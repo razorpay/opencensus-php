@@ -9,11 +9,9 @@ use RZP\Base\Common;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
-use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
-use RZP\Models\Merchant\Balance;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\QueryCache\CacheQueries;
 
 class Repository extends Base\Repository
@@ -51,6 +49,7 @@ class Repository extends Base\Repository
         EsRepository::QUERY             => 'filled|string|min:2|max:100',
         Entity::ORG_ID                  => 'sometimes|string|size:14',
         Entity::ACCOUNT_STATUS          => 'filled|custom',
+        Detail\Entity::REVIEWER_ID      => 'sometimes|string|max:14',
         Entity::SUB_ACCOUNTS            => 'filled|custom',
         Entity::GROUPS                  => 'sometimes|array',
         Entity::ADMINS                  => 'sometimes|array|min:1|max:1',
@@ -165,7 +164,7 @@ class Repository extends Base\Repository
             $this->repo->methods->getTableName(),
             function ($join) use ($params)
             {
-                $merchantId = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+                $merchantId = $this->repo->merchant->dbColumn(Entity::ID);
                 $methodsMerchantId = $this->repo->methods->dbColumn(Methods\Entity::MERCHANT_ID);
 
                 $methods = json_decode($params[Entity::METHODS], true);

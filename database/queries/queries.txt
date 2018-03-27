@@ -3271,5 +3271,8 @@ ALTER TABLE line_items
     ADD COLUMN hsn_code VARCHAR(20) DEFAULT NULL AFTER tax_inclusive,
     ADD COLUMN sac_code VARCHAR(20) DEFAULT NULL AFTER hsn_code;
 
+ALTER TABLE `merchant_details`
+    ADD COLUMN `reviewer_id` char(14) NULL DEFAULT NULL AFTER `archived_at`;
+
 ALTER TABLE orders
     ADD COLUMN discount TINYINT(4) NOT NULL DEFAULT 0 AFTER offer_id;

@@ -122,7 +122,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function editMerchantDetailFields(Merchant\Entity $merchant, array $input): Entity
+    public function syncToMerchantDetailFields(Merchant\Entity $merchant, array $input): Entity
     {
         $merchantDetails = $merchant->merchantDetail;
 
@@ -147,6 +147,37 @@ class Core extends Base\Core
 
         return $merchantDetails;
     }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param array           $input
+     *
+     * @return Entity
+     */
+    public function editMerchantDetailFields(Merchant\Entity $merchant, array $input): Entity
+    {
+        $merchantDetail = $this->getMerchantDetails($merchant);
+
+        if (isset($input[Entity::REVIEWER_ID]) === true)
+        {
+            $reviewerId = $input[Entity::REVIEWER_ID];
+
+            unset($input[Entity::REVIEWER_ID]);
+
+            AdminEntity::verifyIdAndStripSign($reviewerId);
+
+            $reviewer = $this->repo->admin->findOrFailPublic($reviewerId);
+
+            $merchantDetail->reviewer()->associate($reviewer);
+        }
+
+        $merchantDetail->edit($input);
+
+        $this->repo->saveOrFail($merchantDetail);
+
+        return $merchantDetail;
+    }
+
 
     /**
      * Fills up dummy file IDs, required fields for merchant activation

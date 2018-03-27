@@ -231,6 +231,8 @@ class Server extends Base\Mock\Server
 
         $response = $this->getDefaultVerifyResponse($input, $payment);
 
+        $this->content($response,'verify');
+
         $res = [
             $response['txn_id'],
             $response['payment_id'],
@@ -287,6 +289,8 @@ class Server extends Base\Mock\Server
         {
             $response[4] = Status::FAILED;
         }
+
+        $this->content($response, 'refund');
 
         return $this->makeResponse($response, Action::REFUND);
     }

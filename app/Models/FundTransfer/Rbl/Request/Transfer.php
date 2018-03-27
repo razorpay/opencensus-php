@@ -49,7 +49,7 @@ class Transfer extends Base
         return $this;
     }
 
-    public function requestBody(): array
+    public function requestBody(): string
     {
         $source             = $this->entity->source;
 
@@ -60,7 +60,7 @@ class Transfer extends Base
         $this->transferMode = $this->getTransferMode($amount);
 
         // Do not change the order of fields.
-         return [
+         return json_encode([
             'Single_Payment_Corp_Req' => [
                 'Header' => [
                     'TranID'      => $this->entity->getId(),
@@ -83,7 +83,7 @@ class Transfer extends Base
                     'Signature' => 'Signature'
                 ],
             ]
-        ];
+        ]);
     }
 
     /**

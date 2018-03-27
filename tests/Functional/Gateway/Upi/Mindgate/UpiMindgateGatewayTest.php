@@ -186,6 +186,50 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertNull($upiEntity[Entity::NPCI_REFERENCE_ID]);
     }
 
+
+    public function testVpaWithCapitalPspValidation($status = 'created')
+    {
+        $this->payment['vpa'] = 'vishnu@ICiCI';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('async', $response['type']);
+
+        $this->checkPaymentStatus($paymentId, $status);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        // We should have gotten a successful response
+        $this->assertEquals(['success' => true], $response);
+        $this->assertEquals('vishnu@icici', $upiEntity[Entity::VPA]);
+
+    }
+
+    public function testVpaWithoutPspValidation()
+    {
+        $this->payment['vpa'] = 'invalidvpa';
+
+        $payment = $this->payment;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            });
+    }
+
     /**
      * Force the gateway to raise a failure on trying
      * to initiate web collect
@@ -324,6 +368,42 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals('failed', $entity['status']);
         $this->assertEquals(false, $entity['gateway_refunded']);
 
+    }
+
+    public function testRetryRefund()
+    {
+        $this->payment['vpa'] = 'failedrefund@hdfcbank';
+
+        $payment = $this->testPayment();
+
+        $refund = $this->refundPayment($payment['id'], 10000);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->mockServerContentFunction(function (& $content, $action = null) use($refund)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = 'FAILURE';
+            }
+
+            if ($action === 'refund')
+            {
+                $refundId = substr($refund['id'], 5);
+
+                $content[4] = 'SUCCESS';
+
+                $this->assertEquals($refundId . 1, $content[1]);
+            }
+        });
+
+        $refund = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals($refund['status'], 'processed');
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($refund['attempts'], 2);
     }
 
     protected function checkPaymentStatus($id, $expectedStatus)
