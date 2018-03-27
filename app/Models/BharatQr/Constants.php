@@ -25,5 +25,5 @@ class Constants
     const CARD_NAME             = 'Random';
     const CARD_EXPIRY_MONTH     = '11';
     const CARD_EXPIRY_YEAR      = '2037';
-    const UPI_PREFIX            = 'PIL';
+    const UPI_PREFIX            = 'RZP';
 }
