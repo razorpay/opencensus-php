@@ -43,7 +43,7 @@ class Calculator extends Base\Core
                 ]);
         }
 
-        return intval($discountedAmount);
+        return $discountedAmount;
     }
 
     public function calculateDiscount(int $amount)
@@ -79,6 +79,6 @@ class Calculator extends Base\Core
             $discount = $discountFactor / 10000;
         }
 
-        return round($discount);
+        return intval(round($discount));
     }
 }

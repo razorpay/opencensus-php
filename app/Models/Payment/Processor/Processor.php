@@ -464,6 +464,11 @@ class Processor
 
     protected function modifyAmountForDiscountedOfferIfApplicable(Payment\Entity $payment, array & $input)
     {
+        if (empty($input[Payment\Entity::ORDER_ID]) === true)
+        {
+            return;
+        }
+
         $order = $this->fetchOrderFromInput($input);
 
         if (($order !== null) and
