@@ -118,6 +118,15 @@ class EnachRbl extends Base
         $gatewayPayment = $this->repo->enach->findByPaymentIdAndActionOrFail(
             $paymentId, GatewayAction::AUTHORIZE);
 
+        if ((empty($gatewayPayment[EnachEntity::UMRN]) === false) and
+            ($gatewayPayment[EnachEntity::UMRN] !== $content[self::UMRN]))
+        {
+            $this->trace->critical(TraceCode::GATEWAY_TOKEN_MISMATCH, [
+                'umrn' => $content[self::UMRN],
+                'gateway' => 'enach_rbl',
+            ]);
+        }
+
         $attributes = $this->getGatewayAttributes($content);
 
         $gatewayPayment->fill($attributes);
@@ -175,7 +184,7 @@ class EnachRbl extends Base
         return Token\RecurringStatus::REJECTED;
     }
 
-    protected function getTokenErrorMessage(string $gatewayTokenStatus): string
+    protected function getTokenErrorMessage(string $gatewayTokenStatus)
     {
         if (Status::isAcknowledgeSuccess($gatewayTokenStatus) === true)
         {

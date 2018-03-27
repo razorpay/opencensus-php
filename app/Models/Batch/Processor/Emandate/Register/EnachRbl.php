@@ -161,7 +161,7 @@ class EnachRbl extends Base
         return Token\RecurringStatus::REJECTED;
     }
 
-    protected function getTokenErrorMessage(string $gatewayTokenStatus): string
+    protected function getTokenErrorMessage(string $gatewayTokenStatus)
     {
         if (Rbl\Status::isRegistrationSuccess($gatewayTokenStatus) === true)
         {
