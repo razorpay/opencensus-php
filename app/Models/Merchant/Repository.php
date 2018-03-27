@@ -20,7 +20,13 @@ class Repository extends Base\Repository
 
     use Base\RepositoryUpdateTestAndLive;
 
-    const SUB_ACCOUNTS_ONLY_VALUE = '1';
+    //
+    // Possible values for sub_accounts(other than merchant id) query:
+    // - '1': Include only sub accounts in searched results
+    // - '0': Exclude sub accounts from searched results
+    //
+    const SUB_ACCOUNTS_ONLY_VALUE     = '1';
+    const SUB_ACCOUNTS_EXCLUDED_VALUE = '0';
 
     protected $entity = 'merchant';
 
@@ -62,7 +68,9 @@ class Repository extends Base\Repository
 
     protected function validateSubAccounts($attribute, $value)
     {
-        ($value === self::SUB_ACCOUNTS_ONLY_VALUE) or Entity::verifyIdAndStripSign($value);
+        ($value === self::SUB_ACCOUNTS_ONLY_VALUE) or
+            ($value === self::SUB_ACCOUNTS_EXCLUDED_VALUE) or
+            Entity::verifyIdAndStripSign($value);
     }
 
     public function fetchActivatedMerchantsBeforeTimestamp(
