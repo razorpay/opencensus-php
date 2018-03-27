@@ -483,3 +483,10 @@ export const getKeysSeparatedByPipe = params => {
   // Stringify all the other keys and return the string.
   return Object.keys(params).join('|');
 };
+
+/**
+ * Remove all white spaces from a given string
+ **/
+export const trim = str => {
+  return str.replace(/\s+/, '');
+};
