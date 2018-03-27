@@ -7,7 +7,6 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 use RZP\Models\Risk;
-use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 
 /**
@@ -17,19 +16,13 @@ class Shield extends Job implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    /**
-     * Associative array with key as batch type and value
-     * as Batch entity object.
-     *
-     * @var array
-     */
-    protected $paymentCreatedEvent;
+    protected $paymentId;
 
-    public function __construct(string $mode, array $paymentCreatedEvent)
+    public function __construct(string $mode, string $paymentId)
     {
         parent::__construct($mode);
 
-        $this->paymentCreatedEvent = $paymentCreatedEvent;
+        $this->paymentId = $paymentId;
     }
 
     public function handle()
@@ -38,21 +31,17 @@ class Shield extends Job implements ShouldQueue
 
         try
         {
-            $this->trace->info(TraceCode::SHIELD_JOB_RECEIVED, $this->paymentCreatedEvent);
+            $this->trace->info(TraceCode::SHIELD_JOB_RECEIVED, ['payment_id' => $this->paymentId]);
 
             $app = App::getFacadeRoot();
 
-            $shield = $app['shield'];
-
             $repo = $app['repo'];
 
-            $response = $shield->evaluateRules($this->paymentCreatedEvent);
+            $payment = $repo->payment->findOrFail($this->paymentId);
 
-            $paymentId = $this->paymentCreatedEvent['properties']['payment_id'];
+            $shield = $app['shield'];
 
-            Payment\Entity::verifyIdAndStripSign($paymentId);
-
-            $payment = $repo->payment->findOrFail($paymentId);
+            $response = $shield->runFraudCheck($payment);
 
             $riskCore = new Risk\Core();
 

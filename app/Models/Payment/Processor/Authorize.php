@@ -1214,12 +1214,6 @@ trait Authorize
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
         $this->segment->trackPayment($payment, TraceCode::PAYMENT_CREATED);
 
-        $paymentCreateEvent = $this->segment->createPaymentEventForShield($payment);
-
-        $job = new Shield($this->mode, $paymentCreateEvent);
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::SHIELD);
-
         //
         // Call gateway input
         //
@@ -1321,6 +1315,10 @@ trait Authorize
 
     protected function runFraudChecks(Payment\Entity $payment)
     {
+        $job = new Shield($this->mode, $payment->getId());
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::SHIELD);
+
         if ($payment->shouldRunFraudChecks() === true)
         {
             $this->validateEmailTld($payment);
