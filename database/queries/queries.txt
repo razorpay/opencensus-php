@@ -3277,6 +3277,7 @@ ALTER TABLE `merchant_details`
 ALTER TABLE orders
     ADD COLUMN discount TINYINT(4) NOT NULL DEFAULT 0 AFTER offer_id;
 
+<<<<<<< HEAD
 ALTER TABLE upi
     ADD COLUMN account_number VARCHAR(255) NULL DEFAULT NULL AFTER vpa,
     ADD COLUMN ifsc VARCHAR(255) NULL DEFAULT NULL AFTER account_number;
@@ -3440,3 +3441,8 @@ ALTER TABLE invoices
 
 ALTER TABLE tokens
     ADD INDEX `tokens_gateway_token_index` (`gateway_token`);
+
+ALTER TABLE virtual_accounts
+    ADD COLUMN `entity_id` char(14) NULL DEFAULT NULL AFTER `customer_id`,
+    ADD COLUMN `entity_type` char(20) NULL DEFAULT NULL AFTER `entity_id`;
+

@@ -4,6 +4,7 @@ namespace RZP\Models\VirtualAccount;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
@@ -35,9 +36,11 @@ class Service extends Base\Service
 
         $customer = $this->getCustomerIfGiven($input);
 
+        $order = $this->getOrderIfGiven($input);
+
         $this->modifyRequestFromOldFormat($input);
 
-        $virtualAccount = $this->core->create($input, $this->merchant, $customer);
+        $virtualAccount = $this->core->create($input, $this->merchant, $customer, $order);
 
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_CREATED,
@@ -45,6 +48,34 @@ class Service extends Base\Service
         );
 
         return $virtualAccount->toArrayPublic();
+    }
+
+    public function createForOrder(string $orderId, array $input)
+    {
+        $order = $this->repo
+                      ->order
+                      ->findByPublicIdAndMerchant($orderId, $this->merchant);
+
+        $existingVirtualAccount = $this->repo
+                                       ->virtual_account
+                                       ->findActiveVirtualAccountByOrder($order);
+
+        if ($existingVirtualAccount !== null)
+        {
+            return $existingVirtualAccount->toArrayPublic();
+        }
+
+        $createArray = [
+            Entity::ORDER_ID        => $order->getPublicId(),
+            Entity::AMOUNT_EXPECTED => $order->getAmountDue(),
+            Entity::RECEIVERS       => [
+                Entity::TYPES => [
+                    Receiver::BANK_ACCOUNT,
+                ],
+            ],
+        ];
+
+        return $this->create($createArray);
     }
 
     public function fetch(string $id)
@@ -207,6 +238,22 @@ class Service extends Base\Service
         }
 
         return $customer;
+    }
+
+    protected function getOrderIfGiven(array $input)
+    {
+        $order = null;
+
+        if (isset($input[Entity::ORDER_ID]) === true)
+        {
+            $orderId = $input[Entity::ORDER_ID];
+
+            $order = $this->repo
+                          ->order
+                          ->findByPublicIdAndMerchant($orderId, $this->merchant);
+        }
+
+        return $order;
     }
 
     protected function verifyMerchantCategory()

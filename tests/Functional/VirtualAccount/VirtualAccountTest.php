@@ -50,6 +50,39 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
 
+    public function testCreateVirtualAccountForOrder()
+    {
+        $order = $this->fixtures->create('order');
+
+        $response = $this->createVirtualAccountForOrder($order);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals($order->getAmountDue(), $virtualAccount['amount_expected']);
+        $this->assertEquals('active', $virtualAccount['status']);
+        $this->assertEquals($order->getId(), $virtualAccount['entity_id']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $this->assertEquals($virtualAccount['id'], 'va_' . $bankAccount['entity_id']);
+
+        $originalVirtualAccountId = $virtualAccount['id'];
+
+        // Another request does not create a new VA
+        $this->createVirtualAccountForOrder($order);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals($originalVirtualAccountId, $virtualAccount['id']);
+
+        $this->closeVirtualAccount($virtualAccount['id']);
+
+        // If the old VA is closed, then another request would create a new one
+        $this->createVirtualAccountForOrder($order);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertNotEquals($originalVirtualAccountId, $virtualAccount['id']);
+    }
+
     public function testCreateVirtualAccountInvalidReceiverTypes()
     {
         $this->startTest();

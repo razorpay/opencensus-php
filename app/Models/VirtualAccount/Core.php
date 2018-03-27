@@ -8,20 +8,27 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Customer\Entity as Customer;
+use RZP\Models\Order\Entity as Order;
 
 class Core extends Base\Core
 {
-    public function create(array $input, Merchant $merchant, Customer $customer = null): Entity
+    public function create(
+        array $input,
+        Merchant $merchant,
+        Customer $customer = null,
+        Order $order = null): Entity
     {
         $virtualAccount = $this->createEntityAndAssociate($merchant);
 
-        $virtualAccount = $this->repo->transaction(function() use ($virtualAccount, $input, $customer)
+        $virtualAccount = $this->repo->transaction(function() use ($virtualAccount, $input, $customer, $order)
         {
             $virtualAccount->build($input);
 
             $this->validateDescriptor($virtualAccount);
 
             $virtualAccount->customer()->associate($customer);
+
+            $virtualAccount->entity()->associate($order);
 
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 

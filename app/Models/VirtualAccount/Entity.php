@@ -3,9 +3,10 @@
 namespace RZP\Models\VirtualAccount;
 
 use RZP\Models\Base;
+use RZP\Models\Order;
 use RZP\Models\Customer;
-use RZP\Models\BankAccount;
 use RZP\Models\Merchant;
+use RZP\Models\BankAccount;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as Constants;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -35,6 +36,8 @@ class Entity extends Base\PublicEntity
     const VPA                  = 'vpa';
     const QR_CODE_ID           = 'qr_code_id';
     const CUSTOMER_ID          = 'customer_id';
+    const ENTITY_ID            = 'entity_id';
+    const ENTITY_TYPE          = 'entity_type';
     const NOTES                = 'notes';
 
     const RECEIVER_TYPES       = 'receiver_types';
@@ -44,6 +47,10 @@ class Entity extends Base\PublicEntity
     const NUMERIC              = 'numeric';
 
     const DELETED_AT           = 'deleted_at';
+
+    // order_id is a valid request parameter, but is mapped to entity_id
+    const ORDER_ID             = 'order_id';
+
 
     protected $fillable = [
         self::NAME,
@@ -123,6 +130,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function entity()
+    {
+        return $this->morphTo();
     }
 
     // ----------------------- Modifiers ---------------------------------------

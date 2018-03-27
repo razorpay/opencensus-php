@@ -65,6 +65,12 @@ class CreateVirtualAccountsTable extends Migration
             $table->string(VirtualAccount::CUSTOMER_ID, VirtualAccount::ID_LENGTH)
                   ->nullable();
 
+            $table->string(VirtualAccount::ENTITY_ID, VirtualAccount::ID_LENGTH)
+                  ->nullable();
+
+            $table->string(VirtualAccount::ENTITY_TYPE)
+                  ->nullable();
+
             $table->string(VirtualAccount::MERCHANT_ID, VirtualAccount::ID_LENGTH);
 
             $table->integer(VirtualAccount::CREATED_AT);
