@@ -451,6 +451,59 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
     }
 
+    public function testVirtualAccountForOrderPay()
+    {
+        $order = $this->fixtures->create('order');
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 10000]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(1000000, $virtualAccount['amount_paid']);
+        $this->assertEquals('paid', $virtualAccount['status']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('paid', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+    }
+
+    public function testVirtualAccountForOrderPayAndRefund()
+    {
+        $order = $this->fixtures->create('order');
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        // Will see about this later
+        // $this->assertEquals(0, $virtualAccount['amount_paid']);
+        $this->assertEquals('active', $virtualAccount['status']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('attempted', $order['status']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        $refund =  $this->getLastEntity('refund', true);
+        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+    }
+
     public function testVirtualAccountExcess()
     {
         $virtualAccount = $this->createVirtualAccount([

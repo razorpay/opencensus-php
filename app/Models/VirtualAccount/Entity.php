@@ -173,6 +173,11 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::CUSTOMER_ID));
     }
 
+    public function hasOrder()
+    {
+        return ($this->isAttributeNotNull(self::ENTITY_ID));
+    }
+
     public function hasVpa()
     {
         return ($this->isAttributeNotNull(self::VPA));

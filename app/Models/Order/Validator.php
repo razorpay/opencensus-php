@@ -126,7 +126,10 @@ class Validator extends Base\Validator
     {
         $this->validateOrderNotPaid();
 
-        $this->validateOrderAmount($payment->getAdjustedAmountWrtCustFeeBearer());
+        if ($payment->isBankTransfer() === false)
+        {
+            $this->validateOrderAmount($payment->getAdjustedAmountWrtCustFeeBearer());
+        }
 
         $this->validateOrderCurrency($payment->getCurrency());
 

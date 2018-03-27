@@ -130,7 +130,16 @@ class Processor extends VirtualAccount\Processor
 
         if ($bankTransfer->isExpected() === true)
         {
-            $paymentProcessor->autoCapturePayment($payment);
+            // Amount mismatched payments made to order VAs are immediately refunded
+            if (($bankTransfer->virtualAccount->hasOrder() === true) and
+                ($bankTransfer->virtualAccount->getAmountExpected() != $bankTransfer->getAmount()))
+            {
+                $paymentProcessor->refundAuthorizedPayment($payment);
+            }
+            else
+            {
+                $paymentProcessor->autoCapturePayment($payment);
+            }
         }
     }
 
@@ -402,6 +411,13 @@ class Processor extends VirtualAccount\Processor
             $paymentArray[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
             $paymentArray[Payment\Entity::CONTACT]     = $customer->getContact();
             $paymentArray[Payment\Entity::EMAIL]       = $customer->getEmail();
+        }
+
+        if ($this->virtualAccount->hasOrder() === true)
+        {
+            $order = $this->virtualAccount->entity;
+
+            $paymentArray[Payment\Entity::ORDER_ID] = $order->getPublicId();
         }
 
         return $paymentArray;
