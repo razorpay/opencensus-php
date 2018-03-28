@@ -501,13 +501,9 @@
             top: 0;
             width: 100%;
             position: absolute;
-            margin: 128px auto 0;
+            margin: 175px auto 0;
             display: none;
             background: #effff6;
-        }
-
-        .short #scs-box {
-          margin: 175px auto 0;
         }
 
         #payment-for {
@@ -516,13 +512,13 @@
         .btn-link {
           width: 95px;
           color: #528ff0;
-          background: linear-gradient(transparent, #fff);
+          background: linear-gradient(transparent, rgba(255,255,255,0.8));
           border: 0;
           cursor: pointer;
           padding: 0;
           font-size: 14px;
           outline: none;
-          margin-left: -8px;
+          margin-left: -9px;
         }
 
         #mobile-container .btn-link{
@@ -930,7 +926,7 @@
               cleanHTML();
 
               var data = window.RZP_DATA.data;
-              var color = data.merchant.color || '#168AFA';
+              var color = data.merchant.brand_color || '#168AFA';
               document.getElementById('chkout-header').style['background-color'] = color;
 
 
@@ -942,7 +938,7 @@
 
                   if (checkIsDesktop()) {
                       document.getElementById('scs-box').style.display = 'block';
-                      document.getElementById('scs-msg').innerHTML = "You have successfully paid of ₹ " +  (amount/100).toFixed(2);
+                      document.getElementById('scs-msg').innerHTML = "You have successfully paid ₹ " +  (amount/100).toFixed(2);
                       document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2);
                   } else {
                     document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2) + '<span id="paid-tag">PAID</span></span>';
@@ -1047,7 +1043,7 @@
                         options.name = merchant.name;
                   }
 
-                  var color = merchant.color || '#168AFA';
+                  var color = merchant.brand_color || '#168AFA';
                   options.theme.color = color;
 
                   if (merchant.image) {
@@ -1060,54 +1056,6 @@
                     if (checkIsDesktop()) {
                       options.parent = '#chkout-box';
                       razorpay = window.razorpay = Razorpay(options);
-
-                      if (data['invoice']['partial_payment']) {
-                          var poll, pollSteps = 1;
-
-                          // Gets exponential timer
-                          function getNextExpoTimeout(x) {
-                            var pollTime = Math.pow(1.1, x*10) + 150;
-                            return pollTime;
-                          }
-
-                          // Poller to check if iframe loaded
-                          function poller() {
-                            var iframes = document.getElementsByClassName('razorpay-checkout-frame');
-                            if (pollSteps == 100) {
-                                clearTimeout(poll)
-                            }
-                            if (iframes.length) {
-                                clearTimeout(poll);
-                                frameLoaded(iframes);
-                            } else {
-                                poll = setTimeout(poller, getNextExpoTimeout(pollSteps))
-                                pollSteps++;
-                            }
-                          }
-
-                          // Task to perform after frame is loaded
-                          function frameLoaded(iframes) {
-                            var iframe = iframes[0];
-
-                            iframe.onload = function() {
-                              var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-
-                              var steps = 1;
-                              var pollContainer = setInterval(function(){
-                                if (steps === 100) {
-                                  clearInterval(pollContainer);
-                                }
-                                if (iframeDoc.getElementById('next-button')) {
-                                  clearInterval(pollContainer);
-                                  iframeDoc.getElementById('next-button').style.transform = 'translateY(-55px)';
-                                }
-                                steps ++;
-                              }, 60);
-                            };
-                          }
-
-                          poll = setTimeout(poller, getNextExpoTimeout(pollSteps)); // Start poller
-                      }
                     } else {
                         document.getElementById('mob-payment-btn').addEventListener('click', function() {
                             razorpay = window.razorpay = Razorpay(options);
