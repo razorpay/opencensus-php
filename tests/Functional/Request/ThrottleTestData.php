@@ -35,20 +35,7 @@ return [
         ],
     ],
 
-    'testGetOrderWhenThrottledSecondTime1' => [
-        'request' => [
-            'method' => 'get',
-            'url'    => '/orders',
-        ],
-        'response' => [
-            'content' => [
-                'count' => 0,
-                'items' => [],
-            ],
-        ],
-    ],
-
-    'testGetOrderWhenThrottledSecondTime2' => [
+    'testGetOrderWhenThrottled' => [
         'request' => [
             'method' => 'get',
             'url'    => '/orders',
