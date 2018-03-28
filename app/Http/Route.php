@@ -22,7 +22,12 @@ final class Route
         'account'                                 => ['get',      'account',                                        'PublicController@getAccount'                                       ],
         'checkout'                                => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                         => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
+
+        // callback_url case handler for automatic checkout
         'checkout_onyx'                           => ['post',     'checkout/onyx',                                  'PublicController@postCallbackUrlWithParams'                        ],
+
+        // hosted checkout for IRCTC and Bescom
+        'checkout_embedded'                       => ['post',     'checkout/embedded',                              'PublicController@renderEmbedded'                                   ],
         'checkout_hosted'                         => ['post',     'checkout/hosted',                                'PublicController@renderCheckoutHosted'                             ],
         'checkout_hosted_get'                     => ['get',      'checkout/hosted',                                'PublicController@renderCheckoutHosted'                             ],
         // TODO: Check Splunk and remove the write here
@@ -200,7 +205,7 @@ final class Route
         'fund_transfer_attempt_null_utr_report'   => ['get',      'fund_transfer_attempts/null_utr_report',         'FundTransferAttemptController@sendNullUtrReport'                   ],
         'fund_transfer_attempt_reconcile'         => ['post',     'fund_transfer_attempts/reconcile/{channel}',     'FundTransferAttemptController@reconcileFundTransfers',             ],
         'fund_transfer_attempt_process'           => ['post',     'fund_transfer_attempts/initiate/{channel}',      'FundTransferAttemptController@initiateFundTransfers',              ],
-        'gateway_payment_callback_bharatqr'       => ['post',     'payment/callback/bharatqr',                      'BharatQrController@processBharatQrPayment'                         ],
+        'gateway_payment_callback_bharatqr'       => ['post',     'payment/callback/bharatqr/{gateway}',            'BharatQrController@processBharatQrPayment'                         ],
         'qr_code_download_live'                   => ['get',      'l/qrcode/{id}',                                  'QrCodeController@fetchLiveQrCode'                                  ],
         'qr_code_download_test'                   => ['get',      't/qrcode/{id}',                                  'QrCodeController@fetchTestQrCode'                                  ],
         'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
@@ -701,6 +706,7 @@ final class Route
         'merchant_requests_create'                => ['post',     'merchant/requests',                              'MerchantRequestController@create'                                  ],
         'merchant_requests_update'                => ['patch',    'merchant/requests/{id}',                         'MerchantRequestController@update'                                  ],
         'merchant_requests_bulk_update'           => ['put',      'merchant/requests/bulk',                         'MerchantRequestController@bulkUpdate'                              ],
+        'merchant_requests_rejection_reasons'     => ['get',      'merchant/requests/rejection_reasons',            'MerchantRequestController@getRejectionReasons'                     ],
 
         'onboarding_features_fetch_details'       => ['get',      'onboarding/features',                            'FeatureController@getOnboardingDetails'                            ],
         'onboarding_features_fetch_submission'    => ['get',      'onboarding/features/{feature}',                  'FeatureController@getOnboardingSubmissions'                        ],
@@ -1284,6 +1290,7 @@ final class Route
         'setl_retry',
         'merchant_activation_files',
         'merchant_get_rejection_reasons',
+        'merchant_requests_rejection_reasons',
         'merchant_batches',
         'admin_fetch_all_entities',
         'merchant_activation_archive',
@@ -1597,6 +1604,7 @@ final class Route
         'merchant_activation_status_change_log'  => Permission::VIEW_ACTIVATION_FORM,
         'merchant_update_key_access'             => Permission::EDIT_MERCHANT_KEY_ACCESS,
         'merchant_get_rejection_reasons'         => '*',
+        'merchant_requests_rejection_reasons'    => '*',
         'dispute_reason_create'                  => Permission::CREATE_DISPUTE_REASON,
         'user_confirm_by_data'                   => '*',
         'onboarding_features_fetch_submissions'  => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
@@ -1788,6 +1796,7 @@ final class Route
         'mailgun_webhook',
         'gateway_downtime_source_webhook',
         'checkout_onyx',
+        'checkout_embedded',
         'checkout_hosted',
         'checkout_hosted_get',
         'mock_event_tracker',
@@ -2013,6 +2022,7 @@ final class Route
         'webhook_fetch_multiple',
         'merchant_gst_fetch',
         'merchant_get_rejection_reasons',
+        'merchant_requests_rejection_reasons',
         'pricing_get_plans',
         'pricing_get_merchant_plans',
         'pricing_get_gateway_plans',
@@ -2277,6 +2287,7 @@ final class Route
         'payment_topup_ajax',
         'payment_topup_post',
         'payment_redirect_callback',
+        'gateway_payment_callback_bharatqr',
     ];
 
     const WORKFLOW_EXECUTE_ROUTE_NAME = 'action_request_execute';

@@ -265,7 +265,7 @@ class NodalAccount extends NodalBase\FileProcessor
 
         $settlementMail     = new SettlementMail\HdfcSettlement($data);
 
-        Mail::send($settlementMail);
+        Mail::queue($settlementMail);
     }
 
     protected function prepareDataForMail(FileStore\Creator $textFileEntity): array

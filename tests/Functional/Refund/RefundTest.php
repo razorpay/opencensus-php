@@ -64,7 +64,7 @@ class RefundTest extends TestCase
 
         $this->assertEquals(true, $refund['gateway_refunded']);
 
-        Mail::assertSent(RefundedMail::class);
+        Mail::assertQueued(RefundedMail::class);
     }
 
     public function testRefundEditStatus()
@@ -213,7 +213,7 @@ class RefundTest extends TestCase
 
         $this->assertEquals(true, $refund['gateway_refunded']);
 
-        Mail::assertSent(RefundedMail::class);
+        Mail::assertQueued(RefundedMail::class);
     }
 
     public function testRefundDirect()
@@ -887,7 +887,7 @@ class RefundTest extends TestCase
 
         $this->assertEquals($refund['id'], $txn['entity_id']);
 
-        Mail::assertSent(RefundedMail::class);
+        Mail::assertQueued(RefundedMail::class);
     }
 
     public function startTest($paymentId = null, $amount = null)

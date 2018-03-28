@@ -428,7 +428,7 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->assertEquals($gatewayPayment['payment_id'], $debitPaymentId);
         $this->assertEquals($gatewayPayment['amount'], $debitPayment['amount']);
 
-        Mail::assertSent(Email::class, function ($mail) use ($file)
+        Mail::assertQueued(Email::class, function ($mail) use ($file)
         {
             $key = Payment\Gateway::NETBANKING_AXIS . '_debit';
 

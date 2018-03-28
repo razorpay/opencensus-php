@@ -274,6 +274,56 @@ return [
         ]
     ],
 
+    'testCreateTpvTerminalWithInvalidMethod' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hdfc',
+                'gateway_acquirer'          => 'hdfc',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
+                'gateway_terminal_password' => '12345678',
+                'card'                      => '1',
+                'tpv'                       => '2'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'tpv is not required and shouldn\'t be sent',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testCreateTpvTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_mindgate',
+                'gateway_merchant_id'       => '12345',
+                'gateway_merchant_id2'      => '12345678',
+                'gateway_terminal_password' => '12345678',
+                'upi'                       => '1',
+                'tpv'                       => '2'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => '12345678',
+                'enabled'              => true,
+                'tpv'                  => 2
+            ]
+        ]
+    ],
+
     'testToggleTerminal' => [
         'request' => [
             'content' => [

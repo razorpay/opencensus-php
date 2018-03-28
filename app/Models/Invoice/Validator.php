@@ -610,40 +610,22 @@ class Validator extends Base\Validator
         $id    = $invoice->getPublicId();
         $label = $invoice->getTypeLabel();
 
-        switch ($invoice->getStatus())
+        $useNewPlView = (in_array('Hostedplv2', $invoice->merchant->liveTagNames(), true) === true);
+        $isPlAndHasNewViewEnabled = (($invoice->isTypeLink() === true) and ($useNewPlView === true));
+
+        if ($invoice->isDraft() === true)
         {
-            //
-            // If invoice is in draft, cancelled state we don't send any data
-            // but just following error message to view.
-            //
-
-            case Status::DRAFT:
-
-                throw new BadRequestValidationFailureException("$label with id $id is not issued yet");
-
-            case Status::CANCELLED:
-
-                throw new BadRequestValidationFailureException("$label with id $id is cancelled");
-
-            //
-            // If invoice type is expired we still send the data and JS code
-            // shows a torn page with other basic attributes. But in case of
-            // other types we would throw error so the error page with proper
-            // message is rendered.
-            //
-
-            case Status::EXPIRED:
-
-                if ($invoice->isTypeInvoice() === false)
-                {
-                    throw new BadRequestValidationFailureException("$label with id $id is expired");
-                }
-
-                break;
-
-            default:
-
-                break;
+            throw new BadRequestValidationFailureException("$label with id $id is not issued yet");
+        }
+        else if (($invoice->isCancelled() === true) and ($isPlAndHasNewViewEnabled === false))
+        {
+            throw new BadRequestValidationFailureException("$label with id $id is cancelled");
+        }
+        else if (($invoice->isExpired() === true) and
+                 ($invoice->isTypeInvoice() === false) and
+                 ($isPlAndHasNewViewEnabled === false))
+        {
+            throw new BadRequestValidationFailureException("$label with id $id is expired");
         }
     }
 

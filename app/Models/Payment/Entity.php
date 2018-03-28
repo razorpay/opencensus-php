@@ -334,6 +334,7 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::RECURRING,
         self::IFSC,
+        self::VPA,
         'method_based_input',
         'convert_empty_strings_to_null'
     ];
@@ -439,6 +440,23 @@ class Entity extends Base\PublicEntity
             if ($isEmailOptional === true)
             {
                 $input['email'] = self::DUMMY_EMAIL;
+            }
+        }
+    }
+
+    protected function modifyVpa(& $input)
+    {
+        if (empty($input[self::VPA]) === false)
+        {
+            $vpaParts = explode('@', $input[self::VPA]);
+
+            if (count($vpaParts) > 1)
+            {
+                $lastElement = count($vpaParts) - 1;
+
+                $vpaParts[$lastElement] = strtolower($vpaParts[$lastElement]);
+
+                $input[self::VPA] = implode('@', $vpaParts);
             }
         }
     }
@@ -641,9 +659,15 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
     }
 
-    public function setGatewayBharatQr()
+    //
+    // As setGateway is protected method
+    // we didn't want to make it public just
+    // to set gateway for bharat qr payment
+    // so a new method
+    //
+    public function setGatewayForBharatQr(string $gateway)
     {
-        $this->setGateway(Payment\Gateway::BHARAT_QR);
+        $this->setGateway($gateway);
     }
 
     /**
@@ -1264,6 +1288,12 @@ class Entity extends Base\PublicEntity
     {
         return (($this->isMethod(Payment\Method::CARD)) or
                 ($this->isMethod(Payment\Method::EMI)));
+    }
+
+    public function isTpvMethod()
+    {
+        return (($this->isMethod(Payment\Method::UPI)) or
+                ($this->isMethod(Payment\Method::NETBANKING)));
     }
 
     public function isSigned()

@@ -284,6 +284,9 @@ return [
                     'activation_status' => [
                         'type' => 'keyword',
                     ],
+                    'reviewer_id' => [
+                        'type'  => 'keyword',
+                    ],
                     'archived_at' => [
                         'type'   => 'date',
                         'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',

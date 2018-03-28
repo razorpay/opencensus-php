@@ -158,18 +158,16 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $merchantDetails = (new Core)->getMerchantDetails($merchant);
+        $merchantDetailCore = new Core;
 
-        $merchantDetails->edit($input);
-
-        $this->repo->saveOrFail($merchantDetails);
+        $merchantDetails = $merchantDetailCore->editMerchantDetailFields($merchant, $input);
 
         if (isset($slackAction) === true)
         {
             $this->logActionToSlack($merchant, $slackAction);
         }
 
-        return (new Core)->createResponse($merchantDetails);
+        return $merchantDetailCore->createResponse($merchantDetails);
     }
 
     protected function createFile(Entity $merchantDetail,

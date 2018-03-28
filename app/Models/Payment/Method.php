@@ -31,7 +31,8 @@ class Method
     public static $bankMethods = [
         self::NETBANKING,
         self::AEPS,
-        self::EMANDATE
+        self::EMANDATE,
+        self::UPI,
     ];
 
     protected static $asynchronous = [

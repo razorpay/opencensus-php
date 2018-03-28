@@ -575,6 +575,11 @@ class Gateway
         ]
     ];
 
+    public static $bharatQrGateways = [
+        self::UPI_ICICI,
+        self::HITACHI,
+    ];
+
     public static $authTypeToEmandateGatewayMap = [
         AuthType::NETBANKING => [
             Gateway::NETBANKING_AXIS,
@@ -862,7 +867,8 @@ class Gateway
     ];
 
     public static $upiIntentGateways = [
-        Gateway::UPI_ICICI
+        Gateway::UPI_ICICI,
+        Gateway::UPI_MINDGATE,
     ];
 
     public static function getAcquirerName(string $acquirer)
@@ -989,6 +995,11 @@ class Gateway
     public static function isValidGateway($gateway)
     {
         return (defined(__CLASS__ . '::' . strtoupper($gateway)));
+    }
+
+    public static function isValidBharatQrGateway($gateway)
+    {
+        return in_array($gateway , self::$bharatQrGateways, true);
     }
 
     public static function isValidGatewayAcquirer(string $gatewayAcquirer)
