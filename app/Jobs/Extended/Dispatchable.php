@@ -2,6 +2,9 @@
 
 namespace RZP\Jobs\Extended;
 
+/**
+ * Replacement for L5's Dispatchable trait. Returns overridden implementation of PendingDispatch & PendingChain.
+ */
 trait Dispatchable
 {
     public static function dispatch(): PendingDispatch

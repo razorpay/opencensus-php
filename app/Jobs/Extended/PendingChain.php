@@ -2,6 +2,9 @@
 
 namespace RZP\Jobs\Extended;
 
+/**
+ * Overridden: Returns specific implementation of PendingDispatch(find in same tree).
+ */
 class PendingChain extends \Illuminate\Foundation\Bus\PendingChain
 {
     /**

@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use RZP\Exception;
+use RZP\Models\Emi;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;

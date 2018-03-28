@@ -2,6 +2,14 @@
 
 namespace RZP\Jobs\Extended;
 
+/**
+ * Routes a job to specific queue basis few additional arguments.
+ *
+ * E.g.
+ * \RZP\Jobs\Webhook::dispatch($data)->via('payment', ['dispute.created']): Will dispatch the job over queue connection
+ * & queue name as defined in config/queue_route.php. It will look for webhook[connection] to pick the queue connection
+ * & webhook[payment][dispute][created] for queue name.
+ */
 trait Routeable
 {
     /**
@@ -36,6 +44,9 @@ trait Routeable
         return $this;
     }
 
+    /**
+     * Sets job's queue connection and queue name as per configuration using $route & $extra parameters.
+     */
     protected function routeJobPerConfig()
     {
         // If route was not set, use job's default route.

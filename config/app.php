@@ -249,7 +249,6 @@ return array(
         'Mail'            => RZP\Mail\Facade::class,
         'Workflow'        => RZP\Services\Workflow\Facade::class,
         'LaravelSettings' => anlutro\LaravelSettings\Facade::class,
-        'Qenvoy'          => RZP\Services\Qenvoy\Facade::class,
     ],
 
     'context' => env('CONTEXT'),

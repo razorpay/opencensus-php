@@ -7,6 +7,7 @@ use Config;
 use ApiResponse;
 use Carbon\Carbon;
 
+use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Batch;

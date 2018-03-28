@@ -1,7 +1,9 @@
 <?php
 
-// TODO:
-// - Add comments!
+/**
+ * Contains mapping of route keys(nested) and which queue connection & queue name to use respectively.
+ * Usage: Ref \RZP\Jobs\Extended\Routeable.
+ */
 
 return [
     'webhook' => [
@@ -42,6 +44,9 @@ return [
             'settlement' => [
                 'processed'         => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ],
+            'virtual_account' => [
+                'credited'          => env('AWS_WEBHOOKS_TEST_QUEUE'),
+            ]
         ],
         'live' => [
             'payment' => [
@@ -80,6 +85,9 @@ return [
             'settlement' => [
                 'processed'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ],
+            'virtual_account' => [
+                'credited'          => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+            ]
         ],
     ],
     'dashboard' => [
