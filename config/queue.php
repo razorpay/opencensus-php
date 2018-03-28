@@ -146,7 +146,7 @@ return [
     ],
 
     'shield' => [
-        'connection' => 'redis',
+        'connection' => 'sqs_multi_default',
         'test'       => env('AWS_SHIELD_QUEUE'),
         'live'       => env('AWS_SHIELD_QUEUE'),
     ],
