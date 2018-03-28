@@ -985,7 +985,9 @@ class Entity extends Base\PublicEntity
 
     protected function setEmailAttribute($email)
     {
-        $this->attributes[self::EMAIL] = mb_strtolower($email);
+        $formattedEmail = ($email === null) ? null : mb_strtolower(trim($email));
+
+        $this->attributes[self::EMAIL] =  $formattedEmail;
     }
 
     public function setWebsiteAttribute($website)
