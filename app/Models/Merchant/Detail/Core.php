@@ -732,6 +732,25 @@ class Core extends Base\Core
 
         $failedItems = [];
 
+        try
+        {
+            $reviewerIdCopy = $reviewerId;
+
+            AdminEntity::verifyIdAndStripSign($reviewerIdCopy);
+
+            $this->repo->admin->findOrFailPublic($reviewerIdCopy);
+        }
+        catch (\Exception $e)
+        {
+            $response = [
+                'success' => 0,
+                'failed'  => count($merchants),
+                'error'   => $e->getMessage(),
+            ];
+
+            return $response;
+        }
+
         foreach ($merchants as $merchantId)
         {
             try

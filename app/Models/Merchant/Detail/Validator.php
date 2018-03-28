@@ -184,6 +184,12 @@ class Validator extends Base\Validator
         Entity::BUSINESS_WEBSITE                => 'required|max:255|url',
     ];
 
+    protected static $bulkAssignReviewerRules = [
+        Entity::REVIEWER_ID     => 'required|public_id|size:20',
+        Entity::MERCHANTS       => 'filled|array',
+        Entity::MERCHANTS . '*' => 'sometimes|public_id|size:14',
+    ];
+
     /**
      * Validate the transaction report email
      *
@@ -326,42 +332,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE);
-        }
-    }
-
-    /**
-     * Validate if the input contains the reviewer_id and merchants array which needs to be bulk assigned
-     * @param $input
-     *
-     * @throws Exception\BadRequestValidationFailureException
-     */
-    public function validateBulkAssignReviewer($input)
-    {
-        if ((isset($input[Entity::REVIEWER_ID]) === false) or
-            (is_string($input[Entity::REVIEWER_ID]) === false) or
-            (strlen($input[Entity::REVIEWER_ID]) > 14))
-        {
-            $traceData = [
-                'reviewer' => $input[Entity::REVIEWER_ID]
-            ];
-
-            throw new Exception\BadRequestValidationFailureException(self::INVALID_REVIEWER, Entity::REVIEWER_ID, $traceData);
-        }
-
-        if ((isset($input[Entity::MERCHANTS]) === false) or
-            (is_array($input[Entity::MERCHANTS]) === false) or
-            (count($input[Entity::MERCHANTS]) === 0))
-        {
-            throw new Exception\BadRequestValidationFailureException(self::INVALID_MERCHANTS);
-        }
-
-        foreach ($input[Entity::MERCHANTS] as $merchant)
-        {
-            if ((is_string($merchant) === false) or
-                (strlen($merchant) > 14))
-            {
-                throw new Exception\BadRequestValidationFailureException('Invalid Merchant : ' . $merchant);
-            }
         }
     }
 }

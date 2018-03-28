@@ -518,7 +518,7 @@ class Service extends Base\Service
      */
     public function bulkAssignReviewer(array $input)
     {
-        (new Validator)->validateBulkAssignReviewer($input);
+        (new Validator)->validateInput('bulk_assign_reviewer', $input);
 
         $merchants  = $input[Entity::MERCHANTS];
 
@@ -533,21 +533,18 @@ class Service extends Base\Service
 
         Org\Entity::verifyIdAndStripSign($orgId);
 
-        $permissionIds = $this->repo
+        $permission = $this->repo
                             ->permission
-                            ->retrieveIdsByNamesAndOrg(Admin\Permission\Name::REVIEW_MERCHANT_ACTIVATION, $orgId)
-                            ->toArray();
+                            ->findByOrgIdAndPermission($orgId, Admin\Permission\Name::REVIEW_MERCHANT_ACTIVATION);
 
-        if (count($permissionIds) === 0)
+        if (empty($permission) === true)
         {
             throw new Exception\RuntimeException('Missing Permission');
         }
 
-        $permissionId = array_first($permissionIds);
-
         $admins = new Base\Collection;
 
-        foreach ($this->repo->permission->findOrFail($permissionId)->roles as $role)
+        foreach ($permission->roles as $role)
         {
             foreach ($role->admins as $roleAdmin)
             {
