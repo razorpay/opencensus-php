@@ -174,7 +174,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         return $bharatQr->payment->getId();
     }
 
-    protected function alertUnexpectedBharatQrPayment(stinrg $paymentId, array $row)
+    protected function alertUnexpectedBharatQrPayment(string $paymentId, array $row)
     {
         $this->trace->info(TraceCode::BHARAT_QR_UNEXPECTED, [
             'message'       => 'Unexpected Bharat Qr Payment',
