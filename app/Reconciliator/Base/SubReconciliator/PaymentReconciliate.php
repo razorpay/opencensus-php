@@ -158,6 +158,31 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         parent::resetProcessingAttributes();
     }
 
+    protected function getPaymentIdFromBharatQr(string $paymentId, array $row)
+    {
+        $bharatQr = $this->repo->bharat_qr->findByMerchantReference($paymentId);
+
+        if ($bharatQr === null)
+        {
+            $this->alertUnexpectedBharatQrPayment($paymentId, $row);
+
+            $this->setFailUnprocessedRow(true);
+
+            return null;
+        }
+
+        return $bharatQr->payment->getId();
+    }
+
+    protected function alertUnexpectedBharatQrPayment(stinrg $paymentId, array $row)
+    {
+        $this->trace->info(TraceCode::BHARAT_QR_UNEXPECTED, [
+            'message'       => 'Unexpected Bharat Qr Payment',
+            'id'            => $paymentId,
+            'row'           => $row,
+        ]);
+    }
+
     protected function runPreReconciledAtCheckRecon($rowDetails)
     {
         // Setting acquirer data, will be persist from persistPaymentData method

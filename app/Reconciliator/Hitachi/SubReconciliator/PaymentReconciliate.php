@@ -49,27 +49,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             return $paymentId;
         }
 
-        $bharatQr = $this->repo->bharat_qr->findByMerchantReference($paymentId);
-
-        if ($bharatQr === null)
-        {
-            $this->alertUnexpectedBharatQrPayment($row);
-
-            $this->setFailUnprocessedRow(true);
-
-            return null;
-        }
-
-        return $bharatQr->payment->getId();
-    }
-
-    protected function alertUnexpectedBharatQrPayment(array $row)
-    {
-        $this->trace->info(TraceCode::BHARAT_QR_UNEXPECTED, [
-            'message'       => 'Unexpected Bharat Qr Payment',
-            'id'            => $row[self::COLUMN_PAYMENT_ID],
-            'row'           => $row,
-        ]);
+       return $this->getPaymentIdFromBharatQr($paymentId, $row);
     }
 
     protected function getGatewayFee($row)
