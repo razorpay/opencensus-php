@@ -150,8 +150,16 @@ export default function(state = initialState, action) {
         action.fieldName,
         action.fileName
       );
+
       updatedSteps = state.steps;
+
+      //max doc uploads for merchant/linked account
       let maxUploads = action.step === 4 ? 4 : 2;
+
+      //max doc uploads for ngo merchants
+      if (state.data.business_type === '7') {
+        maxUploads = 6;
+      }
 
       if (Object.keys(uploadedFiles).length === maxUploads) {
         updatedSteps = set(state.steps, action.step, 'success');
