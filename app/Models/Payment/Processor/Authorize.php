@@ -1315,9 +1315,7 @@ trait Authorize
 
     protected function runFraudChecks(Payment\Entity $payment)
     {
-        $job = new Shield($this->mode, $payment->getId());
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::SHIELD);
+        $this->runShieldCheck($payment);
 
         if ($payment->shouldRunFraudChecks() === true)
         {
@@ -1327,6 +1325,13 @@ trait Authorize
 
             $this->validateBlockedCard($payment);
         }
+    }
+
+    protected function runShieldCheck(Payment\Entity $payment)
+    {
+        $job = new Shield($this->mode, $payment->getId());
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::SHIELD);
     }
 
     protected function validateEmailTld(Payment\Entity $payment)

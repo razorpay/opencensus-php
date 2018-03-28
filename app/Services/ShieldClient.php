@@ -27,7 +27,7 @@ class ShieldClient
 
     protected $ruleset;
 
-    const CONTEXT_KEYS = [
+    const ANALYTICS_KEYS = [
         Analytics::IP,
         Analytics::CHECKOUT_ID,
         Analytics::USER_AGENT,
@@ -53,44 +53,45 @@ class ShieldClient
         $this->baseUrl = $this->config['url'];
     }
 
-    public function createRule(array $input)
+    public function createRule(array $input): array
     {
         return $this->sendRequest(self::RULES, Requests::POST, $input);
     }
 
-    public function getRules()
+    public function getRules(): array
     {
         return $this->sendRequest(self::RULES, Requests::GET);
     }
 
-    public function getRuleById(string $id)
+    public function getRuleById(string $id): array
     {
         return $this->sendRequest(self::RULES . $id, Requests::GET);
     }
 
-    public function deleteRuleById(string $id)
+    public function deleteRuleById(string $id): array
     {
         return $this->sendRequest(self::RULES . $id, Requests::DELETE);
     }
 
-    public function updateRuleById(string $id, array $input)
+    public function updateRuleById(string $id, array $input): array
     {
         return $this->sendRequest(self::RULES . $id, Requests::PUT, $input);
     }
 
-    public function evaluateRules(array $input)
+    public function evaluateRules(array $input): array
     {
         return $this->sendRequest(self::EVALUATE, Requests::POST, $input);
     }
 
-    public function runFraudCheck(Payment\Entity $payment)
+    public function runFraudCheck(Payment\Entity $payment): array
     {
         $paymentRequest = $this->getPaymentProperties($payment);
 
+        sd($paymentRequest);
         return $this->evaluateRules($paymentRequest);
     }
 
-    protected function getPaymentProperties(Payment\Entity $payment)
+    protected function getPaymentProperties(Payment\Entity $payment): array
     {
         $request = [
             'merchant_id' => $payment->getMerchantId(),
@@ -100,6 +101,7 @@ class ShieldClient
         $input = [
             'id'                => $payment->getId(),
             'amount'            => $payment->getAmount(),
+            'merchant_id'       => $payment->getMerchantId(),
             'merchant_name'     => $payment->merchant->getBillingLabel(),
             'merchant_category' => $payment->merchant->getCategory2(),
             'international'     => $payment->isInternational(),
@@ -107,7 +109,6 @@ class ShieldClient
             'email'             => $payment->getEmail(),
             'created_at'        => $payment->getCreatedAt(),
             'method'            => $payment->getMethod(),
-
         ];
 
         $method = $payment->getMethod();
@@ -129,13 +130,14 @@ class ShieldClient
 
         if ($payment->hasCard() === true)
         {
-            $input['card_iin'] = $payment->card->getIin();
-            $input['card_network'] = $payment->card->getNetwork();
-            $input['card_type'] = $payment->card->getType();
-            $input['card_country'] = $payment->card->getCountry();
-            $input['card_issuer'] = $payment->card->getIssuer();
-            $input['international'] = $payment->isInternational();
-            $input['card_name'] = $payment->card->getName();
+            $card = $payment->card();
+
+            $input['card_iin'] = $card->getIin();
+            $input['card_network'] = $card->getNetwork();
+            $input['card_type'] = $card->getType();
+            $input['card_country'] = $card->getCountry();
+            $input['card_issuer'] = $card->getIssuer();
+            $input['card_name'] = $card->getName();
         }
 
         if ($payment->hasOrder() === true)
@@ -152,7 +154,7 @@ class ShieldClient
         return $request;
     }
 
-    protected function getPaymentAnalyticsData(Payment\Entity $payment)
+    protected function getPaymentAnalyticsData(Payment\Entity $payment): array
     {
         $analytics = [];
 
@@ -165,7 +167,7 @@ class ShieldClient
         else
         {
             // filter metadata for required keys
-            foreach (self::CONTEXT_KEYS as $key)
+            foreach (self::ANALYTICS_KEYS as $key)
             {
                 if (isset($metadata[$key]) === true)
                 {
@@ -177,7 +179,7 @@ class ShieldClient
         return $analytics;
     }
 
-    protected function fetchPaymentAnalytics(Payment\Entity $payment)
+    protected function fetchPaymentAnalytics(Payment\Entity $payment): array
     {
         $pa = $payment->analytics;
 
@@ -189,7 +191,7 @@ class ShieldClient
 
         $analytics = [];
 
-        foreach (self::CONTEXT_KEYS as $key)
+        foreach (self::ANALYTICS_KEYS as $key)
         {
             // generates getter function
             $getterName = 'get' . studly_case($key);
@@ -208,7 +210,7 @@ class ShieldClient
         return $analytics;
     }
 
-    private function sendRequest(string $path, string $method, array $data = [])
+    private function sendRequest(string $path, string $method, array $data = []): array
     {
         $headers = $this->getShieldHeaders();
 
