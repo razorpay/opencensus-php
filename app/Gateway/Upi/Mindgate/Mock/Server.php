@@ -21,10 +21,10 @@ class Server extends Base\Mock\Server
      * actual incoming request
      */
     const REQUEST_FIELD_COUNT = [
-        Action::COLLECT      => 7,
-        Action::VERIFY       => 4,
-        Action::REFUND       => 10,
-        Action::VALIDATE_VPA => 4,
+        Action::COLLECT      => 17,
+        Action::VERIFY       => 14,
+        Action::REFUND       => 20,
+        Action::VALIDATE_VPA => 14,
     ];
 
     /**
@@ -90,7 +90,7 @@ class Server extends Base\Mock\Server
             // Customer VPA
             $input[2],
             // Customer name
-            'Mayank Amencherla',
+            'User Name',
             // Status
             Status::VPA_AVAILABLE,
             // Description
@@ -148,7 +148,14 @@ class Server extends Base\Mock\Server
 
         $arr = explode('|', $res);
 
-        return array_slice($arr, 0, self::REQUEST_FIELD_COUNT[$action]);
+        $actualFieldLength = count($arr);
+        $expectedFieldLength = self::REQUEST_FIELD_COUNT[$action];
+
+        $message = $actualFieldLength . ' is not equal to expected ' . $expectedFieldLength;
+
+        assertTrue($actualFieldLength === $expectedFieldLength, $message);
+
+        return $arr;
     }
 
     public function decrypt($data)

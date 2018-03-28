@@ -558,6 +558,24 @@ class AuthorizeTest extends TestCase
         $this->authorizeFailedPayment($payment['public_id']);
     }
 
+    public function testIntentPaymentWithVpa()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'dontencrypt@icici';
+
+        unset($payment['description']);
+
+        $payment['_']['flow'] = 'intent';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        });
+    }
+
     public function testContentTypeHtmlOnPaymentCreateRoute()
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
@@ -634,9 +652,9 @@ class AuthorizeTest extends TestCase
         $this->assertArrayHasKey('url', $content['request']);
     }
 
-    public function testIciciPaymentViaUpiS2S()
+    public function testIntentPaymentViaUpiS2S()
     {
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_icici_terminal');
+        $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
 
         $this->fixtures->merchant->addFeatures(['s2supi']);
 

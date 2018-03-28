@@ -52,6 +52,12 @@ class CreateUpi extends Migration
             $table->string(Upi::VPA)
                   ->nullable();
 
+            $table->string(Upi::ACCOUNT_NUMBER)
+                  ->nullable();
+
+            $table->string(Upi::IFSC)
+                  ->nullable();
+
             $table->string(Upi::NAME)
                   ->nullable();
 

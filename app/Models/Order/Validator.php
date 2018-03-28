@@ -18,7 +18,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_CAPTURE => 'filled|boolean',
         Entity::CUSTOMER_ID     => 'sometimes|filled',
         Entity::NOTES           => 'sometimes|notes',
-        Entity::METHOD          => 'sometimes|in:netbanking,emandate',
+        Entity::METHOD          => 'sometimes|in:netbanking,emandate,upi',
         Entity::BANK            => 'sometimes|filled',
         Entity::ACCOUNT_NUMBER  => 'sometimes|filled|string|max:50|min:5',
         Entity::DISCOUNT        => 'sometimes|boolean',
@@ -271,15 +271,29 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_ORDER_METHOD_REQUIRED_FOR_MERCHANT);
         }
 
-        if ($order->getMethod() !== Payment\Method::NETBANKING)
+        $method = $order->getMethod();
+
+        if (($method !== Payment\Method::NETBANKING) and
+            ($method !== Payment\Method::UPI))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Order method needs to be netbanking for the merchant');
+                'Order method needs to be netbanking or upi for the merchant');
         }
 
         $orderBank = $order->getBank();
 
-        $tpvBanks = Netbanking::getSupportedBanksForTPV();
+        $tpvBanks = [];
+
+        switch ($method)
+        {
+            case Payment\Method::UPI:
+                $tpvBanks = Netbanking::getSupportedBanks();
+                break;
+
+            case Payment\Method::NETBANKING:
+                $tpvBanks = Netbanking::getSupportedBanksForTPV();
+                break;
+        }
 
         if (in_array($orderBank, $tpvBanks, true) === false)
         {

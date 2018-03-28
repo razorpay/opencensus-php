@@ -41,6 +41,13 @@ class Gateway extends Base\Gateway
 
     const PAY = 'PAY';
 
+    const FIELD_LENGTH = [
+        Action::AUTHORIZE    => 17,
+        Action::VALIDATE_VPA => 14,
+        Action::REFUND       => 20,
+        Action::VERIFY       => 14,
+    ];
+
     protected $map = [
         Entity::VPA                       => Entity::VPA,
         Entity::RECEIVED                  => Entity::RECEIVED,
@@ -174,6 +181,7 @@ class Gateway extends Base\Gateway
             Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
             Entity::VPA                 => $input['payment']['vpa'],
             Entity::ACTION              => $action,
+            Entity::TYPE                => Base\Type::COLLECT,
         ];
 
         if ($action === Action::REFUND)
@@ -272,10 +280,7 @@ class Gateway extends Base\Gateway
 
         $this->checkResponseStatus($content[ResponseFields::STATUS]);
 
-        // Authorization was successful
-        $content[Entity::RECEIVED] = 1;
-
-        $this->updateGatewayPaymentEntity($gatewayPayment, $content);
+        $this->updateGatewayPaymentResponse($gatewayPayment, $content);
 
         // Gateways must return array in callback
         return [
@@ -283,6 +288,20 @@ class Gateway extends Base\Gateway
                 Payment\Entity::VPA => $gatewayPayment->getVpa()
             ]
         ];
+    }
+
+    protected function updateGatewayPaymentResponse($payment, array $response)
+    {
+        $attributes = $this->getMappedAttributes($response);
+
+        // To mark that we have received a response for this request
+        $attributes[Entity::RECEIVED] = 1;
+
+        $payment->fill($attributes);
+
+        $payment->generatePspData($attributes);
+
+        $this->repo->saveOrFail($payment);
     }
 
     /**
@@ -370,7 +389,20 @@ class Gateway extends Base\Gateway
             $this->getPaymentRemark($input),
             $input['upi']['expiry_time'],
             $this->getMerchantCategoryCode($input),
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
         ];
+
+        if ($input['merchant']->isTPVRequired() === true)
+        {
+            // MEBR is the request type for TPV
+            $data[12] = 'MEBR';
+            $data[13] = $input['order']['account_number'];
+        }
 
         $content = $this->transformRequestArrayToContent($data);
 
@@ -442,8 +474,10 @@ class Gateway extends Base\Gateway
      */
     protected function transformRequestArrayToContent(array $data)
     {
+        $extraFields = self::FIELD_LENGTH[$this->action] - count($data);
+
         // We have space for 10 extra fields that we don't use
-        $suffixArray = array_fill(0, 10, 'NA');
+        $suffixArray = array_fill(0, $extraFields, 'NA');
 
         $data = array_merge($data, $suffixArray);
 

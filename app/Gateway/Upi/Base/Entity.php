@@ -23,6 +23,8 @@ class Entity extends Base\Entity
     const PAYMENT_ID            = 'payment_id';
     const REFUND_ID             = 'refund_id';
     const EXPIRY_TIME           = 'expiry_time';
+    const ACCOUNT_NUMBER        = 'account_number';
+    const IFSC                  = 'ifsc';
     const RECEIVED              = 'received';
     const STATUS_CODE           = 'status_code';
     const VPA                   = 'vpa';
@@ -48,6 +50,8 @@ class Entity extends Base\Entity
         self::NPCI_REFERENCE_ID,
         self::REFUND_ID,
         self::PAYMENT_ID,
+        self::ACCOUNT_NUMBER,
+        self::IFSC,
         self::RECEIVED,
         self::STATUS_CODE,
         self::VPA,
@@ -70,6 +74,8 @@ class Entity extends Base\Entity
         self::NPCI_REFERENCE_ID,
         self::PAYMENT_ID,
         self::REFUND_ID,
+        self::ACCOUNT_NUMBER,
+        self::IFSC,
         self::RECEIVED,
         self::STATUS_CODE,
         self::VPA,
