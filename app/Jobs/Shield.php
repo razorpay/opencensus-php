@@ -33,11 +33,21 @@ class Shield extends Job implements ShouldQueue
         $this->shield = $app['shield'];
 
         $this->paymentId = $paymentId;
+
+        $this->app = App::getFacadeRoot();
+
+        $this->repo = $this->app['repo'];
+
+        $this->trace = $this->app['trace'];
+
+        $this->shield = $this->app['shield'];
     }
 
     public function handle()
     {
         parent::handle();
+
+        $riskCore = new Risk\Core();
 
         try
         {
@@ -47,13 +57,26 @@ class Shield extends Job implements ShouldQueue
 
             $response = $this->shield->runFraudCheck($payment);
 
-            $riskCore = new Risk\Core();
+            if (isset($response['action']) === false)
+            {
+                // Already catching the exception as SHIELD_INTEGRATION_ERROR
+                return;
+            }
 
-            $riskCore->create($payment, [
-                Risk\Entity::FRAUD_TYPE => Risk\Type::SUSPECTED,
-                Risk\Entity::SOURCE     => Risk\Source::SHIELD,
-                Risk\Entity::REASON     => 'Blocked by shield',
-            ]);
+            $riskData = [];
+            if ($response['action'] === 'block')
+            {
+                $riskData[Risk\Entity::FRAUD_TYPE] = Risk\Type::CONFIRMED;
+                $riskData[Risk\Entity::REASON] = Risk\RiskCode::PAYMENT_BLOCKED_BY_SHIELD;
+            }
+            else if ($response['action'] === 'review')
+            {
+                $riskData[Risk\Entity::FRAUD_TYPE] = Risk\Type::SUSPECTED;
+                $riskData[Risk\Entity::REASON] = Risk\RiskCode::PAYMENT_FLAGGED_BY_SHIELD;
+            }
+
+            $riskEntity = $riskCore->logPaymentForSource(
+                $payment, Risk\Source::SHIELD, $riskData);
         }
         catch (\Throwable $e)
         {
