@@ -1,6 +1,6 @@
 import { Component, Children } from 'react';
 import { connect } from 'react-redux';
-import { Tour, TourStep } from 'rzp/ui/Tour';
+import { Tour, TourStep, TourStepTitle, TourStepBody } from 'rzp/ui/Tour';
 import * as ModalActions from 'rzp/modules/modals';
 import LocalStorageService from 'rzp/utils/localStorage';
 import { showOrHideTour } from 'merchant/modules/session';
@@ -39,91 +39,48 @@ export default class MerchantTour extends Component {
     this.setState({ isTourActive: false, activeTourStep: 0 });
   };
 
+  setTourStep = activeTourStep => {
+    this.setState({ activeTourStep });
+  };
+
   setToLastInTour = () => {
-    this.setState({ activeTourStep: 3 });
+    this.setTourStep(3);
   };
 
   gotoNextTourStep = () => {
-    this.setState({ activeTourStep: this.state.activeTourStep + 1 });
+    this.setTourStep(this.state.activeTourStep + 1);
   };
 
   render() {
     return (
       <div>
         <Tour
-          isActive={this.state.isTourActive}
-          tourStep={this.state.activeTourStep}
+          tourActive={this.state.isTourActive}
+          onFinish={() => {}}
+          onSkip={() => {}}
+          onStepChange={this.setTourStep}
+          activeStep={this.state.activeTourStep}
           showOverlay={this.state.showOnboardingTour}
         >
-          <TourStep to="#transactions-nav">
-            <p>
-              <b>Payments</b>
-              , <b>Refunds</b> and <b>Orders</b> have moved to Transactions.
-            </p>
-            <div class="btn-toolbar">
-              <button class="btn btn-link" onClick={this.setToLastInTour}>
-                Skip
-              </button>
-              <button
-                class="btn btn-link pull-right"
-                onClick={this.gotoNextTourStep}
-              >
-                Next &gt;
-              </button>
-            </div>
-          </TourStep>
-
-          <TourStep to="#myaccount-nav">
-            <p>
-              <b>Profile</b>
-              , <b>Activation</b>
-              , <b>Credits</b> and <b>Add Funds</b> are now under My Account.
-            </p>
-            <div class="btn-toolbar">
-              <button class="btn btn-link" onClick={this.setToLastInTour}>
-                Skip
-              </button>
-              <button
-                class="btn btn-link pull-right"
-                onClick={this.gotoNextTourStep}
-              >
-                Next &gt;
-              </button>
-            </div>
-          </TourStep>
-
-          <TourStep to="#settings-nav">
-            <p>
-              <b>Configuration</b>
-              , <b>API Keys</b>
-              , and <b>Webhooks</b> have moved to Settings.
-            </p>
-            <div class="btn-toolbar">
-              <button class="btn btn-link" onClick={this.setToLastInTour}>
-                Skip
-              </button>
-
-              <button
-                class="btn btn-link pull-right"
-                onClick={this.gotoNextTourStep}
-              >
-                Next &gt;
-              </button>
-            </div>
+          <TourStep
+            to="#analytics-daterange-picker"
+            align="bottom"
+            className="datepicker-step"
+          >
+            <TourStepTitle>Date Range Presets</TourStepTitle>
+            <TourStepBody>
+              Now along with custom ranges, you can select from presets. Choose
+              All Time to view your aggregates till date.
+            </TourStepBody>
           </TourStep>
           <TourStep
             to="#profile-dropdown"
-            attachment="top center"
-            targetAttachment="bottom left"
-            offset="-15px 30px"
-            arrowLeftPos="85%"
+            align="bottom"
+            className="profile-dropdown-step"
           >
-            <p>Click here to give feedback or see this UI tour again.</p>
-            <div class="btn-toolbar">
-              <button class="btn btn-link pull-right" onClick={this.closeTour}>
-                Okay, Got it!
-              </button>
-            </div>
+            <TourStepTitle>
+              You can always find the tour here for later reference.
+            </TourStepTitle>
           </TourStep>
         </Tour>
       </div>

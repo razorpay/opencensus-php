@@ -33,6 +33,7 @@ import {
   isMobileDevice,
 } from 'merchant/components/Home/data';
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
+import { showOrHideTour } from 'merchant/modules/session';
 
 import {
   trackError,
@@ -83,6 +84,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
   {
     ...HomeActions,
     showNotification,
+    showOrHideTour,
   }
 )
 class HomeContainer extends Component {
@@ -365,21 +367,24 @@ class HomeContainer extends Component {
               <i className="i i-loudspeaker" />
             </div>
             <div className="banner-content">
-              <Banner cta="View Tour" ctaOnClick={() => {}}>
+              <Banner
+                cta="View Tour"
+                ctaOnClick={() => this.props.showOrHideTour(true)}
+              >
                 <span>
                   Hey! We have redesigned the dashboard for an improved Razorpay
                   experience. Please take a quick tour before you get started.
                 </span>
               </Banner>
             </div>
-            <div className="banner-close">
-              <i className="i i-close" />
-            </div>
           </div>
         )}
         <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}>
           <Header className="clearfix" title="" showMode={false}>
-            <div className="pull-left date-range-container">
+            <div
+              id="analytics-daterange-picker"
+              className="pull-left date-range-container"
+            >
               <DateRangePicker
                 presets={dateRangePresets}
                 onDatesChange={this.onDatesChange}

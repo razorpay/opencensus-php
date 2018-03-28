@@ -18,6 +18,7 @@ class Tooltip extends Component {
     };
 
     this.showTooltipTimer = null;
+    this.eventsBounded = false;
 
     this.showTooltip = this.showTooltip.bind(this);
     this.handleMouseEnter = this.handleMouseEnter.bind(this);
@@ -30,7 +31,7 @@ class Tooltip extends Component {
 
     const node = this.node,
       parent = node.parentElement,
-      { align } = this.props;
+      { align, persistent } = this.props;
 
     let width = 0,
       height = 0,
@@ -148,7 +149,7 @@ class Tooltip extends Component {
     this.hideTooltip();
   }
 
-  componentDidMount() {
+  bindEvents() {
     const { followPointer } = this.props,
       parent = this.node.parentElement;
 
@@ -159,9 +160,15 @@ class Tooltip extends Component {
     }
     parent.addEventListener('mouseleave', this.handleMouseLeave);
     window.addEventListener('scroll', this.handleMouseLeave);
+
+    this.eventsBounded = true;
   }
 
-  componentWillUnmount() {
+  unbindEvents() {
+    if (!this.eventsBounded) {
+      return;
+    }
+
     const { followPointer } = this.props,
       parent = this.node.parentElement;
 
@@ -172,11 +179,32 @@ class Tooltip extends Component {
     }
     parent.removeEventListener('mouseleave', this.handleMouseLeave);
     window.removeEventListener('scroll', this.handleMouseLeave);
+
+    this.eventsBounded = false;
+  }
+
+  componentDidMount() {
+    if (this.props.persistent) {
+      this.showTooltip();
+      return;
+    }
+
+    this.bindEvents();
+  }
+
+  componentWillUnmount() {
+    this.unbindEvents();
   }
 
   render() {
     const { show } = this.state,
-      { children, align, followPointer, ...otherProps } = this.props;
+      {
+        children,
+        align,
+        followPointer,
+        persistent,
+        ...otherProps
+      } = this.props;
 
     otherProps.className = `${
       otherProps.className ? otherProps.className + ' ' : ''
@@ -193,11 +221,13 @@ class Tooltip extends Component {
 Tooltip.defaultProps = {
   align: 'bottom',
   followPointer: false,
+  persistent: false,
 };
 
 Tooltip.propTypes = {
   align: PropTypes.oneOf(['top', 'bottom', 'left', 'right']),
   followPointer: PropTypes.bool.isRequired,
+  persistent: PropTypes.bool.isRequired,
 };
 
 export default Tooltip;

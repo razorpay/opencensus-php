@@ -82,7 +82,6 @@ export default class Sidebar extends Component {
                 />
                 <MainNavLink
                   label="Transactions"
-                  id="transactions-nav"
                   icon="i i-repeat text-primary"
                   to={routes.transactions}
                   notMyRole="sellerapp"
@@ -150,13 +149,11 @@ export default class Sidebar extends Component {
                 />
                 <MainNavLink
                   label="My Account"
-                  id="myaccount-nav"
                   icon="i i-account text-primary"
                   to={routes.account}
                 />
                 <MainNavLink
                   label="Settings"
-                  id="settings-nav"
                   icon="i i-settings text-warning"
                   to={routes.settings}
                   myRole="owner manager admin"

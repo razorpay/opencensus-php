@@ -1,12 +1,17 @@
 import { Component, Children, cloneElement } from 'react';
 import TetherComponent from 'react-tether';
-import TourStep from './TourStep';
+import TourStep, { TourStepTitle, TourStepBody } from './TourStep';
 
-// Only Left Popovers are supported as of now
 class Tour extends Component {
-  state = {
-    initialized: false,
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      initialized: false,
+    };
+
+    this.onStepChange = this.onStepChange.bind(this);
+  }
 
   componentWillMount() {
     this.setActiveTour(this.props);
@@ -17,8 +22,8 @@ class Tour extends Component {
   }
 
   setActiveTour(nextProps) {
-    let { tourStep, children, isActive } = nextProps;
-    if (isActive && tourStep >= 0) {
+    let { activeStep: tourStep, children, tourActive } = nextProps;
+    if (tourActive && tourStep >= 0) {
       children = Children.toArray(children);
       let activeChild = children[tourStep];
       let {
@@ -35,7 +40,8 @@ class Tour extends Component {
       if ($target) {
         let clientRect = $target.getBoundingClientRect();
         targetLensPos = {
-          transform: `translate(${clientRect.left}px, ${clientRect.top}px)`,
+          top: `${clientRect.top}px`,
+          left: `${clientRect.left}px`,
           width: clientRect.width,
           height: clientRect.height,
         };
@@ -54,26 +60,39 @@ class Tour extends Component {
       this.setState({ target: null, initialized: false });
     }
 
-    if (!this.props.isActive && nextProps.isActive) {
+    if (!this.props.tourActive && nextProps.tourActive) {
       window.setTimeout(() => {
         this.setState({ initialized: true });
       });
     }
   }
 
-  renderChildren = children => {
-    let { tourStep, isActive } = this.props;
-    return Children.toArray(children).map((child, index) => {
-      if (isActive && tourStep === index && child.type === TourStep) {
-        return cloneElement(child, {
-          className: 'TourStep--active',
-        });
-      }
-    });
-  };
+  onStepClose() {}
+
+  onStepChange(stepNum) {
+    const { onStepChange } = this.props;
+
+    return onStepChange && onStepChange(stepNum);
+  }
+
+  onFinish() {}
 
   render() {
-    let { isActive, showOverlay } = this.props;
+    const children = React.Children.toArray(this.props.children),
+      activeChild = children[this.props.activeStep];
+
+    if (!this.props.tourActive || !activeChild) {
+      return null;
+    }
+
+    let {
+      tourActive,
+      activeStep,
+      showOverlay,
+      onSkip,
+      onFinish,
+      onStepChange,
+    } = this.props;
     let {
       initialized,
       target,
@@ -84,49 +103,38 @@ class Tour extends Component {
       arrowTopPos,
       arrowLeftPos,
     } = this.state;
-    if (!isActive) {
-      return null;
-    }
 
     return (
-      <div
-        class="Tour__Overlay"
-        style={{
-          position: showOverlay ? 'fixed' : 'static',
-        }}
-      >
-        {showOverlay ? (
-          <div class="Tour__TargetLens" style={targetLensPos} />
-        ) : null}
-        <TetherComponent
-          class={`Tour ${initialized ? 'Tour--initialized' : ''}`}
-          target={target}
-          attachment={attachment}
-          targetAttachment={targetAttachment}
-          offset={offset}
-        >
-          <div />
-          {/* required by react-tether */}
-          <div class="TourStep__Container">
-            <div
-              class="arrow"
-              style={{
-                top: arrowTopPos,
-                left: arrowLeftPos,
-              }}
-            />
-            {this.renderChildren(this.props.children)}
-          </div>
-        </TetherComponent>
+      <div class="Tour__Overlay">
+        <div class="Tour__TargetLens" style={targetLensPos}>
+          {/* redering different instance each time */}
+          {children.map((child, index) => {
+            return (
+              child === activeChild && (
+                <child.type
+                  {...child.props}
+                  key={index}
+                  index={activeStep}
+                  totalSteps={children.length}
+                  onStepChange={this.onStepChange}
+                  onStepClose={this.onStepClose}
+                  onFinish={this.onFinish}
+                >
+                  {child.props.children}
+                </child.type>
+              )
+            );
+          })}
+        </div>
       </div>
     );
   }
 }
 
 Tour.defaultProps = {
-  isActive: false,
+  tourActive: false,
   tourStep: 0,
   showOverlay: true,
 };
 
-export { Tour, TourStep };
+export { Tour, TourStep, TourStepTitle, TourStepBody };
