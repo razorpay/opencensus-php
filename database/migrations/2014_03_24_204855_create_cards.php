@@ -82,6 +82,8 @@ class CreateCards extends Migration
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
+
+            $table->index(Card::CREATED_AT);
         });
     }
 

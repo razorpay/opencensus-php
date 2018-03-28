@@ -52,6 +52,8 @@ class CreateActionChecker extends Migration
             $table->integer(Checker::CREATED_AT);
 
             $table->integer(Checker::UPDATED_AT);
+
+            $table->index(Checker::CREATED_AT);
         });
     }
 

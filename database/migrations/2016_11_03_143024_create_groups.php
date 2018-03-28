@@ -40,6 +40,7 @@ class CreateGroups extends Migration
             $table->foreign(Group::ORG_ID)
                   ->references(Org::ID)
                   ->on(Table::ORG);
+            $table->index(Group::CREATED_AT);
         });
     }
 

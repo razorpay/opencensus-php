@@ -48,6 +48,8 @@ class CreateMobikwik extends Migration
                 ->references('id')
                 ->on('payments')
                 ->on_delete('restrict');
+
+            $table->index('created_at');
         });
     }
 
