@@ -739,7 +739,7 @@ class Base extends BaseModel\Core
      */
     protected function cleanEntriesFromInputFile(array & $entries)
     {
-        $expectedHeaders = $this->getInputHeadings();
+        $expectedHeaders = $this->getHeadings();
 
         $headerTemplate = array_combine($expectedHeaders, array_fill(0, count($expectedHeaders), null));
 
@@ -960,24 +960,19 @@ class Base extends BaseModel\Core
         $this->inputFileType = $inputFile->getType();
     }
 
-    public function getHeadings(string $fileType)
-    {
-        return Batch\Header::getHeadersForFileTypeAndBatchType($fileType, $this->batch->getType());
-    }
-
     /**
      * Required by FileHandlerTrait for parseTextFile() method.
      *
      * @return array
      */
-    public function getInputHeadings(): array
+    public function getHeadings(): array
     {
-        return $this->getHeadings($this->inputFileType);
+        return Batch\Header::getHeadersForFileTypeAndBatchType($this->inputFileType, $this->batch->getType());
     }
 
     public function getOutputFileHeadings(): array
     {
-        return $this->getHeadings($this->outputFileType);
+        return Batch\Header::getHeadersForFileTypeAndBatchType($this->outputFileType, $this->batch->getType());
     }
 
     /**
