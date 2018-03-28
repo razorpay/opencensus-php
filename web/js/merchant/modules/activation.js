@@ -157,7 +157,7 @@ export default function(state = initialState, action) {
       let maxUploads = action.step === 4 ? 4 : 2;
 
       //max doc uploads for ngo merchants
-      if (state.data.business_type === '7') {
+      if (action.step === 4 && state.data.business_type === '7') {
         maxUploads = 6;
       }
 
