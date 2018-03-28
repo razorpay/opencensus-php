@@ -95,7 +95,8 @@ class ShieldClient
     {
         $request = [
             Payment\Entity::MERCHANT_ID => $payment->getMerchantId(),
-            'primary_key'               => $payment->getId()
+            'entity_id'                 => $payment->getId(),
+            'entity_type'               => 'payment',
         ];
 
         $input = [
