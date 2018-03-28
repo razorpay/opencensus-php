@@ -62,7 +62,7 @@ class Base extends BaseProcessor
 
         $gatewayPayment->fill($attrs);
 
-        $this->repo->netbanking->saveOrFail($gatewayPayment);
+        $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
     }
@@ -148,6 +148,6 @@ class Base extends BaseProcessor
 
     protected function sendProcessedMail()
     {
-        return ;
+        return;
     }
 }
