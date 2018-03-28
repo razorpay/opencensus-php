@@ -122,4 +122,12 @@ class Core extends Base\Core
 
         return $this->create($payment, $data);
     }
+
+    protected function logPaymentForShield(
+        Payment\Entity $payment, array $data)
+    {
+        $data[Entity::SOURCE] = Source::SHIELD;
+
+        return $this->create($payment, $data);
+    }
 }

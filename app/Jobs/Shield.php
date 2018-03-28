@@ -18,8 +18,6 @@ class Shield extends Job implements ShouldQueue
 
     protected $paymentId;
 
-    protected $repo;
-
     protected $shield;
 
     public function __construct(string $mode, string $paymentId)
@@ -27,8 +25,6 @@ class Shield extends Job implements ShouldQueue
         parent::__construct($mode);
 
         $app = App::getFacadeRoot();
-
-        $this->repo = $app['repo'];
 
         $this->shield = $app['shield'];
 
@@ -39,21 +35,36 @@ class Shield extends Job implements ShouldQueue
     {
         parent::handle();
 
+        $riskCore = new Risk\Core();
+
         try
         {
             $this->trace->info(TraceCode::SHIELD_JOB_RECEIVED, ['payment_id' => $this->paymentId]);
 
-            $payment = $this->repo->payment->findOrFail($this->paymentId);
+            $payment = $this->repoManager->payment->findOrFail($this->paymentId);
 
             $response = $this->shield->runFraudCheck($payment);
 
-            $riskCore = new Risk\Core();
+            if (isset($response['action']) === false)
+            {
+                // Already catching the exception as SHIELD_INTEGRATION_ERROR
+                return;
+            }
 
-            $riskCore->create($payment, [
-                Risk\Entity::FRAUD_TYPE => Risk\Type::SUSPECTED,
-                Risk\Entity::SOURCE     => Risk\Source::SHIELD,
-                Risk\Entity::REASON     => 'Blocked by shield',
-            ]);
+            $riskData = [];
+            if ($response['action'] === 'block')
+            {
+                $riskData[Risk\Entity::FRAUD_TYPE] = Risk\Type::CONFIRMED;
+                $riskData[Risk\Entity::REASON] = Risk\RiskCode::PAYMENT_BLOCKED_BY_SHIELD;
+            }
+            else if ($response['action'] === 'review')
+            {
+                $riskData[Risk\Entity::FRAUD_TYPE] = Risk\Type::SUSPECTED;
+                $riskData[Risk\Entity::REASON] = Risk\RiskCode::PAYMENT_FLAGGED_BY_SHIELD;
+            }
+
+            $riskEntity = $riskCore->logPaymentForSource(
+                $payment, Risk\Source::SHIELD, $riskData);
         }
         catch (\Throwable $e)
         {

@@ -412,4 +412,5 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------- Mutators End ------------------------------------
+    //
 }

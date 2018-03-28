@@ -4,10 +4,11 @@ namespace RZP\Services;
 
 use Requests;
 
+use RZP\Models\Merchant;
 use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Analytics as Analytics;
 use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Analytics\Entity as Analytics;
+use RZP\Trace\TraceCode;
 
 class ShieldClient
 {
@@ -27,7 +28,7 @@ class ShieldClient
 
     protected $ruleset;
 
-    const ANALYTICS_KEYS = [
+    const PAYMENT_ANALYTICS_KEYS = [
         Analytics::IP,
         Analytics::CHECKOUT_ID,
         Analytics::USER_AGENT,
@@ -94,50 +95,50 @@ class ShieldClient
     protected function getPaymentProperties(Payment\Entity $payment): array
     {
         $request = [
-            'merchant_id' => $payment->getMerchantId(),
-            'primary_key' => $payment->getId()
+            Payment\Entity::MERCHANT_ID => $payment->getMerchantId(),
+            'primary_key'               => $payment->getId()
         ];
 
         $input = [
-            'id'                => $payment->getId(),
-            'amount'            => $payment->getAmount(),
-            'merchant_id'       => $payment->getMerchantId(),
-            'merchant_name'     => $payment->merchant->getBillingLabel(),
-            'merchant_category' => $payment->merchant->getCategory2(),
-            'international'     => $payment->isInternational(),
-            'contact'           => $payment->getContact(),
-            'email'             => $payment->getEmail(),
-            'created_at'        => $payment->getCreatedAt(),
-            'method'            => $payment->getMethod(),
+            Payment\Entity::ID            => $payment->getId(),
+            Payment\Entity::AMOUNT        => $payment->getAmount(),
+            Payment\Entity::MERCHANT_ID   => $payment->getMerchantId(),
+            'merchant_name'               => $payment->merchant->getBillingLabel(),
+            'merchant_category'           => $payment->merchant->getCategory2(),
+            Payment\Entity::INTERNATIONAL => $payment->isInternational(),
+            Payment\Entity::CONTACT       => $payment->getContact(),
+            Payment\Entity::EMAIL         => $payment->getEmail(),
+            Payment\Entity::CREATED_AT    => $payment->getCreatedAt(),
+            Payment\Entity::METHOD        => $payment->getMethod(),
         ];
 
         $method = $payment->getMethod();
 
         if ($method === Method::NETBANKING)
         {
-            $input['bank'] = $payment->getBankName();
+            $input[Payment\Entity::BANK] = $payment->getBankName();
         }
 
         if ($method === Method::WALLET)
         {
-            $input['wallet'] = ucfirst($payment->getWallet());
+            $input[Payment\Entity::WALLET] = ucfirst($payment->getWallet());
         }
 
         if ($method === Method::UPI)
         {
-            $input['vpa'] = $payment->getVpa();
+            $input[Payment\Entity::VPA] = $payment->getVpa();
         }
 
         if ($payment->hasCard() === true)
         {
-            $card = $payment->card();
+            $card = $payment->card;
 
-            $input['card_iin'] = $card->getIin();
-            $input['card_network'] = $card->getNetwork();
-            $input['card_type'] = $card->getType();
-            $input['card_country'] = $card->getCountry();
-            $input['card_issuer'] = $card->getIssuer();
-            $input['card_name'] = $card->getName();
+            $input['card_iin']      = $card->getIin();
+            $input['card_network']  = $card->getNetwork();
+            $input['card_type']     = $card->getType();
+            $input['card_country']  = $card->getCountry();
+            $input['card_issuer']   = $card->getIssuer();
+            $input['card_name']     = $card->getName();
         }
 
         if ($payment->hasOrder() === true)
@@ -167,7 +168,7 @@ class ShieldClient
         else
         {
             // filter metadata for required keys
-            foreach (self::ANALYTICS_KEYS as $key)
+            foreach (self::PAYMENT_ANALYTICS_KEYS as $key)
             {
                 if (isset($metadata[$key]) === true)
                 {
@@ -191,7 +192,7 @@ class ShieldClient
 
         $analytics = [];
 
-        foreach (self::ANALYTICS_KEYS as $key)
+        foreach (self::PAYMENT_ANALYTICS_KEYS as $key)
         {
             // generates getter function
             $getterName = 'get' . studly_case($key);
