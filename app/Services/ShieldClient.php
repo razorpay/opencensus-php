@@ -100,18 +100,6 @@ class ShieldClient
         ];
 
         $input = [
-<<<<<<< HEAD
-            'id'                => $payment->getId(),
-            'amount'            => $payment->getAmount(),
-            'merchant_id'       => $payment->getMerchantId(),
-            'merchant_name'     => $payment->merchant->getBillingLabel(),
-            'merchant_category' => $payment->merchant->getCategory2(),
-            'international'     => $payment->isInternational(),
-            'contact'           => $payment->getContact(),
-            'email'             => $payment->getEmail(),
-            'created_at'        => $payment->getCreatedAt(),
-            'method'            => $payment->getMethod(),
-=======
             Payment\Entity::ID            => $payment->getId(),
             Payment\Entity::AMOUNT        => $payment->getAmount(),
             Payment\Entity::MERCHANT_ID   => $payment->getMerchantId(),
@@ -122,7 +110,6 @@ class ShieldClient
             Payment\Entity::EMAIL         => $payment->getEmail(),
             Payment\Entity::CREATED_AT    => $payment->getCreatedAt(),
             Payment\Entity::METHOD        => $payment->getMethod(),
->>>>>>> [Shield] minor changes and logPaymentForShield in Risk
         ];
 
         $method = $payment->getMethod();
@@ -144,16 +131,6 @@ class ShieldClient
 
         if ($payment->hasCard() === true)
         {
-<<<<<<< HEAD
-            $card = $payment->card();
-
-            $input['card_iin'] = $card->getIin();
-            $input['card_network'] = $card->getNetwork();
-            $input['card_type'] = $card->getType();
-            $input['card_country'] = $card->getCountry();
-            $input['card_issuer'] = $card->getIssuer();
-            $input['card_name'] = $card->getName();
-=======
             $card = $payment->card;
 
             $input['card_iin']      = $card->getIin();
@@ -161,9 +138,7 @@ class ShieldClient
             $input['card_type']     = $card->getType();
             $input['card_country']  = $card->getCountry();
             $input['card_issuer']   = $card->getIssuer();
-            $input['international'] = $payment->isInternational();
             $input['card_name']     = $card->getName();
->>>>>>> [Shield] minor changes and logPaymentForShield in Risk
         }
 
         if ($payment->hasOrder() === true)

@@ -18,8 +18,6 @@ class Shield extends Job implements ShouldQueue
 
     protected $paymentId;
 
-    protected $repo;
-
     protected $shield;
 
     public function __construct(string $mode, string $paymentId)
@@ -28,19 +26,9 @@ class Shield extends Job implements ShouldQueue
 
         $app = App::getFacadeRoot();
 
-        $this->repo = $app['repo'];
-
         $this->shield = $app['shield'];
 
         $this->paymentId = $paymentId;
-
-        $this->app = App::getFacadeRoot();
-
-        $this->repo = $this->app['repo'];
-
-        $this->trace = $this->app['trace'];
-
-        $this->shield = $this->app['shield'];
     }
 
     public function handle()
@@ -53,7 +41,7 @@ class Shield extends Job implements ShouldQueue
         {
             $this->trace->info(TraceCode::SHIELD_JOB_RECEIVED, ['payment_id' => $this->paymentId]);
 
-            $payment = $this->repo->payment->findOrFail($this->paymentId);
+            $payment = $this->repoManager->payment->findOrFail($this->paymentId);
 
             $response = $this->shield->runFraudCheck($payment);
 
