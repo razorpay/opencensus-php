@@ -347,6 +347,10 @@ class Processor
 
     public function processAndReturnFees(array & $input)
     {
+        $this->trace->info(
+             TraceCode::FEES_CALCULATE_REQUEST,
+             ['input' => $input]);
+
         // Validate if customer is fee bearer then only move forward
         if ($this->merchant->isFeeBearerCustomer() === false)
         {

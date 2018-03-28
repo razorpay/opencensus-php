@@ -349,6 +349,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LINE_ITEMS_UPDATE_PUT_REQUEST                 = 'LINE_ITEMS_UPDATE_PUT_REQUEST';
 
     const TRANSACTION_REFUND_TRACE                      = 'TRANSACTION_REFUND_TRACE';
+    const FEES_CALCULATE_REQUEST                        = 'FEES_CALCULATE_REQUEST';
     const FEES_BREAKUP_ALREADY_EXISTS                   = 'FEES_BREAKUP_ALREADY_EXISTS';
     const CREATING_FEES_BREAKUP                         = 'CREATING_FEES_BREAKUP';
     const FEES_BREAKUP_CREATION_FAILED                  = 'FEES_BREAKUP_CREATION_FAILED';
