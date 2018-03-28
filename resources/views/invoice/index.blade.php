@@ -501,13 +501,9 @@
             top: 0;
             width: 100%;
             position: absolute;
-            margin: 128px auto 0;
+            margin: 175px auto 0;
             display: none;
             background: #effff6;
-        }
-
-        .short #scs-box {
-          margin: 175px auto 0;
         }
 
         #payment-for {
@@ -930,7 +926,7 @@
               cleanHTML();
 
               var data = window.RZP_DATA.data;
-              var color = data.merchant.color || '#168AFA';
+              var color = data.merchant.brand_color || '#168AFA';
               document.getElementById('chkout-header').style['background-color'] = color;
 
 
@@ -942,7 +938,7 @@
 
                   if (checkIsDesktop()) {
                       document.getElementById('scs-box').style.display = 'block';
-                      document.getElementById('scs-msg').innerHTML = "You have successfully paid of ₹ " +  (amount/100).toFixed(2);
+                      document.getElementById('scs-msg').innerHTML = "You have successfully paid ₹ " +  (amount/100).toFixed(2);
                       document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2);
                   } else {
                     document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2) + '<span id="paid-tag">PAID</span></span>';
@@ -1047,7 +1043,7 @@
                         options.name = merchant.name;
                   }
 
-                  var color = merchant.color || '#168AFA';
+                  var color = merchant.brand_color || '#168AFA';
                   options.theme.color = color;
 
                   if (merchant.image) {
