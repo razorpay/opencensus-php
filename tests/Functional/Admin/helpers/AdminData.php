@@ -845,10 +845,27 @@ return [
         ],
     ],
 
-    'testDbQuery' => [
+    'testDbMetaDataQuery' => [
         'request' => [
             'method'  => 'post',
-            'url'     => '/db_query',
+            'url'     => '/db_meta_query',
+            'content' => [
+                'query' => 'show indexes from merchants;',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                [
+                    'Key_name' => 'PRIMARY',
+                ],
+            ],
+        ],
+    ],
+
+    'testDbMetaDataQueryWithInvalidQuery' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/db_meta_query',
             'content' => [
                 'query' => 'truncate table merchants;',
             ],
@@ -857,7 +874,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The query is invalid or is not allowed',
+                    'description' => ErrorCode::BAD_REQUEST_INVALID_QUERY,
                 ],
             ],
             'status_code' => 400,

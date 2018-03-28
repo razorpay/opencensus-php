@@ -1001,26 +1001,13 @@ class AdminTest extends TestCase
         $this->startTest();
     }
 
-    public function testDbQuery()
+    public function testDbMetaDataQuery()
     {
-        $testData = & $this->testData[__FUNCTION__];
-
-        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
-
         $this->startTest();
+    }
 
-        $testData['request']['content']['query'] = 'show indexes from merchants;';
-
-        $testData['response']['content'] = [
-            [
-                'Key_name' => 'PRIMARY',
-            ],
-        ];
-
-        $testData['response']['status_code'] = 200;
-
-        unset($testData['exception']);
-
+    public function testDbMetaDataQueryWithInvalidQuery()
+    {
         $this->startTest();
     }
 }

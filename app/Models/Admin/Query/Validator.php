@@ -3,17 +3,16 @@
 namespace RZP\Models\Admin\Query;
 
 use RZP\Base;
+use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
-    const INVALID_QUERY = 'The query is invalid or is not allowed';
-
-    protected static $dbQueryRules = [
+    protected static $dbMetaDataQueryRules = [
         'query' => 'required|string|custom',
     ];
 
-    public function validateQuery($attribute, $query)
+    public function validateQuery(string $attribute, string $query)
     {
         $allowedQueryPrefixes = QueryPrefix::ALLOWED_QUERY_PREFIXES;
 
@@ -27,6 +26,7 @@ class Validator extends Base\Validator
             }
         }
 
-        throw new BadRequestValidationFailureException(self::INVALID_QUERY);
+        throw new BadRequestValidationFailureException(
+            ErrorCode::BAD_REQUEST_INVALID_QUERY);
     }
 }

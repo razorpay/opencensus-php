@@ -175,7 +175,7 @@ class Name
     const DELETE_SHIELD_RULES                 = 'delete_shield_rules';
     const EVALUATE_SHIELD_RULES               = 'evaluate_shield_rules';
     const VIEW_MERCHANT_ANALYTICS             = 'view_merchant_analytics';
-    const DB_QUERY                            = 'db_query';
+    const DB_META_QUERY                       = 'db_meta_query';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,
