@@ -13,9 +13,10 @@ export default ({ props, merchantId }) => {
   function onSubmit(body) {
     let tags = [];
     if (body.tags) {
-      body.tags.split(',').forEach((tag, idx) => {
+      body.tags.split(',').forEach(tag => {
+        tag = typeof tag === 'string' && tag.trim();
         if (tag) {
-          tags.push(tag.trim());
+          tags.push(tag);
         }
       });
     }
