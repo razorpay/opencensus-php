@@ -4,11 +4,11 @@ namespace RZP\Services;
 
 use Requests;
 
-use RZP\Models\Merchant;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Analytics as Analytics;
-use RZP\Models\Payment\Method;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Analytics\Entity as Analytics;
+
 
 class ShieldClient
 {
@@ -88,7 +88,6 @@ class ShieldClient
     {
         $paymentRequest = $this->getPaymentProperties($payment);
 
-        sd($paymentRequest);
         return $this->evaluateRules($paymentRequest);
     }
 

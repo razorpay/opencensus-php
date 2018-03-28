@@ -145,6 +145,12 @@ return [
         'live'       => env('AWS_BATCH_QUEUE'),
     ],
 
+    'shield' => [
+        'connection' => 'redis',
+        'test'       => env('AWS_SHIELD_QUEUE'),
+        'live'       => env('AWS_SHIELD_QUEUE'),
+    ],
+
     'capture' => [
         'connection' => 'sqs_multi_default',
         'test'       => env('AWS_GENERAL_TEST_QUEUE'),
