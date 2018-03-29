@@ -5,15 +5,16 @@ namespace RZP\Models\BankTransfer;
 use Config;
 
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
+use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
-use RZP\Models\Payment\Refund as PaymentRefund;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Payment\Refund as PaymentRefund;
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Core extends Base\Core
 {
@@ -380,22 +381,29 @@ class Core extends Base\Core
         return $bankAccount;
     }
 
+    /**
+     * Calculate fees that will be charged for an order,
+     * assuming it is paid using bank_transfer.
+     *
+     * This is used in two places, for customer_fee_bearer merchants:
+     * 1) To set amount_expected when creating the VA for the order
+     * 2) To set fees in payment request, used in bank_tranfer_process
+     *
+     * @param  Order\Entity $order [description]
+     * @return [type]              [description]
+     */
     public function getFeesForOrder(Order\Entity $order)
     {
-        $payment = (new Payment\Entity);
+        $request = [
+            Payment\Entity::AMOUNT   => $order->getAmountDue(),
+            Payment\Entity::CURRENCY => $order->getCurrency(),
+            Payment\Entity::METHOD   => Payment\Method::BANK_TRANSFER,
+        ];
 
-        $payment->merchant()->associate($order->merchant);
+        $paymentProcessor = new PaymentProcessor($order->merchant);
 
-        $payment->build([
-            'amount'   => $order->getAmountDue(),
-            'currency' => $order->getCurrency(),
-            'method'   => 'bank_transfer',
-        ]);
+        $data = $paymentProcessor->processAndReturnFees($request);
 
-        $payment->setBaseAmount($order->getAmountDue());
-
-        list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
-
-        return $fee;
+        return $data['fees'];
     }
 }
