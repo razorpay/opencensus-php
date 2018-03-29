@@ -131,8 +131,7 @@ class Processor extends VirtualAccount\Processor
         if ($bankTransfer->isExpected() === true)
         {
             // Amount mismatched payments made to order VAs are immediately refunded
-            if (($bankTransfer->virtualAccount->hasOrder() === true) and
-                ($bankTransfer->virtualAccount->getAmountExpected() != $bankTransfer->getAmount()))
+            if ($this->shouldRefundOrderPayment($bankTransfer) === true)
             {
                 $paymentProcessor->refundAuthorizedPayment($payment);
             }
@@ -141,6 +140,22 @@ class Processor extends VirtualAccount\Processor
                 $paymentProcessor->autoCapturePayment($payment);
             }
         }
+    }
+
+    protected function shouldRefundOrderPayment(Entity $bankTransfer)
+    {
+        if ($bankTransfer->virtualAccount->hasOrder() === false)
+        {
+            return false;
+        }
+
+        if (($bankTransfer->virtualAccount->getAmountExpected() != $bankTransfer->getAmount()) or
+            ($bankTransfer->virtualAccount->entity->isPaid() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function isPaymentExpected(Base\PublicEntity $bankTransfer): bool
@@ -418,6 +433,11 @@ class Processor extends VirtualAccount\Processor
             $order = $this->virtualAccount->entity;
 
             $paymentArray[Payment\Entity::ORDER_ID] = $order->getPublicId();
+
+            if ($this->virtualAccount->merchant->isFeeBearerCustomer() === true)
+            {
+                $paymentArray[Payment\Entity::FEE] = (new Core)->getFeesForOrder($order);
+            }
         }
 
         return $paymentArray;

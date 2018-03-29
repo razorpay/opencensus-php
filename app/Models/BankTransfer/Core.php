@@ -6,7 +6,9 @@ use Config;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Pricing;
 use RZP\Models\BankAccount;
 use RZP\Models\Payment\Refund as PaymentRefund;
 use RZP\Trace\TraceCode;
@@ -76,7 +78,7 @@ class Core extends Base\Core
                     $processor->process($bankTransfer);
                 },
                 60,
-                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
 
             $valid = true;
         }
@@ -376,5 +378,24 @@ class Core extends Base\Core
         $bankAccount->associateVirtualAccount($bankTransfer->virtualAccount);
 
         return $bankAccount;
+    }
+
+    public function getFeesForOrder(Order\Entity $order)
+    {
+        $payment = (new Payment\Entity);
+
+        $payment->merchant()->associate($order->merchant);
+
+        $payment->build([
+            'amount'   => $order->getAmountDue(),
+            'currency' => $order->getCurrency(),
+            'method'   => 'bank_transfer',
+        ]);
+
+        $payment->setBaseAmount($order->getAmountDue());
+
+        list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
+
+        return $fee;
     }
 }

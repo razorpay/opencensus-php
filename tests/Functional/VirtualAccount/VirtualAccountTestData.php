@@ -38,6 +38,24 @@ return [
         ],
     ],
 
+    'testCreateVirtualAccountForOrderCustomerFeeBearer' => [
+        'name'            => 'Test Merchant',
+        'entity'          => 'virtual_account',
+        'status'          => 'active',
+        'amount_expected' => 1005900,
+        'notes'           => [],
+        'amount_paid'     => 0,
+        'customer_id'     => NULL,
+        'receivers'       => [
+            [
+                'entity'         => 'bank_account',
+                'ifsc'           => 'RAZR0000001',
+                'bank_name'      => NULL,
+                'name'           => 'Test Merchant',
+            ],
+        ],
+    ],
+
     'testCreateVirtualAccountInvalidReceiverTypes' => [
         'request' => [
             'url' => '/virtual_accounts',
