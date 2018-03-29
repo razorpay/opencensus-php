@@ -185,7 +185,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     {
         $this->messenger->raiseReconAlert(
             [
-                'trace_code'   => TraceCode::BHARAT_QR_UNEXPECTED,
+                'trace_code'   => TraceCode::BHARAT_QR_UNEXPECTED_PAYMENT,
+                'info_code'    => 'PAYMENT_ABSENT',
                 'message'      => 'Unexpected Bharat Qr Payment',
                 'merchant_ref' => $merchantReference,
                 'row'          => $row,
