@@ -56,7 +56,7 @@ class Constants
             self::HDFC,
             self::AXIS,
         ],
-        TYPE::REFUND_FAILED => [
+        Type::REFUND_FAILED => [
             'All',
             self::UPI_ICICI,
             self::AIRTEL_MONEY,

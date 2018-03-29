@@ -140,11 +140,10 @@ class Validator extends Base\Validator
      * Validates entries(array) of batch input file before
      * creating the batch entity.
      *
-     * @param array             $entries
-     * @param array             $params
-     * @param Merchant\Entity   $merchant
+     * @param array           $entries
+     * @param array           $params
+     * @param Merchant\Entity $merchant
      *
-     * @throws BadRequestException
      */
     public function validateEntries(
         array & $entries,
