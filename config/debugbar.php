@@ -14,7 +14,7 @@ return [
      |
      */
 
-    'enabled' => env('DEBUGBAR_ENABLED', null),
+    'enabled' => false,
     'except' => [
         //
     ],
@@ -106,12 +106,12 @@ return [
         'time'            => true,  // Time Datalogger
         'memory'          => true,  // Memory usage
         'exceptions'      => true,  // Exception displayer
-        'log'             => true,  // Logs from Monolog (merged in messages if enabled)
+        'log'             => false,  // Logs from Monolog (merged in messages if enabled)
         'db'              => true,  // Show database (PDO) queries and bindings
         'views'           => false,  // Views with their data
         'route'           => true,  // Current route information
         'auth'            => false, // Display Laravel authentication status
-        'gate'            => true, // Display Laravel Gate checks
+        'gate'            => false, // Display Laravel Gate checks
         'session'         => true,  // Display session data
         'symfony_request' => true,  // Only one can be enabled..
         'mail'            => true,  // Catch mail messages
