@@ -158,11 +158,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         parent::resetProcessingAttributes();
     }
 
-    // In case of normal payments merchant reference is payment id,
-    // but in case of bharat qr payments qr_code_id is used as merchant
-    // reference. So when payment is fetch using the merchant reference it will be null,
-    // In that case we will search the bharat qr entity with that merchant reference,
-    // we fetch  the payment id from that bharat qr entity and return it
+    /**
+     * In case of normal payments merchant reference is payment id,
+     * but in case of bharat qr payments qr_code_id is used as merchant
+     * reference. So when payment is fetch using the merchant reference it will be null,
+     * In that case we will search the bharat qr entity with that merchant reference,
+     * we fetch  the payment id from that bharat qr entity and return it
+     */
     protected function getPaymentIdFromBharatQr(string $merchantReference, array $row)
     {
         $bharatQr = $this->repo->bharat_qr->findByMerchantReference($merchantReference);
