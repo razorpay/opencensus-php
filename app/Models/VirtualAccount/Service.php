@@ -61,8 +61,8 @@ class Service extends Base\Service
 
         if ($order->isPaid() === true)
         {
-            // TODO: handle this. Should a new VA be returned?
-            // Should original VA be returned? Should we throw an error?
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DISALLOWED_FOR_ORDER);
         }
 
         $response = $this->mutex->acquireAndRelease(
