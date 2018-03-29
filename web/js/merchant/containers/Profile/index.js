@@ -46,17 +46,20 @@ export default class Profile extends Component {
     this.refreshUser(this.props.user);
 
     // fetch status whether the merchant can change their bank account details or not
-    this.props
-      .fetchBankAccountChangeStatus(this.props.user.id) //user.id is merchant_id not user_id
-      .then(({ data }) => {
-        this.setState({
-          //if api response is true then the request is still in workflow
-          isBankAccountChangeAllowed: !data,
+    // Only allowed for role types `owner` & `admin`
+    if (['admin', 'owner'].indexOf(this.props.user.role) > -1) {
+      this.props
+        .fetchBankAccountChangeStatus(this.props.user.id) //user.id is merchant_id not user_id
+        .then(({ data }) => {
+          this.setState({
+            //if api response is true then the request is still in workflow
+            isBankAccountChangeAllowed: !data,
+          });
+        })
+        .catch(errors => {
+          console.log('ERROR: Failed to fetch bank account change status');
         });
-      })
-      .catch(errors => {
-        console.log('ERROR: Failed to fetch bank account change status');
-      });
+    }
   }
 
   componentWillReceiveProps(nextProps) {
