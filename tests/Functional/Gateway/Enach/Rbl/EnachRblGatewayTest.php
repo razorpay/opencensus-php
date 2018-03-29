@@ -29,8 +29,6 @@ class EnachRblGatewayTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/EnachRblGatewayTestData.php';
-
         parent::setUp();
 
         $this->fixtures->create('terminal:shared_enach_rbl_terminal');
