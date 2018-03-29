@@ -789,6 +789,8 @@ class Service extends Base\Service
 
         $payments = $payments->shuffle();
 
+        $this->removeEmandatePaymentsAsApplicable($payments);
+
         $this->trace->info(
             TraceCode::PAYMENT_AUTO_REFUND_CRON,
             [
@@ -1203,9 +1205,10 @@ class Service extends Base\Service
 
     /**
      * Sends the authorized payments reminder email
-     * @param  string   $merchantId
-     * @param  array    $payments
-     * @param  boolean  $final Whether this is the final payment reminder
+     *
+     * @param  string  $merchantId
+     * @param  array   $payments
+     * @param  boolean $final Whether this is the final payment reminder
      */
     protected function sendAuthorizedPaymentsReminderMail($merchantId, $payments, $final)
     {
@@ -1235,5 +1238,29 @@ class Service extends Base\Service
         $processor = new Processor\Processor($merchant);
 
         return $processor;
+    }
+
+    protected function removeEmandatePaymentsAsApplicable(Base\PublicCollection & $payments)
+    {
+        $seconds = Merchant\Entity::AUTO_REFUND_DELAY_FOR_EMANDATE;
+
+        $currentTime = Carbon::now(Timezone::IST);
+
+        $ts = $currentTime->subSeconds($seconds)->getTimestamp();
+
+        $payments = $payments->reject(function($payment) use ($ts)
+        {
+            if ($payment->isEmandate() === false)
+            {
+                return false;
+            }
+
+            if ($payment->getCreatedAt() <= $ts)
+            {
+                return false;
+            }
+
+            return true;
+        });
     }
 }

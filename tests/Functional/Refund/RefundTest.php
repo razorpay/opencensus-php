@@ -357,6 +357,37 @@ class RefundTest extends TestCase
         $this->assertEquals(2, $content['authorized']);
     }
 
+    public function testRefundOfOldAuthorizedEmandatePayments()
+    {
+        $createdAt = Carbon::today(Timezone::IST)->subDays(25)->timestamp;
+
+        $oldPayment = $this->fixtures->create(
+            'payment:authorized',
+            ['method' => 'emandate',
+             'created_at' => $createdAt]);
+
+        $content = $this->refundOldAuthorizedPayments();
+
+        $this->assertArrayHasKey('refunded', $content);
+        $this->assertEquals(1, $content['refunded']);
+        $this->assertArrayHasKey('authorized', $content);
+        $this->assertEquals(1, $content['authorized']);
+    }
+
+    public function testRefundOldAuthorizedEmandatePayments2()
+    {
+        $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
+
+        $this->fixtures->create('payment:authorized', ['method' => 'emandate', 'created_at' => $createdAt]);
+
+        $content = $this->refundOldAuthorizedPayments();
+
+        $this->assertArrayHasKey('refunded', $content);
+        $this->assertEquals(0, $content['refunded']);
+        $this->assertArrayHasKey('authorized', $content);
+        $this->assertEquals(1, $content['authorized']);
+    }
+
     public function testRefundOfOldAuthorizedPaymentsContainingDisputed()
     {
         $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
@@ -565,12 +596,12 @@ class RefundTest extends TestCase
         {
             if ($payment['disputed'] === true)
             {
-                $disputedCount += 1;
+                $disputedCount++;
             }
 
             $holder = $payment['status'] . 'Count';
 
-            $$holder += 1;
+            $$holder++;
         }
 
         $this->assertEquals(6, $authorizedCount);
