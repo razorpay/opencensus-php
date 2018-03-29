@@ -47,14 +47,16 @@ class UserRolesScope
             'invitation_resend' => [Role::OWNER],
 
             // merchant routes
-            'balance_fetch'               => Role::allExceptSellerRole(),
-            'bank_account_fetch'          => Role::allExceptSellerRole(),
-            'merchant_activation_details' => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::OPERATIONS, Role::FINANCE],
-            'merchant_create_key'         => [Role::OWNER, Role::ADMIN],
-            'merchant_edit_config_logo'   => [Role::OWNER, Role::MANAGER, Role::ADMIN],
-            'merchant_fetch_config'       => Role::allExceptSellerRole(),
-            'merchant_fetch_referrals'    => [Role::OWNER, Role::MANAGER, Role::ADMIN],
-            'merchant_replace_key'        => [Role::OWNER, Role::ADMIN],
+            'balance_fetch'                       => Role::allExceptSellerRole(),
+            'bank_account_fetch'                  => Role::allExceptSellerRole(),
+            'merchant_activation_details'         => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::OPERATIONS, Role::FINANCE],
+            'merchant_create_key'                 => [Role::OWNER, Role::ADMIN],
+            'merchant_edit_config_logo'           => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+            'merchant_fetch_config'               => Role::allExceptSellerRole(),
+            'merchant_fetch_referrals'            => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+            'merchant_replace_key'                => [Role::OWNER, Role::ADMIN],
+            'merchant_add_bank_account'           => [Role::OWNER, Role::ADMIN],
+            'merchant_bank_account_change_status' => [Role::OWNER, Role::ADMIN],
 
             // webhook routes
             'webhook_create'         => [Role::OWNER, Role::MANAGER, Role::ADMIN],
