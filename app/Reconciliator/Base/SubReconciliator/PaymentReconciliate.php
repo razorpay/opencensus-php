@@ -158,13 +158,18 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         parent::resetProcessingAttributes();
     }
 
-    protected function getPaymentIdFromBharatQr(string $paymentId, array $row)
+    // In case of normal payments merchant reference is payment id
+    // but in case of bharat qr payments qr code id is used as merchant
+    // referece. So payment returned will be null. in that case we will seach the
+    // bharat qr entity with that merchant reference we use the payment id from that
+    // entity and return it
+    protected function getPaymentIdFromBharatQr(string $merchantReference, array $row)
     {
-        $bharatQr = $this->repo->bharat_qr->findByMerchantReference($paymentId);
+        $bharatQr = $this->repo->bharat_qr->findByMerchantReference($merchantReference);
 
         if ($bharatQr === null)
         {
-            $this->alertUnexpectedBharatQrPayment($paymentId, $row);
+            $this->alertUnexpectedBharatQrPayment($merchantReference, $row);
 
             $this->setFailUnprocessedRow(true);
 
@@ -174,13 +179,16 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         return $bharatQr->payment->getId();
     }
 
-    protected function alertUnexpectedBharatQrPayment(string $paymentId, array $row)
+    protected function alertUnexpectedBharatQrPayment(string $merchantReference, array $row)
     {
-        $this->trace->info(TraceCode::BHARAT_QR_UNEXPECTED, [
-            'message'       => 'Unexpected Bharat Qr Payment',
-            'id'            => $paymentId,
-            'row'           => $row,
-        ]);
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code'   => TraceCode::BHARAT_QR_UNEXPECTED,
+                'message'      => 'Unexpected Bharat Qr Payment',
+                'merchant_ref' => $merchantReference,
+                'row'          => $row,
+                'gateway'      => get_called_class()
+            ]);
     }
 
     protected function runPreReconciledAtCheckRecon($rowDetails)
