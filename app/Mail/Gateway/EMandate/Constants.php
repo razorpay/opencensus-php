@@ -18,35 +18,30 @@ class Constants extends Base\Constants
     ];
 
     const HEADER_MAP = [
-        Gateway::ENACH_RBL       . '_' . self::DEBIT        => 'RBL eNach Debit',
         Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => 'HDFC EMandate Register',
         Gateway::NETBANKING_HDFC . '_' . self::DEBIT        => 'HDFC EMandate Debit',
         Gateway::NETBANKING_AXIS . '_' . self::DEBIT        => 'Axis EMandate Debit',
     ];
 
     const SUBJECT_MAP = [
-        Gateway::ENACH_RBL       . '_' . self::DEBIT        => 'RBL eNach Debit File for ',
         Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => 'HDFC EMandate Register File for ',
         Gateway::NETBANKING_HDFC . '_' . self::DEBIT        => 'HDFC EMandate Debit File for ',
         Gateway::NETBANKING_AXIS . '_' . self::DEBIT        => 'Axis EMandate Debit File for ',
     ];
 
     const MAILTAG_MAP = [
-        Gateway::ENACH_RBL       . '_' . self::DEBIT        => MailTags::RBL_ENACH_DEBIT_MAIL,
         Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => MailTags::HDFC_EMANDATE_REGISTER_MAIL,
         Gateway::NETBANKING_HDFC . '_' . self::DEBIT        => MailTags::HDFC_EMANDATE_DEBIT_MAIL,
         Gateway::NETBANKING_AXIS . '_' . self::DEBIT        => MailTags::AXIS_EMANDATE_DEBIT_MAIL,
     ];
 
     const BODY_MAP = [
-        Gateway::ENACH_RBL       . '_' . self::DEBIT        => 'PFA EMandate Register request file.',
         Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => 'PFA EMandate Register request file.',
         Gateway::NETBANKING_HDFC . '_' . self::DEBIT        => 'PFA EMandate Debit request file.',
         Gateway::NETBANKING_AXIS . '_' . self::DEBIT        => 'PFA EMandate Debit request file.',
     ];
 
     const MAIL_TEMPLATE_MAP = [
-        Gateway::ENACH_RBL       . '_' . self::DEBIT        => 'emails.message',
         Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => 'emails.message',
         Gateway::NETBANKING_HDFC . '_' . self::DEBIT        => 'emails.message',
         Gateway::NETBANKING_AXIS . '_' . self::DEBIT        => 'emails.message',

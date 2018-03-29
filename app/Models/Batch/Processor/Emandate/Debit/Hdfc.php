@@ -51,7 +51,7 @@ class Hdfc extends Base
 
     protected function isAuthorized(array $content): bool
     {
-        return ($content['status'] === self::PROCESS);
+        return (strtolower($content['status']) === self::PROCESS);
     }
 
     protected function getErrorDescription(array $content)
