@@ -36,13 +36,9 @@ class Repository extends Base\Repository
 
     public function findActiveVirtualAccountByOrder(Order\Entity $order)
     {
-        $publicOrderId = $order->getPublicId();
-
-        $orderId = Order\Entity::verifyIdAndStripSign($publicOrderId);
-
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::ACTIVE)
-                    ->where(Entity::ENTITY_ID, '=', $orderId)
+                    ->where(Entity::ENTITY_ID, '=', $order->getId())
                     ->first();
     }
 
