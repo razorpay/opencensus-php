@@ -85,8 +85,8 @@
         vertical-align: middle;
         display: inline-block;
         white-space: normal;
-        width: 80%;
-        max-width: 290px;
+        width: 92%;
+        max-width: 320px;
         margin: 30px 0;
       }
     </style>
