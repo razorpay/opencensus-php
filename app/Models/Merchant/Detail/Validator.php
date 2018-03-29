@@ -9,12 +9,14 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-    const INVALID_IFSC_CODE_MESSAGE                     = 'Invalid IFSC Code';
+    const INVALID_REVIEWER                              = 'Invalid reviewer';
+    const INVALID_MERCHANTS                             = 'Invalid merchants';
     const INVALID_STATUS_MESSAGE                        = 'Invalid status';
+    const INVALID_IFSC_CODE_MESSAGE                     = 'Invalid IFSC Code';
     const INVALID_STATUS_CHANGE_MESSAGE                 = 'Invalid status change';
     const INVALID_CLARIFICATION_MODE_MESSAGE            = 'Invalid clarification mode';
-    const INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE = 'Clarification mode should not be sent for this status';
     const INVALID_FILE_NON_NGO_ORGANISATION_TYPE        = 'Invalid file for non NGO organisation type';
+    const INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE = 'Clarification mode should not be sent for this status';
 
     protected static $createRules = [
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
@@ -180,6 +182,12 @@ class Validator extends Base\Validator
 
     protected static $websiteDetailsRules = [
         Entity::BUSINESS_WEBSITE                => 'required|max:255|url',
+    ];
+
+    protected static $bulkAssignReviewerRules = [
+        Entity::REVIEWER_ID     => 'required|public_id|size:20',
+        Entity::MERCHANTS       => 'filled|array',
+        Entity::MERCHANTS . '*' => 'sometimes|public_id|size:14',
     ];
 
     /**

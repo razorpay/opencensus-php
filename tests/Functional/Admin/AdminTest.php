@@ -1000,4 +1000,14 @@ class AdminTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testDbMetaDataQuery()
+    {
+        $this->startTest();
+    }
+
+    public function testDbMetaDataQueryWithInvalidQuery()
+    {
+        $this->startTest();
+    }
 }

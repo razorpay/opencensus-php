@@ -36,7 +36,11 @@ class Repository extends Base\Repository
 
     public function findSuccessfulRefundByRefundId($refundId)
     {
-        $refundEntities = $this->findByRefundIdAndAction($refundId, Base\Action::REFUND);
+        $refundEntities = $this->newQuery()
+                               ->where(Entity::REFUND_ID, '=', $refundId)
+                               ->where(Entity::ACTION, '=', Base\Action::REFUND)
+                               ->where(Entity::RESPONSE_CODE, '=', Status::SUCCESS_CODE)
+                               ->get();
 
         //
         // There should never be more than one successful gateway refund entity
