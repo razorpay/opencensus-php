@@ -26,30 +26,26 @@ export default class MetaQuery extends Component {
               Enter a valid db meta query, currently only the following queries
               with prefixes are allowed
               <ul style={listStyle}>
-                <li>Explain select</li>
-                <li>Show create table</li>
-                <li>Show indexes from</li>
+                <li>explain select</li>
+                <li>show create table</li>
+                <li>show indexes from</li>
               </ul>
             </span>
           }
         />
         <SelectMode />
-        {this.state.queryDump && (
-          <div>
-            Raw Data:
-            <div class="code">
-              {JSON.stringify(this.state.queryDump, null, 4)}
-            </div>
-          </div>
-        )}
         <AsyncButton
-          text="OK"
+          text="Execute"
           class="btn"
           pendingClass="small spinner"
           onSubmit={body => {
             let mode = body.mode;
 
             delete body.mode;
+
+            this.setState({
+              queryDump: null,
+            });
 
             return adminPost({
               url: `${mode}/db_meta_query`,
@@ -64,6 +60,16 @@ export default class MetaQuery extends Component {
             });
           }}
         />
+        <br />
+        <br />
+        {this.state.queryDump && (
+          <div>
+            Raw Data:
+            <div class="code">
+              {JSON.stringify(this.state.queryDump, null, 4)}
+            </div>
+          </div>
+        )}
       </Form>
     );
   }
