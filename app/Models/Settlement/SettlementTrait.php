@@ -261,6 +261,8 @@ trait SettlementTrait
 
         if (empty($filteredTxnIds) === true)
         {
+            $this->trace->info(TraceCode::RECIPIENT_SETTLEMENT_NO_TXNS_TO_UPDATE);
+
             return;
         }
 

@@ -1442,15 +1442,24 @@ class Terminal extends Base
             'gateway_merchant_id2'      => 'razorpay@eazypay',
             'gateway_terminal_password' => 'razorpay_password',
             'upi'                       => true,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedUpiIciciIntentTerminal(array $attributes)
+    {
+        $attributes = [
+            'id'                        => Shared::UPI_ICICI_INTENT_TERMINAL,
             'type'                      => [
                 'non_recurring' => '1',
                 'pay'           => '1',
             ]
         ];
 
-        $attributes = array_merge($defaultValues, $attributes);
-
-        return $this->createEntityInTestAndLive('terminal', $attributes);
+        return $this->createSharedUpiIciciTerminal($attributes);
     }
 
     public function createSharedAepsIciciTerminal(array $attributes)
@@ -1499,15 +1508,34 @@ class Terminal extends Base
             'gateway_terminal_password' => 'razorpay_password',
             'upi'                       => 1,
             'gateway_acquirer'          => 'hdfc',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedUpiMindgateIntentTerminal(array $attributes)
+    {
+        $attributes = [
+            'id'                        => Shared::UPI_MINDGATE_INTENT_TERMINAL,
             'type'                      => [
                 'non_recurring' => '1',
                 'pay'           => '1',
             ]
         ];
 
-        $attributes = array_merge($defaultValues, $attributes);
+        return $this->createSharedUpiMindgateTerminal($attributes);
+    }
 
-        return $this->createEntityInTestAndLive('terminal', $attributes);
+    public function createSharedUpiMindgateTpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'               => Shared::UPI_MINDGATE_TPV_TERMINAL,
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedUpiMindgateTerminal($attributes);
     }
 
     public function createSharedUpiMindgateSbiTerminal(array $attributes)

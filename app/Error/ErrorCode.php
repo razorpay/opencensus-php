@@ -69,6 +69,7 @@ class ErrorCode
     const GATEWAY_ERROR_AMOUNT_TAMPERED                                             = 'GATEWAY_ERROR_AMOUNT_TAMPERED';
     const GATEWAY_ERROR_INVALID_FORMAT                                              = 'GATEWAY_ERROR_INVALID_FORMAT';
     const GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH                                   = 'GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH';
+    const GATEWAY_ERROR_TOKEN_ABSENT_RECURRING_PAYMENT                              = 'GATEWAY_ERROR_TOKEN_ABSENT_RECURRING_PAYMENT';
 
     const GATEWAY_ERROR_PIN_CRYPTOGRAPHY_ERROR                                      = 'GATEWAY_ERROR_PIN_CRYPTOGRAPHY_ERROR';
     const GATEWAY_ERROR_PIN_CHANGE_FAILED                                           = 'GATEWAY_ERROR_PIN_CHANGE_FAILED';
@@ -109,6 +110,7 @@ class ErrorCode
     const GATEWAY_ERROR_INVALID_CALLBACK_URL                                        = 'GATEWAY_ERROR_INVALID_CALLBACK_URL';
     const GATEWAY_ERROR_INVALID_PAYMENT_DATA                                        = 'GATEWAY_ERROR_INVALID_PAYMENT_DATA';
 
+    const GATEWAY_ERROR_RECURRING_PAYMENT_NOT_FOUND                                 = 'GATEWAY_ERROR_RECURRING_PAYMENT_NOT_FOUND';
     const GATEWAY_ERROR_PAYMENT_TRANSACTION_NOT_FOUND                               = 'GATEWAY_ERROR_PAYMENT_TRANSACTION_NOT_FOUND';
 
     const GATEWAY_ERROR_CALLBACK_EMPTY_INPUT                                        = 'GATEWAY_ERROR_CALLBACK_EMPTY_INPUT';
@@ -128,6 +130,7 @@ class ErrorCode
     // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
     const BAD_REQUEST_INVALID_IDS                                                   = 'BAD_REQUEST_INVALID_IDS';
+    const BAD_REQUEST_INVALID_QUERY                                                 = 'BAD_REQUEST_INVALID_QUERY';
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                                  = 'BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN';
     const BAD_REQUEST_NO_RECORDS_FOUND                                              = 'BAD_REQUEST_NO_RECORDS_FOUND';
     const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED                                   = 'BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED';

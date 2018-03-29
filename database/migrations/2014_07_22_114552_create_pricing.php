@@ -88,6 +88,7 @@ class CreatePricing extends Migration
             $table->index(Pricing::PLAN_ID);
             $table->index(Pricing::INTERNATIONAL);
             $table->index(Pricing::DELETED_AT);
+            $table->index(Pricing::CREATED_AT);
         });
     }
 

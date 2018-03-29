@@ -39,6 +39,8 @@ class CreateWorkflows extends Migration
             $table->integer(Workflow::CREATED_AT);
 
             $table->integer(Workflow::UPDATED_AT);
+
+            $table->index(Workflow::CREATED_AT);
         });
     }
 

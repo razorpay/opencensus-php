@@ -21,6 +21,7 @@ class Format
     const DOCX  = 'docx';
     const RPT   = 'rpt';
     const DAT   = 'dat';
+    const XML   = 'xml';
     const NONE  = null;
 
     const EXCEL_COLUMN_TEXT = '@';
@@ -41,6 +42,7 @@ class Format
         self::DOCX,
         self::RPT,
         self::DAT,
+        self::XML,
     ];
 
     const VALID_EXTENSION_MIME_MAP = [
@@ -66,6 +68,7 @@ class Format
         self::ZIP   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
         self::DOC   => ['application/msword'],
         self::DOCX  => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        self::XML   => ['application/xml'],
         self::RPT   => ['text/plain'],
         self::DAT   => ['text/plain'],
         self::NONE  => ['text/plain'],

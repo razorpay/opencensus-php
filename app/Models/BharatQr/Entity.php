@@ -40,21 +40,10 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::AMOUNT,
-        self::GATEWAY_MERCHANT_ID,
         self::METHOD,
         self::VPA,
-        self::CARD_NUMBER,
-        self::CARD_NETWORK,
         self::PROVIDER_REFERENCE_ID,
         self::MERCHANT_REFERENCE,
-        self::TRACE_NUMBER,
-        self::RRN,
-        self::TRANSACTION_TIME,
-        self::TRANSACTION_DATE,
-        self::GATEWAY_TERMINAL_ID,
-        self::GATEWAY_TERMINAL_DESC,
-        self::CUSTOMER_NAME,
-        self::STATUS_CODE,
     ];
 
     protected $visible = [
@@ -63,18 +52,9 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::PAYMENT_ID,
         self::VIRTUAL_ACCOUNT_ID,
-        self::GATEWAY_MERCHANT_ID,
         self::METHOD,
-        self::VPA,
-        self::RRN,
-        self::CARD_NUMBER,
-        self::CARD_NETWORK,
-        self::TRANSACTION_TIME,
-        self::TRANSACTION_DATE,
         self::PROVIDER_REFERENCE_ID,
         self::MERCHANT_REFERENCE,
-        self::RRN,
-        self::STATUS_CODE,
     ];
 
     protected $casts = [
@@ -86,10 +66,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::VIRTUAL_ACCOUNT_ID,
         self::PAYMENT_ID,
-    ];
-
-    protected static $modifiers = [
-        self::AMOUNT,
     ];
 
     protected $generateIdOnCreate = true;
@@ -128,20 +104,6 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    // ----------------------- Modifiers -----------------------
-
-    public function modifyAmount(array & $input)
-    {
-        //
-        // If you're wondering why this is here, run "(int) (579.3 * 100)" in tinker
-        //
-        // The value of (579.3 * 100) is actually stored as 57929.999... and casting
-        // that to an integer just dumps the decimal part and ruins everything.
-        //
-
-        $input[self::AMOUNT] = (int) number_format(($input[self::AMOUNT] * 100), 0, '.', '');
-    }
-
     // ----------------------- Setters -----------------------
 
     public function setExpected(bool $expected)
@@ -169,11 +131,6 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
-    }
-
-    public function getCardNumber()
-    {
-        return $this->getAttribute(self::CARD_NUMBER);
     }
 
     public function isExpected()

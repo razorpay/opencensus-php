@@ -69,6 +69,7 @@ class CreateBilldesk extends Migration {
             $table->index('RefundId');
             $table->index('BankReferenceNo');
             $table->index('RefStatus');
+            $table->index('created_at');
         });
     }
 

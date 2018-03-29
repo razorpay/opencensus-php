@@ -66,7 +66,7 @@ class IciciGatewayTest extends TestCase
             }
             else
             {
-                $content['PayerVA'] = 'crims0n@icici';
+                $content['PayerVA'] = 'user@icici';
             }
         });
 
@@ -80,6 +80,8 @@ class IciciGatewayTest extends TestCase
 
     public function testIntentPayment()
     {
+        $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+
         unset($this->payment['description']);
         unset($this->payment['vpa']);
 
@@ -93,7 +95,7 @@ class IciciGatewayTest extends TestCase
             }
             else
             {
-                $content['PayerVA'] = 'crims0n@icici';
+                $content['PayerVA'] = 'user@icici';
             }
         });
 
@@ -106,37 +108,24 @@ class IciciGatewayTest extends TestCase
 
         $this->checkPaymentStatus($paymentId, 'created');
 
-        $upiEntity = $this->getLastEntity('upi_icici', true);
+        $upiEntity = $this->getLastEntity('upi', true);
+
         $payment = $this->getEntityById('payment', $paymentId, true);
 
-        $this->assertEquals('100UPIICICITml', $payment['terminal_id']);
+        $this->assertEquals('1UpiIntICICTml', $payment['terminal_id']);
         $this->assertNull($payment['vpa']);
 
         $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
 
         $response = $this->makeS2SCallbackAndGetContent($content);
 
+        $upi = $this->getLastEntity('upi', true);
         $payment = $this->getEntityById('payment', $paymentId, true);
 
-        $this->assertEquals($payment['vpa'], 'crims0n@icici');
-    }
-
-    public function testIntentPaymentWithVpa()
-    {
-        $payment = $this->getDefaultUpiPaymentArray();
-
-        $payment['vpa'] = 'dontencrypt@icici';
-
-        unset($payment['description']);
-
-        $payment['_']['flow'] = 'intent';
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->doAuthPaymentViaAjaxRoute($payment);
-        });
+        $this->assertEquals($payment['vpa'], 'user@icici');
+        $this->assertEquals('ICIC', $upi['bank']);
+        $this->assertEquals('icici', $upi['acquirer']);
+        $this->assertEquals('icici', $upi['provider']);
     }
 
     public function testPaymentWithExpiryPublicAuth()

@@ -112,6 +112,8 @@ class CreateOffers extends Migration
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
+
+            $table->index(Offer::CREATED_AT);
         });
 
         Schema::table(Table::ORDER, function ($table)

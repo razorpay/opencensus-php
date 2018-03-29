@@ -136,10 +136,10 @@ class Base extends BaseModel\Core
         // created file store entity with this batch and save both of them.
         //
 
-        /**
-         * For file upload, we throw an error in Batch/Validator::validateEntries.
-         * This attribute is used in this validator. Its not stored though.
-         */
+        //
+        // For file upload, we throw an error in Batch/Validator::validateEntries.
+        // This attribute is used in this validator. It's not stored though.
+        //
         if (isset($input[Batch\Entity::FILE]) === true)
         {
             $this->batch->setCreatedByFileUpload(true);
@@ -244,8 +244,10 @@ class Base extends BaseModel\Core
      *   folder in s3 too. The original file is saved in
      *   filestore/batch/upload folder in local.
      *
-     * @param  array            $input
+     * @param  array $input
+     *
      * @return FileStore\Entity
+     * @throws LogicException
      */
     protected function getInputFile(array $input): FileStore\Entity
     {
@@ -455,7 +457,6 @@ class Base extends BaseModel\Core
         $this->batch->setSuccessCount($successCount);
         $this->batch->setFailureCount($failureCount);
     }
-
 
     /**
      * Indicates if a batch should be marked as processed even if it has partial
