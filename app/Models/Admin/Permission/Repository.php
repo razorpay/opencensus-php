@@ -155,6 +155,5 @@ class Repository extends Base\Repository
                     ->where($pmTable . '.entity_type', '=', 'org')
                     ->where(Entity::NAME, $permissionName)
                     ->first();
-
     }
 }

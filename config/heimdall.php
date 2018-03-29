@@ -254,11 +254,9 @@ return [
             ],
             Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER => [
                 'description' => 'Assign Reviews for Merchant Activation Forms',
-                'assignable'  => true,
             ],
             Permission::REVIEW_MERCHANT_ACTIVATION => [
                 'description' => 'Review Merchant Activation Forms',
-                'assignable'  => true,
             ],
         ],
 

@@ -28,7 +28,6 @@ final class Route
 
         // hosted checkout for IRCTC and Bescom
         'checkout_embedded'                        => ['post',     'checkout/embedded',                              'PublicController@renderEmbedded'                                   ],
-
         'checkout_hosted'                          => ['post',     'checkout/hosted',                                'PublicController@renderCheckoutHosted'                             ],
         'checkout_hosted_get'                      => ['get',      'checkout/hosted',                                'PublicController@renderCheckoutHosted'                             ],
         // TODO: Check Splunk and remove the write here
@@ -1776,7 +1775,6 @@ final class Route
         'merchant_activation_reviewers'            => '*',
         'merchant_activation_bulk_assign_reviewer' => Permission::EDIT_MERCHANT_REQUESTS,
         'db_meta_query'                            => Permission::DB_META_QUERY,
-
     ];
 
     public static $direct = [
