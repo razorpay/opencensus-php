@@ -2,13 +2,10 @@
 
 namespace RZP\Models\Admin\Admin;
 
-use RZP\Exception;
-use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
-use RZP\Models\Admin\Base;
+use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
-use RZP\Models\Admin\Role;
-use RZP\Models\Admin\Group;
+use RZP\Models\Admin\Base;
+use RZP\Models\Admin\Permission;
 
 class Repository extends Base\Repository
 {

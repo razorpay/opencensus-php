@@ -9,7 +9,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
 
-class CreateAdjustments extends Migration {
+class CreateAdjustments extends Migration
+{
 
     /**
      * Run the migrations.
@@ -68,6 +69,7 @@ class CreateAdjustments extends Migration {
             $table->index(Adjustment::CHANNEL);
             $table->index(Adjustment::ENTITY_ID);
             $table->index(Adjustment::ENTITY_TYPE);
+            $table->index(Adjustment::CREATED_AT);
         });
     }
 

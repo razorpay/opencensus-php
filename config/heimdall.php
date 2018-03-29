@@ -217,6 +217,7 @@ return [
             Permission::SEND_NEWSLETTER => '',
             Permission::TRIGGER_DUMMY_ERROR => '',
             Permission::MAKE_API_CALL => '',
+            Permission::DB_META_QUERY => '',
             Permission::SCHEDULE_CREATE => '',
             Permission::SCHEDULE_FETCH => '',
             Permission::SCHEDULE_FETCH_MULTIPLE => '',
@@ -250,6 +251,12 @@ return [
                 'description' => 'View Merchant Analytics',
                 'assignable'  => true,
                 'workflow'    => false
+            ],
+            Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER => [
+                'description' => 'Assign Reviews for Merchant Activation Forms',
+            ],
+            Permission::REVIEW_MERCHANT_ACTIVATION => [
+                'description' => 'Review Merchant Activation Forms',
             ],
         ],
 

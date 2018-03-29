@@ -96,6 +96,7 @@ class CreateUpi extends Migration
             $table->index(Upi::BANK);
             $table->index(Upi::STATUS_CODE);
             $table->index(Upi::NPCI_REFERENCE_ID);
+            $table->index(Upi::CREATED_AT);
         });
     }
 

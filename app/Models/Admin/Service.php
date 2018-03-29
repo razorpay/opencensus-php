@@ -217,4 +217,9 @@ class Service extends Base\Service
     {
         return (new GeoIP)->updateGeoIps($input);
     }
+
+    public function dbMetaDataQuery(array $input): array
+    {
+        return (new Query\Core)->dbMetaDataQuery($input);
+    }
 }

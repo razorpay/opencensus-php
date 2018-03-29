@@ -25,6 +25,7 @@ class Entity extends Base\Entity
      * Holds all the permissions as relation key.
      */
     const PERMISSIONS       = 'permissions';
+    const ADMINS            = 'admins';
 
     protected $entity = 'role';
 
@@ -53,6 +54,7 @@ class Entity extends Base\Entity
         self::DESCRIPTION,
         self::ORG_ID,
         self::PERMISSIONS,
+        self::ADMINS
     ];
 
     protected $diff = [
