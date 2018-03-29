@@ -134,6 +134,9 @@ class FeatureAccess
      * Checks if the application requesting to access a feature-based
      * route should be given the access. Returns a boolean.
      *
+     * 1. [simplified] Allow access because the app has the feature.
+     * 2. [simplified] Allow access because the merchant has the feature.
+     *
      * @param array $routeFeatures
      * @param array $merchantRouteFeatures
      *
@@ -144,9 +147,14 @@ class FeatureAccess
         array $merchantRouteFeatures): bool
     {
         //
-        // 1. If the application has any of the route features required, allow the application to access the resource
-        // directly. But if the route feature required is a merchantMandatoryFeature, then do not allow the
-        // application to access it.
+        // 1. Allow the application to access the resource, if -
+        //    - the application has any of the route features assigned, and,
+        //      - either, at least one of the features assigned to the application is a non restrictedAccessFeature,
+        //      - or, the route feature  assigned to the application is a restrictedAccessFeature and both, the app and
+        //        the merchant have it enabled.
+        //
+        // restrictedAccessFeature routes can only be accessed by the application if both, the app and the merchant
+        // have the feature enabled.
         //
 
         // Fetch all the features of the application that is trying to access the resource
@@ -160,32 +168,30 @@ class FeatureAccess
 
         $restrictedAccessFeatures = Feature\Entity::$restrictedAccessFeatures;
 
-        //
-        // We do not allow the application to access the route if it requires a feature which belongs to the list of
-        // restrictedAccessFeatures. If the merchant who has authorized the application to access the routes
-        //
-        $nonRestrictedRouteFeaturesAvailableWithApp = array_values(array_diff($routeFeaturesAvailableWithApp,
-            $restrictedAccessFeatures));
+        $appHasRouteFeatures = filled($routeFeaturesAvailableWithApp);
 
-        if (empty($nonRestrictedRouteFeaturesAvailableWithApp) === false)
+        $appHasNonRestrictedRouteFeatures = filled(array_values(array_diff(
+                                                $routeFeaturesAvailableWithApp,
+                                                $restrictedAccessFeatures)));
+
+        $appAndMerchantHaveRestrictedRouteFeature = filled(array_values(array_intersect(
+                                                        $restrictedAccessFeatures,
+                                                        $routeFeaturesAvailableWithApp,
+                                                        $merchantRouteFeatures)));
+
+        if (($appHasRouteFeatures === true) and
+                (($appHasNonRestrictedRouteFeatures === true) or
+                    ($appAndMerchantHaveRestrictedRouteFeature === true)))
         {
             return true;
         }
 
-        $commonFeatures = array_intersect(
-            $restrictedAccessFeatures,
-            $merchantRouteFeatures,
-            $routeFeaturesAvailableWithApp);
-
-        if (empty($commonFeatures) === false)
-        {
-            return true;
-        }
-
         //
-        // 2. If the application does not have any of the required route features,
-        //    check the merchant features and allow the application to access the
-        //    resource if the feature required is not a blacklisted feature.
+        // 2. If the application does not have any of the required route features, check the merchant features.
+        //    Do not allow the application to access the resource
+        //    Allow the application to access the resource if -
+        //      - the merchant has any of the route features assigned, and,
+        //      - the the feature required is not a blacklisted feature.
         //
 
         $appBlacklistedFeatures = Feature\Entity::$appBlacklistedFeatures;
@@ -194,10 +200,17 @@ class FeatureAccess
         // From the features available with the merchant, remove the features using
         // which the applications should not be allowed to access the routes.
         //
-        $merchantRouteFeaturesWhitelisted = array_values(array_diff($merchantRouteFeatures, $appBlacklistedFeatures));
+        $merchantRouteFeaturesWhitelisted = array_values(array_diff(
+                                                $merchantRouteFeatures,
+                                                $appBlacklistedFeatures));
 
-        $merchantRouteFeaturesWhitelisted = array_values(array_diff($merchantRouteFeaturesWhitelisted, $restrictedAccessFeatures));
+        //
+        // Do not allow the app to access the features
+        //
+        $merchantRouteFeaturesWhitelisted = array_values(array_diff(
+                                                $merchantRouteFeaturesWhitelisted,
+                                                $restrictedAccessFeatures));
 
-        return (empty($merchantRouteFeaturesWhitelisted) === false);
+        return (filled($merchantRouteFeaturesWhitelisted) === true);
     }
 }
