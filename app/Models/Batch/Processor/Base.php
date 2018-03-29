@@ -734,6 +734,7 @@ class Base extends BaseModel\Core
      * has two extra columns named `Error Code` and `Error Description`.
      * For batch create, if the merchant passes a `file_id`, the downloaded file
      * has these two columns, whose entries are removed in this method.
+     * TODO : update this!!
      *
      * @param array $entries
      */
@@ -750,23 +751,26 @@ class Base extends BaseModel\Core
                 // Removing extra columns
                 $extraEntry = array_diff_key($entry, $headerTemplate);
 
-                $entry = array_diff_key($entry, $extraEntry);
+                $entry = $this->getStrippedEntry($entry, $extraEntry);
 
-                // Making empty space or whitespace as null
-                $entry = array_map(
+                if ($this->batch->getType() === Batch\Type::PAYMENT_LINK)
+                {
+                    // Making empty space or whitespace as null
+                    $entry = array_map(
 
-                    function ($item) {
+                        function ($item) {
 
-                        if (($item !== null) and (trim($item) === ''))
-                        {
-                            return null;
-                        }
+                            if (($item !== null) and (trim($item) === ''))
+                            {
+                                return null;
+                            }
 
-                        return $item;
-                    },
+                            return $item;
+                        },
 
-                    $entry
-                );
+                        $entry
+                    );
+                }
 
                 if ($entry === $headerTemplate)
                 {
@@ -781,6 +785,47 @@ class Base extends BaseModel\Core
 
         // Removing empty rows (marked earlier as null)
         $entries = array_filter($entries);
+    }
+
+    protected function getStrippedEntry(array $entry, array $extraEntry): array
+    {
+        $keysExtraEntry = array_keys($extraEntry);
+
+        if ((empty(array_filter($keysExtraEntry)) === true) or
+            ($this->areNumbersContinuous($keysExtraEntry)))
+        {
+            return array_diff_key($entry, $extraEntry);
+        }
+
+        foreach ($extraEntry as $key => $value)
+        {
+            if (($key !== null) or
+                ($key !== ''))
+            {
+                unset($extraEntry[$key]);
+            }
+        }
+
+        return $entry;
+    }
+
+    protected function areNumbersContinuous(array $keysExtraEntry): bool
+    {
+        $count = count($keysExtraEntry);
+
+        if ($count === 0)
+        {
+            return true;
+        }
+
+        $expectedSum = ($keysExtraEntry[0] * $count) + (($count * ($count - 1)) / 2);
+
+        if (array_sum($keysExtraEntry) === $expectedSum)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
