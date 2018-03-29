@@ -11,8 +11,8 @@ use RZP\Error\ErrorCode;
 /**
  * Class GenericController
  *
- * Hosts functions for the orphan routes that don't
- * really belong anywhere else
+ * Hosts functions for those orphan routes that
+ * don't really belong anywhere else
  *
  * @package RZP\Http\Controllers
  */
@@ -29,18 +29,18 @@ class GenericController extends Controller
      */
     public function getInspectorIndex(LaravelDebugbar $debugBar)
     {
-        $debugBar->disable();
-
         // Only allow access when the app is in debug mode
         if ($this->config['app.debug'] !== true)
         {
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
 
+        $debugBar->enable();
+
         // We don't want this route, `/v1/_debug` to store any collected data
         $debugBar->setStorage(null);
 
-        // The view gets its data from the JavascriptRenderer
+        // The view gets its data from JavascriptRenderer
         $renderer = $debugBar->getJavascriptRenderer();
 
         // Defining the openHandler allows you to "open" other debug sessions
