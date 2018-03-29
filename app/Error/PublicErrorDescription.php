@@ -42,6 +42,7 @@ class PublicErrorDescription
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                   = 'The current http method is not supported';
     const BAD_REQUEST_INVALID_ID                                                = 'The id provided does not exist';
     const BAD_REQUEST_INVALID_IDS                                               = 'One or more of the ids provided does not exist';
+    const BAD_REQUEST_INVALID_QUERY                                             = 'The query is invalid or is not allowed';
     const BAD_REQUEST_NO_RECORDS_FOUND                                          = 'No db records found.';
     const BAD_REQUEST_INVALID_BANK_FOR_EMANDATE                                 = 'Invalid bank passed for E-mandate payment';
     const BAD_REQUEST_PAYMENT_FAILED                                            = 'Payment failed';
