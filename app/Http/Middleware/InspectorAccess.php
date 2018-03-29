@@ -3,28 +3,26 @@
 namespace RZP\Http\Middleware;
 
 use Closure;
-use Request;
-use ApiResponse;
-
-use Illuminate\Http\Request as HttpRequest;
+use Debugbar;
 use Illuminate\Foundation\Application;
+use Illuminate\Cache\Repository as Config;
+use Illuminate\Http\Request as HttpRequest;
 
 class InspectorAccess
 {
-    protected $app;
-    protected $repo;
-    protected $router;
+    /**
+     * @var Config
+     */
+    protected $config;
 
-    const DEBUGBAR_ROUTE_PREFIX = '/_debugbar';
-    const INSPECT_QUERY_PARAM   = 'inspect';
+    /**
+     * Query param used to initiate inspector
+     */
+    const INSPECT_QUERY_PARAM   = '_inspect';
 
     public function __construct(Application $app)
     {
-        $this->app = $app;
-
-        $this->ba = $app['basicauth'];
-
-        $this->router = $app['router'];
+        $this->config = $app['config'];
     }
 
     /**
@@ -37,17 +35,15 @@ class InspectorAccess
     public function handle(HttpRequest $request, Closure $next)
     {
         // If the app is not in debug mode, skip
-        if ($this->app->config['app.debug'] !== true)
+        if ($this->config->get('app.debug') !== true)
         {
             return $next($request);
         }
 
-        $requestUri = $request->getRequestUri();
-
-        if (($this->isDebugbarInternalRoute($requestUri) === true) or
+        if (($this->isDebugbarInternalRoute($request) === true) or
             ($request->exists(self::INSPECT_QUERY_PARAM) === true))
         {
-            $this->enableDebugbar();
+            Debugbar::enable();
 
             // Remove the `inspect` query param, if sent
             $request->query->remove(self::INSPECT_QUERY_PARAM);
@@ -56,13 +52,22 @@ class InspectorAccess
         return $next($request);
     }
 
-    protected function enableDebugbar()
+    /**
+     * Debugbar defines a few internal routes for AJAX requests,
+     * which require Debugbar enabled to work.
+     *
+     * @see \Barryvdh\Debugbar\ServiceProvider::boot()
+     *
+     * @param HttpRequest $request
+     *
+     * @return bool
+     */
+    protected function isDebugbarInternalRoute(HttpRequest $request)
     {
-        \Debugbar::enable();
-    }
+        $debugBarRoutePrefix = '/' . $this->config->get('debugbar.route_prefix');
 
-    protected function isDebugbarInternalRoute(string $uri)
-    {
-        return (starts_with($uri, self::DEBUGBAR_ROUTE_PREFIX) === true);
+        $requestUri = $request->getRequestUri();
+
+        return (starts_with($requestUri, $debugBarRoutePrefix) === true);
     }
 }
