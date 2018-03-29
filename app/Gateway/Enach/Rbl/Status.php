@@ -26,4 +26,11 @@ class Status
 
         return ($status === self::REGISTRATION_SUCCESS);
     }
+
+    public static function isDebitSuccess($status)
+    {
+        $status = strtolower($status);
+
+        return ($status !== self::DEBIT_REJECT);
+    }
 }
