@@ -393,8 +393,10 @@ class EnachRblGatewayTest extends TestCase
 
         $batch = $this->makeRequestAndGetContent($request);
 
+        $batch = $this->getDbEntityById('batch', $batch['id']);
+
         $this->assertEquals('emandate', $batch['type']);
-        $this->assertEquals('created', $batch['status']);
+        $this->assertEquals('processed', $batch['status']);
 
         $payment = $this->getDbEntityById('payment', $response['razorpay_payment_id']);
 
