@@ -661,26 +661,15 @@ trait FileHandlerTrait
     protected function parseTextFile($file, string $delimiter = '~')
     {
         $rows = $this->getFileLines($file);
-
         $data = [];
 
         foreach ($rows as $ix => $row)
         {
             // Ending row may be just empty.
-            if ($row === '')
+            if (blank($row) === false)
             {
-                continue;
+                $data[] = $this->parseTextRow($row, $ix, $delimiter);
             }
-
-            $parsedRow = $this->parseTextRow($row, $ix, $delimiter);
-
-            // Optionally, a CSV can have first row as header values.
-            if (array_keys($parsedRow) === array_values($parsedRow))
-            {
-                continue;
-            }
-
-            $data[] = $parsedRow;
         }
 
         return $data;
