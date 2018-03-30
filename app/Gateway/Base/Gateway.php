@@ -167,7 +167,7 @@ class Gateway
 
     protected $sortRequestContent = true;
 
-    protected $mockUrl;
+    protected $externalMockDomain;
 
     public function __construct()
     {
@@ -192,7 +192,7 @@ class Gateway
 
         $this->cache = $this->app['cache'];
 
-        $this->mockUrl = env('EXTERNAL_MOCK_URL');
+         $this->externalMockDomain = env('EXTERNAL_MOCK_DOMAIN_URL');
     }
 
     public function authorize(array $input)
@@ -797,10 +797,9 @@ class Gateway
 
         $type = strtoupper($type);
 
-        //handling for mock server URL in func environment
-        if( $this->env != 'prod' and isset($this->mockUrl))
+        if (($this->env === 'func') and (isset($this->externalMockDomain) === true))
         {
-          return $this->mockUrl.$this->gateway.$this->getRelativeUrl($type);
+          return $this->getExternalMockUrl($type);
         }
 
         return $urlDomain . $this->getRelativeUrl($type);
@@ -1110,5 +1109,15 @@ class Gateway
         $this->getRepository()->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
+    }
+
+/*
+* retuns the external mock url
+* Used for gateway testing using mock in func
+* Appends the gateway string and relative url for the external mock domain
+*/
+    protected function getExternalMockUrl($type)
+    {
+       return $this->externalMockDomain . "/" . $this->gateway . $this->getRelativeUrl($type);
     }
 }
