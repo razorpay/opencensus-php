@@ -6,6 +6,7 @@ return [
             'url' => '/scorecard',
             'method' => 'GET',
             'content' => [
+                'count' => 10
             ],
         ],
         'response' => [

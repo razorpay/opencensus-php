@@ -776,7 +776,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getYesterdayTopMerchantVolumeWise()
+    public function getYesterdayTopMerchantVolumeWise(int $limit)
     {
         $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
         $to = Carbon::today(Timezone::IST)->getTimestamp();
@@ -799,11 +799,11 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(75)
+                    ->limit($limit)
                     ->get();
     }
 
-    public function getMonthTopMerchantVolumeWise()
+    public function getMonthTopMerchantVolumeWise(int $limit)
     {
         $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->getTimestamp();
         $to = Carbon::today(Timezone::IST)->getTimestamp();
@@ -826,7 +826,7 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(75)
+                    ->limit($limit)
                     ->get();
     }
 
