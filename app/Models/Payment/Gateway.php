@@ -667,6 +667,7 @@ class Gateway
             IFSC::CBIN,
             IFSC::CITI,
             IFSC::DCBL,
+            IFSC::BKDN,
             IFSC::FDRL,
             IFSC::HDFC,
             IFSC::ICIC,
@@ -693,6 +694,10 @@ class Gateway
             IFSC::CORP,
             IFSC::VARA,
             IFSC::KVBL,
+            IFSC::CSBX,
+            IFSC::TMBL,
+            IFSC::KAIJ,
+            IFSC::BARB,
         ],
     ];
 
