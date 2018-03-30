@@ -35,7 +35,12 @@ class Scorecard extends Base\Core
 
         $scoreCardMail = new ScorecardMail($data);
 
-        Mail::queue($scoreCardMail);
+        //
+        // This mail is huge (more than 256KB) and breaches SQS message payload.
+        // Think teice before cleverly changing it to queue, as was attempted
+        // previously here https://github.com/razorpay/api/pull/7734/files#diff-6a90a4767da4f4cac0e507d0cf686d6dL34
+        //
+        Mail::send($scoreCardMail);
 
         return ['success' => true];
     }
