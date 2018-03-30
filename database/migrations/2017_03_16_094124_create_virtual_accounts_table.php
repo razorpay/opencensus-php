@@ -98,11 +98,10 @@ class CreateVirtualAccountsTable extends Migration
             $table->index(VirtualAccount::VPA);
             $table->index(VirtualAccount::DESCRIPTOR);
             $table->index(VirtualAccount::STATUS);
-            $table->index(VirtualAccount::ENTITY_ID);
-            $table->index(VirtualAccount::ENTITY_TYPE);
             $table->index(VirtualAccount::CREATED_AT);
             $table->index(VirtualAccount::UPDATED_AT);
             $table->index(VirtualAccount::DELETED_AT);
+            $table->index([VirtualAccount::ENTITY_ID, VirtualAccount::ENTITY_TYPE]);
             $table->index([VirtualAccount::MERCHANT_ID, VirtualAccount::CREATED_AT]);
         });
     }

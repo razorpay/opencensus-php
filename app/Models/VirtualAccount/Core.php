@@ -28,7 +28,7 @@ class Core extends Base\Core
 
             $virtualAccount->customer()->associate($customer);
 
-            $virtualAccount->entity()->associate($order);
+            $virtualAccount->associateOrder($order);
 
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 

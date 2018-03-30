@@ -137,6 +137,16 @@ class Entity extends Base\PublicEntity
         return $this->morphTo();
     }
 
+    public function associateOrder($order)
+    {
+        if ($order !== null)
+        {
+            $this->attributes[self::ENTITY_ID] = $order->getId();
+
+            $this->attributes[self::ENTITY_TYPE] = Type::ORDER;
+        }
+    }
+
     // ----------------------- Modifiers ---------------------------------------
 
     public function modifyName(& $input)

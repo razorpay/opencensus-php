@@ -66,6 +66,7 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($order->getAmountDue(), $virtualAccount['amount_expected']);
         $this->assertEquals('active', $virtualAccount['status']);
         $this->assertEquals($order->getId(), $virtualAccount['entity_id']);
+        $this->assertEquals('order', $virtualAccount['entity_type']);
 
         $bankAccount = $this->getLastEntity('bank_account', true);
         $this->assertEquals($virtualAccount['id'], 'va_' . $bankAccount['entity_id']);
