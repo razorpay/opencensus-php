@@ -3444,5 +3444,6 @@ ALTER TABLE tokens
 
 ALTER TABLE virtual_accounts
     ADD COLUMN `entity_id` char(14) NULL DEFAULT NULL AFTER `customer_id`,
-    ADD COLUMN `entity_type` char(20) NULL DEFAULT NULL AFTER `entity_id`;
-
+    ADD COLUMN `entity_type` char(20) NULL DEFAULT NULL AFTER `entity_id`,
+    ADD INDEX `virtual_accounts_entity_id_index` (`entity_id`),
+    ADD INDEX `virtual_accounts_type_index` (`entity_type`);
