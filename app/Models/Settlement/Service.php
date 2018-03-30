@@ -71,7 +71,7 @@ class Service extends Base\Service
 
         $nodalAccountClass = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\NodalAccount';
 
-        $h2h = (bool)($input['h2h']);
+        $h2h = (bool) ($input['h2h']);
 
         $fileCreator = (new $nodalAccountClass)->generateFundTransferFile($entities, $h2h);
 

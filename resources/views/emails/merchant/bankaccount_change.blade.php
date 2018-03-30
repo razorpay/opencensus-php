@@ -25,9 +25,6 @@
 <strong>IFSC Code</strong>  {{ $ifsc_code }}
 </p>
 
-<p style="margin: 10px 0px 10px 0px; color: #2d2d2d; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 24px; padding: 0; text-align: justify; font-size: 16px; margin-bottom: 20px; background: white;">
-<strong>City</strong>  {{ $beneficiary_city }}
-</p>
   <p style="margin: 10px 0px 10px 0px; color: #2d2d2d; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 24px; padding: 0; text-align: justify; font-size: 16px; margin-bottom: 20px; background: white;">
 Cheers,
 <br>

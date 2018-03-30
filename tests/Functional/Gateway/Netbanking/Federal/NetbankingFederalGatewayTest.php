@@ -354,7 +354,7 @@ class NetbankingFederalGatewayTest extends TestCase
                 ]
         ];
 
-        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData, $date)
+        Mail::assertQueued(DailyFileMail::class, function ($mail) use ($testData, $date)
         {
             $expectedSubject = 'Federal Netbanking claims and refund files for ' . $date;
 

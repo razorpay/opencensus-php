@@ -74,9 +74,7 @@ class RouteServiceProvider extends ServiceProvider
             'prefix'        => 'v1',
             'namespace'     => $this->namespace,
             'middleware'    => [
-                // throttle: old implementation not to be used, to remove later
-                // 'throttle',
-                'throttle_v2',
+                'throttle',
                 'auth',
                 'admin_access',
                 'user_access',

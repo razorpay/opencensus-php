@@ -25,8 +25,8 @@ class Repository extends Base\Repository
      * merchant. This handling is required as merchant detail relation is part
      * of merchant index content.
      *
-     * @param Detail\Entity $merchantDetail
-     * @param array         $options
+     * @param Entity $merchantDetail
+     * @param array  $options
      */
     public function saveOrFail($merchantDetail, array $options = [])
     {

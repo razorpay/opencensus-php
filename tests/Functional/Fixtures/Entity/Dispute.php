@@ -27,12 +27,11 @@ class Dispute extends Base
 
         $dispute = $this->createEntity('dispute', $attributes);
 
-        if ($dispute->isClosed() === true)
-        {
-            $payment = $dispute->payment;
+        $payment = $dispute->payment;
 
-            $this->fixtures->edit('payment', $payment->getId(), [Payment::DISPUTED => 0]);
-        }
+        $flag = ($dispute->isClosed() === true) ? 0 : 1;
+
+        $this->fixtures->edit('payment', $payment->getId(), [Payment::DISPUTED => $flag]);
 
         // Create a transaction only when there's a deduction required
         if ($dispute->getDeductAtOnset() === true)

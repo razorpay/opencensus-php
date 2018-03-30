@@ -13,6 +13,8 @@ class Shared
     const AXIS_MIGS_RAZORPAY_TERMINAL        = '1000AxisMigsTl';
     const BILLDESK_RAZORPAY_TERMINAL         = '1000BdeskTrmnl';
     const BLADE_RAZORPAY_TERMINAL            = '1000BladeTrmnl';
+    const DIGIO_RAZORPAY_TERMINAL            = '1000DigioTrmnl';
+    const ENACH_RBL_RAZORPAY_TERMINAL        = '1000EnachRblTl';
     const EBS_RAZORPAY_TERMINAL              = '100000EbsTrmnl';
     const HDFC_RAZORPAY_TERMINAL             = '1000HdfcShared';
     const MOBIKWIK_RAZORPAY_TERMINAL         = '1000MobiKwikTl';
@@ -48,8 +50,11 @@ class Shared
     const HITACHI_TERMINAL                   = '100HitachiTmnl';
     const FIRST_DATA_RAZORPAY_TERMINAL       = '1000FrstDataTl';
     const UPI_MINDGATE_RAZORPAY_TERMINAL     = '100UPIMindgate';
+    const UPI_MINDGATE_INTENT_TERMINAL       = '1UpiIntMndgate';
+    const UPI_MINDGATE_TPV_TERMINAL          = '100UPIMndgtTpv';
     const UPI_MINDGATE_SBI_RAZORPAY_TERMINAL = '100UPIMgateSbi';
     const UPI_ICICI_RAZORPAY_TERMINAL        = '100UPIICICITml';
+    const UPI_ICICI_INTENT_TERMINAL          = '1UpiIntICICTml';
     const AEPS_ICICI_RAZORPAY_TERMINAL       = '1000AepsShared';
     const AIRTELMONEY_RAZORPAY_TERMINAL      = '100ArtlMnyTmnl';
     const JIOMONEY_RAZORPAY_TERMINAL         = '1000JioMnyTmnl';
@@ -64,7 +69,9 @@ class Shared
         self::AXIS_GENIUS_RAZORPAY_TERMINAL,
         self::BILLDESK_RAZORPAY_TERMINAL,
         self::BLADE_RAZORPAY_TERMINAL,
+        self::DIGIO_RAZORPAY_TERMINAL,
         self::EBS_RAZORPAY_TERMINAL,
+        self::ENACH_RBL_RAZORPAY_TERMINAL,
         self::HDFC_RAZORPAY_TERMINAL,
         self::MOBIKWIK_RAZORPAY_TERMINAL,
         self::OLAMONEY_RAZORPAY_TERMINAL,
@@ -88,6 +95,7 @@ class Shared
         self::HITACHI_TERMINAL,
         self::FIRST_DATA_RAZORPAY_TERMINAL,
         self::UPI_MINDGATE_RAZORPAY_TERMINAL,
+        self::UPI_MINDGATE_TPV_TERMINAL,
         self::UPI_ICICI_RAZORPAY_TERMINAL,
         self::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL,
         self::AEPS_ICICI_RAZORPAY_TERMINAL,
@@ -103,6 +111,7 @@ class Shared
     protected static $map = [
         self::AMEX_RAZORPAY_TERMINAL             => Gateway::AMEX,
         self::BLADE_RAZORPAY_TERMINAL            => Gateway::BLADE,
+        self::DIGIO_RAZORPAY_TERMINAL            => Gateway::ESIGNER_DIGIO,
         self::ATOM_RAZORPAY_TERMINAL             => Gateway::ATOM,
         self::AXIS_GENIUS_RAZORPAY_TERMINAL      => Gateway::AXIS_GENIUS,
         self::AXIS_MIGS_RAZORPAY_TERMINAL        => Gateway::AXIS_MIGS,

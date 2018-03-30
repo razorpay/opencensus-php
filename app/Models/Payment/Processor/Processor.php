@@ -238,11 +238,15 @@ class Processor
         }
 
         //
-        // We need this flow only if either bank_account or auth_type is missing.
-        // TODO: Handle for aadhaar also
+        // We need this flow only if either:
+        //   - bank_account is missing
+        //   - auth_type is missing
+        //   - auth_type is aadhaar and aadhaar_number is missing
         //
         if ((empty($input[Payment\Entity::BANK_ACCOUNT]) === false) and
-            (empty($payment->getAuthType()) === false))
+            (empty($payment->getAuthType()) === false) and
+            (($payment->getAuthType() !== Payment\AuthType::AADHAAR) or
+             (empty($input[Payment\Entity::AADHAAR]['number']) === false)))
         {
             return null;
         }
@@ -343,6 +347,15 @@ class Processor
 
     public function processAndReturnFees(array & $input)
     {
+        $this->tracePaymentNewRequest($input);
+
+        // Validate if customer is fee bearer then only move forward
+        if ($this->merchant->isFeeBearerCustomer() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
         if (isset($input['method']) === false)
         {
             $input['method'] = Payment\Method::CARD;
@@ -940,21 +953,35 @@ class Processor
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
-        $terminal = $this->repo->terminal->fetchForPayment($this->payment);
-
-        if ($terminal === null)
-        {
-            throw new Exception\LogicException(
-                'Terminal should not be null here',
-                null,
-                ['payment_id' => $this->payment->getId()]);
-        }
+        $terminalId = $this->payment->getTerminalId();
 
         $gateway = $this->payment->getGateway();
+
+        $terminal = null;
+
+        // This will be removed after terminal association with bharat qr payments
+        if (($terminalId !== null) or
+            (Payment\Gateway::isValidBharatQrGateway($gateway) === false))
+        {
+            $terminal = $this->repo->terminal->fetchForPayment($this->payment);
+
+            if ($terminal === null)
+            {
+                throw new Exception\LogicException(
+                    'Terminal should not be null here',
+                    null,
+                    ['payment_id' => $this->payment->getId()]);
+            }
+        }
 
         $gatewayData['terminal'] = $terminal;
 
         $gatewayData['merchant'] = $this->payment->merchant;
+
+        if (Payment\Gateway::isValidBharatQrGateway($this->payment->getGateway()) === true)
+        {
+            $gatewayData['bharat_qr'] = $this->repo->bharat_qr->findByPaymentId($this->payment->getId());
+        }
 
         $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . '::' . strtoupper($action);
 
@@ -1210,10 +1237,9 @@ class Processor
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
-            if ($payment->isNetbanking() === true)
+            if ($payment->isTpvMethod() === true)
             {
-                if (($this->merchant->isTPVRequired() === true) or
-                    ($payment->isRecurring() === true))
+                if ($this->merchant->isTPVRequired() === true)
                 {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,

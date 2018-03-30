@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Base;
 
+use App;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
@@ -78,6 +79,14 @@ class PublicEntity extends UniqueIdEntity
     ];
 
     protected $embeddedRelations = [];
+
+    /**
+     * Fields exposed to public but only in AdminAuth. Please don't overuse it since this will removed anyways in a
+     * cleanup effort after Entity Serializer PR is merged.
+     *
+     * @var array
+     */
+    protected $adminOnlyPublic   = [];
 
     public function toArrayPublic()
     {
@@ -276,6 +285,16 @@ class PublicEntity extends UniqueIdEntity
             if (array_key_exists($attr, $array))
             {
                 $publicArray[$attr] = $array[$attr];
+            }
+        }
+
+        $app = App::getFacadeRoot();
+
+        if ($app['basicauth']->isAdminAuth() === false)
+        {
+            foreach ($this->adminOnlyPublic as $attr)
+            {
+                unset($publicArray[$attr]);
             }
         }
 

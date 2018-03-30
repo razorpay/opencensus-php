@@ -11,7 +11,6 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-
     const RAZORPAY_ORG_ID = '100000razorpay';
 
     /**

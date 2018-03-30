@@ -178,4 +178,25 @@ class Customer extends Base
 
         return $this->fixtures->create('customer_balance', $customerBalanceValues);
     }
+
+    public function createEmandateToken($attributes = [])
+    {
+        $defaultValues = [
+            'merchant_id'      => '10000000000000',
+            'customer_id'      => '100000customer',
+            'method'           => 'emandate',
+            'bank'             => 'UTIB',
+            'recurring'        => '1',
+            'max_amount'       => '9999900',
+            'auth_type'        => 'netbanking',
+            'account_number'   => '914010009305862',
+            'ifsc'             => 'UTIB0000123',
+            'beneficiary_name' => 'Test account',
+            'recurring_status' => 'initiated',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->fixtures->create('token', $attributes);
+    }
 }

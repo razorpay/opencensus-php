@@ -10,6 +10,7 @@ class ConfigKey
     const GATEWAY_UNPROCESSED_REFUNDS           = 'GATEWAY_UNPROCESSED_REFUNDS';
     const BLOCK_BANK_TRANSFERS_FOR_CRYPTO       = 'block_bank_transfers_for_crypto';
     const SKIP_SLAVE                            = 'skip_slave';
+    const DISABLE_MAGIC                         = 'disable_magic';
 
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
@@ -18,6 +19,7 @@ class ConfigKey
         self::GATEWAY_UNPROCESSED_REFUNDS,
         self::BLOCK_BANK_TRANSFERS_FOR_CRYPTO,
         self::SKIP_SLAVE,
+        self::DISABLE_MAGIC,
     ];
 
     public static function isSensitive(string $key)

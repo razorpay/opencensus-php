@@ -3,9 +3,13 @@
 namespace RZP\Tests\Functional;
 
 use Artisan;
+use Illuminate\Database\DatabaseManager;
 
 class Database
 {
+    /**
+     * @var DatabaseManager
+     */
     protected $db;
 
     protected $config;
@@ -13,6 +17,17 @@ class Database
     protected $dbTransactionInProgress = false;
 
     protected static $fixturesDone = false;
+
+    /**
+     * DB connections defined for the app
+     *
+     * @var array
+     */
+    protected static $dbConnections = [
+        'live',
+        'test',
+        'auth'
+    ];
 
     public function __construct($app)
     {
@@ -28,16 +43,18 @@ class Database
         //
         if ($this->dbTransactionInProgress === true)
         {
-            $this->db->connection('live')->rollBack();
-            $this->db->connection('test')->rollBack();
-            $this->db->connection('auth')->rollBack();
+            foreach (self::$dbConnections as $connection)
+            {
+                $this->db->connection($connection)->rollBack();
+            }
 
             $this->dbTransactionInProgress = false;
         }
 
-        $this->db->disconnect('live');
-        $this->db->disconnect('test');
-        $this->db->disconnect('auth');
+        foreach (self::$dbConnections as $connection)
+        {
+            $this->db->disconnect($connection);
+        }
     }
 
     public function setUp()
@@ -79,9 +96,9 @@ class Database
 
     protected function runFixturesOnce($fixtures)
     {
-        if (self::$fixturesDone)
+        if (self::$fixturesDone === true)
         {
-            // Alread run, just begin transaction
+            // Already run, just begin transaction
             $this->beginTransaction();
 
             return;
@@ -105,9 +122,10 @@ class Database
         // to rollback once test is finished
         // leaving a clean slate
         //
-        $this->db->connection('test')->beginTransaction();
-        $this->db->connection('live')->beginTransaction();
-        $this->db->connection('auth')->beginTransaction();
+        foreach (self::$dbConnections as $connection)
+        {
+            $this->db->connection($connection)->beginTransaction();
+        }
 
         $this->dbTransactionInProgress = true;
 
@@ -119,19 +137,41 @@ class Database
      */
     public function migrate()
     {
+        $this->createDatabases();
+
         \Artisan::call('migrate', ['--database' => 'live']);
         \Artisan::call('migrate', ['--database' => 'test']);
 
-        //
-        // Creating the auth database here, mainly for wercker.
-        // There isn't a straightforward way of creating multiple
-        // database on the wercker MySQL service
-        //
-        $authDb = env('DB_AUTH_DATABASE', 'auth_test');
-
-        $this->db->statement('CREATE DATABASE IF NOT EXISTS ' . $authDb);
-
+        // Run Auth DB migrations from the oauth package
         \Artisan::call('migrate', ['--database' => 'auth', '--path' => '/vendor/razorpay/oauth/database/migrations']);
+    }
+
+    protected function createDatabases()
+    {
+        //
+        // Define a dummy connection called 'mysql_init'
+        // with no database specified, used just to connect
+        // to MySQL and create the actual DB's we need
+        //
+        $tempMysqlConf = [
+            'driver'   => env('DB_LIVE_DRIVER'),
+            'host'     => env('DB_LIVE_HOST'),
+            'port'     => env('DB_LIVE_PORT'),
+            'database' => null,
+            'username' => env('DB_LIVE_USERNAME'),
+            'password' => env('DB_LIVE_PASSWORD'),
+        ];
+
+        $this->config->set('database.connections.mysql_init', $tempMysqlConf);
+
+        $apiLiveDb = env('DB_LIVE_DATABASE', 'api_live');
+        $this->db->connection('mysql_init')->getPdo()->exec("CREATE DATABASE IF NOT EXISTS `{$apiLiveDb}`");
+
+        $apiTestDb = env('DB_TEST_DATABASE', 'api_test');
+        $this->db->connection('mysql_init')->getPdo()->exec("CREATE DATABASE IF NOT EXISTS `{$apiTestDb}`");
+
+        $authDb = env('DB_AUTH_DATABASE', 'auth');
+        $this->db->connection('mysql_init')->getPdo()->exec("CREATE DATABASE IF NOT EXISTS `{$authDb}`");
     }
 
     protected function truncateTestingDatabaseIfRequired()
@@ -145,18 +185,12 @@ class Database
 
     protected function truncate()
     {
-        $this->config->set('database.default', 'live');
+        foreach (self::$dbConnections as $connection)
+        {
+            $this->config->set('database.default', $connection);
 
-        $this->truncateAllTables();
-
-        $this->config->set('database.default', 'test');
-
-        $this->truncateAllTables();
-
-        $this->config->set('database.default', 'auth');
-
-        $this->truncateAllTables();
-
+            $this->truncateAllTables();
+        }
     }
 
     protected function truncateAllTables()

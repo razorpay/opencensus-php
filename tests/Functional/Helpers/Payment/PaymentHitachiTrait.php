@@ -74,6 +74,19 @@ trait PaymentHitachiTrait
         );
     }
 
+    protected function mockBlankPrn()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'callback')
+                {
+                    $content = '{"pRespCode":"30","pRespDesc":"Format Error"}';
+                }
+            }
+        );
+    }
+
     protected function mockFailureResponseCode()
     {
         $this->mockServerContentFunction(

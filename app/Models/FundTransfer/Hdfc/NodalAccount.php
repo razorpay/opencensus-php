@@ -13,12 +13,12 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base\PublicCollection;
 use RZP\Mail\Settlement as SettlementMail;
-use RZP\Models\FundTransfer\Base as NodalBase;
 use RZP\Models\BankAccount\Entity as BankEntity;
 use RZP\Models\FundTransfer\Mode as TransferMode;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 
-class NodalAccount extends NodalBase\NodalAccount
+class NodalAccount extends NodalBase\FileProcessor
 {
     use FileHandlerTrait;
 
@@ -70,7 +70,7 @@ class NodalAccount extends NodalBase\NodalAccount
      * @param PublicCollection $entities
      * @param bool $h2h
      *
-     * @return array
+     * @return FileStore\Creator
      */
     public function generateFundTransferFile(PublicCollection $entities, $h2h = true): FileStore\Creator
     {
@@ -265,7 +265,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $settlementMail     = new SettlementMail\HdfcSettlement($data);
 
-        Mail::send($settlementMail);
+        Mail::queue($settlementMail);
     }
 
     protected function prepareDataForMail(FileStore\Creator $textFileEntity): array

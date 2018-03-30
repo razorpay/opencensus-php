@@ -11,13 +11,12 @@ use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
-use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
 use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
-
 
 /**
  * @group dns-sensitive
@@ -25,6 +24,7 @@ use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
 class InvoiceTest extends TestCase
 {
     use InvoiceTestTrait;
+    use CreatesInvoice;
     use PaymentTrait;
     use MocksDnsTrait;
 
@@ -99,14 +99,14 @@ class InvoiceTest extends TestCase
 
         $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
 
-        Mail::assertSent(InvoiceAuthorizedMail::class, function ($mail) use ($invoice)
+        Mail::assertQueued(InvoiceAuthorizedMail::class, function ($mail) use ($invoice)
         {
             $this->assertEquals($invoice->getPublicId(), $mail->viewData['invoice']['id']);
 
             return true;
         });
 
-        Mail::assertSent(InvoiceCapturedMail::class, function ($mail) use ($invoice)
+        Mail::assertQueued(InvoiceCapturedMail::class, function ($mail) use ($invoice)
         {
             $this->assertEquals($invoice->getPublicId(), $mail->viewData['invoice']['id']);
 
@@ -1407,6 +1407,34 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testInvoiceNotifyForBatch()
+    {
+        $this->createBatchInvoices();
+
+        $this->startTest();
+
+        $invoices = $this->getEntities('invoice', [], true)['items'];
+
+        $this->assertEquals('sent', $invoices[0]['email_status']);
+        $this->assertEquals('sent', $invoices[0]['sms_status']);
+        $this->assertEquals('sent', $invoices[1]['email_status']);
+        $this->assertEquals('sent', $invoices[1]['sms_status']);
+    }
+
+    public function testInvoiceSmsNotifyForBatch()
+    {
+        $this->createBatchInvoices();
+
+        $this->startTest();
+
+        $invoices = $this->getEntities('invoice', [], true)['items'];
+
+        $this->assertNull($invoices[0]['email_status']);
+        $this->assertEquals('sent', $invoices[0]['sms_status']);
+        $this->assertNull($invoices[1]['email_status']);
+        $this->assertEquals('sent', $invoices[1]['sms_status']);
+    }
+
     // -------------------------------------------------------------------------
     // Following tests asserts working of es fetch in various cases.
     //
@@ -2352,6 +2380,25 @@ class InvoiceTest extends TestCase
                 'id'       => '1000007invoice',
                 'order_id' => $order->getId(),
             ]);
+    }
 
+    protected function createBatchInvoices()
+    {
+        $attributes = $this->testData['testInvoiceNotifyForBatchInputData']['attributes'];
+
+        $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'payment_link',
+                'total_count' => count($attributes),
+            ]);
+
+        $this->ba->proxyAuth();
+
+        foreach ($attributes as $attribute)
+        {
+            $this->createInvoice($attribute['invoiceAttributes'], $attribute['orderAttributes']);
+        }
     }
 }

@@ -35,7 +35,23 @@ return [
         ],
     ],
 
-    'testGetOrderWhenThrottledSecondTime1' => [
+    'testGetOrderWhenThrottled' => [
+        'request' => [
+            'method' => 'get',
+            'url'    => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Request failed. Please try after sometime.',
+                ],
+            ],
+            'status_code' => 429,
+        ],
+    ],
+
+    'testGetOrderWhenThrottledWithoutMockForSpecificMerchant1' => [
         'request' => [
             'method' => 'get',
             'url'    => '/orders',
@@ -48,7 +64,7 @@ return [
         ],
     ],
 
-    'testGetOrderWhenThrottledSecondTime2' => [
+    'testGetOrderWhenThrottledWithoutMockForSpecificMerchant2' => [
         'request' => [
             'method' => 'get',
             'url'    => '/orders',
@@ -74,6 +90,35 @@ return [
                 'count' => 0,
                 'items' => [],
             ],
+        ],
+    ],
+
+    'testGetOrderWhenBlockedForTestMerchant1' => [
+        'request' => [
+            'method' => 'get',
+            'url'    => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'count' => 0,
+                'items' => [],
+            ],
+        ],
+    ],
+
+    'testGetOrderWhenBlockedForTestMerchant2' => [
+        'request' => [
+            'method' => 'get',
+            'url'    => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Request failed. Please try after sometime.',
+                ],
+            ],
+            'status_code' => 429,
         ],
     ],
 ];

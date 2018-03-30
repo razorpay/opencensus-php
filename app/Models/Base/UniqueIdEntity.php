@@ -231,7 +231,7 @@ class UniqueIdEntity extends Entity
         // Generate 3 random bytes, convert to hex and then to dec
         // @note: do not use bindec i.e. convert directly to dec
         //        because it overflows!
-        $dec = hexdec(bin2hex(openssl_random_pseudo_bytes(5)));
+        $dec = hexdec(bin2hex(random_bytes(5)));
 
         // Convert the random decimal generated to base 62
         $rand = self::base62($dec);

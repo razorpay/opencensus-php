@@ -21,6 +21,7 @@ class Format
     const DOCX  = 'docx';
     const RPT   = 'rpt';
     const DAT   = 'dat';
+    const XML   = 'xml';
     const NONE  = null;
 
     const EXCEL_COLUMN_TEXT = '@';
@@ -41,6 +42,7 @@ class Format
         self::DOCX,
         self::RPT,
         self::DAT,
+        self::XML,
     ];
 
     const VALID_EXTENSION_MIME_MAP = [
@@ -52,8 +54,9 @@ class Format
         self::PDF   => ['application/pdf', 'application/x-pdf', 'application/pgp'],
         self::PNG   => ['image/png', 'application/pgp'],
         self::TXT   => ['text/plain', 'application/pgp'],
+        // Adding all possible type of mime type as current library we are using to create xlsx file will not take care of mime
         self::XLSX  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pgp',
-                        'application/octet-stream', 'text/plain', 'application/zlib'],
+                        'application/octet-stream', 'text/plain', 'application/zlib', 'image/x-portable-pixmap'],
         // `text/plain` is being added here because HDFC sends recon CSV files with XLS extension
         // `application/CDFV2-unknown` is being sent as mime_type for FirstData recon files
         self::XLS   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
@@ -65,6 +68,7 @@ class Format
         self::ZIP   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
         self::DOC   => ['application/msword'],
         self::DOCX  => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        self::XML   => ['application/xml'],
         self::RPT   => ['text/plain'],
         self::DAT   => ['text/plain'],
         self::NONE  => ['text/plain'],

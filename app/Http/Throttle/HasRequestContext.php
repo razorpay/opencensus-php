@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use RZP\Http\OAuth;
 use RZP\Http\Route;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\BasicAuth\Type;
@@ -81,9 +82,10 @@ trait HasRequestContext
     protected $mid;
 
     /**
+     * Every oauth application has dev & prod clients.
      * @var string
      */
-    protected $oauthAppId;
+    protected $oauthClientId;
 
     /**
      * @var string
@@ -134,8 +136,10 @@ trait HasRequestContext
 
         $this->key              = $key;
         $this->keyWithoutPrefix = substr($key, 9) ?: null;
-        $this->mode             = substr($key, 4, 4) ?: null;
         $this->secret           = $this->request->getPassword();
+
+        $mode       = substr($key, 4, 4) ?: null;
+        $this->mode = Mode::exists($mode) ? $mode : null;
     }
 
     protected function setAdditionalVars()
@@ -200,9 +204,9 @@ trait HasRequestContext
         if (($isPrivateRoute === true) and
             (empty($token = $this->getBearerToken()) === false))
         {
-            $parsed           = (new Parser)->parse($token);
-            $this->oauthAppId = $parsed->getClaim('aud');
-            $this->mid        = $parsed->getClaim('merchant_id');
+            $parsed              = (new Parser)->parse($token);
+            $this->oauthClientId = $parsed->getClaim('aud');
+            $this->mid           = $parsed->getClaim('merchant_id');
             return true;
         }
         else if ((($isPrivateRoute === true) and ($this->isDashboard() === true)) or

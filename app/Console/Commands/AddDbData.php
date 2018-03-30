@@ -30,7 +30,7 @@ class AddDbData extends Command
      *
      * @return mixed
      */
-    public function fire()
+    public function handle()
     {
         \Database\DefaultConnection::set('test');
 

@@ -3,77 +3,75 @@
 namespace RZP\Models\Batch\Processor\Emandate\Debit;
 
 use RZP\Exception;
-use RZP\Gateway\Base\Action as GatewayAction;
-use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
-use RZP\Models\Batch\Processor\Base as BaseProcessor;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Processor\Processor;
+use RZP\Gateway\Base\Action as GatewayAction;
+use RZP\Models\Batch\Processor\Base as BaseProcessor;
 
 class Base extends BaseProcessor
 {
     protected function processEntry(array & $entry)
     {
-        $parsedData = $this->getDataFromRow($entry);
+        $content = $this->getDataFromRow($entry);
 
-        $this->updatePaymentEntities($parsedData);
+        $this->updatePaymentEntities($content);
     }
 
-    /**
-     * @param array $parsedData
-     * @param $parsedData['payment_id']
-     * @param $parsedData['account_number']
-     */
-    protected function updatePaymentEntities(array $parsedData)
+    protected function updatePaymentEntities(array $content)
     {
-        $paymentId = $parsedData['payment_id'];
-
-        $accountNumber = $parsedData['account_number'];
-
         // Update gateway payment
-        $gatewayPayment = $this->updateGatewayPayment($parsedData);
+        $this->updateGatewayPayment($content);
+
+        $payment = $this->getPayment($content);
+
+        // Update payment
+        $this->updatePayment($payment, $content);
+    }
+
+    protected function getPayment(array $content)
+    {
+        $paymentId = $content['payment_id'];
+
+        $accountNumber = $content['account_number'];
 
         // Get payment
         $payment = $this->repo->payment->fetchDebitEmandatePaymentPendingAuth(
-                        $this->gateway,
-                        $paymentId,
-                        $accountNumber);
+                                                                    $this->gateway,
+                                                                    $paymentId,
+                                                                    $accountNumber);
 
-        // Update payment
-        $this->updatePayment($gatewayPayment, $payment);
+        return $payment;
     }
 
-    /**
-     * @param array $parsedData
-     * @param $parsedData['payment_id']
-     * @param $parsedData['status']
-     * @param $parsedData['error_message']
-     *
-     * @return NetbankingEntity
-     */
-    protected function updateGatewayPayment(array $parsedData): NetbankingEntity
+    protected function updateGatewayPayment(array $content)
     {
-        $paymentId = $parsedData['payment_id'];
+        $paymentId = $content['payment_id'];
 
-        $gatewayPayment = $this->repo->netbanking->findByPaymentIdAndActionOrFail(
-            $paymentId, GatewayAction::AUTHORIZE);
+        $gatewayPayment = $this->repo
+                               ->netbanking
+                               ->findByPaymentIdAndActionOrFail($paymentId, GatewayAction::AUTHORIZE);
 
-        $attrs = $this->getGatewayAttributes($parsedData);
+        $attrs = $this->getGatewayAttributes($content);
 
         $gatewayPayment->fill($attrs);
 
-        $this->repo->netbanking->saveOrFail($gatewayPayment);
-
-        return $gatewayPayment;
+        $this->repo->saveOrFail($gatewayPayment);
     }
 
-    protected function updatePayment(NetbankingEntity $gatewayPayment, Payment\Entity $payment)
+    protected function getGatewayAttributes(array $content)
     {
-        if ($this->isAuthorized($gatewayPayment) === true)
+        return [];
+    }
+
+    protected function updatePayment(Payment\Entity $payment, array $content)
+    {
+        if ($this->isAuthorized($content) === true)
         {
             return $this->processAuthorizedPayment($payment);
         }
 
-        return $this->processFailedPayment($payment, $gatewayPayment);
+        return $this->processFailedPayment($payment, $content);
     }
 
     protected function processAuthorizedPayment(Payment\Entity $payment)
@@ -87,66 +85,46 @@ class Base extends BaseProcessor
         return $processor->processAuth($payment);
     }
 
-    protected function processFailedPayment(Payment\Entity $payment, NetbankingEntity $gatewayPayment)
+    protected function processFailedPayment(Payment\Entity $payment, array $content)
     {
         $merchant = $payment->merchant;
 
         $processor = new Processor($merchant);
 
-        $gatewayErrorDesc = $gatewayPayment->getErrorMessage();
+        $gatewayErrorDesc = $this->getErrorDescription($content);
 
         $errorCode = $this->getApiErrorCode($gatewayErrorDesc);
 
         $e = new Exception\GatewayErrorException(
-                $errorCode,
-                '',
-                $gatewayErrorDesc,
-                [
-                    'payment_id'         => $payment->getId(),
-                    'gateway_payment_id' => $gatewayPayment->getId(),
-                ]);
+            $errorCode,
+            '',
+            $gatewayErrorDesc,
+            [
+                'payment_id'         => $payment->getId(),
+            ]);
 
         $processor = $processor->setPayment($payment);
 
-        return $processor->updatePaymentAuthFailed($e);
+        $processor->updatePaymentAuthFailed($e);
     }
 
-    /**
-     * Child class must implement it
-     *
-     * @param string $errorDescription
-     *
-     * @return string
-     */
+    protected function getErrorDescription(array $content)
+    {
+        return null;
+    }
+
     protected function getApiErrorCode(string $errorDescription): string
     {
-        throw new \BadMethodCallException();
-    }
-
-    /**
-     * Child class must implement it
-     *
-     * @param array $row
-     *
-     * @return array
-     * @return array['payment_id']
-     * @return array['token_id']
-     * @return array['status']
-     * @return array['error_message']
-     * @return array['account_number']
-     */
-    protected function getDataFromRow(array & $row): array
-    {
-        throw new \BadMethodCallException();
+        return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
     }
 
     protected function createSetOutputFileAndSave(array & $entries)
     {
-        return ;
+        return;
     }
 
     protected function sendProcessedMail()
     {
-        return ;
+        return;
     }
 }

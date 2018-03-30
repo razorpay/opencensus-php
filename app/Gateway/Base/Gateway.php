@@ -339,6 +339,11 @@ class Gateway
         return $this->mode;
     }
 
+    protected function getIntegerFormattedAmount(string $amount)
+    {
+        return (int) number_format(($amount * 100), 0, '.', '');
+    }
+
     protected function assertPaymentId($expectedPaymentId, $actualPaymentId)
     {
         if ($actualPaymentId !== $expectedPaymentId)
@@ -504,7 +509,7 @@ class Gateway
 
         if (isset($request['options']['timeout']) === false)
         {
-            $request['options']['timeout'] = self::TIMEOUT;
+            $request['options']['timeout'] = static::TIMEOUT;
         }
 
         try
@@ -1109,6 +1114,12 @@ class Gateway
         $this->getRepository()->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
+    }
+
+    protected function isBharatQrPayment(): bool
+    {
+        return (empty($this->input['bharat_qr']) === false);
+
     }
 
     /*

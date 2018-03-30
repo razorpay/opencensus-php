@@ -4,6 +4,7 @@ namespace RZP\Models\Feature;
 
 use RZP\Constants\Mode;
 use RZP\Models\Base\EsRepository;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\Repository as BaseRepository;
 
 class Repository extends BaseRepository
@@ -73,6 +74,18 @@ class Repository extends BaseRepository
         {
             $this->deleteOrFail($feature);
         }
+    }
+
+    /**
+     * Fetch features assigned to an application_id
+     *
+     * @param string $applicationId
+     *
+     * @return PublicCollection
+     */
+    public function getApplicationFeatures(string $applicationId): PublicCollection
+    {
+        return $this->fetchByEntityTypeAndEntityId(Constants::APPLICATION, $applicationId);
     }
 
     /**

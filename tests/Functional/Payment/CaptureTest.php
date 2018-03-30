@@ -68,7 +68,7 @@ class CaptureTest extends TestCase
 
         $this->assertEquals(true, $payment['gateway_captured']);
 
-        Mail::assertSent(CapturedMail::class);
+        Mail::assertQueued(CapturedMail::class);
     }
 
     public function testBulkCapture()
@@ -93,7 +93,7 @@ class CaptureTest extends TestCase
 
         $this->assertEquals(true, $payment['gateway_captured']);
 
-        Mail::assertSent(CapturedMail::class);
+        Mail::assertQueued(CapturedMail::class);
     }
 
     public function testCaptureWithFeeBreakupException()

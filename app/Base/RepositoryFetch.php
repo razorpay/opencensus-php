@@ -47,7 +47,7 @@ trait RepositoryFetch
     protected $fetchParamRules = [
         self::FROM          => 'integer',
         self::TO            => 'integer',
-        self::COUNT         => 'integer|min:1',
+        self::COUNT         => 'integer|min:1|max:',
         self::SKIP          => 'integer',
 
         //
@@ -733,8 +733,9 @@ trait RepositoryFetch
     }
 
     /**
-     * Filter fetch operation by merchantId. Super important for
-     * private auth calls.
+     * In Fetch merchant_id can also be injected from code.
+     * Method will add merchant id in the query even if it
+     * is not part of input.
      *
      * @param BuilderEx $query
      * @param string    $merchantId
@@ -837,8 +838,21 @@ trait RepositoryFetch
         }
     }
 
+    /**
+     * Add merchant_id dynamically to query after verify
+     * This way Entities only need to set access for it.
+     *
+     * Note: All the entities has set the rule to alpha_num.
+     *       Rather than changing and forcing correct rule
+     *       We are here validating before injecting in query.
+     *
+     * @param $query
+     * @param $params
+     */
     protected function addQueryParamMerchantId($query, $params)
     {
+        Merchant\Entity::verifyIdAndStripSign($params[Common::MERCHANT_ID]);
+
         $query->merchantId($params[Common::MERCHANT_ID]);
     }
 
@@ -866,7 +880,13 @@ trait RepositoryFetch
             $count  = 1000;
         }
 
-        $this->fetchParamRules['count'] .= '|max:'.$max;
+        // In case multiple assertions are checked with different auths in same testcase, the max value for count
+        // needs to always replaced. Hence preg_replace is being used to achieve that.
+        $this->fetchParamRules[self::COUNT] = preg_replace(
+            '/max\:(\d)*/',
+            sprintf('max:%d', $max),
+            $this->fetchParamRules[self::COUNT]
+        );
 
         if (isset($params['count']) === false)
         {

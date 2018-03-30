@@ -162,14 +162,9 @@ return array(
          * application service providers.
          */
         Aws\Laravel\AwsServiceProvider::class,
-        Jenssegers\Agent\AgentServiceProvider::class,
         Razorpay\Slack\Laravel\ServiceProvider::class,
-        Propaganistas\LaravelPhone\LaravelPhoneServiceProvider::class,
-        Maatwebsite\Excel\ExcelServiceProvider::class,
         Http\Httplug\HttplugServiceProvider::class,
         Schuppo\PasswordStrength\PasswordStrengthServiceProvider::class,
-        GrahamCampbell\Throttle\ThrottleServiceProvider::class,
-        Razorpay\Trace\ServiceProvider::class,
         anlutro\LaravelSettings\ServiceProvider::class,
 
         /**
@@ -182,7 +177,6 @@ return array(
         RZP\Providers\EventServiceProvider::class,
         RZP\Providers\RouteServiceProvider::class,
         RZP\Http\BasicAuth\ServiceProvider::class,
-        // RZP\Trace\TraceServiceProvider::class,
         RZP\Services\DashboardServiceProvider::class,
         // Makes blade sharper
         RZP\Providers\KnifeServiceProvider::class,
@@ -247,16 +241,13 @@ return array(
 
         // Application Facades
         'ApiResponse'     => RZP\Http\Response\Facade::class,
-        'Trace'           => Razorpay\Trace\Facades\Trace::class,
 
         // Custom Facades
-        'Excel'           => Maatwebsite\Excel\Facades\Excel::class,
         'AWS'             => Aws\Laravel\AwsFacade::class,
         'Slack'           => Razorpay\Slack\Laravel\Facade::class,
         'Event'           => RZP\Events\Facade::class,
         'Mail'            => RZP\Mail\Facade::class,
         'Workflow'        => RZP\Services\Workflow\Facade::class,
-        'Throttle'        => GrahamCampbell\Throttle\Facades\Throttle::class,
         'LaravelSettings' => anlutro\LaravelSettings\Facade::class,
     ],
 
@@ -280,11 +271,6 @@ return array(
 
     'gateway_priority' => [
         'store_type' => env('GATEWAY_PRIORITY_STORE_TYPE')
-    ],
-
-    'sorting_hat' => [
-        'token' => env('SORTING_HAT_TOKEN', ''),
-        'url'   => env('SORTING_HAT_URL', 'https://sorting-hat-slack.herokuapp.com/')
     ],
 
     'mailchimp' => [

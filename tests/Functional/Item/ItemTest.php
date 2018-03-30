@@ -26,7 +26,7 @@ class ItemTest extends TestCase
 
     public function testCreateItem()
     {
-        $response = $this->startTest();
+        $this->startTest();
     }
 
     public function testCreateItem2()
@@ -37,6 +37,11 @@ class ItemTest extends TestCase
     }
 
     public function testCreateItemWithoutCurrency()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateItemWithInvalidTaxRate()
     {
         $this->startTest();
     }
@@ -56,6 +61,18 @@ class ItemTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateItemWithHsnAndSacCode()
+    {
+        $this->startTest();
+    }
+
+    public function testUpdateItemToContainBothHsnAndSacCode()
+    {
+        $this->fixtures->create('item', ['id' => '1000000001item', 'hsn_code' => '01010101']);
+
+        $this->startTest();
+    }
+
     public function testGetItem()
     {
         $this->fixtures->create('item');
@@ -66,6 +83,16 @@ class ItemTest extends TestCase
     public function testGetMultipleItems()
     {
         $this->fixtures->create('item');
+        $this->fixtures->create('item', ['id' => '1000000001item', 'name' => 'A different product']);
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleItemsWithExpandTax()
+    {
+        $this->ba->proxyAuth();
+        
+        $this->fixtures->create('item', ['tax_id' => '00000000000001']);
         $this->fixtures->create('item', ['id' => '1000000001item', 'name' => 'A different product']);
 
         $this->startTest();

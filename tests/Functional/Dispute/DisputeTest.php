@@ -64,7 +64,7 @@ class DisputeTest extends TestCase
 
         $this->startTest($testData);
 
-        Mail::assertSent(DisputeCreationMail::class, function ($mail) use ($testData)
+        Mail::assertQueued(DisputeCreationMail::class, function ($mail) use ($testData)
         {
             $this->stringContains(
                 $testData['response']['content']['payment_id'],
