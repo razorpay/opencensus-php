@@ -14,13 +14,17 @@ class Scorecard extends Base\Core
 {
     public function generateScorecard($input)
     {
+        (new Validator)->validateInput('scorecard', $input);
+
+        $limit = $input['count'];
+
         $yesterdayVolume = $this->repo->payment->getYesterdayVolume();
 
         $monthVolume = $this->repo->payment->getCurrentMonthVolume();
 
-        $yesterdayMerchantVolume = $this->repo->payment->getYesterdayTopMerchantVolumeWise();
+        $yesterdayMerchantVolume = $this->repo->payment->getYesterdayTopMerchantVolumeWise($limit);
 
-        $monthlyMerchantVolume = $this->repo->payment->getMonthTopMerchantVolumeWise();
+        $monthlyMerchantVolume = $this->repo->payment->getMonthTopMerchantVolumeWise($limit);
 
         $data =  [
             'yesterdayVolume'         => $yesterdayVolume,

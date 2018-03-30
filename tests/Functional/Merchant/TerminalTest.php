@@ -98,6 +98,24 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateTpvTerminalWithInvalidMethod()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateTpvTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testDeleteTerminal()
     {
         $merchant = $this->fixtures

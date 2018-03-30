@@ -33,9 +33,7 @@ class UpiMindgateGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal', [
-            'gateway'   => Gateway::UPI_MINDGATE
-        ]);
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
 
         $this->gateway = Gateway::UPI_MINDGATE;
 
@@ -87,6 +85,8 @@ class UpiMindgateGatewayTest extends TestCase
 
     public function testIntentPayment()
     {
+        $this->fixtures->create('terminal:shared_upi_mindgate_intent_terminal');
+
         unset($this->payment['description']);
         unset($this->payment['vpa']);
 
@@ -105,14 +105,14 @@ class UpiMindgateGatewayTest extends TestCase
         $payment = $this->getEntityById('payment', $paymentId, true);
 
         $this->assertEquals('pay', $upiEntity['type']);
-        $this->assertEquals('100UPIMindgate', $payment['terminal_id']);
+        $this->assertEquals('1UpiIntMndgate', $payment['terminal_id']);
         $this->assertNull($payment['vpa']);
 
         $this->mockServerContentFunction(function (& $content, $action = null)
         {
             if ($action === 'callback')
             {
-                $content[8] = 'crims0n@hdfcbank';
+                $content[8] = 'user@hdfcbank';
             }
         });
 
@@ -120,27 +120,13 @@ class UpiMindgateGatewayTest extends TestCase
 
         $response = $this->makeS2SCallbackAndGetContent($content);
 
+        $upi = $this->getLastEntity('upi', true);
         $payment = $this->getEntityById('payment', $paymentId, true);
 
-        $this->assertEquals($payment['vpa'], 'crims0n@hdfcbank');
-    }
-
-    public function testIntentPaymentWithVpa()
-    {
-        $payment = $this->getDefaultUpiPaymentArray();
-
-        $payment['vpa'] = 'crims0n@hdfcbank';
-
-        unset($payment['description']);
-
-        $payment['_']['flow'] = 'intent';
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->doAuthPaymentViaAjaxRoute($payment);
-        });
+        $this->assertEquals($payment['vpa'], 'user@hdfcbank');
+        $this->assertEquals('HDFC', $upi['bank']);
+        $this->assertEquals('hdfc', $upi['acquirer']);
+        $this->assertEquals('hdfcbank', $upi['provider']);
     }
 
     public function testUpiAmountCap()
@@ -263,6 +249,39 @@ class UpiMindgateGatewayTest extends TestCase
         $this->checkPaymentStatus($paymentId, 'created');
 
         return $paymentId;
+    }
+
+    public function testTpvPayment()
+    {
+        $this->fixtures->create('terminal:shared_upi_mindgate_tpv_terminal', ['tpv' => 3]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $order = $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $payment['amount'] = $order['amount'];
+        $payment['bank'] = $order['bank'];
+        $payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('100UPIMndgtTpv', $payment['terminal_id']);
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('collect', $gatewayEntity['type']);
+        $this->assertEquals('vishnu@icici', $gatewayEntity['vpa']);
     }
 
     public function testVerifyPayment()

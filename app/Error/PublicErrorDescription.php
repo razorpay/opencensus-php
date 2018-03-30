@@ -42,6 +42,7 @@ class PublicErrorDescription
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                   = 'The current http method is not supported';
     const BAD_REQUEST_INVALID_ID                                                = 'The id provided does not exist';
     const BAD_REQUEST_INVALID_IDS                                               = 'One or more of the ids provided does not exist';
+    const BAD_REQUEST_INVALID_QUERY                                             = 'The query is invalid or is not allowed';
     const BAD_REQUEST_NO_RECORDS_FOUND                                          = 'No db records found.';
     const BAD_REQUEST_INVALID_BANK_FOR_EMANDATE                                 = 'Invalid bank passed for E-mandate payment';
     const BAD_REQUEST_PAYMENT_FAILED                                            = 'Payment failed';
@@ -227,11 +228,13 @@ class PublicErrorDescription
     const BAD_REQUEST_SCHEDULE_HOURLY_WITHOUT_INTERVAL                          = 'Hourly schedules require an interval to be set.';
     const BAD_REQUEST_SCHEDULE_IN_USE                                           = 'Cannot delete a schedule that is currently in use by one or more merchants.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_DISALLOWED_FOR_ACCOUNT                    = 'Creation of new virtual accounts is currently blocked for your account.';
+    const BAD_REQUEST_VIRTUAL_ACCOUNT_DISALLOWED_FOR_ORDER                      = 'Creation of new virtual accounts is currently blocked for this order.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES                    = 'One or more of the given receiver types is invalid.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_IDENTICAL_DESCRIPTOR                      = 'An active virtual account with the same descriptor already exists for your account.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH                 = 'Invalid length for descriptor.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE                               = 'A virtual account with this descriptor is unavailable at this time.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_SANS_HANDLE                    = 'Descriptor field cannot be used as merchant handle is not set for your account.';
+    const BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS                     = 'Request failed because another virtual account operation is in progress';
 
     const BAD_REQUEST_ACCOUNT_CLOSED                                            = 'Bank Account is closed.';
     const BAD_REQUEST_ACCOUNT_NUMBER_MISMATCH                                   = 'Bank Account Number does not match.';

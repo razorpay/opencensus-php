@@ -101,6 +101,7 @@ class Entity extends Base\PublicEntity
     //
 
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
+    const AUTO_REFUND_DELAY_FOR_EMANDATE = 1728000; // 20 days
     const SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
     // 30 minutes in seconds
     const MIN_AUTO_REFUND_DELAY = 1800;
@@ -985,7 +986,9 @@ class Entity extends Base\PublicEntity
 
     protected function setEmailAttribute($email)
     {
-        $this->attributes[self::EMAIL] = mb_strtolower($email);
+        $formattedEmail = ($email === null) ? null : mb_strtolower(trim($email));
+
+        $this->attributes[self::EMAIL] =  $formattedEmail;
     }
 
     public function setWebsiteAttribute($website)

@@ -4,7 +4,9 @@ namespace RZP\Models\VirtualAccount;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\BankTransfer;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -23,6 +25,8 @@ class Service extends Base\Service
         parent::__construct();
 
         $this->core = new Core;
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     public function create(array $input)
@@ -35,9 +39,11 @@ class Service extends Base\Service
 
         $customer = $this->getCustomerIfGiven($input);
 
+        $order = $this->getOrderIfGiven($input);
+
         $this->modifyRequestFromOldFormat($input);
 
-        $virtualAccount = $this->core->create($input, $this->merchant, $customer);
+        $virtualAccount = $this->core->create($input, $this->merchant, $customer, $order);
 
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_CREATED,
@@ -45,6 +51,63 @@ class Service extends Base\Service
         );
 
         return $virtualAccount->toArrayPublic();
+    }
+
+    public function createForOrder(string $orderId, array $input)
+    {
+        $order = $this->repo
+                      ->order
+                      ->findByPublicIdAndMerchant($orderId, $this->merchant);
+
+        if ($order->isPaid() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DISALLOWED_FOR_ORDER);
+        }
+
+        $response = $this->mutex->acquireAndRelease(
+            $orderId . '_virtual_account',
+            function() use ($order, $input)
+            {
+                $existingVirtualAccount = $this->repo
+                                                ->virtual_account
+                                                ->findActiveVirtualAccountByOrder($order);
+
+                if ($existingVirtualAccount !== null)
+                {
+                    return $existingVirtualAccount->toArrayPublic();
+                }
+
+                $amountExpected = $this->getExpectedAmountForVirtualAccount($order);
+
+                $createArray = [
+                    Entity::ORDER_ID        => $order->getPublicId(),
+                    Entity::AMOUNT_EXPECTED => $amountExpected,
+                    Entity::RECEIVERS       => [
+                        Entity::TYPES => [
+                            Receiver::BANK_ACCOUNT,
+                        ],
+                    ],
+                ];
+
+                return $this->create($createArray);
+            },
+            60,
+            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
+
+        return $response;
+    }
+
+    protected function getExpectedAmountForVirtualAccount(Order\Entity $order)
+    {
+        if ($order->merchant->isFeeBearerCustomer() === false)
+        {
+            return $order->getAmountDue();
+        }
+
+        $fee = (new BankTransfer\Core)->getFeesForOrder($order);
+
+        return ($order->getAmountDue() + $fee);
     }
 
     public function fetch(string $id)
@@ -207,6 +270,22 @@ class Service extends Base\Service
         }
 
         return $customer;
+    }
+
+    protected function getOrderIfGiven(array $input)
+    {
+        $order = null;
+
+        if (isset($input[Entity::ORDER_ID]) === true)
+        {
+            $orderId = $input[Entity::ORDER_ID];
+
+            $order = $this->repo
+                          ->order
+                          ->findByPublicIdAndMerchant($orderId, $this->merchant);
+        }
+
+        return $order;
     }
 
     protected function verifyMerchantCategory()

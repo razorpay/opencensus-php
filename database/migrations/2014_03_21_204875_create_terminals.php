@@ -145,6 +145,7 @@ class CreateTerminals extends Migration
             $table->index(Terminal::ENABLED);
             $table->index(Terminal::NETWORK_CATEGORY);
             $table->index(Terminal::GATEWAY_MERCHANT_ID);
+            $table->index(Terminal::CREATED_AT);
         });
     }
 

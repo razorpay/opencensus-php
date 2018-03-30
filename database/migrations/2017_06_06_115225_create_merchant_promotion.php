@@ -50,6 +50,8 @@ class CreateMerchantPromotion extends Migration
                   ->references(Promotion::ID)
                   ->on(Table::PROMOTION)
                   ->onDelete('restrict');
+
+            $table->index(Promotion::CREATED_AT);
         });
     }
 

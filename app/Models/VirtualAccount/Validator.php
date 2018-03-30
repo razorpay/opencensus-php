@@ -16,6 +16,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT_EXPECTED                 => 'filled|integer|min:0',
         Entity::DESCRIPTION                     => 'sometimes|nullable|string|max:2048',
         Entity::CUSTOMER_ID                     => 'filled|public_id|size:19',
+        Entity::ORDER_ID                        => 'filled|public_id|size:20',
         Entity::RECEIVERS                       => 'required|array|custom',
         Entity::RECEIVERS . '.' . Entity::TYPES => 'present|array',
         Entity::NOTES                           => 'sometimes|notes',

@@ -28,8 +28,9 @@ trait Capture
      * @param  array         $input
      *
      * @return Payment\Entity Payment\Entity object
+     * @throws Exception\BadRequestException
      */
-    public function capture(Payment\Entity $payment, array $input = array())
+    public function capture(Payment\Entity $payment, array $input = [])
     {
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_REQUEST,

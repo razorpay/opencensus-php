@@ -4,6 +4,7 @@ namespace RZP\Models\Batch;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Gateway\Enach\Rbl\DebitFileHeadings as EnachRblDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
 
@@ -158,6 +159,52 @@ class Header
     const HDFC_EM_REGISTER_MANDATE_ID                       = HdfcEMRegisterHeadings::MANDATE_ID;
     const HDFC_EM_REGISTER_STATUS                           = HdfcEMRegisterHeadings::STATUS;
     const HDFC_EM_REGISTER_REMARK                           = HdfcEMRegisterHeadings::REMARK;
+
+    //
+    // eNach eMandate Register Response File Headers
+    //
+    const ENACH_REGISTER_SRNO               = 'SRNO';
+    const ENACH_REGISTER_MANDATE_DATE       = 'MANDATE_DATE';
+    const ENACH_REGISTER_MANDATE_ID         = 'MANDATE_ID';
+    const ENACH_REGISTER_UMRN               = 'UMRN';
+    const ENACH_REGISTER_CUST_REFNO         = 'CUST_REFNO';
+    const ENACH_REGISTER_SCH_REFNO          = 'SCH_REFNO';
+    const ENACH_REGISTER_CUST_NAME          = 'CUST_NAME';
+    const ENACH_REGISTER_BANK               = 'BANK';
+    const ENACH_REGISTER_BRANCH             = 'BRANCH';
+    const ENACH_REGISTER_BANK_CODE          = 'BANK_CODE';
+    const ENACH_REGISTER_AC_TYPE            = 'AC_TYPE';
+    const ENACH_REGISTER_ACNO               = 'ACNO';
+    const ENACH_REGISTER_UPDATE_DATE        = 'UPDATE_DATE';
+    const ENACH_REGISTER_AMOUNT             = 'AMOUNT';
+    const ENACH_REGISTER_FREQUENCY          = 'FREQUENCY';
+    const ENACH_REGISTER_COLLECTION_TYPE    = 'COLLECTION_TYPE';
+    const ENACH_REGISTER_START_DATE         = 'START_DATE';
+    const ENACH_REGISTER_END_DATE           = 'END_DATE';
+    const ENACH_REGISTER_TEL_NO             = 'TEL_NO';
+    const ENACH_REGISTER_MOBILE_NO          = 'MOBILE_NO';
+    const ENACH_REGISTER_MAIL_ID            = 'MAIL_ID';
+    const ENACH_REGISTER_UPLOAD_BATCH       = 'UPLOAD_BATCH';
+    const ENACH_REGISTER_UPLOAD_DATE        = 'UPLOAD_DATE';
+    const ENACH_REGISTER_RESPONSE_DATE      = 'RESPONSE_DATE';
+    const ENACH_REGISTER_UTILITY_CODE       = 'UTILITY_CODE';
+    const ENACH_REGISTER_UTILITY_NAME       = 'UTILITY_NAME';
+    const ENACH_REGISTER_NODAL_ACNO         = 'NODAL_ACNO';
+    const ENACH_REGISTER_STATUS             = 'STATUS';
+
+    //
+    // eNach Debit Response File Headers
+    //
+    const ENACH_DEBIT_SERIAL_NO             = EnachRblDebitHeadings::SERIAL_NO;
+    const ENACH_DEBIT_ECS_DATE              = EnachRblDebitHeadings::ECS_DATE;
+    const ENACH_DEBIT_SETTLEMENT_DATE       = EnachRblDebitHeadings::SETTLEMENT_DATE;
+    const ENACH_DEBIT_CUST_REFNO            = EnachRblDebitHeadings::CUST_REFNO;
+    const ENACH_DEBIT_SCH_REFNO             = EnachRblDebitHeadings::SCH_REFNO;
+    const ENACH_DEBIT_CUSTOMER_NAME         = EnachRblDebitHeadings::CUSTOMER_NAME;
+    const ENACH_DEBIT_REFNO                 = EnachRblDebitHeadings::REFNO;
+    const ENACH_DEBIT_CLG_STATUS            = EnachRblDebitHeadings::CLG_STATUS;
+    const ENACH_DEBIT_AMOUNT                = EnachRblDebitHeadings::AMOUNT;
+    const ENACH_DEBIT_UMRN                  = EnachRblDebitHeadings::UMRN;
 
     //
     // Payout headers
@@ -348,6 +395,21 @@ class Header
             ]
         ],
 
+        'emandate_debit_enach_rbl' => [
+            self::INPUT => [
+                self::ENACH_DEBIT_SERIAL_NO,
+                self::ENACH_DEBIT_ECS_DATE,
+                self::ENACH_DEBIT_SETTLEMENT_DATE,
+                self::ENACH_DEBIT_CUST_REFNO,
+                self::ENACH_DEBIT_SCH_REFNO,
+                self::ENACH_DEBIT_CUSTOMER_NAME,
+                self::ENACH_DEBIT_AMOUNT,
+                self::ENACH_DEBIT_REFNO,
+                self::ENACH_DEBIT_UMRN,
+                self::ENACH_DEBIT_CLG_STATUS,
+            ]
+        ],
+
         Type::BANK_TRANSFER => [
             self::INPUT => [
                 self::PROVIDER,
@@ -394,6 +456,45 @@ class Header
                 self::HDFC_EM_REGISTER_FREQUENCY,
                 self::HDFC_EM_REGISTER_MANDATE_SERIAL_NUMBER,
                 self::HDFC_EM_REGISTER_MERCHANT_REQUEST_NO,
+            ],
+        ],
+
+        'emandate_acknowledge_enach_rbl' => [
+            self::INPUT => [
+                'data'
+            ],
+        ],
+
+        'emandate_register_enach_rbl' => [
+            self::INPUT => [
+                self::ENACH_REGISTER_SRNO,
+                self::ENACH_REGISTER_MANDATE_DATE,
+                self::ENACH_REGISTER_MANDATE_ID,
+                self::ENACH_REGISTER_UMRN,
+                self::ENACH_REGISTER_CUST_REFNO,
+                self::ENACH_REGISTER_SCH_REFNO,
+                self::ENACH_REGISTER_CUST_NAME,
+                self::ENACH_REGISTER_BANK,
+                self::ENACH_REGISTER_BRANCH,
+                self::ENACH_REGISTER_BANK_CODE,
+                self::ENACH_REGISTER_AC_TYPE,
+                self::ENACH_REGISTER_ACNO,
+                self::ENACH_REGISTER_UPDATE_DATE,
+                self::ENACH_REGISTER_AMOUNT,
+                self::ENACH_REGISTER_FREQUENCY,
+                self::ENACH_REGISTER_COLLECTION_TYPE,
+                self::ENACH_REGISTER_START_DATE,
+                self::ENACH_REGISTER_END_DATE,
+                self::ENACH_REGISTER_TEL_NO,
+                self::ENACH_REGISTER_MOBILE_NO,
+                self::ENACH_REGISTER_MAIL_ID,
+                self::ENACH_REGISTER_UPLOAD_BATCH,
+                self::ENACH_REGISTER_UPLOAD_DATE,
+                self::ENACH_REGISTER_RESPONSE_DATE,
+                self::ENACH_REGISTER_UTILITY_CODE,
+                self::ENACH_REGISTER_UTILITY_NAME,
+                self::ENACH_REGISTER_NODAL_ACNO,
+                self::ENACH_REGISTER_STATUS
             ],
         ],
 

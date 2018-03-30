@@ -25,6 +25,7 @@ use RZP\Models\Merchant;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Processor\Netbanking;
 
 /**
@@ -659,9 +660,15 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
     }
 
-    public function setGatewayBharatQr()
+    //
+    // As setGateway is protected method
+    // we didn't want to make it public just
+    // to set gateway for bharat qr payment
+    // so a new method
+    //
+    public function setGatewayForBharatQr(string $gateway)
     {
-        $this->setGateway(Payment\Gateway::BHARAT_QR);
+        $this->setGateway($gateway);
     }
 
     /**
@@ -1284,6 +1291,12 @@ class Entity extends Base\PublicEntity
                 ($this->isMethod(Payment\Method::EMI)));
     }
 
+    public function isTpvMethod()
+    {
+        return (($this->isMethod(Payment\Method::UPI)) or
+                ($this->isMethod(Payment\Method::NETBANKING)));
+    }
+
     public function isSigned()
     {
         return ($this->getAttribute(self::SIGNED) === true);
@@ -1349,6 +1362,17 @@ class Entity extends Base\PublicEntity
     }
 
 // ----------------------- Getters ---------------------------------------------
+
+    public function getBankCodeFromVpa()
+    {
+        $vpa = $this->getAttribute(self::VPA);
+
+        $vpaParts = explode('@', $vpa);
+
+        $psp = end($vpaParts);
+
+        return ProviderCode::getBankCode($psp);
+    }
 
     public function getTransferId()
     {
