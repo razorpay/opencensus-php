@@ -192,7 +192,7 @@ class Gateway
 
         $this->cache = $this->app['cache'];
 
-         $this->externalMockDomain = env('EXTERNAL_MOCK_DOMAIN_URL');
+        $this->externalMockDomain = env('EXTERNAL_MOCK_GATEWAY_DOMAIN');
     }
 
     public function authorize(array $input)
@@ -1111,11 +1111,11 @@ class Gateway
         return $gatewayPayment;
     }
 
-/*
-* retuns the external mock url
-* Used for gateway testing using mock in func
-* Appends the gateway string and relative url for the external mock domain
-*/
+    /*
+    * Retuns the external mock url
+    * Used for gateway testing using mock in func
+    * Appends the gateway string and relative url for the external mock domain
+    */
     protected function getExternalMockUrl($type)
     {
        return $this->externalMockDomain . "/" . $this->gateway . $this->getRelativeUrl($type);
