@@ -3437,3 +3437,6 @@ ALTER TABLE customers
 
 ALTER TABLE invoices
     ADD INDEX invoices_status_expire_by_deleted_at_index (status, expire_by, deleted_at);
+
+ALTER TABLE tokens
+    ADD INDEX `tokens_gateway_token_index` (`gateway_token`);

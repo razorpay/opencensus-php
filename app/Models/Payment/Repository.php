@@ -1126,6 +1126,53 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    public function fetchDebitEnachPaymentPendingAuth(
+        string $gateway, string $paymentId, string $gatewayToken)
+    {
+        $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
+
+        $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $selectCols = $this->dbColumn('*');
+
+        //
+        // The SQL query that will be run is –
+        //
+        // select `payments`.* from `payments` inner join `tokens`
+        // on `token_id` = `tokens`.`id` or `global_token_id` = `tokens`.`id`
+        // where `payments`.`id` = ? and
+        // `account_number` = ? and
+        // `recurring_type` = ? and
+        // `status` = ? and
+        // `payments`.`recurring` = ? and
+        // `payments`.`method` = ? and
+        // `gateway` = ?
+        //
+        return $this->newQuery()
+                    ->select($selectCols)
+                    ->join(
+                      Table::TOKEN,
+                      function ($join)
+                      use ($tokenIdColumn)
+                      {
+                        $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
+                        $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
+                      })
+                    ->where($paymentIdColumn, $paymentId)
+                    ->where(Token\Entity::GATEWAY_TOKEN, $gatewayToken)
+                    ->where(Entity::RECURRING_TYPE, RecurringType::AUTO)
+                    ->where(Entity::STATUS, Status::CREATED)
+                    ->where($paymentRecurringColumn, 1)
+                    ->where($paymentMethodColumn, Method::EMANDATE)
+                    ->where(Entity::GATEWAY, $gateway)
+                    ->with('merchant')
+                    ->firstOrFail();
+    }
+
     protected function addQueryParamBankReference($query, $params)
     {
         $this->joinQueryBankTransfer($query);
