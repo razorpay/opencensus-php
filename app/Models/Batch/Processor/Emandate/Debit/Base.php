@@ -141,7 +141,7 @@ class Base extends BaseProcessor
         throw new \BadMethodCallException();
     }
 
-    protected function createSetOutputFileAndSave(array & $entries)
+    protected function createSetOutputFileAndSave(array & $entries, string $fileType = FileStore\Type::BATCH_OUTPUT)
     {
         return;
     }

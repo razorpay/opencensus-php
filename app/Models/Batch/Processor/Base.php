@@ -550,11 +550,9 @@ class Base extends BaseModel\Core
         $this->batch->setProcessing(false);
     }
 
-    protected function createSetOutputFileAndSave(array $entries, string $fileType = FileStore\Type::BATCH_OUTPUT)
+    protected function createSetOutputFileAndSave(array & $entries, string $fileType = FileStore\Type::BATCH_OUTPUT)
     {
         $this->outputFileType = $fileType;
-
-        $this->trace->debug(TraceCode::MISC_TRACE_CODE, [$this->outputFileType]);
 
         $entries = $this->prepareEntriesForOutputFileCreation($entries);
 

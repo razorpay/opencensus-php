@@ -599,17 +599,17 @@ class Header
 
     public static function getInputHeadersForType(string $type): array
     {
-        return self::HEADER_MAP[$type][self::INPUT];
+        return self::HEADER_MAP[$type][self::INPUT] ?? [];
     }
 
     public static function getOutputHeadersForType(string $type): array
     {
-        return self::HEADER_MAP[$type][self::OUTPUT];
+        return self::HEADER_MAP[$type][self::OUTPUT] ?? [];
     }
 
     public static function getValidatedHeadersForType(string $type): array
     {
-        return array_merge(self::HEADER_MAP[$type][self::INPUT], self::VALIDATED_HEADERS);
+        return array_merge(self::HEADER_MAP[$type][self::INPUT] ?? [], self::VALIDATED_HEADERS);
     }
 
     public static function getHeadersForFileTypeAndBatchType(string $fileType, string $type): array
