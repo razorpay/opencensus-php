@@ -90,6 +90,7 @@ class PublicController extends Controller
 
     public function renderEmbedded() {
         return View::make('public.embedded', [
+            'key'          => $this->ba->getPublicKey(),
             'options'      => json_encode(Request::all()),
             'script'       => $this->config->get('url.cdn.production') . '/static/hosted/embedded.js'
         ]);
