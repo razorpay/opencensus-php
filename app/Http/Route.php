@@ -1775,7 +1775,7 @@ final class Route
         'merchant_requests_status_log'             => Permission::VIEW_MERCHANT_REQUESTS,
         'merchant_bank_account_change_status'      => '*',
         'merchant_activation_reviewers'            => '*',
-        'merchant_activation_bulk_assign_reviewer' => Permission::EDIT_MERCHANT_REQUESTS,
+        'merchant_activation_bulk_assign_reviewer' => Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER,
         'db_meta_query'                            => Permission::DB_META_QUERY,
     ];
 
