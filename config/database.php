@@ -46,12 +46,23 @@ return array(
 
     'connections' => [
         'live' => [
-            'driver'    => env('DB_LIVE_DRIVER'),
-            'host'      => env('DB_LIVE_HOST'),
-            'port'      => env('DB_LIVE_PORT'),
+            'read'  => [
+                'host'     => env('SLAVE_DB_LIVE_HOST'),
+                'port'     => env('SLAVE_DB_LIVE_PORT'),
+                'username' => env('SLAVE_DB_LIVE_USERNAME'),
+                'password' => env('SLAVE_DB_LIVE_PASSWORD'),
+            ],
+            'write' => [
+                'host'     => env('DB_LIVE_HOST'),
+                'port'     => env('DB_LIVE_PORT'),
+                'username' => env('DB_LIVE_USERNAME'),
+                'password' => env('DB_LIVE_PASSWORD'),
+            ],
+            'username' => env('DB_LIVE_USERNAME'),
+            'password' => env('DB_LIVE_PASSWORD'),
+            'sticky'    => true,
             'database'  => env('DB_LIVE_DATABASE'),
-            'username'  => env('DB_LIVE_USERNAME'),
-            'password'  => env('DB_LIVE_PASSWORD'),
+            'driver'    => env('DB_LIVE_DRIVER'),
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
@@ -59,39 +70,23 @@ return array(
         ],
 
         'test' => [
-            'driver'    => env('DB_TEST_DRIVER'),
-            'host'      => env('DB_TEST_HOST'),
-            'port'      => env('DB_TEST_PORT'),
+            'read'  => [
+                'host'     => env('SLAVE_DB_TEST_HOST'),
+                'port'     => env('SLAVE_DB_TEST_PORT'),
+                'username' => env('SLAVE_DB_TEST_USERNAME'),
+                'password' => env('SLAVE_DB_TEST_PASSWORD'),
+            ],
+            'write' => [
+                'host'     => env('DB_TEST_HOST'),
+                'port'     => env('DB_TEST_PORT'),
+                'username' => env('DB_TEST_USERNAME'),
+                'password' => env('DB_TEST_PASSWORD'),
+            ],
+            'username' => env('DB_TEST_USERNAME'),
+            'password' => env('DB_TEST_PASSWORD'),
+            'sticky'    => true,
             'database'  => env('DB_TEST_DATABASE'),
-            'username'  => env('DB_TEST_USERNAME'),
-            'password'  => env('DB_TEST_PASSWORD'),
-            'charset'   => 'utf8',
-            'collation' => 'utf8_bin',
-            'prefix'    => '',
-            'strict'    => true
-        ],
-
-        'slave-live' => [
-            // Slave must have the same driver and DB names as the master.
-            'driver'    => env('DB_LIVE_DRIVER'),
-            'host'      => env('SLAVE_DB_LIVE_HOST'),
-            'port'      => env('SLAVE_DB_LIVE_PORT'),
-            'database'  => env('DB_LIVE_DATABASE'),
-            'username'  => env('SLAVE_DB_LIVE_USERNAME'),
-            'password'  => env('SLAVE_DB_LIVE_PASSWORD'),
-            'charset'   => 'utf8',
-            'collation' => 'utf8_bin',
-            'prefix'    => '',
-            'strict'    => true
-        ],
-
-        'slave-test' => [
             'driver'    => env('DB_TEST_DRIVER'),
-            'host'      => env('SLAVE_DB_TEST_HOST'),
-            'port'      => env('SLAVE_DB_TEST_PORT'),
-            'database'  => env('DB_TEST_DATABASE'),
-            'username'  => env('SLAVE_DB_TEST_USERNAME'),
-            'password'  => env('SLAVE_DB_TEST_PASSWORD'),
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
