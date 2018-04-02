@@ -472,6 +472,79 @@ return [
         ],
     ],
 
+    'testCreateInvoiceWithMultipleTaxIds' => [
+        'request' => [
+            'url'    => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'name'          => 'Item #1',
+                        'amount'        => 100,
+                        'quantity'      => 5,
+                        'tax_ids'       => ['tax_00000000000001', 'tax_00000000000002'],
+                        'tax_inclusive' => false,
+                    ],
+                ],
+                'type'     => 'invoice',
+                'draft'    => '0',
+                'customer' => [
+                    'email' => 'test@test.test'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details' => [
+                    'name'    => null,
+                    'email'   => 'test@test.test',
+                    'contact' => null
+                ],
+                'line_items' => [
+                    [
+                        'name'          => 'Item #1',
+                        'description'   => null,
+                        'amount'        => 100,
+                        'gross_amount'  => 500,
+                        'tax_amount'    => 150,
+                        'net_amount'    => 650,
+                        'currency'      => 'INR',
+                        'tax_inclusive' => false,
+                        'unit'          => null,
+                        'quantity'      => 5,
+                        'taxes'         => [
+                            [
+                                'tax_id'     => 'tax_00000000000001',
+                                'name'       => 'Tax #1',
+                                'rate'       => 1000,
+                                'rate_type'  => 'percentage',
+                                'group_id'   => null,
+                                'group_name' => null,
+                                'tax_amount' => 50,
+                            ],
+                            [
+                                'tax_id'     => 'tax_00000000000002',
+                                'name'       => 'Tax #2',
+                                'rate'       => 2000,
+                                'rate_type'  => 'percentage',
+                                'group_id'   => null,
+                                'group_name' => null,
+                                'tax_amount' => 100,
+                            ],
+                        ],
+                    ],
+                ],
+                'gross_amount'          => 500,
+                'tax_amount'            => 150,
+                'amount'                => 650,
+                'currency'              => 'INR',
+                'description'           => null,
+                'type'                  => 'invoice',
+                'group_taxes_discounts' => false,
+            ],
+        ],
+    ],
+
     'testUpdateInvoiceWithTaxes' => [
         'request' => [
             'url'    => '/invoices/inv_1000000invoice',

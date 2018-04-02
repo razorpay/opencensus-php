@@ -103,6 +103,13 @@ class InvoiceTaxesTest extends TestCase
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
+    public function testCreateInvoiceWithMultipleTaxIds()
+    {
+        $this->startTest();
+
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
     /**
      * Tests invoice update, includes removal/addition/updates
      * of line items and taxes.
