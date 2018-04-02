@@ -66,7 +66,7 @@ class Service extends Base\Service
         }
 
         $response = $this->mutex->acquireAndRelease(
-            $orderId . '_virtual_account',
+            $orderId,
             function() use ($order, $input)
             {
                 $existingVirtualAccount = $this->repo
@@ -83,6 +83,7 @@ class Service extends Base\Service
                 $createArray = [
                     Entity::ORDER_ID        => $order->getPublicId(),
                     Entity::AMOUNT_EXPECTED => $amountExpected,
+                    Entity::NOTES           => $input[Entity::NOTES] ?? [],
                     Entity::RECEIVERS       => [
                         Entity::TYPES => [
                             Receiver::BANK_ACCOUNT,
