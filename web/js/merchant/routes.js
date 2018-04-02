@@ -16,7 +16,7 @@ import PlanNew from 'merchant/containers/Plans/New';
 const entityMap = {
   '/payments/:id(pay_.+)/:entity_name(transfers)/new': PaymentsDetails,
   '/payments/:id(pay_.+)/:transfer_id(trf_.+)': PaymentsDetails,
-  '/payments/:id': PaymentsDetails,
+  '/payments/:id(pay_.+)': PaymentsDetails,
 
   '/refunds/:id(rfnd_.+)': RefundDetails,
   '/orders/:id': OrderDetails,
