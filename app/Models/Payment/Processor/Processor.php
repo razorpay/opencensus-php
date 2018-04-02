@@ -31,6 +31,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
 class Processor
@@ -1909,7 +1910,7 @@ class Processor
      */
     public function acknowledge(Payment\Entity $payment)
     {
-        $currentTime = Carbon::now()->getTimestamp();
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($payment, $currentTime)
         {

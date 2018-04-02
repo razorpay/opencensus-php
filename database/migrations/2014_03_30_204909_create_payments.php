@@ -232,6 +232,7 @@ class CreatePayments extends Migration
                   ->nullable();
 
             $table->integer(Payment::ACKNOWLEDGED_AT)
+                  ->unsigned()
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table

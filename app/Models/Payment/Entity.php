@@ -2560,6 +2560,6 @@ class Entity extends Base\PublicEntity
      */
     public function isAcknowledged(): bool
     {
-        return ($this->getAcknowledgedAt() !== null);
+        return $this->isAttributeNotNull(self::ACKNOWLEDGED_AT);
     }
 }
