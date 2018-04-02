@@ -56,7 +56,11 @@ class VirtualAccountTest extends TestCase
     {
         $order = $this->fixtures->create('order');
 
-        $response = $this->createVirtualAccountForOrder($order);
+        $response = $this->createVirtualAccountForOrder($order, [
+            'notes' => [
+                'a' => 'b',
+            ],
+        ]);
 
         $expectedResponse = $this->testData[__FUNCTION__];
 

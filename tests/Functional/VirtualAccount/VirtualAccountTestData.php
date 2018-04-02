@@ -25,7 +25,9 @@ return [
         'entity'          => 'virtual_account',
         'status'          => 'active',
         'amount_expected' => 1000000,
-        'notes'           => [],
+        'notes'           => [
+            'a' => 'b',
+        ],
         'amount_paid'     => 0,
         'customer_id'     => NULL,
         'receivers'       => [
