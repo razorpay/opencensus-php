@@ -357,4 +357,14 @@ class Reconciliation extends Base
         //
         RuntimeManager::setMaxExecTime(3600);
     }
+
+    /**
+     * Not Cleaning parsed entries at this step.
+     * @param array $entries
+     * @return array
+     */
+    protected function cleanParsedEntries(array $entries): array
+    {
+        return $entries;
+    }
 }

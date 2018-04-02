@@ -789,9 +789,6 @@ class Base extends BaseModel\Core
                         $entries);
         }
 
-        $headings      = $this->getHeadings();
-        $headingsCount = count($headings);
-
         // Excel: Removes empty trailing rows
         $entries = array_filter($entries, function ($v) { return (empty(array_filter($v)) === false); });
 
