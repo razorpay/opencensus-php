@@ -25,4 +25,12 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_ACKNOWLEDGED
         ],
     ],
+
+    'testAcknowledgeAuthorizedPayment' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payments/pay_100000RandomId/acknowledge',
+            'content' => [],
+        ],
+    ],
 ];
