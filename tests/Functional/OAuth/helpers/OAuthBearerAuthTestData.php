@@ -295,7 +295,7 @@ return [
         ],
     ],
 
-    'testRestrictedAccessFeatureEnabledOnMerchant' => [
+    'testRestrictedAccessFeatureEnabledOnMerchantOnly' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/virtual_accounts',
@@ -312,7 +312,7 @@ return [
         ],
     ],
 
-    'testRestrictedAccessFeatureEnabledOnApp' => [
+    'testRestrictedAccessFeatureEnabledOnAppOnly' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/virtual_accounts',
@@ -340,23 +340,6 @@ return [
                 'entity' => 'virtual_account',
                 'status' => 'active',
             ],
-        ],
-    ],
-
-    'testRestrictedAccessFeatureEnabledOnNone' => [
-        'request' => [
-            'method'  => 'POST',
-            'url'     => '/virtual_accounts',
-            'content' => [],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND
-                ]
-            ],
-            'status_code' => 400,
         ],
     ],
 ];

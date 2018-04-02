@@ -99,9 +99,7 @@ class FeatureAccess
             return ApiResponse::routeNotFound();
         }
 
-        $allowAccess = $this->allowApplicationToAccessFeatureRoute(
-                            $routeFeatures,
-                            $merchantRouteFeatures);
+        $allowAccess = $this->allowAppToAccessRoute($routeFeatures, $merchantRouteFeatures);
 
         if ($allowAccess === true)
         {
@@ -142,7 +140,7 @@ class FeatureAccess
      *
      * @return bool
      */
-    protected function allowApplicationToAccessFeatureRoute(
+    protected function allowAppToAccessRoute(
         array $routeFeatures,
         array $merchantRouteFeatures): bool
     {
@@ -168,8 +166,6 @@ class FeatureAccess
 
         $restrictedAccessFeatures = Feature\Entity::$restrictedAccessFeatures;
 
-        $appHasRouteFeatures = filled($routeFeaturesAvailableWithApp);
-
         $appHasNonRestrictedRouteFeatures = filled(array_values(array_diff(
                                                 $routeFeaturesAvailableWithApp,
                                                 $restrictedAccessFeatures)));
@@ -179,9 +175,8 @@ class FeatureAccess
                                                         $routeFeaturesAvailableWithApp,
                                                         $merchantRouteFeatures)));
 
-        if (($appHasRouteFeatures === true) and
-                (($appHasNonRestrictedRouteFeatures === true) or
-                    ($appAndMerchantHaveRestrictedRouteFeature === true)))
+        if ((($appHasNonRestrictedRouteFeatures === true) or
+            ($appAndMerchantHaveRestrictedRouteFeature === true)))
         {
             return true;
         }
@@ -191,7 +186,8 @@ class FeatureAccess
         //    Do not allow the application to access the resource
         //    Allow the application to access the resource if -
         //      - the merchant has any of the route features assigned, and,
-        //      - the the feature required is not a blacklisted feature.
+        //      - the feature required is not a blacklisted feature.
+        //      - the feature required is not a restricted access feature.
         //
 
         $appBlacklistedFeatures = Feature\Entity::$appBlacklistedFeatures;
@@ -202,13 +198,7 @@ class FeatureAccess
         //
         $merchantRouteFeaturesWhitelisted = array_values(array_diff(
                                                 $merchantRouteFeatures,
-                                                $appBlacklistedFeatures));
-
-        //
-        // Do not allow the app to access the features
-        //
-        $merchantRouteFeaturesWhitelisted = array_values(array_diff(
-                                                $merchantRouteFeaturesWhitelisted,
+                                                $appBlacklistedFeatures,
                                                 $restrictedAccessFeatures));
 
         return (filled($merchantRouteFeaturesWhitelisted) === true);

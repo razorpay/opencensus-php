@@ -365,7 +365,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testRestrictedAccessFeatureEnabledOnMerchant()
+    public function testRestrictedAccessFeatureEnabledOnMerchantOnly()
     {
         $client = factory(Client\Entity::class)->create();
 
@@ -393,7 +393,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->startTest($testData);
     }
 
-    public function testRestrictedAccessFeatureEnabledOnApp()
+    public function testRestrictedAccessFeatureEnabledOnAppOnly()
     {
         $client = factory(Client\Entity::class)->create();
 
@@ -442,27 +442,6 @@ class OAuthBearerAuthTest extends OAuthTestCase
                 'entity_id'   => $client->application_id,
                 'name'        => 'virtual_accounts'
             ]);
-
-        $accessToken = $this->generateOAuthAccessToken(
-            [
-                'scopes' => ['read_write'],
-                'client_id' => $client->getId()
-            ]);
-
-        $this->ba->oauthBearerAuth($accessToken);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
-
-        $this->startTest($testData);
-    }
-
-    public function testRestrictedAccessFeatureEnabledOnNone()
-    {
-        $client = factory(Client\Entity::class)->create();
-
-        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
         $accessToken = $this->generateOAuthAccessToken(
             [
