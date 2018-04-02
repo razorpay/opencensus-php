@@ -146,13 +146,9 @@ class FeatureAccess
     {
         //
         // 1. Allow the application to access the resource, if -
-        //    - the application has any of the route features assigned, and,
-        //      - either, at least one of the features assigned to the application is a non restrictedAccessFeature,
-        //      - or, the route feature  assigned to the application is a restrictedAccessFeature and both, the app and
-        //        the merchant have it enabled.
-        //
-        // restrictedAccessFeature routes can only be accessed by the application if both, the app and the merchant
-        // have the feature enabled.
+        //    - one of the features assigned to the application is not a restrictedAccessFeature, OR
+        //    - the feature assigned to the application is a restrictedAccessFeature and both the app and
+        //      the merchant have it enabled.
         //
 
         // Fetch all the features of the application that is trying to access the resource
@@ -183,7 +179,6 @@ class FeatureAccess
 
         //
         // 2. If the application does not have any of the required route features, check the merchant features.
-        //    Do not allow the application to access the resource
         //    Allow the application to access the resource if -
         //      - the merchant has any of the route features assigned, and,
         //      - the feature required is not a blacklisted feature.

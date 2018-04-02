@@ -63,7 +63,8 @@ class Entity extends Base\PublicEntity
     ];
 
     /**
-     * The features added here are selectively added to the merchants and the applications upon . And hence,
+     * The features added here are selectively added to the merchants and the applications upon proper verification
+     * through the activations team. And hence,
      * - If a merchant directly tries to access a route which requires one of these features, it is allowed to access
      *   the route only if feature is enabled for the merchant [regular flow]
      * - If an app tries to access a route which requires one of these features, it is allowed to access
