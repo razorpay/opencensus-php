@@ -617,6 +617,25 @@ trait RepositoryFetch
         return $this->findByIdAndMerchant($id, $merchant, $params);
     }
 
+    public function findManyByPublicIdsAndMerchant(
+        array $ids,
+        Merchant\Entity $merchant,
+        array $params = []): PublicCollection
+    {
+        /** @var PublicEntity $entity */
+        $entity = $this->getEntityClass();
+
+        $entity::verifyIdAndStripSignMultiple($ids);
+
+        $query = $this->getQueryForFindWithParams($params);
+
+        $entities = $query
+                    ->merchantId($merchant->getId())
+                    ->findManyOrFailPublic($ids);
+
+        return $entities;
+    }
+
     /**
      * Finds entity against given id and merchant.
      *
