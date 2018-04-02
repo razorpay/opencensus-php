@@ -49,13 +49,13 @@ class Core extends Base\Core
      *
      * @throws BadRequestException
      */
-    public function cleanUpAndCreateLineItemTaxes(
-        LineItem\Entity $lineItem,
-        array $input,
-        Merchant\Entity $merchant)
+    public function cleanUpAndCreateLineItemTaxes(LineItem\Entity $lineItem, array $input, Merchant\Entity $merchant)
     {
-        if ((array_key_exists(LineItem\Entity::TAX_ID, $input) === false) and
-            (array_key_exists(LineItem\Entity::TAX_GROUP_ID, $input) === false))
+        $taxIdExists      = (array_key_exists(LineItem\Entity::TAX_ID, $input) === true);
+        $taxIdsExist      = (array_key_exists(LineItem\Entity::TAX_IDS, $input) === true);
+        $taxGroupIdExists = (array_key_exists(LineItem\Entity::TAX_GROUP_ID, $input) === true);
+
+        if (($taxIdExists === false) and ($taxIdsExist === false) and ($taxGroupIdExists === false))
         {
             return;
         }
@@ -90,31 +90,33 @@ class Core extends Base\Core
      *
      * @return array
      */
-    protected function getTaxGroupAndTaxes(
-        array $input,
-        Merchant\Entity $merchant): array
+    protected function getTaxGroupAndTaxes(array $input, Merchant\Entity $merchant): array
     {
         $taxId      = $input[LineItem\Entity::TAX_ID] ?? null;
+        $taxIds     = $input[LineItem\Entity::TAX_IDS] ?? null;
         $taxGroupId = $input[LineItem\Entity::TAX_GROUP_ID] ?? null;
 
         $taxGroup = null;
-        $taxes = new Base\PublicCollection;
+        $taxes    = new Base\PublicCollection;
 
         if ($taxGroupId !== null)
         {
-            $taxGroup = $this->repo->tax_group
-                                   ->findByPublicIdAndMerchant(
-                                        $taxGroupId,
-                                        $merchant);
+            $taxGroup = $this->repo->tax_group->findByPublicIdAndMerchant($taxGroupId, $merchant);
 
             $taxes = $taxGroup->taxes()->getResults();
         }
-        else if ($taxId !== null)
+        else
         {
-            $tax = $this->repo->tax
-                              ->findByPublicIdAndMerchant($taxId, $merchant);
+            if ($taxId !== null)
+            {
+                $tax = $this->repo->tax->findByPublicIdAndMerchant($taxId, $merchant);
 
-            $taxes->push($tax);
+                $taxes->push($tax);
+            }
+            else if ($taxIds !== null)
+            {
+                $taxes = $this->repo->tax->findManyByPublicIdsAndMerchant($taxIds, $merchant);
+            }
         }
 
         return [$taxGroup, $taxes];
@@ -127,7 +129,6 @@ class Core extends Base\Core
      * @param int                   $taxableAmount
      * @param Tax\Entity            $tax
      * @param Tax\Group\Entity|null $taxGroup
-     *
      */
     protected function createLineItemTax(
         LineItem\Entity $lineItem,
