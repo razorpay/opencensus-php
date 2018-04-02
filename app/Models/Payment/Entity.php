@@ -109,6 +109,10 @@ class Entity extends Base\PublicEntity
     const CONVERT_CURRENCY      = 'convert_currency';
     const AUTH_TYPE             = 'auth_type';
     const ACKNOWLEDGED_AT       = 'acknowledged_at';
+    const REFERENCE3            = 'reference3';
+    const REFERENCE4            = 'reference4';
+    const REFERENCE5            = 'reference5';
+    const REFERENCE6            = 'reference6';
 
     const MAX_AMOUNT            = 'max_amount';
     const EXPIRE_BY             = 'expire_by';

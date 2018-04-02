@@ -3454,4 +3454,8 @@ ALTER TABLE tokens
     ADD INDEX tokens_recurring_status_index (recurring_status);
 
 ALTER TABLE payments
-    ADD COLUMN acknowledged_at INTEGER UNSIGNED AFTER auth_type;
+    ADD COLUMN acknowledged_at INTEGER UNSIGNED AFTER auth_type,
+    ADD COLUMN reference3 TINYINT(1) NULL AFTER acknowledged_at,
+    ADD COLUMN reference4 INT(11) DEFAULT NULL AFTER reference3,
+    ADD COLUMN reference5 VARCHAR(255) DEFAULT NULL AFTER reference4,
+    ADD COLUMN reference6 VARCHAR(255) DEFAULT NULL AFTER reference5;
