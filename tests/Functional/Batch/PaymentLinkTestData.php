@@ -297,4 +297,41 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE,
         ],
     ],
+
+    'testFetchBatchesOfPaymentLinkTypeWithConfig' => [
+        'request'   => [
+            'url'    => '/batches',
+            'method' => 'get',
+            'content'=> [
+                'type'        => 'payment_link',
+                'with_config' => '1',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'entity'        => 'collection',
+                'count'         => 2,
+                'items'         => [
+                    [
+                        'id'        => 'batch_00000000000002',
+                        'type'      => 'payment_link',
+                        'status'    => 'created',
+                        'config'    => [
+                            'sms_notify'    => '0',
+                            'email_notify'  => '0',
+                        ],
+                    ],
+                    [
+                        'id'        => 'batch_00000000000001',
+                        'type'      => 'payment_link',
+                        'status'    => 'created',
+                        'config'    => [
+                            'sms_notify'    => '1',
+                            'email_notify'  => '0',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

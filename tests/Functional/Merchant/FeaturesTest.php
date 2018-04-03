@@ -635,6 +635,8 @@ class FeaturesTest extends TestCase
 
     public function testUpdateOnboardingResponses()
     {
+        $this->markTestSkipped();
+
         $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
 
         $this->ba->proxyAuth('rzp_live_' . $merchantId);

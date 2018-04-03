@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Queue;
 
 use RZP\Constants\Mode;
 use RZP\Models\Invoice;
+use RZP\Models\Settings;
 use RZP\Models\Batch\Type;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Entity;
@@ -303,6 +304,41 @@ class PaymentLinkTest extends TestCase
                 'id'   => '00000000000001',
                 'type' => 'linked_account'
             ]);
+
+        $this->startTest();
+    }
+
+    public function testFetchBatchesOfPaymentLinkTypeWithConfig()
+    {
+        $batch1 = $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'payment_link',
+                'total_count' => 4,
+            ]);
+
+        Settings\Accessor::for($batch1, Settings\Module::BATCH)
+                         ->upsert([
+                            'sms_notify'    => 1,
+                            'email_notify'  => 0,
+                         ])->save();
+
+        $batch2 = $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000002',
+                'type'        => 'payment_link',
+                'total_count' => 4,
+            ]);
+
+        Settings\Accessor::for($batch2, Settings\Module::BATCH)
+                        ->upsert([
+                            'sms_notify'    => 0,
+                            'email_notify'  => 0,
+                        ])->save();
+
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
