@@ -57,7 +57,7 @@ const breakdownMap = {
   monthly: 'month',
 };
 
-const getDateFormat = (startDate, endDate, breakdown) => {
+const getDateFormat = (startDate, breakdown) => {
   let format = 'ddd, Do MMM';
 
   const isSameYear = startDate.isSame(moment(), 'year');
@@ -107,7 +107,7 @@ const customToolTip = function(tooltipModel) {
       breakdown,
       graphStartDate,
       graphEndDate,
-      noGrouping
+      noGrouping,
     } = this._chart.options,
     datasets = this._chart.data.datasets;
 
@@ -135,19 +135,16 @@ const customToolTip = function(tooltipModel) {
           graphEndDate
         )
       ),
-      dateFormat = getDateFormat(startDate, endDate, breakdown),
+      dateFormat = getDateFormat(startDate, breakdown),
       url =
         `${externalUrl}?from=${startDate.unix()}&to=${endDate.unix()}` +
         `&ref=home`;
 
     let formattedDate = startDate.format(dateFormat);
 
-    if (
-      breakdown === 'weekly' ||
-      breakdown === 'monthly' ||
-      breakdown === 'hourly'
-    ) {
-      formattedDate += ' - ' + endDate.format(dateFormat);
+    if (breakdown !== 'daily') {
+      formattedDate +=
+        ' - ' + endDate.format(breakdown === 'hourly' ? 'HH:mm' : dateFormat);
     }
 
     // appending title to innerHtml
@@ -173,8 +170,7 @@ const customToolTip = function(tooltipModel) {
     let rows = '';
 
     if (!noGrouping) {
-
-      tooltipDOM.className = "";
+      tooltipDOM.className = '';
 
       var dataPoints = tooltipModel.dataPoints.sort((item1, item2) => {
         return item1.datasetIndex - item2.datasetIndex;
@@ -205,8 +201,7 @@ const customToolTip = function(tooltipModel) {
       // adding rows to innerHtml
       innerHtml += `<div class="tooltip-body">${rows}</div>`;
     } else {
-    
-      tooltipDOM.className = "no-grouping";
+      tooltipDOM.className = 'no-grouping';
     }
     // inserting innerHtml into inner div of chart js tooltip
     var innerTooltip = tooltipDOM.querySelector('.custom-tooltip-inner');

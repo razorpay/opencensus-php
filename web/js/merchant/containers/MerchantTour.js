@@ -93,7 +93,11 @@ export default class MerchantTour extends Component {
               </ul>
             </TourStepBody>
           </TourStep>
-          <TourStep to="#keymetrics-grouping" align="left">
+          <TourStep
+            to="#keymetrics-grouping"
+            align="left"
+            className="overview-smartfilters-step"
+          >
             <TourStepTitle>Smart Filters</TourStepTitle>
             <TourStepBody>
               <div>See how your payments fared by filtering your graphs:</div>
