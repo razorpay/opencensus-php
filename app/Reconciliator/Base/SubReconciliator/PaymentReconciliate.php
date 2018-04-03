@@ -164,6 +164,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * reference. So when payment is fetch using the merchant reference it will be null,
      * In that case we will search the bharat qr entity with that merchant reference,
      * we fetch  the payment id from that bharat qr entity and return it
+     *
+     * @param string $merchantReference
+     * @param array  $row
+     *
+     * @return null|string
      */
     protected function getPaymentIdFromBharatQr(string $merchantReference, array $row)
     {
