@@ -147,7 +147,7 @@ class Base extends BaseProcessor
         return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
     }
 
-    protected function createSetOutputFileAndSave(array & $entries)
+    protected function createSetOutputFileAndSave(array & $entries, string $fileType = FileStore\Type::BATCH_OUTPUT)
     {
         return;
     }

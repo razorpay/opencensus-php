@@ -106,7 +106,7 @@ class Reconciliation extends Base
         return $ufh;
     }
 
-    protected function validateInputFileEntries(string $filePath, array $input): array
+    protected function validateInputFileEntries(array $input): array
     {
         //
         // Not doing anything here as in recon we don't need to validate / parse
@@ -157,7 +157,7 @@ class Reconciliation extends Base
         return;
     }
 
-    protected function createSetOutputFileAndSave(array & $entries)
+    protected function createSetOutputFileAndSave(array & $entries, string $fileType = FileStore\Type::BATCH_OUTPUT)
     {
         //
         // For recon batch procesing we don't need to create any output file.
@@ -356,5 +356,17 @@ class Reconciliation extends Base
         // from being terminated.
         //
         RuntimeManager::setMaxExecTime(3600);
+    }
+
+    /**
+     * Overriding this function as not cleaning parsed recon entries at this step.
+     * Filtering empty rows is already happening while parsing the recon file.
+     * Don't want to iterate over 50,000 rows again.
+     * @param array $entries
+     * @return array
+     */
+    protected function cleanParsedEntries(array $entries): array
+    {
+        return $entries;
     }
 }
