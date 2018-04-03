@@ -359,7 +359,9 @@ class Reconciliation extends Base
     }
 
     /**
-     * Not Cleaning parsed entries at this step.
+     * Overriding this function as not cleaning parsed recon entries at this step.
+     * Filtering empty rows is already happening while parsing the recon file.
+     * Don't want to iterate over 50,000 rows again.
      * @param array $entries
      * @return array
      */
