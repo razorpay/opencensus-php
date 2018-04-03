@@ -25,35 +25,12 @@ export const EmptyComponent = (uploadUrl, openModalFunc) => {
 /**
  *  Render customized status pill for batch
  */
-class BatchStatus extends Component {
-  state = {
-    isLoading: false,
-  };
-  handleClick = () => {
-    let { id } = this.props;
-    this.setState({ isLoading: true });
-    setTimeout(() => {
-      this.props.onRefetchBatchDetails(id);
-    }, 1);
-  };
-
-  render() {
-    const { id, status, onRefetchBatchDetails } = this.props;
-    const { isLoading } = this.state;
-
-    return (
-      <span>
-        <BatchUploadStatusLabel status={status} />
-        {status === 'created' && (
-          <i
-            class={`i i-refresh refetch-batch-btn${isLoading ? ' spin' : ''}`}
-            onClick={this.handleClick}
-          />
-        )}
-      </span>
-    );
-  }
-}
+const BatchStatus = ({ status }) => (
+  <span title="Please refresh the page to check status.">
+    <BatchUploadStatusLabel status={status} />
+    {status === 'created' && <i class={`i i-refresh spin refetch-batch-btn`} />}
+  </span>
+);
 
 /**
  * Render NavLink of batch
@@ -71,15 +48,7 @@ export const batchIdLink = {
   value: batch => <BatchNavLink batchId={batch.id} batchType={batch.type} />,
 };
 
-export const batchStatus = refetchBatchDetails => {
-  return {
-    title: 'Status',
-    value: item => (
-      <BatchStatus
-        id={item.id}
-        status={item.status}
-        onRefetchBatchDetails={refetchBatchDetails}
-      />
-    ),
-  };
+export const batchStatus = {
+  title: 'Status',
+  value: item => <BatchStatus status={item.status} />,
 };

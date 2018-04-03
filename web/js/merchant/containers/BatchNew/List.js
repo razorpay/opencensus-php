@@ -37,22 +37,21 @@ function batchActions({ mode, sendAll, onDownloadClick }) {
         >
           <i class="i i-download" /> Download
         </button>
-        <button
-          class="btn btn-default btn-xs"
-          onClick={_ => sendAll(item)}
-          disabled={!allowSendAllLinks(item)}
-        >
-          {allowSendAllLinks(item) ? 'Send all links' : 'All links sent'}
-        </button>
+        {item.status !== 'created' && (
+          <button
+            class="btn btn-default btn-xs"
+            onClick={_ => sendAll(item)}
+            disabled={!allowSendAllLinks(item)}
+          >
+            {allowSendAllLinks(item) ? 'Send all links' : 'All links sent'}
+          </button>
+        )}
       </div>
     ),
   };
 }
 
 function allowSendAllLinks(batch) {
-  if (batch.status === 'created') {
-    return false;
-  }
   //config object will not be available for older batches
   if (batch.config) {
     if (
@@ -107,10 +106,6 @@ export default class BatchList extends Component {
         />
       ),
     });
-  };
-
-  refetchBatchDetails = batchId => {
-    this.props.fetchBatch(batchId);
   };
 
   componentDidMount() {
@@ -170,7 +165,7 @@ export default class BatchList extends Component {
             batchIdLink,
             batchName,
             totalCount,
-            batchStatus(this.refetchBatchDetails),
+            batchStatus,
             batchActions({
               mode,
               sendAll,

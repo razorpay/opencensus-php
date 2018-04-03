@@ -7,11 +7,9 @@ $stats-border = #eaeff0
       margin: 20px auto
   .refetch-batch-btn
     display: inline-block
-    cursor: pointer
-    transition: 0.5s ease-out
     margin-left: 5px
     &.spin
-      transform: rotate(360deg)
+      animation: infinite-spin-anti 2s linear infinite
 
 .batch-upload-modal
   background: #fff
@@ -122,4 +120,11 @@ $stats-border = #eaeff0
   .pair-group-item
     padding: 8px 0
 
-
+@keyframes infinite-spin-anti {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
