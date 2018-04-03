@@ -171,6 +171,7 @@ class Header
     const ENACH_REGISTER_UMRN               = 'UMRN';
     const ENACH_REGISTER_CUST_REFNO         = 'CUST_REFNO';
     const ENACH_REGISTER_SCH_REFNO          = 'SCH_REFNO';
+    const ENACH_REGISTER_REF_1              = 'REF_1';
     const ENACH_REGISTER_CUST_NAME          = 'CUST_NAME';
     const ENACH_REGISTER_BANK               = 'BANK';
     const ENACH_REGISTER_BRANCH             = 'BRANCH';
@@ -475,6 +476,7 @@ class Header
                 self::ENACH_REGISTER_UMRN,
                 self::ENACH_REGISTER_CUST_REFNO,
                 self::ENACH_REGISTER_SCH_REFNO,
+                self::ENACH_REGISTER_REF_1,
                 self::ENACH_REGISTER_CUST_NAME,
                 self::ENACH_REGISTER_BANK,
                 self::ENACH_REGISTER_BRANCH,

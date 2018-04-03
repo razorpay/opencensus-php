@@ -23,6 +23,7 @@ class Constants
     const HDFC_CYBERSOURCE = 'hdfc_cybersource';
     const AXIS_CYBERSOURCE = 'axis_cybersource';
     const HDFC_FSS         = 'hdfc_fss';
+    const ENACH_RBL        = 'enach_rbl';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -55,6 +56,7 @@ class Constants
         Type::EMANDATE_DEBIT => [
             self::HDFC,
             self::AXIS,
+            self::ENACH_RBL,
         ],
         Type::REFUND_FAILED => [
             'All',
@@ -100,6 +102,7 @@ class Constants
         Type::EMANDATE_DEBIT => [
             self::HDFC      => ['hdfc.emandate@razorpay.com'],
             self::AXIS      => ['axis.emandate@razorpay.com'],
+            self::ENACH_RBL => ['rbl.emandate@razorpay.com'],
         ],
 
         Type::EMI => [
@@ -110,7 +113,7 @@ class Constants
             self::SCBL     => ['scbl.emi@razorpay.com'],
         ],
 
-        TYPE::REFUND_FAILED => [
+        Type::REFUND_FAILED => [
             self::UPI_ICICI        => ['supportteam@razorpay.com'],
             self::AIRTEL_MONEY     => ['supportteam@razorpay.com'],
             self::AXIS_MIGS        => ['supportteam@razorpay.com'],
