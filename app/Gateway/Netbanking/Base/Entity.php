@@ -97,6 +97,11 @@ class Entity extends Base\Entity
         $this->setAttribute(self::BANK, $bank);
     }
 
+    public function setAmount($amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
+    }
+
     public function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];

@@ -3438,5 +3438,7 @@ ALTER TABLE customers
 ALTER TABLE invoices
     ADD INDEX invoices_status_expire_by_deleted_at_index (status, expire_by, deleted_at);
 
-ALTER TABLE tokens
-    ADD INDEX `tokens_gateway_token_index` (`gateway_token`);
+ALTER TABLE virtual_accounts
+    ADD COLUMN `entity_id` char(14) NULL DEFAULT NULL AFTER `customer_id`,
+    ADD COLUMN `entity_type` char(20) NULL DEFAULT NULL AFTER `entity_id`,
+    ADD INDEX `virtual_accounts_entity_id_entity_type_index` (`entity_id`,`entity_type`);

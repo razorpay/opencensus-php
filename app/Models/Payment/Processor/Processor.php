@@ -379,19 +379,13 @@ class Processor
 
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
 
-        $data = array(
+        $data = [
             'originalAmount'    => $input['amount'],
             'fees'              => $fee,
             'razorpay_fee'      => $fee - $tax,
             'tax'               => $tax,
             'amount'            => $input['amount'] + $fee,
-        );
-
-        // Converts all the amounts to rupees
-        foreach ($data as $key => $value)
-        {
-            $data[$key] = $value / 100;
-        }
+        ];
 
         // Set new input amount and fees
         $input['amount'] = $input['amount'] + $fee;

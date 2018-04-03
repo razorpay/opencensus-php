@@ -2524,7 +2524,7 @@ class Entity extends Base\PublicEntity
         // Since the first auth transaction would have already been
         // done, we don't need to do any MaxMind risk checks for this.
         //
-        if ($this->isSecondRecurring() === true)
+        if ($this->isSecondRecurring(true) === true)
         {
             return false;
         }

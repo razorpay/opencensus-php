@@ -41,6 +41,7 @@ class Entity extends Base\Entity
         self::SIGNED_XML,
         self::UMRN,
         self::STATUS,
+        self::ACQUIRER,
         self::GATEWAY_REFERENCE_ID,
         self::ACKNOWLEDGE_STATUS,
         self::REGISTRATION_STATUS,

@@ -209,6 +209,7 @@ final class Route
         'qr_code_download_live'                    => ['get',      'l/qrcode/{id}',                                  'QrCodeController@fetchLiveQrCode'                                  ],
         'qr_code_download_test'                    => ['get',      't/qrcode/{id}',                                  'QrCodeController@fetchTestQrCode'                                  ],
         'virtual_account_create'                   => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
+        'virtual_account_order_create'             => ['post',     'orders/{id}/virtual_accounts',                   'VirtualAccountController@createForOrder'                           ],
         'virtual_account_edit'                     => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
         'virtual_account_fetch'                    => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
         'virtual_account_fetch_multiple'           => ['get',      'virtual_accounts',                               'VirtualAccountController@list'                                     ],
@@ -827,6 +828,7 @@ final class Route
         'otp_verify_app',
         'device_create',
         'merchant_methods_downtime',
+        'virtual_account_order_create',
     ];
 
     public static $device = [
@@ -1773,7 +1775,7 @@ final class Route
         'merchant_requests_status_log'             => Permission::VIEW_MERCHANT_REQUESTS,
         'merchant_bank_account_change_status'      => '*',
         'merchant_activation_reviewers'            => '*',
-        'merchant_activation_bulk_assign_reviewer' => Permission::EDIT_MERCHANT_REQUESTS,
+        'merchant_activation_bulk_assign_reviewer' => Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER,
         'db_meta_query'                            => Permission::DB_META_QUERY,
     ];
 

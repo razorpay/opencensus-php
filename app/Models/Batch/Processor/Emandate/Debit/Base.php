@@ -20,10 +20,16 @@ class Base extends BaseProcessor
 
     protected function updatePaymentEntities(array $content)
     {
+        //
+        // Can't put in a transaction because of webhooks and emails
+        //
+
         // Update gateway payment
         $this->updateGatewayPayment($content);
 
         $payment = $this->getPayment($content);
+
+        $this->assertAmount($payment, $content);
 
         // Update payment
         $this->updatePayment($payment, $content);
@@ -42,6 +48,29 @@ class Base extends BaseProcessor
                                                                     $accountNumber);
 
         return $payment;
+    }
+
+    protected function assertAmount(Payment\Entity $payment, $content)
+    {
+        $expectedAmount = number_format($payment->getAmount() / 100, 2, '.', '');
+
+        $actualAmount = $this->getFormattedGatewayAmount($content);
+
+        if ($expectedAmount !== $actualAmount)
+        {
+            throw new Exception\LogicException(
+                'Amount tampering in Emandate found.',
+                ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED, [
+                    'expected' => $expectedAmount,
+                    'actual'   => $actualAmount,
+                    'payment_id'    => $payment->getId(),
+                ]);
+        }
+    }
+
+    protected function getFormattedGatewayAmount($content)
+    {
+        return number_format($content['amount'], 2, '.', '');
     }
 
     protected function updateGatewayPayment(array $content)
@@ -118,7 +147,7 @@ class Base extends BaseProcessor
         return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
     }
 
-    protected function createSetOutputFileAndSave(array & $entries)
+    protected function createSetOutputFileAndSave(array & $entries, string $fileType = FileStore\Type::BATCH_OUTPUT)
     {
         return;
     }
