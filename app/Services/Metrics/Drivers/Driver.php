@@ -28,7 +28,7 @@ abstract class Driver
      * @param  string $namespace
      * @return Driver
      */
-    abstract public function namespace(string $namespace): Driver
+    public function namespace(string $namespace): Driver
     {
         $this->namespace = $namespace;
 
