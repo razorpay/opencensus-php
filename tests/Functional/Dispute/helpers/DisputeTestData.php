@@ -908,6 +908,42 @@ return [
         ],
     ],
 
+    'testDisputeFetchForAdmin'    => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/admin/dispute?expand[]=payment',
+        ],
+        'response'  => [
+            'content'       => [
+                'count'         => 2,
+                'items'         => [
+                    [
+                        'amount'            => 1000000,
+                        'currency'          => 'INR',
+                        'reason_code'       => 'SOMETHING_BAD',
+                        'status'            => 'open',
+                        'phase'             => 'chargeback',
+                        'payment'           => [
+                            'status'          => 'captured',
+                            'amount_refunded' => 0,
+                        ],
+                    ],
+                    [
+                        'amount'            => 1000000,
+                        'currency'          => 'INR',
+                        'reason_code'       => 'SOMETHING_BAD',
+                        'status'            => 'open',
+                        'phase'             => 'chargeback',
+                        'payment'           => [
+                            'status'          => 'captured',
+                            'amount_refunded' => 0,
+                        ],
+                    ],
+                ]
+            ],
+        ],
+    ],
+
     'testFetchMerchantDetails' => [
         'request' => [
             'method'  => 'get',
