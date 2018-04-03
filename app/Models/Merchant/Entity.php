@@ -272,7 +272,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH => false,
         self::FEE_MODEL              => FeeModel::PREPAID,
         self::REFUND_SOURCE          => RefundSource::BALANCE,
-        self::CHANNEL                => Settlement\Channel::ICICI,
+        self::CHANNEL                => Settlement\Channel::AXIS,
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
