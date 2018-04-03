@@ -552,4 +552,30 @@ class HitachiGatewayTest extends TestCase
 
         $this->assertEquals(1, $payment['verified']);
     }
+
+    /**
+     * Test for payment verification failure when
+     * response from gateway is format error.
+     */
+    public function testVerifyPaymentWithFormatError()
+    {
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $data = $this->testData['testVerifyMismatch'];
+
+        $this->mockVerifyFormatError();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+
+        $hitachiPayment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(0, $hitachiPayment['verified']);
+    }
 }

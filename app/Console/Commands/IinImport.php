@@ -38,7 +38,7 @@ class IinImport extends Command
      *
      * @return mixed
      */
-    public function fire()
+    public function handle()
     {
         $filename = $this->argument('filename');
         $errMsg = (new XLSImporter)->importWithoutNetwork($filename);

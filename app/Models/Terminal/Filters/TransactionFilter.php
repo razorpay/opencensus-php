@@ -262,12 +262,11 @@ class TransactionFilter extends Terminal\Filter
         // payments. Though, it would be applicable for shared terminals also,
         // we don't want to fallback on that just yet.
         //
-        // NOTE: It should be weak check only because array_diff returns back an array.
-        //
         if ((empty(array_diff($applicableTypes, $terminal->getType())) === true) or
             ($terminal->isNo2Fa() === true))
         {
-            if (($terminal->isShared() === false) and
+
+            if (($terminal->isFallbackApplicable($this->input['merchant']) === true) and
                 ($payment->isCard() === true))
             {
                 return true;
@@ -289,7 +288,13 @@ class TransactionFilter extends Terminal\Filter
             {
                 $gateway = $terminal->getGateway();
 
-                return Gateway::isUpiIntentFlowSupported($gateway);
+                if ((Gateway::isUpiIntentFlowSupported($gateway) === true) and
+                    ($terminal->isPay() === true))
+                {
+                    return true;
+                }
+
+                return false;
             }
         }
 
@@ -424,7 +429,7 @@ class TransactionFilter extends Terminal\Filter
      */
     public function tpvFilter($terminal)
     {
-        if ($this->input['payment']->isNetbanking() === true)
+        if ($this->input['payment']->isTpvMethod() === true)
         {
             if ($this->input['merchant']->isFeatureEnabled(Feature\Constants::TPV))
             {
@@ -442,6 +447,7 @@ class TransactionFilter extends Terminal\Filter
      * matching that of the merchant
      *
      * @param  Terminal\Entity $terminal
+     * @param array            $applicableTerminals
      *
      * @return bool
      */

@@ -3,7 +3,6 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Mail;
-use Illuminate\Http\UploadedFile;
 
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -12,14 +11,19 @@ use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\FileUploadTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
+use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class FeaturesTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use FileUploadTrait;
     use DbEntityFetchTrait;
+    use VirtualAccountTrait;
+    use RequestResponseFlowTrait;
 
     const DEFAULT_MERCHANT_ID    = '10000000000000';
     const ONBOARDING_MERCHANT_ID = '10000000001017';
@@ -29,6 +33,16 @@ class FeaturesTest extends TestCase
         $this->testDataFilePath = __DIR__.'/helpers/FeaturesTestData.php';
 
         parent::setUp();
+
+        //
+        // testOnboardingRequestStatus creates an action_state in the live mode which requires an admin to
+        // exist due to a foreign key constraint. Admin fixture is created in test and not in live, hence creating it
+        // here.
+        //
+        $this->fixtures->on('live')->create('admin', [
+            'id'     => Org::SUPER_ADMIN,
+            'org_id' => Org::RZP_ORG,
+        ]);
 
         $this->ba->adminAuth();
     }
@@ -446,6 +460,31 @@ class FeaturesTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertTrue($response);
+
+        $this->verifyMerchantRequest(
+            Constants::SUBSCRIPTIONS,
+            MerchantRequest\Type::PRODUCT,
+            MerchantRequest\Status::UNDER_REVIEW);
+    }
+
+    /**
+     * For Backward Compatibility : Assert that Merchant Request is also created and that the status, name, type is
+     * as expected
+     */
+    public function verifyMerchantRequest($featureName, $featureType, $requestStatus, $mode = Mode::LIVE)
+    {
+        $merchantRequest = $this->getDbLastEntityToArray('merchant_request', $mode);
+
+        $this->assertNotEmpty($merchantRequest);
+
+        $this->assertEquals($featureName, $merchantRequest[MerchantRequest\Entity::NAME]);
+
+        $this->assertEquals($featureType, $merchantRequest[MerchantRequest\Entity::TYPE]);
+
+        $this->assertEquals(
+            $requestStatus,
+            $merchantRequest[MerchantRequest\Entity::STATUS]
+        );
     }
 
     /**
@@ -655,7 +694,7 @@ class FeaturesTest extends TestCase
         // Test the fetch status route
         $this->getMarketplaceOnboardingResponseStatus();
 
-        Mail::assertSent(FeatureEnabledEmail::class, function ($mail)
+        Mail::assertQueued(FeatureEnabledEmail::class, function ($mail)
         {
             $this->assertEquals('Route', $mail->viewData['feature']);
 
@@ -664,6 +703,16 @@ class FeaturesTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testOnboardingRequestStatusUpdateLeadingToMerchantRequestCreation()
+    {
+        $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
+
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        // Test update status API
+        $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'rejected');
     }
 
     /**
@@ -770,6 +819,44 @@ class FeaturesTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertTrue($response);
+
+        $this->verifyMerchantRequest(
+            Constants::MARKETPLACE,
+            MerchantRequest\Type::PRODUCT,
+            MerchantRequest\Status::UNDER_REVIEW);
+    }
+
+    public function testRestrictedAccessFeatureEnabledAndAccessedByMerchant()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000000',
+                'name' => 'virtual_accounts'
+            ]);
+
+        $this->ba->privateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
+
+        $this->startTest($testData);
+    }
+
+    public function testRestrictedAccessFeatureDisabledAndAccessedByMerchant()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->ba->privateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
+
+        $this->startTest($testData);
     }
 
     /**
@@ -800,7 +887,7 @@ class FeaturesTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
-        
+
         $fileStoreData = $this->getDbLastEntityPublic('file_store',MODE::LIVE);
 
         $testData = $this->testData['testFileStoreData'];
@@ -812,6 +899,11 @@ class FeaturesTest extends TestCase
         $fileStoreId = $fileStoreData['id'];
 
         $this->fixtures->stripSign($fileStoreId);
+
+        $this->verifyMerchantRequest(
+            Constants::MARKETPLACE,
+            MerchantRequest\Type::PRODUCT,
+            MerchantRequest\Status::UNDER_REVIEW);
 
         return $fileStoreId;
     }
@@ -845,6 +937,11 @@ class FeaturesTest extends TestCase
         $testData['response']['content']['marketplace_activation_status'] = $status;
 
         $this->startTest($testData);
+
+        $this->verifyMerchantRequest(
+            Constants::MARKETPLACE,
+            MerchantRequest\Type::PRODUCT,
+            MerchantRequest\Constants::getRequestStatusForOnboardingStatus($status));
     }
 
     /**
@@ -920,28 +1017,6 @@ class FeaturesTest extends TestCase
         $this->ba->proxyAuth('rzp_live_' . $merchantId);
 
         return $merchantId;
-    }
-
-    /**
-     * @param string $file
-     *
-     * @return UploadedFile
-     */
-    protected function createUploadedFile(string $file): UploadedFile
-    {
-        $this->assertFileExists($file);
-
-        $mimeType = 'application/pdf';
-        $uploadedFile = new UploadedFile(
-            $file,
-            $file,
-            $mimeType,
-            filesize($file),
-            null,
-            true
-        );
-
-        return $uploadedFile;
     }
 
     protected function getMarketplaceOnboardingResponseStatus()
@@ -1037,7 +1112,7 @@ class FeaturesTest extends TestCase
 
         $testData['request']['content']['names'] = $featureNames;
 
-        $testData['request']['content']['should_sync'] = (int)$shouldSync;
+        $testData['request']['content']['should_sync'] = (int) $shouldSync;
 
         $testData['request']['url'] = '/accounts/me/features';
 

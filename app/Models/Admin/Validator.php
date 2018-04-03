@@ -40,4 +40,8 @@ class Validator extends Base\Validator
         ConfigKey::BLOCK_BANK_TRANSFERS_FOR_CRYPTO      => 'filled|boolean',
         ConfigKey::DISABLE_MAGIC                        => 'filled|boolean',
     ];
+
+    protected static $scorecardRules = [
+        'count'             => 'required|integer|max:100'
+    ];
 }

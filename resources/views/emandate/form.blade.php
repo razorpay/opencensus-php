@@ -319,7 +319,7 @@
                     pattern='^\d{12}$'
                     required
                     placeholder='Enter your Aadhaar number'
-                    value={{ $data['request']['content']['input']['aadhaar']['number'] ?? "" }} >
+                    value="{{ $data['request']['content']['input']['aadhaar']['number'] ?? '' }}" >
               </div>
             </div>
           </div>

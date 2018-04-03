@@ -235,7 +235,7 @@ class Server extends Base\Mock\Server
 
     protected function generateAtomToken()
     {
-        $token = bin2hex(openssl_random_pseudo_bytes(46/2));
+        $token = bin2hex(random_bytes(46/2));
         $token .= 'z'.'%3D';
 
         return $token;

@@ -3,22 +3,16 @@
 namespace RZP\Models\Payment\Processor;
 
 use Mail;
-use Request;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Gateway\Hdfc;
-use RZP\Models\Admin;
+use RZP\Models\BankTransfer;
 use RZP\Models\Batch;
-use RZP\Models\Card;
 use RZP\Models\Currency;
-use RZP\Models\Merchant;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Models\Payment;
-use RZP\Models\BankTransfer;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
 
 trait Refund
 {
@@ -41,10 +35,15 @@ trait Refund
 
         if ($payment->isDisputed() === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_UNDER_DISPUTE_CANNOT_BE_REFUNDED,
-                null,
-                ['input' => $input, 'payment_id' => $payment->getId()]);
+            $openNonFraudDisputes = $this->repo->dispute->getOpenNonFraudDisputes($payment);
+
+            if (count($openNonFraudDisputes) > 0)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_UNDER_DISPUTE_CANNOT_BE_REFUNDED,
+                    null,
+                    ['input' => $input, 'payment_id' => $payment->getId()]);
+            }
         }
 
         $refund = $this->buildRefundEntity($payment, $input, $batch);

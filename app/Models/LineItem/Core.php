@@ -2,12 +2,8 @@
 
 namespace RZP\Models\LineItem;
 
-use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Item;
-use RZP\Models\Invoice;
 use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -20,7 +16,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::LINE_ITEM_CREATE_REQUEST,
             [
-                'input' => $input,
+                'input'     => $input,
                 'entity_id' => $morphEntity->getId(),
             ]
         );
@@ -175,8 +171,6 @@ class Core extends Base\Core
      * @param array             $lineItemsDetails
      * @param Merchant\Entity   $merchant
      * @param Base\PublicEntity $morphEntity
-     *
-     * @return Core
      */
     public function updateLineItemsAsPut(
         array $lineItemsDetails,

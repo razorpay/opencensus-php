@@ -5,30 +5,18 @@ namespace RZP\Console;
 use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use RZP\Console\Commands\ImportCards;
 
 class Kernel extends ConsoleKernel
 {
     /**
-     * The Artisan commands provided by your application.
+     * Register the Closure based commands for the application.
      *
-     * @var array
+     * @return void
      */
-    protected $commands = [
-        Commands\Index::class,
-        Commands\Inspire::class,
-        Commands\AddDbData::class,
-        Commands\IinImport::class,
-        Commands\IndexCreate::class,
-        Commands\RzpDbRefresh::class,
-        Commands\VerifyUpiProviders::class,
-        Commands\UidCheckDigitVerify::class,
-        Commands\VerifyTopLevelDomain::class,
-        Commands\GenerateEmailTemplates::class,
-        \Laravel\Tinker\Console\TinkerCommand::class,
-        Commands\ImportCards::class,
-        Commands\ExportCustomers::class,
-    ];
+    protected function commands()
+    {
+        $this->load(__DIR__.'/Commands');
+    }
 
     /**
      * Define the application's command schedule.

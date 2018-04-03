@@ -199,7 +199,7 @@ class Entity extends Base\PublicEntity
 
     protected function setEmailAttribute($email)
     {
-        $formattedEmail = ($email === null) ? null : mb_strtolower($email);
+        $formattedEmail = ($email === null) ? null : mb_strtolower(trim($email));
 
         $this->attributes[self::EMAIL] =  $formattedEmail;
     }

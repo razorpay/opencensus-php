@@ -15,6 +15,8 @@ return [
                 'description' => 'Item 1 description :) ..',
                 'amount'      => 100,
                 'currency'    => 'INR',
+                'hsn_code'    => '00110022',
+                'tax_rate'    => 1800,
                 'type'        => 'invoice',
             ],
         ],
@@ -25,6 +27,8 @@ return [
                 'description'   => 'Item 1 description :) ..',
                 'amount'        => 100,
                 'currency'      => 'INR',
+                'hsn_code'      => '00110022',
+                'tax_rate'      => 1800,
                 'unit'          => null,
                 'tax_inclusive' => false,
                 'tax_id'        => null,
@@ -42,6 +46,7 @@ return [
                 'description' => 'Item 1 description :) ..',
                 'unit_amount' => 100,
                 'currency'    => 'INR',
+                'sac_code'    => '914566',
                 'type'        => 'invoice',
             ],
         ],
@@ -53,6 +58,8 @@ return [
                 'amount'        => 100,
                 'unit_amount'   => 100,
                 'currency'      => 'INR',
+                'sac_code'      => '914566',
+                'tax_rate'      => null,
                 'unit'          => null,
                 'tax_inclusive' => false,
                 'tax_id'        => null,
@@ -86,8 +93,35 @@ return [
         ],
     ],
 
-    'testCreateItemWithTaxId' => [
+    'testCreateItemWithInvalidTaxRate' => [
         'request' => [
+            'url'     => '/items',
+            'method'  => 'post',
+            'content' => [
+                'name'        => 'Item 1',
+                'description' => 'Item 1 description :) ..',
+                'amount'      => 100,
+                'currency'    => 'INR',
+                'tax_rate'    => 15000,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The tax rate must be a valid integer between 0 and 10000',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateItemWithTaxId' => [
+        'request'  => [
             'url'     => '/items',
             'method'  => 'post',
             'content' => [
@@ -108,6 +142,9 @@ return [
                 'unit'          => null,
                 'tax_inclusive' => false,
                 'tax_id'        => 'tax_00000000000001',
+                'tax'           => [
+                    'id' => 'tax_00000000000001',
+                ],
                 'tax_group_id'  => null,
             ],
         ],
@@ -158,6 +195,57 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Both tax_id and tax_group_id cannot be present',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateItemWithHsnAndSacCode' => [
+        'request'   => [
+            'url'     => '/items',
+            'method'  => 'post',
+            'content' => [
+                'name'        => 'Item 1',
+                'description' => 'Item 1 description :) ..',
+                'amount'      => 100,
+                'currency'    => 'INR',
+                'hsn_code'    => '00110022',
+                'sac_code'    => '914600',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Both hsn_code and sac_code cannot be present',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateItemToContainBothHsnAndSacCode' => [
+        'request'   => [
+            'url'     => '/items/item_1000000001item',
+            'method'  => 'patch',
+            'content' => [
+                'sac_code' => '914600',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Both hsn_code and sac_code cannot be present',
                 ],
             ],
             'status_code' => 400,
@@ -222,6 +310,52 @@ return [
                         'unit'          => null,
                         'tax_inclusive' => false,
                         'tax_id'        => null,
+                        'tax_group_id'  => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetMultipleItemsWithExpandTax' => [
+        'request'  => [
+            'url'     => '/items?expand[]=tax',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 2,
+                'items' => [
+                    [
+                        'id'            => 'item_1000000001item',
+                        'active'        => true,
+                        'name'          => 'A different product',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                        'currency'      => 'INR',
+                        'unit'          => null,
+                        'tax_inclusive' => false,
+                        'tax_id'        => null,
+                        'tax'           => null,
+                        'tax_group_id'  => null,
+                    ],
+                    [
+                        'id'            => 'item_1000000000item',
+                        'active'        => true,
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                        'currency'      => 'INR',
+                        'unit'          => null,
+                        'tax_inclusive' => false,
+                        'tax_id'        => 'tax_00000000000001',
+                        'tax'           => [
+                            'id'        => 'tax_00000000000001',
+                            'name'      => 'Tax #1',
+                            'rate_type' => 'percentage',
+                            'rate'      => 1000,
+                        ],
                         'tax_group_id'  => null,
                     ],
                 ],

@@ -32,6 +32,10 @@ class Entity extends Base\PublicEntity
      */
     const TAX_INCLUSIVE         = 'tax_inclusive';
 
+    const HSN_CODE              = 'hsn_code';
+    const SAC_CODE              = 'sac_code';
+    const TAX_RATE              = 'tax_rate';
+
     /**
      * One item can have associated either one individual tax
      * or a group of tax via tax_group_id.
@@ -40,6 +44,11 @@ class Entity extends Base\PublicEntity
     const TAX_GROUP_ID          = 'tax_group_id';
 
     const DELETED_AT            = 'deleted_at';
+
+    /**
+     * Expandable relation keys
+     */
+    const TAX                   = 'tax';
 
     /**
      * These are used when other entities need
@@ -61,6 +70,9 @@ class Entity extends Base\PublicEntity
         self::TYPE          => Type::INVOICE,
         self::UNIT          => null,
         self::TAX_INCLUSIVE => false,
+        self::HSN_CODE      => null,
+        self::SAC_CODE      => null,
+        self::TAX_RATE      => null,
         self::TAX_ID        => null,
         self::TAX_GROUP_ID  => null,
     ];
@@ -78,7 +90,11 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::UNIT,
         self::TAX_INCLUSIVE,
+        self::HSN_CODE,
+        self::SAC_CODE,
+        self::TAX_RATE,
         self::TAX_ID,
+        self::TAX,
         self::TAX_GROUP_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -96,7 +112,11 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::UNIT,
         self::TAX_INCLUSIVE,
+        self::HSN_CODE,
+        self::SAC_CODE,
+        self::TAX_RATE,
         self::TAX_ID,
+        self::TAX,
         self::TAX_GROUP_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -111,6 +131,9 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::UNIT,
         self::TAX_INCLUSIVE,
+        self::HSN_CODE,
+        self::SAC_CODE,
+        self::TAX_RATE,
     ];
 
     protected $appends = [
@@ -122,6 +145,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT        => 'int',
         self::UNIT_AMOUNT   => 'int',
         self::TAX_INCLUSIVE => 'bool',
+        self::TAX_RATE      => 'int',
     ];
 
     protected $publicSetters = [
@@ -166,6 +190,21 @@ class Entity extends Base\PublicEntity
     public function isTaxInclusive()
     {
         return $this->getAttribute(self::TAX_INCLUSIVE);
+    }
+
+    public function getHsnCode()
+    {
+        return $this->getAttribute(self::HSN_CODE);
+    }
+
+    public function getSacCode()
+    {
+        return $this->getAttribute(self::SAC_CODE);
+    }
+
+    public function getTaxRate()
+    {
+        return $this->getAttribute(self::TAX_RATE);
     }
 
     public function getTaxId()

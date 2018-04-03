@@ -6,9 +6,9 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 
@@ -249,7 +249,9 @@ class Processor extends Base\Core
 
             $merchants = $this->repo->merchant->findMany($mids);
 
-            $this->setlTime = Carbon::tomorrow(Timezone::IST)->getTimestamp();
+            $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+            $settledAtCutoff = Carbon::tomorrow(Timezone::IST)->getTimestamp();
 
             foreach ($merchants as $merchant)
             {
@@ -264,7 +266,7 @@ class Processor extends Base\Core
 
                 // Get all transactions due settlement till yesterday end of day
                 $txns = $this->repo->transaction->fetchUnsettledTransactions(
-                            $this->setlTime, $channel, [$mid]);
+                            $settledAtCutoff, $channel, [$mid]);
 
                 $filteredTxns = $this->filterTransactionsForSettlement($txns);
 
@@ -458,7 +460,7 @@ class Processor extends Base\Core
     protected function isInvalidSettlementTime(): bool
     {
         // Cron runs at 6.10pm.
-        $sixPm = Carbon::today(Timezone::IST)->hour(18)->minute(10)->getTimestamp();
+        $sixPm = Carbon::today(Timezone::IST)->hour(18)->minute(13)->getTimestamp();
 
         // No settlements after five PM but allow settlements file upload anytime
         // before that, we want to do it before 8 am as well as that allows us

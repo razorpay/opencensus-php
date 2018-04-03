@@ -115,6 +115,18 @@ class TerminalRuleFilterTest extends TestCase
         $this->runTestCase($test, $merchant);
     }
 
+    public function testUpiFilter()
+    {
+        $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+        $this->fixtures->create('terminal:shared_upi_icici_terminal');
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $test = $this->testData[__FUNCTION__];
+
+        $this->runTestCase($test, $merchant);
+    }
+
     public function testNetworkFilter()
     {
         $this->fixtures->create('terminal:shared_hdfc_terminal');

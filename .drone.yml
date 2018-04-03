@@ -19,7 +19,7 @@ pipeline:
       - echo -n "extension=nanotime.so" >> /etc/php7/conf.d/nanotime.ini
       - php -m
       - composer config --global github-oauth.github.com $GIT_TOKEN
-      - composer install --no-interaction
+      - composer install --no-interaction --optimize-autoloader
       - mkdir -p /opt/razorpay/certs/first_data
       - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --debug --verbose
     when:
@@ -143,7 +143,7 @@ pipeline:
     pull: true
     secrets:
       - docker_username
-      - docker_password 
+      - docker_password
       - server_url_stage
       - server_cert_stage
       - client_cert_stage

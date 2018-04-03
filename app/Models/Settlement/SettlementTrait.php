@@ -142,7 +142,7 @@ trait SettlementTrait
         //
         $oneSetlPerDayMids = [
             Preferences::MID_WEALTHY,
-//            Preferences::MID_PAISABAZAAR,
+            Preferences::MID_PAISABAZAAR,
         ];
 
         if (($txn->isTypePayment() === true) and
@@ -261,6 +261,8 @@ trait SettlementTrait
 
         if (empty($filteredTxnIds) === true)
         {
+            $this->trace->info(TraceCode::RECIPIENT_SETTLEMENT_NO_TXNS_TO_UPDATE);
+
             return;
         }
 

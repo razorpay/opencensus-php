@@ -62,6 +62,8 @@ class CreateCoupons extends Migration
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
+
+            $table->index(Coupon::CREATED_AT);
         });
     }
 

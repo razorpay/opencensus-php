@@ -542,7 +542,7 @@ class NetbankingAxisGatewayTest extends TestCase
         ];
 
         // Mail catch with amount and refund everywhere
-        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData)
+        Mail::assertQueued(DailyFileMail::class, function ($mail) use ($testData)
         {
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
@@ -569,7 +569,7 @@ class NetbankingAxisGatewayTest extends TestCase
                 ]
         ];
 
-        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData)
+        Mail::assertQueued(DailyFileMail::class, function ($mail) use ($testData)
         {
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 

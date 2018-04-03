@@ -2,6 +2,8 @@
 
 namespace RZP\Models\BankAccount;
 
+use App;
+
 use Razorpay\IFSC\IFSC;
 use RZP\Base;
 use RZP\Constants\Mode;
@@ -14,7 +16,7 @@ class Validator extends Base\Validator
     const INVALID_ADDRESS_PROOF_URL_MESSAGE = 'Invalid Address Proof File in Details or Invalid Auth';
 
     protected static $addBankAccountRules = [
-        Detail\Entity::ADDRESS_PROOF_URL        => 'sometimes|custom',
+        Detail\Entity::ADDRESS_PROOF_URL        => 'sometimes',
         Entity::IFSC_CODE                       => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER                  => 'required|alpha_num|between:5,22',
         Entity::BENEFICIARY_NAME                => 'required|between:4,120|alpha_space_num',
@@ -97,13 +99,14 @@ class Validator extends Base\Validator
         }
     }
 
-    function validateAddressProofUrl($input)
+    public function validateAddressProofUploadOverProxyAuth()
     {
         // Address proof URL will be passed only when merchant
         // is requesting for bank account change which will only
         // happen over proxy auth
-        if (($this->app['basicauth']->isProxyAuth() === false) or
-            (empty($input) === true))
+        $app = App::getFacadeRoot();
+
+        if ($app['basicauth']->isProxyAuth() === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 self::INVALID_ADDRESS_PROOF_URL_MESSAGE);

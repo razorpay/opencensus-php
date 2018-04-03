@@ -53,8 +53,14 @@ class CreateCustomers extends Migration {
             $table->integer(Customer::DELETED_AT)
                   ->nullable();
 
-            $table->index(Customer::CONTACT);
+            //
+            // Currently laravel does not provide a way to use indexes with
+            // a prefix length in migrations. Actual index length for email
+            // column is 40. Ref https://github.com/laravel/framework/issues/9293
+            //
             $table->index(Customer::EMAIL);
+            $table->index([Customer::CONTACT, Customer::EMAIL, Customer::MERCHANT_ID]);
+            $table->index([Customer::CONTACT, Customer::MERCHANT_ID]);
             $table->index(Customer::CREATED_AT);
 
             $table->foreign(Customer::MERCHANT_ID)

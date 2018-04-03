@@ -8,6 +8,7 @@ use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\State;
+use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
@@ -100,6 +101,7 @@ class Entity extends Base\PublicEntity
     //
 
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
+    const AUTO_REFUND_DELAY_FOR_EMANDATE = 1728000; // 20 days
     const SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
     // 30 minutes in seconds
     const MIN_AUTO_REFUND_DELAY = 1800;
@@ -245,6 +247,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::WHITELISTED_IPS_LIVE,
         self::WHITELISTED_IPS_TEST,
+        self::MERCHANT_DETAIL,
      ];
 
     protected $defaults = [
@@ -269,7 +272,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH => false,
         self::FEE_MODEL              => FeeModel::PREPAID,
         self::REFUND_SOURCE          => RefundSource::BALANCE,
-        self::CHANNEL                => Settlement\Channel::ICICI,
+        self::CHANNEL                => Settlement\Channel::AXIS,
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
@@ -983,7 +986,9 @@ class Entity extends Base\PublicEntity
 
     protected function setEmailAttribute($email)
     {
-        $this->attributes[self::EMAIL] = mb_strtolower($email);
+        $formattedEmail = ($email === null) ? null : mb_strtolower(trim($email));
+
+        $this->attributes[self::EMAIL] =  $formattedEmail;
     }
 
     public function setWebsiteAttribute($website)
@@ -1335,6 +1340,17 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany(Invitation\Entity::class)
                     ->orderBy(Invitation\Entity::CREATED_AT, 'desc');
+    }
+
+    /**
+     * Returns tag names for merchant, ensures to read from LIVE mode.
+     * @return array
+     */
+    public function liveTagNames(): array
+    {
+        return $this->getConnectionName() === Mode::LIVE ?
+                $this->tagNames() :
+                (clone $this)->setConnection(Mode::LIVE)->tagNames();
     }
 
     public function isEmailOptional()

@@ -198,18 +198,11 @@ class ViewDataSerializer extends Base\Core
 
     protected function getFormattedMerchantDataForView(): array
     {
-        $merchantBrandColor = $this->merchant->getBrandColor();
-
-        //
-        // If brand_color is not set, use a default value.
-        // Same value is used in invoice.js (hosted page, pdf etc)
-        //
-        if ($merchantBrandColor === null)
-        {
-            $merchantBrandColor = self::DEFAULT_MERCHANT_BRAND_COLOR;
-        }
+        // If merchant branch color is not set, use a default value, same is used in invoice.js repo.
+        $merchantBrandColor = $this->merchant->getBrandColor() ?: self::DEFAULT_MERCHANT_BRAND_COLOR;
 
         $merchantData = [
+            'tags'             => $this->merchant->liveTagNames(),
             'brand_color'      => get_rgb_value($merchantBrandColor),
             'brand_text_color' => get_brand_text_color($merchantBrandColor),
             'image'            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),

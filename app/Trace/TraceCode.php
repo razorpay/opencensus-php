@@ -159,6 +159,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_TRANSFER_ATTEMPT_BULK_UPDATE_REQUEST     = 'FUND_TRANSFER_ATTEMPT_BULK_UPDATE_REQUEST';
     const FUND_TRANSFER_ATTEMPT_UPDATED                 = 'FUND_TRANSFER_ATTEMPT_UPDATED';
     const FUND_TRANSFER_ATTEMPT_SOURCE_UPDATED          = 'FUND_TRANSFER_ATTEMPT_SOURCE_UPDATED';
+    const PAYMENT_RECURRING_INVALID_STATUS              = 'PAYMENT_RECURRING_INVALID_STATUS';
+    const GATEWAY_TOKEN_MISMATCH                        = 'GATEWAY_TOKEN_MISMATCH';
 
     const MPESA_GATEWAY_PARAM_ARRAY                     = 'MPESA_GATEWAY_PARAM_ARRAY';
     const INVALID_AUTH                                  = 'INVALID_AUTH';
@@ -195,7 +197,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RBL_NODAL_BEN_ADD_REQUEST                     = 'RBL_NODAL_BEN_ADD_REQUEST';
     const RBL_NODAL_TRANSFER_REQUEST                    = 'RBL_NODAL_TRANSFER_REQUEST';
     const RBL_NODAL_TRANSFER_RESPONSE                   = 'RBL_NODAL_TRANSFER_RESPONSE';
+    const RBL_NODAL_FAILURE_RESPONSE                    = 'RBL_NODAL_FAILURE_RESPONSE';
     const RBL_NODAL_BEN_ADD_RESPONSE                    = 'RBL_NODAL_BEN_ADD_RESPONSE';
+    const RBL_NODAL_FAILED_RESPONSE                     = 'RBL_NODAL_FAILED_RESPONSE';
+    const RBL_NODAL_TRANSFER_REQUEST_FAILED             = 'RBL_NODAL_TRANSFER_REQUEST_FAILED';
 
     const KOTAK_NODAL_BALANCE_REQUEST                   = 'KOTAK_NODAL_BALANCE_REQUEST';
     const KOTAK_NODAL_BALANCE_RESPONSE                  = 'KOTAK_NODAL_BALANCE_RESPONSE';
@@ -222,6 +227,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CUSTOMER_EDIT                                 = 'CUSTOMER_EDIT';
     const CUSTOMER_TOKEN_CREATE                         = 'CUSTOMER_TOKEN_CREATE';
     const CUSTOMER_TOKEN_EDIT                           = 'CUSTOMER_TOKEN_EDIT';
+    const CUSTOMER_TOKEN_STATUS_MISMATCH                = 'CUSTOMER_TOKEN_STATUS_MISMATCH';
     const CARD_NUMBER_SCRUBBED                          = 'CARD_NUMBER_SCRUBBED';
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS            = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
     const REFUND_EXCEPTION                              = 'REFUND_EXCEPTION';
@@ -543,6 +549,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_TXN_UPDATE_TIME_TAKEN          = 'SETTLEMENT_TXN_UPDATE_TIME_TAKEN';
     const SETTLEMENT_MERCHANT_SETTLE_TIME_TAKEN     = 'SETTLEMENT_MERCHANT_SETTLE_TIME_TAKEN';
     const RECIPIENT_SETTLEMENT_UPDATE_TIME_TAKEN    = 'RECIPIENT_SETTLEMENT_UPDATE_TIME_TAKEN';
+    const RECIPIENT_SETTLEMENT_NO_TXNS_TO_UPDATE    = 'RECIPIENT_SETTLEMENT_NO_TXNS_TO_UPDATE';
     const SETTLEMENT_RECONCILIATION_SKIPPED         = 'SETTLEMENT_RECONCILIATION_SKIPPED';
     const SETTLEMENT_RETURNED                       = 'SETTLEMENT_RETURNED';
     const SETTLEMENT_INITIATE_FAILED                = 'SETTLEMENT_INITIATE_FAILED';
@@ -973,6 +980,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OAUTH_TOKEN_INVALID                           = 'OAUTH_TOKEN_INVALID';
     const APP_MERCHANT_ACCESS_MAP                       = 'APP_MERCHANT_ACCESS_MAP';
     const APP_MERCHANT_ACCESS_MAP_DELETE                = 'APP_MERCHANT_ACCESS_MAP_DELETE';
+
+    const RAZORX_REQUEST                                = 'RAZORX_REQUEST';
+    const RAZORX_REQUEST_FAILED                         = 'RAZORX_REQUEST_FAILED';
 
     const SERVER_ERROR_MISSING_HANDLER                  = 'SERVER_ERROR_MISSING_HANDLER';
     const GATEWAY_FILE_CREATE_REQUEST                   = 'GATEWAY_FILE_CREATE_REQUEST';

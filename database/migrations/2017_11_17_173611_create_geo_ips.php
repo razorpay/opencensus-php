@@ -51,6 +51,8 @@ class CreateGeoIps extends Migration
             $table->index(Entity::CITY);
 
             $table->index(Entity::COUNTRY);
+
+            $table->index(Entity::CREATED_AT);
         });
     }
 

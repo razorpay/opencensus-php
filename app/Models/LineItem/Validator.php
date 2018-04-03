@@ -9,8 +9,17 @@ use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
+/**
+ * Class Validator
+ *
+ * @package RZP\Models\LineItem
+ *
+ * @property Entity     $entity
+ */
 class Validator extends Base\Validator
 {
+    const TAX_CODES  = 'tax_codes';
+
     protected static $createRules = [
         Entity::QUANTITY            => 'filled|integer|min:1',
         Entity::ITEM_ID             => 'sometimes|nullable|string|max:19',
@@ -23,6 +32,8 @@ class Validator extends Base\Validator
         Entity::UNIT                => 'sometimes|nullable|string|max:512',
         Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::TAX_INCLUSIVE       => 'filled|boolean',
+        Entity::HSN_CODE            => 'sometimes|nullable|string|max:8',
+        Entity::SAC_CODE            => 'sometimes|nullable|string|max:8',
         Entity::TAX_ID              => 'sometimes|nullable|public_id|size:18',
         Entity::TAX_GROUP_ID        => 'sometimes|nullable|public_id|size:19',
     ];
@@ -43,12 +54,22 @@ class Validator extends Base\Validator
         Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::UNIT                => 'sometimes|nullable|string|max:512',
         Entity::TAX_INCLUSIVE       => 'sometimes|nullable|boolean',
+        Entity::HSN_CODE            => 'sometimes|nullable|string|max:8',
+        Entity::SAC_CODE            => 'sometimes|nullable|string|max:8',
         Entity::TAX_ID              => 'sometimes|nullable|public_id|size:18',
         Entity::TAX_GROUP_ID        => 'sometimes|nullable|public_id|size:19',
     ];
 
     protected static $removeManyRules = [
         Entity::IDS                 => 'required|array|min:1|max:10',
+    ];
+
+    protected static $createValidators = [
+        self::TAX_CODES,
+    ];
+
+    protected static $editValidators = [
+        self::TAX_CODES,
     ];
 
     public function validateType($attribute, $value)
@@ -84,7 +105,6 @@ class Validator extends Base\Validator
         $morphEntity     = $lineItem->entity;
         $morphEntityName = $morphEntity->getEntity();
 
-
         $traceData = [
             Entity::ID          => $lineItem->getId(),
             Entity::CURRENCY    => $value,
@@ -105,6 +125,26 @@ class Validator extends Base\Validator
                 "Currency of all items should be the same as of the $morphEntityName.",
                 Entity::CURRENCY,
                 $traceData);
+        }
+    }
+
+    /**
+     * TODO: This functions exists in both Item and LineItem Validator. Make Common.
+     *
+     * @param array $input
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateTaxCodes(array $input)
+    {
+        $hsnCode = array_key_exists(Entity::HSN_CODE, $input) ?
+                    $input[Entity::HSN_CODE] : $this->entity->getHsnCode();
+        $sacCode = array_key_exists(Entity::SAC_CODE, $input) ?
+                    $input[Entity::SAC_CODE] : $this->entity->getSacCode();
+
+        if ((empty($hsnCode) === false) and (empty($sacCode) === false))
+        {
+            throw new BadRequestValidationFailureException('Both hsn_code and sac_code cannot be present');
         }
     }
 }

@@ -56,6 +56,7 @@ class CreateSbiepay extends Migration {
                 ->on_delete('restrict');
 
             $table->index('received');
+            $table->index('created_at');
         });
 	}
 

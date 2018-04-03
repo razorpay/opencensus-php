@@ -9,6 +9,8 @@ class Core extends Base\Core
 {
     public function create(array $input, StateEntity $state): Entity
     {
+        (new Validator)->checkValidRejectionReason($input, $state);
+
         $reason = (new Entity)->build($input);
 
         $reason->state()->associate($state);

@@ -7,6 +7,7 @@ class ResponseFields
     const TRANSACTION_TYPE    = 'pTranType';
     const MERCHANT_ID         = 'pMercID';
     const MERCHANT_REF_NUMBER = 'pMerchantRefNr';
+    const MERCHANT_REFERENCE  = 'pTranID';
     const ENROLLED            = 'pEnrolled';
     const BANK_URL            = 'pURL';
     const ACCOUNT_ID          = 'pAccountId';
@@ -27,4 +28,22 @@ class ResponseFields
     const RESPONSE_CODE       = 'pRespCode';
     const REQUEST_ID          = 'pRequestId';
     const STATUS              = 'pStatus';
+
+    //Bharat Qr Fields
+    const MASKED_CARD_NUMBER = 'F002';
+    const CARD_NETWORK       = 'F003';
+    const AMOUNT             = 'F004';
+    const AUDIT_TRACE_NUMBER = 'F011';
+    const TRANSACTION_TIME   = 'F012';
+    const TRANSACTION_DATE   = 'F013';
+    const RRN                = 'F037';
+    const AUTHORIZATION_ID   = 'F038';
+    const STATUS_CODE        = 'F039';
+    const TERMINAL_ID        = 'F041';
+    const MID                = 'F042';
+    const MERCHANT_NAME      = 'F043';
+    const TERMINAL_ID_DESC   = 'F102';
+    const PURCHASE_ID        = 'PurchaseID';
+    const SENDER_NAME        = 'SenderName';
+    const CHECKSUM           = 'CheckSum';
 }

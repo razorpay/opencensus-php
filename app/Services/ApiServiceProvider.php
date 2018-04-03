@@ -8,8 +8,8 @@ use Http\Mock\Client as MockHttplug;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
-use RZP\Models\Key;
 use RZP\Models\Batch;
+use RZP\Models\Order;
 use RZP\Models\Payout;
 use RZP\Models\Dispute;
 use RZP\Models\Invoice;
@@ -30,6 +30,7 @@ use RZP\Models\Workflow\Action;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Gateway\File as GatewayFile;
+use RZP\Models\Merchant\Request as MerchantRequest;
 
 class ApiServiceProvider extends BaseServiceProvider
 {
@@ -162,6 +163,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new GatewayFileManager($app);
         });
 
+        $this->app->singleton('razorx', function($app)
+        {
+            return new RazorXClient($app);
+        });
+
         $this->registerShield();
 
         $this->registerApiMutex();
@@ -223,6 +229,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'authservice',
             'sns',
             'pincodesearch',
+            'razorx',
         ];
     }
 
@@ -315,43 +322,46 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         Relation::morphMap([
             // heimdall
-            'org'             => Admin\Org\Entity::class,
-            'group'           => Admin\Group\Entity::class,
-            'admin'           => Admin\Admin\Entity::class,
-            'role'            => Admin\Role\Entity::class,
-            'permission'      => Admin\Permission\Entity::class,
+            'org'              => Admin\Org\Entity::class,
+            'group'            => Admin\Group\Entity::class,
+            'admin'            => Admin\Admin\Entity::class,
+            'role'             => Admin\Role\Entity::class,
+            'permission'       => Admin\Permission\Entity::class,
 
             // line items
-            'invoice'         => Invoice\Entity::class,
-            'addon'           => Addon\Entity::class,
+            'invoice'          => Invoice\Entity::class,
+            'addon'            => Addon\Entity::class,
 
             // transfers
-            'transfer'        => Transfer\Entity::class,
-            'reversal'        => Reversal\Entity::class,
-            'customer'        => Customer\Entity::class,
+            'transfer'         => Transfer\Entity::class,
+            'reversal'         => Reversal\Entity::class,
+            'customer'         => Customer\Entity::class,
 
             // file store
-            'merchant'        => Merchant\Entity::class,
-            'merchant_detail' => Merchant\Detail\Entity::class,
-            'batch'           => Batch\Entity::class,
-            'gateway_file'    => GatewayFile\Entity::class,
+            'merchant'         => Merchant\Entity::class,
+            'merchant_detail'  => Merchant\Detail\Entity::class,
+            'batch'            => Batch\Entity::class,
+            'gateway_file'     => GatewayFile\Entity::class,
 
             // transaction
-            'adjustment'      => Adjustment\Entity::class,
-            'payment'         => Payment\Entity::class,
-            'refund'          => Payment\Refund\Entity::class,
-            'settlement'      => Settlement\Entity::class,
-            'payout'          => Payout\Entity::class,
+            'adjustment'       => Adjustment\Entity::class,
+            'payment'          => Payment\Entity::class,
+            'order'            => Order\Entity::class,
+            'refund'           => Payment\Refund\Entity::class,
+            'settlement'       => Settlement\Entity::class,
+            'payout'           => Payout\Entity::class,
 
-            'bank_account'    => BankAccount\Entity::class,
-            'virtual_account' => VirtualAccount\Entity::class,
+            'bank_account'     => BankAccount\Entity::class,
+            'virtual_account'  => VirtualAccount\Entity::class,
 
-            'subscription'    => Subscription\Entity::class,
-            'promotion'       => Promotion\Entity::class,
+            'subscription'     => Subscription\Entity::class,
+            'promotion'        => Promotion\Entity::class,
 
-            'dispute'         => Dispute\Entity::class,
+            'dispute'          => Dispute\Entity::class,
 
-            'workflow_action' => Action\Entity::class,
+            'workflow_action'  => Action\Entity::class,
+
+            'merchant_request' => MerchantRequest\Entity::class,
         ]);
     }
 

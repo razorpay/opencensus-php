@@ -691,6 +691,22 @@ return [
         ],
     ],
 
+    'testIntentPaymentWithVpa' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The vpa field is not required and not shouldn\'t be sent.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
     'testFixAuthorizedAt' => [
         'request' => [
             'content' => [],
@@ -877,7 +893,7 @@ return [
         ]
     ],
 
-    'testIciciPaymentViaUpiS2S' => [
+    'testIntentPaymentViaUpiS2S' => [
         'request' => [
             'url' => '/payments/create/upi',
             'method' => 'POST',

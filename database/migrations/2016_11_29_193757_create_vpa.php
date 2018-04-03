@@ -52,6 +52,8 @@ class CreateVpa extends Migration
                   ->on_delete('restrict');
 
             $table->unique( [Entity::USERNAME, Entity::HANDLE] );
+
+            $table->index(Entity::CREATED_AT);
         });
     }
 

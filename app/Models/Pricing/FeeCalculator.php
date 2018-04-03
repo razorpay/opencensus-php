@@ -352,7 +352,8 @@ class FeeCalculator
                 'Invalid rule count: 0, Merchant Id: ' . $payment->getMerchantId(),
                 ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
                 [
-                    'payment_id' => $payment->getId()
+                    'payment_id' => $payment->getId(),
+                    'method'     => $payment->getMethod(),
                 ]);
         }
 
@@ -366,7 +367,8 @@ class FeeCalculator
                 'Failed to find a valid pricing rule for the payment, Merchant Id: ' . $payment->getMerchantId(),
                 ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
                 [
-                    'payment_id' => $payment->getId()
+                    'payment_id' => $payment->getId(),
+                    'method'     => $payment->getMethod(),
                 ]);
         }
 

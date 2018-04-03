@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\Base\EsDao;
 use RZP\Events\DifferEvent;
+use RZP\Constants\Entity as E;
 use RZP\Models\Workflow\Action;
 use RZP\Constants\Entity as ConstantsEntity;
 
@@ -67,6 +68,17 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
         }
 
+        $merchantId = null;
+
+        if ((array_key_exists(Entity::MAKER_TYPE, $esResponse[0]['_source']) === true) and
+            (array_key_exists(Entity::MAKER_ID, $esResponse[0]['_source']) === true))
+        {
+            if ($esResponse[0]['_source'][Entity::MAKER_TYPE] === E::MERCHANT)
+            {
+                $merchantId = $esResponse[0]['_source'][Entity::MAKER_ID];
+            }
+        }
+
         $diff = [];
 
         if (array_key_exists(Entity::DIFF, $esResponse[0]['_source']))
@@ -74,15 +86,15 @@ class Core extends Base\Core
             $diff = $esResponse[0]['_source'][Entity::DIFF];
         }
 
-        $diff["old"] = $this->transformFileIdsToUrls($diff["old"]);
-        $diff["new"] = $this->transformFileIdsToUrls($diff["new"]);
+        $diff["old"] = $this->transformFileIdsToUrls($diff["old"], $merchantId);
+        $diff["new"] = $this->transformFileIdsToUrls($diff["new"], $merchantId);
 
         return $diff;
     }
 
     // code for getting the expiring URLs for the files
     // transforming those urls inline
-    private function transformFileIdsToUrls($diff)
+    private function transformFileIdsToUrls($diff, $merchantId)
     {
         $fileStoreCore = new FileStore\Core;
 
@@ -90,9 +102,9 @@ class Core extends Base\Core
         {
             if (Files::exists($key) === true)
             {
-                $diff[$key] = (function($value) use ($fileStoreCore)
+                $diff[$key] = (function($value) use ($fileStoreCore, $merchantId)
                 {
-                    return $fileStoreCore->getSignedUrlForFileId($value);
+                    return $fileStoreCore->getSignedUrl($value, $merchantId);
                 })($value);
             }
         }

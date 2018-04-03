@@ -64,7 +64,7 @@ class DisputeTest extends TestCase
 
         $this->startTest($testData);
 
-        Mail::assertSent(DisputeCreationMail::class, function ($mail) use ($testData)
+        Mail::assertQueued(DisputeCreationMail::class, function ($mail) use ($testData)
         {
             $this->stringContains(
                 $testData['response']['content']['payment_id'],
@@ -643,6 +643,17 @@ class DisputeTest extends TestCase
         $content = $this->runRequestResponseFlow($testData);
 
         $this->checkDisputeFetchForMerchant($disputes, $content);
+    }
+
+    public function testDisputeFetchForAdmin()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->times(2)->create('dispute');
+
+        $testData = $this->updateFetchTestData();
+
+        $this->runRequestResponseFlow($testData);
     }
 
     protected function checkDisputeFetchForMerchant(array $disputes, array $content)

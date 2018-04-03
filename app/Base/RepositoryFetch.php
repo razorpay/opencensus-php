@@ -47,7 +47,7 @@ trait RepositoryFetch
     protected $fetchParamRules = [
         self::FROM          => 'integer',
         self::TO            => 'integer',
-        self::COUNT         => 'integer|min:1',
+        self::COUNT         => 'integer|min:1|max:',
         self::SKIP          => 'integer',
 
         //
@@ -880,7 +880,13 @@ trait RepositoryFetch
             $count  = 1000;
         }
 
-        $this->fetchParamRules['count'] .= '|max:'.$max;
+        // In case multiple assertions are checked with different auths in same testcase, the max value for count
+        // needs to always replaced. Hence preg_replace is being used to achieve that.
+        $this->fetchParamRules[self::COUNT] = preg_replace(
+            '/max\:(\d)*/',
+            sprintf('max:%d', $max),
+            $this->fetchParamRules[self::COUNT]
+        );
 
         if (isset($params['count']) === false)
         {
