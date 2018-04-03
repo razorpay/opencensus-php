@@ -29,11 +29,13 @@ export default props => {
         </div>
         {props.children}
       </div>
-      <div class="close-icon">
-        <div>
-          <span class="icon i-close" onClick={onCloseClick} />
+      {currentStatus !== 'process' && (
+        <div class="close-icon">
+          <div>
+            <span class="icon i-close" onClick={onCloseClick} />
+          </div>
         </div>
-      </div>
+      )}
       {currentStatus === 'process' && <div class="loader" />}
     </div>
   );

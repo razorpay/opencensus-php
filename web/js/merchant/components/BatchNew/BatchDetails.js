@@ -101,7 +101,7 @@ export default function BatchDetails(props) {
                     className="btn-link pull-right"
                     onClick={() => trackSeeAllLinks(batch.id)}
                   >
-                    View All <strong>{invoices.length}</strong> &gt;
+                    View All {stats.batch_total} &gt;
                   </NavLink>
                 )}
               </div>
@@ -122,15 +122,6 @@ export default function BatchDetails(props) {
                   </TableBody>
                 </table>
               </div>
-              {!shouldShowAllInvoices && (
-                <NavLink
-                  to={`/paymentlinks?batch_id=${batch.id}`}
-                  className="btn btn-default btn-block"
-                  onClick={() => trackSeeAllLinks(batch.id)}
-                >
-                  View All <strong>{invoices.length}</strong>
-                </NavLink>
-              )}
             </div>
           </div>
         </div>
