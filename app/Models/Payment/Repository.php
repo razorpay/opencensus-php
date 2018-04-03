@@ -51,30 +51,31 @@ class Repository extends Base\Repository
 
     // These are admin allowed params to search on.
     protected $appFetchParamRules = [
-        Entity::STATUS             => 'sometimes|string',
-        Entity::VERIFIED           => 'sometimes|in:null,0,1,2',
-        Entity::REFUND_STATUS      => 'sometimes|in:null,partial,full',
-        Entity::TWO_FACTOR_AUTH    => 'sometimes|string',
-        Entity::BANK               => 'sometimes',
-        Entity::METHOD             => 'sometimes',
-        Entity::GATEWAY            => 'sometimes',
-        Entity::EMAIL              => 'sometimes|email',
-        Entity::MERCHANT_ID        => 'sometimes|alpha_num',
-        Entity::TRANSFER_ID        => 'sometimes|alpha_num|size:14',
-        Entity::CARD_ID            => 'sometimes|alpha_num|size:14',
-        Entity::CAPTURED           => 'sometimes|in:0,1',
-        Entity::WALLET             => 'sometimes|custom',
-        Entity::NOTES              => 'sometimes|notes_fetch',
-        Card\Entity::IIN           => 'sometimes|integer|digits:6',
-        Card\Entity::LAST4         => 'sometimes|string|digits:4',
-        Card\Entity::INTERNATIONAL => 'sometimes|in:0,1',
-        Entity::CUSTOMER_ID        => 'sometimes|alpha_num|size:14',
-        Entity::TOKEN_ID           => 'sometimes|alpha_num|size:14',
-        Entity::GLOBAL_TOKEN_ID    => 'sometimes|alpha_num|size:14',
-        Entity::SAVE               => 'sometimes|in:0,1',
-        Entity::LATE_AUTHORIZED    => 'sometimes|in:0,1',
-        Entity::AMOUNT             => 'sometimes|integer',
-        Entity::TERMINAL_ID        => 'sometimes|alpha_num|size:14',
+        Entity::STATUS                  => 'sometimes|string',
+        Entity::VERIFIED                => 'sometimes|in:null,0,1,2',
+        Entity::REFUND_STATUS           => 'sometimes|in:null,partial,full',
+        Entity::TWO_FACTOR_AUTH         => 'sometimes|string',
+        Entity::BANK                    => 'sometimes',
+        Entity::METHOD                  => 'sometimes',
+        Entity::GATEWAY                 => 'sometimes',
+        Entity::EMAIL                   => 'sometimes|email',
+        Entity::MERCHANT_ID             => 'sometimes|alpha_num',
+        Entity::TRANSFER_ID             => 'sometimes|alpha_num|size:14',
+        Entity::CARD_ID                 => 'sometimes|alpha_num|size:14',
+        Entity::CAPTURED                => 'sometimes|in:0,1',
+        Entity::WALLET                  => 'sometimes|custom',
+        Entity::NOTES                   => 'sometimes|notes_fetch',
+        Card\Entity::IIN                => 'sometimes|integer|digits:6',
+        Card\Entity::LAST4              => 'sometimes|string|digits:4',
+        Card\Entity::INTERNATIONAL      => 'sometimes|in:0,1',
+        Entity::CUSTOMER_ID             => 'sometimes|alpha_num|size:14',
+        Entity::TOKEN_ID                => 'sometimes|alpha_num|size:14',
+        Entity::GLOBAL_TOKEN_ID         => 'sometimes|alpha_num|size:14',
+        Entity::SAVE                    => 'sometimes|in:0,1',
+        Entity::LATE_AUTHORIZED         => 'sometimes|in:0,1',
+        Entity::AMOUNT                  => 'sometimes|integer',
+        Entity::TERMINAL_ID             => 'sometimes|alpha_num|size:14',
+        Token\Entity::RECURRING_STATUS  => 'sometimes|string|max:15',
     ];
 
     protected $signedIds = [
@@ -675,6 +676,15 @@ class Repository extends Base\Repository
         $query->where($international, '=', $params[Entity::INTERNATIONAL]);
     }
 
+    protected function addQueryParamRecurringStatus($query, $params)
+    {
+        $this->joinQueryToken($query);
+
+        $query->where(Token\Entity::RECURRING_STATUS, '=', $params[Token\Entity::RECURRING_STATUS]);
+
+        $query->select($this->getTableName() . '.*');
+    }
+
     /**
      * Param to filter payments that have been transferred (amount_transferred > 0)
      *
@@ -739,6 +749,28 @@ class Repository extends Base\Repository
         $cardId = $this->repo->card->dbColumn(Card\Entity::ID);
 
         $query->join($this->repo->card->getTableName(), $paymentCardId, '=', $cardId);
+    }
+
+    protected function joinQueryToken($query)
+    {
+        $joins = $query->getQuery()->joins;
+
+        $joins = $joins ?: [];
+
+        $tokenTable = Table::getTableNameForEntity(Constants\Entity::TOKEN);
+
+        foreach ($joins as $join)
+        {
+            if ($join->table === $tokenTable)
+            {
+                return;
+            }
+        }
+
+        $paymentTokenId = $this->dbColumn(Payment\Entity::TOKEN_ID);
+        $tokenId = $this->repo->token->dbColumn(Token\Entity::ID);
+
+        $query->join($tokenTable, $paymentTokenId, '=', $tokenId);
     }
 
     public function getYesterdayVolume()
