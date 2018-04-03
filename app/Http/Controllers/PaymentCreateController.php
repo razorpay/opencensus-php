@@ -202,6 +202,12 @@ class PaymentCreateController extends Controller
 
         $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
 
+        // Converts all the amounts to rupees
+        foreach ($data as $key => $value)
+        {
+            $data[$key] = $value / 100;
+        }
+
         if ($retJson)
         {
             return ApiResponse::json(['input' => $input,'display' => $data]);

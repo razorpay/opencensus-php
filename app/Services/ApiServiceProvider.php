@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
 use RZP\Models\Batch;
+use RZP\Models\Order;
 use RZP\Models\Payout;
 use RZP\Models\Dispute;
 use RZP\Models\Invoice;
@@ -339,6 +340,7 @@ class ApiServiceProvider extends BaseServiceProvider
             // transaction
             'adjustment'       => Adjustment\Entity::class,
             'payment'          => Payment\Entity::class,
+            'order'            => Order\Entity::class,
             'refund'           => Payment\Refund\Entity::class,
             'settlement'       => Settlement\Entity::class,
             'payout'           => Payout\Entity::class,

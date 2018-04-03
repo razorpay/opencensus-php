@@ -902,8 +902,16 @@ trait Authorize
         // for which the token was created in the first place. Hence, here, second recurring
         // is not really second recurring and could be in fact first recurring only.
         //
+        // We don't have to verify that the payment is coming from Zoho for
+        // a Zoho merchant if it's on public auth. It won't be second recurring
+        // if it's coming from public auth. It's possible that it won't be
+        // second recurring if it's coming from private auth also, but we don't
+        // have any way to figure that out. Adding access check here to at least
+        // handle second recurring type payments (recurring payments with recurring token)
+        // coming via public auth. These can be safely treated as first recurring.
+        //
         if ((empty($input[Payment\Entity::TOKEN]) === false) and
-            ($payment->isSecondRecurring() === true))
+            ($payment->isSecondRecurring(true) === true))
         {
             $this->verifyAggregatorIfApplicable($merchant);
         }
@@ -914,8 +922,10 @@ trait Authorize
      * then the token cannot be used for the payment.
      *
      * @param Payment\Entity $payment
-     * @param Token\Entity $token
+     * @param Token\Entity   $token
+     *
      * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
      */
     protected function assertTokenIsRecurring(Payment\Entity $payment, Token\Entity $token)
     {

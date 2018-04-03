@@ -56,7 +56,7 @@ class Constants
             self::HDFC,
             self::AXIS,
         ],
-        TYPE::REFUND_FAILED => [
+        Type::REFUND_FAILED => [
             'All',
             self::UPI_ICICI,
             self::AIRTEL_MONEY,
@@ -75,7 +75,7 @@ class Constants
         Type::EMI               => MailConstants::MAIL_ADDRESSES[MailConstants::EMI],
         Type::EMANDATE_REGISTER => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::EMANDATE_DEBIT    => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
-        TYPE::REFUND_FAILED     => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
+        Type::REFUND_FAILED     => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
     ];
 
     const RECIPIENTS_MAP = [
@@ -98,8 +98,8 @@ class Constants
         ],
 
         Type::EMANDATE_DEBIT => [
-            self::HDFC => ['hdfc.emandate@razorpay.com'],
-            self::AXIS => ['axis.emandate@razorpay.com'],
+            self::HDFC      => ['hdfc.emandate@razorpay.com'],
+            self::AXIS      => ['axis.emandate@razorpay.com'],
         ],
 
         Type::EMI => [

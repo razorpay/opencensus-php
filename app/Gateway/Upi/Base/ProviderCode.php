@@ -158,4 +158,9 @@ class ProviderCode
     {
         return (self::getBankCode($provider) !== null);
     }
+
+    public static function validateBankCode(string $bankCode): bool
+    {
+        return (array_search($bankCode, self::$bankCodes) !== false);
+    }
 }

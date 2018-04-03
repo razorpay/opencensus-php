@@ -25,6 +25,7 @@ use RZP\Models\Merchant;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Processor\Netbanking;
 
 /**
@@ -1362,6 +1363,17 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Getters ---------------------------------------------
 
+    public function getBankCodeFromVpa()
+    {
+        $vpa = $this->getAttribute(self::VPA);
+
+        $vpaParts = explode('@', $vpa);
+
+        $psp = end($vpaParts);
+
+        return ProviderCode::getBankCode($psp);
+    }
+
     public function getTransferId()
     {
         return $this->getAttribute(self::TRANSFER_ID);
@@ -2512,7 +2524,7 @@ class Entity extends Base\PublicEntity
         // Since the first auth transaction would have already been
         // done, we don't need to do any MaxMind risk checks for this.
         //
-        if ($this->isSecondRecurring() === true)
+        if ($this->isSecondRecurring(true) === true)
         {
             return false;
         }
