@@ -29,6 +29,8 @@ class EnachRblGatewayTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__ . '/EnachRblGatewayTestData.php';
+
         parent::setUp();
 
         $this->fixtures->create('terminal:shared_enach_rbl_terminal');
@@ -212,6 +214,7 @@ class EnachRblGatewayTest extends TestCase
                         'UMRN'            => 'UTIB6000000005844847',
                         'CUST_REFNO'      => '',
                         'SCH_REFNO'       => '',
+                        'REF_1'           => $payment->getId(),
                         'CUST_NAME'       => 'User name',
                         'BANK'            => '',
                         'BRANCH'          => '',
@@ -308,6 +311,78 @@ class EnachRblGatewayTest extends TestCase
         $payment = $this->fixtures->create('payment:emandate_authorized', $payment);
 
         return [$payment, $token, $order];
+    }
+
+    public function testDebitFileGeneration()
+    {
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment['bank_account'] = [
+            'account_number'    => '914010009305862',
+            'ifsc'              => 'UTIB0000123',
+            'name'              => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 1000]);
+
+        $this->fixtures->edit(
+            'token',
+            $tokenId,
+            [
+                Token\Entity::GATEWAY_TOKEN => 'UTIB6000000005844847',
+                Token\Entity::RECURRING => 1,
+                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED
+            ]);
+
+        $payment = $this->getEmandatePaymentArray('UTIB', null, 1000);
+        $payment['token'] = $tokenId;
+        $payment['order_id'] = $order->getPublicId();
+
+        unset($payment['auth_type']);
+
+        $response = $this->doS2SRecurringPayment($payment);
+
+        $this->ba->adminAuth();
+
+        Mail::fake();
+
+        $content = $this->startTest();
+        $content = $content['items'][0];
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'rbl_enach_debit',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'xlsx',
+        ];
+
+        $this->assertStringMatchesFormat('rbl-enach/outgoing/TXN_INP/ACH-DR-RATN-RATNA0001-%d-000001-INP_test', $file['name']);
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Mail::assertQueued(Email::class, function ($mail) use ($file)
+        {
+            $key = Gateway::ENACH_RBL . '_debit';
+
+            $today = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+            $this->assertNotNull($mail->viewData['file_name']);
+            $this->assertNotNull($mail->viewData['signed_url']);
+
+            $this->assertNotEmpty($mail->attachments);
+
+            return (($mail->hasFrom('emandate@razorpay.com')) and
+                    ($mail->hasTo('rbl.emandate@razorpay.com')));
+        });
     }
 
     public function testDebitFileReconciliation()
