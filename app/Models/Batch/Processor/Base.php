@@ -220,11 +220,17 @@ class Base extends BaseModel\Core
             return (isset($entry[Batch\Header::ERROR_CODE]) === false);
         });
 
-        return [
-            Constants::PROCESSABLE_COUNT => count($correctEntries),
-            Constants::ERROR_COUNT       => count($entries) - count($correctEntries),
-            Constants::PARSED_ENTRIES    => array_slice($correctEntries, 0, self::MAX_PARSED_ROWS),
+        $previewData = array_slice($correctEntries, 0, self::MAX_PARSED_ROWS);
+
+        $this->removeErrorColumnsFromEntries($previewData);
+
+        $response = [
+            Constants::PROCESSABLE_COUNT     => count($correctEntries),
+            Constants::ERROR_COUNT           => count($entries) - count($correctEntries),
+            Constants::PARSED_ENTRIES        => $previewData,
         ];
+
+        return $response;
     }
 
     /**
@@ -955,6 +961,18 @@ class Base extends BaseModel\Core
     public function getOutputFileHeadings(): array
     {
         return Batch\Header::getHeadersForFileTypeAndBatchType($this->outputFileType, $this->batch->getType());
+    }
+
+    protected function removeErrorColumnsFromEntries(array & $entries)
+    {
+        $entries = array_map(
+            function ($entry)
+            {
+                unset($entry[Batch\Header::ERROR_CODE]);
+                unset($entry[Batch\Header::ERROR_DESCRIPTION]);
+                return $entry;
+            },
+            $entries);
     }
 
     /**
