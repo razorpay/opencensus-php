@@ -10,6 +10,7 @@ import Amount from 'rzp/ui/Amount';
 import Banner from 'rzp/ui/Banner';
 import Sticky from 'rzp/ui/Sticky';
 import Group, { GroupItem } from 'rzp/ui/Group';
+import LocalStorageService from 'rzp/utils/localStorage';
 import { showNotification } from 'rzp/modules/notifications';
 import DateRangePicker, { customRangeText } from 'rzp/ui/DateRangePicker';
 import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
@@ -113,11 +114,14 @@ class HomeContainer extends Component {
       },
       dateRangePresets,
       showGroupingByPtfm: false,
-      hasNewAnalyticsTour: true,
+      hasNewAnalyticsTour: !LocalStorageService.getItem(
+        'hide_new_analytics_banner'
+      ),
     };
 
     this.oldestTxnReqId = 0;
     this.onDatesChange = this.onDatesChange.bind(this);
+    this.onShowTour = this.onShowTour.bind(this);
   }
 
   fetchTxnsGroupedByPlatform() {
@@ -334,6 +338,16 @@ class HomeContainer extends Component {
     document.body.className = document.body.className.replace(bodyClass, '');
   }
 
+  onShowTour() {
+    LocalStorageService.setItem('hide_new_analytics_banner', true);
+    this.setState(
+      {
+        hasNewAnalyticsTour: false,
+      },
+      () => this.props.showOrHideTour(true)
+    );
+  }
+
   render() {
     let {
       mode,
@@ -367,10 +381,7 @@ class HomeContainer extends Component {
               <i className="i i-loudspeaker" />
             </div>
             <div className="banner-content">
-              <Banner
-                cta="View Tour"
-                ctaOnClick={() => this.props.showOrHideTour(true)}
-              >
+              <Banner cta="View Tour" ctaOnClick={this.onShowTour}>
                 <span>
                   Hey! We have redesigned the dashboard for an improved Razorpay
                   experience. Please take a quick tour before you get started.

@@ -2,6 +2,8 @@ import { Component, Children, cloneElement } from 'react';
 import TetherComponent from 'react-tether';
 import TourStep, { TourStepTitle, TourStepBody } from './TourStep';
 
+const activeTourClassName = ' tour-active';
+
 class Tour extends Component {
   constructor(props) {
     super(props);
@@ -10,6 +12,8 @@ class Tour extends Component {
       initialized: false,
     };
 
+    this.onFinish = this.onFinish.bind(this);
+    this.onStepClose = this.onStepClose.bind(this);
     this.onStepChange = this.onStepChange.bind(this);
   }
 
@@ -23,39 +27,48 @@ class Tour extends Component {
 
   setActiveTour(nextProps) {
     let { activeStep: tourStep, children, tourActive } = nextProps;
+
     if (tourActive && tourStep >= 0) {
       children = Children.toArray(children);
       let activeChild = children[tourStep];
-      let {
-        attachment,
-        targetAttachment,
-        offset,
-        arrowTopPos,
-        arrowLeftPos,
-      } = activeChild.props;
+      let {} = activeChild.props;
       let target = activeChild.props.to;
       let $target = document.querySelector(target);
       let targetLensPos = {};
 
       if ($target) {
-        let clientRect = $target.getBoundingClientRect();
+        const { top, height } = $target.getBoundingClientRect();
+
+        const screenHeight = window.innerHeight,
+          scrollDiff = top + height - screenHeight; // 100 is extra scroll
+
+        if (Math.abs(scrollDiff) > 0) {
+          window.scrollTo(
+            0,
+            document.documentElement.scrollTop +
+              scrollDiff +
+              // 100 is extra 100px scroll
+              (scrollDiff > 0 ? 100 : -100)
+          );
+        }
+
+        const clientRect = $target.getBoundingClientRect();
+
         targetLensPos = {
           top: `${clientRect.top}px`,
           left: `${clientRect.left}px`,
           width: clientRect.width,
           height: clientRect.height,
         };
-      }
 
-      this.setState({
-        target,
-        targetLensPos,
-        targetAttachment,
-        attachment,
-        offset,
-        arrowTopPos,
-        arrowLeftPos,
-      });
+        this.setState({
+          target,
+          targetLensPos,
+        });
+      } else {
+        // skip to next step if target not found
+        this.onStepChange(tourStep + 1);
+      }
     } else {
       this.setState({ target: null, initialized: false });
     }
@@ -67,7 +80,20 @@ class Tour extends Component {
     }
   }
 
-  onStepClose() {}
+  removeGlobalClass() {
+    const documentClass = document.documentElement.className;
+
+    document.documentElement.className = documentClass.replace(
+      activeTourClassName,
+      ''
+    );
+  }
+
+  onStepClose() {
+    const { onStepChange, children } = this.props;
+
+    return onStepChange && onStepChange(children.length - 1, true);
+  }
 
   onStepChange(stepNum) {
     const { onStepChange } = this.props;
@@ -75,45 +101,47 @@ class Tour extends Component {
     return onStepChange && onStepChange(stepNum);
   }
 
-  onFinish() {}
+  onFinish() {
+    const { onFinish } = this.props;
+
+    this.removeGlobalClass();
+    return onFinish && onFinish();
+  }
 
   render() {
     const children = React.Children.toArray(this.props.children),
       activeChild = children[this.props.activeStep];
 
     if (!this.props.tourActive || !activeChild) {
+      this.removeGlobalClass();
       return null;
     }
 
-    let {
-      tourActive,
-      activeStep,
-      showOverlay,
-      onSkip,
-      onFinish,
-      onStepChange,
-    } = this.props;
-    let {
-      initialized,
-      target,
-      targetAttachment,
-      targetLensPos,
-      attachment,
-      offset,
-      arrowTopPos,
-      arrowLeftPos,
-    } = this.state;
+    const documentClass = document.documentElement.className;
+
+    if (documentClass.indexOf(activeTourClassName) < 0) {
+      document.documentElement.className = `${documentClass}${activeTourClassName}`;
+    }
+
+    let { tourActive, activeStep, showOverlay } = this.props;
+    let { initialized, target, targetLensPos } = this.state;
+
+    const { align, ...activeChildProps } = activeChild.props;
+
+    activeChildProps.className = `${
+      activeChildProps.className ? activeChildProps.className + ' ' : ''
+    }Tour__Overlay`;
 
     return (
-      <div class="Tour__Overlay">
+      <div {...activeChildProps}>
         <div class="Tour__TargetLens" style={targetLensPos}>
           {/* redering different instance each time */}
           {children.map((child, index) => {
             return (
               child === activeChild && (
                 <child.type
-                  {...child.props}
                   key={index}
+                  align={align}
                   index={activeStep}
                   totalSteps={children.length}
                   onStepChange={this.onStepChange}

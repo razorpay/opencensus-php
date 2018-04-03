@@ -899,7 +899,11 @@ class KeyMetricsContainer extends Component {
 
     return (
       <div ref={node => (this.node = node)}>
-        <Tabs className="keymetrics" justified={true}>
+        <Tabs
+          className="keymetrics"
+          justified={true}
+          tabsWrapperProps={{ id: 'analytics-keymetrics-section' }}
+        >
           {visibleTabs.map((tabName, index) => {
             const tabData = tabsState[tabName].data,
               { isCurrency, title } = tabsMeta[tabName];

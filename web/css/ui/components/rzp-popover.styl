@@ -10,48 +10,72 @@ $bg-color = #ffffff;
 
   &.align-bottom, &.align-top {
 
-    .rzp-tooltip-inner:after {
+    .rzp-tooltip-inner > .rzp-popover-arrow {
 
       left: 50%;
-      margin-left: - $gutter;
+
+      &:after {
+
+        margin-left: - $gutter;
+      }
     }
   }
 
   &.align-left, &.align-right {
 
-    .rzp-tooltip-inner:after {
+    .rzp-tooltip-inner > .rzp-popover-arrow {
 
       top: 50%;
-      margin-top: - $gutter;
+
+      &:after {
+
+        margin-top: - $gutter;
+      }
     }
   }
 
-  &.align-bottom .rzp-tooltip-inner:after {
+  &.align-bottom .rzp-tooltip-inner > .rzp-popover-arrow {
 
     top: - $gutter;
-    border-top-width: 0;
-    border-bottom-color: $bg-color;
+
+    &:after {
+
+      border-top-width: 0;
+      border-bottom-color: $bg-color;
+    }
   }
 
-  &.align-top .rzp-tooltip-inner:after {
+  &.align-top .rzp-tooltip-inner > .rzp-popover-arrow {
 
     top: 100%;
-    border-border-width: 0;
-    border-top-color: $bg-color;
+
+    &:after {
+
+      border-border-width: 0;
+      border-top-color: $bg-color;
+    }
   }
 
-  &.align-left .rzp-tooltip-inner:after {
+  &.align-left .rzp-tooltip-inner > .rzp-popover-arrow {
 
     left: 100%;
-    border-right-width: 0;
-    border-left-color: $bg-color;
+
+    &:after {
+
+      border-right-width: 0;
+      border-left-color: $bg-color;
+    }
   }
 
-  &.align-right .rzp-tooltip-inner:after {
+  &.align-right .rzp-tooltip-inner > .rzp-popover-arrow {
 
     left: - $gutter;
-    border-left-width: 0;
-    border-right-color: $bg-color;
+
+    &:after {
+
+      border-left-width: 0;
+      border-right-color: $bg-color;
+    }
   }
 
   .rzp-tooltip-inner {
@@ -59,17 +83,22 @@ $bg-color = #ffffff;
     padding: 16px;
     position: relative;
     
-    &:after {
+    .rzp-popover-arrow {
 
-      content: "";
-      border-width: $gutter;
-      border-style: solid;
-      border-color: transparent;
       position: absolute;
       top: auto;
       left: auto;
-      margin-left: 0px;
-      margin-top: 0px;
+
+      &:after {
+
+        content: "";
+        display: block;
+        border-width: $gutter;
+        border-style: solid;
+        border-color: transparent;
+        margin-left: 0px;
+        margin-top: 0px;
+      }
     }
 
     .rzp-popover-title {

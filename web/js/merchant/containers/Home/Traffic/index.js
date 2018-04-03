@@ -250,6 +250,7 @@ class Traffic extends Component {
 
     return (
       <GenericPanel
+        id="traffic-split"
         className="rzp-traffic p-all"
         isLoading={loading || groupState.loading}
         hasNoData={hasNoData}

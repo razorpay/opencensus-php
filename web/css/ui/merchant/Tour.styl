@@ -1,6 +1,12 @@
 $tour-text-color=#f5f5f5;
 $tour-popover-bg=#2e3345;
-$tour-primary-color=$primary-color;
+$tour-primary-color=#3395FF;
+$lens-gutter=10px;
+
+html.tour-active {
+
+  overflow: hidden;
+}
 
 .Tour {
   z-index: 9999 !important;
@@ -17,33 +23,50 @@ $tour-primary-color=$primary-color;
   left: 0;
   right: 0;
   z-index: 9999;
+
+  &.has-padded-lens {
+
+    .Tour__TargetLens {
+
+      padding: $lens-gutter;
+      box-sizing: content-box;
+      margin-top: -($lens-gutter);
+      margin-left: -($lens-gutter);
+    }
+
+    &.overview-section-step .Tour__TargetLens {
+
+      padding-bottom: 0;
+    }
+  }
 }
 
 .Tour__TargetLens {
   position: absolute;
-  box-shadow: 0 0 0 9999px rgba(0,0,0,.5), 0 0 15px rgba(0,0,0,.5);
+  box-shadow: 0 0 0 9999px rgba(0,0,0,.25);
   transition: transform 300ms ease-in-out;
 
   .rzp-popover.rzp-tooltip {
 
-    display: table;
+    display: table !important;
+    min-width: 260px;
 
-    &.align-right .rzp-tooltip-inner:after {
+    &.align-right .rzp-tooltip-inner > .rzp-popover-arrow:after {
 
       border-right-color: $tour-popover-bg;
     }
 
-    &.align-left .rzp-tooltip-inner:after {
+    &.align-left .rzp-tooltip-inner > .rzp-popover-arrow:after {
 
       border-left-color: $tour-popover-bg;
     }
 
-    &.align-top .rzp-tooltip-inner:after {
+    &.align-top .rzp-tooltip-inner > .rzp-popover-arrow:after {
 
       border-top-color: $tour-popover-bg;
     }
 
-    &.align-bottom .rzp-tooltip-inner:after {
+    &.align-bottom .rzp-tooltip-inner > .rzp-popover-arrow:after {
 
       border-bottom-color: $tour-popover-bg;
     }
@@ -52,6 +75,16 @@ $tour-primary-color=$primary-color;
 
       background-color: $tour-popover-bg;
       color: $tour-text-color;
+
+      div.tourstep-close {
+
+        cursor: pointer;
+      }
+
+      ul.nav > li {
+
+        white-space: nowrap;
+      }
 
       div.rzp-tour-step-controls {
 
@@ -73,7 +106,7 @@ $tour-primary-color=$primary-color;
             .step-switch {
 
               display: inline-block;
-              background-color: $tour-text-color;
+              background-color: transparentify($tour-text-color, $tour-text-color, 0.3);
               width: 8px;
               height: 8px;
               border-radius: 50%;
@@ -93,8 +126,13 @@ $tour-primary-color=$primary-color;
 
           &.pagination-link {
 
-            color: $primary-color;
+            color: $tour-text-color;
             cursor: pointer;
+
+            &.next-step {
+
+              text-align: right;
+            }
           }
         }
       }

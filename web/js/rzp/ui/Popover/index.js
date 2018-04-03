@@ -45,10 +45,23 @@ class PopoverBody extends Component {
 class Popover extends Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      leftAdjustment: 0, // arrow adjustment
+    };
+
+    this.onAdjustment = this.onAdjustment.bind(this);
+  }
+
+  onAdjustment(leftAdjustment) {
+    this.setState({
+      leftAdjustment,
+    });
   }
 
   render() {
-    const { children, ...otherProps } = this.props;
+    const { children, ...otherProps } = this.props,
+      { leftAdjustment } = this.state;
 
     let popoverTitle = null,
       popoverBody = null;
@@ -70,7 +83,11 @@ class Popover extends Component {
       otherProps.align;
 
     return (
-      <Tooltip {...otherProps}>
+      <Tooltip {...otherProps} onAdjustment={this.onAdjustment}>
+        <div
+          className="rzp-popover-arrow"
+          style={{ marginLeft: `${-leftAdjustment}px` }}
+        />
         <div className="rzp-popover-content">
           {popoverTitle && (
             <popoverTitle.type {...popoverTitle.props}>

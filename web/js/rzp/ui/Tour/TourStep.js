@@ -110,16 +110,25 @@ export default class TourStep extends Component {
 
     return (
       <Popover persistent={true} align={align} {...otherProps}>
-        {tourStepTitle && (
-          <PopoverTitle>
-            <tourStepTitle.type
-              {...tourStepTitle.props}
-              onStepClose={onStepClose}
-            >
-              {tourStepTitle.props.children}
-            </tourStepTitle.type>
-          </PopoverTitle>
-        )}
+        <PopoverTitle>
+          <div className="tourstep-title clearfix">
+            <div className="pull-left">
+              {tourStepTitle && (
+                <tourStepTitle.type
+                  {...tourStepTitle.props}
+                  onStepClose={onStepClose}
+                >
+                  {tourStepTitle.props.children}
+                </tourStepTitle.type>
+              )}
+            </div>
+            {index + 1 !== totalSteps && (
+              <div className="tourstep-close pull-right" onClick={onStepClose}>
+                &times;
+              </div>
+            )}
+          </div>
+        </PopoverTitle>
 
         <PopoverBody>
           {tourStepBody && (
@@ -140,10 +149,4 @@ export default class TourStep extends Component {
   }
 }
 
-TourStep.defaultProps = {
-  attachment: 'middle left',
-  targetAttachment: 'middle right',
-  offset: '0 -15px',
-  arrowTopPos: '50%',
-  arrowLeftPos: '50%',
-};
+TourStep.defaultProps = {};

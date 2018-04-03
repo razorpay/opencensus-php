@@ -152,7 +152,7 @@ export default class Treemap extends Component {
 
     return (
       <div>
-        <div ref={node => (this.node = node)} />
+        <div id="payment-methods-treemap" ref={node => (this.node = node)} />
 
         <Tooltip followPointer={true}>
           <div>

@@ -323,7 +323,7 @@ class Panel extends Component {
               })}
             </BtnGroup>
             {grouping.length > 0 && (
-              <div className="panel-action-item">
+              <div id="keymetrics-grouping" className="panel-action-item">
                 <GroupingDropdown
                   onGroupChange={this.handleGroupingChange}
                   grouping={grouping}
@@ -342,7 +342,7 @@ class Panel extends Component {
                   />
                 </div>
               )}
-            <div className="panel-action-item">
+            <div id="keymetrics-download" className="panel-action-item">
               <MoreOptionsButton
                 csvData={data.csv}
                 pngData={data.png}

@@ -91,10 +91,18 @@ class Tooltip extends Component {
       }
     }
 
+    let horizontalAdjustment = 0;
+
     if (tooltipLeft < screenLeft) {
-      tooltipLeft += screenLeft - tooltipLeft;
+      horizontalAdjustment = screenLeft - tooltipLeft;
     } else if (tooltipLeft + tooltipWidth > screenRight) {
-      tooltipLeft -= tooltipLeft + tooltipWidth - screenRight;
+      horizontalAdjustment = -(tooltipLeft + tooltipWidth - screenRight);
+    }
+
+    tooltipLeft += horizontalAdjustment;
+
+    if (this.props.onAdjustment) {
+      this.props.onAdjustment(horizontalAdjustment);
     }
 
     if (!this.props.followPointer) {
@@ -203,6 +211,7 @@ class Tooltip extends Component {
         align,
         followPointer,
         persistent,
+        onAdjustment,
         ...otherProps
       } = this.props;
 
@@ -228,6 +237,7 @@ Tooltip.propTypes = {
   align: PropTypes.oneOf(['top', 'bottom', 'left', 'right']),
   followPointer: PropTypes.bool.isRequired,
   persistent: PropTypes.bool.isRequired,
+  onAdjustment: PropTypes.func,
 };
 
 export default Tooltip;
