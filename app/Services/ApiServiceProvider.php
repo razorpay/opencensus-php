@@ -163,6 +163,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new GatewayFileManager($app);
         });
 
+        $this->app->singleton('razorx', function($app)
+        {
+            return new RazorXClient($app);
+        });
+
         $this->registerShield();
 
         $this->registerApiMutex();
@@ -224,6 +229,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'authservice',
             'sns',
             'pincodesearch',
+            'razorx',
         ];
     }
 
