@@ -35,6 +35,7 @@ class TransactionFilter extends Terminal\Filter
         'pharma',
         'corporate',
         'mcc',
+        'bharat_qr',
     ];
 
     public function methodFilter($terminal)
@@ -487,6 +488,17 @@ class TransactionFilter extends Terminal\Filter
                             $applicableTerminals,
                             $merchantMcc) === true);
             }
+        }
+
+        return true;
+    }
+
+    public function bharatQrFilter($terminal)
+    {
+        if (($this->input['payment']->getReceiverType() === 'qr_code') and
+            ($terminal->getType() !== Terminal\Type::BHARAT_QR))
+        {
+            return false;
         }
 
         return true;

@@ -122,6 +122,8 @@ class Processor
      * @var Order\Entity
      */
     protected $order;
+
+    protected $receiver;
     protected $segment;
 
     protected $verifyRefundStatus;
@@ -1034,6 +1036,8 @@ class Processor
 
         $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
 
+        $this->validateAndSetReceiverIfApplicable($payment, $input);
+
         $this->validateBankTransferDetailsIfApplicable($payment);
 
         $this->validateAndSetInvoiceDetailsIfApplicable($payment);
@@ -1118,6 +1122,25 @@ class Processor
                 }
             }
         }
+    }
+
+    protected function validateAndSetReceiverIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if (empty($input[Payment\Entity::RECEIVER]) === true)
+        {
+            return;
+        }
+
+        $this->receiver = $this->fetchReceiverFromInput($input);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_RECEIVED_ON_RECEIVER,
+            [
+                'receiver_id'   => $this->receiver->getId(),
+                'receiver_type' => $this->receiver->getEntity(),
+            ]);
+
+        $payment->receiver()->associate($this->receiver);
     }
 
     protected function addOrderIdToInputForCreatedSubscription(Subscription\Entity $subscription, array & $input)
@@ -1206,6 +1229,29 @@ class Processor
             throw new Exception\BadRequestValidationFailureException(
                 'Payment failed because fees or tax was tampered');
         }
+    }
+
+    protected function fetchReceiverFromInput(array $input)
+    {
+        $entity = $input['entity'];
+
+        $receiver = $this->$entity->findbyId($input['id']);
+
+        if ($receiver === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Receiver id provided not found.',
+                'receiver[id]');
+        }
+
+        if ($receiver->getMerchantId() !== $this->merchant->id)
+        {
+            // Merchant mismatch
+            throw new Exception\BadRequestValidationFailureException(
+                'Receiver id not found');
+        }
+
+        return $receiver;
     }
 
     protected function fetchOrderFromInput(array $input): Order\Entity

@@ -53,6 +53,8 @@ class Entity extends Base\PublicEntity
     const ORDER_ID              = 'order_id';
     const INVOICE_ID            = 'invoice_id';
     const TRANSFER_ID           = 'transfer_id';
+    const RECEIVER_ID           = 'receiver_id';
+    const RECEIVER_TYPE         = 'receiver_type';
     const INTERNATIONAL         = 'international';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
@@ -134,6 +136,7 @@ class Entity extends Base\PublicEntity
 
     const METADATA              = 'metadata';
 
+    const RECEIVER              = 'receiver';
     const AADHAAR               = 'aadhaar';
     const BANK_ACCOUNT          = 'bank_account';
     const NAME                  = 'name';
@@ -2271,6 +2274,11 @@ class Entity extends Base\PublicEntity
     public function transfers()
     {
         return $this->morphMany('RZP\Models\Transfer\Entity', 'source');
+    }
+
+    public function receiver()
+    {
+        return $this->morphTo('receiver',self::RECEIVER_TYPE, self::RECEIVER_ID);
     }
 
     public function netbanking()
