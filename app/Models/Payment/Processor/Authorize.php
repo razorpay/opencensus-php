@@ -3327,7 +3327,7 @@ trait Authorize
      * @param Token\Entity $token
      * @param string|null  $oldRecurringStatus
      */
-    protected function eventTokenStatus(Token\Entity $token, string $oldRecurringStatus = null)
+    public function eventTokenStatus(Token\Entity $token, string $oldRecurringStatus = null)
     {
         $currentRecurringStatus = $token->getRecurringStatus();
 
@@ -3336,6 +3336,9 @@ trait Authorize
         // recurring status in cases like second recurring
         // payment. Here, we don't update anything at all
         // except the used count, terminals and stuff.
+        //
+        // This can also happen in case we do registration recon of
+        // enach rbl again. This will ensure idempotency is maintained.
         //
         if (($oldRecurringStatus !== $currentRecurringStatus) and
             (in_array($currentRecurringStatus, Token\RecurringStatus::$webhookStatuses, true) === true))
