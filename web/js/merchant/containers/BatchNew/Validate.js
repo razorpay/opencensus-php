@@ -34,19 +34,20 @@ export default class BatchValidate extends Component {
       this.props
         .validateBatch(file, this.props.mode)
         .then(response => {
-          this.handleStateChange('success');
-          setTimeout(() => {
-            this.props.onValidation(
-              response.data,
-              file.name.replace(/\.[^/.]+$/, '')
-            );
-          }, 1000);
+          if (response.data.error_count) {
+            this.handleStateChange('error', '', response.data.signed_url);
+          } else {
+            this.handleStateChange('success');
+            setTimeout(() => {
+              this.props.onValidation(
+                response.data,
+                file.name.replace(/\.[^/.]+$/, '')
+              );
+            }, 1000);
+          }
         })
         .catch(error => {
-          // Pass file URL if the user made a mistake in certain fields of batch file
-          const fileUrl = error.fileUrl || null;
-
-          this.handleStateChange('error', error.errors[0], fileUrl);
+          this.handleStateChange('error', error.errors[0]);
         });
     }, 1000);
   };
