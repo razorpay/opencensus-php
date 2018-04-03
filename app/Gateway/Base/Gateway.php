@@ -802,7 +802,8 @@ class Gateway
 
         $type = strtoupper($type);
 
-        if (($this->env === 'func') and (isset($this->externalMockDomain) === true))
+        if (($this->env === 'func') and
+            (isset($this->externalMockDomain) === true))
         {
           return $this->getExternalMockUrl($type);
         }
@@ -1122,12 +1123,15 @@ class Gateway
 
     }
 
-    /*
-    * Retuns the external mock url
-    * Used for gateway testing using mock in func
-    * Appends the gateway string and relative url for the external mock domain
-    */
-    protected function getExternalMockUrl($type)
+    /**
+     * Retuns the external mock url
+     * Used for gateway testing using mock in func
+     * Appends the gateway string and relative url for the external mock domain
+     *
+     * @param  string $type Indicates which relative URL to use
+     * @return string       Complete URL to be used
+     */
+    protected function getExternalMockUrl(string $type)
     {
        return $this->externalMockDomain . "/" . $this->gateway . $this->getRelativeUrl($type);
     }
