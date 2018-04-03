@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\Gateway\Enach\Rbl;
 
 use Mail;
 use Excel;
+use Closure;
+use Mockery;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
@@ -12,6 +14,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Merchant\Webhook;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as Payment;
@@ -180,6 +183,21 @@ class EnachRblGatewayTest extends TestCase
     public function testRegisterSuccessReconciliation()
     {
         list($payment, $token, $order) = $this->createEmandatePayment();
+
+        $this->createWebhook(['events' => ['token.confirmed' => '1']]);
+
+        $testData = $this->testData['tokenWebhookData'];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertEquals('token.confirmed', $data['event']['event']);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+
+            return true;
+        });
 
         $gatewayEntity = $this->getLastEntity('enach', true);
 
@@ -517,5 +535,18 @@ class EnachRblGatewayTest extends TestCase
         }
 
         return $this->submitPaymentCallbackRequest($request);
+    }
+
+    protected function mockInfernoFire(Closure $closure)
+    {
+        $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
+
+        $inferno->shouldReceive('fire')
+                ->once()
+                ->with(
+                    Mockery::type('RZP\Jobs\WebHook'),
+                    Mockery::on($closure));
+
+        $this->app->instance('webhook.inferno', $inferno);
     }
 }

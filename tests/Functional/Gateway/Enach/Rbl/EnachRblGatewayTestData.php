@@ -39,4 +39,25 @@ return [
             ]
         ]
     ],
+
+    'tokenWebhookData' => [
+        'mode'  => 'test',
+        'event' => [
+            'entity'   => 'event',
+            'event' => 'token.confirmed',
+            'contains' => [
+                'token',
+            ],
+            'payload'  => [
+                'token' => [
+                    'entity' => [
+                        'recurring' => true,
+                        'recurring_details' => [
+                            'status' => 'confirmed'
+                        ]
+                    ]
+                ],
+            ],
+        ],
+    ]
 ];

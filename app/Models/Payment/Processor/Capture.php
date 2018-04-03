@@ -28,7 +28,6 @@ trait Capture
      * @param  array         $input
      *
      * @return Payment\Entity Payment\Entity object
-     * @throws Exception\BadRequestException
      */
     public function capture(Payment\Entity $payment, array $input = [])
     {
