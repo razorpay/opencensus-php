@@ -106,6 +106,9 @@ class CreateInvoices extends Migration
             $table->string(Entity::CUSTOMER_CONTACT)
                   ->nullable();
 
+            $table->string(Entity::CUSTOMER_GSTIN, 20)
+                  ->nullable();
+
             $table->text(Entity::DESCRIPTION)
                   ->nullable();
 
