@@ -200,7 +200,7 @@
 
         {{-- try to submit 5 times --}}
         if (submitted_count < 5) {
-          submitForm();
+          submitForm(response);
         }
       }, 4000);
       if (isIntentFlow) {
@@ -215,15 +215,15 @@
       var totalCalls = 0;
       function fetchAgain() {
         totalCalls++;
-        {{-- 5 minutes --}}
-        if (totalCalls > 70 && !(totalCalls % 10)) {
+        {{-- 3 minutes --}}
+        if (totalCalls > 40 && !(totalCalls % 5)) {
           track('call_count', {
             count: totalCalls,
             url: url
           });
         }
 
-        if (totalCalls > 175) {
+        if (totalCalls > 150) {
           return submitForm();
         }
 
@@ -255,7 +255,7 @@
                  * Redirecting to callback_url regardless of whether payment is
                  * succesful or not
                  */
-                submitForm();
+                submitForm(json);
               } else {
                 track('unexpected', {
                   json: json,
