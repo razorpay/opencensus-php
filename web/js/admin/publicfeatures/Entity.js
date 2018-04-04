@@ -12,7 +12,7 @@ import Form from 'ui/Form';
 import BaseModal from 'ui/BaseModal';
 import Field, { SelectField, TextAreaField, FileField } from 'ui/Field';
 import Table from 'ui/Table';
-import { statusPill } from 'common/data';
+import { statusPill, publicFeature } from 'common/data';
 import { isWorkflow } from 'common/util';
 import { snakeToTitleCase, formatDate } from 'common/util';
 
@@ -134,7 +134,7 @@ export default class EditPublicFeatures extends Component {
                 value={selectedStatus}
                 onChange={this.handleStatusChange}
               >
-                {publicFeatureStatuses.map(status => (
+                {publicFeature.statuses.map(status => (
                   <option value={status} key={status}>
                     {snakeToTitleCase(status)}
                   </option>
@@ -168,8 +168,10 @@ export default class EditPublicFeatures extends Component {
                   </SelectField>
                 </Fragment>
               )}
-              {featuresAkaMap[akaFeature] === featuresAkaMap.marketplace ||
-              featuresAkaMap[akaFeature] === featuresAkaMap.virtual_accounts ? (
+              {publicFeature.featuresAkaMap[akaFeature] ===
+                publicFeature.featuresAkaMap.marketplace ||
+              publicFeature.featuresAkaMap[akaFeature] ===
+                publicFeature.featuresAkaMap.virtual_accounts ? (
                 <TextAreaField
                   label="Use Case"
                   name="submissions[use_case]"
@@ -177,8 +179,8 @@ export default class EditPublicFeatures extends Component {
                 />
               ) : null}
 
-              {featuresAkaMap[akaFeature] ===
-                featuresAkaMap.virtual_accounts && (
+              {publicFeature.featuresAkaMap[akaFeature] ===
+                publicFeature.featuresAkaMap.virtual_accounts && (
                 <Field
                   label="Expected Monthly Revenue"
                   type="number"
@@ -187,7 +189,8 @@ export default class EditPublicFeatures extends Component {
                 />
               )}
 
-              {featuresAkaMap[akaFeature] === featuresAkaMap.subscriptions && [
+              {publicFeature.featuresAkaMap[akaFeature] ===
+                publicFeature.featuresAkaMap.subscriptions && [
                 <TextAreaField
                   label="Business Model"
                   name="submissions[business_model]"
@@ -208,14 +211,15 @@ export default class EditPublicFeatures extends Component {
                 />,
               ]}
 
-              {featuresAkaMap[akaFeature] === featuresAkaMap.marketplace && [
+              {publicFeature.featuresAkaMap[akaFeature] ===
+                publicFeature.featuresAkaMap.marketplace && [
                 <SelectField
                   label="Transferring to"
                   name="submissions[settling_to]"
                   key="settling_to"
                   defaultValue={submissions.settling_to}
                 >
-                  {tranferToOptions.map(t => (
+                  {publicFeature.tranferToOptions.map(t => (
                     <option key={t[0]} value={t[0]}>
                       {t[1]}
                     </option>
@@ -261,27 +265,6 @@ export default class EditPublicFeatures extends Component {
 export function showEntity(collection) {
   openModal(<EditPublicFeatures collection={collection} model={this} />);
 }
-
-//Resources
-const tranferToOptions = [
-  ['Businesses', 'Third-party businesses'],
-  ['Own Accounts', 'Own bank accounts'],
-  ['Individuals', 'Individuals'],
-];
-
-//values might change in future
-export const featuresAkaMap = {
-  marketplace: 'Marketplace',
-  subscriptions: 'Subscriptions',
-  virtual_accounts: 'Virtual Accounts',
-};
-
-const publicFeatureStatuses = [
-  'under_review',
-  'needs_clarification',
-  'activated',
-  'rejected',
-];
 
 const statusLogsFields = [
   ['Created At', item => formatDate(item.created_at)],

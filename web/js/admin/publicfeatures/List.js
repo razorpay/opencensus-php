@@ -7,7 +7,7 @@ import { SelectField, FromField, ToField, CheckField } from 'ui/Field';
 import Collection from 'model/collection';
 import { adminFetch } from 'common/fetch';
 import { featuresAkaMap, showEntity } from './Entity';
-import { statusPill } from 'common/data';
+import { statusPill, publicFeature } from 'common/data';
 import { snakeToTitleCase } from 'common/util';
 
 const defaultFilters = {
@@ -58,7 +58,7 @@ export default class PublicFeaturesList extends Component {
               defaultValue={defaultFilters.status}
             >
               <option value="">All</option>
-              {publicFeatureStatuses.map(status => (
+              {publicFeature.statuses.map(status => (
                 <option value={status} key={status}>
                   {snakeToTitleCase(status)}
                 </option>
@@ -93,11 +93,4 @@ const fields = [
   ['Product', item => item.name],
   ['Account Activation Status', item => item.merchant.activated.toString()],
   ['Product Activation Status', item => statusPill(item.status)],
-];
-
-const publicFeatureStatuses = [
-  'under_review',
-  'needs_clarification',
-  'activated',
-  'rejected',
 ];
