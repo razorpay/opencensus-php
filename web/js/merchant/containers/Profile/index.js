@@ -29,7 +29,8 @@ import UpgradeMerchantForm from './UpgradeMerchantForm';
 export default class Profile extends Component {
   state = {
     loggedInUser: {},
-    isBankAccountChangeAllowed: false,
+    //by default this feature is not available
+    isBankAccountChangeAllowed: null,
   };
 
   componentWillMount() {

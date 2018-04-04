@@ -9,11 +9,16 @@ export default ({
     <div class="panel panel-default">
       <div class="panel-heading">
         Bank Account
-        {isBankAccountChangeAllowed && (
-          <a class="pull-right" onClick={onChangeBankAccountDetails}>
-            Request Change
-          </a>
-        )}
+        {isBankAccountChangeAllowed !== null &&
+          (isBankAccountChangeAllowed ? (
+            <a class="pull-right" onClick={onChangeBankAccountDetails}>
+              Request Change
+            </a>
+          ) : (
+            <span class="pull-right" style={{ opacity: '0.5' }}>
+              Request Under Review
+            </span>
+          ))}
       </div>
       <div class="list-group details-row-container">
         <DetailRow label="IFSC Code" value={bankAccount.ifsc} />
