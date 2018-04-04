@@ -118,9 +118,9 @@ const TabContent = ({
         )}
       </h1>
       <div
-        className={`mini-chart${!histogram ? ' loading' : ''}${
-          value === 0 ? ' no-data' : ''
-        }${isActive ? ' active' : ''}`}
+        className={`mini-chart${value === 0 ? ' no-data' : ''}${
+          isActive ? ' active' : ''
+        }`}
       >
         <div className="min-chart-content">
           <MiniChart histogram={histogram} isActive={isActive} />

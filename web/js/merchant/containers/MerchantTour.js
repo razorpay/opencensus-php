@@ -64,8 +64,8 @@ export default class MerchantTour extends Component {
           <TourStep to="#analytics-daterange-picker">
             <TourStepTitle>Date Range Presets</TourStepTitle>
             <TourStepBody>
-              Now along with custom ranges, you can select from presets. Choose
-              All Time to view your aggregates till date.
+              Select from a list of time presets or set a custom time range.
+              `All Time` will show the aggregates till date.
             </TourStepBody>
           </TourStep>
           <TourStep
@@ -76,20 +76,15 @@ export default class MerchantTour extends Component {
             <TourStepBody>
               <ul className="nav">
                 <li>
-                  - Payment Volume and Number of Payments indicate total number
-                  of “Authorized” payments made in the selected time range.
+                  - <b>Payment Volume</b> and <b>Number of Payments</b> indicate
+                  total number of `Authorized` payments made in the selected
+                  time range.
                 </li>
                 <li>
-                  - Saved Card Payments indicate the Percentage of saved card
+                  - `Saved Card Payments` indicate the Percentage of saved card
                   payments, compared to all the card payments.
                 </li>
-                <li>
-                  - Confused about what a term means? You can simply hover over
-                  the tab to get a definition.
-                </li>
-                <li>
-                  - Each of these tabs have a Graph section. More on this next.
-                </li>
+                <li>- Select a tab to see the graphical representations.</li>
               </ul>
             </TourStepBody>
           </TourStep>
@@ -100,7 +95,7 @@ export default class MerchantTour extends Component {
           >
             <TourStepTitle>Smart Filters</TourStepTitle>
             <TourStepBody>
-              <div>See how your payments fared by filtering your graphs:</div>
+              <div>Filter your graphs by:</div>
               <ul className="nav">
                 <li>- By Total Volume</li>
                 <li>- By Payment Methods</li>
@@ -111,8 +106,7 @@ export default class MerchantTour extends Component {
           <TourStep to="#keymetrics-download" align="left">
             <TourStepTitle>Quick Download</TourStepTitle>
             <TourStepBody>
-              You can export your graphs as CSV files or download them as images
-              to use in your PPTs!
+              Export graphs as CSV files or download them as images.
             </TourStepBody>
           </TourStep>
           <TourStep
@@ -139,7 +133,7 @@ export default class MerchantTour extends Component {
                   Payments
                 </li>
                 <li>
-                  - <b>Download</b> as a CSV file or an Image
+                  - <b>Download</b> as a CSV file.
                 </li>
               </ul>
             </TourStepBody>
@@ -147,8 +141,8 @@ export default class MerchantTour extends Component {
           <TourStep to="#traffic-split" align="top">
             <TourStepTitle>Traffic Split on Platforms</TourStepTitle>
             <TourStepBody>
-              See which platforms are contributing to your payment
-              traffic.Filter by Payment volume or Number of Payments.
+              View how payment traffic varies across Platforms. You can filter
+              this by Payment volume or Number of Payments.
             </TourStepBody>
           </TourStep>
           {!tourInterrupted ? (

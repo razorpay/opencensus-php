@@ -89,9 +89,9 @@ class PanelBody extends Component {
 
     return (
       <div {...otherProps}>
-        {!isLoading && noDataMsg && (
+        {(isLoading || noDataMsg) && (
           <Overlay>
-            <span>{noDataMsg}</span>
+            {isLoading ? <Spinner /> : <span>{noDataMsg}</span>}
           </Overlay>
         )}
         {children}
@@ -143,9 +143,9 @@ class Panel extends Component {
       ...otherProps
     } = this.props;
 
-    otherProps.className = `panel dasboard-home-panel${className
-      ? ' ' + className
-      : ''}`;
+    otherProps.className = `panel dasboard-home-panel${
+      className ? ' ' + className : ''
+    }`;
 
     const commonProps = { isLoading, hasNoData, error };
 
@@ -179,10 +179,6 @@ class Panel extends Component {
 
     if (error) {
       otherProps.className += ' has-error';
-    }
-
-    if (isLoading) {
-      otherProps.className += ' loading';
     }
 
     return (
