@@ -236,13 +236,13 @@
                 json = {
                   error: {
                     description: 'Parsing error'
+                  },
+                  xhr: {
+                    status: xhr.status,
+                    text: xhr.responseText,
+                    url: url
                   }
                 };
-                track('ajax_e', {
-                  status: xhr.status,
-                  text: xhr.responseText,
-                  url: url
-                });
               }
               if (json.status === 'created') {
                 fetchAgain(url);
@@ -272,6 +272,10 @@
           }
           xhr.send(null);
         }, timeout || 4000);
+
+        if (timeout !== 4000) {
+          timeout = 4000;
+        }
       }
       fetchAgain();
     }
@@ -291,7 +295,7 @@
               gel('retry-btn').className = '';
               gel('spinner').className = 'hide';
             } else {
-              fetchWait(poll_url, 1);
+              fetchWait(request_url);
             }
           }
         } catch(e) {
