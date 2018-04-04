@@ -1064,7 +1064,6 @@ final class Route
         'user_reset_password_token',
         'virtual_account_refund_excess',
         'fund_transfer_attempt_process',
-        'payment_acknowledge',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
