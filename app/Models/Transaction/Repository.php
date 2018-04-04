@@ -435,7 +435,7 @@ class Repository extends Base\Repository
     {
         $attributes = [Entity::CHANNEL => $channel];
 
-        $batchedIds = array_chunk($transactionIds, 5000);
+        $batchedIds = array_chunk($transactionIds, 1000);
 
         $count = 0;
 
