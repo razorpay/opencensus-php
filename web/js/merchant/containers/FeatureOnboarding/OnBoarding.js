@@ -57,7 +57,9 @@ export default class OnBoarding extends Component {
 
   componentDidMount() {
     setTimeout(
-      _ => document.querySelector('.feature-image').classList.add('in'),
+      _ =>
+        document.querySelector('.feature-image') &&
+        document.querySelector('.feature-image').classList.add('in'),
       200
     );
   }

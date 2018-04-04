@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
+import { observer } from 'mobx-react';
 
 import { notifyError } from 'common/modal';
 
 import fetch, { adminFetch } from 'common/fetch';
 import EntityRow from 'ui/EntityRow';
+import { CheckField } from 'ui/Field';
 
+@observer
 export default class DocumentDetails extends Component {
   state = { files: null };
 
@@ -23,6 +26,7 @@ export default class DocumentDetails extends Component {
 
   render() {
     const { files } = this.state;
+    const { onIssueSelection, doesIssueExist } = this.props;
 
     return (
       <div class="container">
@@ -66,6 +70,12 @@ export default class DocumentDetails extends Component {
                         }
                       }}
                     </div>
+                    <CheckField
+                      label="Has Issue"
+                      data-issuename="business_proof"
+                      onChange={onIssueSelection}
+                      checked={doesIssueExist('business_proof')}
+                    />
                   </div>
                 )}
               />
@@ -100,6 +110,12 @@ export default class DocumentDetails extends Component {
                         }
                       }}
                     </div>
+                    <CheckField
+                      label="Has Issue"
+                      data-issuename="business_operation_proof"
+                      onChange={onIssueSelection}
+                      checked={doesIssueExist('business_operation_proof')}
+                    />
                   </div>
                 )}
               />
@@ -123,6 +139,12 @@ export default class DocumentDetails extends Component {
                         }
                       }}
                     </div>
+                    <CheckField
+                      label="Has Issue"
+                      data-issuename="business_pan_proof"
+                      onChange={onIssueSelection}
+                      checked={doesIssueExist('business_pan_proof')}
+                    />
                   </div>
                 )}
               />
@@ -149,6 +171,12 @@ export default class DocumentDetails extends Component {
                         }
                       }}
                     </div>
+                    <CheckField
+                      label="Has Issue"
+                      data-issuename="address_proof"
+                      onChange={onIssueSelection}
+                      checked={doesIssueExist('address_proof')}
+                    />
                   </div>
                 )}
               />
@@ -169,6 +197,12 @@ export default class DocumentDetails extends Component {
                         }
                       }}
                     </div>
+                    <CheckField
+                      label="Has Issue"
+                      data-issuename="promoter_proof"
+                      onChange={onIssueSelection}
+                      checked={doesIssueExist('promoter_proof')}
+                    />
                   </div>
                 )}
               />
@@ -194,6 +228,12 @@ export default class DocumentDetails extends Component {
                         }
                       }}
                     </div>
+                    <CheckField
+                      label="Has Issue"
+                      data-issuename="promoter_pan_proof"
+                      onChange={onIssueSelection}
+                      checked={doesIssueExist('promoter_pan_proof')}
+                    />
                   </div>
                 )}
               />
@@ -222,6 +262,12 @@ export default class DocumentDetails extends Component {
                         }
                       }}
                     </div>
+                    <CheckField
+                      label="Has Issue"
+                      data-issuename="promoter_address_proof"
+                      onChange={onIssueSelection}
+                      checked={doesIssueExist('promoter_address_proof')}
+                    />
                   </div>
                 )}
               />
@@ -243,6 +289,12 @@ export default class DocumentDetails extends Component {
                         }
                       }}
                     </div>
+                    <CheckField
+                      label="Has Issue"
+                      data-issuename="form_12a_url"
+                      onChange={onIssueSelection}
+                      checked={doesIssueExist('form_12a_url')}
+                    />
                   </div>
                 )}
               />
@@ -264,6 +316,12 @@ export default class DocumentDetails extends Component {
                         }
                       }}
                     </div>
+                    <CheckField
+                      label="Has Issue"
+                      data-issuename="form_80g_url"
+                      onChange={onIssueSelection}
+                      checked={doesIssueExist('form_80g_url')}
+                    />
                   </div>
                 )}
               />

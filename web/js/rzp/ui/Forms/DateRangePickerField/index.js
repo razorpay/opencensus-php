@@ -3,7 +3,7 @@ import { DateRangePicker } from 'react-dates';
 import moment from 'moment';
 
 let numInstances = 1;
-const prefix = "drp";
+const prefix = 'drp';
 
 export default class DateRangePickerField extends Component {
   constructor(props) {

@@ -12,6 +12,7 @@ import GST from 'merchant/containers/Profile/GST';
 import BankAccountDetails from 'merchant/components/Profile/BankAccountDetails';
 import LoggedInUserDetails from 'merchant/components/Profile/LoggedInUserDetails';
 import Invitations from 'merchant/components/Profile/Invitations';
+import BankAccountDetailsChange from './BankAccountDetailsChange';
 import { fetchUser } from 'merchant/modules/session';
 import PasswordForm from './PasswordForm';
 import UpgradeMerchantForm from './UpgradeMerchantForm';
@@ -28,6 +29,8 @@ import UpgradeMerchantForm from './UpgradeMerchantForm';
 export default class Profile extends Component {
   state = {
     loggedInUser: {},
+    //by default this feature is not available
+    isBankAccountChangeAllowed: null,
   };
 
   componentWillMount() {
@@ -42,6 +45,22 @@ export default class Profile extends Component {
     });
     this.props.fetchBankAccount();
     this.refreshUser(this.props.user);
+
+    // fetch status whether the merchant can change their bank account details or not
+    // Only allowed for role types `owner` & `admin`
+    if (['admin', 'owner'].indexOf(this.props.user.role) > -1) {
+      this.props
+        .fetchBankAccountChangeStatus(this.props.user.id) //user.id is merchant_id not user_id
+        .then(({ data }) => {
+          this.setState({
+            //if api response is true then the request is still in workflow
+            isBankAccountChangeAllowed: !data,
+          });
+        })
+        .catch(errors => {
+          console.log('ERROR: Failed to fetch bank account change status');
+        });
+    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -123,6 +142,56 @@ export default class Profile extends Component {
     });
   };
 
+  openChangeBankDetailsModal = () => {
+    const { bankAccount } = this.props.profile;
+
+    this.props.openModal({
+      size: 'large',
+      component: (
+        <BankAccountDetailsChange
+          currentBankAccount={bankAccount}
+          onSave={this.saveBankAccountChanges}
+        />
+      ),
+    });
+  };
+
+  saveBankAccountChanges = data => {
+    const { user } = this.props;
+    let body = { ...data };
+    let formdata = new FormData();
+
+    //not needed
+    delete body.account_number_confirmation;
+
+    //required fields for api
+    body.beneficiary_email = this.props.user.email;
+    body.beneficiary_mobile = this.props.user.contact_mobile;
+
+    for (let prop in body) {
+      if (body.hasOwnProperty(prop)) {
+        formdata.append(prop, body[prop]);
+      }
+    }
+
+    return this.props
+      .saveBankAccountChanges(user.id, formdata) //user.id is merchant_id not user_id
+      .then(response => {
+        this.props.closeModal();
+        this.props.showNotification({
+          type: 'success',
+          message: 'Bank Account change request updated succesfully. ',
+        });
+        this.setState({ isBankAccountChangeAllowed: false });
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
+  };
+
   render() {
     let { user, profile } = this.props;
     let { bankAccount } = profile;
@@ -144,6 +213,9 @@ export default class Profile extends Component {
             {user.current && (
               <div class="panel-heading">
                 Merchant Id: <strong>{user.id}</strong>
+                <a class="pull-right" onClick={this.openChangePasswordModal}>
+                  Change Password
+                </a>
               </div>
             )}
 
@@ -155,7 +227,11 @@ export default class Profile extends Component {
           </ShowWhen>
 
           {bankAccount ? (
-            <BankAccountDetails bankAccount={bankAccount} />
+            <BankAccountDetails
+              bankAccount={bankAccount}
+              isBankAccountChangeAllowed={this.state.isBankAccountChangeAllowed}
+              onChangeBankAccountDetails={this.openChangeBankDetailsModal}
+            />
           ) : null}
 
           {this.state.merchantCount > 1 ||
@@ -175,15 +251,6 @@ export default class Profile extends Component {
           ) : null}
 
           {!this.state.hasMerchant ? <UpgradeMerchantForm /> : null}
-
-          <div class="text-center">
-            <button
-              class="btn btn-primary"
-              onClick={this.openChangePasswordModal}
-            >
-              Change Password
-            </button>
-          </div>
         </div>
       </div>
     );

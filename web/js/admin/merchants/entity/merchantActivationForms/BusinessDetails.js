@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { observer } from 'mobx-react';
 
 import EntityRow from 'ui/EntityRow';
 import AsyncButton from 'ui/AsyncButton';
@@ -7,9 +8,10 @@ import { notifyError, notifySuccess } from 'common/modal';
 import { titleCase } from 'common/util';
 
 import Form from 'ui/Form';
-import Field, { SelectField, TextAreaField } from 'ui/Field';
+import Field, { SelectField, TextAreaField, CheckField } from 'ui/Field';
 import Table from 'ui/Table';
 
+@observer
 export default class BusinessDetails extends Component {
   state = { panVerified: false, companyInfo: null };
 
@@ -46,7 +48,12 @@ export default class BusinessDetails extends Component {
   };
 
   render() {
-    const { merchant_details: merchantDetails, title } = this.props;
+    const {
+      merchant_details: merchantDetails,
+      title,
+      onIssueSelection,
+      doesIssueExist,
+    } = this.props;
 
     return (
       <div class="container">
@@ -56,161 +63,284 @@ export default class BusinessDetails extends Component {
         ) : (
           <Form
             class="full-span full-elements limited"
-            style={{ maxWidth: '650px' }}
+            style={{ maxWidth: '800px' }}
           >
-            <SelectField
-              label="Organisation Type"
-              name="business_type"
-              defaultValue={merchantDetails.business_type}
-              disabled
-            >
-              <option value="1">Proprietorship</option>
-              <option value="2">Individual</option>
-              <option value="3">Partnership</option>
-              <option value="4">Private Limited</option>
-              <option value="5">Public Limited</option>
-              <option value="6">LLP</option>
-              <option value="7">NGO</option>
-              <option value="8">Educational Institutes</option>
-              <option value="9">Trust</option>
-              <option value="10">Society</option>
-              <option value="11">Not yet registered</option>
-              <option value="12">Other</option>
-            </SelectField>
+            <div class="mulitple-fields-group">
+              <SelectField
+                label="Organisation Type"
+                name="business_type"
+                defaultValue={merchantDetails.business_type}
+                disabled
+              >
+                <option value="1">Proprietorship</option>
+                <option value="2">Individual</option>
+                <option value="3">Partnership</option>
+                <option value="4">Private Limited</option>
+                <option value="5">Public Limited</option>
+                <option value="6">LLP</option>
+                <option value="7">NGO</option>
+                <option value="8">Educational Institutes</option>
+                <option value="9">Trust</option>
+                <option value="10">Society</option>
+                <option value="11">Not yet registered</option>
+                <option value="12">Other</option>
+              </SelectField>
+              <CheckField
+                label="Has Issue"
+                data-issuename="business_type"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('business_type')}
+              />
+            </div>
 
-            <Field
-              label="Full Business Name"
-              name="business_name"
-              defaultValue={merchantDetails.business_name}
-              disabled
-            />
+            <div class="mulitple-fields-group">
+              <Field
+                label="Full Business Name"
+                name="business_name"
+                defaultValue={merchantDetails.business_name}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="business_name"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('business_name')}
+              />
+            </div>
 
-            <Field
-              label={
-                <span>
-                  Doing Business As<br />(If Different from Above)
-                </span>
-              }
-              name="business_dba"
-              type="email"
-              defaultValue={merchantDetails.business_dba}
-              disabled
-            />
+            <div class="mulitple-fields-group">
+              <Field
+                label={
+                  <span>
+                    Doing Business As<br />(If Different from Above)
+                  </span>
+                }
+                name="business_dba"
+                type="email"
+                defaultValue={merchantDetails.business_dba}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="business_dba"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('business_dba')}
+              />
+            </div>
 
-            <SelectField
-              label="International Payments Required?"
-              name="business_international"
-              defaultValue={merchantDetails.business_international ? '1' : '0'}
-              disabled
-            >
-              <option value="0">No</option>
-              <option value="1">Yes</option>
-            </SelectField>
+            <div class="mulitple-fields-group">
+              <SelectField
+                label="International Payments Required?"
+                name="business_international"
+                defaultValue={
+                  merchantDetails.business_international ? '1' : '0'
+                }
+                disabled
+              >
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </SelectField>
+              <CheckField
+                label="Has Issue"
+                data-issuename="business_international"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('business_international')}
+              />
+            </div>
 
-            <Field
-              label="Website/App URL"
-              name="business_website"
-              defaultValue={merchantDetails.business_website}
-              disabled
-            />
+            <div class="mulitple-fields-group">
+              <Field
+                label="Website/App URL"
+                name="business_website"
+                defaultValue={merchantDetails.business_website}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="business_website"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('business_website')}
+              />
+            </div>
 
-            <Field
-              label="Payments Accepted for (Also mention B2b or B2C)"
-              name="business_paymentdetails"
-              defaultValue={merchantDetails.business_paymentdetails}
-              disabled
-            />
+            <div class="mulitple-fields-group">
+              <Field
+                label="Payments Accepted for (Also mention B2b or B2C)"
+                name="business_paymentdetails"
+                defaultValue={merchantDetails.business_paymentdetails}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="business_paymentdetails"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('business_paymentdetails')}
+              />
+            </div>
 
-            <TextAreaField
-              label="Business Model"
-              name="business_model"
-              helpMsg="Please give a brief explanation of your business model and future plans (Essential for startups)"
-              defaultValue={merchantDetails.business_model}
-              disabled
-            />
+            <div class="mulitple-fields-group">
+              <TextAreaField
+                label="Business Model"
+                name="business_model"
+                helpMsg="Please give a brief explanation of your business model and future plans (Essential for startups)"
+                defaultValue={merchantDetails.business_model}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="business_model"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('business_model')}
+              />
+            </div>
 
-            <Field
-              label="Registered Address"
-              name="business_registered_address"
-              defaultValue={merchantDetails.business_registered_address}
-              disabled
-            />
+            <div class="mulitple-fields-group">
+              <Field
+                label="Registered Address"
+                name="business_registered_address"
+                defaultValue={merchantDetails.business_registered_address}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="business_registered_address"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('business_registered_address')}
+              />
+            </div>
 
-            <Field
-              label="Registration Address State"
-              name="business_registered_state"
-              defaultValue={merchantDetails.business_registered_state}
-              disabled
-            />
+            <div class="mulitple-fields-group">
+              <Field
+                label="Registration Address State"
+                name="business_registered_state"
+                defaultValue={merchantDetails.business_registered_state}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="business_registered_state"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('business_registered_state')}
+              />
+            </div>
 
-            <Field
-              label="Registered Address City"
-              name="business_registered_city"
-              defaultValue={merchantDetails.business_registered_city}
-              disabled
-            />
+            <div class="mulitple-fields-group">
+              <Field
+                label="Registered Address City"
+                name="business_registered_city"
+                defaultValue={merchantDetails.business_registered_city}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="business_registered_city"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('business_registered_city')}
+              />
+            </div>
 
-            <Field
-              label="Registered Address Pincode"
-              name="business_registered_pin"
-              defaultValue={merchantDetails.business_registered_pin}
-              disabled
-            />
+            <div class="mulitple-fields-group">
+              <Field
+                label="Registered Address Pincode"
+                name="business_registered_pin"
+                defaultValue={merchantDetails.business_registered_pin}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="business_registered_pin"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('business_registered_pin')}
+              />
+            </div>
 
-            <Field
-              label="Operation Address same as Registered Address"
-              name="or_same"
-              defaultValue={merchantDetails.or_same}
-              disabled
-            />
+            <div class="mulitple-fields-group">
+              <Field
+                label="Operation Address"
+                name="business_operation_address"
+                defaultValue={merchantDetails.business_operation_address}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="business_operation_address"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('business_operation_address')}
+              />
+            </div>
 
-            <Field
-              label="Operation Address"
-              name="business_operation_address"
-              defaultValue={merchantDetails.business_operation_address}
-              disabled
-            />
+            <div class="mulitple-fields-group">
+              <Field
+                label="Operation Address State"
+                name="business_operation_state"
+                defaultValue={merchantDetails.business_operation_state}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="business_operation_state"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('business_operation_state')}
+              />
+            </div>
 
-            <Field
-              label="Operation Address State"
-              name="business_operation_state"
-              defaultValue={merchantDetails.business_operation_state}
-              disabled
-            />
+            <div class="mulitple-fields-group">
+              <Field
+                label="Operation Address City"
+                name="business_operation_city"
+                defaultValue={merchantDetails.business_operation_city}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="business_operation_city"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('business_operation_city')}
+              />
+            </div>
 
-            <Field
-              label="Operation Address City"
-              name="business_operation_city"
-              defaultValue={merchantDetails.business_operation_city}
-              disabled
-            />
+            <div class="mulitple-fields-group">
+              <Field
+                label="Operation Address Pincode"
+                name="business_operation_pin"
+                defaultValue={merchantDetails.business_operation_pin}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="business_operation_pin"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('business_operation_pin')}
+              />
+            </div>
 
-            <Field
-              label="Operation Address Pincode"
-              name="business_operation_pin"
-              defaultValue={merchantDetails.business_operation_pin}
-              disabled
-            />
-
-            <Field
-              label="Company CIN"
-              name="company_cin"
-              helpMsg={() => (
-                <AsyncButton
-                  onClick={this.getCompanyData}
-                  class="link"
-                  pendingClass="link btn-pending"
-                >
-                  Verify
-                  <div class="dot-loader">.</div>
-                </AsyncButton>
-              )}
-              defaultValue={merchantDetails.company_cin}
-              disabled
-            />
+            <div class="mulitple-fields-group">
+              <Field
+                label="Company CIN"
+                name="company_cin"
+                helpMsg={() => (
+                  <AsyncButton
+                    onClick={this.getCompanyData}
+                    class="link"
+                    pendingClass="link btn-pending"
+                  >
+                    Verify
+                    <div class="dot-loader">.</div>
+                  </AsyncButton>
+                )}
+                defaultValue={merchantDetails.company_cin}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="company_cin"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('company_cin')}
+              />
+            </div>
 
             {this.state.companyInfo && (
-              <div class="field">
+              <div class="field only-field">
                 {Object.keys(this.state.companyInfo.company).map(key => {
                   let className = 'pill pill-wrap';
                   if (key === 'defaulter') {
@@ -239,7 +369,7 @@ export default class BusinessDetails extends Component {
             )}
 
             {this.state.companyInfo && (
-              <div class="field">
+              <div class="field only-field">
                 <label>Signatories:</label>
                 <Table
                   customClass="custom-table"
@@ -249,60 +379,91 @@ export default class BusinessDetails extends Component {
               </div>
             )}
 
-            <Field
-              label="Company PAN"
-              name="company_pan"
-              helpMsg={() => (
-                <a
-                  class="link"
-                  target="_blank"
-                  href={`https://incometaxindiaefiling.gov.in/e-Filing/Services/KnowYourJurisdictionLink.html?panOfDeductee=${
-                    merchantDetails.company_pan
-                  }`}
-                >
-                  Verify
-                </a>
-              )}
-              defaultValue={merchantDetails.company_pan}
-              disabled
-            />
+            <div class="mulitple-fields-group">
+              <Field
+                label="Company PAN"
+                name="company_pan"
+                helpMsg={() => (
+                  <a
+                    class="link"
+                    target="_blank"
+                    href={`https://incometaxindiaefiling.gov.in/e-Filing/Services/KnowYourJurisdictionLink.html?panOfDeductee=${
+                      merchantDetails.company_pan
+                    }`}
+                  >
+                    Verify
+                  </a>
+                )}
+                defaultValue={merchantDetails.company_pan}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="company_pan"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('company_pan')}
+              />
+            </div>
 
-            <Field
-              label={
-                <span>
-                  Name on PAN Card <br />(as provided above)
-                </span>
-              }
-              name="company_pan_name"
-              helpMsg="Mandatory for Companies"
-              defaultValue={merchantDetails.company_pan_name}
-              disabled
-            />
+            <div class="mulitple-fields-group">
+              <Field
+                label={
+                  <span>
+                    Name on PAN Card <br />(as provided above)
+                  </span>
+                }
+                name="company_pan_name"
+                helpMsg="Mandatory for Companies"
+                defaultValue={merchantDetails.company_pan_name}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="company_pan_name"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('company_pan_name')}
+              />
+            </div>
 
-            <Field
-              label={
-                <span>
-                  EPAN of any 1 authorised signatory/promoter/director <br />(as
-                  provided above)
-                </span>
-              }
-              name="promoter_pan"
-              defaultValue={merchantDetails.promoter_pan}
-              disabled
-            />
+            <div class="mulitple-fields-group">
+              <Field
+                label={
+                  <span>
+                    EPAN of any 1 authorised signatory/promoter/director <br />(as
+                    provided above)
+                  </span>
+                }
+                name="promoter_pan"
+                defaultValue={merchantDetails.promoter_pan}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="promoter_pan"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('promoter_pan')}
+              />
+            </div>
 
-            <Field
-              label={
-                <span>
-                  Name on PAN Card <br />(as provided above)
-                </span>
-              }
-              name="promoter_pan_name"
-              defaultValue={merchantDetails.promoter_pan_name}
-              disabled
-            />
-
-            <div class="field">
+            <div class="mulitple-fields-group">
+              <Field
+                label={
+                  <span>
+                    Name on PAN Card <br />(as provided above)
+                  </span>
+                }
+                name="promoter_pan_name"
+                defaultValue={merchantDetails.promoter_pan_name}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="promoter_pan_name"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('promoter_pan_name')}
+              />
+            </div>
+            <div class="field only-field">
               <label>Signatory PAN Verified</label>
               <i
                 class={`i ${

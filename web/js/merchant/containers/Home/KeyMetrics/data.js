@@ -55,24 +55,24 @@ export const breakdownValsMap = {
     value: 'hourly',
     isEnabled: (startDate, endDate) => endDate.diff(startDate, 'days') <= 3,
     title: 'Hourly',
-    disabledText: "Available for a date range within 3 days"
+    disabledText: 'Available for a date range within 3 days',
   },
   daily: {
     value: 'daily',
     isEnabled: (startDate, endDate) => !startDate.isSame(endDate, 'day'),
-    title: 'Daily'
+    title: 'Daily',
   },
   weekly: {
     value: 'weekly',
     isEnabled: (startDate, endDate) => !startDate.isSame(endDate, 'isoWeek'),
     title: 'Weekly',
-    disabledText: "Available for a date range across multiple weeks"
+    disabledText: 'Available for a date range across multiple weeks',
   },
   monthly: {
     value: 'monthly',
     isEnabled: (startDate, endDate) => !startDate.isSame(endDate, 'month'),
     title: 'Monthly',
-    disabledText: "Available for a date range across multiple months"
+    disabledText: 'Available for a date range across multiple months',
   },
 };
 
@@ -316,11 +316,11 @@ export const getTimelineData = ({
   endTime,
   noGrouping,
   getColor,
-  groupOrder=null,
-  valueKey='value',
-  breakdown='daily',
-  groupTitleMap={},
-  isCurrency=false,
+  groupOrder = null,
+  valueKey = 'value',
+  breakdown = 'daily',
+  groupTitleMap = {},
+  isCurrency = false,
 }) => {
   /*
    * Pokedex data will be completely denormalized without any grouping
@@ -640,37 +640,34 @@ export const getTimelineData = ({
   csvData.unshift(csvHeader);
 
   let groupOrderMap = null,
-      // default sorter is sort by value of the group
-      sorter = (item1, item2) => item2.value - item1.value;
+    // default sorter is sort by value of the group
+    sorter = (item1, item2) => item2.value - item1.value;
 
-  // if an order of groups is specified as an array, the groups will be 
+  // if an order of groups is specified as an array, the groups will be
   // sorted in the same order
   if (groupOrder && Array.isArray(groupOrder)) {
-  
     groupOrderMap = groupOrder.reduce((result, groupName, index) => {
-    
       result[groupName] = index;
       return result;
     }, {});
 
-    // use this index as the index of group names not specified in 
-    // groupOrder, basically the group name would appear at the end 
+    // use this index as the index of group names not specified in
+    // groupOrder, basically the group name would appear at the end
     // of the order
     let outlierIndex = groupOrder.length;
 
     sorter = (item1, item2) => {
-   
       const item1Label = item1.label.toLowerCase(),
-            item2Label = item2.label.toLowerCase(),
-            item1Index = isDefined(groupOrderMap[item1Label])
-                           ? groupOrderMap[item1Label]
-                           : (groupOrderMap[item1Label] = outlierIndex++),
-            item2Index = isDefined(groupOrderMap[item2Label])
-                           ? groupOrderMap[item2Label]
-                           : (groupOrderMap[item2Label] = outlierIndex++);
+        item2Label = item2.label.toLowerCase(),
+        item1Index = isDefined(groupOrderMap[item1Label])
+          ? groupOrderMap[item1Label]
+          : (groupOrderMap[item1Label] = outlierIndex++),
+        item2Index = isDefined(groupOrderMap[item2Label])
+          ? groupOrderMap[item2Label]
+          : (groupOrderMap[item2Label] = outlierIndex++);
 
       return item1Index - item2Index;
-    }
+    };
   }
 
   // sorting aggregates by their value in descending order

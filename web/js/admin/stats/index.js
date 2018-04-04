@@ -78,6 +78,8 @@ export default class MerchantStats extends Component {
             >
               <option value="">All</option>
               <option value="card">Card</option>
+              <option value="aeps">AEPS</option>
+              <option value="emandate">E-Mandate</option>
               <option value="netbanking">Netbanking</option>
               <option value="wallet">Wallet</option>
               <option value="upi">UPI</option>

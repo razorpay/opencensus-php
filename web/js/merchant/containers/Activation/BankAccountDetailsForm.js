@@ -5,6 +5,7 @@ import InputField from 'rzp/ui/Forms/InputField';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
 import { required, validatePincodeLength } from 'rzp/utils/validators';
 import { states } from 'rzp/utils/constants';
+import { isWebkit } from 'rzp/utils/rzp-utils';
 
 import { getPincodeDetails } from 'merchant/modules/activation';
 
@@ -21,16 +22,6 @@ function validationAddressLength(value) {
 }
 
 export default class BankDetailsForm extends Component {
-  componentWillMount() {
-    // Check if webkit browsers
-    this.isWebkit =
-      typeof window.getComputedStyle(document.documentElement)[
-        '-webkit-text-security'
-      ] === 'string'
-        ? true
-        : false;
-  }
-
   //Fetch state/city details based on pincode.
   fetchPincodeDetails = e => {
     const pincode = e.target.value;
@@ -79,9 +70,9 @@ export default class BankDetailsForm extends Component {
               <Field
                 name="bank_account_number"
                 component={InputField}
-                class={`form-control ${this.isWebkit ? 'webkit-sec' : ''}`}
+                class={`form-control ${isWebkit ? 'webkit-sec' : ''}`}
                 placeholder="Bank Account Number"
-                type={this.isWebkit ? 'text' : 'password'}
+                type={isWebkit ? 'text' : 'password'}
                 autoComplete="off"
                 validate={[required()]}
               />
@@ -121,111 +112,6 @@ export default class BankDetailsForm extends Component {
               </small>
             </div>
           </div>
-
-          {accountId ? null : (
-            <div>
-              <div class="form-group">
-                <label class="col-md-3 control-label label-required">
-                  Beneficiary Address Line 1
-                </label>
-                <div class="col-md-9">
-                  <Field
-                    name="bank_beneficiary_address1"
-                    component={InputField}
-                    tagName="input"
-                    class="form-control"
-                    placeholder="Beneficiary Address Line 1"
-                    validate={[required(), validationAddressLength]}
-                  />
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="col-md-3 control-label">
-                  Beneficiary Address Line 2
-                </label>
-                <div class="col-md-9">
-                  <Field
-                    name="bank_beneficiary_address2"
-                    component={InputField}
-                    tagName="input"
-                    class="form-control"
-                    placeholder="Beneficiary Address Line 2"
-                  />
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="col-md-3 control-label">
-                  Beneficiary Address Line 3
-                </label>
-                <div class="col-md-9">
-                  <Field
-                    name="bank_beneficiary_address3"
-                    component={InputField}
-                    tagName="input"
-                    class="form-control"
-                    placeholder="Beneficiary Address Line 3"
-                  />
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="col-md-3 control-label label-required">
-                  Beneficiary Address Pincode
-                </label>
-                <div class="col-md-9">
-                  <Field
-                    name="bank_beneficiary_pin"
-                    component={InputField}
-                    class="form-control"
-                    placeholder="Beneficiary Address Pincode"
-                    validate={[required(), validatePincodeLength]}
-                    onChange={this.fetchPincodeDetails}
-                  />
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="col-md-3 control-label label-required">
-                  Beneficiary Address City
-                </label>
-                <div class="col-md-9">
-                  <Field
-                    name="bank_beneficiary_city"
-                    component={InputField}
-                    class="form-control"
-                    placeholder="Beneficiary Address City"
-                    validate={[required()]}
-                  />
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="col-md-3 control-label label-required">
-                  Beneficiary Address State
-                </label>
-                <div class="col-md-9">
-                  <Field
-                    name="bank_beneficiary_state"
-                    component={InputField}
-                    tagName="select"
-                    class="form-control"
-                    placeholder="Beneficiary Address State"
-                    disabled={locked}
-                    validate={[required()]}
-                  >
-                    <option />
-                    {Object.keys(states).map(stateCode => (
-                      <option value={stateCode} key={stateCode}>
-                        {states[stateCode]}
-                      </option>
-                    ))}
-                  </Field>
-                </div>
-              </div>
-            </div>
-          )}
 
           <div class="form-group">
             <div class="col-md-offset-3 col-md-9">

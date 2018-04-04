@@ -43,8 +43,7 @@ const requestFailedFunc = () => {
   downloadStartedMessage = {
     type: 'success',
     message: 'Your report will download shortly',
-  },
-  defaultSelectedConfigType = 'payments';
+  };
 
 @connect(
   state => {
@@ -74,7 +73,7 @@ export default class ReportsContainer extends Component {
     super(props);
 
     const { user } = props,
-      tags = user.tags,
+      tags = user.tags.map(tag => tag.toLowerCase()),
       configs = [getCustomConfig('monthlyInvoice')],
       accounts = [],
       configRequest = getConfigs().catch(requestFailedFunc),
@@ -89,15 +88,15 @@ export default class ReportsContainer extends Component {
     };
 
     // populate custom configs
-    if (tags.indexOf('Broking_Report') !== -1) {
+    if (tags.indexOf('broking_report') !== -1) {
       configs.push(getCustomConfig('broking'));
     }
 
-    if (tags.indexOf('Rpp_Report') !== -1) {
+    if (tags.indexOf('rpp_report') !== -1) {
       configs.push(getCustomConfig('rpp_report'));
     }
 
-    if (tags.indexOf('Dsp_Report') !== -1) {
+    if (tags.indexOf('dsp_report') !== -1) {
       configs.push(getCustomConfig('dsp_report'));
     }
 
@@ -173,11 +172,11 @@ export default class ReportsContainer extends Component {
     this.requests
       .then(resps => {
         const { 0: configResp, 1: accountsResp } = resps,
-          { configs, accounts } = this.state;
+          { accounts } = this.state;
+
+        let { configs } = this.state;
 
         if (configResp.success) {
-          let selectedConfig = null;
-
           if (this.isMarketplaceEnabled) {
             if (!accountsResp.success) {
               this.props.showNotification({
@@ -193,31 +192,25 @@ export default class ReportsContainer extends Component {
             !!configResp.data.items && configResp.data.items.length > 0;
 
           if (hasConfigs) {
-            configResp.data.items.forEach(configItem => {
-              const { type, description } = configItem,
-                config = {
-                  label: configItem.name,
-                  value: configItem.id,
-                  type,
-                  description,
-                  _item: configItem,
-                };
+            configs = configResp.data.items
+              .map(configItem => {
+                const { type, description } = configItem,
+                  config = {
+                    label: configItem.name,
+                    value: configItem.id,
+                    type,
+                    description,
+                    _item: configItem,
+                  };
 
-              configs.unshift(config);
-
-              if (type === defaultSelectedConfigType) {
-                selectedConfig = config;
-              }
-            });
-
-            if (!selectedConfig) {
-              selectedConfig = configs[0];
-            }
+                return config;
+              })
+              .concat(configs);
           }
 
           this.setState({
             configs,
-            selectedConfig,
+            selectedConfig: configs[0],
             accounts,
             selectedAccount: this.defaultAccount,
           });

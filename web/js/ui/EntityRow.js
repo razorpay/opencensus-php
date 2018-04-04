@@ -1,5 +1,5 @@
 import React from 'react';
-
+import { observer } from 'mobx-react';
 /*
    Definition: Label - value pair in a row.
    Example: Check MerchantEntity.js
@@ -7,7 +7,8 @@ import React from 'react';
      Label: string / fn.
      Value: string / fn.
 */
-export default ({ label, value, className = '', ...otherProps }) => {
+
+export default observer(({ label, value, className = '', ...otherProps }) => {
   if (value === null || value === undefined || value === '') {
     value = '--';
   }
@@ -24,4 +25,4 @@ export default ({ label, value, className = '', ...otherProps }) => {
       </div>
     </div>
   );
-};
+});
