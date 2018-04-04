@@ -216,14 +216,14 @@
       function fetchAgain() {
         totalCalls++;
         {{-- 3 minutes --}}
-        if (totalCalls > 40 && !(totalCalls % 5)) {
+        if (totalCalls > 50 && !(totalCalls % 10)) {
           track('call_count', {
             count: totalCalls,
             url: url
           });
         }
 
-        if (totalCalls > 150) {
+        if (totalCalls > 180) {
           return submitForm();
         }
 
