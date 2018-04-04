@@ -72,6 +72,7 @@ class Repository extends Base\Repository
         string $purpose,
         $type = null,
         string $channel,
+        int $limit = null,
         array $relations = [])
     {
         $query = $this->newQuery()
@@ -84,6 +85,11 @@ class Repository extends Base\Repository
         if ($type !== null)
         {
           $query->where(Entity::SOURCE_TYPE, '=', $type);
+        }
+
+        if ($limit !== null)
+        {
+            $query->limit($limit);
         }
 
         if (count($relations) > 0)
