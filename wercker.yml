@@ -79,8 +79,8 @@ build:
           name: Run unit tests
           code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --printer=Codedungeon\\PHPUnitPrettyResultPrinter\\Printer
       - script:
-          name: List directory
-          code: ls -lah
+          name: create commit.txt
+          code: git rev-parse HEAD > public/commit.txt
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
@@ -102,17 +102,11 @@ deploy:
               fi
             fi
       - script:
-          name: List directory
-          code: ls -lah
-      - script:
           name: check vendor dir exists
           code: if [ ! -d vendor ] ; then exit 1 ; fi;
       - script:
           name: check if dotfile rsyncignore exists
           code: if [ ! -f .rsyncignore ] ; then exit 1 ; fi;
-      - script:
-          name: create commit.txt
-          code: git rev-parse HEAD > public/commit.txt
       - script:
           name: Conditionally skip canary deployment
           code: |
@@ -171,17 +165,11 @@ deploy-canary:
               fi
             fi
       - script:
-          name: List directory
-          code: ls -lah
-      - script:
           name: check vendor dir exists
           code: if [ ! -d vendor ] ; then exit 1 ; fi;
       - script:
           name: check if dotfile rsyncignore exists
           code: if [ ! -f .rsyncignore ] ; then exit 1 ; fi;
-      - script:
-          name: create commit.txt
-          code: git rev-parse HEAD > public/commit.txt
       - razorpay/aws-code-deploy@0.0.25:
           key: $AWS_KEY
           secret: $AWS_SECRET
@@ -231,17 +219,11 @@ deploy-dark:
               fi
             fi
       - script:
-          name: List directory
-          code: ls -lah
-      - script:
           name: check vendor dir exists
           code: if [ ! -d vendor ] ; then exit 1 ; fi;
       - script:
           name: check if dotfile rsyncignore exists
           code: if [ ! -f .rsyncignore ] ; then exit 1 ; fi;
-      - script:
-          name: create commit.txt
-          code: git rev-parse HEAD > public/commit.txt
       - razorpay/aws-code-deploy@0.0.25:
           key: $AWS_KEY
           secret: $AWS_SECRET
