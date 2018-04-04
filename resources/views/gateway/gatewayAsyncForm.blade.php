@@ -211,9 +211,10 @@
       }
     }
 
-    function fetch(url, timeout) {
+    function fetch(url, immediate) {
       var totalCalls = 0;
-      function fetchAgain() {
+
+      function fetchAgain(timeout) {
         totalCalls++;
         {{-- 3 minutes --}}
         if (totalCalls > 50 && !(totalCalls % 10)) {
@@ -236,8 +237,12 @@
               var json;
               try {
                 json = JSON.parse(xhr.responseText);
+                if (!json || typeof json !== 'object') {
+                  throw 'non object:' + json;
+                }
               } catch(e) {
                 json = {
+                  message: e.message,
                   error: {
                     description: 'Parsing error'
                   },
@@ -249,22 +254,30 @@
                 };
               }
               if (json.status === 'created') {
-                fetchAgain(url);
-              } else if (json.razorpay_payment_id || json.error) {
-                /*
-                 * Redirecting to callback_url regardless of whether payment is
-                 * succesful or not
-                 */
-                submitForm(json);
+                return fetchAgain();
               } else {
-                track('unexpected', {
-                  json: json,
-                  status: xhr.status,
-                  text: xhr.responseText,
-                  url: url
-                })
-                setTimeout(submitForm, 4000);
+                try {
+                  if (
+                    json.razorpay_payment_id ||
+                    (json.error && json.error.description !== 'The payment has already been processed') ||
+                    json.version === 1
+                  ) {
+                    /*
+                     * Redirecting to callback_url regardless of whether payment is
+                     * succesful or not
+                     */
+                    return submitForm(json);
+                  }
+                } catch(e) {}
               }
+
+              track('unexpected', {
+                json: json,
+                status: xhr.status,
+                text: xhr.responseText,
+                url: url
+              })
+              setTimeout(submitForm, 4000);
             }
           }
           xhr.onerror = function() {
@@ -272,16 +285,13 @@
               status: xhr.status,
               url: url
             })
-            fetchAgain();
+            fetchAgain(1000);
           }
           xhr.send(null);
         }, timeout || 4000);
-
-        if (timeout !== 4000) {
-          timeout = 4000;
-        }
       }
-      fetchAgain();
+
+      fetchAgain(immediate);
     }
 
     if (isIntentFlow) {
