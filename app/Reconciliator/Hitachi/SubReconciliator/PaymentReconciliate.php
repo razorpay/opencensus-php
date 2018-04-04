@@ -40,16 +40,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             return null;
         }
         
-        $paymentId = $row[self::COLUMN_PAYMENT_ID];
-
-        $payment = $this->repo->payment->find($paymentId);
-
-        if ($payment !== null)
-        {
-            return $paymentId;
-        }
-
-       return $this->getPaymentIdFromBharatQr($paymentId, $row);
+        return $row[self::COLUMN_PAYMENT_ID];
     }
 
     protected function getGatewayFee($row)

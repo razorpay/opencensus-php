@@ -158,47 +158,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         parent::resetProcessingAttributes();
     }
 
-    /**
-     * In case of normal payments merchant reference is payment id,
-     * but in case of bharat qr payments qr_code_id is used as merchant
-     * reference. So when payment is fetch using the merchant reference it will be null,
-     * In that case we will search the bharat qr entity with that merchant reference,
-     * we fetch  the payment id from that bharat qr entity and return it
-     *
-     * @param string $merchantReference
-     * @param array  $row
-     *
-     * @return null|string
-     */
-    protected function getPaymentIdFromBharatQr(string $merchantReference, array $row)
-    {
-        $bharatQr = $this->repo->bharat_qr->findByMerchantReference($merchantReference);
-
-        if ($bharatQr === null)
-        {
-            $this->alertUnexpectedBharatQrPayment($merchantReference, $row);
-
-            $this->setFailUnprocessedRow(true);
-
-            return null;
-        }
-
-        return $bharatQr->payment->getId();
-    }
-
-    protected function alertUnexpectedBharatQrPayment(string $merchantReference, array $row)
-    {
-        $this->messenger->raiseReconAlert(
-            [
-                'trace_code'   => TraceCode::BHARAT_QR_UNEXPECTED_PAYMENT,
-                'info_code'    => 'PAYMENT_ABSENT',
-                'message'      => 'Unexpected Bharat Qr Payment',
-                'merchant_ref' => $merchantReference,
-                'row'          => $row,
-                'gateway'      => get_called_class()
-            ]);
-    }
-
     protected function runPreReconciledAtCheckRecon($rowDetails)
     {
         // Setting acquirer data, will be persist from persistPaymentData method

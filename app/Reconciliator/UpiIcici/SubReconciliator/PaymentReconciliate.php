@@ -9,24 +9,24 @@ use RZP\Gateway\Upi\Icici\Status as UpiStatus;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
-    const MERCHANT_TRAN_ID = 'merchanttranid';
-    const SERVICE_TAX      = 'service_tax';
-    const COMMISSION       = 'commission';
-    const STATUS           = 'status';
-    const AMOUNT           = 'amount';
+    use Base\BharatQrTrait;
+
+    const SUB_MERCHANT_NAME = 'submerchantname';
+    const MERCHANT_TRAN_ID  = 'merchanttranid';
+    const SERVICE_TAX       = 'service_tax';
+    const BANK_TRANS_ID     = 'banktranid';
+    const COMMISSION        = 'commission';
+    const STATUS            = 'status';
+    const AMOUNT            = 'amount';
 
     protected function getPaymentId(array $row)
     {
-        $paymentId =  $row[self::MERCHANT_TRAN_ID];
-
-        $payment = $this->repo->payment->find($paymentId);
-
-        if ($payment !== null)
+        if (strpos($row[self::SUB_MERCHANT_NAME], 'BHARAT QR') !== false)
         {
-            return $paymentId;
+            return $this->getPaymentIdFromBharatQr($row[self::BANK_TRANS_ID], $row);
         }
 
-        return $this->getPaymentIdFromBharatQr($paymentId, $row);
+        return $row[self::MERCHANT_TRAN_ID];
     }
 
     protected function getGatewayFee($row)
