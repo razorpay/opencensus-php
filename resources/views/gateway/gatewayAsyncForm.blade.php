@@ -157,40 +157,53 @@
     var callback_url = payment_base + '/redirect_callback?key_id='+key_id;
     var gel =  document.getElementById.bind(document);
     var CheckoutBridge = window.CheckoutBridge;
+    var isIntentFlow = CheckoutBridge && data.type === 'intent';
 
     function track(name, properties) {
-      properties.CheckoutBridge = !!CheckoutBridge;
-      properties.pageData = {
-        type: data.type,
-        data: data.data,
-        payment_id: data.payment_id
-      }
-      var payload = {
-        context: {
-          user_agent: null
-        },
-        events: [{
-          event: name,
-          properties: properties,
-          timestamp: Date.now()
-        }]
-      };
-      
-      if (key_id.slice(0, 5) === 'rzp_t') return console.log(payload);   
-      var xhr = new XMLHttpRequest();
-      xhr.open('post', 'https://lumberjack.razorpay.com/v1/track', true);
-      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-      xhr.send('key=MC40OTMwNzgyMDM3MDgwNjI3Nw9YnGzW&data=' +
-               encodeURIComponent(btoa(JSON.stringify(payload))));
+      setTimeout(function() {
+        properties.CheckoutBridge = !!CheckoutBridge;
+        properties.pageData = {
+          type: data.type,
+          data: data.data,
+          key: key_id,
+          payment_id: data.payment_id
+        }
+        var payload = {
+          context: {
+            user_agent: null
+          },
+          events: [{
+            event: name,
+            properties: properties,
+            timestamp: Date.now()
+          }]
+        };
+        
+        if (key_id.slice(0, 5) === 'rzp_t') return console.log(payload);   
+        var xhr = new XMLHttpRequest();
+        xhr.open('post', 'https://lumberjack.razorpay.com/v1/track', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.send('key=MC40OTMwNzgyMDM3MDgwNjI3Nw9YnGzW&data=' +
+                 encodeURIComponent(btoa(JSON.stringify(payload))));        
+      })
     }
 
+    var submitted_count = 0;
     function submitForm(response) {
-      if (CheckoutBridge) {
-        alert(JSON.stringify(response));
+      // track if page not closed after 4s of calling submitForm
+      setTimeout(function() {
+        track('no_redirect', {
+          count: ++submitted_count
+        });
+        if (submitted_count < 5) {
+          submitForm();
+        }
+      }, 4000);
+      if (isIntentFlow) {
         CheckoutBridge.oncomplete(JSON.stringify(response));
       } else {
         gel('form').setAttribute('action', callback_url);
-        gel('form').submit();        
+        gel('form').submit();
       }
     }
 
@@ -263,7 +276,7 @@
       fetchAgain();
     }
 
-    if (CheckoutBridge && data.type === 'intent') {
+    if (isIntentFlow) {
       var intent_url = data.data.intent_url;
 
       function initUpiActivity() {
@@ -285,12 +298,11 @@
           track('android_error', {
             error: e.message
           })
+          setTimeout(submitForm, 3000);
         }
       }
       initUpiActivity();
-    }
-
-    if (!window.pollStatus) {
+    } else {
       fetch(request_url);
     }
 
