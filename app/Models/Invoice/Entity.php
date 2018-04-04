@@ -362,6 +362,44 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
     ];
 
+    /**
+     * {@inheritDoc}
+     */
+    protected $hosted = [
+        self::ID,
+        self::ENTITY,
+        self::RECEIPT,
+        self::INVOICE_NUMBER,
+        self::CUSTOMER_ID,
+        self::CUSTOMER_DETAILS,
+        self::ORDER_ID,
+        self::SUBSCRIPTION_ID,
+        self::LINE_ITEMS,
+        self::PAYMENT_ID,
+        self::STATUS,
+        self::EXPIRE_BY,
+        self::ISSUED_AT,
+        self::PAID_AT,
+        self::CANCELLED_AT,
+        self::EXPIRED_AT,
+        self::DATE,
+        self::TERMS,
+        self::PARTIAL_PAYMENT,
+        self::GROSS_AMOUNT,
+        self::TAX_AMOUNT,
+        self::AMOUNT,
+        self::AMOUNT_PAID,
+        self::AMOUNT_DUE,
+        self::CURRENCY,
+        self::DESCRIPTION,
+        self::COMMENT,
+        self::SHORT_URL,
+        self::TYPE,
+        self::GROUP_TAXES_DISCOUNTS,
+        self::SUBSCRIPTION_STATUS,
+        self::CREATED_AT,
+    ];
+
     protected $appends = [
         self::PUBLIC_ID,
         self::ENTITY,
