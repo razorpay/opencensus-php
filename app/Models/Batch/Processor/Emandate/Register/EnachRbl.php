@@ -22,6 +22,7 @@ class EnachRbl extends Base
     const REGISTRATION_STATUS = 'registration_status';
     const ACCOUNT_NUMBER      = 'account_number';
     const ERROR_MESSAGE       = 'error_message';
+    const PAYMENT_ID          = 'payment_id';
 
     /**
      * @var Payment\Processor\Processor
@@ -43,11 +44,12 @@ class EnachRbl extends Base
 
         $gatewayToken = $content[self::GATEWAY_TOKEN];
 
+        $payment = $this->repo->payment->findOrFailPublic($content[self::PAYMENT_ID]);
+
         $gatewayPayment = $this->repo
                                ->enach
-                               ->findAuthorizedPaymentByUmrn($gatewayToken);
+                               ->findAuthorizedPaymentByPaymentId($payment->getId());
 
-        $payment = $gatewayPayment->payment;
         $token = $payment->getGlobalOrLocalTokenEntity();
 
         if ($payment->hasBeenAuthorized() === false)
@@ -180,6 +182,7 @@ class EnachRbl extends Base
             self::TOKEN_STATUS        => $status,
             self::REGISTRATION_STATUS => $entry[Batch\Header::ENACH_REGISTER_STATUS],
             self::ACCOUNT_NUMBER      => $accountNumber,
+            self::PAYMENT_ID          => $entry[Batch\Header::ENACH_REGISTER_REF_1],
             self::ERROR_MESSAGE       => $this->getTokenErrorMessage($entry[Batch\Header::ENACH_REGISTER_STATUS]),
         ];
     }

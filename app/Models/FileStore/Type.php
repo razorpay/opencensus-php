@@ -272,7 +272,6 @@ class Type
             self::HDFC_NETBANKING_REFUND,
             self::HDFC_EMANDATE_REGISTER,
             self::HDFC_EMANDATE_DEBIT,
-            self::RBL_ENACH_DEBIT,
             self::BOB_NETBANKING_REFUND,
             self::BOB_NETBANKING_CLAIMS,
             self::AXIS_NETBANKING_REFUND,
@@ -330,6 +329,7 @@ class Type
             self::FUND_TRANSFER_H2H,
             self::ICICI_EMI_FILE_SFTP,
             self::YES_EMI_FILE_SFTP,
+            self::RBL_ENACH_DEBIT,
         ],
 
         self::RECON_BUCKET_CONFIG => [
