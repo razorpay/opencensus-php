@@ -89,7 +89,9 @@ export default class Sidebar extends Component {
                       </div>
                       <div class="activation-bar-content">
                         <div className="activation-bar-text">
-                          {remainingActivation}% Remaining
+                          {user.activation_progress >= 70
+                            ? `${remainingActivation}% Remaining`
+                            : `${user.activation_progress}% Complete`}
                         </div>
                         <div className="activation-bar">
                           <ProgressBar
