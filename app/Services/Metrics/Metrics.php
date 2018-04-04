@@ -29,7 +29,8 @@ class Metrics
 
     public function __construct(array $config)
     {
-        $this->config = $config;
+        $this->config     = $config;
+        $this->driverPool = [];
 
         $this->driver();
     }
@@ -41,10 +42,29 @@ class Metrics
      */
     public function driver(string $driver = null): Metrics
     {
-        $driver = $driver ?: $this->config['driver'];
-        $this->currentDriver = $this->driverPool[$driver] ?: ($this->driverPool[$driver] = $this->createDriver($driver));
+        $driver = $driver ?: $this->config['default'];
+
+        if (array_key_exists($driver, $this->driverPool) == false)
+        {
+            $this->driverPool[$driver] = $this->createDriver($driver);
+        }
+
+        $this->currentDriver = $this->driverPool[$driver];
 
         return $this;
+    }
+
+    public function render(): string
+    {
+        // Only prometheus works with pull based model, other drivers doesn't implement render()
+        if ($this->currentDriver instanceof Drivers\Prometheus)
+        {
+            return $this->currentDriver->render();
+        }
+        else
+        {
+            return '';
+        }
     }
 
     /**
@@ -67,6 +87,13 @@ class Metrics
     {
         $impl = __NAMESPACE__ . '\\Drivers\\' . studly_case($driver);
 
-        return new $impl($this->config[$driver]);
+        // In cases of corrupt configurations deployed, don't fail critical path. Just work with mock implementation.
+        // Also no need to log here, we would come to know of monitoring not working via other means.
+        if (class_exists($impl) === false)
+        {
+            return new Drivers\Mock;
+        }
+
+        return new $impl($this->config['drivers'][$driver]);
     }
 }

@@ -4,6 +4,7 @@ namespace RZP\Services\Metrics\Drivers;
 
 /**
  * Mock driver implementation
+ * This is default and is useful for local environment where other required(service/package) are not available.
  */
 class Mock extends Driver
 {

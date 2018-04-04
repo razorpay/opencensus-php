@@ -152,6 +152,10 @@ return [
         'secret'    => env('AUTH_SERVICE_SECRET'),
     ],
 
+    'prometheus' => [
+        'secret'    => env('PROMETHEUS_API_SECRET'),
+    ],
+
     'nodal' => [
         'mock' => env('NODAL_MOCK', false),
         'auth' => [

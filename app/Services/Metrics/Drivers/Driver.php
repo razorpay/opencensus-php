@@ -19,7 +19,7 @@ abstract class Driver
     protected $namespace;
 
 
-    public function __construct(array $config)
+    public function __construct(array $config = [])
     {
         $this->config = $config;
     }
@@ -41,7 +41,7 @@ abstract class Driver
      * @param  array  $dimensions
      * @return Driver
      */
-    abstract public function count(string $metric, int $times = 1, array $dimensions = []): Driver;
+    abstract public function count(string $metric, int $times, array $dimensions = []): Driver;
 
     /**
      * @param  string $metric

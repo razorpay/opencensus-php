@@ -3,6 +3,7 @@
 namespace RZP\Services\Metrics\Drivers;
 
 use Prometheus\Storage\APC;
+use Prometheus\Storage\Adapter;
 use Prometheus\RenderTextFormat;
 use Prometheus\CollectorRegistry;
 
@@ -58,18 +59,33 @@ class Prometheus extends Driver
         return (new RenderTextFormat())->render($samples);
     }
 
-    // TODO: Take which adapter to use from config
-
     /**
      * Flushes adapter storage
      */
     public function flush()
     {
-        (new APC)->flushAPC();
+        $this->createAdapter()->flush();
     }
 
     protected function createRegistry(): CollectorRegistry
     {
-        return new CollectorRegistry(new APC);
+        return new CollectorRegistry($this->createAdapter());
+    }
+
+    protected function createAdapter(): Adapter
+    {
+        $adapter = $this->config['adapter'];
+
+        switch ($adapter)
+        {
+            case 'apcu':
+                return new APC;
+
+            // Defaults to in memory adapter. Metrics module on it's own must never fail.
+            // We can live with some data loss but critical application path is too costly to get an error because
+            // of metrics module.
+            default:
+                return new InMemory;
+        }
     }
 }

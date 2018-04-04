@@ -1,18 +1,20 @@
 <?php
 
 /**
- * Contains:
- * - Which driver to use by default for metrics service?
- * - And the corresponding configuration for any initialization of specific driver etc.
+ * Configurations consumed by Services\Metrics module
  */
 return [
+    // Default driver to use. Possible values: mock, prometheus
+    'default'    => env('METRICS_DEFAULT_DRIVER'),
 
-    // Implemented drivers: mock|newrelic|prometheus
-    'driver'     => 'prometheus', // TODO: Move to env.
+    // Configurations per driver
+    'drivers'    => [
+        'mock'       => [],
 
-    'mock'       => [],
+        'newrelic'   => [],
 
-    'newrelic'   => [],
-
-    'prometheus' => [],
+        'prometheus' => [
+            'adapter' => env('METRICS_PROMETHEUS_ADAPTER'),
+        ],
+    ],
 ];

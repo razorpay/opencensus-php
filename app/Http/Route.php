@@ -793,7 +793,6 @@ final class Route
         // Generic Lambda handler
         'lambda_post_h2h'                          => ['post',     'lambda/{type}',                                  'LambdaController@processLambda'                                    ],
 
-        // TODO: Move this to internal group
         'metrics'                                  => ['get',       'metrics',                                       'MetricsController@get'                                             ],
     ];
 
@@ -1088,6 +1087,7 @@ final class Route
         'daily_reconciliation_summary_fetch',
         'lambda_post_h2h',
         'setcronjob_webhook',
+        'metrics',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1857,7 +1857,6 @@ final class Route
         'qr_code_download_live',
         'qr_code_download_test',
         'gateway_payment_callback_bharatqr',
-        'metrics',
     ];
 
     /**
@@ -2023,6 +2022,10 @@ final class Route
             'oauth_merchant_notify',
             'merchant_create_app_access_mapping',
             'merchant_delete_app_access_mapping',
+        ],
+
+        'prometheus' => [
+            'metrics',
         ],
     ];
 
