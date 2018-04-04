@@ -1917,6 +1917,12 @@ class Processor
             {
                 $payment->reload();
 
+                if ($payment->isCaptured() === false)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
+                }
+
                 if ($payment->isAcknowledged() === true)
                 {
                     throw new Exception\BadRequestException(
