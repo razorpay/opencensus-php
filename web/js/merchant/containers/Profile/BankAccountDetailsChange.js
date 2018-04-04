@@ -31,7 +31,6 @@ export default class BandAccountDetailsChange extends Component {
   state = {
     addressProof: null,
   };
-  componentWillMount() {}
   handleFileChange = event => {
     if (event) {
       this.setState({
