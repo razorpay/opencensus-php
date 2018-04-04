@@ -1912,12 +1912,23 @@ class Processor
     {
         $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
-        $this->mutex->acquireAndRelease($payment->getId(), function() use ($payment, $currentTime)
-        {
-            $payment->setAcknowledgedAt($currentTime);
+        $this->mutex->acquireAndRelease($payment->getId(),
+            function() use ($payment, $currentTime)
+            {
+                $payment->reload();
 
-            $this->repo->saveOrFail($payment);
-        });
+                if ($payment->isAcknowledged() === true)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_ACKNOWLEDGED);
+                }
+
+                $payment->setAcknowledgedAt($currentTime);
+
+                $this->repo->saveOrFail($payment);
+            },
+            20,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         $this->trace->info(
             TraceCode::PAYMENT_ACKNOWLEDGED,

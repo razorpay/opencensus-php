@@ -1170,12 +1170,6 @@ class Service extends Base\Service
     {
         $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
 
-        if ($payment->isAcknowledged() === true)
-        {
-            throw new Exception\BadRequestException(
-                Error\ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_ACKNOWLEDGED);
-        }
-
         $this->getNewProcessor()->acknowledge($payment);
     }
 
