@@ -137,6 +137,68 @@ body {
     .text-warning {
       color: #fbe165;
     }
+
+    a.activation-status-link {
+      padding: 0;
+      line-height: inherit;
+      border: none;
+    }
+
+    div.activation-status {
+
+      color: white;
+      padding: 20px 12px;
+      background-color: #315BC2;
+      margin-bottom: 15px;
+     
+      i.i.i-chevron-right {
+
+        margin-right: 0;
+      }
+ 
+      div.activation-bar-content {
+
+        display: table;
+        font-size: 80%;
+        line-height: 20px;
+        margin-top: 4px;
+
+        > div {
+
+          display: table-cell;
+          vertical-align: middle;
+          
+          &.activation-bar-text {
+
+            white-space: nowrap;
+            width: 1%;
+            padding-right: 6px;
+          }
+
+          &.activation-bar {
+
+            div.progress {
+
+              width: 100%;
+              height: 6px;
+              margin-bottom: 0;
+              border-radius: 4px;
+              background-color: #2B3972;
+
+              div.progress-bar {
+
+                background-color: #FFFFFF;
+              }
+            }
+          }
+        }
+      }
+
+      @media (max-width $screen-sm-min) {
+
+        display: none;
+      }
+    }
   }
 
   .nav > a {

@@ -114,6 +114,7 @@ class HomeContainer extends Component {
       },
       dateRangePresets,
       showGroupingByPtfm: false,
+      scrollAmountToStickHeader: 0,
       hasNewAnalyticsTour: !LocalStorageService.getItem(
         'hide_new_analytics_banner'
       ),
@@ -122,6 +123,9 @@ class HomeContainer extends Component {
     this.oldestTxnReqId = 0;
     this.onDatesChange = this.onDatesChange.bind(this);
     this.onShowTour = this.onShowTour.bind(this);
+    this.setScrollAmountToStickHeader = this.setScrollAmountToStickHeader.bind(
+      this
+    );
   }
 
   fetchTxnsGroupedByPlatform() {
@@ -338,6 +342,18 @@ class HomeContainer extends Component {
     document.body.className = document.body.className.replace(bodyClass, '');
   }
 
+  setScrollAmountToStickHeader() {
+    const scrollAmountToStickHeader = this.extraContent
+      ? this.extraContent.clientHeight
+      : 0;
+
+    this.setState({ scrollAmountToStickHeader });
+  }
+
+  componentDidMount() {
+    this.setScrollAmountToStickHeader();
+  }
+
   onShowTour() {
     LocalStorageService.setItem('hide_new_analytics_banner', true);
     this.setState(
@@ -351,6 +367,7 @@ class HomeContainer extends Component {
   render() {
     let {
       mode,
+      user,
       current_balance,
       tabsMeta,
       isAdmin,
@@ -365,31 +382,38 @@ class HomeContainer extends Component {
       dateRangePresets,
       showGroupingByPtfm,
       hasNewAnalyticsTour,
+      scrollAmountToStickHeader,
     } = this.state;
-
-    let scrollAmountToStickHeader = 0;
-
-    if (hasNewAnalyticsTour) {
-      scrollAmountToStickHeader += 64;
-    }
 
     return (
       <div class="react-root dashboard-home">
-        {hasNewAnalyticsTour && (
-          <div className="v2-tour-banner">
-            <div className="banner-icon">
-              <i className="i i-loudspeaker" />
-            </div>
-            <div className="banner-content">
-              <Banner cta="View Tour" ctaOnClick={this.onShowTour}>
-                <span>
-                  Hey! We have redesigned the dashboard for an improved Razorpay
-                  experience. Please take a quick tour before you get started.
-                </span>
-              </Banner>
-            </div>
-          </div>
-        )}
+        <div ref={node => (this.extraContent = node)} className="extra-content">
+          {!isAdmin &&
+            (user.isActivated ? (
+              hasNewAnalyticsTour && (
+                <div className="v2-tour-banner">
+                  <div className="banner-icon">
+                    <i className="i i-loudspeaker" />
+                  </div>
+                  <div className="banner-content">
+                    <Banner cta="View Tour" ctaOnClick={this.onShowTour}>
+                      <span>
+                        Hey! We have redesigned the dashboard for an improved
+                        Razorpay experience. Please take a quick tour before you
+                        get started.
+                      </span>
+                    </Banner>
+                  </div>
+                </div>
+              )
+            ) : (
+              <div className="v2-onboarding-card">
+                <NewUserOnboardingCard
+                  onSizeChange={this.setScrollAmountToStickHeader}
+                />
+              </div>
+            ))}
+        </div>
         <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}>
           <Header className="clearfix" title="" showMode={false}>
             <div

@@ -192,9 +192,7 @@ function main(
   }
 
   function canBeZoomed(d) {
-    return (
-      !d._children.length === 1 || typeof d._children[0].key !== 'undefined'
-    );
+    return typeof d._children[0].key !== 'undefined';
   }
 
   function display(d, isTransitioning) {
