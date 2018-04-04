@@ -3820,6 +3820,95 @@
             "time": "2017-07-28T14:45:09+00:00"
         },
         {
+            "name": "nojacko/email-data-disposable",
+            "version": "1.0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nojacko/email-data-disposable.git",
+                "reference": "f78f2d81902e4043b96f2bdcceeac7eb2a004165"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nojacko/email-data-disposable/zipball/f78f2d81902e4043b96f2bdcceeac7eb2a004165",
+                "reference": "f78f2d81902e4043b96f2bdcceeac7eb2a004165",
+                "shasum": ""
+            },
+            "require-dev": {
+                "ext-intl": "*",
+                "league/climate": "^3.2",
+                "php-curl-class/php-curl-class": "~2.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "EmailData\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "James Jackson",
+                    "email": "git@nojacko.com"
+                }
+            ],
+            "description": "Disposable email domains",
+            "time": "2017-07-12T10:55:04+00:00"
+        },
+        {
+            "name": "nojacko/email-validator",
+            "version": "1.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nojacko/email-validator.git",
+                "reference": "fbd98fdcf373ddbe09843c3ad5a7db9bc3651c3b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nojacko/email-validator/zipball/fbd98fdcf373ddbe09843c3ad5a7db9bc3651c3b",
+                "reference": "fbd98fdcf373ddbe09843c3ad5a7db9bc3651c3b",
+                "shasum": ""
+            },
+            "require": {
+                "nojacko/email-data-disposable": "^1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "EmailValidator\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "James Jackson",
+                    "email": "nojacko@gmail.com",
+                    "homepage": "http://jamesdavidjackson.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Small PHP library to valid email addresses using a number of methods.",
+            "keywords": [
+                "MX",
+                "check",
+                "checker",
+                "disposable",
+                "email",
+                "email address",
+                "library",
+                "role",
+                "throwaway",
+                "validater",
+                "validation"
+            ],
+            "time": "2016-08-09T11:04:18+00:00"
+        },
+        {
             "name": "paragonie/random_compat",
             "version": "v2.0.11",
             "source": {
@@ -5605,17 +5694,18 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/spine.git",
-                "reference": "f41d198ed9896d23cc2865b9000675d383a78956"
+                "reference": "21854eea3ee6577f7c329c71f465c2ee609c23f2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/spine/zipball/f41d198ed9896d23cc2865b9000675d383a78956",
-                "reference": "f41d198ed9896d23cc2865b9000675d383a78956",
+                "url": "https://api.github.com/repos/razorpay/spine/zipball/21854eea3ee6577f7c329c71f465c2ee609c23f2",
+                "reference": "21854eea3ee6577f7c329c71f465c2ee609c23f2",
                 "shasum": ""
             },
             "require": {
                 "illuminate/database": ">=5.4",
                 "illuminate/validation": ">=5.4",
+                "nojacko/email-validator": "^1.1",
                 "php": ">=5.4"
             },
             "require-dev": {
@@ -5648,7 +5738,7 @@
                 "source": "https://github.com/razorpay/spine/tree/master",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2017-08-13T11:09:50+00:00"
+            "time": "2018-04-04T09:22:31+00:00"
         },
         {
             "name": "razorpay/trace",
