@@ -15,6 +15,7 @@
     <?php endif; ?>
     <script>
       var options = {!! $options !!};
+      options.key = "{!! $key !!}";
     </script>
   </head>
   <body>

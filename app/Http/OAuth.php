@@ -200,17 +200,18 @@ class OAuth
             return ApiResponse::oauthInvalidScope();
         }
 
+        $mode = $response[OAuthToken::MODE];
+
+        // Sets the mode for the request, and database connection
+        $this->ba->setMode($mode);
+
+        \Database\DefaultConnection::set($mode);
+
         //
         // Set merchant for the current request
         // TODO: Move this to a common auth class
         //
         $this->ba->setMerchantById($response[OAuthToken::MERCHANT_ID]);
-
-        $mode = $response[OAuthToken::MODE];
-
-        // Sets the mode for the request, and database connection
-        $this->ba->setMode($mode);
-        \Database\DefaultConnection::set($mode);
 
         //
         // Public key is used to generate the callback URL parameter that is

@@ -251,14 +251,13 @@ class Service extends Base\Service
 
         // Gets mode per route and sets application & db mode.
         $mode = str_contains($routeName, '_test') ? Mode::TEST : Mode::LIVE;
-        \Database\DefaultConnection::set($mode);
-        $this->app['rzp.mode'] = $mode;
+        $this->app['basicauth']->setModeAndDbConnection($mode);
 
         $invoice = $this->repo->invoice->findByPublicId($invoiceId);
 
         $invoice->getValidator()->validateInvoiceViewable();
 
-        return (new ViewDataSerializer($invoice))->getWithSubscriptionIfApplicable();
+        return (new ViewDataSerializer($invoice))->serializeForHosted();
     }
 
     /**

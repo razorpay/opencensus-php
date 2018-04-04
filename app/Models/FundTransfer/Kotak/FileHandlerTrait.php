@@ -486,6 +486,13 @@ trait FileHandlerTrait
         return $fullpath;
     }
 
+    protected function generateTextWithHeadings($data, $glue = '~', $ignoreLastNewline = false, array $headings = [])
+    {
+        array_unshift($data, array_combine($headings, $headings));
+
+        return $this->generateText($data, $glue, $ignoreLastNewline);
+    }
+
     protected function generateText($data, $glue = '~', $ignoreLastNewline = false)
     {
         $txt = '';
@@ -654,18 +661,15 @@ trait FileHandlerTrait
     protected function parseTextFile($file, string $delimiter = '~')
     {
         $rows = $this->getFileLines($file);
-
         $data = [];
 
         foreach ($rows as $ix => $row)
         {
             // Ending row may be just empty.
-            if ($row === '')
+            if (blank($row) === false)
             {
-                continue;
+                $data[] = $this->parseTextRow($row, $ix, $delimiter);
             }
-
-            $data[] = $this->parseTextRow($row, $ix, $delimiter);
         }
 
         return $data;

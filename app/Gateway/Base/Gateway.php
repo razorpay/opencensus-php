@@ -167,6 +167,8 @@ class Gateway
 
     protected $sortRequestContent = true;
 
+    protected $externalMockDomain;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -189,6 +191,8 @@ class Gateway
         $this->request = $this->app['request'];
 
         $this->cache = $this->app['cache'];
+
+        $this->externalMockDomain = env('EXTERNAL_MOCK_GATEWAY_DOMAIN');
     }
 
     public function authorize(array $input)
@@ -798,6 +802,12 @@ class Gateway
 
         $type = strtoupper($type);
 
+        if (($this->env === 'func') and
+            (isset($this->externalMockDomain) === true))
+        {
+          return $this->getExternalMockUrl($type);
+        }
+
         return $urlDomain . $this->getRelativeUrl($type);
     }
 
@@ -1111,5 +1121,18 @@ class Gateway
     {
         return (empty($this->input['bharat_qr']) === false);
 
+    }
+
+    /**
+     * Retuns the external mock url
+     * Used for gateway testing using mock in func
+     * Appends the gateway string and relative url for the external mock domain
+     *
+     * @param  string $type Indicates which relative URL to use
+     * @return string       Complete URL to be used
+     */
+    protected function getExternalMockUrl(string $type)
+    {
+       return $this->externalMockDomain . "/" . $this->gateway . $this->getRelativeUrl($type);
     }
 }

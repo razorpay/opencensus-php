@@ -730,10 +730,15 @@ class Validator extends Base\Validator
         //
         // Don't continue if already captured
         //
-        if ($payment->hasBeenCaptured())
+        if ($payment->hasBeenCaptured() === true)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'status'        => $payment->getStatus(),
+                    'captured_at'   => $payment->getCapturedAt(),
+                ]);
         }
     }
 

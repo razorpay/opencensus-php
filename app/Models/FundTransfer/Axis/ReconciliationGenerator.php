@@ -28,8 +28,6 @@ class ReconciliationGenerator
 
         $data = $this->getDecryptedFile($setlFile);
 
-        array_shift($data);
-
         $reconData = [];
 
         foreach ($data as $row)
@@ -85,17 +83,13 @@ class ReconciliationGenerator
             ((bool) $params['failed_recons']) : false;
 
         $data = [
-            Headings::FILE_LEVEL_REFERENCE => 'some text',
+            Headings::FILE_LEVEL_REFERENCE => $row[Headings::REFERENCE_NUMBER],
             Headings::BENEFICIARY_CODE     => 'some code',
             Headings::TRANSACTION_AMOUNT   => $row[Headings::AMOUNT],
-            Headings::SETTLEMENT_DATE      => $row[Headings::CREDIT_DATE],
+            Headings::SETTLEMENT_DATE      => $row[Headings::EXECUTION_DATE],
             Headings::RBI_SEQUENCE_NUMBER  => UniqueIdEntity::generateUniqueId(),
             Headings::STATUS               => Status::SETTLED,
             Headings::RETURN_REASON        => 'nothing',
-            Headings::ADDITIONAL_INFO1     => 'something',
-            Headings::ADDITIONAL_INFO2     => 'something',
-            Headings::ADDITIONAL_INFO3     => $row[Headings::REFERENCE1],
-            Headings::ADDITIONAL_INFO4     => $row[Headings::REFERENCE2],
         ];
 
         if ($generateFailedReconciliations === true)

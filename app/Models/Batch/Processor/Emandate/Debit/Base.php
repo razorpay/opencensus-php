@@ -4,77 +4,103 @@ namespace RZP\Models\Batch\Processor\Emandate\Debit;
 
 use RZP\Exception;
 use RZP\Models\Payment;
-use RZP\Models\FileStore;
+use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Batch\Processor\Base as BaseProcessor;
-use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 
 class Base extends BaseProcessor
 {
     protected function processEntry(array & $entry)
     {
-        $parsedData = $this->getDataFromRow($entry);
+        $content = $this->getDataFromRow($entry);
 
-        $this->updatePaymentEntities($parsedData);
+        $this->updatePaymentEntities($content);
     }
 
-    /**
-     * @param array $parsedData
-     * @param $parsedData['payment_id']
-     * @param $parsedData['account_number']
-     */
-    protected function updatePaymentEntities(array $parsedData)
+    protected function updatePaymentEntities(array $content)
     {
-        $paymentId = $parsedData['payment_id'];
-
-        $accountNumber = $parsedData['account_number'];
+        //
+        // Can't put in a transaction because of webhooks and emails
+        //
 
         // Update gateway payment
-        $gatewayPayment = $this->updateGatewayPayment($parsedData);
+        $this->updateGatewayPayment($content);
+
+        $payment = $this->getPayment($content);
+
+        $this->assertAmount($payment, $content);
+
+        // Update payment
+        $this->updatePayment($payment, $content);
+    }
+
+    protected function getPayment(array $content)
+    {
+        $paymentId = $content['payment_id'];
+
+        $accountNumber = $content['account_number'];
 
         // Get payment
         $payment = $this->repo->payment->fetchDebitEmandatePaymentPendingAuth(
-                        $this->gateway,
-                        $paymentId,
-                        $accountNumber);
+                                                                    $this->gateway,
+                                                                    $paymentId,
+                                                                    $accountNumber);
 
-        // Update payment
-        $this->updatePayment($gatewayPayment, $payment);
+        return $payment;
     }
 
-    /**
-     * @param array $parsedData
-     * @param $parsedData['payment_id']
-     * @param $parsedData['status']
-     * @param $parsedData['error_message']
-     *
-     * @return NetbankingEntity
-     */
-    protected function updateGatewayPayment(array $parsedData): NetbankingEntity
+    protected function assertAmount(Payment\Entity $payment, $content)
     {
-        $paymentId = $parsedData['payment_id'];
+        $expectedAmount = number_format($payment->getAmount() / 100, 2, '.', '');
 
-        $gatewayPayment = $this->repo->netbanking->findByPaymentIdAndActionOrFail(
-            $paymentId, GatewayAction::AUTHORIZE);
+        $actualAmount = $this->getFormattedGatewayAmount($content);
 
-        $attrs = $this->getGatewayAttributes($parsedData);
+        if ($expectedAmount !== $actualAmount)
+        {
+            throw new Exception\LogicException(
+                'Amount tampering in Emandate found.',
+                ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED, [
+                    'expected' => $expectedAmount,
+                    'actual'   => $actualAmount,
+                    'payment_id'    => $payment->getId(),
+                ]);
+        }
+    }
+
+    protected function getFormattedGatewayAmount($content)
+    {
+        return number_format($content['amount'], 2, '.', '');
+    }
+
+    protected function updateGatewayPayment(array $content)
+    {
+        $paymentId = $content['payment_id'];
+
+        $gatewayPayment = $this->repo
+                               ->netbanking
+                               ->findByPaymentIdAndActionOrFail($paymentId, GatewayAction::AUTHORIZE);
+
+        $attrs = $this->getGatewayAttributes($content);
 
         $gatewayPayment->fill($attrs);
 
         $this->repo->saveOrFail($gatewayPayment);
-
-        return $gatewayPayment;
     }
 
-    protected function updatePayment(NetbankingEntity $gatewayPayment, Payment\Entity $payment)
+    protected function getGatewayAttributes(array $content)
     {
-        if ($this->isAuthorized($gatewayPayment) === true)
+        return [];
+    }
+
+    protected function updatePayment(Payment\Entity $payment, array $content)
+    {
+        if ($this->isAuthorized($content) === true)
         {
             return $this->processAuthorizedPayment($payment);
         }
 
-        return $this->processFailedPayment($payment, $gatewayPayment);
+        return $this->processFailedPayment($payment, $content);
     }
 
     protected function processAuthorizedPayment(Payment\Entity $payment)
@@ -88,60 +114,40 @@ class Base extends BaseProcessor
         return $processor->processAuth($payment);
     }
 
-    protected function processFailedPayment(Payment\Entity $payment, NetbankingEntity $gatewayPayment)
+    protected function processFailedPayment(Payment\Entity $payment, array $content)
     {
         $merchant = $payment->merchant;
 
         $processor = new Processor($merchant);
 
-        $gatewayErrorDesc = $gatewayPayment->getErrorMessage();
+        $gatewayErrorDesc = $this->getErrorDescription($content);
 
         $errorCode = $this->getApiErrorCode($gatewayErrorDesc);
 
         $e = new Exception\GatewayErrorException(
-                $errorCode,
-                '',
-                $gatewayErrorDesc,
-                [
-                    'payment_id'         => $payment->getId(),
-                    'gateway_payment_id' => $gatewayPayment->getId(),
-                ]);
+            $errorCode,
+            '',
+            $gatewayErrorDesc,
+            [
+                'payment_id'         => $payment->getId(),
+            ]);
 
         $processor = $processor->setPayment($payment);
 
-        return $processor->updatePaymentAuthFailed($e);
+        $processor->updatePaymentAuthFailed($e);
     }
 
-    /**
-     * Child class must implement it
-     *
-     * @param string $errorDescription
-     *
-     * @return string
-     */
+    protected function getErrorDescription(array $content)
+    {
+        return null;
+    }
+
     protected function getApiErrorCode(string $errorDescription): string
     {
-        throw new \BadMethodCallException();
+        return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
     }
 
-    /**
-     * Child class must implement it
-     *
-     * @param array $row
-     *
-     * @return array
-     * @return array['payment_id']
-     * @return array['token_id']
-     * @return array['status']
-     * @return array['error_message']
-     * @return array['account_number']
-     */
-    protected function getDataFromRow(array & $row): array
-    {
-        throw new \BadMethodCallException();
-    }
-
-    protected function createSetOutputFileAndSave(array & $entries)
+    protected function createSetOutputFileAndSave(array & $entries, string $fileType = FileStore\Type::BATCH_OUTPUT)
     {
         return;
     }

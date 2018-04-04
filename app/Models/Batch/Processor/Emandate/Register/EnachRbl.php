@@ -23,6 +23,11 @@ class EnachRbl extends Base
     const ACCOUNT_NUMBER      = 'account_number';
     const ERROR_MESSAGE       = 'error_message';
 
+    /**
+     * @var Payment\Processor\Processor
+     */
+    protected $paymentProcessor;
+
     protected function processEntry(array & $entry)
     {
         $entry = array_map('trim', $entry);
@@ -58,12 +63,21 @@ class EnachRbl extends Base
                 ]);
         }
 
+        $oldRecurringStatus = $token->getRecurringStatus();
+
+        $this->paymentProcessor = (new Payment\Processor\Processor($payment->merchant));
+
         $this->repo->transaction(function() use ($payment, $token, $gatewayPayment, $gatewayToken, $content)
         {
             $this->updateGatewayPaymentEntityAndCapturePayment($payment, $gatewayPayment, $content);
 
             $this->updateTokenEntity($token, $gatewayToken, $content);
         });
+
+        //
+        // This should be done outside the transaction only!
+        //
+        $this->paymentProcessor->eventTokenStatus($token, $oldRecurringStatus);
 
         $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
     }
@@ -108,7 +122,11 @@ class EnachRbl extends Base
 
         $this->repo->saveOrFail($gatewayPayment);
 
-        if (Rbl\Status::isRegistrationSuccess($data[self::REGISTRATION_STATUS]) === true)
+        //
+        // We do capture ONLY if registration is successful AND it's not already captured.
+        //
+        if ((Rbl\Status::isRegistrationSuccess($data[self::REGISTRATION_STATUS]) === true) and
+            ($payment->hasBeenCaptured() === false))
         {
             $this->captureAuthorizedPayment($payment);
         }
@@ -126,8 +144,6 @@ class EnachRbl extends Base
 
             return;
         }
-
-        $paymentProcessor = (new Payment\Processor\Processor($payment->merchant));
 
         $amount = $payment->getAmount();
 
@@ -148,7 +164,7 @@ class EnachRbl extends Base
         // it's already under transaction and we don't want
         // token to be confirmed if there is any bug on our end
         //
-        $paymentProcessor->capture($payment, $parameters);
+        $this->paymentProcessor->capture($payment, $parameters);
     }
 
     protected function getDataFromRow(array & $entry): array

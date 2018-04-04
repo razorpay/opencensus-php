@@ -323,6 +323,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MAILER_JOB_RECEIVED                           = 'MAILER_JOB_RECEIVED';
     const MAILER_JOB_ERROR                              = 'MAILER_JOB_ERROR';
+    const MAILER_INVALID_RECIPIENT_EMAIL                = 'MAILER_INVALID_RECIPIENT_EMAIL';
     const INVOICE_ACTION_JOB_ERROR                      = 'INVOICE_ACTION_JOB_ERROR';
     const INVOICE_PDF_GEN_FAILED                        = 'INVOICE_PDF_GEN_FAILED';
     const INVOICE_PDF_GEN_TIME_TAKEN                    = 'INVOICE_PDF_GEN_TIME_TAKEN';
@@ -981,6 +982,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OAUTH_TOKEN_INVALID                           = 'OAUTH_TOKEN_INVALID';
     const APP_MERCHANT_ACCESS_MAP                       = 'APP_MERCHANT_ACCESS_MAP';
     const APP_MERCHANT_ACCESS_MAP_DELETE                = 'APP_MERCHANT_ACCESS_MAP_DELETE';
+
+    const RAZORX_REQUEST                                = 'RAZORX_REQUEST';
+    const RAZORX_REQUEST_FAILED                         = 'RAZORX_REQUEST_FAILED';
 
     const SERVER_ERROR_MISSING_HANDLER                  = 'SERVER_ERROR_MISSING_HANDLER';
     const GATEWAY_FILE_CREATE_REQUEST                   = 'GATEWAY_FILE_CREATE_REQUEST';
