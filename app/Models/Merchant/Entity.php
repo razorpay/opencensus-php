@@ -107,6 +107,8 @@ class Entity extends Base\PublicEntity
     const MIN_AUTO_REFUND_DELAY = 1800;
     // 10 days in seconds
     const MAX_AUTO_REFUND_DELAY = 864000;
+    // Default merchant brand color used if not set already
+    const DEFAULT_MERCHANT_BRAND_COLOR = '#6A5DD1';
 
     /**
      * A query parameter to filter results based on
@@ -864,6 +866,11 @@ class Entity extends Base\PublicEntity
     public function getBrandColor()
     {
         return $this->getAttribute(self::BRAND_COLOR);
+    }
+
+    public function getBrandColorOrDefault(string $default = self::DEFAULT_MERCHANT_BRAND_COLOR): string
+    {
+        return $this->getBrandColor() ?: $default;
     }
 
     public function getHandle()

@@ -55,6 +55,9 @@ class Entity extends Base\PublicEntity
     const FILES                   = 'files';
     const RESPOND_BY              = 'respond_by';
 
+    // For expands
+    const PAYMENT                 = 'payment';
+
     protected static $sign = 'disp';
 
     protected $entity = 'dispute';
@@ -87,6 +90,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::PAYMENT_ID,
+        self::PAYMENT,
         self::PARENT_ID,
         self::REASON_ID,
         self::TRANSACTION_ID,
@@ -302,8 +306,6 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------- Getters Ends-------------------------------------
-
-    // Add toArrayAdmin, toArrayReport
 
     // --------------- Relation to other entities ------------------------------
 

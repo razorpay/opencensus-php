@@ -115,6 +115,13 @@ class CustomerTest extends TestCase
         }
     }
 
+    public function testCreateCustomerInvalidGstin()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testCreateCustomerEmailOnly()
     {
         $this->ba->privateAuth();

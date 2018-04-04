@@ -630,24 +630,28 @@ final class Route
         'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
 
         // Tax groups and taxes
-        'tax_get_meta_gst_taxes'                   => ['get',      'taxes/meta/gst_taxes',                           'TaxController@getMetaGstTaxes'                                     ],
-        'tax_get'                                  => ['get',      'taxes/{id}',                                     'TaxController@get'                                                 ],
-        'tax_list'                                 => ['get',      'taxes',                                          'TaxController@list'                                                ],
-        'tax_create'                               => ['post',     'taxes',                                          'TaxController@create'                                              ],
-        'tax_update'                               => ['patch',    'taxes/{id}',                                     'TaxController@update'                                              ],
-        'tax_delete'                               => ['delete',   'taxes/{id}',                                     'TaxController@delete'                                              ],
-        'tax_group_get'                            => ['get',      'tax_groups/{id}',                                'TaxGroupController@get'                                            ],
-        'tax_group_list'                           => ['get',      'tax_groups',                                     'TaxGroupController@list'                                           ],
-        'tax_group_create'                         => ['post',     'tax_groups',                                     'TaxGroupController@create'                                         ],
-        'tax_group_update'                         => ['patch',    'tax_groups/{id}',                                'TaxGroupController@update'                                         ],
-        'tax_group_delete'                         => ['delete',   'tax_groups/{id}',                                'TaxGroupController@delete'                                         ],
-        //promotion routes
+        'tax_get_meta_gst_taxes'                  => ['get',      'taxes/meta/gst_taxes',                           'TaxController@getMetaGstTaxes'                                     ],
+        'tax_get_meta_states'                     => ['get',      'taxes/meta/states',                              'TaxController@getMetaStates'                                       ],
+        'tax_get'                                 => ['get',      'taxes/{id}',                                     'TaxController@get'                                                 ],
+        'tax_list'                                => ['get',      'taxes',                                          'TaxController@list'                                                ],
+        'tax_create'                              => ['post',     'taxes',                                          'TaxController@create'                                              ],
+        'tax_update'                              => ['patch',    'taxes/{id}',                                     'TaxController@update'                                              ],
+        'tax_delete'                              => ['delete',   'taxes/{id}',                                     'TaxController@delete'                                              ],
+        'tax_group_get'                           => ['get',      'tax_groups/{id}',                                'TaxGroupController@get'                                            ],
+        'tax_group_list'                          => ['get',      'tax_groups',                                     'TaxGroupController@list'                                           ],
+        'tax_group_create'                        => ['post',     'tax_groups',                                     'TaxGroupController@create'                                         ],
+        'tax_group_update'                        => ['patch',    'tax_groups/{id}',                                'TaxGroupController@update'                                         ],
+        'tax_group_delete'                        => ['delete',   'tax_groups/{id}',                                'TaxGroupController@delete'                                         ],
+
+        // Promotion routes
         'promotion_create'                         => ['post',     'promotions',                                     'PromotionController@create'                                        ],
         'promotion_update'                         => ['patch',    'promotions/{id}',                                'PromotionController@update'                                        ],
-        //coupon routes
+
+        // Coupon routes
         'coupon_create'                            => ['post',     'coupons',                                        'CouponController@create'                                           ],
         'coupon_apply'                             => ['post',     'coupons/apply',                                  'CouponController@apply'                                            ],
         'coupon_delete'                            => ['delete',   'coupons/{id}',                                   'CouponController@delete'                                           ],
+
         // Merchant invitation routes
         'invitation_create'                        => ['post',     'invitations',                                    'InvitationController@create'                                       ],
         'invitation_fetch_by_token'                => ['get',      'invitations/token/{token}',                      'InvitationController@fetchByToken'                                 ],
@@ -760,6 +764,7 @@ final class Route
         // Pincode Service
         'pincode_get'                              => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
         'db_meta_query'                            => ['post',     'db_meta_query',                                  'AdminController@dbMetaDataQuery'                                   ],
+
         // Deprecated feature routes - maintaining for BC - Remove after dashboard changes
         'feature_get_multiple'                     => ['get',      'features/{entityId}',                            'FeatureController@getMerchantFeatures'                             ],
         'feature_delete'                           => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
@@ -950,16 +955,6 @@ final class Route
         'transfer_edit',
         'transfer_create',
         'transfer_create_reversal',
-        'tax_get',
-        'tax_list',
-        'tax_create',
-        'tax_update',
-        'tax_delete',
-        'tax_group_get',
-        'tax_group_list',
-        'tax_group_create',
-        'tax_group_update',
-        'tax_group_delete',
         'virtual_account_create',
         'virtual_account_edit',
         'virtual_account_fetch',
@@ -1200,6 +1195,17 @@ final class Route
         'merchant_requests_create',
         'merchant_requests_get_feature',
         'merchant_bank_account_change_status',
+        'tax_get',
+        'tax_list',
+        'tax_create',
+        'tax_update',
+        'tax_delete',
+        'tax_group_get',
+        'tax_group_list',
+        'tax_group_create',
+        'tax_group_update',
+        'tax_group_delete',
+        'tax_get_meta_states',
         'tax_get_meta_gst_taxes',
     ];
 

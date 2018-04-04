@@ -17,7 +17,7 @@ class TaxGroupTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
 
         $this->seed('TaxGroupAndTaxSeeder');
     }

@@ -14,6 +14,7 @@ class Fetch extends BaseFetch
             Entity::PHASE              => 'sometimes|string',
             Entity::AMOUNT             => 'sometimes|integer',
             Entity::MERCHANT_ID        => 'sometimes|alpha_num',
+            self::EXPAND_EACH          => 'filled|string|in:payment',
         ],
     ];
 
@@ -26,7 +27,10 @@ class Fetch extends BaseFetch
         AuthType::PRIVILEGE_AUTH => [
             Entity::AMOUNT,
             Entity::MERCHANT_ID,
-        ]
+        ],
+        AuthType::ADMIN_AUTH => [
+            self::EXPAND_EACH,
+        ],
     ];
 
 

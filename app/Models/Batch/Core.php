@@ -7,6 +7,7 @@ use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settings;
 use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
 use RZP\Jobs\DispatchRouter;
@@ -149,6 +150,29 @@ class Core extends Base\Core
             Entity::TYPE  => $batch->getType(),
             Entity::STATS => $stats,
         ];
+
+        return $response;
+    }
+
+    public function fetchWithSettings(array $input, Merchant\Entity $merchant): array
+    {
+        $withConfig = array_pull($input, Entity::WITH_CONFIG, '0');
+
+        $batches    = $this->repo->batch->fetch($input, $merchant->getId());
+
+        $response   = $batches->toArrayPublic();
+
+        // Conditionally, query and populate settings/config for each batch entity in response.
+        if ($withConfig === '1')
+        {
+            // TODO: This is just temporary and not optimal query.
+            $batches->each(function ($batch, $index) use (& $response)
+            {
+                $settingAccessor = Settings\Accessor::for($batch, Settings\Module::BATCH);
+
+                $response[Base\PublicCollection::ITEMS][$index][Entity::CONFIG] = $settingAccessor->all()->toArray();
+            });
+        }
 
         return $response;
     }

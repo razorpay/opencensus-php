@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Base;
 
+use Lib\Gstin;
 use Lib\PhoneBook;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -431,5 +432,12 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
             ]);
 
         return (($isInteger === true) and ($isInRange === true));
+    }
+
+    protected function validateGstin($attribute, $value)
+    {
+        $isString = $this->validateString($attribute, $value);
+
+        return (($isString === true) and (Gstin::isValid($value) === true));
     }
 }
