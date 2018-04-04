@@ -2560,6 +2560,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACKNOWLEDGED_AT);
     }
 
+    public function generateAcknowledgedAtTimestamp()
+    {
+        return Carbon::now(Timezone::IST)->getTimestamp();
+    }
+
     /**
      * Returns true if the payment success/failure has been acknowledged by the merchant.
      *

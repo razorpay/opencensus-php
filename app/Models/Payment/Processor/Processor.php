@@ -1910,24 +1910,20 @@ class Processor
      */
     public function acknowledge(Payment\Entity $payment)
     {
-        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+        $this->trace->info(
+            TraceCode::PAYMENT_ACKNOWLEDGE_REQUEST,
+            [
+                Payment\Entity::ID => $payment->getId(),
+            ]);
+
+        $currentTime = $payment->generateAcknowledgedAtTimestamp();
 
         $this->mutex->acquireAndRelease($payment->getId(),
             function() use ($payment, $currentTime)
             {
                 $this->repo->reload($payment);
 
-                if ($payment->isCaptured() === false)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
-                }
-
-                if ($payment->isAcknowledged() === true)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_ACKNOWLEDGED);
-                }
+                $payment->getValidator()->acknowledgeValidate();
 
                 $payment->setAcknowledgedAt($currentTime);
 

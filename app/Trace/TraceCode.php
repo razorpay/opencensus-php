@@ -422,6 +422,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PAYMENT_UPDATE_AMOUNT_PAIDOUT                 = 'PAYMENT_UPDATE_AMOUNT_PAIDOUT';
     const PAYMENT_WALLET_LOW_BALANCE                    = 'PAYMENT_WALLET_LOW_BALANCE';
+    const PAYMENT_ACKNOWLEDGE_REQUEST                   = 'PAYMENT_ACKNOWLEDGE_REQUEST';
     const PAYMENT_ACKNOWLEDGED                          = 'PAYMENT_ACKNOWLEDGED';
 
     const FILE_DELETING                                 = 'FILE_DELETING';
