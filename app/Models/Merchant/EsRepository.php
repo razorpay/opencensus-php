@@ -42,6 +42,7 @@ class EsRepository extends Base\EsRepository
         DetailEntity::ARCHIVED_AT,
         DetailEntity::SUBMITTED_AT,
         DetailEntity::UPDATED_AT,
+        DetailEntity::REVIEWER_ID,
     ];
 
     protected $groupIndexedFields = [
@@ -71,6 +72,7 @@ class EsRepository extends Base\EsRepository
         Entity::ADMINS,
         Entity::ACCOUNT_STATUS,
         Entity::SUB_ACCOUNTS,
+        DetailEntity::REVIEWER_ID,
     ];
 
     /**
@@ -121,6 +123,13 @@ class EsRepository extends Base\EsRepository
 
     public function buildQueryForGroups(array & $query, array $value)
     {
+    }
+
+    public function buildQueryForReviewerId(array & $query, string $value)
+    {
+        $attribute = E::MERCHANT_DETAIL . '.' . DetailEntity::REVIEWER_ID;
+
+        $this->addMust($query, $this->getTermQuery($attribute, $value));
     }
 
     public function buildQueryForAccountStatus(array & $query, string $value)
@@ -236,7 +245,7 @@ class EsRepository extends Base\EsRepository
 
             default:
 
-                throw new \LogicException('Invalid value for account_status.');
+                throw new LogicException('Invalid value for account_status.');
         }
     }
 
@@ -244,14 +253,16 @@ class EsRepository extends Base\EsRepository
     {
         if ($value === Repository::SUB_ACCOUNTS_ONLY_VALUE)
         {
-            $filter = $this->getExistsQueryForField(Entity::PARENT_ID);
+            $this->addNotNullFilterForField($query, Entity::PARENT_ID);
+        }
+        else if ($value === Repository::SUB_ACCOUNTS_EXCLUDED_VALUE)
+        {
+            $this->addNullFilterForField($query, Entity::PARENT_ID);
         }
         else
         {
-            $filter = [Es::TERM => [Entity::PARENT_ID => $value]];
+            $this->addTermFilter($query, Entity::PARENT_ID, $value);
         }
-
-        $this->addFilter($query, $filter);
     }
 
     public function buildQueryAdditional(array & $query, array $params)

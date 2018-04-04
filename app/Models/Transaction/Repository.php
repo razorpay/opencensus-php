@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Transaction;
 
+use Carbon\Carbon;
 use DB;
 
 use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Gateway\Billdesk;
 use RZP\Models\Base;
@@ -29,7 +31,7 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::SETTLED         => 'sometimes|in:0,1',
         Entity::ON_HOLD         => 'sometimes|in:0,1',
-        Entity::TYPE            => 'sometimes|in:payment,refund,settlement,adjustment',
+        Entity::TYPE            => 'sometimes|in:payment,refund,settlement,adjustment,reversal,transfer',
         Entity::SETTLEMENT_ID   => 'sometimes|alpha_dash|min:14|max:19',
         Entity::ENTITY_ID       => 'sometimes|alpha_dash|min:14',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
@@ -85,6 +87,8 @@ class Repository extends Base\Repository
         $transactionCreditsType = $this->dbColumn(Entity::CREDIT_TYPE);
         $transactionCreatedAt   = $this->dbColumn(Entity::CREATED_AT);
 
+        $txnFetchStartTime = microtime(true);
+
         $query = $this->newQuery()
                       ->select(
                           $transactionId,
@@ -122,7 +126,13 @@ class Repository extends Base\Repository
             $query = $query->whereNotIn($merchantId, $notInMerchantIds);
         }
 
-        return $query->get();
+        $results = $query->get();
+
+        $txnFetchTimeTaken = microtime(true) - $txnFetchStartTime;
+
+        $this->trace->info(TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN, ['time_taken' => $txnFetchTimeTaken]);
+
+        return $results;
     }
 
     public function fetchUnsettledTransactionsForMerchantUpdate($merchantId)
@@ -351,6 +361,8 @@ class Repository extends Base\Repository
 
         $batchedIds = array_chunk($ids, 1000);
 
+        $startTime = microtime(true);
+
         foreach ($batchedIds as $batch)
         {
             $count = $this->newQuery()
@@ -370,6 +382,10 @@ class Repository extends Base\Repository
                     ]);
             }
         }
+
+        $timeTaken = microtime(true) - $startTime;
+
+        $this->trace->info(TraceCode::SETTLEMENT_TXN_UPDATE_TIME_TAKEN, ['time_taken' => $timeTaken]);
 
         return $txnCount;
     }
@@ -613,10 +629,12 @@ class Repository extends Base\Repository
     }
 
     public function fetchFeesAndTaxForTransactionsByType(
-        string $merchantId, int $start, int $end, string $filterType)
+        string $merchantId,
+        int $start,
+        int $end,
+        string $filterType,
+        bool $isCorrection = false)
     {
-        $createdAtCol = $this->dbColumn(Entity::CREATED_AT);
-
         $merchantIdCol = $this->dbColumn(Entity::MERCHANT_ID);
 
         $amountCol = $this->dbColumn(Entity::AMOUNT);
@@ -629,21 +647,41 @@ class Repository extends Base\Repository
 
         $paymentCardIdCol = $this->repo->payment->dbColumn(Payment\Entity::CARD_ID);
 
-        $transactionData = $this->dbColumn('*');
+        $startOfMonth = Carbon::createFromTimestamp($start)->startOfMonth()
+                                                           ->getTimestamp();
 
         $query = $this->newQuery()
                       ->selectRaw(
-                            'SUM(' . $taxCol .') AS tax, SUM(' . $feeCol . ') AS fee')
-                      ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdCol)
-                      ->whereBetween($createdAtCol, [$start, $end])
+                          'SUM(' . $taxCol .') AS tax, SUM(' . $feeCol . ') AS fee')
+                      ->leftjoin(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdCol)
+                      ->where(function ($query) use ($start, $end, $isCorrection)
+                      {
+                          $capturedAt = $this->repo->payment->dbColumn(Payment\Entity::CAPTURED_AT);
+
+                          $query->where(Entity::TYPE, '=', Type::PAYMENT)
+                                ->whereBetween($capturedAt, [$start, $end]);
+
+                          if ($isCorrection === true)
+                          {
+                              $createdAt = $this->dbColumn(Entity::CREATED_AT);
+
+                              $query->whereBetween($createdAt, [$start, $end]);
+                          }
+                      })
+                      ->orWhere(function($query) use ($startOfMonth, $end)
+                      {
+                          $createdAt = $this->dbColumn(Entity::CREATED_AT);
+
+                          $query->where(Entity::TYPE, '<>', Type::PAYMENT)
+                                ->whereBetween($createdAt, [$startOfMonth, $end]);
+                      })
                       ->merchantId($merchantId)
-                      ->whereNotNull(Payment\Entity::CAPTURED_AT)
-                      ->where(Entity::TYPE, Type::PAYMENT)
+                      ->whereNotIn(Entity::TYPE, Type::IGNORE_ENTITIES_FROM_MERCHANT_INVOICE)
                       ->groupBy($merchantIdCol);
 
         switch ($filterType)
         {
-            case InvoiceType::NON_CARD:
+            case InvoiceType::OTHERS:
                 $query = $query->whereNull($paymentCardIdCol);
                 break;
 

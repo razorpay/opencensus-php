@@ -108,8 +108,7 @@ class Notify
             {
                 if (in_array($event, Payment\Event::INVOICE_EVENTS, true) === true)
                 {
-                    $invoiceData = (new ViewDataSerializer($this->invoice))->get();
-
+                    $invoiceData = (new ViewDataSerializer($this->invoice))->serializeForInternal();
                     $mailable->setInvoiceDetails($invoiceData);
                 }
             }
@@ -128,8 +127,7 @@ class Notify
             {
                 if (in_array($event, Payment\Event::INVOICE_EVENTS, true) === true)
                 {
-                    $invoiceData = (new ViewDataSerializer($this->invoice))->get();
-
+                    $invoiceData = (new ViewDataSerializer($this->invoice))->serializeForInternal();
                     $mailable->setInvoiceDetails($invoiceData);
                 }
             }

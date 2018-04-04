@@ -6,8 +6,6 @@ use Cache;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Base\Common;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\AdminFetch;
@@ -72,16 +70,7 @@ class Service extends Base\Service
     {
         Entity::validateEntityOrFailPublic($entity);
 
-        $merchantId = $input[Common::MERCHANT_ID] ?? null;
-
-        if ($merchantId !== null)
-        {
-            Merchant\Entity::verifyIdAndStripSign($merchantId);
-
-            unset($input[Common::MERCHANT_ID]);
-        }
-
-        $entities = $this->repo->$entity->fetch($input, $merchantId);
+        $entities = $this->repo->$entity->fetch($input);
 
         return $entities->toArrayAdmin();
     }
@@ -227,5 +216,10 @@ class Service extends Base\Service
     public function updateGeoIps(array $input)
     {
         return (new GeoIP)->updateGeoIps($input);
+    }
+
+    public function dbMetaDataQuery(array $input): array
+    {
+        return (new Query\Core)->dbMetaDataQuery($input);
     }
 }

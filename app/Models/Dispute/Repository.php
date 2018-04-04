@@ -3,6 +3,7 @@
 namespace RZP\Models\Dispute;
 
 use RZP\Models\Base;
+use RZP\Models\Payment\Entity as Payment;
 
 class Repository extends Base\Repository
 {
@@ -24,4 +25,13 @@ class Repository extends Base\Repository
     protected $signedIds = [
         Entity::PAYMENT_ID,
     ];
+
+    public function getOpenNonFraudDisputes(Payment $payment)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, $payment->getId())
+                    ->whereIn(Entity::STATUS, Status::getOpenStatuses())
+                    ->where(Entity::PHASE, '!=', Phase::FRAUD)
+                    ->get();
+    }
 }

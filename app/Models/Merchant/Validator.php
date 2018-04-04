@@ -114,7 +114,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $addTagsRules = [
-        'tags' => 'required|array'
+        'tags'   => 'required|array',
+        'tags.*' => 'required|string',
     ];
 
     protected static $updateMerchantsBulkRules = [

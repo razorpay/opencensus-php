@@ -19,6 +19,7 @@ use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Models\BharatQr;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
@@ -29,7 +30,7 @@ class Gateway extends Base\Gateway
      * Default request timeout duration in seconds.
      * @var  integer
      */
-    const TIMEOUT = 120;
+    const TIMEOUT = 60;
 
     protected $gateway = 'upi_icici';
 
@@ -52,6 +53,7 @@ class Gateway extends Base\Gateway
         Fields::PAYER_NAME                => Entity::NAME,
         Fields::PAYER_MOBILE              => Entity::CONTACT,
         Fields::RESPONSE                  => Entity::STATUS_CODE,
+        Fields::MERCHANT_TRAN_ID          => Entity::MERCHANT_REFERENCE,
         Fields::BANK_RRN                  => Entity::GATEWAY_PAYMENT_ID,
         Fields::ORIGINAL_BANK_RRN         => Entity::GATEWAY_PAYMENT_ID,
         Fields::MERCHANT_ID               => Entity::GATEWAY_MERCHANT_ID,
@@ -65,6 +67,12 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        if ((isset($input['qr_notification']) === true) and
+            ($input['qr_notification'] === true))
+        {
+            return $this->createGatewayPaymentEntity($input);
+        }
 
         if ((isset($input['upi']['flow']) === true) and
             ($input['upi']['flow'] === 'intent'))
@@ -199,7 +207,11 @@ class Gateway extends Base\Gateway
 
     /**
      * @param  string $response
+     * @param bool    $forceDecryption
+     *
      * @return array response as associative array
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\RuntimeException
      */
     protected function parseGatewayResponse(string $response, bool $forceDecryption = false): array
     {
@@ -254,9 +266,14 @@ class Gateway extends Base\Gateway
     {
         return number_format($amount / 100, 2, '.', '');
     }
-    
+
     protected function getMerchantId(): string
     {
+        if ($this->isBharatQrPayment() === true)
+        {
+            return $this->config['bharatqr_merchant_id'];
+        }
+
         if ($this->mode === Mode::TEST)
         {
             return $this->config['test_merchant_id'];
@@ -574,9 +591,13 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentVerifyRequestArray(array $input)
     {
+        $repo = $this->getRepository();
+
+        $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
         $data = [
             'merchantId'        => $this->getMerchantId(),
-            'merchantTranId'    => $input['payment']['id'],
+            'merchantTranId'    => $gatewayPayment['merchant_reference'] ?? $input['payment']['id'],
             'subMerchantId'     => $this->getSubMerchantId($input),
             'terminalId'        => '1234',
         ];
@@ -680,6 +701,21 @@ class Gateway extends Base\Gateway
 
         $input = $verify->input;
 
+        //
+        // If gatewaySuccess is false
+        // we don't need to check for amount
+        // also in case the gateway says merchant trans id
+        // not availble it doesn't give us amount
+        //
+        if ($verify->gatewaySuccess === true)
+        {
+            $paymentAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+
+            $actualAmount  = number_format($content[Fields::VERIFY_AMOUNT], 2, '.', '');
+
+            $verify->amountMismatch = ($paymentAmount !== $actualAmount);
+        }
+
         // If payment status is either failed or created,
         // this is an api failure
         if (($input['payment']['status'] === 'failed') or
@@ -726,7 +762,8 @@ class Gateway extends Base\Gateway
 
         $content = $this->sendRefundVerifyRequest($input);
 
-        if ($content['status'] === Status::SUCCESS)
+        if (($content['status'] === Status::SUCCESS) or
+            ($content['status'] === Status::DEEMED))
         {
             return true;
         }
@@ -780,10 +817,16 @@ class Gateway extends Base\Gateway
     /**
      * Takes in S2S request as a body string
      * and returns the parsed response as an array
+     *
      * @param  String $body Request body
+     *
+     * @param bool    $isBharatQr
+     *
      * @return array
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\RuntimeException
      */
-    public function preProcessServerCallback($body): array
+    public function preProcessServerCallback($body, $isBharatQr = false): array
     {
         $response = $this->parseGatewayResponse($body, true);
 
@@ -796,13 +839,38 @@ class Gateway extends Base\Gateway
                 'data'      => $response
             ]);
 
+        if ($isBharatQr === true)
+        {
+            $response = $this->getBharatQrResponse($response);
+        }
+
         return $response;
+    }
+
+    protected function getBharatQrResponse(array $input)
+    {
+        $qrData = [
+            BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]),
+            BharatQr\GatewayResponseParams::VPA                   => $input[Fields::PAYER_VA],
+            BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[Fields::MERCHANT_TRAN_ID],
+            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => (string) $input[Fields::BANK_RRN],
+        ];
+
+        return [
+            'gateway_input' => $input,
+            'qr_data'       => $qrData
+        ];
     }
 
     /**
      * Handles the S2S callback
+     *
      * @param  array $input
-     * @return null
+     *
+     * @return array
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\LogicException
      */
     public function callback(array $input)
     {
@@ -899,7 +967,7 @@ class Gateway extends Base\Gateway
             Fields::TERMINAL_ID                     => $this->getTerminalId($input),
             Fields::ORIGINAL_BANK_RRN_REQ           => $gatewayPayment->getGatewayPaymentId(),
             Fields::MERCHANT_TRAN_ID                => $this->getRefundId($refund),
-            Fields::ORIGINAL_MERCHANT_TRAN_ID       => $payment['id'],
+            Fields::ORIGINAL_MERCHANT_TRAN_ID       => $gatewayPayment['merchant_reference'] ?? $payment['id'],
             Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
             Fields::ONLINE_REFUND                   => $this->isOnlineRefund($refund),

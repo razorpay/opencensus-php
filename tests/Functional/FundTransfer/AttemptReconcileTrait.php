@@ -107,7 +107,7 @@ trait AttemptReconcileTrait
         $source = $this->getLastEntity($sourceType, true);
         $this->assertNotNull($source['utr']);
 
-        Mail::assertSent(ReconciliationMail::class);
+        Mail::assertQueued(ReconciliationMail::class);
     }
 
 

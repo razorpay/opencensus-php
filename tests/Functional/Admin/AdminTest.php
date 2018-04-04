@@ -69,7 +69,7 @@ class AdminTest extends TestCase
 
         $this->assertEquals($result['groups'][0]['id'], $group);
 
-        Mail::assertSent(AdminMail\Create::class, function ($mail)
+        Mail::assertQueued(AdminMail\Create::class, function ($mail)
         {
             $testData = [
                 'user' => [
@@ -446,7 +446,7 @@ class AdminTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertSent(AdminMail\ForgotPassword::class, function ($mail)
+        Mail::assertQueued(AdminMail\ForgotPassword::class, function ($mail)
         {
             $this->assertArrayHasKey('firstName', $mail->viewData);
 
@@ -874,7 +874,7 @@ class AdminTest extends TestCase
 
         $this->assertCount(10, $result['fields']);
 
-        $this->assertCount(130, $result['entities']);
+        $this->assertCount(133, $result['entities']);
     }
 
     public function testFetchSoftDeletedEntityForAdmin()
@@ -998,6 +998,16 @@ class AdminTest extends TestCase
         ];
         $this->testData[__FUNCTION__]['response'] = $response;
 
+        $this->startTest();
+    }
+
+    public function testDbMetaDataQuery()
+    {
+        $this->startTest();
+    }
+
+    public function testDbMetaDataQueryWithInvalidQuery()
+    {
         $this->startTest();
     }
 }

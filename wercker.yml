@@ -35,10 +35,16 @@ build:
       - script:
           name: Export wercker DB env var to API environment variables
           code: >
+              export DB_LIVE_HOST="$MYSQL_PORT_3306_TCP_ADDR"
+              export DB_LIVE_PORT="$MYSQL_PORT_3306_TCP_PORT"
               export DB_TEST_HOST="$MYSQL_PORT_3306_TCP_ADDR"
               export DB_TEST_PORT="$MYSQL_PORT_3306_TCP_PORT"
               export DB_AUTH_HOST="$MYSQL_PORT_3306_TCP_ADDR"
               export DB_AUTH_PORT="$MYSQL_PORT_3306_TCP_PORT"
+              export SLAVE_DB_LIVE_HOST="$MYSQL_PORT_3306_TCP_ADDR"
+              export SLAVE_DB_LIVE_PORT="$MYSQL_PORT_3306_TCP_PORT"
+              export SLAVE_DB_TEST_HOST="$MYSQL_PORT_3306_TCP_ADDR"
+              export SLAVE_DB_TEST_PORT="$MYSQL_PORT_3306_TCP_PORT"
       - script:
           name: Export wercker Redis env var to API environment variables
           code: >
@@ -69,14 +75,14 @@ build:
               composer config -g github-oauth.github.com $github_token
               export COMPOSER_CACHE_DIR="$WERCKER_CACHE_DIR/composer"
               mkdir -p $COMPOSER_CACHE_DIR
-              composer install --no-interaction
+              composer install --no-interaction --optimize-autoloader
       - script:
           name: Create certificate directories
           code: |
               mkdir -p /opt/razorpay/certs/first_data
       - script:
           name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose
+          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --printer=Codedungeon\\PHPUnitPrettyResultPrinter\\Printer
       - script:
           name: List directory
           code: ls -lah
@@ -202,6 +208,71 @@ deploy-canary:
       - slack-notifier:
           url: $SLACK_URL
           channel: tech_bots
+          username: wercker
+          icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
+      - slack-notifier:
+          url: $SLACK_URL
+          channel: tech_qa
+          username: wercker
+          icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
+      - script:
+         name: post_deploy_notifier
+         code: |
+            python scripts/post_deploy_notifier.py
+deploy-dark:
+    steps:
+      - script:
+          name: Check if dark branch is up-to-date
+          code: |
+            MASTER=$(git rev-parse master)
+            if [ "$APP_ENV" == "prod" ] && [ "$DARK" == "true" ]; then
+              if [ "$WERCKER_GIT_BRANCH" != "dark" ]; then
+                echo "[ERROR] Cannot deploy a non-dark branch to prod-dark asg"
+                exit 1
+              fi
+              if [ ! -n $(git rev-list HEAD | grep $MASTER) ]; then
+                echo "[ERROR] Cannot deploy outdated branch to prod-dark"
+                exit 1
+              fi
+            fi
+      - script:
+          name: List directory
+          code: ls -lah
+      - script:
+          name: check vendor dir exists
+          code: if [ ! -d vendor ] ; then exit 1 ; fi;
+      - script:
+          name: check if dotfile rsyncignore exists
+          code: if [ ! -f .rsyncignore ] ; then exit 1 ; fi;
+      - script:
+          name: create commit.txt
+          code: git rev-parse HEAD > public/commit.txt
+      - razorpay/aws-code-deploy@0.0.25:
+          key: $AWS_KEY
+          secret: $AWS_SECRET
+          region: $AWS_REGION
+          application-name: api
+          deployment-group-name: $WERCKER_DEPLOYTARGET_NAME
+          s3-bucket: rzp-code-deploy
+      - script:
+          name: Conditionally skip newrelic deployment marker
+          code: |
+            if [ "$APP_ENV" == "prod" ]; then
+              SKIP_NR=false
+            fi
+      - hashfyre/newrelic-deployment:
+          api_key: $NEWRELIC_API_KEY
+          app_name: "$APP_ENV-$APP_NAME"
+          skip: $SKIP_NR
+    after-steps:
+      - slack-notifier:
+          url: $SLACK_URL
+          channel: tech_bots
+          username: wercker
+          icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
+      - slack-notifier:
+          url: $SLACK_URL
+          channel: tech_qa
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
       - script:

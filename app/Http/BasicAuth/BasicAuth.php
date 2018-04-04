@@ -80,6 +80,13 @@ class BasicAuth
     protected $oauthClientId;
 
     /**
+     * OAuth application id
+     *
+     * @var string
+     */
+    protected $applicationId;
+
+    /**
      * OAuth's access token (public) id.
      *
      * @var string
@@ -228,7 +235,7 @@ class BasicAuth
      *
      * @var array
      */
-    protected static $validKeyLengths = [
+    public static $validKeyLengths = [
         8, 14, 23, 33
     ];
 
@@ -639,51 +646,9 @@ class BasicAuth
         $this->fetchMerchantOfKey($this->key);
     }
 
-    public function feature()
-    {
-        return $this->verifyFeatureAccess();
-    }
-
 // --------------------- Basic Auths Ends --------------------------------------
 
 // --------------------- Verifiers ---------------------------------------------
-
-    /**
-     * Checks if the accessed route is a feature route, if yes
-     * checks if the merchant has access to the feature
-     */
-    public function verifyFeatureAccess()
-    {
-        $currentRoute = $this->route->getCurrentRouteName();
-
-        //
-        // A route can belong to multiple features
-        // This fetches an array of all features mapped to the route
-        //
-        // TODO: Fix this! BA calls Route and Route calls BA. Not a good design.
-        //
-        $features = Route::getFeaturesForRoute($currentRoute);
-
-        if (empty($features) === true)
-        {
-            return null;
-        }
-
-        //
-        // If the merchant has at least one of the features
-        // in the $features array enabled, we allow the request
-        //
-        $merchantFeatures = $this->merchant->getEnabledFeatures();
-
-        $commonFeatures = array_intersect($merchantFeatures, $features);
-
-        if (empty($commonFeatures) === false)
-        {
-            return null;
-        }
-
-        return ApiResponse::routeNotFound();
-    }
 
     protected function verifyAccountId(string & $accountId)
     {
@@ -1127,6 +1092,11 @@ class BasicAuth
         return $cron;
     }
 
+    public function getOAuthApplicationId()
+    {
+        return $this->applicationId;
+    }
+
 // --------------------- Getters Ends ------------------------------------------
 
 // --------------------- Setters -----------------------------------------------
@@ -1165,6 +1135,11 @@ class BasicAuth
     public function setOAuthClientId(string $oauthClientId)
     {
         $this->oauthClientId = $oauthClientId;
+    }
+
+    public function setOAuthApplicationId(string $applicationId)
+    {
+        $this->applicationId = $applicationId;
     }
 
     public function setMerchant($merchant)

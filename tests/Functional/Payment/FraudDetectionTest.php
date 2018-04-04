@@ -14,13 +14,14 @@ class FraudDetectionTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/FraudDetectionTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/FraudDetectionTestData.php';
 
         parent::setUp();
 
         $this->ba->publicAuth();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
     }
 
     public function testBlockedBin()
@@ -30,14 +31,14 @@ class FraudDetectionTest extends TestCase
         $this->fixtures->create(
             'iin',
             [
-                'iin' => 521729,
+                'iin'     => 521729,
                 'network' => 'MasterCard',
-                'type' => 'debit',
+                'type'    => 'debit',
                 'country' => null,
                 'enabled' => 0
             ]);
 
-        $payment = $this->getDefaultPaymentArray();
+        $payment                   = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '5217294025032720';
 
         $data = $this->testData[__FUNCTION__];
@@ -67,9 +68,8 @@ class FraudDetectionTest extends TestCase
     {
         $this->mockMaxmind();
 
-        $this->fixtures->merchant->enableInternational();
-
         $payment = $this->getDefaultPaymentArray();
+
         $payment['card']['number'] = '4012010000000007';
 
         $data = $this->testData[__FUNCTION__];
@@ -98,6 +98,7 @@ class FraudDetectionTest extends TestCase
         $this->fixtures->merchant->enableInternational();
 
         $payment = $this->getDefaultPaymentArray();
+
         $payment['card']['number'] = '5105105105105100';
 
         $response = $this->doAuthPayment($payment);
@@ -115,7 +116,7 @@ class FraudDetectionTest extends TestCase
 
         $this->ba->publicAuth();
 
-        $payment = $this->getDefaultRecurringPaymentArray();
+        $payment                   = $this->getDefaultRecurringPaymentArray();
         $payment['card']['number'] = '5105105105105100';
 
         $this->doAuthAndCapturePayment($payment);
@@ -138,8 +139,8 @@ class FraudDetectionTest extends TestCase
     {
         $this->fixtures->merchant->enableInternational();
 
-        $payment = $this->getDefaultPaymentArray();
-        $payment['email'] = 'test@razorpay.xtm';
+        $payment                   = $this->getDefaultPaymentArray();
+        $payment['email']          = 'test@razorpay.xtm';
         $payment['card']['number'] = '4012010000000007';
 
         $data = $this->testData[__FUNCTION__];

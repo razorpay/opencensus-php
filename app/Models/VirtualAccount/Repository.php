@@ -4,6 +4,7 @@ namespace RZP\Models\VirtualAccount;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Order;
 use RZP\Models\Merchant\Entity as Merchant;
 
 class Repository extends Base\Repository
@@ -30,6 +31,14 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::ACTIVE)
                     ->where(Entity::BANK_ACCOUNT_ID, '=', $bankAccountId)
+                    ->first();
+    }
+
+    public function findActiveVirtualAccountByOrder(Order\Entity $order)
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::ACTIVE)
+                    ->where(Entity::ENTITY_ID, '=', $order->getId())
                     ->first();
     }
 

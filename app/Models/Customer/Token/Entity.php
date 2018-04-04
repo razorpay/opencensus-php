@@ -61,9 +61,9 @@ class Entity extends Base\PublicEntity
 
     /**
      * We use this to set the max amount of the token entity.
-     * By default, we have chosen 10000000 paise
+     * By default, we have chosen ₹ 99,999
      */
-    const DEFAULT_MAX_AMOUNT    = 10000000;
+    const DEFAULT_MAX_AMOUNT    = 9999900;
 
     /**
      * We use this to set the number of years after which the
@@ -234,6 +234,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::IFSC);
     }
 
+    public function getAadhaarNumber()
+    {
+        return $this->getAttribute(self::AADHAAR_NUMBER);
+    }
+
     public function getToken()
     {
         return $this->getAttribute(self::TOKEN);
@@ -398,7 +403,6 @@ class Entity extends Base\PublicEntity
             ($this->getMethod() === Payment\Method::EMANDATE))
         {
             $maxAmount = self::DEFAULT_MAX_AMOUNT;
-
         }
 
         $this->attributes[self::MAX_AMOUNT] = $maxAmount;
@@ -480,7 +484,7 @@ class Entity extends Base\PublicEntity
 
         for ($i = 0; $i < 3; $i++)
         {
-            $dec = hexdec(bin2hex(openssl_random_pseudo_bytes(5)));
+            $dec = hexdec(bin2hex(random_bytes(5)));
 
             // Convert the random decimal generated to base 62
             $rand .= self::base62($dec);

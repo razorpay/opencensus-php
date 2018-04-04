@@ -19,10 +19,11 @@ class Constants
     const MERCHANT_CITY         = 'BANGALORE';
     const MERCHANT_PINCODE      = '560030';
     const RUPAY_RID             = 'A000000524';
-    const MERCHANT_VPA          = 'razorpay@icic';
+    const MERCHANT_VPA          = 'razorpaybqr@icici';
     const MUTEX_TIMEOUT         = 60;
     const CARD_CVV              = '123';
     const CARD_NAME             = 'Random';
     const CARD_EXPIRY_MONTH     = '11';
     const CARD_EXPIRY_YEAR      = '2037';
+    const UPI_PREFIX            = 'RZP';
 }

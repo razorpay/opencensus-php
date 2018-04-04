@@ -17,6 +17,64 @@ return [
         ],
     ],
 
+    'testRefundEditStatus' => [
+        'request'  => [
+            'content' => [
+                'status' => 'initiated',
+            ],
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'initiated',
+            ],
+        ],
+    ],
+
+    'testRefundEditInvalidStatus' => [
+        'request'  => [
+            'content' => [
+                'status' => 'abcd',
+            ],
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected status is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testRefundEditStatusFailed' => [
+        'request'  => [
+            'content' => [
+                'status' => 'initiated',
+            ],
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Status cannot be updated to initiated from processed.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testRefundWithReceipt' => [
         'request' => [
             'content' => [
@@ -281,6 +339,23 @@ return [
     ],
 
     'testRefundDisputedPayment' => [
+        'request'   => [],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_UNDER_DISPUTE_CANNOT_BE_REFUNDED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UNDER_DISPUTE_CANNOT_BE_REFUNDED
+        ],
+    ],
+
+    'testRefundDirectPaymentMultipleDisputesNonFraudOpen' => [
         'request'   => [],
         'response'  => [
             'content'     => [

@@ -223,8 +223,9 @@ class Pricing extends Base
                 'payment_method_type' => null,
                 'payment_network'     => null,
                 'payment_issuer'      => null,
-                'percent_rate'        => 0,
+                'percent_rate'        => 100,
                 'fixed_rate'          => 0,
+                'max_fee'             => 5000,
             ],
         ];
 

@@ -448,7 +448,7 @@ class AxisGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals($payment['status'], 'authorized');
 
-        Mail::assertSent(FailedToAuthorizedMail::class);
+        Mail::assertQueued(FailedToAuthorizedMail::class);
     }
 
     public function testForceAuthorizePayment()

@@ -88,6 +88,14 @@ class PublicController extends Controller
         return View::make('public.callback_params', $data);
     }
 
+    public function renderEmbedded() {
+        return View::make('public.embedded', [
+            'key'          => $this->ba->getPublicKey(),
+            'options'      => json_encode(Request::all()),
+            'script'       => $this->config->get('url.cdn.production') . '/static/hosted/embedded.js'
+        ]);
+    }
+
     public function renderCheckoutHosted()
     {
         $params = Request::all();

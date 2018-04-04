@@ -3,7 +3,11 @@
 namespace RZP\Models\Customer\GatewayToken;
 
 use RZP\Models\Base;
+use RZP\Models\Terminal;
 
+/**
+ * @property Terminal\Entity $terminal
+ */
 class Entity extends Base\PublicEntity
 {
     const MERCHANT_ID   = 'merchant_id';
@@ -90,7 +94,13 @@ class Entity extends Base\PublicEntity
 
     public function terminal()
     {
-        return $this->belongsTo('RZP\Models\Terminal\Entity');
+        //
+        // `withTrashed` is required because when we try to
+        // fetch gateway of the gatewayToken, we fetch the terminal
+        // first and then gateway of that. If the terminal is
+        // deleted, we will get an error `getGateway` called on null.
+        //
+        return $this->belongsTo('RZP\Models\Terminal\Entity')->withTrashed();
     }
 
     // -------------------- End Relations --------------------

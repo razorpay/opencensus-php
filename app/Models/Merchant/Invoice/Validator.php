@@ -27,6 +27,7 @@ class Validator extends Base\Validator
         Entity::YEAR        => 'sometimes|digits:4',
         'merchant_ids'      => 'sometimes|array',
         'merchant_ids.*'    => 'sometimes|string|size:14',
+        'correction'        => 'sometimes|boolean',
     ];
 
     protected static $bulkCreateRules = [

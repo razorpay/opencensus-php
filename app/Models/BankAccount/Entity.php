@@ -171,13 +171,7 @@ class Entity extends Base\PublicEntity
 
     public function source()
     {
-        $type = $this->getAttribute(self::TYPE);
-
-        Type::validateType($type);
-
-        $class = Type::getEntityClass($type);
-
-        return $this->belongsTo($class, self::ENTITY_ID);
+        return $this->morphTo('source', self::TYPE, self::ENTITY_ID);
     }
 
     public function payouts()
@@ -277,21 +271,6 @@ class Entity extends Base\PublicEntity
     public function getMobileBankingEnabled()
     {
         return $this->getAttribute(self::MOBILE_BANKING_ENABLED);
-    }
-
-    public function getBeneficiaryAddress1()
-    {
-        return $this->getAttribute(self::BENEFICIARY_ADDRESS1);
-    }
-
-    public function getBeneficiaryAddress2()
-    {
-        return $this->getAttribute(self::BENEFICIARY_ADDRESS2);
-    }
-
-    public function getBeneficiaryAddress3()
-    {
-        return $this->getAttribute(self::BENEFICIARY_ADDRESS3);
     }
 
     public function setMobileBankingEnabled($mobileBankingEnabled)

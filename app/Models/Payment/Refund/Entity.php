@@ -64,6 +64,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::NOTES,
         self::RECEIPT,
+        self::STATUS,
     ];
 
     protected $visible = [
@@ -373,7 +374,7 @@ class Entity extends Base\PublicEntity
         // 'Goomo', 'Goomo', 'IRCTC Services'
         // 'Irctc Web', 'IRCTC Mob', 'IRCTC ecatering'
         // 'epaylater', 'Udacity', 'Accelerator',
-        //
+        // 'IRCTC FTR'
 
         $merchantIds = [
             '10000000000000', '6gn7Xc2gqK40c9', '4uObL8AHBqFNnP',
@@ -385,6 +386,7 @@ class Entity extends Base\PublicEntity
             '8STmhcK1Gd1JVo', '7kBHljwok8Fsom', '8byazTDARv4Io0',
             '8ST00QgEPT14cE', '8YPFnW5UOM91H7', '90xVmQJTCEJ6GH',
             '6uli25q6xe9PPv', '4sW8jQ22JR4Bfi', '5wv2qnnBum6eXo',
+            '9m4CChGex4ENkR',
         ];
 
         $currentMerchantId = $this->getMerchantId();

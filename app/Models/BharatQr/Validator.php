@@ -9,21 +9,20 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::METHOD                => 'required|string|in:upi,card',
         Entity::AMOUNT                => 'required|integer',
-        Entity::VPA                   => 'sometimes|string',
-        Entity::CARD_NUMBER           => 'sometimes|string',
-        Entity::CARD_NETWORK          => 'sometimes|string',
-        // TODO: Failed payments to be handled in separate PR
+        // No validation on max size as it can be anything sent by gateway
         Entity::PROVIDER_REFERENCE_ID => 'required|string',
-        Entity::MERCHANT_REFERENCE    => 'sometimes|string',
-        Entity::TRACE_NUMBER          => 'sometimes|string',
-        Entity::RRN                   => 'required|string',
-        Entity::STATUS_CODE           => 'sometimes|string',
-        Entity::CUSTOMER_NAME         => 'sometimes|string',
-        Entity::TRANSACTION_TIME      => 'sometimes|string',
-        Entity::TRANSACTION_DATE      => 'sometimes|string',
-        Entity::GATEWAY_MERCHANT_ID   => 'sometimes|string',
-        Entity::GATEWAY_TERMINAL_ID   => 'sometimes|string',
-        Entity::GATEWAY_TERMINAL_DESC => 'sometimes|string',
+        // No validation on max size of merchant reference as it can be anything in case of unexpected payments
+        Entity::MERCHANT_REFERENCE    => 'required|string',
+    ];
+
+    protected static $gatewayResponseRules = [
+        GatewayResponseParams::MERCHANT_REFERENCE    => 'required|string',
+        GatewayResponseParams::METHOD                => 'required|in:card,upi',
+        GatewayResponseParams::VPA                   => 'required_if:method,upi',
+        GatewayResponseParams::CARD_FIRST6           => 'required_if:method,card',
+        GatewayResponseParams::CARD_LAST4            => 'required_if:method,card',
+        GatewayResponseParams::PROVIDER_REFERENCE_ID => 'required|string',
+        GatewayResponseParams::AMOUNT                => 'required|integer|min:100',
     ];
 }
 

@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use Mail;
+use Cache;
 use Crypt;
 use Config;
 use Route;
@@ -37,6 +38,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Analytics;
@@ -867,13 +869,17 @@ trait Authorize
 
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        // TODO: Throw a bad request exception if token is null.
-        // For recurring payments, there should always be a token.
-
-        if ($token !== null)
+        if ($token === null)
         {
-            $this->assertTokenIsRecurring($payment, $token);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT,
+                null,
+                [
+                    'payment_id'    => $payment->getId(),
+                ]);
         }
+
+        $this->assertTokenIsRecurring($payment, $token);
 
         //
         // If payment type is card, validate that the card supports recurring
@@ -896,8 +902,16 @@ trait Authorize
         // for which the token was created in the first place. Hence, here, second recurring
         // is not really second recurring and could be in fact first recurring only.
         //
+        // We don't have to verify that the payment is coming from Zoho for
+        // a Zoho merchant if it's on public auth. It won't be second recurring
+        // if it's coming from public auth. It's possible that it won't be
+        // second recurring if it's coming from private auth also, but we don't
+        // have any way to figure that out. Adding access check here to at least
+        // handle second recurring type payments (recurring payments with recurring token)
+        // coming via public auth. These can be safely treated as first recurring.
+        //
         if ((empty($input[Payment\Entity::TOKEN]) === false) and
-            ($payment->isSecondRecurring() === true))
+            ($payment->isSecondRecurring(true) === true))
         {
             $this->verifyAggregatorIfApplicable($merchant);
         }
@@ -908,8 +922,10 @@ trait Authorize
      * then the token cannot be used for the payment.
      *
      * @param Payment\Entity $payment
-     * @param Token\Entity $token
+     * @param Token\Entity   $token
+     *
      * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
      */
     protected function assertTokenIsRecurring(Payment\Entity $payment, Token\Entity $token)
     {
@@ -1610,21 +1626,49 @@ trait Authorize
 
         $payment->setInternational();
 
-        $this->processEmandatePayments($payment);
+        $this->setRecurringType($payment, $input);
     }
 
-    protected function processEmandatePayments(Payment\Entity $payment)
+    protected function setRecurringType(Payment\Entity $payment, array $input)
     {
-        $token = $payment->getGlobalOrLocalTokenEntity();
+        $type = null;
 
         if ($payment->isEmandate() === true)
         {
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
             // True => auto, False => initial
             // TODO: Add support for when we allow recurring tokens for first payments
-            $type = ($token->isRecurring() === true) ? Payment\RecurringType::AUTO : Payment\RecurringType::INITIAL;
-
-            $payment->setRecurringType($type);
+            $type = ($token->isRecurring() === true) ?
+                    Payment\RecurringType::AUTO :
+                    Payment\RecurringType::INITIAL;
         }
+
+        //
+        // TODO: Will have to figure out the recurring type when we allow
+        // the end-users to pay for the subscription themselves manually
+        // before we charge. This can happen when we create an invoice first
+        // and then an hour later, we auto-charge. In that 1 hr gap, the
+        // customer can make a payment (via public auth and all)
+        //
+        if ($payment->hasSubscription() === true)
+        {
+            $subscription = $payment->subscription;
+
+            $type = Payment\RecurringType::AUTO;
+
+            if ($subscription->hasBeenAuthenticated() === false)
+            {
+                $type = Payment\RecurringType::INITIAL;
+            }
+            else if ((isset($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE]) === true) and
+                     (boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE]) === true))
+            {
+                $type = Payment\RecurringType::CARD_CHANGE;
+            }
+        }
+
+        $payment->setRecurringType($type);
     }
 
     protected function addTestSuccessFlagToGatewayInput(array $input, array & $gatewayInput)
@@ -2360,6 +2404,8 @@ trait Authorize
 
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
+        $data['magic'] = $this->isMagicEnabled($payment);
+
         $segmentData = $data;
 
         // this might log sensitive data. Remove it
@@ -2761,7 +2807,7 @@ trait Authorize
                 ]);
         }
 
-        if ($this->isCardChangeFlow($subscription, $payment) === true)
+        if ($this->isCardChangeFlow($subscription) === true)
         {
             $this->processCardChangeForSubscription($subscription, $payment);
 
@@ -2786,11 +2832,10 @@ trait Authorize
      * TODO: This needs to be fixed!!!!!
      *
      * @param Subscription\Entity $subscription
-     * @param Payment\Entity      $payment
      *
      * @return bool
      */
-    protected function isCardChangeFlow(Subscription\Entity $subscription, Payment\Entity $payment)
+    protected function isCardChangeFlow(Subscription\Entity $subscription)
     {
         if ($subscription->hasBeenAuthenticated() === false)
         {
@@ -2820,17 +2865,18 @@ trait Authorize
         //     return true;
         // }
 
-        // NOTE: 2FA WILL NOT WORK FOR INTERNATIONAL. TRUST ME.
+        // NOTE: 2FA WILL NOT WORK FOR INTERNATIONAL.
 
-        // TODO: Public auth check does not work!!!! Use redis or something here. FIX ASAP!
-        if ($this->ba->isPublicAuth() === true)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        //
+        // TODO: Public auth check does not work! Use Redis or something here. FIX ASAP!
+        // Ideally we should have gotten this from subscription_card_change
+        // attribute which would have been sent in payment create input.
+        // But, since we don't store that attribute and this would be in
+        // the callback flow, we don't know whether this is card change flow.
+        // So, what we can do instead is rely on recurring_type attribute of payment
+        // entity. recurring_type can be set to initial or card_change or something.
+        //
+        return ($this->ba->isPublicAuth() === true);
     }
 
     protected function processCardChangeForSubscription(
@@ -3281,7 +3327,7 @@ trait Authorize
      * @param Token\Entity $token
      * @param string|null  $oldRecurringStatus
      */
-    protected function eventTokenStatus(Token\Entity $token, string $oldRecurringStatus = null)
+    public function eventTokenStatus(Token\Entity $token, string $oldRecurringStatus = null)
     {
         $currentRecurringStatus = $token->getRecurringStatus();
 
@@ -3290,6 +3336,9 @@ trait Authorize
         // recurring status in cases like second recurring
         // payment. Here, we don't update anything at all
         // except the used count, terminals and stuff.
+        //
+        // This can also happen in case we do registration recon of
+        // enach rbl again. This will ensure idempotency is maintained.
         //
         if (($oldRecurringStatus !== $currentRecurringStatus) and
             (in_array($currentRecurringStatus, Token\RecurringStatus::$webhookStatuses, true) === true))
@@ -4091,5 +4140,35 @@ trait Authorize
                     'iin'     => $card->getIin()
                 ]);
         }
+    }
+
+    protected function isMagicEnabled(Payment\Entity $payment)
+    {
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return false;
+        }
+
+        try
+        {
+            $cache = Cache::getFacadeRoot();
+
+            $magicDisabledGlobally = (bool) $cache->get(ConfigKey::DISABLE_MAGIC);
+        }
+        catch (\Throwable $e)
+        {
+            $magicDisabledGlobally = true;
+
+            $this->trace->traceException($e);
+        }
+
+        if (($magicDisabledGlobally === false) and
+            ($this->merchant->isMagicEnabled() === true) and
+            ($payment->card->isMagicEnabled() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

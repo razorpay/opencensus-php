@@ -82,6 +82,7 @@ class Entity
     const VIRTUAL_ACCOUNT       = 'virtual_account';
     const MERCHANT_DETAIL       = 'merchant_detail';
     const TERMINAL_ACTION       = 'terminal_action';
+    const MERCHANT_REQUEST      = 'merchant_request';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const GATEWAY_DOWNTIME      = 'gateway_downtime';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
@@ -130,6 +131,7 @@ class Entity
     const AMEX                   = 'amex';
     const BLADE                  = 'blade';
     const ATOM                   = 'atom';
+    const ENACH                  = 'enach';
     const HDFC                   = 'hdfc';
     const HITACHI                = 'hitachi';
     const PAYTM                  = 'paytm';
@@ -148,6 +150,8 @@ class Entity
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_SBI                = 'upi_sbi';
     const UPI_ICICI              = 'upi_icici';
+    const ENACH_RBL              = 'enach_rbl';
+    const ESIGNER_DIGIO          = 'esigner_digio';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_BOB         = 'netbanking_bob';
@@ -182,10 +186,11 @@ class Entity
     const CACHED_ENTITIES = [
         self::KEY      => [
             QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 30,
         ],
         self::MERCHANT => [
             QueryCacheConstants::VERSION => 'v1',
-            QueryCacheConstants::TTL     => 1,
+            QueryCacheConstants::TTL     => 10,
         ],
         self::ACCOUNT  => [
             QueryCacheConstants::VERSION => 'v1',
@@ -236,6 +241,7 @@ class Entity
         self::DISPUTE_REASON        => \RZP\Models\Dispute\Reason::class,
         self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
+        self::MERCHANT_REQUEST      => \RZP\Models\Merchant\Request::class,
         self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
         self::GATEWAY_DOWNTIME      => \RZP\Models\Gateway\Downtime::class,
         self::GATEWAY_RULE          => \RZP\Models\Gateway\Rule::class,
@@ -251,6 +257,7 @@ class Entity
         self::BATCH_FUND_TRANSFER   => \RZP\Models\FundTransfer\Batch::class,
         self::CUSTOMER_TRANSACTION  => \RZP\Models\Customer\Transaction::class,
         self::FUND_TRANSFER_ATTEMPT => \RZP\Models\FundTransfer\Attempt::class,
+        self::VIRTUAL_ACCOUNT       => \RZP\Models\VirtualAccount::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,
@@ -275,6 +282,9 @@ class Entity
         self::AXIS_GENIUS            => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE            => \RZP\Gateway\Cybersource::class,
         self::CARD_FSS               => \RZP\Gateway\Card\Fss::class,
+        self::ENACH                  => \RZP\Gateway\Enach\Base::class,
+        self::ENACH_RBL              => \RZP\Gateway\Enach\Rbl::class,
+        self::ESIGNER_DIGIO          => \RZP\Gateway\Esigner\Digio::class,
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Payzapp::class,
         self::WALLET_OLAMONEY        => \RZP\Gateway\Wallet\Olamoney::class,
         self::WALLET_JIOMONEY        => \RZP\Gateway\Wallet\Jiomoney::class,
@@ -331,22 +341,25 @@ class Entity
         self::NETBANKING_RBL         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_PNB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Base::class,
 
-        self::UPI_MINDGATE          => \RZP\Gateway\Upi\Base::class,
-        self::UPI_SBI               => \RZP\Gateway\Upi\Base::class,
-        self::UPI_ICICI             => \RZP\Gateway\Upi\Base::class,
-        self::UPI_NPCI              => \RZP\Gateway\Upi\Base::class,
+        self::ENACH_RBL              => \RZP\Gateway\Enach\Base::class,
 
-        self::AEPS_ICICI            => \RZP\Gateway\Aeps\Base::class,
+        self::UPI_MINDGATE           => \RZP\Gateway\Upi\Base::class,
+        self::UPI_SBI                => \RZP\Gateway\Upi\Base::class,
+        self::UPI_ICICI              => \RZP\Gateway\Upi\Base::class,
+        self::UPI_NPCI               => \RZP\Gateway\Upi\Base::class,
 
-        self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_JIOMONEY       => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_SBIBUDDY       => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_MPESA          => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Base::class,
+        self::AEPS_ICICI             => \RZP\Gateway\Aeps\Base::class,
+
+        self::WALLET_AIRTELMONEY     => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_FREECHARGE      => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_JIOMONEY        => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_SBIBUDDY        => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_MPESA           => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_OLAMONEY        => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Base::class,
     ];
 
     protected static $syncedInLiveAndTest = [

@@ -25,6 +25,7 @@ use RZP\Models\Merchant;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Processor\Netbanking;
 
 /**
@@ -334,6 +335,7 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::RECURRING,
         self::IFSC,
+        self::VPA,
         'method_based_input',
         'convert_empty_strings_to_null'
     ];
@@ -439,6 +441,23 @@ class Entity extends Base\PublicEntity
             if ($isEmailOptional === true)
             {
                 $input['email'] = self::DUMMY_EMAIL;
+            }
+        }
+    }
+
+    protected function modifyVpa(& $input)
+    {
+        if (empty($input[self::VPA]) === false)
+        {
+            $vpaParts = explode('@', $input[self::VPA]);
+
+            if (count($vpaParts) > 1)
+            {
+                $lastElement = count($vpaParts) - 1;
+
+                $vpaParts[$lastElement] = strtolower($vpaParts[$lastElement]);
+
+                $input[self::VPA] = implode('@', $vpaParts);
             }
         }
     }
@@ -641,9 +660,15 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
     }
 
-    public function setGatewayBharatQr()
+    //
+    // As setGateway is protected method
+    // we didn't want to make it public just
+    // to set gateway for bharat qr payment
+    // so a new method
+    //
+    public function setGatewayForBharatQr(string $gateway)
     {
-        $this->setGateway(Payment\Gateway::BHARAT_QR);
+        $this->setGateway($gateway);
     }
 
     /**
@@ -706,9 +731,12 @@ class Entity extends Base\PublicEntity
      * @param $type
      * @throws Exception\InvalidArgumentException
      */
-    public function setRecurringType($type)
+    public function setRecurringType(string $type = null)
     {
-        RecurringType::validateRecurringType($type);
+        if ($type !== null)
+        {
+            RecurringType::validateRecurringType($type);
+        }
 
         $this->setAttribute(self::RECURRING_TYPE, $type);
     }
@@ -721,6 +749,11 @@ class Entity extends Base\PublicEntity
     public function isRecurringTypeInitial()
     {
         return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::INITIAL);
+    }
+
+    public function isRecurringTypeCardChange()
+    {
+        return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::CARD_CHANGE);
     }
 
     public function setSigned($signed = true)
@@ -1258,6 +1291,12 @@ class Entity extends Base\PublicEntity
                 ($this->isMethod(Payment\Method::EMI)));
     }
 
+    public function isTpvMethod()
+    {
+        return (($this->isMethod(Payment\Method::UPI)) or
+                ($this->isMethod(Payment\Method::NETBANKING)));
+    }
+
     public function isSigned()
     {
         return ($this->getAttribute(self::SIGNED) === true);
@@ -1323,6 +1362,17 @@ class Entity extends Base\PublicEntity
     }
 
 // ----------------------- Getters ---------------------------------------------
+
+    public function getBankCodeFromVpa()
+    {
+        $vpa = $this->getAttribute(self::VPA);
+
+        $vpaParts = explode('@', $vpa);
+
+        $psp = end($vpaParts);
+
+        return ProviderCode::getBankCode($psp);
+    }
 
     public function getTransferId()
     {
@@ -1603,20 +1653,62 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFERENCE2);
     }
 
-    public function isSecondRecurring()
+    /**
+     * @param bool                  $accessCheck For terminal selection, we need to ensure that it's either private
+     *                                           auth or privilege auth. If it's public auth, terminal selection
+     *                                           logic needs to treat it as first recurring only because in public
+     *                                           auth, it always needs to go via 2fa terminal.
+     *
+     * @param Base\PublicCollection $gatewayTokens
+     *
+     * @return bool
+     * @throws Exception\LogicException
+     */
+    public function isSecondRecurring($accessCheck = false, Base\PublicCollection $gatewayTokens = null)
     {
-        $app = \App::getFacadeRoot();
-
-        $token = $this->getGlobalOrLocalTokenEntity();
-
         if ($this->isRecurring() === false)
         {
             return false;
         }
 
-        $reference = $this->getReferenceForGatewayToken();
+        $app = \App::getFacadeRoot();
 
-        $existingGatewayTokens = $app['repo']->gateway_token->findByTokenAndReference($token, $reference);
+        if ($accessCheck === true)
+        {
+            $basicAuth = $app['basicauth'];
+
+            if (($basicAuth->isPrivateAuth() === false) and
+                ($basicAuth->isPrivilegeAuth() === false))
+            {
+                return false;
+            }
+        }
+
+        $token = $this->getGlobalOrLocalTokenEntity();
+
+        // Recurring payments should always have a token!
+        if ($token === null)
+        {
+            throw new Exception\LogicException(
+                'Token absent for recurring payment',
+                ErrorCode::SERVER_ERROR_TOKEN_ABSENT_RECURRING_PAYMENT,
+                [
+                    'payment_id'    => $this->getId(),
+                    'access_check'  => $accessCheck,
+                ]);
+        }
+
+        //
+        // We use null check and not count here because gatewayTokens collection passed
+        // might have 0 items. In this case, we don't need to run the query again. The
+        // query would have already been run and the result could have been 0 items.
+        //
+        if ($gatewayTokens === null)
+        {
+            $reference = $this->getReferenceForGatewayToken();
+
+            $gatewayTokens = $app['repo']->gateway_token->findByTokenAndReference($token, $reference);
+        }
 
         //
         // We can have multiple gateway_tokens for a single token.
@@ -1625,7 +1717,7 @@ class Entity extends Base\PublicEntity
         // gateway_token has already been created for the given token.
         // The token can now be used without 2FA.
         //
-        return ($existingGatewayTokens->count() > 0);
+        return ($gatewayTokens->count() > 0);
     }
 
     public function isEmiMerchantSubvented()
@@ -2432,7 +2524,7 @@ class Entity extends Base\PublicEntity
         // Since the first auth transaction would have already been
         // done, we don't need to do any MaxMind risk checks for this.
         //
-        if ($this->isSecondRecurring() === true)
+        if ($this->isSecondRecurring(true) === true)
         {
             return false;
         }

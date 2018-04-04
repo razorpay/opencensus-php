@@ -16,11 +16,19 @@ class Type
     // Terminal to be used for IVR transactions
     const IVR               = 'ivr';
 
+    // Terminal to be used to create second recurring payments without 2fa
+    const NO_2FA            = 'no_2fa';
+
+    // Terminal to be used for UPI pay
+    const PAY               = 'pay';
+
     protected static $types = [
         self::NON_RECURRING,
         self::RECURRING_3DS,
         self::RECURRING_NON_3DS,
         self::IVR,
+        self::NO_2FA,
+        self::PAY,
     ];
 
     protected static $bitPosition = [
@@ -28,6 +36,8 @@ class Type
         self::RECURRING_3DS     => 2,
         self::RECURRING_NON_3DS => 3,
         self::IVR               => 4,
+        self::NO_2FA            => 5,
+        self::PAY               => 6,
     ];
 
     /**
@@ -67,7 +77,7 @@ class Type
         return self::$bitPosition[$type];
     }
 
-    public static function getEnabledType($hex)
+    public static function getEnabledTypes($hex)
     {
         $types = [];
 

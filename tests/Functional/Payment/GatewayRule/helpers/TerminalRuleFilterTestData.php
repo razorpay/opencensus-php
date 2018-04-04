@@ -622,6 +622,26 @@ return [
         ]
     ],
 
+    'testUpiFilter'  => [
+        'payment_options' => [
+            'method' => Method::UPI,
+            'vpa' => 'vishnu@icici',
+        ],
+        'fixtures' => [
+            [
+                'method'      => Method::UPI,
+                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'gateway'     => 'upi_mindgate',
+                'type'        => 'filter',
+                'filter_type' => 'reject',
+                'group'       => 'method_filter',
+            ],
+        ],
+        'expected_terminal_ids' => [
+            '100UPIICICITml',
+        ]
+    ],
+
     'testInternationalFilter' => [
         [
             'payment_options' => [

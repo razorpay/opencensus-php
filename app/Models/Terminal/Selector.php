@@ -13,6 +13,7 @@ use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Constants\Entity as Constants;
 
 class Selector extends Base\Core
 {
@@ -50,6 +51,13 @@ class Selector extends Base\Core
 
         // Sorting based on gateway downtimes
         Sorters\GatewayDowntimeSorter::class,
+
+        // Boosts terminals with gateway tokens over fallback terminal (without gateway tokens)
+        // No fallback sorting. We are not giving priority
+        // to the actual terminals as such. We will let the
+        // normal sorter take care of it. [Discussed with Shk].
+        // UN-SKIP THE CORRESPONDING TEST TOO!
+        // Sorters\RecurringSorter::class
     ];
 
     public function __construct(array $input, Terminal\Options $options)
@@ -59,6 +67,28 @@ class Selector extends Base\Core
         $this->input = $input;
 
         $this->options = $options;
+
+        $this->setGatewayTokensInInputIfApplicable();
+    }
+
+    protected function setGatewayTokensInInputIfApplicable()
+    {
+        $payment = $this->input['payment'];
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        if (empty($token) === true)
+        {
+            $this->input['gateway_tokens'] = new Base\PublicCollection();
+        }
+        else
+        {
+            $reference = $payment->getReferenceForGatewayToken();
+
+            $this->input['gateway_tokens'] = $this->repo
+                                                  ->gateway_token
+                                                  ->findByTokenAndReference($token, $reference, [Constants::TERMINAL]);
+        }
     }
 
     public function select()
@@ -74,37 +104,6 @@ class Selector extends Base\Core
         $filteredTerminals = $this->filterTerminals($allTerminals, $applicableRules, $verbose);
 
         $payment = $this->input['payment'];
-
-        if (empty($filteredTerminals) === true)
-        {
-            $basicAuth = $this->app['basicauth'];
-
-            $access = (($basicAuth->isPrivateAuth() === true) or
-                       ($basicAuth->isPrivilegeAuth() === true));
-
-            $token = $payment->getGlobalOrLocalTokenEntity();
-
-            //
-            // We are doing this only for second recurring
-            // card payments made via private/privilege auth
-            //
-            if (($payment->isCard() === true) and ($payment->isRecurring() === true) and
-                ($token !== null) and
-                ($token->isRecurring() === true) and
-                ($access === true))
-            {
-                //
-                // For fallback, we need to get direct terminals which
-                // support both recurring 3DS and recurring non-3DS
-                // on a single terminal. These terminals usually allow
-                // payments without 2FA first.
-                //
-                $filteredTerminals = $this->repo
-                                          ->terminal
-                                          ->getDirectRecurringTerminalsOfType($this->input['merchant'], 6)
-                                          ->all();
-            }
-        }
 
         $sortedTerminals = $this->sortTerminals($filteredTerminals, $applicableRules, $verbose);
 
@@ -177,9 +176,52 @@ class Selector extends Base\Core
         $merchantTerminals = $this->repo
                                   ->terminal
                                   ->getTerminalsForMerchantAndSharedMerchant(
-                                        $this->input['merchant']);
+                                                        $this->input['merchant']);
+
+        $payment = $this->input['payment'];
+
+        //
+        // For second recurring payments, the payment must go through a designated
+        // terminal, even if the merchant has since been unassigned from it. This
+        // is achieved by referring to the gateway token, the original terminal of
+        // that gateway token, and finding other usable terminals assigned to the
+        // same primary merchant
+        //
+        if ($payment->isSecondRecurring(true, $this->input['gateway_tokens']) === true)
+        {
+            $possibleApplicableTerminals = $this->getTerminalsForSecondRecurringPayment();
+
+            $merchantTerminals = $merchantTerminals->merge($possibleApplicableTerminals);
+        }
 
         return $merchantTerminals->all();
+    }
+
+    protected function getTerminalsForSecondRecurringPayment()
+    {
+        $gatewayTokens = $this->input['gateway_tokens'];
+
+        if ($gatewayTokens->count() === 0)
+        {
+            return [];
+        }
+
+        $merchantIdsForGatewayTokenTerminals = $gatewayTokens->pluck('terminal.merchant_id')
+                                                             ->toArray();
+
+        // Many gateway tokens, each associated with a terminal
+        // Find all those terminals and gather all their merchant IDs
+        //
+        // Now query for appropriate terminals (type check)
+        // that are assigned to any of these gathered merchants.
+
+        $addTerminals = $this->repo
+                             ->terminal
+                             ->getByTypeAndMerchantIds(
+                                    Type::RECURRING_NON_3DS,
+                                    $merchantIdsForGatewayTokenTerminals);
+
+        return $addTerminals;
     }
 
     protected function filterTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = false): array

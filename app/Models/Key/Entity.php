@@ -157,7 +157,7 @@ class Entity extends Base\PublicEntity
         $x = range(1,8);
         foreach ($x as $n)
         {
-            $hex = bin2hex(openssl_random_pseudo_bytes(4));
+            $hex = bin2hex(random_bytes(4));
             $dec = hexdec($hex);
 
             // Convert the random decimal generated to base 62
@@ -187,7 +187,7 @@ class Entity extends Base\PublicEntity
         $x = range(1,4);
         foreach ($x as $n)
         {
-            $hex = bin2hex(openssl_random_pseudo_bytes(4));
+            $hex = bin2hex(random_bytes(4));
             $dec = hexdec($hex);
 
             // Convert the random decimal generated to base 62

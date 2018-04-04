@@ -6,9 +6,9 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 
@@ -124,6 +124,8 @@ class Processor extends Base\Core
 
             foreach ($channels as $channel)
             {
+                $this->traceSetlInitiating($channel);
+
                 $setlResponse = $this->createSettlements($channel);
 
                 $response[$channel]['count']    += $setlResponse['settlement_count'];
@@ -149,10 +151,10 @@ class Processor extends Base\Core
     {
         $response = [];
 
+        (new Validator)->validateInput('retry', $this->input);
+
         try
         {
-            (new Validator)->validateInput('retry', $this->input);
-
             $setlIds = $this->input['settlement_ids'];
 
             Entity::verifyIdAndStripSignMultiple($setlIds);
@@ -247,7 +249,9 @@ class Processor extends Base\Core
 
             $merchants = $this->repo->merchant->findMany($mids);
 
-            $this->setlTime = Carbon::tomorrow(Timezone::IST)->getTimestamp();
+            $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+            $settledAtCutoff = Carbon::tomorrow(Timezone::IST)->getTimestamp();
 
             foreach ($merchants as $merchant)
             {
@@ -262,7 +266,7 @@ class Processor extends Base\Core
 
                 // Get all transactions due settlement till yesterday end of day
                 $txns = $this->repo->transaction->fetchUnsettledTransactions(
-                            $this->setlTime, $channel, [$mid]);
+                            $settledAtCutoff, $channel, [$mid]);
 
                 $filteredTxns = $this->filterTransactionsForSettlement($txns);
 
@@ -318,13 +322,10 @@ class Processor extends Base\Core
         $settlements        = new Base\PublicCollection;
         $setlAttempts       = new Base\PublicCollection;
         $txnsSettledCount   = 0;
-        $allTxns            = new Base\PublicCollection;
 
         foreach ($groupedTxns as $key => $txns)
         {
             list($setl, $setlAttempt) = $this->createSettlementsFromTxns($txns, $channel);
-
-            $allTxns->push($txns);
 
             if ($setl !== null)
             {
@@ -336,12 +337,10 @@ class Processor extends Base\Core
 
                     $txnsSettledCount += $txns->count();
                 }
+
+                $this->updateSettlementIdInTransfer($txns);
             }
         }
-
-        $allTxns = $allTxns->flatten();
-
-        $this->updateSettlementIdInTransfer($allTxns);
 
         return [
             'settlement_count'  => $settlements->count(),
@@ -461,7 +460,7 @@ class Processor extends Base\Core
     protected function isInvalidSettlementTime(): bool
     {
         // Cron runs at 6.10pm.
-        $sixPm = Carbon::today(Timezone::IST)->hour(18)->minute(10)->getTimestamp();
+        $sixPm = Carbon::today(Timezone::IST)->hour(18)->minute(13)->getTimestamp();
 
         // No settlements after five PM but allow settlements file upload anytime
         // before that, we want to do it before 8 am as well as that allows us

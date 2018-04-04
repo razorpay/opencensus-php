@@ -10,8 +10,10 @@ use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\BharatQr\Tags;
 use RZP\Models\BharatQr\Lengths;
-use RZP\Models\BharatQr\Constants;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Card\NetworkName;
+use RZP\Models\BharatQr\Constants;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Provider
@@ -114,10 +116,10 @@ class Provider
     ];
 
     const PRIVILEGED_NUMERIC_HANDLE_MAPPING = [
-        // Zebpay gets 2224449
-        '8iMbVsEnv1HCo0' => '9',
+        // BPCL gets 2223339
+        Preferences::MID_BPCL => '9',
         // Tests
-        '10000000000000' => '9',
+        Account::TEST_ACCOUNT => '9',
     ];
 
     const IFSC = [
@@ -252,8 +254,7 @@ class Provider
             $masterCardTlv,
             $rupayCardTlv,
             $this->getBharatQrUpiTlv(),
-            // This tag is not supported by UPI ICICI
-            // $this->getBharatQrDynamicUpiTlv($qrCode),
+            $this->getBharatQrDynamicUpiTlv($qrCode),
             Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Constants::MERCHANT_CATEGORY),
             Tags::CURRENCY_CODE . $this->getLengthAndValue(Constants::CURRENCY_CODE),
             $this->getBharatQrAmountTlv($qrCode),
@@ -300,7 +301,12 @@ class Provider
     protected function getBharatQrDynamicUpiTlv(QrCode\Entity $qrCode)
     {
         $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(Constants::RUPAY_RID);
-        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue($qrCode->getId());
+
+        //
+        // In case of upi payments we need to send reference with
+        // prefix. This is how they identify our payments
+        //
+        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue(Constants::UPI_PREFIX . $qrCode->getId());
 
         $upiString = $rupayRidTlv . $transactionReferenceTlv;
 

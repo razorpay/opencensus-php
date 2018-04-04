@@ -16,9 +16,12 @@ class Type
     const HDFC_EMANDATE_REGISTER            = 'hdfc_emandate_register';
     const HDFC_EMANDATE_DEBIT               = 'hdfc_emandate_debit';
 
+    const RBL_ENACH_DEBIT                   = 'rbl_enach_debit';
+
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
 
     const BOB_NETBANKING_REFUND             = 'bob_netbanking_refund';
+    const BOB_NETBANKING_CLAIMS             = 'bob_netbanking_claims';
 
     const ICICI_NETBANKING_REFUND           = 'icici_netbanking_refund';
 
@@ -68,6 +71,7 @@ class Type
 
     const BATCH_INPUT                       = 'batch_input';
     const BATCH_OUTPUT                      = 'batch_output';
+    const BATCH_VALIDATED                   = 'batch_validated';
     const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
 
     const BLANK                             = 'blank';
@@ -127,12 +131,14 @@ class Type
             self::HDFC_NETBANKING_REFUND,
             self::HDFC_EMANDATE_REGISTER,
             self::HDFC_EMANDATE_DEBIT,
+            self::RBL_ENACH_DEBIT,
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_EMANDATE_DEBIT,
             self::FEDERAL_NETBANKING_REFUND,
             self::CORPORATION_NETBANKING_REFUND,
             self::BOB_NETBANKING_REFUND,
+            self::BOB_NETBANKING_CLAIMS,
             self::RBL_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_CLAIM,
@@ -170,6 +176,7 @@ class Type
         Constants\Entity::BATCH => [
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
+            self::BATCH_VALIDATED,
             self::RECONCILIATION_BATCH_INPUT,
         ],
 
@@ -224,7 +231,9 @@ class Type
         self::HDFC_NETBANKING_REFUND,
         self::HDFC_EMANDATE_REGISTER,
         self::HDFC_EMANDATE_DEBIT,
+        self::RBL_ENACH_DEBIT,
         self::BOB_NETBANKING_REFUND,
+        self::BOB_NETBANKING_CLAIMS,
         self::CORPORATION_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,
@@ -263,6 +272,9 @@ class Type
             self::HDFC_NETBANKING_REFUND,
             self::HDFC_EMANDATE_REGISTER,
             self::HDFC_EMANDATE_DEBIT,
+            self::RBL_ENACH_DEBIT,
+            self::BOB_NETBANKING_REFUND,
+            self::BOB_NETBANKING_CLAIMS,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
@@ -282,6 +294,7 @@ class Type
             self::ICICI_EMI_FILE_MAIL,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
+            self::BATCH_VALIDATED,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
             self::UPI_ICICI_FAILED_REFUND,
