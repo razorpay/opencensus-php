@@ -11,8 +11,7 @@ moment.updateLocale('en', {
 });
 
 export function isDefined(value) {
-
-  return typeof value !== "undefined";
+  return typeof value !== 'undefined';
 }
 
 export function titleCase(sentence) {
@@ -271,18 +270,14 @@ const periods = {
   weekly: 'Week',
   monthly: 'Month',
   yearly: 'Year',
+  daily: 'Day',
 };
 
 export const getIntervalCycle = (interval, period) => {
-  switch (interval) {
-    case 1:
-      return `Every ${periods[period]}`;
-
-    case 2:
-      return `Bi-${titleCase(period)}`;
-
-    default:
-      return `Once in ${interval} ${periods[period]}s`;
+  if (interval === 1) {
+    return `Every ${periods[period]}`;
+  } else {
+    return `Once in ${interval} ${periods[period]}s`;
   }
 };
 
@@ -462,6 +457,14 @@ export const autoPrefixUrls = url => {
   return url;
 };
 
+// Check if webkit browsers
+export const isWebkit =
+  typeof window.getComputedStyle(document.documentElement)[
+    '-webkit-text-security'
+  ] === 'string'
+    ? true
+    : false;
+
 export { acronyms, shortenText };
 
 /**
@@ -487,4 +490,11 @@ export const getKeysSeparatedByPipe = params => {
 
   // Stringify all the other keys and return the string.
   return Object.keys(params).join('|');
+};
+
+/**
+ * Remove all white spaces from a given string
+ **/
+export const trim = str => {
+  return str.replace(/\s+/g, '');
 };

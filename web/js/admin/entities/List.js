@@ -227,7 +227,7 @@ export default class EntityList extends Component {
           // Value is time
           value = formatDate(value);
         } else if (value && typeof value === 'object') {
-          return <pre>{JSON.stringify(value)}</pre>;
+          return <pre class="duplex-json">{JSON.stringify(value)}</pre>;
         } else if (typeof value === 'boolean') {
           value = JSON.stringify(value);
         }

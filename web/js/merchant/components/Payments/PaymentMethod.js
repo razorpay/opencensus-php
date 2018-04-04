@@ -28,6 +28,9 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
       netbanking: 'bank',
       wallet: 'wallet',
       upi: 'vpa',
+      upi: 'upi',
+      emandate: 'emandate',
+      aeps: 'aeps',
     },
     cardDetails = card || {};
 

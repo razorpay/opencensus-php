@@ -5,6 +5,7 @@ import {
   isBlank,
   arrayDiff,
   autoPrefixUrls,
+  trim,
 } from 'rzp/utils/rzp-utils';
 
 // Used for Activation
@@ -41,18 +42,7 @@ const activationStepMap = {
     'company_pan',
     'company_pan_name',
   ],
-  3: [
-    'bank_branch_ifsc',
-    'bank_account_number',
-    'bank_account_name',
-    'bank_beneficiary_address1',
-    'bank_beneficiary_address2',
-    'bank_beneficiary_address3',
-    'bank_beneficiary_city',
-    'bank_beneficiary_state',
-    'bank_beneficiary_pin',
-    'bank_branch',
-  ],
+  3: ['bank_branch_ifsc', 'bank_account_number', 'bank_account_name'],
   4: [
     'business_proof_url',
     'business_pan_url',
@@ -192,16 +182,13 @@ export default class Activation extends Entity {
   }
 
   serializeProperty(prop) {
-    // The below fields should not be sent if they are not set, as the api expects them only when they are set
-    if (
-      ['business_international'].indexOf(prop) !== -1 &&
-      isBlank(this[prop])
-    ) {
-      return undefined;
-    }
-
     if (prop === 'business_international') {
       return normalizeBoolean(this.business_international);
+    }
+
+    // remove all white spaces from multiple email inputs
+    if (prop === 'transaction_report_email' && this.transaction_report_email) {
+      return trim(this.transaction_report_email);
     }
 
     return super.serializeProperty(prop);

@@ -31,6 +31,7 @@ class Entity extends Base\Entity
     protected static $generators = array('id');
 
     const AMEX  = 'AMEX';
+    const AEPS  = 'AEPS';
     const DICL  = 'DICL';
     const DISC  = 'DISC';
     const EMI   = 'EMI';
@@ -42,14 +43,17 @@ class Entity extends Base\Entity
     const UNP   = 'UNP';
     const CARD  = 'CARD';
     const UPI   = 'UPI';
-    const NETBANKING = 'NETBANKING';
-    const WALLET  = 'WALLET';
-    const UNKNOWN = 'UNKNOWN';
+    const NETBANKING    = 'NETBANKING';
+    const EMANDATE      = 'EMANDATE';
+    const WALLET        = 'WALLET';
+    const UNKNOWN       = 'UNKNOWN';
 
     protected static $api_mappings = array(
         'American Express'  =>  self::AMEX,
+        'aeps'              =>  self::AEPS,
         'Diners Club'       =>  self::DICL,
         'Discover'          =>  self::DISC,
+        'emandate'          =>  self::EMANDATE,
         'JCB'               =>  self::JCB,
         'Maestro'           =>  self::MAES,
         'MasterCard'        =>  self::MC,

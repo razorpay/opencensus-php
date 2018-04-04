@@ -121,7 +121,7 @@ export default class CreateVirtualAccount extends Component {
           ...receivers,
           bank_account: descriptor
             ? {
-                descriptor
+                descriptor,
               }
             : undefined,
         },

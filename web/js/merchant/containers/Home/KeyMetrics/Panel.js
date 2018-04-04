@@ -223,10 +223,11 @@ class Panel extends Component {
             >
               {breakdownVals.map((item, index) => {
                 const btnProps = {
-                  value: item.value,
-                  key: index,
-                  className: 'btn-default',
-                }, isEnabled = item.isEnabled(startDate, endDate);
+                    value: item.value,
+                    key: index,
+                    className: 'btn-default',
+                  },
+                  isEnabled = item.isEnabled(startDate, endDate);
 
                 if (!isEnabled) {
                   btnProps.disabled = 'disabled';
@@ -234,12 +235,9 @@ class Panel extends Component {
 
                 return (
                   <Btn {...btnProps}>
-                    <span>
-                      {item.title}
-                    </span>
+                    <span>{item.title}</span>
                     {!isEnabled && (
-                      <GenericTooltip
-                         align="top">
+                      <GenericTooltip align="top">
                         {item.disabledText}
                       </GenericTooltip>
                     )}
