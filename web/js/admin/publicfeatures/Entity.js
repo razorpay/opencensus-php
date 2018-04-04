@@ -285,26 +285,21 @@ const publicFeatureStatuses = [
 
 const statusLogsFields = [
   ['Created At', item => formatDate(item.created_at)],
+  ['Activation Status', item => statusPill(item.name)],
   [
-    'Activation Status',
+    'Rejection Reason',
     item =>
-      item.name === 'rejected' && item.rejection_reasons ? (
-        <div>
-          <div>{statusPill(item.name)}</div>
-          <div style={{ maxWidth: '385px' }}>
-            {/* Show rejection reasons */}
-            <span style={{ fontSize: '12px' }}>
-              <strong>
-                {snakeToTitleCase(
-                  item.rejection_reasons.items[0]['reason_category']
-                )}:{' '}
-              </strong>
-              {snakeToTitleCase(item.rejection_reasons.items[0]['reason_code'])}
-            </span>
-          </div>
+      item.rejection_reasons.count ? (
+        <div style={{ maxWidth: '100px' }}>
+          <strong>
+            {snakeToTitleCase(
+              item.rejection_reasons.items[0]['reason_category']
+            )}:{' '}
+          </strong>
+          {snakeToTitleCase(item.rejection_reasons.items[0]['reason_code'])}
         </div>
       ) : (
-        statusPill(item.name)
+        '--'
       ),
   ],
 ];
