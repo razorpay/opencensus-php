@@ -13,15 +13,11 @@ import BaseModal from 'ui/BaseModal';
 import Field, { SelectField, TextAreaField, FileField } from 'ui/Field';
 import Table from 'ui/Table';
 import { statusPill } from 'common/data';
-
-import {
-  adminFetch,
-  adminPost,
-  adminPut,
-  adminFormUpload,
-  adminPatch,
-} from 'common/fetch';
+import { isWorkflow } from 'common/util';
 import { snakeToTitleCase, formatDate } from 'common/util';
+
+import { adminFetch, adminPatch } from 'common/fetch';
+
 @observer
 export default class EditPublicFeatures extends Component {
   state = {
@@ -82,9 +78,12 @@ export default class EditPublicFeatures extends Component {
       data: body,
     }).then(response => {
       if (response) {
-        //TODO: update collection for the list view
-        notifySuccess('Submission edited successfully.');
         closeModal();
+        if (isWorkflow(response)) {
+          notifySuccess('Workflow is created successfully.');
+          return;
+        }
+        notifySuccess('Submission edited successfully.');
         //reload for list updation
         setTimeout(() => location.reload(), 0);
       }
