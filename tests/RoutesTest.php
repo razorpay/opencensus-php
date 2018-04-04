@@ -106,6 +106,7 @@ class RoutesTest extends TestCase
             // get fixed, and we can use [] instead of knownExceptions
             'reports_transaction_dsp',
             'reports_refund_irctc',
+            'payment_acknowledge'
         ];
 
         $this->assertEquals($knownExceptions, array_values(array_diff($internalAppRoutes, Route::$internal)));
