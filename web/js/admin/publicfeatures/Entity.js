@@ -32,7 +32,7 @@ export default class EditPublicFeatures extends Component {
   // TODO: TEST Sending mode as live, not sent earlier
   featureRequestUrls = [
     `live/merchant/requests/${this.props.model.id}`,
-    `live/merchant/requests/${this.props.model.id}/status_log`,
+    // `live/merchant/requests/${this.props.model.id}/status_log`,
     'live/merchant/requests/rejection_reasons',
   ];
 
@@ -45,7 +45,7 @@ export default class EditPublicFeatures extends Component {
       })
     );
 
-    Promise.all(requests).then(([feature, statusLogs, allRejectionReasons]) => {
+    Promise.all(requests).then(([feature, allRejectionReasons]) => {
       if (feature) {
         this.submissions = feature.submissions;
         if (feature.name === 'marketplace') {
