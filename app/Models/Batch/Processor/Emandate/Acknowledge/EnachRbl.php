@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Batch\Processor\Emandate\Acknowledge;
 
+use Config;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Batch;
@@ -24,23 +25,44 @@ class EnachRbl extends Base
 
     protected $gateway = Payment\Gateway::ENACH_RBL;
 
-    // Return single XML row as multiple entries
-    protected function parseFile(string $filePath): array
+    /**
+     * Overriding parseExcelSheets() because of different startRow.
+     * Ideally, we should store `$startRow` in a variable and then use.
+     * @param  string $filePath
+     * @return array
+     */
+    protected function parseExcelSheets($filePath)
     {
-        $xmlObject = simplexml_load_file($filePath);
+        Config::set('excel.import.force_sheets_collection', true);
+        Config::set('excel.import.heading', 'original');
+        Config::set('excel.import.startRow', 2);
 
-        return [
-            ['data' => json_decode(json_encode($xmlObject), true)]
-        ];
+        $sheets = $this->parseExcelFile($filePath);
+
+        //
+        // Resetting startRow to 1 again
+        //
+        Config::set('excel.import.startRow', 1);
+
+        $hasDoubleSheets  = (count($sheets) === 2);
+        $errorMessage    = 'Sheets keys: ' . implode('.', array_keys($sheets));
+
+        assertTrue($hasDoubleSheets, $errorMessage);
+
+        //
+        // We use 2nd index as 1st sheet contains the summary and
+        // 2nd sheet contains th actual recon data
+        //
+        return $sheets[1];
     }
 
     protected function processEntry(array & $entry)
     {
-        $row = $entry['data'];
+        $entry = array_map('trim', $entry);
 
-        $data = $this->getDataFromRow($row);
+        $content = $this->getDataFromRow($row);
 
-        $this->updateEntities($data);
+        $this->updateEntities($content);
 
         $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
     }
@@ -51,6 +73,9 @@ class EnachRbl extends Base
      */
     protected function getDataFromRow(array & $row): array
     {
+
+
+
         $details = $row['MndtAccptncRpt']['UndrlygAccptncDtls'];
         $headerRow = $row['MndtAccptncRpt']['GrpHdr'];
 

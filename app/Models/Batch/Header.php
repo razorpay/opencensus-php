@@ -163,7 +163,36 @@ class Header
     const HDFC_EM_REGISTER_REMARK                           = HdfcEMRegisterHeadings::REMARK;
 
     //
-    // eNach eMandate Register Response File Headers
+    // eNach Acknowledgement Response File Headers
+    //
+
+    const ENACH_ACK_MANDATE_DATE    = 'MANDATE_DATE';
+    const ENACH_ACK_BATCH           = 'BATCH';
+    const ENACH_ACK_IHNO            = 'IHNO';
+    const ENACH_ACK_MANDATE_TYPE    = 'MANDATE_TYPE';
+    const ENACH_ACK_UMRN            = 'UMRN';
+    const ENACH_ACK_REF_1           = 'REF_1';
+    const ENACH_ACK_REF_2           = 'REF_2';
+    const ENACH_ACK_CUST_NAME       = 'CUST_NAME';
+    const ENACH_ACK_BANK            = 'BANK';
+    const ENACH_ACK_BRANCH          = 'BRANCH';
+    const ENACH_ACK_BANK_CODE       = 'BANK_CODE';
+    const ENACH_ACK_AC_TYPE         = 'AC_TYPE';
+    const ENACH_ACK_ACNO            = 'ACNO';
+    const ENACH_ACK_ACK_DATE        = 'ACK_DATE';
+    const ENACH_ACK_ACK_DESC        = 'ACK_DESC';
+    const ENACH_ACK_AMOUNT          = 'AMOUNT';
+    const ENACH_ACK_FREQUENCY       = 'FREQUENCY';
+    const ENACH_ACK_TEL_NO          = 'TEL_NO';
+    const ENACH_ACK_MOBILE_NO       = 'MOBILE_NO';
+    const ENACH_ACK_MAIL_ID         = 'MAIL_ID';
+    const ENACH_ACK_UPLOAD_BATCH    = 'UPLOAD_BATCH';
+    const ENACH_ACK_UPLOAD_DATE     = 'UPLOAD_DATE';
+    const ENACH_ACK_UPDATE_DATE     = 'UPDATE_DATE';
+    const ENACH_ACK_SOLE_ID         = 'SOLE_ID';
+
+    //
+    // eNach Register Response File Headers
     //
     const ENACH_REGISTER_SRNO               = 'SRNO';
     const ENACH_REGISTER_MANDATE_DATE       = 'MANDATE_DATE';
@@ -464,7 +493,30 @@ class Header
 
         'emandate_acknowledge_enach_rbl' => [
             self::INPUT => [
-                'data'
+                self::ENACH_ACK_MANDATE_DATE,
+                self::ENACH_ACK_BATCH,
+                self::ENACH_ACK_IHNO,
+                self::ENACH_ACK_MANDATE_TYPE,
+                self::ENACH_ACK_UMRN,
+                self::ENACH_ACK_REF_1,
+                self::ENACH_ACK_REF_2,
+                self::ENACH_ACK_CUST_NAME,
+                self::ENACH_ACK_BANK,
+                self::ENACH_ACK_BRANCH,
+                self::ENACH_ACK_BANK_CODE,
+                self::ENACH_ACK_AC_TYPE,
+                self::ENACH_ACK_ACNO,
+                self::ENACH_ACK_ACK_DATE,
+                self::ENACH_ACK_ACK_DESC,
+                self::ENACH_ACK_AMOUNT,
+                self::ENACH_ACK_FREQUENCY,
+                self::ENACH_ACK_TEL_NO,
+                self::ENACH_ACK_MOBILE_NO,
+                self::ENACH_ACK_MAIL_ID,
+                self::ENACH_ACK_UPLOAD_BATCH,
+                self::ENACH_ACK_UPLOAD_DATE,
+                self::ENACH_ACK_UPDATE_DATE,
+                self::ENACH_ACK_SOLE_ID,
             ],
         ],
 
