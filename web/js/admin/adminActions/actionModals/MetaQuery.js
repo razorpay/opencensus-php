@@ -55,8 +55,7 @@ export default function MetaQuery() {
 }
 
 const openQueryModal = queryDump => {
-  const isCreateTableQuery =
-    !!(queryDump && queryDump[0]['Create Table']) || false;
+  const isCreateTableQuery = !!(queryDump && queryDump[0]['Create Table']);
 
   openModal(
     <BaseModal header="Response">
