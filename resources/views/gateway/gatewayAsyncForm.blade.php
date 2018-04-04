@@ -26,12 +26,6 @@
       text-align: center;
     }
 
-    .card {
-      padding: 24px;
-      background: #fff;
-      margin: 24px 0;
-    }
-
     .spin {
       width: 60px;
       height: 60px;
@@ -55,7 +49,7 @@
     }
 
     .spin2 {
-      margin: -60px auto 20px;
+      margin: -60px auto 0;
     }
 
     .spin2 div {
@@ -63,22 +57,22 @@
     }
 
     #spinner {
-      padding: 15px 0 10px;
+      margin: 20px 0 60px;
     }
 
     #content {
-      max-width: 480px;
+      max-width: 400px;
       margin: 0 auto;
-      padding: 24px;
+      padding: 10px;
       box-sizing: border-box;
       position: relative;
     }
 
-    .loadingcard {
+    .card {
       background: white;
-      padding: 40px 0 0;
       border-radius: 2px;
       box-shadow: 0px 4px 20px rgba(0,0,0,0.10);
+      padding-bottom: 1px;
     }
 
     #message-txt b {
@@ -88,8 +82,9 @@
     }
 
     #message-txt {
+      line-height: 26px;
+      padding: 50px 30px 30px;
       font-size: 16px;
-      margin-top: 12px;
       opacity: 0.8;
     }
 
@@ -97,8 +92,9 @@
       padding: 24px;
     }
 
-    .buttons div {
-      padding: 15px;
+    .buttons {
+      margin-top: 18px;
+      line-height: 56px;
     }
 
     #retry-btn {
@@ -113,7 +109,6 @@
 
     #cancel-btn {
       color: #3395ff;
-      margin-top: 40px;
       border-top: 1px solid #ececec;
       cursor: pointer;
     }
@@ -130,14 +125,9 @@
       <img src="https://cdn.razorpay.com/logo.svg" id="logo" height="28px" style="height: 28px; margin: 20px auto;display: block;">
     </div>
 
-    <div class="loadingcard">
+    <div class="card">
       <div id='message-txt'>
-        @if ($data['data']['type'] === 'intent')
-          <b>Select UPI App</b>
-          Payment will be made to Razorpay's VPA
-        @else
-          Please accept collect request from Razorpay's VPA in your UPI app
-        @endif
+        Please accept collect request from Razorpay's VPA in your UPI app
       </div>
 
       <div id="spinner">
@@ -224,7 +214,6 @@
         }
 
         setTimeout(function() {
-
           var xhr = new XMLHttpRequest();
           xhr.open('get', url, true);
 
@@ -281,29 +270,43 @@
       var intent_url = data.data.intent_url;
 
       function initUpiActivity() {
-        gel('retry-btn').className = 'hide';
-        CheckoutBridge.callNativeIntent(intent_url);        
-      }
-      initUpiActivity();
-
-      window.pollStatus = function(resp) {
-        if (!Object.keys(resp).length || /txnid=(undefined|null)/i.test(resp.response)) {
-          gel('cancel-btn').className = '';
-          gel('retry-btn').className = '';
+        try {
+          CheckoutBridge.callNativeIntent(intent_url);
           gel('spinner').className = 'hide';
-        } else {
-          gel('cancel-btn').className = 'hide';
           gel('retry-btn').className = 'hide';
-          gel('message-txt').innerHTML = "Please wait...";
-          fetch(poll_url, 1);
+          gel('message-txt').innerHTML = '<b>Select UPI App</b>Payment will be made to Razorpay\'s VPA';
+          window.pollStatus = function(resp) {
+            if (!Object.keys(resp).length || /txnid=(undefined|null)/i.test(resp.response)) {
+              gel('cancel-btn').className = '';
+              gel('retry-btn').className = '';
+              gel('spinner').className = 'hide';
+            } else {
+              fetchWait(poll_url, 1);
+            }
+          }
+        } catch(e) {
+          track('android_error', {
+            error: e.message
+          })
         }
       }
-    } else {
-      fetch(request_url)
+      initUpiActivity();
+    }
+
+    if (!window.pollStatus) {
+      fetch(request_url);
     }
 
     gel('cancel-btn').onclick = function() {
-      fetch(cancel_url);
+      fetchWait(cancel_url);
+    }
+
+    function fetchWait(url) {
+      gel('spinner').className = '';
+      gel('cancel-btn').className = 'hide';
+      gel('retry-btn').className = 'hide';
+      gel('message-txt').innerHTML = "Please wait...";
+      fetch(url, 1);
     }
 
   </script>
