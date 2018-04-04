@@ -9,7 +9,7 @@ import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
-import { isBlank, stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
+import { isBlank, getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import { saveInvoice } from 'merchant/modules/invoices/list';
 import { required, phone, email, amount } from 'rzp/utils/validators';
 import { showNotification } from 'rzp/modules/notifications';
@@ -205,7 +205,7 @@ export default class CreatePaymentLink extends Component {
         window.rzpAnalytics({
           eventCategory: 'Dashboard - Payment Links',
           eventAction: `Submit Form - ${isEdit ? 'Edit' : 'New'} Payment Link`,
-          eventLabel: stringifyQueryParamsWithPipe(params),
+          eventLabel: getKeysSeparatedByPipe(params),
         });
 
         this.props.onSave(invoice);
@@ -288,7 +288,7 @@ export default class CreatePaymentLink extends Component {
 
                 <div class="form-group">
                   <label class="col-md-3 control-label help-label label-required">
-                    Summary
+                    Payment For
                   </label>
                   <div class="col-md-8">
                     <Field
@@ -300,6 +300,10 @@ export default class CreatePaymentLink extends Component {
                       validate={required('Please enter the summary')}
                       disabled={isEdit}
                     />
+                    <span class="help-block label--secondary">
+                      <i class="i i-info-outline" />
+                      This will be visible to the customer
+                    </span>
                   </div>
                 </div>
 
@@ -372,6 +376,7 @@ export default class CreatePaymentLink extends Component {
               <div class="col-md-4">
                 <Field
                   name="customer[contact]"
+                  id="customer_contact"
                   component={InputField}
                   class="form-control"
                   placeholder="Phone"
@@ -386,6 +391,7 @@ export default class CreatePaymentLink extends Component {
               <div class="col-md-4 or-separator">
                 <Field
                   name="customer[email]"
+                  id="customer_email"
                   component={InputField}
                   class="form-control"
                   placeholder="Email"
@@ -455,6 +461,11 @@ export default class CreatePaymentLink extends Component {
                     name="sms_notify"
                     component="input"
                     type="checkbox"
+                    onChange={e => {
+                      if (e.target.checked) {
+                        document.getElementById('customer_contact').focus();
+                      }
+                    }}
                     disabled={isEdit}
                   />
                   SMS
@@ -463,6 +474,11 @@ export default class CreatePaymentLink extends Component {
                   <Field
                     name="email_notify"
                     component="input"
+                    onChange={e => {
+                      if (e.target.checked) {
+                        document.getElementById('customer_email').focus();
+                      }
+                    }}
                     type="checkbox"
                     disabled={isEdit}
                   />

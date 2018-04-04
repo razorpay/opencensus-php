@@ -11,7 +11,20 @@ import { adminPost } from 'common/fetch';
 
 export default ({ props, merchantId }) => {
   function onSubmit(body) {
-    const tags = body.tags ? body.tags.split(',').map(tag => tag.trim()) : [];
+    let tags = [];
+    if (body.tags) {
+      body.tags.split(',').forEach(tag => {
+        tag = typeof tag === 'string' && tag.trim();
+        if (tag) {
+          tags.push(tag);
+        }
+      });
+    }
+
+    if (tags.length === 0) {
+      notifyError('Tags cannot be empty');
+      return;
+    }
 
     return adminPost({
       url: `live/merchants/${merchantId}/tags`,

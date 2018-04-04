@@ -69,6 +69,6 @@ const fields = [
   ['Recipient', item => item.recipient],
   ['Subject', item => item.message.headers.subject],
   ['Failure Reason', item => item.reason],
-  ['Tags', item => <pre>{item.tags.join('\n')}</pre>],
+  ['Tags', item => <pre class="duplex-json">{item.tags.join('\n')}</pre>],
   ['Timestamp', item => new Date(1e3 * item.timestamp).toString()],
 ];

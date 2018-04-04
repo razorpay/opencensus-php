@@ -104,7 +104,6 @@ export default class WizardItem extends Component {
           type: 'success',
           message,
         });
-        this.updateActivationProgress();
       })
       .catch(err => {
         this.setState({
@@ -136,7 +135,6 @@ export default class WizardItem extends Component {
           type: 'success',
           message: 'File uploaded successfully',
         });
-        this.updateActivationProgress();
       })
       .catch(({ errors }) => {
         this.props.showNotification({
@@ -153,13 +151,6 @@ export default class WizardItem extends Component {
   goNext = () => {
     this.props.gotoTab(this.props.step + 1);
   };
-
-  updateActivationProgress() {
-    return this.props.fetchUser().then(response => {
-      document.querySelector('#activationNav b').innerHTML =
-        response.data.activation_progress;
-    });
-  }
 
   render() {
     let WizardForm = FORM_COMPONENTS[this.props.form];

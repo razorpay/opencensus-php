@@ -54,18 +54,26 @@ class Tooltip extends Component {
     let tooltipLeft = 0,
       tooltipTop = 0,
       paddingTop = 0,
-      paddingLeft = 0;
+      paddingLeft = 0,
+      paddingBottom = 0;
 
     // TODO: need to handle other alignment options also
-    if (align === 'bottom') {
+    if (align === 'bottom' || align === 'top') {
       tooltipLeft = left + width / 2 - tooltipWidth / 2;
+
       tooltipTop = top;
 
-      if (!this.props.followPointer) {
-        tooltipTop += height;
-      }
+      if (align === 'bottom') {
+        if (!this.props.followPointer) {
+          tooltipTop += height;
+        }
 
-      paddingTop = gutter;
+        paddingTop = gutter;
+      } else {
+        tooltipTop -= tooltipHeight + height;
+
+        paddingBottom = gutter;
+      }
     } else if (align === 'right') {
       tooltipLeft = left;
 
@@ -88,8 +96,9 @@ class Tooltip extends Component {
       node.style.left = tooltipLeft + 'px';
       node.style.paddingLeft = paddingLeft + 'px';
       node.style.paddingTop = paddingTop + 'px';
+      node.style.paddingBottom = paddingBottom + 'px';
     } else {
-      node.style.top = tooltipTop + paddingTop + 'px';
+      node.style.top = tooltipTop + paddingTop - paddingBottom + 'px';
       node.style.left = tooltipLeft + paddingLeft + 'px';
     }
 

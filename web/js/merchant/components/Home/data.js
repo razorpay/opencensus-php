@@ -18,14 +18,20 @@ const paymentMethodsOrder = [
     'wallet',
     'bank transfer',
     'emi',
+    'emandate',
   ],
-  platformColorMap = {
-    desktop: namedColors.blue,
-    mweb: namedColors.orange,
-    android: namedColors.androidGreen,
-    ios: namedColors.lightBlue,
-    others: namedColors.red,
-  },
+  platformsOrder = ['desktop', 'mweb', 'android', 'ios', 'others'],
+  platformColors = [
+    namedColors.blue,
+    namedColors.orange,
+    namedColors.androidGreen,
+    namedColors.lightBlue,
+    namedColors.red,
+  ],
+  platformColorMap = platformsOrder.reduce((result, platform, index) => {
+    result[platform] = platformColors[index];
+    return result;
+  }, {}),
   paymentMethodsColorMap = paymentMethodsOrder.reduce(
     (result, method, index) => {
       result[method] = colors[index];
@@ -63,6 +69,8 @@ export {
   API_INVALID_RESP,
   OLDEST_TXN_ERROR,
   isMobileDevice,
+  platformsOrder,
   getPlatformColor,
+  paymentMethodsOrder,
   getPaymentMethodColor,
 };

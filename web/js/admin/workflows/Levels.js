@@ -32,7 +32,7 @@ export default class Levels extends Component {
             roles={this.props.roles}
           />
         ))}
-        <div class="btn" onClick={this.addLevel}>
+        <div class="btn btn-default" onClick={this.addLevel}>
           + Add Step
         </div>
       </div>

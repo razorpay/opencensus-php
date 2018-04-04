@@ -24,6 +24,14 @@ export default class Model extends BaseModel {
     adminsMap: {},
   };
 
+  //Following properties are deeply nested into merchant details, hence create a diff observalble for it.
+  @observable
+  activationReview = {
+    issue_fields: [],
+    issue_fields_reason: '',
+    internal_notes: '',
+  };
+
   constructor({ merchantId, fetchFn }) {
     super();
     this.fetchFn = fetchFn;
@@ -48,6 +56,15 @@ export default class Model extends BaseModel {
       if (data) {
         this.setAutoRefundDelay(data);
         this.merchant.details = data;
+
+        //pre-fill props related to review activation fields
+        this.activationReview = {
+          issue_fields: data.merchant_details.issue_fields
+            ? data.merchant_details.issue_fields.split(',')
+            : [],
+          issue_fields_reason: data.merchant_details.issue_fields_reason || '',
+          internal_notes: data.merchant_details.internal_notes || '',
+        };
       }
 
       // TODO: Ensure rendering happpens on resolve of each below otherwise data will update but not merchant object, hence no re-rendering. Or take out each property instead of putting inside merchant object
@@ -287,6 +304,17 @@ export default class Model extends BaseModel {
     this.merchant = { ...this.merchant }; // To force re-render the view
   }
 
+  updateScheduleTask(data) {
+    let scheduleTaskToUpdate = this.merchant.scheduleTasks.find(
+      task => task.method == data.method // double equal is to handle 'method:null - All' case
+    );
+
+    this.merchant.scheduleTasks.remove(scheduleTaskToUpdate);
+    this.merchant.scheduleTasks.push(data);
+
+    this.merchant = { ...this.merchant }; // To force re-render the view
+  }
+
   /**
    * Sets the auto refund delay value and type.
    * `data` is passed by reference.
@@ -338,5 +366,19 @@ export default class Model extends BaseModel {
         }
       }
     });
+  }
+
+  @action
+  editIssuesList(selectedIssue) {
+    //toggle issue from the issues list
+    const foundIndex = this.activationReview.issue_fields.indexOf(
+      selectedIssue
+    );
+
+    if (foundIndex > -1) {
+      this.activationReview.issue_fields.splice(foundIndex, 1);
+    } else {
+      this.activationReview.issue_fields.push(selectedIssue);
+    }
   }
 }

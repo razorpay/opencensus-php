@@ -10,6 +10,10 @@ moment.updateLocale('en', {
   },
 });
 
+export function isDefined(value) {
+  return typeof value !== 'undefined';
+}
+
 export function titleCase(sentence) {
   return (sentence || '')
     .split(/\s+|_/)
@@ -266,18 +270,14 @@ const periods = {
   weekly: 'Week',
   monthly: 'Month',
   yearly: 'Year',
+  daily: 'Day',
 };
 
 export const getIntervalCycle = (interval, period) => {
-  switch (interval) {
-    case 1:
-      return `Every ${periods[period]}`;
-
-    case 2:
-      return `Bi-${titleCase(period)}`;
-
-    default:
-      return `Once in ${interval} ${periods[period]}s`;
+  if (interval === 1) {
+    return `Every ${periods[period]}`;
+  } else {
+    return `Once in ${interval} ${periods[period]}s`;
   }
 };
 
@@ -300,7 +300,9 @@ export const flattenObject = (object, delimeter = '.') => {
   for (let i = 0; i < keys.length; i++) {
     let key = keys[i];
     let val = object[key];
-    if (typeof val === 'object') {
+
+    // if the value is an object and not falsy (null)
+    if (typeof val === 'object' && !!val) {
       var _obj = flattenObject(val, delimeter);
       var _keys = Object.keys(_obj);
       for (var j = 0; j < _keys.length; j++) {
@@ -464,3 +466,35 @@ export const isWebkit =
     : false;
 
 export { acronyms, shortenText };
+
+/**
+ * Method to create a query string separated by | instead of &
+ * @param {Object} params
+ * @return {String}
+ */
+export const getKeysSeparatedByPipe = params => {
+  if (!params) return '';
+
+  params = flattenObject(params, '_');
+
+  let keys = Object.keys(params);
+  for (let i = 0; i < keys.length; i++) {
+    let key = keys[i],
+      val = params[key];
+
+    // Remove keys that don't contain a value.
+    if (val === null || val === undefined || val === '' || val == 0) {
+      delete params[key];
+    }
+  }
+
+  // Stringify all the other keys and return the string.
+  return Object.keys(params).join('|');
+};
+
+/**
+ * Remove all white spaces from a given string
+ **/
+export const trim = str => {
+  return str.replace(/\s+/g, '');
+};

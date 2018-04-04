@@ -16,6 +16,7 @@ import {
   humanReadableIndianCurrency,
 } from 'rzp/utils/numerals';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import GenericTooltip from 'rzp/ui/Tooltip';
 
 import { tabsMeta, breakdownVals } from './data';
 import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
@@ -216,22 +217,32 @@ class Panel extends Component {
             )}
           <div className="panel-actions pull-right">
             <BtnGroup
-              className="panel-action-item"
+              className="panel-action-item time-breakdown"
               value={selectedBreakdown}
               onChange={this.handleBreakdownChange}
             >
               {breakdownVals.map((item, index) => {
                 const btnProps = {
-                  value: item.value,
-                  key: index,
-                  className: 'btn-default',
-                };
+                    value: item.value,
+                    key: index,
+                    className: 'btn-default',
+                  },
+                  isEnabled = item.isEnabled(startDate, endDate);
 
-                if (!item.isEnabled(startDate, endDate)) {
+                if (!isEnabled) {
                   btnProps.disabled = 'disabled';
                 }
 
-                return <Btn {...btnProps}>{item.title}</Btn>;
+                return (
+                  <Btn {...btnProps}>
+                    <span>{item.title}</span>
+                    {!isEnabled && (
+                      <GenericTooltip align="top">
+                        {item.disabledText}
+                      </GenericTooltip>
+                    )}
+                  </Btn>
+                );
               })}
             </BtnGroup>
             {showGrouping &&

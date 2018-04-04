@@ -13,7 +13,7 @@ import {
   createdAt,
 } from 'rzp/ui/item/pair';
 
-import { stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 @connect(state => state.orders, { fetchAll })
 export default class OrdersListContainer extends ListContainer {
@@ -25,7 +25,7 @@ export default class OrdersListContainer extends ListContainer {
   }
 
   onSearchAnalytics = params => {
-    const label = stringifyQueryParamsWithPipe(params);
+    const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
       window.rzpAnalytics({
         eventCategory: 'Dashboard - Orders',
