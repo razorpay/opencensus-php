@@ -68,28 +68,24 @@ class EnachRbl extends Base
     }
 
     /**
-     * @param  array $row
+     * @param  array $entry
      * @return array
      */
-    protected function getDataFromRow(array & $row): array
+    protected function getDataFromRow(array & $entry): array
     {
-
-
-
-        $details = $row['MndtAccptncRpt']['UndrlygAccptncDtls'];
-        $headerRow = $row['MndtAccptncRpt']['GrpHdr'];
-
-        $originalMandate = $details['OrgnlMndt']['OrgnlMndt'];
-        $status = trim($details['AccptncRslt']['Accptd']);
+        // TODO: FIX!
+        $status = 'true';
+        // TODO: FIX!
+        $referenceId = 'check';
 
         return [
-            self::PAYMENT_ID         => trim($originalMandate['MndtReqId']),
-            self::UMRN               => trim($originalMandate['MndtId']),
-            self::REFERENCE_ID       => $headerRow['MsgId'],
-            self::ACKNOWLEDGE_STATUS => $status,
-            self::ACCOUNT_NUMBER     => trim($originalMandate['DbtrAcct']['Id']['Othr']['Id']),
-            self::TOKEN_STATUS       => $this->getTokenStatus($status),
-            self::ERROR_MESSAGE      => $this->getTokenErrorMessage($status),
+            self::PAYMENT_ID            => $entry[Batch\Header::ENACH_ACK_REF_1],
+            self::UMRN                  => $entry[Batch\Header::ENACH_ACK_UMRN],
+            self::REFERENCE_ID          => $referenceId,
+            self::ACKNOWLEDGE_STATUS    => $status,
+            self::ACCOUNT_NUMBER        => $entry[Batch\Header::ENACH_ACK_ACNO],
+            self::TOKEN_STATUS          => $this->getTokenStatus($status),
+            self::ERROR_MESSAGE         => $this->getTokenErrorMessage($status),
         ];
     }
 
