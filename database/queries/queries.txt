@@ -3449,3 +3449,6 @@ ALTER TABLE customers
 
 ALTER TABLE invoices
     ADD COLUMN customer_gstin VARCHAR(20) DEFAULT NULL AFTER customer_contact;
+
+ALTER TABLE tokens
+    ADD INDEX tokens_recurring_status_index (recurring_status);
