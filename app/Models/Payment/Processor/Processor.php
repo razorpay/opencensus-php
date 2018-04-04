@@ -1916,14 +1916,14 @@ class Processor
                 Payment\Entity::ID => $payment->getId(),
             ]);
 
-        $currentTime = $payment->generateAcknowledgedAtTimestamp();
-
         $this->mutex->acquireAndRelease($payment->getId(),
-            function() use ($payment, $currentTime)
+            function() use ($payment)
             {
                 $this->repo->reload($payment);
 
                 $payment->getValidator()->acknowledgeValidate();
+
+                $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
                 $payment->setAcknowledgedAt($currentTime);
 
@@ -1936,7 +1936,7 @@ class Processor
             TraceCode::PAYMENT_ACKNOWLEDGED,
             [
                 Payment\Entity::ID              => $payment->getId(),
-                Payment\Entity::ACKNOWLEDGED_AT => $currentTime
+                Payment\Entity::ACKNOWLEDGED_AT => $payment->getAcknowledgedAt()
             ]);
     }
 }

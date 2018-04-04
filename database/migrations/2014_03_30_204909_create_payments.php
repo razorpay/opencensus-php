@@ -178,20 +178,16 @@ class CreatePayments extends Migration
                   ->nullable();
 
             $table->tinyInteger(Payment::REFERENCE3)
-                  ->nullable()
-                  ->default(null);
+                  ->nullable();
 
             $table->tinyInteger(Payment::REFERENCE4)
-                  ->nullable()
-                  ->default(null);
+                  ->nullable();
 
             $table->integer(Payment::REFERENCE5)
-                  ->nullable()
-                  ->default(null);
+                  ->nullable();
 
             $table->integer(Payment::REFERENCE6)
-                  ->nullable()
-                  ->default(null);
+                  ->nullable();
 
             $table->string(Payment::REFERENCE7)
                   ->nullable();
@@ -201,8 +197,7 @@ class CreatePayments extends Migration
 
             $table->bigInteger(Payment::REFERENCE9)
                   ->unsigned()
-                  ->nullable()
-                  ->default(null);
+                  ->nullable();
 
             $table->tinyInteger(Payment::SIGNED)
                   ->default(0);

@@ -765,13 +765,23 @@ class Validator extends Base\Validator
         if ($payment->hasBeenCaptured() === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
+                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED,
+                [
+                    Entity::ID              => $payment->getId(),
+                    Entity::STATUS          => $payment->getStatus(),
+                    Entity::ACKNOWLEDGED_AT => $payment->getAcknowledgedAt(),
+                ]);
         }
 
         if ($payment->isAcknowledged() === true)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_ACKNOWLEDGED);
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_ACKNOWLEDGED,
+                [
+                    Entity::ID              => $payment->getId(),
+                    Entity::STATUS          => $payment->getStatus(),
+                    Entity::ACKNOWLEDGED_AT => $payment->getAcknowledgedAt(),
+                ]);
         }
     }
 }
