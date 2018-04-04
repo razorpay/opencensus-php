@@ -1915,7 +1915,7 @@ class Processor
         $this->mutex->acquireAndRelease($payment->getId(),
             function() use ($payment, $currentTime)
             {
-                $payment->reload();
+                $this->repo->reload($payment);
 
                 if ($payment->isCaptured() === false)
                 {
