@@ -98,12 +98,8 @@
     }
 
     #retry-btn {
-      display: block;
       background: #3395ff;
       color: #fff;
-      border: 0;
-      border-bottom-left-radius: 2px;
-      border-bottom-right-radius: 2px;
       cursor: pointer;
     }
 
@@ -190,6 +186,7 @@
 
     function submitForm(response) {
       if (CheckoutBridge) {
+        alert(JSON.stringify(response));
         CheckoutBridge.oncomplete(JSON.stringify(response));
       } else {
         gel('form').setAttribute('action', callback_url);
