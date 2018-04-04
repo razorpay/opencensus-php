@@ -64,12 +64,6 @@ class AcknowledgeTest extends TestCase
 
         $testData['request']['url'] = '/payments/' . $payment['id'] . '/acknowledge';
 
-        $response = $this->sendRequest($testData['request']);
-
-        $response->assertStatus(204);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertNotNull( $payment['acknowledged_at']);
+        $this->startTest($testData);
     }
 }
