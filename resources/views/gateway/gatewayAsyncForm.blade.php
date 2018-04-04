@@ -188,13 +188,17 @@
       })
     }
 
+    {{-- submit form redirects to callback_url
+        or, in case of anrdoid app, it calls CheckoutBridge.oncomplete --}}
     var submitted_count = 0;
     function submitForm(response) {
-      // track if page not closed after 4s of calling submitForm
+      {{-- track if page not closed after 4s of calling submitForm --}}
       setTimeout(function() {
         track('no_redirect', {
           count: ++submitted_count
         });
+
+        {{-- try to submit 5 times --}}
         if (submitted_count < 5) {
           submitForm();
         }
@@ -211,7 +215,7 @@
       var totalCalls = 0;
       function fetchAgain() {
         totalCalls++;
-        // 5 minutes
+        {{-- 5 minutes --}}
         if (totalCalls > 70 && !(totalCalls % 10)) {
           track('call_count', {
             count: totalCalls,
