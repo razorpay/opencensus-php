@@ -201,6 +201,26 @@
       $('log').innerHTML += '<br>blur ' + Date.now().toString().slice(-6);
     }
 
+    // Adds a hash to the URL
+    var addHash = function () {
+      if (!location.hash) {
+        window.location.hash = 'pay';
+      }
+    }
+    onhashchange = addHash;
+
+    // Method to call when page loads.
+    var loadMethod = function () {
+      if (typeof history !== 'undefined') {
+        // Push current URL to history.
+        history.pushState({}, document.title, location.href);
+        // Add hash to page.
+        addHash();
+      }
+    }
+    loadMethod();
+
+
     function track(name, properties) {
       setTimeout(function() {
         properties.CheckoutBridge = !!CheckoutBridge;
