@@ -168,6 +168,8 @@
     var lastPollTS;
     var threshold = 1000 * 5; // 15 seconds
     var lastFocus;
+    var pollRetriesOnError = 5;
+    var pollRetriesSoFar = 0;
 
     onfocus = function() {
       var now = Date.now();
@@ -320,7 +322,16 @@
                   ) {
                     return submitForm(json);
                   }
-                } catch(e) {}
+                } catch(e) {
+                  track('ajax_onerror', {
+                    status: xhr.status,
+                    url: url
+                  });
+                  if (pollRetriesSoFar < pollRetriesOnError) {
+                    pollRetriesSoFar++;
+                    fetchAgain(timeout || 4000);
+                  }
+                }
               }
 
               track('unexpected', {
