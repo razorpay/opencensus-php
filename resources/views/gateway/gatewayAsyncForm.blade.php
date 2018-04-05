@@ -113,6 +113,10 @@
       display: none !important;
     }
 
+    form {
+      visibility: hidden;
+    }
+
   </style>
 </head>
 <body>
@@ -137,12 +141,12 @@
       </div>
     </div>
 
-    <form id='form' method="POST">
-    </form>
+    <form method="post"></form>
     <form id="form2" name="form2">
-      <input type="hidden" name="type" value="{{$data['data']['type']}}">
-      <input type="hidden" name="gateway" value="{{$data['data']['gateway']}}">
+      <input name="type" value="{{$data['data']['type']}}">
+      <input name="gateway" value="{{$data['data']['gateway']}}">
     </form>
+    <div id="log"></div>
   </div>
 
   <script type="text/javascript">
@@ -155,9 +159,20 @@
     var payment_base = '{{$data["api"]}}/v1/payments/' + data.payment_id;
     var cancel_url = payment_base + '/cancel?key_id='+key_id;
     var callback_url = payment_base + '/redirect_callback?key_id='+key_id;
-    var gel =  document.getElementById.bind(document);
+    var $ =  document.getElementById.bind(document);
+    var form = $('form');
     var CheckoutBridge = window.CheckoutBridge;
     var isIntentFlow = CheckoutBridge && data.type === 'intent';
+
+    var xhr;
+
+    onfocus = function() {
+      $('log').innerHTML += '<br>focus ' + Date.now().toString().slice(-6);
+    }
+
+    onblur = function() {
+      $('log').innerHTML += '<br>blur ' + Date.now().toString().slice(-6);
+    }
 
     function track(name, properties) {
       setTimeout(function() {
@@ -180,16 +195,19 @@
         };
         
         if (key_id.slice(0, 5) === 'rzp_t') return console.log(payload);   
-        var xhr = new XMLHttpRequest();
-        xhr.open('post', 'https://lumberjack.razorpay.com/v1/track', true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.send('key=MC40OTMwNzgyMDM3MDgwNjI3Nw9YnGzW&data=' +
+        var call = new XMLHttpRequest();
+        call.open('post', 'https://lumberjack.razorpay.com/v1/track', true);
+        call.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        call.send('key=MC40OTMwNzgyMDM3MDgwNjI3Nw9YnGzW&data=' +
                  encodeURIComponent(btoa(JSON.stringify(payload))));        
       })
     }
 
-    {{-- submit form redirects to callback_url
-        or, in case of anrdoid app, it calls CheckoutBridge.oncomplete --}}
+    {{--
+      submit form redirects to callback_url
+      or, in case of anrdoid app, call CheckoutBridge.oncomplete
+    --}}
+
     var submitted_count = 0;
     function submitForm(response) {
       {{-- track if page not closed after 4s of calling submitForm --}}
@@ -197,17 +215,25 @@
         track('no_redirect', {
           count: ++submitted_count
         });
-
-        {{-- try to submit 5 times --}}
-        if (submitted_count < 5) {
+        if (submitted_count && !(submitted_count % 2) && submitted_count < 10) {
           submitForm(response);
         }
       }, 4000);
       if (isIntentFlow) {
         CheckoutBridge.oncomplete(JSON.stringify(response));
       } else {
-        gel('form').setAttribute('action', callback_url);
-        gel('form').submit();
+        if (response && response.type === 'return') {
+          var req = response.request;
+          var content = req.content;
+          form.action = req.url;
+          form.method = req.method;
+          form.innerHTML = Object.keys(content)
+            .map(name => '<input name="' + name + '" value="' + content[name] + '">')
+            .join('')
+        } else {
+          form.action = callback_url;
+        }
+        form.submit();
       }
     }
 
@@ -229,7 +255,7 @@
         }
 
         setTimeout(function() {
-          var xhr = new XMLHttpRequest();
+          xhr = new XMLHttpRequest();
           xhr.open('get', url, true);
 
           xhr.onreadystatechange = function() {
@@ -262,10 +288,6 @@
                     (json.error && json.error.description !== 'The payment has already been processed') ||
                     json.version === 1
                   ) {
-                    /*
-                     * Redirecting to callback_url regardless of whether payment is
-                     * succesful or not
-                     */
                     return submitForm(json);
                   }
                 } catch(e) {}
@@ -300,14 +322,14 @@
       function initUpiActivity() {
         try {
           CheckoutBridge.callNativeIntent(intent_url);
-          gel('spinner').className = 'hide';
-          gel('retry-btn').className = 'hide';
-          gel('message-txt').innerHTML = '<b>Select UPI App</b>Payment will be made to Razorpay\'s VPA';
+          $('spinner').className = 'hide';
+          $('retry-btn').className = 'hide';
+          $('message-txt').innerHTML = '<b>Select UPI App</b>Payment will be made to Razorpay\'s VPA';
           window.pollStatus = function(resp) {
             if (!Object.keys(resp).length || /txnid=(undefined|null)/i.test(resp.response)) {
-              gel('cancel-btn').className = '';
-              gel('retry-btn').className = '';
-              gel('spinner').className = 'hide';
+              $('cancel-btn').className = '';
+              $('retry-btn').className = '';
+              $('spinner').className = 'hide';
             } else {
               fetchWait(request_url);
             }
@@ -324,15 +346,15 @@
       fetch(request_url);
     }
 
-    gel('cancel-btn').onclick = function() {
+    $('cancel-btn').onclick = function() {
       fetchWait(cancel_url);
     }
 
     function fetchWait(url) {
-      gel('spinner').className = '';
-      gel('cancel-btn').className = 'hide';
-      gel('retry-btn').className = 'hide';
-      gel('message-txt').innerHTML = "Please wait...";
+      $('spinner').className = '';
+      $('cancel-btn').className = 'hide';
+      $('retry-btn').className = 'hide';
+      $('message-txt').innerHTML = "Please wait...";
       fetch(url, 1);
     }
 
