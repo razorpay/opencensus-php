@@ -64,6 +64,39 @@ const globalChartOptions = {
   },
 };
 
+const _getChartData = (data, selectedGrouping, canvas) => {
+  /*
+   * Used to specify the color of the series,
+   * For Cumulative graph, we need to render gradient
+   */
+
+  if (
+    !data.histogram ||
+    !selectedGrouping ||
+    selectedGrouping.value !== CUMULATIVE
+  ) {
+    return data.histogram;
+  }
+
+  const ctx = canvas.getContext('2d'),
+    gradient = ctx.createLinearGradient(0, 0, 0, 250),
+    // reducing opacity of primary color
+    startColor = namedColors.primaryColor.replace(/1\)$/, '0.5)');
+
+  gradient.addColorStop(0, startColor);
+  gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+  const { datasets } = data.histogram;
+
+  if (datasets && datasets[0]) {
+    datasets[0].backgroundColor = gradient;
+    datasets[0].borderColor = namedColors.primaryColor;
+    datasets[0].borderWidth = 2;
+  }
+
+  return data.histogram;
+};
+
 /*
  * This component is responsible to show tab content in `KeyMetrics`
  * component.
@@ -213,33 +246,7 @@ class Panel extends Component {
     chartOptions.graphEndDate = endDate.toDate();
     chartOptions.noGrouping = noGrouping;
 
-    const getChartData = canvas => {
-      if (
-        !data.histogram ||
-        !selectedGrouping ||
-        selectedGrouping.value !== CUMULATIVE
-      ) {
-        return data.histogram;
-      }
-
-      const ctx = canvas.getContext('2d'),
-        gradient = ctx.createLinearGradient(0, 0, 0, 250),
-        // reducing opacity of primary color
-        startColor = namedColors.primaryColor.replace(/1\)$/, '0.5)');
-
-      gradient.addColorStop(0, startColor);
-      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-
-      const { datasets } = data.histogram;
-
-      if (datasets && datasets[0]) {
-        datasets[0].backgroundColor = gradient;
-        datasets[0].borderColor = namedColors.primaryColor;
-        datasets[0].borderWidth = 2;
-      }
-
-      return data.histogram;
-    };
+    const getChartData = _getChartData.bind(null, data, selectedGrouping);
 
     return (
       <GenericPanel

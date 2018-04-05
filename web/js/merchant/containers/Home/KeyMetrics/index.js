@@ -41,6 +41,7 @@ import {
   SUCCESS_RATE,
   PLATFORM,
   CUMULATIVE,
+  METHOD,
   tabsOrder,
   tabsMeta,
   getQuery,
@@ -256,6 +257,16 @@ class KeyMetricsContainer extends Component {
   }
 
   tabStateMixin({ tabState, histogram, refreshTinyGraphs }) {
+    /*
+     * Given response from PQL( `histogram` ) , prepares timeline data
+     * required for chart.js using `getTimelineData`, Prepares CSV and Screenshot
+     *
+     * This function will be called whenever the user interacts with
+     * datepicker/breakdown group, or grouping dropdown
+     *
+     * refreshTinyGraphs will be true only when someone changes the dates
+     */
+
     const { selectedGrouping, selectedBreakdown, name: tabName } = tabState,
       tabMeta = tabsMeta[tabName],
       {
@@ -270,6 +281,9 @@ class KeyMetricsContainer extends Component {
         : tabMeta.groupByColumnName,
       { startDate, endDate, sectionTitle } = this.props;
 
+    /*
+     * Preparing options for `getTimelineData`
+     */
     const options = {
       data: histogram.result,
       groupByColumnName,
@@ -284,6 +298,13 @@ class KeyMetricsContainer extends Component {
         : groupByColumnName === CUMULATIVE,
     };
 
+    /*
+     * For Transaction Volume, Number of Transactions and Refunds, we 
+     * group by Payment Method (card , netbanking etc..) and 
+     * Platform (Desktop, Andorid , IOS etc..) , we can get color to be used
+     * for a particular platform from `getPlatformColor`, similarly for 
+     * payment methods from `getPaymentMethodColor`
+     */
     if ([NUM_TRANSACTIONS, TRANSACTION_VOLUME, REFUNDS].indexOf(tabName) >= 0) {
       options.getColor =
         selectedGrouping && selectedGrouping.value === PLATFORM
@@ -291,10 +312,9 @@ class KeyMetricsContainer extends Component {
           : getPaymentMethodColor;
     }
 
-    // TODO: use constants
-    if (options.groupByColumnName === 'method') {
+    if (options.groupByColumnName === METHOD) {
       options.groupOrder = paymentMethodsOrder;
-    } else if (options.groupByColumnName === 'platform') {
+    } else if (options.groupByColumnName === PLATFORM) {
       options.groupOrder = platformsOrder;
     }
 
@@ -310,6 +330,7 @@ class KeyMetricsContainer extends Component {
       );
     }
 
+    // preparing csv and png
     const downloadFileName = `${title}, ${startDate.format(
       csvDateFormat
     )} to ${endDate.format(csvDateFormat)}, ${titleCase(selectedBreakdown)}${
@@ -344,6 +365,12 @@ class KeyMetricsContainer extends Component {
   }
 
   makeQueryForTab(tabName, fetchAllCounts) {
+    /*
+     * gets the query to be made to Harvester,
+     * if fetchAllCounts is true, gets counts and histgram for the first tab in
+     * `tabsOrder` and only counts for the rest of the tabs.
+     */
+
     const {
         selectedFilters,
         selectedGrouping,
@@ -373,6 +400,10 @@ class KeyMetricsContainer extends Component {
   }
 
   fetchOtherTabsHistogram(refreshTinyGraphs) {
+    /*
+     * Makes query and prepares data for tabs other than the selected tab
+     */
+
     const { selectedTab, tabsState } = this.state,
       otherTabs = this.getVisibleTabs().filter(
         tabName => tabName !== selectedTab

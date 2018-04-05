@@ -1,7 +1,5 @@
 /*
  * TODO( pending things ):
- * Popover caret Position
- * Popover right position
  * Multiple trigger events, click, hover ... etc
  */
 

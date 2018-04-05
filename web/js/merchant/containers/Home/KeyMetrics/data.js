@@ -24,7 +24,8 @@ const TRANSACTION_VOLUME = 'transactionVolume',
   SAVED_CARDS = 'savedCards',
   SUCCESS_RATE = 'successRate',
   PLATFORM = 'platform',
-  CUMULATIVE = 'Total';
+  CUMULATIVE = 'Total',
+  METHOD = 'method';
 
 export {
   TRANSACTION_VOLUME,
@@ -33,6 +34,7 @@ export {
   REFUNDS,
   PLATFORM,
   CUMULATIVE,
+  METHOD,
 };
 
 const defaultGroupingVals = [

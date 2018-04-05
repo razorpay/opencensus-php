@@ -31,7 +31,6 @@ class Tour extends Component {
     if (tourActive && tourStep >= 0) {
       children = Children.toArray(children);
       let activeChild = children[tourStep];
-      let {} = activeChild.props;
       let target = activeChild.props.to;
       let $target = document.querySelector(target);
       let targetLensPos = {};

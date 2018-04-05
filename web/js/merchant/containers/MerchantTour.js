@@ -56,7 +56,6 @@ export default class MerchantTour extends Component {
         <Tour
           tourActive={this.state.isTourActive}
           onFinish={this.closeTour}
-          onSkip={() => {}}
           onStepChange={this.setTourStep}
           activeStep={this.state.activeTourStep}
           showOverlay={this.state.showOnboardingTour}
