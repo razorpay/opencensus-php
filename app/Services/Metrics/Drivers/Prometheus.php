@@ -50,6 +50,16 @@ class Prometheus extends Driver
         return $this;
     }
 
+    public function histogram(string $metric, float $value, array $buckets = [], array $dimensions = []): Driver
+    {
+
+        $this->registry
+            ->getOrRegisterHistogram($this->namespace, $metric, null, array_keys($dimensions), $buckets)
+            ->observe($value, array_values($dimensions));
+
+        return $this;
+    }
+
     /**
      * Renders as string metric samples, to be exposed for Prometheus to poll
      * @return string
@@ -65,7 +75,7 @@ class Prometheus extends Driver
      * Pushes collected metrics to configured pushgateway
      * @param string $job
      */
-    public function push(string $job)
+    public function push(string $job = 'pushgateway')
     {
         (new PushGateway($this->config['pushgateway']))->push($this->registry, $job);
     }

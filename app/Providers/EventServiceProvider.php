@@ -61,7 +61,7 @@ class EventServiceProvider extends ServiceProvider
         Queue::after(function (JobProcessed $event)
         {
             // Metrics: Pushes metrics(if any) collected during the job lifetime to push gateway configured
-            Metrics::push('api_queues');
+            Metrics::push();
 
             $this->resetModePostSyncQueueProcessed($event);
         });

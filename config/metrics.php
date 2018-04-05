@@ -7,6 +7,8 @@ return [
     // Default driver to use. Possible values: mock, prometheus
     'default'    => env('METRICS_DEFAULT_DRIVER'),
 
+    'namespace'  => 'api',
+
     // Configurations per driver
     'drivers'    => [
         'mock'       => [],

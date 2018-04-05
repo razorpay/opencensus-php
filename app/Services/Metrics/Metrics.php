@@ -7,10 +7,6 @@ use BadMethodCallException;
 /**
  * Metrics service.
  * Works with various underlying driver implementation.
- *
- * Usage:
- * - Metrics::count('total_hits');                    // Usage default driver per config/metrics.php
- * - Metrics::driver('custom')->count('total_hits');  // Usage custom driver
  */
 class Metrics
 {
@@ -91,11 +87,10 @@ class Metrics
 
         // In cases of corrupt configurations deployed, don't fail critical path. Just work with mock implementation.
         // Also no need to log here, we would come to know of monitoring not working via other means.
-        if (class_exists($impl) === false)
-        {
-            return new Drivers\Mock;
-        }
+        $driverConfig   = $this->config['drivers'][$driver];
+        $driverInstance = class_exists($impl) === true ? new $impl($driverConfig) : new Drivers\Mock($driverConfig);
+        $driverInstance->namespace($this->config['namespace']);
 
-        return new $impl($this->config['drivers'][$driver]);
+        return $driverInstance;
     }
 }
