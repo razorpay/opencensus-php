@@ -17,10 +17,23 @@ export default class DiffModal extends Component {
       let items = [...this.state.items];
 
       Object.keys(response.new).forEach(key => {
+        const isUrl = key.indexOf('url') > -1;
         items.push({
           property: key,
-          old: JSON.stringify(response.old[key]),
-          new: JSON.stringify(response.new[key]),
+          old: isUrl ? (
+            <a href={response.old[key]} target="_blank" class="diff-link">
+              {response.old[key]}
+            </a>
+          ) : (
+            JSON.stringify(response.old[key])
+          ),
+          new: isUrl ? (
+            <a href={response.new[key]} target="_blank" class="diff-link">
+              {response.new[key]}
+            </a>
+          ) : (
+            JSON.stringify(response.new[key])
+          ),
         });
       });
 
