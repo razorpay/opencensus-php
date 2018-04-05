@@ -22,7 +22,7 @@ class Type
     const TEST_APP_ID   = '10000TestAppId';
     const JUSPAY_APP_ID = '100RandomAppId';
 
-    const S2S_APPLICATION__IDS = [
+    const S2S_APPLICATION_IDS = [
         self::TEST_APP_ID,
         self::JUSPAY_APP_ID,
     ];

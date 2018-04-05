@@ -132,7 +132,7 @@ class FeatureAccess
      * Checks if the application requesting to access a feature-based
      * route should be given the access. Returns a boolean.
      *
-     * 1. [simplified] Block access for competitor applications.
+     * 1. Block access for competitor applications.
      * 2. [simplified] Allow access because the app has the feature.
      * 3. [simplified] Allow access because the merchant has the feature.
      *
@@ -152,7 +152,6 @@ class FeatureAccess
 
         if ($this->allowCompetitorApplications() === false)
         {
-            // If they should not be allowed, block them here. Else, proceed for further checks.
             return false;
         }
 
@@ -222,12 +221,10 @@ class FeatureAccess
     protected function allowCompetitorApplications()
     {
         $isCompetitorApplication = in_array($this->ba->getOAuthApplicationId(),
-                                    Feature\Type::S2S_APPLICATION__IDS,
+                                    Feature\Type::S2S_APPLICATION_IDS,
                                     true);
 
-        $isCurrentRouteS2S = in_array($this->route->getCurrentRouteName(), Route::S2S_ROUTES, true);
-
-        if (($isCompetitorApplication === true) and ($isCurrentRouteS2S === true))
+        if (($isCompetitorApplication === true) and ($this->route->isS2SPaymentRoute() === true))
         {
             $isAllowed = $this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_S2S_APPS);
 
