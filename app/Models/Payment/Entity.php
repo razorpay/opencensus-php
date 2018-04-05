@@ -1095,6 +1095,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CAPTURED_AT);
     }
 
+    public function getReceiverType()
+    {
+        return $this->getAttribute(self::RECEIVER_TYPE);
+    }
+
 // ----------------------- Accessor Ends ---------------------------------------
 
     public function isCreated()

@@ -34,6 +34,11 @@ class Entity extends Base\PublicEntity
     const GATEWAY_ACQUIRER              = 'gateway_acquirer';
     const GATEWAY_CLIENT_CERTIFICATE    = 'gateway_client_certificate';
 
+    const MASTERCARD_MPAN               = 'mastercard_mpan';
+    const VISA_MPAN                     = 'visa_mpan';
+    const RUPAY_MPAN                    = 'rupay_mpan';
+    const VPA                           = 'vpa';
+
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';
     const EMI                           = 'emi';
@@ -98,6 +103,10 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_RECON_PASSWORD,
         self::GATEWAY_ACQUIRER,
         self::GATEWAY_CLIENT_CERTIFICATE,
+        self::MASTERCARD_MPAN,
+        self::VISA_MPAN,
+        self::RUPAY_MPAN,
+        self::VPA,
         self::ENABLED
     ];
 
@@ -564,6 +573,26 @@ class Entity extends Base\PublicEntity
         return Type::getEnabledTypes($type);
     }
 
+    public function getMasterCardMpan()
+    {
+        return $this->getAttribute(self::MASTERCARD_MPAN);
+    }
+
+    public function getVisaMpan()
+    {
+        return $this->getAttribute(self::VISA_MPAN);
+    }
+
+    public function getRupayMpan()
+    {
+        return $this->getAttribute(self::RUPAY_MPAN);
+    }
+
+    public function getGatewayVpa()
+    {
+        return $this->getAttribute(self::VPA);
+    }
+
     protected function modifyInternational(& $input)
     {
         if (empty($input[self::INTERNATIONAL]) === true)
@@ -827,6 +856,11 @@ class Entity extends Base\PublicEntity
     public function isPay()
     {
         return ($this->isTypeApplicable(Type::PAY) === true);
+    }
+
+    public function isBharatQr()
+    {
+        return ($this->isTypeApplicable(Type::BHARAT_QR) === true);
     }
 
     public function isInternational()

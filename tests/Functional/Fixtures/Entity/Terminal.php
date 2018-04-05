@@ -42,6 +42,52 @@ class Terminal extends Base
         $this->createSharedEmandateAxisTerminal();
     }
 
+    public function createBharatQrTerminal()
+    {
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'hitachi',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_terminal_id'       => 'abcde',
+            'gateway_acquirer'          => 'ratn',
+            'gateway_terminal_password' => 'abcdef',
+            'card'                      => 1,
+            'mastercard_mpan'           => '4287346823986423',
+            'visa_mpan'                 => '5287346823986423',
+            'rupay_mpan'                => '6287346823986423',
+            'type'                      =>
+                [
+                    Type::NON_RECURRING => '1',
+                    Type::BHARAT_QR => '1',
+                ]
+        ];
+
+        return parent::create($attributes);
+
+    }
+
+    public function createBharatQrTerminalUpi()
+    {
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_icici',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_terminal_id'       => 'abcde',
+            'gateway_acquirer'          => 'ratn',
+            'gateway_terminal_password' => 'abcdef',
+            'upi'                       => true,
+            'vpa'                       => 'random@icici',
+            'type'                      =>
+                [
+                    Type::NON_RECURRING => '1',
+                    Type::BHARAT_QR => '1'
+                ]
+        ];
+
+        return parent::create($attributes);
+
+    }
+
     public function createMultipleNetbankingTerminals()
     {
         $this->createSharedAtomNetbankingTerminal();

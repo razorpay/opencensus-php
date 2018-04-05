@@ -1184,7 +1184,7 @@ class Processor
         $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($subscriptionInvoice->getOrderId());
     }
 
-    protected function buildPaymentEntity(array $input): Payment\Entity
+    public function buildPaymentEntity(array $input): Payment\Entity
     {
         $payment = new Payment\Entity;
 

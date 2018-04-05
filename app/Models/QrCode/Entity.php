@@ -21,6 +21,10 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'qr_code';
 
+    protected $morphClass  = 'qr_code';
+
+    protected $generateIdOnCreate = true;
+
     protected $fillable = [
         self::AMOUNT,
         self::PROVIDER,
@@ -46,8 +50,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT => 'int',
     ];
 
-    protected $generateIdOnCreate = true;
-
     // --------------------- RELATIONS ---------------------
 
     public function source()
@@ -65,9 +67,26 @@ class Entity extends Base\PublicEntity
         return $this->morphMany(FileStore\Entity::class, 'entity');
     }
 
+    public function payments()
+    {
+        return $this->morphMany('RZP\Models\Payment\Entity', 'source');
+    }
+
     // --------------------- END RELATIONS ---------------------
 
     // --------------------- GETTERS ---------------------
+
+    /**
+     * This function is used in case of polymorphic relations where we associate one entity
+     * with multiple other entities using (entity_type and entity_id). It determines the string that
+     * will be stored for entity_type when the association is with the Account entity.
+     *
+     * @return string
+     */
+    public function getMorphClass()
+    {
+        return 'qr_code';
+    }
 
     /**
      * Gets the most recent qrcode file
@@ -119,6 +138,10 @@ class Entity extends Base\PublicEntity
         return 'qrcodes/'. $this->getId();
     }
 
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
+    }
     // --------------------- END GETTERS ---------------------
 
     // --------------------- SETTERS ---------------------
@@ -135,7 +158,7 @@ class Entity extends Base\PublicEntity
 
     public function generateQrString()
     {
-        $qrString = (new Provider)->generateQrString($this);
+        $qrString = (new Provider($this))->generateQrString($this);
 
         $this->setQrString($qrString);
 

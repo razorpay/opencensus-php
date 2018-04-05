@@ -3546,7 +3546,7 @@ trait Authorize
         }
     }
 
-    protected function createCardEntity(array $cardInput, bool $vault, Merchant\Entity $merchant)
+    public function createCardEntity(array $cardInput, bool $vault, Merchant\Entity $merchant, $save = true)
     {
         //
         // Creates card entity. Card number is vaulted if vault is true
@@ -3571,7 +3571,10 @@ trait Authorize
 
         $this->payment->card()->associate($card);
 
-        $this->repo->saveOrFail($card);
+        if ($save === true)
+        {
+            $this->repo->saveOrFail($card);
+        }
 
         return $cardData;
 

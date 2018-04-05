@@ -66,6 +66,18 @@ class CreateTerminals extends Migration
             $table->text(Terminal::GATEWAY_CLIENT_CERTIFICATE)
                   ->nullable();
 
+            $table->string(Terminal::MASTERCARD_MPAN)
+                  ->nullable();
+
+            $table->string(Terminal::VISA_MPAN)
+                ->nullable();
+
+            $table->string(Terminal::RUPAY_MPAN)
+                ->nullable();
+
+            $table->string(Terminal::VPA)
+                ->nullable();
+
             $table->tinyInteger(Terminal::CARD)
                   ->default(0);
 

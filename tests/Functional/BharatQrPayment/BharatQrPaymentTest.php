@@ -24,6 +24,10 @@ class BharatQrPaymentTest extends TestCase
 
         $this->fixtures->merchant->activate();
 
+        $this->fixtures->create('terminal:bharat_qr_terminal');
+
+        $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
     }
 

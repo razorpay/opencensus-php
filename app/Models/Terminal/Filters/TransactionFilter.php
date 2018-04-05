@@ -496,7 +496,7 @@ class TransactionFilter extends Terminal\Filter
     public function bharatQrFilter($terminal)
     {
         if (($this->input['payment']->getReceiverType() === 'qr_code') and
-            ($terminal->getType() !== Terminal\Type::BHARAT_QR))
+            ($terminal->isBharatQr() === false))
         {
             return false;
         }
