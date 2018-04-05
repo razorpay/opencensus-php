@@ -2325,6 +2325,20 @@ final class Route
     const WORKFLOW_APPROVE_ROUTE_NAME = 'action_checker_create';
 
     /**
+     * The OAuth applications will not be able to access these routes on behalf of the merchant, unless,
+     * the merchant has been authorized by the ops team by enabling the feature: allow_s2s_apps.
+     */
+    const S2S_ROUTES = [
+        'payment_create',
+        'payment_create_private',
+        'payment_create_aeps',
+        'payment_create_recurring',
+        'payment_create_private_old',
+        'payment_create_checkout',
+        'payment_create_openwallet',
+    ];
+
+    /**
      * @var Router
      */
     protected $router;
