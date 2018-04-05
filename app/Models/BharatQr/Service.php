@@ -63,9 +63,9 @@ class Service extends Base\Service
 
         $this->determineAndSetModeForQr($qrCodeId);
 
-        $qrData[GatewayResponseParams::GATEWAY] = $gateway;
+        $callbackData['qr_data'][GatewayResponseParams::GATEWAY] = $gateway;
 
-        list($valid, $bharatQr) = $this->core->processPayment($qrData);
+        list($valid, $bharatQr) = $this->core->processPayment($callbackData);
 
         //
         // In case of duplicate notification

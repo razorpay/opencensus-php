@@ -85,11 +85,7 @@ class CreateUpi extends Migration
             $table->integer(Upi::CREATED_AT);
             $table->integer(Upi::UPDATED_AT);
 
-            $table->foreign(Upi::PAYMENT_ID)
-                  ->references(Payment::ID)
-                  ->on(Table::PAYMENT)
-                  ->on_delete('restrict');
-
+            $table->index(Upi::PAYMENT_ID);
             $table->index(Upi::REFUND_ID);
             $table->index(Upi::RECEIVED);
             $table->index(Upi::GATEWAY_PAYMENT_ID);

@@ -25,7 +25,7 @@ class Core extends Base\Core
 
     public function processPayment(array $gatewayInput)
     {
-        $input = $this->getBharatQrInputParams($gatewayInput);
+        $input = $this->getBharatQrInputParams($gatewayInput['qr_data']);
 
         $this->trace->info(
             TraceCode::BHARAT_QR_PAYMENT_PROCESS_REQUEST,

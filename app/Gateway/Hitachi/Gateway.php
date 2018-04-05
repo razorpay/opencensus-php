@@ -46,10 +46,12 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        if ((isset($input['qr_notification']) === true) and
-            ($input['qr_notification'] === true))
+        if ((isset($input['payment']['receiver_type']) === true) and
+            ($input['payment']['receiver_type'] === 'qr_code'))
         {
-            return $this->createGatewayPaymentEntityForQr($input);
+            $this->createGatewayPaymentEntityForQr($input);
+
+            return null;
         }
 
         if ($this->isSecondRecurringPaymentRequest($input) === true)

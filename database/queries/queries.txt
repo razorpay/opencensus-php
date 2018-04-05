@@ -3443,3 +3443,13 @@ ALTER TABLE terminals
     ADD COLUMN visa_mpan varchar(255) DEFAULT NULL after mastercard_mpan,
     ADD COLUMN rupay_mpan varchar(255) DEFAULT NULL after visa_mpan,
     ADD COLUMN vpa varchar(255) DEFAULT NULL after rupay_mpan;
+
+
+ALTER TABLE payments
+    ADD COLUMN receiver_id char(14) DEFAULT NULL after transfer_id,
+    ADD COLUMN receiver_type varchar(255) DEFAULT NULL after recevier_id;
+
+
+alter table hitachi drop foreign key hitachi_payment_id_foreign;
+
+alter table upi drop foreign key upi_payment_id_foreign;

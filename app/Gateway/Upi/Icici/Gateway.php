@@ -71,7 +71,9 @@ class Gateway extends Base\Gateway
         if ((isset($input['payment']['receiver_type']) === true) and
             ($input['payment']['receiver_type'] === 'qr_code'))
         {
-            return $this->createGatewayPaymentEntity($input);
+            $this->createGatewayPaymentEntity($input);
+
+            return null;
         }
 
         if ((isset($input['upi']['flow']) === true) and

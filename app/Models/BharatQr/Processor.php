@@ -21,11 +21,16 @@ class Processor extends VirtualAccount\Processor
 
     protected $gatewayInput;
 
+    protected $callbackData;
+
+    protected $receiver;
     public function __construct( array $gatewayInput, string $provider = null)
     {
         parent::__construct($provider);
 
-        $this->gatewayInput = $gatewayInput;
+        $this->gatewayInput = $gatewayInput['qr_data'];
+
+        $this->callbackData = $gatewayInput['gateway_input'];
     }
 
     /**
@@ -122,7 +127,7 @@ class Processor extends VirtualAccount\Processor
                         {
                             $paymentInput = $this->getBharatQrPaymentArray();
 
-                            $res = $paymentProcessor->process($paymentInput);
+                            $res = $paymentProcessor->process($paymentInput, $this->callbackData);
 
                             $payment = $this->repo
                                             ->payment
@@ -175,6 +180,8 @@ class Processor extends VirtualAccount\Processor
         {
             return null;
         }
+
+        $this->receiver = $qrCode;
 
         $virtualAccount = $this->repo
                                ->virtual_account
@@ -232,6 +239,13 @@ class Processor extends VirtualAccount\Processor
             $paymentArray[Payment\Entity::CONTACT]     = $customer->getContact();
             $paymentArray[Payment\Entity::EMAIL]       = $customer->getEmail();
         }
+
+        $receiverData = [
+            'id'   => $this->receiver->getId(),
+            'type' => 'qr_code',
+        ];
+
+        $paymentArray[Payment\Entity::RECEIVER] = $receiverData;
 
         return $paymentArray;
     }

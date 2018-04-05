@@ -172,7 +172,7 @@ class Processor
         $this->verifyRefundStatus = null;
     }
 
-    public function process(array $input): array
+    public function process(array $input, $gatewayInput = []): array
     {
         $this->setMethodForInput($input);
 
@@ -195,7 +195,7 @@ class Processor
         // This flow is being used for only hosted (Shopify).
         $this->checkSignature($input, $payment);
 
-        return $this->authorize($payment, $input);
+        return $this->authorize($payment, $input, $gatewayInput);
     }
 
     protected function preProcessPaymentInputs(array $input, Payment\Entity $payment)
@@ -1131,7 +1131,7 @@ class Processor
             return;
         }
 
-        $this->receiver = $this->fetchReceiverFromInput($input);
+        $this->receiver = $this->fetchReceiverFromInput($input['receiver']);
 
         $this->trace->info(
             TraceCode::PAYMENT_RECEIVED_ON_RECEIVER,
@@ -1233,9 +1233,9 @@ class Processor
 
     protected function fetchReceiverFromInput(array $input)
     {
-        $entity = $input['entity'];
+        $entity = $input['type'];
 
-        $receiver = $this->$entity->findbyId($input['id']);
+        $receiver = $this->repo->$entity->find($input['id']);
 
         if ($receiver === null)
         {
@@ -1913,25 +1913,6 @@ class Processor
         }
 
         if ($payment->isBankTransfer() === true)
-        {
-            return false;
-        }
-
-        if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
-        {
-            return false;
-        }
-
-        //
-        // TODO: route check to be changed after refactor
-        //
-        // If this is hit while creating a payment, gateway would not have been set yet.
-        // Hence, gateway check in the previous block would not work.
-        // This function is hit in the refund flow also, in which the gateway
-        // would have been set already.
-        // The gateway would be set AFTER the payment is created and processed.
-        //
-        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
         {
             return false;
         }
