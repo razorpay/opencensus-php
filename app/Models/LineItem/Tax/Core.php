@@ -115,7 +115,7 @@ class Core extends Base\Core
             }
             else if ($taxIds !== null)
             {
-                $taxes = $this->repo->tax->findManyByPublicIdsAndMerchant($taxIds, $merchant);
+                $taxes = $this->repo->tax->findManyByPublicIdsForMerchant($taxIds, $merchant);
             }
         }
 

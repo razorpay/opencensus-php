@@ -4,6 +4,9 @@ namespace RZP\Models\Tax;
 
 use RZP\Models\Base;
 use RZP\Models\Item;
+use RZP\Models\Merchant;
+use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
 {
@@ -18,12 +21,45 @@ class Repository extends Base\Repository
      * get triggered.
      *
      * @param Entity $entity
-     *
      */
     public function deleteOrFail($entity)
     {
         $entity->items()->update([Item\Entity::TAX_ID => null]);
 
-        return parent::deleteOrFail($entity);
+        parent::deleteOrFail($entity);
+    }
+
+    /**
+     * @param array           $ids
+     * @param Merchant\Entity $merchant
+     * @param array           $params
+     * @param bool            $shared If true, returns taxes defined on the Shared merchant account as well
+     *
+     * @return PublicCollection
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function findManyByPublicIdsForMerchant(
+        array $ids,
+        Merchant\Entity $merchant,
+        array $params = [],
+        bool $shared = true) : PublicCollection
+    {
+        Entity::verifyIdAndStripSignMultiple($ids);
+
+        $query = $this->getQueryForFindWithParams($params);
+
+        $merchantId = $merchant->getId();
+
+        if ($shared === true)
+        {
+            $merchantIds = [$merchantId, Merchant\Account::SHARED_ACCOUNT];
+            $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
+        }
+        else
+        {
+            $query->merchantId($merchantId);
+        }
+
+        return $query->findManyOrFailPublic($ids);
     }
 }

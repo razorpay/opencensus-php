@@ -5,6 +5,7 @@ namespace RZP\Models\Tax;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Account;
 
 class Entity extends Base\PublicEntity
 {
