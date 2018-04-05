@@ -9,7 +9,6 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Analytics\Entity as Analytics;
 
-
 class ShieldClient
 {
     const RULES = '/rules/';

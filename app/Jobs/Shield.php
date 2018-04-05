@@ -7,7 +7,10 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 use RZP\Models\Risk;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Services\ShieldClient;
+use RZP\Exception\LogicException;
 
 /**
  * Represents asynchronous job to send PAYMENT_CREATED event to Shield
@@ -16,7 +19,13 @@ class Shield extends Job implements ShouldQueue
 {
     use InteractsWithQueue;
 
+    /**
+     * @var string
+     */
     protected $paymentId;
+
+    const ACTION_REVIEW = 'review';
+    const ACTION_BLOCK  = 'block';
 
     public function __construct(string $mode, string $paymentId)
     {
@@ -33,12 +42,14 @@ class Shield extends Job implements ShouldQueue
 
         $app = App::getFacadeRoot();
 
+        /** @var ShieldClient $shield */
         $shield = $app['shield'];
 
         try
         {
             $this->trace->info(TraceCode::SHIELD_JOB_RECEIVED, ['payment_id' => $this->paymentId]);
 
+            /** @var Payment\Entity $payment */
             $payment = $this->repoManager->payment->findOrFail($this->paymentId);
 
             $response = $shield->runFraudCheck($payment);
@@ -50,20 +61,30 @@ class Shield extends Job implements ShouldQueue
             }
 
             $riskData = [];
+            $action   = $response['action'];
 
-            if ($response['action'] === 'block')
+            $fraudType = $reason = null;
+
+            switch ($action)
             {
-                $riskData[Risk\Entity::FRAUD_TYPE] = Risk\Type::CONFIRMED;
-                $riskData[Risk\Entity::REASON] = Risk\RiskCode::PAYMENT_BLOCKED_BY_SHIELD;
-            }
-            else if ($response['action'] === 'review')
-            {
-                $riskData[Risk\Entity::FRAUD_TYPE] = Risk\Type::SUSPECTED;
-                $riskData[Risk\Entity::REASON] = Risk\RiskCode::PAYMENT_FLAGGED_BY_SHIELD;
+                case self::ACTION_BLOCK:
+                    $fraudType = Risk\Type::CONFIRMED;
+                    $reason    = Risk\RiskCode::PAYMENT_BLOCKED_BY_SHIELD;
+                    break;
+
+                case self::ACTION_REVIEW:
+                    $fraudType = Risk\Type::SUSPECTED;
+                    $reason    = Risk\RiskCode::PAYMENT_FLAGGED_BY_SHIELD;
+                    break;
+
+                default:
+                    throw new LogicException('Unexpected shield action: ' . $action);
             }
 
-            $riskEntity = $riskCore->logPaymentForSource(
-                $payment, Risk\Source::SHIELD, $riskData);
+            $riskData[Risk\Entity::FRAUD_TYPE] = $fraudType;
+            $riskData[Risk\Entity::REASON]     = $reason;
+
+            $riskCore->logPaymentForSource($payment, Risk\Source::SHIELD, $riskData);
 
         }
         catch (\Throwable $e)
