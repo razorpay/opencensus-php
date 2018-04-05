@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\Invoice;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Models\Tax\Entity as T;
+use RZP\Models\Tax\Gst\GstTaxIdMap;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -580,6 +582,112 @@ return [
         'exception' => [
             'class'               => BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateInvoiceWithSharedGstTaxes' => [
+        'request' => [
+            'url'    => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'name'          => 'Item #1',
+                        'amount'        => 100000,
+                        'quantity'      => 5,
+                        'tax_ids'       => [
+                            T::getIdPrefix() . GstTaxIdMap::CGST_500,
+                            T::getIdPrefix() . GstTaxIdMap::SGST_500
+                        ],
+                        'tax_inclusive' => false,
+                    ],
+                    [
+                        'name'          => 'Item #2',
+                        'amount'        => 100000,
+                        'quantity'      => 2,
+                        'tax_ids'       => [T::getIdPrefix() . GstTaxIdMap::IGST_2800],
+                        'tax_inclusive' => false,
+                    ],
+                ],
+                'type'     => 'invoice',
+                'draft'    => '0',
+                'customer' => [
+                    'email' => 'test@test.test'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details' => [
+                    'name'    => null,
+                    'email'   => 'test@test.test',
+                    'contact' => null
+                ],
+                'line_items' => [
+                    [
+                        'name'          => 'Item #1',
+                        'description'   => null,
+                        'amount'        => 100000,
+                        'gross_amount'  => 500000,
+                        'tax_amount'    => 50000,
+                        'net_amount'    => 550000,
+                        'currency'      => 'INR',
+                        'tax_inclusive' => false,
+                        'unit'          => null,
+                        'quantity'      => 5,
+                        'taxes'         => [
+                            [
+                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::CGST_500,
+                                'name'       => 'CGST 5%',
+                                'rate'       => 500,
+                                'rate_type'  => 'percentage',
+                                'group_id'   => null,
+                                'group_name' => null,
+                                'tax_amount' => 25000,
+                            ],
+                            [
+                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::SGST_500,
+                                'name'       => 'SGST 5%',
+                                'rate'       => 500,
+                                'rate_type'  => 'percentage',
+                                'group_id'   => null,
+                                'group_name' => null,
+                                'tax_amount' => 25000,
+                            ],
+                        ],
+                    ],
+                    [
+                        'name'          => 'Item #2',
+                        'description'   => null,
+                        'amount'        => 100000,
+                        'gross_amount'  => 200000,
+                        'tax_amount'    => 56000,
+                        'net_amount'    => 256000,
+                        'currency'      => 'INR',
+                        'tax_inclusive' => false,
+                        'unit'          => null,
+                        'quantity'      => 2,
+                        'taxes'         => [
+                            [
+                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::IGST_2800,
+                                'name'       => 'IGST 28%',
+                                'rate'       => 2800,
+                                'rate_type'  => 'percentage',
+                                'group_id'   => null,
+                                'group_name' => null,
+                                'tax_amount' => 56000,
+                            ],
+                        ],
+                    ],
+                ],
+                'gross_amount'          => 700000,
+                'tax_amount'            => 106000,
+                'amount'                => 806000,
+                'currency'              => 'INR',
+                'description'           => null,
+                'type'                  => 'invoice',
+                'group_taxes_discounts' => false,
+            ],
         ],
     ],
 

@@ -127,6 +127,11 @@ class InvoiceTaxesTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceWithSharedGstTaxes()
+    {
+        $this->startTest();
+    }
+
     /**
      * Tests invoice update, includes removal/addition/updates
      * of line items and taxes.
