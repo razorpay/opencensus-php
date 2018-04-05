@@ -11,6 +11,9 @@ class Type
     const CARD_GT_2K    = 'card_gt_2k';
 
     // Commission on All Methods Except Cards
+    const OTHERS        = 'others';
+
+    // This is kept to support older invoice
     const NON_CARD      = 'non_card';
 
     // Any adjustments made for commission
@@ -21,20 +24,24 @@ class Type
     protected static $typeToSacMap = [
         self::CARD_LTE_2K   => 997158,
         self::CARD_GT_2K    => 997158,
-        self::NON_CARD      => 997158,
+        self::OTHERS        => 997158,
         self::ADJUSTMENT    => 997158,
+        // This is kept to support older invoice
+        self::NON_CARD      => 997158,
     ];
 
     const DEFAULT_DESCRIPTION = 'Commission';
 
     const CARD_LTE_2K_DESCRIPTION   = 'Commission on Card Payments <= INR 2,000';
     const CARD_GT_2K_DESCRIPTION    = 'Commission on Card Payments > INR 2,000';
-    const NON_CARD_DESCRIPTION      = 'Commission on All Methods Except Cards';
+    const OTHERS_DESCRIPTION        = 'Commission on All Methods Except Cards';
 
     protected static $typeToDescriptionMap = [
         self::CARD_LTE_2K   => self::CARD_LTE_2K_DESCRIPTION,
         self::CARD_GT_2K    => self::CARD_GT_2K_DESCRIPTION,
-        self::NON_CARD      => self::NON_CARD_DESCRIPTION,
+        self::OTHERS        => self::OTHERS_DESCRIPTION,
+        // This is kept to support older invoice
+        self::NON_CARD      => self::OTHERS_DESCRIPTION,
     ];
 
     public static function getAllTypes(): array
@@ -42,7 +49,7 @@ class Type
         return [
             self::CARD_LTE_2K,
             self::CARD_GT_2K,
-            self::NON_CARD,
+            self::OTHERS,
         ];
     }
 

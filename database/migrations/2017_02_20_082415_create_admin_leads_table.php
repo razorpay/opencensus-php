@@ -58,6 +58,8 @@ class CreateAdminLeadsTable extends Migration
             $table->foreign(AdminLead::MERCHANT_ID)
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT);
+
+            $table->index(AdminLead::CREATED_AT);
         });
     }
 

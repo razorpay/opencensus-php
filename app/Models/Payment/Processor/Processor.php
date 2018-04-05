@@ -31,6 +31,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
 class Processor
@@ -347,6 +348,8 @@ class Processor
 
     public function processAndReturnFees(array & $input)
     {
+        $this->tracePaymentNewRequest($input);
+
         // Validate if customer is fee bearer then only move forward
         if ($this->merchant->isFeeBearerCustomer() === false)
         {
@@ -377,19 +380,13 @@ class Processor
 
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
 
-        $data = array(
+        $data = [
             'originalAmount'    => $input['amount'],
             'fees'              => $fee,
             'razorpay_fee'      => $fee - $tax,
             'tax'               => $tax,
             'amount'            => $input['amount'] + $fee,
-        );
-
-        // Converts all the amounts to rupees
-        foreach ($data as $key => $value)
-        {
-            $data[$key] = $value / 100;
-        }
+        ];
 
         // Set new input amount and fees
         $input['amount'] = $input['amount'] + $fee;
@@ -951,21 +948,35 @@ class Processor
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
-        $terminal = $this->repo->terminal->fetchForPayment($this->payment);
-
-        if ($terminal === null)
-        {
-            throw new Exception\LogicException(
-                'Terminal should not be null here',
-                null,
-                ['payment_id' => $this->payment->getId()]);
-        }
+        $terminalId = $this->payment->getTerminalId();
 
         $gateway = $this->payment->getGateway();
+
+        $terminal = null;
+
+        // This will be removed after terminal association with bharat qr payments
+        if (($terminalId !== null) or
+            (Payment\Gateway::isValidBharatQrGateway($gateway) === false))
+        {
+            $terminal = $this->repo->terminal->fetchForPayment($this->payment);
+
+            if ($terminal === null)
+            {
+                throw new Exception\LogicException(
+                    'Terminal should not be null here',
+                    null,
+                    ['payment_id' => $this->payment->getId()]);
+            }
+        }
 
         $gatewayData['terminal'] = $terminal;
 
         $gatewayData['merchant'] = $this->payment->merchant;
+
+        if (Payment\Gateway::isValidBharatQrGateway($this->payment->getGateway()) === true)
+        {
+            $gatewayData['bharat_qr'] = $this->repo->bharat_qr->findByPaymentId($this->payment->getId());
+        }
 
         $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . '::' . strtoupper($action);
 
@@ -1221,10 +1232,9 @@ class Processor
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
-            if ($payment->isNetbanking() === true)
+            if ($payment->isTpvMethod() === true)
             {
-                if (($this->merchant->isTPVRequired() === true) or
-                    ($payment->isRecurring() === true))
+                if ($this->merchant->isTPVRequired() === true)
                 {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
@@ -1891,5 +1901,42 @@ class Processor
         $terminal->setEnabled(false);
 
         $this->repo->saveOrFail($terminal);
+    }
+
+    /**
+     * Marks the payment as acknowledged.
+     *
+     * @param Payment\Entity $payment
+     */
+    public function acknowledge(Payment\Entity $payment)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_ACKNOWLEDGE_REQUEST,
+            [
+                Payment\Entity::ID => $payment->getId(),
+            ]);
+
+        $this->mutex->acquireAndRelease($payment->getId(),
+            function() use ($payment)
+            {
+                $this->repo->reload($payment);
+
+                $payment->getValidator()->acknowledgeValidate();
+
+                $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+                $payment->setAcknowledgedAt($currentTime);
+
+                $this->repo->saveOrFail($payment);
+            },
+            20,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_ACKNOWLEDGED,
+            [
+                Payment\Entity::ID              => $payment->getId(),
+                Payment\Entity::ACKNOWLEDGED_AT => $payment->getAcknowledgedAt()
+            ]);
     }
 }

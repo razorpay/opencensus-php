@@ -51,6 +51,7 @@ class CreateHdfcMpr extends Migration
             $table->integer('updated_at');
 
             $table->index('gateway_transaction_id');
+            $table->index('created_at');
         });
     }
 

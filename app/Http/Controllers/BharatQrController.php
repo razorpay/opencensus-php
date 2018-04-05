@@ -7,11 +7,24 @@ use ApiResponse;
 
 class BharatQrController extends Controller
 {
-    public function processBharatQrPayment()
+    public function processBharatQrPayment(string $gateway)
     {
-        $input = Request::all();
+        switch ($gateway)
+        {
+            //
+            // in case of upi icici
+            // input is in form of text
+            //
+            case 'upi_icici' :
+                $input = Request::getContent();
 
-        $response = $this->service()->processPayment($input);
+                break;
+
+            default:
+                $input = Request::all();
+        }
+
+        $response = $this->service()->processPayment($input, $gateway);
 
         return ApiResponse::json($response);
     }

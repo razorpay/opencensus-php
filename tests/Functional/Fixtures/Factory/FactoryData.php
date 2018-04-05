@@ -245,6 +245,18 @@ final class FactoryData
             'postdate' => $faker->hdfcPostDate,
         ]);
 
+        $factory(\RZP\Gateway\Enach\Base\Entity::class, [
+            'id' => $faker->randomNumber(6),
+            'payment_id' => null,
+            'refund_id' => null,
+            'acquirer' => 'ratn',
+            'action' => 'authorize',
+            'bank' => 'UTIB',
+            'amount' => $faker->randomNumber(2),
+            'status' => 'success',
+            'signed_xml' => '<xml>'
+        ]);
+
         $factory(\RZP\Gateway\Atom\Entity::class, [
             'id' => $faker->randomNumber(6),
             'gateway_payment_id' => 'factory:\RZP\Models\Payment\Entity',

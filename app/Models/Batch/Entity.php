@@ -57,6 +57,11 @@ class Entity extends Base\PublicEntity
      */
     const STATS                     = 'stats';
 
+    /**
+     * Constant used for batch multiple fetch api to include settings
+     */
+    const WITH_CONFIG               = 'with_config';
+
     protected static $sign = 'batch';
 
     protected $entity = 'batch';

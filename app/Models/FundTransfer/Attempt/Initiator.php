@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
@@ -78,6 +79,8 @@ class Initiator extends Base\Core
 
             $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
+            $limit = $this->getLimitForChannel($channel);
+
             $attempts = $this->repo
                              ->fund_transfer_attempt
                              ->getCreatedAttemptsBeforeTimestamp(
@@ -85,6 +88,7 @@ class Initiator extends Base\Core
                                  $purpose,
                                  $sourceType,
                                  $channel,
+                                 $limit,
                                  ['source']);
 
             $data[$channel] = $this->processFundTransferAttempts($channel, $attempts);
@@ -136,6 +140,25 @@ class Initiator extends Base\Core
             default:
                 return 1;
         }
+    }
+
+    /**
+     * Returns the maximum number of attempts that can
+     * be processed by a channel in one request.
+     * If null is returned, it means there is no
+     * such limit for that channel.
+     *
+     * @param string $channel
+     * @return int|null
+     */
+    protected function getLimitForChannel(string $channel)
+    {
+        if ($channel === Channel::AXIS)
+        {
+            return 1000;
+        }
+
+        return null;
     }
 
     /**

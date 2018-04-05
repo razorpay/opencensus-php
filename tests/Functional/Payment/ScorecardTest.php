@@ -32,7 +32,7 @@ class ScorecardTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(ScorecardMail::class);
+        Mail::assertSent(ScorecardMail::class);
     }
 
     public function createPaymentEntities()

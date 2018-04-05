@@ -21,6 +21,7 @@ return [
                     'email'     => 'test@razorpay.com',
                     'contact'   => '9999999999',
                     'name'      => 'test',
+                    'gstin'     => '29ABCDE1234L1Z1',
                 ],
                 'line_items'    => [
                     [
@@ -39,6 +40,7 @@ return [
                     'email'   => 'test@razorpay.com',
                     'contact' => '9999999999',
                     'name'    => 'test',
+                    'gstin'   => '29ABCDE1234L1Z1',
                 ],
                 'line_items' => [
                     [

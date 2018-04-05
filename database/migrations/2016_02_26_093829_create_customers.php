@@ -1,13 +1,14 @@
 <?php
 
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
-use RZP\Models\Customer\Entity as Customer;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Customer\Entity as Customer;
 
 class CreateCustomers extends Migration {
 
@@ -36,6 +37,9 @@ class CreateCustomers extends Migration {
             $table->string(Customer::EMAIL, 255)
                   ->nullable();
 
+            $table->string(Customer::GSTIN, 20)
+                  ->nullable();
+
             $table->text(Customer::NOTES);
 
             $table->tinyInteger(Customer::ACTIVE)
@@ -49,8 +53,14 @@ class CreateCustomers extends Migration {
             $table->integer(Customer::DELETED_AT)
                   ->nullable();
 
-            $table->index(Customer::CONTACT);
+            //
+            // Currently laravel does not provide a way to use indexes with
+            // a prefix length in migrations. Actual index length for email
+            // column is 40. Ref https://github.com/laravel/framework/issues/9293
+            //
             $table->index(Customer::EMAIL);
+            $table->index([Customer::CONTACT, Customer::EMAIL, Customer::MERCHANT_ID]);
+            $table->index([Customer::CONTACT, Customer::MERCHANT_ID]);
             $table->index(Customer::CREATED_AT);
 
             $table->foreign(Customer::MERCHANT_ID)

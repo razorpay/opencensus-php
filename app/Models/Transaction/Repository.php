@@ -435,7 +435,7 @@ class Repository extends Base\Repository
     {
         $attributes = [Entity::CHANNEL => $channel];
 
-        $batchedIds = array_chunk($transactionIds, 5000);
+        $batchedIds = array_chunk($transactionIds, 1000);
 
         $count = 0;
 
@@ -629,10 +629,12 @@ class Repository extends Base\Repository
     }
 
     public function fetchFeesAndTaxForTransactionsByType(
-        string $merchantId, int $start, int $end, string $filterType)
+        string $merchantId,
+        int $start,
+        int $end,
+        string $filterType,
+        bool $isCorrection = false)
     {
-        $createdAtCol = $this->dbColumn(Entity::CREATED_AT);
-
         $merchantIdCol = $this->dbColumn(Entity::MERCHANT_ID);
 
         $amountCol = $this->dbColumn(Entity::AMOUNT);
@@ -645,21 +647,41 @@ class Repository extends Base\Repository
 
         $paymentCardIdCol = $this->repo->payment->dbColumn(Payment\Entity::CARD_ID);
 
-        $transactionData = $this->dbColumn('*');
+        $startOfMonth = Carbon::createFromTimestamp($start)->startOfMonth()
+                                                           ->getTimestamp();
 
         $query = $this->newQuery()
                       ->selectRaw(
-                            'SUM(' . $taxCol .') AS tax, SUM(' . $feeCol . ') AS fee')
-                      ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdCol)
-                      ->whereBetween($createdAtCol, [$start, $end])
+                          'SUM(' . $taxCol .') AS tax, SUM(' . $feeCol . ') AS fee')
+                      ->leftjoin(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdCol)
+                      ->where(function ($query) use ($start, $end, $isCorrection)
+                      {
+                          $capturedAt = $this->repo->payment->dbColumn(Payment\Entity::CAPTURED_AT);
+
+                          $query->where(Entity::TYPE, '=', Type::PAYMENT)
+                                ->whereBetween($capturedAt, [$start, $end]);
+
+                          if ($isCorrection === true)
+                          {
+                              $createdAt = $this->dbColumn(Entity::CREATED_AT);
+
+                              $query->whereBetween($createdAt, [$start, $end]);
+                          }
+                      })
+                      ->orWhere(function($query) use ($startOfMonth, $end)
+                      {
+                          $createdAt = $this->dbColumn(Entity::CREATED_AT);
+
+                          $query->where(Entity::TYPE, '<>', Type::PAYMENT)
+                                ->whereBetween($createdAt, [$startOfMonth, $end]);
+                      })
                       ->merchantId($merchantId)
-                      ->whereNotNull(Payment\Entity::CAPTURED_AT)
-                      ->where(Entity::TYPE, Type::PAYMENT)
+                      ->whereNotIn(Entity::TYPE, Type::IGNORE_ENTITIES_FROM_MERCHANT_INVOICE)
                       ->groupBy($merchantIdCol);
 
         switch ($filterType)
         {
-            case InvoiceType::NON_CARD:
+            case InvoiceType::OTHERS:
                 $query = $query->whereNull($paymentCardIdCol);
                 break;
 

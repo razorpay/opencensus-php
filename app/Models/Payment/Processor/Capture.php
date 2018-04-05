@@ -29,7 +29,7 @@ trait Capture
      *
      * @return Payment\Entity Payment\Entity object
      */
-    public function capture(Payment\Entity $payment, array $input = array())
+    public function capture(Payment\Entity $payment, array $input = [])
     {
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_REQUEST,

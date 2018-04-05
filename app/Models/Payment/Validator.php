@@ -730,10 +730,15 @@ class Validator extends Base\Validator
         //
         // Don't continue if already captured
         //
-        if ($payment->hasBeenCaptured())
+        if ($payment->hasBeenCaptured() === true)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'status'        => $payment->getStatus(),
+                    'captured_at'   => $payment->getCapturedAt(),
+                ]);
         }
     }
 
@@ -743,6 +748,40 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED);
+        }
+    }
+
+    /**
+     * Validates if a payment can be marked as acknowledged. Only captured payments can be acknowledged.
+     * Note: A payment that has been captured and then refunded can be marked as acknowledged;
+     *       but a payment authorized and then refunded cannot be marked as acknowledged.
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function acknowledgeValidate()
+    {
+        $payment = $this->entity;
+
+        if ($payment->hasBeenCaptured() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED,
+                [
+                    Entity::ID              => $payment->getId(),
+                    Entity::STATUS          => $payment->getStatus(),
+                    Entity::ACKNOWLEDGED_AT => $payment->getAcknowledgedAt(),
+                ]);
+        }
+
+        if ($payment->isAcknowledged() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_ACKNOWLEDGED,
+                [
+                    Entity::ID              => $payment->getId(),
+                    Entity::STATUS          => $payment->getStatus(),
+                    Entity::ACKNOWLEDGED_AT => $payment->getAcknowledgedAt(),
+                ]);
         }
     }
 }

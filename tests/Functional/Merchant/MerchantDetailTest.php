@@ -485,4 +485,11 @@ class MerchantDetailTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testBulkAssignReviewer()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
 }

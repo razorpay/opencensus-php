@@ -336,8 +336,8 @@
                   if (merchant.name) {
                     options.name = invoiceObj.merchant_label || merchant.name;
                   }
-                  if (merchant.color) {
-                    options.theme.color = merchant.color;
+                  if (merchant.brand_color) {
+                    options.theme.color = merchant.brand_color;
                   }
                   if (merchant.image) {
                     options.image = merchant.image;

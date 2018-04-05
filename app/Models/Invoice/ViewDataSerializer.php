@@ -7,7 +7,6 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
@@ -22,8 +21,6 @@ use RZP\Exception\BadRequestException;
  */
 class ViewDataSerializer extends Base\Core
 {
-    const DEFAULT_MERCHANT_BRAND_COLOR = '#6A5DD1';
-
     /**
      * {key}_formatted gets appended in view data
      * which holds the formatted time value for {key}
@@ -66,55 +63,48 @@ class ViewDataSerializer extends Base\Core
         $this->merchant = $invoice->merchant;
     }
 
-    /**
-     * Returns view data (few formatted for view purpose) of invoice,
-     * to be used in hosted page, pdf generation, mails etc.
-     *
-     * @return array
-     */
-    public function get(): array
+    public function serializeForHosted(): array
     {
-        $invoiceData  = $this->getFormattedInvoiceDataForView();
-        $keyId        = $this->getMerchantKeyId();
-        $merchantData = $this->getFormattedMerchantDataForView();
-
-        $invoiceJsUrl = Config::get('app.cdn_v1_url') . '/invoice.js';
-
         return [
             'environment'   => $this->app->environment(),
-            // Following is sent to view for showing warning(in hosted page and
-            // emails) to avoid mis communication.
             'is_test_mode'  => ($this->mode === Mode::TEST),
-            'invoicejs_url' => $invoiceJsUrl,
-            'key_id'        => $keyId,
-            'merchant'      => $merchantData,
-            'invoice'       => $invoiceData,
+            'invoicejs_url' => Config::get('app.cdn_v1_url') . '/invoice.js',
+            'key_id'        => $this->getMerchantKeyId(),
+            'merchant'      => $this->serializeMerchantForHosted(),
+            'invoice'       => $this->serializeInvoiceForHosted(),
         ];
     }
 
-    /**
-     * Gets the view data long with few of subscription fields.
-     * ViewDataSerializer gets used in multiple places and elsewhere we don't
-     * need to load subscription relation of invoice. Only on hosted page (called
-     * from Controller action) this is needed.
-     *
-     * @return array
-     */
-    public function getWithSubscriptionIfApplicable(): array
+    public function serializeForInternal(): array
     {
-        $data = $this->get();
+        $serialized = $this->serializeForHosted();
 
-        if ($this->invoice->isOfSubscription() === true)
-        {
-            $subscription = $this->invoice->subscription;
+        $this->addAdditionalAttributesForInternal($serialized);
 
-            $data[E::INVOICE][E::SUBSCRIPTION] = $subscription->toArrayHosted();
-        }
-
-        return $data;
+        return $serialized;
     }
 
-    protected function getFormattedInvoiceDataForView(): array
+    protected function getMerchantKeyId(): string
+    {
+        return $this->repo
+                    ->key
+                    ->getFirstActiveKeyForMerchantOrFail($this->merchant->getId())
+                    ->getPublicKey($this->mode);
+    }
+
+    protected function serializeMerchantForHosted(): array
+    {
+        return [
+            'new_view_enabled' => (in_array('Hostedplv2', $this->merchant->liveTagNames(), true) === true),
+            'brand_color'      => get_rgb_value($this->merchant->getBrandColorOrDefault()),
+            'brand_text_color' => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
+            'image'            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
+            'name'             => $this->merchant->getBillingLabel(),
+            'id'               => $this->merchant->getId(),
+        ];
+    }
+
+    protected function serializeInvoiceForHosted(): array
     {
         //
         // Reload is needed as from Payment\Processor\Notify, the invoice
@@ -122,134 +112,91 @@ class ViewDataSerializer extends Base\Core
         //
         $this->repo->loadRelations($this->invoice);
 
-        $invoiceData = $this->invoice->toArrayPublic();
+        $serialized = $this->invoice->toArrayHosted();
 
-        $invoiceData[Entity::IS_PAID] = $this->invoice->isPaid();
+        $this->addDerivedAttributesForInvoice($serialized);
+        $this->addFormattedAmountAttributesForInvoice($serialized);
+        $this->addFormattedEpochAttributesForInvoice($serialized);
+        $this->addSubscriptionAttributesForInvoice($serialized);
 
-        //
-        // Puts callback_url, callback_method and merchant_label in view data.
-        // These are not exposed in route response as of now.
-        //
-        $invoiceData[Entity::CALLBACK_URL]    = $this->invoice->getCallbackUrl();
-        $invoiceData[Entity::CALLBACK_METHOD] = $this->invoice->getCallbackMethod();
-        $invoiceData[Entity::MERCHANT_LABEL]  = $this->invoice->getMerchantLabel();
-
-        //
-        // Gets public view attributes of all payments against this invoice
-        // in descending order.
-        //
-        $invoiceData[Entity::PAYMENTS] = $this->invoice
-                                              ->load(Entity::PAYMENTS)
-                                              ->payments
-                                              ->sortByDesc(Entity::CREATED_AT)
-                                              ->values()
-                                              ->toArrayHosted();
-
-        foreach (self::$amounts as $key)
-        {
-            $invoiceData[$key . '_formatted'] = number_format($invoiceData[$key] / 100, 2);
-        }
-
-        foreach (self::$epochs as $key)
-        {
-            $epoch = $invoiceData[$key];
-
-            $epochFormatted = null;
-
-            if ($epoch !== null)
-            {
-                $epochFormatted = Carbon::createFromTimestamp($epoch, Timezone::IST)
-                                        ->format('j M Y');
-            }
-
-            $invoiceData[$key . '_formatted'] = $epochFormatted;
-        }
-
-        array_walk(
-            $invoiceData[Entity::LINE_ITEMS],
-            function (& $lineItem, $i)
-            {
-                $amountFormatted      = number_format($lineItem[LineItem\Entity::AMOUNT] / 100, 2);
-                $grossAmount          = $lineItem[LineItem\Entity::AMOUNT] * $lineItem[LineItem\Entity::QUANTITY];
-                $grossAmountFormatted = number_format($grossAmount / 100, 2);
-
-                $lineItem += [
-                    'amount_formatted'       => $amountFormatted,
-                    'total_amount_formatted' => $grossAmountFormatted,
-                ];
-            });
-
-        $this->addExtraInvoicePayLoad($invoiceData);
-
-        return $invoiceData;
+        return $serialized;
     }
 
-    protected function addExtraInvoicePayLoad(array & $data)
+    protected function addDerivedAttributesForInvoice(array & $serialized)
     {
-        $id = $this->invoice->getPublicId();
+        // Ordered serialized payments of invoice
+        $serializedPayments = $this->invoice
+                                   ->load(Entity::PAYMENTS)
+                                   ->payments
+                                   ->sortByDesc(Entity::CREATED_AT)
+                                   ->values()
+                                   ->toArrayHosted();
 
+        $serialized[Entity::IS_PAID]         = $this->invoice->isPaid();
+        $serialized[Entity::PAYMENTS]        = $serializedPayments;
+        $serialized[Entity::CALLBACK_URL]    = $this->invoice->getCallbackUrl();
+        $serialized[Entity::CALLBACK_METHOD] = $this->invoice->getCallbackMethod();
+        $serialized[Entity::MERCHANT_LABEL]  = $this->invoice->getMerchantLabel();
+    }
+
+    protected function addFormattedAmountAttributesForInvoice(array & $serialized)
+    {
+        // Adds formatted invoice's amount attributes
+        foreach (self::$amounts as $key)
+        {
+            $serialized[$key . '_formatted'] = number_format($serialized[$key] / 100, 2);
+        }
+
+        // Adds formatted invoice's line item's amount attributes
+        array_walk(
+            $serialized[Entity::LINE_ITEMS],
+            function (& $lineItem, $idx)
+            {
+                $lineItem += [
+                    'amount_formatted'       => number_format($lineItem[LineItem\Entity::AMOUNT] / 100, 2),
+                    'total_amount_formatted' => number_format($lineItem[LineItem\Entity::GROSS_AMOUNT] / 100, 2),
+                ];
+            });
+    }
+
+    protected function addFormattedEpochAttributesForInvoice(array & $serialized)
+    {
+        foreach (self::$epochs as $key)
+        {
+            $value = $serialized[$key];
+            $formatted = ($value === null ? null : Carbon::createFromTimestamp($value, Timezone::IST)->format('j M Y'));
+            $serialized[$key . '_formatted'] = $formatted;
+        }
+    }
+
+    protected function addSubscriptionAttributesForInvoice(array & $serialized)
+    {
+        if ($this->invoice->isOfSubscription() === true)
+        {
+            $serialized[E::SUBSCRIPTION] = $this->invoice->subscription->toArrayHosted();
+        }
+    }
+
+    /**
+     * Adds additional attributes ONLY to be used internally in various flows. E.g. merchant side mails, which requires
+     * attributes besides hosted attributes, which is basically public user view attributes, etc.
+     *
+     * @param array $serialized
+     */
+    protected function addAdditionalAttributesForInternal(array & $serialized)
+    {
+        // Adds type label & dashboard path for invoices.
+        $dashboardUrl = Config::get('applications.dashboard.url');
         $invoiceDashboardPath = $this->invoice->getDashboardPath();
 
-        $dashboardUrl = Config::get('applications.dashboard.url');
-
-        $extraInvoicePayload = [
+        $serialized[E::INVOICE] += [
             'type_label'    => ucwords($this->invoice->getTypeLabel()),
-            'pdf_url'       => url("v1/invoices/$id/pdf"),
             'dashboard_url' => $dashboardUrl . $invoiceDashboardPath,
         ];
 
-        $data += $extraInvoicePayload;
-    }
-
-    protected function getFormattedMerchantDataForView(): array
-    {
-        // If merchant branch color is not set, use a default value, same is used in invoice.js repo.
-        $merchantBrandColor = $this->merchant->getBrandColor() ?: self::DEFAULT_MERCHANT_BRAND_COLOR;
-
-        $merchantData = [
-            'tags'             => $this->merchant->liveTagNames(),
-            'brand_color'      => get_rgb_value($merchantBrandColor),
-            'brand_text_color' => get_brand_text_color($merchantBrandColor),
-            'image'            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
-            'name'             => $this->merchant->getBillingLabel(),
-            'id'               => $this->merchant->getId(),
+        // Adds registered business address of merchant
+        $serialized[E::MERCHANT] += [
+            'business_registered_address' => optional($this->merchant->merchantDetail)->getBusinessRegisteredAddress(),
         ];
-
-        if ($this->merchant->getOrgId() !== null)
-        {
-            $merchantData['organization'] = $this->merchant->org->toArrayPublic();
-        }
-
-        $merchantDetail = $this->merchant->merchantDetail;
-
-        if ($merchantDetail !== null)
-        {
-            $merchantData['business_registered_address'] = $merchantDetail->getBusinessRegisteredAddress();
-        }
-
-        return $merchantData;
-    }
-
-    protected function getMerchantKeyId(): string
-    {
-        $merchantId = $this->merchant->getId();
-
-        $keys = $this->repo->key->getKeysForMerchant($merchantId);
-
-        //
-        // Currently key is being used in the view to open checkout and we server
-        // bad request page if key is not available. Also, we restrict creation of
-        // invoices as well when no key but there are some old invoices when the
-        // restriction wasn't there during creation. So following check saves us
-        // from server error.
-        //
-        if ($keys->count() === 0)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_API_KEY_NOT_PRESENT);
-        }
-
-        $keyId = $keys->first()->getPublicKey($this->mode);
-
-        return $keyId;
     }
 }

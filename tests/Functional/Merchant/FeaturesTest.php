@@ -16,11 +16,13 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
+use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class FeaturesTest extends TestCase
 {
     use FileUploadTrait;
     use DbEntityFetchTrait;
+    use VirtualAccountTrait;
     use RequestResponseFlowTrait;
 
     const DEFAULT_MERCHANT_ID    = '10000000000000';
@@ -633,6 +635,8 @@ class FeaturesTest extends TestCase
 
     public function testUpdateOnboardingResponses()
     {
+        $this->markTestSkipped();
+
         $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
 
         $this->ba->proxyAuth('rzp_live_' . $merchantId);
@@ -822,6 +826,39 @@ class FeaturesTest extends TestCase
             Constants::MARKETPLACE,
             MerchantRequest\Type::PRODUCT,
             MerchantRequest\Status::UNDER_REVIEW);
+    }
+
+    public function testRestrictedAccessFeatureEnabledAndAccessedByMerchant()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000000',
+                'name' => 'virtual_accounts'
+            ]);
+
+        $this->ba->privateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
+
+        $this->startTest($testData);
+    }
+
+    public function testRestrictedAccessFeatureDisabledAndAccessedByMerchant()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->ba->privateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
+
+        $this->startTest($testData);
     }
 
     /**
