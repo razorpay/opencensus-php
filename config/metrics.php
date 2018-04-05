@@ -14,7 +14,8 @@ return [
         'newrelic'   => [],
 
         'prometheus' => [
-            'adapter' => env('METRICS_PROMETHEUS_ADAPTER'),
+            'adapter'     => env('METRICS_PROMETHEUS_ADAPTER'),
+            'pushgateway' => env('METRICS_PROMETHEUS_PUSHGATEWAY'),
         ],
     ],
 ];

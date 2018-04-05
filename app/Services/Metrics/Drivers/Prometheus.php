@@ -2,8 +2,10 @@
 
 namespace RZP\Services\Metrics\Drivers;
 
+use Prometheus\PushGateway;
 use Prometheus\Storage\APC;
 use Prometheus\Storage\Adapter;
+use Prometheus\Storage\InMemory;
 use Prometheus\RenderTextFormat;
 use Prometheus\CollectorRegistry;
 
@@ -57,6 +59,15 @@ class Prometheus extends Driver
         $samples = $this->registry->getMetricFamilySamples();
 
         return (new RenderTextFormat())->render($samples);
+    }
+
+    /**
+     * Pushes collected metrics to configured pushgateway
+     * @param string $job
+     */
+    public function push(string $job)
+    {
+        (new PushGateway($this->config['pushgateway']))->push($this->registry, $job);
     }
 
     /**

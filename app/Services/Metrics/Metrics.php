@@ -2,6 +2,8 @@
 
 namespace RZP\Services\Metrics;
 
+use BadMethodCallException;
+
 /**
  * Metrics service.
  * Works with various underlying driver implementation.
@@ -54,19 +56,6 @@ class Metrics
         return $this;
     }
 
-    public function render(): string
-    {
-        // Only prometheus works with pull based model, other drivers doesn't implement render()
-        if ($this->currentDriver instanceof Drivers\Prometheus)
-        {
-            return $this->currentDriver->render();
-        }
-        else
-        {
-            return '';
-        }
-    }
-
     /**
      * Invokes the underlying driver's implementation
      * @param  string $name
@@ -75,7 +64,20 @@ class Metrics
      */
     public function __call(string $name, array $arguments)
     {
-        return $this->currentDriver->$name(...$arguments);
+        if (method_exists($this->currentDriver, $name) === false)
+        {
+            throw new BadMethodCallException("Not implemented method: $name");
+        }
+
+        try
+        {
+            return $this->currentDriver->$name(...$arguments);
+        }
+        // In case it errors out, for now not doing anything. Probably log, but not want to couple with api's trace.
+        // Also we would probably come to know of issues via prometheus alerts.
+        catch (\Throwable $e)
+        {
+        }
     }
 
     /**

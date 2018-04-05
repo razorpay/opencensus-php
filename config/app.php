@@ -250,7 +250,7 @@ return array(
         'Mail'            => RZP\Mail\Facade::class,
         'Workflow'        => RZP\Services\Workflow\Facade::class,
         'LaravelSettings' => anlutro\LaravelSettings\Facade::class,
-        'Metrics'         => RZP\services\Metrics\Facade\Metrics::class,
+        'Metrics'         => RZP\Services\Metrics\Facade\Metrics::class,
     ],
 
     'context' => env('CONTEXT'),

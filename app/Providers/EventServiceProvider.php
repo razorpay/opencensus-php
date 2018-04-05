@@ -5,7 +5,10 @@ namespace RZP\Providers;
 use Illuminate\Queue\Jobs\SyncJob;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+
+use Metrics;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -45,8 +48,21 @@ class EventServiceProvider extends ServiceProvider
     {
         parent::boot();
 
+        Queue::before(function (JobProcessing $event)
+        {
+            //
+            // Metrics:
+            // Sets Prometheus's storage adapter as in-memory, otherwise we use APCU but for php cli mode apcu is not
+            // enabled and in-memory is sufficient.
+            //
+            $this->app['config']->set('metrics.drivers.prometheus.adapter', 'inmemory');
+        });
+
         Queue::after(function (JobProcessed $event)
         {
+            // Metrics: Pushes metrics(if any) collected during the job lifetime to push gateway configured
+            Metrics::push('api_queues');
+
             $this->resetModePostSyncQueueProcessed($event);
         });
     }
