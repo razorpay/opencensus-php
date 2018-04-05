@@ -155,16 +155,22 @@ export default class EditPublicFeatures extends Component {
                       </option>
                     ))}
                   </SelectField>
-                  <SelectField
-                    label="Select Rejection Reasons:"
-                    name="rejection_reason[reason_code]"
-                  >
-                    {allRejectionReasons[selectedReasonCategory].map(reason => (
-                      <option value={reason.code} key={reason.code}>
-                        {reason.description}
-                      </option>
-                    ))}
-                  </SelectField>
+
+                  {/* hide reason_code field for now as reason_category has only one reason_code. */}
+                  <div style={{ display: 'none' }}>
+                    <SelectField
+                      label="Select Rejection Reasons:"
+                      name="rejection_reason[reason_code]"
+                    >
+                      {allRejectionReasons[selectedReasonCategory].map(
+                        reason => (
+                          <option value={reason.code} key={reason.code}>
+                            {reason.description}
+                          </option>
+                        )
+                      )}
+                    </SelectField>
+                  </div>
                 </Fragment>
               )}
               {publicFeature.featuresAkaMap[akaFeature] ===
@@ -273,12 +279,7 @@ const statusLogsFields = [
     item =>
       item.rejection_reasons.count ? (
         <div style={{ maxWidth: '100px' }}>
-          <strong>
-            {snakeToTitleCase(
-              item.rejection_reasons.items[0]['reason_category']
-            )}:{' '}
-          </strong>
-          {snakeToTitleCase(item.rejection_reasons.items[0]['reason_code'])}
+          {snakeToTitleCase(item.rejection_reasons.items[0]['reason_category'])}
         </div>
       ) : (
         '--'
