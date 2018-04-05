@@ -9,6 +9,7 @@ use Requests_Exception;
 
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Constants\Entity;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -21,7 +22,7 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 /**
  * Interface for api to talk to Reporting service
  */
-class Reporting
+class Reporting implements ExternalService
 {
     const REQUEST_TIMEOUT = 30; // In secs
 
@@ -60,6 +61,36 @@ class Reporting
         // TODO: This service should(to discuss) not depend on BA, better to pass
         // or set merchant context on the instance before using.
         $this->ba     = $app['basicauth'];
+    }
+
+    public function fetchMultiple(string $entity, array $input)
+    {
+        switch ($entity)
+        {
+            case Entity::LOGS:
+                return $this->fetchLogMultiple($input);
+
+            case Entity::CONFIGS:
+                return $this->fetchConfigMultiple($input);
+
+            case Entity::SCHEDULES:
+                return $this->fetchScheduleMultiple($input);
+        }
+    }
+
+    public function fetch(string $entity, string $id)
+    {
+        switch ($entity)
+        {
+            case Entity::LOGS:
+                return $this->fetchLogById($id);
+
+            case Entity::CONFIGS:
+                return $this->fetchConfigById($id);
+
+            case Entity::SCHEDULES:
+                return $this->fetchScheduleById($id);
+        }
     }
 
     public function createConfig(array $input): array

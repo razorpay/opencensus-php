@@ -6,7 +6,7 @@ use RZP\Exception;
 use RZP\Trace\TraceCode;
 use Requests;
 
-class ShieldClient
+class ShieldClient implements ExternalService
 {
     const RULES = '/rules/';
 
@@ -36,14 +36,33 @@ class ShieldClient
         $this->baseUrl = $this->config['url'];
     }
 
+    public function fetchMultiple(string $entity, array $input)
+    {
+        switch ($entity)
+        {
+            case 'rules':
+                return $this->getRules($input);
+        }
+    }
+
+    public function fetch(string $entity, string $id)
+    {
+        switch ($entity)
+        {
+            case 'rules':
+                return $this->getRules($id);
+        }
+    }
+
+
     public function createRule(array $input)
     {
         return $this->sendRequest(self::RULES, Requests::POST, $input);
     }
 
-    public function getRules()
+    public function getRules(array $input)
     {
-        return $this->sendRequest(self::RULES, Requests::GET);
+        return $this->sendRequest(self::RULES, Requests::GET, $input);
     }
 
     public function getRuleById(string $id)

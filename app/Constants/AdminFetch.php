@@ -19,6 +19,30 @@ class AdminFetch
         return Fetch::getCommonFields();
     }
 
+    public static function externalEntities()
+    {
+        return [
+            Entity::REPORTING . '.' . Entity::LOGS => [
+                'merchant_id'       => Fetch::FIELD_MERCHANT_ID
+            ],
+            Entity::REPORTING . '.' . Entity::CONFIGS => [
+                'merchant_id'       => Fetch::FIELD_MERCHANT_ID
+            ],
+            Entity::REPORTING . '.' . Entity::SCHEDULES => [
+                'merchant_id'       => Fetch::FIELD_MERCHANT_ID
+            ],
+            Entity::SHIELD . '.' . Entity::RULESETS => [
+
+            ],
+            Entity::SHIELD . '.' . Entity::RULES => [
+
+            ],
+            Entity::SHIELD . '.' . Entity::RULES_ANALYTICS => [
+
+            ]
+        ];
+    }
+
     public static function entities()
     {
         return [

@@ -177,6 +177,18 @@ class Entity
     const TAX                   = 'tax';
     const TAX_GROUP             = 'tax_group';
 
+    // External Services
+    const SHIELD                = 'shield';
+    const REPORTING             = 'reporting';
+
+    // External Service Entity
+    const LOGS                  = 'logs';
+    const CONFIGS               = 'configs';
+    const SCHEDULES             = 'schedules';
+    const RULES                 = 'rules';
+    const RULES_ANALYTICS       = 'rules_analytics';
+    const RULESETS              = 'rulesets';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -359,6 +371,11 @@ class Entity
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Base::class,
     ];
 
+    protected static $externalServiceClass = [
+        self::REPORTING              => \RZP\Services\Reporting::class,
+        self::SHIELD                 => \RZP\Services\ShieldClient::class,
+    ];
+
     protected static $syncedInLiveAndTest = [
         self::ORG,
         self::IIN,
@@ -370,6 +387,20 @@ class Entity
         self::USER,
         self::SCHEDULE,
         self::MERCHANT_ACCESS_MAP,
+    ];
+
+    protected static $externalServiceEntities = [
+        self::REPORTING => [
+            self::LOGS,
+            self::CONFIGS,
+            self::SCHEDULES
+        ],
+
+        self::SHIELD => [
+            self::RULES_ANALYTICS,
+            self::RULES,
+            self::RULESETS
+        ]
     ];
 
     public static function getAllEntities()
@@ -518,6 +549,65 @@ class Entity
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid entity.');
         }
+    }
+
+    /**
+     * The split will have service.entityname
+     * For API entities there would only be entity, which would be verified by normal flow
+     * For other, we need to validate the service should exists, and entity is exposed
+     *
+     * @param string $entity
+     * @return bool
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public static function validateExternalServiceEntity(string $entity)
+    {
+        list($service, $entity) = self::getServiceAndEntity($entity);
+
+        if ($entity === null)
+        {
+            return false;
+        }
+
+        self::validateExternalService($service);
+
+        $validEntities = self::$externalServiceEntities[$service];
+
+        if (in_array($entity, $validEntities, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid external service entity');
+        }
+
+        return true;
+    }
+
+    public static function validateExternalService(string $service)
+    {
+        if (in_array($service, array_keys(self::$externalServiceEntities), true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid external service.');
+        }
+    }
+
+    public static function getExternalServiceClass(string $service)
+    {
+        $class = self::$externalServiceClass[$service];
+
+        return new $class;
+    }
+
+    public static function getServiceAndEntity(string $entity)
+    {
+        $entitySplit = explode('.', $entity);
+
+        if (count($entitySplit) === 1)
+        {
+            return [$entitySplit, null];
+        }
+
+        return $entitySplit;
     }
 
     public static function isEntitySyncedInLiveAndTest($entity)
