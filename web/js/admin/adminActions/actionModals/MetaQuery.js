@@ -19,12 +19,17 @@ export default class MetaQuery extends Component {
   };
 
   handleSubmit = body => {
+    let { query, mode } = body;
+
+    //trim escape space/newline characters
+    query = query.trim();
+
     //reinitialize `query` ui upon request
     this.setState({ queryDump: null });
 
     return adminPost({
-      url: `${body.mode}/db_meta_query`,
-      data: { query: body.query },
+      url: `${mode}/db_meta_query`,
+      data: { query },
     }).then(response => {
       if (response) {
         this.setState({
@@ -42,15 +47,23 @@ export default class MetaQuery extends Component {
 
     for (let prop in queryObj) {
       if (queryObj.hasOwnProperty(prop)) {
-        fields.push([snakeToTitleCase(prop), item => item[prop]]);
+        // add `pre` tag for Create Table query
+        if (prop === 'Create Table') {
+          fields.push([
+            snakeToTitleCase(prop),
+            item => <pre class="code">{item[prop]}</pre>,
+          ]);
+        } else {
+          fields.push([snakeToTitleCase(prop), item => item[prop]]);
+        }
       }
     }
 
     return fields;
   };
+
   render() {
     const { queryDump } = this.state;
-    const isCreateTableQuery = !!(queryDump && queryDump[0]['Create Table']);
 
     return (
       <div class="meta-query" style={{ width: '1000px' }}>
@@ -63,7 +76,7 @@ export default class MetaQuery extends Component {
                 Enter a valid db meta query, currently only the following
                 queries with prefixes are allowed
                 <ul style={listStyle}>
-                  <li>explain select</li>
+                  <li>explain</li>
                   <li>show create table</li>
                   <li>show indexes from</li>
                 </ul>
@@ -79,26 +92,14 @@ export default class MetaQuery extends Component {
           />
         </Form>
         <div class="query-dump">
-          {queryDump &&
-            // Generate JSON view  for `create table` requests
-            (isCreateTableQuery ? (
-              <pre class="code">
-                {queryDump.map((query, idx) => (
-                  <div key={idx}>
-                    Table: {query['Table']}
-                    <br />
-                    {query['Create Table']}
-                  </div>
-                ))}
-              </pre>
-            ) : (
-              //Generate table view for other db requests
-              <Table
-                animateRow={false}
-                items={queryDump}
-                fields={this.getFields()}
-              />
-            ))}
+          {queryDump && (
+            //Generate table view for other db requests
+            <Table
+              animateRow={false}
+              items={queryDump}
+              fields={this.getFields()}
+            />
+          )}
         </div>
       </div>
     );
