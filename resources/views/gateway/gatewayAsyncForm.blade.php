@@ -165,9 +165,34 @@
     var isIntentFlow = CheckoutBridge && data.type === 'intent';
 
     var xhr;
+    var lastPollTS;
+    var threshold = 1000 * 5; // 15 seconds
+    var lastFocus;
 
     onfocus = function() {
+      var now = Date.now();
+      $('log').innerHTML += '<br>now ' + now;
+      // Focus is being fired for some reason. Don't consider the second one.
+      if (lastFocus) {
+        if (now - lastFocus <= 1000 * 0.5) {
+          lastFocus = now;
+          return;
+        }
+      }
+
+      lastFocus = now;
+
       $('log').innerHTML += '<br>focus ' + Date.now().toString().slice(-6);
+      if (lastPollTS) {
+        $('log').innerHTML += '<br>lastPollTS ' + lastPollTS;
+        // If last XHR was more than threshold seconds ago, abort XHR and start a new poll.
+        $('log').innerHTML += '<br>lastPollTS diff ' + (now - lastPollTS);
+        if (xhr && now - lastPollTS >= threshold) {
+          $('log').innerHTML += '<br>retrying on focus ' + Date.now().toString().slice(-6);
+          xhr.abort();
+          fetch(request_url);
+        }
+      }
     }
 
     onblur = function() {
@@ -193,13 +218,13 @@
             timestamp: Date.now()
           }]
         };
-        
-        if (key_id.slice(0, 5) === 'rzp_t') return console.log(payload);   
+
+        if (key_id.slice(0, 5) === 'rzp_t') return console.log(payload);
         var call = new XMLHttpRequest();
         call.open('post', 'https://lumberjack.razorpay.com/v1/track', true);
         call.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         call.send('key=MC40OTMwNzgyMDM3MDgwNjI3Nw9YnGzW&data=' +
-                 encodeURIComponent(btoa(JSON.stringify(payload))));        
+                 encodeURIComponent(btoa(JSON.stringify(payload))));
       })
     }
 
@@ -255,6 +280,11 @@
         }
 
         setTimeout(function() {
+          // If polling, set timestamp.
+          if (url === request_url) {
+            lastPollTS = Date.now();
+          }
+
           xhr = new XMLHttpRequest();
           xhr.open('get', url, true);
 
