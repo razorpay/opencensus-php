@@ -18,6 +18,15 @@ class Type
     const MERCHANTS     = 'merchants';
     const APPLICATIONS  = 'applications';
 
+    // Application ids
+    const TEST_APP_ID   = '10000TestAppId';
+    const JUSPAY_APP_ID = '100RandomAppId';
+
+    const S2S_APPLICATION__IDS = [
+        self::TEST_APP_ID,
+        self::JUSPAY_APP_ID,
+    ];
+
     /**
      * Maps the route endpoints to the corresponding Entity type
      *
