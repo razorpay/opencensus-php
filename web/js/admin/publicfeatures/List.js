@@ -6,7 +6,7 @@ import { SelectField, FromField, ToField, CheckField } from 'ui/Field';
 
 import Collection from 'model/collection';
 import { adminFetch } from 'common/fetch';
-import { featuresAkaMap, showEntity } from './Entity';
+import { showEntity } from './Entity';
 import { statusPill, publicFeature } from 'common/data';
 import { snakeToTitleCase } from 'common/util';
 
@@ -66,9 +66,9 @@ export default class PublicFeaturesList extends Component {
             </SelectField>
             <SelectField label="Product" name="name" onChange={this.filter}>
               <option value="">All</option>
-              {Object.keys(featuresAkaMap).map(feature => (
+              {Object.keys(publicFeature.featuresAkaMap).map(feature => (
                 <option value={feature} key={feature}>
-                  {featuresAkaMap[feature]}
+                  {publicFeature.featuresAkaMap[feature]}
                 </option>
               ))}
             </SelectField>

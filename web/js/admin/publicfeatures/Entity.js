@@ -32,7 +32,6 @@ export default class EditPublicFeatures extends Component {
   // TODO: TEST Sending mode as live, not sent earlier
   featureRequestUrls = [
     `live/merchant/requests/${this.props.model.id}`,
-    // `live/merchant/requests/${this.props.model.id}/status_log`,
     'live/merchant/requests/rejection_reasons',
   ];
 
