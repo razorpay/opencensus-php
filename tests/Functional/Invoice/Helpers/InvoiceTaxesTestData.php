@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\Invoice;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestValidationFailureException;
 
 return [
     'testCreateInvoiceWithTaxes1' => [
@@ -186,30 +188,21 @@ return [
                         'description'   => 'Some item description',
                         'amount'        => 100000,
                         'gross_amount'  => 100000,
-                        'tax_amount'    => 10100,
-                        'net_amount'    => 110100,
+                        'tax_amount'    => 20000,
+                        'net_amount'    => 120000,
                         'currency'      => 'INR',
                         'tax_inclusive' => false,
                         'unit'          => null,
                         'quantity'      => 1,
                         'taxes' => [
                             [
-                                'tax_id'     => 'tax_00000000000001',
-                                'name'       => 'Tax #1',
-                                'rate'       => 1000,
+                                'tax_id'     => 'tax_00000000000002',
+                                'name'       => 'Tax #2',
+                                'rate'       => 2000,
                                 'rate_type'  => 'percentage',
-                                'group_id'   => 'taxg_00000000000002',
-                                'group_name' => 'Tax Group #2',
-                                'tax_amount' => 10000,
-                            ],
-                            [
-                                'tax_id'     => 'tax_00000000000004',
-                                'name'       => 'Flat Tax #4',
-                                'rate'       => 100,
-                                'rate_type'  => 'flat',
-                                'group_id'   => 'taxg_00000000000002',
-                                'group_name' => 'Tax Group #2',
-                                'tax_amount' => 100,
+                                'group_id'   => null,
+                                'group_name' => null,
+                                'tax_amount' => 20000,
                             ],
                         ],
                     ],
@@ -247,8 +240,8 @@ return [
                     ],
                 ],
                 'gross_amount'          => 301000,
-                'tax_amount'            => 20400,
-                'amount'                => 321400,
+                'tax_amount'            => 30300,
+                'amount'                => 331300,
                 'currency'              => 'INR',
                 'description'           => null,
                 'type'                  => 'invoice',
@@ -542,6 +535,51 @@ return [
                 'type'                  => 'invoice',
                 'group_taxes_discounts' => false,
             ],
+        ],
+    ],
+
+    'testCreateInvoiceLineItemWithTaxIdAndTaxGroupId' => [
+        'request'   => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'item_id' => 'item_00000000000001',
+                    ],
+                    [
+                        'item_id' => 'item_00000000000002',
+                    ],
+                    [
+                        'item_id' => 'item_00000000000003',
+                        'name'    => 'Updated item name',
+                        'tax_id'  => 'tax_00000000000002',
+                    ],
+                    [
+                        'name'         => 'Item #3',
+                        'amount'       => 1000,
+                        'tax_group_id' => 'taxg_00000000000001'
+                    ],
+                ],
+                'type'       => 'invoice',
+                'draft'      => '1',
+                'customer'   => [
+                    'email' => 'test@test.test'
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only one among tax_id, tax_ids or tax_group_id can be present',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

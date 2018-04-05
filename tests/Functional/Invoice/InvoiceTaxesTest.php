@@ -69,10 +69,9 @@ class InvoiceTaxesTest extends TestCase
 
         $this->fixtures->create('item', [
                 'id'           => '00000000000003',
-                'tax_group_id' => '00000000000002',
             ]);
 
-        $response = $this->startTest();
+        $this->startTest();
 
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
@@ -84,7 +83,7 @@ class InvoiceTaxesTest extends TestCase
      */
     public function testCreateInvoiceWithTaxes3()
     {
-        $response = $this->startTest();
+        $this->startTest();
 
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
@@ -94,11 +93,10 @@ class InvoiceTaxesTest extends TestCase
      * amounts.
      * In general this won't be there practically, but still API supports it
      * so dropping a test around it.
-     *
      */
     public function testCreateInvoiceWithTaxes4()
     {
-        $response = $this->startTest();
+        $this->startTest();
 
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
@@ -108,6 +106,25 @@ class InvoiceTaxesTest extends TestCase
         $this->startTest();
 
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
+    public function testCreateInvoiceLineItemWithTaxIdAndTaxGroupId()
+    {
+        $this->fixtures->create('item', [
+            'id' => '00000000000001',
+        ]);
+
+        $this->fixtures->create('item', [
+            'id'     => '00000000000002',
+            'tax_id' => '00000000000001'
+        ]);
+
+        $this->fixtures->create('item', [
+            'id'           => '00000000000003',
+            'tax_group_id' => '00000000000002',
+        ]);
+
+        $this->startTest();
     }
 
     /**
