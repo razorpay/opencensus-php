@@ -111,19 +111,15 @@ class InvoiceTaxesTest extends TestCase
     public function testCreateInvoiceLineItemWithTaxIdAndTaxGroupId()
     {
         $this->fixtures->create('item', [
-            'id' => '00000000000001',
-        ]);
-
-        $this->fixtures->create('item', [
-            'id'     => '00000000000002',
-            'tax_id' => '00000000000001'
-        ]);
-
-        $this->fixtures->create('item', [
             'id'           => '00000000000003',
             'tax_group_id' => '00000000000002',
         ]);
 
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceLineItemWithTaxIdAndTaxIds()
+    {
         $this->startTest();
     }
 

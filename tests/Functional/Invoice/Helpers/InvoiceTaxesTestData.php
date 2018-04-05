@@ -6,7 +6,6 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\Tax\Entity as T;
 use RZP\Models\Tax\Gst\GstTaxIdMap;
-use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestValidationFailureException;
 
 return [
@@ -547,20 +546,47 @@ return [
             'content' => [
                 'line_items' => [
                     [
-                        'item_id' => 'item_00000000000001',
-                    ],
-                    [
-                        'item_id' => 'item_00000000000002',
-                    ],
-                    [
                         'item_id' => 'item_00000000000003',
                         'name'    => 'Updated item name',
                         'tax_id'  => 'tax_00000000000002',
                     ],
+                ],
+                'type'       => 'invoice',
+                'draft'      => '1',
+                'customer'   => [
+                    'email' => 'test@test.test'
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only one among tax_id, tax_ids or tax_group_id can be present',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateInvoiceLineItemWithTaxIdAndTaxIds' => [
+        'request'   => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'line_items' => [
                     [
-                        'name'         => 'Item #3',
-                        'amount'       => 1000,
-                        'tax_group_id' => 'taxg_00000000000001'
+                        'name'    => 'Item #1',
+                        'amount'  => 1000,
+                        'tax_id'  => 'tax_00000000000001',
+                        'tax_ids' => [
+                            T::getIdPrefix() . GstTaxIdMap::CGST_500,
+                            T::getIdPrefix() . GstTaxIdMap::SGST_500
+                        ],
                     ],
                 ],
                 'type'       => 'invoice',
