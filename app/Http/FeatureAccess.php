@@ -132,8 +132,9 @@ class FeatureAccess
      * Checks if the application requesting to access a feature-based
      * route should be given the access. Returns a boolean.
      *
-     * 1. [simplified] Allow access because the app has the feature.
-     * 2. [simplified] Allow access because the merchant has the feature.
+     * 1. [simplified] Block access for competitor applications.
+     * 2. [simplified] Allow access because the app has the feature.
+     * 3. [simplified] Allow access because the merchant has the feature.
      *
      * @param array $routeFeatures
      * @param array $merchantRouteFeatures
@@ -145,10 +146,24 @@ class FeatureAccess
         array $merchantRouteFeatures): bool
     {
         //
-        // 1. Allow the application to access the resource, if -
+        // 1. Competitor OAuth applications should be blocked to access the S2S routes on behalf of the merchant,
+        //    if the merchant does not have the allow_s2s_apps feature enabled.
+        //
+
+        if ($this->allowCompetitorApplications() === false)
+        {
+            // If they should not be allowed, block them here. Else, proceed for further checks.
+            return false;
+        }
+
+        //
+        // 2. Allow the application to access the resource, if -
         //    - one of the features assigned to the application is not a restrictedAccessFeature, OR
         //    - the feature assigned to the application is a restrictedAccessFeature and both the app and
         //      the merchant have it enabled.
+        //
+        // restrictedAccessFeature routes can only be accessed by the application if both, the app and the merchant
+        // have the feature enabled.
         //
 
         // Fetch all the features of the application that is trying to access the resource
@@ -178,7 +193,7 @@ class FeatureAccess
         }
 
         //
-        // 2. If the application does not have any of the required route features, check the merchant features.
+        // 3. If the application does not have any of the required route features, check the merchant features.
         //    Allow the application to access the resource if -
         //      - the merchant has any of the route features assigned, and,
         //      - the feature required is not a blacklisted feature.
@@ -197,5 +212,30 @@ class FeatureAccess
                                                 $restrictedAccessFeatures));
 
         return (filled($merchantRouteFeaturesWhitelisted) === true);
+    }
+
+    /**
+     * Defines the access of the competitor oauth applications.
+     *
+     * @return bool
+     */
+    protected function allowCompetitorApplications()
+    {
+        $isCompetitorApplication = in_array($this->ba->getOAuthApplicationId(),
+                                    Feature\Type::S2S_APPLICATION__IDS,
+                                    true);
+
+        $isCurrentRouteS2S = in_array($this->route->getCurrentRouteName(), Route::S2S_ROUTES, true);
+
+        if (($isCompetitorApplication === true) and ($isCurrentRouteS2S === true))
+        {
+            $isAllowed = $this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_S2S_APPS);
+
+            // Allow if the feature is enabled on the merchant account, block otherwise.
+            return $isAllowed;
+        }
+
+        // Do not block if the app is not a competitor or if the competitor app is not trying to access an S2S route.
+        return true;
     }
 }
