@@ -212,17 +212,39 @@ return [
         ],
         'response' => [
             'content' => [
-                   'entity' => 'collection',
-                    'count' => 1,
-                    'items' => [
-                        [
-                            'url' => 'http://example.com/v1/dummy/route',
-                            'events' => [
-                                'payment.authorized' => true
-                            ],
-                            'active' => true
-                        ]
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'url' => 'http://example.com/v1/dummy/route',
+                        'events' => [
+                            'payment.authorized' => true
+                        ],
+                        'active' => true
                     ]
+                ]
+            ]
+        ]
+    ],
+
+    'testGetWebhookEvents' => [
+        'request' => [
+            'url'   => '/webhooks/events/all',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'payment.authorized',
+                'payment.failed',
+                'payment.captured',
+                'payment.dispute.created',
+                'order.paid',
+                'invoice.paid',
+                'invoice.expired',
+                'vpa.edited',
+                'p2p.created',
+                'p2p.rejected',
+                'p2p.transferred',
             ]
         ]
     ],

@@ -827,6 +827,13 @@ class Service extends Base\Service
         return $webhook->toArrayPublic();
     }
 
+    public function fetchWebhookEvents()
+    {
+        $events = (new Webhook\Core)->fetchApplicableWebhookEvents($this->merchant);
+
+        return $events;
+    }
+
     public function getWebhook($id)
     {
         $webhook = $this->repo->webhook->findByIdAndMerchant($id, $this->merchant);
