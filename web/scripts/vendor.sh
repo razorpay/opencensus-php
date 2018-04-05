@@ -17,7 +17,7 @@ vendor_a=$(cat <<-END
   React           react/umd/react.$REACT_ENV.js
   ReactDOM        react-dom/umd/react-dom.$REACT_ENV.js
   ReactRouterDOM  react-router-dom/umd/react-router-dom$APPEND_MIN.js
-  mobx            mobx/lib/mobx.umd.min.js
+  mobx            mobx/lib/mobx.umd$APPEND_MIN.js
   mobxReact       mobx-react/index.min.js
   moment          moment/min/moment.min.js
   PropTypes       prop-types/prop-types$APPEND_MIN.js

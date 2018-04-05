@@ -202,7 +202,9 @@ export default class EntityList extends Component {
             value = 'pay_' + value;
           }
           return (
-            <Link to={`/entity/payment/${value}`} class="link" target="_blank">
+            <Link to={`/entity/payment/${
+                this.collection.extraFields.mode
+              }/${value}`} class="link" target="_blank">
               {value}
             </Link>
           );
