@@ -91,6 +91,9 @@ const fields = [
   ['Merchant ID', item => item.merchant.id],
   ['Merchant Name', item => item.merchant.name],
   ['Product', item => item.name],
-  ['Account Activation Status', item => item.merchant.activated.toString()],
+  [
+    'Account Activation Status',
+    item => (item.merchant.activated ? 'Activated' : 'Not Activated'),
+  ],
   ['Product Activation Status', item => statusPill(item.status)],
 ];
