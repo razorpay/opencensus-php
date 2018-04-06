@@ -98,6 +98,7 @@ export default class MetaQuery extends Component {
               animateRow={false}
               items={queryDump}
               fields={this.getFields()}
+              indexFn={(_, idx) => idx}
             />
           )}
         </div>
