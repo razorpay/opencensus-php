@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 
+import debounce from 'rzp/utils/debounce';
+
 class Sticky extends Component {
   constructor(props) {
     super(props);
@@ -8,7 +10,6 @@ class Sticky extends Component {
       isSticky: false,
     };
 
-    this.timer = null;
     this.handleScroll = this.handleScroll.bind(this);
   }
 
@@ -50,17 +51,13 @@ class Sticky extends Component {
   }
 
   handleScroll() {
-    window.clearTimeout(this.timer);
-
-    this.timer = window.setTimeout(() => {
-      return this.toggleSticky(window.scrollY);
-    });
+    return this.toggleSticky(window.scrollY);
   }
 
   componentDidMount() {
     const container = this.props.container;
 
-    window.addEventListener('scroll', this.handleScroll);
+    window.addEventListener('scroll', debounce(this.handleScroll));
     return this.toggleSticky(container.scrollTop);
   }
 

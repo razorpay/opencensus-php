@@ -3,6 +3,8 @@ import { connect } from 'react-redux';
 import { Tour, TourStep, TourStepTitle, TourStepBody } from 'rzp/ui/Tour';
 import * as ModalActions from 'rzp/modules/modals';
 import LocalStorageService from 'rzp/utils/localStorage';
+import scrollTo from 'rzp/utils/scrollTo';
+
 import { showOrHideTour } from 'merchant/modules/session';
 
 @connect(state => state.session, {
@@ -36,6 +38,7 @@ export default class MerchantTour extends Component {
   closeTour = () => {
     this.props.closeModal();
 
+    scrollTo({ endPos: 0 });
     this.props.showOrHideTour(false);
     this.setState({ isTourActive: false, activeTourStep: 0 });
   };

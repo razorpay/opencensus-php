@@ -109,42 +109,47 @@ export default class TourStep extends Component {
     } = this.props;
 
     return (
-      <Popover persistent={true} align={align} {...otherProps}>
-        <PopoverTitle>
-          <div className="tourstep-title clearfix">
-            <div className="pull-left">
-              {tourStepTitle && (
-                <tourStepTitle.type
-                  {...tourStepTitle.props}
-                  onStepClose={onStepClose}
+      <div className="tour-lens-content">
+        <Popover persistent={true} align={align} {...otherProps}>
+          <PopoverTitle>
+            <div className="tourstep-title clearfix">
+              <div className="pull-left">
+                {tourStepTitle && (
+                  <tourStepTitle.type
+                    {...tourStepTitle.props}
+                    onStepClose={onStepClose}
+                  >
+                    {tourStepTitle.props.children}
+                  </tourStepTitle.type>
+                )}
+              </div>
+              {index + 1 !== totalSteps && (
+                <div
+                  className="tourstep-close pull-right"
+                  onClick={onStepClose}
                 >
-                  {tourStepTitle.props.children}
-                </tourStepTitle.type>
+                  &times;
+                </div>
               )}
             </div>
-            {index + 1 !== totalSteps && (
-              <div className="tourstep-close pull-right" onClick={onStepClose}>
-                &times;
-              </div>
+          </PopoverTitle>
+
+          <PopoverBody>
+            {tourStepBody && (
+              <tourStepBody.type {...tourStepBody.props}>
+                {tourStepBody.props.children}
+              </tourStepBody.type>
             )}
-          </div>
-        </PopoverTitle>
 
-        <PopoverBody>
-          {tourStepBody && (
-            <tourStepBody.type {...tourStepBody.props}>
-              {tourStepBody.props.children}
-            </tourStepBody.type>
-          )}
-
-          <TourStepControls
-            index={index}
-            totalSteps={totalSteps}
-            onStepChange={onStepChange}
-            onFinish={onFinish}
-          />
-        </PopoverBody>
-      </Popover>
+            <TourStepControls
+              index={index}
+              totalSteps={totalSteps}
+              onStepChange={onStepChange}
+              onFinish={onFinish}
+            />
+          </PopoverBody>
+        </Popover>
+      </div>
     );
   }
 }

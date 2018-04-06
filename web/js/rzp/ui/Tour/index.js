@@ -1,5 +1,8 @@
 import { Component, Children, cloneElement } from 'react';
 import TetherComponent from 'react-tether';
+
+import scrollTo from 'rzp/utils/scrollTo';
+
 import TourStep, { TourStepTitle, TourStepBody } from './TourStep';
 
 const activeTourClassName = ' tour-active';
@@ -9,7 +12,8 @@ class Tour extends Component {
     super(props);
 
     this.state = {
-      initialized: false,
+      activeStep: 0,
+      showLens: true,
     };
 
     this.onFinish = this.onFinish.bind(this);
@@ -25,6 +29,22 @@ class Tour extends Component {
     this.setActiveTour(nextProps);
   }
 
+  setTargetLensPos($target) {
+    const clientRect = $target.getBoundingClientRect();
+
+    const targetLensPos = {
+      top: `${clientRect.top}px`,
+      left: `${clientRect.left}px`,
+      width: clientRect.width,
+      height: clientRect.height,
+    };
+
+    this.setState({
+      targetLensPos,
+      showLens: true,
+    });
+  }
+
   setActiveTour(nextProps) {
     let { activeStep: tourStep, children, tourActive } = nextProps;
 
@@ -33,37 +53,39 @@ class Tour extends Component {
       let activeChild = children[tourStep];
       let target = activeChild.props.to;
       let $target = document.querySelector(target);
-      let targetLensPos = {};
 
       if ($target) {
-        const { top, height } = $target.getBoundingClientRect();
+        $target.focus();
 
-        const screenHeight = window.innerHeight,
-          scrollDiff = top + height - screenHeight; // 100 is extra scroll
+        const { top: eleTop, height } = $target.getBoundingClientRect(),
+          eleBottom = eleTop + height,
+          screenHeight = window.innerHeight,
+          scrollTop = document.documentElement.scrollTop,
+          isEleHiddenAboveScreen = eleTop < scrollTop,
+          isEleHiddenBelowScreen = eleTop + height > screenHeight;
 
-        if (Math.abs(scrollDiff) > 0) {
-          window.scrollTo(
-            0,
-            document.documentElement.scrollTop +
-              scrollDiff +
-              // 100 is extra 100px scroll
-              (scrollDiff > 0 ? 100 : -100)
+        if (isEleHiddenAboveScreen || isEleHiddenBelowScreen) {
+          let scrollPos = isEleHiddenAboveScreen
+            ? eleTop + scrollTop - 50 - 75 - 100
+            : eleTop + scrollTop - (screenHeight - height) + 100;
+
+          this.setState(
+            {
+              showLens: false,
+            },
+            () => {
+              scrollTo({
+                endPos: scrollPos,
+                duration: 1000,
+                cb: () => {
+                  this.setTargetLensPos($target);
+                },
+              });
+            }
           );
+        } else {
+          this.setTargetLensPos($target);
         }
-
-        const clientRect = $target.getBoundingClientRect();
-
-        targetLensPos = {
-          top: `${clientRect.top}px`,
-          left: `${clientRect.left}px`,
-          width: clientRect.width,
-          height: clientRect.height,
-        };
-
-        this.setState({
-          target,
-          targetLensPos,
-        });
       } else {
         // skip to next step if target not found
         this.onStepChange(tourStep + 1);
@@ -123,13 +145,17 @@ class Tour extends Component {
     }
 
     let { tourActive, activeStep, showOverlay } = this.props;
-    let { initialized, target, targetLensPos } = this.state;
+    let { initialized, target, targetLensPos, showLens } = this.state;
 
     const { align, ...activeChildProps } = activeChild.props;
 
     activeChildProps.className = `${
       activeChildProps.className ? activeChildProps.className + ' ' : ''
     }Tour__Overlay`;
+
+    if (!showLens) {
+      return <div className="tourstep-overlay" />;
+    }
 
     return (
       <div {...activeChildProps}>

@@ -55,7 +55,8 @@ class Tooltip extends Component {
       tooltipHeight =
         this.nodeHeight || (this.nodeHeight = this.node.clientHeight),
       screenLeft = 0,
-      screenRight = document.body.clientWidth;
+      screenRight = document.body.clientWidth,
+      screenBottom = document.body.clientHeight;
 
     let tooltipLeft = 0,
       tooltipTop = 0,

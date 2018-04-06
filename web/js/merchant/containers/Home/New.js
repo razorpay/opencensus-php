@@ -118,6 +118,7 @@ class HomeContainer extends Component {
       hasNewAnalyticsTour: !LocalStorageService.getItem(
         'hide_new_analytics_banner'
       ),
+      dismissNewAnalyticsBanner: false,
     };
 
     this.oldestTxnReqId = 0;
@@ -358,9 +359,17 @@ class HomeContainer extends Component {
     LocalStorageService.setItem('hide_new_analytics_banner', true);
     this.setState(
       {
-        hasNewAnalyticsTour: false,
+        dismissNewAnalyticsBanner: true,
       },
-      () => this.props.showOrHideTour(true)
+      () => {
+        window.setTimeout(() => {
+          this.setState({
+            dismissNewAnalyticsBanner: false,
+            hasNewAnalyticsTour: false,
+          });
+          this.props.showOrHideTour(true);
+        }, 500); // let the trasition to hide banner complete
+      }
     );
   }
 
@@ -383,15 +392,20 @@ class HomeContainer extends Component {
       showGroupingByPtfm,
       hasNewAnalyticsTour,
       scrollAmountToStickHeader,
+      dismissNewAnalyticsBanner,
     } = this.state;
 
     return (
       <div class="react-root dashboard-home">
         <div ref={node => (this.extraContent = node)} className="extra-content">
           {!isAdmin &&
-            (user.isActivated ? (
+            (!user.isActivated ? (
               hasNewAnalyticsTour && (
-                <div className="v2-tour-banner">
+                <div
+                  className={`v2-tour-banner${
+                    dismissNewAnalyticsBanner ? ' dismiss' : ''
+                  }`}
+                >
                   <div className="banner-icon">
                     <i className="i i-loudspeaker" />
                   </div>
