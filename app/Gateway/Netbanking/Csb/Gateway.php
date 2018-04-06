@@ -76,7 +76,8 @@ class Gateway extends Base\Gateway
         // We verify the callback response before doing anything else with the response,
         // this is so that we ensure the response is for the right payment id and amount
         // We are eliminating false positives in this case (callback returns success, when it actually a failure).
-        // We do not handle the case when callback = failure, and verify callback = success. We do not handle false negatives.
+        // We do not handle the case when callback = failure, and verify callback = success.
+        // We do not handle false negatives.
         //
         $this->verifyCallback($gatewayPayment, $input, $callbackSuccess);
 
@@ -341,12 +342,7 @@ class Gateway extends Base\Gateway
 
     private function parseVerifyResponse(string $responseString): array
     {
-        if (empty($response) === true)
-        {
-            return $response;
-        }
-
-        $response = simplexml_load_string($response);
+        $response = simplexml_load_string($responseString);
 
         //
         // Converting all elements of $response xml into an array
@@ -517,5 +513,4 @@ class Gateway extends Base\Gateway
     {
         return 'https://www.api.razorpay.com';
     }
-    
 }
