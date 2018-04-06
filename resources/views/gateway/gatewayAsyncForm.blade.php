@@ -143,8 +143,8 @@
 
     <form method="post"></form>
     <form id="form2" name="form2">
-      <input name="type" value="{{$data['data']['type']}}">
-      <input name="gateway" value="{{$data['data']['gateway']}}">
+      <input name="type" id="form2_type" value="{{$data['data']['type']}}">
+      <input name="gateway" id="form2_gateway" value="{{$data['data']['gateway']}}">
     </form>
     <div id="log"></div>
   </div>
@@ -163,6 +163,67 @@
     var form = $('form');
     var CheckoutBridge = window.CheckoutBridge;
     var isIntentFlow = CheckoutBridge && data.type === 'intent';
+
+    /**
+     * Retrieves data from localStorage and updates values.
+     */
+    function updateFromLocalStorage() {
+      // Check for localStorage
+      if (typeof localStorage === 'undefined') return;
+
+      // Retrieve from localStorage and parse.
+      let stored = localStorage.getItem('pay_data');
+      if (!stored) return;
+      try {
+        stored = JSON.parse(stored);
+      } catch (e) {
+        return;
+      }
+
+      // Set form values.
+      $('form2_type').value = stored.form.type;
+      $('form2_gateway').value = stored.form.gateway;
+
+      // Set values in variables.
+      data = stored.data;
+      request_url = stored.request_url;
+      key_id = stored.key_id;
+      cancel_url = stored.cancel_url;
+      callback_url = stored.callback_url;
+    }
+
+    /**
+     * Stores data in localStorage.
+     */
+    function storeInLocalStorage() {
+      // Check for localStorage.
+      if (typeof localStorage === 'undefined') return;
+
+      // Populate values to store.
+      let stored = {};
+      stored.form = {
+        type: $('form2_type').value,
+        gateway: $('form2_gateway').value
+      };
+      stored.data = data;
+      stored.request_url = request_url;
+      stored.key_id = key_id;
+      stored.cancel_url = cancel_url;
+      stored.callback_url = callback_url;
+      stored.timestamp = Date.now();
+
+      // Store in localStorage.
+      localStorage.setItem('pay_data', JSON.stringify(stored));
+    }
+
+    // If storage is to be used, update values from storage.
+    if (data.storage) {
+      updateFromLocalStorage();
+    }
+    // Otherwise, store in storage.
+    else {
+      storeInLocalStorage();
+    }
 
     var xhr;
     var lastPollTS;
@@ -209,17 +270,20 @@
     }
     onhashchange = addHash;
 
+    let reloadUrl = location.protocol + '//' + location.hostname + '/v1/payments/create/checkout/ajax';
+
     // Method to call when page loads.
     var loadMethod = function () {
-      if (typeof history !== 'undefined') {
-        // Push current URL to history.
+      // If localStorage and history exist, only then do this.
+      if (typeof history !== 'undefined' && typeof localStorage !== 'undefined') {
+        // Push current URL and reload URL to history.
         history.pushState({}, document.title, location.href);
+        history.pushState({}, document.title, reloadUrl);
         // Add hash to page.
         addHash();
       }
     }
     loadMethod();
-
 
     function track(name, properties) {
       setTimeout(function() {
@@ -279,6 +343,10 @@
             .join('')
         } else {
           form.action = callback_url;
+        }
+        // Remove item from storage upon submitting.
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem('pay_data');
         }
         form.submit();
       }
