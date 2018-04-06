@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingOriental;
+namespace RZP\Reconciliator\NetbankingObc;
 
 use RZP\Reconciliator\Base;
 

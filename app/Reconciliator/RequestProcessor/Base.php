@@ -50,7 +50,7 @@ class Base extends Core
     const NETBANKING_INDUSIND    = 'NetbankingIndusind';
     const NETBANKING_PNB         = 'NetbankingPnb';
     const NETBANKING_BOB         = 'NetbankingBob';
-    const NETBANKING_ORIENTAL    = 'NetbankingOriental';
+    const NETBANKING_OBC         = 'NetbankingObc';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const JIOMONEY               = 'Jiomoney';
     const UPI_SBI                = 'UpiSbi';
@@ -80,7 +80,7 @@ class Base extends Core
         self::NETBANKING_FEDERAL  => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_RBL      => ['internetbanking@rblbank.com'],
         self::NETBANKING_INDUSIND => [],
-        self::NETBANKING_ORIENTAL => [], // TODO: Add email here
+        self::NETBANKING_OBC => [], // TODO: Add email here
         self::NETBANKING_PNB      => [],
         self::NETBANKING_BOB      => [],
         self::JIOMONEY            => [],
@@ -93,6 +93,14 @@ class Base extends Core
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN               => ['saurav.chowdhury@razorpay.com'],
+    ];
+
+    /**
+     * Set of attributes, which act as configuration for recon processing
+     * and can be optionally passed in the request.
+     */
+    const CONFIG_PARAMS = [
+        self::FORCE_UPDATE
     ];
 
     protected $validator;

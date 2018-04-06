@@ -1,11 +1,11 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingOriental;
+namespace RZP\Reconciliator\NetbankingObc;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Action;
-use RZP\Gateway\Netbanking\Oriental\Status;
+use RZP\Gateway\Netbanking\Obc\Status;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {

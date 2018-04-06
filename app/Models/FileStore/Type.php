@@ -50,7 +50,8 @@ class Type
 
     const PNB_NETBANKING_CLAIMS             = 'pnb_netbanking_claims';
 
-    const ORIENTAL_NETBANKING_REFUND        = 'oriental_netbanking_refund';
+
+    const OBC_NETBANKING_REFUND             = 'obc_netbanking_refund';
 
     const BATCH_INPUT                       = 'batch_input';
     const BATCH_OUTPUT                      = 'batch_output';
@@ -84,6 +85,8 @@ class Type
     const MERCHANT_PROMOTER_PROOF_URL           = 'promoter_proof_url';
     const MERCHANT_PROMOTER_PAN_URL             = 'promoter_pan_url';
     const MERCHANT_PROMOTER_ADDRESS_URL         = 'promoter_address_url';
+    const MERCHANT_FORM_12A_URL                 = 'form_12a_url';
+    const MERCHANT_FORM_80G_URL                 = 'form_80g_url';
 
     const SETTLEMENT_BUCKET_CONFIG              = 'settlement_bucket_config';
     const TEST_BUCKET_CONFIG                    = 'test_bucket_config';
@@ -117,7 +120,7 @@ class Type
             self::RBL_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_CLAIM,
-            self::ORIENTAL_NETBANKING_REFUND,
+            self::OBC_NETBANKING_REFUND,
             self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
@@ -155,6 +158,8 @@ class Type
             self::MERCHANT_PROMOTER_PROOF_URL,
             self::MERCHANT_PROMOTER_PAN_URL,
             self::MERCHANT_PROMOTER_ADDRESS_URL,
+            self::MERCHANT_FORM_12A_URL,
+            self::MERCHANT_FORM_80G_URL,
         ],
 
         Constants\Entity::INVOICE => [
@@ -196,7 +201,7 @@ class Type
         self::CORPORATION_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,
-        self::ORIENTAL_NETBANKING_REFUND,
+        self::OBC_NETBANKING_REFUND,
         self::AXIS_EMANDATE_DEBIT,
         self::FEDERAL_NETBANKING_REFUND,
         self::RBL_NETBANKING_REFUND,
@@ -228,7 +233,7 @@ class Type
             self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
-            self::ORIENTAL_NETBANKING_REFUND,
+            self::OBC_NETBANKING_REFUND,
             self::ICICI_UPI_REFUND,
             self::SBI_UPI_REFUND,
             self::FUND_TRANSFER_DEFAULT,
@@ -260,6 +265,8 @@ class Type
             self::MERCHANT_PROMOTER_PROOF_URL,
             self::MERCHANT_PROMOTER_PAN_URL,
             self::MERCHANT_PROMOTER_ADDRESS_URL,
+            self::MERCHANT_FORM_12A_URL,
+            self::MERCHANT_FORM_80G_URL,
         ],
 
         self::H2H_BUCKET_CONFIG => [

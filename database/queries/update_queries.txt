@@ -1426,3 +1426,15 @@ WHERE terminal_id in ('7Y30j1EY3JG8ob', '7bOl7tgaZ5kWvf');
 
 UPDATE fund_transfer_attempts
 SET id = UPPER(id) WHERE channel = 'icici';
+
+# Goalwise linked accounts max_payment_amount
+UPDATE merchants
+SET max_payment_amount=1000000000,
+    updated_at=UNIX_TIMESTAMP(NOW())
+WHERE parent_id='7BfRNg10LH7N6T';
+
+# Goalwise linked accounts max_payment_amount
+UPDATE merchants
+SET max_payment_amount=1000000000,
+    updated_at=UNIX_TIMESTAMP(NOW())
+WHERE parent_id='8ytYezIThlseJd';

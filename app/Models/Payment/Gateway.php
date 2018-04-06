@@ -39,7 +39,7 @@ class Gateway
     const NETBANKING_KOTAK       = 'netbanking_kotak';
     const NETBANKING_RBL         = 'netbanking_rbl';
     const NETBANKING_PNB         = 'netbanking_pnb';
-    const NETBANKING_ORIENTAL    = 'netbanking_oriental';
+    const NETBANKING_OBC         = 'netbanking_obc';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
@@ -155,6 +155,8 @@ class Gateway
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::WALLET_PAYZAPP,
         Payment\Gateway::WALLET_MPESA,
+        Payment\Gateway::WALLET_PAYUMONEY,
+        Payment\Gateway::WALLET_FREECHARGE,
     ];
 
     public static $channels = [
@@ -623,7 +625,7 @@ class Gateway
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::PUNB => Gateway::NETBANKING_PNB,
-        IFSC::ORBC => Gateway::NETBANKING_ORIENTAL,
+        IFSC::ORBC => Gateway::NETBANKING_OBC,
     ];
 
     /**
@@ -643,7 +645,7 @@ class Gateway
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
         IFSC::PUNB => Gateway::NETBANKING_PNB,
-        IFSC::ORBC => Gateway::NETBANKING_ORIENTAL,
+        IFSC::ORBC => Gateway::NETBANKING_OBC,
     ];
 
     /**

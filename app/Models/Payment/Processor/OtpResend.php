@@ -16,6 +16,14 @@ trait OtpResend
 
         $payment = $this->retrieve($id);
 
+        $this->trace->info(
+            TraceCode::PAYMENT_OTP_RESEND_REQUEST,
+            [
+                'input'         => $input,
+                'payment_id'    => $payment->getId(),
+                'gateway'       => $payment->getGateway(),
+            ]);
+
         $this->validatePaymentStatus($payment);
 
         $gatewayInput = [];

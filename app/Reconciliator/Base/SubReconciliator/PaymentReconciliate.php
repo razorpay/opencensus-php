@@ -32,7 +32,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_PNB,
         RequestProcessor\Base::NETBANKING_BOB,
         RequestProcessor\Base::UPI_SBI,
-        RequestProcessor\Base::NETBANKING_ORIENTAL
+        RequestProcessor\Base::NETBANKING_OBC
     ];
 
     /*******************

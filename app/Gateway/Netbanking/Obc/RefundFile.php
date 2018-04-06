@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Netbanking\Oriental;
+namespace RZP\Gateway\Netbanking\Obc;
 
 use Carbon\Carbon;
 use RZP\Constants\Mode;
@@ -12,7 +12,7 @@ class RefundFile extends Base\RefundFile
 {
     const DELIMITER               = '|';
     const DATE_FORMAT             = 'Ymd';
-    const FILE_NAME               = 'REFUND_NB_OBC_MERCHANTNAME_';
+    const FILE_NAME               = 'REFUND_NB_OBC_RAZORPAY_';
     const HEADER_NAME             = 'HOBCUTLPRFD';
     const TAIL_NAME               = 'TOBCUTLPRFD';
 
@@ -56,7 +56,7 @@ class RefundFile extends Base\RefundFile
                 ->content($data)
                 ->name($fileName)
                 ->store($store)
-                ->type(FileStore\Type::ORIENTAL_NETBANKING_REFUND)
+                ->type(FileStore\Type::OBC_NETBANKING_REFUND)
                 ->save();
 
         return $creator;

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Netbanking\Oriental\Mock;
+namespace RZP\Gateway\Netbanking\Obc\Mock;
 
 use Carbon\Carbon;
 use RZP\Models\Payment;
@@ -10,7 +10,7 @@ use RZP\Gateway\Base\Mock\PaymentReconciliator as BaseMockRecon;
 
 class Reconciliator extends BaseMockRecon
 {
-    protected $gateway = Payment\Gateway::NETBANKING_ORIENTAL;
+    protected $gateway = Payment\Gateway::NETBANKING_OBC;
 
     protected $fileExtension = FileStore\Format::DAT;
 
