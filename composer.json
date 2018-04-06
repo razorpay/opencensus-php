@@ -91,8 +91,7 @@
         "phpunit/phpunit": "^6.2",
         "symfony/phpunit-bridge": "3.3.*@dev",
         "codedungeon/phpunit-result-printer": "^0.5.4",
-        "orchestra/testbench": "^3.5",
-        "barryvdh/laravel-debugbar": "^3.1"
+        "orchestra/testbench": "^3.5"
     },
     "autoload": {
         "classmap": ["database", "tests", "app/Models/Customer"],

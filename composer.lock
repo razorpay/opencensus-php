@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "f2a451b19cac30d079592f11544add8a",
+    "content-hash": "5a6ebb21e5b40091235ec173d8cab6fa",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -132,7 +132,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2017-07-26T22:05:53+00:00"
+            "time": "2017-08-11T21:16:28+00:00"
         },
         {
             "name": "aws/aws-sdk-php-laravel",
@@ -1028,7 +1028,7 @@
                 "singularize",
                 "string"
             ],
-            "time": "2017-07-22T12:18:28+00:00"
+            "time": "2015-11-06T14:35:42+00:00"
         },
         {
             "name": "doctrine/instantiator",
@@ -1447,16 +1447,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "8.9.2",
+            "version": "8.9.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "dc06ec4f106568fcd79be56e2574a51759d73f67"
+                "reference": "ace655b505f58cc75481e0df54e93418bfa4736d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/dc06ec4f106568fcd79be56e2574a51759d73f67",
-                "reference": "dc06ec4f106568fcd79be56e2574a51759d73f67",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/ace655b505f58cc75481e0df54e93418bfa4736d",
+                "reference": "ace655b505f58cc75481e0df54e93418bfa4736d",
                 "shasum": ""
             },
             "require": {
@@ -1511,7 +1511,7 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2018-03-14T18:52:28+00:00"
+            "time": "2018-04-05T07:34:49+00:00"
         },
         {
             "name": "giggsey/locale",
@@ -2034,7 +2034,7 @@
                 "crawlerdetect",
                 "php crawler detect"
             ],
-            "time": "2017-07-03T20:56:40+00:00"
+            "time": "2017-08-07T18:48:00+00:00"
         },
         {
             "name": "jenssegers/agent",
@@ -2894,7 +2894,7 @@
                 "sftp",
                 "storage"
             ],
-            "time": "2017-04-28T10:15:08+00:00"
+            "time": "2017-08-06T17:41:04+00:00"
         },
         {
             "name": "league/oauth2-server",
@@ -3817,7 +3817,96 @@
                 "parser",
                 "php"
             ],
-            "time": "2017-06-28T20:53:48+00:00"
+            "time": "2017-07-28T14:45:09+00:00"
+        },
+        {
+            "name": "nojacko/email-data-disposable",
+            "version": "1.0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nojacko/email-data-disposable.git",
+                "reference": "f78f2d81902e4043b96f2bdcceeac7eb2a004165"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nojacko/email-data-disposable/zipball/f78f2d81902e4043b96f2bdcceeac7eb2a004165",
+                "reference": "f78f2d81902e4043b96f2bdcceeac7eb2a004165",
+                "shasum": ""
+            },
+            "require-dev": {
+                "ext-intl": "*",
+                "league/climate": "^3.2",
+                "php-curl-class/php-curl-class": "~2.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "EmailData\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "James Jackson",
+                    "email": "git@nojacko.com"
+                }
+            ],
+            "description": "Disposable email domains",
+            "time": "2017-07-12T10:55:04+00:00"
+        },
+        {
+            "name": "nojacko/email-validator",
+            "version": "1.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nojacko/email-validator.git",
+                "reference": "fbd98fdcf373ddbe09843c3ad5a7db9bc3651c3b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nojacko/email-validator/zipball/fbd98fdcf373ddbe09843c3ad5a7db9bc3651c3b",
+                "reference": "fbd98fdcf373ddbe09843c3ad5a7db9bc3651c3b",
+                "shasum": ""
+            },
+            "require": {
+                "nojacko/email-data-disposable": "^1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "EmailValidator\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "James Jackson",
+                    "email": "nojacko@gmail.com",
+                    "homepage": "http://jamesdavidjackson.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Small PHP library to valid email addresses using a number of methods.",
+            "keywords": [
+                "MX",
+                "check",
+                "checker",
+                "disposable",
+                "email",
+                "email address",
+                "library",
+                "role",
+                "throwaway",
+                "validater",
+                "validation"
+            ],
+            "time": "2016-08-09T11:04:18+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -4044,7 +4133,7 @@
                 "message",
                 "psr7"
             ],
-            "time": "2017-03-02T06:56:00+00:00"
+            "time": "2017-08-03T10:12:53+00:00"
         },
         {
             "name": "php-http/guzzle6-adapter",
@@ -5182,7 +5271,7 @@
                 "interactive",
                 "shell"
             ],
-            "time": "2017-07-22T15:14:19+00:00"
+            "time": "2017-07-29T19:30:02+00:00"
         },
         {
             "name": "ramsey/uuid",
@@ -5264,7 +5353,7 @@
                 "identifier",
                 "uuid"
             ],
-            "time": "2017-03-26T20:37:53+00:00"
+            "time": "2017-08-04T13:39:04+00:00"
         },
         {
             "name": "razorpay/ec2-metadata",
@@ -5307,12 +5396,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/hodor.git",
-                "reference": "cc3b5fa77ae5b01992e693fcc99828aa1f1cccac"
+                "reference": "c66b4ef8d405c1816e838d898dbaf9051fc54b14"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/hodor/zipball/cc3b5fa77ae5b01992e693fcc99828aa1f1cccac",
-                "reference": "cc3b5fa77ae5b01992e693fcc99828aa1f1cccac",
+                "url": "https://api.github.com/repos/razorpay/hodor/zipball/c66b4ef8d405c1816e838d898dbaf9051fc54b14",
+                "reference": "c66b4ef8d405c1816e838d898dbaf9051fc54b14",
                 "shasum": ""
             },
             "require": {
@@ -5340,7 +5429,7 @@
                 "source": "https://github.com/razorpay/hodor/tree/master",
                 "issues": "https://github.com/razorpay/hodor/issues"
             },
-            "time": "2018-03-06T17:24:48+00:00"
+            "time": "2018-03-29T11:42:00+00:00"
         },
         {
             "name": "razorpay/ifsc",
@@ -5348,12 +5437,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "a457b6f889633dc2ed54abd706b0a8dfb62f46ae"
+                "reference": "733dbf70dc2add1e3b3016562dbda02c08f96de0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/a457b6f889633dc2ed54abd706b0a8dfb62f46ae",
-                "reference": "a457b6f889633dc2ed54abd706b0a8dfb62f46ae",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/733dbf70dc2add1e3b3016562dbda02c08f96de0",
+                "reference": "733dbf70dc2add1e3b3016562dbda02c08f96de0",
                 "shasum": ""
             },
             "require": {
@@ -5387,7 +5476,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2018-03-20T07:14:22+00:00"
+            "time": "2018-03-19T14:00:07+00:00"
         },
         {
             "name": "razorpay/oauth",
@@ -5439,7 +5528,7 @@
                 "source": "https://github.com/razorpay/oauth/tree/master",
                 "issues": "https://github.com/razorpay/oauth/issues"
             },
-            "time": "2018-03-21 09:14:01"
+            "time": "2018-03-21T09:14:01+00:00"
         },
         {
             "name": "razorpay/razorpay",
@@ -5496,7 +5585,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2017-07-17T20:11:53+00:00"
+            "time": "2017-08-03T11:25:15+00:00"
         },
         {
             "name": "razorpay/slack",
@@ -5605,17 +5694,18 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/spine.git",
-                "reference": "f41d198ed9896d23cc2865b9000675d383a78956"
+                "reference": "21854eea3ee6577f7c329c71f465c2ee609c23f2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/spine/zipball/f41d198ed9896d23cc2865b9000675d383a78956",
-                "reference": "f41d198ed9896d23cc2865b9000675d383a78956",
+                "url": "https://api.github.com/repos/razorpay/spine/zipball/21854eea3ee6577f7c329c71f465c2ee609c23f2",
+                "reference": "21854eea3ee6577f7c329c71f465c2ee609c23f2",
                 "shasum": ""
             },
             "require": {
                 "illuminate/database": ">=5.4",
                 "illuminate/validation": ">=5.4",
+                "nojacko/email-validator": "^1.1",
                 "php": ">=5.4"
             },
             "require-dev": {
@@ -5648,7 +5738,7 @@
                 "source": "https://github.com/razorpay/spine/tree/master",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2017-08-13 11:09:50"
+            "time": "2018-04-04T09:22:31+00:00"
         },
         {
             "name": "razorpay/trace",
@@ -5813,7 +5903,7 @@
                 "source": "https://github.com/razorpay/upi-clients/tree/master",
                 "issues": "https://github.com/razorpay/upi-clients/issues"
             },
-            "time": "2017-06-09T09:05:10+00:00"
+            "time": "2017-08-10T18:30:30+00:00"
         },
         {
             "name": "react/promise",
@@ -7064,7 +7154,7 @@
                 "uri",
                 "url"
             ],
-            "time": "2017-06-24T09:29:48+00:00"
+            "time": "2017-07-21T17:43:13+00:00"
         },
         {
             "name": "symfony/translation",
@@ -7197,7 +7287,7 @@
                 "debug",
                 "dump"
             ],
-            "time": "2017-07-10T14:18:27+00:00"
+            "time": "2017-07-28T06:06:09+00:00"
         },
         {
             "name": "symfony/yaml",
@@ -7550,74 +7640,6 @@
     ],
     "packages-dev": [
         {
-            "name": "barryvdh/laravel-debugbar",
-            "version": "v3.1.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/barryvdh/laravel-debugbar.git",
-                "reference": "7a91480cc6e597caed5117a3c5d685f06d35c5a1"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/barryvdh/laravel-debugbar/zipball/7a91480cc6e597caed5117a3c5d685f06d35c5a1",
-                "reference": "7a91480cc6e597caed5117a3c5d685f06d35c5a1",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/routing": "5.5.x|5.6.x",
-                "illuminate/session": "5.5.x|5.6.x",
-                "illuminate/support": "5.5.x|5.6.x",
-                "maximebf/debugbar": "~1.15.0",
-                "php": ">=7.0",
-                "symfony/debug": "^3|^4",
-                "symfony/finder": "^3|^4"
-            },
-            "require-dev": {
-                "illuminate/framework": "5.5.x"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "3.2-dev"
-                },
-                "laravel": {
-                    "providers": [
-                        "Barryvdh\\Debugbar\\ServiceProvider"
-                    ],
-                    "aliases": {
-                        "Debugbar": "Barryvdh\\Debugbar\\Facade"
-                    }
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Barryvdh\\Debugbar\\": "src/"
-                },
-                "files": [
-                    "src/helpers.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Barry vd. Heuvel",
-                    "email": "barryvdh@gmail.com"
-                }
-            ],
-            "description": "PHP Debugbar integration for Laravel",
-            "keywords": [
-                "debug",
-                "debugbar",
-                "laravel",
-                "profiler",
-                "webprofiler"
-            ],
-            "time": "2018-03-06T08:35:31+00:00"
-        },
-        {
             "name": "codacy/coverage",
             "version": "dev-master",
             "source": {
@@ -7660,7 +7682,7 @@
             ],
             "description": "Sends PHP test coverage information to Codacy.",
             "homepage": "https://github.com/codacy/php-codacy-coverage",
-            "time": "2017-04-05T13:51:33+00:00"
+            "time": "2017-08-09T14:23:33+00:00"
         },
         {
             "name": "codedungeon/phpunit-result-printer",
@@ -8018,67 +8040,6 @@
                 "testing"
             ],
             "time": "2015-04-27T15:56:12+00:00"
-        },
-        {
-            "name": "maximebf/debugbar",
-            "version": "v1.15.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/maximebf/php-debugbar.git",
-                "reference": "30e7d60937ee5f1320975ca9bc7bcdd44d500f07"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/maximebf/php-debugbar/zipball/30e7d60937ee5f1320975ca9bc7bcdd44d500f07",
-                "reference": "30e7d60937ee5f1320975ca9bc7bcdd44d500f07",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.0",
-                "psr/log": "^1.0",
-                "symfony/var-dumper": "^2.6|^3.0|^4.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^4.0|^5.0"
-            },
-            "suggest": {
-                "kriswallsmith/assetic": "The best way to manage assets",
-                "monolog/monolog": "Log using Monolog",
-                "predis/predis": "Redis storage"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.14-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "DebugBar\\": "src/DebugBar/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Maxime Bouroumeau-Fuseau",
-                    "email": "maxime.bouroumeau@gmail.com",
-                    "homepage": "http://maximebf.com"
-                },
-                {
-                    "name": "Barry vd. Heuvel",
-                    "email": "barryvdh@gmail.com"
-                }
-            ],
-            "description": "Debug bar in the browser for php application",
-            "homepage": "https://github.com/maximebf/php-debugbar",
-            "keywords": [
-                "debug",
-                "debugbar"
-            ],
-            "time": "2017-12-15T11:13:46+00:00"
         },
         {
             "name": "mockery/mockery",

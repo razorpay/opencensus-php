@@ -37,7 +37,7 @@ class GenericController extends Controller
 
         $debugBar->enable();
 
-        // We don't want this route, `/v1/_debug` to store any collected data
+        // We don't want this route, `/v1/_inspector`, to store any collected data
         $debugBar->setStorage(null);
 
         // The view gets its data from JavascriptRenderer
