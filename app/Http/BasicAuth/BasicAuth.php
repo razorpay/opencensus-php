@@ -444,7 +444,7 @@ class BasicAuth
     public function keylessPublicAuth()
     {
         // Attempts to retrieve merchant via key less public auth approach
-        $merchant = (new KeylessPublicAuth)->retrieveMerchant();
+        list($mode, $merchant) = (new KeylessPublicAuth)->retrieveModeAndMerchant();
 
         // If we fail to retrieve merchant, return http auth expected exception
         if ($merchant === null)
@@ -452,6 +452,7 @@ class BasicAuth
             return ApiResponse::httpAuthExpected();
         }
 
+        $this->setModeAndDbConnection($mode);
         $this->setMerchant($merchant);
         $this->checkMerchantActivatedForLive();
 

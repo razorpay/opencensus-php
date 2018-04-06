@@ -5,10 +5,10 @@ namespace RZP\Http\BasicAuth;
 use App;
 
 use RZP\Http\Route;
+use RZP\Models\Order;
 use RZP\Constants\Mode;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
-use RZP\Models\Order;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
@@ -60,8 +60,7 @@ final class KeylessPublicAuth
         $app = App::getFacadeRoot();
 
         $this->request = $app['request'];
-        $this->route   = $app['api.route'];
-        $this->ba      = $app['basicauth'];
+        $this->repo    = $app['repo'];
     }
 
     /**
@@ -77,10 +76,10 @@ final class KeylessPublicAuth
      * At last if we are not able to do so, we just return null to caller(
      * BasicAuth) and there it'll follow expected 401 response.
      *
-     * @return Merchant\Entity|null
+     * @return array [string|null, Merchant\Entity|null]
      * @throws BadRequestException
      */
-    public function retrieveMerchant()
+    public function retrieveModeAndMerchant(): array
     {
         $info = $this->retrieveEntityAndSignedId();
 
@@ -88,8 +87,10 @@ final class KeylessPublicAuth
         {
             list($entity, $signedId) = $info;
 
-            return $this->retrieveMerchantForEntity($entity, $signedId);
+            return $this->retrieveModeAndMerchantForEntity($entity, $signedId);
         }
+
+        return [null, null];
     }
 
     /**
@@ -112,7 +113,7 @@ final class KeylessPublicAuth
         $signedId = $this->retrieveXEntityId();
         if ($signedId !== null)
         {
-            $sign   = explode('_', $signedId)[0];
+            $sign   = str_before($signedId, '_');
             $entity = $this->getEntityFromSign($sign);
 
             return [$entity, $signedId];
@@ -141,7 +142,7 @@ final class KeylessPublicAuth
         {
             $signedId = $this->request->get(self::X_ENTITY_ID_QUERY_KEY);
 
-            // unset x_entity_id from query param
+            // Unset x_entity_id from query and/or request(post/form data)
             $this->request->query->remove(self::X_ENTITY_ID_QUERY_KEY);
             $this->request->request->remove(self::X_ENTITY_ID_QUERY_KEY);
         }
@@ -157,90 +158,59 @@ final class KeylessPublicAuth
     /**
      * @param  string $sign
      * @return string
+     * @throws BadRequestException
      */
     protected function getEntityFromSign(string $sign)
     {
-        if ($sign === Order\Entity::getSign())
+        switch ($sign)
         {
-            return E::ORDER;
-        }
-        else if ($sign === Invoice\Entity::getSign())
-        {
-            return E::INVOICE;
-        }
-        else if ($sign === Payment\Entity::getSign())
-        {
-            return E::PAYMENT;
-        }
-        else if ($sign === Subscription\Entity::getSign())
-        {
-            return E::SUBSCRIPTION;
-        }
-        else if ($sign === Customer\Entity::getSign())
-        {
-            return E::CUSTOMER;
-        }
-        else
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            case Order\Entity::getSign():
+                return E::ORDER;
+
+            case Invoice\Entity::getSign():
+                return E::INVOICE;
+
+            case Payment\Entity::getSign():
+                return E::PAYMENT;
+
+            case Subscription\Entity::getSign():
+                return E::SUBSCRIPTION;
+
+            case Customer\Entity::getSign():
+                return E::CUSTOMER;
+
+            default:
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
         }
     }
 
     /**
      * @param  string               $entity
      * @param  string               $signedId
-     * @return Merchant\Entity|null
+     * @return array [string, Merchant\Entity|null]
      * @throws BadRequestException
      */
-    protected function retrieveMerchantForEntity(string $entity, string $signedId)
+    protected function retrieveModeAndMerchantForEntity(string $entity, string $signedId): array
     {
         $entityClass = E::getEntityClass($entity);
-
-        $entityId = $entityClass::verifyIdAndSilentlyStripSign($signedId);
+        $entityId    = $entityClass::verifyIdAndSilentlyStripSign($signedId);
 
         // Try to retrieve merchant using LIVE mode
-        $merchant = $this->setModeAndRetrieveMerchantForEntity($entity, $entityId, Mode::LIVE);
+        $mode     = Mode::LIVE;
+        $merchant = optional($this->repo->$entity->connection($mode)->find($entityId))->merchant;
+
         // If we fail to retrieve merchant, try using TEST mode
         if ($merchant === null)
         {
-            $merchant = $this->setModeAndRetrieveMerchantForEntity($entity, $entityId, Mode::TEST);
+            $mode     = Mode::TEST;
+            $merchant = optional($this->repo->$entity->connection($mode)->find($entityId))->merchant;
         }
 
-        return $merchant;
-    }
-
-    /**
-     * @param  string               $entity
-     * @param  string               $entityId
-     * @param  string               $mode
-     * @return Merchant\Entity|null
-     * @throws BadRequestException
-     */
-    protected function setModeAndRetrieveMerchantForEntity(string $entity, string $entityId, string $mode)
-    {
-        $this->ba->setModeAndDbConnection($mode);
-
-        $repoClass = E::getEntityRepository($entity);
-        $repo = new $repoClass;
-
-        try
+        if ($merchant === null)
         {
-            $model = $repo->findOrFailPublic($entityId);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
 
-            if ($model->getMerchantId() !== null)
-            {
-                return $model->merchant;
-            }
-        }
-        catch (BadRequestException $ex)
-        {
-            // As we will be querying in the LIVE mode first and then in the TEST mode,
-            // catch exception for bad request invalid id incase of LIVE mode and
-            // throw same exception incase of TEST mode or any other exception.
-            if (($ex->getCode() !== ErrorCode::BAD_REQUEST_INVALID_ID) or ($mode === Mode::TEST))
-            {
-                throw $ex;
-            }
-        }
+        return [$mode, $merchant];
     }
 }
