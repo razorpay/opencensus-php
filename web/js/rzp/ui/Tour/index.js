@@ -111,9 +111,9 @@ class Tour extends Component {
   }
 
   onStepClose() {
-    const { onStepChange, children } = this.props;
+    const { onStepChange, activeStep, children } = this.props;
 
-    return onStepChange && onStepChange(children.length - 1, true);
+    return onStepChange && onStepChange(children.length - 1, activeStep, true);
   }
 
   onStepChange(stepNum) {

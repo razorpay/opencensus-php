@@ -45,7 +45,7 @@ const scrollTo = ({
           startPos + easing(timeTaken / duration) * scrollDiff
         );
 
-        if (timeTaken + step > duration) {
+        if (cb && timeTaken + step > duration) {
           cb();
         }
       }, step + timeTaken);

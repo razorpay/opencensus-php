@@ -7,6 +7,8 @@ import scrollTo from 'rzp/utils/scrollTo';
 
 import { showOrHideTour } from 'merchant/modules/session';
 
+import { trackSkipTour, trackFinishTour } from './ga';
+
 @connect(state => state.session, {
   showOrHideTour,
   ...ModalActions,
@@ -16,7 +18,7 @@ export default class MerchantTour extends Component {
     isTourActive: false,
     activeTourStep: 0,
     showOnboardingTour: false,
-    tourInterrupted: false,
+    isTourInterrupted: false,
   };
 
   componentWillReceiveProps(nextProps) {
@@ -36,15 +38,25 @@ export default class MerchantTour extends Component {
   };
 
   closeTour = () => {
+    const { isTourInterrupted } = this.state;
+
     this.props.closeModal();
 
     scrollTo({ endPos: 0 });
     this.props.showOrHideTour(false);
     this.setState({ isTourActive: false, activeTourStep: 0 });
+
+    if (!isTourInterrupted) {
+      trackFinishTour();
+    }
   };
 
-  setTourStep = (activeTourStep, tourInterrupted) => {
-    this.setState({ activeTourStep, tourInterrupted });
+  setTourStep = (activeTourStep, lastStep, isTourInterrupted) => {
+    this.setState({ activeTourStep, isTourInterrupted });
+
+    if (isTourInterrupted) {
+      trackSkipTour(lastStep + 1);
+    }
   };
 
   gotoNextTourStep = () => {
@@ -52,7 +64,7 @@ export default class MerchantTour extends Component {
   };
 
   render() {
-    const { tourInterrupted } = this.state;
+    const { isTourInterrupted } = this.state;
 
     return (
       <div>
@@ -147,7 +159,7 @@ export default class MerchantTour extends Component {
               this by Payment volume or Number of Payments.
             </TourStepBody>
           </TourStep>
-          {!tourInterrupted ? (
+          {!isTourInterrupted ? (
             <TourStep to="#profile-dropdown" className="profile-dropdown-step">
               <TourStepTitle>Tour Complete!</TourStepTitle>
               <TourStepBody>

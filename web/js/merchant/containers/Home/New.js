@@ -43,6 +43,7 @@ import {
   trackSettlementsClick,
   trackPlatformAnalyticsHidden,
   trackForceOldDashboard,
+  trackViewTour,
 } from './ga';
 
 const dateRangePresets = [
@@ -371,6 +372,8 @@ class HomeContainer extends Component {
         }, 500); // let the trasition to hide banner complete
       }
     );
+
+    trackViewTour();
   }
 
   render() {
