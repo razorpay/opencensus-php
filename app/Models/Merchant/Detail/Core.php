@@ -679,6 +679,8 @@ class Core extends Base\Core
             $response[Entity::REJECTION_REASONS] = $rejectionReasons->toArrayPublic();
         }
 
+        $response[Entity::BUSINESS_CATEGORIES] = BusinessCategory::BUSINESS_CATEGORY_SUBCATEGORIES_MAPPING;
+
         $totalFields = count($validationFields);
 
         foreach ($validationFields as $key)

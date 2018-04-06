@@ -41,6 +41,8 @@ class Entity extends Base\PublicEntity
     const COMPANY_CIN                        = 'company_cin';
     const COMPANY_PAN                        = 'company_pan';
     const COMPANY_PAN_NAME                   = 'company_pan_name';
+    const BUSINESS_CATEGORY                  = 'business_category';
+    const BUSINESS_SUBCATEGORY               = 'business_subcategory';
     const TRANSACTION_VOLUME                 = 'transaction_volume';
     const TRANSACTION_VALUE                  = 'transaction_value';
     const PROMOTER_PAN                       = 'promoter_pan';
@@ -100,6 +102,7 @@ class Entity extends Base\PublicEntity
     const ARCHIVED                         = 'archived';
     const REJECTION_REASONS                = 'rejection_reasons';
     const ALLOWED_NEXT_ACTIVATION_STATUSES = 'allowed_next_activation_statuses';
+    const BUSINESS_CATEGORIES              = 'business_categories';
     const VERIFICATION                     = 'verification';
     const CAN_SUBMIT                       = 'can_submit';
     const REVIEWER                         = 'reviewer';
@@ -146,6 +149,8 @@ class Entity extends Base\PublicEntity
         self::COMPANY_CIN,
         self::COMPANY_PAN,
         self::COMPANY_PAN_NAME,
+        self::BUSINESS_CATEGORY,
+        self::BUSINESS_SUBCATEGORY,
         self::TRANSACTION_VOLUME,
         self::TRANSACTION_VALUE,
         self::PROMOTER_PAN,
@@ -224,6 +229,8 @@ class Entity extends Base\PublicEntity
         self::COMPANY_CIN,
         self::COMPANY_PAN,
         self::COMPANY_PAN_NAME,
+        self::BUSINESS_CATEGORY,
+        self::BUSINESS_SUBCATEGORY,
         self::BUSINESS_MODEL,
         self::TRANSACTION_VOLUME,
         self::TRANSACTION_VALUE,

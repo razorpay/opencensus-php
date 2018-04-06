@@ -17,6 +17,9 @@ class Validator extends Base\Validator
     const INVALID_CLARIFICATION_MODE_MESSAGE            = 'Invalid clarification mode';
     const INVALID_FILE_NON_NGO_ORGANISATION_TYPE        = 'Invalid file for non NGO organisation type';
     const INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE = 'Clarification mode should not be sent for this status';
+    const INVALID_BUSINESS_CATEGORY                     = 'Invalid business category';
+    const INVALID_BUSINESS_SUBCATEGORY                  = 'Invalid business subcategory';
+    const INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY     = 'Invalid business subcategory for given category';
 
     protected static $createRules = [
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
@@ -44,6 +47,8 @@ class Validator extends Base\Validator
         Entity::COMPANY_CIN                     => 'sometimes|alpha_num|max:21',
         Entity::COMPANY_PAN                     => 'sometimes|alpha_num|max:15',
         Entity::COMPANY_PAN_NAME                => 'sometimes|max:255',
+        Entity::BUSINESS_CATEGORY               => 'sometimes|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY            => 'sometimes|max:255|custom',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
         Entity::TRANSACTION_VALUE               => 'filled|numeric|min:0|max:10000000',
         Entity::PROMOTER_PAN                    => 'sometimes|alpha_num|max:15',
@@ -110,6 +115,8 @@ class Validator extends Base\Validator
         Entity::COMPANY_CIN                     => 'sometimes|alpha_num|max:21',
         Entity::COMPANY_PAN                     => 'sometimes|alpha_num|max:15',
         Entity::COMPANY_PAN_NAME                => 'sometimes|max:255',
+        Entity::BUSINESS_CATEGORY               => 'sometimes|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY            => 'sometimes|max:255|custom',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
         Entity::TRANSACTION_VALUE               => 'filled|numeric|min:0|max:10000000',
         Entity::PROMOTER_PAN                    => 'sometimes|alpha_num|max:15',
@@ -178,6 +185,10 @@ class Validator extends Base\Validator
     protected static $activationStatusValidators = [
         'activation_status',
         'clarification_mode',
+    ];
+
+    protected static $editValidators = [
+        'business_subcategory_for_category',
     ];
 
     protected static $websiteDetailsRules = [
@@ -263,6 +274,61 @@ class Validator extends Base\Validator
         if (in_array($newStatus, Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$currentStatus], true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_STATUS_CHANGE_MESSAGE);
+        }
+    }
+
+    public function validateBusinessCategory(string $attribute, string $businessCategory)
+    {
+        $businessCategories = array_keys(BusinessCategory::BUSINESS_CATEGORY_SUBCATEGORIES_MAPPING);
+
+        if (in_array($businessCategory, $businessCategories, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(self::INVALID_BUSINESS_CATEGORY);
+        }
+    }
+
+    public function validateBusinessSubcategory(string $attribute, string $businessSubcategory)
+    {
+        $businessCategorySubcategoriesMapping = BusinessCategory::BUSINESS_CATEGORY_SUBCATEGORIES_MAPPING;
+
+        $businessSubcategories = [];
+
+        foreach ($businessCategorySubcategoriesMapping as $businessCategorySubcategoriesList)
+        {
+            $businessCategorySubcategories = $businessCategorySubcategoriesList[BusinessCategory::SUBCATEGORIES];
+
+            $businessSubcategories = array_merge($businessSubcategories, $businessCategorySubcategories);
+        }
+
+        $businessSubcategories = array_keys($businessSubcategories);
+
+        if (in_array($businessSubcategory, $businessSubcategories, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(self::INVALID_BUSINESS_SUBCATEGORY);
+        }
+    }
+
+    public function validateBusinessSubcategoryForCategory(array $input)
+    {
+        if ((isset($input[Entity::BUSINESS_CATEGORY]) === false) or
+            (isset($input[Entity::BUSINESS_SUBCATEGORY]) === false))
+        {
+            return;
+        }
+
+        $businessCategorySubcategoriesMapping = BusinessCategory::BUSINESS_CATEGORY_SUBCATEGORIES_MAPPING;
+
+        $businessCategory = $input[Entity::BUSINESS_CATEGORY];
+
+        $businessSubcategory = $input[Entity::BUSINESS_SUBCATEGORY];
+
+        $businessCategorySubcategories = $businessCategorySubcategoriesMapping[$businessCategory];
+
+        $validBusinessSubcategories = array_keys($businessCategorySubcategories[BusinessCategory::SUBCATEGORIES]);
+
+        if (in_array($businessSubcategory, $validBusinessSubcategories, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(self::INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY);
         }
     }
 
