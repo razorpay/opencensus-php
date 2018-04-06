@@ -104,6 +104,8 @@ class HomeContainer extends Component {
 
     startDate.add(...dateRangePresets[defaultPreset].slice(1));
 
+    const { user, isAdmin } = props;
+
     this.state = {
       startDate,
       endDate,
@@ -116,9 +118,10 @@ class HomeContainer extends Component {
       dateRangePresets,
       showGroupingByPtfm: false,
       scrollAmountToStickHeader: 0,
-      hasNewAnalyticsTour: !LocalStorageService.getItem(
-        'hide_new_analytics_banner'
-      ),
+      hasNewAnalyticsTour:
+        !isAdmin &&
+        user.isActivated &&
+        !LocalStorageService.getItem('hide_new_analytics_banner'),
       dismissNewAnalyticsBanner: false,
     };
 
@@ -401,26 +404,25 @@ class HomeContainer extends Component {
     return (
       <div class="react-root dashboard-home">
         <div ref={node => (this.extraContent = node)} className="extra-content">
-          {!isAdmin &&
-            hasNewAnalyticsTour && (
-              <div
-                className={`v2-tour-banner${
-                  dismissNewAnalyticsBanner ? ' dismiss' : ''
-                }`}
-              >
-                <div className="banner-icon">
-                  <i className="i i-loudspeaker" />
-                </div>
-                <div className="banner-content">
-                  <Banner cta="View Tour" ctaOnClick={this.onShowTour}>
-                    <span>
-                      We heard you! We have redesigned the Dashboard Home so
-                      that you can make the most out of it.
-                    </span>
-                  </Banner>
-                </div>
+          {hasNewAnalyticsTour && (
+            <div
+              className={`v2-tour-banner${
+                dismissNewAnalyticsBanner ? ' dismiss' : ''
+              }`}
+            >
+              <div className="banner-icon">
+                <i className="i i-loudspeaker" />
               </div>
-            )}
+              <div className="banner-content">
+                <Banner cta="View Tour" ctaOnClick={this.onShowTour}>
+                  <span>
+                    We heard you! We have redesigned the Dashboard Home so that
+                    you can make the most out of it.
+                  </span>
+                </Banner>
+              </div>
+            </div>
+          )}
         </div>
         <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}>
           <Header className="clearfix" title="" showMode={false}>
