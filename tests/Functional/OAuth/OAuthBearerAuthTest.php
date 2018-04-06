@@ -102,7 +102,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
             'feature',
             [
                 'entity_id' => '10000000000000',
-                'name' => 'dummy'
+                'name'      => 'dummy'
             ]);
 
         $this->fixtures->create(
@@ -110,7 +110,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
             [
                 'entity_type' => 'application',
                 'entity_id'   => $client->application_id,
-                'name' => 'dummy'
+                'name'        => 'dummy'
             ]);
 
         $accessToken = $this->generateOAuthAccessToken(['scopes' => ['dummy.read']]);
@@ -167,17 +167,11 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $accessToken = $this->generateOAuthAccessToken(
             [
-                'scopes' => ['read_write'],
+                'scopes'    => ['read_write'],
                 'client_id' => $client->getId()
             ]);
 
-        $this->fixtures->create(
-            'feature',
-            [
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000',
-                'name'        => 's2s'
-            ]);
+        $this->fixtures->merchant->addFeatures(['s2s']);
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -205,7 +199,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $accessToken = $this->generateOAuthAccessToken(
             [
-                'scopes' => ['read_write'],
+                'scopes'    => ['read_write'],
                 'client_id' => $client->getId()
             ]);
 
@@ -257,13 +251,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
                 'name'        => 's2s'
             ]);
 
-        $this->fixtures->create(
-            'feature',
-            [
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000',
-                'name'        => 's2s'
-            ]);
+        $this->fixtures->merchant->addFeatures(['s2s']);
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -377,12 +365,12 @@ class OAuthBearerAuthTest extends OAuthTestCase
             'feature',
             [
                 'entity_id' => '10000000000000',
-                'name' => 'virtual_accounts'
+                'name'      => 'virtual_accounts'
             ]);
 
         $accessToken = $this->generateOAuthAccessToken(
             [
-                'scopes' => ['read_write'],
+                'scopes'    => ['read_write'],
                 'client_id' => $client->getId()
             ]);
 
@@ -411,7 +399,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $accessToken = $this->generateOAuthAccessToken(
             [
-                'scopes' => ['read_write'],
+                'scopes'    => ['read_write'],
                 'client_id' => $client->getId()
             ]);
 
@@ -434,7 +422,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
             'feature',
             [
                 'entity_id' => '10000000000000',
-                'name' => 'virtual_accounts'
+                'name'      => 'virtual_accounts'
             ]);
 
         $this->fixtures->create(
@@ -447,7 +435,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $accessToken = $this->generateOAuthAccessToken(
             [
-                'scopes' => ['read_write'],
+                'scopes'    => ['read_write'],
                 'client_id' => $client->getId()
             ]);
 
@@ -478,7 +466,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $accessToken = $this->generateOAuthAccessToken(
             [
-                'scopes' => ['read_write'],
+                'scopes'    => ['read_write'],
                 'client_id' => $client->getId()
             ]);
 
@@ -490,13 +478,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
                 'name'        => 's2s'
             ]);
 
-        $this->fixtures->create(
-            'feature',
-            [
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000',
-                'name'        => 's2s'
-            ]);
+        $this->fixtures->merchant->addFeatures(['s2s']);
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -527,7 +509,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $accessToken = $this->generateOAuthAccessToken(
             [
-                'scopes' => ['read_write'],
+                'scopes'    => ['read_write'],
                 'client_id' => $client->getId()
             ]);
 
@@ -539,21 +521,9 @@ class OAuthBearerAuthTest extends OAuthTestCase
                 'name'        => 's2s'
             ]);
 
-        $this->fixtures->create(
-            'feature',
-            [
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000',
-                'name'        => 's2s'
-            ]);
+        $this->fixtures->merchant->addFeatures(['s2s']);
 
-        $this->fixtures->create(
-            'feature',
-            [
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000',
-                'name'        => 'allow_s2s_apps'
-            ]);
+        $this->fixtures->merchant->addFeatures(['allow_s2s_apps']);
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -583,7 +553,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $accessToken = $this->generateOAuthAccessToken(
             [
-                'scopes' => ['read_write'],
+                'scopes'    => ['read_write'],
                 'client_id' => $client->getId()
             ]);
 
