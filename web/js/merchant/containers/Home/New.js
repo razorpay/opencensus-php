@@ -402,34 +402,25 @@ class HomeContainer extends Component {
       <div class="react-root dashboard-home">
         <div ref={node => (this.extraContent = node)} className="extra-content">
           {!isAdmin &&
-            (!user.isActivated ? (
-              hasNewAnalyticsTour && (
-                <div
-                  className={`v2-tour-banner${
-                    dismissNewAnalyticsBanner ? ' dismiss' : ''
-                  }`}
-                >
-                  <div className="banner-icon">
-                    <i className="i i-loudspeaker" />
-                  </div>
-                  <div className="banner-content">
-                    <Banner cta="View Tour" ctaOnClick={this.onShowTour}>
-                      <span>
-                        Hey! We have redesigned the dashboard for an improved
-                        Razorpay experience. Please take a quick tour before you
-                        get started.
-                      </span>
-                    </Banner>
-                  </div>
+            hasNewAnalyticsTour && (
+              <div
+                className={`v2-tour-banner${
+                  dismissNewAnalyticsBanner ? ' dismiss' : ''
+                }`}
+              >
+                <div className="banner-icon">
+                  <i className="i i-loudspeaker" />
                 </div>
-              )
-            ) : (
-              <div className="v2-onboarding-card">
-                <NewUserOnboardingCard
-                  onSizeChange={this.setScrollAmountToStickHeader}
-                />
+                <div className="banner-content">
+                  <Banner cta="View Tour" ctaOnClick={this.onShowTour}>
+                    <span>
+                      We heard you! We have redesigned the Dashboard Home so
+                      that you can make the most out of it.
+                    </span>
+                  </Banner>
+                </div>
               </div>
-            ))}
+            )}
         </div>
         <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}>
           <Header className="clearfix" title="" showMode={false}>

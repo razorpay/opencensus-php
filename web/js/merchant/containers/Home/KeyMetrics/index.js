@@ -16,6 +16,7 @@ import {
   humanReadableIndian,
   humanReadableIndianCurrency,
 } from 'rzp/utils/numerals';
+import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import { showNotification } from 'rzp/modules/notifications';
 import { groupBy } from 'rzp/utils/pokedex';
@@ -72,6 +73,7 @@ const TabContent = ({
   trend,
   histogram,
   isActive,
+  helpText,
 }) => {
   /*
    * Description:
@@ -101,7 +103,26 @@ const TabContent = ({
    */
   return (
     <div>
-      <span>{!isLoading ? title : <PlaceholderLoader />}</span>
+      <span>
+        {!isLoading ? (
+          <span>
+            {title}
+            {helpText && (
+              <small className="help-content">
+                <i class="i i-help" />
+                <Popover align="top">
+                  <PopoverTitle>What's this?</PopoverTitle>
+                  <PopoverBody>
+                    <div>{helpText}</div>
+                  </PopoverBody>
+                </Popover>
+              </small>
+            )}
+          </span>
+        ) : (
+          <PlaceholderLoader />
+        )}
+      </span>
       <h1>
         {!isLoading ? (
           <span>
@@ -937,7 +958,7 @@ class KeyMetricsContainer extends Component {
         >
           {visibleTabs.map((tabName, index) => {
             const tabData = tabsState[tabName].data,
-              { isCurrency, title } = tabsMeta[tabName];
+              { isCurrency, title, helpText } = tabsMeta[tabName];
 
             return (
               <Tab
@@ -952,6 +973,7 @@ class KeyMetricsContainer extends Component {
                 <TabContent
                   value={tabData.count}
                   name={tabName}
+                  helpText={helpText}
                   isCurrency={isCurrency}
                   title={title}
                   isLoading={loading}

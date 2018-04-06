@@ -76,51 +76,31 @@ export default class MerchantTour extends Component {
           showOverlay={this.state.showOnboardingTour}
         >
           <TourStep to="#analytics-daterange-picker">
-            <TourStepTitle>Date Range Presets</TourStepTitle>
+            <TourStepTitle>Date Range</TourStepTitle>
             <TourStepBody>
-              Select from a list of time presets or set a custom time range.
-              `All Time` will show the aggregates till date.
+              To begin with, you can select any date range to view its graphs.
             </TourStepBody>
           </TourStep>
           <TourStep
             to="#analytics-keymetrics-section"
             className="overview-section-step has-padded-lens"
           >
-            <TourStepTitle>Overview Section</TourStepTitle>
+            <TourStepTitle>Overview of Payments</TourStepTitle>
             <TourStepBody>
-              <ul className="nav">
-                <li>
-                  - <b>Payment Volume</b> and <b>Number of Payments</b> indicate
-                  total number of `Authorized` payments made in the selected
-                  time range.
-                </li>
-                <li>
-                  - `Saved Card Payments` indicate the Percentage of saved card
-                  payments, compared to all the card payments.
-                </li>
-                <li>- Select a tab to see the graphical representations.</li>
-              </ul>
+              This section shows an overview of your payments. You can click on
+              the cards to view detailed graphs.
             </TourStepBody>
           </TourStep>
-          <TourStep
-            to="#keymetrics-grouping"
-            align="left"
-            className="overview-smartfilters-step"
-          >
-            <TourStepTitle>Smart Filters</TourStepTitle>
+          <TourStep to="#keymetrics-grouping" align="left">
+            <TourStepTitle>Detailed Charts</TourStepTitle>
             <TourStepBody>
-              <div>Filter your graphs by:</div>
-              <ul className="nav">
-                <li>- By Total Volume</li>
-                <li>- By Payment Methods</li>
-                <li>- By Platforms</li>
-              </ul>
+              You can also group the charts by Payment Methods or Platforms.
             </TourStepBody>
           </TourStep>
           <TourStep to="#keymetrics-download" align="left">
             <TourStepTitle>Quick Download</TourStepTitle>
             <TourStepBody>
-              Export graphs as CSV files or download them as images.
+              The charts can be downloaded as images or as CSV.
             </TourStepBody>
           </TourStep>
           <TourStep
@@ -130,33 +110,14 @@ export default class MerchantTour extends Component {
           >
             <TourStepTitle>Payment Insights</TourStepTitle>
             <TourStepBody>
-              <ul className="nav">
-                <li>
-                  - <b>Gain insights</b> about your top revenue generating
-                  payment methods.
-                </li>
-                <li>
-                  - <b>Click tiles</b> to drill down the hierarchy of a
-                  particular payment method.
-                </li>
-                <li>
-                  - <b>Hover</b> to view information for smaller tiles.
-                </li>
-                <li>
-                  - <b>Select filters</b> to view by Payment Volume or Number of
-                  Payments
-                </li>
-                <li>
-                  - <b>Download</b> as a CSV file.
-                </li>
-              </ul>
+              This chart shows you a detailed breakdown of payments by Payment
+              Methods.
             </TourStepBody>
           </TourStep>
           <TourStep to="#traffic-split" align="top">
-            <TourStepTitle>Traffic Split on Platforms</TourStepTitle>
+            <TourStepTitle>Payment Split on Platforms</TourStepTitle>
             <TourStepBody>
-              View how payment traffic varies across Platforms. You can filter
-              this by Payment volume or Number of Payments.
+              At last, here you can get an overview of payment data by Platform.
             </TourStepBody>
           </TourStep>
           {!isTourInterrupted ? (

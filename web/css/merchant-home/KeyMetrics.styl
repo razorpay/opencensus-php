@@ -1,3 +1,5 @@
+$tab-inactive-color=#9fb1c7;
+
 placeholder () {
 
   background: #bbc1d3;
@@ -61,6 +63,15 @@ placeholder () {
         margin: 0;
         color: inherit;
 
+        small.help-content {
+
+          display: inline-block;
+          margin-left: 2px;
+          vertical-align: text-bottom;
+          color: $tab-inactive-color;
+        }
+
+
         &:hover {
 
           padding-left: 0;
@@ -119,7 +130,7 @@ placeholder () {
 
               .min-chart-content {
 
-                border-bottom: 1px solid rgba(159, 177, 199, 1);
+                border-bottom: 1px solid $tab-inactive-color;
               }
 
               &.active {

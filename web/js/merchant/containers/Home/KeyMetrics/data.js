@@ -115,6 +115,9 @@ export const tabsMeta = {
     index: 'payments',
     getGroupObj,
     getGroupQuery,
+    helpText:
+      'Payment volume is the amount of "authorised"' +
+      'payments, which were created in the selected time range.',
     getCountQuery: function() {
       return {
         [this.name]: {
@@ -149,6 +152,9 @@ export const tabsMeta = {
     index: 'payments',
     getGroupObj,
     getGroupQuery,
+    helpText:
+      'Number of "authorised" payments, which' +
+      ' were created in the selected time range.',
     getCountQuery: function() {
       return {
         [this.name]: {
@@ -181,6 +187,7 @@ export const tabsMeta = {
     index: 'refunds',
     getGroupObj,
     getGroupQuery,
+    helpText: 'Number of refunds created in the selected time range.',
     getCountQuery: function() {
       return {
         [this.name]: {
@@ -220,6 +227,9 @@ export const tabsMeta = {
     index: 'payments',
     groupByColumnName: 'saved_card',
     isPercent: true,
+    helpText:
+      'Percentage of number of saved card payments,' +
+      ' compared to all the card payments.',
     groupTitleMap: {
       '0': 'Other Card Payments',
       '1': 'Saved Card Payments',

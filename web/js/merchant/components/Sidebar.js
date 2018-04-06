@@ -78,7 +78,7 @@ export default class Sidebar extends Component {
               null;
             } else {
               <div class="nav">
-                {!!+user.activated && (
+                {!+user.activated && (
                   <Link className="activation-status-link" to="/activation">
                     <div className="activation-status">
                       <div className="clearfix">

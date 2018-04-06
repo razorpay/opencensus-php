@@ -111,17 +111,20 @@ export default class ProfileDropdown extends Component {
               </div>
             </div>
 
-            <div
-              class="media media-action"
-              onClick={() => this.showOrHideTour(true)}
-            >
-              <div class="media-left">
-                <div class="media-object">
-                  <i class="i i-tour" />
+            {user.isActivated &&
+              user.isNewAnalyticsEnabled && (
+                <div
+                  class="media media-action"
+                  onClick={() => this.showOrHideTour(true)}
+                >
+                  <div class="media-left">
+                    <div class="media-object">
+                      <i class="i i-tour" />
+                    </div>
+                  </div>
+                  <div class="media-body">Show Dashboard Home Tour</div>
                 </div>
-              </div>
-              <div class="media-body">Show Recent UI Changes</div>
-            </div>
+              )}
 
             <div class="media media-action" onClick={this.submitFeedback}>
               <div class="media-left">

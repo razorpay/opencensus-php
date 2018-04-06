@@ -141,7 +141,7 @@ export default class OnboardingCard extends Component {
     }
 
     return (
-      <div>
+      <div className="onboarding-card-wrapper">
         <div class={`media onboarding-card ${isFirstStep ? 'first-step' : ''}`}>
           {FirstStep}
           <div class="onboarding-illustration" />
