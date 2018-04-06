@@ -777,6 +777,9 @@ final class Route
         'feature_bulk_assign'                      => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                      => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'feature_delete_entity'                    => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
+
+        //Recon summary
+        'daily_reconciliation_summary_fetch'       => ['get',      'daily_recon_summary',                           'AdminController@getDailyReconciliationStatusSummary'              ],
     ];
 
     public static $public = [
@@ -1065,6 +1068,7 @@ final class Route
         'user_reset_password_token',
         'virtual_account_refund_excess',
         'fund_transfer_attempt_process',
+        'daily_reconciliation_summary_fetch'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1944,6 +1948,7 @@ final class Route
             'fund_transfer_attempt_null_utr_report',
             'admin_lock_old_accounts',
             'fund_transfer_attempt_process',
+            'daily_reconciliation_summary_fetch'
         ],
 
         'kotak' => [
@@ -2196,6 +2201,7 @@ final class Route
         // 'onboarding_features_fetch_status',
         // 'feature_onboarding_fetch_responses',
         // 'feature_onboarding_fetch_all_responses',
+        'daily_reconciliation_summary_fetch'
     ];
 
     protected static $jsonpRoutes = [
