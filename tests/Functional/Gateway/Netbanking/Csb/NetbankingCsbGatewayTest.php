@@ -45,7 +45,10 @@ class NetbankingCsbGatewayTest extends TestCase
         $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
 
         $this->assertEquals(Payment\TwoFactorAuth::UNAVAILABLE, $payment[Payment\Entity::TWO_FACTOR_AUTH]);
-        $this->assertEquals($netbanking[Netbanking::BANK_PAYMENT_ID], $payment[Payment\Entity::ACQUIRER_DATA]['bank_transaction_id']);
+        $this->assertEquals(
+            $netbanking[Netbanking::BANK_PAYMENT_ID],
+            $payment[Payment\Entity::ACQUIRER_DATA]['bank_transaction_id']
+        );
 
         $this->assertTestResponse($netbanking);
 
@@ -230,85 +233,6 @@ class NetbankingCsbGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($testData, $netbanking);
     }
 
-    public function testPaymentVerifyHtmlResponse()
-    {
-        $payment = $this->testPaymentFailed();
-
-        $data = $this->testData['testVerifyMismatch'];
-
-        $this->mockPaymentVerifyHtmlPage();
-
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($payment)
-            {
-                $this->verifyPayment($payment[Payment\Entity::ID]);
-            });
-
-        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
-
-        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
-        $this->assertEquals(VerifyStatus::UNKNOWN, $payment[Payment\Entity::VERIFIED]);
-
-        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
-
-        $this->assertTestResponse($netbanking, 'testPaymentFailedNetbankingEntity');
-    }
-
-    public function testPaymentEmptyStringVerifyResponse()
-    {
-        $payment = $this->doAuthAndCapturePayment($this->payment);
-
-        $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
-
-        $data = $this->testData['testVerifyMismatch'];
-
-        $this->mockPaymentVerifyEmptyStringResponse();
-
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($payment)
-            {
-                $this->verifyPayment($payment[Payment\Entity::ID]);
-            });
-
-        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
-
-        $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
-        $this->assertEquals(VerifyStatus::FAILED, $payment[Payment\Entity::VERIFIED]);
-
-        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
-
-        $this->assertTestResponse($netbanking, 'testPayment');
-    }
-
-    public function testPaymentRandomStringVerifyResponse()
-    {
-        $payment = $this->doAuthAndCapturePayment($this->payment);
-
-        $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
-
-        $data = $this->testData['testVerifyMismatch'];
-
-        $this->mockPaymentVerifyRandomStringResponse();
-
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($payment)
-            {
-                $this->verifyPayment($payment[Payment\Entity::ID]);
-            });
-
-        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
-
-        $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
-        $this->assertEquals(VerifyStatus::FAILED, $payment[Payment\Entity::VERIFIED]);
-
-        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
-
-        $this->assertTestResponse($netbanking, 'testPayment');
-    }
-
     private function mockPaymentFailed()
     {
         $this->mockServerContentFunction(
@@ -327,42 +251,6 @@ class NetbankingCsbGatewayTest extends TestCase
                 if ($action === 'verify')
                 {
                     $content[ResponseFields::VERIFICATION] = Status::FAILURE;
-                }
-            });
-    }
-
-    private function mockPaymentVerifyHtmlPage()
-    {
-        $this->mockServerContentFunction(
-            function(& $content, $action = null)
-            {
-                if ($action === 'verify')
-                {
-                    $content = file_get_contents(__DIR__ . '/csbk.html');
-                }
-            });
-    }
-
-    private function mockPaymentVerifyEmptyStringResponse()
-    {
-        $this->mockServerContentFunction(
-            function(& $content, $action = null)
-            {
-                if ($action === 'verify')
-                {
-                    $content = '';
-                }
-            });
-    }
-
-    private function mockPaymentVerifyRandomStringResponse()
-    {
-        $this->mockServerContentFunction(
-            function(& $content, $action = null)
-            {
-                if ($action === 'verify')
-                {
-                    $content = 'Random string';
                 }
             });
     }
