@@ -95,6 +95,7 @@ final class Route
         'payment_refund_authorized'                => ['post',     'payments/refund/authorized',                     'PaymentController@postRefundOldAuthorizedPayments'                 ],
         'payment_capture_verify'                   => ['post',     'payments/{id}/verify/capture',                   'PaymentController@postCaptureVerify'                               ],
         'payment_capture_gateway_manual'           => ['post',     'payments/{id}/gateway/capture',                  'PaymentController@postManualGatewayCapture'                        ],
+        'payment_acknowledge'                      => ['post',     'payments/{id}/acknowledge',                      'PaymentController@postAcknowledge'                                 ],
         'payment_authorize_time_out'               => ['post',     'payments/authorize/timeout/{ids}',               'PaymentController@postAuthorizeLockTimeOut'                        ],
         'refund_create'                            => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
         'refund_edit_status'                       => ['put',      'refunds/{id}/status',                            'RefundController@putRefundStatus'                                        ],
@@ -218,6 +219,7 @@ final class Route
         'webhook_create'                           => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                             => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                            => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
+        'webhook_fetch_events'                     => ['get',      'webhooks/events/all',                            'MerchantController@getWebhookEvents'                               ],
         'webhook_fetch_multiple'                   => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
         'oauth_app_webhook_create'                 => ['post',     'oauth/applications/{id}/webhooks',               'MerchantController@postOAuthApplicationWebhook'                    ],
         'merchant_create_key'                      => ['post',     'keys',                                           'KeyController@postCreateKeys'                                      ],
@@ -775,6 +777,9 @@ final class Route
         'feature_bulk_assign'                      => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                      => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'feature_delete_entity'                    => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
+
+        //Recon summary
+        'daily_reconciliation_summary_fetch'       => ['get',      'daily_recon_summary',                           'AdminController@getDailyReconciliationStatusSummary'              ],
     ];
 
     public static $public = [
@@ -973,6 +978,7 @@ final class Route
         'dispute_fetch',
         'account_features_add',
         'account_features_get',
+        'payment_acknowledge',
     ];
 
     // Only routes defined in internalApps go here
@@ -1062,6 +1068,7 @@ final class Route
         'user_reset_password_token',
         'virtual_account_refund_excess',
         'fund_transfer_attempt_process',
+        'daily_reconciliation_summary_fetch'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1110,6 +1117,7 @@ final class Route
         'merchant_fetch_config',
         'merchant_sub_create',
         'merchant_fetch_referrals',
+        'webhook_fetch_events',
         'customer_delete',
         'device_verify_token',
         'app_fetch_tokens',
@@ -1940,6 +1948,7 @@ final class Route
             'fund_transfer_attempt_null_utr_report',
             'admin_lock_old_accounts',
             'fund_transfer_attempt_process',
+            'daily_reconciliation_summary_fetch'
         ],
 
         'kotak' => [
@@ -1971,6 +1980,7 @@ final class Route
 
         'hosted' => [
             'merchant_secret',
+            'payment_acknowledge',
         ],
 
         'h2h' => [
@@ -2191,6 +2201,7 @@ final class Route
         // 'onboarding_features_fetch_status',
         // 'feature_onboarding_fetch_responses',
         // 'feature_onboarding_fetch_all_responses',
+        'daily_reconciliation_summary_fetch'
     ];
 
     protected static $jsonpRoutes = [

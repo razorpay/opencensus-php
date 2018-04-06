@@ -1159,6 +1159,20 @@ class Service extends Base\Service
         ];
     }
 
+    /**
+     * Marks the payment as acknowledged, if not already acknowledged.
+     *
+     * @param string $paymentId
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function acknowledge(string $paymentId)
+    {
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+
+        $this->getNewProcessor()->acknowledge($payment);
+    }
+
     protected function setHoldFalse(Payment\Entity $payment)
     {
         $this->repo->payment->lockForUpdateAndReload($payment);
