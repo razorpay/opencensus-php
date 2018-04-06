@@ -43,7 +43,7 @@ export default class OnBoarding extends Component {
     this.props
       .getOnboardingResponse(this.props.formType)
       .then(response => {
-        const submitted = response.data && !(response.data instanceof Array);
+        const submitted = !!response.data.id;
 
         this.setState({
           isLoading: false,
