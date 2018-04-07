@@ -35,6 +35,33 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
+    public function getBharatQrCallback($qrCodeId)
+    {
+        $data = [
+            'F002'       => '423156XXXXXX1234',
+            'F003'       => '26000',
+            'F004'       => '2.00',
+            'F011'       => 'abc123',
+            'F012'       => '120000',
+            'F013'       => '1212',
+            'F037'       => 'something',
+            'F038'       => 'randoma',
+            'F039'       => '0',
+            'F041'       => 'abc',
+            'F042'       => 'random',
+            'F043'       => 'RazorpayBangalore',
+            'F102'       => 'paymentId',
+            'PurchaseID' => $qrCodeId,
+            'SenderName' => 'Razorpay',
+        ];
+
+        $hash = $this->getGatewayInstance()->getStringToHashForBharatQr($data);
+
+        $data['CheckSum'] = $this->getGatewayInstance()->getHashOfString($hash);
+
+        return $data;
+    }
+
     public function verify($input)
     {
         $content = json_decode($input, true);
@@ -112,7 +139,7 @@ class Server extends Base\Mock\Server
             ResponseFields::MERCHANT_REF_NUMBER => $input[RequestFields::MERCHANT_REF_NUMBER],
             ResponseFields::RETRIEVAL_REF_NUM   => Str::random(12),
             ResponseFields::RESPONSE_CODE       => '00',
-            ResponseFields::STATUS              => 'S',
+            ResponseFields::STATUS              => 'Success',
         ];
 
         return $response;

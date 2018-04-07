@@ -51,6 +51,34 @@ class Channel
             self::YESBANK,
             self::AXIS,
             self::ICICI,
+            self::HDFC,
+            self::RBL
+        ];
+    }
+
+    /**
+     * Channels for which balance API is available
+     *
+     * @return array
+     */
+    public static function getChannelsWithFetchBalance(): array
+    {
+        return [
+            self::KOTAK,
+        ];
+    }
+
+    /**
+     * Only channels of whose beneficiaries have been
+     * added on RBL account are valid.
+     * @return array
+     */
+    public static function validChannelsForRblTransfer()
+    {
+        return [
+            self::KOTAK,
+//            self::AXIS,
+            self::ICICI
         ];
     }
 

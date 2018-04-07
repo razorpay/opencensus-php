@@ -4,10 +4,14 @@ namespace RZP\Mail\Base;
 
 use App;
 use Config;
+use EmailValidator;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Mail\Mailer as MailerContract;
-use Illuminate\Contracts\Queue\Factory as Queue;
+use Illuminate\Container\Container;
 use Illuminate\Mail\Mailable as BaseMailable;
+use Illuminate\Contracts\Queue\Factory as Queue;
+use Illuminate\Contracts\Mail\Mailer as MailerContract;
+use GuzzleHttp\Exception\ClientException as GuzzleClientException;
+
 use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 
@@ -19,6 +23,8 @@ class Mailable extends BaseMailable
     public $tries = 5;
 
     public $taskId;
+
+    protected $emailValidator;
 
     public function __construct()
     {
@@ -57,7 +63,27 @@ class Mailable extends BaseMailable
 
         try
         {
-            parent::send($mailer);
+            Container::getInstance()->call([$this, 'build']);
+
+            if ($this->isValidRecipient() === true)
+            {
+                $mailer->send($this->buildView(), $this->buildViewData(), function ($message) {
+                    $this->buildFrom($message)
+                         ->buildRecipients($message)
+                         ->buildSubject($message)
+                         ->buildAttachments($message)
+                         ->runCallbacks($message);
+                });
+            }
+            else
+            {
+                $trace->info(TraceCode::MAILER_INVALID_RECIPIENT_EMAIL, [
+                    'from'    => $this->from,
+                    'to'      => $this->to,
+                    'subject' => $this->subject,
+                    'mailable' => get_class($this)
+                ]);
+            }
         }
         catch (\Throwable $e)
         {
@@ -71,9 +97,14 @@ class Mailable extends BaseMailable
                                         'mailable' => get_class($this)
                                    ]);
 
-            // After logging the exception caught, we rethrw it so that the
-            // retry mechanism for mails is triggerred
-            throw $e;
+            // After logging the exception caught, we rethrow it so that the
+            // retry mechanism for mails is triggerred unless the exception
+            // was a guzzle client exception (i.e 4XX errors), in which case,
+            // retrying the request would just cause the request to fail.
+            if (($e instanceof GuzzleClientException) !== true)
+            {
+                throw $e;
+            }
         }
     }
 
@@ -192,5 +223,25 @@ class Mailable extends BaseMailable
     protected function addHeaders()
     {
         return $this;
+    }
+
+    /**
+     * Checks if the recipient email is not void@razorpay.com and is a valid email
+     * by checking MX records. Check details here https://github.com/nojacko/email-validator
+     *
+     * @return boolean
+     */
+    protected function isValidRecipient(): bool
+    {
+        if (filled($this->to) === true)
+        {
+            $emailValidator = new EmailValidator\Validator;
+            $recipientEmail = $this->to[0]['address'];
+
+            return (($recipientEmail !== 'void@razorpay.com') and
+                ($emailValidator->isSendable($recipientEmail) === true));
+        }
+
+        return false;
     }
 }

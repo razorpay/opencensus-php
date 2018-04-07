@@ -12,15 +12,7 @@ class EmiPlan extends Base
             'methods'           => 'debitcard',
             'bank'              => 'HDFC',
             'min_amount'        => '300000',
-        ],
-        [
-            'id'                => '10101010101000',
-            'duration'          => '9',
-            'subvention'        => 'merchant',
-            'rate'              => '1200',
-            'methods'           => 'debitcard',
-            'bank'              => 'HDFC',
-            'min_amount'        => '300000',
+            'merchant_payback'  => '518',
         ],
         [
             'id'                => '10101010101011',
@@ -115,5 +107,12 @@ class EmiPlan extends Base
         }
 
         return $emiPlans;
+    }
+
+    public function enableMerchantSubvention(string $planId)
+    {
+        $attributes = ['emi_plan_id' => $planId];
+
+        $this->fixtures->create('emi_merchant_subvention', $attributes);
     }
 }

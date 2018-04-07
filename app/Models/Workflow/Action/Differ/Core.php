@@ -7,8 +7,10 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
 use RZP\Models\Base\EsDao;
 use RZP\Events\DifferEvent;
+use RZP\Constants\Entity as E;
 use RZP\Models\Workflow\Action;
 use RZP\Constants\Entity as ConstantsEntity;
 
@@ -66,11 +68,45 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
         }
 
+        $merchantId = null;
+
+        if ((array_key_exists(Entity::MAKER_TYPE, $esResponse[0]['_source']) === true) and
+            (array_key_exists(Entity::MAKER_ID, $esResponse[0]['_source']) === true))
+        {
+            if ($esResponse[0]['_source'][Entity::MAKER_TYPE] === E::MERCHANT)
+            {
+                $merchantId = $esResponse[0]['_source'][Entity::MAKER_ID];
+            }
+        }
+
         $diff = [];
 
         if (array_key_exists(Entity::DIFF, $esResponse[0]['_source']))
         {
             $diff = $esResponse[0]['_source'][Entity::DIFF];
+        }
+
+        $diff["old"] = $this->transformFileIdsToUrls($diff["old"], $merchantId);
+        $diff["new"] = $this->transformFileIdsToUrls($diff["new"], $merchantId);
+
+        return $diff;
+    }
+
+    // code for getting the expiring URLs for the files
+    // transforming those urls inline
+    private function transformFileIdsToUrls($diff, $merchantId)
+    {
+        $fileStoreCore = new FileStore\Core;
+
+        foreach ($diff as $key => $value)
+        {
+            if (Files::exists($key) === true)
+            {
+                $diff[$key] = (function($value) use ($fileStoreCore, $merchantId)
+                {
+                    return $fileStoreCore->getSignedUrl($value, $merchantId);
+                })($value);
+            }
         }
 
         return $diff;
@@ -191,7 +227,7 @@ class Core extends Base\Core
                     $oldEntityData = [];
 
                     $entityClass = ConstantsEntity::getEntityClass($entity);
-                    
+
                     $newEntity = new $entityClass;
 
                     // Run validator
@@ -370,7 +406,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function createRelationDiff(    
+    protected function createRelationDiff(
         $oldIds,
         $newIds,
         $relatedEntityName)

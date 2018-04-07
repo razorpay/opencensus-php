@@ -6,17 +6,25 @@ use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
 class ThrottleException extends TooManyRequestsHttpException
 {
+    /**
+     * @var string
+     */
+    protected $message = 'Rate limit exceeded!';
+
+    /**
+     * @var array
+     */
     protected $data = [];
 
-    public function __construct(
-        $retryAfter,
-        $data = [])
+    /**
+     * @param int|null $retryAfter Minimum near time when retry would succeed
+     * @param array    $data       Additional contextual data
+     */
+    public function __construct(int $retryAfter = null, array $data = [])
     {
         $this->data = $data;
 
-        $message = 'Rate limit exceeded.';
-
-        parent::__construct($retryAfter, $message);
+        parent::__construct($retryAfter, $this->message);
     }
 
     public function getData()

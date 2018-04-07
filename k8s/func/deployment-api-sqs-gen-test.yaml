@@ -1,0 +1,66 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: api-sqs-gen-test
+  namespace: func
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: api-sqs-es-sync
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        iam.amazonaws.com/role: func-api
+      labels:
+        name: api-sqs-gen-test
+    spec:
+      containers:
+      - name: api
+        env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: api
+              key: APP_MODE
+        image: razorpay/api:65776c4923b1d010ba80b9ae7d2f3e0d1014299b
+        imagePullPolicy: IfNotPresent
+        command: ["/entrypoint.sh"]
+        args: ["sqs_multi_default", "api-gen-test", "20"]
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources:
+          limits:
+            memory: "244Mi"
+            cpu: "50m" 
+          requests:
+            memory: "244Mi"
+            cpu: "50m"
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/bin/php", "artisan", "down"]
+        volumeMounts:
+          - name: trace
+            mountPath: /app/storage/logs/
+          - name: apache
+            mountPath: /var/log/apache/
+      dnsPolicy: Default
+      imagePullSecrets:
+      - name: registry
+      nodeSelector:
+        node-role.kubernetes.io/qa: ""
+      restartPolicy: Always
+      volumes:
+      - name: trace
+        hostPath:
+          path: /var/log/fluentd/splunk/api/trace
+      - name: apache
+        hostPath:
+          path: /var/log/fluentd/splunk/api/apache

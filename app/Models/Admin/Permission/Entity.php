@@ -48,6 +48,7 @@ class Entity extends Base\Entity
         self::ASSIGNABLE,
         self::ORGS,
         self::WORKFLOW_ORGS,
+        self::ROLES,
     ];
 
     protected $diff = [

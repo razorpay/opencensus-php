@@ -156,9 +156,22 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
+        // @todo: Add flow in the payment entity
+        if (isset($input['flow']) === true)
+        {
+            $input['_']['flow'] = $input['flow'];
+
+            unset($input['flow']);
+        }
+
         $data = $this->service(E::PAYMENT)->processUpi($input);
 
         $response = ['razorpay_payment_id' => $data['payment_id']];
+
+        if (isset($data['data']['intent_url']) === true)
+        {
+            $response['link'] = $data['data']['intent_url'];
+        }
 
         return ApiResponse::json($response);
     }
@@ -188,6 +201,12 @@ class PaymentCreateController extends Controller
         $this->setMerchantCallbackUrlIfApplicable($input);
 
         $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
+
+        // Converts all the amounts to rupees
+        foreach ($data as $key => $value)
+        {
+            $data[$key] = $value / 100;
+        }
 
         if ($retJson)
         {
@@ -333,8 +352,12 @@ class PaymentCreateController extends Controller
             else if (($data['type'] === 'async') or
                      ($data['type'] === 'intent'))
             {
+                $templateData = [
+                    'data' => $data,
+                    'api'  => $this->config->get('url.api.production')
+                ];
                 return View::make('gateway.gatewayAsyncForm')
-                           ->with('data', $data);
+                           ->with('data', $templateData);
             }
             else if ($data['type'] === 'wallet')
             {

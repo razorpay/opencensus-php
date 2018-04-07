@@ -622,6 +622,26 @@ return [
         ]
     ],
 
+    'testUpiFilter'  => [
+        'payment_options' => [
+            'method' => Method::UPI,
+            'vpa' => 'vishnu@icici',
+        ],
+        'fixtures' => [
+            [
+                'method'      => Method::UPI,
+                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'gateway'     => 'upi_mindgate',
+                'type'        => 'filter',
+                'filter_type' => 'reject',
+                'group'       => 'method_filter',
+            ],
+        ],
+        'expected_terminal_ids' => [
+            '100UPIICICITml',
+        ]
+    ],
+
     'testInternationalFilter' => [
         [
             'payment_options' => [
@@ -1012,6 +1032,27 @@ return [
         'expected_terminal_ids' => [
             '1000HdfcShared',
         ]
+    ],
+
+    'testTerminalSortingWithSorterRuleForDirectTerminal' => [
+        'payment_options' => [
+            'method' => Method::CARD,
+        ],
+        'fixtures' => [
+            [
+                'method'          => Method::CARD,
+                'merchant_id'     => Merchant\Account::SHARED_ACCOUNT,
+                'gateway'         => 'hdfc',
+                'type'            => 'sorter',
+                'load'            => 100,
+                'shared_terminal' => 0,
+            ],
+        ],
+        'expected_terminal_ids' => [
+            '1000HdfcDirect',
+            '1000AxisDirect',
+            '1000HdfcShared',
+        ],
     ],
 
     'testFeatureBasedMigrationPlan' => [

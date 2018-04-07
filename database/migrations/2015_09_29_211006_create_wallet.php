@@ -57,6 +57,7 @@ class CreateWallet extends Migration {
             $table->index('refund_id');
             $table->index('gateway_refund_id');
             $table->index('wallet');
+            $table->index('created_at');
         });
     }
 

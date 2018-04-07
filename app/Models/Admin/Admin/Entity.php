@@ -8,13 +8,17 @@ use App;
 use Hash;
 use Carbon\Carbon;
 use RZP\Constants\Table;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Models\Base\Traits\RevisionableTrait;
+
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Permission;
-use RZP\Models\Base\Traits\RevisionableTrait;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Role;
+use RZP\Models\Admin\Group;
+use RZP\Models\Workflow\Action;
 
 class Entity extends Base\Entity
 {
@@ -190,28 +194,33 @@ class Entity extends Base\Entity
     // -------------- Relations -------------
     public function org()
     {
-        return $this->belongsTo('RZP\Models\Admin\Org\Entity');
+        return $this->belongsTo(Org\Entity::class);
     }
 
     public function roles()
     {
-        return $this->morphToMany('RZP\Models\Admin\Role\Entity', 'entity', Table::ROLE_MAP);
+        return $this->morphToMany(Role\Entity::class, 'entity', Table::ROLE_MAP);
     }
 
     // Admins can be part of multiple groups
     public function groups()
     {
-        return $this->morphToMany('RZP\Models\Admin\Group\Entity', 'entity', Table::GROUP_MAP);
+        return $this->morphToMany(Group\Entity::class, 'entity', Table::GROUP_MAP);
     }
 
     public function merchants()
     {
-        return $this->morphToMany('RZP\Models\Merchant\Entity', 'entity', Table::MERCHANT_MAP);
+        return $this->morphToMany(Merchant\Entity::class, 'entity', Table::MERCHANT_MAP);
     }
 
     public function tokens()
     {
-        return $this->hasMany('RZP\Models\Admin\Admin\Token\Entity');
+        return $this->hasMany(Token\Entity::class);
+    }
+
+    public function workflows()
+    {
+        return $this->morphMany(Action\Entity::class, Action\Entity::MAKER);
     }
 
     public function getPermissionsList()
@@ -456,6 +465,22 @@ class Entity extends Base\Entity
         }
 
         return false;
+    }
+
+    public function getSuperAdminRole()
+    {
+        $roles = $this->roles;
+
+        foreach ($roles as $role)
+        {
+            // default role is SuperAdmin
+            if ($role->isSuperAdminRole() === true)
+            {
+                return $role;
+            }
+        }
+
+        return null;
     }
 
     public function isLocked()

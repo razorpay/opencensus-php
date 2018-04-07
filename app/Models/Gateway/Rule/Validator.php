@@ -4,12 +4,13 @@ namespace RZP\Models\Gateway\Rule;
 
 use RZP\Base;
 use RZP\Exception;
-use RZP\Models\Bank\IFSC;
 use RZP\Models\Card;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
-use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Category;
+use RZP\Gateway\Upi\Base\ProviderCode;
 
 class Validator extends Base\Validator
 {
@@ -26,7 +27,7 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL    => 'filled|boolean',
         Entity::NETWORK_CATEGORY => 'sometimes_if:type,filter|string|max:30',
         Entity::CATEGORY2        => 'sometimes_if:type,filter|string|max:30|custom',
-        Entity::SHARED_TERMINAL  => 'sometimes_if:type,filter|boolean',
+        Entity::SHARED_TERMINAL  => 'filled|boolean',
         Entity::METHOD           => 'required|string|max:30',
         Entity::METHOD_TYPE      => 'filled|string|max:10',
         Entity::ISSUER           => 'filled|string',
@@ -182,6 +183,12 @@ class Validator extends Base\Validator
 
                 break;
 
+            case Method::UPI:
+
+                $this->validateUpiIssuer($input);
+
+                break;
+
             default:
 
                 // For certain methods like UPI there is no concept of issuer, so
@@ -277,6 +284,15 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'wallet issuer not valid for gateway');
         }
+    }
+
+    protected function validateUpiIssuer(array $input)
+    {
+       if (ProviderCode::validateBankCode($input[Entity::ISSUER]) === false)
+       {
+           throw new Exception\BadRequestValidationFailureException(
+               'Invalid bank code for PSP');
+       }
     }
 
     protected function validateNetwork(array $input)

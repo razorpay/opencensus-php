@@ -14,7 +14,7 @@ class Server extends Base\Mock\Server
     use Base\Mock\GatewayTrait;
 
     const CUSTOMER_ACCOUNT_NUMBER = '123000000345678';
-    const BANK_REF_NUMBER         = 'AB1234';
+    const BANK_REF_NUMBER         = '12345678';
 
     public function authorize($input)
     {
@@ -31,10 +31,24 @@ class Server extends Base\Mock\Server
         $redirectUrl = $content[RequestFields::CALLBACK_URL];
 
         $request = [
-            'url' => $redirectUrl,
+            'url'     => $redirectUrl,
             'content' => $authResponseContent,
-            'method' => 'post',
+            'method'  => 'post',
         ];
+
+        $modifyContent = [
+            'request' => $request,
+            'content' => $content
+        ];
+
+        $this->content($modifyContent, 'cancelPayment');
+
+        $request = $modifyContent['request'];
+
+        if ($request['method'] === 'get')
+        {
+            return $request['url'];
+        }
 
         return $this->makePostResponse($request);
     }

@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Mail\Payment\FailedToAuthorized as FailedToAuthorizedMail;
 use RZP\Models\Payment;
 use RZP\Tests\Functional\Fixtures;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity;
@@ -19,6 +20,7 @@ use RZP\Error\PublicErrorCode;
 class AxisGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -43,28 +45,27 @@ class AxisGatewayTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
         $this->assertNull($txn);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
 
         $this->assertNull($payment['transaction_id']);
         $this->assertEquals(TwoFactorAuth::PASSED, $payment[Entity::TWO_FACTOR_AUTH]);
 
-        $migs = $this->getLastEntity('axis_migs', true);
+        $migs = $this->getDbLastEntityPublic('axis_migs');
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentAxisMigsEntity'], $migs);
 
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
-        $txn = $this->getLastEntity('transaction', true);
+        $txn = $this->getDbLastEntityPublic('transaction');
 
-        $this->assertArraySelectiveEquals(
-            $this->testData['testTransactionAfterCapture'], $txn);
+        $this->assertArraySelectiveEquals($this->testData['testTransactionAfterCapture'], $txn);
 
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment);
 
-        $migs = $this->getLastEntity('axis_migs', true);
+        $migs = $this->getDbLastEntityPublic('axis_migs');
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentAxisMigsCaptureEntity'], $migs);
@@ -447,18 +448,18 @@ class AxisGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals($payment['status'], 'authorized');
 
-        Mail::assertSent(FailedToAuthorizedMail::class);
+        Mail::assertQueued(FailedToAuthorizedMail::class);
     }
 
     public function testForceAuthorizePayment()
     {
         $payment = $this->doAuthPayment();
-        $migs = $this->getLastEntity('axis_migs', true);
+        $migs = $this->getDbLastEntityPublic('axis_migs');
         $txnNo = (int) $migs['vpc_TransactionNo'] - 1;
 
         $this->failAuthorizePayment();
 
-        $payment = $this->getLastEntity('axis_migs', true);
+        $payment = $this->getDbLastEntityPublic('axis_migs');
         $pid1 = 'pay_'.$payment['payment_id'];
         $txnNoNew = $payment['vpc_TransactionNo'];
 
@@ -466,12 +467,13 @@ class AxisGatewayTest extends TestCase
 
         $this->resetMockServer();
 
-        $this->forceAuthorizeFailedPayment($pid1, ['vpc_TransactionNo' => $txnNo]);
+        $content = $this->forceAuthorizeFailedPayment($pid1, ['vpc_TransactionNo' => $txnNo]);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
+
         $this->assertEquals($payment['status'], 'authorized');
 
-        $payment = $this->getLastEntity('axis_migs', true);
+        $payment = $this->getDbLastEntityPublic('axis_migs');
 
         $this->assertEquals($payment['vpc_TransactionNo'], $txnNoNew);
     }

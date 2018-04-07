@@ -89,6 +89,15 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
+    public function notifyInvoicesOfBatch(string $batchId, array $input)
+    {
+        $batch = $this->repo->batch->findByPublicIdAndMerchant(
+                                        $batchId,
+                                        $this->merchant);
+
+        $this->core->notifyInvoicesOfBatch($batch, $input);
+    }
+
     public function delete(string $id): array
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
@@ -240,25 +249,15 @@ class Service extends Base\Service
     {
         $routeName = $this->app['api.route']->getCurrentRouteName();
 
-        if (($routeName === 'invoice_view_test') or
-            ($routeName === 'invoice_view_test_post'))
-        {
-            $mode = Mode::TEST;
-        }
-        else
-        {
-            $mode = Mode::LIVE;
-        }
-
-        \Database\DefaultConnection::set($mode);
-
-        $this->app['rzp.mode'] = $mode;
+        // Gets mode per route and sets application & db mode.
+        $mode = str_contains($routeName, '_test') ? Mode::TEST : Mode::LIVE;
+        $this->app['basicauth']->setModeAndDbConnection($mode);
 
         $invoice = $this->repo->invoice->findByPublicId($invoiceId);
 
         $invoice->getValidator()->validateInvoiceViewable();
 
-        return (new ViewDataSerializer($invoice))->getWithSubscriptionIfApplicable();
+        return (new ViewDataSerializer($invoice))->serializeForHosted();
     }
 
     /**

@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\VirtualAccount;
 
 use Closure;
 use Mockery;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
@@ -35,6 +36,8 @@ class VirtualAccountTest extends TestCase
 
         $this->ba->privateAuth();
 
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
         $this->customer = $this->getEntityById('customer', 'cust_100000customer');
 
         $this->setupMockDns();
@@ -47,6 +50,66 @@ class VirtualAccountTest extends TestCase
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testCreateVirtualAccountForOrder()
+    {
+        $order = $this->fixtures->create('order');
+
+        $response = $this->createVirtualAccountForOrder($order, [
+            'notes' => [
+                'a' => 'b',
+            ],
+        ]);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals($order->getAmountDue(), $virtualAccount['amount_expected']);
+        $this->assertEquals('active', $virtualAccount['status']);
+        $this->assertEquals($order->getId(), $virtualAccount['entity_id']);
+        $this->assertEquals('order', $virtualAccount['entity_type']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $this->assertEquals($virtualAccount['id'], 'va_' . $bankAccount['entity_id']);
+
+        $originalVirtualAccountId = $virtualAccount['id'];
+
+        // Another request does not create a new VA
+        $this->createVirtualAccountForOrder($order);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals($originalVirtualAccountId, $virtualAccount['id']);
+
+        $this->closeVirtualAccount($virtualAccount['id']);
+
+        // If the old VA is closed, then another request would create a new one
+        $this->createVirtualAccountForOrder($order);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertNotEquals($originalVirtualAccountId, $virtualAccount['id']);
+    }
+
+    public function testCreateVirtualAccountForOrderCustomerFeeBearer()
+    {
+        $order = $this->fixtures->create('order');
+
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $response = $this->createVirtualAccountForOrder($order);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(1005900, $virtualAccount['amount_expected']);
+        $this->assertEquals($order->getId(), $virtualAccount['entity_id']);
+    }
+
+    public function testCreateVirtualAccountInvalidReceiverTypes()
+    {
+        $this->startTest();
     }
 
     public function testCreateVirtualAccountCrypto()
@@ -70,7 +133,11 @@ class VirtualAccountTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
-        $qrString = $response['receivers'][0]['qr_string'];
+        $qrCode = $this->getLastEntity('qr_code', true);
+
+        $qrString = $qrCode['qr_string'];
+
+        $this->assertRegExp('^http://dwarf.razorpay.in/^', $qrCode['short_url']);
 
         $tlvArray = $this->getTagMappedValues($qrString);
 
@@ -102,11 +169,97 @@ class VirtualAccountTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
-        $qrString = $response['receivers'][0]['qr_string'];
+        $qrCode = $this->getLastEntity('qr_code', true);
+
+        $qrString = $qrCode['qr_string'];
 
         $tlvArray = $this->getTagMappedValues($qrString);
 
         $this->assertEquals($tlvArray['54'], '100.00');
+    }
+
+    public function testDownloadQrCode()
+    {
+        $response = $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+            'amount_expected' => 10000,
+        ]);
+
+        $qrCodeId = $response['receivers'][0]['id'];
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/t/qrcode/' . $qrCodeId,
+        ];
+
+        $this->ba->directAuth();
+
+        $response = $this->sendRequest($request);
+
+        $this->assertContentTypeForResponse('image/jpeg', $response);
+    }
+
+    public function testDownloadQrInLiveMode()
+    {
+        $response = $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+            'amount_expected' => 10000,
+        ]);
+
+        $qrCodeId = $response['receivers'][0]['id'];
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/l/qrcode/' . $qrCodeId,
+        ];
+
+        $this->ba->directAuth();
+
+        $this->expectException(BadRequestException::class);
+
+        $this->sendRequest($request);
+    }
+
+    public function testDownloadQrInTestMode()
+    {
+        $this->fixtures->merchant->activate();
+
+        $attributes =  [
+            'name'            => 'Test virtual account',
+            'description'     => 'VA for tests',
+            'amount_expected' => 10000,
+            'receivers'       => [
+                'types' => [
+                    'qr_code',
+                ],
+            ],
+            'notes'           => [
+                'a' => 'b',
+            ],
+        ];
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts',
+            'content' => $attributes,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $qrCodeId = $response['receivers'][0]['id'];
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/t/qrcode/' . $qrCodeId,
+        ];
+
+        $this->ba->directAuth();
+
+        $this->expectException(BadRequestException::class);
+
+        $this->sendRequest($request);
     }
 
     public function testCreateVirtualAccountWithDescriptor()
@@ -322,6 +475,82 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
     }
 
+    public function testVirtualAccountForOrderPay()
+    {
+        $order = $this->fixtures->create('order');
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 10000]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(1000000, $virtualAccount['amount_paid']);
+        $this->assertEquals('paid', $virtualAccount['status']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('paid', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+    }
+
+    public function testVirtualAccountForOrderPayCustomerFeeBearer()
+    {
+        $order = $this->fixtures->create('order');
+
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 10059]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(1005900, $virtualAccount['amount_paid']);
+        $this->assertEquals('paid', $virtualAccount['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('paid', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals(1005900, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    public function testVirtualAccountForOrderPayAndRefund()
+    {
+        $order = $this->fixtures->create('order');
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        // Will see about this later
+        // $this->assertEquals(0, $virtualAccount['amount_paid']);
+        $this->assertEquals('active', $virtualAccount['status']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('attempted', $order['status']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        $refund =  $this->getLastEntity('refund', true);
+        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+    }
+
     public function testVirtualAccountExcess()
     {
         $virtualAccount = $this->createVirtualAccount([
@@ -390,7 +619,7 @@ class VirtualAccountTest extends TestCase
         $this->createWebhook(
             [
                 'events' => [
-                    'payment.captured' => '1',
+                    'virtual_account.credited' => '1',
                 ]
             ]);
 
@@ -400,7 +629,7 @@ class VirtualAccountTest extends TestCase
         {
             $data['event'] = json_decode($data['event'], true);
 
-            $this->assertEquals('payment.captured', $data['event']['event']);
+            $this->assertEquals('virtual_account.credited', $data['event']['event']);
 
             $this->assertArraySelectiveEquals($testData, $data);
 

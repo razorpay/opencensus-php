@@ -36,6 +36,7 @@ trait PaymentTrait
     use PaymentFirstDataTrait;
     use PaymentEbsTrait;
     use PaymentCreationTrait;
+    use PaymentFssTrait;
     use PaymentWalletAirtelMoneyTrait;
 
     use RequestResponseFlowTrait
@@ -118,6 +119,16 @@ trait PaymentTrait
         return $this->getAndMatchPayment($id, $paymentResponse);
     }
 
+    public function createRefundFromPayments($payments)
+    {
+        foreach ($payments as $payment)
+        {
+            $attrs = ['payment' => $payment, 'amount'  => '100'];
+            $refund = $this->fixtures->create('refund:from_payment', $attrs);
+            $refunds[] = $refund;
+        }
+    }
+
     protected function createAndGetFeesForPayment($payment = null)
     {
         if ($payment === null)
@@ -198,7 +209,7 @@ trait PaymentTrait
 
     protected function sendAutoCaptureEmails()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $request = [
             'url'    => '/payments/autocapture/email',
@@ -305,6 +316,17 @@ trait PaymentTrait
 
     protected function doAuthPayment($payment = null, $server = null, $key = null)
     {
+        $request = $this->buildAuthPaymentRequest($payment, $server);
+
+        $this->ba->publicAuth($key);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function buildAuthPaymentRequest($payment = null, $server = null): array
+    {
         if ($payment === null)
         {
             $payment = $this->getDefaultPaymentArray();
@@ -321,7 +343,14 @@ trait PaymentTrait
             $request['server'] = $server;
         }
 
-        $this->ba->publicAuth($key);
+        return $request;
+    }
+
+    public function doAuthPaymentOAuth($payment = null, $server = null, $key = null)
+    {
+        $request = $this->buildAuthPaymentRequest($payment, $server);
+
+        $this->ba->oauthPublicTokenAuth($key);
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -403,7 +432,7 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function doS2sPrivateAuthAndCapturePayment($payment = null)
+    protected function doS2SPrivateAuthAndCapturePayment($payment = null)
     {
         $paymentAuth = $this->doS2SPrivateAuthPayment($payment);
 
@@ -707,7 +736,7 @@ trait PaymentTrait
             'url'    => '/payments/'.$id.'/verify',
             'method' => 'GET');
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -720,7 +749,7 @@ trait PaymentTrait
             'url'    => '/payments/'.$id.'/authorize_failed',
             'method' => 'POST');
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -794,7 +823,7 @@ trait PaymentTrait
 
     protected function disputePayment(Payment\Entity $payment, int $deduct = 0): array
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $reason = $this->fixtures->create('dispute_reason');
 
@@ -821,7 +850,7 @@ trait PaymentTrait
 
     protected function verifyRefund($id)
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = [];
 
@@ -837,7 +866,7 @@ trait PaymentTrait
 
     protected function retryFailedRefunds($gateway = [])
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $content = [];
 
@@ -854,7 +883,7 @@ trait PaymentTrait
 
     protected function retryFailedRefund($id, $content = [])
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $request = array(
             'method'  => 'POST',
@@ -896,7 +925,7 @@ trait PaymentTrait
 
     protected function refundOldAuthorizedPayments()
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = array(
             'method'  => 'POST',
@@ -914,7 +943,7 @@ trait PaymentTrait
             'url'    => '/payments/'.$id.'/authorize_failed',
             'method' => 'post');
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -928,7 +957,7 @@ trait PaymentTrait
             'method'  => 'post',
             'content' => $content);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -1038,23 +1067,32 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function getNetbankingRecurringPaymentArray($bank = 'HDFC')
+    protected function getEmandatePaymentArray($bank = 'HDFC', $authType = 'netbanking', $amount = 2000)
     {
         $payment = $this->getDefaultNetbankingPaymentArray($bank);
 
-        $payment['amount'] = 2000;
-
+        $payment['method'] = Payment\Method::EMANDATE;
+        $payment['bank'] = $bank;
+        $payment['amount'] = $amount;
+        $payment['auth_type'] = $authType;
         $payment['recurring'] = true;
 
         $payment['customer_id'] = 'cust_100000customer';
 
+        if ($authType === Payment\AuthType::AADHAAR)
+        {
+            $payment['aadhaar']['number'] = '123123123123';
+        }
+
         return $payment;
     }
 
-    protected function getEmandateNetbankingRecurringPaymentArray($bank = 'HDFC', $amount = 2000)
+    protected function getEmandateNetbankingRecurringPaymentArray($bank = 'HDFC', $amount = 4000)
     {
-        $payment = $this->getDefaultNetbankingPaymentArray($bank);
+        $payment = $this->getDefaultPaymentArray();
+        unset($payment['card']);
 
+        $payment['bank'] = $bank;
         $payment['amount'] = $amount;
 
         if (in_array($bank, Payment\Gateway::$zeroRupeeEmandateBanks, true) === true)
@@ -1530,7 +1568,7 @@ trait PaymentTrait
                     $binRiskMapping = [
                         '510510' => '22.0',
                         '401201' => '15.3',
-                        '555555' => '2.4'
+                        '555555' => '2.4',
                     ];
 
                     if (isset($binRiskMapping[$bin]) === true)

@@ -5,6 +5,23 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testSaveGatewayPriority' => [
+        'request' => [
+            'content' => [
+                'axis_migs'   => '100',
+            ],
+            'url' => '/gateway/priorities/card',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'card' => [
+                    'axis_migs'   => '100',
+                ]
+            ]
+        ]
+    ],
+
     'testRecurringInternationalPaymentWhenNotAllowed' => [
         'response' => [
             'content' => [
@@ -133,4 +150,21 @@ return [
             'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
         ],
     ],
+
+    'testRecurringPaymentCardNetworkNotSupported' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestException::class,
+            'message'             => 'Recurring is not supported on this card',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED,
+        ],
+    ]
 ];

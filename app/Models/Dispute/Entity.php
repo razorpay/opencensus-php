@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Dispute;
 
+use App;
+
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -43,7 +45,18 @@ class Entity extends Base\PublicEntity
      *  Field for edit input, when accepted chargeback amount
      *  is lesser than disputed amount.
      */
-    const ACCEPTED_AMOUNT = 'accepted_amount';
+    const ACCEPTED_AMOUNT         = 'accepted_amount';
+
+    // Input keys
+    const ACCEPT_DISPUTE          = 'accept_dispute';
+    const SUBMIT                  = 'submit';
+
+    // Output attributes
+    const FILES                   = 'files';
+    const RESPOND_BY              = 'respond_by';
+
+    // For expands
+    const PAYMENT                 = 'payment';
 
     protected static $sign = 'disp';
 
@@ -77,6 +90,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::PAYMENT_ID,
+        self::PAYMENT,
         self::PARENT_ID,
         self::REASON_ID,
         self::TRANSACTION_ID,
@@ -101,19 +115,17 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
-        self::MERCHANT_ID,
         self::PAYMENT_ID,
-        self::PARENT_ID,
         self::AMOUNT,
         self::CURRENCY,
         self::GATEWAY_DISPUTE_ID,
         self::REASON_CODE,
         self::REASON_DESCRIPTION,
-        self::RAISED_ON,
-        self::EXPIRES_ON,
+        self::RESPOND_BY,
         self::STATUS,
         self::PHASE,
         self::COMMENTS,
+        self::FILES,
         self::CREATED_AT,
     ];
 
@@ -121,6 +133,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::PAYMENT_ID,
+        self::RESPOND_BY,
+        self::REASON_DESCRIPTION,
     ];
 
     protected $casts = [
@@ -137,7 +151,8 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::RESOLVED_AT,
         self::RAISED_ON,
-        self::EXPIRES_ON
+        self::EXPIRES_ON,
+        self::RESPOND_BY,
     ];
 
     protected $defaults = [
@@ -151,6 +166,10 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::AMOUNT_REVERSED,
         self::AMOUNT_DEDUCTED,
+    ];
+
+    protected $with = [
+        self::FILES,
     ];
 
     // ----------------------- Setters -----------------------------------------
@@ -194,6 +213,27 @@ class Entity extends Base\PublicEntity
     {
         $attributes[self::PAYMENT_ID] =
             Payment\Entity::getSignedId($this->getAttribute(self::PAYMENT_ID));
+    }
+
+    public function setPublicRespondByAttribute(array & $attributes)
+    {
+        $attributes[self::RESPOND_BY] = (int) $this->getExpiresOn();
+    }
+
+    public function setPublicReasonDescriptionAttribute(array & $attributes)
+    {
+        $app = App::getFacadeRoot();
+
+        $basicAuth = $app['basicauth'];
+
+        //
+        // Attr reason_description to be sent only for dashboard
+        // TODO: Remove after entity serializer
+        //
+        if ($basicAuth->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::REASON_DESCRIPTION]);
+        }
     }
 
     // ----------------------- Setters Ends-------------------------------------
@@ -267,8 +307,6 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Getters Ends-------------------------------------
 
-    // Add toArrayAdmin, toArrayReport
-
     // --------------- Relation to other entities ------------------------------
 
     public function payment()
@@ -279,6 +317,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function files()
+    {
+        return $this->hasMany(File\Entity::class);
     }
 
     public function parent()

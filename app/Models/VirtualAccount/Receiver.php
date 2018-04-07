@@ -91,21 +91,9 @@ class Receiver extends Base\Core
 
     public function buildQrCode(Entity $virtualAccount): QrCode\Entity
     {
-        $qrCode = new QrCode\Entity;
-
         $input = $this->getQrCodeEntityParams($virtualAccount);
 
-        $qrCode = $qrCode->build($input);
-
-        $qrCode->generateId();
-
-        $qrCode->merchant()->associate($this->merchant);
-
-        $qrCode->source()->associate($virtualAccount);
-
-        $qrCode = $qrCode->generateQrString();
-
-        $this->repo->saveOrFail($qrCode);
+        $qrCode = (new QrCode\Generator($this->merchant))->generate($input, $virtualAccount);
 
         return $qrCode;
     }
@@ -161,6 +149,26 @@ class Receiver extends Base\Core
         $validator->validateDescriptor($this->descriptor);
 
         $handle = $this->merchant->getHandle();
+
+        //
+        // We currently don't have any alphanumeric prefixes, and don't
+        // want to give alphanumeric account with the numeric ones.
+        //
+        // This check ensures that even merchants with set
+        // handles cannot create non-numeric accounts.
+        //
+        // Why are we setting handles at all then?
+        //
+        // Because we use that to identify privileged account
+        // (see isPrivilegedAccount), for other features like
+        // using descriptor with numeric accounts.
+        //
+        if (($this->numeric === false) and
+            ($this->mode === Mode::LIVE))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Alphanumeric accounts are temporarily blocked.');
+        }
 
         if (($this->numeric === true) and
             ($this->descriptor !== null) and

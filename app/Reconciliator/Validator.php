@@ -30,34 +30,64 @@ class Validator
     ];
 
     const GATEWAY_SUBJECT_REGEX = [
-        RequestProcessor\Base::HDFC               => "/^'{0,1}Email MPR as of [0-9]{2}-"
-                                            . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
-        RequestProcessor\Base::KOTAK              => "/^PG Transaction File/",
-        RequestProcessor\Base::OLAMONEY           => "/^Merchant Settlement File/",
-        RequestProcessor\Base::FREECHARGE         => "/^Merchant (Transaction|Settlement) Report/",
-        RequestProcessor\Base::NETBANKING_AXIS    => "/^MIS file for (0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}, "
-                                            . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/",
-        RequestProcessor\Base::NETBANKING_ICICI   => "/^Payment Through Internet Banking Center Razorpay/",
-        RequestProcessor\Base::NETBANKING_FEDERAL => "/^MIS Report File Dated "
-                                            . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}---razorpay/",
-        RequestProcessor\Base::AXIS               => "/^Axis Estatement [0-9]{2}-"
-                                            . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
-        RequestProcessor\Base::FIRST_DATA         => "/Statement for Merchant MID No. razorpay/",
-        RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => "/^RAZOR_VA_REPORT$/",
+        RequestProcessor\Base::HDFC               => [
+                                                        "/^'{0,1}Email MPR as of [0-9]{2}-"
+                                                        . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"
+                                                     ],
+        RequestProcessor\Base::KOTAK              => ["/^PG Transaction File/"],
+        RequestProcessor\Base::OLAMONEY           => ["/^Merchant Settlement File/"],
+        RequestProcessor\Base::FREECHARGE         => ["/^Merchant (Transaction|Settlement) Report/"],
+        RequestProcessor\Base::NETBANKING_AXIS    => [
+                                                        "/^MIS file for (0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}, "
+                                                        . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/"
+                                                     ],
+        RequestProcessor\Base::NETBANKING_BOB     => ["/^Razorpay_Scroll_ of /"],
+        RequestProcessor\Base::NETBANKING_ICICI   => ["/^Payment Through Internet Banking Center Razorpay/"],
+        RequestProcessor\Base::NETBANKING_FEDERAL => [
+                                                        "/^MIS Report File Dated "
+                                                        . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}---razorpay/"
+                                                     ],
+        RequestProcessor\Base::AXIS               => [
+                                                        "/^Axis Estatement [0-9]{2}-"
+                                                        . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"
+                                                     ],
+        RequestProcessor\Base::FIRST_DATA         => ["/Statement for Merchant MID No. razorpay/"],
+        RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => ["/^RAZOR_VA_REPORT$/"],
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK=> ["Confidential | Cash Management MIS Report E-Collect"],
+        RequestProcessor\Base::HITACHI            => ["/RAZORPAY RBL SETTLED REPORT for the date of [0-9]{2}-"
+                                                     . "[0-9]{2}-20[0-9]{2}/"],
+        RequestProcessor\Base::UPI_ICICI          => [
+                                                         "/Eazypay app\s*sales summary-[0-9]{2}-"
+                                                         . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
+                                                         "/Refund MIS for 116798_RAZORPAY_[0-9]{2}-[0-9]{2}-20[0-9]{2}/"
+                                                     ]
     ];
 
     const GATEWAY_BODY_REGEX = [
-        RequestProcessor\Base::OLAMONEY           => "/^Please find settlement report for /",
-        RequestProcessor\Base::FREECHARGE         => "/Please view your (transaction|settlement) report/",
-        RequestProcessor\Base::NETBANKING_AXIS    => "/Kindly find attached below the MIS for "
-                                            . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/",
-        RequestProcessor\Base::NETBANKING_ICICI   => "/Please find below the payment report for the day./",
-        RequestProcessor\Base::NETBANKING_FEDERAL => "/^MIS Report File Dated "
-                                            . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/",
-        RequestProcessor\Base::AXIS               => "/Please find attached the settlement file for today."
-                                            . " You net amount settled is/",
-        RequestProcessor\Base::FIRST_DATA         => "/the statement of transactions for MID (.)*razorpay/",
-        RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => "/Please find the hourly report of Virtual Accounts./",
+        RequestProcessor\Base::OLAMONEY           => ["/^Please find settlement report for /"],
+        RequestProcessor\Base::FREECHARGE         => ["/Please view your (transaction|settlement) report/"],
+        RequestProcessor\Base::NETBANKING_AXIS    => [
+                                                        "/Kindly find attached below the MIS for "
+                                                        . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/"
+                                                     ],
+        RequestProcessor\Base::NETBANKING_ICICI   => ["/Please find below the payment report for the day./"],
+        RequestProcessor\Base::NETBANKING_FEDERAL => [
+                                                        "/^MIS Report File Dated "
+                                                        . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/"
+                                                     ],
+        RequestProcessor\Base::AXIS               => [
+                                                        "/Please find attached the settlement file for today."
+                                                        . " You net amount settled is/"
+                                                     ],
+        RequestProcessor\Base::FIRST_DATA         => ["/the statement of transactions for MID (.)*razorpay/"],
+        RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => ["/Please find the hourly report of Virtual Accounts./"],
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK=> ["/Please find attached subject scheduled reports./"],
+        RequestProcessor\Base::HITACHI            => ["/Please find the attached RAZORPAY RBL Settled Transaction report./"],
+        RequestProcessor\Base::UPI_ICICI          => [
+                                                        "/Please find attached the UPI Transaction Report MIS as on"
+                                                        ."\s*[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
+                                                         "/Please find attached the Refund Report as on\s*[0-9]{2}_[0-9]{2}_20[0-9]{2}/"
+                                                     ]
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
@@ -67,6 +97,8 @@ class Validator
         RequestProcessor\Base::AXIS               => 1,
         RequestProcessor\Base::FIRST_DATA         => 1,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => 1,
+        RequestProcessor\Base::HITACHI            => 1,
+        RequestProcessor\Base::UPI_ICICI          => 1
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -171,6 +203,15 @@ class Validator
         return ($validSubject and $validAttachmentCount and $validBody);
     }
 
+    public function validateNetbankingBobEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_BOB);
+
+        return $validSubject;
+    }
+
     public function validateNetbankingIciciEmail(array $emailDetails)
     {
         $validSubject = $this->validateEmailSubject(
@@ -253,6 +294,42 @@ class Validator
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
             RequestProcessor\Base::FIRST_DATA);
+
+        return ($validSubject and $validAttachmentCount and $validBody);
+    }
+
+    public function validateHitachiEmail(array $emailDetails): bool
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::HITACHI);
+
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY],
+            RequestProcessor\Base::HITACHI);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::HITACHI);
+
+        return (($validSubject === true) and
+            ($validAttachmentCount === true) and
+            ($validBody === true));
+    }
+
+    public function validateUpiIciciEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+                             $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+                    RequestProcessor\Base::UPI_ICICI);
+
+        $validBody = $this->validateEmailBody(
+                          $emailDetails[RequestProcessor\Mailgun::BODY_HTML_TEXT],
+                 RequestProcessor\Base::UPI_ICICI);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+                                $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+                       RequestProcessor\Base::UPI_ICICI);
 
         return ($validSubject and $validAttachmentCount and $validBody);
     }
@@ -421,25 +498,29 @@ class Validator
 
     protected function validateEmailSubject(string $subject, string $gateway)
     {
-        $regex = self::GATEWAY_SUBJECT_REGEX[$gateway];
+        $regexArray = self::GATEWAY_SUBJECT_REGEX[$gateway];
 
-        if (preg_match($regex, $subject) === 1)
+        foreach ($regexArray as $regex)
         {
-            return true;
+            if (preg_match($regex, $subject) === 1)
+            {
+                return true;
+            }
         }
-
         return false;
     }
 
     protected function validateEmailBody(string $body, string $gateway)
     {
-        $regex = self::GATEWAY_BODY_REGEX[$gateway];
+        $regexArray = self::GATEWAY_BODY_REGEX[$gateway];
 
-        if (preg_match($regex, $body) === 1)
+        foreach ($regexArray as $regex)
         {
-            return true;
+            if (preg_match($regex, $body) === 1)
+            {
+                return true;
+            }
         }
-
         return false;
     }
 

@@ -28,6 +28,13 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function processDailySettlements($input)
+    {
+        $data = (new Settlement\Processor)->processDailySettlements($input);
+
+        return $data;
+    }
+
     /** Generates settlement file for a given batch_fund_transfer_id
       * Uses settlement entities / fund_transfer_attempt entities to generate
       * file depending on the created_at timestamp of the batch.
@@ -60,9 +67,15 @@ class Service extends Base\Service
                                 ['source', 'source.merchant', 'source.merchant.bankAccount']);
         }
 
-        $urls = (new Kotak\Service)->generateSettlementFile($entities);
+        $channel = $batch->getChannel();
 
-        return $urls;
+        $nodalAccountClass = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\NodalAccount';
+
+        $h2h = (bool) ($input['h2h']);
+
+        $fileCreator = (new $nodalAccountClass)->generateFundTransferFile($entities, $h2h);
+
+        return $fileCreator->get();
     }
 
     public function fetch($id)
@@ -183,6 +196,29 @@ class Service extends Base\Service
     public function addBeneficiary(string $channel, array $input): array
     {
         $response = (new Core)->addBeneficiary($channel, $input);
+
+        return $response;
+    }
+
+    /**
+     * Gets account balance of Nodal Account
+     *
+     * @param string $channel channel for which the balance has to be fetched
+     *
+     * @return array
+     * [
+     *  account_number => account_balance,
+     * ]
+     */
+    public function getAccountBalance(string $channel): array
+    {
+        $channelAttributeKey = 'balance_' . Entity::CHANNEL;
+
+        (new Validator)->validateInput('canFetchBalance', [
+            $channelAttributeKey => $channel
+        ]);
+
+        $response = (new Core)->getAccountBalance($channel);
 
         return $response;
     }

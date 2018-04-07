@@ -2,18 +2,15 @@
 
 namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
-use Carbon\Carbon;
-
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
-use RZP\Constants\Timezone;
 
 class AirtelMoney extends Base
 {
     const GATEWAY            = Payment\Gateway::WALLET_AIRTELMONEY;
     const EXTENSION          = FileStore\Format::CSV;
     const FILE_NAME          = 'Airtelmoney_Wallet_Failed_Refunds';
-    const FILE_TYPE          = FileStore\Type::AIRTELMONEY_WALLET_REFUND;
+    const FILE_TYPE          = FileStore\Type::AIRTELMONEY_WALLET_FAILED_REFUND;
 
     const SR_NO               = 'Sr No';
     const CUSTOMER_PHONE      = 'Customer Phone';
@@ -32,13 +29,10 @@ class AirtelMoney extends Base
 
         foreach ($data as $index => $row)
         {
-            $date = Carbon::createFromTimestamp(
-                $row['payment']['authorized_at'], Timezone::IST)->format('d/m/Y');
-
             $formattedData[] = [
                 self::SR_NO               => $index + 1,
                 self::CUSTOMER_PHONE      => $row['gateway']['contact'],
-                self::TRANSACTION_DATE    => $date,
+                self::TRANSACTION_DATE    => $this->getFormattedDate($row['payment']['created_at'], 'd/m/Y'),
                 self::PAYMENT_AMOUNT      => $this->getFormattedAmount($row['payment']['amount']),
                 self::REFUND_AMOUNT       => $this->getFormattedAmount($row['refund']['amount']),
                 self::REFUND_TYPE         => $row['payment']['refund_status'],

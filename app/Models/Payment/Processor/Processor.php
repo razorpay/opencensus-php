@@ -31,6 +31,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
 class Processor
@@ -238,24 +239,29 @@ class Processor
         }
 
         //
-        // We need this flow only if either bank_account or auth_type is missing.
-        // TODO: Handle for aadhaar also
+        // We need this flow only if either:
+        //   - bank_account is missing
+        //   - auth_type is missing
+        //   - auth_type is aadhaar and aadhaar_number is missing
         //
         if ((empty($input[Payment\Entity::BANK_ACCOUNT]) === false) and
-            (empty($payment->getAuthType()) === false))
+            (empty($payment->getAuthType()) === false) and
+            (($payment->getAuthType() !== Payment\AuthType::AADHAAR) or
+             (empty($input[Payment\Entity::AADHAAR]['number']) === false)))
         {
             return null;
         }
 
-        $methods = [];
+        $emandateMethods = [];
 
-        (new Methods\Core)->addRecurringEmandateToMethodsIfApplicable($this->merchant, $methods);
+        (new Methods\Core)->addRecurringEmandateToMethodsIfApplicable(
+                                $this->merchant, $this->methods, $emandateMethods);
 
         //
         // This can happen when the required features are not enabled
         // or when there's not a single bank for any auth type.
         //
-        if (empty($methods) === true)
+        if (empty($emandateMethods) === true)
         {
             return null;
         }
@@ -269,7 +275,7 @@ class Processor
         // not come up in the methods API now, then most likely someone
         // is tampering with the request on the frontend.
         //
-        if (isset($methods['emandate'][$bank]) === false)
+        if (isset($emandateMethods['emandate'][$bank]) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_BANK_FOR_EMANDATE,
@@ -286,14 +292,13 @@ class Processor
                 'method'  => 'POST',
                 'content' => [
                     'input' => $input,
-                    'bank_details' => $methods['emandate'][$input[Payment\Entity::BANK]],
+                    'bank_details' => $emandateMethods['emandate'][$input[Payment\Entity::BANK]],
                 ]
             ],
             'version' => '1',
         ];
 
         return $coproto;
-
     }
 
     protected function preProcessPaymentInputsForWallet(array $input, Payment\Entity $payment)
@@ -343,6 +348,15 @@ class Processor
 
     public function processAndReturnFees(array & $input)
     {
+        $this->tracePaymentNewRequest($input);
+
+        // Validate if customer is fee bearer then only move forward
+        if ($this->merchant->isFeeBearerCustomer() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
         if (isset($input['method']) === false)
         {
             $input['method'] = Payment\Method::CARD;
@@ -366,19 +380,13 @@ class Processor
 
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
 
-        $data = array(
+        $data = [
             'originalAmount'    => $input['amount'],
             'fees'              => $fee,
             'razorpay_fee'      => $fee - $tax,
             'tax'               => $tax,
             'amount'            => $input['amount'] + $fee,
-        );
-
-        // Converts all the amounts to rupees
-        foreach ($data as $key => $value)
-        {
-            $data[$key] = $value / 100;
-        }
+        ];
 
         // Set new input amount and fees
         $input['amount'] = $input['amount'] + $fee;
@@ -433,15 +441,6 @@ class Processor
             }
 
             $tokenMethod = $token->getMethod();
-
-            //
-            // TODO: Remove this after we move netbanking recurring to emandate method
-            // We have to start storing method as `emandate` in token entity for this.
-            //
-            if ($tokenMethod === Payment\Method::NETBANKING)
-            {
-                $tokenMethod = Payment\Method::EMANDATE;
-            }
 
             $input[Payment\Entity::METHOD] = $tokenMethod;
 
@@ -682,7 +681,6 @@ class Processor
      * @param  string $id payment id
      * @return array
      * @throws Exception\BadRequestException
-     * @throws Exception\LogicException
      */
     public function getAsyncResponse($id)
     {
@@ -883,8 +881,12 @@ class Processor
     {
         $payment = $this->payment;
 
-        // For Netbanking payments two_factor_auth was set to NOT_APPLICABLE on authorize itself
-        if ($payment->isNetbanking() === true)
+        //
+        // For Netbanking and emandate payments two_factor_auth
+        // was set to NOT_APPLICABLE on authorize itself
+        //
+        if (($payment->isNetbanking() === true) or
+            ($payment->isEmandate() === true))
         {
             $twoFactorAuth = Payment\TwoFactorAuth::UNAVAILABLE;
         }
@@ -946,21 +948,35 @@ class Processor
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
-        $terminal = $this->repo->terminal->fetchForPayment($this->payment);
-
-        if ($terminal === null)
-        {
-            throw new Exception\LogicException(
-                'Terminal should not be null here',
-                null,
-                ['payment_id' => $this->payment->getId()]);
-        }
+        $terminalId = $this->payment->getTerminalId();
 
         $gateway = $this->payment->getGateway();
+
+        $terminal = null;
+
+        // This will be removed after terminal association with bharat qr payments
+        if (($terminalId !== null) or
+            (Payment\Gateway::isValidBharatQrGateway($gateway) === false))
+        {
+            $terminal = $this->repo->terminal->fetchForPayment($this->payment);
+
+            if ($terminal === null)
+            {
+                throw new Exception\LogicException(
+                    'Terminal should not be null here',
+                    null,
+                    ['payment_id' => $this->payment->getId()]);
+            }
+        }
 
         $gatewayData['terminal'] = $terminal;
 
         $gatewayData['merchant'] = $this->payment->merchant;
+
+        if (Payment\Gateway::isValidBharatQrGateway($this->payment->getGateway()) === true)
+        {
+            $gatewayData['bharat_qr'] = $this->repo->bharat_qr->findByPaymentId($this->payment->getId());
+        }
 
         $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . '::' . strtoupper($action);
 
@@ -1216,10 +1232,9 @@ class Processor
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
-            if ($payment->isNetbanking() === true)
+            if ($payment->isTpvMethod() === true)
             {
-                if (($this->merchant->isTPVRequired() === true) or
-                    ($payment->isRecurring() === true))
+                if ($this->merchant->isTPVRequired() === true)
                 {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
@@ -1291,7 +1306,8 @@ class Processor
         }
 
         // TODO: Following is not testable in cases. Ref: BankTransferBatchTest
-        if ($this->app['basicauth']->isAppAuth() === false)
+        if (($this->app['basicauth']->isAppAuth() === false) and
+            (Route::currentRouteName() !== 'bank_transfer_process_test'))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid payment method given: ' . $payment->getMethod());
@@ -1485,35 +1501,25 @@ class Processor
         }
 
         //
-        // We do auto capture for eMandate in two ways.
-        // For file based registration, we auto capture once the
-        // registration is complete.
-        // For normal flow, we auto capture the payment as soon as
-        // it is authorized
+        // In case of emandate debit payment, the payment would be in `created` status
+        // and this flow will not get executed at all. Once the debit recon is done,
+        // only then the payment gets authorized and this flow gets run.
         //
-        if ($this->isAsyncEmandatePayment($payment) === true)
+        // But in case of emandate registration payment, the payment would be in `authorized`
+        // status and this flow will get executed. But, we should be capturing it only after
+        // the token is successfully confirmed as recurring. This, we get to know only
+        // after registration recon. Again, this is an issue only for async registration gateways.
+        // In case of sync registration gateways, the token is marked as recurring/confirmed in
+        // the normal flow itself.
+        //
+        // Hence, we don't need to handle for emandate debit and emandate sync register here.
+        //
+        if ($payment->isFileBasedEmandateRegistrationPayment() === true)
         {
             return false;
         }
 
         return $this->shouldAutoCaptureOrder($payment);
-    }
-
-    protected function isAsyncEmandatePayment(Payment\Entity $payment)
-    {
-        if ($payment->isEmandate() === true)
-        {
-            if ($payment->isRecurringTypeInitial() === true)
-            {
-                return (Payment\Gateway::isFileBasedEMandateRegistrationGateway($payment->getGateway()) === true);
-            }
-            else if ($payment->isRecurringTypeAuto() === true)
-            {
-                return (Payment\Gateway::isFileBasedEMandateDebitGateway($payment->getGateway()) === true);
-            }
-        }
-
-        return false;
     }
 
     protected function shouldAutoCaptureAlreadyAuthenticatedSubscription(Payment\Entity $payment)
@@ -1895,5 +1901,42 @@ class Processor
         $terminal->setEnabled(false);
 
         $this->repo->saveOrFail($terminal);
+    }
+
+    /**
+     * Marks the payment as acknowledged.
+     *
+     * @param Payment\Entity $payment
+     */
+    public function acknowledge(Payment\Entity $payment)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_ACKNOWLEDGE_REQUEST,
+            [
+                Payment\Entity::ID => $payment->getId(),
+            ]);
+
+        $this->mutex->acquireAndRelease($payment->getId(),
+            function() use ($payment)
+            {
+                $this->repo->reload($payment);
+
+                $payment->getValidator()->acknowledgeValidate();
+
+                $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+                $payment->setAcknowledgedAt($currentTime);
+
+                $this->repo->saveOrFail($payment);
+            },
+            20,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_ACKNOWLEDGED,
+            [
+                Payment\Entity::ID              => $payment->getId(),
+                Payment\Entity::ACKNOWLEDGED_AT => $payment->getAcknowledgedAt()
+            ]);
     }
 }

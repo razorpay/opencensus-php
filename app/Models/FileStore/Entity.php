@@ -102,6 +102,7 @@ class Entity extends Base\PublicEntity
         self::PERMISSION        => null,
         self::ENCRYPTION_METHOD => null,
         self::PASSWORD          => null,
+        self::EXTENSION         => null,
         self::METADATA          => [],
     ];
 

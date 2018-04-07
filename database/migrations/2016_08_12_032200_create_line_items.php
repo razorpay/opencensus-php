@@ -55,6 +55,12 @@ class CreateLineItems extends Migration
             $table->tinyInteger(Entity::TAX_INCLUSIVE)
                   ->default(0);
 
+            $table->string(Entity::HSN_CODE, 20)
+                  ->nullable();
+
+            $table->string(Entity::SAC_CODE, 20)
+                  ->nullable();
+
             $table->string(Entity::UNIT, 512)
                   ->nullable();
 

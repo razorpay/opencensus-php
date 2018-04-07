@@ -47,6 +47,11 @@ class Checkout
      */
     protected $subscription;
 
+    /**
+     * @var Order\Entity
+     */
+    protected $order;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -97,11 +102,16 @@ class Checkout
 
         $orderId = $input[Payment\Entity::ORDER_ID];
 
-        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $merchant);
+        $order = $this->setOrGetOrder($orderId, $merchant);
 
         $data['order'] = (new Order\Core)->getFormattedDataForCheckout($order, $merchant);
 
         $this->resetMethodsIfValidBanksPresent($data, $order);
+    }
+
+    protected function setOrGetOrder(string $orderId, Merchant\Entity $merchant)
+    {
+        return $this->order ?? $this->repo->order->findByPublicIdAndMerchant($orderId, $merchant);
     }
 
     protected function resetMethodsIfValidBanksPresent(
@@ -113,11 +123,11 @@ class Checkout
             $bankCode = $order->getBank();
 
             // Order bank should be present in the list of netbanking banks.
-            if (isset($data['methods']['netbanking'][$bankCode]) === true)
+            if (isset($data['methods'][Payment\Method::NETBANKING][$bankCode]) === true)
             {
-                $bankName = $data['methods']['netbanking'][$bankCode];
+                $bankName = $data['methods'][Payment\Method::NETBANKING][$bankCode];
 
-                $data['methods']['netbanking'] = [
+                $data['methods'][Payment\Method::NETBANKING] = [
                     $bankCode => $bankName,
                 ];
             }
@@ -266,7 +276,7 @@ class Checkout
             // We do not handle the flow where a customer can use an existing token
             // to subscribe to another product.
             //
-            $savedTokens = $tokenCore->removeNetbankingRecurringTokens($savedTokens);
+            $savedTokens = $tokenCore->removeEmandateRecurringTokens($savedTokens);
 
             $custData =  [
                 'email'     => $customer->getEmail(),
@@ -396,9 +406,9 @@ class Checkout
                         $tokens = $response['tokens'];
 
                         // TODO: Needs to be fixed later when we allow first recurring on old recurring nb token.
-                        $tokensWithoutNB = (new Customer\Token\Core)->removeNetbankingRecurringTokens($tokens);
+                        $tokensWithoutEmandate = (new Customer\Token\Core)->removeEmandateRecurringTokens($tokens);
 
-                        $data['customer']['tokens'] = $tokensWithoutNB;
+                        $data['customer']['tokens'] = $tokensWithoutEmandate;
                     }
                 }
             }
@@ -513,6 +523,9 @@ class Checkout
 
         $data['version'] = 1;
 
+        // Magic checkout is displayed for the merchant based on true or false
+        $data['magic'] = $merchant->isFeatureEnabled(Feature\Constants::MAGIC);
+
         $optionalInputConfig = $merchant->getOptionalInputConfig();
 
         if (empty($optionalInputConfig) === false)
@@ -543,29 +556,28 @@ class Checkout
 
     public function checkAndFillOfferDetails(Merchant\Entity $merchant, array $input, array & $data)
     {
-        $offerCore = new Offer\Core;
+        $order = null;
 
-        $orderId = $input[Payment\Entity::ORDER_ID] ?? null;
-
-        if ($orderId !== null)
+        if (isset($input[Payment\Entity::ORDER_ID]) === true)
         {
-            $orderOffer = $offerCore->fetchForOrder($orderId, $merchant);
-
-            if ($orderOffer !== null)
-            {
-                // For offer applied on a particular order only enable methods eligible for the
-                // offer. Customer won't be able to select other payment methods
-                $this->updateMethodsToEnableOnCheckout($orderOffer, $data);
-
-                $data['offers'] = [
-                    $orderOffer->toArrayCheckout()
-                ];
-
-                return;
-            }
+            $order = $this->setOrGetOrder($input[Payment\Entity::ORDER_ID], $merchant);
         }
 
-        $this->checkAndFillNonOrderOffers($merchant, $data);
+        if (($order !== null) and
+            ($order->offer !== null))
+        {
+            $orderAmount = $order->getAmount();
+
+            $this->updateMethodsToEnableOnCheckout($order->offer, $data);
+
+            $data['offers'] = [
+                $order->offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount),
+            ];
+        }
+        else
+        {
+            $this->checkAndFillNonOrderOffers($merchant, $data);
+        }
     }
 
     protected function checkAndFillNonOrderOffers(Merchant\Entity $merchant, array & $data)
@@ -588,9 +600,9 @@ class Checkout
             return ;
         }
 
-        $enabledBanks = $data['methods']['netbanking'];
+        $enabledBanks = $data['methods'][Payment\Method::NETBANKING];
 
-        $enabledWallets = $data['methods']['wallet'];
+        $enabledWallets = $data['methods'][Payment\Method::WALLET];
 
         $data['methods'] = [
             'entity' => 'methods'
@@ -609,7 +621,7 @@ class Checkout
             case Payment\Method::NETBANKING:
 
                 // Only allow payments through supported banks
-                $data['methods']['netbanking'] = $enabledBanks;
+                $data['methods'][Payment\Method::NETBANKING] = $enabledBanks;
 
                 // Only allow payment through specific bank if network is specified
                 if ($offer->getIssuer() !== null)
@@ -618,7 +630,7 @@ class Checkout
 
                     $bankName = Netbanking::getName($bankCode);
 
-                    $data['methods']['netbanking'] = [
+                    $data['methods'][Payment\Method::NETBANKING] = [
                         $bankCode => $bankName
                     ];
                 }
@@ -628,7 +640,7 @@ class Checkout
             case Payment\Method::WALLET:
 
                 // Only allow payments through supported wallets
-                $data['methods']['wallet'] = $enabledWallets;
+                $data['methods'][Payment\Method::WALLET] = $enabledWallets;
 
                 // For wallet offers if network is specified, lock method to only that wallet
                 if ($offer->getIssuer() !== null)

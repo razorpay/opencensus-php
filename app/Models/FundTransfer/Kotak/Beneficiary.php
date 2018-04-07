@@ -56,21 +56,23 @@ class Beneficiary extends Base\Beneficiary
 
             $beneName = substr($beneName, 0, 40);
 
+            $merchantDetails = $ba->source->merchantDetail;
+
             $array = [
                 'Client_Code'           => 'RAZORNODAL',
                 'Bene_Code'             => $ba->getBeneficiaryCode(),
                 'Bene_Name'             => $beneName,
-                'Bene_Add_1'            => $ba->getAttribute(BankAccount::BENEFICIARY_ADDRESS1),
-                'Bene_Add_2'            => $ba->getAttribute(BankAccount::BENEFICIARY_ADDRESS2),
-                'Bene_Add_3'            => $ba->getAttribute(BankAccount::BENEFICIARY_ADDRESS3),
-                'Bene_Add_4'            => $ba->getAttribute(BankAccount::BENEFICIARY_ADDRESS4),
+                'Bene_Add_1'            => substr($merchantDetails->getBusinessRegisteredState(), 0, 30),
+                'Bene_Add_2'            => '',
+                'Bene_Add_3'            => '',
+                'Bene_Add_4'            => '',
                 'Bene_Add_5'            => '',
-                'Bene_City'             => $ba->getAttribute(BankAccount::BENEFICIARY_CITY),
-                'Bene_Pin'              => $ba->getAttribute(BankAccount::BENEFICIARY_PIN),
-                'State'                 => $ba->getAttribute(BankAccount::BENEFICIARY_STATE),
-                'Country'               => $ba->getAttribute(BankAccount::BENEFICIARY_COUNTRY),
-                'Bene_Email'            => $ba->getAttribute(BankAccount::BENEFICIARY_EMAIL),
-                'Bene_Mobile'           => $ba->getAttribute(BankAccount::BENEFICIARY_MOBILE),
+                'Bene_City'             => substr($merchantDetails->getBusinessRegisteredCity(), 0, 30),
+                'Bene_Pin'              => substr($merchantDetails->getBusinessRegisteredPin(), 0, 6),
+                'State'                 => substr($merchantDetails->getBusinessRegisteredState(), 0, 2),
+                'Country'               => 'IN',
+                'Bene_Email'            => $merchantDetails->getContactEmail(),
+                'Bene_Mobile'           => substr($merchantDetails->getContactMobile(), 0, 32),
                 'Bene_Tel'              => '',
                 'Bene_Fax'              => '',
                 'IFSC'                  => $ba->getAttribute(BankAccount::IFSC_CODE),

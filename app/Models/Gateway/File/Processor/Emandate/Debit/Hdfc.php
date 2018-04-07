@@ -24,6 +24,13 @@ class Hdfc extends Base
     const EXTENSION     = FileStore\Format::XLSX;
     const FILE_TYPE     = FileStore\Type::HDFC_EMANDATE_DEBIT;
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->gatewayRepo = $this->repo->netbanking;
+    }
+
     protected function getClientCode(Payment\Entity $payment): string
     {
         $email = $payment->getEmail() ?: Payment\Entity::DUMMY_EMAIL;
@@ -61,6 +68,11 @@ class Hdfc extends Base
         }
 
         return $rows;
+    }
+
+    protected function getNewGatewayPaymentEntity()
+    {
+        return new Netbanking\Base\Entity;
     }
 
     protected function getGatewayAttributes(Payment\Entity $payment): array

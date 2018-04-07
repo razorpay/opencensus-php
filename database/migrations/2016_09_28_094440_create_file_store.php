@@ -35,7 +35,7 @@ class CreateFileStore extends Migration
 
             $table->text(FileStore::COMMENTS)->nullable();
 
-            $table->string(FileStore::EXTENSION);
+            $table->string(FileStore::EXTENSION)->nullable();
 
             $table->string(FileStore::MIME)->nullable();
 

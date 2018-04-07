@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch\Processor\Emandate\Register;
 
 use RZP\Exception;
+use RZP\Models\FileStore;
 use RZP\Models\Customer\Token;
 use RZP\Models\Batch\Processor\Base as BaseProcessor;
 
@@ -48,7 +49,7 @@ class Base extends BaseProcessor
             Token\Entity::RECURRING_FAILURE_REASON  => $remark,
         ];
 
-        (new Token\Core)->updateTokenFromNetbankingGatewayData($token, $tokenParams);
+        (new Token\Core)->updateTokenFromEmandateGatewayData($token, $tokenParams);
 
         $this->repo->saveOrFail($token);
     }
@@ -68,7 +69,7 @@ class Base extends BaseProcessor
         throw new \BadMethodCallException();
     }
 
-    protected function createSetOutputFileAndSave(array & $entries)
+    protected function createSetOutputFileAndSave(array & $entries, string $fileType = FileStore\Type::BATCH_OUTPUT)
     {
         return;
     }

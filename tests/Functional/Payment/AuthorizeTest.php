@@ -3,15 +3,18 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Mail;
+use Cache;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment as PaymentModel;
+use RZP\Exception\GatewayErrorException;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Mail\Payment\Failed as PaymentFailedMail;
-use RZP\Models\Payment as PaymentModel;
-use RZP\Error\ErrorCode;
-use RZP\Tests\Functional\TestCase;
-use RZP\Exception\GatewayErrorException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
 
 class AuthorizeTest extends TestCase
 {
@@ -42,11 +45,6 @@ class AuthorizeTest extends TestCase
         $response->assertSessionHas('foo', 'bar');
     }
 
-    public function testInvalidEmailInPayment()
-    {
-        $this->startTest();
-    }
-
     public function testJsonpPayment()
     {
         Mail::fake();
@@ -55,7 +53,71 @@ class AuthorizeTest extends TestCase
 
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 
-        Mail::assertSent(AuthorizedMail::class);
+        Mail::assertQueued(AuthorizedMail::class);
+    }
+
+    public function testMagicKeyFalseMerchantDisabled()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->edit('iin', 401200, ['flows' => ['magic' => '1']]);
+
+        $this->startTest();
+    }
+
+    public function testMagicKeySet()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->enableMagic();
+
+        $this->fixtures->edit('iin', 401200, ['flows' => ['magic' => '1']]);
+
+        $this->startTest();
+    }
+
+    public function testMagicKeyFalseDisabledIin()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->enableMagic();
+
+        $this->startTest();
+    }
+
+    public function testMagicKeyFalseDisabledGlobally()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->enableMagic();
+
+        $this->fixtures->edit('iin', 401200, ['flows' => ['magic' => '1']]);
+
+        $store = Cache::store();
+
+        Cache::shouldReceive('store')
+            ->withAnyArgs()
+            ->andReturn($store);
+
+        Cache::shouldReceive('get')
+            ->once()
+            ->with(ConfigKey::DISABLE_MAGIC)
+            ->andReturn(true);
+
+        $this->startTest();
+    }
+
+    public function testInvalidEmailInPayment()
+    {
+        $this->startTest();
     }
 
     public function testEmailMissing()
@@ -311,7 +373,7 @@ class AuthorizeTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = '/payments/fix_authorized_at';
         $this->testData[__FUNCTION__]['request']['content']['payment_ids'] = [$payment->getPublicId()];
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -351,13 +413,15 @@ class AuthorizeTest extends TestCase
 
         $tokenId = $token['id'];
 
+        // TODO: Figure out how to write the test cases here!
+
         // Should timeout
         $payment2 = $this->fixtures->create('payment:status_created',
             [
                 'created_at'        => time() - (60 * 100),
                 'gateway'           => PaymentModel\Gateway::NETBANKING_HDFC,
                 'bank'              => IFSC::HDFC,
-                'method'            => PaymentModel\Method::NETBANKING,
+                'method'            => PaymentModel\Method::EMANDATE,
                 'token_id'          => $tokenId,
                 'recurring'         => 1,
                 'recurring_type'    => PaymentModel\RecurringType::INITIAL,
@@ -369,7 +433,7 @@ class AuthorizeTest extends TestCase
                 'created_at'        => time() - (60 * 100),
                 'gateway'           => PaymentModel\Gateway::NETBANKING_HDFC,
                 'bank'              => IFSC::HDFC,
-                'method'            => PaymentModel\Method::NETBANKING,
+                'method'            => PaymentModel\Method::EMANDATE,
                 'token_id'          => $tokenId,
                 'recurring'         => 1,
                 'recurring_type'    => PaymentModel\RecurringType::AUTO,
@@ -382,7 +446,7 @@ class AuthorizeTest extends TestCase
                 'gateway'           => PaymentModel\Gateway::NETBANKING_HDFC,
                 'bank'              => IFSC::HDFC,
                 'token_id'          => $tokenId,
-                'method'            => PaymentModel\Method::NETBANKING,
+                'method'            => PaymentModel\Method::EMANDATE,
                 'recurring'         => 1,
                 'recurring_type'    => PaymentModel\RecurringType::AUTO,
             ]);
@@ -433,7 +497,7 @@ class AuthorizeTest extends TestCase
             $this->doAuthPayment($payment);
         });
 
-        Mail::assertSent(PaymentFailedMail::class, function ($mail)
+        Mail::assertQueued(PaymentFailedMail::class, function ($mail)
         {
             $this->assertArrayHasKey('error_description', $mail->viewData['payment']);
 
@@ -492,6 +556,24 @@ class AuthorizeTest extends TestCase
             'payment:failed');
 
         $this->authorizeFailedPayment($payment['public_id']);
+    }
+
+    public function testIntentPaymentWithVpa()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'dontencrypt@icici';
+
+        unset($payment['description']);
+
+        $payment['_']['flow'] = 'intent';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        });
     }
 
     public function testContentTypeHtmlOnPaymentCreateRoute()
@@ -555,6 +637,8 @@ class AuthorizeTest extends TestCase
 
     public function testPayumoneyPaymentViaWalletS2S()
     {
+        $this->markTestSkipped();
+
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_payumoney_terminal');
 
         $this->fixtures->merchant->addFeatures(['s2swallet']);
@@ -566,6 +650,30 @@ class AuthorizeTest extends TestCase
         $content = $this->startTest();
 
         $this->assertArrayHasKey('url', $content['request']);
+    }
+
+    public function testIntentPaymentViaUpiS2S()
+    {
+        $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+
+        $this->fixtures->merchant->addFeatures(['s2supi']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->ba->privateAuth();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+        }, 'upi_icici');
+
+        $content = $this->startTest();
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+        $this->assertArrayHasKey('link', $content);
     }
 
     public function testMobikwikPaymentViaWalletS2S()

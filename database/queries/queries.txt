@@ -2801,7 +2801,7 @@ ALTER TABLE settings
     MODIFY COLUMN updated_at INT(11) NOT NULL;
 
 ALTER TABLE fund_transfer_attempts
-    ADD COLUMN purpose VARCHAR(32) AFTER merchant_id;A
+    ADD COLUMN purpose VARCHAR(32) AFTER merchant_id;
 
 # Makes customer id nullable in payouts
 ALTER TABLE payouts
@@ -2873,3 +2873,592 @@ ALTER TABLE merchants
 ALTER TABLE `merchant_details`
     ADD COLUMN `form_12a_url` VARCHAR(255) DEFAULT NULL AFTER `promoter_address_url`,
     ADD COLUMN `form_80g_url` VARCHAR(255) DEFAULT NULL AFTER `form_12a_url`;
+
+ALTER TABLE webhooks
+    ADD COLUMN entity_type VARCHAR(100) DEFAULT NULL AFTER events,
+    ADD COLUMN entity_id VARCHAR(14) DEFAULT NULL AFTER entity_type;
+
+ALTER TABLE webhooks
+    ADD UNIQUE INDEX webhooks_merchant_id_entity_id_unique (merchant_id,entity_id);
+
+
+ALTER TABLE merchants
+   ADD COLUMN whitelisted_ips_live VARCHAR(255) DEFAULT NULL AFTER category,
+   ADD COLUMN whitelisted_ips_test VARCHAR(255) DEFAULT NULL AFTER whitelisted_ips_live;
+
+ALTER TABLE qr_code
+    ADD COLUMN short_url varchar(255) NOT NULL after qr_string;
+
+ALTER TABLE hitachi
+    ADD INDEX `hitachi_prequestid_index`(`pRequestId`),
+    ADD INDEX `hitachi_prrn_index`(`pRRN`),
+    ADD INDEX `hitachi_action_index`(`action`);
+
+ALTER TABLE iins
+    ADD COLUMN flows INTEGER UNSIGNED DEFAULT 1 AFTER otp_read;
+
+ALTER TABLE payments Change token emi_subvention varchar(14);
+
+ALTER TABLE atom
+    ADD PRIMARY KEY (id);
+
+ALTER TABLE gateway_downtimes
+    ADD PRIMARY KEY (id);
+
+ALTER TABLE merchant_terminal
+    ADD UNIQUE INDEX merchant_terminal_merchant_id_terminal_id_unique (merchant_id, terminal_id),
+    DROP INDEX merchant_terminal_merchant_id_foreign;
+
+ALTER TABLE workflow_permissions
+    ADD UNIQUE INDEX workflow_permissions_workflow_id_permission_id (workflow_id, permission_id),
+    DROP INDEX workflow_permissions_workflow_id_index;
+
+ALTER TABLE migrations
+    ADD UNIQUE INDEX migrations_migration_unique (migration);
+
+ALTER TABLE workflow_actions
+    ADD COLUMN `state_changer_id` char(14) COLLATE utf8_bin  NULL AFTER `admin_id`,
+    ADD COLUMN `state_changer_role_id` char(14) COLLATE utf8_bin  NULL AFTER `admin_id`,
+    ADD CONSTRAINT `workflow_actions_state_changer_id_foreign` FOREIGN KEY (`state_changer_id`) REFERENCES `admins` (`id`),
+    ADD CONSTRAINT `workflow_actions_state_changer_role_id_foreign` FOREIGN KEY (`state_changer_role_id`) REFERENCES `roles` (`id`);
+
+ALTER TABLE transactions
+    DROP INDEX transactions_settled_index,
+    ADD INDEX transactions_settled_channel_on_hold_index (settled, channel, on_hold);
+
+ALTER TABLE payments
+    ADD INDEX payments_merchant_id_status_created_at_index (merchant_id, status, created_at),
+    ADD INDEX payments_merchant_id_index (merchant_id);
+
+ALTER TABLE payments
+    ADD INDEX payments_recurring_index (recurring);
+
+ALTER TABLE files modify extension varchar(255) default null;
+
+ALTER TABLE terminals
+    ADD COLUMN emandate TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
+
+ALTER TABLE tokens
+    ADD COLUMN `auth_type` VARCHAR(14) DEFAULT NULL after gateway_token2;
+
+ALTER TABLE merchant_banks
+    ADD COLUMN emandate TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
+
+ALTER TABLE payments
+    DROP INDEX payments_merchant_id_foreign;
+
+ALTER TABLE coupons
+    DROP INDEX coupons_code_index;
+
+ALTER TABLE devices
+    DROP INDEX devices_verification_token_index;
+
+ALTER TABLE invoices
+    ADD INDEX invoices_updated_at_index (updated_at),
+    DROP INDEX invoices_merchant_id_foreign;
+
+ALTER TABLE merchant_users
+    DROP INDEX merchant_users_merchant_id_foreign;
+
+ALTER TABLE orders
+    DROP INDEX orders_merchant_id_foreign;
+
+ALTER TABLE orgs
+    DROP INDEX custom_code,
+    DROP INDEX custom_code_2,
+    ADD UNIQUE KEY orgs_custom_code_unique (custom_code);
+
+ALTER TABLE refunds
+    DROP INDEX refunds_merchant_id_foreign;
+
+ALTER TABLE settlements
+    DROP INDEX settlements_merchant_id_foreign;
+
+ALTER TABLE transactions
+    DROP INDEX transactions_settled_at_index,
+    DROP INDEX transactions_merchant_id_foreign;
+
+ALTER TABLE webhooks
+    DROP INDEX webhooks_merchant_id_foreign;
+
+ALTER TABLE bank_transfers
+    ADD INDEX bank_transfers_updated_at_index (updated_at);
+
+ALTER TABLE virtual_accounts
+    ADD INDEX virtual_accounts_updated_at_index (updated_at);
+
+ALTER TABLE hitachi
+    ADD COLUMN masked_card_number varchar(255) DEFAULT NULL after pStatus,
+    ADD COLUMN card_network varchar(255) DEFAULT NULL after masked_card_number,
+    ADD COLUMN merchant_reference varchar(255) DEFAULT NULL after card_network;
+
+ALTER TABLE upi
+    ADD COLUMN merchant_reference varchar(255) DEFAULT NULL after received;
+
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN initiate_at INT(11) AFTER batch_fund_transfer_id;
+
+ALTER TABLE merchant_access_map
+    DROP FOREIGN KEY merchant_access_map_merchant_id_foreign,
+    DROP INDEX merchant_access_map_merchant_id_entity_id_unique;
+
+ALTER TABLE merchant_access_map
+    ADD CONSTRAINT merchant_access_map_merchant_id_foreign FOREIGN KEY(merchant_id)
+        REFERENCES merchants(id);
+
+ALTER TABLE workflow_actions
+    ADD COLUMN `maker_id` char(14) NULL AFTER `admin_id`,
+    ADD COLUMN `maker_type` char(14) NULL AFTER `maker_id`,
+    ADD INDEX workflow_actions_maker_id_maker_type_index (maker_id, maker_type),
+    MODIFY `admin_id` CHAR(14) NULL DEFAULT NULL;
+
+# To run after the PR is merged.
+UPDATE `workflow_actions`
+    SET maker_id = admin_id , maker_type = 'admin'
+    WHERE maker_id IS NULL AND admin_id IS NOT NULL;
+
+ALTER TABLE `merchants`
+    ADD COLUMN `has_key_access` TINYINT(1) NOT NULL DEFAULT 0 after `linked_account_kyc`;
+
+ALTER TABLE tokens
+    ADD COLUMN aadhaar_number VARCHAR(255) DEFAULT NULL AFTER ifsc;
+
+ALTER TABLE schedules
+    MODIFY COLUMN `interval` INTEGER DEFAULT NULL;
+
+ALTER TABLE `merchant_details`
+    ADD COLUMN `issue_fields` TEXT DEFAULT NULL AFTER `archived_at`,
+    ADD COLUMN `issue_fields_reason` TEXT DEFAULT NULL AFTER `issue_fields`,
+    ADD COLUMN `internal_notes` TEXT DEFAULT NULL AFTER `issue_fields_reason`;
+
+ALTER TABLE batches
+    ADD COLUMN name varchar(255) AFTER sub_type;
+
+# Airtel aggregator accounts breakup -- start
+
+UPDATE merchant_users
+SET user_id='9mPKUa8oBmduZK'
+WHERE merchant_id IN ('9NpBWKfcLqbgSz','9NpBWktBZ4FEV5','9NpBXAOz1bfDrT','9NpBXaSMBxI1Yt','9NpBY0wePPxA0p','9NpBYSQEFw4kdE','9NpBYutxbGhDv0','9NpBZOOsbscowE','9NpBZug7d03Mr5','9NpBaO8Ok7hpsY','9NpBavxja2MPEy','9NpBbS2cs0GCv1','9NpBbzNHFc7uqh','9NpBcUWcOAAppn','9NpBd1dBd5tJDq','9NpBdUovIi0hbF','9NpBdzgHk64I7T','9NpBeRUfbKv0Wi','9NpBewbQZnITU3','9NpBm2jQNEEbU8','9NpBmYRPdxX4ML')
+AND role = 'owner';
+
+DElETE FROM merchant_users
+WHERE merchant_id = '9NpBVlLQV8KFf6' AND user_id = '8fgklXn4RUHBqi' AND role = 'owner';
+
+INSERT INTO tagging_tags (tag_slug, tag_name, suggest, count)
+VALUES ('ref-9npbvllqv8kff6', 'Ref-9NpBVlLQV8KFf6', 0, 21);
+
+INSERT INTO tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)
+VALUES ('9NpBVlLQV8KFf6', 'merchant', 'Referral', 'referral');
+
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBWKfcLqbgSz', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBWktBZ4FEV5', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBXAOz1bfDrT', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBXaSMBxI1Yt', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBY0wePPxA0p', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBYSQEFw4kdE', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBYutxbGhDv0', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBZOOsbscowE', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBZug7d03Mr5', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBaO8Ok7hpsY', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBavxja2MPEy', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBbS2cs0GCv1', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBbzNHFc7uqh', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBcUWcOAAppn', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBd1dBd5tJDq', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBdUovIi0hbF', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBdzgHk64I7T', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBeRUfbKv0Wi', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBewbQZnITU3', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBm2jQNEEbU8', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBmYRPdxX4ML', 'merchant', 'Ref-9NpBVlLQV8KFf6', 'ref-9npbvllqv8kff6');
+
+UPDATE merchant_users
+SET user_id='9mPMrVjjPpYvcM'
+WHERE merchant_id IN ('9NpBnzZdKKxoWx','9NpBoSlNLHjNqO','9NpBouqMMe8GwD','9NpBpObVZwKsBy','9NpBpyWIDlH8dY','9NpBqQR2APWd5z','9NpBqwXPa97TBl','9NpBrQ4jhFQ5F7','9NpBrso0pLEjvf','9NpBsQoxXZPVyT','9NpBssEnjQCv25','9NpBtMSsKuyzL6','9NpBttHNAprqDX','9NpBuNoVGQ1pra','9NpBurc8FKEo7W','9NpBvIpAHpl0rx','9NpBvih8SA7vWO','9NpBw7aWIFQPUe','9NpBwX8eZgtew3','9NpBwz8vbKCrh0','9NpBxPcEu66GGS')
+AND role = 'owner';
+
+DElETE FROM merchant_users
+WHERE merchant_id = '9NpBnYoKsshmsn' AND user_id = '8fgklXn4RUHBqi' AND role = 'owner';
+
+INSERT INTO tagging_tags (tag_slug, tag_name, suggest, count)
+VALUES ('ref-9npbnyoksshmsn', 'Ref-9NpBnYoKsshmsn', 0, 21);
+
+INSERT INTO tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)
+VALUES ('9NpBnYoKsshmsn', 'merchant', 'Referral', 'referral');
+
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBnzZdKKxoWx', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBoSlNLHjNqO', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBouqMMe8GwD', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBpObVZwKsBy', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBpyWIDlH8dY', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBqQR2APWd5z', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBqwXPa97TBl', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBrQ4jhFQ5F7', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBrso0pLEjvf', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBsQoxXZPVyT', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBssEnjQCv25', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBtMSsKuyzL6', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBttHNAprqDX', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBuNoVGQ1pra', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBurc8FKEo7W', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBvIpAHpl0rx', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBvih8SA7vWO', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBw7aWIFQPUe', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBwX8eZgtew3', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBwz8vbKCrh0', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBxPcEu66GGS', 'merchant', 'Ref-9NpBnYoKsshmsn', 'ref-9npbnyoksshmsn');
+
+
+UPDATE merchant_users
+SET user_id='9mPNcxLacwvrjY'
+WHERE merchant_id IN ('9NpBfxOrgqid0P','9NpBgOd0xMJAIt','9NpBgpnck94xNY','9NpBhG7fVuTpNW','9NpBhgPCG3DQ6W','9NpBi9etiEt3d3','9NpBieXoo8ydI4','9NpBj6pIjvui1s','9NpBjctCgqwcpR','9NpBk2671Jh7LD','9NpBkSLPEr5AkA','9NpBl5OaRxiSr0','9NpBlVsJ6ItRMC','9NpBn39Go7wtxh')
+AND role = 'owner';
+
+DElETE FROM merchant_users
+WHERE merchant_id = '9NpBfTPEa4zCjZ' AND user_id = '8fgklXn4RUHBqi' AND role = 'owner';
+
+INSERT INTO tagging_tags (tag_slug, tag_name, suggest, count)
+VALUES ('ref-9npbftpea4zcjz', 'Ref-9NpBfTPEa4zCjZ', 0, 14);
+
+INSERT INTO tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)
+VALUES ('9NpBfTPEa4zCjZ', 'merchant', 'Referral', 'referral');
+
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBfxOrgqid0P', 'merchant', 'Ref-9NpBfTPEa4zCjZ', 'ref-9npbftpea4zcjz');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBgOd0xMJAIt', 'merchant', 'Ref-9NpBfTPEa4zCjZ', 'ref-9npbftpea4zcjz');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBgpnck94xNY', 'merchant', 'Ref-9NpBfTPEa4zCjZ', 'ref-9npbftpea4zcjz');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBhG7fVuTpNW', 'merchant', 'Ref-9NpBfTPEa4zCjZ', 'ref-9npbftpea4zcjz');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBhgPCG3DQ6W', 'merchant', 'Ref-9NpBfTPEa4zCjZ', 'ref-9npbftpea4zcjz');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBi9etiEt3d3', 'merchant', 'Ref-9NpBfTPEa4zCjZ', 'ref-9npbftpea4zcjz');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBieXoo8ydI4', 'merchant', 'Ref-9NpBfTPEa4zCjZ', 'ref-9npbftpea4zcjz');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBj6pIjvui1s', 'merchant', 'Ref-9NpBfTPEa4zCjZ', 'ref-9npbftpea4zcjz');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBjctCgqwcpR', 'merchant', 'Ref-9NpBfTPEa4zCjZ', 'ref-9npbftpea4zcjz');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBk2671Jh7LD', 'merchant', 'Ref-9NpBfTPEa4zCjZ', 'ref-9npbftpea4zcjz');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBkSLPEr5AkA', 'merchant', 'Ref-9NpBfTPEa4zCjZ', 'ref-9npbftpea4zcjz');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBl5OaRxiSr0', 'merchant', 'Ref-9NpBfTPEa4zCjZ', 'ref-9npbftpea4zcjz');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBlVsJ6ItRMC', 'merchant', 'Ref-9NpBfTPEa4zCjZ', 'ref-9npbftpea4zcjz');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9NpBn39Go7wtxh', 'merchant', 'Ref-9NpBfTPEa4zCjZ', 'ref-9npbftpea4zcjz');
+
+update merchant_users
+set user_id='9mPQa4tX51tYnW'
+where merchant_id IN ('9ac01tGbLrFpSV','9ac02H8xqcdFQh','9ac02hmncjWTgM','9ac0379Ep1r0J3','9ac03W9VWLetCt','9ac03yT0APTh1z','9ac04NsWxC3tRt','9ac04oe4MKbOXV','9ac05IfbWfIGJo','9ac05lO6vSzhor','9ac06DbLwe9v4u','9ac06hnFv0HRGG','9ac07EP4SuA1KO','9ac07oOsTamskQ','9ac08GZgcokhYc','9ac08i6gJgDVq2','9ac0976yFgKTzq','9ac09UxoDTe1dC','9ac09ucR1vEvph','9ac0GVIQRhPapZ','9ac0Gy7qAbaXk3','9ac0RZym55VGsd')
+and role = 'owner';
+
+DElETE FROM merchant_users
+WHERE merchant_id = '9ac01GMEGfyU2o' AND user_id = '9aHC1buuBvesVy' AND role = 'owner';
+
+INSERT INTO tagging_tags (tag_slug, tag_name, suggest, count)
+VALUES ('ref-9ac01gmegfyu2o', 'Ref-9ac01GMEGfyU2o', 0, 22);
+
+INSERT INTO tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)
+VALUES ('9ac01GMEGfyU2o', 'merchant', 'Referral', 'referral');
+
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac01tGbLrFpSV', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac02H8xqcdFQh', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac02hmncjWTgM', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0379Ep1r0J3', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac03W9VWLetCt', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac03yT0APTh1z', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac04NsWxC3tRt', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac04oe4MKbOXV', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac05IfbWfIGJo', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac05lO6vSzhor', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac06DbLwe9v4u', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac06hnFv0HRGG', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac07EP4SuA1KO', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac07oOsTamskQ', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac08GZgcokhYc', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac08i6gJgDVq2', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0976yFgKTzq', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac09UxoDTe1dC', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac09ucR1vEvph', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0GVIQRhPapZ', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0Gy7qAbaXk3', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0RZym55VGsd', 'merchant', 'Ref-9ac01GMEGfyU2o', 'ref-9ac01gmegfyu2o');
+
+update merchant_users
+set user_id='9mPSJFZA1Ubx3i'
+where merchant_id IN ('9ac0INQnpskegm','9ac0Imf8IB87Fh','9ac0JErnD2Ro2U','9ac0JlJ59uylbj','9ac0KBJpur4TWH','9ac0KYoafmULYX','9ac0KxjsLehKbe','9ac0LNVeQv3hwO','9ac0LnF27xkXSy','9ac0MGfpVXM1rX','9ac0MhpX7a0s80','9ac0NHWnXaAQzB','9ac0NmLhDuYhiw','9ac0OJXuuHPLFr','9ac0OjIAZ8F5Er','9ac0P8x82pOwdA','9ac0PY46Hi7cA0','9ac0Pw41WpACh6','9ac0QKavrGzQnG','9ac0QisoFm888E','9ac0R6snbutUvv')
+and role = 'owner';
+
+DElETE FROM merchant_users
+WHERE merchant_id = '9ac0HotNhSMJzK' AND user_id = '9aHC1buuBvesVy' AND role = 'owner';
+
+INSERT INTO tagging_tags (tag_slug, tag_name, suggest, count)
+VALUES ('ref-9ac0hotnhsmjzk', 'Ref-9ac0HotNhSMJzK', 0, 21);
+
+INSERT INTO tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)
+VALUES ('9ac0HotNhSMJzK', 'merchant', 'Referral', 'referral');
+
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0INQnpskegm', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0Imf8IB87Fh', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0JErnD2Ro2U', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0JlJ59uylbj', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0KBJpur4TWH', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0KYoafmULYX', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0KxjsLehKbe', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0LNVeQv3hwO', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0LnF27xkXSy', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0MGfpVXM1rX', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0MhpX7a0s80', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0NHWnXaAQzB', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0NmLhDuYhiw', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0OJXuuHPLFr', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0OjIAZ8F5Er', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0P8x82pOwdA', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0PY46Hi7cA0', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0Pw41WpACh6', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0QKavrGzQnG', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0QisoFm888E', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0R6snbutUvv', 'merchant', 'Ref-9ac0HotNhSMJzK', 'ref-9ac0hotnhsmjzk');
+
+update merchant_users
+set user_id='9mPSvBxUBCLKx8'
+where merchant_id IN ('9ac0ApXdgwOurS','9ac0BFkiA29q8o','9ac0Bihc4F9qnW','9ac0CBXZ5Oszgy','9ac0CbzTsptnFU','9ac0D4UcMgbTZV','9ac0DT7Epk7Dre','9ac0DtwA1clRpg','9ac0EIkPFZHWYR','9ac0EnB7f5eyU7','9ac0FFIRLXx83B','9ac0FcOUFdiZWP','9ac0FzCLhwFBx4','9ac0HPqkLkY6tR')
+and role = 'owner';
+
+DElETE FROM merchant_users
+WHERE merchant_id = '9ac0AMR1H3n18A' AND user_id = '9aHC1buuBvesVy' AND role = 'owner';
+
+INSERT INTO tagging_tags (tag_slug, tag_name, suggest, count)
+VALUES ('ref-9ac0amr1h3n18a', 'Ref-9ac0AMR1H3n18A', 0, 14);
+
+INSERT INTO tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)
+VALUES ('9ac0AMR1H3n18A', 'merchant', 'Referral', 'referral');
+
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0ApXdgwOurS', 'merchant', 'Ref-9ac0AMR1H3n18A', 'ref-9ac0amr1h3n18a');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0BFkiA29q8o', 'merchant', 'Ref-9ac0AMR1H3n18A', 'ref-9ac0amr1h3n18a');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0Bihc4F9qnW', 'merchant', 'Ref-9ac0AMR1H3n18A', 'ref-9ac0amr1h3n18a');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0CBXZ5Oszgy', 'merchant', 'Ref-9ac0AMR1H3n18A', 'ref-9ac0amr1h3n18a');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0CbzTsptnFU', 'merchant', 'Ref-9ac0AMR1H3n18A', 'ref-9ac0amr1h3n18a');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0D4UcMgbTZV', 'merchant', 'Ref-9ac0AMR1H3n18A', 'ref-9ac0amr1h3n18a');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0DT7Epk7Dre', 'merchant', 'Ref-9ac0AMR1H3n18A', 'ref-9ac0amr1h3n18a');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0DtwA1clRpg', 'merchant', 'Ref-9ac0AMR1H3n18A', 'ref-9ac0amr1h3n18a');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0EIkPFZHWYR', 'merchant', 'Ref-9ac0AMR1H3n18A', 'ref-9ac0amr1h3n18a');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0EnB7f5eyU7', 'merchant', 'Ref-9ac0AMR1H3n18A', 'ref-9ac0amr1h3n18a');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0FFIRLXx83B', 'merchant', 'Ref-9ac0AMR1H3n18A', 'ref-9ac0amr1h3n18a');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0FcOUFdiZWP', 'merchant', 'Ref-9ac0AMR1H3n18A', 'ref-9ac0amr1h3n18a');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0FzCLhwFBx4', 'merchant', 'Ref-9ac0AMR1H3n18A', 'ref-9ac0amr1h3n18a');
+insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VALUES ('9ac0HPqkLkY6tR', 'merchant', 'Ref-9ac0AMR1H3n18A', 'ref-9ac0amr1h3n18a');
+
+DElETE FROM merchant_users
+WHERE merchant_id = '9ac0S0RCy2Zy6T' AND user_id = '9aHC1buuBvesVy' AND role = 'owner';
+
+INSERT INTO tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)
+VALUES ('9ac0S0RCy2Zy6T', 'merchant', 'Referral', 'referral');
+
+delete from tagging_tagged
+where tag_name = 'Ref-9aHC1hl4PNU3sn';
+
+delete from tagging_tagged
+where tag_name = 'Ref-8fgkljXsVg4lSh';
+
+delete from tagging_tags
+where name = 'Ref-8fgkljXsVg4lSh';
+
+delete from tagging_tags
+where name = 'Ref-9aHC1hl4PNU3sn';
+
+# Airtel aggregator accounts breakup -- end
+
+# Invoice GST - item / line_items
+
+ALTER TABLE items
+    ADD COLUMN hsn_code VARCHAR(20) DEFAULT NULL AFTER tax_inclusive,
+    ADD COLUMN sac_code VARCHAR(20) DEFAULT NULL AFTER hsn_code,
+    ADD COLUMN tax_rate INTEGER UNSIGNED DEFAULT NULL AFTER sac_code;
+
+ALTER TABLE line_items
+    ADD COLUMN hsn_code VARCHAR(20) DEFAULT NULL AFTER tax_inclusive,
+    ADD COLUMN sac_code VARCHAR(20) DEFAULT NULL AFTER hsn_code;
+
+ALTER TABLE `merchant_details`
+    ADD COLUMN `reviewer_id` char(14) NULL DEFAULT NULL AFTER `archived_at`;
+
+ALTER TABLE orders
+    ADD COLUMN discount TINYINT(4) NOT NULL DEFAULT 0 AFTER offer_id;
+
+ALTER TABLE upi
+    ADD COLUMN account_number VARCHAR(255) NULL DEFAULT NULL AFTER vpa,
+    ADD COLUMN ifsc VARCHAR(255) NULL DEFAULT NULL AFTER account_number;
+
+ALTER TABLE action_checker
+    ADD INDEX action_checker_created_at_index (created_at);
+
+ALTER TABLE action_comments
+    ADD INDEX action_comments_created_at_index (created_at);
+
+ALTER TABLE action_state
+    ADD INDEX action_state_created_at_index (created_at);
+
+ALTER TABLE action_state_reasons
+    ADD INDEX action_state_reasons_created_at_index (created_at);
+
+ALTER TABLE admin_leads
+    ADD INDEX admin_leads_created_at_index (created_at);
+
+ALTER TABLE adjustment
+    ADD INDEX adjustment_created_at_index (created_at);
+
+ALTER TABLE admin_tokens
+    ADD INDEX admin_tokens_created_at_index (created_at);
+
+ALTER TABLE atom
+    ADD INDEX atom_created_at_index (created_at);
+
+ALTER TABLE axis
+    ADD INDEX axis_created_at_index (created_at);
+
+ALTER TABLE balance
+    ADD INDEX balance_created_at_index (created_at);
+
+ALTER TABLE billdesk
+    ADD INDEX billdesk_created_at_index (created_at);
+
+ALTER TABLE cards
+    ADD INDEX cards_created_at_index (created_at);
+
+ALTER TABLE coupons
+    ADD INDEX coupons_created_at_index (created_at);
+
+ALTER TABLE credit_transaction
+    ADD INDEX credit_transaction_created_at_index (created_at);
+
+ALTER TABLE emi_plans
+    ADD INDEX emi_plans_created_at_index (created_at);
+
+ALTER TABLE features
+    ADD INDEX features_created_at_index (created_at);
+
+ALTER TABLE fees_breakup
+    ADD INDEX fees_breakup_created_at_index (created_at),
+    DROP INDEX fees_breakup_name_index;
+
+ALTER TABLE gateway_rules
+    ADD INDEX gateway_rules_created_at_index (created_at);
+
+ALTER TABLE geo_ips
+    ADD INDEX geo_ips_created_at_index (created_at);
+
+ALTER TABLE groups
+    ADD INDEX groups_created_at_index (created_at);
+
+ALTER TABLE hdfc
+    ADD INDEX hdfc_created_at_index (created_at);
+
+ALTER TABLE hdfc_mpr
+    ADD INDEX hdfc_mpr_created_at_index (created_at);
+
+ALTER TABLE hdfc_response_xml
+    ADD INDEX hdfc_response_xml_created_at_index (created_at);
+
+ALTER TABLE `keys`
+    ADD INDEX keys_created_at_index (created_at);
+
+ALTER TABLE kotak
+    ADD INDEX kotak_created_at_index (created_at);
+
+ALTER TABLE login_attempts
+    ADD INDEX login_attempts_created_at_index (created_at);
+
+ALTER TABLE merchant_banks
+    ADD INDEX merchant_banks_created_at_index (created_at);
+
+ALTER TABLE merchant_emi_plans
+    ADD INDEX merchant_emi_plans_created_at_index (created_at);
+
+ALTER TABLE merchant_promotion
+    ADD INDEX merchant_promotion_created_at_index (created_at);
+
+ALTER TABLE merchant_requests
+    ADD INDEX merchant_requests_created_at_index (created_at);
+
+ALTER TABLE mobikwik
+    ADD INDEX mobikwik_created_at_index (created_at);
+
+ALTER TABLE netbanking
+    ADD INDEX netbanking_created_at_index (created_at);
+
+ALTER TABLE offers
+    ADD INDEX offers_created_at_index (created_at);
+
+ALTER TABLE org_field_map
+    ADD INDEX org_field_map_created_at_index (created_at);
+
+ALTER TABLE org_hostname
+    ADD INDEX org_hostname__created_at_index (created_at);
+
+ALTER TABLE permissions
+    ADD INDEX permissions_created_at_index (created_at);
+
+ALTER TABLE paytm
+    ADD INDEX paytm_created_at_index (created_at);
+
+ALTER TABLE pricing
+    ADD INDEX pricing_created_at_index (created_at);
+
+ALTER TABLE roles
+    ADD INDEX roles_created_at_index (created_at);
+
+ALTER TABLE sbiepay
+    ADD INDEX sbiepay_created_at_index (created_at);
+
+ALTER TABLE settlement_details
+    ADD INDEX settlement_details_created_at_index (created_at);
+
+ALTER TABLE terminals
+    ADD INDEX terminals_created_at_index (created_at);
+
+ALTER TABLE upi
+    ADD INDEX upi_created_at_index (created_at);
+
+ALTER TABLE users
+    ADD INDEX users_created_at_index (created_at);
+
+ALTER TABLE vpa
+    ADD INDEX vpa_created_at_index (created_at);
+
+ALTER TABLE wallet
+    ADD INDEX wallet_created_at_index (created_at);
+
+ALTER TABLE workflows
+    ADD INDEX workflows_created_at_index (created_at);
+
+# this is already there on reporting replica
+# Please ensure that it is dropped before applying this on master
+ALTER TABLE transactions
+    ADD INDEX transactions_settled_at_merchant_id_index (settled_at, merchant_id);
+
+ALTER TABLE customers
+    DROP INDEX customers_contact_index,
+    DROP INDEX customers_email_index,
+    ADD INDEX customers_email_index (email(40)),
+    ADD INDEX customers_contact_email_merchant_id_index (contact, email(40), merchant_id),
+    ADD INDEX customers_contact_merchant_id_index (contact, merchant_id);
+
+ALTER TABLE invoices
+    ADD INDEX invoices_status_expire_by_deleted_at_index (status, expire_by, deleted_at);
+
+ALTER TABLE virtual_accounts
+    ADD COLUMN `entity_id` char(14) NULL DEFAULT NULL AFTER `customer_id`,
+    ADD COLUMN `entity_type` char(20) NULL DEFAULT NULL AFTER `entity_id`,
+    ADD INDEX `virtual_accounts_entity_id_entity_type_index` (`entity_id`,`entity_type`);
+
+# Customer GSTIN - Invoices
+ALTER TABLE customers
+    ADD COLUMN gstin VARCHAR(20) DEFAULT NULL AFTER email;
+
+ALTER TABLE invoices
+    ADD COLUMN customer_gstin VARCHAR(20) DEFAULT NULL AFTER customer_contact;
+
+ALTER TABLE tokens
+    ADD INDEX tokens_recurring_status_index (recurring_status);
+
+ALTER TABLE payments
+    ADD COLUMN acknowledged_at INTEGER UNSIGNED AFTER auth_type,
+    ADD COLUMN reference3 TINYINT(1) NULL AFTER reference2,
+    ADD COLUMN reference4 TINYINT(1) NULL AFTER reference3,
+    ADD COLUMN reference5 INT(11) DEFAULT NULL AFTER reference4,
+    ADD COLUMN reference6 INT(11) DEFAULT NULL AFTER reference5,
+    ADD COLUMN reference7 VARCHAR(255) DEFAULT NULL AFTER reference6,
+    ADD COLUMN reference8 VARCHAR(255) DEFAULT NULL AFTER reference7,
+    ADD COLUMN reference9 BIGINT UNSIGNED DEFAULT NULL AFTER reference8;

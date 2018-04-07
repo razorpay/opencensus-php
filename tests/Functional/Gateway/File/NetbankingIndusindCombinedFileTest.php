@@ -35,7 +35,7 @@ class NetbankingIndusindCombinedFileTest extends TestCase
 
         $refund = $this->refundPayment($payment['id']);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
         $content = $content['items'][0];

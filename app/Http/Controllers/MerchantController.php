@@ -9,11 +9,11 @@ use RZP\Models\Key;
 use RZP\Models\Report;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Merchant\AccessMap;
 
 class MerchantController extends Controller
 {
@@ -247,6 +247,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getBankAccountChangeStatus($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getBankAccountChangeStatus($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getBankAccount($id)
     {
         $data = $this->service()->getBankAccount($id);
@@ -380,6 +389,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getWebhookEvents()
+    {
+        $data = $this->service()->fetchWebhookEvents();
+
+        return ApiResponse::json($data);
+    }
+
     public function getWebhook($id)
     {
         $data = $this->service()->getWebhook($id);
@@ -389,7 +405,14 @@ class MerchantController extends Controller
 
     public function getWebhooks()
     {
-        $data = $this->service()->getWebhooks();
+        $data = $this->service()->getWebhooks($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postOAuthApplicationWebhook(string $appId)
+    {
+        $data = $this->service()->createOAuthAppWebhook($appId, $this->input);
 
         return ApiResponse::json($data);
     }
@@ -533,11 +556,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function updateHoldFundsForMultipleMerchants()
+    public function updateMerchantsBulk()
     {
         $input = Request::all();
 
-        $data = $this->service()->updateHoldFundsForMultipleMerchants($input);
+        $data = $this->service()->updateMerchantsBulk($input);
 
         return ApiResponse::json($data);
     }
@@ -698,9 +721,9 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function getUsers($id)
+    public function getUsers()
     {
-        $data = $this->service()->getUsers($id);
+        $data = $this->service()->getUsers();
 
         return ApiResponse::json($data);
     }
@@ -746,6 +769,24 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function updateWebsiteDetails()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->updateWebsiteDetails($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateKeyAccess(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateKeyAccess($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getRejectionReasons()
     {
         $response = $this->service(E::MERCHANT_DETAIL)->getRejectionReasons();
@@ -779,6 +820,15 @@ class MerchantController extends Controller
     public function deleteTag($id, $tagName)
     {
         $response = $this->service()->deleteTag($id, $tagName);
+
+        return ApiResponse::json($response);
+    }
+
+    public function bulkTagMerchants()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkTag($input);
 
         return ApiResponse::json($response);
     }
@@ -871,6 +921,49 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service()->sendPayoutMailForMultipleMerchants($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postMapOAuthApplication(string $merchantId)
+    {
+        $input = Request::all();
+
+        $response = (new AccessMap\Service)
+                        ->mapOAuthApplication($merchantId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteMapOAuthApplication(string $merchantId, string $appId)
+    {
+        $response = (new AccessMap\Service)
+                        ->deleteMapOAuthApplication($merchantId, $appId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function enableEmiMerchantSubvention(string $id, string $emiPlanId)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->enableEmiMerchantSubvention($id, $emiPlanId, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function bulkAssignReviewer()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->bulkAssignReviewer($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMerchantActivationReviewers()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getMerchantActivationReviewers();
 
         return ApiResponse::json($response);
     }

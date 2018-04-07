@@ -322,19 +322,19 @@ class Validator extends Base\Validator
 
     public function validateSubscriptionViewable()
     {
-        $subscription = $this->entity;
-
-        $id = $subscription->getPublicId();
+        $subscription   = $this->entity;
+        $subscriptionId = $subscription->getPublicId();
 
         if ($subscription->hasBeenAuthenticated() === false)
         {
-            throw new BadRequestValidationFailureException("Subscription with id $id is not authenticated yet");
+            $message = "Subscription with id {$subscriptionId} is not authenticated yet";
+            throw new BadRequestValidationFailureException($message);
         }
 
         if ($subscription->isGlobal() === false)
         {
-            throw new BadRequestValidationFailureException('Hosted page is not available. ' .
-                'Please contact the merchant for further details.');
+            $message = 'Hosted page is not available. Please contact the merchant for further details.';
+            throw new BadRequestValidationFailureException($message);
         }
     }
 }

@@ -47,6 +47,8 @@ class CreateCreditsTransactionTable extends Migration
                  ->on_delete('restrict');
 
             $table->unique([CreditTransaction::TRANSACTION_ID, CreditTransaction::CREDITS_ID]);
+
+            $table->index(CreditTransaction::CREATED_AT);
         });
     }
 

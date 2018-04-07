@@ -16,6 +16,7 @@ use RZP\Models\Admin\Action;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Admin\Permission;
 use RZP\Models\BankAccount;
+use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Merchant;
@@ -216,7 +217,13 @@ class Core extends Base\Core
 
         (new Methods\Core)->validateInternationalPricingForMerchant($merchant, $plan);
 
-        $this->saveAndNotify($merchant);
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
+        {
+            // This is used to sync fields transaction_report_email and website in merchant and merchantDetail
+            (new Detail\Core)->syncToMerchantDetailFields($merchant, $input);
+
+            $this->saveAndNotify($merchant);
+        });
 
         $this->syncHeimdallRelatedEntities($merchant, $input);
 
@@ -428,6 +435,34 @@ class Core extends Base\Core
         return $merchant->getActivationStatusChangeLog();
     }
 
+    /**
+     * This function is used for updating key access of a merchant
+     * @param Entity $merchant
+     * @param array $input
+     *
+     * @return Entity
+     */
+    public function updateKeyAccess(Entity $merchant, array $input): Entity
+    {
+        $merchant->getValidator()->validateInput('keyAccess', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_UPDATE_KEY_ACCESS,
+            ['input' => $input]);
+
+        $oldMerchant = clone $merchant;
+
+        $merchant->setHasKeyAccess($input[Entity::HAS_KEY_ACCESS]);
+
+        $this->app['workflow']
+             ->setEntity($merchant->getEntity())
+             ->handle($oldMerchant, $merchant);
+
+        $this->repo->saveOrFail($merchant);
+
+        return $merchant;
+    }
+
     public function markGratisTransactionPostpaid(string $merchantId, int $from)
     {
         $merchant =  $this->repo->merchant->findOrFail($merchantId);
@@ -603,9 +638,7 @@ class Core extends Base\Core
             {
                 $body = $body . '<br />' . $payoutBankAccount->getBeneficiaryName() . '<br />';
                 $body = $body . 'Bank Account Number : ' . $payoutBankAccount->getAccountNumber() . '<br />';
-                $body = $body . $payoutBankAccount->getBeneficiaryAddress1() . '<br />';
-                $body = $body . $payoutBankAccount->getBeneficiaryAddress2() . '<br />';
-                $body = $body . $payoutBankAccount->getBeneficiaryAddress3() . '<br />';
+                $body = $body . $payoutBankAccount->source->merchantDetail->getBusinessRegisteredAddress() . '<br />';
             }
 
             $body = $body . '<br />'
@@ -702,5 +735,20 @@ class Core extends Base\Core
 
             (new User\Core)->edit($selfUser, $userData);
         }
+    }
+
+    public function enableEmiMerchantSubvention(Entity $merchant, Emi\Entity $emiPlan, array $input)
+    {
+        $emiMerchantSub = (new EmiPlans\Entity)->build($input);
+
+        $emiMerchantSub->merchant()->associate($merchant);
+
+        $emiMerchantSub->emiPlan()->associate($emiPlan);
+
+        $emiMerchantSub->generateId();
+
+        $this->repo->saveOrFail($emiMerchantSub);
+
+        return $emiMerchantSub->toArray();
     }
 }

@@ -114,8 +114,20 @@ class Server extends Base\Mock\Server
 
         $payment = $app['repo']->payment->find($input['merchantTranId']);
 
+        if ($payment === NULL)
+        {
+            $bharatQr = $app['repo']->bharat_qr->findByMerchantReference($input['merchantTranId']);
+
+            if ($bharatQr != NULL)
+            {
+                $payment = $bharatQr->payment;
+            }
+        }
+
         $status = 'SUCCESS';
         $message = 'Transaction Successful';
+
+        $amount = number_format($payment['amount'] / 100, 2, '.', '');
 
         if (isset($payment['notes']['status']) === true)
         {
@@ -131,6 +143,14 @@ class Server extends Base\Mock\Server
             }
         }
 
+        if (isset($payment['notes']['amount']) === true)
+        {
+            if ($payment['notes']['amount'] === 'mismatch')
+            {
+                $amount = '12';
+            }
+        }
+
         $responseCode = $this->getVerifyResponseCode($payment['vpa']);
 
         $response = [
@@ -142,7 +162,8 @@ class Server extends Base\Mock\Server
             'message'           => $message,
             'merchantTranId'    => $input['merchantTranId'],
             'OriginalBankRRN'   => (string) random_int(1111111111, 9999999999),
-            'status'            => $status
+            'status'            => $status,
+            'Amount'            => $amount,
         ];
 
         $this->content($response, 'verify');
@@ -288,6 +309,15 @@ class Server extends Base\Mock\Server
     {
         $content = $this->S2SRequestContent($upiEntity, $payment);
 
+        $json = json_encode($content, JSON_PRETTY_PRINT);
+
+        $encrypted = $this->encrypt($json);
+
+        return base64_encode($encrypted);
+    }
+
+    public function getAsyncCallbackContentForBharatQr(array $content)
+    {
         $json = json_encode($content, JSON_PRETTY_PRINT);
 
         $encrypted = $this->encrypt($json);

@@ -20,6 +20,8 @@ class Status
 
     const REJECT     = 'REJECT';
 
+    const DEEMED     = 'DEEMED';
+
     const NO_RECORDS = 'original record not found';
 
     const NO_RECORDS2 = 'merchant tranid is not available';

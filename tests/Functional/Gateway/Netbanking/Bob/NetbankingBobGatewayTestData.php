@@ -17,7 +17,7 @@ return [
         'currency'          => 'INR',
         'description'       => 'random description',
         'card_id'           => null,
-        'bank'              => 'BARB',
+        'bank'              => 'BARB_R',
         'error_code'        => null,
         'error_description' => null,
         'email'             => 'a@b.com',
@@ -33,13 +33,29 @@ return [
     ],
 
     'testPaymentNetbankingEntity' => [
-        'bank_payment_id' => 'AB1234',
+        'bank_payment_id' => '12345678',
         'received'        => true,
-        'bank'            => 'BARB',
+        'bank'            => 'BARB_R',
         'status'          => 'S',
     ],
 
     'testAuthorizationFailure' => [
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        ],
+    ],
+
+    'testUserCancelledPayments' => [
         'response' => [
             'content'     => [
                 'error' => [
@@ -74,21 +90,21 @@ return [
     'testPaymentFailedNetbankingEntity' => [
         'bank_payment_id' => null,
         'received'        => true,
-        'bank'            => 'BARB',
+        'bank'            => 'BARB_R',
         'status'          => Status::FAILURE
     ],
 
     'testPaymentVerifySuccessEntity' => [
-        'bank_payment_id' => 'AB1234',
+        'bank_payment_id' => '12345678',
         'received'        => true,
-        'bank'            => 'BARB',
+        'bank'            => 'BARB_R',
         'status'          => Status::SUCCESS
     ],
 
     'testAuthFailedEntity' => [
-        'bank_payment_id' => 'AB1234',
+        'bank_payment_id' => '12345678',
         'received'        => true,
-        'bank'            => 'BARB',
+        'bank'            => 'BARB_R',
         'status'          => Status::SUCCESS
     ],
 

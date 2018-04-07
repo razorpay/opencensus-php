@@ -41,7 +41,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->makeEmiPaymentOnCard('4111460212312338', 3);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -63,15 +63,15 @@ class GatewayEmiFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(EmiMail\Password::class);
-        Mail::assertSent(EmiMail\File::class);
+        Mail::assertQueued(EmiMail\Password::class);
+        Mail::assertQueued(EmiMail\File::class);
     }
 
     public function testGenerateEmiFileWithNoEmiPayments()
     {
         Mail::fake();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -98,7 +98,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->makeEmiPaymentOnCard('4111460212312338', 3);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
     }
@@ -113,7 +113,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->makeEmiPaymentOnCard('4111460212312338', 3);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -133,7 +133,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->makeEmiPaymentOnCard('4147720000000009', 9);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -155,8 +155,8 @@ class GatewayEmiFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(EmiMail\Password::class);
-        Mail::assertSent(EmiMail\File::class);
+        Mail::assertQueued(EmiMail\Password::class);
+        Mail::assertQueued(EmiMail\File::class);
     }
 
     public function testGenerateEmiFileForKotak()
@@ -167,7 +167,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->makeEmiPaymentOnCard('4280951000002433', 9, 1, 'capp_1000000custapp');
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -189,8 +189,8 @@ class GatewayEmiFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(EmiMail\Password::class);
-        Mail::assertSent(EmiMail\File::class);
+        Mail::assertQueued(EmiMail\Password::class);
+        Mail::assertQueued(EmiMail\File::class);
     }
 
     public function testGenerateEmiFileForRbl()
@@ -201,7 +201,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->makeEmiPaymentOnCard('5243730000000008', 9);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -223,8 +223,8 @@ class GatewayEmiFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(EmiMail\Password::class);
-        Mail::assertSent(EmiMail\File::class);
+        Mail::assertQueued(EmiMail\Password::class);
+        Mail::assertQueued(EmiMail\File::class);
     }
 
     public function testGenerateEmiFileForScbl()
@@ -235,7 +235,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->makeEmiPaymentOnCard('4028740000000001', 9);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -257,8 +257,8 @@ class GatewayEmiFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(EmiMail\Password::class);
-        Mail::assertSent(EmiMail\File::class);
+        Mail::assertQueued(EmiMail\Password::class);
+        Mail::assertQueued(EmiMail\File::class);
     }
 
     protected function makeEmiPaymentOnCard($card, $emiDuration,

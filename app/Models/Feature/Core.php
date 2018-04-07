@@ -18,6 +18,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Mail\Merchant\FeatureEnabled;
 use RZP\Models\Merchant\SlackActions;
 use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Core extends Base\Core
@@ -38,7 +39,11 @@ class Core extends Base\Core
 
         $feature->generateId();
 
-        $existingFeatures = $this->repo->feature->findByEntityId($feature->getEntityId());
+        $entityType = $feature->getEntityType();
+
+        $entityId = $feature->getEntityId();
+
+        $existingFeatures = $this->repo->feature->fetchByEntityTypeAndEntityId($entityType, $entityId);
 
         $assignedFeatureNames = $existingFeatures->pluck(Entity::NAME)->toArray();
 
@@ -62,7 +67,7 @@ class Core extends Base\Core
 
         $merchantId = $input['entity_id'];
 
-        $this->notifyMerchantIfApplicable($merchantId, $feature, $shouldSync);
+        $this->notifyMerchantOfFeatureActivationIfApplicable($merchantId, $feature, $shouldSync);
 
         return $feature;
     }
@@ -98,13 +103,13 @@ class Core extends Base\Core
     }
 
     /**
-     * notifyFeature is enabled on Live mode
+     * Notify the merchant of feature Activation by email if applicable based on mode, feature type and sync status.
      *
      * @param string $merchantId
      * @param Entity $feature
      * @param bool   $shouldSync
      */
-    public function notifyMerchantIfApplicable(
+    public function notifyMerchantOfFeatureActivationIfApplicable(
         string $merchantId,
         Entity $feature,
         bool $shouldSync)
@@ -302,11 +307,19 @@ class Core extends Base\Core
             $this->create($params, true);
         }
 
+        // TODO:: Remove this once the migration to new merchant requests flow has been done.
         $this->repo->merchant_detail->updateFeatureActivationStatus(
             $merchant,
             $featureName,
             $status
         );
+
+        // Creating/Update a Merchant Request if applicable from the current status of onboarding feature submission
+        (new MerchantRequest\Core)->syncOnboardingSubmissionToMerchantRequest(
+            $merchant,
+            $featureName,
+            MerchantRequest\Type::PRODUCT,
+            $status);
 
         $merchantDetail = $merchant->merchantDetail;
 
@@ -459,6 +472,7 @@ class Core extends Base\Core
         {
             $fileId = $response[$featureName][$question];
 
+            // TODO :: replace its usage with the one from FileStore\Core
             $fileUrl = $this->getSignedUrl($fileId, $merchant->getId());
 
             $response[$featureName][$question] = $fileUrl;
@@ -475,7 +489,9 @@ class Core extends Base\Core
     {
         $accessor = new FileStore\Accessor;
 
-        $signedUrls = $accessor->id($fileStoreId)->merchantId($merchantId)->getSignedUrl();
+        $signedUrls = $accessor->id($fileStoreId)
+                               ->merchantId($merchantId)
+                               ->getSignedUrl();
 
         return $signedUrls[$fileStoreId];
     }
@@ -559,11 +575,17 @@ class Core extends Base\Core
         Entity $feature,
         bool $shouldSync)
     {
+        if ($feature->isMerchantFeature() === false)
+        {
+            // Return if the feature is not for a merchant
+            return;
+        }
+
         $merchantId = $feature->getEntityId();
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $featureName     = $feature->getName();
+        $featureName = $feature->getName();
 
         $isLiveMode = $this->isLiveMode();
 
@@ -732,5 +754,22 @@ class Core extends Base\Core
 
             $this->logActionToSlack($merchant, SlackActions::PRODUCT_ACTIVATION, $data);
         }
+    }
+
+    public function getOnboardingQuestions(array $features): array
+    {
+        $response = [];
+
+        foreach ($features as $feature)
+        {
+            $questionMap = Constants::getFeatureQuestions($feature);
+
+            if (count($questionMap) > 0)
+            {
+                $response[$feature] = $questionMap;
+            }
+        }
+
+        return $response;
     }
 }

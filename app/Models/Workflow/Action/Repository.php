@@ -14,30 +14,17 @@ class Repository extends Base\Repository
     protected $entity = 'workflow_action';
 
     protected $adminFetchParamRules = [
-        Entity::ADMIN_ID            => 'sometimes|string|max:14',
+        Entity::MAKER_ID            => 'sometimes|string|max:14',
+        Entity::MAKER_TYPE          => 'sometimes|string|max:11',
         Entity::WORKFLOW_ID         => 'sometimes|string|max:14',
         Entity::ORG_ID              => 'sometimes|string|max:14',
-        self::EXPAND . '.*'         => 'filled|string|in:admin,workflow,',
+        self::EXPAND . '.*'         => 'filled|string|in:workflow,maker,stateChanger',
         Constants::TYPE             => 'sometimes|string|max:10',
         Entity::PERMISSION          => 'sometimes|boolean|in:0,1',
         Constants::CLOSED_ACTIONS   => 'sometimes|boolean|in:0,1',
         Constants::CHECKER_ACTIONS  => 'sometimes|boolean|in:0,1',
         Constants::ACTIONS_CHECKED  => 'sometimes|boolean|in:0,1',
     ];
-
-    protected function getNewQueryWithPermissions()
-    {
-        $permission = Table::PERMISSION;
-
-        return $this->newQuery()
-                    ->select(
-                        Table::WORKFLOW_ACTION . '.*',
-                        'permissions.name AS permission_name',
-                        'permissions.description AS permission_description')
-                    ->join($permission, function ($join) {
-                        $join->on('permissions.id', '=', 'workflow_actions.permission_id');
-                    });
-    }
 
     public function addQueryParamPermission($query, $params)
     {
@@ -167,7 +154,7 @@ class Repository extends Base\Repository
 
     /**
      * Get action entity with its relations like workflow,
-     * workflow.steps, workflow.steps.role, admin, permission, etc.
+     * workflow.steps, workflow.steps.role, maker, permission, etc.
      *
      * Important to note about workflow.steps relation is that
      * we may have previously executed workflow actions for which the
@@ -175,7 +162,7 @@ class Repository extends Base\Repository
      *
      * In such cases we select steps with action.created_at lying between
      * step.created_at and step.deleted_at.
-     * 
+     *
      * For actions that are open or executed but the workflow steps haven't
      * been modified (and hence soft deleted) since the action was created
      * we just select the rows with step.deleted_at IS NULL and obviously
@@ -205,7 +192,6 @@ class Repository extends Base\Repository
                 // Get all steps where action.created_at is between
                 // step.created_at AND step.deleted_at (deleted/old steps) or it is more
                 // than step.created_at but step.deleted_at is NULL (active steps)
-                
                 $query->withTrashed()
                       ->where(Entity::CREATED_AT, '<=', $actionEntity->getCreatedAt())
                       ->where(function ($query) use ($actionEntity)
@@ -215,7 +201,15 @@ class Repository extends Base\Repository
                         });
             },
             'workflow.steps.role',
-            'admin' => function ($query)
+            'maker' => function ($query) use ($actionEntity)
+            {
+                // Since only Admin uses soft deletes
+                if ($actionEntity->getMakerType() === MakerType::ADMIN)
+                {
+                    $query->withTrashed();
+                }
+            },
+            'stateChanger' => function ($query)
             {
                 $query->withTrashed();
             },

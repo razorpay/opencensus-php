@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Icici\Headings;
 use RZP\Models\FundTransfer\Base\Reconciliation\FileProcessor as BaseProcessor;
@@ -19,6 +20,10 @@ class FileProcessor extends BaseProcessor
     protected static $channel = Channel::ICICI;
 
     protected static $delimiter = ',';
+
+    protected static $fileExtensions = [
+        FileStore\Format::TXT
+    ];
 
     public static function getHeadings()
     {
@@ -47,7 +52,12 @@ class FileProcessor extends BaseProcessor
         if (($count < 11) or ($count > 12))
         {
             throw new Exception\LogicException(
-                'Invalid count: ' . $count . ' Should be between 11 and 13. Row: ' . $ix);
+                'Invalid count: ' . $count . ' Should be between 11 and 13. Row',
+                null,
+                [
+                    'line'      => $ix,
+                    'content'   => $values
+                ]);
         }
 
         $headings = array_slice($headings, 0, $count);
