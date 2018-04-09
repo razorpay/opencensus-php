@@ -3,10 +3,11 @@
 namespace RZP\Mail\Merchant;
 
 use RZP\Constants\MailTags;
+use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Common;
 
-class AccountChange extends Mailable
+class AccountChangeRequest extends Mailable
 {
     protected $bankAccount;
 
@@ -36,6 +37,8 @@ class AccountChange extends Mailable
 
         $this->to($this->recipientEmails, $name);
 
+        $this->cc(Constants::MAIL_ADDRESSES[Constants::SUPPORT], Constants::HEADERS[Constants::SUPPORT]);
+
         return $this;
     }
 
@@ -43,7 +46,7 @@ class AccountChange extends Mailable
     {
         $label = $this->merchant['billing_label'] ?? $this->merchant['name'];
 
-        $subject = 'Razorpay | Bank account change successful for ' . $label;
+        $subject = 'Razorpay | Bank account change request for ' . $label;
 
         $this->subject($subject);
 
@@ -61,7 +64,7 @@ class AccountChange extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.merchant.bankaccount_change');
+        $this->view('emails.merchant.bankaccount_change_request');
 
         return $this;
     }
@@ -72,7 +75,7 @@ class AccountChange extends Mailable
         {
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader(MailTags::HEADER, MailTags::ACCOUNT_CHANGED);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::ACCOUNT_CHANGE_REQUEST);
         });
 
         return $this;

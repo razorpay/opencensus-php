@@ -7,12 +7,14 @@ use Mail;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
+use RZP\Mail\Merchant\AccountChangeRequest as BankAccountChangeRequestMail;
 
 
 class Core extends Base\Core
@@ -113,16 +115,18 @@ class Core extends Base\Core
             $this->app['request']->replace($input);
         }
 
+        $ba = $this->createBankAccount($input, $merchant, $this->mode);
+
+        $this->sendBankAccountChangeRequestEmail($ba, $merchant);
+
         $this->app['workflow']
              ->setEntityAndId($oldBankAccount->getEntity(), $oldBankAccount->getId())
              ->handle($oldBankAccountArray, $newBankAccountArray);
 
         return $this->repo->transaction(
-            function() use ($merchant, $oldBankAccount, $input, $detail)
+            function() use ($merchant, $ba, $oldBankAccount, $input, $detail)
             {
                 $this->repo->delete($oldBankAccount);
-
-                $ba = $this->createBankAccount($input, $merchant, $this->mode);
 
                 $this->sendBankAccountChangeEmail($ba, $merchant);
 
@@ -244,6 +248,24 @@ class Core extends Base\Core
         return $ba;
     }
 
+    protected function sendBankAccountChangeRequestEmail($newBankAccount, $merchant)
+    {
+        if ($this->shouldNotifyViaEmail($merchant) === false)
+        {
+            return;
+        }
+
+        $newBankAccount = $newBankAccount->toArray();
+
+        $recipients = (new Merchant\Core)->getEmailsOfOwnersAndAdmins($merchant);
+
+        $merchant = $merchant->toArray();
+
+        $bankAccountChangeMail = new BankAccountChangeRequestMail($newBankAccount, $merchant, $recipients);
+
+        Mail::queue($bankAccountChangeMail);
+    }
+
     protected function sendBankAccountChangeEmail($newBankAccount, $merchant)
     {
         if ($this->shouldNotifyViaEmail($merchant) === false)
@@ -253,9 +275,11 @@ class Core extends Base\Core
 
         $newBankAccount = $newBankAccount->toArray();
 
+        $recipients = (new Merchant\Core)->getEmailsOfOwnersAndAdmins($merchant);
+
         $merchant = $merchant->toArray();
 
-        $bankAccountChangeMail = new BankAccountChangeMail($newBankAccount, $merchant);
+        $bankAccountChangeMail = new BankAccountChangeMail($newBankAccount, $merchant, $recipients);
 
         Mail::queue($bankAccountChangeMail);
     }

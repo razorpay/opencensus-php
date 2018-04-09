@@ -751,4 +751,18 @@ class Core extends Base\Core
 
         return $emiMerchantSub->toArray();
     }
+
+    public function getEmailsOfOwnersAndAdmins(Entity $merchant)
+    {
+        $users = $merchant->users()->whereIn('role', ['admin','owner'])->get();
+
+        $emails = [];
+
+        foreach($users as $user)
+        {
+            $emails[] = $user->email;
+        }
+
+        return $emails;
+    }
 }
