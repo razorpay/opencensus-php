@@ -21,7 +21,7 @@ import Collection from 'model/collection';
 import BulkAssign from './BulkAssign';
 
 const defaultFilters = {
-  account_status: '',
+  account_status: 'pending_under_review',
 };
 
 export default class MerchantList extends Component {
@@ -135,12 +135,6 @@ export default class MerchantList extends Component {
       delete filters['sub_accounts'];
     }
 
-    //hijack account_status based on activation_status value
-    if (filters.account_status === 'pending') {
-      filters.account_status = filters.activation_status;
-      delete filters.activation_status;
-    }
-
     return this.collection.applyFilters(filters);
   };
 
@@ -191,28 +185,13 @@ export default class MerchantList extends Component {
           <header>Merchant List</header>
           <Form onSubmit={this.onSubmit} class="filters">
             <Field name="q" label="Search" />
-            <SelectField
-              name="account_status"
-              label="Account Status"
-              value={this.state.accountStatus}
-              onChange={this.handleAccountStatusChange}
-            >
-              <option value="">All</option>
-              <option value="activated">Activated</option>
-              <option value="pending">Pending Activation</option>
-              <option value="dead">Dead</option>
-              <option value="archived">Archived</option>
-              <option value="suspended">Suspended</option>
+
+            <SelectField name="account_status" label="Activation Status">
+              <option value="pending_under_review">Under Review</option>
+              <option value="pending_needs_clarification">
+                Needs Clarification
+              </option>
             </SelectField>
-            {this.state.accountStatus === 'pending' && (
-              <SelectField name="activation_status" label="Activation Status">
-                <option value="pending">All</option>
-                <option value="pending_under_review">Under Review</option>
-                <option value="pending_needs_clarification">
-                  Needs Clarification
-                </option>
-              </SelectField>
-            )}
             <Field name="sub_accounts" label="Linked-accounts for ID" />
             <CheckField
               label="Linked Accounts Only"
