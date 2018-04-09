@@ -10,6 +10,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Report\Types\BasicEntityReport;
+use RZP\Models\FundTransfer\Base\Reconciliation\Mock;
 use RZP\Models\Settlement;
 
 class Service extends Base\Service
@@ -137,14 +138,30 @@ class Service extends Base\Service
         return (new $reconNamepsace)->process($input);
     }
 
-    public function reconcileSettlementsInTestMode($input)
+    public function reconcileSettlementsInTestMode(array $input)
     {
-        return (new Kotak\ReconciliationGenerator)->reconcileSettlementsInTestMode($input);
+        $result = [];
+
+        foreach (Channel::getChannelsWithReconMock() as $channel)
+        {
+            $class = 'RZP\\Models\\FundTransfer\\' . ucfirst($channel)
+                     . '\\Reconciliation\\Mock\\FileGenerator';
+
+            $result[] = (new $class)->reconcileSettlements($input);
+        }
+
+        return $result;
     }
 
     public function generateSettlementReconciliation($input, string $channel)
     {
-        $reconGeneratorNamespace = '\\RZP\\Models\FundTransfer\\' . ucfirst($channel) . '\\ReconciliationGenerator';
+        (new Settlement\Validator)->validateInput('valid_channel', [
+            'channel'   => $channel
+        ]);
+
+        $reconGeneratorNamespace = '\\RZP\\Models\FundTransfer\\'
+                                    . ucfirst($channel)
+                                    . '\\Reconciliation\\Mock\\FileGenerator';
 
         $filename = (new $reconGeneratorNamespace)->generateReconcileFile($input);
 
