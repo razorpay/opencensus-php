@@ -270,7 +270,7 @@
     }
     onhashchange = addHash;
 
-    let reloadUrl = location.protocol + '//' + location.hostname + '/v1/payments/create/checkout/ajax';
+    let reloadUrl = location.protocol + '//' + location.hostname + '/v1/payments/create/checkout';
 
     // Method to call when page loads.
     var loadMethod = function () {
