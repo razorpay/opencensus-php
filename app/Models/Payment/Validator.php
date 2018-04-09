@@ -363,7 +363,9 @@ class Validator extends Base\Validator
     {
         $amount = (int) $input['amount'];
 
-        if ($input['method'] !== Payment\Method::EMANDATE)
+        $method = $input['method'];
+
+        if ($method !== Payment\Method::EMANDATE)
         {
             if ($amount < 100)
             {
@@ -373,7 +375,7 @@ class Validator extends Base\Validator
             }
         }
 
-        if (($input['method'] === Payment\Method::WALLET) and
+        if (($method === Payment\Method::WALLET) and
             ($input['wallet'] === Wallet::AIRTELMONEY) and
             ($amount < 1000))
         {
@@ -382,7 +384,7 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        if (($input['method'] === Payment\Method::EMI) and ($amount < 200000))
+        if (($method === Payment\Method::EMI) and ($amount < 200000))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT_FOR_EMI,
@@ -390,12 +392,12 @@ class Validator extends Base\Validator
         }
 
         // No limit on amount for payments made via bank_transfer
-        if ($input['method'] === Payment\Method::BANK_TRANSFER)
+        if ($method === Payment\Method::BANK_TRANSFER)
         {
             return;
         }
 
-        if ($input['method'] === Payment\Method::UPI)
+        if ($method === Payment\Method::UPI)
         {
             if ($amount > 10000000)
             {
@@ -426,7 +428,12 @@ class Validator extends Base\Validator
 
         $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
 
-        if ($amount > $maxAmountAllowed)
+        //
+        // Validate against max_payment_amount for all methods but 'transfer'
+        // Payment method 'transfer' is used internally for Route and does not
+        // need this validated
+        //
+        if (($amount > $maxAmountAllowed) and ($method !== Method::TRANSFER))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
