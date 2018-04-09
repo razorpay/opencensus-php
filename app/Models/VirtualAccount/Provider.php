@@ -377,6 +377,15 @@ class Provider
         return $identifiers;
     }
 
+    /**
+     * This method will select the terminals using a dummy payment
+     * The terminals will have all the mpans which will be used to
+     * generate qr codes
+     *
+     * @param string $method
+     * @return mixed
+     * @throws Exception\RuntimeException
+     */
     protected function getTerminalForMethod(string $method)
     {
         $paymentArray = [
@@ -389,7 +398,7 @@ class Provider
         if ($method === Payment\Method::CARD)
         {
             $card = [
-                Card\Entity::NUMBER       => '4231560000511234',
+                Card\Entity::NUMBER       => Constants::DUMMY_CARD_NUMBER,
                 Card\Entity::CVV          => Constants::CARD_CVV,
                 Card\Entity::NAME         => Constants::CARD_NAME,
                 Card\Entity::EXPIRY_MONTH => Constants::CARD_EXPIRY_MONTH,
@@ -400,12 +409,12 @@ class Provider
         }
         else
         {
-            $paymentArray['vpa'] = 'random@icici';
+            $paymentArray['vpa'] = Constants::DUMMY_VPA;
         }
 
-        $paymentArray[Payment\Entity::CONTACT] = '9876543210';
+        $paymentArray[Payment\Entity::CONTACT] = Constants::DUMMY_CONTACT;
 
-        $paymentArray[Payment\Entity::EMAIL]   = 'random@gmail.com';
+        $paymentArray[Payment\Entity::EMAIL]   = Constants::DUMMY_EMAIL;
 
         $paymentProcessor = new PaymentProcessor($this->receiver->merchant);
 
@@ -428,10 +437,5 @@ class Provider
         }
 
         return $selectedTerminals[0];
-    }
-
-    protected function getBharatQrAcquirerCode(string $network)
-    {
-        return Config::get('gateway.bharat_qr.' . strtolower($network) . '_' . 'acquirer_code');
     }
 }

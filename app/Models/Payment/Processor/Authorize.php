@@ -3554,6 +3554,19 @@ trait Authorize
         }
     }
 
+    /**
+     * Save is false when we create dummy card entity for Bharat Qr Payments
+     * This is being done in order to do terminal selection before the
+     * payment creation itself
+     *
+     * @param array $cardInput
+     * @param bool $vault
+     * @param Merchant\Entity $merchant
+     * @param bool $save
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
     public function createCardEntity(array $cardInput, bool $vault, Merchant\Entity $merchant, $save = true)
     {
         //

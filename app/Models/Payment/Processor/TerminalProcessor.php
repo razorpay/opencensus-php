@@ -23,7 +23,7 @@ class TerminalProcessor extends Base\Core
      *
      * @param Payment\Entity $payment
      *
-     * @return Terminal\Entity
+     * @return array
      */
     public function getTerminalsForPayment(Payment\Entity $payment, array $gatewayData = [])
     {

@@ -271,11 +271,6 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId(): string
     {
-        if ($this->isBharatQrPayment() === true)
-        {
-            return $this->config['bharatqr_merchant_id'];
-        }
-
         if ($this->mode === Mode::TEST)
         {
             return $this->config['test_merchant_id'];
