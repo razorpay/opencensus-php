@@ -416,8 +416,8 @@ class HomeContainer extends Component {
               <div className="banner-content">
                 <Banner cta="View Tour" ctaOnClick={this.onShowTour}>
                   <span>
-                    We heard you! We have redesigned the Dashboard Home so that
-                    you can make the most out of it.
+                    We heard you! We have updated the dashboard home design for
+                    an improved experience.
                   </span>
                 </Banner>
               </div>
@@ -440,7 +440,7 @@ class HomeContainer extends Component {
             <div className="pull-right">
               <Group>
                 <GroupItem>
-                  <span>
+                  <span className="balance-amount">
                     Current Balance:{' '}
                     {!current_balance.loading && (
                       <Amount value={current_balance.data.balance} />

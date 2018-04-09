@@ -7,7 +7,7 @@ import options from './data';
 const _getChartData = (histogram, isActive, canvas) => {
   const ctx = canvas.getContext('2d'),
     graphColor = isActive ? namedColors.primaryColor : namedColors.blueishGrey,
-    gradient = ctx.createLinearGradient(0, 0, 0, 40),
+    gradient = ctx.createLinearGradient(0, -20, 0, 50),
     // reducing opacity of primary color
     startColor = graphColor.replace(/1\)$/, '0.5)');
 

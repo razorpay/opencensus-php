@@ -43,6 +43,7 @@ import {
   PLATFORM,
   CUMULATIVE,
   METHOD,
+  SAVED_CARD_PAYMENTS,
   tabsOrder,
   tabsMeta,
   getQuery,
@@ -96,6 +97,8 @@ const TabContent = ({
     trendValue = trend.currentCount - trend.previousCount;
   }
 
+  const hasNoData = !histogram || histogram.datasets.length === 0;
+
   /*
    * checks if the current tab is showing currency values and renders
    * content in the tab
@@ -140,7 +143,7 @@ const TabContent = ({
         )}
       </h1>
       <div
-        className={`mini-chart${value === 0 ? ' no-data' : ''}${
+        className={`mini-chart${!isLoading && hasNoData ? ' no-data' : ''}${
           isActive ? ' active' : ''
         }`}
       >
@@ -234,7 +237,7 @@ class KeyMetricsContainer extends Component {
           error: '',
         },
 
-        showTab: true,
+        showTab: tabName !== SAVED_CARDS,
 
         error: '',
       };
@@ -377,8 +380,20 @@ class KeyMetricsContainer extends Component {
         datasets: [],
       });
 
-      if (datasets && datasets[0]) {
-        data.datasets.push({ ...datasets[0] });
+      if (datasets && datasets.length > 0) {
+        // need to filter and show only "Saved Card Payments" in tiny chart,
+        // as the tab has no cumulative like other tabs
+        if (tabName === SAVED_CARDS) {
+          const savedCardsDataset = datasets.filter(dataset => {
+            return dataset.label === SAVED_CARD_PAYMENTS;
+          })[0];
+
+          if (savedCardsDataset) {
+            data.datasets.push({ ...savedCardsDataset });
+          }
+        } else {
+          data.datasets.push({ ...datasets[0] });
+        }
       }
     }
 
@@ -536,10 +551,6 @@ class KeyMetricsContainer extends Component {
 
     const requestId = ++this.requestId;
 
-    if (fetchAllCounts) {
-      this.fetchOtherTabsHistogram(fetchAllCounts);
-    }
-
     return (analyticsFetch || fetch)(query, mode)
       .then(resp => {
         if (requestId !== this.requestId) {
@@ -617,6 +628,10 @@ class KeyMetricsContainer extends Component {
 
         this.setState(this.state, () => {
           this.setTabWidth();
+
+          if (fetchAllCounts) {
+            this.fetchOtherTabsHistogram(fetchAllCounts);
+          }
         });
 
         return resp;

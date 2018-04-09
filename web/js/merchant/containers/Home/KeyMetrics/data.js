@@ -25,7 +25,8 @@ const TRANSACTION_VOLUME = 'transactionVolume',
   SUCCESS_RATE = 'successRate',
   PLATFORM = 'platform',
   CUMULATIVE = 'Total',
-  METHOD = 'method';
+  METHOD = 'method',
+  SAVED_CARD_PAYMENTS = 'Saved Card Payments';
 
 export {
   TRANSACTION_VOLUME,
@@ -35,6 +36,7 @@ export {
   PLATFORM,
   CUMULATIVE,
   METHOD,
+  SAVED_CARD_PAYMENTS,
 };
 
 const defaultGroupingVals = [
@@ -221,7 +223,7 @@ export const tabsMeta = {
   },
   [SAVED_CARDS]: {
     name: SAVED_CARDS,
-    title: 'Saved Card Payments',
+    title: SAVED_CARD_PAYMENTS,
     grouping: [],
     options: [],
     index: 'payments',
@@ -232,7 +234,7 @@ export const tabsMeta = {
       ' compared to all the card payments.',
     groupTitleMap: {
       '0': 'Other Card Payments',
-      '1': 'Saved Card Payments',
+      '1': SAVED_CARD_PAYMENTS,
     },
     getCountQuery: function() {
       return {

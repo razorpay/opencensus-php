@@ -5,11 +5,19 @@ class Overlay extends Component {
     super(props);
   }
 
-  componentDidMount() {
+  layout() {
     const parentNode = this.node.parentNode;
 
     this.node.style.width = parentNode.clientWidth + 'px';
     this.node.style.height = parentNode.clientHeight + 'px';
+  }
+
+  componentDidMount() {
+    this.layout();
+  }
+
+  componentWillReceiveProps() {
+    this.layout();
   }
 
   render() {
