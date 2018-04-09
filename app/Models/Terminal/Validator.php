@@ -198,6 +198,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes|string|max:8',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_ACQUIRER           => 'sometimes|in:ratn',
     ];
 
     protected static $firstDataEditTerminalRules = [
