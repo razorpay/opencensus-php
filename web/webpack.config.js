@@ -1,10 +1,9 @@
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const webpack = require('webpack');
 const isProd = require('process').env.NODE_ENV === 'production';
 
-let plugins = [];
-
 module.exports = {
+  mode: isProd ? 'production' : 'development',
+
   externals: [].reduce.call(
     (process.env.externals || '').split(/\s+/),
     (prev, next, index, arr) => {
@@ -61,14 +60,4 @@ module.exports = {
   },
 
   devtool: isProd ? false : false,
-
-  plugins,
 };
-
-if (isProd) {
-  plugins.push(
-    new UglifyJSPlugin({
-      sourceMap: true,
-    })
-  );
-}

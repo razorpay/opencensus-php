@@ -46,8 +46,8 @@
     "redux": "^3.7.2",
     "redux-form": "6.8.0",
     "smooch": "^4.8.5",
-    "uglifyjs-webpack-plugin": "^1.1.6",
-    "webpack": "^3.10.0"
+    "webpack": "^4.5.0",
+    "webpack-cli": "^2.0.14"
   },
   "scripts": {
     "start": "externals=`./scripts/vendor.sh` webpack -w & gulp watch; kill -9 $!",
