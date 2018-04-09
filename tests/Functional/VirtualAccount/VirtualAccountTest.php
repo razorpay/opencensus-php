@@ -34,6 +34,10 @@ class VirtualAccountTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
+        $this->fixtures->create('terminal:bharat_qr_terminal');
+
+        $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+
         $this->ba->privateAuth();
 
         $this->customer = $this->getEntityById('customer', 'cust_100000customer');
@@ -96,9 +100,9 @@ class VirtualAccountTest extends TestCase
 
         $visaAcquirerCode = substr($visaValue, 0, 6);
 
-        $this->assertEquals('470100', $visaAcquirerCode);
+        $this->assertEquals('528734', $visaAcquirerCode);
 
-        $this->assertEquals('513344', $masterCardAcquirerCode);
+        $this->assertEquals('428734', $masterCardAcquirerCode);
     }
 
     public function testCreateVirtualAccountWithBharatQrWithAmount()

@@ -1360,4 +1360,21 @@ class TerminalSelectionTest extends TestCase
 
         $this->assertEquals($mgTerminal->getId(), $payment['terminal_id']);
     }
+
+    public function testUpiFilterWithBharatQrFilter()
+    {
+        $mgTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal', ['gateway' => 'upi_mindgate']);
+
+        $this->fixtures->merchant->enableUpi();
+
+        $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($mgTerminal->getId(), $payment['terminal_id']);
+    }
 }

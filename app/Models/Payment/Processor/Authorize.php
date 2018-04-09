@@ -4082,7 +4082,6 @@ trait Authorize
     {
         $params = $this->getPaymentIdAndHashParams();
 
-        s($params);
         $callbackUrl = $this->route->getUrlWithPublicCallbackAuth($params);
 
         return $callbackUrl;

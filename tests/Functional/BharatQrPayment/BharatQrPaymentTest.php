@@ -143,9 +143,7 @@ class BharatQrPaymentTest extends TestCase
 
         $request = $this->testData[__FUNCTION__];
 
-        $qrCode = $this->getLastEntity('qr_code', true);
-
-        $qrCodeId = substr($qrCode['id'], 3);
+        $qrCodeId = substr($this->qrCode['id'], 3);
 
         $request['content']['merchantTranId'] = $qrCodeId;
 
@@ -187,9 +185,7 @@ class BharatQrPaymentTest extends TestCase
 
         $request = $this->testData['testUpiQrPaymentProcess'];
 
-        $qrCode = $this->getLastEntity('qr_code', true);
-
-        $qrCodeId = substr($qrCode['id'], 3);
+        $qrCodeId = substr($this->qrCode['id'], 3);
 
         $request['content']['merchantTranId'] = $qrCodeId;
 
@@ -254,8 +250,6 @@ class BharatQrPaymentTest extends TestCase
 
     public function testUnexpectedPayment()
     {
-
-        $this->markTestSkipped();
         $request = $this->testData['testQrPaymentProcess'];
 
         $this->ba->directAuth();
