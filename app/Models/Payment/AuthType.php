@@ -45,7 +45,8 @@ class AuthType
                 'Invalid auth type',
                 [
                     'field'                 => Entity::AUTH_TYPE,
-                    'auth_type'             => $type
+                    'auth_type'             => $type,
+                    'method'                => $method,
                 ]);
         }
     }
