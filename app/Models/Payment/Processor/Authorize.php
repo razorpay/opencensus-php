@@ -3184,7 +3184,13 @@ trait Authorize
         // typically for a test charge. In this case as well, we cannot
         // and should not add the signature to the response.
         //
-        if ($this->app['basicauth']->isProxyOrPrivilegeAuth() === false)
+        // In case of batch payments (emandate, recurring, etc), this
+        // flow comes in via queue. In queue, we don't set the key. We
+        // don't need signature and stuff when being run in queue anyway.
+        //
+
+        if (($this->app['basicauth']->isProxyOrPrivilegeAuth() === false) and
+            ($this->app->runningInQueue() === false))
         {
             if ($payment->hasSubscription() === true)
             {
