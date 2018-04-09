@@ -24,6 +24,7 @@ class Validator extends Base\Validator
         Entity::CONTACT             => 'sometimes|nullable|contact_syntax',
         Entity::NAME                => 'sometimes|string|max:50|nullable|custom',
         Entity::EMAIL               => 'sometimes|nullable|email',
+        Entity::GSTIN               => 'filled|gstin',
         Entity::NOTES               => 'sometimes|notes',
         Entity::SHIPPING_ADDRESS    => 'sometimes',
         Entity::BILLING_ADDRESS     => 'sometimes',
@@ -33,6 +34,7 @@ class Validator extends Base\Validator
         Entity::CONTACT         => 'sometimes|contact_syntax',
         Entity::NAME            => 'sometimes|string|max:50|nullable|custom',
         Entity::ACTIVE          => 'sometimes|in:0,1',
+        Entity::EMAIL           => 'sometimes|email',
     ];
 
     protected static $globalCreateRules = [
@@ -138,6 +140,7 @@ class Validator extends Base\Validator
      * @param null $number
      *
      * @throws Exception\BadRequestException
+     * @throws \libphonenumber\NumberParseException
      */
     public function validateIndianContact($number = null)
     {

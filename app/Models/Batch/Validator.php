@@ -33,12 +33,14 @@ class Validator extends Base\Validator
                                     . 'application/vnd.oasis.opendocument.spreadsheet,'
                                     . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
                                     . 'application/octet-stream,'
+                                    . 'application/xml,'
                                     . 'text/csv,'
                                     . 'text/plain'
                                 . '|mimes:'
                                     . 'zip,'
                                     . 'xlsx,'
                                     . 'xls,'
+                                    . 'xml,'
                                     . 'csv,'
                                     . 'txt';
 
@@ -75,7 +77,7 @@ class Validator extends Base\Validator
     protected static $emandateCreateRules = [
         Entity::FILE        => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
         Entity::TYPE        => 'required|in:emandate',
-        Entity::SUB_TYPE    => 'required|string|in:register,debit',
+        Entity::SUB_TYPE    => 'required|string|in:register,debit,acknowledge',
         Entity::GATEWAY     => 'required|string',
     ];
 
@@ -138,11 +140,10 @@ class Validator extends Base\Validator
      * Validates entries(array) of batch input file before
      * creating the batch entity.
      *
-     * @param array             $entries
-     * @param array             $params
-     * @param Merchant\Entity   $merchant
+     * @param array           $entries
+     * @param array           $params
+     * @param Merchant\Entity $merchant
      *
-     * @throws BadRequestException
      */
     public function validateEntries(
         array & $entries,

@@ -15,7 +15,7 @@ class TaxTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
     }
 
     public function testGetTax()
@@ -90,6 +90,13 @@ class TaxTest extends TestCase
     }
 
     public function testGetTaxMetaTaxRates()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetTaxMetaStates()
     {
         $this->ba->proxyAuth();
 

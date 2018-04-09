@@ -46,6 +46,22 @@ class PaymentCreateConvenienceFeeTest extends TestCase
         return $feesArray;
     }
 
+    public function testFeesRouteOnPlatformFeeBearer()
+    {
+        $this->fixtures->merchant->disableConvenienceFeeModel();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->createAndGetFeesForPayment($payment);
+        });
+
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+    }
+
     public function testPaymentWithConvenienceFees()
     {
         $payment   = $this->getDefaultPaymentArray();

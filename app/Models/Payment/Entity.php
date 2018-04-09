@@ -25,6 +25,7 @@ use RZP\Models\Merchant;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Processor\Netbanking;
 
 /**
@@ -92,6 +93,13 @@ class Entity extends Base\PublicEntity
     const APPROVAL_CODE         = 'approval_code';
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
+    const REFERENCE3            = 'reference3';
+    const REFERENCE4            = 'reference4';
+    const REFERENCE5            = 'reference5';
+    const REFERENCE6            = 'reference6';
+    const REFERENCE7            = 'reference7';
+    const REFERENCE8            = 'reference8';
+    const REFERENCE9            = 'reference9';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
     const GATEWAY_CAPTURED      = 'gateway_captured';
@@ -107,6 +115,7 @@ class Entity extends Base\PublicEntity
     const LATE_AUTHORIZED       = 'late_authorized';
     const CONVERT_CURRENCY      = 'convert_currency';
     const AUTH_TYPE             = 'auth_type';
+    const ACKNOWLEDGED_AT       = 'acknowledged_at';
 
     const MAX_AMOUNT            = 'max_amount';
     const EXPIRE_BY             = 'expire_by';
@@ -261,6 +270,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::DISPUTED,
         self::RECURRING_TYPE,
+        self::ACKNOWLEDGED_AT,
     ];
 
     protected $public = [
@@ -334,6 +344,7 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::RECURRING,
         self::IFSC,
+        self::VPA,
         'method_based_input',
         'convert_empty_strings_to_null'
     ];
@@ -384,6 +395,7 @@ class Entity extends Base\PublicEntity
         self::DISPUTED             => false,
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
+        self::ACKNOWLEDGED_AT      => null,
     ];
 
     protected $amounts = [
@@ -439,6 +451,23 @@ class Entity extends Base\PublicEntity
             if ($isEmailOptional === true)
             {
                 $input['email'] = self::DUMMY_EMAIL;
+            }
+        }
+    }
+
+    protected function modifyVpa(& $input)
+    {
+        if (empty($input[self::VPA]) === false)
+        {
+            $vpaParts = explode('@', $input[self::VPA]);
+
+            if (count($vpaParts) > 1)
+            {
+                $lastElement = count($vpaParts) - 1;
+
+                $vpaParts[$lastElement] = strtolower($vpaParts[$lastElement]);
+
+                $input[self::VPA] = implode('@', $vpaParts);
             }
         }
     }
@@ -641,9 +670,15 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
     }
 
-    public function setGatewayBharatQr()
+    //
+    // As setGateway is protected method
+    // we didn't want to make it public just
+    // to set gateway for bharat qr payment
+    // so a new method
+    //
+    public function setGatewayForBharatQr(string $gateway)
     {
-        $this->setGateway(Payment\Gateway::BHARAT_QR);
+        $this->setGateway($gateway);
     }
 
     /**
@@ -890,6 +925,11 @@ class Entity extends Base\PublicEntity
     public function setEmiSubvention(string $subvention)
     {
         $this->setAttribute(self::EMI_SUBVENTION, $subvention);
+    }
+
+    public function setAcknowledgedAt(int $timestamp)
+    {
+        $this->setAttribute(self::ACKNOWLEDGED_AT, $timestamp);
     }
 
     // ----------------------- Setters Ends-----------------------------------------
@@ -1266,6 +1306,12 @@ class Entity extends Base\PublicEntity
                 ($this->isMethod(Payment\Method::EMI)));
     }
 
+    public function isTpvMethod()
+    {
+        return (($this->isMethod(Payment\Method::UPI)) or
+                ($this->isMethod(Payment\Method::NETBANKING)));
+    }
+
     public function isSigned()
     {
         return ($this->getAttribute(self::SIGNED) === true);
@@ -1331,6 +1377,17 @@ class Entity extends Base\PublicEntity
     }
 
 // ----------------------- Getters ---------------------------------------------
+
+    public function getBankCodeFromVpa()
+    {
+        $vpa = $this->getAttribute(self::VPA);
+
+        $vpaParts = explode('@', $vpa);
+
+        $psp = end($vpaParts);
+
+        return ProviderCode::getBankCode($psp);
+    }
 
     public function getTransferId()
     {
@@ -2482,7 +2539,7 @@ class Entity extends Base\PublicEntity
         // Since the first auth transaction would have already been
         // done, we don't need to do any MaxMind risk checks for this.
         //
-        if ($this->isSecondRecurring() === true)
+        if ($this->isSecondRecurring(true) === true)
         {
             return false;
         }
@@ -2496,5 +2553,20 @@ class Entity extends Base\PublicEntity
         $filteredDescription = preg_replace('/[^a-zA-Z0-9 ]+/', '', $description);
 
         return $filteredDescription;
+    }
+
+    public function getAcknowledgedAt()
+    {
+        return $this->getAttribute(self::ACKNOWLEDGED_AT);
+    }
+
+    /**
+     * Returns true if the payment success/failure has been acknowledged by the merchant.
+     *
+     * @return bool
+     */
+    public function isAcknowledged(): bool
+    {
+        return $this->isAttributeNotNull(self::ACKNOWLEDGED_AT);
     }
 }

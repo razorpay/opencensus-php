@@ -24,6 +24,13 @@ class Axis extends Base
 
     const STEP      = 'debit';
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->gatewayRepo = $this->repo->netbanking;
+    }
+
     protected function formatDataForFile($payments)
     {
         $rows = [];
@@ -53,6 +60,11 @@ class Axis extends Base
         }
 
         return $rows;
+    }
+
+    protected function getNewGatewayPaymentEntity()
+    {
+        return new Netbanking\Base\Entity;
     }
 
     protected function getFormattedAmount($amount)

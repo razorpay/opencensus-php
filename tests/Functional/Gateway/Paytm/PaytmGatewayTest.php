@@ -14,7 +14,6 @@ class PaytmGatewayTest extends TestCase
     {
         // Paytm codebase is no longer used anywhere
         // PayTM has stopped working with aggregators since March 2016.
-        $this->markTestSkipped();
 
         $this->testDataFilePath = __DIR__.'/PaytmGatewayTestData.php';
 

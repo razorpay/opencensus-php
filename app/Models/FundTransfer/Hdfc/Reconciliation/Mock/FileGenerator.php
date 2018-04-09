@@ -1,19 +1,21 @@
 <?php
 
-namespace RZP\Models\FundTransfer\Hdfc;
+namespace RZP\Models\FundTransfer\Hdfc\Reconciliation\Mock;
 
-use phpseclib\Crypt\AES;
-
-use RZP\Exception;
+use RZP\Models\Settlement;
 use RZP\Models\Base\UniqueIdEntity;
-use RZP\Models\FundTransfer\Hdfc\Reconciliation\Status;
+use RZP\Models\FundTransfer\Hdfc\Headings;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\FundTransfer\Hdfc\Reconciliation\Status;
+use RZP\Models\FundTransfer\Base\Reconciliation\Mock\Generator;
 
-class ReconciliationGenerator
+class FileGenerator extends Generator
 {
     use FileHandlerTrait;
 
-    protected static $fileToReadName = 'Hdfc_Settlement';
+    const CHANNEL   = Settlement\Channel::HDFC;
+
+    protected static $fileToReadName  = 'Hdfc_Settlement';
 
     protected static $fileToWriteName = 'Hdfc_Settlement_Reconciliation';
 
@@ -27,19 +29,14 @@ class ReconciliationGenerator
             return [];
         }
 
+        $this->initRequestParams($input);
+
         $data = $this->parseTextFile($setlFile, ',');
-
-        $generateFailedReconciliations = false;
-
-        if (isset($input['failed_recons']) === true)
-        {
-            $generateFailedReconciliations = ($input['failed_recons'] === '1');
-        }
 
         $reconData = [];
         foreach ($data as $row)
         {
-            $newRow = $this->generateReconciliationFields($row, $generateFailedReconciliations);
+            $newRow = $this->generateReconciliationFields($row);
 
             $reconData[] = $newRow;
         }
@@ -58,7 +55,7 @@ class ReconciliationGenerator
         return Headings::getRequestFileHeadings();
     }
 
-    protected function generateReconciliationFields($row, bool $generateFailedReconciliations)
+    protected function generateReconciliationFields($row)
     {
         $data = [
             Headings::TRANSACTION_TYPE          => $row[Headings::TRANSACTION_TYPE],
@@ -79,7 +76,7 @@ class ReconciliationGenerator
             Headings::UTR                       => UniqueIdEntity::generateUniqueId(),
         ];
 
-        if ($generateFailedReconciliations === true)
+        if ($this->generateFailedReconciliations === true)
         {
             $data[Headings::TRANSACTION_STATUS]  = Status::CANCELLED;
         }

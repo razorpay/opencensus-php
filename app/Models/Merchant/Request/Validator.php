@@ -36,16 +36,16 @@ class Validator extends Base\Validator
     ];
 
     protected static $changeStatusRules = [
-        Entity::STATUS               => 'required|max:30',
-        Constants::REJECTION_REASONS => 'sometimes|array',
+        Entity::STATUS              => 'required|max:30',
+        Constants::REJECTION_REASON => 'sometimes|array',
     ];
 
     protected static $updateRules = [
-        Entity::STATUS               => 'sometimes|max:30',
-        Constants::SUBMISSIONS       => 'sometimes|array',
-        Entity::PUBLIC_MESSAGE       => 'sometimes|max:255',
-        Entity::INTERNAL_COMMENT     => 'sometimes|max:255',
-        Constants::REJECTION_REASONS => 'filled|array',
+        Entity::STATUS              => 'sometimes|max:30',
+        Constants::SUBMISSIONS      => 'sometimes|array',
+        Entity::PUBLIC_MESSAGE      => 'sometimes|max:255',
+        Entity::INTERNAL_COMMENT    => 'sometimes|max:255',
+        Constants::REJECTION_REASON => 'filled|array',
     ];
 
     public function validateStatus(array $input)

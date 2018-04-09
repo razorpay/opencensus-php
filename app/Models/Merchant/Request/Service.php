@@ -32,7 +32,7 @@ class Service extends Base\Service
 
     public function getAll(array $input)
     {
-        $input[Constants::EXPAND] = [Entity::MERCHANT];
+        $input[Constants::EXPAND] = [Entity::MERCHANT, 'merchant.merchantDetail'];
 
         return (new Core)->fetch($input);
     }
@@ -87,5 +87,10 @@ class Service extends Base\Service
     public function bulkUpdate(array $input)
     {
         return (new Core)->bulkUpdateMerchantRequests($input);
+    }
+
+    public function getRejectionReasons()
+    {
+        return RejectionReasons::REJECTION_REASONS_MAPPING;
     }
 }

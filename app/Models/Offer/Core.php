@@ -120,15 +120,6 @@ class Core extends Base\Core
             ]);
     }
 
-    public function fetchForOrder(string $orderId, Merchant\Entity $merchant)
-    {
-        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $merchant);
-
-        $offer = $order->getOfferIfExists();
-
-        return $offer;
-    }
-
     public function fetchMerchantOffersForCheckout(Merchant\Entity $merchant)
     {
         $merchantId = $merchant->getId();

@@ -220,7 +220,7 @@ class Core extends Base\Core
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
         {
             // This is used to sync fields transaction_report_email and website in merchant and merchantDetail
-            (new Detail\Core)->editMerchantDetailFields($merchant, $input);
+            (new Detail\Core)->syncToMerchantDetailFields($merchant, $input);
 
             $this->saveAndNotify($merchant);
         });

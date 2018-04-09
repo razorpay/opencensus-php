@@ -1,19 +1,24 @@
 <?php
 
-namespace RZP\Models\FundTransfer\Axis;
+namespace RZP\Models\FundTransfer\Axis\Reconciliation\Mock;
 
 use phpseclib\Crypt\AES;
 
 use Config;
+use RZP\Models\Settlement;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\FundTransfer\Axis\Headings;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\FundTransfer\Axis\Reconciliation\Status;
+use RZP\Models\FundTransfer\Base\Reconciliation\Mock\Generator;
 
-class ReconciliationGenerator
+class FileGenerator extends Generator
 {
     use FileHandlerTrait;
 
-    protected static $fileToReadName = 'Axis_Settlement';
+    const CHANNEL   = Settlement\Channel::AXIS;
+
+    protected static $fileToReadName  = 'Axis_Settlement';
 
     protected static $fileToWriteName = 'Axis_Settlement_Reconciliation';
 
@@ -26,15 +31,15 @@ class ReconciliationGenerator
             return [];
         }
 
-        $data = $this->getDecryptedFile($setlFile);
+        $this->initRequestParams($input);
 
-        array_shift($data);
+        $data = $this->getDecryptedFile($setlFile);
 
         $reconData = [];
 
         foreach ($data as $row)
         {
-            $reconData[] = $this->generateReconciliationFields($row, $input);
+            $reconData[] = $this->generateReconciliationFields($row);
         }
 
         $filename = 'NRPSS_' . str_random(10);
@@ -79,26 +84,19 @@ class ReconciliationGenerator
         return Headings::getResponseFileHeadings();
     }
 
-    protected function generateReconciliationFields($row, array $params)
+    protected function generateReconciliationFields($row)
     {
-        $generateFailedReconciliations = (isset($params['failed_recons'])) ?
-            ((bool) $params['failed_recons']) : false;
-
         $data = [
-            Headings::FILE_LEVEL_REFERENCE => 'some text',
+            Headings::FILE_LEVEL_REFERENCE => $row[Headings::REFERENCE_NUMBER],
             Headings::BENEFICIARY_CODE     => 'some code',
             Headings::TRANSACTION_AMOUNT   => $row[Headings::AMOUNT],
-            Headings::SETTLEMENT_DATE      => $row[Headings::CREDIT_DATE],
+            Headings::SETTLEMENT_DATE      => $row[Headings::EXECUTION_DATE],
             Headings::RBI_SEQUENCE_NUMBER  => UniqueIdEntity::generateUniqueId(),
             Headings::STATUS               => Status::SETTLED,
             Headings::RETURN_REASON        => 'nothing',
-            Headings::ADDITIONAL_INFO1     => 'something',
-            Headings::ADDITIONAL_INFO2     => 'something',
-            Headings::ADDITIONAL_INFO3     => $row[Headings::REFERENCE1],
-            Headings::ADDITIONAL_INFO4     => $row[Headings::REFERENCE2],
         ];
 
-        if ($generateFailedReconciliations === true)
+        if ($this->generateFailedReconciliations === true)
         {
             $data[Headings::STATUS]  = Status::REJECTED;
         }

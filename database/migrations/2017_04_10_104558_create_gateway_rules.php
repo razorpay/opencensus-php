@@ -114,6 +114,7 @@ class CreateGatewayRules extends Migration
             $table->index(Rule::METHOD_TYPE);
             $table->index(Rule::ISSUER);
             $table->index(Rule::DELETED_AT);
+            $table->index(Rule::CREATED_AT);
 
             $table->foreign(Rule::MERCHANT_ID)
                     ->references(Merchant::ID)

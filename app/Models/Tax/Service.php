@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Tax;
 
+use Lib\Gstin;
 use RZP\Models\Base;
 
 class Service extends Base\Service
@@ -27,5 +28,12 @@ class Service extends Base\Service
             Entity::GST_TAX_SLABS  => Gst\Gst::TAX_SLABS,
             Entity::GST_TAX_ID_MAP => Gst\GstTaxIdMap::get(),
         ];
+    }
+
+    public function getMetaStates(): array
+    {
+        $data = Gstin::getGstinStateMetadata();
+
+        return (new Base\PublicCollection($data))->toArrayWithItems();
     }
 }

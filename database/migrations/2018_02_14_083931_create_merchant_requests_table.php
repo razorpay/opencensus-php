@@ -42,6 +42,8 @@ class CreateMerchantRequestsTable extends Migration
             $table->integer(Entity::UPDATED_AT);
 
             $table->index(Entity::MERCHANT_ID);
+
+            $table->index(Entity::CREATED_AT);
         });
     }
 

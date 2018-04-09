@@ -5,18 +5,16 @@ namespace RZP\Models\Transaction;
 use Carbon\Carbon;
 use DB;
 
+use RZP\Models\Base;
 use RZP\Constants\Table;
-use RZP\Constants\Entity as E;
-use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Gateway\Billdesk;
-use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Refund;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 use RZP\Models\Pricing\FeeCalculator;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
-use RZP\Models\Schedule;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 
@@ -435,7 +433,7 @@ class Repository extends Base\Repository
     {
         $attributes = [Entity::CHANNEL => $channel];
 
-        $batchedIds = array_chunk($transactionIds, 5000);
+        $batchedIds = array_chunk($transactionIds, 1000);
 
         $count = 0;
 
@@ -629,10 +627,12 @@ class Repository extends Base\Repository
     }
 
     public function fetchFeesAndTaxForTransactionsByType(
-        string $merchantId, int $start, int $end, string $filterType)
+        string $merchantId,
+        int $start,
+        int $end,
+        string $filterType,
+        bool $isCorrection = false)
     {
-        $createdAtCol = $this->dbColumn(Entity::CREATED_AT);
-
         $merchantIdCol = $this->dbColumn(Entity::MERCHANT_ID);
 
         $amountCol = $this->dbColumn(Entity::AMOUNT);
@@ -645,21 +645,41 @@ class Repository extends Base\Repository
 
         $paymentCardIdCol = $this->repo->payment->dbColumn(Payment\Entity::CARD_ID);
 
-        $transactionData = $this->dbColumn('*');
+        $startOfMonth = Carbon::createFromTimestamp($start)->startOfMonth()
+                                                           ->getTimestamp();
 
         $query = $this->newQuery()
                       ->selectRaw(
-                            'SUM(' . $taxCol .') AS tax, SUM(' . $feeCol . ') AS fee')
-                      ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdCol)
-                      ->whereBetween($createdAtCol, [$start, $end])
+                          'SUM(' . $taxCol .') AS tax, SUM(' . $feeCol . ') AS fee')
+                      ->leftjoin(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdCol)
+                      ->where(function ($query) use ($start, $end, $isCorrection)
+                      {
+                          $capturedAt = $this->repo->payment->dbColumn(Payment\Entity::CAPTURED_AT);
+
+                          $query->where(Entity::TYPE, '=', Type::PAYMENT)
+                                ->whereBetween($capturedAt, [$start, $end]);
+
+                          if ($isCorrection === true)
+                          {
+                              $createdAt = $this->dbColumn(Entity::CREATED_AT);
+
+                              $query->whereBetween($createdAt, [$start, $end]);
+                          }
+                      })
+                      ->orWhere(function($query) use ($startOfMonth, $end)
+                      {
+                          $createdAt = $this->dbColumn(Entity::CREATED_AT);
+
+                          $query->where(Entity::TYPE, '<>', Type::PAYMENT)
+                                ->whereBetween($createdAt, [$startOfMonth, $end]);
+                      })
                       ->merchantId($merchantId)
-                      ->whereNotNull(Payment\Entity::CAPTURED_AT)
-                      ->where(Entity::TYPE, Type::PAYMENT)
+                      ->whereNotIn(Entity::TYPE, Type::IGNORE_ENTITIES_FROM_MERCHANT_INVOICE)
                       ->groupBy($merchantIdCol);
 
         switch ($filterType)
         {
-            case InvoiceType::NON_CARD:
+            case InvoiceType::OTHERS:
                 $query = $query->whereNull($paymentCardIdCol);
                 break;
 
@@ -678,5 +698,156 @@ class Repository extends Base\Repository
         }
 
         return $query->first();
+    }
+
+    /**
+     * Raw sql query :
+     *
+        select payments.gateway,(transactions.created_at - transactions.created_at % 86400) AS date,
+        COUNT(transactions.entity_id) AS total_count,SUM(transactions.amount)/100 AS total_amount,
+        COUNT(CASE
+        WHEN transactions.reconciled_at is not null
+        THEN transactions.id
+        END) recon_count,
+        COUNT(CASE
+        WHEN transactions.reconciled_at is null
+        THEN transactions.id
+        END) unrecon_count,
+
+        SUM(CASE
+        WHEN transactions.reconciled_at is not null
+        THEN transactions.amount
+        ELSE 0
+        END)/100 recon_amount,
+        SUM(CASE
+        WHEN transactions.reconciled_at is null
+        THEN transactions.amount
+        ELSE 0
+        END)/100 unrecon_amount from `transactions`
+        inner join `payments` on `entity_id` = `payments`.`id`
+        where `payments`.`gateway` in (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        and `transactions`.`created_at` between ? and ?
+        group by `date`, `payments`.`gateway` order by `date` desc
+    */
+    public function fetchPaymentReconStatusSummary($from, $to, $gateways)
+    {
+        $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $gateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $transactionsCreatedAt = $this->dbColumn(Entity::CREATED_AT);
+
+        $reconciledPaymentsSummary  =  $this->newQuery()
+                                            ->selectRaw($gateway . ','.
+
+                                                '('. $transactionsCreatedAt. ' - '. $transactionsCreatedAt .' % 86400) AS date' . ',' .
+
+                                                $this->getParamsQueryForReconSummary())
+
+                                            ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentId)
+
+                                            ->whereIn($gateway, $gateways)
+                                            ->betweenTime($from, $to)
+                                            ->groupBy('date', $gateway)
+                                            ->orderBy('date', 'desc')
+                                            ->get()
+                                            ->toArray();
+
+        return $reconciledPaymentsSummary;
+    }
+
+    /**
+     * Raw sql query :
+     *
+        select payments.gateway, (transactions.created_at - transactions.created_at % 86400) AS date,
+        COUNT(transactions.entity_id) AS total_count,SUM(transactions.amount) AS total_amount,COUNT(CASE
+        WHEN transactions.reconciled_at is not null
+        THEN transactions.id
+        END) recon_count,
+        COUNT(CASE
+        WHEN transactions.reconciled_at is null
+        THEN transactions.id
+        END) unrecon_count,
+
+        SUM(CASE
+        WHEN transactions.reconciled_at is not null
+        THEN transactions.amount
+        ELSE 0
+        END) recon_amount,
+        SUM(CASE
+        WHEN transactions.reconciled_at is null
+        THEN transactions.amount
+        ELSE 0
+        END) unrecon_amount from `transactions`
+        inner join `refunds` on `entity_id` = `refunds`.`id`
+        inner join `payments` on `payments`.`id` = `payment_id`
+        where `transactions`.`type` = ? and `payments`.`gateway` in (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        and `transactions`.`created_at` between ? and ? group by `payments`.`gateway`, `date`
+     */
+
+    public function fetchRefundReconStatusSummary($from, $to, $gateways)
+    {
+        $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $refundId = $this->repo->refund->dbColumn(Refund\Entity::ID);
+
+        $gateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $transactionsCreatedAt = $this->dbColumn(Entity::CREATED_AT);
+
+        $reconciledRefundsSummary  =  $this->newQuery()
+                                            ->selectRaw($gateway . ','.
+
+                                                '('. $transactionsCreatedAt. ' - '. $transactionsCreatedAt .' % 86400) AS date' . ',' .
+
+                                                $this->getParamsQueryForReconSummary())
+
+                                            ->join(Table::REFUND, Entity::ENTITY_ID, '=', $refundId)
+                                            ->join(Table::PAYMENT, $paymentId, '=', Refund\Entity::PAYMENT_ID)
+
+                                            ->whereIn($gateway, $gateways)
+                                            ->betweenTime($from, $to)
+                                            ->groupBy('date', $gateway)
+                                            ->orderBy('date', 'desc')
+                                            ->get()
+                                            ->toArray();
+
+        return $reconciledRefundsSummary;
+    }
+
+    protected function getParamsQueryForReconSummary()
+    {
+        $transactionPaymentId = $this->dbColumn(Entity::ENTITY_ID);
+
+        $transactionAmount = $this->dbColumn(Entity::AMOUNT);
+
+        $transactionReconciledAt = $this->dbColumn(Entity::RECONCILED_AT);
+
+        $transactionId = $this->dbColumn(Entity::ID);
+
+        $query =  'COUNT('.$transactionPaymentId.') AS total_count'. ','.
+            'SUM('.$transactionAmount.')/100 AS total_amount'.','.
+
+            'COUNT(CASE 
+                       WHEN '.$transactionReconciledAt.' is not null
+                            THEN '.$transactionId.'
+                        END) recon_count,
+                 COUNT(CASE 
+                       WHEN '.$transactionReconciledAt.' is null
+                            THEN '.$transactionId.'
+                        END) unrecon_count,
+                 
+                 SUM(CASE 
+                     WHEN '.$transactionReconciledAt.' is not null 
+                        THEN '.$transactionAmount.'
+                        ELSE 0 
+                     END)/100 recon_amount,
+                 SUM(CASE
+                     WHEN '.$transactionReconciledAt.' is null
+                        THEN '.$transactionAmount.'
+                        ELSE 0
+                     END)/100 unrecon_amount';
+
+        return $query;
     }
 }

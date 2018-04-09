@@ -58,6 +58,7 @@ class CreateAtomGateway extends Migration
             $table->index('token');
 
             $table->index('gateway_payment_id');
+            $table->index('created_at');
         });
     }
 

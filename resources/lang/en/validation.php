@@ -88,6 +88,8 @@ return array(
      | Defined by user application
      */
 
+
+    'gstin'                => 'The :attribute field is invalid',
     'mysql_unsigned_int'   => 'The :attribute must be valid integer between 0 and 4294967295.',
     'mysql_signed_int'     => 'The :attribute must be valid integer between -2147483648 and 2147483647.',
     'int_percentage'       => 'The :attribute must be a valid integer between 0 and 10000',
