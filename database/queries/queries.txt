@@ -3448,8 +3448,3 @@ ALTER TABLE terminals
 ALTER TABLE payments
     ADD COLUMN receiver_id char(14) DEFAULT NULL after transfer_id,
     ADD COLUMN receiver_type varchar(255) DEFAULT NULL after recevier_id;
-
-
-alter table hitachi drop foreign key hitachi_payment_id_foreign;
-
-alter table upi drop foreign key upi_payment_id_foreign;
