@@ -45,7 +45,7 @@ export default class BandAccountDetailsChange extends Component {
     if (!this.state.file) {
       this.props.showNotification({
         type: 'error',
-        message: 'Please upload a valid address proof of the new Bank Account.',
+        message: 'Please upload a valid Bank Account proof.',
       });
       return;
     }
