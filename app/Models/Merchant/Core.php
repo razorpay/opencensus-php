@@ -220,7 +220,7 @@ class Core extends Base\Core
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
         {
             // This is used to sync fields transaction_report_email and website in merchant and merchantDetail
-            (new Detail\Core)->editMerchantDetailFields($merchant, $input);
+            (new Detail\Core)->syncToMerchantDetailFields($merchant, $input);
 
             $this->saveAndNotify($merchant);
         });
@@ -638,9 +638,7 @@ class Core extends Base\Core
             {
                 $body = $body . '<br />' . $payoutBankAccount->getBeneficiaryName() . '<br />';
                 $body = $body . 'Bank Account Number : ' . $payoutBankAccount->getAccountNumber() . '<br />';
-                $body = $body . $payoutBankAccount->getBeneficiaryAddress1() . '<br />';
-                $body = $body . $payoutBankAccount->getBeneficiaryAddress2() . '<br />';
-                $body = $body . $payoutBankAccount->getBeneficiaryAddress3() . '<br />';
+                $body = $body . $payoutBankAccount->source->merchantDetail->getBusinessRegisteredAddress() . '<br />';
             }
 
             $body = $body . '<br />'

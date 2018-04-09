@@ -86,6 +86,8 @@ class CreateAxisGateway extends Migration
                   ->references('id')
                   ->on('terminals')
                   ->on_delete('restrict');
+
+            $table->index('created_at');
         });
     }
 

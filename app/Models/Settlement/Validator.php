@@ -54,6 +54,10 @@ class Validator extends Base\Validator
         'ignore_time_limit' => 'sometimes',
     ];
 
+    protected static $validChannelRules = [
+        Entity::CHANNEL => 'required|string|custom'
+    ];
+
     protected static $canFetchBalanceRules = [
         'balance_' . Entity::CHANNEL    => 'required|string|custom',
     ];
@@ -89,5 +93,4 @@ class Validator extends Base\Validator
                 'Invalid Channel: ' . $value);
         }
     }
-
 }

@@ -40,9 +40,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             return null;
         }
         
-        $paymentId = $row[self::COLUMN_PAYMENT_ID];
-
-        return $paymentId;
+        return $row[self::COLUMN_PAYMENT_ID];
     }
 
     protected function getGatewayFee($row)

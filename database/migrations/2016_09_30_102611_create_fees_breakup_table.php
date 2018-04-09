@@ -41,7 +41,6 @@ class CreateFeesBreakupTable extends Migration
             $table->integer(FeeBreakup::UPDATED_AT);
 
             $table->index(FeeBreakup::CREATED_AT);
-            $table->index(FeeBreakup::NAME);
             $table->index(FeeBreakup::PERCENTAGE);
 
             $table->foreign(FeeBreakup::TRANSACTION_ID)

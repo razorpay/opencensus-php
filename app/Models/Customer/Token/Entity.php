@@ -484,7 +484,7 @@ class Entity extends Base\PublicEntity
 
         for ($i = 0; $i < 3; $i++)
         {
-            $dec = hexdec(bin2hex(openssl_random_pseudo_bytes(5)));
+            $dec = hexdec(bin2hex(random_bytes(5)));
 
             // Convert the random decimal generated to base 62
             $rand .= self::base62($dec);

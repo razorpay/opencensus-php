@@ -7,9 +7,27 @@ use RZP\Error\PublicErrorDescription;
 return [
 
     'testInvoiceEntityCreateForPrevMonth' => [
-        'non_card'      => [
+        'others'      => [
+            'amount'    => 1510,
+            'tax'       => 272,
+            'gstin'     => '29kjsngjk213922',
+        ],
+        'card_gt_2k'    => [
+            'amount'    => 4680,
+            'tax'       => 842,
+            'gstin'     => '29kjsngjk213922',
+        ],
+        'card_lte_2k'    => [
             'amount'    => 1000,
-            'tax'       => 180,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ],
+    ],
+
+    'testMerchantInvoiceWithLateAuth' => [
+        'others'      => [
+            'amount'    => 1510,
+            'tax'       => 272,
             'gstin'     => '29kjsngjk213922',
         ],
         'card_gt_2k'    => [
@@ -25,9 +43,9 @@ return [
     ],
 
     'testInvoiceEntityCreateForGivenMonthYear' => [
-        'non_card'      => [
-            'amount'    => 1000,
-            'tax'       => 180,
+        'others'      => [
+            'amount'    => 1510,
+            'tax'       => 272,
             'gstin'     => '29kjsngjk213922',
         ],
         'card_gt_2k'    => [
@@ -66,9 +84,27 @@ return [
     ],
 
     'testInvoiceEntityCreateForGivenMerchant' => [
-        'non_card'      => [
+        'others'      => [
+            'amount'    => 1510,
+            'tax'       => 272,
+            'gstin'     => '29kjsngjk213922',
+        ],
+        'card_gt_2k'    => [
+            'amount'    => 4680,
+            'tax'       => 842,
+            'gstin'     => '29kjsngjk213922',
+        ],
+        'card_lte_2k'    => [
             'amount'    => 1000,
-            'tax'       => 180,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ],
+    ],
+
+    'testInvoiceEntityCreateForGivenMerchantWithLateAuth' => [
+        'others'      => [
+            'amount'    => 1510,
+            'tax'       => 272,
             'gstin'     => '29kjsngjk213922',
         ],
         'card_gt_2k'    => [
@@ -99,4 +135,3 @@ return [
         ],
     ],
 ];
-

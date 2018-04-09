@@ -389,6 +389,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getWebhookEvents()
+    {
+        $data = $this->service()->fetchWebhookEvents();
+
+        return ApiResponse::json($data);
+    }
+
     public function getWebhook($id)
     {
         $data = $this->service()->getWebhook($id);
@@ -943,5 +950,21 @@ class MerchantController extends Controller
         $data = $this->service()->enableEmiMerchantSubvention($id, $emiPlanId, $input);
 
         return ApiResponse::json($data);
+    }
+
+    public function bulkAssignReviewer()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->bulkAssignReviewer($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMerchantActivationReviewers()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getMerchantActivationReviewers();
+
+        return ApiResponse::json($response);
     }
 }

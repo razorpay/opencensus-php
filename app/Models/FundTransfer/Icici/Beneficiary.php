@@ -64,13 +64,17 @@ class Beneficiary extends BaseBeneficiary
 
         foreach ($bankAccounts as $ba)
         {
+            $address = $ba->source->merchantDetail->getBusinessRegisteredAddress();
+
+            $address = substr($address, 0, 30);
+
             $row = [
                 'A',
                 $ba->getId(),
                 $ba->getBeneficiaryName(),
                 $ba->getAccountNumber(),
                 'vendor',
-                $ba->getBeneficiaryAddress1(),
+                $address,
             ];
 
             $rows[] = $row;

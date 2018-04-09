@@ -30,22 +30,6 @@ return [
         'entity' => 'payment',
     ],
 
-    'testIntentPaymentWithVpa' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The vpa field is not required and not shouldn\'t be sent.'
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
-        ],
-    ],
-
     'testIntentDisabledPayment' => [
         'response'  => [
             'content'     => [
@@ -349,8 +333,6 @@ return [
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED
         ],
     ],
-
-
 
     'testPaymentUpiEntity' => [
         'action'                => 'authorize',

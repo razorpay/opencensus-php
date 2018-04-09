@@ -245,6 +245,18 @@ final class FactoryData
             'postdate' => $faker->hdfcPostDate,
         ]);
 
+        $factory(\RZP\Gateway\Enach\Base\Entity::class, [
+            'id' => $faker->randomNumber(6),
+            'payment_id' => null,
+            'refund_id' => null,
+            'acquirer' => 'ratn',
+            'action' => 'authorize',
+            'bank' => 'UTIB',
+            'amount' => $faker->randomNumber(2),
+            'status' => 'success',
+            'signed_xml' => '<xml>'
+        ]);
+
         $factory(\RZP\Gateway\Atom\Entity::class, [
             'id' => $faker->randomNumber(6),
             'gateway_payment_id' => 'factory:\RZP\Models\Payment\Entity',
@@ -860,6 +872,12 @@ final class FactoryData
             'entity_id'   => '10000000000App',
             'created_at'  => Carbon::now()->getTimestamp(),
             'updated_at'  => Carbon::now()->getTimestamp(),
+        ]);
+
+        $factory(\RZP\Models\Merchant\Request\Entity::class, [
+            'id'         => $faker->uniqueid,
+            'created_at' => $faker->timestamp,
+            'updated_at' => $faker->timestamp,
         ]);
     }
 }

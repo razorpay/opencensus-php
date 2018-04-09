@@ -22,6 +22,8 @@ class MailTags
 
     const HDFC_SETTLEMENT_FILES            = 'hdfc_settlement_files';
 
+    const RBL_SETTLEMENT                   = 'rbl_settlement';
+
     const SETTLEMENT_FAILURE_EMAIL         = 'settlement_failure_email';
 
     const NULL_UTR_REPORT                  = 'null_utr_report';
@@ -78,6 +80,8 @@ class MailTags
 
     const AXIS_EMANDATE_DEBIT_MAIL         = 'axis_emandate_debit_mail';
 
+    const RBL_ENACH_DEBIT_MAIL             = 'rbl_enach_debit_mail';
+
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';
     const IRCTC_REFUND_REPORT              = 'irctc_refund_report';
@@ -116,8 +120,14 @@ class MailTags
     // Merchant feature tags
     const FEATURE_ENABLED                  = 'feature_enabled';
 
+    // Merchant Request tags
+    const MERCHANT_REQUEST_REJECTED        = 'merchant_request_rejected';
+
     // Dispute tags
     const DISPUTE_CREATED                  = 'dispute_created';
+
+    // Daily Recon summary tags
+    const DAILY_RECON_SUMMARY              = 'daily_recon_summary';
 
     /**
      * Email tags that should respond to the mailgun failure webhook

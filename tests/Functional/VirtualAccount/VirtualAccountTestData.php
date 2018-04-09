@@ -20,6 +20,44 @@ return [
         ],
     ],
 
+    'testCreateVirtualAccountForOrder' => [
+        'name'            => 'Test Merchant',
+        'entity'          => 'virtual_account',
+        'status'          => 'active',
+        'amount_expected' => 1000000,
+        'notes'           => [
+            'a' => 'b',
+        ],
+        'amount_paid'     => 0,
+        'customer_id'     => NULL,
+        'receivers'       => [
+            [
+                'entity'         => 'bank_account',
+                'ifsc'           => 'RAZR0000001',
+                'bank_name'      => NULL,
+                'name'           => 'Test Merchant',
+            ],
+        ],
+    ],
+
+    'testCreateVirtualAccountForOrderCustomerFeeBearer' => [
+        'name'            => 'Test Merchant',
+        'entity'          => 'virtual_account',
+        'status'          => 'active',
+        'amount_expected' => 1005900,
+        'notes'           => [],
+        'amount_paid'     => 0,
+        'customer_id'     => NULL,
+        'receivers'       => [
+            [
+                'entity'         => 'bank_account',
+                'ifsc'           => 'RAZR0000001',
+                'bank_name'      => NULL,
+                'name'           => 'Test Merchant',
+            ],
+        ],
+    ],
+
     'testCreateVirtualAccountInvalidReceiverTypes' => [
         'request' => [
             'url' => '/virtual_accounts',
@@ -247,8 +285,11 @@ return [
         'mode' => 'test',
         'event' => [
             'entity' => 'event',
-            'event' => 'payment.captured',
-            'contains' => ['payment'],
+            'event' => 'virtual_account.credited',
+            'contains' => [
+                'payment',
+                'virtual_account',
+            ],
             'payload' => [
                 'payment' => [
                     'entity' => [
@@ -267,6 +308,28 @@ return [
                         'contact'           => null,
                         'error_code'        => null,
                         'error_description' => null,
+                    ],
+                ],
+                'virtual_account' => [
+                    'entity' => [
+                        'name'            => 'Test virtual account',
+                        'entity'          => 'virtual_account',
+                        'status'          => 'active',
+                        'description'     => 'VA for tests',
+                        'amount_expected' => NULL,
+                        'notes' => [
+                            'a' => 'b',
+                        ],
+                        'amount_paid' => 10000,
+                        'customer_id' => null,
+                        'receivers' => [
+                            [
+                                'name'      => 'Test virtual account',
+                                'entity'    => 'bank_account',
+                                'ifsc'      => 'RAZR0000001',
+                                'bank_name' => null,
+                            ],
+                        ],
                     ],
                 ],
             ],

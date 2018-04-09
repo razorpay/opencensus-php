@@ -18,6 +18,9 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
+    // In mins
+    const TEMPORARY_SESSION_TIME = 10;
+
     /**
      * @param array           $input
      * @param Merchant\Entity $merchant
@@ -197,7 +200,7 @@ class Core extends Base\Core
         $this->putAppTokenInSession($appToken);
 
         // Create response
-        $response = array('success' => 1);
+        $response = ['success' => 1];
 
         if ($appToken->merchant->getId() !== $this->getSharedAccount()->getId())
         {
@@ -216,6 +219,11 @@ class Core extends Base\Core
             // $tokens = (new Token\Core)->removeEmandateRecurringTokens($tokens);
 
             $response['tokens'] = $tokens->toArrayPublic();
+        }
+
+        if ($this->isCookieDisabledOnBrowser() === true)
+        {
+            $response['session_id'] = $this->getTemporarySessionToken();
         }
 
         return $response;
@@ -476,6 +484,30 @@ class Core extends Base\Core
             ]);
     }
 
+    protected function isCookieDisabledOnBrowser()
+    {
+        $key = $this->mode . '_checkcookie';
+
+        $cookieCheck = $this->app['request']->session()->get($key, '0');
+
+        return ($cookieCheck !== '1');
+    }
+
+    protected function getTemporarySessionToken()
+    {
+        $temporaryId = Base\UniqueIdEntity::generateUniqueId();
+
+        $sessionData = [
+            'session_id' => $this->app['request']->session()->getId(),
+            'user_agent' => $this->app['request']->userAgent(),
+            'ip'         => $this->app['request']->ip(),
+        ];
+
+        $this->app['cache']->put($temporaryId, $sessionData, self::TEMPORARY_SESSION_TIME);
+
+        return $temporaryId;
+    }
+
     protected function verifyUniqueCustomer(Customer\Entity $customer, $failOnDuplicate = true)
     {
         if ($customer->merchant->isShared() === true)
@@ -519,8 +551,8 @@ class Core extends Base\Core
         ];
 
         $params = [
-            'method' =>  'ReqBalEnq',
-            'params' =>  $gatewayInput
+            'method' => 'ReqBalEnq',
+            'params' => $gatewayInput
         ];
 
         $response = (new Upi\Core)->callUpiGateway('makeRequest', $params);
@@ -534,8 +566,8 @@ class Core extends Base\Core
         $gatewayInput = $this->getGatewayInputParams($device, $customer, $bankAccount, $input);
 
         $params = [
-            'method'    =>  'ReqOtp',
-            'params'    =>  $gatewayInput
+            'method'    => 'ReqOtp',
+            'params'    => $gatewayInput
         ];
 
         $response = (new Upi\Core)->callUpiGateway('makeRequest', $params);
@@ -549,8 +581,8 @@ class Core extends Base\Core
         $gatewayInput = $this->getGatewayInputParams($device, $customer, $bankAccount, $input);
 
         $params = [
-            'method'    =>  'ReqRegMob',
-            'params'    =>  $gatewayInput
+            'method'    => 'ReqRegMob',
+            'params'    => $gatewayInput
         ];
 
         $response = (new Upi\Core)->callUpiGateway('makeRequest', $params);
@@ -564,8 +596,8 @@ class Core extends Base\Core
         $gatewayInput = $this->getGatewayInputParams($device, $customer, $bankAccount, $input);
 
         $params = [
-            'method'    =>  'ReqSetCre',
-            'params'    =>  $gatewayInput
+            'method'    => 'ReqSetCre',
+            'params'    => $gatewayInput
         ];
 
         $response = (new Upi\Core)->callUpiGateway('makeRequest', $params);

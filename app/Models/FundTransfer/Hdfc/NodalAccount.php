@@ -13,12 +13,12 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base\PublicCollection;
 use RZP\Mail\Settlement as SettlementMail;
-use RZP\Models\FundTransfer\Base as NodalBase;
 use RZP\Models\BankAccount\Entity as BankEntity;
 use RZP\Models\FundTransfer\Mode as TransferMode;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 
-class NodalAccount extends NodalBase\NodalAccount
+class NodalAccount extends NodalBase\FileProcessor
 {
     use FileHandlerTrait;
 
@@ -70,7 +70,7 @@ class NodalAccount extends NodalBase\NodalAccount
      * @param PublicCollection $entities
      * @param bool $h2h
      *
-     * @return array
+     * @return FileStore\Creator
      */
     public function generateFundTransferFile(PublicCollection $entities, $h2h = true): FileStore\Creator
     {
@@ -147,6 +147,8 @@ class NodalAccount extends NodalBase\NodalAccount
         $record[Headings::TRANSACTION_DATE]              = $this->date;
         $record[Headings::PAYMENT_DETAILS_1]             = $entity->getId();
         $record[Headings::PAYMENT_DETAILS_2]             = $source->getBatchFundTransferId();
+        $record[Headings::BENEFICIARY_NAME]              = $ba->getBeneficiaryName();
+        $record[Headings::BENEFICIARY_CODE]              = $ba->getBeneficiaryCode();
 
         return $record;
     }
@@ -238,7 +240,7 @@ class NodalAccount extends NodalBase\NodalAccount
     {
         $settlementCount    = $this->repo->batch_fund_transfer->getSettlementBatchCountOfDay($channel);
 
-        $count              = $settlementCount;
+        $count              = $settlementCount + 1;
 
         return str_pad($count, 3, '0', STR_PAD_LEFT);
     }
@@ -265,7 +267,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $settlementMail     = new SettlementMail\HdfcSettlement($data);
 
-        Mail::send($settlementMail);
+        Mail::queue($settlementMail);
     }
 
     protected function prepareDataForMail(FileStore\Creator $textFileEntity): array

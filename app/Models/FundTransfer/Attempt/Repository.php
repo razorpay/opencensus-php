@@ -72,6 +72,7 @@ class Repository extends Base\Repository
         string $purpose,
         $type = null,
         string $channel,
+        int $limit = null,
         array $relations = [])
     {
         $query = $this->newQuery()
@@ -84,6 +85,11 @@ class Repository extends Base\Repository
         if ($type !== null)
         {
           $query->where(Entity::SOURCE_TYPE, '=', $type);
+        }
+
+        if ($limit !== null)
+        {
+            $query->limit($limit);
         }
 
         if (count($relations) > 0)
@@ -105,6 +111,21 @@ class Repository extends Base\Repository
                       ->where(Entity::STATUS, $status)
                       ->where(Entity::CHANNEL, $channel)
                       ->whereNotNull(Entity::BANK_STATUS_CODE);
+
+        if (($from !== null) and ($to !== null))
+        {
+            $query = $query->whereBetween(Entity::CREATED_AT, [$from, $to]);
+        }
+
+        return $query->get();
+    }
+
+    public function getAttemptsBetweenTimestamps(string $status, string $channel, int $from = null, int $to = null)
+    {
+        $query = $this->newQuery()
+                      ->select([Entity::ID, Entity::BATCH_FUND_TRANSFER_ID])
+                      ->where(Entity::STATUS, $status)
+                      ->where(Entity::CHANNEL, $channel);
 
         if (($from !== null) and ($to !== null))
         {

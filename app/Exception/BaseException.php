@@ -26,7 +26,7 @@ class BaseException extends Exception
     public function __construct(
         $message,
         $code = '',
-        \Exception $previous = null)
+        \Throwable $previous = null)
     {
         parent::__construct($message, 0, $previous);
 

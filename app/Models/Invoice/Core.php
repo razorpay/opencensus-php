@@ -13,6 +13,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\LineItem;
+use RZP\Models\Settings;
 use RZP\Models\FileStore;
 use RZP\Jobs\DispatchRouter;
 use RZP\Models\Plan\Subscription;
@@ -21,6 +22,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Jobs\Invoice\BatchIssue as InvoiceBatchIssueJob;
+use RZP\Jobs\Invoice\BatchNotify as InvoiceBatchNotifyJob;
 
 class Core extends Base\Core
 {
@@ -716,6 +718,30 @@ class Core extends Base\Core
     }
 
     /**
+     * Sends notifications for all the invoices of a given batch, if not
+     * already sent.
+     *
+     * @param  Batch\Entity $batch
+     * @param  array        $input
+     */
+    public function notifyInvoicesOfBatch(Batch\Entity $batch, array $input)
+    {
+        //
+        // Settings module captures whether notification for this batch has
+        // been already sent or not.
+        //
+        $settingsAccessor = Settings\Accessor::for($batch, Settings\Module::BATCH);
+
+        (new Validator)->validateNotifyInvoicesOfBatch($settingsAccessor, $batch, $input);
+
+        $settingsAccessor->upsert($input)->save();
+
+        $job = new InvoiceBatchNotifyJob($this->mode, $batch->getId(), $input);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+    }
+
+    /**
      * Calculates and sets derived amounts of invoice.
      *
      * @param Entity $invoice
@@ -764,6 +790,18 @@ class Core extends Base\Core
         $invoice->setAmount($amount);
 
         $invoice->getValidator()->validateMaxAllowedAmount($grossAmount);
+    }
+
+    public function fetchStatsOfBatch(Batch\Entity $batch): array
+    {
+        $stats = $this->repo->invoice->getInvoiceStatsForBatch($batch);
+
+        return [
+            Entity::TOTAL_COUNT   => $batch->getTotalCount(),
+            Entity::ISSUED_COUNT  => (int) ($stats[Status::ISSUED] ?? 0),
+            Entity::PAID_COUNT    => (int) ($stats[Status::PAID] ?? 0),
+            Entity::EXPIRED_COUNT => (int) ($stats[Status::EXPIRED] ?? 0),
+        ];
     }
 
     // -------------------- Protected methods --------------------

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Base;
 
+use Lib\Gstin;
 use Lib\PhoneBook;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -16,6 +17,9 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 
     const MYSQL_SIGNED_INT_MIN   = -2147483648;
     const MYSQL_SIGNED_INT_MAX   = 2147483647;
+
+    const INT_PERCENTAGE_MIN     = 0;
+    const INT_PERCENTAGE_MAX     = 10000;
 
     const EPOCH_DEFAULT_MIN      = 946684800;                  // Sat Jan  1 05:30:00 IST 2000
     const EPOCH_DEFAULT_MAX      = self::MYSQL_SIGNED_INT_MAX; // Tue Jan 19 08:44:07 IST 2038, *MySQL max for Signed Int
@@ -33,6 +37,8 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         'Integer',
         'MysqlSignedInt',
         'MysqlUnsignedInt',
+        'IntPercentage',
+        'Epoch',
     ];
 
     protected function validatePublicId($attribute, $id)
@@ -402,5 +408,36 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         }
 
         return true;
+    }
+
+    /**
+     * Validates percentage value depicted as integer
+     * For ex: 18.5% as 1850
+     *
+     * @param $attribute
+     * @param $value
+     *
+     * @return bool
+     */
+    protected function validateIntPercentage($attribute, $value)
+    {
+        $isInteger = $this->validateInteger($attribute, $value);
+
+        $isInRange = $this->validateBetween(
+            $attribute,
+            $value,
+            [
+                self::INT_PERCENTAGE_MIN,
+                self::INT_PERCENTAGE_MAX,
+            ]);
+
+        return (($isInteger === true) and ($isInRange === true));
+    }
+
+    protected function validateGstin($attribute, $value)
+    {
+        $isString = $this->validateString($attribute, $value);
+
+        return (($isString === true) and (Gstin::isValid($value) === true));
     }
 }

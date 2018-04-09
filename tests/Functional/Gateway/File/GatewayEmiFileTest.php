@@ -63,8 +63,8 @@ class GatewayEmiFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(EmiMail\Password::class);
-        Mail::assertSent(EmiMail\File::class);
+        Mail::assertQueued(EmiMail\Password::class);
+        Mail::assertQueued(EmiMail\File::class);
     }
 
     public function testGenerateEmiFileWithNoEmiPayments()
@@ -155,8 +155,8 @@ class GatewayEmiFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(EmiMail\Password::class);
-        Mail::assertSent(EmiMail\File::class);
+        Mail::assertQueued(EmiMail\Password::class);
+        Mail::assertQueued(EmiMail\File::class);
     }
 
     public function testGenerateEmiFileForKotak()
@@ -189,8 +189,8 @@ class GatewayEmiFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(EmiMail\Password::class);
-        Mail::assertSent(EmiMail\File::class);
+        Mail::assertQueued(EmiMail\Password::class);
+        Mail::assertQueued(EmiMail\File::class);
     }
 
     public function testGenerateEmiFileForRbl()
@@ -223,8 +223,8 @@ class GatewayEmiFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(EmiMail\Password::class);
-        Mail::assertSent(EmiMail\File::class);
+        Mail::assertQueued(EmiMail\Password::class);
+        Mail::assertQueued(EmiMail\File::class);
     }
 
     public function testGenerateEmiFileForScbl()
@@ -257,8 +257,8 @@ class GatewayEmiFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(EmiMail\Password::class);
-        Mail::assertSent(EmiMail\File::class);
+        Mail::assertQueued(EmiMail\Password::class);
+        Mail::assertQueued(EmiMail\File::class);
     }
 
     protected function makeEmiPaymentOnCard($card, $emiDuration,

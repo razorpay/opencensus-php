@@ -426,6 +426,7 @@ class Gateway
     public static $cardNetworkRecurringMap = [
         self::HITACHI => [
             Network::VISA,
+            Network::MC,
         ],
     ];
 
@@ -495,7 +496,6 @@ class Gateway
     public static $verifyDisabled = [
         self::WALLET_OPENWALLET,
         self::NETBANKING_RBL,
-        self::UPI_ICICI,
         self::ENACH_RBL,
     ];
 
@@ -573,6 +573,11 @@ class Gateway
             IFSC::VARA,
             IFSC::KVBL,
         ]
+    ];
+
+    public static $bharatQrGateways = [
+        self::UPI_ICICI,
+        self::HITACHI,
     ];
 
     public static $authTypeToEmandateGatewayMap = [
@@ -662,6 +667,7 @@ class Gateway
             IFSC::CBIN,
             IFSC::CITI,
             IFSC::DCBL,
+            IFSC::BKDN,
             IFSC::FDRL,
             IFSC::HDFC,
             IFSC::ICIC,
@@ -688,6 +694,10 @@ class Gateway
             IFSC::CORP,
             IFSC::VARA,
             IFSC::KVBL,
+            IFSC::CSBX,
+            IFSC::TMBL,
+            IFSC::KAIJ,
+            IFSC::BARB,
         ],
     ];
 
@@ -862,7 +872,8 @@ class Gateway
     ];
 
     public static $upiIntentGateways = [
-        Gateway::UPI_ICICI
+        Gateway::UPI_ICICI,
+        Gateway::UPI_MINDGATE,
     ];
 
     public static function getAcquirerName(string $acquirer)
@@ -989,6 +1000,11 @@ class Gateway
     public static function isValidGateway($gateway)
     {
         return (defined(__CLASS__ . '::' . strtoupper($gateway)));
+    }
+
+    public static function isValidBharatQrGateway($gateway)
+    {
+        return in_array($gateway , self::$bharatQrGateways, true);
     }
 
     public static function isValidGatewayAcquirer(string $gatewayAcquirer)

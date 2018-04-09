@@ -3,20 +3,25 @@
 namespace RZP\Tests\Functional\Batch;
 
 use Mail;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
 
 use RZP\Constants\Mode;
 use RZP\Models\Invoice;
+use RZP\Models\Settings;
 use RZP\Models\Batch\Type;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Entity;
 use RZP\Jobs\Batch as BatchJob;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Mail\Batch\PaymentLink as BatchPaymentLinkFileMail;
 
 class PaymentLinkTest extends TestCase
 {
     use BatchTestTrait;
+    use CreatesInvoice;
 
     public function setUp()
     {
@@ -25,13 +30,15 @@ class PaymentLinkTest extends TestCase
         parent::setUp();
 
         $this->ba->proxyAuth();
+
+        $this->enablePartialPaymentForMerchant();
     }
 
     public function testCreateBatchOfPaymentLinkType1()
     {
         Queue::fake();
 
-        $entries = $this->getDefaultPaymentLinkFileEntries();
+        $entries = $this->getDefaultFileEntries();
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
@@ -47,17 +54,17 @@ class PaymentLinkTest extends TestCase
     {
         Mail::fake();
 
-        $entries = $this->getDefaultPaymentLinkFileEntries();
+        $entries = $this->getDefaultFileEntries();
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
         $response = $this->startTest();
 
         // Gets last entity (Post queue processing) and asserts attributes
-        $entities = $this->getLastEntity('batch', true);
+        $entity = $this->getLastEntity('batch', true);
 
-        $this->assertEquals(2, $entities['success_count']);
-        $this->assertEquals(1, $entities['failure_count']);
+        $this->assertEquals(2, $entity['success_count']);
+        $this->assertEquals(1, $entity['failure_count']);
 
         // Processing should have happened immediately in tests as
         // queue are sync basically.
@@ -76,7 +83,7 @@ class PaymentLinkTest extends TestCase
      */
     public function testCreateBatchOfPaymentLinkTypeWithInvalidFile1()
     {
-        $entries = $this->getDefaultPaymentLinkFileEntries();
+        $entries = $this->getDefaultFileEntries();
 
         // Remove a required header
 
@@ -91,7 +98,7 @@ class PaymentLinkTest extends TestCase
 
         //  Test again by adding one extra header in input
 
-        $entries = $this->getDefaultPaymentLinkFileEntries();
+        $entries = $this->getDefaultFileEntries();
 
         foreach ($entries as & $entry)
         {
@@ -120,7 +127,7 @@ class PaymentLinkTest extends TestCase
      */
     public function testCreateBatchOfPaymentLinkTypeWithInvalidFile3()
     {
-        $entries = $this->getDefaultPaymentLinkFileEntries();
+        $entries = $this->getDefaultFileEntries();
 
         $entries[1][Header::AMOUNT] = 0;
 
@@ -163,7 +170,180 @@ class PaymentLinkTest extends TestCase
         });
     }
 
-    protected function getDefaultPaymentLinkFileEntries()
+    public function testBatchFileValidation()
+    {
+        $entries = $this->getDefaultFileEntries();
+
+        $entries = array_merge($entries, $this->getFileEntriesWithBooleanPartialPaymentValues());
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $response = $this->startTest();
+
+        $files = $this->getEntities('file_store', [], true);
+
+        $validatedFile = $files['items'][0];
+
+        $inputFile = $files['items'][1];
+
+        $this->assertNull($inputFile['entity_type']);
+        $this->assertNull($inputFile['entity_id']);
+        $this->assertEquals('batch_input', $inputFile['type']);
+
+        $this->assertNull($validatedFile['entity_type']);
+        $this->assertNull($validatedFile['entity_id']);
+        $this->assertEquals('batch_validated', $validatedFile['type']);
+
+        $this->assertEquals($validatedFile['id'], $response['file_id']);
+
+        // The validated file is supposed to be inside batch/validated folder
+        $this->assertEquals(storage_path('files/filestore/') . $validatedFile['location'], $response['signed_url']);
+        $this->assertTrue(str_contains($validatedFile['location'], 'batch/validated'));
+        $this->assertTrue(str_contains($response['signed_url'], 'batch/validated'));
+    }
+
+    public function testBatchCreateForUploadedFile()
+    {
+        $this->prepareStateFromValidateApi();
+
+        $response = $this->startTest();
+
+        // Check invoices
+        $invoices = $this->getEntities('invoice', [], true);
+        $this->assertEquals(2, $invoices['count']);
+
+        // Check files
+        $files = $this->getEntities('file_store', [], true);
+        $this->assertEquals(3, $files['count']);
+
+        // Check output file
+        $outputFile = $files['items'][0];
+        $this->assertEquals('batch_output', $outputFile['type']);
+        $this->assertEquals($response['id'], $outputFile['entity_type'] . '_' . $outputFile['entity_id']);
+        $this->assertEquals('batch/download/' . Entity::stripDefaultSign($response['id']), $outputFile['name']);
+
+        // Check validated file
+        $validatedFile = $files['items'][1];
+        $this->assertEquals('batch_validated', $validatedFile['type']);
+        $this->assertEquals($response['id'], $validatedFile['entity_type'] . '_' . $validatedFile['entity_id']);
+        $this->assertTrue(str_contains($validatedFile['location'], 'batch/validated'));
+
+        // Check input file
+        $inputFile = $files['items'][2];
+        $this->assertEquals('batch_input', $inputFile['type']);
+        $this->assertNull($inputFile['entity_type']);
+        $this->assertNull($inputFile['entity_id']);
+        $this->assertTrue(str_contains($inputFile['location'], 'batch/upload'));
+    }
+
+    /**
+     * Helper method to accompany testBatchCreateForUploadedFile() test.
+     * It creates an state(db, file wise) which would have been there if
+     * /validate api was called prior to /create api call. We could have triggered
+     * /validated api call first followed by /create api call in same tests
+     * but we are avoiding doing multiple api calls in same test.
+     */
+    protected function prepareStateFromValidateApi()
+    {
+        // Creating input and validated file fixtures
+        $attributeInputFile = [
+
+            'type'          => 'batch_input',
+            'entity_type'   => null,
+            'name'          => 'batch/upload/10000000000001',
+            'location'      => 'batch/upload/10000000000001.xlsx',
+        ];
+
+        $attributeValidatedFile = [
+
+            'type'          => 'batch_validated',
+            'entity_type'   => null,
+            'name'          => 'batch/validated/10000000000002',
+            'location'      => 'batch/validated/10000000000002.xlsx',
+        ];
+
+        $inputFile = $this->fixtures->create('file_store', $attributeInputFile);
+
+        $validatedFile = $this->fixtures->create('file_store', $attributeValidatedFile);
+
+        // Move validated test file copy to validated folder
+        copy('tests/Functional/Batch/files/validated.xlsx',
+            'storage/files/filestore/batch/validated/10000000000002.xlsx');
+
+        $trace    = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $name     = $testDataKey ?? $trace[1]['function'];
+
+        $this->testData[$name]['request']['content']['file_id'] = $validatedFile->getPublicId();
+    }
+
+    public function testPaymentLinkStatsOfBatch()
+    {
+        $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'payment_link',
+                'total_count' => 4,
+            ]);
+
+        $attributes = $this->testData[__FUNCTION__ . 'InputData']['attributes'];
+
+        foreach ($attributes as $attribute)
+        {
+            $this->createInvoice($attribute['invoiceAttributes'], $attribute['orderAttributes']);
+        }
+
+        $this->startTest();
+    }
+
+    public function testGetStatsOfInvalidType()
+    {
+        $this->fixtures->create(
+            'batch',
+            [
+                'id'   => '00000000000001',
+                'type' => 'linked_account'
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testFetchBatchesOfPaymentLinkTypeWithConfig()
+    {
+        $batch1 = $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'payment_link',
+                'total_count' => 4,
+            ]);
+
+        Settings\Accessor::for($batch1, Settings\Module::BATCH)
+                         ->upsert([
+                            'sms_notify'    => 1,
+                            'email_notify'  => 0,
+                         ])->save();
+
+        $batch2 = $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000002',
+                'type'        => 'payment_link',
+                'total_count' => 4,
+            ]);
+
+        Settings\Accessor::for($batch2, Settings\Module::BATCH)
+                        ->upsert([
+                            'sms_notify'    => 0,
+                            'email_notify'  => 0,
+                        ])->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    protected function getDefaultFileEntries()
     {
         return [
             [
@@ -174,7 +354,7 @@ class PaymentLinkTest extends TestCase
                 Header::AMOUNT           => 100,
                 Header::DESCRIPTION      => 'test payment link',
                 Header::EXPIRE_BY        => null,
-                Header::PARTIAL_PAYMENT  => null,
+                Header::PARTIAL_PAYMENT  => 'YES',
             ],
             // Following one should fail
             [
@@ -185,7 +365,7 @@ class PaymentLinkTest extends TestCase
                 Header::AMOUNT           => 100,
                 Header::DESCRIPTION      => 'test payment link - 2',
                 Header::EXPIRE_BY        => null,
-                Header::PARTIAL_PAYMENT  => 0,
+                Header::PARTIAL_PAYMENT  => 'NO',
             ],
             [
                 Header::INVOICE_NUMBER   => '#3',
@@ -198,5 +378,41 @@ class PaymentLinkTest extends TestCase
                 Header::PARTIAL_PAYMENT  => null,
             ],
         ];
+    }
+
+    protected function getFileEntriesWithBooleanPartialPaymentValues()
+    {
+        return [
+            [
+                Header::INVOICE_NUMBER   => '#10',
+                Header::CUSTOMER_NAME    => 'test 3',
+                Header::CUSTOMER_EMAIL   => 'test-3@test.test',
+                Header::CUSTOMER_CONTACT => '9999996666',
+                Header::AMOUNT           => 100,
+                Header::DESCRIPTION      => 'test payment link - 3',
+                Header::EXPIRE_BY        => null,
+                Header::PARTIAL_PAYMENT  => '1',
+            ],
+            [
+                Header::INVOICE_NUMBER   => '#20',
+                Header::CUSTOMER_NAME    => 'test 3',
+                Header::CUSTOMER_EMAIL   => 'test-3@test.test',
+                Header::CUSTOMER_CONTACT => '9999996666',
+                Header::AMOUNT           => 100,
+                Header::DESCRIPTION      => 'test payment link - 3',
+                Header::EXPIRE_BY        => null,
+                Header::PARTIAL_PAYMENT  => '0',
+            ],
+        ];
+    }
+
+    protected function enablePartialPaymentForMerchant()
+    {
+        $attribute = [
+            'name'      => FeatureConstants::INVOICE_PARTIAL_PAYMENTS,
+            'entity_id' => '10000000000000',
+        ];
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants:: INVOICE_PARTIAL_PAYMENTS]);
     }
 }

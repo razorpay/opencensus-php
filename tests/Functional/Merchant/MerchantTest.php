@@ -672,7 +672,7 @@ class MerchantTest extends TestCase
 
         $this->runRequestResponseFlow($testData);
 
-        Mail::assertSent(ActivationMail::class, function ($mailable)
+        Mail::assertQueued(ActivationMail::class, function ($mailable)
         {
             $mailData = $mailable->viewData;
 
@@ -923,7 +923,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertSent(BankAccountChangeMail::class, function ($mail)
+        Mail::assertQueued(BankAccountChangeMail::class, function ($mail)
         {
             $testData = $this->testData['testAddBankAccount']['response']['content'];
 
@@ -946,7 +946,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertSent(BankAccountChangeMail::class, function ($mail)
+        Mail::assertQueued(BankAccountChangeMail::class, function ($mail)
         {
             $testData = $this->testData['testAddBankAccount']['response']['content'];
 
@@ -1554,6 +1554,37 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetCheckoutPreferencesWithOrderRelatedUndiscountedOffer()
+    {
+        $this->ba->publicAuth();
+
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        foreach ($testData['tests'] as $test)
+        {
+            $data = [
+                'request' => $request,
+                'response' => $test['response'],
+            ];
+
+            $fixtureData = $test['offer'];
+            $fixtureData['starts_at'] = $startsAt;
+
+            $offer = $this->fixtures->create('offer', $fixtureData);
+            $order = $this->fixtures->create('order:with_undiscounted_offer_applied', [
+                'offer_id' => $offer->getId()
+            ]);
+
+            $data['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
+
+            $this->runRequestResponseFlow($data);
+        }
+    }
+
     public function testGetCheckoutPreferencesWithOrderRelatedOffer()
     {
         $this->ba->publicAuth();
@@ -1575,7 +1606,9 @@ class MerchantTest extends TestCase
             $fixtureData['starts_at'] = $startsAt;
 
             $offer = $this->fixtures->create('offer', $fixtureData);
-            $order = $this->fixtures->create('order:with_offer_applied', ['offer_id' => $offer->getId()]);
+            $order = $this->fixtures->create('order:with_offer_applied', [
+                'offer_id' => $offer->getId()
+            ]);
 
             $data['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
 
@@ -1902,6 +1935,16 @@ class MerchantTest extends TestCase
     {
         Mail::fake();
 
+        $md = $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
+
         $this->ba->adminAuth();
 
         $request = [
@@ -1914,7 +1957,7 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('signed_url', $content);
         $this->assertEquals(Channel::KOTAK, $content['channel']);
 
-        Mail::assertSent(BeneficiaryFileMail::class);
+        Mail::assertQueued(BeneficiaryFileMail::class);
     }
 
     public function testBeneficiaryRegisterBetweenTimestampKotak()
@@ -1931,6 +1974,16 @@ class MerchantTest extends TestCase
         $ba1 = $this->fixtures->create('bank_account', ['created_at' => $thirdJan2017Timestamp - 2]);
         $ba2 = $this->fixtures->create('bank_account', ['created_at' => $thirdJan2017Timestamp - 10]);
         $ba3 = $this->fixtures->create('bank_account', ['created_at' => $thirdJan2017Timestamp + 50]);
+
+        $md = $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
 
         $this->ba->appAuth();
 
@@ -1951,7 +2004,7 @@ class MerchantTest extends TestCase
         $this->assertEquals(2, $content['merchants_count']);
         $this->assertEquals(Channel::KOTAK, $content['channel']);
 
-        Mail::assertSent(BeneficiaryFileMail::class, function ($mail)
+        Mail::assertQueued(BeneficiaryFileMail::class, function ($mail)
         {
             return $mail->hasTo(['abc@d.com', 'efg@h.com']);
         });
@@ -1963,6 +2016,16 @@ class MerchantTest extends TestCase
 
         $this->ba->adminAuth();
 
+        $md = $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
+
         $request = [
             'url'       => '/merchants/beneficiary/file/axis',
             'method'    => 'get',
@@ -1973,7 +2036,7 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('signed_url', $content);
         $this->assertEquals(Channel::AXIS, $content['channel']);
 
-        Mail::assertSent(BeneficiaryFileMail::class);
+        Mail::assertQueued(BeneficiaryFileMail::class);
     }
 
     public function testBeneficiaryRegisterIcici()
@@ -1981,6 +2044,16 @@ class MerchantTest extends TestCase
         Mail::fake();
 
         $this->ba->adminAuth();
+
+        $md = $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
 
         $request = [
             'url'       => '/merchants/beneficiary/file/icici',
@@ -1992,7 +2065,7 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('signed_url', $content);
         $this->assertEquals(Channel::ICICI, $content['channel']);
 
-        Mail::assertSent(BeneficiaryFileMail::class);
+        Mail::assertQueued(BeneficiaryFileMail::class);
     }
 
     public function testEditCredits()

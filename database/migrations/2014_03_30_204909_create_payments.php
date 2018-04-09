@@ -177,6 +177,28 @@ class CreatePayments extends Migration
             $table->string(Payment::REFERENCE2)
                   ->nullable();
 
+            $table->tinyInteger(Payment::REFERENCE3)
+                  ->nullable();
+
+            $table->tinyInteger(Payment::REFERENCE4)
+                  ->nullable();
+
+            $table->integer(Payment::REFERENCE5)
+                  ->nullable();
+
+            $table->integer(Payment::REFERENCE6)
+                  ->nullable();
+
+            $table->string(Payment::REFERENCE7)
+                  ->nullable();
+
+            $table->string(Payment::REFERENCE8)
+                  ->nullable();
+
+            $table->bigInteger(Payment::REFERENCE9)
+                  ->unsigned()
+                  ->nullable();
+
             $table->tinyInteger(Payment::SIGNED)
                   ->default(0);
 
@@ -231,6 +253,10 @@ class CreatePayments extends Migration
             $table->string(Payment::AUTH_TYPE, 14)
                   ->nullable();
 
+            $table->integer(Payment::ACKNOWLEDGED_AT)
+                  ->unsigned()
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Payment::CREATED_AT);
             $table->integer(Payment::UPDATED_AT);
@@ -257,6 +283,7 @@ class CreatePayments extends Migration
             $table->index(Payment::AUTH_TYPE);
 
             $table->index(Payment::DISPUTED);
+            $table->index(Payment::RECURRING);
             $table->index(Payment::UPDATED_AT);
             $table->index(Payment::CAPTURED_AT);
             $table->index(Payment::MERCHANT_ID);

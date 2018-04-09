@@ -436,6 +436,7 @@ class Entity extends Base\PublicEntity
             '8ST00QgEPT14cE', // IRCTC WEB
             '8YPFnW5UOM91H7', // IRCTC Mobile
             '8byazTDARv4Io0', // IRCTC Air Ticketing
+            '9m4CChGex4ENkR', // IRCTC FTR
             // Email Subject: Re: Managing NEFT transfers with Razorpay Virtual Accounts
             '9YAQd3b47mdIQY', // Endurance
             '9ZO8jNaR0OORNH', // Endurance
@@ -612,6 +613,17 @@ class Entity extends Base\PublicEntity
 
         if ((isset($blackList[$iin]) === true) and
             (in_array($last4, $blackList[$iin])))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isMagicEnabled()
+    {
+        if (($this->iinRelation !== null) and
+            ($this->iinRelation->isMagicEnabled() === true))
         {
             return true;
         }

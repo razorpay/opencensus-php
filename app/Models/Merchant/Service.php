@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Config;
 use DB;
 use Mail;
+use Request;
 use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Token as OAuthToken;
 use RZP\Base\RuntimeManager;
@@ -655,21 +656,33 @@ class Service extends Base\Service
 
         $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
 
-        $this->logActionToSlack($merchant, SlackActions::EDIT_BANK_DETAILS, $input);
+        // Using Request::input() since we do not want the file as input to log
+        $this->logActionToSlack($merchant, SlackActions::EDIT_BANK_DETAILS, Request::input());
 
         return $ba->toArray();
     }
 
+    /**
+     * This function returns if there any open workflow actions associated with the current bank account entity of a
+     * merchant. @todo: Replace this with a more generic approach based on primary entity
+     *
+     * @param $id
+     *
+     * @return bool
+     */
     public function getBankAccountChangeStatus($id)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant);
 
-        $entityId = PublicEntity::stripDefaultSign($oldBankAccount->getId());
+        if (empty($oldBankAccount) === true)
+        {
+            return false;
+        }
 
         $actions = (new \RZP\Models\Workflow\Action\Core)->fetchOpenActionOnEntityOperation(
-            $entityId, $oldBankAccount->getEntity(), Permission::EDIT_MERCHANT_BANK_DETAIL);
+            $oldBankAccount->getId(), $oldBankAccount->getEntity(), Permission::EDIT_MERCHANT_BANK_DETAIL);
 
         $actions = $actions->toArray();
 
@@ -812,6 +825,13 @@ class Service extends Base\Service
         $webhook = (new Webhook\Core)->editWebhook($this->merchant, $webhookId, $input);
 
         return $webhook->toArrayPublic();
+    }
+
+    public function fetchWebhookEvents()
+    {
+        $events = (new Webhook\Core)->fetchApplicableWebhookEvents($this->merchant);
+
+        return $events;
     }
 
     public function getWebhook($id)

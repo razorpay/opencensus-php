@@ -34,6 +34,8 @@ class CreateAdminTokensTable extends Migration
             $table->foreign(AdminToken::ADMIN_ID)
                   ->references(Admin::ID)
                   ->on(Table::ADMIN);
+
+            $table->index(AdminToken::CREATED_AT);
         });
     }
 

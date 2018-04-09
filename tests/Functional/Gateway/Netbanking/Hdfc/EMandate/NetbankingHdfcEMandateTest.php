@@ -169,7 +169,7 @@ class NetbankingHdfcEMandateTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(Email::class, function ($mail) use ($file)
+        Mail::assertQueued(Email::class, function ($mail) use ($file)
         {
             $key = Payment\Gateway::NETBANKING_HDFC . '_register';
 
@@ -238,7 +238,7 @@ class NetbankingHdfcEMandateTest extends TestCase
         $this->assertEquals($gatewayPayment['amount'], $debitPayment['amount']);
 
         // Verify email
-        Mail::assertSent(Email::class, function ($mail) use ($file)
+        Mail::assertQueued(Email::class, function ($mail) use ($file)
         {
             $key = Payment\Gateway::NETBANKING_HDFC . '_debit';
 
@@ -323,7 +323,7 @@ class NetbankingHdfcEMandateTest extends TestCase
         $this->assertEquals($gatewayPaymentLast['id'], $gatewayPayment['id']);
 
         // Verify email
-        Mail::assertSent(Email::class, function ($mail) use ($file)
+        Mail::assertQueued(Email::class, function ($mail) use ($file)
         {
             $key = Payment\Gateway::NETBANKING_HDFC . '_debit';
 

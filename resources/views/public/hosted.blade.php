@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Processing, Please wait...</title>
+    <title>Payment Page · Razorpay</title>
     <meta name="viewport" content="width=device-width">
     <meta charset="utf-8">
     <?php if ($_SERVER['HTTP_HOST'] !== "api.razorpay.com"): ?>

@@ -9,14 +9,13 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 
 class Initiator extends Base\Core
 {
-    use BatchFundTransferTrait;
-
     const MUTEX_RESOURCE        = 'FUND_TRANSFER_PROCESSING';
     const MUTEX_LOCK_TIMEOUT    = 900;
 
@@ -80,6 +79,8 @@ class Initiator extends Base\Core
 
             $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
+            $limit = $this->getLimitForChannel($channel);
+
             $attempts = $this->repo
                              ->fund_transfer_attempt
                              ->getCreatedAttemptsBeforeTimestamp(
@@ -87,6 +88,7 @@ class Initiator extends Base\Core
                                  $purpose,
                                  $sourceType,
                                  $channel,
+                                 $limit,
                                  ['source']);
 
             $data[$channel] = $this->processFundTransferAttempts($channel, $attempts);
@@ -110,40 +112,11 @@ class Initiator extends Base\Core
             return $data;
         }
 
-        foreach ($attempts as $attempt)
-        {
-            $txnCount = $this->getTransactionsCount($attempt);
-
-            $this->createOrUpdateBatchFundTransferForEntity($attempt->source, $txnCount);
-
-            $attempt->batchFundTransfer()->associate($this->batchFundTransfer);
-
-            $attempt->setStatus(Status::INITIATED);
-
-            $attempt->source->batchFundTransfer()->associate($this->batchFundTransfer);
-
-            $attempt->source->setStatus(Status::INITIATED);
-        }
-
         $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
 
-        $fileEntity = (new $class)->generateFundTransferFile($attempts);
+        $response = (new $class)->initiateTransfer($attempts);
 
-        $url = $fileEntity->getUrl();
-
-        $urls = ['file' => $url];
-
-        $fileDetails = $fileEntity->get();
-
-        $this->updateFileDetailsInBatchFundTransferEntity(
-            [
-                'urls'          => $urls,
-                'txt_file_id'   => $fileDetails['id'],
-            ]);
-
-        $this->saveEntitiesToDb($attempts);
-
-        $data['file'] = $fileDetails;
+        $data += $response;
 
         $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $slackData);
 
@@ -169,14 +142,23 @@ class Initiator extends Base\Core
         }
     }
 
-    protected function saveEntitiesToDb(Base\PublicCollection $attempts)
+    /**
+     * Returns the maximum number of attempts that can
+     * be processed by a channel in one request.
+     * If null is returned, it means there is no
+     * such limit for that channel.
+     *
+     * @param string $channel
+     * @return int|null
+     */
+    protected function getLimitForChannel(string $channel)
     {
-        foreach ($attempts as $attempt)
+        if ($channel === Channel::AXIS)
         {
-            $this->repo->saveOrFail($attempt);
-
-            $this->repo->saveOrFail($attempt->source);
+            return 1000;
         }
+
+        return null;
     }
 
     /**

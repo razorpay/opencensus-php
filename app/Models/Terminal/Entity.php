@@ -360,7 +360,7 @@ class Entity extends Base\PublicEntity
      * - terminal's primary merchant is given merchant
      * - any of the sub-merchants of the terminal has this merchant
      *
-     * @param  Merchant\Entity $merchant    Merchant entity for which we wantto check
+     * @param  Merchant\Entity $merchant    Merchant entity for which we want to check
      * @return boolean
      */
     public function isDirectForMerchant(Merchant\Entity $merchant): bool
@@ -376,6 +376,26 @@ class Entity extends Base\PublicEntity
         }
 
         return $result;
+    }
+
+    /**
+     * Fallback is applicable only if the terminal is assigned
+     * directly to the merchant (or via sub merchant).
+     * Hitachi is an exception where we are okay with
+     * shared terminals also being used for fallback.
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return bool
+     */
+    public function isFallbackApplicable(Merchant\Entity $merchant): bool
+    {
+        if ($this->getGateway() === Payment\Gateway::HITACHI)
+        {
+            return true;
+        }
+
+        return $this->isDirectForMerchant($merchant);
     }
 
     public function isCorporate()
@@ -794,9 +814,19 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::RECURRING_NON_3DS) === true);
     }
 
+    public function isNo2fa()
+    {
+        return ($this->isTypeApplicable(Type::NO_2FA) === true);
+    }
+
     public function isIvr()
     {
         return ($this->isTypeApplicable(Type::IVR) === true);
+    }
+
+    public function isPay()
+    {
+        return ($this->isTypeApplicable(Type::PAY) === true);
     }
 
     public function isInternational()

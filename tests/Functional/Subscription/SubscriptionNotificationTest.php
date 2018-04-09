@@ -68,7 +68,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $this->doAuthPayment($paymentRequest);
 
-        Mail::assertSent(SubscriptionMail\Authenticated::class, function ($mail)
+        Mail::assertQueued(SubscriptionMail\Authenticated::class, function ($mail)
         {
             // Only merchant email has been sent
             $this->assertEquals(true, $mail->isMerchantEmail());
@@ -83,7 +83,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $this->doAuthTxnForNewSubscription();
 
-        Mail::assertSent(SubscriptionMail\Authenticated::class, function ($mail)
+        Mail::assertQueued(SubscriptionMail\Authenticated::class, function ($mail)
         {
             $data = $mail->viewData;
 
@@ -127,7 +127,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        Mail::assertSent(SubscriptionMail\Authenticated::class, function ($mail) use ($subscription)
+        Mail::assertQueued(SubscriptionMail\Authenticated::class, function ($mail) use ($subscription)
         {
             $data = $mail->viewData;
 
@@ -175,7 +175,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $this->doAuthTxnForSubscriptionWithAddOn();
 
-        Mail::assertSent(SubscriptionMail\Authenticated::class, function ($mail)
+        Mail::assertQueued(SubscriptionMail\Authenticated::class, function ($mail)
         {
             $data = $mail->viewData;
 
@@ -220,7 +220,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        Mail::assertSent(SubscriptionMail\Authenticated::class, function ($mail) use ($subscription)
+        Mail::assertQueued(SubscriptionMail\Authenticated::class, function ($mail) use ($subscription)
         {
             $data = $mail->viewData;
 
@@ -269,7 +269,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $this->chargeSubscriptionsViaCron($subscription['charge_at']);
 
-        Mail::assertSent(SubscriptionMail\Charged::class, function ($mail)
+        Mail::assertQueued(SubscriptionMail\Charged::class, function ($mail)
         {
             $data = $mail->viewData;
 
@@ -322,7 +322,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        Mail::assertSent(SubscriptionMail\CardChanged::class, function ($mail) use ($subscription)
+        Mail::assertQueued(SubscriptionMail\CardChanged::class, function ($mail) use ($subscription)
         {
             $data = $mail->viewData;
 
@@ -379,7 +379,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        Mail::assertSent(SubscriptionMail\CardChanged::class, function ($mail)
+        Mail::assertQueued(SubscriptionMail\CardChanged::class, function ($mail)
         {
             $data = $mail->viewData;
 
@@ -425,7 +425,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $this->makeCancelRequest($subscription['id']);
 
-        Mail::assertSent(SubscriptionMail\Cancelled::class, function ($mail)
+        Mail::assertQueued(SubscriptionMail\Cancelled::class, function ($mail)
         {
             $data = $mail->viewData;
 
@@ -465,7 +465,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $this->chargeSubscriptionInvoiceManually($oldInvoice);
 
-        Mail::assertSent(SubscriptionMail\Charged::class, function ($mail) use ($oldInvoice)
+        Mail::assertQueued(SubscriptionMail\Charged::class, function ($mail) use ($oldInvoice)
         {
             $data = $mail->viewData;
 
@@ -510,7 +510,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $this->chargeSubscriptionsViaCron($subscription['charge_at']);
 
-        Mail::assertSent(SubscriptionMail\Pending::class, function ($mail)
+        Mail::assertQueued(SubscriptionMail\Pending::class, function ($mail)
         {
             $data = $mail->viewData;
 
@@ -560,7 +560,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        Mail::assertSent(SubscriptionMail\Halted::class, function ($mail)
+        Mail::assertQueued(SubscriptionMail\Halted::class, function ($mail)
         {
             $data = $mail->viewData;
 
@@ -606,7 +606,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        Mail::assertSent(SubscriptionMail\Completed::class, function ($mail) use ($subscription)
+        Mail::assertQueued(SubscriptionMail\Completed::class, function ($mail) use ($subscription)
         {
             $data = $mail->viewData;
 
@@ -670,7 +670,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        Mail::assertSent(SubscriptionMail\Completed::class, function ($mail) use ($subscription)
+        Mail::assertQueued(SubscriptionMail\Completed::class, function ($mail) use ($subscription)
         {
             $data = $mail->viewData;
 
@@ -736,7 +736,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $this->retrySubscriptionsViaCron($subscription['charge_at']);
 
-        Mail::assertSent(SubscriptionMail\Completed::class, function ($mail)
+        Mail::assertQueued(SubscriptionMail\Completed::class, function ($mail)
         {
             $data = $mail->viewData;
 

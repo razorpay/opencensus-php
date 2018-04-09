@@ -135,7 +135,7 @@ class AttemptReconcileTest extends TestCase
         $dataKey = 'matchAttemptForReconFailure' . ucfirst($channel);
         $this->assertTestResponse($settlementAttempt, $dataKey);
 
-        Mail::assertSent(ReconciliationMail::class);
+        Mail::assertQueued(ReconciliationMail::class);
     }
 
     public function testSettlementReconcileEntitiesSuccessForKotak()
@@ -198,7 +198,7 @@ class AttemptReconcileTest extends TestCase
         $merchant = $this->getEntityById('merchant', '10000000000000', true);
         $this->assertEquals(true, $merchant['hold_funds']);
 
-        Mail::assertSent(SettlementFailureMail::class);
+        Mail::assertQueued(SettlementFailureMail::class);
     }
 
     protected function verifyReconcileEntitiesFailureForIcici()
@@ -332,5 +332,70 @@ class AttemptReconcileTest extends TestCase
         //Validate settlement entity
         $settlement = $this->getLastEntity('settlement', true);
         $this->assertTestResponse($settlement, 'testRetrySettlement');
+    }
+
+
+    public function verifyReconciliationInTestMode(string $channel, bool $failure = false)
+    {
+        $this->createDataAndAssertInitiateTransferSuccess(
+            $channel, 1, Attempt\Type::SETTLEMENT);
+
+        $request = [
+            'url' => '/settlements/reconcile/test/all',
+            'method' => 'POST',
+            'content' => [
+                'failed_recons' => (int) $failure
+            ]
+        ];
+
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $ftas = $this->getEntities('fund_transfer_attempt', [], true);
+
+        $success = $failed = 0;
+
+        $statusClass = $this->getReconStatusClass($channel);
+
+        foreach ($ftas['items'] as $attempt)
+        {
+            $status = $attempt['bank_status_code'];
+
+            if (in_array($status, $statusClass::getSuccessfulStatus(), true) === true)
+            {
+                $success++;
+            }
+            else
+            {
+                $failed++;
+            }
+        }
+
+        if ($failure === true)
+        {
+            $this->assertEquals(1, $failed);
+        }
+        else
+        {
+            $this->assertEquals(1, $success);
+        }
+    }
+
+    public function testReconciliationInTestModeForSuccess()
+    {
+        $this->verifyReconciliationInTestMode(Channel::AXIS);
+    }
+
+    public function testReconciliationInTestModeForFailure()
+    {
+        // This test wont work for kotak.
+        // because kotak failure transactions can not be determined by the status.
+        $this->verifyReconciliationInTestMode(Channel::AXIS, true);
+    }
+
+    protected function getReconStatusClass(string $channel)
+    {
+        return 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\Reconciliation\\Status';
     }
 }
