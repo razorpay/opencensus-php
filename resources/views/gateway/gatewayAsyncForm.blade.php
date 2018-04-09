@@ -154,6 +154,7 @@
     var data = {!!utf8_json_encode($data['data'])!!};
     // Async Payment data //
 
+    var localStorageKey = 'upi_pay_data';
     var request_url = data.request.url;
     var key_id = '{{ App::getFacadeRoot()['basicauth']->getPublicKey() }}';
     var payment_base = '{{$data["api"]}}/v1/payments/' + data.payment_id;
@@ -172,7 +173,7 @@
       if (typeof localStorage === 'undefined') return;
 
       // Retrieve from localStorage and parse.
-      let stored = localStorage.getItem('pay_data');
+      let stored = localStorage.getItem(localStorageKey);
       if (!stored) return;
       try {
         stored = JSON.parse(stored);
@@ -213,7 +214,7 @@
       stored.timestamp = Date.now();
 
       // Store in localStorage.
-      localStorage.setItem('pay_data', JSON.stringify(stored));
+      localStorage.setItem(localStorageKey, JSON.stringify(stored));
     }
 
     // If storage is to be used, update values from storage.
@@ -346,7 +347,7 @@
         }
         // Remove item from storage upon submitting.
         if (typeof localStorage !== 'undefined') {
-          localStorage.removeItem('pay_data');
+          localStorage.removeItem(localStorageKey);
         }
         form.submit();
       }
