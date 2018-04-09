@@ -136,6 +136,10 @@ export default class Collection extends BaseModel {
   }
 
   remove(item) {
+    if (!this.items.remove) {
+      window.location.reload();
+    }
+
     return this.items.remove(item);
   }
 }
