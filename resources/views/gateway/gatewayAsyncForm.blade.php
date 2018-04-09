@@ -146,7 +146,6 @@
       <input name="type" id="form2_type" value="{{$data['data']['type']}}">
       <input name="gateway" id="form2_gateway" value="{{$data['data']['gateway']}}">
     </form>
-    <div id="log"></div>
   </div>
 
   <script type="text/javascript">
@@ -235,7 +234,7 @@
 
     onfocus = function() {
       var now = Date.now();
-      $('log').innerHTML += '<br>now ' + now;
+
       // Focus is being fired for some reason. Don't consider the second one.
       if (lastFocus) {
         if (now - lastFocus <= 1000 * 0.5) {
@@ -246,21 +245,13 @@
 
       lastFocus = now;
 
-      $('log').innerHTML += '<br>focus ' + Date.now().toString().slice(-6);
       if (lastPollTS) {
-        $('log').innerHTML += '<br>lastPollTS ' + lastPollTS;
         // If last XHR was more than threshold seconds ago, abort XHR and start a new poll.
-        $('log').innerHTML += '<br>lastPollTS diff ' + (now - lastPollTS);
         if (xhr && now - lastPollTS >= threshold) {
-          $('log').innerHTML += '<br>retrying on focus ' + Date.now().toString().slice(-6);
           xhr.abort();
           fetch(request_url);
         }
       }
-    }
-
-    onblur = function() {
-      $('log').innerHTML += '<br>blur ' + Date.now().toString().slice(-6);
     }
 
     // Adds a hash to the URL
