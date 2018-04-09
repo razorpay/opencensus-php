@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BharatQr;
 
+use RZP\Exception;
 use RZP\Base\Luhn;
 use RZP\Models\Base;
 use RZP\Models\Card;
@@ -118,6 +119,21 @@ class Processor extends VirtualAccount\Processor
         return true;
     }
 
+    /**
+     * A static qr code for all the unexpected payments is picked.
+     *
+     * @param int $amount
+     */
+    protected function createAndSetVirtualAccount(int $amount)
+    {
+        $virtualAccountId = Constants::SHARED_VIRTUAL_ACCOUNT;
+
+        $this->virtualAccount = $this->repo->virtual_account->find($virtualAccountId);
+
+        $this->receiver = $this->virtualAccount->qrCode;
+    }
+
+
     protected function processBharatQr(Base\PublicEntity $bharatQr)
     {
         $paymentProcessor = new PaymentProcessor($this->merchant);
@@ -126,6 +142,8 @@ class Processor extends VirtualAccount\Processor
                         function() use ($bharatQr, $paymentProcessor)
                         {
                             $paymentInput = $this->getBharatQrPaymentArray();
+
+                            $this->setTerminalIdInCallback();
 
                             $res = $paymentProcessor->process($paymentInput, $this->callbackData);
 
@@ -152,6 +170,25 @@ class Processor extends VirtualAccount\Processor
         {
             $paymentProcessor->autoCapturePayment($payment);
         }
+    }
+
+    protected function setTerminalIdInCallback()
+    {
+        $gatewayMerchantId = $this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID];
+
+        $gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
+
+        $terminal = $this->repo->terminal->getByGatewayMerchantId($gatewayMerchantId, $gateway);
+
+        if ($terminal === null)
+        {
+            throw new Exception\LogicException(
+                'Terminal should not be null here',
+                null,
+                ['gateway_merchant_id' => $gatewayMerchantId]);
+        }
+
+        $this->callbackData['razorpay_terminal_id'] = $terminal->getId();
     }
 
     protected function setMerchant(bool $paymentExpected)

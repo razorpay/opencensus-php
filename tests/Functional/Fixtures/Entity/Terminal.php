@@ -47,7 +47,7 @@ class Terminal extends Base
         $attributes = [
             'merchant_id'               => '10000000000000',
             'gateway'                   => 'hitachi',
-            'gateway_merchant_id'       => 'abcd',
+            'gateway_merchant_id'       => 'abcd_hitachi_bharat',
             'gateway_terminal_id'       => 'abcde',
             'gateway_acquirer'          => 'ratn',
             'gateway_terminal_password' => 'abcdef',
@@ -71,7 +71,7 @@ class Terminal extends Base
         $attributes = [
             'merchant_id'               => '10000000000000',
             'gateway'                   => 'upi_icici',
-            'gateway_merchant_id'       => 'abcd',
+            'gateway_merchant_id'       => 'abcd_bharat_qr',
             'gateway_terminal_id'       => 'abcde',
             'gateway_acquirer'          => 'ratn',
             'gateway_terminal_password' => 'abcdef',

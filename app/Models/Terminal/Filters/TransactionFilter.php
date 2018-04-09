@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal\Filters;
 
 use App;
 
+use function Aws\or_chain;
 use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
@@ -495,8 +496,10 @@ class TransactionFilter extends Terminal\Filter
 
     public function bharatQrFilter($terminal)
     {
-        if (($this->input['payment']->getReceiverType() === 'qr_code') and
-            ($terminal->isBharatQr() === false))
+        if ((($this->input['payment']->getReceiverType() === 'qr_code') and
+                ($terminal->isBharatQr() === false)) or
+            (($terminal->isBharatQr() === true) and
+                ($this->input['payment']->getReceiverType() !== 'qr_code')))
         {
             return false;
         }

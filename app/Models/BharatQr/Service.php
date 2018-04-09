@@ -49,6 +49,7 @@ class Service extends Base\Service
         }
         catch (\Exception $ex)
         {
+            s($ex->getMessage());
             $this->trace->traceException($ex);
 
             return $this->getResponse(false);

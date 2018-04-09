@@ -94,7 +94,7 @@ trait Authorize
         // for s2s recurring payments, so that terminal can be set later
         // using this instance variable.
         //
-        $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+        $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment, $gatewayInput);
 
         if ($this->shouldHitGatewayForPayment($payment) === false)
         {
@@ -1219,9 +1219,19 @@ trait Authorize
         //
         $gatewayInput['payment'] = $payment->toArrayGateway();
 
-        $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
 
-        $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
+        $callbackUrl = null;
+        $otpSubmitUrl = null;
+
+        if($payment->getReceiverType() === null)
+        {
+            $callbackUrl = $this->getCallbackUrl();
+
+            $otpSubmitUrl = $this->getOtpSubmitUrl();
+        }
+
+        $gatewayInput['callbackUrl'] = $callbackUrl;
+        $gatewayInput['otpSubmitUrl'] = $otpSubmitUrl;
 
         if ($payment->hasOrder())
         {
@@ -1243,8 +1253,8 @@ trait Authorize
         $this->setGatewayTokenInInput($payment, $gatewayInput);
 
         $customProperties = [
-            'otpSubmitUrl' => $this->getOtpSubmitUrl(),
-            'callbackUrl' => $this->getCallbackUrl()
+            'otpSubmitUrl' => $otpSubmitUrl,
+            'callbackUrl' => $callbackUrl
         ];
 
         $this->segment->trackPayment($payment, TraceCode::GATEWAY_SELECTION_PREPROCESSING, $customProperties);
@@ -4072,6 +4082,7 @@ trait Authorize
     {
         $params = $this->getPaymentIdAndHashParams();
 
+        s($params);
         $callbackUrl = $this->route->getUrlWithPublicCallbackAuth($params);
 
         return $callbackUrl;

@@ -26,4 +26,6 @@ class Constants
     const CARD_EXPIRY_MONTH     = '11';
     const CARD_EXPIRY_YEAR      = '2037';
     const UPI_PREFIX            = 'RZP';
+    const SHARED_VIRTUAL_ACCOUNT = 'sharedvirtuala';
+    const SHARED_QR_CODE         = 'sharedqrcode12';
 }

@@ -25,7 +25,7 @@ class TerminalProcessor extends Base\Core
      *
      * @return Terminal\Entity
      */
-    public function getTerminalsForPayment(Payment\Entity $payment)
+    public function getTerminalsForPayment(Payment\Entity $payment, array $gatewayData = [])
     {
         $this->payment = $payment;
 
@@ -33,6 +33,14 @@ class TerminalProcessor extends Base\Core
         if ($this->payment->isBankTransfer() === true)
         {
             return [];
+        }
+
+        if (($payment->getReceiverType() === 'qr_code') and
+            (empty($gatewayData) === false))
+        {
+            $terminalId = $gatewayData['razorpay_terminal_id'];
+
+            return [$this->repo->terminal->find($terminalId)];
         }
 
         $options = $this->getTerminalSelectionOptions();

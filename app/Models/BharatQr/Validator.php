@@ -23,6 +23,7 @@ class Validator extends Base\Validator
         GatewayResponseParams::CARD_LAST4            => 'required_if:method,card',
         GatewayResponseParams::PROVIDER_REFERENCE_ID => 'required|string',
         GatewayResponseParams::AMOUNT                => 'required|integer|min:100',
+        GatewayResponseParams::GATEWAY_MERCHANT_ID   => 'required|string',
     ];
 }
 
