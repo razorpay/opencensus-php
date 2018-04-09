@@ -147,6 +147,8 @@ class NodalAccount extends NodalBase\FileProcessor
         $record[Headings::TRANSACTION_DATE]              = $this->date;
         $record[Headings::PAYMENT_DETAILS_1]             = $entity->getId();
         $record[Headings::PAYMENT_DETAILS_2]             = $source->getBatchFundTransferId();
+        $record[Headings::BENEFICIARY_NAME]              = $ba->getBeneficiaryName();
+        $record[Headings::BENEFICIARY_CODE]              = $ba->getBeneficiaryCode();
 
         return $record;
     }
@@ -238,7 +240,7 @@ class NodalAccount extends NodalBase\FileProcessor
     {
         $settlementCount    = $this->repo->batch_fund_transfer->getSettlementBatchCountOfDay($channel);
 
-        $count              = $settlementCount;
+        $count              = $settlementCount + 1;
 
         return str_pad($count, 3, '0', STR_PAD_LEFT);
     }
