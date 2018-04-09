@@ -12,14 +12,14 @@ import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
 const analyticsGoTo = name => {
   window.rzpAnalytics({
     eventCategory: 'Dashboard - Home',
-    eventAction: `Go To - ${name.replace('Razorpay ', '')}`
+    eventAction: `Go To - ${name.replace('Razorpay ', '')}`,
   });
-}
+};
 
 const analyticsLearnMore = name => {
   window.rzpAnalytics({
     eventCategory: 'Dashboard - Home',
-    eventAction: `Learn More - ${name.replace('Razorpay ', '')}`
+    eventAction: `Learn More - ${name.replace('Razorpay ', '')}`,
   });
 };
 
@@ -43,11 +43,20 @@ const NewProducts = ({ close }) => {
             <MediaCard title={product.name} symbol={product.symbol}>
               <div className="text-small m-b">{product.description}</div>
               <div className="links">
-                <Link to={product.link} onClick={() => analyticsGoTo(product.name)}>Try Now</Link>
+                <Link
+                  to={product.link}
+                  onClick={() => analyticsGoTo(product.name)}
+                >
+                  Try Now
+                </Link>
                 <span className="text-fade" style={{ padding: '0 4px' }}>
                   &nbsp;•&nbsp;
                 </span>
-                <a href={product.help} target="_blank" onClick={() => analyticsLearnMore(product.name)}>
+                <a
+                  href={product.help}
+                  target="_blank"
+                  onClick={() => analyticsLearnMore(product.name)}
+                >
                   Learn More
                 </a>
               </div>

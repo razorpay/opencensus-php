@@ -24,6 +24,59 @@ traffic-responsive() {
 
 .dashboard-home {
 
+  .v2-tour-banner {
+
+    width: 100%;
+    display: table;
+    background: linear-gradient(223.96deg, #5D89E5 0%, #3059C0 100%);
+    color: white;
+    transition: margin 0.5s ease-in;
+
+    &.dismiss {
+
+      margin-top: -62px; // height of banner
+    }
+
+    > div {
+
+      display: table-cell;
+      vertical-align: middle;
+
+      &.banner-icon {
+
+        padding: 0 16px;
+        font-size: 24px;
+        text-align: center;
+      }
+
+      &.banner-icon {
+
+        background-color: $primary-color;
+      }
+
+      .rzp-banner {
+
+        background-color: transparent; 
+        border: none;
+        margin-bottom: 0;
+        color: inherit;
+
+        .rzp-banner-cta button.btn {
+
+          background-color: #ffffff;
+          color: $primary-color;
+          border: none;
+          box-shadow: 0 1px 3px 0 rgba(0,0,0,0.14);
+
+          &:hover {
+
+            box-shadow: inset 0 1px 3px 0 rgba(0,0,0,0.24);
+          }
+        }
+      }
+    }
+  }
+
   > .rzp-sticky > .sticky-content {
 
     z-index: 2;
@@ -44,6 +97,11 @@ traffic-responsive() {
         padding-top: 0;
         padding-bottom: 0;
 
+        .balance-amount {
+
+          font-weight: bold;
+        }
+
         &:last-child {
 
           border-left-width: 1px;
@@ -58,7 +116,7 @@ traffic-responsive() {
   padding: 24px;
   background-color: transparent;;
 
-  p.section-title {
+  .section-title {
 
     font-size: 18px;
     padding-top: 40px;
@@ -69,11 +127,32 @@ traffic-responsive() {
 
       padding-top: 0;
     }
+
+    &.payment-insights-title {
+
+      i.i:hover {
+
+        color: $primary-color;
+      }
+
+      .popover-highlight {
+
+        color: $text-color;
+      }
+    }
   }
 
   .panel.dasboard-home-panel {
 
     margin-bottom: 0;
+
+    &.no-legends {
+
+      .panel-body {
+
+        height: 272px;
+      }
+    }
   }
 
   div.traffic-activity-row {
@@ -110,7 +189,7 @@ traffic-responsive() {
 
         div.panel {
 
-          height: 340px; // aligns with 5 items in recent activity
+          height: 360px; // aligns with 5 items in recent activity
 
           div.panel-body {
 

@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import { withRouter, Link } from 'react-router-dom';
+
+import ProgressBar from 'rzp/ui/ProgressBar';
+
 import MainNavLink from 'merchant/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -59,6 +62,8 @@ export default class Sidebar extends Component {
     let routes = this.routes;
     let isMerchant = !!user.current;
 
+    const remainingActivation = 100 - user.activation_progress;
+
     return (
       <div class="sidebar">
         <section class="brand-logo">
@@ -73,6 +78,32 @@ export default class Sidebar extends Component {
               null;
             } else {
               <div class="nav">
+                {false && (
+                  <Link className="activation-status-link" to="/activation">
+                    <div className="activation-status">
+                      <div className="clearfix">
+                        <div className="pull-left">Activate your account</div>
+                        <div className="pull-right">
+                          <i className="i i-chevron-right" />
+                        </div>
+                      </div>
+                      <div class="activation-bar-content">
+                        <div className="activation-bar-text">
+                          {user.activation_progress >= 70
+                            ? `${remainingActivation}% Remaining`
+                            : `${user.activation_progress}% Complete`}
+                        </div>
+                        <div className="activation-bar">
+                          <ProgressBar
+                            type="success"
+                            max={100}
+                            value={user.activation_progress}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                )}
                 <MainNavLink
                   label="Home"
                   icon="i i-chart text-info"
@@ -82,7 +113,6 @@ export default class Sidebar extends Component {
                 />
                 <MainNavLink
                   label="Transactions"
-                  id="transactions-nav"
                   icon="i i-repeat text-primary"
                   to={routes.transactions}
                   notMyRole="sellerapp"
@@ -150,13 +180,11 @@ export default class Sidebar extends Component {
                 />
                 <MainNavLink
                   label="My Account"
-                  id="myaccount-nav"
                   icon="i i-account text-primary"
                   to={routes.account}
                 />
                 <MainNavLink
                   label="Settings"
-                  id="settings-nav"
                   icon="i i-settings text-warning"
                   to={routes.settings}
                   myRole="owner manager admin"

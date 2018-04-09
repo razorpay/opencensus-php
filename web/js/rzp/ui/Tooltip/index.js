@@ -1,3 +1,8 @@
+/*
+ * TODO( pending things ):
+ * Handle Bottom Position
+ */
+
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
@@ -13,6 +18,7 @@ class Tooltip extends Component {
     };
 
     this.showTooltipTimer = null;
+    this.eventsBounded = false;
 
     this.showTooltip = this.showTooltip.bind(this);
     this.handleMouseEnter = this.handleMouseEnter.bind(this);
@@ -25,7 +31,7 @@ class Tooltip extends Component {
 
     const node = this.node,
       parent = node.parentElement,
-      { align } = this.props;
+      { align, persistent } = this.props;
 
     let width = 0,
       height = 0,
@@ -44,51 +50,60 @@ class Tooltip extends Component {
       top = screenY;
     }
 
-    const {
-        width: tooltipWidth,
-        height: tooltipHeight,
-      } = node.getBoundingClientRect(),
+    let tooltipWidth =
+        this.nodeWidth || (this.nodeWidth = this.node.clientWidth),
+      tooltipHeight =
+        this.nodeHeight || (this.nodeHeight = this.node.clientHeight),
       screenLeft = 0,
-      screenRight = document.body.clientWidth;
+      screenRight = document.body.clientWidth,
+      screenBottom = document.body.clientHeight;
 
     let tooltipLeft = 0,
       tooltipTop = 0,
       paddingTop = 0,
       paddingLeft = 0,
-      paddingBottom = 0;
+      paddingBottom = 0,
+      paddingRight = 0;
 
-    // TODO: need to handle other alignment options also
     if (align === 'bottom' || align === 'top') {
       tooltipLeft = left + width / 2 - tooltipWidth / 2;
 
       tooltipTop = top;
 
       if (align === 'bottom') {
-        if (!this.props.followPointer) {
-          tooltipTop += height;
-        }
-
+        tooltipTop += height;
         paddingTop = gutter;
       } else {
-        tooltipTop -= tooltipHeight + height;
-
+        tooltipTop -= tooltipHeight;
+        tooltipTop -= gutter;
         paddingBottom = gutter;
       }
-    } else if (align === 'right') {
+    } else if (align === 'right' || align === 'left') {
       tooltipLeft = left;
 
-      if (!this.props.followPointer) {
-        tooltipLeft += width;
-      }
-
       tooltipTop = top + height / 2 - tooltipHeight / 2;
-      paddingLeft = gutter;
+
+      if (align === 'right') {
+        tooltipLeft += width;
+        paddingLeft = gutter;
+      } else {
+        tooltipLeft -= tooltipWidth;
+        paddingRight = gutter;
+      }
     }
 
+    let horizontalAdjustment = 0;
+
     if (tooltipLeft < screenLeft) {
-      tooltipLeft += screenLeft - tooltipLeft;
+      horizontalAdjustment = screenLeft - tooltipLeft;
     } else if (tooltipLeft + tooltipWidth > screenRight) {
-      tooltipLeft -= tooltipLeft + tooltipWidth - screenRight;
+      horizontalAdjustment = -(tooltipLeft + tooltipWidth - screenRight);
+    }
+
+    tooltipLeft += horizontalAdjustment;
+
+    if (this.props.onAdjustment) {
+      this.props.onAdjustment(horizontalAdjustment);
     }
 
     if (!this.props.followPointer) {
@@ -97,9 +112,10 @@ class Tooltip extends Component {
       node.style.paddingLeft = paddingLeft + 'px';
       node.style.paddingTop = paddingTop + 'px';
       node.style.paddingBottom = paddingBottom + 'px';
+      node.style.paddingRight = paddingRight + 'px';
     } else {
       node.style.top = tooltipTop + paddingTop - paddingBottom + 'px';
-      node.style.left = tooltipLeft + paddingLeft + 'px';
+      node.style.left = tooltipLeft + paddingLeft - paddingRight + 'px';
     }
 
     this.setState({
@@ -142,7 +158,7 @@ class Tooltip extends Component {
     this.hideTooltip();
   }
 
-  componentDidMount() {
+  bindEvents() {
     const { followPointer } = this.props,
       parent = this.node.parentElement;
 
@@ -153,9 +169,15 @@ class Tooltip extends Component {
     }
     parent.addEventListener('mouseleave', this.handleMouseLeave);
     window.addEventListener('scroll', this.handleMouseLeave);
+
+    this.eventsBounded = true;
   }
 
-  componentWillUnmount() {
+  unbindEvents() {
+    if (!this.eventsBounded) {
+      return;
+    }
+
     const { followPointer } = this.props,
       parent = this.node.parentElement;
 
@@ -166,17 +188,41 @@ class Tooltip extends Component {
     }
     parent.removeEventListener('mouseleave', this.handleMouseLeave);
     window.removeEventListener('scroll', this.handleMouseLeave);
+
+    this.eventsBounded = false;
+  }
+
+  componentDidMount() {
+    if (this.props.persistent) {
+      this.showTooltip();
+      return;
+    }
+
+    this.bindEvents();
+  }
+
+  componentWillUnmount() {
+    this.unbindEvents();
   }
 
   render() {
-    const { show } = this.state;
+    const { show } = this.state,
+      {
+        children,
+        align,
+        followPointer,
+        persistent,
+        onAdjustment,
+        ...otherProps
+      } = this.props;
+
+    otherProps.className = `${
+      otherProps.className ? otherProps.className + ' ' : ''
+    }rzp-tooltip${show ? ' show' : ''}`;
 
     return (
-      <div
-        className={`rzp-tooltip ${show ? 'show' : ''}`}
-        ref={node => (this.node = node)}
-      >
-        <div className="rzp-tooltip-inner">{this.props.children}</div>
+      <div {...otherProps} ref={node => (this.node = node)}>
+        <div className="rzp-tooltip-inner">{children}</div>
       </div>
     );
   }
@@ -185,11 +231,14 @@ class Tooltip extends Component {
 Tooltip.defaultProps = {
   align: 'bottom',
   followPointer: false,
+  persistent: false,
 };
 
 Tooltip.propTypes = {
   align: PropTypes.oneOf(['top', 'bottom', 'left', 'right']),
   followPointer: PropTypes.bool.isRequired,
+  persistent: PropTypes.bool.isRequired,
+  onAdjustment: PropTypes.func,
 };
 
 export default Tooltip;

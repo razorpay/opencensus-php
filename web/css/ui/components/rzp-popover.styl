@@ -1,0 +1,117 @@
+$gutter = 10px;
+$bg-color = #ffffff;
+
+.rzp-popover.rzp-tooltip {
+
+  display: block;
+  width: 260px;
+  font-size: 1rem;
+  font-size: 12px;
+
+  &.align-bottom, &.align-top {
+
+    .rzp-tooltip-inner > .rzp-popover-arrow {
+
+      left: 50%;
+
+      &:after {
+
+        margin-left: - $gutter;
+      }
+    }
+  }
+
+  &.align-left, &.align-right {
+
+    .rzp-tooltip-inner > .rzp-popover-arrow {
+
+      top: 50%;
+
+      &:after {
+
+        margin-top: - $gutter;
+      }
+    }
+  }
+
+  &.align-bottom .rzp-tooltip-inner > .rzp-popover-arrow {
+
+    top: - $gutter;
+
+    &:after {
+
+      border-top-width: 0;
+      border-bottom-color: $bg-color;
+    }
+  }
+
+  &.align-top .rzp-tooltip-inner > .rzp-popover-arrow {
+
+    top: 100%;
+
+    &:after {
+
+      border-border-width: 0;
+      border-top-color: $bg-color;
+    }
+  }
+
+  &.align-left .rzp-tooltip-inner > .rzp-popover-arrow {
+
+    left: 100%;
+
+    &:after {
+
+      border-right-width: 0;
+      border-left-color: $bg-color;
+    }
+  }
+
+  &.align-right .rzp-tooltip-inner > .rzp-popover-arrow {
+
+    left: - $gutter;
+
+    &:after {
+
+      border-left-width: 0;
+      border-right-color: $bg-color;
+    }
+  }
+
+  .rzp-tooltip-inner {
+
+    padding: 16px;
+    position: relative;
+    
+    .rzp-popover-arrow {
+
+      position: absolute;
+      top: auto;
+      left: auto;
+
+      &:after {
+
+        content: "";
+        display: block;
+        border-width: $gutter;
+        border-style: solid;
+        border-color: transparent;
+        margin-left: 0px;
+        margin-top: 0px;
+      }
+    }
+
+    .rzp-popover-title {
+
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .rzp-popover-body {
+
+      font-size: 12px;
+      color: #8991AE;
+      line-height: 1.5em;
+    }
+  }
+}

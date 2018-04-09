@@ -11,7 +11,7 @@ const GroupingDropdown = ({
   <div className="grouping-dropdown">
     <Group>
       <GroupItem>
-        <i className="i i-sort"/>
+        <i className="i i-sort grouping-icon" />
       </GroupItem>
       <GroupItem className="dropdown-group-item">
         <PowerSelect
