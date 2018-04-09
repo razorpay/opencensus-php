@@ -70,6 +70,8 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        s($input);
+
         $content = $this->parseGatewayResponse($input['gateway']);
 
         $this->assertPaymentId($input['payment']['id'],
@@ -194,8 +196,25 @@ class Gateway extends Base\Gateway
 
     private function parseVerifyResponse(\Requests_Response $response)
     {
-        // TODO: Check this
-        return json_decode($response->body, true);
+        $keyValuePair= explode('|', $response->body);
+
+        $verifyResponseArray = [];
+
+        foreach ($keyValuePair as $fields)
+        {
+            if (empty(trim($fields)) === true)
+            {
+                continue;
+            }
+            $content = explode('=', $fields);
+
+            $key = $content[0];
+
+            $value = $content[1];
+
+            $verifyResponseArray[$key] = $value;
+        }
+        return $verifyResponseArray;
     }
 
     private function getVerifyMatchStatus(Verify $verify)
@@ -388,7 +407,11 @@ class Gateway extends Base\Gateway
     {
         $encryptedString = array_keys($response)[0];
 
+        s($encryptedString);
+
         $decryptedString = $this->decrypt($encryptedString);
+
+        s($decryptedString);
 
         parse_str($decryptedString, $decryptedArray);
 
