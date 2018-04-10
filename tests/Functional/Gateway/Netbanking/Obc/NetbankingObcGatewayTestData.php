@@ -11,7 +11,7 @@ use RZP\Exception\PaymentVerificationException;
 return [
     'testPayment' => [
         'entity'          => 'netbanking',
-        'amount'          => 500,
+        'amount'          => 50000,
         'status'          => 'Y',
         'bank_payment_id' => '9999999999',
         'account_number'  => '1234567890'
@@ -35,7 +35,7 @@ return [
 
     'netbankingPaymentFailed' => [
         'entity'          => 'netbanking',
-        'amount'          => 500,
+        'amount'          => 50000,
         'status'          => 'N',
         'bank_payment_id' => '9999999999',
         'account_number'  => '1234567890'
@@ -43,7 +43,7 @@ return [
 
     'netbankingPaymentFailedVerifySuccess' => [
         'entity'          => 'netbanking',
-        'amount'          => 500,
+        'amount'          => 50000,
         'status'          => 'Y',
         'bank_payment_id' => '9999999999',
         'account_number'  => '1234567890'
@@ -51,7 +51,7 @@ return [
 
     'netbankingVerify' => [
         'entity'          => 'netbanking',
-        'amount'          => 500,
+        'amount'          => 50000,
         'status'          => 'Y',
         'bank_payment_id' => '9999999999',
         'account_number'  => '1234567890'

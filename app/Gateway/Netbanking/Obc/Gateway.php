@@ -164,7 +164,7 @@ class Gateway extends Base\Gateway
     protected function getContentToSave($payment): array
     {
         return [
-            Base\Entity::AMOUNT => $payment[Payment::AMOUNT],
+            Base\Entity::AMOUNT => $payment[Payment\Entity::AMOUNT],
             Base\Entity::REFERENCE1 => $this->getMerchantId(),
         ];
     }
@@ -175,16 +175,18 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2);
+
         try
         {
-            $this->assertAmount($input['payment']['amount'] / 100, $content[ResponseFields::AMOUNT]);
+            $this->assertAmount($expectedAmount, $content[ResponseFields::AMOUNT]);
         }
         catch (Exception\LogicException $e)
         {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     private function parseVerifyResponse(\Requests_Response $response)
