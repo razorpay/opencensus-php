@@ -255,6 +255,8 @@ class EnachRblGatewayTest extends TestCase
                         'UTILITY_NAME'    => 'RAZORPAY',
                         'NODAL_ACNO'      => 'RATN3234334',
                         'STATUS'          => 'Active',
+                        'CODE_DESC'       => '',
+                        'RETURN_CODE'     => '',
                     ]
                 ]
             ]
