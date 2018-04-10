@@ -156,9 +156,13 @@ class Service extends Base\Service
      */
     public function refundAuthorized($id, array $input)
     {
+        //
+        // Since this is in admin auth, we won't
+        // have any merchant to check this with.
+        //
         $payment = $this->repo->payment->findByPublicId($id);
 
-        $refund = $this->getNewProcessor()->refundAuthorizedPayment($payment, $input);
+        $refund = $this->getNewProcessor($payment->merchant)->refundAuthorizedPayment($payment, $input);
 
         return $refund->toArrayPublic();
     }
