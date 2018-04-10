@@ -24,12 +24,11 @@ class Mock extends Driver
         return $this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function histogram(string $metric, float $value, array $buckets = [], array $dimensions = []): Driver
     {
         return $this;
-    }
-
-    public function push(string $job = null)
-    {
     }
 }

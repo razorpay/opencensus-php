@@ -4,9 +4,9 @@ namespace RZP\Services\Metrics;
 
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\ServiceProvider as IlluminateServiceProvider;
 
-class MetricsServiceProvider extends ServiceProvider
+class ServiceProvider extends IlluminateServiceProvider
 {
     public function register()
     {

@@ -69,8 +69,8 @@ class Metrics
         {
             return $this->currentDriver->$name(...$arguments);
         }
-        // In case it errors out, for now not doing anything. Probably log, but not want to couple with api's trace.
-        // Also we would probably come to know of issues via prometheus alerts.
+        // In case it errors out, for now not doing anything, maybe log it but not want to couple with api's trace
+        // Also we would come to know of issues via Prometheus alerts
         catch (\Throwable $e)
         {
         }

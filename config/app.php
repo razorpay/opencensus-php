@@ -181,7 +181,7 @@ return array(
         // Makes blade sharper
         RZP\Providers\KnifeServiceProvider::class,
         \Conner\Tagging\Providers\TaggingServiceProvider::class,
-        RZP\Services\Metrics\MetricsServiceProvider::class,
+        RZP\Services\Metrics\ServiceProvider::class,
     ],
 
     /*

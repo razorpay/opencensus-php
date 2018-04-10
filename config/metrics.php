@@ -11,8 +11,14 @@ return [
 
     // Configurations per driver
     'drivers'    => [
-        'mock'       => [],
+        'mock'      => [],
 
-        'dogstatsd' => [],
+        'dogstatsd' => [
+            // Client options
+            'client' => [
+                'host' => env('METRICS_DOGSTATSD_HOST'),
+                'port' => env('METRICS_DOGSTATSD_PORT'),
+            ],
+        ],
     ],
 ];

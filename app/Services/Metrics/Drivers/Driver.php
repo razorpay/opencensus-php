@@ -37,6 +37,15 @@ abstract class Driver
 
     /**
      * @param  string $metric
+     * @return string
+     */
+    public function getNamespacedMetric(string $metric): string
+    {
+        return "{$this->namespace}_{$metric}";
+    }
+
+    /**
+     * @param  string $metric
      * @param  int    $times
      * @param  array  $dimensions
      * @return Driver
