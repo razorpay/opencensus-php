@@ -65,7 +65,10 @@ return [
             ],
             'virtual_account' => [
                 'credited'          => env('AWS_WEBHOOKS_TEST_QUEUE'),
-            ]
+            ],
+            'token' => [
+                'confirmed'         => env('AWS_WEBHOOKS_TEST_QUEUE'),
+            ],
         ],
         'live' => [
             'payment' => [
@@ -106,6 +109,9 @@ return [
             ],
             'virtual_account' => [
                 'credited'          => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+            ],
+            'token' => [
+                'confirmed'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ],
         ],
     ],
