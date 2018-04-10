@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use App;
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -15,9 +16,9 @@ use RZP\Exception\LogicException;
 /**
  * Represents asynchronous job to send PAYMENT_CREATED event to Shield
  */
-class Shield extends Job implements ShouldQueue
+class RunShieldCheck extends Job implements ShouldQueue
 {
-    use InteractsWithQueue;
+    use InteractsWithQueue, SerializesModels;
 
     /**
      * @var string
@@ -61,20 +62,22 @@ class Shield extends Job implements ShouldQueue
             }
 
             $riskData = [];
-            $action   = $response['action'];
 
-            $fraudType = $reason = null;
+            $action = $response['action'];
+
+            $fraudType = null;
+            $reason = null;
 
             switch ($action)
             {
                 case self::ACTION_BLOCK:
                     $fraudType = Risk\Type::CONFIRMED;
-                    $reason    = Risk\RiskCode::PAYMENT_BLOCKED_BY_SHIELD;
+                    $reason    = Risk\RiskCode::PAYMENT_CONFIRMED_FRAUD_BY_SHIELD;
                     break;
 
                 case self::ACTION_REVIEW:
                     $fraudType = Risk\Type::SUSPECTED;
-                    $reason    = Risk\RiskCode::PAYMENT_FLAGGED_BY_SHIELD;
+                    $reason    = Risk\RiskCode::PAYMENT_SUSPECTED_FRAUD_BY_SHEILD;
                     break;
 
                 default:

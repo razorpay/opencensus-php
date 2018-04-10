@@ -12,7 +12,7 @@ use Carbon\Carbon;
 use Lib\PhoneBook;
 
 use RZP\Exception;
-use RZP\Jobs\Shield;
+
 use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Risk;
@@ -33,6 +33,7 @@ use RZP\Models\Customer;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
 use RZP\Jobs\DispatchRouter;
+use RZP\Jobs\RunShieldCheck;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
@@ -1329,7 +1330,7 @@ trait Authorize
 
     protected function runShieldCheck(Payment\Entity $payment)
     {
-        $job = new Shield($this->mode, $payment->getId());
+        $job = new RunShieldCheck($this->mode, $payment->getId());
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::SHIELD);
     }

@@ -11,13 +11,13 @@ use RZP\Models\Payment\Analytics\Entity as Analytics;
 
 class ShieldClient
 {
-    const RULES = '/rules/';
+    const RULES         = '/rules/';
 
-    const EVALUATE = '/rules/evaluate';
+    const EVALUATE      = '/rules/evaluate';
 
-    const X_RULESET = 'x-ruleset';
+    const X_RULESET     = 'x-ruleset';
 
-    const CONTENT_TYPE = 'content-type';
+    const CONTENT_TYPE  = 'content-type';
 
     protected $config;
 
@@ -95,7 +95,7 @@ class ShieldClient
         $request = [
             Payment\Entity::MERCHANT_ID => $payment->getMerchantId(),
             'entity_id'                 => $payment->getId(),
-            'entity_type'               => 'payment',
+            'entity_type'               => $payment->getEntity()
         ];
 
         $input = [
@@ -111,34 +111,9 @@ class ShieldClient
             Payment\Entity::METHOD        => $payment->getMethod(),
         ];
 
-        $method = $payment->getMethod();
+        $methodParams = $this->fillMethodSpecificDetails($payment);
 
-        if ($method === Method::NETBANKING)
-        {
-            $input[Payment\Entity::BANK] = $payment->getBankName();
-        }
-
-        if ($method === Method::WALLET)
-        {
-            $input[Payment\Entity::WALLET] = ucfirst($payment->getWallet());
-        }
-
-        if ($method === Method::UPI)
-        {
-            $input[Payment\Entity::VPA] = $payment->getVpa();
-        }
-
-        if ($payment->hasCard() === true)
-        {
-            $card = $payment->card;
-
-            $input['card_iin']      = $card->getIin();
-            $input['card_network']  = $card->getNetwork();
-            $input['card_type']     = $card->getType();
-            $input['card_country']  = $card->getCountry();
-            $input['card_issuer']   = $card->getIssuer();
-            $input['card_name']     = $card->getName();
-        }
+        $input = array_merge($input, $methodParams);
 
         if ($payment->hasOrder() === true)
         {
@@ -154,32 +129,43 @@ class ShieldClient
         return $request;
     }
 
-    protected function getPaymentAnalyticsData(Payment\Entity $payment): array
+    protected function fillMethodSpecificDetails(Payment\Entity $payment): array
     {
-        $analytics = [];
+        $methodParams = [];
 
-        $metadata = $payment->getMetadata();
+        $method = $payment->getMethod();
 
-        if (empty($metadata) === true)
+        switch($method)
         {
-            $analytics = $this->fetchPaymentAnalytics($payment);
-        }
-        else
-        {
-            // filter metadata for required keys
-            foreach (self::PAYMENT_ANALYTICS_KEYS as $key)
-            {
-                if (isset($metadata[$key]) === true)
-                {
-                    $analytics[$key] = $metadata[$key];
-                }
-            }
+            case Method::NETBANKING:
+                $methodParams[Payment\Entity::BANK] = $payment->getBankName();
+                break;
+
+            case Method::WALLET:
+                $methodParams[Payment\Entity::WALLET] = strtolower($payment->getWallet());
+                break;
+
+            case Method::UPI:
+                $methodParams[Payment\Entity::VPA] = $payment->getVpa();
+                break;
+
+            case Method::CARD:
+                $card = $payment->card;
+
+                $methodParams['card_iin']      = $card->getIin();
+                $methodParams['card_network']  = $card->getNetwork();
+                $methodParams['card_type']     = $card->getType();
+                $methodParams['card_country']  = $card->getCountry();
+                $methodParams['card_issuer']   = $card->getIssuer();
+                $methodParams['card_name']     = $card->getName();
+                break;
+
         }
 
-        return $analytics;
+        return $methodParams;
     }
 
-    protected function fetchPaymentAnalytics(Payment\Entity $payment): array
+    protected function getPaymentAnalyticsData(Payment\Entity $payment): array
     {
         $pa = $payment->analytics;
 
@@ -198,11 +184,11 @@ class ShieldClient
 
             if (method_exists($pa, $getterName) === true)
             {
-                $getterValue = $pa->$getterName();
+                $value = $pa->$getterName();
 
-                if (empty($getterValue) === false)
+                if (empty($value) === false)
                 {
-                    $analytics[$key] = $getterValue;
+                    $analytics[$key] = $value;
                 }
             }
         }
