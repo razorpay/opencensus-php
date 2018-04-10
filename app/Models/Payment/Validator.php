@@ -433,11 +433,6 @@ class Validator extends Base\Validator
 
         $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
 
-        //
-        // Validate against max_payment_amount for all methods but 'transfer'
-        // Payment method 'transfer' is used internally for Route and does not
-        // need this validated
-        //
         if ($amount > $maxAmountAllowed)
         {
             throw new Exception\BadRequestValidationFailureException(

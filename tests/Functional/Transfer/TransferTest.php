@@ -237,9 +237,7 @@ class TransferTest extends TestCase
 
     public function testDirectTransferAmountOverMaxAmount()
     {
-        $this->fixtures->on('live')->merchant->edit('10000000000000', ['max_payment_amount' => 100]);
-
-        $this->fixtures->on('live')->merchant->editBalance(20000);
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 100]);
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__], function()
         {
