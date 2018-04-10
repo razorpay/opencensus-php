@@ -340,6 +340,15 @@ class TransferTest extends TestCase
         $this->checkPaymentAndTxnRecords($patch);
     }
 
+    public function testTransferWithoutPaymentAmountValidation()
+    {
+        $this->fixtures->merchant->edit($this->linkedAccountId, ['max_payment_amount' => 100]);
+
+        $transfer = $this->createTransfer('account');
+
+        $this->assertEquals(1000, $transfer['amount']);
+    }
+
     public function testPatchTransferOnHoldTxnSettled()
     {
         $transfer = $this->createTransfer('account');
