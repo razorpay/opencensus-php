@@ -24,11 +24,11 @@ class BharatQrPaymentTest extends TestCase
 
         $this->fixtures->merchant->activate();
 
-        $this->fixtures->on('live')->create('customer:customers');
-
         $this->fixtures->create('terminal:bharat_qr_terminal');
 
         $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+
+        $this->fixtures->on('live')->create('customer:customers');
 
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
 

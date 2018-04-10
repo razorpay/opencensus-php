@@ -22,8 +22,6 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Methods;
-use RZP\Models\Plan\Subscription\Addon;
-use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
 use RZP\Models\Risk;
@@ -358,9 +356,9 @@ class Processor
      */
     public function processAndReturnTerminal(array & $input)
     {
-        $receiver = $input['receiver'];
+        $receiver = $input[Payment\Entity::RECEIVER];
 
-        unset($input['receiver']);
+        unset($input[Payment\Entity::RECEIVER]);
 
         $this->tracePaymentNewRequest($input);
 
@@ -1192,7 +1190,7 @@ class Processor
         $this->receiver = $this->fetchReceiverFromInput($input['receiver']);
 
         $this->trace->info(
-            TraceCode::PAYMENT_RECEIVED_ON_RECEIVER,
+            TraceCode::PAYMENT_RECEIVED_VIA_RECEIVER,
             [
                 'receiver_id'   => $this->receiver->getId(),
                 'receiver_type' => $this->receiver->getEntity(),

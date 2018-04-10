@@ -162,7 +162,6 @@ class Provider
         ],
     ];
 
-
     protected $receiver;
 
     public static function getBankCode(string $provider)
@@ -388,31 +387,13 @@ class Provider
      */
     protected function getTerminalForMethod(string $method)
     {
-        $paymentArray = [
-            Payment\Entity::CURRENCY    => Currency::INR,
-            Payment\Entity::METHOD      => $method,
-            Payment\Entity::AMOUNT      => 100,
-            Payment\Entity::DESCRIPTION => 'Bharat Qr Payment',
-            Payment\Entity::CONTACT     => Constants::DUMMY_CONTACT,
-            Payment\Entity::EMAIL       => Constants::DUMMY_EMAIL,
-            'receiver'                  => $this->receiver,
-        ];
-
         if ($method === Payment\Method::CARD)
         {
-            $card = [
-                Card\Entity::NUMBER       => Constants::DUMMY_CARD_NUMBER,
-                Card\Entity::CVV          => Constants::CARD_CVV,
-                Card\Entity::NAME         => Constants::CARD_NAME,
-                Card\Entity::EXPIRY_MONTH => Constants::CARD_EXPIRY_MONTH,
-                Card\Entity::EXPIRY_YEAR  => Constants::CARD_EXPIRY_YEAR,
-            ];
-
-            $paymentArray['card'] = $card;
+            $paymentArray = Constants::getDummyCardPaymentArray($this->receiver);
         }
         else
         {
-            $paymentArray['vpa'] = Constants::DUMMY_VPA;
+            $paymentArray = Constants::getDummyVpaPaymentArray($this->receiver);
         }
 
         $paymentProcessor = new PaymentProcessor($this->receiver->merchant);

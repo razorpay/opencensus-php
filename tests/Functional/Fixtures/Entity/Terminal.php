@@ -55,11 +55,10 @@ class Terminal extends Base
             'mastercard_mpan'           => '4287346823986423',
             'visa_mpan'                 => '5287346823986423',
             'rupay_mpan'                => '6287346823986423',
-            'type'                      =>
-                [
-                    Type::NON_RECURRING => '1',
-                    Type::BHARAT_QR => '1',
-                ]
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::BHARAT_QR => '1',
+            ],
         ];
 
         return parent::create($attributes);
@@ -77,11 +76,10 @@ class Terminal extends Base
             'gateway_terminal_password' => 'abcdef',
             'upi'                       => true,
             'vpa'                       => 'random@icici',
-            'type'                      =>
-                [
-                    Type::NON_RECURRING => '1',
-                    Type::BHARAT_QR => '1'
-                ]
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::BHARAT_QR => '1'
+            ],
         ];
 
         return parent::create($attributes);

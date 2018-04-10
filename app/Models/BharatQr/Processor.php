@@ -23,13 +23,14 @@ class Processor extends VirtualAccount\Processor
     protected $callbackData;
 
     protected $receiver;
-    public function __construct( array $gatewayInput, string $provider = null)
+
+    public function __construct(array $gatewayResponse, string $provider = null)
     {
         parent::__construct($provider);
 
-        $this->gatewayInput = $gatewayInput['qr_data'];
+        $this->gatewayInput = $gatewayResponse['qr_data'];
 
-        $this->callbackData = $gatewayInput['gateway_input'];
+        $this->callbackData = $gatewayResponse['callback_data'];
     }
 
     /**
@@ -150,7 +151,6 @@ class Processor extends VirtualAccount\Processor
         return (new VirtualAccount\Core)->create($input, $this->merchant, $customers[0]);
     }
 
-
     protected function processBharatQr(Base\PublicEntity $bharatQr)
     {
         $paymentProcessor = new PaymentProcessor($this->merchant);
@@ -195,7 +195,7 @@ class Processor extends VirtualAccount\Processor
 
         $gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
 
-        $terminal = $this->repo->terminal->getByGatewayMerchantId($gatewayMerchantId, $gateway);
+        $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
 
         if ($terminal === null)
         {
@@ -205,7 +205,7 @@ class Processor extends VirtualAccount\Processor
                 ['gateway_merchant_id' => $gatewayMerchantId]);
         }
 
-        $this->callbackData['razorpay_terminal_id'] = $terminal->getId();
+        $this->callbackData[Constants::RAZORPAY_TERMINAL_ID] = $terminal->getId();
     }
 
     protected function setMerchant(bool $paymentExpected)

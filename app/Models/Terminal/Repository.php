@@ -90,7 +90,7 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getByGatewayMerchantId(string $gatewayMerchantId, string $gateway)
+    public function findByGatewayMerchantId(string $gatewayMerchantId, string $gateway)
     {
         return $this->newQuery()
                     ->withTrashed()

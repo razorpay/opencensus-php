@@ -45,18 +45,18 @@ class Service extends Base\Service
 
         try
         {
-            $callbackData = $gatewayClass->preProcessServerCallback($input, true);
+            $gatewayResponse = $gatewayClass->preProcessServerCallback($input, true);
         }
         catch (\Exception $ex)
         {
-            s($ex->getMessage());
             $this->trace->traceException($ex);
 
             return $this->getResponse(false);
         }
 
-        $qrData = $callbackData['qr_data'];
-        $gatewayInput = $callbackData['gateway_input'];
+        $qrData = $gatewayResponse['qr_data'];
+
+        $callbackData = $gatewayResponse['callback_data'];
 
         (new Validator)->validateInput('gateway_response', $qrData);
 
@@ -64,20 +64,10 @@ class Service extends Base\Service
 
         $this->determineAndSetModeForQr($qrCodeId);
 
-        $callbackData['qr_data'][GatewayResponseParams::GATEWAY] = $gateway;
+        $gatewayResponse['qr_data'][GatewayResponseParams::GATEWAY] = $gateway;
 
-        list($valid, $bharatQr) = $this->core->processPayment($callbackData);
+        list($valid, $bharatQr) = $this->core->processPayment($gatewayResponse);
 
-        //
-        // In case of duplicate notification
-        // we don't create new payment
-        //
-        if ($bharatQr !== null)
-        {
-            $gatewayInput['payment'] = $bharatQr->payment->toArray();
-
-            $this->callGatewayAuthorize($gateway, $gatewayInput);
-        }
 
         $response = $this->getResponse($valid);
 

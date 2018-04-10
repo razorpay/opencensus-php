@@ -4,10 +4,11 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use RZP\Models\Base;
+use RZP\Models\BharatQr\Constants;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Models\Terminal;
-use RZP\Models\Order;
+use RZP\Models\BharatQr;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Analytics;
 
@@ -38,7 +39,7 @@ class TerminalProcessor extends Base\Core
         if (($payment->getReceiverType() === 'qr_code') and
             (empty($gatewayData) === false))
         {
-            $terminalId = $gatewayData['razorpay_terminal_id'];
+            $terminalId = $gatewayData[BharatQr\Constants::RAZORPAY_TERMINAL_ID];
 
             return [$this->repo->terminal->find($terminalId)];
         }

@@ -3444,7 +3444,6 @@ ALTER TABLE terminals
     ADD COLUMN rupay_mpan varchar(255) DEFAULT NULL after visa_mpan,
     ADD COLUMN vpa varchar(255) DEFAULT NULL after rupay_mpan;
 
-
 ALTER TABLE payments
     ADD COLUMN receiver_id char(14) DEFAULT NULL after transfer_id,
     ADD COLUMN receiver_type varchar(255) DEFAULT NULL after recevier_id;

@@ -68,8 +68,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        if ((isset($input['payment']['receiver_type']) === true) and
-            ($input['payment']['receiver_type'] === 'qr_code'))
+        if ($this->isBharatQrPayment() === true)
         {
             $this->createGatewayPaymentEntity($input);
 
@@ -856,7 +855,7 @@ class Gateway extends Base\Gateway
         ];
 
         return [
-            'gateway_input' => $input,
+            'callback_data' => $input,
             'qr_data'       => $qrData
         ];
     }
