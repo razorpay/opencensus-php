@@ -111,7 +111,7 @@ const TabContent = ({
           <span>
             {title}
             {helpText && (
-              <small className="help-content faded-text">
+              <small className="help-content">
                 <i class="i i-help" />
                 <Popover align="top">
                   <PopoverTitle>What's this?</PopoverTitle>
