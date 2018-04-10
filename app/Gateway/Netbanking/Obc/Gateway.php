@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Netbanking\Obc;
 
 use RZP\Constants\Mode;
-use RZP\Exception\LogicException;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -12,18 +11,13 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
+use RZP\Exception\LogicException;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Exception\GatewayErrorException;
 
 use phpseclib\Crypt\AES;
 
-/**
- * This gateway has been developed as per the API contract from oriental bank of commerce
- * @see https://drive.google.com/drive/u/0/folders/1A5ULegmYTyv3yVgAD33wwi6wQZk50Nmt
- *
- * Class Gateway
- * @package RZP\Gateway\Netbanking\Obc
- */
+
 class Gateway extends Base\Gateway
 {
     protected $gateway = Payment\Gateway::NETBANKING_OBC;
