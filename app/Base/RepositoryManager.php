@@ -141,6 +141,8 @@ class RepositoryManager extends Illuminate\Support\Manager
             return Mode::TEST;
         }
 
+        $repo->connection(null);
+
         return null;
     }
 

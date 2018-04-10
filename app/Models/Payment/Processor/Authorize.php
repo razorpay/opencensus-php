@@ -3555,19 +3555,16 @@ trait Authorize
     }
 
     /**
-     * Save is false when we create dummy card entity for Bharat Qr Payments
-     * This is being done in order to do terminal selection before the
-     * payment creation itself
+     * Creates the card entity
      *
      * @param array $cardInput
      * @param bool $vault
      * @param Merchant\Entity $merchant
-     * @param bool $save
      *
      * @return array
      * @throws Exception\BadRequestException
      */
-    public function createCardEntity(array $cardInput, bool $vault, Merchant\Entity $merchant, $save = true)
+    protected function createCardEntity(array $cardInput, bool $vault, Merchant\Entity $merchant)
     {
         //
         // Creates card entity. Card number is vaulted if vault is true
@@ -3592,10 +3589,7 @@ trait Authorize
 
         $this->payment->card()->associate($card);
 
-        if ($save === true)
-        {
-            $this->repo->saveOrFail($card);
-        }
+        $this->repo->saveOrFail($card);
 
         return $cardData;
 

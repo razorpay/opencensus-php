@@ -74,6 +74,7 @@ class Generator extends Base\Core
             $this->repo->saveOrFail($qrCode);
 
             $this->generateQrCodeFile();
+
         });
 
         return $this->qrCode;

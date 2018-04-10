@@ -393,6 +393,9 @@ class Provider
             Payment\Entity::METHOD      => $method,
             Payment\Entity::AMOUNT      => 100,
             Payment\Entity::DESCRIPTION => 'Bharat Qr Payment',
+            Payment\Entity::CONTACT     => Constants::DUMMY_CONTACT,
+            Payment\Entity::EMAIL       => Constants::DUMMY_EMAIL,
+            'receiver'                  => $this->receiver,
         ];
 
         if ($method === Payment\Method::CARD)
@@ -412,30 +415,8 @@ class Provider
             $paymentArray['vpa'] = Constants::DUMMY_VPA;
         }
 
-        $paymentArray[Payment\Entity::CONTACT] = Constants::DUMMY_CONTACT;
-
-        $paymentArray[Payment\Entity::EMAIL]   = Constants::DUMMY_EMAIL;
-
         $paymentProcessor = new PaymentProcessor($this->receiver->merchant);
 
-        $payment = $paymentProcessor->buildPaymentEntity($paymentArray);
-
-        $payment->receiver()->associate($this->receiver);
-
-        if ($method === Payment\Method::CARD)
-        {
-            $paymentProcessor->createCardEntity($paymentArray['card'], false, $this->receiver->merchant, false);
-        }
-
-        $selectedTerminals = (new Payment\Processor\TerminalProcessor)->getTerminalsForPayment($payment);
-
-        if (count($selectedTerminals) === 0)
-        {
-            throw new Exception\RuntimeException(
-                'No terminal found.',
-                ['payment' => $payment->toArrayAdmin()]);
-        }
-
-        return $selectedTerminals[0];
+        return $paymentProcessor->processAndReturnTerminal($paymentArray);
     }
 }

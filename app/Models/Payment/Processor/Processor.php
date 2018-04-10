@@ -347,6 +347,64 @@ class Processor
         return $coproto;
     }
 
+    /**
+     * This function is used while creating the Qr codes
+     * It will create dummy payment and fetch terminal corresponding to
+     * that
+     *
+     * @param array $input
+     * @return mixed
+     * @throws Exception\RuntimeException
+     */
+    public function processAndReturnTerminal(array & $input)
+    {
+        $receiver = $input['receiver'];
+
+        unset($input['receiver']);
+
+        $this->tracePaymentNewRequest($input);
+
+        //
+        // We only create a dummy payment entity for purpose
+        // of pre-calculating fees and returning it.
+        // It's not going to be saved in the database.
+        //
+        $payment = $this->buildPaymentEntity($input);
+
+        $payment->receiver()->associate($receiver);
+
+        try
+        {
+            $this->repo->transaction(
+                function() use ($payment, $input)
+                {
+                    // Performing dummy set of processing for the same
+                    $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
+
+                    // We throw this exception because we want to rollback
+                    // the current transaction. We don't want to save card
+                    // data in db
+                    throw new \Exception('Random Exception');
+                });
+        }
+        catch (\Exception $e)
+        {
+            // Do nothing
+        }
+
+        $selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+
+        if (count($selectedTerminals) === 0)
+        {
+            throw new Exception\RuntimeException(
+                'No terminal found.',
+                ['payment' => $payment->toArrayAdmin()]);
+        }
+
+
+        return $selectedTerminals[0];
+    }
+
     public function processAndReturnFees(array & $input)
     {
         $this->tracePaymentNewRequest($input);
@@ -1184,7 +1242,7 @@ class Processor
         $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($subscriptionInvoice->getOrderId());
     }
 
-    public function buildPaymentEntity(array $input): Payment\Entity
+    protected function buildPaymentEntity(array $input): Payment\Entity
     {
         $payment = new Payment\Entity;
 
@@ -1244,7 +1302,7 @@ class Processor
                 'receiver[id]');
         }
 
-        if ($receiver->getMerchantId() !== $this->merchant->id)
+        if ($receiver->getMerchantId() !== $this->merchant->getId())
         {
             // Merchant mismatch
             throw new Exception\BadRequestValidationFailureException(

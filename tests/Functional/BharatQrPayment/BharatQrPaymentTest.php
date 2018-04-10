@@ -24,17 +24,15 @@ class BharatQrPaymentTest extends TestCase
 
         $this->fixtures->merchant->activate();
 
+        $this->fixtures->on('live')->create('customer:customers');
+
         $this->fixtures->create('terminal:bharat_qr_terminal');
 
         $this->fixtures->create('terminal:bharat_qr_terminal_upi');
 
-        $this->fixtures->create('virtual_account:default_virtual_account_and_qr');
-
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
 
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal_upi');
-
-        $this->fixtures->on('live')->create('virtual_account:default_virtual_account_and_qr');
 
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 

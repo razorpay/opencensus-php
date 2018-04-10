@@ -4,6 +4,7 @@ namespace RZP\Models\VirtualAccount;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\BharatQr\Constants;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Entity as Merchant;
@@ -17,7 +18,21 @@ class Core extends Base\Core
 
         $virtualAccount = $this->repo->transaction(function() use ($virtualAccount, $input, $customer)
         {
+            $shared = false;
+
+            if (empty($input['shared']) === false)
+            {
+                $shared = $input['shared'];
+
+                unset($input['shared']);
+            }
+
             $virtualAccount->build($input);
+
+            if ($shared === true)
+            {
+                $virtualAccount->setId(Constants::SHARED_VIRTUAL_ACCOUNT);
+            }
 
             $this->validateDescriptor($virtualAccount);
 
@@ -84,7 +99,7 @@ class Core extends Base\Core
                 break;
 
             case Receiver::QR_CODE:
-                $this->verifyBharatQrEnabled();
+                $this->verifyBharatQrEnabled($virtualAccount->merchant);
                 break;
 
             default:
@@ -155,11 +170,11 @@ class Core extends Base\Core
         }
     }
 
-    protected function verifyBharatQrEnabled()
+    protected function verifyBharatQrEnabled(Merchant $merchant)
     {
         $feature = Feature\Constants::BHARAT_QR;
 
-        if ($this->merchant->isFeatureEnabled($feature) === false)
+        if ($merchant->isFeatureEnabled($feature) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);

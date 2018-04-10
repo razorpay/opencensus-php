@@ -6,14 +6,12 @@ use RZP\Exception;
 use RZP\Base\Luhn;
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
 use RZP\Models\QrCode\Entity as QrCode;
-use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Processor extends VirtualAccount\Processor
@@ -130,7 +128,26 @@ class Processor extends VirtualAccount\Processor
 
         $this->virtualAccount = $this->repo->virtual_account->find($virtualAccountId);
 
+        if ($this->virtualAccount === null)
+        {
+            $this->virtualAccount = $this->createSharedVirtualAccount();
+        }
+
         $this->receiver = $this->virtualAccount->qrCode;
+    }
+
+    protected function createSharedVirtualAccount()
+    {
+        $customers = $this->repo->customer->fetchByMerchantId($this->merchant->getId());
+
+        $input = [
+            VirtualAccount\Entity::RECEIVERS => [
+                VirtualAccount\Entity::TYPES => ['qr_code']
+            ],
+            'shared' => true,
+        ];
+
+        return (new VirtualAccount\Core)->create($input, $this->merchant, $customers[0]);
     }
 
 
