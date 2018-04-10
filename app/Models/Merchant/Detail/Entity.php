@@ -402,6 +402,11 @@ class Entity extends Base\PublicEntity
         $array[self::ALLOWED_NEXT_ACTIVATION_STATUSES] = $allowedNextActivationStatuses;
     }
 
+    public function getBusinessCategorySubcategoriesMap()
+    {
+        return BusinessCategory::BUSINESS_CATEGORY_SUBCATEGORIES_MAPPING;
+    }
+
     public function getActivationStatus()
     {
         return $this->getAttribute(self::ACTIVATION_STATUS);

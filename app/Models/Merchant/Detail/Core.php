@@ -679,7 +679,7 @@ class Core extends Base\Core
             $response[Entity::REJECTION_REASONS] = $rejectionReasons->toArrayPublic();
         }
 
-        $response[Entity::BUSINESS_CATEGORIES] = BusinessCategory::BUSINESS_CATEGORY_SUBCATEGORIES_MAPPING;
+        $response[Entity::BUSINESS_CATEGORIES] = $merchantDetails->getBusinessCategorySubcategoriesMap();
 
         $totalFields = count($validationFields);
 

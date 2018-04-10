@@ -20,6 +20,8 @@ class Validator extends Base\Validator
     const INVALID_BUSINESS_CATEGORY                     = 'Invalid business category';
     const INVALID_BUSINESS_SUBCATEGORY                  = 'Invalid business subcategory';
     const INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY     = 'Invalid business subcategory for given category';
+    const BUSINESS_SUBCATEGORY_MISSING_FOR_CATEGORY     = 'Business subcategory missing for a given category';
+    const BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY     = 'Business category missing for a given subcategory';
 
     protected static $createRules = [
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
@@ -187,6 +189,10 @@ class Validator extends Base\Validator
         'clarification_mode',
     ];
 
+    protected static $createValidators = [
+        'business_subcategory_for_category',
+    ];
+
     protected static $editValidators = [
         'business_subcategory_for_category',
     ];
@@ -279,56 +285,86 @@ class Validator extends Base\Validator
 
     public function validateBusinessCategory(string $attribute, string $businessCategory)
     {
-        $businessCategories = array_keys(BusinessCategory::BUSINESS_CATEGORY_SUBCATEGORIES_MAPPING);
-
-        if (in_array($businessCategory, $businessCategories, true) === false)
+        if (isset(BusinessCategory::BUSINESS_CATEGORY_SUBCATEGORIES_MAPPING[$businessCategory]) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(self::INVALID_BUSINESS_CATEGORY);
+            throw new Exception\BadRequestValidationFailureException(
+                self::INVALID_BUSINESS_CATEGORY . ': ' . $businessCategory,
+                Entity::BUSINESS_CATEGORY,
+                [
+                    Entity::BUSINESS_CATEGORY => $businessCategory
+                ]);
         }
     }
 
     public function validateBusinessSubcategory(string $attribute, string $businessSubcategory)
     {
-        $businessCategorySubcategoriesMapping = BusinessCategory::BUSINESS_CATEGORY_SUBCATEGORIES_MAPPING;
-
-        $businessSubcategories = [];
-
-        foreach ($businessCategorySubcategoriesMapping as $businessCategorySubcategoriesList)
+        if (defined(BusinessSubcategory::class . '::' . strtoupper($businessSubcategory)) === false)
         {
-            $businessCategorySubcategories = $businessCategorySubcategoriesList[BusinessCategory::SUBCATEGORIES];
-
-            $businessSubcategories = array_merge($businessSubcategories, $businessCategorySubcategories);
-        }
-
-        $businessSubcategories = array_keys($businessSubcategories);
-
-        if (in_array($businessSubcategory, $businessSubcategories, true) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(self::INVALID_BUSINESS_SUBCATEGORY);
+            throw new Exception\BadRequestValidationFailureException(
+                self::INVALID_BUSINESS_SUBCATEGORY . ': ' . $businessSubcategory,
+                Entity::BUSINESS_SUBCATEGORY,
+                [
+                    Entity::BUSINESS_SUBCATEGORY => $businessSubcategory
+                ]);
         }
     }
 
     public function validateBusinessSubcategoryForCategory(array $input)
     {
-        if ((isset($input[Entity::BUSINESS_CATEGORY]) === false) or
+        // If both category and subcategory are not set
+        if ((isset($input[Entity::BUSINESS_CATEGORY]) === false) and
             (isset($input[Entity::BUSINESS_SUBCATEGORY]) === false))
         {
             return;
         }
 
-        $businessCategorySubcategoriesMapping = BusinessCategory::BUSINESS_CATEGORY_SUBCATEGORIES_MAPPING;
-
-        $businessCategory = $input[Entity::BUSINESS_CATEGORY];
-
-        $businessSubcategory = $input[Entity::BUSINESS_SUBCATEGORY];
-
-        $businessCategorySubcategories = $businessCategorySubcategoriesMapping[$businessCategory];
-
-        $validBusinessSubcategories = array_keys($businessCategorySubcategories[BusinessCategory::SUBCATEGORIES]);
-
-        if (in_array($businessSubcategory, $validBusinessSubcategories, true) === false)
+        // If category is set and subcategory is not set
+        if ((isset($input[Entity::BUSINESS_CATEGORY]) === true) and
+            (isset($input[Entity::BUSINESS_SUBCATEGORY]) === false))
         {
-            throw new Exception\BadRequestValidationFailureException(self::INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY);
+            // If category is `others`
+            if (($input[Entity::BUSINESS_CATEGORY] === BusinessCategory::OTHERS))
+            {
+                return;
+            }
+
+            throw new Exception\BadRequestValidationFailureException(
+                self::BUSINESS_SUBCATEGORY_MISSING_FOR_CATEGORY . ': ' . $input[Entity::BUSINESS_CATEGORY],
+                Entity::BUSINESS_SUBCATEGORY,
+                [
+                    Entity::BUSINESS_CATEGORY => $input[Entity::BUSINESS_CATEGORY]
+                ]);
+        }
+
+        // If subcategory is set and category is not set
+        if ((isset($input[Entity::BUSINESS_SUBCATEGORY]) === true) and
+            (isset($input[Entity::BUSINESS_CATEGORY]) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                self::BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY . ': ' . $input[Entity::BUSINESS_SUBCATEGORY],
+                Entity::BUSINESS_CATEGORY,
+                [
+                    Entity::BUSINESS_SUBCATEGORY => $input[Entity::BUSINESS_SUBCATEGORY]
+                ]);
+        }
+
+        $categoryMap = BusinessCategory::BUSINESS_CATEGORY_SUBCATEGORIES_MAPPING;
+
+        $category = $input[Entity::BUSINESS_CATEGORY];
+
+        $subcategory = $input[Entity::BUSINESS_SUBCATEGORY];
+
+        $validSubcategories = array_keys($categoryMap[$category][BusinessCategory::SUBCATEGORIES]);
+
+        if (in_array($subcategory, $validSubcategories, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                self::INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY . ': ' . $input[Entity::BUSINESS_CATEGORY],
+                Entity::BUSINESS_SUBCATEGORY,
+                [
+                    Entity::BUSINESS_CATEGORY    => $category,
+                    Entity::BUSINESS_SUBCATEGORY => $subcategory,
+                ]);
         }
     }
 
