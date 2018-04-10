@@ -1330,7 +1330,7 @@ trait Authorize
 
     protected function runShieldCheck(Payment\Entity $payment)
     {
-        $job = new RunShieldCheck($this->mode, $payment->getId());
+        $job = new RunShieldCheck($this->mode, $payment);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::SHIELD);
     }

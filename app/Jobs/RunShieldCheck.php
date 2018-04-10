@@ -23,16 +23,16 @@ class RunShieldCheck extends Job implements ShouldQueue
     /**
      * @var string
      */
-    protected $paymentId;
+    protected $payment;
 
     const ACTION_REVIEW = 'review';
     const ACTION_BLOCK  = 'block';
 
-    public function __construct(string $mode, string $paymentId)
+    public function __construct(string $mode, Payment\Entity $payment)
     {
         parent::__construct($mode);
 
-        $this->paymentId = $paymentId;
+        $this->payment = $payment;
     }
 
     public function handle()
@@ -48,12 +48,9 @@ class RunShieldCheck extends Job implements ShouldQueue
 
         try
         {
-            $this->trace->info(TraceCode::SHIELD_JOB_RECEIVED, ['payment_id' => $this->paymentId]);
+            $this->trace->info(TraceCode::SHIELD_JOB_RECEIVED, ['payment_id' => $this->payment->getId()]);
 
-            /** @var Payment\Entity $payment */
-            $payment = $this->repoManager->payment->findOrFail($this->paymentId);
-
-            $response = $shield->runFraudCheck($payment);
+            $response = $shield->runFraudCheck($this->payment);
 
             if (isset($response['action']) === false)
             {
@@ -87,7 +84,7 @@ class RunShieldCheck extends Job implements ShouldQueue
             $riskData[Risk\Entity::FRAUD_TYPE] = $fraudType;
             $riskData[Risk\Entity::REASON]     = $reason;
 
-            $riskCore->logPaymentForSource($payment, Risk\Source::SHIELD, $riskData);
+            $riskCore->logPaymentForSource($this->payment, Risk\Source::SHIELD, $riskData);
 
         }
         catch (\Throwable $e)
@@ -97,7 +94,7 @@ class RunShieldCheck extends Job implements ShouldQueue
                 null,
                 TraceCode::SHIELD_JOB_ERROR,
                 [
-                    'payment_id' => $this->paymentId
+                    'payment_id' => $this->payment->getId()
                 ]);
         }
     }

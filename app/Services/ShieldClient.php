@@ -11,13 +11,15 @@ use RZP\Models\Payment\Analytics\Entity as Analytics;
 
 class ShieldClient
 {
-    const RULES         = '/rules/';
+    const REQUEST_TIMEOUT   = 30; // In secs
 
-    const EVALUATE      = '/rules/evaluate';
+    const RULES             = '/rules/';
 
-    const X_RULESET     = 'x-ruleset';
+    const EVALUATE          = '/rules/evaluate';
 
-    const CONTENT_TYPE  = 'content-type';
+    const X_RULESET         = 'x-ruleset';
+
+    const CONTENT_TYPE      = 'content-type';
 
     protected $config;
 
@@ -201,7 +203,8 @@ class ShieldClient
         $headers = $this->getShieldHeaders();
 
         $options = [
-            'auth' => $this->getAuthHeaders()
+            'timeout' => self::REQUEST_TIMEOUT,
+            'auth'    => $this->getAuthHeaders(),
         ];
 
         $content = '';
