@@ -69,9 +69,7 @@ class Reporting implements ExternalService
 
     public function fetchMultiple(string $entity, array $input)
     {
-        $entityName = explode('.', $entity)[1];
-
-        switch ($entityName)
+        switch ($entity)
         {
             case self::LOGS:
                 return $this->fetchLogMultiple($input);
@@ -86,9 +84,7 @@ class Reporting implements ExternalService
 
     public function fetch(string $entity, string $id)
     {
-        $entityName = explode('.', $entity)[1];
-
-        switch ($entityName)
+        switch ($entity)
         {
             case self::LOGS:
                 return $this->fetchLogById($id);

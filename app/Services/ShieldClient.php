@@ -38,9 +38,7 @@ class ShieldClient implements ExternalService
 
     public function fetchMultiple(string $entity, array $input)
     {
-        $entityName = explode('.', $entity)[1];
-
-        switch ($entityName)
+        switch ($entity)
         {
             case 'rules':
                 return $this->getRules($input);
@@ -49,9 +47,7 @@ class ShieldClient implements ExternalService
 
     public function fetch(string $entity, string $id)
     {
-        $entityName = explode('.', $entity)[1];
-
-        switch ($entityName)
+        switch ($entity)
         {
             case 'rules':
                 return $this->getRules($id);

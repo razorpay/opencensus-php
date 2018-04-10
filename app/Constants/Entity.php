@@ -547,7 +547,7 @@ class Entity
      */
     public static function validateExternalServiceEntity(string $entity)
     {
-        return (in_array($entity, array_keys(self::$externalServiceClass), true) === true);
+        return (isset(self::$externalServiceClass[$entity]) === true);
     }
 
     public static function getExternalServiceClass(string $entity)
@@ -555,6 +555,11 @@ class Entity
         $class = self::$externalServiceClass[$entity];
 
         return new $class;
+    }
+
+    public static function getExternalEntityName(string $entity)
+    {
+        return explode('.', $entity)[1];
     }
 
     public static function isEntitySyncedInLiveAndTest($entity)

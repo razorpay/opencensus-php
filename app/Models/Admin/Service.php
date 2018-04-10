@@ -38,7 +38,9 @@ class Service extends Base\Service
         {
             $class = Entity::getExternalServiceClass($entity);
 
-            return $class->fetch($entity, $input);
+            $entityName = Entity::getExternalEntityName($entity);
+
+            return $class->fetch($entityName, $input);
         }
 
         $entity = $this->fetchEntityByNameAndId($entity, $id, $input);
@@ -80,7 +82,9 @@ class Service extends Base\Service
         {
             $class = Entity::getExternalServiceClass($entity);
 
-            return $class->fetchMultiple($entity, $input);
+            $entityName = Entity::getExternalEntityName($entity);
+
+            return $class->fetchMultiple($entityName, $input);
         }
 
         Entity::validateEntityOrFailPublic($entity);
