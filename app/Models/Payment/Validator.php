@@ -391,13 +391,8 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        //
-        // No limit on amount for payments of method 'bank_transfer' and
-        // 'transfer'
-        //
-        $skipMethods = [Method::BANK_TRANSFER, Method::TRANSFER];
-
-        if (in_array($method, $skipMethods, true) === true)
+        // No limit on amount for payments of method deinfed in Method::$methodsWithoutAmountValidation
+        if (in_array($method, Method::$methodsWithoutAmountValidation, true) === true)
         {
             return;
         }
