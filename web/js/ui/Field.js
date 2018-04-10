@@ -226,6 +226,9 @@ class SearchableSelect extends Component {
     this.setState({ selectedOption: option });
   };
 
+  //bind context for change handler
+  handleContextChange = context => this.handleChange(context);
+
   render() {
     const {
       options,
@@ -251,7 +254,7 @@ class SearchableSelect extends Component {
           name={name}
           optionLabelPath="name"
           selected={this.state.selectedOption}
-          onChange={this.handleChange}
+          onChange={this.handleContextChange}
           className="searchable-select-field"
           {...props}
         />

@@ -2,10 +2,12 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
 import user from 'admin/user';
+
+import { notifySuccess, notifyError, closeModal } from 'common/modal';
 import { statusPill } from 'common/data';
 import { formatDate, prevent } from 'common/util';
 import { openModal } from 'common/modal';
-import { adminFetch } from 'common/fetch';
+import { adminFetch, adminPost } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
 import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
@@ -28,7 +30,7 @@ export default class MerchantList extends Component {
   state = {
     accountStatus: defaultFilters.account_status,
     selectedMerchants: [],
-    reviewers: null,
+    pending: true,
   };
   collection = new Collection({
     data: {
@@ -43,7 +45,8 @@ export default class MerchantList extends Component {
       if (response) {
         //TODO: remove admin_
         response.forEach(r => (r.id = r.id.replace('admin_', '')));
-        this.setState({ reviewers: response });
+        this.reviewers = [{ id: '', name: 'Unassigned' }, ...response];
+        this.setState({ pending: false });
       }
     });
   }
@@ -67,6 +70,18 @@ export default class MerchantList extends Component {
         ),
       ],
       [
+        'Reviewer',
+        item => (
+          <SearchableSelectField
+            name="reviewer_id"
+            options={this.reviewers}
+            trackBy="id"
+            defaultValue={item.merchant_detail.reviewer_id || ''}
+            onChange={this.handleReviewerAssignment.bind(item)}
+          />
+        ),
+      ],
+      [
         'Merchant ID',
         item => (
           <Link to={`/merchants/${item.id}`}>
@@ -74,25 +89,8 @@ export default class MerchantList extends Component {
           </Link>
         ),
       ],
-      ['Referrer', item => item.referrer || '--'],
       ['Name', item => item.name],
       ['Email', item => item.email],
-      [
-        'Activation Progress',
-        item =>
-          statusPill(item.merchant_detail.activation_status, '') || (
-            <span
-              class={`pill ${
-                item.merchant_detail.activation_progress < 100
-                  ? 'label-danger'
-                  : 'label-info'
-              }`}
-            >
-              {item.merchant_detail.activation_progress}%
-            </span>
-          ),
-      ],
-      ['Registered At', item => formatDate(item.created_at)],
       [
         'Submitted At',
         item =>
@@ -165,22 +163,45 @@ export default class MerchantList extends Component {
     this.setState({ selectedMerchants });
   };
 
+  handleReviewerAssignment = ({ option }) => {
+    let body = {
+      //TODO: remove admin_
+      reviewer_id: 'admin_' + option.id,
+      merchants: [this.id],
+    };
+    adminPost({
+      url: 'live/merchant/activation/bulk_assign_reviewer',
+      data: body,
+    })
+      .then(response => {
+        if (response) {
+          notifySuccess('Merchants assigned successfully');
+          closeModal();
+        }
+      })
+      .catch(err => notifyError(JSON.stringify(err.response)));
+  };
+
   handleBulkAssign = e => {
     //prevent filter form submission
     prevent(e);
     openModal(
       <BulkAssign
-        reviewers={this.state.reviewers}
+        reviewers={this.reviewers}
         selectedMerchants={this.state.selectedMerchants}
       />
     );
   };
 
   render() {
-    const { reviewers, selectedMerchants } = this.state;
+    const { selectedMerchants } = this.state;
+
+    if (this.state.pending) {
+      return <div class="table-pending" />;
+    }
 
     return (
-      <div class="list-container">
+      <div class="list-container activations">
         <div class="box">
           <header>Merchant List</header>
           <Form onSubmit={this.onSubmit} class="filters">
@@ -200,22 +221,21 @@ export default class MerchantList extends Component {
             />
             <FromField />
             <ToField />
-            {reviewers && (
-              <div style={{ width: '172px' }}>
-                <SearchableSelectField
-                  label="Reviewer"
-                  name="reviewer_id"
-                  options={reviewers}
-                  trackBy="id"
-                  defaultValue="Unassigned"
-                />
-              </div>
-            )}
+            <div style={{ width: '172px' }}>
+              <SearchableSelectField
+                label="Reviewer"
+                name="reviewer_id"
+                options={this.reviewers}
+                trackBy="id"
+                defaultValue={''}
+              />
+            </div>
             <button class="pull-right">Apply</button>
             <button
               class={`pull-left btn-default${
                 !selectedMerchants.length ? ' disabled' : ''
               }`}
+              disabled={selectedMerchants.length === 0}
               onClick={this.handleBulkAssign}
             >
               Bulk Assign
