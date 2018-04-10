@@ -33,16 +33,16 @@ class Repository extends Base\Repository
      * @param array           $ids
      * @param Merchant\Entity $merchant
      * @param array           $params
-     * @param bool            $shared If true, returns taxes defined on the Shared merchant account as well
+     * @param bool            $includeShared If true, returns taxes defined on the Shared merchant account as well
      *
      * @return PublicCollection
      * @throws \RZP\Exception\BadRequestException
      */
-    public function findManyByPublicIdsForMerchant(
+    public function findManyByPublicIdsAndMerchant(
         array $ids,
         Merchant\Entity $merchant,
         array $params = [],
-        bool $shared = true) : PublicCollection
+        bool $includeShared = true) : PublicCollection
     {
         Entity::verifyIdAndStripSignMultiple($ids);
 
@@ -50,7 +50,7 @@ class Repository extends Base\Repository
 
         $merchantId = $merchant->getId();
 
-        if ($shared === true)
+        if ($includeShared === true)
         {
             $merchantIds = [$merchantId, Merchant\Account::SHARED_ACCOUNT];
             $query->whereIn(Entity::MERCHANT_ID, $merchantIds);

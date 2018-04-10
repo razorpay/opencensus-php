@@ -627,13 +627,9 @@ trait RepositoryFetch
 
         $entity::verifyIdAndStripSignMultiple($ids);
 
-        $query = $this->getQueryForFindWithParams($params);
-
-        $entities = $query
+        return $this->getQueryForFindWithParams($params)
                     ->merchantId($merchant->getId())
                     ->findManyOrFailPublic($ids);
-
-        return $entities;
     }
 
     /**

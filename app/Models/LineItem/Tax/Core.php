@@ -52,10 +52,10 @@ class Core extends Base\Core
     public function cleanUpAndCreateLineItemTaxes(LineItem\Entity $lineItem, array $input, Merchant\Entity $merchant)
     {
         $taxIdExists      = (array_key_exists(LineItem\Entity::TAX_ID, $input) === true);
-        $taxIdsExist      = (array_key_exists(LineItem\Entity::TAX_IDS, $input) === true);
+        $taxIdsExists     = (array_key_exists(LineItem\Entity::TAX_IDS, $input) === true);
         $taxGroupIdExists = (array_key_exists(LineItem\Entity::TAX_GROUP_ID, $input) === true);
 
-        if (($taxIdExists === false) and ($taxIdsExist === false) and ($taxGroupIdExists === false))
+        if (($taxIdExists === false) and ($taxIdsExists === false) and ($taxGroupIdExists === false))
         {
             return;
         }
@@ -105,18 +105,15 @@ class Core extends Base\Core
 
             $taxes = $taxGroup->taxes()->getResults();
         }
-        else
+        else if ($taxId !== null)
         {
-            if ($taxId !== null)
-            {
-                $tax = $this->repo->tax->findByPublicIdAndMerchant($taxId, $merchant);
+            $tax = $this->repo->tax->findByPublicIdAndMerchant($taxId, $merchant);
 
-                $taxes->push($tax);
-            }
-            else if ($taxIds !== null)
-            {
-                $taxes = $this->repo->tax->findManyByPublicIdsForMerchant($taxIds, $merchant);
-            }
+            $taxes->push($tax);
+        }
+        else if ($taxIds !== null)
+        {
+            $taxes = $this->repo->tax->findManyByPublicIdsAndMerchant($taxIds, $merchant);
         }
 
         return [$taxGroup, $taxes];
