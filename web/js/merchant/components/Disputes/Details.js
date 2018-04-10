@@ -26,33 +26,43 @@ export default props => {
             {dispute.status === 'open' && (
               <div class="alert alert-warning rzp-banner">
                 <div class="rzp-banner-text">
+                  {/* text required only for fraud dispute */}
+                  {dispute.phase === 'fraud' && (
+                    <p>
+                      This transaction is suspected to be fraudulent. If you
+                      agree, a good practice would be to initiate a refund, in
+                      order to prevent a chargeback.
+                    </p>
+                  )}
+
                   <p>
+                    {/* text depending upon if dispute is fraud or not */}
                     {dispute.phase === 'fraud' ? (
-                      "The customer's bank has reported a possibly fraudulent transaction. We recommend that you respond to the email sent to you by "
+                      'If you think this is a valid transaction, then '
                     ) : (
                       <React.Fragment>
                         A customer has raised a dispute for&nbsp;
                         <Amount
                           value={dispute.amount}
                           currency={dispute.currency}
-                        />&nbsp; Kindly respond to the mail sent to you by
-                        &nbsp;
+                        />,&nbsp;
                       </React.Fragment>
                     )}
+                    {/* Text required in all types of dispute  */}
+                    kindly respond to the mail sent to you by&nbsp;
                     <Time value={dispute.respond_by} format="ll" />&nbsp; ({daysLeftInExpiry(
                       dispute.respond_by,
                       'in '
                     )}).
                   </p>
 
-                  <p>
-                    Failing to do so,{' '}
-                    {dispute.phase !== 'fraud' &&
-                      'you will loose the dispute and '}
-                    the disputed amount{' '}
-                    {dispute.phase === 'fraud' ? 'might' : 'will'} be deducted
-                    from your account.
-                  </p>
+                  {/* text NOT required for fraud dispute */}
+                  {dispute.phase !== 'fraud' && (
+                    <p>
+                      Failing to do so, the disputed amount will be deducted
+                      from your account.
+                    </p>
+                  )}
                 </div>
               </div>
             )}

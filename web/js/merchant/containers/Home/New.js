@@ -7,10 +7,13 @@ import moment from 'moment';
 import { Redirect } from 'react-router-dom';
 
 import Amount from 'rzp/ui/Amount';
+import Banner from 'rzp/ui/Banner';
 import Sticky from 'rzp/ui/Sticky';
 import Group, { GroupItem } from 'rzp/ui/Group';
+import LocalStorageService from 'rzp/utils/localStorage';
 import { showNotification } from 'rzp/modules/notifications';
 import DateRangePicker, { customRangeText } from 'rzp/ui/DateRangePicker';
+import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
 import {
   oldestTransactionQuery,
   getDefaultPaymentFilter,
@@ -31,6 +34,7 @@ import {
   isMobileDevice,
 } from 'merchant/components/Home/data';
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
+import { showOrHideTour } from 'merchant/modules/session';
 
 import {
   trackError,
@@ -39,6 +43,7 @@ import {
   trackSettlementsClick,
   trackPlatformAnalyticsHidden,
   trackForceOldDashboard,
+  trackViewTour,
 } from './ga';
 
 const dateRangePresets = [
@@ -81,6 +86,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
   {
     ...HomeActions,
     showNotification,
+    showOrHideTour,
   }
 )
 class HomeContainer extends Component {
@@ -98,6 +104,8 @@ class HomeContainer extends Component {
 
     startDate.add(...dateRangePresets[defaultPreset].slice(1));
 
+    const { user, isAdmin } = props;
+
     this.state = {
       startDate,
       endDate,
@@ -108,11 +116,21 @@ class HomeContainer extends Component {
         ...getPreviousDates({ startDate, endDate }),
       },
       dateRangePresets,
-      showGrouping: false,
+      showGroupingByPtfm: false,
+      scrollAmountToStickHeader: 0,
+      hasNewAnalyticsTour:
+        !isAdmin &&
+        user.isActivated &&
+        !LocalStorageService.getItem('hide_new_analytics_banner'),
+      dismissNewAnalyticsBanner: false,
     };
 
     this.oldestTxnReqId = 0;
     this.onDatesChange = this.onDatesChange.bind(this);
+    this.onShowTour = this.onShowTour.bind(this);
+    this.setScrollAmountToStickHeader = this.setScrollAmountToStickHeader.bind(
+      this
+    );
   }
 
   fetchTxnsGroupedByPlatform() {
@@ -158,13 +176,12 @@ class HomeContainer extends Component {
       })
       .then(data => {
         if (data.error) {
-
           trackError(`While Fetching Txns Grouped by Ptfm`);
 
           return this.props.showNotification({
             type: 'error',
             message: data.error,
-            hidePrevious: true
+            hidePrevious: true,
           });
         }
 
@@ -208,7 +225,7 @@ class HomeContainer extends Component {
         // this will show group by platform dropdowns and also
         // traffic graph
         this.setState({
-          showGrouping: true,
+          showGroupingByPtfm: true,
         });
       });
   }
@@ -229,10 +246,8 @@ class HomeContainer extends Component {
       oldestTransactionDate: { ...oldestTransactionDate },
     });
 
-    return (analyticsFetch || fetch)(
-        oldestTransactionQuery,
-        this.props.mode
-      ).then(data => {
+    return (analyticsFetch || fetch)(oldestTransactionQuery, this.props.mode)
+      .then(data => {
         if (oldestTxnReqId !== this.oldestTxnReqId) {
           return null;
         }
@@ -267,7 +282,7 @@ class HomeContainer extends Component {
             this.props.showNotification({
               type: 'error',
               message: data.error,
-              hidePrevious: true
+              hidePrevious: true,
             });
           }
 
@@ -332,9 +347,42 @@ class HomeContainer extends Component {
     document.body.className = document.body.className.replace(bodyClass, '');
   }
 
+  setScrollAmountToStickHeader() {
+    const scrollAmountToStickHeader = this.extraContent
+      ? this.extraContent.clientHeight
+      : 0;
+
+    this.setState({ scrollAmountToStickHeader });
+  }
+
+  componentDidMount() {
+    this.setScrollAmountToStickHeader();
+  }
+
+  onShowTour() {
+    LocalStorageService.setItem('hide_new_analytics_banner', true);
+    this.setState(
+      {
+        dismissNewAnalyticsBanner: true,
+      },
+      () => {
+        window.setTimeout(() => {
+          this.setState({
+            dismissNewAnalyticsBanner: false,
+            hasNewAnalyticsTour: false,
+          });
+          this.props.showOrHideTour(true);
+        }, 500); // let the trasition to hide banner complete
+      }
+    );
+
+    trackViewTour();
+  }
+
   render() {
     let {
       mode,
+      user,
       current_balance,
       tabsMeta,
       isAdmin,
@@ -347,14 +395,41 @@ class HomeContainer extends Component {
       endDate,
       oldestTransactionDate,
       dateRangePresets,
-      showGrouping,
+      showGroupingByPtfm,
+      hasNewAnalyticsTour,
+      scrollAmountToStickHeader,
+      dismissNewAnalyticsBanner,
     } = this.state;
 
     return (
       <div class="react-root dashboard-home">
-        <Sticky stickWhen={0} stickAt={50}>
+        <div ref={node => (this.extraContent = node)} className="extra-content">
+          {hasNewAnalyticsTour && (
+            <div
+              className={`v2-tour-banner${
+                dismissNewAnalyticsBanner ? ' dismiss' : ''
+              }`}
+            >
+              <div className="banner-icon">
+                <i className="i i-loudspeaker" />
+              </div>
+              <div className="banner-content">
+                <Banner cta="View Tour" ctaOnClick={this.onShowTour}>
+                  <span>
+                    We heard you! We have updated the dashboard home design for
+                    an improved experience.
+                  </span>
+                </Banner>
+              </div>
+            </div>
+          )}
+        </div>
+        <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}>
           <Header className="clearfix" title="" showMode={false}>
-            <div className="pull-left date-range-container">
+            <div
+              id="analytics-daterange-picker"
+              className="pull-left date-range-container"
+            >
               <DateRangePicker
                 presets={dateRangePresets}
                 onDatesChange={this.onDatesChange}
@@ -365,7 +440,7 @@ class HomeContainer extends Component {
             <div className="pull-right">
               <Group>
                 <GroupItem>
-                  <span>
+                  <span className="balance-amount">
                     Current Balance:{' '}
                     {!current_balance.loading && (
                       <Amount value={current_balance.data.balance} />
@@ -395,7 +470,7 @@ class HomeContainer extends Component {
                 endDate={endDate}
                 oldestTransactionDate={oldestTransactionDate}
                 mode={mode}
-                showGrouping={showGrouping}
+                showGroupingByPtfm={showGroupingByPtfm}
                 sectionTitle={keymetricsSectionTitle}
                 tabsMeta={tabsMeta}
                 isAdmin={isAdmin}
@@ -407,7 +482,30 @@ class HomeContainer extends Component {
 
           <div className="row">
             <div className="col-md-12">
-              <p className="section-title">{paymentInsightsTitle}</p>
+              <div className="section-title payment-insights-title">
+                {paymentInsightsTitle}&nbsp;
+                <small>
+                  <i class="i i-help" />
+                  <Popover align="top">
+                    <PopoverTitle>What's this?</PopoverTitle>
+                    <PopoverBody>
+                      <p>
+                        This graph helps you gain insights into your overall
+                        payments by seeing how different payment methods stack
+                        up against each other in your revenue pool.
+                      </p>
+                      <div>
+                        <span className="popover-highlight">Click tiles</span>{' '}
+                        to drill-down into the hierarchy.
+                      </div>
+                      <div>
+                        <span className="popover-highlight">Hover</span> to view
+                        information for smaller tiles.
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </small>
+              </div>
             </div>
             <div className="col-md-12">
               <PaymentMethods
@@ -423,10 +521,10 @@ class HomeContainer extends Component {
           <div className="row">
             <div
               className={`col-md-12 traffic-activity-row clearfix${
-                showGrouping ? '' : ' traffic-hidden'
+                showGroupingByPtfm ? '' : ' traffic-hidden'
               }`}
             >
-              {showGrouping && (
+              {showGroupingByPtfm && (
                 <div className="traffic-container">
                   <p className="content-title section-title">
                     {trafficSectionTitle}

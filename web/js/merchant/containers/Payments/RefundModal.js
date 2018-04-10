@@ -213,7 +213,10 @@ export default class RefundModal extends Component {
     const amountError = amountValidation(this.props),
       partial = isPartialPayment(this.props);
 
-    const disputeCount = payment.disputes && payment.disputes.count;
+    const nonFraudDisputeCount =
+      payment.disputes &&
+      payment.disputes.items.filter(dispute => dispute.phase !== 'fraud')
+        .length;
     return (
       <div>
         <ModalHeader
@@ -221,9 +224,9 @@ export default class RefundModal extends Component {
           onCloseClick={this.props.closeModal}
         />
         <div class="modal-body">
-          {disputeCount ? (
+          {nonFraudDisputeCount ? (
             <div class="text-danger m-b">
-              There {disputeCount > 1 ? 'are' : 'is'} dispute{disputeCount >
+              There {nonFraudDisputeCount > 1 ? 'are' : 'is'} dispute{nonFraudDisputeCount >
                 1 && 's'}{' '}
               raised against this payment. Kindly check the dispute details
               before initiating a refund.
@@ -266,7 +269,7 @@ export default class RefundModal extends Component {
                     type="checkbox"
                     class="form-control"
                   />
-                  <label for="reverse_all">
+                  <label class="icon i-check" for="reverse_all">
                     Reverse all{' '}
                     <a
                       href="https://razorpay.com/docs/route/operations/#reversals"

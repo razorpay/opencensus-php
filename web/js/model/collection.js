@@ -18,7 +18,8 @@ export default class Collection extends BaseModel {
     if (this.noPagination) {
       newFilters = Object.assign({}, filters);
     } else {
-      newFilters = Object.assign({}, defaultFilters, filters);
+      let curFilters = this.filters || defaultFilters;
+      newFilters = Object.assign({}, curFilters, filters);
     }
 
     this.filters = observable.shallowObject(newFilters);
@@ -31,6 +32,7 @@ export default class Collection extends BaseModel {
 
   addFilters(filters) {
     for (let f in defaultFilters) {
+      // TODO: This should ideally consider this.filters || defaultFilters, not defaultFilters
       if (f in filters) {
         filters[f] = Number(filters[f]);
       }
@@ -136,6 +138,10 @@ export default class Collection extends BaseModel {
   }
 
   remove(item) {
+    if (!this.items.remove) {
+      window.location.reload();
+    }
+
     return this.items.remove(item);
   }
 }

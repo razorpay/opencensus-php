@@ -1,6 +1,7 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react';
+
 import {
   openModal,
   notifyError,
@@ -10,38 +11,56 @@ import {
 import Form from 'ui/Form';
 import BaseModal from 'ui/BaseModal';
 import Field, { SelectField, TextAreaField, FileField } from 'ui/Field';
-import { adminFetch, adminPost, adminPut, adminFormUpload } from 'common/fetch';
+import Table from 'ui/Table';
+import { statusPill, publicFeature } from 'common/data';
+import { isWorkflow } from 'common/util';
+import { snakeToTitleCase, formatDate } from 'common/util';
+
+import { adminFetch, adminPatch } from 'common/fetch';
 
 @observer
 export default class EditPublicFeatures extends Component {
   state = {
     pending: true,
     agreement: null,
+    selectedStatus: this.props.model.status,
+    selectedReasonCategory: null,
   };
 
-  akaFeature = this.props.model.product;
-
-  selectedStatus = this.props.model.collection.filters.status;
+  akaFeature = this.props.model.name;
 
   // TODO: TEST Sending mode as live, not sent earlier
-  featureParams = {
-    url: `live_${this.props.model.merchant_id}/onboarding/features`,
-    params: {
-      features: [this.akaFeature],
-    },
-  };
+  featureRequestUrls = [
+    `live/merchant/requests/${this.props.model.id}`,
+    'live/merchant/requests/rejection_reasons',
+  ];
 
   componentWillMount() {
-    adminFetch(this.featureParams).then(response => {
-      if (response) {
-        this.submissions = response.submissions;
-        this.setState({ pending: false });
-        if (response.submissions['marketplace']) {
+    let requests = [];
+
+    requests = this.featureRequestUrls.map(url =>
+      adminFetch({
+        url,
+      })
+    );
+
+    Promise.all(requests).then(([feature, allRejectionReasons]) => {
+      if (feature) {
+        this.submissions = feature.submissions;
+        if (feature.name === 'marketplace') {
           this.setState({
-            agreement: response.submissions['marketplace'].vendor_agreement,
+            agreement: feature.submissions.vendor_agreement,
           });
         }
       }
+
+      this.statusLogs = feature.states.items;
+      this.allRejectionReasons = allRejectionReasons;
+
+      this.setState({
+        pending: false,
+        selectedReasonCategory: Object.keys(allRejectionReasons)[0],
+      });
     });
   }
 
@@ -50,64 +69,46 @@ export default class EditPublicFeatures extends Component {
   };
 
   save = body => {
-    let { akaFeature, selectedStatus } = this;
+    let { akaFeature } = this;
+    let { selectedStatus } = this.state;
 
-    // TODO: TEST to send merchant id in data? Also, hard coded the mode as live, not sent earlier
-    body.merchant_id = this.props.model.merchant_id;
-    //send request if status changed
-    if (selectedStatus !== body.status) {
-      adminPut({
-        url: `live_${
-          body.merchant_id
-        }/onboarding/features/${akaFeature}/status`,
-        data: {
-          status: body.status,
-        },
-      }).then(response => {
-        if (response) {
-          notifySuccess('Status updated!');
+    return adminPatch({
+      url: `live/merchant/requests/${this.props.model.id}`,
+      data: body,
+    }).then(response => {
+      if (response) {
+        closeModal();
+        if (isWorkflow(response)) {
+          notifySuccess('Workflow is created successfully.');
+          return;
         }
-      });
-    } else {
-      delete body.status;
-    }
+        notifySuccess('Submission edited successfully.');
+        //reload for list updation
+        setTimeout(() => location.reload(), 0);
+      }
+    });
+  };
 
-    if (featuresAkaMap[akaFeature] === featuresAkaMap.marketplace) {
-      let form = {};
+  handleStatusChange = e => {
+    this.setState({
+      selectedStatus: e.target.value,
+    });
+  };
 
-      Object.keys(body).forEach(key => (form[`body[${key}]`] = body[key]));
-
-      return adminFormUpload(
-        form,
-        `/admin/api/live/onboarding/features/${akaFeature}/update`
-      ).then(response => {
-        if (response.data.success) {
-          notifySuccess('Submission edited successfully.');
-          closeModal();
-        } else {
-          notifyError(response.data.errors.join(', '));
-        }
-      });
-    } else {
-      return adminPost({
-        url: `live/onboarding/features/${akaFeature}/update`,
-        data: body,
-      }).then(response => {
-        if (response) {
-          notifySuccess('Submission edited successfully.');
-          closeModal();
-        }
-      });
-    }
+  handleRejectionCategoryChange = e => {
+    this.setState({
+      selectedReasonCategory: e.target.value,
+    });
   };
 
   render() {
-    let { product, merchant_id } = this.props.model;
+    let { selectedStatus, selectedReasonCategory } = this.state;
+    let { merchant_id, name } = this.props.model;
     let {
-      selectedStatus,
       akaFeature,
       submissions,
       changeAgreement,
+      allRejectionReasons,
       save,
     } = this;
 
@@ -124,67 +125,106 @@ export default class EditPublicFeatures extends Component {
               </div>
               <div class="field">
                 <label>Feature</label>
-                <code>{product}</code>
+                <code>{name}</code>
               </div>
               <SelectField
                 label="Status"
                 name="status"
-                defaultValue={selectedStatus}
+                value={selectedStatus}
+                onChange={this.handleStatusChange}
               >
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
+                {publicFeature.statuses.map(status => (
+                  <option value={status} key={status}>
+                    {snakeToTitleCase(status)}
+                  </option>
+                ))}
               </SelectField>
-              {featuresAkaMap[akaFeature] === featuresAkaMap.marketplace ||
-              featuresAkaMap[akaFeature] === featuresAkaMap.virtual_accounts ? (
+
+              {/* rejection functionality for product activation */}
+              {selectedStatus === 'rejected' && (
+                <Fragment>
+                  <SelectField
+                    label="Select Rejection Category:"
+                    name="rejection_reason[reason_category]"
+                    value={selectedReasonCategory}
+                    onChange={this.handleRejectionCategoryChange}
+                  >
+                    {Object.keys(allRejectionReasons).map(reasonCategory => (
+                      <option value={reasonCategory} key={reasonCategory}>
+                        {snakeToTitleCase(reasonCategory)}
+                      </option>
+                    ))}
+                  </SelectField>
+
+                  {/* hide reason_code field for now as reason_category has only one reason_code. */}
+                  <div style={{ display: 'none' }}>
+                    <SelectField
+                      label="Select Rejection Reasons:"
+                      name="rejection_reason[reason_code]"
+                    >
+                      {allRejectionReasons[selectedReasonCategory].map(
+                        reason => (
+                          <option value={reason.code} key={reason.code}>
+                            {reason.description}
+                          </option>
+                        )
+                      )}
+                    </SelectField>
+                  </div>
+                </Fragment>
+              )}
+              {publicFeature.featuresAkaMap[akaFeature] ===
+                publicFeature.featuresAkaMap.marketplace ||
+              publicFeature.featuresAkaMap[akaFeature] ===
+                publicFeature.featuresAkaMap.virtual_accounts ? (
                 <TextAreaField
                   label="Use Case"
-                  name="use_case"
-                  defaultValue={submissions[akaFeature].use_case}
+                  name="submissions[use_case]"
+                  defaultValue={submissions.use_case}
                 />
               ) : null}
 
-              {featuresAkaMap[akaFeature] ===
-                featuresAkaMap.virtual_accounts && (
+              {publicFeature.featuresAkaMap[akaFeature] ===
+                publicFeature.featuresAkaMap.virtual_accounts && (
                 <Field
                   label="Expected Monthly Revenue"
                   type="number"
-                  name="expected_monthly_revenue"
-                  defaultValue={
-                    submissions[akaFeature].expected_monthly_revenue
-                  }
+                  name="submissions[expected_monthly_revenue]"
+                  defaultValue={submissions.expected_monthly_revenue}
                 />
               )}
 
-              {featuresAkaMap[akaFeature] === featuresAkaMap.subscriptions && [
+              {publicFeature.featuresAkaMap[akaFeature] ===
+                publicFeature.featuresAkaMap.subscriptions && [
                 <TextAreaField
                   label="Business Model"
-                  name="business_model"
+                  name="submissions[business_model]"
                   key="business_model"
-                  defaultValue={submissions[akaFeature].business_model}
+                  defaultValue={submissions.business_model}
                 />,
                 <TextAreaField
                   label="Subscription Plans"
-                  name="sample_plans"
+                  name="submissions[sample_plans]"
                   key="sample_plans"
-                  defaultValue={submissions[akaFeature].sample_plans}
+                  defaultValue={submissions.sample_plans}
                 />,
                 <TextAreaField
                   label="Website Details"
-                  name="website_details"
+                  name="submissions[website_details]"
                   key="website_details"
-                  defaultValue={submissions[akaFeature].website_details}
+                  defaultValue={submissions.website_details}
                 />,
               ]}
 
-              {featuresAkaMap[akaFeature] === featuresAkaMap.marketplace && [
+              {publicFeature.featuresAkaMap[akaFeature] ===
+                publicFeature.featuresAkaMap.marketplace && [
                 <SelectField
                   label="Transferring to"
-                  name="settling_to"
+                  name="submissions[settling_to]"
                   key="settling_to"
-                  defaultValue={submissions[akaFeature].settling_to}
+                  defaultValue={submissions.settling_to}
                 >
-                  {tranferToOptions.map(t => (
+                  {publicFeature.tranferToOptions.map(t => (
                     <option key={t[0]} value={t[0]}>
                       {t[1]}
                     </option>
@@ -216,6 +256,7 @@ export default class EditPublicFeatures extends Component {
                   )}
                 </div>,
               ]}
+              <Table items={this.statusLogs} fields={statusLogsFields} />
 
               <button class="btn">Save</button>
             </div>
@@ -230,16 +271,18 @@ export function showEntity(collection) {
   openModal(<EditPublicFeatures collection={collection} model={this} />);
 }
 
-//Resources
-const tranferToOptions = [
-  ['Businesses', 'Third-party businesses'],
-  ['Own Accounts', 'Own bank accounts'],
-  ['Individuals', 'Individuals'],
+const statusLogsFields = [
+  ['Created At', item => formatDate(item.created_at)],
+  ['Activation Status', item => statusPill(item.name)],
+  [
+    'Rejection Reason',
+    item =>
+      item.rejection_reasons.count ? (
+        <div style={{ maxWidth: '100px' }}>
+          {snakeToTitleCase(item.rejection_reasons.items[0]['reason_category'])}
+        </div>
+      ) : (
+        '--'
+      ),
+  ],
 ];
-
-//values might change in future
-export const featuresAkaMap = {
-  marketplace: 'Marketplace',
-  subscriptions: 'Subscriptions',
-  virtual_accounts: 'Virtual Accounts',
-};

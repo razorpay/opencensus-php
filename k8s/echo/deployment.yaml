@@ -41,8 +41,6 @@ spec:
         volumeMounts:
           - name: trace
             mountPath: /app/storage/logs/
-          - name: nginx
-            mountPath: /var/log/nginx/
         readinessProbe:
           httpGet:
             path: /status
@@ -64,8 +62,5 @@ spec:
       - name: trace
         hostPath:
           path: /var/log/fluentd/splunk/echo/trace
-      - name: nginx
-        hostPath:
-          path: /var/log/fluentd/splunk/echo/nginx
       dnsPolicy: Default
       restartPolicy: Always

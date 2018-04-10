@@ -106,6 +106,11 @@ export default props => {
             <div class="panel-body">
               <div class="list-group details-row-container">
                 <EntityDetailRow
+                  label="Payment For"
+                  pairClass="description"
+                  value={invoice.description || '--'}
+                />
+                <EntityDetailRow
                   label="Amount"
                   value={() => (
                     <Amount
@@ -113,10 +118,6 @@ export default props => {
                       currency={invoice.currency}
                     />
                   )}
-                />
-                <EntityDetailRow
-                  label="Status"
-                  value={() => <InvoiceStatusLabel status={invoice.status} />}
                 />
                 <EntityDetailRow
                   label="Amount Paid"
@@ -127,7 +128,10 @@ export default props => {
                     />
                   )}
                 />
-
+                <EntityDetailRow
+                  label="Status"
+                  value={() => <InvoiceStatusLabel status={invoice.status} />}
+                />
                 <EntityDetailRow
                   label="Payment Id"
                   value={() => {
@@ -159,10 +163,6 @@ export default props => {
                     />
                   )}
                 />
-                <EntityDetailRow
-                  label="Summary"
-                  value={invoice.description || '--'}
-                />
                 <EntityDetailRow label="Receipt" value={invoice.receipt} />
                 <EntityDetailRow label="Customer Details">
                   {getCustomerDetail(invoice)}
@@ -176,7 +176,7 @@ export default props => {
                   value={() => (
                     <Time
                       value={invoice.paid_at}
-                      format="DD MMM YYYY, hh:mm:ss a"
+                      format="DD MMM YYYY, hh:mm a"
                     />
                   )}
                 />
@@ -185,7 +185,7 @@ export default props => {
                   value={() => (
                     <Time
                       value={invoice.expire_by}
-                      format="DD MMM YYYY, hh:mm:ss a"
+                      format="DD MMM YYYY, hh:mm a"
                     />
                   )}
                 />

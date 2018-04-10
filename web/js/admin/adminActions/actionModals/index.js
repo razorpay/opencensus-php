@@ -26,3 +26,5 @@ export CreateGatewayFile from './CreateGatewayFile';
 export SettlementBulkChannel from './SettlementBulkChannel';
 
 export BulkTransaction from './BulkTransaction';
+
+export MetaQuery from './MetaQuery';

@@ -11,7 +11,7 @@ import ListContainer from 'merchant/containers/ListContainer';
 import * as ModalActions from 'rzp/modules/modals';
 import * as ItemActions from 'merchant/modules/items';
 import { luminateRow } from 'merchant/modules/app';
-import { stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import { stringifyQueryParams } from '../../../rzp/utils/rzp-utils';
 
 @connect(state => state.items, { ...ItemActions, ...ModalActions, luminateRow })
@@ -63,7 +63,7 @@ export default class ItemsListContainer extends ListContainer {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Invoices',
       eventAction: `Submit Form - ${prevItem ? 'Edit' : 'New'} Item`,
-      eventLabel: stringifyQueryParamsWithPipe(item),
+      eventLabel: getKeysSeparatedByPipe(item),
     });
     this.props.luminateRow(item.id);
     this.props.closeModal();

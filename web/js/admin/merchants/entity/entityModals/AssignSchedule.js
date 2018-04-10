@@ -71,6 +71,8 @@ export default class ScheduleModal extends Component {
             notifySuccess('Workflow is created successfully.');
             return;
           }
+
+          this.props.props.updateScheduleTask(response);
           notifySuccess('Schedule Plan assigned successfully.');
         }
       })

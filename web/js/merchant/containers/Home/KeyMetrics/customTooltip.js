@@ -51,18 +51,23 @@ window.addEventListener('scroll', () => {
 });
 
 const breakdownMap = {
+  hourly: 'hour',
   daily: 'day',
   weekly: 'isoWeek',
   monthly: 'month',
 };
 
-const getDateFormat = (startDate, endDate) => {
+const getDateFormat = (startDate, breakdown) => {
   let format = 'ddd, Do MMM';
 
   const isSameYear = startDate.isSame(moment(), 'year');
 
   if (!isSameYear) {
     format += ' YYYY';
+  }
+
+  if (breakdown === 'hourly') {
+    format += ' HH:mm';
   }
 
   return format;
@@ -102,6 +107,7 @@ const customToolTip = function(tooltipModel) {
       breakdown,
       graphStartDate,
       graphEndDate,
+      noGrouping,
     } = this._chart.options,
     datasets = this._chart.data.datasets;
 
@@ -129,23 +135,27 @@ const customToolTip = function(tooltipModel) {
           graphEndDate
         )
       ),
-      dateFormat = getDateFormat(startDate, endDate),
-      url = `${externalUrl}?from=${startDate.unix()}&to=${endDate.unix()}`+
-            `&ref=home`;
+      dateFormat = getDateFormat(startDate, breakdown),
+      url =
+        `${externalUrl}?from=${startDate.unix()}&to=${endDate.unix()}` +
+        `&ref=home`;
 
     let formattedDate = startDate.format(dateFormat);
 
-    if (breakdown === 'weekly' || breakdown === 'monthly') {
-      formattedDate += ' - ' + endDate.format(dateFormat);
+    if (breakdown !== 'daily') {
+      formattedDate +=
+        ' - ' + endDate.format(breakdown === 'hourly' ? 'HH:mm' : dateFormat);
     }
 
     // appending title to innerHtml
     innerHtml +=
       `<div class="tooltip-title">` +
       `<div>` +
-      `<div class="tooltip-amount">${isCurrency
-        ? getFormattedAmountNew(rupeesToPaise(sumOfAllDataPoints), true)
-        : getFormattedNumber(sumOfAllDataPoints)}</div>` +
+      `<div class="tooltip-amount">${
+        isCurrency
+          ? getFormattedAmountNew(rupeesToPaise(sumOfAllDataPoints), true)
+          : getFormattedNumber(sumOfAllDataPoints)
+      }</div>` +
       `<div class="sec-text tooltip-date">${formattedDate}</div>` +
       `</div>` +
       `<a href="${url}" class="ex-link deepdive-link"` +
@@ -159,33 +169,40 @@ const customToolTip = function(tooltipModel) {
     // variable to hold rows
     let rows = '';
 
-    var dataPoints = tooltipModel.dataPoints.sort((item1, item2) => {
-      return item1.datasetIndex - item2.datasetIndex;
-    });
+    if (!noGrouping) {
+      tooltipDOM.className = '';
 
-    datasets.forEach((dataset, index) => {
-      const { backgroundColor, label, data } = dataset,
-        dataPoint = dataPoints[index],
-        value = dataPoint.yLabel;
+      var dataPoints = tooltipModel.dataPoints.sort((item1, item2) => {
+        return item1.datasetIndex - item2.datasetIndex;
+      });
 
-      const labelIcon = `<span class="label-icon" style="background-color: ${backgroundColor}"></span>`;
+      datasets.forEach((dataset, index) => {
+        const { backgroundColor, label, data } = dataset,
+          dataPoint = dataPoints[index],
+          value = dataPoint.yLabel;
 
-      const labelHTML = `<span class="label sec-text">${label}</span>`;
+        const labelIcon = `<span class="label-icon" style="background-color: ${backgroundColor}"></span>`;
 
-      const labelValue =
-        `<span class="label-value">` +
-        `${isCurrency
-          ? getFormattedAmountNew(rupeesToPaise(value), true)
-          : getFormattedNumber(value)}` +
-        `</span>`;
+        const labelHTML = `<span class="label sec-text">${label}</span>`;
 
-      // appending rows with each line
-      rows += `<div class="tooltip-row clearfix">${labelIcon}${labelHTML}${labelValue}</div>`;
-    });
+        const labelValue =
+          `<span class="label-value">` +
+          `${
+            isCurrency
+              ? getFormattedAmountNew(rupeesToPaise(value), true)
+              : getFormattedNumber(value)
+          }` +
+          `</span>`;
 
-    // adding rows to innerHtml
-    innerHtml += `<div class="tooltip-body">${rows}</div>`;
+        // appending rows with each line
+        rows += `<div class="tooltip-row clearfix">${labelIcon}${labelHTML}${labelValue}</div>`;
+      });
 
+      // adding rows to innerHtml
+      innerHtml += `<div class="tooltip-body">${rows}</div>`;
+    } else {
+      tooltipDOM.className = 'no-grouping';
+    }
     // inserting innerHtml into inner div of chart js tooltip
     var innerTooltip = tooltipDOM.querySelector('.custom-tooltip-inner');
     innerTooltip.innerHTML = innerHtml;

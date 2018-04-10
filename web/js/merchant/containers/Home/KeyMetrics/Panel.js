@@ -7,7 +7,13 @@ import { PowerSelect } from 'react-power-select';
 import Definition from 'rzp/ui/Definition';
 import Change from 'rzp/ui/Change';
 import { BtnGroup, Btn } from 'rzp/ui/BtnGroup/index.js';
-import { titleCase, paiseToRupees, getPercentage } from 'rzp/utils/rzp-utils';
+import { namedColors } from 'rzp/utils/chart/colors';
+import {
+  isDefined,
+  titleCase,
+  paiseToRupees,
+  getPercentage,
+} from 'rzp/utils/rzp-utils';
 import { timeScale } from 'rzp/utils/chart/new.js';
 import takeScreenshot from 'rzp/utils/screenshot';
 import Group, { GroupItem } from 'rzp/ui/Group';
@@ -16,6 +22,7 @@ import {
   humanReadableIndianCurrency,
 } from 'rzp/utils/numerals';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import GenericTooltip from 'rzp/ui/Tooltip';
 
 import { tabsMeta, breakdownVals } from './data';
 import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
@@ -28,20 +35,22 @@ import GenericPanel, {
   PanelBody,
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
-import customToolTip, { positioner } from './customTooltip';
 import Tooltip from 'merchant/components/Home/Tooltip';
+import { PLATFORM, CUMULATIVE } from 'merchant/containers/Home/KeyMetrics/data';
 
 import { trackGoToLinks } from './ga';
+import customToolTip, { positioner } from './customTooltip';
 
 Chart.Tooltip.positioners.custom = positioner;
 
-const chartOptions = {
+const globalChartOptions = {
   ...timeScale({}),
   layout: {
     padding: {
       top: 0,
       left: 0,
       right: 0,
+      bottom: 0,
     },
   },
   tooltips: {
@@ -55,6 +64,39 @@ const chartOptions = {
   },
 };
 
+const _getChartData = (data, selectedGrouping, canvas) => {
+  /*
+   * Used to specify the color of the series,
+   * For Cumulative graph, we need to render gradient
+   */
+
+  if (
+    !data.histogram ||
+    !selectedGrouping ||
+    selectedGrouping.value !== CUMULATIVE
+  ) {
+    return data.histogram;
+  }
+
+  const ctx = canvas.getContext('2d'),
+    gradient = ctx.createLinearGradient(0, 0, 0, 250),
+    // reducing opacity of primary color
+    startColor = namedColors.primaryColor.replace(/1\)$/, '0.5)');
+
+  gradient.addColorStop(0, startColor);
+  gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+  const { datasets } = data.histogram;
+
+  if (datasets && datasets[0]) {
+    datasets[0].backgroundColor = gradient;
+    datasets[0].borderColor = namedColors.primaryColor;
+    datasets[0].borderWidth = 2;
+  }
+
+  return data.histogram;
+};
+
 /*
  * This component is responsible to show tab content in `KeyMetrics`
  * component.
@@ -65,10 +107,35 @@ class Panel extends Component {
     super(props);
 
     this.meta = tabsMeta[props.tabName];
+
+    this.state = {
+      visibleGroups: this.getVisibleGroups(props.showGroupingByPtfm),
+    };
+
     this.handleGroupingChange = ::this.handleGroupingChange;
     this.handleBreakdownChange = ::this.handleBreakdownChange;
     this.handleImageExportClick = ::this.handleImageExportClick;
     this.handleFilterChange = ::this.handleFilterChange;
+  }
+
+  getVisibleGroups(showGroupingByPtfm) {
+    const { grouping = [] } = this.meta;
+
+    return showGroupingByPtfm || grouping.length === 0
+      ? grouping
+      : grouping.filter(groupItem => {
+          return groupItem.value !== PLATFORM;
+        });
+  }
+
+  setVisibleGroups(showGroupingByPtfm) {
+    showGroupingByPtfm = isDefined(showGroupingByPtfm)
+      ? showGroupingByPtfm
+      : this.props.showGroupingByPtfm;
+
+    this.setState({
+      visibleGroups: this.getVisibleGroups(showGroupingByPtfm),
+    });
   }
 
   handleGroupingChange({ option }) {
@@ -77,7 +144,7 @@ class Panel extends Component {
     return onGroupingChange && onGroupingChange(tabName, option);
   }
 
-  handleFilterChange (option) {
+  handleFilterChange(option) {
     const { tabName, onFilterChange } = this.props;
 
     return onFilterChange && onFilterChange(tabName, option);
@@ -106,6 +173,12 @@ class Panel extends Component {
     }
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.showGroupingByPtfm !== this.props.showGroupingByPtfm) {
+      this.setVisibleGroups(nextProps.showGroupingByPtfm);
+    }
+  }
+
   render() {
     const {
         selectedGrouping,
@@ -117,15 +190,22 @@ class Panel extends Component {
         lastUpdatedAt,
         isCurrency,
         externalUrl,
-        showGrouping,
+        showGroupingByPtfm,
         tabName,
         sectionTitle,
       } = this.props,
+      { visibleGroups: grouping } = this.state,
       dateFormat = 'DD MMM YYYY',
-      { grouping, options, filters } = this.meta,
+      { options, filters } = this.meta,
       { loading, histogram, trend } = data;
 
     const hasNoData = !histogram || histogram.datasets.length === 0;
+
+    const noGrouping =
+      (selectedGrouping && selectedGrouping.value === CUMULATIVE) ||
+      this.meta.noGrouping;
+
+    const hasLegends = !noGrouping && !loading && data.legendData;
 
     let trendValue = 0,
       trendText = '',
@@ -149,16 +229,30 @@ class Panel extends Component {
         '%)';
     }
 
+    let chartOptions = { ...globalChartOptions };
+
+    if (selectedBreakdown === 'hourly') {
+      chartOptions = {
+        ...chartOptions,
+        ...timeScale({ breakdown: selectedBreakdown }),
+      };
+    }
+
     // following chart options will be used by cutomTooltip.js
     chartOptions.isCurrency = isCurrency;
     chartOptions.externalUrl = externalUrl;
     chartOptions.breakdown = selectedBreakdown;
     chartOptions.graphStartDate = startDate.toDate();
     chartOptions.graphEndDate = endDate.toDate();
+    chartOptions.noGrouping = noGrouping;
+
+    const getChartData = _getChartData.bind(null, data, selectedGrouping);
 
     return (
       <GenericPanel
-        className="key-metrics-container"
+        className={`key-metrics-container${
+          !loading && noGrouping ? ' no-legends' : ''
+        }`}
         isLoading={data.loading}
         hasNoData={hasNoData}
         error={data.error}
@@ -167,9 +261,9 @@ class Panel extends Component {
           {data.trend.show &&
             !data.trend.error && (
               <div
-                className={`pull-left ${data.trend.loading
-                  ? ' trend-loading'
-                  : ''}`}
+                className={`pull-left ${
+                  data.trend.loading ? ' trend-loading' : ''
+                }`}
               >
                 <div>
                   <Change value={trendValue}>
@@ -207,47 +301,55 @@ class Panel extends Component {
             )}
           <div className="panel-actions pull-right">
             <BtnGroup
-              className="panel-action-item"
+              className="panel-action-item time-breakdown"
               value={selectedBreakdown}
               onChange={this.handleBreakdownChange}
             >
               {breakdownVals.map((item, index) => {
                 const btnProps = {
-                  value: item.value,
-                  key: index,
-                  className: 'btn-default',
-                };
+                    value: item.value,
+                    key: index,
+                    className: 'btn-default',
+                  },
+                  isEnabled = item.isEnabled(startDate, endDate);
 
-                if (!item.isEnabled(startDate, endDate)) {
+                if (!isEnabled) {
                   btnProps.disabled = 'disabled';
                 }
 
-                return <Btn {...btnProps}>{item.title}</Btn>;
+                return (
+                  <Btn {...btnProps}>
+                    <span>{item.title}</span>
+                    {!isEnabled && (
+                      <GenericTooltip align="top">
+                        {item.disabledText}
+                      </GenericTooltip>
+                    )}
+                  </Btn>
+                );
               })}
             </BtnGroup>
-            {showGrouping &&
-              grouping.length > 0 && (
+            {grouping.length > 0 && (
+              <div id="keymetrics-grouping" className="panel-action-item">
+                <GroupingDropdown
+                  onGroupChange={this.handleGroupingChange}
+                  grouping={grouping}
+                  selectedGrouping={selectedGrouping}
+                  sectionTitle={`${sectionTitle} | ${this.meta.title}`}
+                />
+              </div>
+            )}
+            {filters &&
+              filters.length > 0 && (
                 <div className="panel-action-item">
-                  <GroupingDropdown
-                    onGroupChange={this.handleGroupingChange}
-                    grouping={grouping}
-                    selectedGrouping={selectedGrouping}
-                    sectionTitle={`${sectionTitle} | ${this.meta.title}`}
+                  <FilteringDropdown
+                    onFilterChange={this.handleFilterChange}
+                    filters={filters}
+                    selectedFilters={selectedFilters}
                   />
                 </div>
               )}
-            {filters &&
-               filters.length > 0 && (
-            
-                 <div className="panel-action-item">
-                   <FilteringDropdown
-                     onFilterChange={this.handleFilterChange}
-                     filters={filters}
-                     selectedFilters={selectedFilters} />
-                 </div>
-               )
-            }
-            <div className="panel-action-item">
+            <div id="keymetrics-download" className="panel-action-item">
               <MoreOptionsButton
                 csvData={data.csv}
                 pngData={data.png}
@@ -267,10 +369,11 @@ class Panel extends Component {
             <div className="chart-container">
               {!data.loading &&
                 data.histogram && (
-                  <Line options={chartOptions} data={data.histogram} />
+                  <Line options={chartOptions} data={getChartData} />
                 )}
             </div>
-            {!this.meta.noGrouping && !data.loading &&
+            {!noGrouping &&
+              !data.loading &&
               data.legendData && (
                 <div>
                   <Legend data={data.legendData} isCurrency={isCurrency} />
@@ -286,16 +389,18 @@ class Panel extends Component {
           <div className="pull-right">
             <Link
               target="_blank"
-              to={`/${this.meta
-                .index}?from=${startDate.unix()}&to=${endDate.unix()}&ref=home`}
+              to={`/${
+                this.meta.index
+              }?from=${startDate.unix()}&to=${endDate.unix()}&ref=home`}
               onClick={() =>
                 trackGoToLinks(
                   titleCase(this.meta.index),
                   sectionTitle + ' | ' + this.meta.title
-                )}
+                )
+              }
             >
               {`View these ${titleCase(this.meta.index)} `}
-              <i className="i i-chevron-right"></i>
+              <i className="i i-chevron-right" />
             </Link>
           </div>
         </PanelFooter>

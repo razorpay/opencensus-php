@@ -224,3 +224,22 @@ export const statusPill = (status, emptyValue = '--') => {
     emptyValue
   );
 };
+
+/**
+ * Resources for `Public Features`
+ */
+export const publicFeature = {
+  statuses: ['under_review', 'needs_clarification', 'activated', 'rejected'],
+
+  tranferToOptions: [
+    ['Businesses', 'Third-party businesses'],
+    ['Own Accounts', 'Own bank accounts'],
+    ['Individuals', 'Individuals'],
+  ],
+
+  featuresAkaMap: {
+    marketplace: 'Marketplace',
+    subscriptions: 'Subscriptions',
+    virtual_accounts: 'Virtual Accounts',
+  },
+};

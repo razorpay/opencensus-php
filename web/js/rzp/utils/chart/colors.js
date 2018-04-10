@@ -1,14 +1,18 @@
 const namedColors = {
-  'red'         : '#f98383',
-  'blue'        : '#136edc',
-  'brown'       : '#ada17e',
-  'green'       : '#85d01d',
-  'orange'      : '#f0a13f',
-  'yellow'      : '#f1d447',
-  'iosGrey'     : '#999999',
-  'darkBlue'    : '#1B3c97',
-  'lightBlue'   : '#00bbff',
-  'androidGreen': '#a4c639'
+  red: '#f98383',
+  blue: '#136edc',
+  white: '#ffffff',
+  brown: '#ada17e',
+  green: '#85d01d',
+  orange: '#edc250',
+  yellow: '#d9e627',
+  iosGrey: '#999999',
+  darkBlue: '#1B3c97',
+  lightBlue: '#00bbff',
+  androidGreen: '#a4c639',
+  blueishGrey: 'rgba(159, 177, 199, 1)',
+  primaryColor: 'rgba(82, 143, 240, 1)',
+  black: '#000',
 };
 
 const colors = [
@@ -28,6 +32,6 @@ const colors = [
   'rgb(35, 183, 229)',
 ];
 
-export {namedColors};
+export { namedColors };
 
 export default colors;

@@ -1,19 +1,26 @@
+$tab-inactive-color=#9fb1c7;
+
 placeholder () {
 
   background: #bbc1d3;
   background: linear-gradient(to right, #bbc1d3 0%, #252939 10%,  20%);
 }
 
+.keymetrics-container.loading {
+
+  pointer-events: none;
+}
+
 .keymetrics {
 
   > .nav.nav-tabs {
-
-    box-shadow: 0 2px 4px 0 rgba(0,0,0,0.1);
 
     li {
 
       padding-bottom: 0;
       display: inline-block;
+      font-size: 14px;
+      line-height: 1.43em;
 
       &.active > a , &:hover > a {
 
@@ -23,14 +30,27 @@ placeholder () {
 
       &.active > a > div {
 
-        background-color: #ffffff;
-        border: 1px solid transparent;
-        box-shadow: 0px 1px 5px rgba(0,0,0,0.1);
-        color: #6F758A;
+        position: relative;
+        border: 1px solid $primary-color;
 
         .PlaceholderLoader {
 
           placeholder;
+        }
+
+        &:after {
+
+          content: " ";
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          margin-left: -10px;
+          display: block;
+          border-width: 10px;
+          border-color: transparent;
+          border-bottom-width: 0;
+          border-top-color: $primary-color;
+          border-style: solid;
         }
       }
 
@@ -40,29 +60,98 @@ placeholder () {
         padding: 0;
         text-align: left;
         margin: 0;
+        color: inherit;
+
+        small.help-content {
+
+          display: inline-block;
+          margin-left: 2px;
+          vertical-align: text-bottom;
+          color: $tab-inactive-color;
+
+          &:hover {
+
+            color: $primary-color;
+          }
+        }
+
 
         &:hover {
 
           padding-left: 0;
+
+          > div {
+
+            border: 1px solid $primary-color;
+          }
         }
 
         > div {
 
-          padding: 24px;
-          border: 1px solid rgba(0, 0, 0, 0.04);
-          color: #9398a9;
-          background-color: #f5f7f8;
+          padding: 16px 16px 8px;
+          border: 1px solid #ffffff;
+          background-color: #ffffff;
+          box-shadow: 0 1px 4px 0 rgba(0,0,0,0.1);
 
           > h1 {
 
-            font-weight: 300;
             margin-top: 0;
             margin-bottom: 8px;
-            line-height: 1;
+            font-size: 32px;
+            line-height: 40px;
 
             > .PlaceholderLoader {
 
               width: 20%;
+            }
+          }
+
+          > div.mini-chart {
+
+            width: 100%;
+            height: 40px;
+            background-color: transparent;
+            transition: 0.1s margin 0.05s ease-out;
+
+            &.loading {
+
+              .min-chart-content , &.active .min-chart-content {
+
+                opacity: 0;
+              }
+            }
+
+            &.active {
+
+              margin-bottom: 4px;
+              transition: margin 0.1s ease-out;
+
+              .min-chart-content {
+
+                opacity: 1;
+              }
+            }
+
+            &.no-data {
+
+              .min-chart-content {
+
+                border-bottom: 1px solid $tab-inactive-color;
+              }
+
+              &.active {
+
+                .min-chart-content {
+                  border-bottom-color: $primary-color;
+                }
+              }
+            }
+
+            .min-chart-content {
+
+              width: 100%;
+              height: 100%;
+              opacity: 0.6;
             }
           }
         }
@@ -128,7 +217,7 @@ placeholder () {
 
         display: inline-block;
         height: 1em;
-        width: 10em;
+        width: 12em;
         line-height: 1em;
         vertical-align: middle;
       }
@@ -149,6 +238,30 @@ placeholder () {
     }
   }
 
+  div.panel-actions .panel-action-item {
+
+    &.btn-group.time-breakdown button.btn[disabled] {
+
+      position: relative;
+      opacity: 1;
+      border-color: rgba(207, 218, 221, 0.45);
+      color: rgba(88, 102, 110, 0.45);
+
+      &:hover {
+
+        .rzp-tooltip {
+
+          opacity: 1;
+          position: absolute;
+          top: 0;
+          left: 0;
+          margin-top: -40px;
+          white-space: nowrap;
+        }
+      }
+    }
+  }
+
   div.chart-container {
 
     height: 248px;
@@ -157,7 +270,7 @@ placeholder () {
   .rzp-legend {
 
     padding-top: 8px;
-  }
+  } 
 }
 
 #chartjs-tooltip {
@@ -168,6 +281,16 @@ placeholder () {
   padding-bottom: 10px;
   transition: left 0.25s ease, top 0.25s ease;
   margin-left: -128px;
+
+  &.no-grouping {
+
+    .custom-tooltip-inner .tooltip-title {
+
+      margin: 0;
+      padding: 0;
+      border: none;
+    }
+  }
 
   .custom-tooltip-inner {
 
@@ -207,7 +330,7 @@ placeholder () {
         position: absolute;
         top: 0;
         right: 0;
-        color: #4c58c7;
+        color: $primary-color;
 
         > svg {
 

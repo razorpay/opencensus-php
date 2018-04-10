@@ -4,15 +4,13 @@ const pageTitle = 'Dashboard - Home V2';
 
 export const track = setTrackData({ eventCategory: pageTitle });
 
-export const trackError = (error) => {
-
-  const eventLabel = typeof error === "object"
-                       ? JSON.stringify(error)
-                       : String(error);
+export const trackError = error => {
+  const eventLabel =
+    typeof error === 'object' ? JSON.stringify(error) : String(error);
 
   track({
-    eventAction: "Error Triggered",
-    eventLabel
+    eventAction: 'Error Triggered',
+    eventLabel,
   });
 };
 
@@ -68,14 +66,20 @@ export const trackPlatformAnalyticsHidden = percent => {
 export const trackForceOldDashboard = () => {
   track({
     eventAction: 'Force Old Dashboard on Mobile',
-    eventLabel: `Resolution - ${window.outerWidth}x${window.outerHeight}`
+    eventLabel: `Resolution - ${window.outerWidth}x${window.outerHeight}`,
   });
 };
 
-export const trackNoData = (description) => {
+export const trackNoData = description => {
   track({
     eventAction: 'No Data Found',
-    eventLabel: description
+    eventLabel: description,
+  });
+};
+
+export const trackViewTour = () => {
+  track({
+    eventAction: 'Click - View Tour on Banner',
   });
 };
 

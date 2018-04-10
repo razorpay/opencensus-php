@@ -43,7 +43,7 @@ export default class OnBoarding extends Component {
     this.props
       .getOnboardingResponse(this.props.formType)
       .then(response => {
-        const submitted = response.data && !(response.data instanceof Array);
+        const submitted = !!response.data.id;
 
         this.setState({
           isLoading: false,
@@ -57,7 +57,9 @@ export default class OnBoarding extends Component {
 
   componentDidMount() {
     setTimeout(
-      _ => document.querySelector('.feature-image').classList.add('in'),
+      _ =>
+        document.querySelector('.feature-image') &&
+        document.querySelector('.feature-image').classList.add('in'),
       200
     );
   }
@@ -83,10 +85,10 @@ export default class OnBoarding extends Component {
         const { website_checkbox, ...rest } = props;
         props = rest;
       }
-      if(props.website_details) {
+      if (props.website_details) {
         props.website_details = autoPrefixUrls(props.website_details);
       }
-      
+
       return this.props
         .saveOnboarding(this.props.formType, props, file, fileName)
         .then(() => {

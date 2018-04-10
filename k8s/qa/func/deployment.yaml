@@ -1,0 +1,66 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: dashboard
+  namespace: func
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      name: dashboard
+  template:
+    metadata:
+      annotations:
+        iam.amazonaws.com/role: func-dashboard
+      labels:
+        name: dashboard
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/qa: ""
+      imagePullSecrets:
+      - name: registry
+      containers:
+      - env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: dashboard
+              key: APP_MODE
+        name: func
+        image: razorpay/dashboard:1dd5360f9c7b9639cc703d0304a39f562d24b642
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        volumeMounts:
+          - name: trace
+            mountPath: /app/storage/logs/
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 120
+        livenessProbe:
+          httpGet:
+            path: /commit.txt
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 2
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/rm","-f","/app/public/commit.txt",";","sleep","5",";","/usr/sbin/nginx","-s","quit"]
+      terminationGracePeriodSeconds: 60
+      volumes:
+      - name: trace
+        hostPath:
+          path: /var/log/fluentd/splunk/func/trace
+      dnsPolicy: Default
+      restartPolicy: Always

@@ -202,7 +202,13 @@ export default class EntityList extends Component {
             value = 'pay_' + value;
           }
           return (
-            <Link to={`/entity/payment/${value}`} class="link" target="_blank">
+            <Link
+              to={`/entity/payment/${
+                this.collection.extraFields.mode
+              }/${value}`}
+              class="link"
+              target="_blank"
+            >
               {value}
             </Link>
           );
@@ -227,7 +233,7 @@ export default class EntityList extends Component {
           // Value is time
           value = formatDate(value);
         } else if (value && typeof value === 'object') {
-          return <pre>{JSON.stringify(value)}</pre>;
+          return <pre class="duplex-json">{JSON.stringify(value)}</pre>;
         } else if (typeof value === 'boolean') {
           value = JSON.stringify(value);
         }

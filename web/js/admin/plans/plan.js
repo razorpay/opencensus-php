@@ -111,6 +111,8 @@ export const options = {
     '100000-200000': '100000-200000',
     '0-200000': '0-200000',
     '200000-1000000000': '200000-1000000000',
+    '0-10000000': '0 - 1 lac',
+    '10000000-': '1 lac+',
   },
   emi_duration: {
     '': 'All',
@@ -156,7 +158,8 @@ class Rule extends CollectionItem {
       let range = data.amount_range.split('-');
       data.amount_range_active = 1;
       data.amount_range_min = range[0];
-      data.amount_range_max = range[1];
+      // if the max not specified its 2cr
+      data.amount_range_max = range[1] || 1000000000;
     }
     delete data.amount_range;
 
@@ -173,7 +176,13 @@ class Rule extends CollectionItem {
     // if unsaved plan
     if (!this.collection.props.id) {
       this.define('readonly', true);
-      this.collection.items.push(new Rule(this.collection));
+
+      let nextRule = new Rule(this.collection);
+      if (this.international == 1) {
+        delete this['payment_method_type'];
+      }
+
+      this.collection.items.push(nextRule);
     } else {
       return this.request(
         'save',
@@ -273,7 +282,7 @@ class Rule extends CollectionItem {
 
   paymentMethodTypeField() {
     var data;
-    if (this.payment_method === 'card') {
+    if (this.payment_method === 'card' && this.international == 0) {
       data = options.payment_method_type;
     } else if (this.payment_method === 'emandate') {
       data = {
@@ -295,9 +304,9 @@ class Rule extends CollectionItem {
     if (this.payment_method === 'emandate') {
       return this.selectField('payment_issuer', {
         '': 'All',
-        'initial': 'Initial',
-        'auto': 'Auto'
-      })
+        initial: 'Initial',
+        auto: 'Auto',
+      });
     }
     return this.selectField('payment_issuer');
   }

@@ -11,6 +11,12 @@ import { adminPost } from 'common/fetch';
 
 export default ({ props, merchantId }) => {
   function onSubmit(body) {
+    body.referral = typeof body.referral === 'string' && body.referral.trim();
+    if (!body.referral) {
+      notifyError('ref tag cannot be empty');
+      return;
+    }
+
     const tags = toJS(props.merchant.details.tags);
     tags.push('ref-' + body.referral);
 

@@ -137,6 +137,70 @@ body {
     .text-warning {
       color: #fbe165;
     }
+
+    a.activation-status-link {
+      padding: 0;
+      line-height: inherit;
+      border: none;
+    }
+
+    div.activation-status {
+
+      color: white;
+      padding: 12px 20px;
+      background-color: #315BC2;
+      margin-bottom: 15px;
+     
+      i.i.i-chevron-right {
+
+        margin-right: 0;
+      }
+ 
+      div.activation-bar-content {
+
+        display: table;
+        font-size: 80%;
+        line-height: 20px;
+        margin-top: 4px;
+        color: rgba(255, 255, 255, 0.7);
+
+        > div {
+
+          display: table-cell;
+          vertical-align: middle;
+          
+          &.activation-bar-text {
+
+            white-space: nowrap;
+            width: 1%;
+            padding-right: 8px;
+          }
+
+          &.activation-bar {
+
+            div.progress {
+
+              width: 100%;
+              height: 6px;
+              margin-bottom: 0;
+              border-radius: 4px;
+              background-color: #2B3972;
+
+              div.progress-bar {
+
+                background-color: #FFFFFF;
+                border-radius: 4px;
+              }
+            }
+          }
+        }
+      }
+
+      @media (max-width $screen-sm-min) {
+
+        display: none;
+      }
+    }
   }
 
   .nav > a {
@@ -624,7 +688,16 @@ tr:hover .row-action.btn-group {
   padding: 8px;
   margin-bottom: -1px;
   position: relative;
-  clearfix()
+
+  &:not(.description) {
+    clearfix()
+  }
+
+  &.description {
+    white-space: 'pre-wrap';
+    word-wrap: 'break-word';
+    overflow: auto;
+  }
 
   .pair-label, .pair-value, .pair-separator {
     vertical-align: top;
@@ -650,13 +723,6 @@ tr:hover .row-action.btn-group {
     }
   }
 
-  /*
-  // Separator is colon as per old design. Currently not being used but will be removed once design is concretely confirmed all across
-  .pair-separator {
-    padding: 0 4px;
-    color: #afafaf;
-  }
-  */
   .pair-value {
     width: 60%;
     padding-left: 8px;

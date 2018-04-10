@@ -41,12 +41,10 @@ export default function Field({
       {(infoMsg || helpMsg) && (
         <div class="info-block">
           {helpMsg && <i class="i i-info-circle" />}
-          {
-            do {
-              var msg = infoMsg || helpMsg;
-              typeof msg === 'function' ? msg() : msg
-            }
-          }
+          {do {
+            var msg = infoMsg || helpMsg;
+            typeof msg === 'function' ? msg() : msg;
+          }}
         </div>
       )}
     </div>
@@ -75,9 +73,23 @@ export const DateField = ({
   </div>
 );
 
-export const FromField = _ => <DateField name="from" label="From" postSelectionValue={val => val.startOf('day')} {..._} />;
+export const FromField = _ => (
+  <DateField
+    name="from"
+    label="From"
+    postSelectionValue={val => val.startOf('day')}
+    {..._}
+  />
+);
 
-export const ToField = _ => <DateField name="to" label="To" postSelectionValue={val => val.endOf('day')} {..._} />;
+export const ToField = _ => (
+  <DateField
+    name="to"
+    label="To"
+    postSelectionValue={val => val.endOf('day')}
+    {..._}
+  />
+);
 
 export function RadioField({ label, value, defaultValue, ...props }) {
   return (
@@ -226,7 +238,7 @@ class SearchableSelect extends Component {
     } = this.props;
 
     return (
-      <div>
+      <div class="searchable-select">
         <input
           type="hidden"
           class="hide"

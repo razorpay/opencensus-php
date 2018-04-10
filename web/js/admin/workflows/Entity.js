@@ -8,6 +8,7 @@ import fetch, { adminFetch, adminPost, adminPut } from 'common/fetch';
 
 import Form from 'ui/Form';
 import Field, { SelectField, Switch } from 'ui/Field';
+import MultiSelectField from 'ui/MultiSelectField';
 import Table from 'ui/Table';
 import AsyncButton from 'ui/AsyncButton';
 
@@ -35,8 +36,8 @@ export default class EditWorkflow extends Component {
         url: 'live/permissions-multiple',
         params: {
           type: 'workflow',
-          count: 1000
-        }
+          count: 1000,
+        },
       }),
     ];
 
@@ -71,34 +72,10 @@ export default class EditWorkflow extends Component {
     }
   }
 
-  selectPerm = e =>
-    this.allPerms.some(
-      p => p.id === e.target.value && this.permissions.push(p)
-    );
-
-  deletePerm = e => {
-    this.allPerms.some(
-      p =>
-        p.id === e.target.getAttribute('data-id') && this.permissions.remove(p)
-    );
-  };
-
-  actionFields = [
-    ['Actions', p => p.name],
-    [
-      '',
-      p => (
-        <div class="link danger" data-id={p.id} onClick={this.deletePerm}>
-          Remove
-        </div>
-      ),
-    ],
-  ];
-
   save = body => {
     let { id } = this.props.match.params;
 
-    body.permissions = this.permissions.map(p => p.id);
+    body.permissions = body.permissions.split(',');
     body.levels = toJS(this.levels);
 
     if (!body.levels.length) {
@@ -188,24 +165,14 @@ export default class EditWorkflow extends Component {
             </div>
             <div class="box">
               <div class="heading">Actions List</div>
-              <SelectField label="" onChange={this.selectPerm} defaultValue="">
-                <option value="" disabled>
-                  --Select an action--
-                </option>
-                <option value="" />
-                {allPerms.map(
-                  p =>
-                    permissions.indexOf(p) < 0 && (
-                      <option value={p.id} key={p.id}>
-                        {p.name}
-                      </option>
-                    )
-                )}
-              </SelectField>
-              <Table
-                animateRow={false}
-                fields={this.actionFields}
-                items={permissions}
+              <MultiSelectField
+                label=""
+                name="permissions"
+                options={allPerms}
+                defaultValue={permissions}
+                trackBy="id"
+                keys={['name']}
+                placeholder="Select Permissions"
               />
             </div>
             <AsyncButton

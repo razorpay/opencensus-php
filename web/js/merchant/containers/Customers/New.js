@@ -9,7 +9,7 @@ import { required, email, phone } from 'rzp/utils/validators';
 import * as CustomerActions from 'merchant/modules/customers';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import { stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 function validate(values) {
   let errors = {};
@@ -44,25 +44,31 @@ export default class AddCustomer extends Component {
     }
   }
 
-  componentDidMount () {
+  componentDidMount() {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Customers',
-      eventAction: `Open Form - ${this.props.customer && this.props.customer.id ? 'Edit' : 'New'} Customer`,
+      eventAction: `Open Form - ${
+        this.props.customer && this.props.customer.id ? 'Edit' : 'New'
+      } Customer`,
     });
   }
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Customers',
-      eventAction: `Close Form - ${this.props.customer && this.props.customer.id ? 'Edit' : 'New'} Customer`
+      eventAction: `Close Form - ${
+        this.props.customer && this.props.customer.id ? 'Edit' : 'New'
+      } Customer`,
     });
   }
 
   save = props => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Customers',
-      eventAction: `Submit Form - ${this.props.customer && this.props.customer.id ? 'Edit' : 'New'} Customer`,
-      eventLabel: stringifyQueryParamsWithPipe(props)
+      eventAction: `Submit Form - ${
+        this.props.customer && this.props.customer.id ? 'Edit' : 'New'
+      } Customer`,
+      eventLabel: getKeysSeparatedByPipe(props),
     });
     return this.props
       .saveCustomer(props)

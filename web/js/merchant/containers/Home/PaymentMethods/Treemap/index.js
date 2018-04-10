@@ -2,11 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import Tooltip from 'rzp/ui/Tooltip';
-import {
-  getFormattedNumber,
-  getFormattedAmountNew
-} from 'rzp/utils/rzp-utils';
-import { globalGroupTitleMap as groupTitleMap } from "rzp/utils/pokedex";
+import { getFormattedNumber, getFormattedAmountNew } from 'rzp/utils/rzp-utils';
+import { globalGroupTitleMap as groupTitleMap } from 'rzp/utils/pokedex';
 
 import { bankNames } from '../data';
 import renderTreemap from './renderTreemap';
@@ -38,7 +35,7 @@ export default class Treemap extends Component {
     this.onHideTooltip = ::this.onHideTooltip;
   }
 
-  showTooltip({ amount, percent, label }) {
+  showTooltip({ amount, percent, label, canBeZoomed }) {
     this.setState({
       tooltip: {
         show: true,
@@ -47,6 +44,7 @@ export default class Treemap extends Component {
           percent,
           label,
         },
+        canBeZoomed,
       },
     });
   }
@@ -59,11 +57,12 @@ export default class Treemap extends Component {
     });
   }
 
-  onShowTooltip({ amount, percent, label }) {
+  onShowTooltip({ amount, percent, label, canBeZoomed }) {
     this.showTooltip({
       amount,
       percent,
       label,
+      canBeZoomed,
     });
   }
 
@@ -104,7 +103,6 @@ export default class Treemap extends Component {
 
     // if resize is only vertical
     if (this.node.clientWidth === parent.clientWidth) {
-    
       return;
     }
 
@@ -130,7 +128,6 @@ export default class Treemap extends Component {
     const { data, currentLevel } = this.props;
 
     if (data !== nextProps.data) {
-
       return this.renderTreemap(nextProps.data, nextProps.isCurrency);
     } else if (
       !this.isNewData &&
@@ -147,23 +144,30 @@ export default class Treemap extends Component {
 
   render() {
     const { tooltip } = this.state,
-          { isCurrency } = this.props,
-      amount = (isCurrency
-                  ? getFormattedAmountNew
-                  : getFormattedNumber
-               )(tooltip.data.amount, true);
+      { isCurrency } = this.props,
+      amount = (isCurrency ? getFormattedAmountNew : getFormattedNumber)(
+        tooltip.data.amount,
+        true
+      );
 
     return (
       <div>
-        <div ref={node => (this.node = node)} />
+        <div id="payment-methods-treemap" ref={node => (this.node = node)} />
 
         <Tooltip followPointer={true}>
           <div>
             <p>
-              {amount} <small>{'(' + tooltip.data.percent + '%)'}</small>
+              <span className="payment-label">{tooltip.data.label}</span>
             </p>
-            <small>{tooltip.data.label}</small>
+            <span className="payment-amount">
+              {amount} <small>{'(' + tooltip.data.percent + '%)'}</small>
+            </span>
           </div>
+          {tooltip.canBeZoomed && (
+            <div className="tooltip-footer">
+              <i className="i i-hand" />Click to drill down
+            </div>
+          )}
         </Tooltip>
       </div>
     );

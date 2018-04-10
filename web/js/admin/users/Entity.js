@@ -131,15 +131,15 @@ export default class EditUser extends Component {
 export function removeEntity(e) {
   prevent(e);
 
-  return adminDelete(`admin/${this.id}`).then(response => {
+  return adminDelete(`live/admin/${this.id}`).then(response => {
     if (response) {
       if (isWorkflow(response)) {
         notifySuccess('Workflow created successfully');
         return;
       }
 
-      this.collection.items.remove(this);
       notifySuccess('User delete successfully');
+      this.collection.remove(this);
     }
   });
 }

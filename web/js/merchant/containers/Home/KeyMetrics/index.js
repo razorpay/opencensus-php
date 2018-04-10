@@ -6,30 +6,32 @@ import moment from 'moment';
 import Amount from 'rzp/ui/Amount';
 import Tabs, { Tab, TabPane } from 'rzp/ui/ReactTabs';
 import {
-  paiseToRupees,
   titleCase,
+  isDefined,
   getPercentage,
-  getFixedNumber
+  paiseToRupees,
+  getFixedNumber,
 } from 'rzp/utils/rzp-utils';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
 } from 'rzp/utils/numerals';
+import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import { showNotification } from 'rzp/modules/notifications';
 import { groupBy } from 'rzp/utils/pokedex';
+import Change from 'rzp/ui/Change';
 
 import { fetch } from 'merchant/modules/pokedex';
 import {
   API_ERROR,
   API_INVALID_RESP,
   getPlatformColor,
-  getPaymentMethodColor
+  getPaymentMethodColor,
+  platformsOrder,
+  paymentMethodsOrder,
 } from 'merchant/components/Home/data';
-import {
-  trackNoData,
-  trackError
-} from 'merchant/containers/Home/ga';
+import { trackNoData, trackError } from 'merchant/containers/Home/ga';
 import Tooltip from 'merchant/components/Home/Tooltip';
 
 import {
@@ -39,25 +41,40 @@ import {
   SAVED_CARDS,
   SUCCESS_RATE,
   PLATFORM,
+  CUMULATIVE,
+  METHOD,
+  SAVED_CARD_PAYMENTS,
   tabsOrder,
   tabsMeta,
   getQuery,
   breakdownVals,
+  breakdownValsMap,
   getTimelineData,
 } from './data';
 import {
   trackTabClick,
   trackBreakdownChange,
-  trackSavedCardsHidden
+  trackSavedCardsHidden,
 } from './ga';
 import Panel from './Panel';
+import MiniChart from './TinyAreaChart';
 
 const csvDateFormat = 'DD-MM-YYYY';
 
+const gutterBetweenTabs = 16; // 16px
+
 const TabContent = ({
-  name, value, percent,
-  isCurrency, title, isLoading,
-  error
+  name,
+  value,
+  percent,
+  isCurrency,
+  title,
+  isLoading,
+  error,
+  trend,
+  histogram,
+  isActive,
+  helpText,
 }) => {
   /*
    * Description:
@@ -66,13 +83,21 @@ const TabContent = ({
 
   let formattedValue = value;
 
-  if (typeof percent === "undefined") {
+  if (!isDefined(percent)) {
     formattedValue = isCurrency
       ? humanReadableIndianCurrency(paiseToRupees(value))
       : humanReadableIndian(value);
   } else {
     formattedValue = getFixedNumber(percent) + '%';
   }
+
+  let trendValue = 0;
+
+  if (!trend.loading) {
+    trendValue = trend.currentCount - trend.previousCount;
+  }
+
+  const hasNoData = !histogram || histogram.datasets.length === 0;
 
   /*
    * checks if the current tab is showing currency values and renders
@@ -81,6 +106,26 @@ const TabContent = ({
    */
   return (
     <div>
+      <span>
+        {!isLoading ? (
+          <span>
+            {title}
+            {helpText && (
+              <small className="help-content">
+                <i class="i i-help" />
+                <Popover align="top">
+                  <PopoverTitle>What's this?</PopoverTitle>
+                  <PopoverBody>
+                    <div>{helpText}</div>
+                  </PopoverBody>
+                </Popover>
+              </small>
+            )}
+          </span>
+        ) : (
+          <PlaceholderLoader />
+        )}
+      </span>
       <h1>
         {!isLoading ? (
           <span>
@@ -97,7 +142,15 @@ const TabContent = ({
           <PlaceholderLoader />
         )}
       </h1>
-      <span>{!isLoading ? title : <PlaceholderLoader />}</span>
+      <div
+        className={`mini-chart${!isLoading && hasNoData ? ' no-data' : ''}${
+          isActive ? ' active' : ''
+        }`}
+      >
+        <div className="min-chart-content">
+          <MiniChart histogram={histogram} isActive={isActive} />
+        </div>
+      </div>
     </div>
   );
 };
@@ -125,14 +178,16 @@ class KeyMetricsContainer extends Component {
       loading: true,
     };
 
-    this.requestId = this.trendRequestID = 0;
+    this.requestId = this.trendRequestID = this.otherTabsReqId = 0;
 
     // Populating default value
     tabsOrder.forEach(tabName => {
-      const {grouping, filters} = tabsMeta[tabName],
+      const { grouping, filters } = tabsMeta[tabName],
         // assigment on R.H.S is intentional, puts value and declares
         // variable at the same time
         tabState = (this.state.tabsState[tabName] = {});
+
+      tabState.name = tabName;
 
       if (grouping.length > 0) {
         // default grouping selected in each tab
@@ -140,11 +195,9 @@ class KeyMetricsContainer extends Component {
       }
 
       if (filters && filters.length > 0) {
-      
         tabState.selectedFilters = filters.reduce((result, filter) => {
-        
           const filterName = filter.name,
-                firstFilter = filter.values[0];
+            firstFilter = filter.values[0];
 
           result[filterName] = firstFilter;
 
@@ -152,7 +205,7 @@ class KeyMetricsContainer extends Component {
         }, {});
       }
 
-      tabState.selectedBreakdown = breakdownVals[0].value;
+      tabState.selectedBreakdown = breakdownValsMap.daily.value;
 
       tabState.data = {
         loading: false,
@@ -170,6 +223,9 @@ class KeyMetricsContainer extends Component {
         // calculated legend info is stored here
         legendData: [],
 
+        // data for small overview graphs shown in tabs
+        tinyGraphData: null,
+
         // trend data
         trend: {
           loading: true,
@@ -181,17 +237,295 @@ class KeyMetricsContainer extends Component {
           error: '',
         },
 
-        showTab: true,
+        showTab: tabName !== SAVED_CARDS,
 
         error: '',
       };
     });
+
+    this.state.tabWidth = 100 / tabsOrder.length + '%';
+
+    this.node = null;
 
     this.onGroupingChange = ::this.onGroupingChange;
     this.onFilterChange = ::this.onFilterChange;
     this.onBreakdownChange = ::this.onBreakdownChange;
     this.handleTabChange = ::this.handleTabChange;
     this.onScreenshot = ::this.onScreenshot;
+  }
+
+  setTabWidth() {
+    if (!this.node) {
+      return;
+    }
+
+    const nodeWidth = this.node.clientWidth,
+      numVisibleTabs = this.getVisibleTabs().length;
+
+    if (!numVisibleTabs) {
+      return;
+    }
+
+    const tabWidth =
+      (nodeWidth - gutterBetweenTabs * (numVisibleTabs - 1)) / numVisibleTabs;
+
+    this.setState({
+      tabWidth: tabWidth + 'px',
+    });
+  }
+
+  getVisibleTabs() {
+    const { tabsState } = this.state;
+
+    return tabsOrder.filter(tabName => tabsState[tabName].data.showTab);
+  }
+
+  tabStateMixin({ tabState, histogram, refreshTinyGraphs }) {
+    /*
+     * Given response from PQL( `histogram` ) , prepares timeline data
+     * required for chart.js using `getTimelineData`, Prepares CSV and Screenshot
+     *
+     * This function will be called whenever the user interacts with
+     * datepicker/breakdown group, or grouping dropdown
+     *
+     * refreshTinyGraphs will be true only when someone changes the dates
+     */
+
+    const { selectedGrouping, selectedBreakdown, name: tabName } = tabState,
+      tabMeta = tabsMeta[tabName],
+      {
+        title,
+        isCurrency,
+        noGrouping,
+        valueKey = 'value',
+        groupTitleMap = { Mobile: 'mWeb' },
+      } = tabMeta,
+      groupByColumnName = !isDefined(tabMeta.groupByColumnName)
+        ? selectedGrouping && selectedGrouping.value
+        : tabMeta.groupByColumnName,
+      { startDate, endDate, sectionTitle } = this.props;
+
+    /*
+     * Preparing options for `getTimelineData`
+     */
+    const options = {
+      data: histogram.result,
+      groupByColumnName,
+      startTime: startDate.unix(),
+      endTime: endDate.unix(),
+      breakdown: selectedBreakdown,
+      groupTitleMap: groupTitleMap,
+      isCurrency,
+      valueKey,
+      noGrouping: isDefined(noGrouping)
+        ? noGrouping
+        : groupByColumnName === CUMULATIVE,
+    };
+
+    /*
+     * For Transaction Volume, Number of Transactions and Refunds, we 
+     * group by Payment Method (card , netbanking etc..) and 
+     * Platform (Desktop, Andorid , IOS etc..) , we can get color to be used
+     * for a particular platform from `getPlatformColor`, similarly for 
+     * payment methods from `getPaymentMethodColor`
+     */
+    if ([NUM_TRANSACTIONS, TRANSACTION_VOLUME, REFUNDS].indexOf(tabName) >= 0) {
+      options.getColor =
+        selectedGrouping && selectedGrouping.value === PLATFORM
+          ? getPlatformColor
+          : getPaymentMethodColor;
+    }
+
+    if (options.groupByColumnName === METHOD) {
+      options.groupOrder = paymentMethodsOrder;
+    } else if (options.groupByColumnName === PLATFORM) {
+      options.groupOrder = platformsOrder;
+    }
+
+    const { labels, datasets, aggregates, csv } = getTimelineData(options);
+
+    // track in GA that no data found in this section for
+    // given daterange
+    if (labels.length === 0) {
+      trackNoData(
+        `${tabMeta.title} in ${sectionTitle} from ${startDate.format(
+          csvDateFormat
+        )} to ${endDate.format(csvDateFormat)}`
+      );
+    }
+
+    // preparing csv and png
+    const downloadFileName = `${title}, ${startDate.format(
+      csvDateFormat
+    )} to ${endDate.format(csvDateFormat)}, ${titleCase(selectedBreakdown)}${
+      selectedGrouping ? ' ' + selectedGrouping.text : ''
+    }(Razorpay)`;
+
+    tabState.data.downloadFileName = downloadFileName;
+    tabState.data.histogram = { labels, datasets };
+    tabState.lastUpdatedAt = histogram.last_updated_at;
+    tabState.data.legendData = aggregates;
+    tabState.data.csv = {
+      name: `${downloadFileName}.csv`,
+      url: csv,
+    };
+    tabState.data.png = {
+      name: `${downloadFileName}.png`,
+      url: '',
+    };
+
+    if (refreshTinyGraphs) {
+      const data = (tabState.data.tinyGraphData = {
+        labels,
+        datasets: [],
+      });
+
+      if (datasets && datasets.length > 0) {
+        // need to filter and show only "Saved Card Payments" in tiny chart,
+        // as the tab has no cumulative like other tabs
+        if (tabName === SAVED_CARDS) {
+          const savedCardsDataset = datasets.filter(dataset => {
+            return dataset.label === SAVED_CARD_PAYMENTS;
+          })[0];
+
+          if (savedCardsDataset) {
+            data.datasets.push({ ...savedCardsDataset });
+          }
+        } else {
+          data.datasets.push({ ...datasets[0] });
+        }
+      }
+    }
+
+    return tabState;
+  }
+
+  makeQueryForTab(tabName, fetchAllCounts) {
+    /*
+     * gets the query to be made to Harvester,
+     * if fetchAllCounts is true, gets counts and histgram for the first tab in
+     * `tabsOrder` and only counts for the rest of the tabs.
+     */
+
+    const {
+        selectedFilters,
+        selectedGrouping,
+        selectedBreakdown,
+      } = this.state.tabsState[tabName],
+      { startDate, endDate } = this.props;
+
+    let filterBy = null;
+
+    if (selectedFilters) {
+      filterBy = Object.keys(selectedFilters).reduce((result, filterName) => {
+        result[filterName] = selectedFilters[filterName].value;
+
+        return result;
+      }, {});
+    }
+
+    return getQuery({
+      tabName: fetchAllCounts ? 'all' : tabName,
+      breakdown: selectedBreakdown,
+      startTime: startDate.unix(),
+      endTime: endDate.unix(),
+      groupBy: !!selectedGrouping && selectedGrouping.value,
+      filterBy,
+      includeHistogramForTab: !!fetchAllCounts && tabName,
+    });
+  }
+
+  fetchOtherTabsHistogram(refreshTinyGraphs) {
+    /*
+     * Makes query and prepares data for tabs other than the selected tab
+     */
+
+    const { selectedTab, tabsState } = this.state,
+      otherTabs = this.getVisibleTabs().filter(
+        tabName => tabName !== selectedTab
+      ),
+      { mode, analyticsFetch } = this.props;
+
+    const query = otherTabs.reduce(
+      (result, tabName) => {
+        const query = this.makeQueryForTab(tabName),
+          tabState = tabsState[tabName];
+
+        tabState.data.loading = true;
+        tabState.data.error = '';
+
+        result.filters = { ...result.filters, ...query.filters };
+
+        result.aggregations = {
+          ...result.aggregations,
+          [`${tabName}Histogram`]: query.aggregations[`${tabName}Histogram`],
+        };
+
+        return result;
+      },
+      { filters: {}, aggregations: {} }
+    );
+
+    const requestId = ++this.otherTabsReqId;
+
+    return (analyticsFetch || fetch)(query, mode)
+      .then(resp => {
+        if (requestId !== this.otherTabsReqId) {
+          return;
+        }
+
+        if (!resp.data) {
+          return API_INVALID_RESP;
+        }
+
+        return resp;
+      })
+      .catch(e => {
+        console.error(e);
+
+        if (requestId !== this.otherTabsReqId) {
+          return;
+        }
+
+        return e;
+      })
+      .then(data => {
+        if (!data) {
+          return;
+        }
+
+        if (data.error) {
+          trackError(
+            `Error while fetching data for Keymetrics - Remaining tabs data`
+          );
+
+          this.props.showNotification({
+            type: 'error',
+            message: data.error,
+            hidePrevious: true,
+          });
+        }
+
+        otherTabs.forEach(tabName => {
+          const tabState = tabsState[tabName];
+
+          if (!data.error) {
+            const histogram = data.data[`${tabName}Histogram`];
+
+            this.tabStateMixin({
+              tabState: tabsState[tabName],
+              histogram,
+              refreshTinyGraphs,
+            });
+          }
+
+          tabState.data.loading = false;
+          tabState.data.fetchData = false;
+          tabState.data.error = data.error;
+        });
+
+        this.setState(this.state);
+      });
   }
 
   fetchData(fetchAllCounts) {
@@ -206,37 +540,9 @@ class KeyMetricsContainer extends Component {
     const { tabsState, selectedTab } = this.state,
       tabState = tabsState[selectedTab],
       { selectedGrouping, selectedFilters } = tabState,
-      {
-        startDate,
-        endDate,
-        mode,
-        sectionTitle,
-        isAdmin,
-        analyticsFetch
-      } = this.props;
+      { startDate, endDate, mode, isAdmin, analyticsFetch } = this.props;
 
-    let filterBy = null;
-
-    if (selectedFilters) {
-    
-      filterBy = Object.keys(selectedFilters)
-                              .reduce((result, filterName) => {
-      
-        result[filterName] = selectedFilters[filterName].value;
-
-        return result;
-      }, {});
-    }
-
-    const query = getQuery({
-      tabName: fetchAllCounts ? 'all' : selectedTab,
-      breakdown: tabState.selectedBreakdown,
-      startTime: startDate.unix(),
-      endTime: endDate.unix(),
-      groupBy: selectedGrouping ? selectedGrouping.value : '',
-      fetchHistogramForTab: selectedTab,
-      filterBy 
-    });
+    const query = this.makeQueryForTab(selectedTab, fetchAllCounts);
 
     tabState.data.loading = true;
     tabState.data.error = '';
@@ -259,13 +565,7 @@ class KeyMetricsContainer extends Component {
           const tabState = tabsState[tabName],
             { selectedBreakdown } = tabState,
             tabMeta = tabsMeta[tabName],
-            {
-              isCurrency,
-              isPercent,
-              title,
-              noGrouping,
-              valueKey="value"
-            } = tabMeta;
+            { isCurrency, isPercent, title, valueKey = 'value' } = tabMeta;
 
           // Main stat showin in the taib
           const mainStat = resp.data[tabName];
@@ -299,13 +599,12 @@ class KeyMetricsContainer extends Component {
               }
             } else {
               const value = mainStat.result[0]
-                ? mainStat.result[0][tabMeta.valueKey || "value"]
+                ? mainStat.result[0][valueKey]
                 : 0;
 
               tabState.data.count = value;
 
               if (isPercent) {
-              
                 tabState.data.percent = value;
               }
             }
@@ -313,68 +612,13 @@ class KeyMetricsContainer extends Component {
 
           // Timeline data
           const histogram = resp.data[`${tabName}Histogram`];
+
           if (histogram) {
-
-            const options = {
-              data: histogram.result,
-              groupByColumnName:
-                typeof tabMeta.groupByColumnName === "undefined"
-                  ? selectedGrouping.value
-                  : tabMeta.groupByColumnName,
-              startTime: startDate.unix(),
-              endTime: endDate.unix(),
-              breakdown: tabState.selectedBreakdown,
-              groupTitleMap: tabMeta.groupTitleMap || { Mobile: 'mWeb' },
-              isCurrency,
-              valueKey,
-              noGrouping
-            };
-
-            if ([NUM_TRANSACTIONS, TRANSACTION_VOLUME , REFUNDS].indexOf(
-              selectedTab
-            ) >= 0) {
-            
-              options.getColor = (selectedGrouping &&
-                                  selectedGrouping.value === PLATFORM)
-                                    ? getPlatformColor
-                                    : getPaymentMethodColor;
-            }
-
-            const {
-              labels,
-              datasets,
-              aggregates,
-              csv
-            } = getTimelineData(options);
-
-            // track in GA that no data found in this section for 
-            // given daterange
-            if (labels.length === 0) {
-              trackNoData(
-                `${tabMeta.title} in ${sectionTitle} from ${
-                 startDate.format(csvDateFormat)} to ${
-                 endDate.format(csvDateFormat)}`
-              );
-            }
-
-            const downloadFileName = `${title}, ${startDate.format(
-              csvDateFormat
-            )} to ${endDate.format(csvDateFormat)}, ${titleCase(
-              selectedBreakdown
-            )}${selectedGrouping ? ' ' + selectedGrouping.text : ''}(Razorpay)`;
-
-            tabState.data.downloadFileName = downloadFileName;
-            tabState.data.histogram = { labels, datasets };
-            tabState.lastUpdatedAt = histogram.last_updated_at;
-            tabState.data.legendData = aggregates;
-            tabState.data.csv = {
-              name: `${downloadFileName}.csv`,
-              url: csv,
-            };
-            tabState.data.png = {
-              name: `${downloadFileName}.png`,
-              url: '',
-            };
+            this.tabStateMixin({
+              tabState,
+              histogram,
+              refreshTinyGraphs: fetchAllCounts,
+            });
           }
         });
 
@@ -382,14 +626,12 @@ class KeyMetricsContainer extends Component {
           this.state.loading = false;
         }
 
-        tabState.data.loading = false;
-        tabState.data.fetchData = false;
-
         this.setState(this.state, () => {
-          const { tabsState, selectedTab } = this.state,
-            tabState = tabsState[selectedTab];
+          this.setTabWidth();
 
-          this.setState(this.state);
+          if (fetchAllCounts) {
+            this.fetchOtherTabsHistogram(fetchAllCounts);
+          }
         });
 
         return resp;
@@ -409,14 +651,14 @@ class KeyMetricsContainer extends Component {
         }
 
         if (data.error) {
-
-          trackError(`Error while fetching data for Keymetrics - ${
-                      selectedTab}`);
+          trackError(
+            `Error while fetching data for Keymetrics - ${selectedTab}`
+          );
 
           this.props.showNotification({
             type: 'error',
             message: data.error,
-            hidePrevious: true
+            hidePrevious: true,
           });
         }
 
@@ -428,6 +670,7 @@ class KeyMetricsContainer extends Component {
           const tabState = tabsState[tabName];
 
           tabState.data.loading = false;
+          tabState.data.fetchData = false;
           tabState.data.error = data.error;
         });
 
@@ -453,7 +696,7 @@ class KeyMetricsContainer extends Component {
       oldestTransactionDate || this.props.oldestTransactionDate;
 
     const { analyticsFetch } = this.props,
-          { startDate, endDate, value } = oldestTransactionDate;
+      { startDate, endDate, value } = oldestTransactionDate;
 
     if (
       oldestTransactionDate.error ||
@@ -489,7 +732,6 @@ class KeyMetricsContainer extends Component {
       tabName: 'all',
       startTime: startDate.unix(),
       endTime: endDate.unix(),
-      countsOnly: true,
     });
 
     return (analyticsFetch || fetch)(query, this.props.mode)
@@ -529,18 +771,16 @@ class KeyMetricsContainer extends Component {
                 { trend } = tabState.data;
 
               let previousCount = data[tabName].result[0]
-                    ? data[tabName].result[0].value
-                    : 0,
+                  ? data[tabName].result[0].value
+                  : 0,
                 currentCount = tabState.data.count;
 
               if (tabName === SAVED_CARDS) {
-              
-                const savedCardData = data[tabName]
-                                        .result
-                                        .filter(item => item.saved_card)[0];
+                const savedCardData = data[tabName].result.filter(
+                  item => item.saved_card
+                )[0];
 
-                previousCount = savedCardData
-                                  ? savedCardData.value : 0;
+                previousCount = savedCardData ? savedCardData.value : 0;
               }
 
               trend.loading = false;
@@ -555,13 +795,12 @@ class KeyMetricsContainer extends Component {
 
           return;
         } else {
-
           trackError(`Error while fetching prev data for all tabs`);
 
           this.props.showNotification({
             type: 'error',
             message: data.error,
-            hidePrevious: true
+            hidePrevious: true,
           });
 
           tabsOrder.forEach(tabName => {
@@ -589,6 +828,10 @@ class KeyMetricsContainer extends Component {
     }
   }
 
+  componentDidMount() {
+    this.setTabWidth();
+  }
+
   handleTabChange(tabName) {
     this.setState(
       {
@@ -609,23 +852,21 @@ class KeyMetricsContainer extends Component {
 
   onFilterChange(tabName, selectedFilter) {
     const { tabsState } = this.state,
-          { onFilterChange } = this.props,
-          tabState = tabsState[tabName];
+      { onFilterChange } = this.props,
+      tabState = tabsState[tabName];
 
     tabState.selectedFilters = {
-    
       ...tabState.selectedFilters,
-      [selectedFilter.filterName]: selectedFilter
+      [selectedFilter.filterName]: selectedFilter,
     };
 
     // Hardcoding, can not import these values as the code will
     // not be present in merchant dashboard
-    if (selectedFilter.filterName === "paymentMethods") {
-    
+    if (selectedFilter.filterName === 'paymentMethods') {
       tabState.selectedFilters.sources = {
-        filterName: "sources",
-        text: "All Sources",
-        value: "all"
+        filterName: 'sources',
+        text: 'All Sources',
+        value: 'all',
       };
     }
 
@@ -682,19 +923,21 @@ class KeyMetricsContainer extends Component {
 
       // check the daterange and correct the breakdown in each tab
       // if needed
-      tabsOrder.forEach((tabName) => {
-
+      tabsOrder.forEach(tabName => {
         const tabState = tabsState[tabName],
-              selectedBreakdown = tabState.selectedBreakdown;
+          selectedBreakdown = tabState.selectedBreakdown,
+          { hourly, weekly, monthly } = breakdownValsMap;
 
         if (selectedBreakdown !== 'daily') {
+          const showHourly = hourly.isEnabled(startDate, endDate),
+            showWeekly = weekly.isEnabled(startDate, endDate),
+            showMonthly = monthly.isEnabled(startDate, endDate);
 
-          const showWeekly = !startDate.isSame(endDate, 'week'),
-                showMonthly = !startDate.isSame(endDate, 'month');
-
-          if (selectedBreakdown === 'weekly'  && !showWeekly  ||
-              selectedBreakdown === 'monthly' && !showMonthly   ) {
-
+          if (
+            (selectedBreakdown === 'hourly' && !showHourly) ||
+            (selectedBreakdown === 'weekly' && !showWeekly) ||
+            (selectedBreakdown === 'monthly' && !showMonthly)
+          ) {
             /*
              * if the changed daterange doesn't fit for the
              * selected breakdown switch to daily
@@ -717,67 +960,80 @@ class KeyMetricsContainer extends Component {
   }
 
   render() {
-    const { tabsState, loading } = this.state,
-      { startDate, endDate, showGrouping, sectionTitle } = this.props,
-      visibleTabs = tabsOrder.filter(
-        tabName => tabsState[tabName].data.showTab
-      );
+    const { tabsState, loading, tabWidth, selectedTab } = this.state,
+      { startDate, endDate, showGroupingByPtfm, sectionTitle } = this.props,
+      visibleTabs = this.getVisibleTabs();
 
     return (
-      <Tabs
-         className="keymetrics"
-         justified={true}>
-        {visibleTabs.map((tabName, index) => {
-          const tabData = tabsState[tabName].data,
-            { isCurrency, title } = tabsMeta[tabName];
+      <div
+        ref={node => (this.node = node)}
+        className={`keymetrics-container ${loading ? 'loading' : ''}`}
+      >
+        <Tabs
+          className="keymetrics"
+          justified={true}
+          tabsWrapperProps={{ id: 'analytics-keymetrics-section' }}
+        >
+          {visibleTabs.map((tabName, index) => {
+            const tabData = tabsState[tabName].data,
+              { isCurrency, title, helpText } = tabsMeta[tabName];
 
-          return (
-            <Tab
-              key={index}
-              onClick={() => this.handleTabChange(tabName)}
-              style={{ width: 100 / visibleTabs.length + '%' }}
-            >
-              <TabContent
-                value={tabData.count}
-                name={tabName}
-                isCurrency={isCurrency}
-                title={title}
-                isLoading={loading}
-                error={tabData.error}
-                percent={tabData.percent}
-              />
-            </Tab>
-          );
-        })}
+            return (
+              <Tab
+                key={index}
+                onClick={() => this.handleTabChange(tabName)}
+                style={{
+                  width: tabWidth,
+                  marginLeft: (index === 0 ? 0 : gutterBetweenTabs) + 'px',
+                  marginBottom: gutterBetweenTabs + 'px',
+                }}
+              >
+                <TabContent
+                  value={tabData.count}
+                  name={tabName}
+                  helpText={helpText}
+                  isCurrency={isCurrency}
+                  title={title}
+                  isLoading={loading}
+                  error={tabData.error}
+                  percent={tabData.percent}
+                  trend={tabData.trend}
+                  histogram={tabData.tinyGraphData}
+                  isActive={selectedTab === tabName}
+                />
+              </Tab>
+            );
+          })}
 
-        {visibleTabs.map((tabName, index) => {
-          const tabState = tabsState[tabName],
-            { isCurrency } = tabsMeta[tabName];
+          {visibleTabs.map((tabName, index) => {
+            const tabState = tabsState[tabName],
+              { isCurrency } = tabsMeta[tabName];
 
-          return (
-            <TabPane key={index}>
-              <Panel
-                tabName={tabName}
-                selectedBreakdown={tabState.selectedBreakdown}
-                onBreakdownChange={this.onBreakdownChange}
-                selectedGrouping={tabState.selectedGrouping}
-                selectedFilters={tabState.selectedFilters}
-                onGroupingChange={this.onGroupingChange}
-                onFilterChange={this.onFilterChange}
-                data={tabsState[tabName].data}
-                startDate={startDate}
-                endDate={endDate}
-                lastUpdatedAt={tabsState[tabName].lastUpdatedAt}
-                isCurrency={isCurrency}
-                onScreenshot={this.onScreenshot}
-                externalUrl={`/#/app/${tabsMeta[tabName].index}`}
-                showGrouping={showGrouping}
-                sectionTitle={sectionTitle}
-              />
-            </TabPane>
-          );
-        })}
-      </Tabs>
+            return (
+              <TabPane key={index}>
+                <Panel
+                  tabName={tabName}
+                  selectedBreakdown={tabState.selectedBreakdown}
+                  onBreakdownChange={this.onBreakdownChange}
+                  selectedGrouping={tabState.selectedGrouping}
+                  selectedFilters={tabState.selectedFilters}
+                  onGroupingChange={this.onGroupingChange}
+                  onFilterChange={this.onFilterChange}
+                  data={tabsState[tabName].data}
+                  startDate={startDate}
+                  endDate={endDate}
+                  lastUpdatedAt={tabsState[tabName].lastUpdatedAt}
+                  isCurrency={isCurrency}
+                  onScreenshot={this.onScreenshot}
+                  externalUrl={`/#/app/${tabsMeta[tabName].index}`}
+                  showGroupingByPtfm={showGroupingByPtfm}
+                  sectionTitle={sectionTitle}
+                />
+              </TabPane>
+            );
+          })}
+        </Tabs>
+      </div>
     );
   }
 }
