@@ -143,7 +143,7 @@ export default class PaymentDetailsContainer extends Component {
 
     window.rzpAnalytics({
       eventCategory: eventCategory,
-      eventAction: 'Open form - Capture',
+      eventAction: 'Open Form - Capture',
       eventLabel: `payment_id=${payment.id}`,
     });
     this.context
