@@ -48,7 +48,7 @@ class Server extends Mock\Server
         $verifyResponse = $this->getVerifyResponse($input);
 
         $stringResponse = $this->getResponseString($verifyResponse);
-        
+
         return $this->makeResponse($stringResponse);
     }
 
