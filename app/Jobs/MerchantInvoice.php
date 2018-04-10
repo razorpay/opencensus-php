@@ -8,7 +8,10 @@ use RZP\Models\Merchant\Invoice\Processor;
 
 class MerchantInvoice extends Job
 {
-    const ROUTE = 'merchant_invoice';
+    /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'merchant_invoice';
 
     protected $merchantId;
 

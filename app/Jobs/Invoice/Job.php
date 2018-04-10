@@ -16,7 +16,6 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 class Job extends BaseJob
 {
-    const ROUTE                = 'invoice';
     const MAX_ALLOWED_ATTEMPTS = 10;
     const RELEASE_WAIT_SECS    = 60;
 
@@ -31,6 +30,11 @@ class Job extends BaseJob
     const UPDATED               = 'updated';
     const EXPIRED               = 'expired';
     const CAPTURED              = 'captured';
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'invoice';
 
     protected $event;
     protected $id;

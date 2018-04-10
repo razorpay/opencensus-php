@@ -610,6 +610,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         try
         {
+            // We do delayed dispatch here to account for time taken in db transaction(with numbers of queries) commit.
             EsSync::dispatch($mode, $action, $entity->getEntity(), $entity->getId())->delay(self::ES_JOB_DELAY);
         }
         catch (\Throwable $e)

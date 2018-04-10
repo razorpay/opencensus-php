@@ -12,12 +12,16 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 
 class ReportsJob extends Job
 {
-    const ROUTE                = 'reports';
     const MAX_ALLOWED_ATTEMPTS = 5;
     const RELEASE_WAIT_SECS    = 300;
 
     const JOB_DELETED          = 'job_deleted';
     const JOB_RELEASED         = 'job_released';
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'reports';
 
     protected $input;
 

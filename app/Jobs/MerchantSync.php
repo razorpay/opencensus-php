@@ -18,7 +18,6 @@ use RZP\Models\Base\EsRepository;
  */
 class MerchantSync extends Job
 {
-    const ROUTE            = 'es';
     const MAX_JOB_ATTEMPTS = 3;
     const JOB_RELEASE_WAIT = 30;
 
@@ -27,6 +26,11 @@ class MerchantSync extends Job
     //
     const GROUP_EDIT       = 'group_edit';
     const GROUP_DELETE     = 'group_delete';
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'es';
 
     private $event;
     private $payload;

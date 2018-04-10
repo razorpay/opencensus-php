@@ -16,9 +16,13 @@ use RZP\Models\Invoice as InvoiceModel;
  */
 class BatchIssue extends Job
 {
-    const ROUTE              = 'invoice';
     const INPUT              = 'input';
     const MUTEX_LOCK_TIMEOUT = 3600;    // In seconds
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'invoice';
 
     /**
      * Batch entity id.

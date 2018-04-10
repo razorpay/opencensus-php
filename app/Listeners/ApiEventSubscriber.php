@@ -539,7 +539,7 @@ class ApiEventSubscriber extends Base\Core
 
     protected function dispatchWebhook(array $data)
     {
-        Webhook::dispatch($data)->extra([$this->event]);
+        Webhook::dispatch($data)->using([$this->event]);
     }
 
     protected function getWebhookData(array $payload, WebhookEntity $webhook): array

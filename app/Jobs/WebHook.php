@@ -6,7 +6,10 @@ use App;
 
 class WebHook extends Job
 {
-    const ROUTE = 'webhook';
+    /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'webhook';
 
     protected $data;
 

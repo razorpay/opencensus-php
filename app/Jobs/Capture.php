@@ -10,13 +10,17 @@ use RZP\Trace\TraceCode;
 
 class Capture extends Job
 {
-    const ROUTE            = 'capture';
     const MAX_JOB_ATTEMPTS = 10;
     const JOB_RELEASE_WAIT = 300;
 
     // Make sure that this is below 900 (seconds) because SQS doesn't support
     // delay over 15 minutes.
     public $delay = 100;
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'capture';
 
     protected $trace;
 

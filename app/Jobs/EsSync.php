@@ -13,9 +13,13 @@ use Razorpay\Trace\Logger as Trace;
  */
 class EsSync extends Job
 {
-    const ROUTE            = 'es';
     const MAX_JOB_ATTEMPTS = 3;
     const JOB_RELEASE_WAIT = 30;
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'es';
 
     private $action;
     private $entity;

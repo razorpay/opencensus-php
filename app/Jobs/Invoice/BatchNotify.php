@@ -13,8 +13,12 @@ use RZP\Jobs\Invoice\Job as InvoiceJob;
  */
 class BatchNotify extends Job
 {
-    const ROUTE = 'invoice';
     const INPUT = 'input';
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'invoice';
 
     /**
      * Batch entity id.

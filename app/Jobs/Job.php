@@ -12,9 +12,11 @@ class Job implements ShouldQueue
 {
     use Extended\Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    // If a key is specified, it's value would be used from config/queue_route.php to
-    // choose proper queue connection and route.
-    const ROUTE = '';
+    /**
+     * If specified, it's value would be used from config/queue.php to choose proper queue connection and name
+     * @var string|null
+     */
+    protected $queueConfigKey;
 
     /**
      * Mode as received from pushed job payload. We set the basic auth's mode
@@ -81,9 +83,9 @@ class Job implements ShouldQueue
         return $this->previousMode;
     }
 
-    public function getRoute()
+    public function getQueueConfigKey()
     {
-        return static::ROUTE;
+        return $this->queueConfigKey;
     }
 
     /**

@@ -14,11 +14,15 @@ use RZP\Models\Batch as BatchModel;
  */
 class IrctcBatch extends Job
 {
-    const ROUTE       = 'batch';
     const BATCH_ORDER = [
         BatchModel\Type::IRCTC_REFUND,
         BatchModel\Type::IRCTC_SETTLEMENT
     ];
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'batch';
 
     /**
      * Associative array with key as batch type and value

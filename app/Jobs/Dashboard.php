@@ -8,12 +8,16 @@ use Razorpay\Trace\Logger as Trace;
 
 class Dashboard extends Job
 {
-    const ROUTE                = 'dashboard';
     const MAX_ALLOWED_ATTEMPTS = 5;
     const RELEASE_WAIT_SECS    = 60;
 
     const JOB_DELETED          = 'job_deleted';
     const JOB_RELEASED         = 'job_released';
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'dashboard';
 
     protected $data;
 
