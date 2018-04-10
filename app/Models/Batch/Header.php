@@ -145,6 +145,18 @@ class Header
     const TIME           = 'time';
 
     //
+    // Batch recurring payments
+    //
+    const RECURRING_CHARGE_AMOUNT      = 'amount';
+    const RECURRING_CHARGE_CURRENCY    = 'currency';
+    const RECURRING_CHARGE_EMAIL       = 'email';
+    const RECURRING_CHARGE_CONTACT     = 'contact';
+    const RECURRING_CHARGE_DESCRIPTION = 'description';
+    const RECURRING_CHARGE_CUSTOMER_ID = 'customer_id';
+    const RECURRING_CHARGE_TOKEN       = 'token';
+    const RECURRING_CHARGE_PAYMENT_ID  = 'payment_id';
+
+    //
     // HDFC Emandate Register Response File Headers
     //
     const HDFC_EM_REGISTER_CLIENT_NAME                      = HdfcEMRegisterHeadings::CLIENT_NAME;
@@ -452,6 +464,28 @@ class Header
                 self::AMOUNT,
                 self::DESCRIPTION,
                 self::STATUS,
+            ],
+        ],
+
+        Type::RECURRING_CHARGE => [
+            self::INPUT => [
+                self::RECURRING_CHARGE_AMOUNT,
+                self::RECURRING_CHARGE_CURRENCY,
+                self::RECURRING_CHARGE_EMAIL,
+                self::RECURRING_CHARGE_CONTACT,
+                self::RECURRING_CHARGE_DESCRIPTION,
+                self::RECURRING_CHARGE_CUSTOMER_ID,
+                self::RECURRING_CHARGE_TOKEN,
+            ],
+            self::OUTPUT => [
+                self::RECURRING_CHARGE_AMOUNT,
+                self::RECURRING_CHARGE_CURRENCY,
+                self::RECURRING_CHARGE_EMAIL,
+                self::RECURRING_CHARGE_CONTACT,
+                self::RECURRING_CHARGE_DESCRIPTION,
+                self::RECURRING_CHARGE_CUSTOMER_ID,
+                self::RECURRING_CHARGE_TOKEN,
+                self::RECURRING_CHARGE_PAYMENT_ID,
             ],
         ],
 

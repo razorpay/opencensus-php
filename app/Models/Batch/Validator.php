@@ -344,6 +344,19 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateRecurringChargeEntries(array & $entries, array $params, Merchant\Entity $merchant)
+    {
+        if ($merchant->isFeatureEnabled(Feature::CHARGE_AT_WILL) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Charge-at-will is not enabled for merchant',
+                null,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+    }
+
     protected function validatePayoutEntries(array & $entries, array $params, Merchant\Entity $merchant)
     {
         if ($merchant->isFeatureEnabled(Feature::PAYOUT) === false)
