@@ -1053,7 +1053,7 @@ class Base extends BaseModel\Core
 
     /**
      * Handles any exception while processing the batch, and updates the batch
-     * status accordingly. Should be overrideen by respective processors for any
+     * status accordingly. Should be overridden by respective processors for any
      * special handling
      *
      * @param \Throwable $ex
