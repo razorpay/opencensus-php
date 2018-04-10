@@ -39,15 +39,18 @@ class Entity extends Base\PublicEntity
         self::STATES,
         self::STATUS,
         self::MERCHANT,
+        self::CREATED_AT,
         self::MERCHANT_ID,
         self::PUBLIC_MESSAGE,
         self::INTERNAL_COMMENT,
+        Constants::ALLOWED_NEXT_ACTIVATION_STATUSES,
     ];
 
     protected $publicSetters = [
         self::ID,
         self::MERCHANT_ID,
         self::INTERNAL_COMMENT,
+        Constants::ALLOWED_NEXT_ACTIVATION_STATUSES,
     ];
 
     protected $defaults = [
@@ -109,4 +112,19 @@ class Entity extends Base\PublicEntity
             unset($attributes[Entity::INTERNAL_COMMENT]);
         }
     }
+
+    protected function setPublicAllowedNextActivationStatusesAttribute(array & $array)
+    {
+        $activationStatus = $this->getStatus();
+
+        $allowedNextActivationStatuses = [];
+
+        if (empty($activationStatus) === false)
+        {
+            $allowedNextActivationStatuses = Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$activationStatus];
+        }
+
+        $array[Constants::ALLOWED_NEXT_ACTIVATION_STATUSES] = $allowedNextActivationStatuses;
+    }
+
 }

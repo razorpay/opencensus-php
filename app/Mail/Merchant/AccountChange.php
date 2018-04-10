@@ -22,12 +22,12 @@ class AccountChange extends Mailable
 
         $this->merchant = $merchant;
 
+        $this->recipientEmails = [$this->merchant['email']];
+
         if (empty($emails) === false)
         {
-            $this->recipientEmails = $emails;
+            $this->recipientEmails = array_merge($this->recipientEmails, $emails);
         }
-
-        $this->recipientEmails = $this->merchant['email'];
     }
 
     protected function addRecipients()

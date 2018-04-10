@@ -261,9 +261,9 @@ class Core extends Base\Core
 
         $merchant = $merchant->toArray();
 
-        $bankAccountChangeMail = new BankAccountChangeRequestMail($newBankAccount, $merchant, $recipients);
+        $bankAccountChangeRequestMail = new BankAccountChangeRequestMail($newBankAccount, $merchant, $recipients);
 
-        Mail::queue($bankAccountChangeMail);
+        Mail::queue($bankAccountChangeRequestMail);
     }
 
     protected function sendBankAccountChangeEmail($newBankAccount, $merchant)
