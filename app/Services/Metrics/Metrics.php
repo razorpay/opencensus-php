@@ -52,6 +52,11 @@ class Metrics
         return $this;
     }
 
+    public function getCurrentDriver(): Drivers\Driver
+    {
+        return $this->currentDriver;
+    }
+
     /**
      * Invokes the underlying driver's implementation
      * @param  string $name

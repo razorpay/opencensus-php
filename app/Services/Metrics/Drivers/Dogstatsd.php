@@ -31,7 +31,10 @@ class Dogstatsd extends Driver
      */
     public function count(string $metric, int $times = 1, array $dimensions = []): Driver
     {
-        $this->statsd->increment($this->getNamespacedMetric($metric), $times, self::SAMPLE_RATE, $dimensions);
+        while ($times--)
+        {
+            $this->statsd->increment($this->getNamespacedMetric($metric), self::SAMPLE_RATE, $dimensions);
+        }
 
         return $this;
     }
