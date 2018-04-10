@@ -156,7 +156,7 @@ class Service extends Base\Service
      */
     public function refundAuthorized($id, array $input)
     {
-        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
+        $payment = $this->repo->payment->findByPublicId($id);
 
         $refund = $this->getNewProcessor()->refundAuthorizedPayment($payment, $input);
 
