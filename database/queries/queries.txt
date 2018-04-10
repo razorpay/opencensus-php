@@ -3462,3 +3462,8 @@ ALTER TABLE payments
     ADD COLUMN reference7 VARCHAR(255) DEFAULT NULL AFTER reference6,
     ADD COLUMN reference8 VARCHAR(255) DEFAULT NULL AFTER reference7,
     ADD COLUMN reference9 BIGINT UNSIGNED DEFAULT NULL AFTER reference8;
+
+# Invoice GST Changes - address and tax codes
+ALTER TABLE invoices
+    ADD COLUMN customer_shipping_addr_id CHAR(14) DEFAULT NULL AFTER customer_billing_addr_id,
+    ADD CONSTRAINT invoices_customer_shipping_addr_id_foreign FOREIGN KEY (customer_shipping_addr_id) REFERENCES addresses (id);
