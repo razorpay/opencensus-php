@@ -32,13 +32,14 @@ class NetbankingObcGatewayTest extends TestCase
 
         $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
 
-        $this->gateway = Payment\Gateway::NETBANKING_OBC;
+        $this->gateway = 'netbanking_obc';
 
         $this->fixtures->create('terminal:shared_netbanking_obc_terminal');
     }
 
     public function testPayment()
     {
+
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
@@ -102,9 +103,9 @@ class NetbankingObcGatewayTest extends TestCase
 
     public function testPaymentAmountMismatch()
     {
-        $this->payment['amount'] = 2000;
+        $payment = $this->doAuthAndCapturePayment($this->payment);
 
-        $payment = $this->doAuthAndCapturePayment($this->payment, 2000);
+        $this->mockAmountMismatch();
 
         $data = $this->testData['testPaymentAmountMismatch'];
 
@@ -263,5 +264,14 @@ class NetbankingObcGatewayTest extends TestCase
             {
                 $content[Obc\ResponseFields::PAID] = Obc\Status::FAILED;
             });
+    }
+
+    protected function mockAmountMismatch()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                $content['AMT'] = '300.00';
+            }, $this->gateway);
     }
 }

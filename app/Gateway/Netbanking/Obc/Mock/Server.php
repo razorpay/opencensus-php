@@ -2,18 +2,14 @@
 
 namespace RZP\Gateway\Netbanking\Obc\Mock;
 
-use RZP\Gateway\Base\Mock;
+use RZP\Gateway\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Netbanking\Obc\Status;
 use RZP\Gateway\Netbanking\Obc\RequestFields;
 use RZP\Gateway\Netbanking\Obc\ResponseFields;
 
-/**
- * This class cannot be marked as final as it will be mocked for test cases
- * Class Server
- * @package RZP\Gateway\Netbanking\Obc\Mock
- */
-class Server extends Mock\Server
+
+class Server extends Base\Mock\Server
 {
     /**
      * @var Gateway
@@ -45,11 +41,9 @@ class Server extends Mock\Server
 
         $this->validateActionInput($input, $this->action);
 
-        $verifyResponse = $this->getVerifyResponse($input);
+        $content = $this->getVerifyResponse($input);
 
-        $stringResponse = $this->getResponseString($verifyResponse);
-
-        return $this->makeResponse($stringResponse);
+        return $this->makeResponse($content);
     }
 
     private function getAuthResponse(array $input): array
@@ -80,16 +74,20 @@ class Server extends Mock\Server
 
     private function getVerifyResponse(array $input)
     {
-        $verifyResponseArray = [
+        $content = [
             ResponseFields::PAYEE_ID        => $input[RequestFields::PAYEE_ID],
             ResponseFields::PAY_REF_NUM     => $input[RequestFields::PAY_REF_NUM],
             ResponseFields::ITEM_CODE       => $input[RequestFields::ITEM_CODE],
-            ResponseFields::AMOUNT          => '500.00',
+            ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
             ResponseFields::BANK_PAYMENT_ID => $input[RequestFields::BID],
             ResponseFields::TXN_STATUS      => Status::VERIFY_SUCCESS,
         ];
 
-        return $verifyResponseArray;
+        $this->content($content, $this->action);
+
+        $stringResponse = $this->getResponseString($content);
+
+        return $stringResponse;
     }
 
     private function getResponseString($reponse)
