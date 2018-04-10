@@ -105,13 +105,13 @@ const TabContent = ({
    *
    */
   return (
-    <div>
+    <div className="card">
       <span>
         {!isLoading ? (
           <span>
             {title}
             {helpText && (
-              <small className="help-content">
+              <small className="help-content faded-text">
                 <i class="i i-help" />
                 <Popover align="top">
                   <PopoverTitle>What's this?</PopoverTitle>

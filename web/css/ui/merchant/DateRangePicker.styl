@@ -5,6 +5,7 @@ $height = 40px;
 
   display: block;
   border: 1px solid $borderColor;
+  border-radius: 2px;
 
   div.DateRangePicker > .caret {
 
@@ -19,12 +20,25 @@ $height = 40px;
     vertical-align: middle;
     background-color: #FFFFFF;
 
+    &.icon-container, &.presets-container {
+
+      border-left: none;
+    }
+
     &.icon-container {
 
       line-height: 1;
       padding: 9px;
       font-size: 20px;
-      border-left: none;
+      padding-right: 0;
+    }
+
+    &.presets-container {
+
+      .PowerSelect__TriggerLabel, .PowerSelect__Trigger {
+
+        height: 40px;
+      }
     }
 
     &.daterange-container i.i-date-range {
