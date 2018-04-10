@@ -69,7 +69,7 @@ class Server extends Base\Mock\Server
 
         $encryptedString = $this->encrypt($queryStringToEncrypt);
 
-        return [$encryptedString => ""];
+        return [$encryptedString => ''];
     }
 
     private function getVerifyResponse(array $input)

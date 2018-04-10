@@ -16,7 +16,6 @@ use RZP\Gateway\Base\VerifyResult;
 
 use phpseclib\Crypt\AES;
 
-
 class Gateway extends Base\Gateway
 {
     protected $gateway = Payment\Gateway::NETBANKING_OBC;
