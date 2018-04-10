@@ -32,9 +32,8 @@ class PaymentLink
     public static function getEntityInput(array & $entry, array & $params): array
     {
         // Set partial_payment attribute to false if field comes as null from excel file.
-        $partialPayment = array_get($entry, Batch\Header::PARTIAL_PAYMENT) ?: null;
-        $partialPayment = empty($partialPayment) === true ?
-            '0' : self::PARTIAL_PAYMENT_INPUT_MAP[strtolower(trim($partialPayment))];
+        $partialPayment = array_get($entry, Batch\Header::PARTIAL_PAYMENT);
+        $partialPayment = self::PARTIAL_PAYMENT_INPUT_MAP[strtolower(trim($partialPayment))];
 
         $receipt = $entry[Batch\Header::INVOICE_NUMBER];
         $receipt = empty($receipt) === true ? null : (string) $receipt;
