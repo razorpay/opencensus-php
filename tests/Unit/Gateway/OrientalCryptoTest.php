@@ -4,7 +4,7 @@ namespace RZP\Tests\Unit\Gateway;
 
 use RZP\Tests\TestCase;
 use phpseclib\Crypt\AES;
-use RZP\Gateway\Netbanking\Oriental\Crypto;
+use RZP\Gateway\Netbanking\Obc\AESCrypto;
 
 class OrientalCryptoTest extends TestCase
 {
@@ -17,7 +17,7 @@ class OrientalCryptoTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $this->crypto = new Crypto(AES::MODE_ECB, self::KEY);
+        $this->crypto = new AESCrypto(AES::MODE_ECB, self::KEY);
     }
 
     public function testEncryptionIsSameAsJava()
