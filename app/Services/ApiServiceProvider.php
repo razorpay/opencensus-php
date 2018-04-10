@@ -4,10 +4,6 @@ namespace RZP\Services;
 
 use RZP;
 use Swift_Mailer;
-use Http\Mock\Client as MockHttplug;
-use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\ServiceProvider as BaseServiceProvider;
-
 use RZP\Models\Batch;
 use RZP\Models\Order;
 use RZP\Models\Payout;
@@ -23,14 +19,19 @@ use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Constants\Entity as E;
-use RZP\Models\VirtualAccount;
 use RZP\Models\Admin as Admin;
+use RZP\Models\VirtualAccount;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Plan\Subscription;
+use Illuminate\Database\Connection;
+use RZP\Base\CustomMySQLConnection;
+use Http\Mock\Client as MockHttplug;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Gateway\File as GatewayFile;
 use RZP\Models\Merchant\Request as MerchantRequest;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
 class ApiServiceProvider extends BaseServiceProvider
 {
@@ -197,6 +198,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerGeolocation();
 
         $this->registerPincodeSearch();
+
+        $this->registerCustomMySQLConnection();
     }
 
     /**
@@ -468,6 +471,13 @@ class ApiServiceProvider extends BaseServiceProvider
             $implementation = $mock ? Mock\ShieldClient::class : ShieldClient::class;
 
             return new $implementation($app);
+        });
+    }
+
+    protected function registerCustomMySQLConnection()
+    {
+        Connection::resolverFor('mysql', function ($connection, $database, $prefix, $config) {
+            return new CustomMySQLConnection($connection, $database, $prefix,$config);
         });
     }
 }
