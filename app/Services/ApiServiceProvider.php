@@ -28,6 +28,7 @@ use Illuminate\Database\Connection;
 use RZP\Base\CustomMySQLConnection;
 use Http\Mock\Client as MockHttplug;
 use RZP\Models\Plan\Subscription\Addon;
+use Illuminate\Database\MySqlConnection;
 use RZP\Models\Gateway\File as GatewayFile;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -477,7 +478,12 @@ class ApiServiceProvider extends BaseServiceProvider
     protected function registerCustomMySQLConnection()
     {
         Connection::resolverFor('mysql', function ($connection, $database, $prefix, $config) {
-            return new CustomMySQLConnection($connection, $database, $prefix,$config);
+            if (isset($config['lag_check']) === false)
+            {
+                return new MySqlConnection($connection, $database, $prefix, $config);
+            }
+
+            return new CustomMySQLConnection($connection, $database, $prefix, $config);
         });
     }
 }

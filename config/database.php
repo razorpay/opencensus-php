@@ -1,5 +1,7 @@
 <?php
 
+use RZP\Models\Admin\ConfigKey;
+
 return array(
 
     /*
@@ -66,7 +68,11 @@ return array(
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
-            'strict'    => true
+            'strict'    => true,
+            'lag_check' => [
+                'driver' => 'redis',
+                'flag' => ConfigKey::SKIP_SLAVE
+             ]
         ],
 
         'test' => [
@@ -90,7 +96,11 @@ return array(
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
-            'strict'    => true
+            'strict'    => true,
+            'lag_check' => [
+                'driver' => 'redis',
+                'flag' => ConfigKey::SKIP_SLAVE
+             ]
         ],
 
         'auth' => [

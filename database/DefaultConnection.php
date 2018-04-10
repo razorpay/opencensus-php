@@ -16,25 +16,25 @@ class DefaultConnection
         $currentRoute = Route::currentRouteName();
 
         // adding namespace above causes conflicts on Route class
-        $slaveRoutes = \RZP\Http\Route::getSlaveRoutes();
+        // $slaveRoutes = \RZP\Http\Route::getSlaveRoutes();
 
-        //
-        // In the testing environment, we can't set slave connection because all
-        // entities created during test execution are not committed and we can't
-        // fetch them using a different slave connection
-        //
-        if ((\App::getFacadeRoot()['env'] !== 'testing') and
-            (in_array($currentRoute, $slaveRoutes) === true))
-        {
-            $skipSlave = self::getSkipSlaveConfig();
+        // //
+        // // In the testing environment, we can't set slave connection because all
+        // // entities created during test execution are not committed and we can't
+        // // fetch them using a different slave connection
+        // //
+        // if ((\App::getFacadeRoot()['env'] !== 'testing') and
+        //     (in_array($currentRoute, $slaveRoutes) === true))
+        // {
+        //     $skipSlave = self::getSkipSlaveConfig();
 
-            if ($skipSlave === false)
-            {
-                self::setSlaveConnection($mode);
+        //     if ($skipSlave === false)
+        //     {
+        //         self::setSlaveConnection($mode);
 
-                return;
-            }
-        }
+        //         return;
+        //     }
+        // }
 
         self::setMasterConnection($mode);
     }
