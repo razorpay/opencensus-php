@@ -35,6 +35,16 @@ class Method
         self::UPI,
     ];
 
+    /**
+     * Payment methods where amount validation is skipped
+     *
+     * @var array
+     */
+    public static $methodsWithoutAmountValidation = [
+        self::TRANSFER,
+        self::BANK_TRANSFER,
+    ];
+
     protected static $asynchronous = [
         self::UPI,
     ];

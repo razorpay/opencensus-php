@@ -19,6 +19,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     const TAX_CODES  = 'tax_codes';
+    const TAX_INPUTS = 'tax_inputs';
 
     protected static $createRules = [
         Entity::QUANTITY            => 'filled|integer|min:1',
@@ -35,6 +36,8 @@ class Validator extends Base\Validator
         Entity::HSN_CODE            => 'sometimes|nullable|string|max:8',
         Entity::SAC_CODE            => 'sometimes|nullable|string|max:8',
         Entity::TAX_ID              => 'sometimes|nullable|public_id|size:18',
+        Entity::TAX_IDS             => 'sometimes|nullable|array|max:10',
+        Entity::TAX_IDS . '.*'      => 'filled|public_id|size:18',
         Entity::TAX_GROUP_ID        => 'sometimes|nullable|public_id|size:19',
     ];
 
@@ -57,6 +60,8 @@ class Validator extends Base\Validator
         Entity::HSN_CODE            => 'sometimes|nullable|string|max:8',
         Entity::SAC_CODE            => 'sometimes|nullable|string|max:8',
         Entity::TAX_ID              => 'sometimes|nullable|public_id|size:18',
+        Entity::TAX_IDS             => 'sometimes|nullable|array|max:10',
+        Entity::TAX_IDS . '.*'      => 'filled|public_id|size:18',
         Entity::TAX_GROUP_ID        => 'sometimes|nullable|public_id|size:19',
     ];
 
@@ -66,10 +71,12 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         self::TAX_CODES,
+        self::TAX_INPUTS,
     ];
 
     protected static $editValidators = [
         self::TAX_CODES,
+        self::TAX_INPUTS,
     ];
 
     public function validateType($attribute, $value)
@@ -145,6 +152,26 @@ class Validator extends Base\Validator
         if ((empty($hsnCode) === false) and (empty($sacCode) === false))
         {
             throw new BadRequestValidationFailureException('Both hsn_code and sac_code cannot be present');
+        }
+    }
+
+    /**
+     * Validates that only one of tax_id, tax_ids or tax_group_id is sent.
+     *
+     * @param array $input
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateTaxInputs(array $input)
+    {
+        $taxId      = $input[Entity::TAX_ID] ?? null;
+        $taxIds     = $input[Entity::TAX_IDS] ?? null;
+        $taxGroupId = $input[Entity::TAX_GROUP_ID] ?? null;
+
+        if (count(array_filter([$taxId, $taxIds, $taxGroupId])) > 1)
+        {
+            throw new BadRequestValidationFailureException(
+                'Only one among tax_id, tax_ids or tax_group_id can be present');
         }
     }
 }
