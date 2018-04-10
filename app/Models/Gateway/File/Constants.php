@@ -55,6 +55,7 @@ class Constants
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
+            self::ENACH_RBL,
         ],
         Type::EMANDATE_DEBIT => [
             self::HDFC,
@@ -101,7 +102,8 @@ class Constants
         ],
 
         Type::EMANDATE_REGISTER => [
-            self::HDFC => ['hdfc.emandate@razorpay.com'],
+            self::HDFC      => ['hdfc.emandate@razorpay.com'],
+            self::ENACH_RBL => ['rbl.emandate@razorpay.com'],
         ],
 
         Type::EMANDATE_DEBIT => [

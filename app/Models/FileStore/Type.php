@@ -17,6 +17,7 @@ class Type
     const HDFC_EMANDATE_DEBIT               = 'hdfc_emandate_debit';
 
     const RBL_ENACH_DEBIT                   = 'rbl_enach_debit';
+    const RBL_ENACH_REGISTER                = 'rbl_enach_register';
 
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
 
