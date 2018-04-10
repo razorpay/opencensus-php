@@ -99,9 +99,7 @@ class FeatureAccess
             return ApiResponse::routeNotFound();
         }
 
-        $allowAccess = $this->allowApplicationToAccessFeatureRoute(
-                            $routeFeatures,
-                            $merchantRouteFeatures);
+        $allowAccess = $this->allowAppToAccessRoute($routeFeatures, $merchantRouteFeatures);
 
         if ($allowAccess === true)
         {
@@ -134,18 +132,23 @@ class FeatureAccess
      * Checks if the application requesting to access a feature-based
      * route should be given the access. Returns a boolean.
      *
+     * 1. [simplified] Allow access because the app has the feature.
+     * 2. [simplified] Allow access because the merchant has the feature.
+     *
      * @param array $routeFeatures
      * @param array $merchantRouteFeatures
      *
      * @return bool
      */
-    protected function allowApplicationToAccessFeatureRoute(
+    protected function allowAppToAccessRoute(
         array $routeFeatures,
         array $merchantRouteFeatures): bool
     {
         //
-        // 1. If the application has any of the route features required,
-        //    allow the application to access the resource directly.
+        // 1. Allow the application to access the resource, if -
+        //    - one of the features assigned to the application is not a restrictedAccessFeature, OR
+        //    - the feature assigned to the application is a restrictedAccessFeature and both the app and
+        //      the merchant have it enabled.
         //
 
         // Fetch all the features of the application that is trying to access the resource
@@ -157,15 +160,29 @@ class FeatureAccess
 
         $routeFeaturesAvailableWithApp = array_intersect($routeFeatures, $appFeatures);
 
-        if (empty($routeFeaturesAvailableWithApp) === false)
+        $restrictedAccessFeatures = Feature\Entity::$restrictedAccessFeatures;
+
+        $appHasNonRestrictedRouteFeatures = filled(array_values(array_diff(
+                                                $routeFeaturesAvailableWithApp,
+                                                $restrictedAccessFeatures)));
+
+        $appAndMerchantHaveRestrictedRouteFeature = filled(array_values(array_intersect(
+                                                        $restrictedAccessFeatures,
+                                                        $routeFeaturesAvailableWithApp,
+                                                        $merchantRouteFeatures)));
+
+        if ((($appHasNonRestrictedRouteFeatures === true) or
+            ($appAndMerchantHaveRestrictedRouteFeature === true)))
         {
             return true;
         }
 
         //
-        // 2. If the application does not have any of the required route features,
-        //    check the merchant features and allow the application to access the
-        //    resource if the feature required is not a blacklisted feature.
+        // 2. If the application does not have any of the required route features, check the merchant features.
+        //    Allow the application to access the resource if -
+        //      - the merchant has any of the route features assigned, and,
+        //      - the feature required is not a blacklisted feature.
+        //      - the feature required is not a restricted access feature.
         //
 
         $appBlacklistedFeatures = Feature\Entity::$appBlacklistedFeatures;
@@ -174,8 +191,11 @@ class FeatureAccess
         // From the features available with the merchant, remove the features using
         // which the applications should not be allowed to access the routes.
         //
-        $merchantRouteFeaturesWhitelisted = array_values(array_diff($merchantRouteFeatures, $appBlacklistedFeatures));
+        $merchantRouteFeaturesWhitelisted = array_values(array_diff(
+                                                $merchantRouteFeatures,
+                                                $appBlacklistedFeatures,
+                                                $restrictedAccessFeatures));
 
-        return (empty($merchantRouteFeaturesWhitelisted) === false);
+        return (filled($merchantRouteFeaturesWhitelisted) === true);
     }
 }

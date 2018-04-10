@@ -562,4 +562,24 @@ return [
             ],
         ],
     ],
+
+    'testBulkAssignReviewer' => [
+        'request' => [
+            'content' => [
+                'reviewer_id' => Org::SUPER_ADMIN_SIGNED,
+                'merchants'   => [
+                    '10000000000000'
+                ],
+            ],
+            'url'     => '/merchant/activation/bulk_assign_reviewer',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success'     => 1,
+                'failed'      => 0,
+                'failedItems' => [],
+            ],
+        ],
+    ]
 ];

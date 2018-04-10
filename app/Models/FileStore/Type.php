@@ -16,6 +16,8 @@ class Type
     const HDFC_EMANDATE_REGISTER            = 'hdfc_emandate_register';
     const HDFC_EMANDATE_DEBIT               = 'hdfc_emandate_debit';
 
+    const RBL_ENACH_DEBIT                   = 'rbl_enach_debit';
+
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
 
     const BOB_NETBANKING_REFUND             = 'bob_netbanking_refund';
@@ -129,6 +131,7 @@ class Type
             self::HDFC_NETBANKING_REFUND,
             self::HDFC_EMANDATE_REGISTER,
             self::HDFC_EMANDATE_DEBIT,
+            self::RBL_ENACH_DEBIT,
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_EMANDATE_DEBIT,
@@ -228,6 +231,7 @@ class Type
         self::HDFC_NETBANKING_REFUND,
         self::HDFC_EMANDATE_REGISTER,
         self::HDFC_EMANDATE_DEBIT,
+        self::RBL_ENACH_DEBIT,
         self::BOB_NETBANKING_REFUND,
         self::BOB_NETBANKING_CLAIMS,
         self::CORPORATION_NETBANKING_REFUND,
@@ -325,6 +329,7 @@ class Type
             self::FUND_TRANSFER_H2H,
             self::ICICI_EMI_FILE_SFTP,
             self::YES_EMI_FILE_SFTP,
+            self::RBL_ENACH_DEBIT,
         ],
 
         self::RECON_BUCKET_CONFIG => [

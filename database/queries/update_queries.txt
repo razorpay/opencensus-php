@@ -1583,3 +1583,9 @@ UPDATE batches SET status = 'processed' , failure_reason = NULL where id = '9mgi
 UPDATE batches SET status = 'processed' , failure_reason = NULL where id = '9mgXmUTz5fuSNH';
 
 UPDATE batches SET status = 'processed' , failure_reason = NULL where id = '9mjTnhhc1GygE1';
+
+https://razorpay.slack.com/archives/C0SG9Q7TM/p1522674619000397
+UPDATE refunds SET status='failed', gateway_refunded = 0 WHERE id in ('8fUtGcrig5clJ6', '8fUsm1am4FYOO7')
+
+https://razorpay.slack.com/archives/C3BPZHG8P/p1523020215000036
+UPDATE terminals SET gateway_acquirer = 'ratn' where id in ('92Ay2pCOmk80iq', '9IjdmbQNKKJ7Uz');

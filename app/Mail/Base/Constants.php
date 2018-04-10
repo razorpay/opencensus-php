@@ -23,6 +23,7 @@ class Constants
     const EMANDATE      = 'emandate';
     const DISPUTES      = 'disputes';
     const NOREPLY       = 'noreply';
+    const RECON         = 'recon';
 
     const SETTLEMENT_ALERTS = 'settlement_alert';
 
@@ -46,6 +47,7 @@ class Constants
         self::EMANDATE      => 'emandate@razorpay.com',
         self::DISPUTES      => 'disputes@razorpay.com',
         self::NOREPLY       => 'no-reply@razorpay.com',
+        self::RECON         => 'pgrecon@razorpay.com',
 
         self::SETTLEMENT_ALERTS     => 'settlement.alerts@razorpay.com'
     ];
@@ -64,5 +66,6 @@ class Constants
         self::IRCTC       => 'Razorpay IRCTC Files',
         self::EMANDATE    => 'Razorpay EMandate',
         self::DISPUTES    => 'Razorpay Risk Team',
+        self::RECON       => 'Reconciliation Summary'
     ];
 }

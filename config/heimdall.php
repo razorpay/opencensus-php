@@ -251,6 +251,9 @@ return [
                 'assignable'  => true,
                 'workflow'    => false
             ],
+            Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER => [
+                'description' => 'Assign Reviews for Merchant Activation Forms',
+            ],
         ],
 
         PermissionCategory::SETTLEMENT  => [
@@ -431,6 +434,10 @@ return [
                 'assignable'  => true,
                 'workflow'    => true
             ],
+        ],
+
+        PermissionCategory::ACTION => [
+            Permission::DB_META_QUERY => '',
         ],
 
         // Permissions

@@ -259,4 +259,20 @@ class Event
     {
         return self::$bitPosition[$event];
     }
+
+    public static function filterByFeatures(array $eventNames, array $merchantAssignedFeatures)
+    {
+        $featureMap = Event::$eventsToFeatureMap;
+
+        foreach ($eventNames as $eventName => $value)
+        {
+            if ((isset($featureMap[$eventName]) === true) and
+                (in_array($featureMap[$eventName], $merchantAssignedFeatures, true) === false))
+            {
+                unset($eventNames[$eventName]);
+            }
+        }
+
+        return $eventNames;
+    }
 }

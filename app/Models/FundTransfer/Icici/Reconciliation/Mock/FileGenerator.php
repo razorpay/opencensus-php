@@ -1,17 +1,23 @@
 <?php
 
-namespace RZP\Models\FundTransfer\Icici;
+namespace RZP\Models\FundTransfer\Icici\Reconciliation\Mock;
 
 use phpseclib\Crypt\AES;
 
 use RZP\Exception;
+use RZP\Models\Settlement;
+use RZP\Models\FundTransfer\Icici\Headings;
+use RZP\Models\FundTransfer\Icici\NodalAccount;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\FundTransfer\Icici\Reconciliation\Mode;
 use RZP\Models\FundTransfer\Icici\Reconciliation\Status;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\FundTransfer\Base\Reconciliation\Mock\Generator;
 
-class ReconciliationGenerator
+class FileGenerator extends Generator
 {
     use FileHandlerTrait;
+
+    const CHANNEL   = Settlement\Channel::ICICI;
 
     const INTERNAL_FAILURE_REMARK = 'Rejected by RTGS Gateway (Some string goes here)';
 
@@ -28,6 +34,8 @@ class ReconciliationGenerator
         {
             return [];
         }
+
+        $this->initRequestParams($input);
 
         $data = $this->getDecryptedFile($setlFile);
 
@@ -74,11 +82,8 @@ class ReconciliationGenerator
 
     protected function generateReconciliationFields($row, array $params)
     {
-        $remark = (isset($params['internal_failure']) and $params['internal_failure'] === '1') ?
-            self::INTERNAL_FAILURE_REMARK : random_integer(7);
-
-        $generateFailedReconciliations = (isset($params['failed_recons'])) ?
-            ((bool) $params['failed_recons']) : false;
+        $remark = $this->generateInternalFailure ?
+                    self::INTERNAL_FAILURE_REMARK : random_integer(7);
 
         $data = [
             Headings::FILE_REF_NO               => '000205025290',
@@ -96,7 +101,7 @@ class ReconciliationGenerator
             Headings::DUMMY3                    => 'dummy',
         ];
 
-        if ($generateFailedReconciliations === true)
+        if ($this->generateFailedReconciliations === true)
         {
             $data[Headings::STATUS]  = Status::CANCELLED;
 

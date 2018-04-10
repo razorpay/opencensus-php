@@ -29,7 +29,9 @@ class CRC16
 
         $hex = dechex($expectedCRC);
 
-        return str_pad($hex, self::CRC_LENGTH, '0', STR_PAD_LEFT);
+        $crc =  str_pad($hex, self::CRC_LENGTH, '0', STR_PAD_LEFT);
+
+        return strtoupper($crc);
     }
 
     /**

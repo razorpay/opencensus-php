@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Payment Page · Razorpay</title>
+    <meta name="viewport" content="width=device-width">
+    <meta charset="utf-8">
+    <?php if ($_SERVER['HTTP_HOST'] !== "api.razorpay.com"): ?>
+    <script>
+    var Razorpay = {
+      config: {
+        api: '/'
+      }
+    };
+    </script>
+    <?php endif; ?>
+    <script>
+      var options = {!! $options !!};
+      options.key = "{!! $key !!}";
+    </script>
+  </head>
+  <body>
+    @include('partials.loader')
+    <script src="https://checkout.razorpay.com/v1/razorpay.js"></script>
+    <script src="{{ $script }}"></script>

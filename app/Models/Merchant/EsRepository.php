@@ -253,14 +253,16 @@ class EsRepository extends Base\EsRepository
     {
         if ($value === Repository::SUB_ACCOUNTS_ONLY_VALUE)
         {
-            $filter = $this->getExistsQueryForField(Entity::PARENT_ID);
+            $this->addNotNullFilterForField($query, Entity::PARENT_ID);
+        }
+        else if ($value === Repository::SUB_ACCOUNTS_EXCLUDED_VALUE)
+        {
+            $this->addNullFilterForField($query, Entity::PARENT_ID);
         }
         else
         {
-            $filter = [Es::TERM => [Entity::PARENT_ID => $value]];
+            $this->addTermFilter($query, Entity::PARENT_ID, $value);
         }
-
-        $this->addFilter($query, $filter);
     }
 
     public function buildQueryAdditional(array & $query, array $params)

@@ -194,4 +194,11 @@ return [
             'password' => env('SHIELD_SECRET'),
         ],
     ],
+
+    'razorx' => [
+        'mock'     => env('RAZORX_MOCK', false),
+        'url'      => env('RAZORX_URL'),
+        'username' => 'rzp_api',
+        'secret'   => env('RAZORX_SECRET'),
+    ],
 ];
