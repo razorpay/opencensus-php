@@ -14,8 +14,6 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Constants\Mode as RZPMode;
 use RZP\Models\Payment\Gateway as PG;
 use RZP\Exception\GatewayErrorException;
-use RZP\Exception\PaymentVerificationException;
-use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 /**
  * This gateway was developed as per the API contract shared by the bank.
