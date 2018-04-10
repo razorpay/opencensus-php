@@ -50,7 +50,7 @@ class EnachRblGatewayTest extends TestCase
         $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
         $payment['bank_account'] = [
             'account_number'    => '914010009305862',
-            'ifsc'              => 'UTIB0000123',
+            'ifsc'              => 'utib0000123',
             'name'              => 'Test account',
         ];
 
