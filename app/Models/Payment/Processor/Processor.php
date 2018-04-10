@@ -569,6 +569,8 @@ class Processor
             $payment->getId(),
             function() use ($payment, $input)
             {
+                $this->repo->reload($payment);
+
                 return $this->repo->transaction(function() use ($payment, $input)
                 {
                     $transfers = (new TransferCore)->createForPayment(
