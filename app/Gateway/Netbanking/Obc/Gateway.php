@@ -70,8 +70,6 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        s($input);
-
         $content = $this->parseGatewayResponse($input['gateway']);
 
         $this->assertPaymentId($input['payment']['id'],
@@ -253,6 +251,8 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->fill($attributes);
 
+//        sd($gatewayPayment);
+
         $this->repo->saveOrFail($gatewayPayment);
     }
 
@@ -260,6 +260,7 @@ class Gateway extends Base\Gateway
     {
         $attributesToSave = $this->getMappedAttributes($content);
 
+//        sd($gatewayPayment->getStatus());
         // If auth status was not success, we update the entity with verify status
         if ($gatewayPayment->getStatus() !== Status::SUCCESS)
         {
@@ -407,11 +408,7 @@ class Gateway extends Base\Gateway
     {
         $encryptedString = array_keys($response)[0];
 
-        s($encryptedString);
-
         $decryptedString = $this->decrypt($encryptedString);
-
-        s($decryptedString);
 
         parse_str($decryptedString, $decryptedArray);
 

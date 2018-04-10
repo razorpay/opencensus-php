@@ -45,11 +45,13 @@ class Server extends Mock\Server
 
         $this->validateActionInput($input, $this->action);
 
-        $response = $this->getVerifyResponse($input);
+        $verifyResponse = $this->getVerifyResponse($input);
 
-        $this->content($response, $this->action);
+        $stringResponse = $this->getResponseString($verifyResponse);
 
-        return $this->makeResponse($response);
+        s($stringResponse);
+
+        return $this->makeResponse($stringResponse);
     }
 
     private function getAuthResponse(array $input): array
@@ -78,9 +80,9 @@ class Server extends Mock\Server
         return [$encryptedString => ""];
     }
 
-    private function getVerifyResponse(array $input): array
+    private function getVerifyResponse(array $input)
     {
-        return [
+        $verifyResponseArray = [
             ResponseFields::PAYEE_ID        => $input[RequestFields::PAYEE_ID],
             ResponseFields::PAY_REF_NUM     => $input[RequestFields::PAY_REF_NUM],
             ResponseFields::ITEM_CODE       => $input[RequestFields::ITEM_CODE],
@@ -88,6 +90,21 @@ class Server extends Mock\Server
             ResponseFields::BANK_PAYMENT_ID => $input[RequestFields::BID],
             ResponseFields::TXN_STATUS      => Status::VERIFY_SUCCESS,
         ];
+
+        return $verifyResponseArray;
+    }
+
+
+    private function getResponseString($reponse)
+    {
+        $responseString = '';
+
+        foreach ($reponse as $key => $value)
+        {
+            $responseString .= $key . '=' . $value . '|';
+        }
+
+        return $responseString;
     }
 
     private function getQueryArray(string $queryString)
