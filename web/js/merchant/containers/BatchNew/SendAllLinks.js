@@ -35,6 +35,13 @@ export default class SendAllLinksModal extends Component {
           message: 'All payment links of this batch will be sent shortly',
         });
         this.props.closeModal();
+
+        //re-render the list
+        this.props.fetchAll({
+          skip: 0,
+          count: 25,
+          type: 'payment_link',
+        });
       })
       .catch(({ errors }) => {
         this.props.showNotification({

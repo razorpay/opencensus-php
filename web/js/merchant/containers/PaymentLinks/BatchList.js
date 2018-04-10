@@ -24,7 +24,9 @@ export default class BatchListContainer extends ListContainer {
   sendAll = item => {
     this.props.openModal({
       size: 'small',
-      component: <SendAllLinks batchId={item.id} />,
+      component: (
+        <SendAllLinks batchId={item.id} fetchAll={this.props.fetchAll} />
+      ),
     });
   };
 
