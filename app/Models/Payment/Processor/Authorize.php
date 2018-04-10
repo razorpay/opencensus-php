@@ -1219,7 +1219,7 @@ trait Authorize
         // Fees validation can only happen after international validation has gone through
         // otherwise can cause issues with international pricing rule being not available when
         // international is not enabled.
-        $this->verifyFeesLessThanAmount($payment);
+//        $this->verifyFeesLessThanAmount($payment);
 
         $this->repo->saveOrFail($payment);
 
