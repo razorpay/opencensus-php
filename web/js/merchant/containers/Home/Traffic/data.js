@@ -89,24 +89,14 @@ const getPieData = ({
     colorsToBeUsed = [];
 
   Object.keys(groupedData)
+    .map(groupName => {
+      groupedData[groupName] = groupedData[groupName].reduce(valueReducer, 0);
+      return groupName;
+    })
     // sorting groups by share of contribution in desc order
     .sort((groupName1, groupName2) => {
       let group2Value = groupedData[groupName2],
         group1Value = groupedData[groupName1];
-
-      if (Array.isArray(group2Value)) {
-        group2Value = groupedData[groupName2] = group2Value.reduce(
-          valueReducer,
-          0
-        );
-      }
-
-      if (Array.isArray(group1Value)) {
-        group1Value = groupedData[groupName1] = group1Value.reduce(
-          valueReducer,
-          0
-        );
-      }
 
       return group2Value - group1Value;
     })
