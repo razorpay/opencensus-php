@@ -188,4 +188,20 @@ class Validator extends Base\Validator
                 ]);
         }
     }
+
+    public function validateTransferMaxAmount(int $amount, Merchant\Entity $merchant)
+    {
+        $maxAmount = $merchant->getMaxPaymentAmount();
+
+        if ($amount > $maxAmount)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Amount exceeds the maximum amount allowed',
+                Entity::AMOUNT,
+                [
+                    'max_payment_amount' => $maxAmount
+                ]
+            );
+        }
+    }
 }

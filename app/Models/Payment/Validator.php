@@ -391,8 +391,13 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        // No limit on amount for payments made via bank_transfer
-        if ($method === Payment\Method::BANK_TRANSFER)
+        //
+        // No limit on amount for payments of method 'bank_transfer' and
+        // 'transfer'
+        //
+        $skipMethods = [Method::BANK_TRANSFER, Method::TRANSFER];
+
+        if (in_array($method, $skipMethods, true) === true)
         {
             return;
         }
@@ -433,7 +438,7 @@ class Validator extends Base\Validator
         // Payment method 'transfer' is used internally for Route and does not
         // need this validated
         //
-        if (($amount > $maxAmountAllowed) and ($method !== Method::TRANSFER))
+        if ($amount > $maxAmountAllowed)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
