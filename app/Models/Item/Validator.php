@@ -88,7 +88,6 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException('Both tax_id and tax_group_id cannot be present');
         }
-
     }
 
     public function validateTaxCodes(array $input)
