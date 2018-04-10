@@ -965,7 +965,10 @@ class KeyMetricsContainer extends Component {
       visibleTabs = this.getVisibleTabs();
 
     return (
-      <div ref={node => (this.node = node)}>
+      <div
+        ref={node => (this.node = node)}
+        className={`keymetrics-container ${loading ? 'loading' : ''}`}
+      >
         <Tabs
           className="keymetrics"
           justified={true}
