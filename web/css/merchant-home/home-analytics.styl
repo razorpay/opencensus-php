@@ -24,6 +24,12 @@ traffic-responsive() {
 
 .dashboard-home {
 
+  .card {
+
+    border-radius: 2px;
+    box-shadow: 0 1px 4px 0 rgba(0,0,0,0.1);
+  }
+
   .v2-tour-banner {
 
     width: 100%;
@@ -130,9 +136,14 @@ traffic-responsive() {
 
     &.payment-insights-title {
 
-      i.i:hover {
+      i.i {
 
-        color: $primary-color;
+        color: $faded-text-color;
+
+        &:hover {
+
+          color: $primary-color;
+        }
       }
 
       .popover-highlight {

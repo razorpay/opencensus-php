@@ -105,7 +105,7 @@ const TabContent = ({
    *
    */
   return (
-    <div>
+    <div className="card">
       <span>
         {!isLoading ? (
           <span>
