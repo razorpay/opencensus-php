@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Obc;
 
+use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -11,9 +12,7 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
-use RZP\Exception\LogicException;
 use RZP\Gateway\Base\VerifyResult;
-use RZP\Exception\GatewayErrorException;
 
 use phpseclib\Crypt\AES;
 
@@ -23,19 +22,13 @@ class Gateway extends Base\Gateway
     protected $gateway = Payment\Gateway::NETBANKING_OBC;
 
     /**
-     * Variable to store the gateway attributes after mapping
-     * @var array
-     */
-    private $gatewayAttribues = [];
-
-    /**
      * @var Crypto
      */
     private $aesCrypto;
 
     protected $map = [
+        Base\Entity::AMOUNT             => Base\Entity::AMOUNT,
         // Auth request mapping
-        RequestFields::TXN_AMOUNT       => Base\Entity::AMOUNT,
         RequestFields::PAYEE_ID         => Base\Entity::REFERENCE1,
 
         // Auth response mapping
@@ -53,7 +46,9 @@ class Gateway extends Base\Gateway
 
         $request = $this->getAuthorizeRequest($input);
 
-        $this->createGatewayPaymentEntity($this->gatewayAttribues);
+        $attributes = $this->getContentToSave($input['payment']);
+
+        $this->createGatewayPaymentEntity($attributes);
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -166,17 +161,25 @@ class Gateway extends Base\Gateway
         parent::assertAmount($expectedAmount, $actualAmount);
     }
 
+    protected function getContentToSave($payment): array
+    {
+        return [
+            Base\Entity::AMOUNT => $payment[Payment::AMOUNT],
+            Base\Entity::REFERENCE1 => $this->getMerchantId(),
+        ];
+    }
+
     private function setVerifyAmountMismatch(Verify $verify)
     {
         $input = $verify->input;
 
         $content = $verify->verifyResponseContent;
 
-        $expectedAmount = number_format($input['payment']['amount'] / 100, 2);
-
-        $actualAmount = $content[ResponseFields::AMOUNT];
-
-        if ($expectedAmount === $actualAmount)
+        try
+        {
+            $this->assertAmount($input['payment']['amount'] / 100, $content[ResponseFields::AMOUNT]);
+        }
+        catch (Exception\LogicException $e)
         {
             return false;
         }
@@ -186,7 +189,7 @@ class Gateway extends Base\Gateway
 
     private function parseVerifyResponse(\Requests_Response $response)
     {
-        $keyValuePair= explode('|', $response->body);
+        $keyValuePair = explode('|', $response->body);
 
         $verifyResponseArray = [];
 
@@ -196,6 +199,7 @@ class Gateway extends Base\Gateway
             {
                 continue;
             }
+
             $content = explode('=', $fields);
 
             $key = $content[0];
@@ -204,6 +208,7 @@ class Gateway extends Base\Gateway
 
             $verifyResponseArray[$key] = $value;
         }
+
         return $verifyResponseArray;
     }
 
@@ -243,8 +248,6 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->fill($attributes);
 
-//        sd($gatewayPayment);
-
         $this->repo->saveOrFail($gatewayPayment);
     }
 
@@ -252,7 +255,6 @@ class Gateway extends Base\Gateway
     {
         $attributesToSave = $this->getMappedAttributes($content);
 
-//        sd($gatewayPayment->getStatus());
         // If auth status was not success, we update the entity with verify status
         if ($gatewayPayment->getStatus() !== Status::SUCCESS)
         {
@@ -274,7 +276,8 @@ class Gateway extends Base\Gateway
         if ((empty($content[ResponseFields::PAID]) === false) and
             ($content[ResponseFields::PAID] !== Status::SUCCESS))
         {
-            throw new GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
     }
 
@@ -375,7 +378,7 @@ class Gateway extends Base\Gateway
         //
 
         $queryStringToEncrypt = implode(
-            "|",
+            '|',
             array_map(
                 function($key, $value)
                 {
