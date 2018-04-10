@@ -37,7 +37,7 @@ class IinTest extends TestCase
 
     public function testAllFlow()
     {
-        $this->input['flows'] = ['3ds' => '1', 'otp' => '1', 'debit_pin' => '1'];
+        $this->input['flows'] = ['3ds' => '1', 'otp' => '1', 'pin' => '1'];
 
         $iin = $this->iin->build($this->input);
 
@@ -48,6 +48,6 @@ class IinTest extends TestCase
 
         $this->assertContains('3ds', $iin['flows']);
         $this->assertContains('otp', $iin['flows']);
-        $this->assertContains('debit_pin', $iin['flows']);
+        $this->assertContains('pin', $iin['flows']);
     }
 }
