@@ -36,6 +36,7 @@ class Table
     const FEATURE               = 'features';
     const DISPUTE               = 'disputes';
     const ADDRESS               = 'addresses';
+    const DISCOUNT              = 'discounts';
     const MERCHANT              = 'merchants';
 
     // Account entity is currently pointing to the 'merchants' table.
@@ -62,6 +63,7 @@ class Table
     const APP_TOKEN             = 'customer_apps';
     const BANK_ACCOUNT          = 'bank_accounts';
     const SUBSCRIPTION          = 'subscriptions';
+    const DISPUTE_FILE          = 'dispute_files';
     const METHODS               = 'merchant_banks';
     const BANK_TRANSFER         = 'bank_transfers';
     const GATEWAY_TOKEN         = 'gateway_tokens';
@@ -74,11 +76,14 @@ class Table
     const MERCHANT_DETAIL       = 'merchant_details';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const MERCHANT_TERMINAL     = 'merchant_terminal';
+    const MERCHANT_REQUEST      = 'merchant_requests';
     const MERCHANT_PROMOTION    = 'merchant_promotion';
     const MERCHANT_INVOICE      = 'merchant_invoice';
     const CREDIT_TRANSACTION    = 'credit_transaction';
     const SETTLEMENT_DETAILS    = 'settlement_details';
+    const MERCHANT_EMI_PLANS    = 'merchant_emi_plans';
     const BATCH_FUND_TRANSFER   = 'daily_settlements';
+    const MERCHANT_ACCESS_MAP   = 'merchant_access_map';
     const CUSTOMER_TRANSACTION  = 'customer_transactions';
     const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempts';
 
@@ -128,6 +133,7 @@ class Table
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
     const MIGS                  = 'axis';
+    const ENACH                 = 'enach';
     const PAYTM                 = 'paytm';
     const WALLET                = 'wallet';
     const BILLDESK              = 'billdesk';
@@ -136,6 +142,7 @@ class Table
     const NETBANKING            = 'netbanking';
     const FIRST_DATA            = 'first_data';
     const CYBERSOURCE           = 'cybersource';
+    const CARD_FSS              = 'card_fss';
 
     // Sessions table
     const SESSION               = 'sessions';

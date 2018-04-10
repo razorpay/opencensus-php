@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const EMI           = 'emi';
     const OTP_READ      = 'otp_read';
     const TRIVIA        = 'trivia';
+    const FLOWS         = 'flows';
     const ENABLED       = 'enabled';
     const LOCKED        = 'locked';
 
@@ -50,6 +51,7 @@ class Entity extends Base\PublicEntity
         self::TRIVIA,
         self::EMI,
         self::ENABLED,
+        self::FLOWS,
         self::LOCKED,
     ];
 
@@ -66,21 +68,34 @@ class Entity extends Base\PublicEntity
         self::OTP_READ,
         self::TRIVIA,
         self::ENABLED,
+        self::FLOWS,
         self::LOCKED,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
 
+    protected $publicSetters = [
+        self::FLOWS,
+    ];
+
     protected $defaults = [
-        self::EMI     => false,
-        self::ENABLED => true,
-        self::LOCKED  => false
+        self::EMI      => false,
+        self::FLOWS    => [
+            '3ds' => '1'
+        ],
+        self::ENABLED  => true,
+        self::LOCKED   => false
     ];
 
     protected $casts = [
         self::ENABLED => 'bool',
         self::LOCKED  => 'bool'
     ];
+
+    public function supports($flows)
+    {
+        return (($this->getFlows() & $flows) === $flows);
+    }
 
     public function isEmiAvailable()
     {
@@ -105,6 +120,7 @@ class Entity extends Base\PublicEntity
     public function setType($type)
     {
         Card\Type::checkType($type);
+
         $this->setAttribute(self::TYPE, $type);
     }
 
@@ -128,6 +144,11 @@ class Entity extends Base\PublicEntity
         return $this->getNetworkCodeAttribute();
     }
 
+    public function isMagicEnabled()
+    {
+        return $this->supports(Flow::MAGIC);
+    }
+
     protected function getNetworkCodeAttribute()
     {
         return Card\Network::getCode($this->getNetwork());
@@ -136,6 +157,11 @@ class Entity extends Base\PublicEntity
     public function getTrivia()
     {
         return $this->getAttribute(self::TRIVIA);
+    }
+
+    public function getFlows()
+    {
+        return $this->getAttribute(self::FLOWS);
     }
 
     public function isEnabled()
@@ -212,6 +238,19 @@ class Entity extends Base\PublicEntity
     protected function getEmiAttribute()
     {
         return (bool) $this->attributes[self::EMI];
+    }
+
+    protected function setPublicFlowsAttribute(array & $array)
+    {
+        if (isset($array[self::FLOWS]) === true)
+        {
+            $array[self::FLOWS] = Flow::getEnabledFlows($array[self::FLOWS]);
+        }
+    }
+
+    protected function setFlowsAttribute($flows)
+    {
+        $this->attributes[self::FLOWS] = Flow::getHexValue($flows);
     }
 
     protected function generateIssuerName($input)

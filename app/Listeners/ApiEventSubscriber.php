@@ -4,18 +4,19 @@ namespace RZP\Listeners;
 
 use Illuminate\Events\Dispatcher;
 
-use App;
-
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Jobs\WebHook;
 use RZP\Models\Event;
 use RZP\Models\Invoice;
+use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Jobs\DispatchRouter;
 use RZP\Models\Customer\Token;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
+use RZP\Models\Merchant\Webhook\Entity as WebhookEntity;
+use RZP\Models\Merchant\AccessMap\Entity as AccessMapEntity;
 
 class ApiEventSubscriber extends Base\Core
 {
@@ -52,6 +53,16 @@ class ApiEventSubscriber extends Base\Core
     protected $withPayload;
 
     protected $webhookEnabledForEvent = false;
+
+    /**
+     * Active merchant webhook, enabled for the current event.
+     */
+    protected $activeMerchantWebhook  = null;
+
+    /**
+     * Active webhooks of applications used by the merchant, enabled for the current event.
+     */
+    protected $activeAppsWebhooks     = [];
 
     const MAIN = 'main';
     const WITH = 'with';
@@ -94,7 +105,7 @@ class ApiEventSubscriber extends Base\Core
         }
         else
         {
-            $this->mainEntity = $params[self::MAIN];
+            $this->mainEntity  = $params[self::MAIN];
             $this->withPayload = $params[self::WITH] ?? [];
         }
 
@@ -173,9 +184,23 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onPaymentDisputeCreated($payment)
+    {
+        $payload = $this->getPaymentPayloadWithDispute($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onOrderPaid($payment)
     {
         $payload = $this->getOrderPayload($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onVirtualAccountCredited(Payment\Entity $payment)
+    {
+        $payload = $this->getVirtualAccountPayload($payment);
 
         $this->prepareAndDispatchWebhook($payload);
     }
@@ -395,6 +420,23 @@ class ApiEventSubscriber extends Base\Core
         return $partialPayload;
     }
 
+    protected function getVirtualAccountPayload(Payment\Entity $payment)
+    {
+        $bankTransfer = $payment->bankTransfer;
+
+        $virtualAccount = $bankTransfer->virtualAccount;
+
+        $partialPayload[Constants\Entity::PAYMENT] = [
+            'entity' => $payment->toArrayPublic()
+        ];
+
+        $partialPayload[Constants\Entity::VIRTUAL_ACCOUNT] = [
+            'entity' => $virtualAccount->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
+
     protected function getInvoicePayload(Invoice\Entity $invoice)
     {
         $payload = [
@@ -448,21 +490,51 @@ class ApiEventSubscriber extends Base\Core
         return $payload;
     }
 
+    protected function getPaymentPayloadWithDispute($payment)
+    {
+        $partialPayload = $this->getPaymentPayload($payment);
+
+        // Add dispute entity defined in `withPayload`
+        $this->addExtraDataToPayload($partialPayload);
+
+        return $partialPayload;
+    }
+
     protected function prepareAndDispatchWebhook(array $payload)
     {
-        $data = $this->getWebhookData($payload);
+        $merchantWebhook = $this->activeMerchantWebhook;
 
+        // If merchant webhook is active and enabled, then dispatch.
+        if ($merchantWebhook !== null)
+        {
+            $data = $this->getWebhookData($payload, $merchantWebhook);
+
+            $this->dispatchWebhook($data);
+        }
+
+        $activeEnabledAppWebhooks = $this->activeAppsWebhooks;
+
+        // Dispatch each active and enabled connected App Webhook
+        foreach ($activeEnabledAppWebhooks as $activeEnabledAppWebhook)
+        {
+            $data = $this->getWebhookData($payload, $activeEnabledAppWebhook);
+
+            $this->dispatchWebhook($data);
+        }
+    }
+
+    protected function dispatchWebhook(array $data)
+    {
         $job = new Webhook($data);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::WEBHOOK, [$this->event]);
     }
 
-    protected function getWebhookData($payload)
+    protected function getWebhookData(array $payload, WebhookEntity $webhook): array
     {
         $eventFired = $this->event;
         $entity     = $this->mainEntity;
         $merchant   = $this->getMerchantFromEntity($entity);
-        $webhook    = $merchant->webhook;
 
         // Send the signed account id of the merchant associated with the entity, along with the payload
         // In case of settlements, $entity->merchant is the the merchant to whom the settlement is processed
@@ -488,11 +560,11 @@ class ApiEventSubscriber extends Base\Core
 
         $event->merchant()->associate($merchant);
 
-        $data = array(
+        $data = [
             'mode'       => $this->getMode(),
             'event'      => json_encode($event->toArrayPublic()),
             'webhook_id' => $webhook->getId()
-        );
+        ];
 
         return $data;
     }
@@ -515,15 +587,84 @@ class ApiEventSubscriber extends Base\Core
         }
     }
 
-    protected function isWebhookEnabledForEvent(Base\PublicEntity $entity)
+    protected function isWebhookEnabledForEvent(Base\PublicEntity $entity): bool
     {
         $merchant = $this->getMerchantFromEntity($entity);
 
         $webhook = $this->repo->webhook->findByMerchant($merchant);
 
+        //
+        // Check if the merchant has an active webhook for the event
+        //
+        $enabledForMerchant = $this->isWebhookActiveAndEnabled($webhook);
+
+        if ($enabledForMerchant === true)
+        {
+            $this->activeMerchantWebhook = $webhook;
+        }
+
+        //
+        // Check if any of the apps used by the merchant have an active webhook
+        // for the event. This means that the app needs notification of events on
+        // the merchants using the app.
+        //
+        $enabledForApps = $this->checkAndSetWebhooksEnabledForEventForAnyApp();
+
+        return (($enabledForApps or $enabledForMerchant) === true);
+    }
+
+    protected function isWebhookActiveAndEnabled(WebhookEntity $webhook = null): bool
+    {
         return (($webhook !== null) and
-                ($webhook->isActive()) and
+                ($webhook->isActive() === true) and
                 ($webhook->isEventEnabled($this->event)));
+    }
+
+    protected function checkAndSetWebhooksEnabledForEventForAnyApp(): bool
+    {
+        $merchantId = $this->mainEntity->merchant->getId();
+
+        $activeEnabledAppWebhooks = $this->getActiveWebhooksForConnectedApps($merchantId);
+
+        if (count($activeEnabledAppWebhooks) > 0)
+        {
+            $this->activeAppsWebhooks = $activeEnabledAppWebhooks;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Gets active webhooks used by al lthe apps used by the merchant whose
+     * event is triggering the webhooks. Takes the apps used by the merchant
+     * as input.
+     *
+     * @param string $merchantId
+     *
+     * @return array $activeEnabledAppWebhooks
+     */
+    protected function getActiveWebhooksForConnectedApps(string $merchantId)
+    {
+        $appConnections = $this->repo
+                               ->merchant_access_map
+                               ->fetchMerchantAccessMapsOnEntity($merchantId, WebhookEntity::APPLICATION);
+
+        if (count($appConnections) === 0)
+        {
+            return [];
+        }
+
+        $appIds = $appConnections->pluck(AccessMapEntity::ENTITY_ID)->all();
+
+        $appWebhooks = $this->repo->webhook->findMultipleByApplicationIds($appIds);
+
+        $activeEnabledAppWebhooks = $appWebhooks->filter(function($webhook, $key) {
+            return ($this->isWebhookActiveAndEnabled($webhook) === true);
+        });
+
+        return $activeEnabledAppWebhooks;
     }
 
     /**

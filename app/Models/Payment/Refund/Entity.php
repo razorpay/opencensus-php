@@ -64,6 +64,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::NOTES,
         self::RECEIPT,
+        self::STATUS,
     ];
 
     protected $visible = [
@@ -296,6 +297,14 @@ class Entity extends Base\PublicEntity
         return (new Dictionary($acquirerData));
     }
 
+    /**
+     * Used by FTA reconciliation
+     */
+    public function setFailureReason()
+    {
+        return;
+    }
+
     public function setGatewayRefunded($gatewayRefunded)
     {
         $this->setAttribute(self::GATEWAY_REFUNDED, $gatewayRefunded);
@@ -361,9 +370,11 @@ class Entity extends Base\PublicEntity
         // 'RailYatri', 'Treebo', 'Goibibo',
         // 'Goeventz', 'RentoMojo', 'Voonik',
         // 'Zomato', 'Swiggy', 'Yatra'
-        // 'Mr Button', 'Zefo', 'Goomo',
-        // 'Goomo',
-        //
+        // 'Mr Button', 'Zefo', 'Zefo',
+        // 'Goomo', 'Goomo', 'IRCTC Services'
+        // 'Irctc Web', 'IRCTC Mob', 'IRCTC ecatering'
+        // 'epaylater', 'Udacity', 'Accelerator',
+        // 'IRCTC FTR'
 
         $merchantIds = [
             '10000000000000', '6gn7Xc2gqK40c9', '4uObL8AHBqFNnP',
@@ -371,8 +382,11 @@ class Entity extends Base\PublicEntity
             '5yvFZKqbBjEBsr', '3d2EGdZF6CAYVc', '6ZLE5BE57SExGF',
             '6B94xSUfS76yht', '4bnk7yysqr5Wx5', '4zGGr9ZwCTH1gh',
             '6H7N6hlcv29OMG', '8S0i1kWYyF2woQ', '87qTXzFTBLFN7i',
-            '5PKFA3s9dpIwPn', '6RGC8wjp5U2K2e', '8STmhcK1Gd1JVo',
-            '7kBHljwok8Fsom',
+            '5PKFA3s9dpIwPn', '6RGC8wjp5U2K2e', '3fiAig3CaxCxM3',
+            '8STmhcK1Gd1JVo', '7kBHljwok8Fsom', '8byazTDARv4Io0',
+            '8ST00QgEPT14cE', '8YPFnW5UOM91H7', '90xVmQJTCEJ6GH',
+            '6uli25q6xe9PPv', '4sW8jQ22JR4Bfi', '5wv2qnnBum6eXo',
+            '9m4CChGex4ENkR',
         ];
 
         $currentMerchantId = $this->getMerchantId();

@@ -59,6 +59,8 @@ class UpiIciciGatewayReconTest extends TestCase
 
         foreach ($refunds['items'] as $refund)
         {
+            $this->assertEquals('processed', $refund['status']);
+
             $transactionId = $refund['transaction_id'];
 
             $transaction = $this->getEntityById('transaction', $transactionId, true);
@@ -84,7 +86,7 @@ class UpiIciciGatewayReconTest extends TestCase
                 if ($action === 'col_icici_recon')
                 {
                     // Setting random column value
-                    $content[9] = 13476475;
+                    $content['Refund Amount'] = 13476475;
                 }
             },
             $this->gateway,
@@ -107,6 +109,8 @@ class UpiIciciGatewayReconTest extends TestCase
         // We do not reconcile refunds that fail the amount assertion step
         foreach ($refunds['items'] as $refund)
         {
+            $this->assertNull($refund['status']);
+
             $transactionId = $refund['transaction_id'];
 
             $transaction = $this->getEntityById('transaction', $transactionId, true);
@@ -225,7 +229,7 @@ class UpiIciciGatewayReconTest extends TestCase
             {
                 if ($action === 'col_payment_icici_recon')
                 {
-                    $content[5] = "";
+                    $content['merchantTranID'] = "";
                 }
             },
             $this->gateway,
@@ -250,7 +254,7 @@ class UpiIciciGatewayReconTest extends TestCase
             {
                 if ($action === 'col_payment_icici_recon')
                 {
-                    $content[11] = "failed";
+                    $content['status'] = "failed";
                 }
             },
             $this->gateway,
@@ -275,7 +279,7 @@ class UpiIciciGatewayReconTest extends TestCase
             {
                 if ($action === 'col_payment_icici_recon')
                 {
-                    $content[9] = 1840913;
+                    $content['amount'] = 1840913;
                 }
             },
             $this->gateway,

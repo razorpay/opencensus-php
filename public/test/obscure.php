@@ -90,7 +90,7 @@ function disableEmptyInputs(form) {
         <td colspan="40">Select Bank (Netbanking): </td>
         <td>
             <select name="bank">
-                <option value="BARB">Bank of Baroda</option>
+                <option value="BARB_R">Bank of Baroda - Retail</option>
                 <option value="HDFC">HDFC Bank</option>
                 <option value="CORP">Corporation Bank</option>
                 <option value="SBIN">SBI Bank</option>

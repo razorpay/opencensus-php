@@ -4,6 +4,7 @@ namespace RZP\Models\Feature;
 
 use RZP\Constants\Mode;
 use RZP\Models\Base\EsRepository;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\Repository as BaseRepository;
 
 class Repository extends BaseRepository
@@ -16,16 +17,18 @@ class Repository extends BaseRepository
         Entity::NAME        => 'sometimes|string|max:25'
     );
 
-    public function findByEntityId(string $entityId)
+    public function fetchByEntityTypeAndEntityId(string $entityType, string $entityId)
     {
         return $this->newQuery()
+                    ->where(Entity::ENTITY_TYPE, $entityType)
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->get();
     }
 
-    public function findByEntityIdAndNameOrFail(string $entityId, string $featureName)
+    public function findByEntityTypeEntityIdAndNameOrFail(string $entityType, string $entityId, string $featureName)
     {
         return $this->newQuery()
+                    ->where(Entity::ENTITY_TYPE, $entityType)
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->where(Entity::NAME, $featureName)
                     ->firstOrFailPublic();
@@ -37,6 +40,14 @@ class Repository extends BaseRepository
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->where(Entity::NAME, $featureName)
                     ->first();
+    }
+
+    public function findMerchantsHavingFeatures(array $featureNames)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::NAME, $featureNames)
+                    ->where(Entity::ENTITY_TYPE, 'merchant')
+                    ->get();
     }
 
     public function saveAndSyncIfApplicableOrFail(Entity $feature, array $assignedFeatureNames, bool $shouldSync)
@@ -63,6 +74,18 @@ class Repository extends BaseRepository
         {
             $this->deleteOrFail($feature);
         }
+    }
+
+    /**
+     * Fetch features assigned to an application_id
+     *
+     * @param string $applicationId
+     *
+     * @return PublicCollection
+     */
+    public function getApplicationFeatures(string $applicationId): PublicCollection
+    {
+        return $this->fetchByEntityTypeAndEntityId(Constants::APPLICATION, $applicationId);
     }
 
     /**

@@ -120,29 +120,44 @@ class Gateway extends Base\Gateway
 
         $eci = $gatewayPayment->getEci();
 
-        $network = strtoupper($input['card']['network']);
+        $networkCode = Card\Network::getCode($input['card']['network']);
 
-        $this->validateEci($eci, $network);
+        $isInternational = $input['card']['international'];
 
-        $txnStatus = $PARes[PARes::TX][PARes::STATUS];
-
-        $authenticateStatus = ParesStatus::getAuthenticationStatus($txnStatus);
-
-        if ($authenticateStatus !== AuthenticationStatus::Y)
-        {
-            // Throw GatewayErrorException with authentication failed error code
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
-                null,
-                null,
-                [
-                    'auth_status' => $authenticateStatus
-                ]);
-        }
+        $this->validateAuthResponse($eci, $networkCode, $isInternational);
 
         // Blade callback response field is being used by Hitachi
         // These fields are already set in gatewayPayment entity
         return $gatewayPayment->toArray();
+    }
+
+    protected function validateAuthResponse($eci, $networkCode, $isInternational)
+    {
+        if (($networkCode === Card\Network::VISA) and
+            (($eci === '05') or
+             (($eci === '06') and
+              ($isInternational === true))))
+        {
+            return true;
+        }
+        if ((in_array($networkCode, [Card\Network::MC, Card\Network::MAES], true) === true) and
+            (($eci === '02') or
+             (($eci === '01') and
+              ($isInternational === true))))
+        {
+            return true;
+        }
+
+        throw new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+            null,
+            null,
+            [
+                'eci'             => $eci,
+                'network'         => $networkCode,
+                'isInternational' => $isInternational,
+            ]
+        );
     }
 
     protected function getVeresAttributesToSave(array $response, array $input)
@@ -197,18 +212,6 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
-    }
-
-    protected function validateEci(string $eci = null, string $networkCode)
-    {
-        if ((($networkCode === Card\Network::VISA) and ($eci === '07')) or
-            (($networkCode === Card\Network::MC) and ($eci === '00')))
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
-                $eci,
-                'Invalid Eci value for network ' . $networkCode);
-        }
     }
 
     protected function getCallbackResponseAttributes($response)
@@ -724,7 +727,7 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::TEST)
         {
-            $merchantId = $this->config['test_merchant_id'];;
+            $merchantId = $this->config['test_merchant_id'];
         }
 
         return $merchantId;
@@ -819,8 +822,8 @@ class Gateway extends Base\Gateway
 
         $request['options'] = $options;
 
-        $request['options']['timeout'] = 10;
-        $request['options']['connect_timeout'] = 10;
+        $request['options']['timeout'] = 20;
+        $request['options']['connect_timeout'] = 20;
         $request['options']['verify'] = $this->getCaInfo();
 
         return $request;

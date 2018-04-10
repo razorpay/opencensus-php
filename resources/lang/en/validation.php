@@ -46,6 +46,7 @@ return array(
     'in_array'             => 'The :attribute field does not exist in :other.',
     'integer'              => 'The :attribute must be an integer.',
     'ip'                   => 'The :attribute must be a valid IP address.',
+    'ipv4'                 => 'One or more IPs in the input are invalid',
     'json'                 => 'The :attribute must be a valid JSON string.',
     'max'                  => [
         'numeric' => 'The :attribute may not be greater than :max.',
@@ -82,12 +83,16 @@ return array(
     'timezone'             => 'The :attribute must be a valid zone.',
     'unique'               => 'The :attribute has already been taken.',
     'url'                  => 'The :attribute format is invalid.',
-    'mysql_unsigned_int'   => 'The :attribute must be valid integer between 0 and 4294967295.',
-    'mysql_signed_int'     => 'The :attribute must be valid integer between -2147483648 and 2147483647.',
 
     /*
      | Defined by user application
      */
+
+
+    'gstin'                => 'The :attribute field is invalid',
+    'mysql_unsigned_int'   => 'The :attribute must be valid integer between 0 and 4294967295.',
+    'mysql_signed_int'     => 'The :attribute must be valid integer between -2147483648 and 2147483647.',
+    'int_percentage'       => 'The :attribute must be a valid integer between 0 and 10000',
 
     /*
     |--------------------------------------------------------------------------

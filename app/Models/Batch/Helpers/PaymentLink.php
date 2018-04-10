@@ -8,6 +8,16 @@ use RZP\Models\Customer;
 
 class PaymentLink
 {
+    const PARTIAL_PAYMENT_INPUT_MAP = [
+        'YES'   => '1',
+        'NO'    => '0',
+        // Case: When null values are read from csv/xlsx file.
+        null    => '0',
+        // For backward compatibility with old inputs files formats. To be removed later
+        '1'     => '1',
+        '0'     => '0',
+    ];
+
     /**
      * Gets input array(similar to API request) for entity validation / creation.
      *
@@ -21,11 +31,9 @@ class PaymentLink
      */
     public static function getEntityInput(array & $entry, array & $params): array
     {
-        // Set partial_payment attribute to false if field comes as null
-        // from excel file.
-
-        $partialPayment = $entry[Batch\Header::PARTIAL_PAYMENT];
-        $partialPayment = empty($partialPayment) === true ? '0' : (string) $partialPayment;
+        // Set partial_payment attribute to false if field comes as null from excel file.
+        $partialPayment = array_get($entry, Batch\Header::PARTIAL_PAYMENT) ?: null;
+        $partialPayment = self::PARTIAL_PAYMENT_INPUT_MAP[$partialPayment];
 
         $receipt = $entry[Batch\Header::INVOICE_NUMBER];
         $receipt = empty($receipt) === true ? null : (string) $receipt;

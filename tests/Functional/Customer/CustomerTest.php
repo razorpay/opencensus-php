@@ -115,6 +115,13 @@ class CustomerTest extends TestCase
         }
     }
 
+    public function testCreateCustomerInvalidGstin()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testCreateCustomerEmailOnly()
     {
         $this->ba->privateAuth();
@@ -189,6 +196,13 @@ class CustomerTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateCustomerEmail()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testUpdateCustomerName()
     {
         $this->ba->privateAuth();
@@ -210,11 +224,60 @@ class CustomerTest extends TestCase
         $customer = $this->getLastEntity('customer', true);
 
         $request = &$this->testData['testDeleteCustomer']['request'];
+
         $request['url'] = '/customers/'.$customer['id'];
 
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testOtpFlowForEmailOptionalMerchants()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockRaven();
+
+        $this->sendOtp('9988776655');
+
+        $this->fixtures->merchant->addFeatures(['email_optional']);
+
+        $responseWhenEmailNull = $this->verifyOtp('9988776655', null, '233323');
+
+        $this->assertEquals($responseWhenEmailNull['success'], 1);
+
+        $responseWhenEmailBlank = $this->verifyOtp('9988776655', ' ', '233323');
+
+        $this->assertEquals($responseWhenEmailBlank['success'], 1);
+
+        $responseWithValidEmail = $this->verifyOtp('9988776655', 'test@razorpay.com', '233323');
+
+        $this->assertEquals($responseWithValidEmail['success'], 1);
+    }
+
+    public function testOtpWorkFlowWithEmailRequired()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockRaven();
+
+        $this->sendOtp('9988776655');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->verifyOtp('9988776655', null, '233323');
+        });
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->verifyOtp('9988776655', '', '233323');
+        });
+
+        $responseWithValidEmail = $this->verifyOtp('9988776655', 'test@razorpay.com', '233323');
+
+        $this->assertEquals($responseWithValidEmail['success'], 1);
     }
 
     public function testOtpFlowWithoutDeviceToken()

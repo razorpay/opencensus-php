@@ -3,22 +3,30 @@
 namespace RZP\Models\Merchant;
 
 use Closure;
+
 use RZP\Exception;
-use RZP\Models\Base;
 use RZP\Base\Common;
+use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
-use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
-use RZP\Models\Merchant\Balance;
+use RZP\Models\Merchant\Detail;
+use RZP\Models\Base\QueryCache\CacheQueries;
 
 class Repository extends Base\Repository
 {
+    use CacheQueries;
+
     use Base\RepositoryUpdateTestAndLive;
 
-    const SUB_ACCOUNTS_ONLY_VALUE = '1';
+    //
+    // Possible values for sub_accounts(other than merchant id) query:
+    // - '1': Include only sub accounts in searched results
+    // - '0': Exclude sub accounts from searched results
+    //
+    const SUB_ACCOUNTS_ONLY_VALUE     = '1';
+    const SUB_ACCOUNTS_EXCLUDED_VALUE = '0';
 
     protected $entity = 'merchant';
 
@@ -47,6 +55,7 @@ class Repository extends Base\Repository
         EsRepository::QUERY             => 'filled|string|min:2|max:100',
         Entity::ORG_ID                  => 'sometimes|string|size:14',
         Entity::ACCOUNT_STATUS          => 'filled|custom',
+        Detail\Entity::REVIEWER_ID      => 'sometimes|string|max:14',
         Entity::SUB_ACCOUNTS            => 'filled|custom',
         Entity::GROUPS                  => 'sometimes|array',
         Entity::ADMINS                  => 'sometimes|array|min:1|max:1',
@@ -59,7 +68,9 @@ class Repository extends Base\Repository
 
     protected function validateSubAccounts($attribute, $value)
     {
-        ($value === self::SUB_ACCOUNTS_ONLY_VALUE) or Entity::verifyIdAndStripSign($value);
+        ($value === self::SUB_ACCOUNTS_ONLY_VALUE) or
+            ($value === self::SUB_ACCOUNTS_EXCLUDED_VALUE) or
+            Entity::verifyIdAndStripSign($value);
     }
 
     public function fetchActivatedMerchantsBeforeTimestamp(
@@ -161,7 +172,7 @@ class Repository extends Base\Repository
             $this->repo->methods->getTableName(),
             function ($join) use ($params)
             {
-                $merchantId = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+                $merchantId = $this->repo->merchant->dbColumn(Entity::ID);
                 $methodsMerchantId = $this->repo->methods->dbColumn(Methods\Entity::MERCHANT_ID);
 
                 $methods = json_decode($params[Entity::METHODS], true);
@@ -286,75 +297,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    /**
-     * @deprecated Ref: #4216
-     */
-    public function fetchMerchantsByFilter(array $merchantIds, array $input)
-    {
-        $merchantCreatedAt = $this->repo->merchant->dbColumn(Entity::CREATED_AT);
-        $merchantUpdatedAt = $this->repo->merchant->dbColumn(Entity::CREATED_AT);
-
-        $merchantId = $this->repo
-                           ->merchant_detail
-                           ->dbColumn(Merchant\Detail\Entity::MERCHANT_ID);
-
-        $submittedAt = $this->repo
-                            ->merchant_detail
-                            ->dbColumn(Merchant\Detail\Entity::SUBMITTED_AT);
-
-        $stepsFinished = $this->repo
-                              ->merchant_detail
-                              ->dbColumn(Merchant\Detail\Entity::STEPS_FINISHED);
-
-        $activationProgress = $this->repo
-                                   ->merchant_detail
-                                   ->dbColumn(Merchant\Detail\Entity::ACTIVATION_PROGRESS);
-
-        $submitted = $this->repo
-                          ->merchant_detail
-                          ->dbColumn(Merchant\Detail\Entity::SUBMITTED);
-
-        $updatedAt = $this->repo
-                          ->merchant_detail
-                          ->dbColumn(Merchant\Detail\Entity::UPDATED_AT);
-
-        $query = $this->newQuery()
-                      ->with('features')
-                      ->select(Entity::ID,
-                               Entity::NAME,
-                               Entity::EMAIL,
-                               Entity::ACTIVATED,
-                               Entity::PARENT_ID,
-                               $merchantCreatedAt,
-                               $merchantUpdatedAt,
-                               Entity::ARCHIVED_AT,
-                               Entity::SUSPENDED_AT,
-                               $stepsFinished,
-                               $activationProgress,
-                               $submitted,
-                               $submittedAt,
-                               $updatedAt)
-                      ->join(Table::MERCHANT_DETAIL, Entity::ID, '=', $merchantId)
-                      ->whereIn(Entity::ID, $merchantIds);
-
-        $this->modifyQuery($query, $input);
-
-        // Marketplace accounts filter
-        if (empty($input['sub_accounts']) === false)
-        {
-            if ($input['sub_accounts'] === '1')
-            {
-                $query = $query->whereNotNull(Entity::PARENT_ID);
-            }
-            else
-            {
-                $query = $query->where(Entity::PARENT_ID, $input['sub_accounts']);
-            }
-        }
-
-        return $query->get();
-    }
-
     public function findByAccountIdAndParent(
         string $accountId,
         Entity $parent,
@@ -401,52 +343,6 @@ class Repository extends Base\Repository
         return $query->take($count)
                      ->skip($skip)
                      ->get();
-    }
-
-    /**
-     * @deprecated Ref: #4216
-     */
-    protected function modifyQuery($query, array $input)
-    {
-        $submittedAt = $this->repo
-                            ->merchant_detail
-                            ->dbColumn(Merchant\Detail\Entity::SUBMITTED_AT);
-
-        switch (true)
-        {
-            case (empty($input['suspended']) === false):
-                $query = $query->whereNotNull(Entity::SUSPENDED_AT);
-                break;
-
-            case (empty($input['archived']) === false):
-                $query = $query->whereNotNull(Entity::ARCHIVED_AT);
-                break;
-
-            case (empty($input['activated']) === false):
-                $query = $query->whereNotNull(Entity::ACTIVATED_AT)
-                               ->whereNull(Entity::SUSPENDED_AT)
-                               ->whereNull(Entity::ARCHIVED_AT);
-                break;
-
-            case (empty($input['pending']) === false):
-                $query = $query->whereNull(Entity::ACTIVATED_AT)
-                               ->whereNotNull($submittedAt)
-                               ->whereNull(Entity::SUSPENDED_AT)
-                               ->whereNull(Entity::ARCHIVED_AT);
-                break;
-
-            case (empty($input['dead']) === false):
-                $query = $query->where($merchantCreatedAt, '<', time() - 24 * 7 * 3600)
-                               ->whereNull($submittedAt)
-                               ->whereNull(Entity::SUSPENDED_AT)
-                               ->whereNull(Entity::ARCHIVED_AT);
-                break;
-
-            default:
-                $query = $query->whereNull(Entity::ARCHIVED_AT)
-                               ->whereNull(Entity::SUSPENDED_AT);
-                break;
-        }
     }
 
     /**

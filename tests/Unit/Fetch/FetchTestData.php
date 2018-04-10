@@ -161,6 +161,212 @@ return [
         ],
     ],
 
+    E::DISPUTE => [
+        Type::PRIVILEGE_AUTH    => [
+            [
+                'amount' => 1
+            ],
+        ],
+    ],
+
+    E::EMI_PLAN => [
+        Type::PRIVILEGE_AUTH    => [
+            [
+                'bank' => "hdfc"
+            ],
+        ],
+    ],
+
+    E::FEATURE=> [
+        Type::PRIVILEGE_AUTH    => [
+            [
+                'name' => "name"
+            ],
+        ],
+    ],
+
+    E::FILE_STORE=> [
+        Type::PRIVILEGE_AUTH    => [
+            [
+                'type' => "type"
+            ],
+        ],
+    ],
+
+    E::ITEM=> [
+        Type::PRIVILEGE_AUTH    => [
+            [
+                'merchant_id' => "merchant123456"
+            ],
+        ],
+        Type::PROXY_AUTH    => [
+            [
+                'type' => "plan"
+            ],
+        ],
+    ],
+
+    E::FILE_STORE=> [
+        Type::PRIVILEGE_AUTH    => [
+            [
+                'type' => "type"
+            ],
+        ],
+    ],
+
+    E::KEY => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => 'merchant123456'
+            ],
+        ],
+    ],
+
+    E::MERCHANT => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'international' => true
+            ],
+        ],
+        Type::ADMIN_AUTH => [
+            [
+                'groups' => []
+            ],
+        ],
+    ],
+
+    E::OFFER => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'payment_method' => 'netbanking'
+            ],
+        ],
+    ],
+
+    E::PAYOUT => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => 'merchant123456'
+            ],
+        ],
+    ],
+
+    E::PLAN => [
+        Type::PROXY_AUTH => [
+            [
+//                'period'    => 'weekly',
+                'interval'  => 1
+            ],
+        ],
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id'   => 'merchant123456',
+                'item_id'       => 'merchant123456',
+            ],
+        ],
+    ],
+
+    E::PRICING => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'deleted' => '1'
+            ],
+        ],
+    ],
+
+    E::REPORT => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => 'merchant123456'
+            ],
+        ],
+        Type::PROXY_AUTH => [
+            [
+                'type' => '1'
+            ],
+        ],
+    ],
+
+    E::REVERSAL => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => 'merchant123456'
+            ],
+        ],
+    ],
+
+    E::RISK => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'reason' => 'reason'
+            ],
+        ],
+    ],
+
+    E::RISK => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'reason' => 'reason'
+            ],
+        ],
+    ],
+
+    E::SETTLEMENT => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => 'merchant123456'
+            ],
+        ],
+    ],
+
+    E::STATE => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => 'merchant123456'
+            ],
+        ],
+    ],
+
+    E::TRANSACTION => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'on_hold' => '1'
+            ],
+        ],
+    ],
+
+    E::TRANSFER => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => 'merchant123456'
+            ],
+        ],
+    ],
+
+    E::USER => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'email' => 'email@gmail.com'
+            ],
+        ],
+    ],
+
+    E::VIRTUAL_ACCOUNT => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => 'merchant123456'
+            ],
+        ],
+    ],
+
+    E::WORKFLOW => [
+        Type::ADMIN_AUTH => [
+            [
+                'org_id' => 'organization12'
+            ],
+        ],
+    ],
+
     E::GEO_IP => [
         Type::PRIVILEGE_AUTH => [
             [
@@ -178,4 +384,12 @@ return [
     ],
 
     E::INVOICE => [],
+
+    E::WEBHOOK => [
+        Type::PRIVATE_AUTH => [
+            [
+                'application_id' => str_random(14)
+            ],
+        ],
+    ],
 ];

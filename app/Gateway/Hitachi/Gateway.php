@@ -11,6 +11,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\BharatQr;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Timezone;
 use RZP\Models\Card\Network;
@@ -28,6 +29,8 @@ class Gateway extends Base\Gateway
     protected $secureCacheDriver;
 
     const CACHE_KEY = 'hitachi_%s_card_details';
+    const CACHE_TTL = 20;
+
 
     const TIME_FORMAT = 'His';
     const DATE_FORMAT = 'md';
@@ -42,6 +45,17 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        if ((isset($input['qr_notification']) === true) and
+            ($input['qr_notification'] === true))
+        {
+            return $this->createGatewayPaymentEntityForQr($input);
+        }
+
+        if ($this->isSecondRecurringPaymentRequest($input) === true)
+        {
+            return $this->authorizeRecurring($input);
+        }
 
         $authResponse = $this->callAuthenticationGateway($input);
 
@@ -144,12 +158,71 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function preProcessServerCallback($input, $isBharatQr = false): array
+    {
+        if ($isBharatQr === true)
+        {
+            $qrData = $this->validateChecksumAndGetQrData($input);
+
+            return [
+                'qr_data'           => $qrData,
+                'gateway_input'     => $input,
+            ];
+        }
+
+        return $input;
+    }
+
+    public function getStringToHashForBharatQr($content)
+    {
+        $salt = $this->config['bharatqr_salt'];
+
+        $stringToHash =  urldecode(http_build_query($content));
+
+        return $salt . '|' . $stringToHash . '&';
+    }
+
+    public function getHashOfString($str)
+    {
+        return hash(HashAlgo::SHA256, $str);
+    }
+
+    protected function validateChecksumAndGetQrData($input)
+    {
+        $actualChecksum = array_pull($input, ResponseFields::CHECKSUM);
+
+        $hashString = $this->getStringToHashForBharatQr($input);
+
+        $expectedChecksum = $this->getHashOfString($hashString);
+
+        $this->compareHashes($actualChecksum, $expectedChecksum);
+
+        $qrData = [
+            BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]),
+            BharatQr\GatewayResponseParams::CARD_FIRST6           => substr($input[ResponseFields::MASKED_CARD_NUMBER], 0, 6),
+            BharatQr\GatewayResponseParams::CARD_LAST4            => substr($input[ResponseFields::MASKED_CARD_NUMBER], 12, 4),
+            BharatQr\GatewayResponseParams::METHOD                => Payment\Method::CARD,
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[ResponseFields::PURCHASE_ID],
+            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::AUTHORIZATION_ID],
+        ];
+
+        return $qrData;
+    }
+
+    protected function createGatewayPaymentEntityForQr($input)
+    {
+        $attributes = $this->getAttributesForQrResponse($input);
+
+        $payment = $this->createGatewayPaymentEntity($input, $attributes);
+
+        return $payment;
+    }
+
     /**
      * Hitachi does not do to the authentication step of the payment itself.
      * It calls Blade to authenticate, then uses the response to authorize.
      *
      * @param array $input
-     * @throws Exception\GatewayErrorException
      * @return array|null
      */
     protected function callAuthenticationGateway(array $input)
@@ -159,6 +232,21 @@ class Gateway extends Base\Gateway
             $this->action,
             $input,
             $this->mode);
+    }
+
+    protected function authorizeRecurring(array $input)
+    {
+        $request = $this->getAuthorizeRequestArrayForRecurring($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_RECURRING_AUTH_RESPONSE);
+
+        $attributes = $this->getAttributesFromAuthResponse($response);
+
+        $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
+
+        $this->checkErrorsAndThrowException($response);
     }
 
     protected function authorizeNotEnrolled(array $input)
@@ -195,6 +283,20 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
+        $gatewayPayment = $verify->payment;
+
+        if ((empty($gatewayPayment->getRRN()) === true) and
+            ($gatewayPayment->getResponseCode() === '30'))
+        {
+            $verify->apiStatus = false;
+
+            $verify->gatewayStatus = false;
+
+            $verify->match = true;
+
+            return [];
+        }
+
         $request = $this->getVerifyRequestArray($input);
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
@@ -204,6 +306,21 @@ class Gateway extends Base\Gateway
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
 
         $verify->verifyResponseContent = $response;
+    }
+
+    public function verifyRefund(array $input)
+    {
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return false;
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return true;
+        }
+
+        parent::verifyRefund($input);
     }
 
     protected function verifyPayment(Verify $verify)
@@ -244,6 +361,41 @@ class Gateway extends Base\Gateway
         {
             $verify->gatewaySuccess = true;
         }
+    }
+
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $refundedEntities = $this->repo->findSuccessfulRefundByRefundId($refundId);
+
+        if ($refundedEntities->count() === 0)
+        {
+            return false;
+        }
+
+        $refundEntity = $refundedEntities->first();
+
+        $refundEntityPaymentId = $refundEntity->getPaymentId();
+        $refundEntityRefundAmount = $refundEntity->getAmount();
+
+        $this->trace->info(
+            TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
+            [
+                'input'                 => $input,
+                'refund_payment_id'     => $refundEntityPaymentId,
+                'gateway_refund_amount' => $refundEntityRefundAmount
+            ]);
+
+        if (($refundEntityPaymentId !== $paymentId) or
+            ($refundEntityRefundAmount !== $refundAmount))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     // ----------------------------------------- Request Arrays --------------------------------------------------------
@@ -291,9 +443,56 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function getAuthorizeRequestArrayForRecurring(array $input)
+    {
+        $content = $this->getDefaultAuthorizeRequestArray($input);
+
+        $content[RequestFields::TRANSACTION_TYPE] = 'SI';
+
+        $network = Network::getCode($input['card']['network']);
+
+        if (($network === Card\Network::VISA) or
+            ($network === Card\Network::MC))
+        {
+            $content[RequestFields::ECI] = '02';
+        }
+        else
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
+        }
+
+        $traceContent = $content;
+
+        $content += $this->getCardDataForAuthorizeRequestArray($input);
+
+        $request = $traceRequest = $this->getStandardRequestArray($content);
+
+        $traceRequest['content'] = $traceContent;
+
+        $this->trace->info(TraceCode::GATEWAY_RECURRING_AUTH_REQUEST,
+            [
+                'request'    => $traceRequest,
+                'gateway'    => 'hitachi',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        return $request;
+    }
+
     protected function getAuthorizeRequestArrayForNotEnrolled(array $input)
     {
         $content = $this->getDefaultAuthorizeRequestArray($input);
+
+        $networkCode  = Network::getCode($input['card']['network']);
+
+        $eciValues = [
+            Card\Network::VISA => '07',
+            Card\Network::MAES => '00',
+            Card\Network::MC   => '00',
+        ];
+
+        $content[RequestFields::ECI] = $eciValues[$networkCode];
 
         $traceContent = $content;
 
@@ -335,7 +534,7 @@ class Gateway extends Base\Gateway
 
         $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::AUTH,
-            RequestFields::TRANSACTION_AMOUNT  => str_pad($input['payment']['amount'], 10, 0, STR_PAD_LEFT),
+            RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['payment']['amount']),
             RequestFields::TRANSACTION_TIME    => $time,
             RequestFields::TRANSACTION_DATE    => $date,
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
@@ -357,11 +556,17 @@ class Gateway extends Base\Gateway
 
         $expiry = substr($card['expiry_year'], 2) . str_pad($card['expiry_month'], 2, '0', STR_PAD_LEFT);
 
-        return [
+        $data = [
             RequestFields::CARD_NUMBER         => $input['card']['number'],
-            RequestFields::CVV2                => $input['card']['cvv'],
             RequestFields::EXPIRY_DATE         => $expiry,
         ];
+
+        if ($this->isSecondRecurringPaymentRequest($input) === false)
+        {
+            $data[RequestFields::CVV2] = $input['card']['cvv'];
+        }
+
+        return $data;
     }
 
     protected function getCaptureRequestArray(array $input, Entity $gatewayPayment)
@@ -378,7 +583,7 @@ class Gateway extends Base\Gateway
             RequestFields::TRANSACTION_DATE    => $date,
             RequestFields::RETRIEVAL_REF_NUM   => $gatewayPayment->getRrn(),
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
-            RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id']
+            RequestFields::MERCHANT_REF_NUMBER => $gatewayPayment->getMerchantReference() ?? $input['payment']['id'],
         ];
 
         return $this->getStandardRequestArray($content);
@@ -399,7 +604,7 @@ class Gateway extends Base\Gateway
             RequestFields::RETRIEVAL_REF_NUM   => $gatewayPayment->getRrn(),
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
             RequestFields::TERMINAL_ID         => $this->getTerminalId(),
-            RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id'],
+            RequestFields::MERCHANT_REF_NUMBER => $input['refund']['id'],
             RequestFields::REQUEST_ID          => UniqueIdEntity::generateUniqueId(),
         ];
 
@@ -447,13 +652,30 @@ class Gateway extends Base\Gateway
 
     // ----------------------------------------- Get Attributes --------------------------------------------------------
 
+    protected function getAttributesForQrResponse(array $response)
+    {
+        $attributes = [
+            Entity::RECEIVED           => true,
+            Entity::MASKED_CARD_NUMBER => $response[ResponseFields::MASKED_CARD_NUMBER],
+            Entity::CARD_NETWORK       => $response[ResponseFields::CARD_NETWORK],
+            Entity::AMOUNT             => $this->getIntegerFormattedAmount($response[ResponseFields::AMOUNT]),
+            Entity::RRN                => $response[ResponseFields::RRN],
+            Entity::REQUEST_ID         => $response[ResponseFields::AUTHORIZATION_ID],
+            Entity::STATUS             => $response[ResponseFields::STATUS_CODE],
+            Entity::MERCHANT_REFERENCE => $response[ResponseFields::PURCHASE_ID],
+        ];
+
+        return $attributes;
+    }
+
     protected function getAttributesFromAuthResponse(array $response) : array
     {
         $attributes = [
-            Entity::RECEIVED      => true,
-            Entity::RRN           => $response[ResponseFields::RETRIEVAL_REF_NUM] ?? null,
-            Entity::RESPONSE_CODE => $response[ResponseFields::RESPONSE_CODE] ?? null,
-            Entity::AUTH_ID       => $response[ResponseFields::AUTH_ID] ?? null,
+            Entity::RECEIVED           => true,
+            Entity::RRN                => $response[ResponseFields::RETRIEVAL_REF_NUM] ?? null,
+            Entity::RESPONSE_CODE      => $response[ResponseFields::RESPONSE_CODE] ?? null,
+            Entity::AUTH_ID            => $response[ResponseFields::AUTH_ID] ?? null,
+            Entity::MERCHANT_REFERENCE => $response[ResponseFields::MERCHANT_REFERENCE] ?? null,
         ];
 
         return $attributes;
@@ -486,14 +708,17 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        $gatewayAttributes = [
-            Entity::STATUS     => $content[ResponseFields::STATUS],
-            Entity::REQUEST_ID => $content[ResponseFields::REQUEST_ID],
-        ];
+        if (isset($content[ResponseFields::STATUS]))
+        {
+            $gatewayAttributes = [
+                Entity::STATUS      => $content[ResponseFields::STATUS],
+                Entity::REQUEST_ID  => $content[ResponseFields::REQUEST_ID],
+            ];
 
-        $gatewayPayment->fill($gatewayAttributes);
+            $gatewayPayment->fill($gatewayAttributes);
 
-        $this->repo->saveOrFail($gatewayPayment);
+            $this->repo->saveOrFail($gatewayPayment);
+        }
 
         return $gatewayPayment;
     }
@@ -506,9 +731,12 @@ class Gateway extends Base\Gateway
 
         $action = $action ?: $this->action;
 
-        $acquirer = $input['terminal']->getGatewayAcquirer();
+        if (empty($input['terminal']) === false)
+        {
+            $acquirer = $input['terminal']->getGatewayAcquirer();
 
-        $gatewayPayment->setAcquirer($acquirer);
+            $gatewayPayment->setAcquirer($acquirer);
+        }
 
         $gatewayPayment->setAction($action);
 
@@ -590,11 +818,6 @@ class Gateway extends Base\Gateway
         return parent::getStringToHash($array, $glue);
     }
 
-    protected function getHashOfString($str)
-    {
-        return hash(HashAlgo::SHA256, $str);
-    }
-
     protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
     {
         $body = json_encode($content);
@@ -661,6 +884,11 @@ class Gateway extends Base\Gateway
 
     protected function getTerminalId()
     {
+        if ($this->isBharatQrPayment() === true)
+        {
+            return $this->config['bharatqr_terminal_id'];
+        }
+
         $terminalId = $this->terminal['gateway_terminal_id'];
 
         if ($this->mode === Mode::TEST)

@@ -43,7 +43,7 @@ class Entity extends Base\Entity
      * For charge at will payments, we don't know off hand
      * how long the merchant wants the subscription to go on
      */
-    const MAX_RECURRING_END_YEARS = 30;
+    const MAX_RECURRING_END_YEARS = 10;
 
     protected $entity = 'netbanking';
 
@@ -95,6 +95,11 @@ class Entity extends Base\Entity
     public function setBank($bank)
     {
         $this->setAttribute(self::BANK, $bank);
+    }
+
+    public function setAmount($amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
     }
 
     public function getAmountAttribute()

@@ -15,6 +15,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Exception;
 use RZP\Models\Transaction;
 use Razorpay\Trace\Logger as Trace;
@@ -88,6 +89,7 @@ class Service extends Base\Service
                 unset($gateways[IFSC::FDRL]);
                 unset($gateways[IFSC::INDB]);
                 unset($gateways[IFSC::UTIB]);
+                unset($gateways[Netbanking::BARB_R]);
 
                 break;
 
@@ -250,6 +252,7 @@ class Service extends Base\Service
                 $dt = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST);
 
                 $from = $dt->startOfMonth()->getTimestamp();
+
                 $to   = $dt->endOfMonth()->addDay()->getTimestamp() - 1;
             }
             else
@@ -299,7 +302,7 @@ class Service extends Base\Service
         return $refunds->toArrayPublic();
     }
 
-    public function verify($ids)
+    public function verifyMultiple($ids)
     {
         $refundIds = explode(',', $ids);
 
@@ -769,6 +772,33 @@ class Service extends Base\Service
         return [
             'refund_id' => $id,
             'status'    => $refundStatus
+        ];
+    }
+
+    public function verify(string $id)
+    {
+        $refund = $this->repo->refund->findByPublicId($id);
+
+        $verifySuccess = $this->getNewProcessor($refund->merchant)->verifyRefund($refund);
+
+        return [
+            'refund_id'      => $id,
+            'verify_success' => $verifySuccess
+        ];
+    }
+
+    public function editStatus($refundId, array $input)
+    {
+        Refund\Entity::verifyIdAndStripSign($refundId);
+
+        $refund = $this->repo->refund->findOrFailPublic($refundId);
+
+        $refund->edit($input, 'editStatus');
+
+        $this->repo->saveOrFail($refund);
+
+        return [
+            'status' => $refund->getStatus(),
         ];
     }
 }

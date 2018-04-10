@@ -127,6 +127,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::DATE, $timestamp);
     }
 
+    public function getChannel()
+    {
+        return $this->getAttribute(self::CHANNEL);
+    }
+
     public function getTotalCount()
     {
         return $this->getAttribute(self::TOTAL_COUNT);
@@ -171,6 +176,21 @@ class Entity extends Base\PublicEntity
     public function incrementTransactionCount($value)
     {
         $this->increment(self::TRANSACTION_COUNT, $value);
+    }
+
+    public function setAmount($value)
+    {
+        $this->setAttribute(self::AMOUNT, $value);
+    }
+
+    public function setTotalCount($value)
+    {
+        $this->setAttribute(self::TOTAL_COUNT, $value);
+    }
+
+    public function setTransactionCount($value)
+    {
+        $this->setAttribute(self::TRANSACTION_COUNT, $value);
     }
 
     public function setType($type)

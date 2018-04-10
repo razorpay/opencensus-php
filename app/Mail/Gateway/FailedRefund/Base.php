@@ -6,17 +6,28 @@ use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
-use RZP\Mail\Gateway\RefundFile;
+use RZP\Mail\Base\Mailable;
+use RZP\Models\Payment\Gateway;
 
-class Base extends RefundFile\Base
+class Base extends Mailable
 {
-    protected function getSubject()
+    protected $type;
+
+    protected $data;
+
+    protected $emails;
+
+    public function __construct(array $data,
+                                string $type,
+                                array $emails = [])
     {
-        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
+        parent::__construct();
 
-        $subject = Constants::SUBJECT_MAP[$this->type] . $today;
+        $this->data = $data;
 
-        return $subject;
+        $this->type = $type;
+
+        $this->emails = $emails;
     }
 
     protected function addSender()
@@ -26,6 +37,24 @@ class Base extends RefundFile\Base
         $fromHeader = Constants::HEADER_MAP[$this->type];
 
         $this->from($fromEmail, $fromHeader);
+
+        return $this;
+    }
+
+    protected function addRecipients()
+    {
+        $this->emails ?: Constants::RECIPIENT_EMAILS_MAP[$this->type];
+
+        $this->to($this->emails);
+
+        return $this;
+    }
+
+    protected function addSubject()
+    {
+        $subject = $this->getSubject();
+
+        $this->subject($subject);
 
         return $this;
     }
@@ -43,9 +72,25 @@ class Base extends RefundFile\Base
         return $this;
     }
 
+    protected function getSubject()
+    {
+        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        $subject = Constants::SUBJECT_MAP[$this->type] . $today;
+
+        return $subject;
+    }
+
     protected function addHtmlView()
     {
         $this->view(Constants::MAIL_TEMPLATE_MAP[$this->type]);
+
+        return $this;
+    }
+
+    protected function addAttachments()
+    {
+        $this->attach($this->data['signed_url'], ['as' => $this->data['file_name']]);
 
         return $this;
     }

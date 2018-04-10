@@ -68,7 +68,7 @@ class CaptureTest extends TestCase
 
         $this->assertEquals(true, $payment['gateway_captured']);
 
-        Mail::assertSent(CapturedMail::class);
+        Mail::assertQueued(CapturedMail::class);
     }
 
     public function testBulkCapture()
@@ -83,7 +83,7 @@ class CaptureTest extends TestCase
             $payments[] = $this->defaultAuthPayment();
         }
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->mockDashboardRequest($count);
 
@@ -93,7 +93,7 @@ class CaptureTest extends TestCase
 
         $this->assertEquals(true, $payment['gateway_captured']);
 
-        Mail::assertSent(CapturedMail::class);
+        Mail::assertQueued(CapturedMail::class);
     }
 
     public function testCaptureWithFeeBreakupException()

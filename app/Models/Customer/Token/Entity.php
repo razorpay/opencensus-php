@@ -2,6 +2,9 @@
 
 namespace RZP\Models\Customer\Token;
 
+use Crypt;
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
@@ -34,11 +37,13 @@ class Entity extends Base\PublicEntity
     const GATEWAY_TOKEN2            = 'gateway_token2';
     const RECURRING                 = 'recurring';
     const MAX_AMOUNT                = 'max_amount';
+    const AUTH_TYPE                 = 'auth_type';
     const RECURRING_STATUS          = 'recurring_status';
     const RECURRING_FAILURE_REASON  = 'recurring_failure_reason';
     const RECURRING_DETAILS         = 'recurring_details';
     const BENEFICIARY_NAME          = 'beneficiary_name';
     const IFSC                      = 'ifsc';
+    const AADHAAR_NUMBER            = 'aadhaar_number';
     const USED_COUNT                = 'used_count';
     const USED_AT                   = 'used_at';
     const EXPIRED_AT                = 'expired_at';
@@ -56,9 +61,17 @@ class Entity extends Base\PublicEntity
 
     /**
      * We use this to set the max amount of the token entity.
-     * By default, we have chosen 10000000 paise
+     * By default, we have chosen ₹ 99,999
      */
-    const DEFAULT_MAX_AMOUNT    = 10000000;
+    const DEFAULT_MAX_AMOUNT    = 9999900;
+
+    /**
+     * We use this to set the number of years after which the
+     * emandate token will get expired and cannot be used
+     * anymore. Ideally, the merchant sends the expiry time.
+     * In case he does not, we add 10 years to the current time.
+     */
+    const DEFAULT_EXPIRY_YEARS  = 10;
 
     protected static $sign      = 'token';
 
@@ -78,8 +91,10 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
         self::RECURRING,
+        self::AUTH_TYPE,
+        self::AADHAAR_NUMBER,
+        self::MAX_AMOUNT,
         self::EXPIRED_AT,
-        self::MAX_AMOUNT
     ];
 
     protected $visible = [
@@ -103,6 +118,8 @@ class Entity extends Base\PublicEntity
         self::RECURRING_FAILURE_REASON,
         self::RECURRING_STATUS,
         self::MAX_AMOUNT,
+        self::AUTH_TYPE,
+        self::AADHAAR_NUMBER,
         self::USED_COUNT,
         self::USED_AT,
         self::EXPIRED_AT,
@@ -138,6 +155,8 @@ class Entity extends Base\PublicEntity
         self::RECURRING_FAILURE_REASON  => null,
         self::RECURRING_STATUS          => null,
         self::MAX_AMOUNT                => null,
+        self::AUTH_TYPE                 => null,
+        self::AADHAAR_NUMBER            => null,
         self::USED_AT                   => null,
         self::USED_COUNT                => 0,
         self::EXPIRED_AT                => null,
@@ -162,7 +181,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected static $generators = [
-        self::TOKEN
+        self::TOKEN,
     ];
 
     public function customer()
@@ -213,6 +232,11 @@ class Entity extends Base\PublicEntity
     public function getIfsc()
     {
         return $this->getAttribute(self::IFSC);
+    }
+
+    public function getAadhaarNumber()
+    {
+        return $this->getAttribute(self::AADHAAR_NUMBER);
     }
 
     public function getToken()
@@ -270,6 +294,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MAX_AMOUNT);
     }
 
+    public function getAuthType()
+    {
+        return $this->getAttribute(self::AUTH_TYPE);
+    }
+
     public function getCardId()
     {
         return $this->getAttribute(self::CARD_ID);
@@ -310,6 +339,11 @@ class Entity extends Base\PublicEntity
         }
 
         return ($expiredAt <= time());
+    }
+
+    public function setAuthType($authType)
+    {
+        $this->setAttribute(self::AUTH_TYPE, $authType);
     }
 
     public function setRecurring($recurring)
@@ -354,6 +388,58 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    /**
+     * Cannot use generators here because we can receive
+     * null in max_amount which will get overridden
+     * by  fillable. Hence, no use of generator.
+     * It needs to be in fillable because
+     * merchant can send its value too.
+     *
+     * @param $maxAmount
+     */
+    protected function setMaxAmountAttribute($maxAmount)
+    {
+        if ((empty($maxAmount) === true) and
+            ($this->getMethod() === Payment\Method::EMANDATE))
+        {
+            $maxAmount = self::DEFAULT_MAX_AMOUNT;
+        }
+
+        $this->attributes[self::MAX_AMOUNT] = $maxAmount;
+    }
+
+    /**
+     * Cannot use generators here because we can receive
+     * null in expired_at which will get overridden
+     * by fillable. Hence, no use of generator.
+     * It needs to be in fillable because
+     * merchant can send its value too.
+     *
+     * @param $expiredAt
+     */
+    protected function setExpiredAtAttribute($expiredAt)
+    {
+        if ((empty($expiredAt) === true) and
+            ($this->getMethod() === Payment\Method::EMANDATE))
+        {
+            $expiredAt = Carbon::now(Timezone::IST)
+                               ->addYears(self::DEFAULT_EXPIRY_YEARS)
+                               ->getTimestamp();
+        }
+
+        $this->attributes[self::EXPIRED_AT] = $expiredAt;
+    }
+
+    protected function setAadhaarNumberAttribute($aadhaarNumber)
+    {
+        if ($aadhaarNumber !== null)
+        {
+            $aadhaarNumber = Crypt::encrypt($aadhaarNumber);
+        }
+
+        $this->attributes[self::AADHAAR_NUMBER] = $aadhaarNumber;
+    }
+
     protected function setPublicCardAttribute(array & $array)
     {
         if ($this->hasCard())
@@ -374,6 +460,16 @@ class Entity extends Base\PublicEntity
         ];
     }
 
+    protected function getAadhaarNumberAttribute($aadhaarNumber)
+    {
+        if ($aadhaarNumber === null)
+        {
+            return $aadhaarNumber;
+        }
+
+        return Crypt::decrypt($aadhaarNumber);
+    }
+
     public function setPublicRecurringDetailsAttribute(array & $array)
     {
         if ($this->getMethod() === Payment\Method::CARD)
@@ -388,7 +484,7 @@ class Entity extends Base\PublicEntity
 
         for ($i = 0; $i < 3; $i++)
         {
-            $dec = hexdec(bin2hex(openssl_random_pseudo_bytes(5)));
+            $dec = hexdec(bin2hex(random_bytes(5)));
 
             // Convert the random decimal generated to base 62
             $rand .= self::base62($dec);

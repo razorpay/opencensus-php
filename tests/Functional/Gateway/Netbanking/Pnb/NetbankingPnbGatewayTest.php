@@ -24,7 +24,7 @@ class NetbankingPnbGatewayTest extends TestCase
 
         $this->gateway = 'netbanking_pnb';
 
-        $this->bank = 'PUNB';
+        $this->bank = 'PUNB_R';
 
         $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
 
@@ -179,7 +179,7 @@ class NetbankingPnbGatewayTest extends TestCase
 
         $this->createRefundForFileGeneration($payments);
 
-        $data = $this->generateRefundsExcelForNB('PUNB');
+        $data = $this->generateRefundsExcelForNB('PUNB_R');
 
         $this->checkRefundTextData($data);
 
@@ -192,7 +192,7 @@ class NetbankingPnbGatewayTest extends TestCase
 
         $payments = $this->createPaymentsToClaim();
 
-        $data = $this->generateRefundsExcelForNb('PUNB');
+        $data = $this->generateRefundsExcelForNb('PUNB_R');
 
         $this->checkEmptyRefundTextData($data);
 
@@ -363,7 +363,7 @@ class NetbankingPnbGatewayTest extends TestCase
         ];
 
         // Mail catch with amount and refund everywhere
-        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData)
+        Mail::assertQueued(DailyFileMail::class, function ($mail) use ($testData)
         {
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
@@ -389,7 +389,7 @@ class NetbankingPnbGatewayTest extends TestCase
                 ]
         ];
 
-        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData)
+        Mail::assertQueued(DailyFileMail::class, function ($mail) use ($testData)
         {
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 

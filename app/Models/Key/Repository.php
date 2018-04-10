@@ -3,25 +3,19 @@
 namespace RZP\Models\Key;
 
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Base\QueryCache\CacheQueries;
 
 class Repository extends Base\Repository
 {
-    // Cache TTL defined in minutes
-    const CACHE_TTL = 5;
+    use CacheQueries;
 
     protected $entity = 'key';
 
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID => 'sometimes|alpha_num',
     ];
-
-    public function find($id, $columns = ['*'])
-    {
-        return $this->newQuery()
-                    ->remember(self::CACHE_TTL)
-                    ->cacheTags(['v1', 'key_'. $id])
-                    ->find($id, $columns);
-    }
 
     public function getKeysForMerchant($merchantId, $expired = false)
     {
@@ -33,6 +27,14 @@ class Repository extends Base\Repository
         }
 
         return $query->get();
+    }
+
+    public function getFirstActiveKeyForMerchantOrFail(string $merchantId)
+    {
+        return $this->newQuery()
+                    ->merchantId($merchantId)
+                    ->notExpired()
+                    ->firstOrFail();
     }
 
     public function findNotExpired($keyId)

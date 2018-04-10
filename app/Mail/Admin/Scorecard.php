@@ -76,6 +76,9 @@ class Scorecard extends Mailable
 
     protected function getTabularFormattedMerchantVolumeScorecard($volumeData)
     {
+        //
+        // TODO: Refactor this to move to a blade template
+        //
         $message = '<table border="1">';
 
         $message .= '<tr>' .

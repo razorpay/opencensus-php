@@ -18,10 +18,11 @@ class Validator extends Base\Validator
         Entity::PAYMENT_CAPTURE => 'filled|boolean',
         Entity::CUSTOMER_ID     => 'sometimes|filled',
         Entity::NOTES           => 'sometimes|notes',
-        Entity::METHOD          => 'sometimes|in:netbanking,emandate',
+        Entity::METHOD          => 'sometimes|in:netbanking,emandate,upi',
         Entity::BANK            => 'sometimes|filled',
         Entity::ACCOUNT_NUMBER  => 'sometimes|filled|string|max:50|min:5',
-        Entity::OFFER_ID        => 'sometimes|string|size:20'
+        Entity::DISCOUNT        => 'sometimes|boolean',
+        Entity::OFFER_ID        => 'sometimes|string|size:20',
     );
 
     protected static $createValidators = [
@@ -30,6 +31,7 @@ class Validator extends Base\Validator
         Entity::BANK,
         'method_fee_bearer',
         Entity::CURRENCY,
+        'offer',
     ];
 
     protected function validateAmount($input)
@@ -124,7 +126,15 @@ class Validator extends Base\Validator
     {
         $this->validateOrderNotPaid();
 
-        $this->validateOrderAmount($payment->getAdjustedAmountWrtCustFeeBearer());
+        //
+        // Bank transfer is a push payment, it cannot be rejected.
+        // So even if the amount mismatches here, we go ahead and
+        // authorize it anyway, and will later refund it.
+        //
+        if ($payment->isBankTransfer() === false)
+        {
+            $this->validateOrderAmount($payment->getAdjustedAmountWrtCustFeeBearer());
+        }
 
         $this->validateOrderCurrency($payment->getCurrency());
 
@@ -193,7 +203,7 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH,
-                'amount',
+                Entity::AMOUNT,
                 [
                     'order_amount'   => $orderAmountDue,
                     'payment_amount' => $paymentAmount,
@@ -263,21 +273,35 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (empty($order->getMethod()))
+        if (empty($order->getMethod()) === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_METHOD_REQUIRED_FOR_MERCHANT);
         }
 
-        if ($order->getMethod() !== Payment\Method::NETBANKING)
+        $method = $order->getMethod();
+
+        if (($method !== Payment\Method::NETBANKING) and
+            ($method !== Payment\Method::UPI))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Order method needs to be netbanking for the merchant');
+                'Order method needs to be netbanking or upi for the merchant');
         }
 
         $orderBank = $order->getBank();
 
-        $tpvBanks = Netbanking::getSupportedBanksForTPV();
+        $tpvBanks = [];
+
+        switch ($method)
+        {
+            case Payment\Method::UPI:
+                $tpvBanks = Netbanking::getSupportedBanks();
+                break;
+
+            case Payment\Method::NETBANKING:
+                $tpvBanks = Netbanking::getSupportedBanksForTPV();
+                break;
+        }
 
         if (in_array($orderBank, $tpvBanks, true) === false)
         {
@@ -327,7 +351,11 @@ class Validator extends Base\Validator
     /**
      * Custom validator not used as both the entity values are not
      * available at the time of creation.
-     * */
+     *
+     * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     */
     protected function validateAccountNumber(array $input)
     {
         $accountNumberLengths = Netbanking::getAccountNumberLengths();
@@ -341,6 +369,7 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_BANK_REQUIRED_WITH_ACCOUNT_NUMBER,
+                Entity::BANK,
                 [
                     $input
                 ]);
@@ -359,6 +388,7 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_ACCOUNT_NUMBER_INCORRECT_LENGTH,
+                Entity::ACCOUNT_NUMBER,
                 [
                     $input
                 ]);
@@ -374,6 +404,21 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_METHOD_DOES_NOT_MATCH_ORDER_METHOD);
+        }
+    }
+
+    protected function validateOffer($input)
+    {
+        if (isset($input[Entity::DISCOUNT]) === false)
+        {
+            return;
+        }
+
+        if (($input[Entity::DISCOUNT] === true) and
+            (isset($input[Entity::OFFER_ID]) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    'Discount without offer_id is not supported');
         }
     }
 }

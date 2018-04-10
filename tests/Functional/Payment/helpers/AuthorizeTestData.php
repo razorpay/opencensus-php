@@ -17,7 +17,87 @@ return [
         ],
         'response' => [
             'content' => [
-                'http_status_code' => 200
+                'http_status_code' => 200,
+            ]
+        ],
+        'jsonp' => true
+    ],
+
+    'testMagicKeySet' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments/create/jsonp',
+            'content' => [
+                'card' => [
+                    'number' => '4012001037167778'
+                ],
+                'callback' => 'abcdefghijkl',
+                '_' => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'magic' => true,
+            ]
+        ],
+        'jsonp' => true
+    ],
+
+    'testMagicKeyFalseDisabledIin' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments/create/jsonp',
+            'content' => [
+                'card' => [
+                    'number' => '4012001037167778'
+                ],
+                'callback' => 'abcdefghijkl',
+                '_' => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'magic' => false,
+            ]
+        ],
+        'jsonp' => true
+    ],
+
+    'testMagicKeyFalseDisabledGlobally' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments/create/jsonp',
+            'content' => [
+                'card' => [
+                    'number' => '4012001037167778'
+                ],
+                'callback' => 'abcdefghijkl',
+                '_' => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'magic' => false,
+            ]
+        ],
+        'jsonp' => true
+    ],
+
+    'testMagicKeyFalseMerchantDisabled' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments/create/jsonp',
+            'content' => [
+                'card' => [
+                    'number' => '4012001037167778'
+                ],
+                'callback' => 'abcdefghijkl',
+                '_' => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'magic' => false,
             ]
         ],
         'jsonp' => true
@@ -611,6 +691,22 @@ return [
         ],
     ],
 
+    'testIntentPaymentWithVpa' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The vpa field is not required and not shouldn\'t be sent.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
     'testFixAuthorizedAt' => [
         'request' => [
             'content' => [],
@@ -792,6 +888,30 @@ return [
                 'request' => [
                     'method'    => 'post'
                 ]
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testIntentPaymentViaUpiS2S' => [
+        'request' => [
+            'url' => '/payments/create/upi',
+            'method' => 'POST',
+            'content' => [
+                'amount'        => 10000,
+                'currency'      => 'INR',
+                'contact'       => '9999999999',
+                'email'         => 'a@b.com',
+                'description'   => 'description',
+                'notes'         => [
+                    'key'   => 'value'
+                ],
+                'flow'          => 'intent'
+            ],
+        ],
+        'response' => [
+            'content' => [
+
             ],
             'status_code' => 200,
         ]

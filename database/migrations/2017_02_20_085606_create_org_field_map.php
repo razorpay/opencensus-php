@@ -37,6 +37,7 @@ class CreateOrgFieldMap extends Migration
 
             $table->integer(FieldMap::CREATED_AT);
             $table->integer(FieldMap::UPDATED_AT);
+            $table->index(FieldMap::CREATED_AT);
         });
     }
 

@@ -41,6 +41,7 @@ class CreateActionStateReasons extends Migration
                    ->on_delete('restrict');
 
             $table->index(StateReason::REASON_TYPE);
+            $table->index(StateReason::CREATED_AT);
         });
     }
 

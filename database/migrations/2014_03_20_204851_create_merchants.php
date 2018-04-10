@@ -86,6 +86,9 @@ class CreateMerchants extends Migration
             $table->tinyInteger(Merchant::LINKED_ACCOUNT_KYC)
                   ->default(0);
 
+            $table->tinyInteger(Merchant::HAS_KEY_ACCESS)
+                  ->default(0);
+
             $table->char(Merchant::BRAND_COLOR, 6)
                   ->nullable();
 
@@ -125,6 +128,12 @@ class CreateMerchants extends Migration
             $table->char(Merchant::INVOICE_CODE, 12);
 
             $table->text(Merchant::NOTES)
+                  ->nullable();
+
+            $table->string(Merchant::WHITELISTED_IPS_LIVE, 255)
+                  ->nullable();
+
+            $table->string(Merchant::WHITELISTED_IPS_TEST, 255)
                   ->nullable();
 
             $table->integer(Merchant::CREATED_AT);

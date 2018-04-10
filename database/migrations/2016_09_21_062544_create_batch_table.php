@@ -28,6 +28,9 @@ class CreateBatchTable extends Migration
 
             $table->char(Batch::MERCHANT_ID, Batch::ID_LENGTH);
 
+            $table->string(Batch::NAME, 255)
+                  ->nullable();
+
             $table->char(Batch::TYPE, 25);
 
             $table->string(Batch::SUB_TYPE, 25)

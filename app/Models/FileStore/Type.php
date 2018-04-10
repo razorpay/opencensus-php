@@ -16,9 +16,12 @@ class Type
     const HDFC_EMANDATE_REGISTER            = 'hdfc_emandate_register';
     const HDFC_EMANDATE_DEBIT               = 'hdfc_emandate_debit';
 
+    const RBL_ENACH_DEBIT                   = 'rbl_enach_debit';
+
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
 
     const BOB_NETBANKING_REFUND             = 'bob_netbanking_refund';
+    const BOB_NETBANKING_CLAIMS             = 'bob_netbanking_claims';
 
     const ICICI_NETBANKING_REFUND           = 'icici_netbanking_refund';
 
@@ -46,19 +49,38 @@ class Type
 
     const SBI_UPI_REFUND                    = 'sbi_upi_refund';
 
+    const UPI_ICICI_FAILED_REFUND           = 'upi_icici_failed_refund';
+
+    const AIRTELMONEY_WALLET_FAILED_REFUND  = 'airtelmoney_wallet_failed_refund';
+
+    const AXIS_MIGS_FAILED_REFUND           = 'axis_migs_failed_refund';
+
+    const ICIC_FIRST_DATA_FAILED_REFUND     = 'icic_first_data_failed_refund';
+
+    const HDFC_CYBERSOURCE_FAILED_REFUND    = 'hdfc_cybersource_failed_refund';
+
+    const AXIS_CYBERSOURCE_FAILED_REFUND    = 'axis_cybersource_failed_refund';
+
+    const HDFC_FSS_FAILED_REFUND            = 'hdfc_fss_failed_refund';
+
     const PNB_NETBANKING_REFUND             = 'pnb_netbanking_refund';
 
     const PNB_NETBANKING_CLAIMS             = 'pnb_netbanking_claims';
 
     const OBC_NETBANKING_REFUND             = 'obc_netbanking_refund';
 
+    const GATEWAY_FAILED_REFUNDS            = 'gateway_failed_refunds';
+
     const BATCH_INPUT                       = 'batch_input';
     const BATCH_OUTPUT                      = 'batch_output';
+    const BATCH_VALIDATED                   = 'batch_validated';
     const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
 
     const BLANK                             = 'blank';
 
     const INVOICE_PDF                       = 'invoice_pdf';
+
+    const QR_CODE_IMAGE                     = 'qr_code_image';
 
     const REPORT                            = 'report';
 
@@ -94,6 +116,7 @@ class Type
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
     const RECON_BUCKET_CONFIG                   = 'recon_bucket_config';
     const MOCK_RECONCILIATION_FILE              = 'mock_reconciliation_file';
+    const CUSTOMER_BUCKET_CONFIG                = 'customer_bucket_config';
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
@@ -110,12 +133,14 @@ class Type
             self::HDFC_NETBANKING_REFUND,
             self::HDFC_EMANDATE_REGISTER,
             self::HDFC_EMANDATE_DEBIT,
+            self::RBL_ENACH_DEBIT,
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_EMANDATE_DEBIT,
             self::FEDERAL_NETBANKING_REFUND,
             self::CORPORATION_NETBANKING_REFUND,
             self::BOB_NETBANKING_REFUND,
+            self::BOB_NETBANKING_CLAIMS,
             self::RBL_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_CLAIM,
@@ -140,12 +165,21 @@ class Type
             self::ICICI_EMI_FILE_SFTP,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
+            self::UPI_ICICI_FAILED_REFUND,
+            self::AIRTELMONEY_WALLET_FAILED_REFUND,
+            self::AXIS_MIGS_FAILED_REFUND,
+            self::ICIC_FIRST_DATA_FAILED_REFUND,
+            self::HDFC_CYBERSOURCE_FAILED_REFUND,
+            self::AXIS_CYBERSOURCE_FAILED_REFUND,
+            self::HDFC_FSS_FAILED_REFUND,
             self::MOCK_RECONCILIATION_FILE,
+            self::GATEWAY_FAILED_REFUNDS,
         ],
 
         Constants\Entity::BATCH => [
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
+            self::BATCH_VALIDATED,
             self::RECONCILIATION_BATCH_INPUT,
         ],
 
@@ -163,6 +197,10 @@ class Type
 
         Constants\Entity::INVOICE => [
             self::INVOICE_PDF,
+        ],
+
+        Constants\Entity::QR_CODE => [
+            self::QR_CODE_IMAGE,
         ],
 
         Constants\Entity::BATCH_FUND_TRANSFER => [
@@ -196,7 +234,9 @@ class Type
         self::HDFC_NETBANKING_REFUND,
         self::HDFC_EMANDATE_REGISTER,
         self::HDFC_EMANDATE_DEBIT,
+        self::RBL_ENACH_DEBIT,
         self::BOB_NETBANKING_REFUND,
+        self::BOB_NETBANKING_CLAIMS,
         self::CORPORATION_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,
@@ -216,7 +256,15 @@ class Type
         self::FUND_TRANSFER_H2H,
         self::PNB_NETBANKING_REFUND,
         self::PNB_NETBANKING_CLAIMS,
-        self::MOCK_RECONCILIATION_FILE
+        self::UPI_ICICI_FAILED_REFUND,
+        self::AIRTELMONEY_WALLET_FAILED_REFUND,
+        self::AXIS_MIGS_FAILED_REFUND,
+        self::ICIC_FIRST_DATA_FAILED_REFUND,
+        self::HDFC_CYBERSOURCE_FAILED_REFUND,
+        self::HDFC_FSS_FAILED_REFUND,
+        self::AXIS_CYBERSOURCE_FAILED_REFUND,
+        self::MOCK_RECONCILIATION_FILE,
+        self::GATEWAY_FAILED_REFUNDS,
     ];
 
     /**
@@ -228,6 +276,8 @@ class Type
             self::HDFC_NETBANKING_REFUND,
             self::HDFC_EMANDATE_REGISTER,
             self::HDFC_EMANDATE_DEBIT,
+            self::BOB_NETBANKING_REFUND,
+            self::BOB_NETBANKING_CLAIMS,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
@@ -248,12 +298,24 @@ class Type
             self::ICICI_EMI_FILE_MAIL,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
+            self::BATCH_VALIDATED,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
+            self::UPI_ICICI_FAILED_REFUND,
+            self::AIRTELMONEY_WALLET_FAILED_REFUND,
+            self::AXIS_MIGS_FAILED_REFUND,
+            self::ICIC_FIRST_DATA_FAILED_REFUND,
+            self::HDFC_CYBERSOURCE_FAILED_REFUND,
+            self::AXIS_CYBERSOURCE_FAILED_REFUND,
+            self::HDFC_FSS_FAILED_REFUND,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [
-            self::INVOICE_PDF
+            self::INVOICE_PDF,
+        ],
+
+        self::CUSTOMER_BUCKET_CONFIG => [
+            self::QR_CODE_IMAGE,
         ],
 
         self::ACTIVATION_BUCKET_CONFIG => [
@@ -272,6 +334,7 @@ class Type
             self::FUND_TRANSFER_H2H,
             self::ICICI_EMI_FILE_SFTP,
             self::YES_EMI_FILE_SFTP,
+            self::RBL_ENACH_DEBIT,
         ],
 
         self::RECON_BUCKET_CONFIG => [

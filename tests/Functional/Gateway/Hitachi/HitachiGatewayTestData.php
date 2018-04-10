@@ -18,7 +18,7 @@ return [
         'balance'           => 1049000,
         'gateway_fee'       => 0,
         'api_fee'           => 0,
-        'channel'           => 'kotak',
+        'channel'           => 'axis',
         'settled'           => false,
         'settlement_id'     => null,
         'reconciled_at'     => null,
@@ -88,6 +88,85 @@ return [
         'tax'               => 0,
         'entity'            => 'payment',
     ],
+     'testInternationalVisa' => [
+        'merchant_id' => '10000000000000',
+        'amount' => 50000,
+        'method' => 'card',
+        'status' => 'captured',
+        'two_factor_auth'   => 'passed',
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+919918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'hitachi',
+        'terminal_id'       => '100HitachiTmnl',
+        'signed'            => false,
+        'verified'          => null,
+        'fee'               => 1000,
+        'tax'               => 0,
+        'entity'            => 'payment',
+    ],
+    'testInternationalMaster' => [
+        'merchant_id' => '10000000000000',
+        'amount' => 50000,
+        'method' => 'card',
+        'status' => 'captured',
+        'two_factor_auth'   => 'passed',
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+919918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'hitachi',
+        'terminal_id'       => '100HitachiTmnl',
+        'signed'            => false,
+        'verified'          => null,
+        'fee'               => 1000,
+        'tax'               => 0,
+        'entity'            => 'payment',
+    ],
+    'testInternationalMaestro' => [
+        'merchant_id' => '10000000000000',
+        'amount' => 50000,
+        'method' => 'card',
+        'status' => 'captured',
+        'two_factor_auth'   => 'passed',
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+919918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'hitachi',
+        'terminal_id'       => '100HitachiTmnl',
+        'signed'            => false,
+        'verified'          => null,
+        'fee'               => 1000,
+        'tax'               => 0,
+        'entity'            => 'payment',
+    ],
+
     'testSuccessful13DigitPanForEnrolledCard' => [
         'merchant_id' => '10000000000000',
         'amount' => 50000,
@@ -200,6 +279,22 @@ return [
         'currency'  => 'INR',
         'pRespCode' => '79',
         'entity'    => 'hitachi'
+    ],
+
+    'testInvalidEci' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+        ],
     ],
 
     'testPaymentEnrollUnavailable' => [
@@ -330,22 +425,6 @@ return [
             'class'                 => 'RZP\Exception\GatewayErrorException',
             'internal_error_code'   => ErrorCode::GATEWAY_ERROR_INVALID_FORMAT,
             'gateway_error_code'    => '30',
-        ],
-    ],
-
-    'testMismatchVerify' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED ,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                 => 'RZP\Exception\PaymentVerificationException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
 ];

@@ -11,8 +11,6 @@ trait EntityFetchTrait
 {
     protected function getLastEntity($entity, $admin = false, $mode = 'test')
     {
-        $this->ba->appAuth();
-
         $input = array('count' => 1);
 
         $content = $this->getEntities($entity, $input, $admin, $mode);
@@ -35,7 +33,7 @@ trait EntityFetchTrait
         {
             $appAuth = 'appAuth' . camel_case($mode);
 
-            $this->ba->$appAuth();
+            $this->ba->adminAuth();
 
             $url = '/admin/'.$entity;
         }
@@ -65,7 +63,7 @@ trait EntityFetchTrait
         {
             $appAuth = 'appAuth' . camel_case($mode);
 
-            $this->ba->$appAuth();
+            $this->ba->adminAuth();
 
             $url = '/admin/'.$entity.'/'.$id;
         }

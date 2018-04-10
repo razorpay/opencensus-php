@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Helpers\VirtualAccount;
 
+use RZP\Models\Order;
+
 trait VirtualAccountTrait
 {
     private function createVirtualAccount(
@@ -29,6 +31,21 @@ trait VirtualAccountTrait
             'method'  => 'POST',
             'url'     => '/virtual_accounts',
             'content' => $attributes,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    private function createVirtualAccountForOrder(Order\Entity $order, array $input = [])
+    {
+        $this->ba->publicAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/orders/' . $order->getPublicId() . '/virtual_accounts',
+            'content' => $input,
         ];
 
         $response = $this->makeRequestAndGetContent($request);

@@ -167,6 +167,8 @@ class Gateway
 
     protected $sortRequestContent = true;
 
+    protected $externalMockDomain;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -189,6 +191,8 @@ class Gateway
         $this->request = $this->app['request'];
 
         $this->cache = $this->app['cache'];
+
+        $this->externalMockDomain = env('EXTERNAL_MOCK_GATEWAY_DOMAIN');
     }
 
     public function authorize(array $input)
@@ -335,6 +339,11 @@ class Gateway
         return $this->mode;
     }
 
+    protected function getIntegerFormattedAmount(string $amount)
+    {
+        return (int) number_format(($amount * 100), 0, '.', '');
+    }
+
     protected function assertPaymentId($expectedPaymentId, $actualPaymentId)
     {
         if ($actualPaymentId !== $expectedPaymentId)
@@ -380,7 +389,10 @@ class Gateway
     {
         $response[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::PASSED;
 
-        if ($input['payment'][Payment\Entity::METHOD] === Payment\Method::NETBANKING)
+        // Keeping this same for eMandate. However, this needs
+        // to be updated for different authentication type
+        if (($input['payment'][Payment\Entity::METHOD] === Payment\Method::NETBANKING) or
+            ($input['payment'][Payment\Entity::METHOD] === Payment\Method::EMANDATE))
         {
             $response[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::UNAVAILABLE;
         }
@@ -497,7 +509,7 @@ class Gateway
 
         if (isset($request['options']['timeout']) === false)
         {
-            $request['options']['timeout'] = self::TIMEOUT;
+            $request['options']['timeout'] = static::TIMEOUT;
         }
 
         try
@@ -789,6 +801,12 @@ class Gateway
         $type = $type ?? $this->action;
 
         $type = strtoupper($type);
+
+        if (($this->env === 'func') and
+            (isset($this->externalMockDomain) === true))
+        {
+          return $this->getExternalMockUrl($type);
+        }
 
         return $urlDomain . $this->getRelativeUrl($type);
     }
@@ -1097,5 +1115,24 @@ class Gateway
         $this->getRepository()->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
+    }
+
+    protected function isBharatQrPayment(): bool
+    {
+        return (empty($this->input['bharat_qr']) === false);
+
+    }
+
+    /**
+     * Retuns the external mock url
+     * Used for gateway testing using mock in func
+     * Appends the gateway string and relative url for the external mock domain
+     *
+     * @param  string $type Indicates which relative URL to use
+     * @return string       Complete URL to be used
+     */
+    protected function getExternalMockUrl(string $type)
+    {
+       return $this->externalMockDomain . "/" . $this->gateway . $this->getRelativeUrl($type);
     }
 }

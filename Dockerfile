@@ -3,6 +3,9 @@ FROM razorpay/containers:base-php7
 ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN
 ENV GIT_COMMIT_HASH=${GIT_COMMIT_HASH}
+ENV NR_INSTALL_SILENT true
+
+ARG NR_VERSION='8.0.0.204'
 
 COPY . /app/
 
@@ -16,13 +19,20 @@ WORKDIR /app
 
 RUN apk --update add python py-pip openssl ca-certificates && \
     apk --update add --virtual build-dependencies python-dev libffi-dev openssl-dev build-base  && \
-    pip install razorpay.alohomora==0.2 && \
+    wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 && \
+    chmod +x /usr/local/bin/dumb-init && \
+    pip install razorpay.alohomora==0.4 && \
     apk del build-dependencies          && \
     rm -rf /var/cache/apk/*
 
-RUN composer config -g github-oauth.github.com ${GIT_TOKEN} && \
-    composer install --no-interaction
+## TODO: move the newrelic install to base-nginx-php7 image
+RUN composer config -g github-oauth.github.com ${GIT_TOKEN} \
+    && composer install --no-interaction --optimize-autoloader \
+    && mkdir /opt && cd /opt \
+    && wget https://download.newrelic.com/php_agent/release/newrelic-php5-${NR_VERSION}-linux-musl.tar.gz \
+    && tar -xzvf newrelic-php5-${NR_VERSION}-linux-musl.tar.gz \
+    && ./newrelic-php5-${NR_VERSION}-linux-musl/newrelic-install install
 
 EXPOSE 80
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]

@@ -68,6 +68,12 @@ class Core extends Base\Core
             $invoiceDate = Carbon::now(Timezone::IST)->subMonth();
         }
 
+        // When true, payment transactions will be cosiderd from the month
+        // specified by `$invoiceDate` where created and captured in same month
+        // All other transction will we considered on created date
+        $isCorrection = (isset($input['correction']) === true) ?
+                                (bool) $input['correction'] : false;
+
         // Get merchants
         $merchantIds = [];
 
@@ -98,7 +104,7 @@ class Core extends Base\Core
             foreach ($merchants as $merchant)
             {
                 $createJob = new MerchantInvoiceJob(
-                    $merchant->getId(), $invoiceDate->month, $invoiceDate->year, $this->mode);
+                    $merchant->getId(), $invoiceDate->month, $invoiceDate->year, $this->mode, $isCorrection);
 
                 // Assign a delay between 0 and 900 so that tasks are distributed over 15 minute period
                 $createJob->delay($i % 901);

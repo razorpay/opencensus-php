@@ -15,7 +15,7 @@ class DisputeReasonTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     public function testReasonCreate()

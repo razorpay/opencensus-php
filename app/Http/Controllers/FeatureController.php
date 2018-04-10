@@ -2,16 +2,37 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use Request;
+use ApiResponse;
+
+use RZP\Models\Feature\Type;
+use RZP\Models\Feature\Constants;
 
 class FeatureController extends Controller
 {
-    public function addFeatures()
+    /**
+     * Adds features to accounts
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function addAccountFeatures()
+    {
+        return $this->addFeatures();
+    }
+
+    /**
+     * Adds features to entities
+     *
+     * @param string|null $routeName
+     * @param string|null $entityId
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function addFeatures(string $routeName = null, string $entityId = null)
     {
         $input = Request::all();
 
-        $data = $this->service()->addFeatures($input);
+        $data = $this->service()->addFeatures($input, $routeName, $entityId);
 
         return ApiResponse::json($data);
     }
@@ -34,18 +55,74 @@ class FeatureController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * Deletes the feature association with the merchant
+     *
+     * @todo: Remove the function once the dashboard is migrated.
+     *
+     * @deprecated Use deleteEntityFeature instead.
+     * @param string $entityId
+     * @param string $featureName
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function deleteFeature(string $entityId, string $featureName)
+    {
+        return $this->deleteEntityFeature(Type::ACCOUNTS, $entityId, $featureName);
+    }
+
+    /**
+     * Deletes the feature association with an entity
+     *
+     * @param string $entityType
+     * @param string $entityId
+     * @param string $featureName
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function deleteEntityFeature(string $entityType, string $entityId, string $featureName)
     {
         $input = Request::all();
 
-        $data = $this->service()->deleteFeature($entityId, $featureName, $input);
+        $data = $this->service()->deleteEntityFeature($entityType, $entityId, $featureName, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function getFeatures(string $entityId)
+    /**
+     * Returns the features assigned to the merchant
+     *
+     * @deprecated Use getAccountFeatures instead
+     * @param string|null $merchantId
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getMerchantFeatures(string $merchantId)
     {
-        $data = $this->service()->getFeatures($entityId);
+        return $this->getFeatures(Type::ACCOUNTS, $merchantId);
+    }
+
+    /**
+     * Returns the features assigned to the merchant
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getAccountFeatures()
+    {
+        return $this->getFeatures();
+    }
+
+    /**
+     * Returns the features assigned to the entity
+     *
+     * @param string|null $entityType
+     * @param string|null $entityId
+     *
+     * @return \Illuminate\Http\Response
+     */
+    protected function getFeatures($entityType = null, $entityId = null)
+    {
+        $data = $this->service()->getFeatures($entityType, $entityId);
 
         return ApiResponse::json($data);
     }

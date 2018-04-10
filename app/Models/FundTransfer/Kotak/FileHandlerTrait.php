@@ -151,11 +151,29 @@ trait FileHandlerTrait
         return $fullpath;
     }
 
+    protected function getFileExtension(string $key): string
+    {
+        $extension = pathinfo($key, PATHINFO_EXTENSION);
+
+        if(empty($extension) === false)
+        {
+            $extension = '.' . $extension;
+        }
+        else
+        {
+            $extension = '.txt';
+        }
+
+        return $extension;
+    }
+
     public function getH2HFileFromAws($key)
     {
         $bucket = 'h2h_bucket';
 
-        $name = $this->getFileToWriteName();
+        $extension = $this->getFileExtension($key);
+
+        $name = $this->getFileToWriteName($extension);
 
         $fullPath = $this->getFullFilePath($name);
 
@@ -468,6 +486,13 @@ trait FileHandlerTrait
         return $fullpath;
     }
 
+    protected function generateTextWithHeadings($data, $glue = '~', $ignoreLastNewline = false, array $headings = [])
+    {
+        array_unshift($data, array_combine($headings, $headings));
+
+        return $this->generateText($data, $glue, $ignoreLastNewline);
+    }
+
     protected function generateText($data, $glue = '~', $ignoreLastNewline = false)
     {
         $txt = '';
@@ -492,7 +517,7 @@ trait FileHandlerTrait
 
     protected function getFile($input)
     {
-        if (isset($input['file']))
+        if (isset($input['file']) === true)
         {
             return $this->moveFile($input['file']);
         }
@@ -517,9 +542,9 @@ trait FileHandlerTrait
         return $fullpath;
     }
 
-    protected function getFileToReadName()
+    protected function getFileToReadName(string $extension = 'txt')
     {
-        return $this->getFileToReadNameWithoutExt().'.txt';
+        return $this->getFileToReadNameWithoutExt() . '.' . $extension;
     }
 
     protected function getExcelFileToReadName()
@@ -536,9 +561,9 @@ trait FileHandlerTrait
         return static::$fileToReadName.'_'.$mode.'_'.$time;
     }
 
-    protected function getFileToReadFullPath()
+    protected function getFileToReadFullPath(string $extension = 'txt')
     {
-        $name = $this->getFileToReadName();
+        $name = $this->getFileToReadName($extension);
 
         return $this->getStoragePath($name);
     }
@@ -636,18 +661,15 @@ trait FileHandlerTrait
     protected function parseTextFile($file, string $delimiter = '~')
     {
         $rows = $this->getFileLines($file);
-
         $data = [];
 
         foreach ($rows as $ix => $row)
         {
             // Ending row may be just empty.
-            if ($row === '')
+            if (blank($row) === false)
             {
-                continue;
+                $data[] = $this->parseTextRow($row, $ix, $delimiter);
             }
-
-            $data[] = $this->parseTextRow($row, $ix, $delimiter);
         }
 
         return $data;
@@ -673,9 +695,14 @@ trait FileHandlerTrait
 
     protected function parseTextRowWithHeadingMismatch($headings, $values, $ix)
     {
-        throw new Exception\RuntimeException(
+        throw new Exception\LogicException(
             'Count of array elements for combine not equal. Heading count: ' .
-            count($headings). ' Value count: ' . count($values) . ' Row: ' . $ix);
+            count($headings). ' Value count: ' . count($values) . ' Row',
+            null,
+            [
+                'line'      => $ix,
+                'content'   => $values
+            ]);
     }
 
     protected function parseExcelFile($filePath)
@@ -762,7 +789,9 @@ trait FileHandlerTrait
     {
         $uploadedFilePath = $file->getRealPath();
 
-        $newFilepath = $this->getFileToReadFullPath();
+        $extension = $file->getClientOriginalExtension();
+
+        $newFilepath = $this->getFileToReadFullPath($extension);
 
         $dir = $this->getStorageDir();
 

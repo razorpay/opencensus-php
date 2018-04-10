@@ -81,7 +81,7 @@ class Service extends Base\Service
 
                 $invoicesCreated++;
             }
-            catch (\Exception $ex)
+            catch (\Throwable $ex)
             {
                 $failed++;
                 $failures[] = $subscription->getId();
@@ -344,25 +344,15 @@ class Service extends Base\Service
     {
         $routeName = $this->app['api.route']->getCurrentRouteName();
 
-        if (($routeName === 'subscription_view_test') or
-            ($routeName === 'subscription_view_test_post'))
-        {
-            $mode = Constants\Mode::TEST;
-        }
-        else
-        {
-            $mode = Constants\Mode::LIVE;
-        }
-
-        \Database\DefaultConnection::set($mode);
-
-        $this->app['basicauth']->setMode($mode);
+        // Gets mode per route and sets application & db mode.
+        $mode = str_contains($routeName, '_test') ? Mode::TEST : Mode::LIVE;
+        $this->app['basicauth']->setModeAndDbConnection($mode);
 
         $subscription = $this->repo->subscription->findByPublicId($subscriptionId);
 
         $subscription->getValidator()->validateSubscriptionViewable();
 
-        return (new ViewDataSerializer($subscription))->get();
+        return (new ViewDataSerializer($subscription))->serializeForHosted();
     }
 
     /**

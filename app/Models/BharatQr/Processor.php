@@ -19,6 +19,15 @@ class Processor extends VirtualAccount\Processor
 {
     const RANDOM_CARD_PADDING = '00000';
 
+    protected $gatewayInput;
+
+    public function __construct( array $gatewayInput, string $provider = null)
+    {
+        parent::__construct($provider);
+
+        $this->gatewayInput = $gatewayInput;
+    }
+
     /**
      * Entry point for  BharatQr  process flow.
      * Check if the bharatQr was an expected one.
@@ -55,7 +64,7 @@ class Processor extends VirtualAccount\Processor
 
         if ($isPaymentExpected === false)
         {
-            $this->createAndSetVirtualAccount($bharatQr->getAmount());
+            $this->createAndSetVirtualAccount($this->gatewayInput[GatewayResponseParams::AMOUNT]);
         }
 
         $this->processBharatQr($bharatQr);
@@ -88,7 +97,7 @@ class Processor extends VirtualAccount\Processor
 
     protected function checkIfDuplicateNotification(Base\PublicEntity $bharatQr)
     {
-        $providerReferenceId = $bharatQr->getProviderReferenceId();
+        $providerReferenceId = $this->gatewayInput[GatewayResponseParams::PROVIDER_REFERENCE_ID];
 
         $bharatQrEntity = $this->repo->bharat_qr->findByProviderReferenceId($providerReferenceId);
 
@@ -108,30 +117,31 @@ class Processor extends VirtualAccount\Processor
     {
         $paymentProcessor = new PaymentProcessor($this->merchant);
 
-        $payment = $this->repo->transaction(function() use (
-                    $bharatQr,
-                    $paymentProcessor)
-        {
-            $paymentInput = $this->getBharatQrPaymentArray($bharatQr);
+        $payment = $this->repo->transaction(
+                        function() use ($bharatQr, $paymentProcessor)
+                        {
+                            $paymentInput = $this->getBharatQrPaymentArray();
 
-            $res = $paymentProcessor->process($paymentInput);
+                            $res = $paymentProcessor->process($paymentInput);
 
-            $payment = $this->repo
-                            ->payment
-                            ->findByPublicId($res['razorpay_payment_id']);
+                            $payment = $this->repo
+                                            ->payment
+                                            ->findByPublicId($res['razorpay_payment_id']);
 
-            $bharatQr->payment()->associate($payment);
+                            $bharatQr->payment()->associate($payment);
 
-            $payment->setGatewayBharatQr();
+                            $payment->setGatewayForBharatQr($this->gatewayInput[GatewayResponseParams::GATEWAY]);
 
-            $bharatQr->virtualAccount()->associate($this->virtualAccount);
+                            $bharatQr->virtualAccount()->associate($this->virtualAccount);
 
-            $this->repo->saveOrFail($bharatQr);
+                            $this->repo->saveOrFail($bharatQr);
 
-            $this->updateVirtualAccount($bharatQr);
+                            $this->repo->saveOrFail($payment);
 
-            return $payment;
-        });
+                            $this->updateVirtualAccount($bharatQr);
+
+                            return $payment;
+                        });
 
         if ($bharatQr->isExpected() === true)
         {
@@ -176,17 +186,13 @@ class Processor extends VirtualAccount\Processor
     /**
      * TODO: Need a better way to handle this
      *
-     * @param Entity $bharatQr
-     *
      * @return string
      */
-    protected function getLuhnValidCardNumberFromBharatQr(Entity $bharatQr)
+    protected function getLuhnValidCardNumber()
     {
-        $maskedCardNumber = $bharatQr->getCardNumber();
+        $firstSix = $this->gatewayInput[GatewayResponseParams::CARD_FIRST6];
 
-        $firstSix = substr($maskedCardNumber, 0, 6);
-
-        $lastFour = substr($maskedCardNumber, 12, 4);
+        $lastFour = $this->gatewayInput[GatewayResponseParams::CARD_LAST4];
 
         $part1 = $firstSix . self::RANDOM_CARD_PADDING;
 
@@ -194,22 +200,29 @@ class Processor extends VirtualAccount\Processor
 
         $checksum = Luhn::computeCheckDigitWithPart($part1, $part2);
 
-        $finalCardNumber =  $firstSix . self::RANDOM_CARD_PADDING . $checksum . $lastFour ;
+        $finalCardNumber =  $part1 . $checksum . $part2;
 
         return $finalCardNumber;
     }
 
-    protected function getBharatQrPaymentArray(Entity $bharatQr): array
+    protected function getBharatQrPaymentArray(): array
     {
         $paymentArray = [
             Payment\Entity::CURRENCY    => Currency::INR,
-            Payment\Entity::METHOD      => $bharatQr->getMethod(),
-            Payment\Entity::AMOUNT      => $bharatQr->getAmount(),
-            Payment\Entity::DESCRIPTION => "Bharat Qr Payment",
+            Payment\Entity::METHOD      => $this->gatewayInput[GatewayResponseParams::METHOD],
+            Payment\Entity::AMOUNT      => $this->gatewayInput[GatewayResponseParams::AMOUNT],
+            Payment\Entity::DESCRIPTION => 'Bharat Qr Payment',
         ];
 
         // TODO: find a better method to do this. This is done in order to bypass validation
-        $paymentArray['card'] = $this->getDummyCardDetails($bharatQr);
+        if ($this->gatewayInput[Entity::METHOD] === Method::CARD)
+        {
+            $paymentArray['card'] = $this->getDummyCardDetails();
+        }
+        else
+        {
+            $paymentArray['vpa'] = $this->gatewayInput[GatewayResponseParams::VPA];
+        }
 
         if ($this->virtualAccount->hasCustomer() === true)
         {
@@ -223,11 +236,11 @@ class Processor extends VirtualAccount\Processor
         return $paymentArray;
     }
 
-    protected function getDummyCardDetails(Entity $bharatQr)
+    protected function getDummyCardDetails()
     {
         // TODO: Handle the null checks in card validation
         $card = [
-            Card\Entity::NUMBER       => $this->getLuhnValidCardNumberFromBharatQr($bharatQr),
+            Card\Entity::NUMBER       => $this->getLuhnValidCardNumber(),
             Card\Entity::CVV          => Constants::CARD_CVV,
             Card\Entity::NAME         => Constants::CARD_NAME,
             Card\Entity::EXPIRY_MONTH => Constants::CARD_EXPIRY_MONTH,

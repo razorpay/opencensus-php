@@ -116,6 +116,8 @@ class Entity extends Base\PublicEntity
         self::ISSUER,
         self::INTERNATIONAL,
         self::EMI,
+        self::EXPIRY_MONTH,
+        self::EXPIRY_YEAR,
     ];
 
     protected $appends = [self::NETWORK_CODE];
@@ -124,6 +126,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::IIN,
+        self::EXPIRY_YEAR,
+        self::EXPIRY_MONTH,
     ];
 
     protected $defaults = [
@@ -432,6 +436,10 @@ class Entity extends Base\PublicEntity
             '8ST00QgEPT14cE', // IRCTC WEB
             '8YPFnW5UOM91H7', // IRCTC Mobile
             '8byazTDARv4Io0', // IRCTC Air Ticketing
+            '9m4CChGex4ENkR', // IRCTC FTR
+            // Email Subject: Re: Managing NEFT transfers with Razorpay Virtual Accounts
+            '9YAQd3b47mdIQY', // Endurance
+            '9ZO8jNaR0OORNH', // Endurance
             Merchant\Account::TEST_ACCOUNT,
             Merchant\Account::SHARED_ACCOUNT,
         ];
@@ -449,6 +457,22 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setPublicExpiryMonthAttribute(array & $array)
+    {
+        if ($this->issetPublicExpiryAllowed() === false)
+        {
+            unset($array[self::EXPIRY_MONTH]);
+        }
+    }
+
+    public function setPublicExpiryYearAttribute(array & $array)
+    {
+        if ($this->issetPublicExpiryAllowed() === false)
+        {
+            unset($array[self::EXPIRY_YEAR]);
+        }
+    }
+
     public function getEmi()
     {
         return (bool) $this->getAttribute(self::EMI);
@@ -462,6 +486,20 @@ class Entity extends Base\PublicEntity
     protected function getExpiryYearAttribute()
     {
         return (int) $this->getAttributeFromArray(self::EXPIRY_YEAR);
+    }
+
+    protected  function issetPublicExpiryAllowed()
+    {
+        $cardMerchant = $this->getMerchantId();
+
+        $app = \App::getFacadeRoot();
+
+        $auth = $app['basicauth'];
+
+        $allowed = (($auth->isPrivilegeAuth() === false) and
+                    (in_array($cardMerchant, Merchant\Preferences::MID_ENDURANCE, true) === true));
+
+        return $allowed;
     }
 
     protected function getInternationalAttribute()
@@ -486,6 +524,11 @@ class Entity extends Base\PublicEntity
         $network = Card\Network::getCode($this->getNetwork());
 
         return (Card\Network::isUnsupportedNetwork($network));
+    }
+
+    public function isNetworkUnknown(): bool
+    {
+        return ($this->getNetworkCode() === Card\Network::UNKNOWN);
     }
 
     public function isInternational()
@@ -570,6 +613,17 @@ class Entity extends Base\PublicEntity
 
         if ((isset($blackList[$iin]) === true) and
             (in_array($last4, $blackList[$iin])))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isMagicEnabled()
+    {
+        if (($this->iinRelation !== null) and
+            ($this->iinRelation->isMagicEnabled() === true))
         {
             return true;
         }

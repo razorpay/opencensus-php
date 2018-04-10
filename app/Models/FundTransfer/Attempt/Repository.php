@@ -3,8 +3,8 @@
 namespace RZP\Models\FundTransfer\Attempt;
 
 use RZP\Models\Base;
-use RZP\Models\Payout;
-use RZP\Constants;
+use RZP\Constants\Table;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Repository extends Base\Repository
 {
@@ -64,21 +64,32 @@ class Repository extends Base\Repository
      * Those are never in created state, but this may change in the future,
      * so source_type filter is added anyway.
      *
-     * @param  int    $timestamp Upper limit on created_at, usually set to now
+     * @param  int    $initiateAtTimestamp Upper limit limit on initiate_at
      * @param  array  $relations Relations required in the process
      */
-    public function getCreatedAttemptsBeforeTimestamp(int $timestamp, string $purpose, $type, string $channel, array $relations = [])
+    public function getCreatedAttemptsBeforeTimestamp(
+        int $initiateAtTimestamp,
+        string $purpose,
+        $type = null,
+        string $channel,
+        int $limit = null,
+        array $relations = [])
     {
         $query = $this->newQuery()
                       ->where(Entity::STATUS, '=', Status::CREATED)
                       ->where(Entity::PURPOSE, '=', $purpose)
-                      ->where(Entity::CREATED_AT, '<=', $timestamp)
+                      ->where(Entity::INITIATE_AT, '<=', $initiateAtTimestamp)
                       ->where(Entity::CHANNEL, '=', $channel)
                       ->orderBy(Entity::ID);
 
         if ($type !== null)
         {
           $query->where(Entity::SOURCE_TYPE, '=', $type);
+        }
+
+        if ($limit !== null)
+        {
+            $query->limit($limit);
         }
 
         if (count($relations) > 0)
@@ -93,14 +104,37 @@ class Repository extends Base\Repository
      * Fetches all attempts pending reconciliation between given timestamps (both including)
      */
     public function getAttemptsBetweenTimestampsWithStatus(
-        $from, $to, string $status, string $channel)
+        $from = null, $to = null, string $status, string $channel)
+    {
+        $query = $this->newQuery()
+                      ->select([Entity::ID, Entity::BATCH_FUND_TRANSFER_ID])
+                      ->where(Entity::STATUS, $status)
+                      ->where(Entity::CHANNEL, $channel)
+                      ->whereNotNull(Entity::BANK_STATUS_CODE);
+
+        if (($from !== null) and ($to !== null))
+        {
+            $query = $query->whereBetween(Entity::CREATED_AT, [$from, $to]);
+        }
+
+        return $query->get();
+    }
+
+    public function getSettlementsWithNoUtr(
+        string $channel,
+        int $startTime,
+        int $endTime,
+        int $limit = 2000,
+        int $offset = 0)
     {
         return $this->newQuery()
-                    ->select([Entity::ID, Entity::BATCH_FUND_TRANSFER_ID])
-                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
-                    ->where(Entity::STATUS, $status)
+                    ->whereNull(Entity::UTR)
                     ->where(Entity::CHANNEL, $channel)
-                    ->whereNotNull(Entity::BANK_STATUS_CODE)
+                    ->where(Entity::STATUS, Status::INITIATED)
+                    ->whereBetween(Entity::INITIATE_AT, [$startTime, $endTime])
+                    ->with(['merchant'])
+                    ->take($limit)
+                    ->skip($offset)
                     ->get();
     }
 }

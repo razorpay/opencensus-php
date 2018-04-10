@@ -36,6 +36,7 @@ class CreatePermissions extends Migration
             $table->integer(Permission::UPDATED_AT);
 
             $table->unique([Permission::NAME, Permission::CATEGORY]);
+            $table->index(Permission::CREATED_AT);
         });
     }
 

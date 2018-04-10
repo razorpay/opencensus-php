@@ -217,25 +217,6 @@ class Core extends Base\Core
         return $user->toArrayPublic();
     }
 
-    public function postSortingHatData($data)
-    {
-        $url = Config::get('app.sorting_hat.url');
-
-        $request  = [
-            'method'    => 'post',
-            'url'       => $url,
-            'headers'   => [],
-            'content'   => $data,
-            'options'   => [
-                'timeout'   => 30
-            ]
-        ];
-
-        $job = new RequestJob($request);
-
-        $this->dispatch($job);
-    }
-
     public function subscribeToMailingList($user)
     {
         $data = [

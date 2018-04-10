@@ -38,7 +38,7 @@ class NetbankingIciciRefundFileTest extends TestCase
 
         $refund = $this->refundPayment($payment['id']);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -60,7 +60,7 @@ class NetbankingIciciRefundFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(RefundFileMail::class, function ($mail) use ($file)
+        Mail::assertQueued(RefundFileMail::class, function ($mail) use ($file)
         {
             $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 

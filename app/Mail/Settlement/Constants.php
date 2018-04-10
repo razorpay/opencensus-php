@@ -11,10 +11,16 @@ class Constants extends Base\Constants
     const HEADER_MAP = [
         Channel::KOTAK  => 'Kotak Settlement',
         Channel::ICICI  => 'ICICI Settlement',
+        Channel::AXIS   => 'AXIS Settlement',
+        Channel::HDFC   => 'HDFC Settlement',
+        Channel::RBL    => 'RBL Settlement'
     ];
 
     const MAILTAG_MAP = [
         Channel::KOTAK  => MailTags::KOTAK_SETTLEMENT_FILES,
         Channel::ICICI  => MailTags::ICICI_SETTLEMENT_FILES,
+        Channel::AXIS   => MailTags::AXIS_SETTLEMENT_FILES,
+        Channel::HDFC   => MailTags::HDFC_SETTLEMENT_FILES,
+        Channel::RBL    => MailTags::RBL_SETTLEMENT,
     ];
 }

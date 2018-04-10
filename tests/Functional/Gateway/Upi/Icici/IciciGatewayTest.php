@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Mail;
 
+use RZP\Exception\RuntimeException;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -46,9 +47,40 @@ class IciciGatewayTest extends TestCase
         return $paymentId;
     }
 
+    public function testIntentDisabledPayment()
+    {
+        $this->fixtures->merchant->addFeatures(['disable_upi_intent']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        unset($payment['description']);
+        unset($payment['vpa']);
+
+        $payment['_']['flow'] = 'intent';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+            else
+            {
+                $content['PayerVA'] = 'user@icici';
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        });
+    }
+
     public function testIntentPayment()
     {
-        $this->fixtures->merchant->addFeatures(['upi_intent']);
+        $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
 
         unset($this->payment['description']);
         unset($this->payment['vpa']);
@@ -63,7 +95,7 @@ class IciciGatewayTest extends TestCase
             }
             else
             {
-                $content['PayerVA'] = 'crims0n@icici';
+                $content['PayerVA'] = 'user@icici';
             }
         });
 
@@ -76,18 +108,24 @@ class IciciGatewayTest extends TestCase
 
         $this->checkPaymentStatus($paymentId, 'created');
 
-        $upiEntity = $this->getLastEntity('upi_icici', true);
+        $upiEntity = $this->getLastEntity('upi', true);
+
         $payment = $this->getEntityById('payment', $paymentId, true);
 
+        $this->assertEquals('1UpiIntICICTml', $payment['terminal_id']);
         $this->assertNull($payment['vpa']);
 
         $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
 
         $response = $this->makeS2SCallbackAndGetContent($content);
 
+        $upi = $this->getLastEntity('upi', true);
         $payment = $this->getEntityById('payment', $paymentId, true);
 
-        $this->assertEquals($payment['vpa'], 'crims0n@icici');
+        $this->assertEquals($payment['vpa'], 'user@icici');
+        $this->assertEquals('ICIC', $upi['bank']);
+        $this->assertEquals('icici', $upi['acquirer']);
+        $this->assertEquals('icici', $upi['provider']);
     }
 
     public function testPaymentWithExpiryPublicAuth()
@@ -610,6 +648,29 @@ EOT;
         $this->assertSame($this->payment['payment']['verified'], 1);
     }
 
+    public function testVerifyPaymentWithAmountMismatch()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['notes']['amount'] = 'mismatch';
+
+        $authPayment = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+        $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
+
+        $payment['notes']['amount'] = 'mismatch';
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->expectException(RuntimeException::class);
+
+        $this->payment = $this->verifyPayment($payment['id']);
+
+        $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
     /**
      * Make sure a 5006 is taken as a gateway failure
      */
@@ -709,7 +770,7 @@ EOT;
         $this->assertEquals(3, $data['upi_icici']['count']);
         $this->assertTrue(file_exists($data['upi_icici']['file']));
 
-        Mail::assertSent(RefundFileMail::class, function ($mail)
+        Mail::assertQueued(RefundFileMail::class, function ($mail)
         {
             $body = 'Please find attached refunds information for UPI';
 
