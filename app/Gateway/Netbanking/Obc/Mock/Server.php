@@ -84,14 +84,13 @@ class Server extends Mock\Server
             ResponseFields::PAYEE_ID        => $input[RequestFields::PAYEE_ID],
             ResponseFields::PAY_REF_NUM     => $input[RequestFields::PAY_REF_NUM],
             ResponseFields::ITEM_CODE       => $input[RequestFields::ITEM_CODE],
-            ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
+            ResponseFields::AMOUNT          => '500.00',
             ResponseFields::BANK_PAYMENT_ID => $input[RequestFields::BID],
             ResponseFields::TXN_STATUS      => Status::VERIFY_SUCCESS,
         ];
 
         return $verifyResponseArray;
     }
-
 
     private function getResponseString($reponse)
     {

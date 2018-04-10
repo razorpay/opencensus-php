@@ -168,22 +168,20 @@ class Gateway extends Base\Gateway
 
     private function setVerifyAmountMismatch(Verify $verify)
     {
-        $mismatch = false;
-
         $input = $verify->input;
 
         $content = $verify->verifyResponseContent;
 
-        try
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2);
+
+        $actualAmount = $content[ResponseFields::AMOUNT];
+
+        if ($expectedAmount === $actualAmount)
         {
-            $this->assertAmount($input['payment']['amount'] / 100, $content[ResponseFields::AMOUNT]);
-        }
-        catch (LogicException $e)
-        {
-            $mismatch = true;
+            return false;
         }
 
-        return $mismatch;
+        return true;
     }
 
     private function parseVerifyResponse(\Requests_Response $response)
