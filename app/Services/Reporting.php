@@ -35,6 +35,10 @@ class Reporting implements ExternalService
 
     const SCHEDULE_PREFIX = 'sched_';
 
+    const LOGS          = 'logs';
+    const CONFIGS       = 'configs';
+    const SCHEDULES     = 'schedules';
+
     /**
      * @var array
      */
@@ -65,30 +69,34 @@ class Reporting implements ExternalService
 
     public function fetchMultiple(string $entity, array $input)
     {
-        switch ($entity)
+        $entityName = explode('.', $entity)[1];
+
+        switch ($entityName)
         {
-            case Entity::LOGS:
+            case self::LOGS:
                 return $this->fetchLogMultiple($input);
 
-            case Entity::CONFIGS:
+            case self::CONFIGS:
                 return $this->fetchConfigMultiple($input);
 
-            case Entity::SCHEDULES:
+            case self::SCHEDULES:
                 return $this->fetchScheduleMultiple($input);
         }
     }
 
     public function fetch(string $entity, string $id)
     {
-        switch ($entity)
+        $entityName = explode('.', $entity)[1];
+
+        switch ($entityName)
         {
-            case Entity::LOGS:
+            case self::LOGS:
                 return $this->fetchLogById($id);
 
-            case Entity::CONFIGS:
+            case self::CONFIGS:
                 return $this->fetchConfigById($id);
 
-            case Entity::SCHEDULES:
+            case self::SCHEDULES:
                 return $this->fetchScheduleById($id);
         }
     }

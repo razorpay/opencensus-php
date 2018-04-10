@@ -22,22 +22,22 @@ class AdminFetch
     public static function externalEntities()
     {
         return [
-            Entity::REPORTING . '.' . Entity::LOGS => [
+            Entity::REPORTING_LOGS => [
                 'merchant_id'       => Fetch::FIELD_MERCHANT_ID
             ],
-            Entity::REPORTING . '.' . Entity::CONFIGS => [
+            Entity::REPORTING_CONFIGS => [
                 'merchant_id'       => Fetch::FIELD_MERCHANT_ID
             ],
-            Entity::REPORTING . '.' . Entity::SCHEDULES => [
+            Entity::REPORTING_SCHEDULES => [
                 'merchant_id'       => Fetch::FIELD_MERCHANT_ID
             ],
-            Entity::SHIELD . '.' . Entity::RULESETS => [
+            Entity::SHIELD_RULESETS => [
 
             ],
-            Entity::SHIELD . '.' . Entity::RULES => [
+            Entity::SHIELD_RULES => [
 
             ],
-            Entity::SHIELD . '.' . Entity::RULES_ANALYTICS => [
+            Entity::SHIELD_RULES_ANALYTICS => [
 
             ]
         ];

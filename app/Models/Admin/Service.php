@@ -36,9 +36,7 @@ class Service extends Base\Service
     {
         if (Entity::validateExternalServiceEntity($entity) === true)
         {
-            list($service, $entity) = Entity::getServiceAndEntity($entity);
-
-            $class = Entity::getExternalServiceClass($service);
+            $class = Entity::getExternalServiceClass($entity);
 
             return $class->fetch($entity, $input);
         }
@@ -80,9 +78,7 @@ class Service extends Base\Service
     {
         if (Entity::validateExternalServiceEntity($entity) === true)
         {
-            list($service, $entity) = Entity::getServiceAndEntity($entity);
-
-            $class = Entity::getExternalServiceClass($service);
+            $class = Entity::getExternalServiceClass($entity);
 
             return $class->fetchMultiple($entity, $input);
         }

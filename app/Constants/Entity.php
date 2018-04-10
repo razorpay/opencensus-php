@@ -177,17 +177,13 @@ class Entity
     const TAX                   = 'tax';
     const TAX_GROUP             = 'tax_group';
 
-    // External Services
-    const SHIELD                = 'shield';
-    const REPORTING             = 'reporting';
-
-    // External Service Entity
-    const LOGS                  = 'logs';
-    const CONFIGS               = 'configs';
-    const SCHEDULES             = 'schedules';
-    const RULES                 = 'rules';
-    const RULES_ANALYTICS       = 'rules_analytics';
-    const RULESETS              = 'rulesets';
+    // External Service Entity (ServiceName.EntityName)
+    const REPORTING_LOGS               = 'reporting.logs';
+    const REPORTING_CONFIGS            = 'reporting.configs';
+    const REPORTING_SCHEDULES          = 'reporting.schedules';
+    const SHIELD_RULES                 = 'shield.rules';
+    const SHIELD_RULES_ANALYTICS       = 'shield.rules_analytics';
+    const SHIELD_RULESETS              = 'shield.rulesets';
 
     /**
      * Defines a map of entites which are currently
@@ -372,8 +368,12 @@ class Entity
     ];
 
     protected static $externalServiceClass = [
-        self::REPORTING              => \RZP\Services\Reporting::class,
-        self::SHIELD                 => \RZP\Services\ShieldClient::class,
+        self::REPORTING_LOGS               => \RZP\Services\Reporting::class,
+        self::REPORTING_CONFIGS            => \RZP\Services\Reporting::class,
+        self::REPORTING_SCHEDULES          => \RZP\Services\Reporting::class,
+        self::SHIELD_RULES                 => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RULES_ANALYTICS       => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RULESETS              => \RZP\Services\ShieldClient::class,
     ];
 
     protected static $syncedInLiveAndTest = [
@@ -387,20 +387,6 @@ class Entity
         self::USER,
         self::SCHEDULE,
         self::MERCHANT_ACCESS_MAP,
-    ];
-
-    protected static $externalServiceEntities = [
-        self::REPORTING => [
-            self::LOGS,
-            self::CONFIGS,
-            self::SCHEDULES
-        ],
-
-        self::SHIELD => [
-            self::RULES_ANALYTICS,
-            self::RULES,
-            self::RULESETS
-        ]
     ];
 
     public static function getAllEntities()
@@ -552,7 +538,6 @@ class Entity
     }
 
     /**
-     * The split will have service.entityname
      * For API entities there would only be entity, which would be verified by normal flow
      * For other, we need to validate the service should exists, and entity is exposed
      *
@@ -562,52 +547,14 @@ class Entity
      */
     public static function validateExternalServiceEntity(string $entity)
     {
-        list($service, $entity) = self::getServiceAndEntity($entity);
-
-        if ($entity === null)
-        {
-            return false;
-        }
-
-        self::validateExternalService($service);
-
-        $validEntities = self::$externalServiceEntities[$service];
-
-        if (in_array($entity, $validEntities, true) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Not a valid external service entity');
-        }
-
-        return true;
+        return (in_array($entity, array_keys(self::$externalServiceClass), true) === true);
     }
 
-    public static function validateExternalService(string $service)
+    public static function getExternalServiceClass(string $entity)
     {
-        if (in_array($service, array_keys(self::$externalServiceEntities), true) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Not a valid external service.');
-        }
-    }
-
-    public static function getExternalServiceClass(string $service)
-    {
-        $class = self::$externalServiceClass[$service];
+        $class = self::$externalServiceClass[$entity];
 
         return new $class;
-    }
-
-    public static function getServiceAndEntity(string $entity)
-    {
-        $entitySplit = explode('.', $entity);
-
-        if (count($entitySplit) === 1)
-        {
-            return [$entitySplit, null];
-        }
-
-        return $entitySplit;
     }
 
     public static function isEntitySyncedInLiveAndTest($entity)
