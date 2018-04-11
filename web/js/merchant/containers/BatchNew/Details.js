@@ -45,8 +45,12 @@ export default class BatchDetailsContainer extends Component {
       });
   };
 
-  componentWillMount() {
-    let { fetchBatch, fetchBatchStats, fetchBatchInvoices, id } = this.props;
+  fetchData = id => {
+    if (!id) {
+      return;
+    }
+
+    let { fetchBatch, fetchBatchStats, fetchBatchInvoices } = this.props;
     let requests = [
       fetchBatch(id),
       fetchBatchStats(id),
@@ -68,6 +72,17 @@ export default class BatchDetailsContainer extends Component {
           message: 'Failed to fetch batch.',
         });
       });
+  };
+
+  componentWillMount() {
+    this.fetchData(this.props.id);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.id !== nextProps.id) {
+      this.setState({ isLoading: true });
+      this.fetchData(nextProps.id);
+    }
   }
 
   componentDidMount() {
