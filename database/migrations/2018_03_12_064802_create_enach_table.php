@@ -55,6 +55,12 @@ class CreateEnachTable extends Migration
             $table->string(Enach::REGISTRATION_STATUS)
                   ->nullable();
 
+            $table->string(Enach::ERROR_MESSAGE)
+                  ->nullable();
+
+            $table->string(Enach::ERROR_CODE)
+                  ->nullable();
+
             $table->integer(Enach::CREATED_AT);
             $table->integer(Enach::UPDATED_AT);
 

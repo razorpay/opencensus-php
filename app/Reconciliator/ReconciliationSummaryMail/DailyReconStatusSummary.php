@@ -40,12 +40,14 @@ class DailyReconStatusSummary extends Base\Core
         'recon_count',
         'unrecon_count',
         'recon_amount',
-        'unrecon_amount'
+        'unrecon_amount',
+        'recon_count_percentage',
+        'recon_amount_percentage'
     ];
 
     const ENTITIES = [
-        'Refund',
-        'Payment'
+        'Payment',
+        'Refund'
     ];
 
     /**
@@ -92,8 +94,10 @@ class DailyReconStatusSummary extends Base\Core
         return __NAMESPACE__ . '\\' . $entity . 'ReconStatusSummary';
     }
 
-    protected function getFormattedDate($timestamp)
+    protected function addExtraColumns(&$entry)
     {
-        return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('jS F, Y');
+        $entry['recon_count_percentage'] = $entry['recon_count']/$entry['total_count'] * 100;
+
+        $entry['recon_amount_percentage'] = $entry['recon_amount']/$entry['total_amount'] * 100;
     }
 }

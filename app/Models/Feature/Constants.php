@@ -66,6 +66,9 @@ class Constants
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
     const ORDER_RECEIPT_UNIQUE          = 'order_receipt_unique';
 
+    // Payment authentication
+    const ATM_PIN_AUTH                  = 'atm_pin_auth';
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
@@ -141,6 +144,7 @@ class Constants
         self::NEW_ANALYTICS                 => true,
         self::DAILY_SETTLEMENT              => true,
         self::DISABLE_UPI_INTENT            => true,
+        self::ATM_PIN_AUTH                  => true,
     ];
 
     // Entity type constants
