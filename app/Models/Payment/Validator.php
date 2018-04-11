@@ -65,7 +65,7 @@ class Validator extends Base\Validator
         'subscription_card_change'      => 'sometimes|boolean',
         'upi'                           => 'sometimes_if:method,upi|array',
         'upi.expiry_time'               => 'sometimes_if:method,upi|integer|between:5,30|filled',
-        'auth_type'                     => 'sometimes_if:method,emandate|string|max:10|filled|in:netbanking,aadhaar',
+        'auth_type'                     => 'sometimes_if:method,emandate,card,emi|string|max:10|filled',
         'bank_account'                  => 'sometimes_if:method,emandate|associative_array|filled',
         'bank_account.account_number'   => 'required_with:bank_account|filled|alpha_num|between:5,20',
         'bank_account.ifsc'             => 'required_with:bank_account|filled|alpha_num|size:11',
@@ -139,6 +139,7 @@ class Validator extends Base\Validator
         // due to dot notation, we cannot use it.
         'token_max_amount',
         'token_expire_by',
+        'auth_type',
     ];
 
     protected function validateIfsc(array $input)
@@ -197,6 +198,20 @@ class Validator extends Base\Validator
                     'payment_id'        => $this->entity->getId(),
                 ]);
         }
+    }
+
+    protected function validateAuthType(array $input)
+    {
+        if (isset($input[Entity::AUTH_TYPE]) === false)
+        {
+            return;
+        }
+
+        AuthType::validateAuthType($input[Entity::AUTH_TYPE], $input[Entity::METHOD]);
+
+        $merchant = $this->entity->merchant;
+
+        AuthType::validateFeatureBasedAuth($merchant, $input[Entity::AUTH_TYPE]);
     }
 
     protected function validateUpiExpiryTime(array $input)

@@ -829,7 +829,7 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::PAY) === true);
     }
 
-    public function isPinAuth()
+    public function isPin()
     {
         return ($this->isTypeApplicable(Type::PIN) === true);
     }
