@@ -35,6 +35,7 @@ final class Route
         'merchant_methods_downtime'                => ['get',      'methods/downtime',                               'MerchantController@getPublicGatewayDowntimeData'                   ],
         'merchant_checkout_preferences'            => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
+        // @todo: Require feature S2S for payment_create_private route.
         'payment_create_private'                   => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_aeps'                      => ['post',     'payments/create/aeps',                           'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_recurring'                 => ['post',     'payments/create/recurring',                      'PaymentCreateController@postCreateS2SPayment'                      ],
@@ -2329,9 +2330,9 @@ final class Route
      */
     const S2S_PAYMENT_ROUTES = [
         'payment_create_private',
-        'payment_create_aeps',
-        'payment_create_recurring',
         'payment_create_private_old',
+        'payment_create_recurring',
+        'payment_create_aeps',
         'payment_create_openwallet',
     ];
 
