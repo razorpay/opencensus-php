@@ -136,7 +136,7 @@ class Gateway extends Base\Gateway
             ]);
     }
 
-    public function verifyPayment(Verify $verify)
+    protected function verifyPayment(Verify $verify)
     {
         //
         // we won't be setting amountMismatch here because verify response doesn't contain amount
@@ -175,13 +175,9 @@ class Gateway extends Base\Gateway
 
     public final function computeChecksum(array $content): string
     {
-        // Add the secret to the end of the content array to be hashed
-        array_push($content, $this->getSecret());
+        $contentToHash = array_merge($content, [$this->getSecret()]);
 
-        $contentToHash = implode('|', $content);
-
-        // Remove the last element of the array which is the checksum key
-        array_pop($content);
+        $contentToHash = $this->getStringToHash($contentToHash, '|');
 
         return (string) hexdec($this->getHashOfString($contentToHash));
     }
@@ -327,9 +323,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            array_merge($content, ['not yet encrypted', "verify_callback = $verifyCallback"]));
+            array_merge($content, ["verify_callback = $verifyCallback"]));
 
-        // Setting verify request property of $verify
         $verify->verifyRequest = $content;
 
         $contentToEncode = $this->computeStringToEncode($content);
@@ -474,7 +469,6 @@ class Gateway extends Base\Gateway
     {
         $checkSum = $this->computeChecksum($content);
 
-        // Add the checksum value to the end of the array
         array_push($content, $checkSum);
 
         return implode('|', $content);
