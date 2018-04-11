@@ -166,7 +166,7 @@
 
     var xhr;
     var lastPollTS;
-    var threshold = 1000 * 20; // 20 seconds
+    var threshold = 1000 * 20;{{-- 20 seconds --}}
     var lastFocus;
     var pollRetriesOnError = 5;
     var pollRetriesSoFar = 0;
@@ -174,7 +174,7 @@
     onfocus = function() {
       var now = Date.now();
 
-      // Focus is being fired for some reason. Don't consider the second one.
+      {{-- Focus is being fired for some reason. Don't consider the second one. --}}
       if (lastFocus) {
         if (now - lastFocus <= 1000 * 0.5) {
           lastFocus = now;
@@ -185,7 +185,7 @@
       lastFocus = now;
 
       if (lastPollTS) {
-        // If last XHR was more than threshold seconds ago, abort XHR and start a new poll.
+        {{-- If last XHR was more than threshold seconds ago, abort XHR and start a new poll. --}}
         if (xhr && now - lastPollTS >= threshold) {
           xhr.abort();
           fetch(request_url);
@@ -197,10 +197,10 @@
       history.pushState(null, null, '/v1/payments/create/checkout/' + data.payment_id);
     }
 
-    // If HTML5 history API exists, only then do this.
+    {{-- If HTML5 history API exists, only then do this. --}}
     window.history && onpopstate();
 
-    function track(name, properties) {
+    function track(name, properties, cb) {
       setTimeout(function() {
         properties.CheckoutBridge = !!CheckoutBridge;
         properties.pageData = {
@@ -224,6 +224,15 @@
         var call = new XMLHttpRequest();
         call.open('post', 'https://lumberjack.razorpay.com/v1/track', true);
         call.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        {{-- If a callback is provided, fire it on response headers recieved
+             or fire it in 4s anyway
+          --}}
+        if (cb) {
+          call.onreadystatechange = function() { if (call.readyState === 2) { cb() } }
+          setTimeout(cb, 4e3);
+        }
+
         call.send('key=MC40OTMwNzgyMDM3MDgwNjI3Nw9YnGzW&data=' +
                  encodeURIComponent(btoa(JSON.stringify(payload))));
       })
@@ -258,10 +267,6 @@
             .join('')
         } else {
           form.action = callback_url;
-        }
-        // Remove item from storage upon submitting.
-        if (typeof localStorage !== 'undefined') {
-          localStorage.removeItem(localStorageKey);
         }
         form.submit();
       }
@@ -342,8 +347,7 @@
                 status: xhr.status,
                 text: xhr.responseText,
                 url: url
-              })
-              setTimeout(submitForm, 4000);
+              }, submitForm)
             }
           }
           xhr.onerror = function() {
@@ -381,8 +385,7 @@
         } catch(e) {
           track('android_error', {
             error: e.message
-          })
-          setTimeout(submitForm, 3000);
+          }, submitForm)
         }
       }
       initUpiActivity();
