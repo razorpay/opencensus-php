@@ -40,7 +40,7 @@ final class Route
         'payment_create_recurring'                 => ['post',     'payments/create/recurring',                      'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_private_old'               => ['post',     'payments/create/redirect',                       'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_checkout'                  => ['post',     'payments/create/checkout',                       'PaymentCreateController@postCreatePaymentCheckoutCallback'         ],
-        'payment_create_checkout_get'              => ['get',      'payments/create/checkout',                       'PaymentCreateController@getCreatePaymentCheckoutCallback'          ],
+        'payment_create_checkout_get'              => ['get',      'payments/create/checkout/{payment_id}',          'PaymentCreateController@getCreatePaymentCheckoutCallback'          ],
         'payment_create_jsonp'                     => ['get',      'payments/create/jsonp',                          'PaymentCreateController@getCreatePaymentJsonp'                     ],
         'payment_create_ajax'                      => ['post',     'payments/create/ajax',                           'PaymentCreateController@postAJAX'                                  ],
         'payment_create_fees'                      => ['post',     'payments/create/fees',                           'PaymentCreateController@postCreatePaymentFees'                     ],

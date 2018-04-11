@@ -74,18 +74,6 @@ class PaymentCreateController extends Controller
     }
 
     public function getCreatePaymentCheckoutCallback() {
-        $templateData = array(
-            'data' => array(
-                'type' => 'async',
-                'request' => array(
-                    'url' => ''
-                ),
-                'gateway' => '',
-                'payment_id' => '',
-                'storage' => true
-            ),
-            'api'  => $this->config->get('url.api.production')
-        );
         return View::make('gateway.gatewayAsyncForm')
                 ->with('data', $templateData);
     }

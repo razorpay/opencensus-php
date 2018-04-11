@@ -153,81 +153,20 @@
     var data = {!!utf8_json_encode($data['data'])!!};
     // Async Payment data //
 
-    var localStorageKey = 'upi_pay_data';
     var request_url = data.request.url;
     var key_id = '{{ App::getFacadeRoot()['basicauth']->getPublicKey() }}';
     var payment_base = '{{$data["api"]}}/v1/payments/' + data.payment_id;
     var cancel_url = payment_base + '/cancel?key_id='+key_id;
     var callback_url = payment_base + '/redirect_callback?key_id='+key_id;
+
     var $ =  document.getElementById.bind(document);
     var form = $('form');
     var CheckoutBridge = window.CheckoutBridge;
     var isIntentFlow = CheckoutBridge && data.type === 'intent';
 
-    /**
-     * Retrieves data from localStorage and updates values.
-     */
-    function updateFromLocalStorage() {
-      // Check for localStorage
-      if (typeof localStorage === 'undefined') return;
-
-      // Retrieve from localStorage and parse.
-      let stored = localStorage.getItem(localStorageKey);
-      if (!stored) return;
-      try {
-        stored = JSON.parse(stored);
-      } catch (e) {
-        return;
-      }
-
-      // Set form values.
-      $('form2_type').value = stored.form.type;
-      $('form2_gateway').value = stored.form.gateway;
-
-      // Set values in variables.
-      data = stored.data;
-      request_url = stored.request_url;
-      key_id = stored.key_id;
-      cancel_url = stored.cancel_url;
-      callback_url = stored.callback_url;
-    }
-
-    /**
-     * Stores data in localStorage.
-     */
-    function storeInLocalStorage() {
-      // Check for localStorage.
-      if (typeof localStorage === 'undefined') return;
-
-      // Populate values to store.
-      let stored = {};
-      stored.form = {
-        type: $('form2_type').value,
-        gateway: $('form2_gateway').value
-      };
-      stored.data = data;
-      stored.request_url = request_url;
-      stored.key_id = key_id;
-      stored.cancel_url = cancel_url;
-      stored.callback_url = callback_url;
-      stored.timestamp = Date.now();
-
-      // Store in localStorage.
-      localStorage.setItem(localStorageKey, JSON.stringify(stored));
-    }
-
-    // If storage is to be used, update values from storage.
-    if (data.storage) {
-      updateFromLocalStorage();
-    }
-    // Otherwise, store in storage.
-    else {
-      storeInLocalStorage();
-    }
-
     var xhr;
     var lastPollTS;
-    var threshold = 1000 * 5; // 15 seconds
+    var threshold = 1000 * 20; // 20 seconds
     var lastFocus;
     var pollRetriesOnError = 5;
     var pollRetriesSoFar = 0;
@@ -254,28 +193,12 @@
       }
     }
 
-    // Adds a hash to the URL
-    var addHash = function () {
-      if (!location.hash) {
-        window.location.hash = 'pay';
-      }
+    onpopstate = function() {
+      history.pushState(null, null, '/v1/payments/create/checkout/' + data.payment_id);
     }
-    onhashchange = addHash;
 
-    let reloadUrl = location.protocol + '//' + location.hostname + '/v1/payments/create/checkout';
-
-    // Method to call when page loads.
-    var loadMethod = function () {
-      // If localStorage and history exist, only then do this.
-      if (typeof history !== 'undefined' && typeof localStorage !== 'undefined') {
-        // Push current URL and reload URL to history.
-        history.pushState({}, document.title, location.href);
-        history.pushState({}, document.title, reloadUrl);
-        // Add hash to page.
-        addHash();
-      }
-    }
-    loadMethod();
+    // If HTML5 history API exists, only then do this.
+    window.history && onpopstate();
 
     function track(name, properties) {
       setTimeout(function() {
