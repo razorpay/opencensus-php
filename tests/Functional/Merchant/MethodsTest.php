@@ -68,7 +68,7 @@ class MethodsTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(62, $count);
+        $this->assertEquals(61, $count);
     }
 
     public function testBulkMethodUpdate()
