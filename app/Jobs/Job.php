@@ -2,8 +2,8 @@
 
 namespace RZP\Jobs;
 
+use DB;
 use App;
-
 use Illuminate\Bus\Queueable;
 
 class Job
@@ -114,5 +114,7 @@ class Job
         {
             $app['basicauth']->setModeAndDbConnection($this->mode);
         }
+
+        DB::connection()->recordsHaveNotBeenModified();
     }
 }

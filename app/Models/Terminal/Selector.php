@@ -176,10 +176,10 @@ class Selector extends Base\Core
     protected function getTerminals()
     {
         // Fetch terminals for both the current merchant and the shared Merchant
-        $merchantTerminals = $this->repo
-                                  ->terminal
-                                  ->getTerminalsForMerchantAndSharedMerchant(
-                                                        $this->input['merchant']);
+        $merchantTerminals = $this->repo->useSlave(function ()
+        {
+            return $this->repo->terminal->getTerminalsForMerchantAndSharedMerchant($this->input['merchant']);
+        });
 
         $payment = $this->input['payment'];
 

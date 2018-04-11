@@ -1,12 +1,20 @@
 <?php
 
-namespace RZP\Base;
+namespace RZP\Base\Database;
 
 use Closure;
 use RZP\Foundation\Application;
 
-class RedisLagChecker
+class RedisLagChecker implements LagChecker
 {
+    protected $app;
+
+    protected $config;
+
+    protected $trace;
+
+    protected $cache;
+
     public function __construct(Application $app, array $config)
     {
         $this->app = $app;

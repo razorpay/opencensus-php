@@ -1,18 +1,22 @@
 <?php
 
-namespace RZP\Base;
+namespace RZP\Base\Database;
 
 use App;
 use Closure;
 use Illuminate\Database\MySqlConnection;
 
-class CustomMySQLConnection extends MySqlConnection
+class CustomMysqlConnection extends MySqlConnection
 {
     protected $lagChecker;
+
+    protected $forceReadPdo;
 
     public function __construct($pdo, $database = '', $tablePrefix = '', array $config = [])
     {
         $lagCheckConfig = $config['lag_check'] ?? null;
+
+        $this->forceReadPdo = false;
 
         $this->lagChecker = $this->getLagChecker($lagCheckConfig);
 
@@ -31,6 +35,7 @@ class CustomMySQLConnection extends MySqlConnection
                 return new RedisLagChecker($app, $config);
 
             case 'heartbeat':
+                // TODO: This needs to be implemented.
                 return new HeartbeatLagChecker($app, $config);
         }
     }
@@ -42,7 +47,9 @@ class CustomMySQLConnection extends MySqlConnection
             return $this->getPdo();
         }
 
-        if (($this->getConfig('sticky') === true) and ($this->recordsModified === true))
+        if (($this->getConfig('sticky') === true) and
+            ($this->recordsModified === true) and
+            ($this->forceReadPdo === false))
         {
             return $this->getPdo();
         }
@@ -53,5 +60,18 @@ class CustomMySQLConnection extends MySqlConnection
         }
 
         return $this->readPdo ?: $this->getPdo();
+    }
+
+    public function forceReadPdo(bool $value)
+    {
+        $this->forceReadPdo = $value;
+    }
+
+    public function recordsHaveNotBeenModified(bool $value = false)
+    {
+        if ($this->recordsModified)
+        {
+            $this->recordsModified = $value;
+        }
     }
 }

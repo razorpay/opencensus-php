@@ -25,7 +25,7 @@ use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Plan\Subscription;
 use Illuminate\Database\Connection;
-use RZP\Base\CustomMySQLConnection;
+use RZP\Base\Database\CustomMysqlConnection;
 use Http\Mock\Client as MockHttplug;
 use RZP\Models\Plan\Subscription\Addon;
 use Illuminate\Database\MySqlConnection;
@@ -200,7 +200,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerPincodeSearch();
 
-        $this->registerCustomMySQLConnection();
+        $this->registerCustomMysqlConnection();
     }
 
     /**
@@ -475,7 +475,7 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
-    protected function registerCustomMySQLConnection()
+    protected function registerCustomMysqlConnection()
     {
         Connection::resolverFor('mysql', function ($connection, $database, $prefix, $config) {
             if (isset($config['lag_check']) === false)
@@ -483,7 +483,7 @@ class ApiServiceProvider extends BaseServiceProvider
                 return new MySqlConnection($connection, $database, $prefix, $config);
             }
 
-            return new CustomMySQLConnection($connection, $database, $prefix, $config);
+            return new CustomMysqlConnection($connection, $database, $prefix, $config);
         });
     }
 }
