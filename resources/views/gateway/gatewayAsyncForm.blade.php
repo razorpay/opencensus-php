@@ -198,7 +198,7 @@
     }
 
     {{-- If HTML5 history API exists, only then do this. --}}
-    window.history && onpopstate();
+    // window.history && onpopstate();
 
     function track(name, properties, cb) {
       setTimeout(function() {
