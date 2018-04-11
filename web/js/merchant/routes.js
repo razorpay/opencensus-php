@@ -23,7 +23,7 @@ const entityMap = {
   '/orders/:id': OrderDetails,
   '/settlements/:id': SettlementDetails,
   '/paymentlinks/:id(inv_.+)': PaymentLinkDetails,
-  '/paymentlinks/batch/:id': BatchDetails,
+  '/paymentlinks/batchuploads/:id(batch_.+)': BatchDetails,
   '/invoices/:id/details': PaymentLinkDetails,
 
   '/route/payments/:id': PaymentsDetails,

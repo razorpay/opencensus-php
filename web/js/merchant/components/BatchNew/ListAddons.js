@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
 
@@ -36,9 +36,9 @@ const BatchStatus = ({ status }) => (
  * Render NavLink of batch
  */
 const BatchNavLink = ({ batchType, batchId }) => (
-  <NavLink to={`/${batchType.split('_').join('')}s/batch/${batchId}`}>
+  <Link to={`/${batchType.split('_').join('')}s/batchuploads/${batchId}`}>
     <code>{batchId}</code>
-  </NavLink>
+  </Link>
 );
 
 // Pairs
