@@ -127,7 +127,7 @@ export default class EntityList extends Component {
     this.collection.extraFields.type = value;
     this.selectedEntity = value;
 
-    this.collection.setFilters({});
+    this.collection.setFilters(null);
     this.clearForm(value);
     this.onSelectChange(e);
   };
@@ -202,9 +202,13 @@ export default class EntityList extends Component {
             value = 'pay_' + value;
           }
           return (
-            <Link to={`/entity/payment/${
+            <Link
+              to={`/entity/payment/${
                 this.collection.extraFields.mode
-              }/${value}`} class="link" target="_blank">
+              }/${value}`}
+              class="link"
+              target="_blank"
+            >
               {value}
             </Link>
           );

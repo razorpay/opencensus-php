@@ -12,13 +12,20 @@ export const defaultFilters = {
 export default class Collection extends BaseModel {
   animateItems = true;
 
+  // null or undefined argument means unsetting the existing filters to "defaultSearch" - (if pagination) or "{}" -(if no pagination)
   setFilters(filters) {
     let newFilters;
 
     if (this.noPagination) {
       newFilters = Object.assign({}, filters);
     } else {
-      let curFilters = this.filters || defaultFilters;
+      let curFilters = defaultFilters;
+
+      // For very 1st search, this.filters would be empty, so defaultFilters would be applied
+      if (filters && this.filters && Object.keys(this.filters).length) {
+        curFilters = this.filters;
+      }
+
       newFilters = Object.assign({}, curFilters, filters);
     }
 
