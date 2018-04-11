@@ -177,7 +177,7 @@
         {{-- Only if it's the polling URL --}}
         if (lastPollUrl === request_url && timeSince > threshold) {
           lastXhr.abort();
-          fetch(request_url);
+          fetch(request_url, 1);
           track('ajax_periodic_retry', {
             focus: !!e,
             time: timeSince
@@ -243,7 +243,7 @@
 
     var submitted_count = 0;
     function submitForm(response) {
-      {{-- track if page not closed after 4s of calling submitForm --}}
+      {{-- track if page not closed after 10s of calling submitForm --}}
       setTimeout(function() {
         track('no_redirect', {
           count: ++submitted_count
@@ -251,7 +251,7 @@
         if (submitted_count && !(submitted_count % 2) && submitted_count < 10) {
           submitForm(response);
         }
-      }, 4000);
+      }, 10000);
       if (isIntentFlow) {
         CheckoutBridge.oncomplete(JSON.stringify(response));
       } else {
