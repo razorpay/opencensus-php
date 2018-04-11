@@ -3,14 +3,13 @@
 namespace RZP\Gateway\Netbanking\Csb\Mock;
 
 use RZP\Base;
-use RZP\Gateway\Netbanking\Csb\Constant;
 use RZP\Gateway\Netbanking\Csb\RequestFields;
 
 class Validator extends Base\Validator
 {
     protected static $authRules = [
-        RequestFields::CHNPGSYN     => 'required|string|in:' . Constant::CHNPGSYN,
-        RequestFields::CHNPGCODE    => 'required|string|in:000000RazorPwy018126',
+        RequestFields::CHNPGSYN     => 'required|string',
+        RequestFields::CHNPGCODE    => 'required|string',
         RequestFields::PAYEE_ID     => 'required|string',
         RequestFields::BANK_REF_NUM => 'required|string|size:14',
         RequestFields::AMOUNT       => 'required|integer',
@@ -20,13 +19,13 @@ class Validator extends Base\Validator
     ];
 
     protected static $verifyRules = [
-        RequestFields::CHNPGSYN     => 'required|string|in:' . Constant::CHNPGSYN,
-        RequestFields::CHNPGCODE    => 'required|string|in:000000RazorPwy018126',
+        RequestFields::CHNPGSYN     => 'required|string',
+        RequestFields::CHNPGCODE    => 'required|string',
         RequestFields::PAYEE_ID     => 'required|string',
         RequestFields::BANK_REF_NUM => 'required|string|size:14',
         RequestFields::AMOUNT       => 'required|integer',
         RequestFields::RETURN_URL   => 'required|string|url',
-        RequestFields::TRAN_REF_NUM => 'sometimes|integer|in:9999999999',
+        RequestFields::TRAN_REF_NUM => 'sometimes|integer',
         RequestFields::MODE         => 'required|string|in:V,S',
         RequestFields::CHECKSUM     => 'required|string'
     ];
