@@ -91,7 +91,7 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    public final function verify(array $input): array
+    public function verify(array $input): array
     {
         parent::verify($input);
 
@@ -156,7 +156,7 @@ class Gateway extends Base\Gateway
      * @param $str
      * @return string
      */
-    public final function getHashOfString($str): string
+    public function getHashOfString($str): string
     {
         return hash(HashAlgo::CRC32, $str);
     }
@@ -168,12 +168,12 @@ class Gateway extends Base\Gateway
      * @param $actual
      * @param $generated
      */
-    public final function compareHashes($actual, $generated)
+    public function compareHashes($actual, $generated)
     {
         parent::compareHashes($actual, $generated);
     }
 
-    public final function computeChecksum(array $content): string
+    public function computeChecksum(array $content): string
     {
         $contentToHash = array_merge($content, [$this->getSecret()]);
 
@@ -181,8 +181,6 @@ class Gateway extends Base\Gateway
 
         return (string) hexdec($this->getHashOfString($contentToHash));
     }
-
-    //-----------------------------------------------  Public methods ------------------------------------------------//
 
     /**
      * Verifying the payment after callback response is saved to
@@ -223,7 +221,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected final function updateGatewayPaymentEntity(
+    protected function updateGatewayPaymentEntity(
         Entity $gatewayPayment,
         array $attributes,
         bool $mapped = true): Entity
@@ -242,7 +240,7 @@ class Gateway extends Base\Gateway
      * @param $expectedAmount
      * @param $actualAmount
      */
-    protected final function assertAmount($expectedAmount, $actualAmount)
+    protected function assertAmount($expectedAmount, $actualAmount)
     {
         $expectedAmount = $this->formatAmount($expectedAmount);
         $actualAmount = $this->formatAmount($actualAmount);
@@ -260,9 +258,7 @@ class Gateway extends Base\Gateway
         return $this->config['live_hash_secret'];
     }
 
-    //-----------------------------------------------  Private methods -----------------------------------------------//
-
-    private function throwExceptionIfCallbackFailure(bool $callbackSuccess, array $content)
+    protected function throwExceptionIfCallbackFailure(bool $callbackSuccess, array $content)
     {
         // callbackSuccess is set during verify callback
         if ($callbackSuccess === false)
@@ -286,7 +282,7 @@ class Gateway extends Base\Gateway
      * @param Verify $verify
      * @return array
      */
-    private function getVerifyRequestData(Verify $verify): array
+    protected function getVerifyRequestData(Verify $verify): array
     {
         $content = [
             $this->getMerchantId(),
@@ -317,7 +313,7 @@ class Gateway extends Base\Gateway
         return $this->getStandardRequestArray($content);
     }
 
-    private function parseVerifyResponse(string $responseString): array
+    protected function parseVerifyResponse(string $responseString): array
     {
         $response = simplexml_load_string($responseString);
 
@@ -329,7 +325,7 @@ class Gateway extends Base\Gateway
         return $responseArray;
     }
 
-    private function getVerifyStatus(Verify $verify): string
+    protected function getVerifyStatus(Verify $verify): string
     {
         $status = VerifyResult::STATUS_MATCH;
 
@@ -345,7 +341,7 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
-    private function checkCallbackSuccess(array $content)
+    protected function checkCallbackSuccess(array $content)
     {
         if ((empty($content[ResponseFields::STATUS]) === false) and
             ($content[ResponseFields::STATUS] !== Status::SUCCESS))
@@ -356,7 +352,7 @@ class Gateway extends Base\Gateway
         return true;
     }
 
-    private function checkGatewaySuccess(Verify $verify)
+    protected function checkGatewaySuccess(Verify $verify)
     {
         $verify->gatewaySuccess = false;
 
@@ -381,7 +377,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    private function saveVerifyContent(Verify $verify)
+    protected function saveVerifyContent(Verify $verify)
     {
         $wallet = $verify->payment;
 
@@ -406,7 +402,7 @@ class Gateway extends Base\Gateway
      * @param array $input
      * @return array
      */
-    private function getAuthorizeRequest(array $input): array
+    protected function getAuthorizeRequest(array $input): array
     {
         $contentToEncrypt = [
             RequestFields::CHNPGSYN     => $this->getMerchantId(),
@@ -431,7 +427,7 @@ class Gateway extends Base\Gateway
         return $this->getStandardRequestArray($content);
     }
 
-    private function formatAmount(float $amount): string
+    protected function formatAmount(float $amount): string
     {
         return number_format($amount / 100, 2, '.', '');
     }
@@ -448,7 +444,7 @@ class Gateway extends Base\Gateway
      * @param array $content
      * @return string
      */
-    private function computeStringToEncode(array $content): string
+    protected function computeStringToEncode(array $content): string
     {
         $checkSum = $this->computeChecksum($content);
 
@@ -457,7 +453,7 @@ class Gateway extends Base\Gateway
         return implode('|', $content);
     }
 
-    private function getMerchantId(): string
+    protected function getMerchantId(): string
     {
         $merchantId = $this->config['test_merchant_id'];
 
@@ -473,7 +469,7 @@ class Gateway extends Base\Gateway
      * Sub merchant.
      * @return string
      */
-    private function getMerchantId2(): string
+    protected function getMerchantId2(): string
     {
         $merchantId2 = $this->config['test_merchant_id_2'];
 
@@ -485,7 +481,7 @@ class Gateway extends Base\Gateway
         return $merchantId2;
     }
 
-    private function getCallbackUrl(): string
+    protected function getCallbackUrl(): string
     {
         return 'https://www.api.razorpay.com';
     }
