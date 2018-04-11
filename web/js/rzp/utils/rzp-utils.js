@@ -511,3 +511,7 @@ export const getKeysSeparatedByPipe = params => {
 export const trim = str => {
   return str.replace(/\s+/g, '');
 };
+
+export const pluralize = (str, length) => {
+  return length > 1 ? `${str}s` : str;
+};

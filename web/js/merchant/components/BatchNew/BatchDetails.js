@@ -6,7 +6,7 @@ import Amount from 'rzp/ui/Amount';
 import Banner from 'rzp/ui/Banner';
 import Spinner from 'rzp/ui/Spinner';
 import TableBody from 'rzp/ui/TableBody';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { titleCase, pluralize } from 'rzp/utils/rzp-utils';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
@@ -92,10 +92,12 @@ export default function BatchDetails(props) {
               <hr />
               <div class="m-all p-t" style={{ overflow: 'auto' }}>
                 <span class="pull-left">
-                  <strong>{titleCase(batch.type)}</strong> created from this
-                  batch.
+                  <strong>
+                    {pluralize(titleCase(batch.type), stats.batch_total)}
+                  </strong>{' '}
+                  created from this batch.
                 </span>
-                {invoices.length > 0 && (
+                {!shouldShowAllInvoices && (
                   <NavLink
                     to={`/paymentlinks?batch_id=${batch.id}`}
                     className="btn-link pull-right"
