@@ -47,6 +47,7 @@ class Validator extends Base\Validator
     protected static $editTerminalGateways = [
         Payment\Gateway::HDFC,
         Payment\Gateway::HITACHI,
+        Payment\Gateway::CARD_FSS,
         Payment\Gateway::BILLDESK,
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::UPI_ICICI,
@@ -372,6 +373,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
         Entity::GATEWAY_MERCHANT_ID         => 'required',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
+        Entity::TYPE                        => 'sometimes|array',
+    ];
+
+    protected static $cardFssEditTerminalRules = [
+        Entity::GATEWAY                     => 'sometimes|in:card_fss',
+        Entity::TYPE                        => 'sometimes|array',
     ];
 
     protected static $enachRblTerminalRules = [
