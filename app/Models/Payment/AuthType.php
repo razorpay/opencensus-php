@@ -21,6 +21,10 @@ class AuthType
             self::PIN,
             self::_3DS
         ],
+        Method::EMI     => [
+            self::PIN,
+            self::_3DS
+        ],
     ];
 
     public static $featureToAuthMap = [
