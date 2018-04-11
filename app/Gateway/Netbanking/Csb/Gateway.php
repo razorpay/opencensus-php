@@ -26,6 +26,8 @@ class Gateway extends Base\Gateway
 {
     const PAYEE_ID = 'Razorpay';
 
+    const CALLBACK_URL = 'https://www.api.razorpay.com';
+
     protected $gateway = PG::NETBANKING_CSB;
 
     protected $map = [
@@ -290,7 +292,7 @@ class Gateway extends Base\Gateway
             self::PAYEE_ID,
             $verify->input['payment']['id'],
             $verify->input['payment']['amount'] / 100,
-            $this->getCallbackUrl(),
+            self::CALLBACK_URL,
             $verify->payment->getBankPaymentId(),
             Mode::VERIFY
         ];
@@ -479,10 +481,5 @@ class Gateway extends Base\Gateway
         }
 
         return $merchantId2;
-    }
-
-    protected function getCallbackUrl(): string
-    {
-        return 'https://www.api.razorpay.com';
     }
 }
