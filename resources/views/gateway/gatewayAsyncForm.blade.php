@@ -141,7 +141,7 @@
       </div>
     </div>
 
-    <form method="post"></form>
+    <form id="form" method="post"></form>
     <form id="form2" name="form2">
       <input name="type" id="form2_type" value="{{$data['data']['type']}}">
       <input name="gateway" id="form2_gateway" value="{{$data['data']['gateway']}}">
@@ -322,15 +322,14 @@
                 try {
                   if (
                     json.razorpay_payment_id ||
-                    (json.error && json.error.description !== 'The payment has already been processed') ||
+                    json.error ||
                     json.version === 1
                   ) {
-                    submitForm(json);
+                    return submitForm(json);
                   }
                 } catch(e) {
-                  handleAjaxError(e);
+                  return handleAjaxError(e);
                 }
-                return;
               }
               handleAjaxError();
             }
@@ -400,11 +399,7 @@
       {{-- retry if it's json parsing or network error --}}
       if (e && pollRetriesSoFar < pollRetriesOnError) {
         pollRetriesSoFar++;
-        fetchAgain(4000);
+        fetch(lastPollUrl);
       }
     }
-
   </script>
-
-</body>
-</html>
