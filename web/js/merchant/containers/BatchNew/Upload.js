@@ -48,7 +48,10 @@ export default class BatchUpload extends Component {
   render() {
     return (
       <div class={`batch-upload-modal ${this.state.currentStatus}`}>
-        <ModalHeader title="Batch Upload" onCloseClick={this.onModalClose} />
+        <ModalHeader
+          title={this.state.currentStatus !== 'success' ? 'Batch Upload' : ''}
+          onCloseClick={this.onModalClose}
+        />
         {(() => {
           switch (this.state.currentStatus) {
             case 'validate':
@@ -71,11 +74,20 @@ export default class BatchUpload extends Component {
               );
             case 'success':
               return (
-                <BatchSuccess
-                  name={this.state.batch.name}
-                  success_count={this.state.batch.success_count}
-                  total_count={this.state.batch.total_count}
-                />
+                <div class="modal-body">
+                  <div class="success-tick" />
+                  <h4>Batch Created Succesfully</h4>
+                  <p class="success-text">
+                    You can download the output file from batch detail view to
+                    check payment links generated. For the links that could not
+                    be generated due to some issues, please upload a new batch
+                    file.
+                    <br />
+                    <span class="btn btn-link" onClick={this.onModalClose}>
+                      <strong>Close</strong>
+                    </span>
+                  </p>
+                </div>
               );
             case 'default':
               return null;
@@ -85,17 +97,3 @@ export default class BatchUpload extends Component {
     );
   }
 }
-
-const BatchSuccess = ({ success_count, total_count, name }) => (
-  <div class="modal-body">
-    The batch file named{' '}
-    {name ? (
-      <span>
-        titled <strong>{name}</strong>{' '}
-      </span>
-    ) : null}{' '}
-    has been created successfully. You can download the output file from the
-    batch detail view to check payment links generated. For the links that could
-    not be generated due to some issues, please upload a new batch file.
-  </div>
-);
