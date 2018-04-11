@@ -193,7 +193,7 @@ class Gateway extends Base\Gateway
      * @param bool $callbackSuccess
      * @throws GatewayErrorException
      */
-    protected final function verifyCallback(Base\Entity $gatewayPayment, array $input, bool $callbackSuccess)
+    protected function verifyCallback(Base\Entity $gatewayPayment, array $input, bool $callbackSuccess)
     {
         parent::verify($input);
 
@@ -206,12 +206,9 @@ class Gateway extends Base\Gateway
         $this->checkGatewaySuccess($verify);
 
         //
-        // If callback returned a success and
-        // If verify returns false, we throw an error as
-        // authorize request / response has been tampered with
+        // If the status in callback and verify does not match
         //
-        if (($callbackSuccess === true) and
-            ($verify->gatewaySuccess === false))
+        if ($callbackSuccess !== $verify->gatewaySuccess)
         {
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
