@@ -869,7 +869,11 @@ class Gateway
         IFSC::HSBC => Gateway::FIRST_DATA,
     ];
 
-    public static $pinAuthGateways = [
+    /**
+     * This variable defines the mapping of gateway acquirer and the
+     * supported ifsc on that acquirer
+     */
+    public static $gatewayAcquirerIfscMapping = [
         Gateway::CARD_FSS => [
             self::ACQUIRER_FSS => [
                 IFSC::UTIB,
@@ -881,10 +885,6 @@ class Gateway
                 IFSC::ICIC,
             ]
         ],
-    ];
-
-    public static $testPinAuthGateways = [
-        Gateway::SHARP
     ];
 
     public static $subscriptionOverOneYearGateways = [
@@ -939,21 +939,12 @@ class Gateway
 
     public static function isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer)
     {
-        $pinAuthGateways = self::$pinAuthGateways;
+        $pinAuthGateways = self::$gatewayAcquirerIfscMapping;
 
         if ((isset($pinAuthGateways[$gateway][$acquirer]) === true) and
             (in_array($issuer, $pinAuthGateways[$gateway][$acquirer], true) === true))
         {
             return true;
-        }
-
-        $app = App::getFacadeRoot();
-
-        if ($app['rzp.mode'] === Mode::TEST)
-        {
-            $pinAuthGateways = self::$testPinAuthGateways;
-
-            return (in_array($gateway, $pinAuthGateways, true) === true);
         }
 
         return false;

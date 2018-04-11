@@ -590,21 +590,18 @@ class AuthorizeTest extends TestCase
         $this->assertContentTypeForResponse($contentType, $this->response);
     }
 
-    public function testPinAuthenticationPayment()
+    public function testAtmPinAuthenticationPayment()
     {
-        $terminal = $this->fixtures->create('terminal:shared_sharp_terminal', [
-            'id' => 'SharpTerminal1',
+        $terminal = $this->fixtures->create('terminal:shared_fss_terminal', [
+            'id' => 'SharedFssTrmnl',
+            'gateway_acquirer' => 'fss',
             'type' => [
                 'pin' => '1',
                 'non_recurring' => '1',
             ]
         ]);
 
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-
-        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
-
-         $this->fixtures->iin->create([
+        $this->fixtures->iin->create([
             'iin'     => '414366',
             'country' => 'IN',
             'issuer'  => 'ICIC',
@@ -619,6 +616,15 @@ class AuthorizeTest extends TestCase
         $payment['card']['number'] = '4143667057540458';
         $payment['auth_type'] = 'pin';
 
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
+
         $response = $this->doAuthPayment($payment);
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
@@ -626,11 +632,11 @@ class AuthorizeTest extends TestCase
         $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
 
         $this->assertEquals('pin', $payment['auth_type']);
-        $this->assertEquals('sharp', $payment['gateway']);
-        $this->assertEquals('SharpTerminal1', $payment['terminal_id']);
+        $this->assertEquals('card_fss', $payment['gateway']);
+        $this->assertEquals('SharedFssTrmnl', $payment['terminal_id']);
     }
 
-    public function testPinAuthenticationWithMultipleTerminals()
+    public function testAtmPinAuthenticationWithNoTerminal()
     {
         $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
 
@@ -657,7 +663,7 @@ class AuthorizeTest extends TestCase
         });
     }
 
-    public function testPinAuthenticationNotSupported()
+    public function testAtmPinAuthenticationNotSupported()
     {
         $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
 
@@ -685,11 +691,12 @@ class AuthorizeTest extends TestCase
 
     public function test3dsPaymentWithPinTerminal()
     {
-        $this->fixtures->create('terminal:shared_sharp_terminal', [
-            'id' => 'SharpTerminal1',
+        $this->fixtures->create('terminal:shared_fss_terminal', [
+            'id' => 'SharedFssTrmnl',
+            'gateway_acquirer' => 'fss',
             'type' => [
                 'pin' => '1',
-                'non_recurring' => '0'
+                'non_recurring' => '1',
             ]
         ]);
 
@@ -702,7 +709,7 @@ class AuthorizeTest extends TestCase
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
-            $this->doAuthPayment($payment);
+            $payment = $this->doAuthPayment($payment);
         });
     }
 

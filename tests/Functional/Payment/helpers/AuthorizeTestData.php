@@ -764,7 +764,23 @@ return [
         ]
     ],
 
-    'testPinAuthenticationWithMultipleTerminals' => [
+    'testAtmPinAuthenticationPayment' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The auth_type field is invalid',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAtmPinAuthenticationWithNoTerminal' => [
         'response' => [
             'content' => [
                 'error' => [
@@ -780,11 +796,12 @@ return [
         ],
     ],
 
-    'testPinAuthenticationNotSupported' => [
+    'testAtmPinAuthenticationNotSupported' => [
         'response' => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The pin authentication type is not applicable on the given card',
                 ],
             ],
             'status_code' => 400,
