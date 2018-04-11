@@ -52,5 +52,10 @@
   "scripts": {
     "start": "externals=`./scripts/vendor.sh` webpack -w & gulp watch; kill -9 $!",
     "build": "gulp && externals=`./scripts/vendor.sh` webpack && ./scripts/build.sh"
+  },
+  "devDependencies": {
+    "express": "^4.16.3",
+    "livereload": "^0.7.0",
+    "webpack-dev-middleware": "^3.1.2"
   }
 }

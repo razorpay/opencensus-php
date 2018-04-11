@@ -1,39 +1,104 @@
-.activation-wizard {
-  .nav-tabs {
-    position: relative;
-    top: 1px;
-  }
+.activation-wizard
+  background: #F6F6F6
+  position: relative
+  height: 580px
+  width: 100vw
+  max-width: 960px
 
-  .panel {
-    box-shadow: none;
-    border-color: #dee5e7;
-  }
+  $side-width = 240px
 
-  small.help-block {
-    font-size: 12px;
-    line-height: 18px;
-  }
+  side-title
+    font-size: 18px
+    font-weight: bold
+    display: block
+    margin-bottom: 20px
 
-  small.help-block,
-  .nav-tabs > li > a {
-    .i + span {
-      margin-left: 5px;
-    }
-  }
+  aside
+    padding: 30px
+    width: $side-width
+    background: #fff
+    position: absolute
+    height: 100%
+    ul
+      margin: 30px 0
+      padding: 0
+    li
+      cursor: pointer
+      line-height: 40px
+      border-radius: 3px
+      list-style: none
+      padding: 0 12px
+      margin: 4px 0
+      color: #528FF0
+      &:hover
+        background: #fafbfc
+      &.active
+        background: #528FF0
+        color: #fff
 
-  .btn-toolbar {
-    margin-top: 16px;
-    margin-bottom: 16px;
-  }
+  main
+    margin-left: $side-width
+    padding: 30px
 
-  .wizard-header {
-    margin-top: 15px;
-    margin-bottom: 30px;
-    font-weight: bold;
-    font-size: 20px;
-  }
-  .RadioButton {
-    display: inline-block;
-    margin: 7px 20px 7px 0;
-  }
-}
+  main-title
+    text-transform: uppercase
+    display: block
+    margin-bottom: 20px
+
+.activation-field
+  clear: both
+  position: relative
+  padding-left: 180px
+  &.has-label:not(.field-grouped)
+    margin-top: 20px
+  > label
+    position: absolute
+    left: 0
+    top: 0
+    width: 160px
+    text-align: right
+    margin: 4px 0 0 0
+    line-height: 16px
+  input, select, textarea, .input-placeholder
+    margin: 4px 0
+    border: 1px solid #ddd
+    background: #fff
+    width: 160px
+    height: 30px
+    padding: 0 10px
+  textarea
+    height: 70px
+    resize: none
+  &.is-required > label:after
+    content: '*'
+    font-size: 12px
+    position: absolute
+    right: -8px
+    top: 0
+    color: #E78D8D
+  [type=checkbox], [type=radio]
+    width: 14px
+    height: 14px
+    position: relative
+    top: 3px
+    &+label
+      padding-left: 4px
+      display: inline
+      position: static
+      font-weight: normal
+
+  .input-placeholder
+    height: 40px
+    width: 210px
+    position: relative
+    input
+      opacity: 0
+      position: absolute
+      width: 100%
+      margin: 0
+      height: 100%
+      left: 0
+
+.field-radio
+  display: inline-block
+  margin-right: 10px

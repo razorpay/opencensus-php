@@ -18,7 +18,7 @@ function createBaseDir() {
 function handleError(err) {
   console.log(err.toString());
   this.emit('end');
-  process.exit(1);
+  isProd && process.exit(1);
 }
 
 function compileCss(o) {
@@ -72,6 +72,18 @@ gulp.task('watch', () => {
   iconFont(compileCss);
   gulp.watch('css/**/*.styl', compileCss);
   gulp.watch('icons/*.svg', _ => iconFont(compileCss));
+  gulp.watch('js/components/**/*.js', e => {
+    if (e.type === 'added' || e.type === 'deleted' || e.type === 'renamed') {
+      workbenchServer();
+    }
+  })
+
+  require('livereload')
+    .createServer()
+    .watch([__dirname + '/../public/dist/css', __dirname + '/js/components']);
+
+  workbenchServer();
+
 });
 
 gulp.task('default', () => {
@@ -80,3 +92,31 @@ gulp.task('default', () => {
   execSync('cp -r css/assets ../public/dist/css');
   iconFont(compileCss);
 });
+
+const webpackConfig = require('./webpack.config');
+webpackConfig.output.filename = '[name]';
+webpackConfig.output.library = 'component';
+webpackConfig.output.libraryTarget = 'umd';
+
+let workbenchApp;
+
+function workbenchServer() {
+  let entry = {};
+  glob('js/components/**/*.js').forEach(f => { entry[f] = './' + f });
+  webpackConfig.entry = entry;
+
+  const middleware = require('webpack-dev-middleware');
+  const compiler = require('webpack')(webpackConfig);
+
+  if (workbenchApp) {
+    workbenchApp.close();
+    console.log('restarting workbench');
+  }
+  workbenchApp = require('express')();
+
+  workbenchApp.use(middleware(compiler, {
+    lazy: true
+  }));
+
+  workbenchApp = workbenchApp.listen(3000);
+}
