@@ -245,6 +245,7 @@ class Gateway
             self::NETBANKING_RBL,
             self::NETBANKING_INDUSIND,
             self::NETBANKING_PNB,
+            self::NETBANKING_OBC
         ],
 
         //

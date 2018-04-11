@@ -8,7 +8,6 @@ use RZP\Gateway\Netbanking\Obc\Status;
 use RZP\Gateway\Netbanking\Obc\RequestFields;
 use RZP\Gateway\Netbanking\Obc\ResponseFields;
 
-
 class Server extends Base\Mock\Server
 {
     /**
