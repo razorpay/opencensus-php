@@ -106,7 +106,8 @@ class RefundFile extends Base\RefundFile
             $count--;
 
             if (($ignoreLastNewline === false) or
-                (($ignoreLastNewline === true) and ($count > 0)))
+                (($ignoreLastNewline === true) and
+                 ($count > 0)))
             {
                 $txt .= $glue;
             }
