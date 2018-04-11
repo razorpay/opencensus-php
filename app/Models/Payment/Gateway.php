@@ -2,9 +2,11 @@
 
 namespace RZP\Models\Payment;
 
+use App;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC as BaseIFSC;
 
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
@@ -880,6 +882,24 @@ class Gateway
         IFSC::HSBC => Gateway::FIRST_DATA,
     ];
 
+    /**
+     * This variable defines the mapping of gateway acquirer and the
+     * supported ifsc on that acquirer
+     */
+    public static $gatewayAcquirerIfscMapping = [
+        Gateway::CARD_FSS => [
+            self::ACQUIRER_FSS => [
+                IFSC::UTIB,
+                IFSC::IOBA,
+                IFSC::ANDB,
+                IFSC::SYNB,
+                IFSC::SURY,
+                IFSC::UCBA,
+                IFSC::ICIC,
+            ]
+        ],
+    ];
+
     public static $subscriptionOverOneYearGateways = [
         Gateway::AXIS_MIGS
     ];
@@ -928,6 +948,19 @@ class Gateway
     public static function isUpiIntentFlowSupported($gateway): bool
     {
         return in_array($gateway, self::$upiIntentGateways, true);
+    }
+
+    public static function isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer)
+    {
+        $pinAuthGateways = self::$gatewayAcquirerIfscMapping;
+
+        if ((isset($pinAuthGateways[$gateway][$acquirer]) === true) and
+            (in_array($issuer, $pinAuthGateways[$gateway][$acquirer], true) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**

@@ -18,7 +18,7 @@ class FileDeleter
     ];
 
     protected $fileTypeMapping = [
-        'setl_initiate' => 'ReconciliationGenerator2',
+        'setl_initiate' => 'Reconciliation\\Mock\\FileGenerator2',
         'reconcile'     => 'Reconciliation\\FileProcessor',
     ];
 

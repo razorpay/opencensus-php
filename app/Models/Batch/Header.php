@@ -194,6 +194,8 @@ class Header
     const ENACH_REGISTER_UTILITY_NAME       = 'UTILITY_NAME';
     const ENACH_REGISTER_NODAL_ACNO         = 'NODAL_ACNO';
     const ENACH_REGISTER_STATUS             = 'STATUS';
+    const ENACH_REGISTER_RETURN_CODE        = 'RETURN_CODE';
+    const ENACH_REGISTER_CODE_DESC          = 'CODE_DESC';
 
     //
     // eNach Debit Response File Headers
@@ -498,7 +500,9 @@ class Header
                 self::ENACH_REGISTER_UTILITY_CODE,
                 self::ENACH_REGISTER_UTILITY_NAME,
                 self::ENACH_REGISTER_NODAL_ACNO,
-                self::ENACH_REGISTER_STATUS
+                self::ENACH_REGISTER_STATUS,
+                self::ENACH_REGISTER_RETURN_CODE,
+                self::ENACH_REGISTER_CODE_DESC,
             ],
         ],
 

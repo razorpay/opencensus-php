@@ -235,6 +235,16 @@ class TransferTest extends TestCase
         });
     }
 
+    public function testDirectTransferAmountOverMaxAmount()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 100]);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function()
+        {
+            $this->createTransfer('account');
+        });
+    }
+
     public function testTransferInsufficientBalance()
     {
         $this->fixtures->merchant->editBalance(100);
@@ -328,6 +338,15 @@ class TransferTest extends TestCase
         $this->assertEquals(false, $patch['on_hold']);
 
         $this->checkPaymentAndTxnRecords($patch);
+    }
+
+    public function testTransferWithoutPaymentAmountValidation()
+    {
+        $this->fixtures->merchant->edit($this->linkedAccountId, ['max_payment_amount' => 100]);
+
+        $transfer = $this->createTransfer('account');
+
+        $this->assertEquals(1000, $transfer['amount']);
     }
 
     public function testPatchTransferOnHoldTxnSettled()
