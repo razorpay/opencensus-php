@@ -108,6 +108,8 @@ trait Authorize
 
         $this->createAnalyticsLog($payment);
 
+        $this->runShieldCheck($payment);
+
         //
         // If $request is not null, then payment is two-step process
         // where client needs to provide additional info via his browser.
@@ -258,6 +260,8 @@ trait Authorize
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
         $this->createAnalyticsLog($this->payment);
+
+        $this->runShieldCheck($this->payment);
     }
 
     protected function verifyFeesLessThanAmount(Payment\Entity $payment)
@@ -1326,8 +1330,6 @@ trait Authorize
 
     protected function runFraudChecks(Payment\Entity $payment)
     {
-        $this->runShieldCheck($payment);
-
         if ($payment->shouldRunFraudChecks() === true)
         {
             $this->validateEmailTld($payment);
@@ -1338,6 +1340,20 @@ trait Authorize
         }
     }
 
+    /**
+     * This is called in 2 places, both after creation for payment/payment analytics
+     * as both entity should have persisted at this time
+     *
+     * This is not called in case of emandate, BharatQR, and Bank Transfer.
+     *
+     * Currently this call happens after payment auth success or fail.
+     * Ideally this should be a pre-auth step as we want to block the payment before authorization itself
+     * But because current code limitation, and time constraint this has to be done this way.
+     *
+     * As per YV, to block the payment in pre-auth the whole class need to be refractored.
+     *
+     * @param Payment\Entity $payment
+     */
     protected function runShieldCheck(Payment\Entity $payment)
     {
         $job = new RunShieldCheck($this->mode, $payment);
