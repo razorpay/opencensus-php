@@ -144,7 +144,15 @@ trait Callback
             return $this->processPaymentCallbackSecondTime($payment);
         }
 
-        throw new Exception\LogicException('Should not have been hit.');
+        throw new Exception\LogicException(
+            'Should not have been hit.',
+            null,
+            [
+                'payment_id' => $payment->getId(),
+                'status'     => $payment->getStatus(),
+                'order_id'   => $payment->getApiOrderId(),
+                'gateway'    => $payment->getGateway(),
+            ]);
     }
 
     /**
