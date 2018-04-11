@@ -164,41 +164,39 @@
     var CheckoutBridge = window.CheckoutBridge;
     var isIntentFlow = CheckoutBridge && data.type === 'intent';
 
-    var xhr;
-    var lastPollTS;
+    var lastXhr, lastPollTS, lastPollUrl;
     var threshold = 1000 * 20;{{-- 20 seconds --}}
-    var lastFocus;
     var pollRetriesOnError = 5;
     var pollRetriesSoFar = 0;
 
-    onfocus = function() {
-      var now = Date.now();
-
-      {{-- Focus is being fired for some reason. Don't consider the second one. --}}
-      if (lastFocus) {
-        if (now - lastFocus <= 1000 * 0.5) {
-          lastFocus = now;
-          return;
-        }
-      }
-
-      lastFocus = now;
-
+    onfocus = function(e) {
       if (lastPollTS) {
         {{-- If last XHR was more than threshold seconds ago, abort XHR and start a new poll. --}}
-        if (xhr && now - lastPollTS >= threshold) {
-          xhr.abort();
+        var timeSince = Date.now() - lastPollTS;
+
+        {{-- Only if it's the polling URL --}}
+        if (lastPollUrl === request_url && timeSince > threshold) {
+          lastXhr.abort();
           fetch(request_url);
+          track('ajax_periodic_retry', {
+            focus: !!e,
+            time: timeSince
+          })
         }
       }
     }
 
+    {{-- Keep checking every 1s for hung AJAX --}}
+    setInterval(onfocus, 1000);
+
+    {{--
     onpopstate = function() {
       history.pushState(null, null, '/v1/payments/create/checkout/' + data.payment_id);
     }
 
-    {{-- If HTML5 history API exists, only then do this. --}}
-    // window.history && onpopstate();
+    //{{- If HTML5 history API exists, only then do this. -}}
+    window.history && onpopstate();
+    --}}
 
     function track(name, properties, cb) {
       setTimeout(function() {
@@ -291,18 +289,17 @@
 
         setTimeout(function() {
           // If polling, set timestamp.
-          if (url === request_url) {
-            lastPollTS = Date.now();
-          }
+          lastPollUrl = url;
+          lastPollTS = Date.now();
 
-          xhr = new XMLHttpRequest();
-          xhr.open('get', url, true);
+          lastXhr = new XMLHttpRequest();
+          lastXhr.open('get', url, true);
 
-          xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status) {
+          lastXhr.onreadystatechange = function() {
+            if (lastXhr.readyState === 4 && lastXhr.status) {
               var json;
               try {
-                json = JSON.parse(xhr.responseText);
+                json = JSON.parse(lastXhr.responseText);
                 if (!json || typeof json !== 'object') {
                   throw 'non object:' + json;
                 }
@@ -313,8 +310,8 @@
                     description: 'Parsing error'
                   },
                   xhr: {
-                    status: xhr.status,
-                    text: xhr.responseText,
+                    status: lastXhr.status,
+                    text: lastXhr.responseText,
                     url: url
                   }
                 };
@@ -328,36 +325,18 @@
                     (json.error && json.error.description !== 'The payment has already been processed') ||
                     json.version === 1
                   ) {
-                    return submitForm(json);
+                    submitForm(json);
                   }
                 } catch(e) {
-                  track('ajax_onerror', {
-                    status: xhr.status,
-                    url: url
-                  });
-                  if (pollRetriesSoFar < pollRetriesOnError) {
-                    pollRetriesSoFar++;
-                    fetchAgain(timeout || 4000);
-                  }
+                  handleAjaxError(e);
                 }
+                return;
               }
-
-              track('unexpected', {
-                json: json,
-                status: xhr.status,
-                text: xhr.responseText,
-                url: url
-              }, submitForm)
+              handleAjaxError();
             }
           }
-          xhr.onerror = function() {
-            track('ajax_onerror', {
-              status: xhr.status,
-              url: url
-            })
-            fetchAgain(1000);
-          }
-          xhr.send(null);
+          lastXhr.onerror = handleAjaxError;
+          lastXhr.send(null);
         }, timeout || 4000);
       }
 
@@ -403,6 +382,26 @@
       $('retry-btn').className = 'hide';
       $('message-txt').innerHTML = "Please wait...";
       fetch(url, 1);
+    }
+
+    function handleAjaxError(e) {
+      var props = {
+        text: lastXhr.responseText,
+        status: lastXhr.status,
+        url: lastPollUrl
+      }
+      if (e) {
+        props.message = e.message;
+      }
+
+      {{-- pass redirection callback if it's unexpected response error --}}
+      track('ajax_error', props, !e && submitForm);
+
+      {{-- retry if it's json parsing or network error --}}
+      if (e && pollRetriesSoFar < pollRetriesOnError) {
+        pollRetriesSoFar++;
+        fetchAgain(4000);
+      }
     }
 
   </script>
