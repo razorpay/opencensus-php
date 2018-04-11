@@ -237,7 +237,7 @@ class KeyMetricsContainer extends Component {
           error: '',
         },
 
-        showTab: tabName !== SAVED_CARDS,
+        showTab: props.isAdmin || tabName !== SAVED_CARDS,
 
         error: '',
       };
@@ -590,8 +590,9 @@ class KeyMetricsContainer extends Component {
                *    hide the tab for the merchant
                * 3) Decide to show the tab or not only on initial load
                */
-              if (!isAdmin && isInitialLoad) {
-                tabState.data.showTab = tabState.data.percent > 15;
+              if (isInitialLoad) {
+                tabState.data.showTab =
+                  tabState.data.showTab || tabState.data.percent > 15;
 
                 if (!tabState.data.showTab) {
                   trackSavedCardsHidden(tabState.data.percent);
