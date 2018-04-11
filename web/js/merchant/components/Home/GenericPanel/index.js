@@ -143,7 +143,7 @@ class Panel extends Component {
       ...otherProps
     } = this.props;
 
-    otherProps.className = `panel dasboard-home-panel${
+    otherProps.className = `card panel dasboard-home-panel${
       className ? ' ' + className : ''
     }`;
 
