@@ -37,7 +37,9 @@ class Status
     /**
      * Indicates that the SI registration was successful
      */
-    const SI_SUCCESS            = 'Success';
+    const SI_SUCCESS            = 'success';
+
+    const SI_REGISTRATION_SUCCESS = 'your payment is scheduled successfully';
 
     /**
      * Indicates that the SI registration was a failure
@@ -67,10 +69,11 @@ class Status
         return ($status === self::Y) ? 'Success' : 'Failure';
     }
 
-    public static function isSiStatusFailure(string $status): bool
+    public static function isSiStatusSuccess(string $status): bool
     {
         $status = strtolower($status);
 
-        return (in_array($status, self::SI_FAILED_STATUSES, true) === true);
+        return (($status === self::SI_SUCCESS) or
+                ($status === self::SI_REGISTRATION_SUCCESS));
     }
 }

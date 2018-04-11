@@ -546,6 +546,8 @@ class Processor
      *
      * @param  string $id    Payment ID
      * @param  array  $input Input Array
+     *
+     * @return PublicCollection
      * @throws Exception\BadRequestException
      */
     public function transfer(string $id, array $input)
@@ -556,6 +558,7 @@ class Processor
 
         $payment = $this->retrieve($id);
 
+        /** @var Payment\Validator $validator */
         $validator = $payment->getValidator();
 
         $validator->validateIsCaptured();
@@ -566,6 +569,8 @@ class Processor
             $payment->getId(),
             function() use ($payment, $input)
             {
+                $this->repo->reload($payment);
+
                 return $this->repo->transaction(function() use ($payment, $input)
                 {
                     $transfers = (new TransferCore)->createForPayment(
