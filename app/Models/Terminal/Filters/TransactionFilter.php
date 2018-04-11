@@ -510,7 +510,7 @@ class TransactionFilter extends Terminal\Filter
 
             $issuer = $payment->card->iinRelation->getIssuer();
 
-            if (($terminal->isPinAuth() === true) and
+            if (($terminal->isPin() === true) and
                 (Gateway::isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer) === true))
             {
                 return true;
@@ -525,7 +525,7 @@ class TransactionFilter extends Terminal\Filter
         // In case, we have plan to add new auth in the filter, we will have to
         // add a condition here to remove terminals of that auth type while
         // ensuring that all other gateways are selected.
-        return ($terminal->isPinAuth() === false);
+        return ($terminal->isPin() === false);
     }
 
     protected function isTerminalWithMerchantMccAbsent(
