@@ -14,8 +14,6 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Constants\Mode as RZPMode;
 use RZP\Models\Payment\Gateway as PG;
 use RZP\Exception\GatewayErrorException;
-use RZP\Exception\PaymentVerificationException;
-use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 /**
  * This gateway was developed as per the API contract shared by the bank.
@@ -26,6 +24,8 @@ use RZP\Models\Payment\Verify\Action as VerifyAction;
  */
 class Gateway extends Base\Gateway
 {
+    const PAYEE_ID = 'Razorpay';
+
     protected $gateway = PG::NETBANKING_CSB;
 
     /**
@@ -79,7 +79,6 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
-        // We check the callback status and set the callbackSuccess property of this class
         $callbackSuccess = $this->checkCallbackSuccess($input['gateway']);
 
         //
@@ -109,7 +108,7 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public final function sendPaymentVerifyRequest(Verify $verify, bool $verifyCallback = false)
+    protected function sendPaymentVerifyRequest(Verify $verify, bool $verifyCallback = false)
     {
         $request = $this->getVerifyRequestData($verify, $verifyCallback);
 
@@ -147,7 +146,7 @@ class Gateway extends Base\Gateway
             ]);
     }
 
-    public function verifyPayment(Verify $verify)
+    protected function verifyPayment(Verify $verify)
     {
         //
         // we won't be setting amountMismatch here because verify response doesn't contain amount
@@ -186,13 +185,9 @@ class Gateway extends Base\Gateway
 
     public final function computeChecksum(array $content): string
     {
-        // Add the secret to the end of the content array to be hashed
-        array_push($content, $this->getSecret());
+        $contentToHash = array_merge($content, [$this->getSecret()]);
 
-        $contentToHash = implode('|', $content);
-
-        // Remove the last element of the array which is the checksum key
-        array_pop($content);
+        $contentToHash = $this->getStringToHash($contentToHash, '|');
 
         return (string) hexdec($this->getHashOfString($contentToHash));
     }
@@ -308,9 +303,9 @@ class Gateway extends Base\Gateway
     private function getVerifyRequestData(Verify $verify, bool $verifyCallback = false): array
     {
         $content = [
-            Constant::CHNPGSYN,
             $this->getMerchantId(),
             $this->getMerchantId2(),
+            self::PAYEE_ID,
             $verify->input['payment']['id'],
             $verify->input['payment']['amount'] / 100,
             $this->getCallbackUrl(),
@@ -338,9 +333,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            array_merge($content, ['not yet encrypted', "verify_callback = $verifyCallback"]));
+            array_merge($content, ["verify_callback = $verifyCallback"]));
 
-        // Setting verify request property of $verify
         $verify->verifyRequest = $content;
 
         $contentToEncode = $this->computeStringToEncode($content);
@@ -442,9 +436,9 @@ class Gateway extends Base\Gateway
     private function getAuthorizeRequest(array $input): array
     {
         $contentToEncrypt = [
-            RequestFields::CHNPGSYN     => Constant::CHNPGSYN,
-            RequestFields::CHNPGCODE    => $this->getMerchantId(),
-            RequestFields::PAYEE_ID     => $this->getMerchantId2(),
+            RequestFields::CHNPGSYN     => $this->getMerchantId(),
+            RequestFields::CHNPGCODE    => $this->getMerchantId2(),
+            RequestFields::PAYEE_ID     => self::PAYEE_ID,
             RequestFields::BANK_REF_NUM => $input['payment']['id'],
             RequestFields::AMOUNT       => $input['payment']['amount'] / 100,
             RequestFields::RETURN_URL   => $input['callbackUrl'],
@@ -491,7 +485,6 @@ class Gateway extends Base\Gateway
     {
         $checkSum = $this->computeChecksum($content);
 
-        // Add the checksum value to the end of the array
         array_push($content, $checkSum);
 
         return implode('|', $content);
@@ -515,7 +508,7 @@ class Gateway extends Base\Gateway
      */
     private function getMerchantId2(): string
     {
-        $merchantId2 = Constant::PID;
+        $merchantId2 = $this->config['test_merchant_id_2'];
 
         if ($this->mode === RZPMode::LIVE)
         {

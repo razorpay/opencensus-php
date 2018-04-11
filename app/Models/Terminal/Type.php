@@ -22,6 +22,9 @@ class Type
     // Terminal to be used for UPI pay
     const PAY               = 'pay';
 
+    // Terminal to be used for ATM PIN transactions
+    const PIN               = 'pin';
+
     protected static $types = [
         self::NON_RECURRING,
         self::RECURRING_3DS,
@@ -29,6 +32,7 @@ class Type
         self::IVR,
         self::NO_2FA,
         self::PAY,
+        self::PIN,
     ];
 
     protected static $bitPosition = [
@@ -38,6 +42,7 @@ class Type
         self::IVR               => 4,
         self::NO_2FA            => 5,
         self::PAY               => 6,
+        self::PIN               => 7,
     ];
 
     /**

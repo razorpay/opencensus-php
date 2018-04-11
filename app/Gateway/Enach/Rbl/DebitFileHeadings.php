@@ -21,4 +21,6 @@ class DebitFileHeadings
     const DESTINATIONBANKCODE       = 'DESTINATIONBANKCODE';
     const BENEFICIARYACNO           = 'BENEFICIARYACNO';
     const TRANSACTIONREFERENCE      = 'TRANSACTIONREFERENCE';
+    const RETURN_CODE               = 'RETURN_CODE';
+    const CODE_DESC                 = 'CODE_DESC';
 }

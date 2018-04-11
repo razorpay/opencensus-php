@@ -16,8 +16,6 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Plan\Subscription;
-use RZP\Services\Elfin\Service as Elfin;
-use RZP\Exception\BadRequestValidationFailureException;
 
 class Generator extends Base\Core
 {
@@ -140,8 +138,6 @@ class Generator extends Base\Core
      * - Creates and associates line items
      *
      * @param array $input
-     *
-     * @throws BadRequestValidationFailureException
      */
     protected function preProcessGeneration(array $input)
     {
@@ -370,6 +366,7 @@ class Generator extends Base\Core
      * Consumes customer related attributes of $input. Gets called in both create/
      * update flow. Works as follows:
      * - If customer_id is passed, use that and update invoice's copy of attributes
+     *   ELSE
      * - If customer is passed, override invoice copy of attributes with those details
      *
      * @param array $input
@@ -380,8 +377,7 @@ class Generator extends Base\Core
         {
             $this->associateCustomerWithInvoiceById($input[Entity::CUSTOMER_ID]);
         }
-
-        if (array_key_exists(Entity::CUSTOMER, $input) === true)
+        else if (array_key_exists(Entity::CUSTOMER, $input) === true)
         {
             $this->associateCustomerWithInvoiceByDetails($input[Entity::CUSTOMER]);
         }
@@ -425,14 +421,16 @@ class Generator extends Base\Core
     {
         $this->invoice->getValidator()->validateInput('editCustomerDetails', $details);
 
-        if (isset($details[Customer\Entity::BILLING_ADDRESS_ID]))
-        {
-            $billingAddressId = array_pull($details, Customer\Entity::BILLING_ADDRESS_ID);
+        $customerDetails = array_except(
+            $details,
+            [
+                Customer\Entity::BILLING_ADDRESS_ID,
+                Customer\Entity::SHIPPING_ADDRESS_ID,
+            ]);
 
-            $this->associateCustomerBillingAddressById($billingAddressId);
-        }
+        $this->processCustomerAddressDetails($details);
 
-        foreach ($details as $attribute => $value)
+        foreach ($customerDetails as $attribute => $value)
         {
             $setter = 'setCustomer' . studly_case($attribute);
 
@@ -440,22 +438,39 @@ class Generator extends Base\Core
         }
     }
 
-    protected function associateCustomerBillingAddressById(string $id = null)
+    protected function processCustomerAddressDetails(array $details)
     {
+        if (array_key_exists(Customer\Entity::BILLING_ADDRESS_ID, $details) === true)
+        {
+            $billingAddressId = $details[Customer\Entity::BILLING_ADDRESS_ID];
+
+            $this->associateCustomerAddressById(Address\Type::BILLING_ADDRESS, $billingAddressId);
+        }
+
+        if (array_key_exists(Customer\Entity::SHIPPING_ADDRESS_ID, $details) === true)
+        {
+            $shippingAddressId = $details[Customer\Entity::SHIPPING_ADDRESS_ID];
+
+            $this->associateCustomerAddressById(Address\Type::SHIPPING_ADDRESS, $shippingAddressId);
+        }
+    }
+
+    protected function associateCustomerAddressById(string $type, string $id = null)
+    {
+        // customerBillingAddress() or customerShippingAddress()
+        $relation = camel_case('customer_' . $type);
+
         if ($id === null)
         {
-            $this->invoice->customerBillingAddress()->dissociate();
+            $this->invoice->$relation()->dissociate();
 
             return;
         }
 
         $address = $this->repo
                         ->address
-                        ->findByPublicIdEntityAndTypeOrFail(
-                            $id,
-                            $this->invoice->customer,
-                            Address\Type::BILLING_ADDRESS);
+                        ->findByPublicIdEntityAndTypeOrFail($id, $this->invoice->customer, $type);
 
-        $this->invoice->customerBillingAddress()->associate($address);
+        $this->invoice->$relation()->associate($address);
     }
 }

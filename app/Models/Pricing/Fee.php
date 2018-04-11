@@ -52,7 +52,7 @@ class Fee extends Base\Core
 
     public function calculateMerchantFees($entity)
     {
-        $calculator = new FeeCalculator($entity, $this->repo);
+        $calculator = new FeeCalculator($entity);
 
         $pricingPlanId = $this->getPricingPlanId($entity->merchant);
 

@@ -12,6 +12,8 @@ use RZP\Gateway\Netbanking\Csb\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
+    const BANK_ID   = 'CSB';
+
     private $gatewayInstance = null;
 
     public function authorize($input)
@@ -75,7 +77,7 @@ class Server extends Base\Mock\Server
             ResponseFields::DATE_TIME    => $date,
             ResponseFields::TRAN_REF_NUM => 9999999999,
             ResponseFields::STATUS       => Status::SUCCESS,
-            ResponseFields::BANKID       => Constant::BANK_ID,
+            ResponseFields::BANKID       => self::BANK_ID,
             ResponseFields::CHNPGCODE    => $request[RequestFields::CHNPGCODE]
         ];
 

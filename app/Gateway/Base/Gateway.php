@@ -607,14 +607,6 @@ class Gateway
 
         $this->verifyPayment($verify);
 
-        if (($verify->match === false) and
-            ($verify->throwExceptionOnMismatch))
-        {
-            throw new Exception\PaymentVerificationException(
-                $verify->getDataToTrace(),
-                $verify);
-        }
-
         if (($verify->amountMismatch === true) and
             ($verify->throwExceptionOnMismatch))
         {
@@ -625,6 +617,14 @@ class Gateway
                     'gateway'    => $this->gateway
                 ]
             );
+        }
+
+        if (($verify->match === false) and
+            ($verify->throwExceptionOnMismatch))
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify);
         }
 
         return $verify->getDataToTrace();
@@ -731,10 +731,8 @@ class Gateway
         {
             return $this->getTestSecret();
         }
-        else
-        {
-            return $this->getLiveSecret();
-        }
+
+        return $this->getLiveSecret();
     }
 
     protected function getTestSecret()

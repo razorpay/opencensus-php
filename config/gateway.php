@@ -251,7 +251,7 @@ return [
     ],
 
     'aeps_icici' => [
-        'terminal_id'                  => env('AEPS_TERMINAL_ID'),
+        'terminal_id'                  => env('AEPS_ICICI_TEST_TERMINAL_ID'),
         'channel_code'                 => env('AEPS_ICICI_CHANNEL_CODE'),
         'refund_mcc_test'              => env('AEPS_ICICI_REFUND_MCC_TEST'),
         'refund_mcc_live'              => env('AEPS_ICICI_REFUND_MCC_LIVE'),
@@ -452,8 +452,9 @@ return [
     ],
 
     'netbanking_csb' => [
-        'test_merchant_id'  => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),
-        'test_hash_secret'  => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id'    => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id_2'  => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID_2'),
+        'test_hash_secret'    => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
     ],
 
     'sharp' => [

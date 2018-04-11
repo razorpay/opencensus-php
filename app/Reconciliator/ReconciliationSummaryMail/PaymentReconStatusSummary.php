@@ -12,9 +12,9 @@ class PaymentReconStatusSummary extends DailyReconStatusSummary
 
         foreach ($paymentSummary as $entry)
         {
-            $date = $this->getFormattedDate($entry['date']);
+            $this->addExtraColumns($entry);
 
-            $formattedSummary[$date][] =  $entry;
+            $formattedSummary[$entry['date']][] =  $entry;
         }
 
         return $formattedSummary;
