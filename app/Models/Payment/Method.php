@@ -25,11 +25,24 @@ class Method
         self::EMI           => 'EMI',
         self::TRANSFER      => 'Marketplace Transfer',
         self::BANK_TRANSFER => 'Bank Transfer',
-        // TODO: Uncomment this when we actually want to start
-        // using emandate as a method Currently we are just
-        // accepting emandate as a method from the request
-        // but not actually setting the method as emandate.
-        self::EMANDATE      => 'eMandate',
+        self::EMANDATE      => 'E-Mandate',
+    ];
+
+    public static $bankMethods = [
+        self::NETBANKING,
+        self::AEPS,
+        self::EMANDATE,
+        self::UPI,
+    ];
+
+    /**
+     * Payment methods where amount validation is skipped
+     *
+     * @var array
+     */
+    public static $methodsWithoutAmountValidation = [
+        self::TRANSFER,
+        self::BANK_TRANSFER,
     ];
 
     protected static $asynchronous = [

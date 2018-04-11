@@ -13,7 +13,9 @@ use RZP\Models;
  * @property Models\Plan\Subscription\Repository    $subscription
  * @property Models\Terminal\Repository             $terminal
  * @property Models\Invoice\Repository              $invoice
+ * @property Models\Tax\Repository                  $tax
  * @property Models\Payment\Repository              $payment
+ * @property Models\Merchant\Repository             $merchant
  * @property Models\Batch\Repository                $batch
  * @property Models\BankAccount\Repository          $bank_account
  * @property Models\Merchant\Account\Repository     $account

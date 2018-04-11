@@ -46,7 +46,7 @@ class UpiFailedRefundFileTest extends TestCase
             $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
         }
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $data = $this->startTest();
 
@@ -63,7 +63,7 @@ class UpiFailedRefundFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(FailedRefundMail::class, function ($mail)
+        Mail::assertQueued(FailedRefundMail::class, function ($mail)
         {
             $this->assertNotEmpty($mail->attachments);
 
@@ -73,7 +73,7 @@ class UpiFailedRefundFileTest extends TestCase
 
             $fileName = 'Icici_Upi_Failed_Refunds_test_'. $date  . '.csv';
 
-            $subject = 'UPI Icici Failed refunds file for ' . $date;
+            $subject = 'UPI Icici failed refunds file for ' . $date;
 
             $this->assertEquals($subject, $mail->subject);
 
@@ -89,7 +89,7 @@ class UpiFailedRefundFileTest extends TestCase
     {
         Mail::fake();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }

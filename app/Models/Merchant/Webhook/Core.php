@@ -4,14 +4,16 @@ namespace RZP\Models\Merchant\Webhook;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\Webhook;
-use Crypt;
 
 class Core extends Base\Core
 {
-    public function createWebhook($merchant, $input)
+    public function createWebhook(Merchant\Entity $merchant, array $input)
     {
-        $webhooks = $this->getWebhooks($merchant);
+        $entityId = isset($input[Entity::ENTITY_ID]) ? $input[Entity::ENTITY_ID] : null;
+
+        $webhooks = $this->getWebhooksWithEntityId($merchant, $entityId);
 
         if ($webhooks->count() !== 0)
         {
@@ -28,7 +30,7 @@ class Core extends Base\Core
         return $webhook;
     }
 
-    public function editWebhook($merchant, $webhookId, $input)
+    public function editWebhook(Merchant\Entity $merchant, string $webhookId, array $input)
     {
         $webhook = $this->repo->webhook->findByIdAndMerchant($webhookId, $merchant);
 
@@ -39,8 +41,20 @@ class Core extends Base\Core
         return $webhook;
     }
 
-    public function getWebhooks($merchant)
+    public function fetchApplicableWebhookEvents(Merchant\Entity $merchant)
     {
-        return $this->repo->webhook->findMultipleByMerchant($merchant);
+        return array_keys(Event::filterByFeatures(
+                                    array_flip(Event::getLaunchedEventNames()),
+                                    $merchant->getEnabledFeatures()));
+    }
+
+    public function getWebhooks(Merchant\Entity $merchant)
+    {
+        return $this->repo->webhook->fetch([], $merchant->getId());
+    }
+
+    public function getWebhooksWithEntityId(Merchant\Entity $merchant, string $entityId = null)
+    {
+        return $this->repo->webhook->findMultipleByMerchantAndEntityId($merchant, $entityId);
     }
 }

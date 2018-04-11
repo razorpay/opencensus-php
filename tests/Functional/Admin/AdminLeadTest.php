@@ -57,7 +57,7 @@ class AdminLeadTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertSent(MerchantInvitationMail::class, function ($mail)
+        Mail::assertQueued(MerchantInvitationMail::class, function ($mail)
         {
             $data = $mail->viewData;
 
@@ -100,7 +100,7 @@ class AdminLeadTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }

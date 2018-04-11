@@ -35,6 +35,13 @@ class Reconciliator
      */
     protected $shouldAddHeaders = true;
 
+    /**
+     * Can be overridden in the child class. This variable
+     * is used to set the sheet name of the excel file generated.
+     * @var string
+     */
+    protected $sheetName = 'Sheet 1';
+
     protected $fileExtension = FileStore\Format::XLSX;
 
     public function __construct()
@@ -93,6 +100,7 @@ class Reconciliator
         $creator->extension($this->fileExtension)
                 ->content($content)
                 ->name($this->fileToWriteName)
+                ->sheetName($this->sheetName)
                 ->store($store)
                 ->type($type)
                 ->headers($this->shouldAddHeaders)

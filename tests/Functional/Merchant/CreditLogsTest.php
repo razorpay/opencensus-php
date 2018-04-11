@@ -18,8 +18,11 @@ class CreditLogsTest extends TestCase
 
         parent::setUp();
 
-        // All API calls to Credits have to be through admin account.
-        $this->ba->appAuth();
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
     }
 
     // create fee credits and fetch using get route
@@ -87,6 +90,7 @@ class CreditLogsTest extends TestCase
         $creditslog = $this->fixtures->create('credits', ['value' => 90, 'type' => Credits\Type::FEE]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/merchants/10000000000000/credits/' . $creditslog->getId();
+
         $this->startTest();
     }
 

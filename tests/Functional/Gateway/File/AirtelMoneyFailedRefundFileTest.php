@@ -61,14 +61,14 @@ class AirtelMoneyFailedRefundFileTest extends TestCase
         $file = $this->getLastEntity('file_store', true);
 
         $expectedFileContent = [
-            'type'        => 'airtelmoney_wallet_refund',
+            'type'        => 'airtelmoney_wallet_failed_refund',
             'entity_type' => 'gateway_file',
             'entity_id'   => $entity_id,
             'extension'   => 'csv',
         ];
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(FailedRefund::class, function ($mail)
+        Mail::assertQueued(FailedRefund::class, function ($mail)
         {
             $this->assertNotEmpty($mail->attachments);
 
@@ -78,7 +78,7 @@ class AirtelMoneyFailedRefundFileTest extends TestCase
 
             $fileName = 'Airtelmoney_Wallet_Failed_Refunds_test_'. $date  . '.csv';
 
-            $subject = 'Airtel Money Failed refunds file for ' . $date;
+            $subject = 'Airtel Money failed refunds file for ' . $date;
 
             $this->assertEquals($subject, $mail->subject);
 

@@ -29,6 +29,60 @@ return [
         'entity' => 'payment',
     ],
 
+    'testIntentPaymentWithVpa' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The vpa field is not required and not shouldn\'t be sent.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testUpiAmountCap' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Maximum amount for UPI payment can be Rs 20000',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testTpvPayment' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'upi',
+                'bank'           => 'RATN',
+                'account_number' => '04030403040304',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
     'testFailedVpaValidation' => [
         'response'  => [
             'content'     => [
@@ -41,6 +95,22 @@ return [
         ],
         'exception' => [
             'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA
+        ],
+    ],
+
+    'testVpaWithoutPspValidation' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA
         ],
     ],
@@ -78,9 +148,9 @@ return [
     ],
 
     'testCollectRejectedFailure' => [
-        'response'  =>  [
-            'content'   =>  [
-                'error' =>  [
+        'response'  => [
+            'content'   => [
+                'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED
                 ]

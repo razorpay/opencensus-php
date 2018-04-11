@@ -70,6 +70,8 @@ class CreateFundTransferAttemptsTable extends Migration
             $table->string(FundTransferAttempt::BATCH_FUND_TRANSFER_ID, BatchFundTransfer::ID_LENGTH)
                   ->nullable();
 
+            $table->integer(FundTransferAttempt::INITIATE_AT);
+
             $table->integer(FundTransferAttempt::CREATED_AT);
 
             $table->integer(FundTransferAttempt::UPDATED_AT);
@@ -79,6 +81,8 @@ class CreateFundTransferAttemptsTable extends Migration
             $table->index([FundTransferAttempt::SOURCE_ID, FundTransferAttempt::SOURCE_TYPE]);
 
             $table->index(FundTransferAttempt::CHANNEL);
+
+            $table->index(FundTransferAttempt::INITIATE_AT);
 
             $table->index(FundTransferAttempt::CREATED_AT);
 

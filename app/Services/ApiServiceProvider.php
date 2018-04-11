@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
 use RZP\Models\Batch;
+use RZP\Models\Order;
 use RZP\Models\Payout;
 use RZP\Models\Dispute;
 use RZP\Models\Invoice;
@@ -21,13 +22,15 @@ use RZP\Models\Promotion;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
+use RZP\Constants\Entity as E;
+use RZP\Models\VirtualAccount;
 use RZP\Models\Admin as Admin;
-use RZP\Models\Workflow\Action;
 use RZP\Gateway\GatewayManager;
+use RZP\Models\Workflow\Action;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Gateway\File as GatewayFile;
-
+use RZP\Models\Merchant\Request as MerchantRequest;
 
 class ApiServiceProvider extends BaseServiceProvider
 {
@@ -37,6 +40,21 @@ class ApiServiceProvider extends BaseServiceProvider
      * @var bool
      */
     protected $defer = true;
+
+    /**
+     * Registering observers for eloquent events here.
+     * Used for invalidating cached entities on update
+     */
+    public function boot()
+    {
+        foreach (E::CACHED_ENTITIES as $entity => $_)
+        {
+            $entityClass = E::getEntityClass($entity);
+            $entityObserverClass = E::getEntityObserverClass($entity);
+
+            $entityClass::observe($entityObserverClass);
+        }
+    }
 
     /**
      * Register the service provider.
@@ -128,10 +146,29 @@ class ApiServiceProvider extends BaseServiceProvider
             return new HarvesterClient($app);
         });
 
+        $this->app->singleton('ufh.service', function ($app)
+        {
+            $ufhServiceMock = $app['config']->get('applications.ufh.mock');
+
+            if ($ufhServiceMock === true)
+            {
+                return new Mock\UfhService($app);
+            }
+
+            return new UfhService($app);
+        });
+
         $this->app->singleton('gateway_file', function($app)
         {
             return new GatewayFileManager($app);
         });
+
+        $this->app->singleton('razorx', function($app)
+        {
+            return new RazorXClient($app);
+        });
+
+        $this->registerShield();
 
         $this->registerApiMutex();
 
@@ -158,6 +195,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerHttplugMockClient();
 
         $this->registerGeolocation();
+
+        $this->registerPincodeSearch();
     }
 
     /**
@@ -189,6 +228,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'workflow',
             'authservice',
             'sns',
+            'pincodesearch',
+            'razorx',
         ];
     }
 
@@ -281,42 +322,46 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         Relation::morphMap([
             // heimdall
-            'org'             => Admin\Org\Entity::class,
-            'group'           => Admin\Group\Entity::class,
-            'admin'           => Admin\Admin\Entity::class,
-            'role'            => Admin\Role\Entity::class,
-            'permission'      => Admin\Permission\Entity::class,
+            'org'              => Admin\Org\Entity::class,
+            'group'            => Admin\Group\Entity::class,
+            'admin'            => Admin\Admin\Entity::class,
+            'role'             => Admin\Role\Entity::class,
+            'permission'       => Admin\Permission\Entity::class,
 
             // line items
-            'invoice'         => Invoice\Entity::class,
-            'addon'           => Addon\Entity::class,
+            'invoice'          => Invoice\Entity::class,
+            'addon'            => Addon\Entity::class,
 
             // transfers
-            'transfer'        => Transfer\Entity::class,
-            'reversal'        => Reversal\Entity::class,
-            'customer'        => Customer\Entity::class,
+            'transfer'         => Transfer\Entity::class,
+            'reversal'         => Reversal\Entity::class,
+            'customer'         => Customer\Entity::class,
 
             // file store
-            'merchant'        => Merchant\Entity::class,
-            'merchant_detail' => Merchant\Detail\Entity::class,
-            'batch'           => Batch\Entity::class,
-            'gateway_file'    => GatewayFile\Entity::class,
+            'merchant'         => Merchant\Entity::class,
+            'merchant_detail'  => Merchant\Detail\Entity::class,
+            'batch'            => Batch\Entity::class,
+            'gateway_file'     => GatewayFile\Entity::class,
 
             // transaction
-            'adjustment'      => Adjustment\Entity::class,
-            'payment'         => Payment\Entity::class,
-            'refund'          => Payment\Refund\Entity::class,
-            'settlement'      => Settlement\Entity::class,
-            'payout'          => Payout\Entity::class,
+            'adjustment'       => Adjustment\Entity::class,
+            'payment'          => Payment\Entity::class,
+            'order'            => Order\Entity::class,
+            'refund'           => Payment\Refund\Entity::class,
+            'settlement'       => Settlement\Entity::class,
+            'payout'           => Payout\Entity::class,
 
-            'bank_account'    => BankAccount\Entity::class,
+            'bank_account'     => BankAccount\Entity::class,
+            'virtual_account'  => VirtualAccount\Entity::class,
 
-            'subscription'    => Subscription\Entity::class,
-            'promotion'       => Promotion\Entity::class,
+            'subscription'     => Subscription\Entity::class,
+            'promotion'        => Promotion\Entity::class,
 
-            'dispute'         => Dispute\Entity::class,
+            'dispute'          => Dispute\Entity::class,
 
-            'workflow_action' => Action\Entity::class,
+            'workflow_action'  => Action\Entity::class,
+
+            'merchant_request' => MerchantRequest\Entity::class,
         ]);
     }
 
@@ -400,5 +445,29 @@ class ApiServiceProvider extends BaseServiceProvider
         $apiProcessor = new RZP\Trace\ApiTraceProcessor($this->app);
 
         $this->app['trace']->pushProcessor($apiProcessor);
+    }
+
+    protected function registerPincodeSearch()
+    {
+        $this->app->singleton('pincodesearch', function($app)
+        {
+            $mock = $app['config']->get('applications.pincodesearch.mock');
+
+            $implementation = $mock ? Mock\PincodeSearch::class : PincodeSearch::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerShield()
+    {
+        $this->app->singleton('shield', function($app)
+        {
+            $mock = $app['config']->get('applications.shield.mock');
+
+            $implementation = $mock ? Mock\ShieldClient::class : ShieldClient::class;
+
+            return new $implementation($app);
+        });
     }
 }

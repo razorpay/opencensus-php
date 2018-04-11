@@ -45,16 +45,15 @@ class Netbanking
         IFSC::ICIC,
         IFSC::HDFC,
         IFSC::CORP,
-        IFSC::BARB,
         IFSC::UTIB,
         IFSC::KKBK,
         IFSC::AIRP,
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
-        IFSC::PUNB,
         IFSC::ORBC,
-        // self::BARB_R,
+        self::PUNB_R,
+        self::BARB_R,
     ];
 
     protected static $selfCorp = [
@@ -85,7 +84,7 @@ class Netbanking
         IFSC::JAKA,
         IFSC::KKBK,
         IFSC::MAHB,
-        IFSC::PUNB,
+        self::PUNB_R,
         IFSC::UBIN,
         IFSC::UTIB,
         IFSC::VIJB,
@@ -263,8 +262,6 @@ class Netbanking
 
     protected static $defaultDisabled = [
         IFSC::AIRP,
-        IFSC::PUNB,
-        IFSC::BARB
     ];
 
     protected static $ebsTPV = [];

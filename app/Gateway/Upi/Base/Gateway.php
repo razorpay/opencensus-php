@@ -34,9 +34,7 @@ class Gateway extends Base\Gateway
 
                 break;
 
-            case Base\Action::AUTHORIZE:
             default:
-
                 $entity->setAmount($this->input['payment']['amount']);
         }
 

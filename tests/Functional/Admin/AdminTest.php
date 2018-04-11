@@ -69,7 +69,7 @@ class AdminTest extends TestCase
 
         $this->assertEquals($result['groups'][0]['id'], $group);
 
-        Mail::assertSent(AdminMail\Create::class, function ($mail)
+        Mail::assertQueued(AdminMail\Create::class, function ($mail)
         {
             $testData = [
                 'user' => [
@@ -268,7 +268,7 @@ class AdminTest extends TestCase
             'admin_id'  => $admin->getId(),
         ]);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $result = $this->startTest();
 
@@ -359,53 +359,6 @@ class AdminTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetMerchantIds()
-    {
-        $grp = $this->fixtures->create(
-            'group', ['org_id' => $this->orgId]);
-        $subGrp = $this->fixtures->create(
-            'group', ['org_id' => $this->orgId]);
-
-        $subGrp->parents()->attach($grp);
-
-        $merchantsGrp = $this->fixtures->create(
-            'merchant', ['org_id' => $this->orgId]);
-        $merchantsSubGrp = $this->fixtures->create(
-            'merchant', ['org_id' => $this->orgId]);
-
-        $grp->merchants()->attach($merchantsGrp);
-        $subGrp->merchants()->attach($merchantsSubGrp);
-
-        $adminGrp = $this->fixtures->create(
-            'admin', ['org_id' => $this->orgId]);
-        $adminSubGrp = $this->fixtures->create(
-            'admin', ['org_id' => $this->orgId]);
-
-        $adminGrp->merchants()->attach($merchantsGrp);
-        $adminSubGrp->merchants()->attach($merchantsSubGrp);
-
-        $grp->admins()->attach($adminGrp);
-        $subGrp->admins()->attach($adminSubGrp);
-
-        $merchantsAdminGrp = $this->fixtures->create(
-            'merchant', ['org_id' => $this->orgId]);
-        $merchantsAdminSubGrp = $this->fixtures->create(
-            'merchant', ['org_id' => $this->orgId]);
-
-        $adminGrp->merchants()->attach($merchantsAdminGrp);
-        $adminSubGrp->merchants()->attach($merchantsAdminSubGrp);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId(), $adminGrp->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $result = $this->startTest();
-
-        $this->assertEquals(count($result), 4);
-    }
-
     public function testLoginUserDoesNotExist()
     {
         $this->ba->appAuth();
@@ -493,7 +446,7 @@ class AdminTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertSent(AdminMail\ForgotPassword::class, function ($mail)
+        Mail::assertQueued(AdminMail\ForgotPassword::class, function ($mail)
         {
             $this->assertArrayHasKey('firstName', $mail->viewData);
 
@@ -875,7 +828,7 @@ class AdminTest extends TestCase
 
     public function testConfigKeys()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $request = $this->testData['testConfigKeysSet']['request'];
 
@@ -920,7 +873,8 @@ class AdminTest extends TestCase
         $result = $this->startTest();
 
         $this->assertCount(10, $result['fields']);
-        $this->assertCount(126, $result['entities']);
+
+        $this->assertCount(134, $result['entities']);
     }
 
     public function testFetchSoftDeletedEntityForAdmin()
@@ -1044,6 +998,16 @@ class AdminTest extends TestCase
         ];
         $this->testData[__FUNCTION__]['response'] = $response;
 
+        $this->startTest();
+    }
+
+    public function testDbMetaDataQuery()
+    {
+        $this->startTest();
+    }
+
+    public function testDbMetaDataQueryWithInvalidQuery()
+    {
         $this->startTest();
     }
 }

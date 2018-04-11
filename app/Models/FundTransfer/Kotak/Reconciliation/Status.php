@@ -2,8 +2,25 @@
 
 namespace RZP\Models\FundTransfer\Kotak\Reconciliation;
 
-class Status
+use RZP\Models\FundTransfer\Base\Reconciliation\Status as BaseStatus;
+use RZP\Models\FundTransfer\Kotak\Headings;
+
+class Status extends BaseStatus
 {
     const PROCESSED = 'P';
     const CANCELLED = 'C';
+
+    public static function getSuccessfulStatus(): array
+    {
+        return [
+            self::PROCESSED
+        ];
+    }
+
+    public static function getFailureStatus(): array
+    {
+        return [
+            self::CANCELLED
+        ];
+    }
 }

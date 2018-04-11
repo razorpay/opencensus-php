@@ -113,6 +113,37 @@ class TransferTest extends TestCase
         $this->checkTransferAndTxnRecords($transfer, $transferData, $txnData);
     }
 
+    public function testTransferToAccountPricingPostpaid()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['fee_model' => 'postpaid']);
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId(self::STANDARD_PRICING_PLAN_ID);
+
+        $transfer = $this->createTransfer('account');
+
+        $tax = 4;
+        $expectedFee = 20 + $tax;
+
+        $transferData = [
+            'fees'  => $expectedFee,
+            'tax'   => $tax
+        ];
+
+        $txnData = [
+            'amount'      => $transfer['amount'],
+            'fee'         => $expectedFee,
+            'tax'         => $tax,
+            'debit'       => $transfer['amount'],
+            'fee_model'   => 'postpaid',
+            'credit_type' => 'default',
+            'fee_credits' => 0,
+        ];
+
+        $this->checkTransferAndTxnRecords($transfer, $transferData, $txnData);
+    }
+
     public function testTransferToAccountWithFeeCredits()
     {
         $this->fixtures->create('pricing:standard_plan');
@@ -194,11 +225,47 @@ class TransferTest extends TestCase
 
     public function testLiveModeTransferToNonActivatedAccount()
     {
-        $this->fixtures->merchant->edit('10000000000000', ['activated' => true]);
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => true]);
+
+        $this->fixtures->on('live')->merchant->editBalance(20000);
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__], function()
         {
             $this->createTransfer('account', [], 'live');
+        });
+    }
+
+    public function testDirectTransferAmountOverMaxAmount()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 100]);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function()
+        {
+            $this->createTransfer('account');
+        });
+    }
+
+    public function testTransferInsufficientBalance()
+    {
+        $this->fixtures->merchant->editBalance(100);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function()
+        {
+            $this->createTransfer('account', []);
+        });
+    }
+
+    public function testTransferWithFeeInsufficientBalance()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId(self::STANDARD_PRICING_PLAN_ID);
+
+        $this->fixtures->merchant->editBalance(1000);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function()
+        {
+            $this->createTransfer('account', []);
         });
     }
 
@@ -271,6 +338,15 @@ class TransferTest extends TestCase
         $this->assertEquals(false, $patch['on_hold']);
 
         $this->checkPaymentAndTxnRecords($patch);
+    }
+
+    public function testTransferWithoutPaymentAmountValidation()
+    {
+        $this->fixtures->merchant->edit($this->linkedAccountId, ['max_payment_amount' => 100]);
+
+        $transfer = $this->createTransfer('account');
+
+        $this->assertEquals(1000, $transfer['amount']);
     }
 
     public function testPatchTransferOnHoldTxnSettled()

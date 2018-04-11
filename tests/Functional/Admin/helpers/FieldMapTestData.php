@@ -7,7 +7,7 @@ use RZP\Error\PublicErrorCode;
 return [
     'testCreateFieldMap' => [
         'request' => [
-            'url' => '/orgs/%s/field-map',
+            'url' => '/field-map',
             'method' => 'post',
             'content' => [
                 'entity_name' => 'org',
@@ -34,7 +34,7 @@ return [
 
     'testInvalidFieldMap' => [
         'request' => [
-            'url' => '/orgs/%s/field-map',
+            'url' => '/field-map',
             'method' => 'post',
             'content' => [
                 'entity_name' => 'org',
@@ -62,7 +62,7 @@ return [
 
     'testInvalidEntityForFieldMap' => [
         'request' => [
-            'url' => '/orgs/%s/field-map',
+            'url' => '/field-map',
             'method' => 'post',
             'content' => [
                 'entity_name' => 'invalid_entity',
@@ -90,7 +90,7 @@ return [
 
     'testGetFieldMap' => [
         'request' => [
-            'url' => '/orgs/%s/field-map/%s',
+            'url' => '/field-map/%s',
             'method' => 'get',
             'content' => [],
         ],
@@ -108,7 +108,7 @@ return [
 
     'testPutFieldMap' => [
         'request' => [
-            'url' => '/orgs/%s/field-map/%s',
+            'url' => '/field-map/%s',
             'method' => 'put',
             'content' => [
                 'fields' => [
@@ -133,7 +133,7 @@ return [
 
     'testDeleteFieldMap' => [
         'request' => [
-            'url' => '/orgs/%s/field-map/%s',
+            'url' => '/field-map/%s',
             'method' => 'delete',
             'content' => [],
         ],
@@ -147,7 +147,7 @@ return [
 
     'testFieldMapMultiple' => [
         'request' => [
-            'url' => '/orgs/%s/field-map',
+            'url' => '/field-map',
             'method' => 'get',
             'content' => [],
         ],
@@ -159,7 +159,7 @@ return [
 
     'testGetFieldMapByEntity' => [
         'request' => [
-            'url' => '/orgs/%s/field-map/entity/%s',
+            'url' => '/field-map/entity/%s',
             'method' => 'get',
             'content' => [],
         ],
@@ -177,7 +177,7 @@ return [
 
     'testCreateFieldMapForPasswordAuth' => [
         'request' => [
-            'url' => '/orgs/%s/field-map',
+            'url' => '/field-map',
             'method' => 'post',
             'content' => [
                 'entity_name' => 'admin',

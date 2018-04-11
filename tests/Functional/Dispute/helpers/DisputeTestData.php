@@ -19,12 +19,11 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id'        => '10000000000000',
                 'amount'             => 100,
                 'currency'           => 'INR',
                 'phase'              => 'chargeback',
                 'status'             => 'open',
-                'reason_description' => 'This is a serious fraud',
+                'reason_code'        => 'KFRER_R',
             ],
         ],
     ],
@@ -43,12 +42,11 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id'        => '10000000000000',
                 'amount'             => 100,
                 'currency'           => 'INR',
                 'phase'              => 'chargeback',
                 'status'             => 'open',
-                'reason_description' => 'This is a serious fraud',
+                'reason_code'        => 'KFRER_R',
             ],
         ],
     ],
@@ -68,12 +66,59 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id'        => '10000000000000',
                 'amount'             => 100,
                 'currency'           => 'INR',
                 'phase'              => 'chargeback',
                 'status'             => 'open',
-                'reason_description' => 'This is a serious fraud',
+                'reason_code'        => 'KFRER_R',
+            ],
+        ],
+    ],
+
+    'testDisputeCreatedWebhook' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id' => '4342frf34r',
+                'raised_on'          => '946684800',
+                'expires_on'         => 946684801,
+                'amount'             => 50000,
+                'deduct_at_onset'    => 0,
+                'phase'              => 'chargeback',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testDisputeCreatedWebhookEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payment.dispute.created',
+        'contains' => [
+            'payment',
+            'dispute',
+        ],
+        'payload' => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 50000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'captured'   => true,
+                ],
+            ],
+            'dispute' => [
+                'entity' => [
+                    'entity'             => 'dispute',
+                    'amount'             => 50000,
+                    'currency'           => 'INR',
+                    'gateway_dispute_id' => '4342frf34r',
+                    'respond_by'         => 946684801,
+                    'status'             => 'open',
+                    'reason_code'        => 'KFRER_R',
+                ],
             ],
         ],
     ],
@@ -92,12 +137,11 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id'        => '10000000000000',
                 'amount'             => 100,
                 'currency'           => 'INR',
                 'phase'              => 'chargeback',
                 'status'             => 'open',
-                'reason_description' => 'This is a serious fraud',
+                'reason_code'        => 'KFRER_R',
             ],
         ],
     ],
@@ -309,12 +353,11 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id'        => '10000000000000',
                 'amount'             => 100,
                 'currency'           => 'INR',
                 'phase'              => 'chargeback',
                 'status'             => 'open',
-                'reason_description' => 'This is a serious fraud',
+                'reason_code'        => 'KFRER_R',
             ],
         ],
     ],
@@ -459,7 +502,7 @@ return [
 
     'testDisputeEdit' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                 => 'under_review',
                 'expires_on'             => '1912162918',
@@ -468,7 +511,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id' => '10000000000000',
                 'amount'      => 1000000,
                 'currency'    => 'INR',
                 'phase'       => 'chargeback',
@@ -479,7 +521,7 @@ return [
 
     'testDisputeEditWon' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                 => 'won',
                 'expires_on'             => '1912162918',
@@ -488,7 +530,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id' => '10000000000000',
                 'amount'      => 1000000,
                 'currency'    => 'INR',
                 'phase'       => 'chargeback',
@@ -499,7 +540,7 @@ return [
 
     'testDisputeEditClose' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                 => 'closed',
                 'expires_on'             => '1912162918',
@@ -508,7 +549,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id' => '10000000000000',
                 'amount'      => 1000000,
                 'currency'    => 'INR',
                 'phase'       => 'chargeback',
@@ -519,14 +559,13 @@ return [
 
     'testDisputeEditDeductOnLost' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status' => 'lost',
             ],
         ],
         'response' => [
             'content' => [
-                'merchant_id' => '10000000000000',
                 'amount'      => 1000000,
                 'currency'    => 'INR',
                 'phase'       => 'chargeback',
@@ -535,16 +574,60 @@ return [
         ],
     ],
 
+    'testMerchantEditWhenDisputeUnderReview' => [
+        'request'   => [
+            'method'  => 'post',
+            'content' => [
+                'accept_dispute' => true
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Disputes can only be modified when in open status',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantEditAcceptAndSubmit' => [
+        'request'   => [
+            'method'  => 'post',
+            'content' => [
+                'submit'         => true,
+                'accept_dispute' => true
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only one of the fields `accept_dispute` and `submit` can be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testDisputeEditDoNotDeductOnLostIfDeducted' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status' => 'lost',
             ],
         ],
         'response' => [
             'content' => [
-                'merchant_id' => '10000000000000',
                 'amount'      => 1000000,
                 'currency'    => 'INR',
                 'phase'       => 'chargeback',
@@ -555,7 +638,7 @@ return [
 
     'testDisputeEditInvalidStatus' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                 => 'review',
                 'expires_on'             => '1912162918',
@@ -566,7 +649,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Not a valid dispute status',
+                    'description' => 'Not a valid dispute status: review',
                 ],
             ],
             'status_code' => 400,
@@ -579,7 +662,7 @@ return [
 
     'testDisputeEditExtraInput' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                 => 'under_review',
                 'expires_on'             => '1912162918',
@@ -604,7 +687,7 @@ return [
 
     'testDisputeEditClosed' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                 => 'under_review',
                 'expires_on'             => '1912162918',
@@ -628,7 +711,7 @@ return [
 
     'testDisputeReversalWinLogic' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'        => 'won'
             ],
@@ -640,7 +723,7 @@ return [
 
     'testDisputeReversalLostLogic' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'        => 'lost'
             ],
@@ -652,7 +735,7 @@ return [
 
     'testDisputeEditForNoInitialParent' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
             ],
         ],
@@ -663,7 +746,7 @@ return [
 
     'testDisputeEditWithExistingParent' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
             ],
         ],
@@ -676,7 +759,7 @@ return [
 
     'testDisputeEditReplaceParent' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
             ],
         ],
@@ -687,7 +770,7 @@ return [
 
     'testDisputeEditReplaceParentWithAlreadyLinkedParent' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
             ],
         ],
@@ -708,7 +791,7 @@ return [
 
     'testDisputeLostPartiallyAccepted' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                    => 'lost',
             ],
@@ -720,7 +803,7 @@ return [
 
     'testDisputeLostPartiallyAcceptedForNoOnsetDeduct' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                    => 'lost',
             ],
@@ -732,7 +815,7 @@ return [
 
     'testDisputeLostPartiallyAcceptedWithInvalidAcceptedAmount' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                    => 'lost',
             ],
@@ -754,7 +837,7 @@ return [
 
     'testDisputeLostPartiallyAcceptedWithZeroAcceptedAmount' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                    => 'lost',
                 'accepted_amount'           => 0,
@@ -777,7 +860,7 @@ return [
 
     'testNonTransactionalDisputeInvalidClose' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'        => 'lost'
             ],
@@ -807,7 +890,6 @@ return [
                 'count'         => 2,
                 'items'         => [
                     [
-                        'merchant_id'       => '10000000000000',
                         'amount'            => 1000000,
                         'currency'          => 'INR',
                         'reason_code'       => 'SOMETHING_BAD',
@@ -815,12 +897,47 @@ return [
                         'phase'             => 'chargeback',
                     ],
                     [
-                        'merchant_id'       => '10000000000000',
                         'amount'            => 1000000,
                         'currency'          => 'INR',
                         'reason_code'       => 'SOMETHING_BAD',
                         'status'            => 'open',
                         'phase'             => 'chargeback',
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testDisputeFetchForAdmin'    => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/admin/dispute?expand[]=payment',
+        ],
+        'response'  => [
+            'content'       => [
+                'count'         => 2,
+                'items'         => [
+                    [
+                        'amount'            => 1000000,
+                        'currency'          => 'INR',
+                        'reason_code'       => 'SOMETHING_BAD',
+                        'status'            => 'open',
+                        'phase'             => 'chargeback',
+                        'payment'           => [
+                            'status'          => 'captured',
+                            'amount_refunded' => 0,
+                        ],
+                    ],
+                    [
+                        'amount'            => 1000000,
+                        'currency'          => 'INR',
+                        'reason_code'       => 'SOMETHING_BAD',
+                        'status'            => 'open',
+                        'phase'             => 'chargeback',
+                        'payment'           => [
+                            'status'          => 'captured',
+                            'amount_refunded' => 0,
+                        ],
                     ],
                 ]
             ],
@@ -833,15 +950,188 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id'   => '10000000000000',
-                'parent_id'     => null,
                 'amount'        => 1000000,
                 'currency'      => 'INR',
                 'reason_code'   => 'SOMETHING_BAD',
                 'status'        => 'open',
                 'phase'         => 'chargeback',
+                'respond_by'    => 12345678,
             ],
             'status_code' => 200,
+        ],
+    ],
+
+    'testEditDisputeMerchantDocumentUploadByProxy' => [
+        'request' => [
+            'content' => [
+                'upload_files'  =>  [
+                    [
+                        'name'      => 'myfile1.png',
+                        'category'  => 'explanation_letter',
+                    ],
+                    [
+                        'name'      => 'myfile2.pdf',
+                        'category'  => 'delivery_proof',
+                    ],
+                ],
+            ],
+            'method' => 'post',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'dispute',
+                'amount'      => 1000000,
+                'currency'    => 'INR',
+                'reason_code' => 'SOMETHING_BAD',
+                'status'      => 'open',
+                'phase'       => 'chargeback',
+                'files'       => [
+                    'entity' => 'collection',
+                    'count'  => 2,
+                    'items'  => [
+                        [
+                            'file_id'  => 'rzp_file_mock_id_1000000_explanation_letter',
+                            'name'     => 'myfile1.png',
+                            'category' => 'explanation_letter',
+                        ],
+                        [
+                            'file_id'  => 'rzp_file_mock_id_1000000_delivery_proof',
+                            'name'     => 'myfile2.pdf',
+                            'category' => 'delivery_proof',
+                        ],
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testDisputeFetchWithFiles' => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/disputes',
+        ],
+        'response'  => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'amount'      => 1000000,
+                        'currency'    => 'INR',
+                        'reason_code' => 'SOMETHING_BAD',
+                        'status'      => 'open',
+                        'phase'       => 'chargeback',
+                        'files'       => [
+                            'entity' => 'collection',
+                            'count'  => 2,
+                            'items'  => [
+                                [
+                                    'file_id'  => 'rzp_file_mock_id_1000000_explanation_letter',
+                                    'name'     => 'myfile1.png',
+                                    'category' => 'explanation_letter',
+                                ],
+                                [
+                                    'file_id'  => 'rzp_file_mock_id_1000000_delivery_proof',
+                                    'name'     => 'myfile2.pdf',
+                                    'category' => 'delivery_proof',
+                                ],
+                            ]
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testEditDisputeFileUploadSaveForLater' => [
+        'request' => [
+            'content' => [
+                'upload_files'  =>  [
+                    [
+                        'name'      => 'myfile1.png',
+                        'category'  => 'explanation_letter',
+                    ],
+                    [
+                        'name'      => 'myfile2.pdf',
+                        'category'  => 'delivery_proof',
+                    ],
+                ],
+            ],
+            'method' => 'post',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'dispute',
+                'amount'        => 1000000,
+                'currency'      => 'INR',
+                'reason_code'   => 'SOMETHING_BAD',
+                'status'        => 'open',
+                'phase'         => 'chargeback',
+                'files'         => [],
+            ],
+        ],
+    ],
+
+    'testEditDisputeFileUploadSaveForLaterAfterSave' => [
+        'request' => [
+            'content' => [
+                'upload_files'  =>  [
+                    [
+                        'name'      => 'myfile1.png',
+                        'category'  => 'instant_services',
+                    ],
+                    [
+                        'name'      => 'myfile2.pdf',
+                        'category'  => 'others',
+                    ],
+                ],
+            ],
+            'method' => 'post',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'dispute',
+                'amount'        => 1000000,
+                'currency'      => 'INR',
+                'reason_code'   => 'SOMETHING_BAD',
+                'status'        => 'under_review',
+                'phase'         => 'chargeback',
+                'files'         => [],
+            ],
+        ],
+    ],
+
+    'testEditDisputeMerchantAcceptDispute' => [
+        'request' => [
+            'content' => [
+                'accept_dispute'    => true,
+            ],
+            'method' => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'amount'            => 10100,
+                'status'            => 'lost',
+                'phase'             => 'chargeback',
+            ],
+        ],
+    ],
+
+    'testEditDisputeMerchantAcceptDisputeForNonTransactional' => [
+        'request' => [
+            'content' => [
+                'accept_dispute'    => true,
+            ],
+            'method' => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'amount'            => 10100,
+                'status'            => 'closed',
+                'phase'             => 'fraud',
+            ],
         ],
     ],
 ];

@@ -8,8 +8,8 @@ use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Terminal;
-use RZP\Models\Settlement;
 use RZP\Error\ErrorCode;
+use RZP\Models\Settlement;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Validator extends Base\Validator
@@ -58,6 +58,10 @@ class Validator extends Base\Validator
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
+        Entity::WHITELISTED_IPS_LIVE        => 'sometimes|array|max:5',
+        Entity::WHITELISTED_IPS_LIVE . '.*' => 'required_with:' . Entity::WHITELISTED_IPS_LIVE . '|ipv4',
+        Entity::WHITELISTED_IPS_TEST        => 'sometimes|array|max:5',
+        Entity::WHITELISTED_IPS_TEST . '.*' => 'required_with:' . Entity::WHITELISTED_IPS_TEST . '|ipv4',
     ];
 
     protected static $uniqueEmailRules = [
@@ -90,6 +94,13 @@ class Validator extends Base\Validator
         Entity::ACTION                      => 'required|custom'
     ];
 
+    protected static $bulkTagRules = [
+        'action'         => 'required|string|filled|max:10|in:insert,delete',
+        'name'           => 'required|string|filled',
+        'merchant_ids'   => 'required|array',
+        'merchant_ids.*' => 'required|string|filled|max:14'
+    ];
+
     protected static $oauthMailRules = [
         'client_id'    => 'required|alpha_num|size:14',
         'user_id'      => 'required|alpha_num|size:14',
@@ -103,12 +114,18 @@ class Validator extends Base\Validator
     ];
 
     protected static $addTagsRules = [
-        'tags' => 'required|array'
+        'tags'   => 'required|array',
+        'tags.*' => 'required|string',
     ];
 
-    protected static $updateHoldFundsRules = [
-        'hold_funds'   => 'required|boolean',
-        'merchant_ids' => 'required|array'
+    protected static $updateMerchantsBulkRules = [
+        'merchant_ids' => 'required|sequential_array',
+        'attributes'   => 'sometimes|associative_array',
+        'action'       => 'sometimes',
+    ];
+
+    protected static $keyAccessRules = [
+        Entity::HAS_KEY_ACCESS => 'required|boolean',
     ];
 
     protected static $updateChannelRules = [
@@ -163,6 +180,10 @@ class Validator extends Base\Validator
 
     protected static $editEmailValidators = [
         'is_test_account',
+    ];
+
+    protected static $keyAccessValidators = [
+        'key_access',
     ];
 
     protected function validateIsTestAccount(array $input)
@@ -233,6 +254,22 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid channel name: ' . $channel);
+        }
+    }
+
+    public function validateKeyAccess(array $input)
+    {
+        $merchant = $this->entity;
+
+        if (empty($input[Entity::HAS_KEY_ACCESS]) === true)
+        {
+            return;
+        }
+
+        if (empty($merchant->merchantDetail->getWebsite()) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Key access cannot be granted with out website details');
         }
     }
 

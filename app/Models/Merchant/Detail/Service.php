@@ -4,17 +4,17 @@ namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
 
-use RZP\Constants\Timezone;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Models\Admin;
 use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Org;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Constants;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\Merchant\Detail\ValidationFields;
-use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
@@ -92,13 +92,35 @@ class Service extends Base\Service
 
         $merchantDetails->edit($input);
 
+        $params = $this->storeActivationFile($merchantDetails, $input);
+
+        $merchantDetails->fill($params);
+
+        $response = $core->createResponse($merchantDetails);
+
+        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+
+        $this->repo->saveOrFail($merchantDetails);
+
+        return $response;
+    }
+
+    public function storeActivationFile(
+        Entity $merchantDetails,
+        array $input)
+    {
         $params = [];
+
+        $merchant = $merchantDetails->merchant;
 
         foreach ($input as $key => $value)
         {
             $merchantDetails->getValidator()->validateFileType($value);
 
-            $fileName = 'api/' . $merchant->getId() .'/' .$key;
+            // Adding a prefix hash for filename to avoid overwrites to the same fileName on S3.
+            $partial = substr(bin2hex(random_bytes(6)), 0, 5);
+
+            $fileName = 'api/' . $merchant->getId() .'/' . $partial . '/' . $key;
 
             $file = $this->createFile(
                 $merchantDetails,
@@ -111,15 +133,7 @@ class Service extends Base\Service
             $params[$key] = FileStore\Entity::verifyIdAndSilentlyStripSign($file['id']);
         }
 
-        $merchantDetails->fill($params);
-
-        $response = $core->createResponse($merchantDetails);
-
-        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
-
-        $this->repo->saveOrFail($merchantDetails);
-
-        return $response;
+        return $params;
     }
 
     public function editMerchantDetails($id, array $input)
@@ -147,18 +161,16 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $merchantDetails = (new Core)->getMerchantDetails($merchant);
+        $merchantDetailCore = new Core;
 
-        $merchantDetails->edit($input);
-
-        $this->repo->saveOrFail($merchantDetails);
+        $merchantDetails = $merchantDetailCore->editMerchantDetailFields($merchant, $input);
 
         if (isset($slackAction) === true)
         {
             $this->logActionToSlack($merchant, $slackAction);
         }
 
-        return (new Core)->createResponse($merchantDetails);
+        return $merchantDetailCore->createResponse($merchantDetails);
     }
 
     protected function createFile(Entity $merchantDetail,
@@ -191,13 +203,12 @@ class Service extends Base\Service
 
     protected function getSignedUrl(string $fileStoreId, string $merchantId)
     {
-        $accessor = new FileStore\Accessor;
+        $core = new FileStore\Core;
 
-        $signedUrls = $accessor->id($fileStoreId)
-                               ->merchantId($merchantId)
-                               ->getSignedUrl();
+        // [ id1 => url1, id2 => url2, ... ]
+        $signedUrls = $core->getSignedUrl($fileStoreId, $merchantId);
 
-        return $signedUrls[$fileStoreId];
+        return $signedUrls;
     }
 
     private function getFieldsToStepMap() : array
@@ -294,6 +305,21 @@ class Service extends Base\Service
         $activationStatusChangeLog = (new Merchant\Core)->getActivationStatusChangeLog($merchant);
 
         return $activationStatusChangeLog->toArrayPublic();
+    }
+
+    /**
+     * This function is used for updating website details of a merchant
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateWebsiteDetails(array $input): array
+    {
+        $merchantDetails = $this->merchant->merchantDetail;
+
+        $merchantDetails = (new Core)->updateWebsiteDetails($merchantDetails, $input);
+
+        return $merchantDetails->toArrayPublic();
     }
 
     public function getRejectionReasons()
@@ -425,21 +451,20 @@ class Service extends Base\Service
         $this->merchant->reload();
 
         // This is the same format we'll set in the google spreadsheet
-        $timestamp = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('j/m/Y');
+        $timestamp = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('Y-m-d\TH:i:s+05:30');
 
         $userName = $input['contact_name'] ?? '';
 
         $phoneNumber = $input['contact_mobile'] ?? '';
 
-        $businessType = isset($input['business_type']) ?
-            Merchant\Detail\BusinessType::getType($input['business_type']) : '';
+        $businessType = isset($input['business_type']) ? BusinessType::getType($input['business_type']) : '';
 
         $transactionVolume = isset($input['transaction_volume']) ?
-            Merchant\Detail\TransactionVolume::getVolume($input['transaction_volume']) : '';
+            TransactionVolume::getVolume($input['transaction_volume']) : '';
 
-        $role = isset($input['role']) ? Merchant\Detail\Role::getType($input['role']) : '';
+        $role = isset($input['role']) ? Role::getType($input['role']) : '';
 
-        $department = isset($input['department']) ? Merchant\Detail\Department::getType($input['department']) : '';
+        $department = isset($input['department']) ? Department::getType($input['department']) : '';
 
         $referrer = $merchant->referrer ?? '';
 
@@ -449,7 +474,7 @@ class Service extends Base\Service
             Constants::INDIVIDUAL      => $userName,
             Merchant\Entity::NAME      => $merchant->name,
             Constants::REF             => $referrer,
-            Constants::TIMESTAMP       => $timestamp,
+            Constants::SIGNUP_DATE     => $timestamp,
             Constants::CONTACT         => $phoneNumber,
             Entity::BUSINESS_TYPE      => $businessType,
             Entity::TRANSACTION_VOLUME => $transactionVolume,
@@ -486,5 +511,50 @@ class Service extends Base\Service
             Entity::BUSINESS_WEBSITE => $merchantDetails->business_website,
             Constants::REF           => $merchant->referrer,
         ];
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function bulkAssignReviewer(array $input)
+    {
+        (new Validator)->validateInput('bulk_assign_reviewer', $input);
+
+        $merchants  = $input[Entity::MERCHANTS];
+
+        $reviewerId = $input[Entity::REVIEWER_ID];
+
+        return (new Core)->bulkAssignReviewer($reviewerId, $merchants);
+    }
+
+    public function getMerchantActivationReviewers()
+    {
+        $orgId = $this->auth->getOrgId();
+
+        Org\Entity::verifyIdAndStripSign($orgId);
+
+        $permission = $this->repo
+                            ->permission
+                            ->findByOrgIdAndPermission($orgId, Admin\Permission\Name::EDIT_ACTIVATE_MERCHANT);
+
+        if (empty($permission) === true)
+        {
+            throw new Exception\RuntimeException('Missing Permission');
+        }
+
+        $admins = new Base\Collection;
+
+        foreach ($permission->roles as $role)
+        {
+            foreach ($role->admins as $roleAdmin)
+            {
+                $admins->push($roleAdmin->toArrayPublic());
+            }
+        }
+
+        return $admins;
     }
 }

@@ -20,7 +20,13 @@ class MailTags
     const AXIS_SETTLEMENT_FILES            = 'axis_settlement_files';
     const AXIS_BENEFICIARY_MAIL            = 'axis_beneficiary_mail';
 
+    const HDFC_SETTLEMENT_FILES            = 'hdfc_settlement_files';
+
+    const RBL_SETTLEMENT                   = 'rbl_settlement';
+
     const SETTLEMENT_FAILURE_EMAIL         = 'settlement_failure_email';
+
+    const NULL_UTR_REPORT                  = 'null_utr_report';
 
     const CORPORATION_NETBANKING_REFUNDS_MAIL   = 'corporation_netbanking_refunds_mail';
     const HDFC_NETBANKING_REFUNDS_MAIL          = 'hdfc_netbanking_refunds_mail';
@@ -33,6 +39,12 @@ class MailTags
     const KOTAK_NETBANKING_REFUNDS_MAIL         = 'kotak_netbanking_refunds_mail';
     const RBL_NETBANKING_REFUNDS_MAIL           = 'rbl_netbanking_refunds_mail';
     const INDUSIND_NETBANKING_REFUNDS_MAIL      = 'indusind_netbanking_refunds_mail';
+    const AXIS_MIGS_FAILED_REFUNDS_MAIL         = 'axis_migs_failed_refunds_mail';
+    const ICICI_FIRST_DATA_FAILED_REFUNDS_MAIL  = 'icici_firstdata_failed_refunds_mail';
+    const HDFC_CYBERSOURCE_FAILED_REFUNDS_MAIL  = 'hdfc_cybersource_failed_refunds_mail';
+    const HDFC_FSS_FAILED_REFUNDS_MAIL          = 'fss_failed_refunds_mail';
+    const AXIS_CYBERSOURCE_FAILED_REFUNDS_MAIL  = 'axis_cybersource_failed_refunds_mail';
+    const FAILED_REFUNDS_MAIL                   = 'failed_refunds_mail';
 
     const PAYU_MONEY_REFUNDS_MAIL          = 'payu_money_refunds_mail';
     const ICICI_UPI_REFUNDS_MAIL           = 'icici_upi_refunds_mail';
@@ -68,6 +80,8 @@ class MailTags
 
     const AXIS_EMANDATE_DEBIT_MAIL         = 'axis_emandate_debit_mail';
 
+    const RBL_ENACH_DEBIT_MAIL             = 'rbl_enach_debit_mail';
+
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';
     const IRCTC_REFUND_REPORT              = 'irctc_refund_report';
@@ -97,14 +111,23 @@ class MailTags
     const NOTIFY_ACTIVATION_SUBMISSION     = 'notify_activation_submission';
     const CONFIRM_ACTIVATION_SUBMISSION    = 'confirm_activation_submission';
 
+    // Merchant website details update email tags
+    const NOTIFY_WEBSITE_DETAIL_SUBMISSION = 'notify_website_detail_submission';
+
     // OAuth email tags
     const OAUTH_APP_AUTHORIZED             = 'oauth_app_authorized';
 
     // Merchant feature tags
     const FEATURE_ENABLED                  = 'feature_enabled';
 
+    // Merchant Request tags
+    const MERCHANT_REQUEST_REJECTED        = 'merchant_request_rejected';
+
     // Dispute tags
     const DISPUTE_CREATED                  = 'dispute_created';
+
+    // Daily Recon summary tags
+    const DAILY_RECON_SUMMARY              = 'daily_recon_summary';
 
     /**
      * Email tags that should respond to the mailgun failure webhook

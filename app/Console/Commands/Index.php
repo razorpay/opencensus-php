@@ -45,7 +45,7 @@ class Index extends Command
     protected $repo;
     protected $esRepo;
 
-    public function fire()
+    public function handle()
     {
         $this->setOptions();
 

@@ -598,14 +598,12 @@ class Service extends Base\Service
                                 ->customer_balance
                                 ->findByCustomerIdAndMerchantSilent($customerId, $this->merchant);
 
+        // If no customer balance entity exists, return an empty collection
+        $records = new Base\PublicCollection;
+
         if ($customerBalance !== null)
         {
             $records = (new Customer\Transaction\Core)->getStatement($customerBalance, $this->merchant, $input);
-        }
-        else
-        {
-            // If no customer balance entity exists, return an empty collection
-            $records = new Base\PublicCollection;
         }
 
         return $records->toArrayPublic();

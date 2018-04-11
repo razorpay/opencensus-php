@@ -11,6 +11,9 @@ trait ReconTrait
 {
     protected function generateReconFile($content = [])
     {
+        // TODO: Get this vetted
+        $this->ba->adminAuth();
+
         $request = [
             'url'     => '/gateway/mock/reconciliation/' . $this->gateway,
             'content' => $content,
@@ -22,6 +25,8 @@ trait ReconTrait
 
     protected function reconcile(UploadedFile $uploadedFile, $gateway)
     {
+        $this->ba->appAuth();
+
         $input = [
             'manual'           => true,
             'gateway'          => $gateway,

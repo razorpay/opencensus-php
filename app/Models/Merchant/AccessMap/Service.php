@@ -1,0 +1,53 @@
+<?php
+
+namespace RZP\Models\Merchant\AccessMap;
+
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+
+class Service extends Base\Service
+{
+    const ADD_APP     = 'add_app';
+
+    /**
+     * Maps the oauth application to the merchant when he
+     * first gives access to his account to the app.
+     *
+     * @param string $merchantId
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function mapOAuthApplication(string $merchantId, array $input): array
+    {
+        $this->trace->info(TraceCode::APP_MERCHANT_ACCESS_MAP, ['input' => $input]);
+
+        (new Validator)->validateInput(self::ADD_APP, $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $mapping = (new Core)->addMappingForOAuthApp($merchant, $input);
+
+        return $mapping->toArrayPublic();
+    }
+
+    /**
+     * Deletes the mapping of oauth application to the merchant when
+     * the last access token is revoked for the app.
+     *
+     * @param string $merchantId
+     * @param string $appId
+     *
+     * @return array
+     */
+    public function deleteMapOAuthApplication(string $merchantId, string $appId)
+    {
+        $this->trace->info(TraceCode::APP_MERCHANT_ACCESS_MAP_DELETE, ['app_id' => $appId]);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        (new Core)->deleteMappingForOAuthApp($merchant, $appId);
+
+        return ['success' => true];
+    }
+}

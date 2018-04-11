@@ -57,7 +57,7 @@ trait EmandateTrait
             Frequency::ADHOC,
             $input['token'][Token\Entity::ACCOUNT_NUMBER],
             Carbon::now(Timezone::IST)->format('m/d/Y'),
-            Carbon::now(Timezone::IST)->addYears(30)->format('m/d/Y'),
+            Carbon::createFromTimestamp($input['token']['expired_at'], Timezone::IST)->format('m/d/Y'),
             $maxAmount,
         ];
 
@@ -319,7 +319,14 @@ trait EmandateTrait
 
     protected function setRecurringVerifyAmountMismatch(Verify $verify)
     {
-        $paymentAmount = $this->formatAmount($verify->input['payment'][Payment\Entity::AMOUNT]);
+        $payment = $verify->input['payment'];
+        $token = $verify->input['token'];
+
+        $paymentAmount = ($payment[Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL) ?
+                                                                        $token[Token\Entity::MAX_AMOUNT] :
+                                                                        $payment[Payment\Entity::AMOUNT];
+
+        $paymentAmount = $this->formatAmount($paymentAmount);
 
         $verifyAmount = $verify->verifyResponseContent[ResponseFields::AMOUNT] ?: '0';
 

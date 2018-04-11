@@ -18,6 +18,9 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
+    // In mins
+    const TEMPORARY_SESSION_TIME = 10;
+
     /**
      * @param array           $input
      * @param Merchant\Entity $merchant
@@ -25,6 +28,7 @@ class Core extends Base\Core
      *
      * @return Entity
      * @throws Exception\LogicException
+     * @throws Exception\BadRequestException
      */
     public function createLocalCustomer(array $input, Merchant\Entity $merchant, $failOnDuplicate = true)
     {
@@ -37,6 +41,7 @@ class Core extends Base\Core
      *
      * @return Entity
      * @throws Exception\LogicException
+     * @throws Exception\BadRequestException
      */
     public function createGlobalCustomer($input, $failOnDuplicate = true)
     {
@@ -128,6 +133,7 @@ class Core extends Base\Core
      * @param array  $input
      *
      * @return null
+     * @throws Exception\BadRequestValidationFailureException
      */
     protected function createCustomerAddressesIfValuesSetInInput(Entity $customer, array $input)
     {
@@ -172,7 +178,6 @@ class Core extends Base\Core
 
     public function verifyOtp($input, $merchant)
     {
-        // Currently, the validator does not have any mandatory field.
         Customer\Validator::validateGlobalCustomerCreateInput($input);
 
         // Parse contact
@@ -195,7 +200,7 @@ class Core extends Base\Core
         $this->putAppTokenInSession($appToken);
 
         // Create response
-        $response = array('success' => 1);
+        $response = ['success' => 1];
 
         if ($appToken->merchant->getId() !== $this->getSharedAccount()->getId())
         {
@@ -211,9 +216,14 @@ class Core extends Base\Core
             //
 
             // TODO: Uncomment this when we use charge_at_will for global flow
-            // $tokens = (new Token\Core)->removeNetbankingRecurringTokens($tokens);
+            // $tokens = (new Token\Core)->removeEmandateRecurringTokens($tokens);
 
             $response['tokens'] = $tokens->toArrayPublic();
+        }
+
+        if ($this->isCookieDisabledOnBrowser() === true)
+        {
+            $response['session_id'] = $this->getTemporarySessionToken();
         }
 
         return $response;
@@ -306,7 +316,8 @@ class Core extends Base\Core
     protected function getOrCreateGlobalCustomer($input)
     {
         $contact = $input[Customer\Entity::CONTACT];
-        $email = $input[Customer\Entity::EMAIL];
+
+        $email = $input[Customer\Entity::EMAIL] ?? null;
 
         $customer = $this->repo->customer->findByContactAndMerchant(
             $contact,
@@ -400,14 +411,13 @@ class Core extends Base\Core
         // In case of internal auth/ crons,
         // there will not be any app_token.
         // Also, in case of subscriptions, we have a charge route (in test mode)
-        // (which is generally used by our crons)
+        // (which is generally used by our crons) and also
+        // manual invoice charge route (for subscriptions)
         // which is hit from the dashboard. We do not expect to
         // have app_token here just like how we don't expect in
         // privilege (cron) auth.
         //
-        if ((($ba->isProxyAuth() === true) and
-             ($this->mode === Mode::TEST)) or
-            ($ba->isPrivilegeAuth() === true))
+        if ($ba->isProxyOrPrivilegeAuth() === true)
         {
             return [$customer, null];
         }
@@ -474,6 +484,30 @@ class Core extends Base\Core
             ]);
     }
 
+    protected function isCookieDisabledOnBrowser()
+    {
+        $key = $this->mode . '_checkcookie';
+
+        $cookieCheck = $this->app['request']->session()->get($key, '0');
+
+        return ($cookieCheck !== '1');
+    }
+
+    protected function getTemporarySessionToken()
+    {
+        $temporaryId = Base\UniqueIdEntity::generateUniqueId();
+
+        $sessionData = [
+            'session_id' => $this->app['request']->session()->getId(),
+            'user_agent' => $this->app['request']->userAgent(),
+            'ip'         => $this->app['request']->ip(),
+        ];
+
+        $this->app['cache']->put($temporaryId, $sessionData, self::TEMPORARY_SESSION_TIME);
+
+        return $temporaryId;
+    }
+
     protected function verifyUniqueCustomer(Customer\Entity $customer, $failOnDuplicate = true)
     {
         if ($customer->merchant->isShared() === true)
@@ -517,8 +551,8 @@ class Core extends Base\Core
         ];
 
         $params = [
-            'method' =>  'ReqBalEnq',
-            'params' =>  $gatewayInput
+            'method' => 'ReqBalEnq',
+            'params' => $gatewayInput
         ];
 
         $response = (new Upi\Core)->callUpiGateway('makeRequest', $params);
@@ -532,8 +566,8 @@ class Core extends Base\Core
         $gatewayInput = $this->getGatewayInputParams($device, $customer, $bankAccount, $input);
 
         $params = [
-            'method'    =>  'ReqOtp',
-            'params'    =>  $gatewayInput
+            'method'    => 'ReqOtp',
+            'params'    => $gatewayInput
         ];
 
         $response = (new Upi\Core)->callUpiGateway('makeRequest', $params);
@@ -547,8 +581,8 @@ class Core extends Base\Core
         $gatewayInput = $this->getGatewayInputParams($device, $customer, $bankAccount, $input);
 
         $params = [
-            'method'    =>  'ReqRegMob',
-            'params'    =>  $gatewayInput
+            'method'    => 'ReqRegMob',
+            'params'    => $gatewayInput
         ];
 
         $response = (new Upi\Core)->callUpiGateway('makeRequest', $params);
@@ -562,8 +596,8 @@ class Core extends Base\Core
         $gatewayInput = $this->getGatewayInputParams($device, $customer, $bankAccount, $input);
 
         $params = [
-            'method'    =>  'ReqSetCre',
-            'params'    =>  $gatewayInput
+            'method'    => 'ReqSetCre',
+            'params'    => $gatewayInput
         ];
 
         $response = (new Upi\Core)->callUpiGateway('makeRequest', $params);

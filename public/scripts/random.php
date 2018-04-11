@@ -33,7 +33,7 @@ error_reporting(E_ALL);
         echo strlen($b62) . PHP_EOL;
 
         // Generate 3 random bytes, convert to hex and then to dec
-        $dec = hexdec(bin2hex(openssl_random_pseudo_bytes(3)));
+        $dec = hexdec(bin2hex(random_bytes(3)));
         // Convert the random decimal generated to base 62
         $rand = base62($dec);
 

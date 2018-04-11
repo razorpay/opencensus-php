@@ -4,10 +4,14 @@ namespace RZP\Models\Workflow\Action;
 
 use App;
 use Request;
+use RZP\Exception;
+
 use RZP\Models\State;
 use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Base\PublicEntity;
 
 use RZP\Models\Workflow;
 use RZP\Models\Workflow\Base;
@@ -15,21 +19,20 @@ use RZP\Models\Workflow\Step;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\Checker;
 
+use RZP\Constants\Entity as E;
+
 
 class Core extends Base\Core
 {
     private function buildParams(array $input) : array
     {
-        $admin = $this->app['basicauth']->getAdmin();
+        $maker = $this->app['workflow']->getWorkflowMaker();
+
+        $orgId = $maker->getOrgId();
 
         $params = [
-            Entity::ORG_ID      => $admin->getOrgId(),
-            Entity::ADMIN_ID    => $admin->getId()
+            Entity::ORG_ID      => $orgId
         ];
-
-        $adminPermissions = $admin->getPermissionsList();
-
-        $orgId = $admin->getOrgId();
 
         $routePermission = $input[Differ\Entity::PERMISSION];
 
@@ -44,7 +47,7 @@ class Core extends Base\Core
         // - Whether a workflow exists against the routePermission
         // because this is already done in workflow middleware
         //
-        // - Whether the admin has access to this permission because
+        // - Whether the maker has access to this permission because
         // that is also done in the middleware or should be done
         // from whereever this code is called/triggered.
 
@@ -78,6 +81,11 @@ class Core extends Base\Core
 
         $params[Entity::ENTITY_NAME] = $input[Differ\Entity::ENTITY_NAME] ?: null;
 
+        // TODO:: add code for actual verification of maker_type here
+        $params[Entity::MAKER_TYPE] = $input[Entity::MAKER_TYPE] ?: null;
+
+        $params[Entity::MAKER_ID] = $input[Entity::MAKER_ID] ?: null;
+
         return $params;
     }
 
@@ -91,9 +99,12 @@ class Core extends Base\Core
     {
         $strip = 'verifyIdAndStripSign';
 
+        $makerClass = E::getEntityClass($input[Entity::MAKER_TYPE]);
+
         $params = [
             Entity::ORG_ID          => Org\Entity::$strip($input[Entity::ORG_ID]),
-            Entity::ADMIN_ID        => Admin\Entity::$strip($input[Entity::ADMIN_ID]),
+            Entity::MAKER_ID        => $makerClass::$strip($input[Entity::MAKER_ID]),
+            Entity::MAKER_TYPE      => $input[Entity::MAKER_TYPE],
             Entity::WORKFLOW_ID     => Workflow\Entity::$strip($input[Entity::WORKFLOW_ID]),
             Entity::PERMISSION_ID   => Permission\Entity::$strip($input[Entity::PERMISSION_ID]),
             Entity::ENTITY_ID       => $input[Entity::ENTITY_ID],
@@ -131,7 +142,7 @@ class Core extends Base\Core
         our main RDBMS and to whom the entries did not fail because
         transaction rollbacks don't affect that.
     */
-    public function create(array $input, $retry = false, Admin\Entity $admin): Entity
+    public function create(array $input, $retry = false, PublicEntity $maker): Entity
     {
         $action = new Entity;
 
@@ -149,12 +160,16 @@ class Core extends Base\Core
         }
         else
         {
+            $input[Entity::MAKER_TYPE] = $this->app['workflow']->getWorkflowMakerType();
+
+            $input[Entity::MAKER_ID] = $maker->getId();
+
             $params = $this->buildParams($input);
         }
 
         // $params has data for Action\Entity (Mysql) + Differ\Entity (ES)
 
-        $this->repo->transactionOnLiveAndTest(function() use ($action, $params, $retry, $admin)
+        $this->repo->transactionOnLiveAndTest(function() use ($action, $params, $retry, $maker)
         {
             $differInput = $params[Entity::DIFFER] ?? null;
 
@@ -164,7 +179,7 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($action);
 
-            $this->createInitialStateForAction($action, $admin);
+            $this->createInitialStateForAction($action, $maker);
 
             if (($retry === false) and (empty($differInput) === false))
             {
@@ -178,13 +193,13 @@ class Core extends Base\Core
         return $action;
     }
 
-    protected function createInitialStateForAction(Entity $action, Admin\Entity $admin)
+    protected function createInitialStateForAction(Entity $action, PublicEntity $maker)
     {
         $input = [
             State\Entity::NAME       => State\Name::OPEN,
         ];
 
-        $actionState = (new State\Core)->createForWorkflowAction($input, $admin, $action);
+        $actionState = (new State\Core)->createForMakerAndEntity($input, $maker, $action);
 
         return $actionState;
     }
@@ -218,12 +233,14 @@ class Core extends Base\Core
      */
     public function checkAndMarkActionApproved(Entity $action, Admin\Entity $admin)
     {
+        // 1. If action is already approved then return
+
         if ($action->getApproved() === true)
         {
             return true;
         }
 
-        $actionId = $action->getId();
+        // 2. If current level is not the last level then return
 
         $workflowId = $action->getWorkflowId();
 
@@ -235,10 +252,24 @@ class Core extends Base\Core
             return false;
         }
 
+        // 3. If the current level is approved (and it is already the last level)
+
         if ($this->isCurrentLevelApproved($action) === true)
         {
             $this->approveAction($action, $admin);
         }
+
+        return true;
+    }
+
+    public function approveActionForcefully(Entity $action, Admin\Entity $admin)
+    {
+        if ($action->getApproved() === true)
+        {
+            return true;
+        }
+
+        $this->approveAction($action, $admin);
 
         return true;
     }
@@ -262,7 +293,7 @@ class Core extends Base\Core
                 State\Entity::NAME      => State\Name::APPROVED,
             ];
 
-            (new State\Core)->createForWorkflowAction($stateData, $admin, $action);
+            (new State\Core)->createForMakerAndEntity($stateData, $admin, $action);
 
             (new Differ\Core)->updateStateInEs(
                 $action->getId(), $stateData[State\Entity::NAME]);
@@ -281,10 +312,13 @@ class Core extends Base\Core
                       ->workflow_step
                       ->findByLevelAndWorkflowId($level, $workflowId);
 
+        // Get the op type (AND or OR)
         $opType = $steps[0]->getOpType();
 
+        // All the step IDs for the current action's current level
         $stepIds = [];
 
+        // Hashmap of all stepIds => required_review_count
         $stepReviewCountMap = [];
 
         foreach ($steps as $step)
@@ -301,6 +335,8 @@ class Core extends Base\Core
                                       ->action_checker
                                       ->fetchApprovedCountByActionIdAndStepIds(
                                           $action->getId(), $stepIds);
+
+        // Hashmap of stepIds => total_approvals_received
         $stepCheckerMap = [];
 
         foreach ($totalCheckerApprovals as $approval)
@@ -310,6 +346,17 @@ class Core extends Base\Core
             $stepCheckerMap[$stepId] = $approval['total'];
         }
 
+        // So effectively now we have:
+        // - $stepReviewCountMap - stores stepIds => required_review_count for all steps
+        // in the current level.
+        // - $stepCheckerMap - stores stepIds => total_approvals_received for all steps
+        // in the current level
+
+        // We just need to create 1 more map that will store whether the total approval count
+        // for each step has reached or not.
+        //
+        // Hashmap of stepIds => true/false denoting whether any further approvals
+        // are required or not.
         $stepApprovedMap = [];
 
         foreach ($stepReviewCountMap as $stepId => $reviewCount)
@@ -319,23 +366,20 @@ class Core extends Base\Core
             $stepApprovedMap[$stepId] = ($approvalCount === $reviewCount);
         }
 
-        // If the reviewers in a single step approved
-        // Based on the op type, we do an AND or OR operation on approvals per
-        // step basis.
-        // If step1 or step2. one of the steps's approvals should match
-        // reviewer count without a single rejection by either side.
-        //
+        // Now all we need to do is for:
+        // AND op - None of the stepId is false. Means all the required === received is true.
+        // OR op - At least one stepId is true. Means at least one required === received is true.
 
         $levelApproved = false;
 
         if ($opType === Step\Entity::OP_TYPE_AND)
         {
-            // if any of the check fails, level is not approved.
+            // If any of the check fails, level is not approved.
             $levelApproved = (in_array(false, $stepApprovedMap, true) === false);
         }
         else if ($opType === Step\Entity::OP_TYPE_OR)
         {
-            // if any of the check passed, level is approved.
+            // If any of the check passed, level is approved.
             $levelApproved = in_array(true, $stepApprovedMap, true);
         }
 
@@ -358,6 +402,7 @@ class Core extends Base\Core
         }
 
         $level = $action->getCurrentLevel();
+
         $workflowId = $action->getWorkflowId();
 
         $levelApproved = $this->isCurrentLevelApproved($action);
@@ -422,19 +467,66 @@ class Core extends Base\Core
                 State\Entity::NAME      => $state,
             ];
 
-            $this->updateState($action, $state);
+            if ($admin->isSuperAdmin() === true)
+            {
+                $this->updateStateAndStateChanger($action, $state, $admin, $admin->getSuperAdminRole());
+            }
+            else
+            {
+                $this->updateStateAndStateChanger($action, $state, $admin, null);
+            }
 
-            (new State\Core)->createForWorkflowAction($stateData, $admin, $action);
+            (new State\Core)->createForMakerAndEntity($stateData, $admin, $action);
 
             (new Differ\Core)->updateStateInEs(
                 $action->getId(), $stateData[State\Entity::NAME]);
         });
     }
 
+    /*
+        State changes on rejection
+    */
+    public function applyActionRejectionStateChanges($action, Admin\Entity $admin, Role\Entity $role)
+    {
+        $state = State\Name::REJECTED;
+
+        $actionId = $action->getId();
+
+        (new State\Core)->changeActionState($action, $state, $admin);
+
+        $this->updateStateAndStateChanger($action, $state, $admin, $role);
+
+        (new Differ\Core)->updateStateInEs($actionId, $state);
+    }
+
     public function updateState(Entity $action, string $state)
     {
         $input = [
             Entity::STATE => $state,
+        ];
+
+        return $this->edit($action, $input);
+    }
+
+    /**
+     * This function will now be used instead of updateState so as to
+     * store the information about the person(admin_id, and role_id) who
+     * was responsible of actually executing the workflow. In case it is a
+     * superadmin, then we allow to skip any steps and execute the workflow
+     * forcefully. Hence the information about StateChanger. StateChanger
+     * information will also be stored in case the workflow was closed or rejected.
+     */
+    public function updateStateAndStateChanger(
+        Entity $action,
+        string $state,
+        Admin\Entity $admin,
+        Role\Entity $role = null
+    )
+    {
+        $input = [
+            Entity::STATE                 => $state,
+            Entity::STATE_CHANGER_ID      => $admin->getId(),
+            Entity::STATE_CHANGER_ROLE_ID => $role ? $role->getId() : null
         ];
 
         return $this->edit($action, $input);
@@ -457,9 +549,10 @@ class Core extends Base\Core
         string $entityName,
         string $permissionName)
     {
-        $admin = $this->app['basicauth']->getAdmin();
 
-        $orgId = $admin->getOrgId();
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
         $permissionId = $this->repo
                              ->permission
@@ -474,7 +567,7 @@ class Core extends Base\Core
         return $actions;
     }
 
-    public function executeAction($action, Admin\Entity $admin)
+    public function executeAction($action, Admin\Entity $admin, Role\Entity $role = null)
     {
         list($stateCore, $differCore) = [
             new State\Core,
@@ -522,7 +615,7 @@ class Core extends Base\Core
 
         // Update states
 
-        $this->updateState($action, $state);
+        $this->updateStateAndStateChanger($action, $state, $admin, $role);
 
         $stateCore->changeActionState($action, $state, $admin);
 

@@ -6,6 +6,7 @@ use Closure;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use Illuminate\Foundation\Application;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Workflow\Service as WorkflowService;
@@ -20,12 +21,15 @@ class Workflow
     // Mostly because workflow will be trigger
     // inside the code since the generic handler
     // is too generic to handle the diffing.
+    // Workflows for EXCLUDED_PERMISSIONS will be triggered from inside
+    // the code.
     const EXCLUDED_PERMISSIONS = [
         Permission::EDIT_MERCHANT_METHODS,
         Permission::ASSIGN_MERCHANT_BANKS,
         Permission::ADD_MERCHANT_CREDITS,
         Permission::EDIT_MERCHANT_PRICING,
         Permission::EDIT_ACTIVATE_MERCHANT,
+        Permission::EDIT_MERCHANT_KEY_ACCESS,
         Permission::ADD_MERCHANT_ADJUSTMENT,
         Permission::SCHEDULE_ASSIGN,
         Permission::EDIT_MERCHANT_ENABLE_LIVE,
@@ -36,6 +40,8 @@ class Workflow
         Permission::EDIT_MERCHANT_BANK_DETAIL,
         Permission::EDIT_MERCHANT_INVOICE_GSTIN,
         Permission::CREATE_ADMIN,
+        Permission::DELETE_ADMIN,
+        Permission::EDIT_MERCHANT_REQUESTS,
     ];
 
     protected $app;
@@ -57,13 +63,17 @@ class Workflow
     {
         $routeName = $this->router->currentRouteName();
 
+        $maker = $this->app['workflow']->getWorkflowMaker();
+
         // Disable workflows if:
         // - It is mocked
-        // - There's no admin user in current context. This means
-        // that the route might be running under proxy/app without
-        // any admin context
+        // - The maker isn't an Admin or Merchant
+        // - Auth is not apt for workflows
+        // - No org ID found in the incoming request
         if (($this->config->get('heimdall.workflows.mock') === true) or
-            ($this->ba->isAdminAuth() !== true))
+            (empty($maker) === true) or
+            ($this->isAptAuthForWorkflows() === false) or
+            (empty($this->ba->getOrgId()) === true))
         {
             return $next($request);
         }
@@ -72,8 +82,7 @@ class Workflow
         {
             $permission = $this->getRoutePermission($routeName);
 
-            // Workflows for EXCLUDED_PERMISSIONS will be triggered from inside
-            // the code.
+            // Workflows for EXCLUDED_PERMISSIONS will be triggered from inside the code
             if (in_array($permission, self::EXCLUDED_PERMISSIONS, true) === true)
             {
                 // Set the default permission in workflow service
@@ -83,10 +92,21 @@ class Workflow
                 return $next($request);
             }
 
-            $admin = $this->ba->getAdmin();
+            // ba->getOrgId() returns route's org ID, not maker's org ID
+            // This will also work when RZP admin tries to hit route for HDFC
+            // but yes the admin can spoof the call by passing random org_id in $input
+            // note: this will only happen for Route::$crossOrgRoutes since for all
+            // other routes we have a strict check of admin->org === route->org
+            //
+            // So only RZP admins can exploit this, can figure out a solution later
+            // when this is a "real" issue.
+            $orgId = $this->ba->getOrgId();
 
             $permissionHasWorkflow = (new WorkflowService)->permissionHasWorkflow(
-                $permission, $admin->getOrgId());
+                $permission, Org\Entity::verifyIdAndSilentlyStripSign($orgId));
+
+            // rzp admin -> hdfc bank_account_update
+            // rzp P1 no workflow
 
             // If the permissions has no workflow assigned to it
             // then let's not apply any maker-checker process
@@ -136,6 +156,27 @@ class Workflow
 
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_PERMISSION_ERROR);
+    }
+
+    /**
+     * Workflows will work for admin auth (admins) + proxy auth (merchants)
+     * (without internal auth)
+     */
+    private function isAptAuthForWorkflows()
+    {
+        $adminAuth = $this->ba->isAdminAuth();
+
+        $proxyAuth = $this->ba->isProxyAuth();
+
+        $strictPrivateAuth = $this->ba->isStrictPrivateAuth();
+
+        if (($adminAuth === true) or
+            ($proxyAuth === true and $strictPrivateAuth === false))
+        {
+            return true;
+        }
+
+        return false;
     }
 
 }

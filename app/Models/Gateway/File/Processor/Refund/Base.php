@@ -22,6 +22,7 @@ class Base extends BaseProcessor
     public function fetchEntities(): PublicCollection
     {
         $begin = $this->gatewayFile->getBegin();
+
         $end = $this->gatewayFile->getEnd();
 
         $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
@@ -60,11 +61,19 @@ class Base extends BaseProcessor
         foreach ($refunds as $refund)
         {
             $payment = $refund->payment;
+
             $terminal = $payment->terminal;
 
             $col['refund'] = $refund->toArray();
+
             $col['payment'] = $payment->toArray();
+
             $col['terminal'] = $terminal->toArray();
+
+            if ($payment->hasCard() === true)
+            {
+                $col['card'] = $payment->card->toArray();
+            }
 
             $data[] = $col;
         }

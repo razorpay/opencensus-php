@@ -113,7 +113,9 @@ class Repository extends Base\Repository
     }
 
     public function toggleWorkflowOnOrgForPermissions(
-        string $orgId, array $permissionIds, bool $enabled)
+        string $orgId,
+        array $permissionIds,
+        bool $enabled)
     {
         DB::table(Table::PERMISSION_MAP)
                 ->where('entity_id', '=', $orgId)
@@ -137,5 +139,21 @@ class Repository extends Base\Repository
                     ->where($pmTable . '.entity_id', '=', $orgId)
                     ->where($pmTable . '.enable_workflow', '=', 1)
                     ->get();
+    }
+
+    public function findByOrgIdAndPermission($orgId, $permissionName)
+    {
+        $pid = $this->dbColumn(Permission\Entity::ID);
+
+        $pmTable = Table::PERMISSION_MAP;
+
+        return $this->newQuery()
+                    ->select(Table::PERMISSION . '.*')
+                    ->with('roles.admins')
+                    ->join($pmTable, $pid, '=', $pmTable . '.permission_id')
+                    ->where($pmTable . '.entity_id', '=', $orgId)
+                    ->where($pmTable . '.entity_type', '=', 'org')
+                    ->where(Entity::NAME, $permissionName)
+                    ->first();
     }
 }

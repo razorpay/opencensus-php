@@ -125,11 +125,7 @@ class CreateTransactions extends Migration
 
             $table->index(Transaction::TYPE);
 
-            $table->index(Transaction::SETTLED_AT);
-
             $table->index(Transaction::ON_HOLD);
-
-            $table->index(Transaction::SETTLED);
 
             $table->index(Transaction::RECONCILED_AT);
 
@@ -144,6 +140,10 @@ class CreateTransactions extends Migration
             $table->index(Transaction::UPDATED_AT);
 
             $table->index([Transaction::MERCHANT_ID, Transaction::CREATED_AT]);
+
+            $table->index([Transaction::SETTLED, Transaction::CHANNEL, Transaction::ON_HOLD]);
+
+            $table->index([Transaction::SETTLED_AT, Transaction::MERCHANT_ID]);
 
             $table->foreign(Transaction::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

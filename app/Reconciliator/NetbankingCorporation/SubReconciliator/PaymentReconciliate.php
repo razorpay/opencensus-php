@@ -36,7 +36,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return [];
     }
 
-    protected function getNbAccountDetails($row)
+    protected function getAccountDetails($row)
     {
         return [
             BaseReconciliate::ACCOUNT_NUMBER     => $row[Constants::ACCOUNT_NUMBER],

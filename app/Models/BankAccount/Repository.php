@@ -16,6 +16,7 @@ class Repository extends Base\Repository
     const WITH_TRASHED = 'deleted';
 
     protected $appFetchParamRules = array(
+        Entity::ACCOUNT_NUMBER  => 'sometimes|alpha_num',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         self::WITH_TRASHED      => 'sometimes|in:0,1',
         Entity::TYPE            => 'sometimes|in:customer,merchant',
@@ -145,6 +146,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(BankAccount\Entity::TYPE, '=', BankAccount\Type::MERCHANT)
+                    ->with(['source', 'source.merchantDetail'])
                     ->oldest()
                     ->get();
     }
@@ -154,6 +156,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->whereBetween(BankAccount\Entity::CREATED_AT, array($from, $to))
                     ->where(Entity::TYPE, '=', Type::MERCHANT)
+                    ->with(['source', 'source.merchantDetail'])
                     ->oldest()
                     ->get();
     }

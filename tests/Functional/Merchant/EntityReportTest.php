@@ -182,7 +182,7 @@ class EntityReportTest extends TestCase
     {
         $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::CARD_LTE_2K]);
         $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::CARD_GT_2K]);
-        $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::NON_CARD]);
+        $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::OTHERS]);
         $this->fixtures->create('merchant_invoice',
             [
                 'type' => Invoice\Type::ADJUSTMENT, 'amount' => -45000,

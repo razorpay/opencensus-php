@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
@@ -59,24 +60,49 @@ abstract class FileProcessor extends Base\Core
         $mutexResource = sprintf(self::MUTEX_RESOURCE, static::$channel);
 
         $data = $this->mutex->acquireAndRelease(
-
             $mutexResource,
-
             function () use ($input)
             {
                 return $this->processReconciliation($input);
             },
-
             self::MUTEX_LOCK_TIMEOUT,
-
-            ErrorCode::BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS);
+            ErrorCode::BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS,
+            50,
+            2000,
+            4000);
 
         return $data;
     }
 
-    protected function parseFile($filePath)
+    /**
+     * Checks the reverse file extension is same as specified by the bank
+     *
+     * @param string $filePath
+     *
+     * @return string
+     *
+     * @throws LogicException
+     */
+    protected function getFileExtensionForParsing(string $filePath): string
     {
-        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+
+        if (in_array($extension, static::$fileExtensions, true) === true)
+        {
+            return $extension;
+        }
+
+        throw new LogicException(
+            "Extension not handled: {$extension}"
+            , null
+            , [
+                'file_path' => $filePath
+            ]);
+    }
+
+    protected function parseFile(string $filePath)
+    {
+        $ext = $this->getFileExtensionForParsing($filePath);
 
         switch ($ext)
         {
@@ -84,20 +110,24 @@ abstract class FileProcessor extends Base\Core
             case FileStore\Format::XLS:
                 return $this->parseExcelSheets($filePath);
 
-            case FileStore\Format::TXT:
-                return $this->parseTextFile($filePath, static::$delimiter);
-
             case FileStore\Format::CSV:
                 return $this->parseTextFile($filePath, ',');
 
             default:
-                throw new LogicException("Extension not handled: {$ext}");
+                return $this->parseTextFile($filePath, static::$delimiter);
         }
     }
 
     protected function processReconciliation($input)
     {
         $reconcileFile = $this->getReconcilationFile($input);
+
+        $this->trace->info(
+            TraceCode::MISC_TRACE_CODE,
+            [
+                'recon_filename' => $reconcileFile,
+                'input'          => $input
+            ]);
 
         if ($reconcileFile === null)
         {
@@ -192,7 +222,7 @@ abstract class FileProcessor extends Base\Core
         if ((isset($input['source']) === true) and
             ($input['source'] === 'lambda'))
         {
-            $key = $input['key'];
+            $key = urldecode($input['key']);
 
             $reconcileFile = $this->getH2HFileFromAws($key);
         }

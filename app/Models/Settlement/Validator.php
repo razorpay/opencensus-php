@@ -19,6 +19,7 @@ class Validator extends Base\Validator
 
     protected static $batchFetchRules = [
         Entity::BATCH_FUND_TRANSFER_ID => 'required|alpha_num|size:14',
+        'h2h'                          => 'required|in:0,1',
     ];
 
     protected static $nodalTransferRules = [
@@ -53,6 +54,14 @@ class Validator extends Base\Validator
         'ignore_time_limit' => 'sometimes',
     ];
 
+    protected static $validChannelRules = [
+        Entity::CHANNEL => 'required|string|custom'
+    ];
+
+    protected static $canFetchBalanceRules = [
+        'balance_' . Entity::CHANNEL    => 'required|string|custom',
+    ];
+
     protected function validateGateway($attribute, $value)
     {
         Payment\Gateway::validateGateway($value);
@@ -67,6 +76,15 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateBalanceChannel($attribute, $value)
+    {
+        if (in_array($value, Channel::getChannelsWithFetchBalance()) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid Channel: ' . $value);
+        }
+    }
+
     protected function validateDestination($attribute, $value)
     {
         if (in_array($value, Channel::getChannels()) === false)
@@ -75,5 +93,4 @@ class Validator extends Base\Validator
                 'Invalid Channel: ' . $value);
         }
     }
-
 }

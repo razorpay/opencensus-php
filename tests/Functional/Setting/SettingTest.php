@@ -17,6 +17,7 @@ class SettingTest extends TestCase
         parent::setUp();
 
         $this->ba->adminAuth();
+
         $this->fixtures->edit('admin', 'RzrpySprAdmnId', ['allow_all_merchants' => 1]);
         $this->ba->addAccountAuth('10000000000000');
     }

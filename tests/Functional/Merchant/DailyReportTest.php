@@ -35,9 +35,9 @@ class DailyReportTest extends TestCase
 
         $this->setUpFixture();
 
-        $content = $this->initiateSettlements('kotak', $this->settleAtTimestamp);
+        $content = $this->initiateSettlements('axis', $this->settleAtTimestamp);
 
-        $this->assertNotEquals($content['kotak']['count'], 0);
+        $this->assertNotEquals($content['axis']['count'], 0);
 
         $setl = $this->getLastEntity('settlement', true);
 
@@ -53,7 +53,7 @@ class DailyReportTest extends TestCase
 
         $this->generateDailyReport();
 
-        Mail::assertSent(DailyReportMail::class, function ($mail) use ($testData)
+        Mail::assertQueued(DailyReportMail::class, function ($mail) use ($testData)
         {
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 

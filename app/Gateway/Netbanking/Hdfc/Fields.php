@@ -2,7 +2,10 @@
 
 namespace RZP\Gateway\Netbanking\Hdfc;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
+use RZP\Gateway\Netbanking\Base as Netbanking;
 
 class Fields
 {
@@ -67,7 +70,7 @@ class Fields
             EMandateRegisterFileHeadings::AMOUNT_TYPE                   => self::AMOUNT_TYPE,
             EMandateRegisterFileHeadings::CLIENT_NAME                   => self::CLIENT_NAME,
             self::START_TIMESTAMP                                       => $token->getCreatedAt(),
-            self::END_TIMESTAMP                                         => 4102338600, // timestamp for 31st Dec 2099
+            self::END_TIMESTAMP                                         => $token->getExpiredAt(),
         ];
     }
 }

@@ -188,6 +188,8 @@ class FetchTest extends TestCase
 
         $fetchs = [];
 
+        unset($entities['CACHED_ENTITIES']);
+
         foreach ($entities as $entity)
         {
             $fetch = E::getEntityFetch($entity);
@@ -204,7 +206,7 @@ class FetchTest extends TestCase
     /**
      * Returns test data for given entity and type. Currently it reads data
      * from self::$testData, but for more complex entities like payments
-     * we can have separate testData file to keep contain readable and modular.
+     * we can have separate testData file to keep contents readable and modular.
      *
      * @param string $entity
      * @param string $type
@@ -214,7 +216,7 @@ class FetchTest extends TestCase
     {
         if (isset($this->testData[$entity]) === false)
         {
-            $this->fail('Entity needs to declared in fetch Test Data : '. $entity);
+            $this->fail('Entity needs to be declared in fetch Test Data : '. $entity);
         }
 
         $entityTests = $this->testData[$entity];

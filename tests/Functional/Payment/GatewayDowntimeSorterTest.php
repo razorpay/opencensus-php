@@ -37,7 +37,13 @@ class GatewayDowntimeSorterTest extends TestCase
             $payment['card']['number'] = $cardNumber;
         }
 
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
         $this->doAuthAndCapturePayment($payment);
+
+        Carbon::setTestNow();
 
         return $payment;
     }

@@ -6,6 +6,13 @@ use DB;
 
 class User extends Base
 {
+    const MERCHANT_USER_ID = 'MerchantUser01';
+
+    public function setup()
+    {
+        $this->fixtures->create('user', ['id' => self::MERCHANT_USER_ID]);
+    }
+
     public function create(array $attributes = array())
     {
         $merchant = $this->fixtures->create('merchant');

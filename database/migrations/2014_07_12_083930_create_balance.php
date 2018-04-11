@@ -46,6 +46,8 @@ class CreateBalance extends Migration
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
+
+            $table->index(Balance::CREATED_AT);
         });
     }
 

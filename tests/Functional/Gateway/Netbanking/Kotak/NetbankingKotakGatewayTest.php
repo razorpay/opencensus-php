@@ -211,7 +211,7 @@ class NetbankingKotakGatewayTest extends TestCase
             ],
         ];
 
-        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData)
+        Mail::assertQueued(DailyFileMail::class, function ($mail) use ($testData)
         {
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 

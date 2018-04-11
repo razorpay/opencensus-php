@@ -33,6 +33,7 @@ class MockGatewayController extends Controller
         $this->gateway = $this->app['gateway'];
 
         $this->mockHdfcGatewayServer = $this->gateway->server('hdfc');
+
         $this->mockHdfcGatewayServer->setInput($input);
     }
 
@@ -163,6 +164,17 @@ class MockGatewayController extends Controller
         return Redirect::to($url);
     }
 
+    public function getFssPayment()
+    {
+        $input = Request::all();
+
+        $server = $this->gateway->server('card_fss');
+
+        $url = $server->authorize($input);
+
+        return Redirect::to($url);
+    }
+
     public function postPaytmPayment()
     {
         $input = Request::all();
@@ -274,6 +286,17 @@ class MockGatewayController extends Controller
         $server = $this->gateway->server($driver);
 
         return $server->authorize($input, $paymentId);
+    }
+
+    public function postEsignerPayment($esigner)
+    {
+        $input = Request::all();
+
+        $driver = 'esigner_' . $esigner;
+
+        $server = $this->gateway->server($driver);
+
+        return $server->sign($input);
     }
 
     public function postUpiPayment($bank)

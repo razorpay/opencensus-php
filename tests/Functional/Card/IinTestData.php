@@ -26,6 +26,58 @@ return [
         ],
     ],
 
+    'testAddIinFailed' => [
+        'request'   => [
+            'url'     => '/iins',
+            'method'  => 'post',
+            'content' => [
+                'iin'     => 112333,
+                'network' => 'RuPay',
+                'type'    => 'credit',
+                'emi'     => 1,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The issuer field is required when emi is 1.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditIinFailed' => [
+        'request'   => [
+            'url'     => '/iins/112333',
+            'method'  => 'put',
+            'content' => [
+                'country' => 'IN',
+                'emi'     => 1,
+                'network' => 'RuPay',
+                'type'    => 'credit'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The issuer field is required when emi is 1.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testEditIin' => [
         'request' => [
             'url' => '/iins/112333',

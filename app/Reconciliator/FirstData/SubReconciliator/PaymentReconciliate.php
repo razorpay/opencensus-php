@@ -6,6 +6,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
+use Razorpay\Spine\Exception\DbQueryException;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -44,11 +45,29 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         // just to be on the safer side.
         $capsPaymentId = strtoupper($capsPaymentId);
 
-        // The broad assumption here is that these ids will not collide
-        // The mathematical probability is very low (not zero though)!
-        $paymentId = $this->repo->first_data
-                                ->findPaymentForGateway($capsPaymentId)
-                                ->getPaymentId();
+        $paymentId = null;
+
+        try
+        {
+            // The broad assumption here is that these ids will not collide
+            // The mathematical probability is very low (not zero though)!
+            $paymentId = $this->repo->first_data
+                                    ->findPaymentForGateway($capsPaymentId)
+                                    ->getPaymentId();
+        }
+        catch (DbQueryException $ex)
+        {
+            $this->trace->error(
+                    TraceCode::RECON_ALERT,
+                    [
+                        'info_code' => 'PAYMENT_ABSENT',
+                        'message'   => 'Payment Id not found. Skipping',
+                        'row'       => $row,
+                        'gateway'   => get_called_class()
+                    ]);
+
+            $this->setFailUnprocessedRow(true);
+        }
 
         return $paymentId;
     }

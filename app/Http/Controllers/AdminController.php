@@ -151,4 +151,22 @@ class AdminController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function dbMetaDataQuery()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->dbMetaDataQuery($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getDailyReconciliationStatusSummary()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchReconciliationSummary($input);
+
+        return ApiResponse::json($data);
+    }
 }

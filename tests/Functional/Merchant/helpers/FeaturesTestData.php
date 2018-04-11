@@ -6,40 +6,6 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants;
 
 return [
-    'addFeatures' => [
-        'request'  => [
-            'url'     => '/features',
-            'method'  => 'post',
-            'server'  => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-            'content' => [
-                'names'       => ['dummy'],
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000'
-            ]
-        ],
-        'response' => [
-            'content' => [ ]
-        ]
-    ],
-
-    'deleteFeature' => [
-        'request'  => [
-            'url'     => "/features/10000000000000/dummy",
-            'method'  => 'delete',
-            'server'  => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-            'content' => [ ]
-        ],
-        'response' => [
-            'content' => [ ]
-        ]
-    ],
-
     'updateFeatureAsMerchant' => [
         'request' => [
             'content' => [
@@ -54,34 +20,6 @@ return [
         ],
         'response' => [
             'content' => [ ]
-        ]
-    ],
-
-    'verifyFeatureAbsence' => [
-        'request' => [
-            'url'    => '/features/10000000000000',
-            'method' => 'get',
-            'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ],
-        'response' => [
-            'content' => [ ]
-        ]
-    ],
-
-    'verifyFeaturePresence' => [
-        'request'  => [
-            'url'    => '/features/10000000000000',
-            'method' => 'get',
-            'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ],
-        'response' => [
-            'content' => []
         ]
     ],
 
@@ -706,5 +644,132 @@ return [
         'response' => [
             'content' => [ ]
         ]
+    ],
+
+    'addFeatures' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['dummy'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [ ]
+        ]
+    ],
+
+    'getDataToAddAccountFeatures' => [
+        'request'  => [
+            'url'     => '/applications/1000000DemoApp/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['dummy'],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name'        => 'dummy',
+                    'entity_type' => 'application',
+                    'entity_id'   => '1000000DemoApp'
+                ]
+            ]
+        ]
+    ],
+
+    'verifyFeatureAbsence' => [
+        'request' => [
+            'url'    => '/features/10000000000000',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [ ]
+        ]
+    ],
+
+    'verifyFeaturePresence' => [
+        'request'  => [
+            'url'    => '/features/10000000000000',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'verifyFeaturePresenceForAccounts' => [
+        'request'  => [
+            'url'    => '/accounts/100DemoAccount/features',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'verifyFeaturePresenceForEntity' => [
+        'request'  => [
+            'url'    => '/features/10000000000000',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'deleteFeature' => [
+        'request'  => [
+            'url'     => "/features/10000000000000/dummy",
+            'method'  => 'delete',
+            'content' => [ ]
+        ],
+        'response' => [
+            'content' => [ ]
+        ]
+    ],
+
+    'getDataToDeleteFeaturesFromEntity' => [
+        'request'  => [
+            'url'     => "/accounts/100DemoAccount/features/dummy",
+            'method'  => 'delete',
+            'content' => [ ]
+        ],
+        'response' => [
+            'content' => [ ]
+        ]
+    ],
+
+    'testRestrictedAccessFeatureEnabledAndAccessedByMerchant' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts',
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'entity' => 'virtual_account',
+                'status' => 'active',
+            ],
+        ],
+    ],
+
+    'testRestrictedAccessFeatureDisabledAndAccessedByMerchant' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND
+                ]
+            ],
+            'status_code' => 400,
+        ],
     ],
 ];

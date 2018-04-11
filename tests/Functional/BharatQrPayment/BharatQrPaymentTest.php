@@ -4,11 +4,13 @@ namespace RZP\Tests\Functional\QrPayment;
 
 use RZP\Exception;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class BharatQrPaymentTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -22,16 +24,22 @@ class BharatQrPaymentTest extends TestCase
 
         $this->fixtures->merchant->activate();
 
-        $this->qrCode = $this->createVirtualAccount();
-
-        $this->ba->directAuth();
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
     }
 
     public function testQrPaymentProcess()
     {
         $request = $this->testData[__FUNCTION__];
 
-        $request['content']['PurchaseID'] = $this->qrCode['id'];
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
+
+        $request['content'] = $content;
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -49,14 +57,83 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals('card', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals(200, $payment['amount']);
+        $this->assertEquals('hitachi', $payment['gateway']);
 
         $this->assertEquals($bharatQr['payment_id'], $payment['id']);
         $this->assertEquals($bharatQr['expected'], true);
     }
 
+    public function testHitachiVerifyAndRefund()
+    {
+        $request = $this->testData['testQrPaymentProcess'];
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
+
+        $request['content'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->verifyPayment($payment['id']);
+
+        $this->refundPayment($payment['id']);
+    }
+
+    public function testHitachiBadCheckSum()
+    {
+        $request = $this->testData['testQrPaymentProcess'];
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
+
+        $content['CheckSum'] = 'random';
+
+        $request['content'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('NOK', $response[0]);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment);
+    }
+
     public function testUnexpectedPayment()
     {
         $request = $this->testData['testQrPaymentProcess'];
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback('tobefilled');
+
+        $request['content'] = $content;
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -68,9 +145,9 @@ class BharatQrPaymentTest extends TestCase
 
         // Live because by default mode is live
         // if entity id is not given
-        $bharatQr = $this->getLastEntity('bharat_qr', true, 'live');
+        $bharatQr = $this->getDbLastEntity('bharat_qr', 'live');
 
-        $payment =  $this->getLastEntity('payment', true, 'live');
+        $payment =  $this->getDbLastEntity('payment', 'live');
 
         $this->assertEquals('card', $payment['method']);
         $this->assertEquals('authorized', $payment['status']);
@@ -78,8 +155,87 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals($bharatQr['expected'], false);
     }
 
+    public function testUpiQrPaymentProcess()
+    {
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $request = $this->testData[__FUNCTION__];
+
+        $qrCode = $this->getLastEntity('qr_code', true);
+
+        $qrCodeId = substr($qrCode['id'], 3);
+
+        $request['content']['merchantTranId'] = $qrCodeId;
+
+        $content = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($request['content']);
+
+        $request['raw'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        //Created Qr Entity As Expected
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(10000, $payment['amount']);
+
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($upi['payment_id']);
+
+        $this->assertEquals($bharatQr['expected'], true);
+    }
+
+    public function testUpiVerifyAndRefundPayment()
+    {
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $request = $this->testData['testUpiQrPaymentProcess'];
+
+        $qrCode = $this->getLastEntity('qr_code', true);
+
+        $qrCodeId = substr($qrCode['id'], 3);
+
+        $request['content']['merchantTranId'] = $qrCodeId;
+
+        $content = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($request['content']);
+
+        $request['raw'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->verifyPayment($payment['id']);
+
+        $this->refundPayment($payment['id']);
+    }
+
     public function testFailedPayment()
     {
+        $this->markTestSkipped('We wont be getting notifications for failed payments');
+
         $request = $this->testData['testQrPaymentProcess'];
 
         unset($request['content']['F038']);
@@ -95,17 +251,25 @@ class BharatQrPaymentTest extends TestCase
 
     public function testDuplicateNotification()
     {
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
         $request = $this->testData['testQrPaymentProcess'];
 
-        $request['content']['PurchaseID'] = $this->qrCode['id'];
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
+
+        $request['content'] = $content;
 
         $response = $this->makeRequestAndGetContent($request);
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $bharatQr = $this->getEntities('bharat_qr', [], true);
+        $bharatQr = $this->getDbEntities('bharat_qr', []);
 
-        $this->assertEquals(count($bharatQr['items']) , 1);
+        $this->assertEquals(count($bharatQr) , 1);
     }
 
     protected function createVirtualAccount()

@@ -159,7 +159,7 @@ class NetbankingHdfcGatewayTest extends TestCase
         $this->assertEquals($data['netbanking_hdfc']['count'], 3);
         $this->assertTrue(file_exists($data['netbanking_hdfc']['file']));
 
-        Mail::assertSent(RefundFileMail::class, function ($mail)
+        Mail::assertQueued(RefundFileMail::class, function ($mail)
         {
             $testData = [
                 'body' => 'Please forward the HDFC Netbanking refunds file to: Directpay.Refunds@hdfcbank.com',

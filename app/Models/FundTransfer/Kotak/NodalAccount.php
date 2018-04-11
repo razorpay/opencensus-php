@@ -16,15 +16,11 @@ use RZP\Models\FileStore;
 use RZP\Models\FundTransfer;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Attempt\Type;
-use RZP\Models\FundTransfer\Base as NodalBase;
-use RZP\Models\Merchant;
+use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 use RZP\Models\Settlement;
-use RZP\Constants\MailTags;
-use RZP\Constants\Entity;
 use RZP\Constants\Mode;
-use RZP\Models\Transaction;
 
-class NodalAccount extends NodalBase\NodalAccount
+class NodalAccount extends NodalBase\FileProcessor
 {
     use FileHandlerTrait;
 
@@ -41,7 +37,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
     public function __construct()
     {
-        //parent::__construct();
+        parent::__construct();
 
         // Date format is DD/MM/YYYY in human representation
         $this->date = Carbon::today(Timezone::IST)->format('d/m/Y');
@@ -68,6 +64,9 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $this->summary['RTGS']['amount'] = 0;
         $this->summary['RTGS']['count'] = 0;
+
+        $this->summary['IMPS']['amount'] = 0;
+        $this->summary['IMPS']['count'] = 0;
     }
 
     public static function getHeadings()
@@ -75,39 +74,11 @@ class NodalAccount extends NodalBase\NodalAccount
         return Headings::getRequestFileHeadings();
     }
 
-    public function generateSettlementFile($entities, $h2h = true): array
-    {
-        $textData = $excelData = [];
-
-        foreach ($entities as $entity)
-        {
-            list($amount, $row) = $this->getSettlementRow($entity);
-
-            $textDataArray = $row;
-
-            $textDataArray['Amount'] = (string) $amount;
-
-            array_push($textData, $textDataArray);
-
-            array_push($excelData, $row);
-        }
-
-        $txt = $this->generateText($textData);
-
-        list($excelFileEntity, $textFileEntity) = $this->createSettlementFiles($excelData, $txt, $h2h);
-
-        $this->sendSettlementMail($excelFileEntity, $textFileEntity);
-
-        return [$textFileEntity, $excelFileEntity];
-    }
-
-    public function generatePayoutsFile(Base\PublicCollection $payoutAttempts): string
+    public function generateFundTransferFile(Base\PublicCollection $attempts, $h2h = true): FileStore\Creator
     {
         $textData = [];
 
-        $totalAmount = 0;
-
-        foreach ($payoutAttempts as $attempt)
+        foreach ($attempts as $attempt)
         {
             if ($attempt->isRefund() === true)
             {
@@ -118,30 +89,33 @@ class NodalAccount extends NodalBase\NodalAccount
                 list($amount, $row) = $this->getSettlementRow($attempt);
             }
 
-            $textData[] = $row;
+            $textDataArray = $row;
 
-            $totalAmount += $amount;
+            $textDataArray['Amount'] = (string) $amount;
+
+            array_push($textData, $textDataArray);
         }
-
-        $amounts['total'] = $totalAmount;
-
-        $count['total'] = $payoutAttempts->count();
 
         $txt = $this->generateText($textData);
 
-        $name = $this->getH2HFileName();
+        $textFileEntity = $this->createSettlementFiles($txt, $h2h);
 
-        $urlText = $this->writeToTextFileH2H($name, $txt);
+        $this->sendSettlementMail($textFileEntity);
 
-        self::$fileToWriteName = 'Kotak_Payout';
+        return $textFileEntity;
+    }
 
-        $name = $this->getFileToWriteName();
-
-        $this->createTxtFile($name, $txt);
-
-        $this->sendKotakPayoutsMail($name, $count, $amounts);
-
-        return $urlText;
+    /**
+     * Fetched the Nodal Account balance
+     *
+     * @return array
+     * [
+     *  {account_number} => {account_balance}
+     * ]
+     */
+    public function getAccountBalance(): array
+    {
+        return (new Balance())->getAccountBalance();
     }
 
     protected function getSettlementRow(Attempt\Entity $entity) : array
@@ -316,15 +290,8 @@ class NodalAccount extends NodalBase\NodalAccount
         return $dict;
     }
 
-    protected function createSettlementFiles($excelData, $textData, bool $h2h): array
+    protected function createSettlementFiles($textData, bool $h2h)
     {
-        // Create excel file
-        $excelFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
-                                              ->content($excelData)
-                                              ->extension(FileStore\Format::XLSX)
-                                              ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
-                                              ->save();
-
         // Create txt file in h2h only for live mode and h2h is true
         if (($this->getMode() === Mode::LIVE) and
             ($h2h === true))
@@ -350,12 +317,10 @@ class NodalAccount extends NodalBase\NodalAccount
                                              ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
                                              ->save();
 
-        return [$excelFile, $textFile];
+        return $textFile;
     }
 
-    protected function sendSettlementMail(
-        FileStore\Creator $excelFileEntity,
-        FileStore\Creator $textFileEntity)
+    protected function sendSettlementMail(FileStore\Creator $textFileEntity)
     {
         // Don't send mail if mode is test and env is not dev or testing
         if (($this->getMode() === Mode::TEST) and
@@ -365,6 +330,7 @@ class NodalAccount extends NodalBase\NodalAccount
         }
 
         $summary = $this->summary;
+
         $channel = 'Kotak';
 
         $today = Carbon::now(Timezone::IST)->format('d-m-Y');
@@ -372,31 +338,13 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $data = compact('summary', 'subject', 'channel');
 
-        $excelFileEntity = $excelFileEntity->get();
         $textFileEntity = $textFileEntity->get();
 
-        $data['excelFile'] = $excelFileEntity['local_file_path'];
         $data['textFile'] = $textFileEntity['local_file_path'];
 
         $kotakSettlementMail = new SettlementMail\KotakSettlement($data);
 
-        Mail::send($kotakSettlementMail);
-    }
-
-    protected function sendKotakPayoutsMail($fileName, $count, $amounts)
-    {
-        $amounts['total'] = sprintf('%.2f', $amounts['total']);
-
-        $data = compact('amounts', 'count');
-
-        $data['file_data'] = [
-            'file_path'  => $this->getFullFilePath($fileName),
-            'file_name'  => $fileName,
-        ];
-
-        $kotakPayoutMail = new SettlementMail\KotakPayout($data);
-
-        Mail::send($kotakPayoutMail);
+        Mail::queue($kotakSettlementMail);
     }
 
     protected function getFileToWriteNameWithoutExt()

@@ -3,6 +3,7 @@
 namespace RZP\Models\Base\QueryCache;
 
 use App;
+use Config;
 use Illuminate\Support\Collection;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Cache\Events\KeyForgotten;
@@ -27,6 +28,16 @@ class CacheQueryBuilder extends RememberableQueryBuilder
     public function getCached($columns = ['*'])
     {
         $trace = App::getFacadeRoot()['trace'];
+
+        $mock = Config::get('app.query_cache.mock');
+
+        //
+        // If query cache is mocked, we directly hit the db
+        //
+        if ($mock === true)
+        {
+            return IlluminateQueryBuilder::get($columns);
+        }
 
         try
         {
@@ -56,6 +67,16 @@ class CacheQueryBuilder extends RememberableQueryBuilder
      */
     public function flushCache($cacheTags = null)
     {
+        $mock = Config::get('app.query_cache.mock');
+
+        //
+        // If query cache is mocked we do not need to make cache flush call
+        //
+        if ($mock === true)
+        {
+            return true;
+        }
+
         $trace = App::getFacadeRoot()['trace'];
 
         $this->cacheTags($cacheTags);

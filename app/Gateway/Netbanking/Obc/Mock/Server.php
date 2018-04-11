@@ -2,18 +2,13 @@
 
 namespace RZP\Gateway\Netbanking\Obc\Mock;
 
-use RZP\Gateway\Base\Mock;
+use RZP\Gateway\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Netbanking\Obc\Status;
 use RZP\Gateway\Netbanking\Obc\RequestFields;
 use RZP\Gateway\Netbanking\Obc\ResponseFields;
 
-/**
- * This class cannot be marked as final as it will be mocked for test cases
- * Class Server
- * @package RZP\Gateway\Netbanking\Obc\Mock
- */
-class Server extends Mock\Server
+class Server extends Base\Mock\Server
 {
     /**
      * @var Gateway
@@ -45,11 +40,9 @@ class Server extends Mock\Server
 
         $this->validateActionInput($input, $this->action);
 
-        $response = $this->getVerifyResponse($input);
+        $content = $this->getVerifyResponse($input);
 
-        $this->content($response, $this->action);
-
-        return $this->makeResponse($response);
+        return $this->makeResponse($content);
     }
 
     private function getAuthResponse(array $input): array
@@ -75,12 +68,12 @@ class Server extends Mock\Server
 
         $encryptedString = $this->encrypt($queryStringToEncrypt);
 
-        return [$encryptedString => ""];
+        return [$encryptedString => ''];
     }
 
-    private function getVerifyResponse(array $input): array
+    private function getVerifyResponse(array $input)
     {
-        return [
+        $content = [
             ResponseFields::PAYEE_ID        => $input[RequestFields::PAYEE_ID],
             ResponseFields::PAY_REF_NUM     => $input[RequestFields::PAY_REF_NUM],
             ResponseFields::ITEM_CODE       => $input[RequestFields::ITEM_CODE],
@@ -88,6 +81,24 @@ class Server extends Mock\Server
             ResponseFields::BANK_PAYMENT_ID => $input[RequestFields::BID],
             ResponseFields::TXN_STATUS      => Status::VERIFY_SUCCESS,
         ];
+
+        $this->content($content, $this->action);
+
+        $stringResponse = $this->getResponseString($content);
+
+        return $stringResponse;
+    }
+
+    private function getResponseString($reponse)
+    {
+        $responseString = '';
+
+        foreach ($reponse as $key => $value)
+        {
+            $responseString .= $key . '=' . $value . '|';
+        }
+
+        return $responseString;
     }
 
     private function getQueryArray(string $queryString)

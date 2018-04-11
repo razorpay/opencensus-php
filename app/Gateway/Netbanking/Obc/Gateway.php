@@ -2,8 +2,8 @@
 
 namespace RZP\Gateway\Netbanking\Obc;
 
+use RZP\Exception;
 use RZP\Constants\Mode;
-use RZP\Exception\LogicException;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -13,26 +13,12 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
-use RZP\Exception\GatewayErrorException;
 
 use phpseclib\Crypt\AES;
 
-/**
- * This gateway has been developed as per the API contract from oriental bank of commerce
- * @see https://drive.google.com/drive/u/0/folders/1A5ULegmYTyv3yVgAD33wwi6wQZk50Nmt
- *
- * Class Gateway
- * @package RZP\Gateway\Netbanking\Obc
- */
 class Gateway extends Base\Gateway
 {
     protected $gateway = Payment\Gateway::NETBANKING_OBC;
-
-    /**
-     * Variable to store the gateway attributes after mapping
-     * @var array
-     */
-    private $gatewayAttribues = [];
 
     /**
      * @var Crypto
@@ -40,9 +26,9 @@ class Gateway extends Base\Gateway
     private $aesCrypto;
 
     protected $map = [
+        Base\Entity::AMOUNT             => Base\Entity::AMOUNT,
         // Auth request mapping
-        RequestFields::TXN_AMOUNT       => Base\Entity::AMOUNT,
-        RequestFields::ITEM_CODE        => Base\Entity::REFERENCE1,
+        RequestFields::PAYEE_ID         => Base\Entity::REFERENCE1,
 
         // Auth response mapping
         ResponseFields::PAID            => Base\Entity::STATUS,
@@ -59,17 +45,16 @@ class Gateway extends Base\Gateway
 
         $request = $this->getAuthorizeRequest($input);
 
-        $this->createGatewayPaymentEntity($this->gatewayAttribues);
+        $attributes = $this->getContentToSave($input['payment']);
 
-        // Resetting this object to null to free up the memory occupied by the contents of this object
-        $this->gatewayAttribues = [];
+        $this->createGatewayPaymentEntity($attributes);
 
         $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
     }
 
-    public final function callback(array $input)
+    public function callback(array $input)
     {
         parent::callback($input);
 
@@ -91,7 +76,7 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    public final function verify(array $input)
+    public function verify(array $input)
     {
         parent::verify($input);
 
@@ -105,7 +90,7 @@ class Gateway extends Base\Gateway
      * @param string $stringToEncrypt
      * @return string
      */
-    public final function encrypt(string $stringToEncrypt)
+    public function encrypt(string $stringToEncrypt)
     {
         $this->createCryptoIfNotCreated();
 
@@ -117,14 +102,14 @@ class Gateway extends Base\Gateway
      * @param string $stringToDecrypt
      * @return string
      */
-    public final function decrypt(string $stringToDecrypt)
+    public function decrypt(string $stringToDecrypt)
     {
         $this->createCryptoIfNotCreated();
 
         return $this->aesCrypto->decryptString($stringToDecrypt);
     }
 
-    protected final function sendPaymentVerifyRequest(Verify $verify)
+    protected function sendPaymentVerifyRequest(Verify $verify)
     {
         $data = $this->getVerifyRequestData($verify);
 
@@ -149,7 +134,7 @@ class Gateway extends Base\Gateway
         $verify->verifyResponseContent = $this->parseVerifyResponse($verify->verifyResponse);
     }
 
-    protected final function verifyPayment(Verify $verify)
+    protected function verifyPayment(Verify $verify)
     {
         $verify->status = $this->getVerifyMatchStatus($verify);
 
@@ -167,7 +152,7 @@ class Gateway extends Base\Gateway
      * @param $expectedAmount
      * @param $actualAmount
      */
-    protected final function assertAmount($expectedAmount, $actualAmount)
+    protected function assertAmount($expectedAmount, $actualAmount)
     {
         $expectedAmount = $this->formatAmount($expectedAmount);
         $actualAmount = $this->formatAmount($actualAmount);
@@ -175,30 +160,57 @@ class Gateway extends Base\Gateway
         parent::assertAmount($expectedAmount, $actualAmount);
     }
 
+    protected function getContentToSave($payment): array
+    {
+        return [
+            Base\Entity::AMOUNT => $payment[Payment\Entity::AMOUNT],
+            Base\Entity::REFERENCE1 => $this->getMerchantId(),
+        ];
+    }
+
     private function setVerifyAmountMismatch(Verify $verify)
     {
-        $mismatch = false;
-
         $input = $verify->input;
 
         $content = $verify->verifyResponseContent;
 
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2);
+
         try
         {
-            $this->assertAmount($input['payment']['amount'] / 100, $content[ResponseFields::AMOUNT]);
+            $this->assertAmount($expectedAmount, $content[ResponseFields::AMOUNT]);
         }
-        catch (LogicException $e)
+        catch (Exception\LogicException $e)
         {
-            $mismatch = true;
+            return true;
         }
 
-        return $mismatch;
+        return false;
     }
 
     private function parseVerifyResponse(\Requests_Response $response)
     {
-        // TODO: Check this
-        return json_decode($response->body, true);
+        $keyValuePair = explode('|', $response->body);
+
+        $verifyResponseArray = [];
+
+        foreach ($keyValuePair as $fields)
+        {
+            if (empty(trim($fields)) === true)
+            {
+                continue;
+            }
+
+            $content = explode('=', $fields);
+
+            $key = $content[0];
+
+            $value = $content[1];
+
+            $verifyResponseArray[$key] = $value;
+        }
+
+        return $verifyResponseArray;
     }
 
     private function getVerifyMatchStatus(Verify $verify)
@@ -265,7 +277,8 @@ class Gateway extends Base\Gateway
         if ((empty($content[ResponseFields::PAID]) === false) and
             ($content[ResponseFields::PAID] !== Status::SUCCESS))
         {
-            throw new GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
     }
 
@@ -366,7 +379,7 @@ class Gateway extends Base\Gateway
         //
 
         $queryStringToEncrypt = implode(
-            "|",
+            '|',
             array_map(
                 function($key, $value)
                 {
@@ -398,7 +411,7 @@ class Gateway extends Base\Gateway
         return $decryptedArray;
     }
 
-    public final function getMerchantId()
+    public function getMerchantId()
     {
         $merchantId = $this->getLiveMerchantId();
 

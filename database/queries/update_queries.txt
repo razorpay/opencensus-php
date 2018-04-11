@@ -1438,3 +1438,201 @@ UPDATE merchants
 SET max_payment_amount=1000000000,
     updated_at=UNIX_TIMESTAMP(NOW())
 WHERE parent_id='8ytYezIThlseJd';
+
+update settlements join fund_transfer_attempts
+on settlements.id = fund_transfer_attempts.source_id
+set settlements.utr = fund_transfer_attempts.utr
+where settlements.channel = 'icici'
+and settlements.`batch_fund_transfer_id` = fund_transfer_attempts.`batch_fund_transfer_id`
+and settlements.utr is null
+and fund_transfer_attempts.utr is not null;
+
+update emi_plans set deleted_at = now() where subvention = 'merchant';
+
+update emi_plans set merchant_payback = ROUND(10000 * (duration * rate/120000 * POWER(1 + rate/120000 , duration) - POWER(1 + rate/120000, duration) + 1)/ (duration * rate/120000 * POWER(1 + rate/120000, duration)));
+
+// setting it to max int (jan 19 2038)
+// between nov 1st 2017 and feb 5th 2018
+UPDATE tokens SET expired_at = 2147483647 WHERE method='netbanking' AND recurring_status IS NOT NULL AND created_at > 1506796200 AND created_at <= 1517853630;
+
+// after feb 5th 2018, 23:30
+UPDATE tokens SET expired_at = (UNIX_TIMESTAMP((DATE_ADD(FROM_UNIXTIME(created_at), INTERVAL 10 YEAR)))) WHERE method='netbanking' AND recurring_status IS NOT NULL AND created_at > 1517853630;
+
+update merchant_invoice join merchant_details
+on merchant_invoice.merchant_id = merchant_details.merchant_id
+set merchant_invoice.gstin = merchant_details.p_gstin
+where merchant_invoice.gstin = ''
+and merchant_details.gstin = ''
+and merchant_details.p_gstin != ''
+and merchant_details.p_gstin is not null
+and merchant_invoice.year = 2017
+and merchant_invoice.month = 12;
+
+update merchant_invoice join merchant_details
+on merchant_invoice.merchant_id = merchant_details.merchant_id
+set merchant_invoice.gstin = merchant_details.p_gstin
+where merchant_invoice.gstin = ''
+and merchant_details.gstin = ''
+and merchant_details.p_gstin != ''
+and merchant_details.p_gstin is not null
+and merchant_invoice.year = 2018
+and merchant_invoice.month = 1;
+
+-- move tokens to emandate method:
+UPDATE tokens
+SET method = 'emandate', auth_type = 'netbanking'
+WHERE method = 'netbanking';
+
+-- move payments to emandate method
+UPDATE payments
+SET method = 'emandate'
+WHERE created_at > 1504243800
+  AND terminal_id IN ('91LaFcjGVPBmcu',
+                      '8n8nyWExX8l4Oy',
+                      '8qH2tMbx3MCP7n',
+                      '8yswNFkuG98eN4',
+                      '9HxXL7xNhF3KyH',
+                      '9QYaAkoHaXO8Hk',
+                      '9TNVhZGrDKIQ1R',
+                      '9TNbtq22gvZql3',
+                      '9Yrjx0YHzWBlVQ',
+                      '9YrlbhQML8cd4Y')
+
+-- move emandate payments to auth_type = netbanking:
+UPDATE payments
+SET auth_type = 'netbanking'
+WHERE created_at > 1504243800
+  AND recurring_type = 'initial'
+  AND method = 'emandate'
+  AND terminal_id IN ('91LaFcjGVPBmcu',
+                      '8n8nyWExX8l4Oy',
+                      '8qH2tMbx3MCP7n',
+                      '8yswNFkuG98eN4',
+                      '9HxXL7xNhF3KyH',
+                      '9QYaAkoHaXO8Hk',
+                      '9TNVhZGrDKIQ1R',
+                      '9TNbtq22gvZql3',
+                      '9Yrjx0YHzWBlVQ',
+                      '9YrlbhQML8cd4Y')
+
+-- move orders to emandate method:
+UPDATE orders
+SET method = 'emandate'
+WHERE id IN
+    ( SELECT order_id
+      FROM payments
+      WHERE created_at > 1504243800
+        AND terminal_id IN ('91LaFcjGVPBmcu',
+                           '8n8nyWExX8l4Oy',
+                           '8qH2tMbx3MCP7n',
+                           '8yswNFkuG98eN4',
+                           '9HxXL7xNhF3KyH',
+                           '9QYaAkoHaXO8Hk',
+                           '9TNVhZGrDKIQ1R',
+                           '9TNbtq22gvZql3',
+                           '9Yrjx0YHzWBlVQ',
+                           '9YrlbhQML8cd4Y'))
+
+-- move terminals to emandate method:
+UPDATE terminals
+SET emandate = 1,
+netbanking = 0
+WHERE id IN ('91LaFcjGVPBmcu',
+             '8n8nyWExX8l4Oy',
+             '8qH2tMbx3MCP7n',
+             '8yswNFkuG98eN4',
+             '9HxXL7xNhF3KyH',
+             '9QYaAkoHaXO8Hk',
+             '9TNVhZGrDKIQ1R',
+             '9TNbtq22gvZql3',
+             '9Yrjx0YHzWBlVQ',
+             '9YrlbhQML8cd4Y')
+
+UPDATE fund_transfer_attempts
+SET initiate_at = created_at;
+
+# Update has_key_access to 1 for activation form submitted merchants
+UPDATE `merchants` m
+JOIN `merchant_details` md ON m.`id` = md.`merchant_id`
+SET m.`has_key_access` = 1
+WHERE m.`parent_id` IS NULL AND md.`submitted_at` IS NOT NULL;
+
+# Delete workflow for 'delete workflow'
+UPDATE workflows SET deleted_at = UNIX_TIMESTAMP(NOW()) WHERE id = '9R2zfkFxFdMDH4';
+
+# Undo deleted merchant_suspend workflow
+UPDATE workflows SET deleted_at = NULL WHERE id = '8VdlpVWnbPoqwK';
+
+# Update recipient_settlement_id in transfers table
+UPDATE transfers as tr
+    JOIN payments
+        ON payments.transfer_id = tr.id
+    JOIN transactions as txn
+        ON txn.entity_id = payments.id
+    JOIN settlements
+        ON txn.settlement_id = settlements.id
+SET tr.recipient_settlement_id = settlements.id
+WHERE payments.transfer_id IS NOT NULL
+AND txn.settled = 1
+AND txn.type='payment'
+AND tr.recipient_settlement_id IS NULL
+
+# Batches status set to failed with error - A function with return type must return a value.
+UPDATE batches SET status = 'processed', failure_reason = NULL where id = '9mgioKH3k2uIF1';
+
+UPDATE batches SET status = 'processed', failure_reason = NULL where id = '9mgXmUTz5fuSNH';
+
+UPDATE batches SET status = 'processed', failure_reason = NULL where id = '9mjTnhhc1GygE1';
+
+https://razorpay.slack.com/archives/C0SG9Q7TM/p1522674619000397
+UPDATE refunds SET status='failed', gateway_refunded = 0 WHERE id in ('8fUtGcrig5clJ6', '8fUsm1am4FYOO7')
+
+https://razorpay.slack.com/archives/C3BPZHG8P/p1523020215000036
+UPDATE terminals SET gateway_acquirer = 'ratn' where id in ('92Ay2pCOmk80iq', '9IjdmbQNKKJ7Uz');
+
+UPDATE tokens set recurring_failure_reason = 'signed Content does not tally with data mandate' where id = '9tWADFziLif7gI'
+UPDATE tokens set recurring_failure_reason = 'signed Content does not tally with data mandate' where id = '9trR4PM6G0MxDf'
+UPDATE tokens set recurring_failure_reason = 'Aadhaar not mapped to account number' where id = '9uGhuBWGEQ3XwI'
+UPDATE tokens set recurring_failure_reason = 'No such account' where id = '9ueEcZFs66Kr3M'
+UPDATE tokens set recurring_failure_reason = 'Aadhaar not mapped to account number' where id = '9ukO696PuwzRMs'
+UPDATE tokens set recurring_failure_reason = 'No such account' where id = '9v2BpJ5usVazDp'
+UPDATE tokens set recurring_failure_reason = 'Aadhaar not mapped to account number' where id = '9v2rkyJKvrCWef'
+UPDATE tokens set recurring_failure_reason = 'No such account' where id = '9vUrjLuww2VhWc'
+UPDATE tokens set recurring_failure_reason = 'Aadhaar not mapped to account number' where id = '9vXQP3a1Yb0hbA'
+UPDATE tokens set recurring_failure_reason = 'Aadhaar not mapped to account number' where id = '9vt8OaObXL7SEC'
+
+# GST Default Taxes
+INSERT INTO `taxes` (`id`, `merchant_id`, `name`, `rate_type`, `rate`, `created_at`, `updated_at`, `deleted_at`)
+VALUES
+	('9nDpYboKAK9j7t','100000Razorpay','IGST 0%','percentage',0,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYciCWeNBzE','100000Razorpay','IGST 5%','percentage',500,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYdbYNqD4Rw','100000Razorpay','IGST 12%','percentage',1200,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYf1tTUs2Vh','100000Razorpay','IGST 18%','percentage',1800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYfqgnYW5Dx','100000Razorpay','IGST 28%','percentage',2800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYglSpU58lc','100000Razorpay','CGST 0%','percentage',0,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYhZ0d60X7V','100000Razorpay','CGST 2.5%','percentage',250,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYiArP6j0qT','100000Razorpay','CGST 5%','percentage',500,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYivRHUQQV8','100000Razorpay','CGST 6%','percentage',600,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYjuyZsOlMK','100000Razorpay','CGST 9%','percentage',900,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYkng64GyTa','100000Razorpay','CGST 12%','percentage',1200,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYlTs7cWM80','100000Razorpay','CGST 14%','percentage',1400,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYmPK2K2mVi','100000Razorpay','CGST 18%','percentage',1800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYnFEoqJQ5v','100000Razorpay','CGST 28%','percentage',2800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYnvgiGXrZh','100000Razorpay','SGST 0%','percentage',0,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYoeYBsXRvC','100000Razorpay','SGST 2.5%','percentage',250,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYpMRZgJEgU','100000Razorpay','SGST 5%','percentage',500,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYpuN72gdfY','100000Razorpay','SGST 6%','percentage',600,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYqgYcqpr8q','100000Razorpay','SGST 9%','percentage',900,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYrIMXQTtPd','100000Razorpay','SGST 12%','percentage',1200,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYs1yK0pndD','100000Razorpay','SGST 14%','percentage',1400,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYsoU7subph','100000Razorpay','SGST 18%','percentage',1800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYtb0S0JhMP','100000Razorpay','SGST 28%','percentage',2800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYuFVNQcVaU','100000Razorpay','UTGST 0%','percentage',0,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYv53mqSsip','100000Razorpay','UTGST 2.5%','percentage',250,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYvgwu0p8WP','100000Razorpay','UTGST 5%','percentage',500,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYwRScK0Mz2','100000Razorpay','UTGST 6%','percentage',600,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYxMkO0LLhz','100000Razorpay','UTGST 9%','percentage',900,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYyC50acDzW','100000Razorpay','UTGST 12%','percentage',1200,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYz26oaOHgI','100000Razorpay','UTGST 14%','percentage',1400,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYznDzU7NKP','100000Razorpay','UTGST 18%','percentage',1800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpZ0hEw4vZky','100000Razorpay','UTGST 28%','percentage',2800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL);

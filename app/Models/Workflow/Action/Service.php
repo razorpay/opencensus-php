@@ -5,11 +5,12 @@ namespace RZP\Models\Workflow\Action;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Role;
 use RZP\Models\Workflow\Constants;
 
 class Service extends Base\Service
 {
-    protected $admin;
+    protected $maker;
 
     const ACTION_FUNCTION_MAPPING = [
         "maker" => [
@@ -30,12 +31,12 @@ class Service extends Base\Service
     {
         parent::__construct();
 
-        $this->admin = $this->app['basicauth']->getAdmin();
+        $this->maker = $this->app['workflow']->getWorkflowMaker();
     }
 
     public function create(array $input)
     {
-        $action = $this->core()->create($input, false, $this->admin);
+        $action = $this->core()->create($input, false, $this->maker);
 
         return $action->toArrayPublic();
     }
@@ -76,7 +77,7 @@ class Service extends Base\Service
      */
     public function getActionsCheckedByAdmin($input)
     {
-        $input[Constants::EXPAND] = ['admin'];
+        $input[Constants::EXPAND] = [Entity::MAKER];
 
         $input[Constants::ACTIONS_CHECKED] = true;
 
@@ -89,9 +90,7 @@ class Service extends Base\Service
     {
         $data = [];
 
-        $admin = $this->app['basicauth']->getAdmin();
-
-        $orgId = $admin->getOrgId();
+        $orgId = $this->maker->getOrgId();
 
         Entity::verifyIdAndStripSign($actionId);
 
@@ -101,7 +100,7 @@ class Service extends Base\Service
                        ->workflow_action
                        ->getActionDetails($actionId, $orgId)
                        ->first();
-        
+
         // $action can be null because we don't validate the result after fetching from the collection.
         if (empty($action) === false)
         {
@@ -152,11 +151,9 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($id);
 
-        $admin = $this->app['basicauth']->getAdmin();
-
         $action = $this->repo->workflow_action->findOrFailPublic($id);
 
-        $this->core()->close($action, $admin);
+        $this->core()->close($action, $this->maker);
 
         // fetch again from db to get updated values
         $action = $this->repo->workflow_action->findOrFailPublic($id);
@@ -164,7 +161,7 @@ class Service extends Base\Service
         return $action->toArrayPublic();
     }
 
-    public function executeAction(string $id)
+    public function executeAction(string $id, Role\Entity $role = null)
     {
         Entity::verifyIdAndStripSign($id);
 
@@ -184,7 +181,19 @@ class Service extends Base\Service
 
         $admin = $this->app['basicauth']->getAdmin();
 
-        return $this->core()->executeAction($action, $admin);
+        if (empty($role) === true)
+        {
+            if ($admin->isSuperAdmin() === false)
+            {
+                $role = $admin->getSuperAdminRole();
+            }
+            else
+            {
+                $role = null;
+            }
+        }
+
+        return $this->core()->executeAction($action, $admin, $role);
     }
 
     /**
@@ -198,7 +207,7 @@ class Service extends Base\Service
      */
     public function getActionsForChecker(array $input)
     {
-        $input[Constants::EXPAND] = ['admin'];
+        $input[Constants::EXPAND] = [Entity::MAKER];
 
         $input[Constants::CHECKER_ACTIONS] = true;
 
@@ -221,9 +230,9 @@ class Service extends Base\Service
         // Only superadmin can access maker.all and maker.open
         $this->app['basicauth']->validateSuperAdminAccess();
 
-        $input[Entity::ORG_ID] = $this->admin->getOrgId();
+        $input[Entity::ORG_ID] = $this->maker->getOrgId();
 
-        $input[Constants::EXPAND] = ['admin'];
+        $input[Constants::EXPAND] = [Entity::MAKER];
 
         $input[Entity::PERMISSION] = true;
 
@@ -241,7 +250,7 @@ class Service extends Base\Service
     {
         $input[Entity::PERMISSION] = true;
 
-        $input[Constants::EXPAND] = ['admin'];
+        $input[Constants::EXPAND] = [Entity::MAKER];
 
         $input[Constants::CLOSED_ACTIONS] = true;
 
@@ -259,11 +268,11 @@ class Service extends Base\Service
     {
         $input[Entity::PERMISSION] = true;
 
-        $input[Constants::EXPAND] = ['workflow', 'admin'];
+        $input[Constants::EXPAND] = ['workflow', Entity::MAKER];
 
-        $input[Entity::ORG_ID] = $this->admin->getOrgId();
+        $input[Entity::ORG_ID] = $this->maker->getOrgId();
 
-        $input[Entity::ADMIN_ID] = $this->admin->getId();
+        $input[Entity::MAKER_ID] = $this->maker->getId();
 
         $actions = $this->repo->workflow_action->fetch($input);
 

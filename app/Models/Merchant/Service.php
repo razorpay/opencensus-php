@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Config;
 use DB;
 use Mail;
+use Request;
 use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Token as OAuthToken;
 use RZP\Base\RuntimeManager;
@@ -21,8 +22,8 @@ use RZP\Models\BankAccount;
 use RZP\Models\Base;
 use RZP\Models\Coupon;
 use RZP\Models\Feature;
-use RZP\Models\Key;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Offer;
@@ -36,8 +37,8 @@ class Service extends Base\Service
 {
     use Notify;
 
-    const COUPON_RESPONSE = 'apply_coupon';
-    const OAUTH_MAIL      = 'oauth_mail';
+    const COUPON_RESPONSE               = 'apply_coupon';
+    const OAUTH_MAIL                    = 'oauth_mail';
 
     /**
      * Creates a merchant and saves in database
@@ -204,7 +205,28 @@ class Service extends Base\Service
             Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
         }
 
-        $merchant = (new Merchant\Core)->edit($merchant, $input);
+        $merchant = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
+        {
+            $merchant = (new Merchant\Core)->edit($merchant, $input);
+
+            if (isset($input[Entity::FEE_BEARER]) === true)
+            {
+                $merchantId = $merchant->getId();
+
+                // add feebearer tag if fee_bearer field is set to customer
+                // else remove feebearer tag
+                if ($input[Entity::FEE_BEARER] === 'customer')
+                {
+                    $this->insertTag($merchantId, 'feebearer');
+                }
+                else
+                {
+                    $this->deleteTag($merchantId, 'feebearer');
+                }
+            }
+
+            return $merchant;
+        });
 
         return $merchant->toArrayPublic();
     }
@@ -363,7 +385,9 @@ class Service extends Base\Service
         // validate if this plan can be set for this merchant.
         // Refer: https://github.com/razorpay/api/issues/324
 
-        (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan);
+        $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+
+        (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan, $methods);
 
         $originalPricingPlan = null;
 
@@ -632,9 +656,44 @@ class Service extends Base\Service
 
         $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
 
-        $this->logActionToSlack($merchant, SlackActions::EDIT_BANK_DETAILS, $input);
+        // Using Request::input() since we do not want the file as input to log
+        $this->logActionToSlack($merchant, SlackActions::EDIT_BANK_DETAILS, Request::input());
 
         return $ba->toArray();
+    }
+
+    /**
+     * This function returns if there any open workflow actions associated with the current bank account entity of a
+     * merchant. @todo: Replace this with a more generic approach based on primary entity
+     *
+     * @param $id
+     *
+     * @return bool
+     */
+    public function getBankAccountChangeStatus($id)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant);
+
+        if (empty($oldBankAccount) === true)
+        {
+            return false;
+        }
+
+        $actions = (new \RZP\Models\Workflow\Action\Core)->fetchOpenActionOnEntityOperation(
+            $oldBankAccount->getId(), $oldBankAccount->getEntity(), Permission::EDIT_MERCHANT_BANK_DETAIL);
+
+        $actions = $actions->toArray();
+
+        // If there are any action in progress
+        if (empty($actions) === false)
+        {
+            return true;
+        }
+
+        return false;
+
     }
 
     public function getBankAccount($id)
@@ -768,6 +827,13 @@ class Service extends Base\Service
         return $webhook->toArrayPublic();
     }
 
+    public function fetchWebhookEvents()
+    {
+        $events = (new Webhook\Core)->fetchApplicableWebhookEvents($this->merchant);
+
+        return $events;
+    }
+
     public function getWebhook($id)
     {
         $webhook = $this->repo->webhook->findByIdAndMerchant($id, $this->merchant);
@@ -775,11 +841,22 @@ class Service extends Base\Service
         return $webhook->toArrayPublic();
     }
 
-    public function getWebhooks()
+    public function getWebhooks(array $params)
     {
-        $webhooks = $this->repo->webhook->fetch([], $this->merchant->getId());
+        $webhooks = $this->repo->webhook->fetch($params, $this->merchant->getId());
 
         return $webhooks->toArrayPublic();
+    }
+
+    public function createOAuthAppWebhook(string $appId, array $input): array
+    {
+        $input[Webhook\Entity::ENTITY_TYPE] = AccessMap\Entity::APPLICATION;
+
+        $input[Webhook\Entity::ENTITY_ID] = $appId;
+
+        $webhook = (new Webhook\Core)->createWebhook($this->merchant, $input);
+
+        return $webhook->toArrayPublic();
     }
 
     public function patchMerchantBeneficiaryCode()
@@ -907,18 +984,25 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function updateHoldFundsForMultipleMerchants(array $input)
+    public function updateMerchantsBulk(array $input)
     {
-        (new Validator)->validateInput('updateHoldFunds', $input);
-
         $this->trace->info(
-            TraceCode::MERCHANT_HOLD_FUNDS_BULK_UPDATE_REQUEST,
+            TraceCode::MERCHANT_BULK_UPDATE_REQUEST,
             $input
         );
 
+        if((isset($input['attributes']) === true) and
+           (isset($input['action']) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Both Action and Attributes should not be sent.');
+        }
+
+        (new Validator)->validateInput('updateMerchantsBulk', $input);
+
         $merchantIds = $input['merchant_ids'];
 
-        $holdFunds = $input['hold_funds'];
+        unset($input['merchant_ids']);
 
         $successCount = $failedCount = 0;
 
@@ -928,7 +1012,14 @@ class Service extends Base\Service
         {
             try
             {
-                $this->updateHoldFunds($merchantId, $holdFunds);
+                if(isset($input['attributes']) === true)
+                {
+                    $this->edit($merchantId, $input['attributes']);
+                }
+                else
+                {
+                    $this->action($merchantId, $input);
+                }
 
                 $successCount++;
             }
@@ -950,7 +1041,7 @@ class Service extends Base\Service
         ];
 
         $this->trace->info(
-            TraceCode::MERCHANT_HOLD_FUNDS_BULK_UPDATE_RESPONSE,
+            TraceCode::MERCHANT_BULK_UPDATE_RESPONSE,
             $response
         );
 
@@ -1071,11 +1162,7 @@ class Service extends Base\Service
 
     public function getMerchantFeatures()
     {
-        $merchant = $this->merchant;
-
-        $data = (new Feature\Service)->getFeaturesForEntity($merchant);
-
-        return $data;
+        return (new Feature\Service)->getFeaturesForEntity($this->merchant);
     }
 
     public function addOrRemoveMerchantFeatures(array $input)
@@ -1114,6 +1201,64 @@ class Service extends Base\Service
     }
 
     /**
+     * Bulk add or remove tags from a list of merchant_ids
+     *
+     * Input:
+     *
+     * name = Tag_Name
+     * action = insert/delete
+     * merchant_ids = [array, of, ids]
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function bulkTag(array $input): array
+    {
+        $this->trace->info(TraceCode::MERCHANT_TAGS_BULK_REQUEST, $input);
+
+        (new Validator)->validateInput('bulk_tag', $input);
+
+        $merchantIds = $input['merchant_ids'];
+        // Action: 'insert' or 'delete'
+        $action      = $input['action'];
+        $tagName     = $input['name'];
+
+        $tagFunction = $action . 'Tag';
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                //
+                // Calls either:
+                // $this->insertTag() or $this->deleteTag()
+                //
+                $this->{$tagFunction}($merchantId, $tagName);
+            }
+            catch (\Throwable $t)
+            {
+                $this->trace->error(
+                    TraceCode::MERCHANT_TAGS_BULK_EXCEPTION,
+                    [
+                        'merchant_id' => $merchantId,
+                        'tag_name'    => $tagName
+                    ]);
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        return [
+            'total_count'  => count($merchantIds),
+            'failed_count' => count($failedIds),
+            'failed_ids'   => $failedIds
+        ];
+    }
+
+    /**
      * used for getting tags of the merchant
      * @param string $id
      */
@@ -1126,9 +1271,14 @@ class Service extends Base\Service
 
     /**
      * used for adding tags to merchant
+     * This function uses retag(), which overwrites all previous tags
+     * with the ones passed in the $input array
+     *
      * @param string $id
-     * @param array $input which contains the tags of the merchant
-     * @param bool $slackNotify
+     * @param array  $input which contains the tags of the merchant
+     * @param bool   $slackNotify
+     *
+     * @return
      */
     public function addTags($id, $input, $slackNotify = false)
     {
@@ -1166,6 +1316,41 @@ class Service extends Base\Service
         $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
 
         return $merchant->tagNames();
+    }
+
+    /**
+     * Tag a merchant for a single tag
+     *
+     * @param string $merchantId
+     * @param string $tagName
+     *
+     * @return mixed
+     */
+    public function insertTag(string $merchantId, string $tagName)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchant->tag($tagName);
+
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+
+        return $merchant->tagNames();
+    }
+
+    /**
+     * This function is used for updating key access of a merchant
+     * @param string $merchantId
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateKeyAccess(string $merchantId, array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchant = (new Core)->updateKeyAccess($merchant, $input);
+
+        return $merchant->toArrayPublic();
     }
 
     public function markGratisTransactionPostpaid($input)
@@ -1211,17 +1396,10 @@ class Service extends Base\Service
         return $response;
     }
 
-    protected function updateHoldFunds(string $merchantId, bool $holdFunds)
+    public function getUsers()
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchantId = $this->merchant->getId();
 
-        $merchant->setHoldFunds($holdFunds);
-
-        $this->repo->saveOrFail($merchant);
-    }
-
-    public function getUsers(string $merchantId)
-    {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $users = (new Merchant\Core)->getUsers($merchant);
@@ -1295,7 +1473,6 @@ class Service extends Base\Service
         );
 
         return $response;
-
     }
 
     /**
@@ -1418,7 +1595,8 @@ class Service extends Base\Service
 
         foreach ($featureNames as $featureName)
         {
-            $feature = $this->repo->feature->findByEntityIdAndNameOrFail(
+            $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+                Feature\Constants::MERCHANT,
                 $entityId,
                 $featureName);
 
@@ -1493,13 +1671,19 @@ class Service extends Base\Service
      */
     public function sendOAuthMail(array $input, string $type): array
     {
-        $this->trace->info(TraceCode::SEND_OAUTH_MAIL_REQUEST, ['type' => $type, 'input' => $input]);
+        $this->trace->info(
+            TraceCode::SEND_OAUTH_MAIL_REQUEST,
+            [
+                'type' => $type,
+                'input' => $input
+            ]);
 
-        (new Merchant\Validator)->validateInput(self::OAUTH_MAIL, $input);
+        (new Validator)->validateInput(self::OAUTH_MAIL, $input);
 
         $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
         $user     = $this->repo->user->findOrFail($input[User\Entity::USER_ID]);
-        $client   = (new OAuthClient\Repository)->findOrFail($input[OAuthToken\Entity::CLIENT_ID]);
+        $client   = (new OAuthClient\Repository)->findOrFail(
+                                                    $input[OAuthToken\Entity::CLIENT_ID]);
 
         $mailer = $this->getOAuthMailerClassByType($type);
 
@@ -1587,5 +1771,14 @@ class Service extends Base\Service
             User\Entity::PASSWORD_CONFIRMATION => $input['password_confirmation'],
             User\Entity::CAPTCHA_DISABLE       => User\Validator::DISABLE_CAPTCHA_SECRET,
         ];
+    }
+
+    public function enableEmiMerchantSubvention(string $id, string $emiPlanId, array $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $emiPlan = $this->repo->emi_plan->findOrFailPublic($emiPlanId);
+
+        return $this->core()->enableEmiMerchantSubvention($merchant, $emiPlan, $input);
     }
 }

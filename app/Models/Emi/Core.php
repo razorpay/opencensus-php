@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Emi;
 
-use RZP\Exception;
 use RZP\Models\Base;
 
 class Core extends Base\Core

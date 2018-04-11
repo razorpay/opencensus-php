@@ -22,7 +22,7 @@ class RefundFile extends Base\RefundFile
     {
         parent::__construct();
 
-        $this->setTodayDate();
+        $this->date = Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
     }
 
     public function generate($input)
@@ -106,7 +106,8 @@ class RefundFile extends Base\RefundFile
             $count--;
 
             if (($ignoreLastNewline === false) or
-                (($ignoreLastNewline === true) and ($count > 0)))
+                (($ignoreLastNewline === true) and
+                 ($count > 0)))
             {
                 $txt .= $glue;
             }
@@ -129,10 +130,6 @@ class RefundFile extends Base\RefundFile
         return implode(self::DELIMITER, $line);
     }
 
-    private function setTodayDate()
-    {
-        $this->date = Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
-    }
 
     protected function getFileToWriteNameWithoutExt()
     {

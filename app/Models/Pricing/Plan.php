@@ -51,6 +51,7 @@ class Plan extends PublicCollection
                         break;
 
                     case Method::NETBANKING:
+                    case Method::EMANDATE:
                         $rule[Entity::PAYMENT_NETWORK_NAME] = Bank\Name::getName($network);
                         break;
 

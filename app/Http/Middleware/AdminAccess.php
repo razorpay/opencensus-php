@@ -91,7 +91,6 @@ class AdminAccess
 
     private function validateAdminBelongsToSameOrg($routeName, $admin, $request)
     {
-
         if (in_array($routeName, static::getExcludedRoutes(), true) === true)
         {
             return;
@@ -280,13 +279,7 @@ class AdminAccess
         // there's a hierarchy (or actually a graph)
         $nodes = $this->getAllNodes($admin);
 
-        // $nodes['groups'], $nodes['admins']
-
-        // dd($nodes);
-
         $merchantIds = $this->getMerchantIdsOfNodes($nodes);
-
-        // dd($merchantIds);
 
         if (in_array($merchant->id, $merchantIds))
         {

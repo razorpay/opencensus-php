@@ -33,9 +33,7 @@ class UpiMindgateGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal', [
-            'gateway'   => Gateway::UPI_MINDGATE
-        ]);
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
 
         $this->gateway = Gateway::UPI_MINDGATE;
 
@@ -85,6 +83,70 @@ class UpiMindgateGatewayTest extends TestCase
         return $payment;
     }
 
+    public function testIntentPayment()
+    {
+        $this->fixtures->create('terminal:shared_upi_mindgate_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi_mindgate', true);
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals('pay', $upiEntity['type']);
+        $this->assertEquals('1UpiIntMndgate', $payment['terminal_id']);
+        $this->assertNull($payment['vpa']);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'callback')
+            {
+                $content[8] = 'user@hdfcbank';
+            }
+        });
+
+        $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $upi = $this->getLastEntity('upi', true);
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals($payment['vpa'], 'user@hdfcbank');
+        $this->assertEquals('HDFC', $upi['bank']);
+        $this->assertEquals('hdfc', $upi['acquirer']);
+        $this->assertEquals('hdfcbank', $upi['provider']);
+    }
+
+    public function testUpiAmountCap()
+    {
+        $this->payment['vpa'] = 'vishnu@upi';
+
+        $payment = $this->payment;
+
+        $payment['amount'] = 2100000;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            });
+    }
+
     public function testFailedVpaValidation()
     {
         $this->payment['vpa'] = 'invalidvpa@hdfcbank';
@@ -108,6 +170,50 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals('invalidvpa@hdfcbank', $upiEntity[Entity::VPA]);
         $this->assertNull($upiEntity[Entity::GATEWAY_PAYMENT_ID]);
         $this->assertNull($upiEntity[Entity::NPCI_REFERENCE_ID]);
+    }
+
+
+    public function testVpaWithCapitalPspValidation($status = 'created')
+    {
+        $this->payment['vpa'] = 'vishnu@ICiCI';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('async', $response['type']);
+
+        $this->checkPaymentStatus($paymentId, $status);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        // We should have gotten a successful response
+        $this->assertEquals(['success' => true], $response);
+        $this->assertEquals('vishnu@icici', $upiEntity[Entity::VPA]);
+
+    }
+
+    public function testVpaWithoutPspValidation()
+    {
+        $this->payment['vpa'] = 'invalidvpa';
+
+        $payment = $this->payment;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            });
     }
 
     /**
@@ -143,6 +249,39 @@ class UpiMindgateGatewayTest extends TestCase
         $this->checkPaymentStatus($paymentId, 'created');
 
         return $paymentId;
+    }
+
+    public function testTpvPayment()
+    {
+        $this->fixtures->create('terminal:shared_upi_mindgate_tpv_terminal', ['tpv' => 3]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $order = $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $payment['amount'] = $order['amount'];
+        $payment['bank'] = $order['bank'];
+        $payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('100UPIMndgtTpv', $payment['terminal_id']);
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('collect', $gatewayEntity['type']);
+        $this->assertEquals('vishnu@icici', $gatewayEntity['vpa']);
     }
 
     public function testVerifyPayment()
@@ -208,6 +347,25 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals('failed', $payment['status']);
     }
 
+    public function testPaymentWithExpiryPrivateAuth()
+    {
+        $this->fixtures->merchant->addFeatures(['s2supi']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['upi']['expiry_time'] = 10;
+
+        $response = $this->doS2SUpiPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals(10, $upiEntity['expiry_time']);
+    }
+
     public function testRefundSuccess()
     {
         $payment = $this->testPayment();
@@ -229,6 +387,42 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals('failed', $entity['status']);
         $this->assertEquals(false, $entity['gateway_refunded']);
 
+    }
+
+    public function testRetryRefund()
+    {
+        $this->payment['vpa'] = 'failedrefund@hdfcbank';
+
+        $payment = $this->testPayment();
+
+        $refund = $this->refundPayment($payment['id'], 10000);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->mockServerContentFunction(function (& $content, $action = null) use($refund)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = 'FAILURE';
+            }
+
+            if ($action === 'refund')
+            {
+                $refundId = substr($refund['id'], 5);
+
+                $content[4] = 'SUCCESS';
+
+                $this->assertEquals($refundId . 1, $content[1]);
+            }
+        });
+
+        $refund = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals($refund['status'], 'processed');
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($refund['attempts'], 2);
     }
 
     protected function checkPaymentStatus($id, $expectedStatus)
