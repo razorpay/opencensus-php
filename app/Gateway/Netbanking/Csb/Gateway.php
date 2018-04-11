@@ -49,15 +49,17 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity([RequestFields::AMOUNT => $input['payment']['amount'] / 100]);
 
-        $this->traceGatewayPaymentRequest($request,
-                                          $input,
-                                          $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST,
-                                          ['encrypted' => true]);
+        $this->traceGatewayPaymentRequest(
+            $request,
+            $input,
+            $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST,
+            ['encrypted' => true]
+        );
 
         return $request;
     }
 
-    public final function callback(array $input): array
+    public function callback(array $input): array
     {
         parent::callback($input);
 
@@ -98,28 +100,26 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    protected function sendPaymentVerifyRequest(Verify $verify, bool $verifyCallback = false)
+    protected function sendPaymentVerifyRequest(Verify $verify)
     {
-        $request = $this->getVerifyRequestData($verify, $verifyCallback);
+        $request = $this->getVerifyRequestData($verify);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            array_merge(
-                $request,
-                [
-                    'encrypted'       => true,
-                    'payment_id'      => $verify->input['payment']['id'],
-                    'gateway'         => $this->gateway,
-                    'verify_callback' => $verifyCallback
-                ]));
+            [
+                'request'    => $request,
+                'encrypted'  => true,
+                'payment_id' => $verify->input['payment']['id'],
+                'gateway'    => $this->gateway
+            ]
+        );
 
         $response = $this->sendGatewayRequest($request);
 
         $data = [
             'gateway'         => $this->gateway,
             'response'        => $response->body,
-            'payment_id'      => $verify->input['payment']['id'],
-            'verify_callback' => $verifyCallback
+            'payment_id'      => $verify->input['payment']['id']
         ];
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE, $data);
@@ -201,7 +201,7 @@ class Gateway extends Base\Gateway
 
         $verify->payment = $gatewayPayment;
 
-        $this->sendPaymentVerifyRequest($verify, true);
+        $this->sendPaymentVerifyRequest($verify);
 
         $this->checkGatewaySuccess($verify);
 
@@ -284,10 +284,9 @@ class Gateway extends Base\Gateway
      * @see https://docs.google.com/document/d/153ypkOhWNIetN3kV153gevKz2EIBO4aGj4XjIguLB0Y/edit#
      *
      * @param Verify $verify
-     * @param bool $verifyCallback
      * @return array
      */
-    private function getVerifyRequestData(Verify $verify, bool $verifyCallback = false): array
+    private function getVerifyRequestData(Verify $verify): array
     {
         $content = [
             $this->getMerchantId(),
@@ -296,31 +295,18 @@ class Gateway extends Base\Gateway
             $verify->input['payment']['id'],
             $verify->input['payment']['amount'] / 100,
             $this->getCallbackUrl(),
+            $verify->payment->getBankPaymentId(),
+            Mode::VERIFY
         ];
-
-        //
-        // When we are verifying the callback, we want to send the
-        // callback response payee_id and amount in the verify request
-        //
-        if ($verifyCallback === true)
-        {
-            $content[3] = $verify->input['gateway'][ResponseFields::BANK_REF_NUM];
-            $content[4] = $verify->input['gateway'][ResponseFields::AMOUNT];
-            $content[5] = $this->getCallbackUrl();
-        }
-
-        if (empty($verify->payment->getBankPaymentId()) === false)
-        {
-            $content = array_merge($content, [$verify->payment->getBankPaymentId(), Mode::VERIFY]);
-        }
-        else
-        {
-            $content = array_merge($content, ["", Mode::VERIFY_WO_TID]);
-        }
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            array_merge($content, ["verify_callback = $verifyCallback"]));
+            [
+                'data'       => $content,
+                'payment_id' => $verify->input['payment']['id'],
+                'gateway'    => $this->gateway
+            ]
+        );
 
         $verify->verifyRequest = $content;
 
