@@ -4,8 +4,9 @@ namespace RZP\Mail\OAuth;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
+use RZP\Mail\Base\Constants;
 
-class CompetitorAuthorized extends Mailable
+class CompetitorAppAuthorized extends Mailable
 {
     protected $data;
 
@@ -18,21 +19,23 @@ class CompetitorAuthorized extends Mailable
 
     protected function addRecipients()
     {
-        $this->to('support@razorpay.com');
+        $this->to(Constants::MAIL_ADDRESSES[Constants::SUPPORT], Constants::HEADERS[Constants::SUPPORT]);
+
+        $this->cc(Constants::MAIL_ADDRESSES[Constants::PRODUCT_OAUTH], Constants::HEADERS[Constants::PRODUCT_OAUTH]);
 
         return $this;
     }
 
     protected function addHtmlView()
     {
-        $this->view('emails.oauth.competitor_authorized');
+        $this->view('emails.oauth.competitor_app_authorized');
 
         return $this;
     }
 
     protected function addSubject()
     {
-        $this->subject('Razorpay | Competitor access grant notification');
+        $this->subject('Razorpay | Competitor access granted');
 
         return $this;
     }

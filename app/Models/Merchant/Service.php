@@ -7,6 +7,7 @@ use Config;
 use DB;
 use Mail;
 use Request;
+use Razorpay\OAuth\Application as OAuthApplication;
 use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Token as OAuthToken;
 use RZP\Base\RuntimeManager;
@@ -1696,7 +1697,7 @@ class Service extends Base\Service
 
         Mail::queue((new $mailer($data)));
 
-        $this->sendCompetitorAuthorizedEmail($merchant, $user, $client);
+        $this->sendCompetitorAppAuthorizedEmail($merchant, $client);
 
         return ['success' => true];
     }
@@ -1706,12 +1707,10 @@ class Service extends Base\Service
      * an application owned by a competitor like Juspay.
      *
      * @param Entity             $merchant
-     * @param User\Entity        $user
      * @param OAuthClient\Entity $client
      */
-    protected function sendCompetitorAuthorizedEmail(
+    protected function sendCompetitorAppAuthorizedEmail(
         Merchant\Entity $merchant,
-        User\Entity $user,
         OAuthClient\Entity $client)
     {
         // Do not send the email if the application is not a competitor to us
@@ -1720,14 +1719,20 @@ class Service extends Base\Service
             return;
         }
 
-        $type = 'competitor_authorized';
+        $type = 'competitor_app_authorized';
 
         $mailer = $this->getOAuthMailerClassByType($type);
 
         $data = [
-            'merchant'    => $merchant->toArrayPublic(),
-            'user'        => $user->toArrayPublic(),
-            'application' => $client->application->toArrayPublic(),
+            'merchant'    => [
+                Entity::ID            => $merchant->getId(),
+                Entity::NAME          => $merchant->getName(),
+                Entity::WEBSITE       => $merchant->getWebsite(),
+                Entity::BILLING_LABEL => $merchant->getBillingLabel(),
+            ],
+            'application' => [
+                OAuthApplication\Entity::ID => $client->application->getId(),
+            ]
         ];
 
         Mail::queue((new $mailer($data)));
