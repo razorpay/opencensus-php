@@ -276,8 +276,8 @@ class Gateway extends Base\Gateway
             $verify->input['payment']['id'],
             $verify->input['payment']['amount'] / 100,
             self::CALLBACK_URL,
-            $verify->payment->getBankPaymentId(),
-            Mode::VERIFY
+            '',
+            Mode::VERIFY_WO_TID
         ];
 
         $this->trace->info(
