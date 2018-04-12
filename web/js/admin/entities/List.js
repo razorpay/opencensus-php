@@ -132,8 +132,12 @@ export default class EntityList extends Component {
     this.onSelectChange(e);
   };
 
+  /*
+    * Clear the previous values (It doesn't clear WHOLE FORM. it only clears the value to default value.
+   * But after search, new values becomes default value if defaultValue props is missing)
+  */
   clearForm(currentEntity) {
-    document.getElementById('entity-form').reset(); // Clear the previous values (It doesn't clear)
+    document.getElementById('entity-form').reset();
     // document.getElementsByName("from")[0].value = ''; // TODO: Clear from and to values explicitly
     // document.getElementsByName("to")[0].value = '';
     document.getElementById('selected-entity').value = currentEntity; // Keep the current selected entity selected
@@ -150,6 +154,7 @@ export default class EntityList extends Component {
   };
 
   onSelectChange = e => {
+    //TODO: Form data is creating issue, so currently not being used.
     const form = e.currentTarget.closest('form');
     let formData;
 
@@ -157,7 +162,7 @@ export default class EntityList extends Component {
       formData = serialize(form);
     }
 
-    this.submit(formData);
+    this.submit(this.collection.filters);
     this.updateUrl();
   };
 
