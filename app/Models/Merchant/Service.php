@@ -1694,15 +1694,42 @@ class Service extends Base\Service
             'application' => $client->application->toArrayPublic(),
         ];
 
-//        Mail::queue((new $mailer($data)));
+        Mail::queue((new $mailer($data)));
 
-        $type = 'juspay_authorized';
+        $this->sendCompetitorAuthorizedEmail($merchant, $user, $client);
+
+        return ['success' => true];
+    }
+
+    /**
+     * Sends an email to support team informing them that a merchant has authorized
+     * an application owned by a competitor like Juspay.
+     *
+     * @param Entity             $merchant
+     * @param User\Entity        $user
+     * @param OAuthClient\Entity $client
+     */
+    protected function sendCompetitorAuthorizedEmail(
+        Merchant\Entity $merchant,
+        User\Entity $user,
+        OAuthClient\Entity $client)
+    {
+        if (in_array($client->application->getId(), Feature\Type::S2S_APPLICATION_IDS) === false)
+        {
+            return;
+        }
+
+        $type = 'competitor_authorized';
 
         $mailer = $this->getOAuthMailerClassByType($type);
 
-        Mail::queue((new $mailer($data)));
+        $data = [
+            'merchant'    => $merchant->toArrayPublic(),
+            'user'        => $user->toArrayPublic(),
+            'application' => $client->application->toArrayPublic(),
+        ];
 
-        return ['success' => true];
+        Mail::queue((new $mailer($data)));
     }
 
     /**

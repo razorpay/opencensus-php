@@ -5,7 +5,7 @@ namespace RZP\Mail\OAuth;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 
-class JuspayAuthorized extends Mailable
+class CompetitorAuthorized extends Mailable
 {
     protected $data;
 
@@ -26,14 +26,14 @@ class JuspayAuthorized extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.oauth.juspay_authorized');
+        $this->view('emails.oauth.competitor_authorized');
 
         return $this;
     }
 
     protected function addSubject()
     {
-        $this->subject('Razorpay | Juspay access grant notification');
+        $this->subject('Razorpay | Competitor access grant notification');
 
         return $this;
     }

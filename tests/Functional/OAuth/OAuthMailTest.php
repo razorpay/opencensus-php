@@ -8,7 +8,7 @@ use Razorpay\OAuth\Application;
 
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\OAuth\AppAuthorized as OAuthAppAuthorizedMail;
-use RZP\Mail\OAuth\JuspayAuthorized as OAuthJuspayAuthorizedMail;
+use RZP\Mail\OAuth\CompetitorAuthorized as OAuthJuspayAuthorizedMail;
 
 class OAuthMailTest extends OAuthTestCase
 {
