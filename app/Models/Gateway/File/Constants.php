@@ -85,7 +85,7 @@ class Constants
         Type::REFUND => [
             self::HDFC  => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
-            self::CSB   => ['settlements@razorpay.com'], // TODO: Add csb refunds email
+            self::CSB   => ['csb.netbanking.refunds@razorpay.com'],
         ],
 
         Type::COMBINED => [

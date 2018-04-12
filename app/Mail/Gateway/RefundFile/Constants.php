@@ -16,7 +16,6 @@ class Constants extends Base\Constants
         Gateway::NETBANKING_FEDERAL     => ['settlements@razorpay.com'],
         Gateway::NETBANKING_BOB         => ['bob.netbanking.refunds@razorpay.com'],
         Gateway::NETBANKING_RBL         => ['settlements@razorpay.com'],
-        Gateway::NETBANKING_CSB         => ['settlements@razorpay.com'],
         Gateway::NETBANKING_INDUSIND    => ['settlements@razorpay.com'],
         Gateway::UPI_ICICI              => ['settlements@razorpay.com'],
         Gateway::WALLET_AIRTELMONEY     => ['settlements@razorpay.com'],
