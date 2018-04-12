@@ -143,18 +143,6 @@ class Gateway extends Base\Gateway
         return hash(HashAlgo::CRC32, $str);
     }
 
-    /**
-     * Overriding this method so that it can be exposed as a public API for the mock server
-     *
-     * @override
-     * @param $actual
-     * @param $generated
-     */
-    public function compareHashes($actual, $generated)
-    {
-        parent::compareHashes($actual, $generated);
-    }
-
     public function computeChecksum(array $content): string
     {
         $contentToHash = array_merge($content, [$this->getSecret()]);
