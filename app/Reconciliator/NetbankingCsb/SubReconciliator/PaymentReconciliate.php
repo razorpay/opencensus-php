@@ -14,7 +14,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const STATUS          = 'status';
     const AMOUNT          = 'amount';
     const DATE            = 'date';
-    
+
     protected function getPaymentId(array $row)
     {
         return $row[self::PAYMENT_ID];
@@ -50,7 +50,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
-                    'gateway'         => get_called_class()
+                    'gateway'         => 'netbanking_csb'
                 ]);
 
             return false;

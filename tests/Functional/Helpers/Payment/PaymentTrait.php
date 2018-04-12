@@ -2,17 +2,18 @@
 
 namespace RZP\Tests\Functional\Helpers\Payment;
 
-use Carbon\Carbon;
 use Mockery;
 use Requests;
-use RZP\Constants\Timezone;
+use Carbon\Carbon;
+use Symfony\Component\DomCrawler\Crawler;
+
 use RZP\Exception;
+use RZP\Models\Payment;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Account;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Payment\Verify\Action;
-use Symfony\Component\DomCrawler\Crawler;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Models\Payment;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
