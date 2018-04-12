@@ -44,6 +44,10 @@ class VirtualAccountTest extends TestCase
 
         $this->customer = $this->getEntityById('customer', 'cust_100000customer');
 
+        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
+
+        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal_upi');
+
         $this->setupMockDns();
     }
 
