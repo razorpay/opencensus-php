@@ -3,9 +3,11 @@
 namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\FileStore;
+use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Constants\Mode as RZPMode;
@@ -31,7 +33,7 @@ class Csbk extends Base
     const EXTENSION              = FileStore\Format::XLSX;
     const FILE_TYPE              = FileStore\Type::CSB_NETBANKING_REFUND;
     const GATEWAY                = Payment\Gateway::NETBANKING_CSB;
-    const GATEWAY_CODE           = 'CSBK';
+    const GATEWAY_CODE           = IFSC::CSBK;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
 
     const BANK_CODE              = 'CSB';
@@ -64,7 +66,7 @@ class Csbk extends Base
                 Action::AUTHORIZE);
 
             $content[] = [
-                'Sr.No'              => sizeof($content) + 1,
+                'Sr.No'              => (count($content) + 1),
                 'Refund Id'          => $row[ConstantsEntity::REFUND][RefundEntity::ID],
                 'Bank Id'            => self::BANK_CODE,
                 'Merchant Name'      => CsbGateway::PAYEE_ID,

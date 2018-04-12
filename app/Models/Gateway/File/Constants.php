@@ -18,7 +18,7 @@ class Constants
     const SCBL             = 'scbl';
     const UPI_ICICI        = 'upi_icici';
     const AIRTEL_MONEY     = 'airtel_money';
-    const CSB              = IFSC::CSBK;
+    const CSB              = 'csbk';
     const AXIS_MIGS        = 'axis_migs';
     const ICIC_FIRST_DATA  = 'icic_first_data';
     const HDFC_CYBERSOURCE = 'hdfc_cybersource';
