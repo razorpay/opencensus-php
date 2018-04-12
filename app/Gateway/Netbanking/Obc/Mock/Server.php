@@ -13,7 +13,7 @@ class Server extends Base\Mock\Server
     /**
      * @var Gateway
      */
-    private $gatewayInstance = null;
+    private $gatewayInstance;
 
     public function authorize($input)
     {
@@ -127,11 +127,7 @@ class Server extends Base\Mock\Server
         $input[RequestFields::QUERY_STRING] = $this->decrypt($input[RequestFields::QUERY_STRING]);
     }
 
-    /**
-     * This method encrypts and then encodes the input string
-     * @param string $stringToEncrypt
-     * @return string
-     */
+
     private function encrypt(string $stringToEncrypt)
     {
         return $this->getGatewayInstance()->encrypt($stringToEncrypt);

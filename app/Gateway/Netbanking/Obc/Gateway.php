@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\Netbanking\Obc;
 
+use phpseclib\Crypt\AES;
+
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -14,8 +16,6 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 
-use phpseclib\Crypt\AES;
-
 class Gateway extends Base\Gateway
 {
     protected $gateway = Payment\Gateway::NETBANKING_OBC;
@@ -27,16 +27,10 @@ class Gateway extends Base\Gateway
 
     protected $map = [
         Base\Entity::AMOUNT             => Base\Entity::AMOUNT,
-        // Auth request mapping
         RequestFields::PAYEE_ID         => Base\Entity::REFERENCE1,
-
-        // Auth response mapping
         ResponseFields::PAID            => Base\Entity::STATUS,
         ResponseFields::BANK_PAYMENT_ID => Base\Entity::BANK_PAYMENT_ID,
         ResponseFields::DEBIT_ACC_NUM   => Base\Entity::ACCOUNT_NUMBER,
-
-        // Verify response mapping
-        ResponseFields::BANK_PAYMENT_ID => Base\Entity::BANK_PAYMENT_ID,
     ];
 
     public function authorize(array $input)
@@ -85,11 +79,6 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    /**
-     * This method encrypts and then encodes the input string
-     * @param string $stringToEncrypt
-     * @return string
-     */
     public function encrypt(string $stringToEncrypt)
     {
         $this->createCryptoIfNotCreated();
@@ -97,11 +86,6 @@ class Gateway extends Base\Gateway
         return $this->aesCrypto->encryptString($stringToEncrypt);
     }
 
-    /**
-     * This method decodes the string and then decrypts it
-     * @param string $stringToDecrypt
-     * @return string
-     */
     public function decrypt(string $stringToDecrypt)
     {
         $this->createCryptoIfNotCreated();
@@ -145,16 +129,11 @@ class Gateway extends Base\Gateway
         $verify->amountMismatch = $this->setVerifyAmountMismatch($verify);
     }
 
-    /**
-     * Asserting that payment amount is the same as the amount received in the callback / verify response.
-     *
-     * @override
-     * @param $expectedAmount
-     * @param $actualAmount
-     */
+
     protected function assertAmount($expectedAmount, $actualAmount)
     {
         $expectedAmount = $this->formatAmount($expectedAmount);
+
         $actualAmount = $this->formatAmount($actualAmount);
 
         parent::assertAmount($expectedAmount, $actualAmount);
@@ -163,7 +142,7 @@ class Gateway extends Base\Gateway
     protected function getContentToSave($payment): array
     {
         return [
-            Base\Entity::AMOUNT => $payment[Payment\Entity::AMOUNT],
+            Base\Entity::AMOUNT     => $payment[Payment\Entity::AMOUNT],
             Base\Entity::REFERENCE1 => $this->getMerchantId(),
         ];
     }
@@ -300,7 +279,7 @@ class Gateway extends Base\Gateway
             RequestFields::PAY_REF_NUM => $verify->input['payment']['id'],
             RequestFields::ITEM_CODE   => strtoupper($verify->input['payment']['id']),
             RequestFields::AMOUNT      => $this->formatAmount($verify->input['payment']['amount'] / 100),
-            RequestFields::RETURN_URL  => $this->getCallbackUrl($verify->input['payment']['id']),
+            RequestFields::RETURN_URL  => 'https://api.razorpay.com/s',
             RequestFields::BID         => $verify->payment['bank_payment_id']
         ];
 
@@ -310,45 +289,6 @@ class Gateway extends Base\Gateway
     private function formatAmount(float $amount)
     {
         return number_format($amount, 2, '.', '');
-    }
-
-    /**
-     * Creates the callback url for payment
-     * where the gateway can hit back to say payment
-     * is finished/authorized.
-     *
-     * @param string $paymentId
-     * @return string Callback url
-     */
-    private function getCallbackUrl(string $paymentId): string
-    {
-        $params = $this->getPaymentIdAndHashParams($paymentId);
-
-        $callbackUrl = $this->route->getUrlWithPublicCallbackAuth($params);
-
-        return $callbackUrl;
-    }
-
-    private function getPaymentIdAndHashParams(string $paymentId): array
-    {
-        $publicId = Payment\Entity::getSignedId($paymentId);
-
-        $hash = $this->getHashOf($publicId);
-
-        return ['id' => $publicId, 'hash' => $hash];
-    }
-
-    /**
-     * Returns a hash of a string.
-     *
-     * @param string $string
-     * @return string Hash of the string
-     */
-    private function getHashOf(string $string): string
-    {
-        $secret = $this->app->config->get('app.key');
-
-        return hash_hmac(HashAlgo::SHA1, $string, $secret);
     }
 
     /**
@@ -367,16 +307,6 @@ class Gateway extends Base\Gateway
             RequestFields::PAY_REF_NUM => $input['payment']['id'],
             RequestFields::ITEM_CODE   => strtoupper($input['payment']['id'])
         ];
-
-        // We will be using this to map to our gateway entity
-        $this->gatewayAttribues = $queryArray;
-
-        //
-        // The code below does the following:
-        // 1. Takes in the array $queryArray in the form [key1 => value1, key2 => value2]
-        // 2. Implodes array key-value pairs with ~ as delimiter as [key1 ~ value1, key2 ~ value2]
-        // 3. Implodes that using | as delimiter as key1~value1|key2~value2
-        //
 
         $queryStringToEncrypt = implode(
             '|',
