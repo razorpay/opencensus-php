@@ -26,7 +26,6 @@ const defaultFilters = {
   account_status: 'pending_under_review',
   count: 20,
   skip: 0,
-  reviewer_id: '',
 };
 
 function fetchMerchants() {
@@ -69,10 +68,7 @@ export default class MerchantList extends Component {
           filters: { account_status: 'pending_under_review' },
         });
 
-        //TODO: remove admin_
-        reviewers.forEach(r => (r.id = r.id.replace('admin_', '')));
-
-        this.reviewers = [{ id: '', name: 'Not Assigned' }, ...reviewers];
+        this.reviewers = [{ id: 'none', name: 'Not Assigned' }, ...reviewers];
 
         this._updateMerchateReviewerMap(this.reviewers, merchants.items);
       }
@@ -83,9 +79,10 @@ export default class MerchantList extends Component {
   _updateMerchateReviewerMap = (reviewers, merchants) => {
     let merchantReviewerMap = {};
     merchants.forEach(
+      // merchants api doesn't return the reviewer_id with `admin_` prefix
       merchant =>
         (merchantReviewerMap[merchant.id] = this.getReviewer(
-          merchant.merchant_detail.reviewer_id
+          'admin_' + merchant.merchant_detail.reviewer_id
         ))
     );
     this.setState({ pending: false, merchantReviewerMap });
@@ -226,7 +223,7 @@ export default class MerchantList extends Component {
 
     this.handleReviewerAssignment(
       {
-        reviewer_id: `admin_${reviewer.id}`,
+        reviewer_id: reviewer.id,
         merchants: [merchandId],
       },
       true
@@ -242,12 +239,20 @@ export default class MerchantList extends Component {
       .then(response => {
         if (response) {
           notifySuccess('Merchants assigned successfully');
+          if (response.failedItems.length) {
+            //show merchant id list of whose assignment failed
+            notifyError(
+              `Some merchants could not be assigned. ${response.failedItems
+                .map(f => f.merchant_id)
+                .join(', ')}`
+            );
+          }
           closeModal();
           if (!isSingleAssignment) {
             body.merchants.forEach(
               merchantId =>
                 (merchantReviewerMap[merchantId] = this.getReviewer(
-                  body.reviewer_id.replace('admin_', '')
+                  body.reviewer_id
                 ))
             );
             this.setState({ merchantReviewerMap });
@@ -258,10 +263,13 @@ export default class MerchantList extends Component {
   };
 
   render() {
-    const { selectedMerchants } = this.state;
     if (this.state.pending) {
       return <div class="table-pending" />;
     }
+
+    const { selectedMerchants } = this.state;
+    //For filters, add `All` option for reviewer
+    let filterReviewers = [{ name: 'All', id: '' }, ...this.reviewers];
 
     return (
       <div class="list-container activations">
@@ -288,7 +296,7 @@ export default class MerchantList extends Component {
               <SearchableSelectField
                 label="Reviewer"
                 name="reviewer_id"
-                options={this.reviewers}
+                options={filterReviewers}
                 trackBy="id"
                 defaultValue={''}
               />
