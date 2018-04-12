@@ -60,8 +60,6 @@ return array(
                 'username' => env('DB_LIVE_USERNAME'),
                 'password' => env('DB_LIVE_PASSWORD'),
             ],
-            'username' => env('DB_LIVE_USERNAME'),
-            'password' => env('DB_LIVE_PASSWORD'),
             'sticky'    => true,
             'database'  => env('DB_LIVE_DATABASE'),
             'driver'    => env('DB_LIVE_DRIVER'),
@@ -71,7 +69,7 @@ return array(
             'strict'    => true,
             'lag_check' => [
                 'driver' => 'redis',
-                'flag' => ConfigKey::SKIP_SLAVE
+                'flag'   => ConfigKey::SKIP_SLAVE
              ]
         ],
 
@@ -88,8 +86,6 @@ return array(
                 'username' => env('DB_TEST_USERNAME'),
                 'password' => env('DB_TEST_PASSWORD'),
             ],
-            'username' => env('DB_TEST_USERNAME'),
-            'password' => env('DB_TEST_PASSWORD'),
             'sticky'    => true,
             'database'  => env('DB_TEST_DATABASE'),
             'driver'    => env('DB_TEST_DRIVER'),
@@ -99,7 +95,7 @@ return array(
             'strict'    => true,
             'lag_check' => [
                 'driver' => 'redis',
-                'flag' => ConfigKey::SKIP_SLAVE
+                'flag'   => ConfigKey::SKIP_SLAVE
              ]
         ],
 
