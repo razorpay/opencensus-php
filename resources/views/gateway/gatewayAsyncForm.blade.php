@@ -174,11 +174,16 @@
         {{-- If last XHR was more than threshold seconds ago, abort XHR and start a new poll. --}}
         var timeSince = Date.now() - lastPollTS;
 
-        {{-- Only if it's the polling URL --}}
+        {{-- Only if its the polling URL --}}
         if (lastPollUrl === request_url && timeSince > threshold) {
           lastXhr.abort();
           fetch(request_url, 1);
           track('ajax_periodic_retry', {
+            last: {
+              status: lastXhr.status,
+              url: lastXhr.url,
+              text: lastXhr.responseText
+            },
             focus: !!e,
             time: timeSince
           })
@@ -393,10 +398,10 @@
         props.message = e.message;
       }
 
-      {{-- pass redirection callback if it's unexpected response error --}}
+      {{-- pass redirection callback if its unexpected response error --}}
       track('ajax_error', props, !e && submitForm);
 
-      {{-- retry if it's json parsing or network error --}}
+      {{-- retry if its json parsing or network error --}}
       if (e && pollRetriesSoFar < pollRetriesOnError) {
         pollRetriesSoFar++;
         fetch(lastPollUrl);
