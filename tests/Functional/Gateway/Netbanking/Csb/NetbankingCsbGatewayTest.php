@@ -107,7 +107,7 @@ class NetbankingCsbGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($testData, $netbanking);
     }
 
-    public function testPaymentFailedVerifyCallbackSuccess()
+    public function testPaymentFailedVerifyCallbackFailure()
     {
         $this->mockPaymentFailed();
 
