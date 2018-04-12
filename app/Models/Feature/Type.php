@@ -20,7 +20,7 @@ class Type
 
     // Application ids
     const TEST_APP_ID   = '10000TestAppId';
-    const JUSPAY_APP_ID = '9xtRpC30btgOMA';
+    const JUSPAY_APP_ID = '100000RandomId';
 
     const S2S_APPLICATION_IDS = [
         self::TEST_APP_ID,

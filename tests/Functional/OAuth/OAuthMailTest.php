@@ -6,9 +6,10 @@ use Mail;
 
 use Razorpay\OAuth\Application;
 
+use RZP\Models\Feature;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\OAuth\AppAuthorized as OAuthAppAuthorizedMail;
-use RZP\Mail\OAuth\CompetitorAuthorized as OAuthJuspayAuthorizedMail;
+use RZP\Mail\OAuth\CompetitorAuthorized as OAuthCompetitorAuthorizedMail;
 
 class OAuthMailTest extends OAuthTestCase
 {
@@ -59,8 +60,45 @@ class OAuthMailTest extends OAuthTestCase
 
             return true;
         });
+    }
 
-        Mail::assertSent(OAuthJusPayAuthorizedMail::class, function ($mail) use ($user, $application)
+    public function testOAuthCompetitorAuthorizedMail()
+    {
+        Mail::fake();
+
+        $appData = [
+            Application\Entity::ID   => Feature\Type::JUSPAY_APP_ID,
+            Application\Entity::NAME => 'Test App'
+        ];
+
+        $application = $this->createOAuthApplication($appData);
+
+        $clients = $application->clients()->get()->all();
+
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['client_id'] = $clients[0]->id;
+
+        $testData['request']['content']['user_id'] = $user->id;
+
+        $testData['request']['content']['merchant_id'] = $merchant->id;
+
+        $this->startTest();
+
+        Mail::assertQueued(OAuthAppAuthorizedMail::class, function ($mail) use ($user, $application)
+        {
+            $this->assertEquals($user->getPublicId(), $mail->viewData['user']['id']);
+
+            $this->assertEquals($application->id, $mail->viewData['application']['id']);
+
+            return true;
+        });
+
+        Mail::assertQueued(OAuthCompetitorAuthorizedMail::class, function ($mail) use ($user, $application)
         {
             $this->assertEquals($user->getPublicId(), $mail->viewData['user']['id']);
 
