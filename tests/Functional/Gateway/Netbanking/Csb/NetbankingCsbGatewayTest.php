@@ -289,9 +289,10 @@ class NetbankingCsbGatewayTest extends TestCase
             {
                 $refund = $this->doAuthCaptureAndRefundPayment($this->payment, $amount);
 
-                $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)
-                                                                ->addMinutes(45)
-                                                                ->getTimestamp();
+                $createdAt = Carbon::yesterday(Timezone::IST)
+                                ->addHours(10)
+                                ->addMinutes(45)
+                                ->getTimestamp();
 
                 $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
             },
