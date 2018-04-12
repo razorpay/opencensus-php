@@ -326,6 +326,8 @@ class Validator extends Base\Validator
     protected static $netbankingAirtelTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_airtel',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
     ];
 
     protected static $netbankingAxisTerminalRules = [

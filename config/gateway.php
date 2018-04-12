@@ -420,9 +420,9 @@ return [
     ],
 
     'netbanking_airtel' => [
-        'test_merchant_id'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_MERCHANT_ID'),
-        'test_hash_secret'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_HASH_SECRET'),
-        'live_hash_secret'  => env('NETBANKING_AIRTEL_GATEWAY_LIVE_HASH_SECRET'),
+        'test_merchant_id2'     => env('NETBANKING_AIRTEL_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'      => env('NETBANKING_AIRTEL_GATEWAY_TEST_HASH_SECRET'),
+        'test_end_merchant_id'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_END_MERCHANT_ID'),
     ],
 
     'netbanking_federal' => [
