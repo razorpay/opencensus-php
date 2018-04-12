@@ -482,7 +482,8 @@ class Service extends Base\Service
             $input[Merchant\Entity::ADMINS] = [$admin->getId()];
         }
 
-        if (isset($input[Merchant\Detail\Entity::REVIEWER_ID]) === true)
+        if ((isset($input[Merchant\Detail\Entity::REVIEWER_ID]) === true) and
+            ($input[Merchant\Detail\Entity::REVIEWER_ID] !== 'none'))
         {
             Entity::verifyIdAndStripSign($input[Merchant\Detail\Entity::REVIEWER_ID]);
         }
