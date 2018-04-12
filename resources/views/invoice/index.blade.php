@@ -1038,11 +1038,9 @@
                   }
                 };
 
-                if (merchant) {
-                  if (merchant.name) {
-                        options.name = invoiceObj.merchant_label || merchant.name;
-                  }
+                options.name = invoiceObj.merchant_label;
 
+                if (merchant) {
                   var color = merchant.brand_color || '#168AFA';
                   options.theme.color = color;
 
