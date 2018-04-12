@@ -8,13 +8,15 @@ use Razorpay\OAuth\Application;
 
 use RZP\Models\Feature;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\OAuth\AppAuthorized as OAuthAppAuthorizedMail;
-use RZP\Mail\OAuth\CompetitorAuthorized as OAuthCompetitorAuthorizedMail;
+use RZP\Mail\OAuth\CompetitorAppAuthorized as OAuthCompetitorAuthorizedMail;
 
 class OAuthMailTest extends OAuthTestCase
 {
-    use RequestResponseFlowTrait;
     use OAuthTrait;
+    use DbEntityFetchTrait;
+    use RequestResponseFlowTrait;
 
     public function setUp()
     {
@@ -38,9 +40,9 @@ class OAuthMailTest extends OAuthTestCase
 
         $clients = $application->clients()->get()->all();
 
-        $user = $this->fixtures->create('user');
+        $user = $this->getDbLastEntity('user', 'test');
 
-        $merchant = $this->fixtures->create('merchant');
+        $merchant = $this->getDbLastEntity('merchant', 'test');
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -62,7 +64,7 @@ class OAuthMailTest extends OAuthTestCase
         });
     }
 
-    public function testOAuthCompetitorAuthorizedMail()
+    public function testOAuthCompetitorAppAuthorizedMail()
     {
         Mail::fake();
 
@@ -75,9 +77,9 @@ class OAuthMailTest extends OAuthTestCase
 
         $clients = $application->clients()->get()->all();
 
-        $user = $this->fixtures->create('user');
+        $user = $this->getDbLastEntity('user', 'test');
 
-        $merchant = $this->fixtures->create('merchant');
+        $merchant = $this->getDbLastEntity('merchant', 'test');
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -98,9 +100,9 @@ class OAuthMailTest extends OAuthTestCase
             return true;
         });
 
-        Mail::assertQueued(OAuthCompetitorAuthorizedMail::class, function ($mail) use ($user, $application)
+        Mail::assertQueued(OAuthCompetitorAuthorizedMail::class, function ($mail) use ($merchant, $application)
         {
-            $this->assertEquals($user->getPublicId(), $mail->viewData['user']['id']);
+            $this->assertEquals($merchant->getId(), $mail->viewData['merchant']['id']);
 
             $this->assertEquals($application->id, $mail->viewData['application']['id']);
 

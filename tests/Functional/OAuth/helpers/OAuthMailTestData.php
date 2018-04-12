@@ -14,7 +14,7 @@ return [
         ],
     ],
 
-    'testOAuthCompetitorAuthorizedMail' => [
+    'testOAuthCompetitorAppAuthorizedMail' => [
         'request' => [
             'url' => '/oauth/notify/app_authorized',
             'method' => 'POST',
