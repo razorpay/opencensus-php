@@ -18,8 +18,7 @@ class CompetitorAuthorized extends Mailable
 
     protected function addRecipients()
     {
-//        $this->to('support@razorpay.com');
-        $this->to('pratik.kapasi@razorpay.com');
+        $this->to('support@razorpay.com');
 
         return $this;
     }
@@ -50,6 +49,7 @@ class CompetitorAuthorized extends Mailable
         $this->withSwiftMessage(function ($message)
         {
             $headers = $message->getHeaders();
+
             $headers->addTextHeader(MailTags::HEADER, MailTags::OAUTH_APP_AUTHORIZED);
         });
 

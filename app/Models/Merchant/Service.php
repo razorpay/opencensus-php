@@ -1714,6 +1714,7 @@ class Service extends Base\Service
         User\Entity $user,
         OAuthClient\Entity $client)
     {
+        // Do not send the email if the application is not a competitor to us
         if (in_array($client->application->getId(), Feature\Type::S2S_APPLICATION_IDS) === false)
         {
             return;
