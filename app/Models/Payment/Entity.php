@@ -2595,6 +2595,6 @@ class Entity extends Base\PublicEntity
     public function scopeReceiver(\RZP\Base\BuilderEx $query, Base\PublicEntity $entity)
     {
         $query->where(Entity::RECEIVER_ID, '=', $entity->getId())
-            ->where(Entity::RECEIVER_TYPE, '=', $entity->getEntity());
+              ->where(Entity::RECEIVER_TYPE, '=', $entity->getEntity());
     }
 }
