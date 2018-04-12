@@ -404,25 +404,34 @@ class HomeContainer extends Component {
     return (
       <div class="react-root dashboard-home">
         <div ref={node => (this.extraContent = node)} className="extra-content">
-          {hasNewAnalyticsTour && (
-            <div
-              className={`v2-tour-banner${
-                dismissNewAnalyticsBanner ? ' dismiss' : ''
-              }`}
-            >
-              <div className="banner-icon">
-                <i className="i i-loudspeaker" />
+          {!isAdmin &&
+            (user.isActivated ? (
+              hasNewAnalyticsTour && (
+                <div
+                  className={`v2-tour-banner${
+                    dismissNewAnalyticsBanner ? ' dismiss' : ''
+                  }`}
+                >
+                  <div className="banner-icon">
+                    <i className="i i-loudspeaker" />
+                  </div>
+                  <div className="banner-content">
+                    <Banner cta="View Tour" ctaOnClick={this.onShowTour}>
+                      <span>
+                        We heard you! We have updated the dashboard home design
+                        for an improved experience.
+                      </span>
+                    </Banner>
+                  </div>
+                </div>
+              )
+            ) : (
+              <div className="v2-onboarding-card">
+                <NewUserOnboardingCard
+                  onSizeChange={this.setScrollAmountToStickHeader}
+                />
               </div>
-              <div className="banner-content">
-                <Banner cta="View Tour" ctaOnClick={this.onShowTour}>
-                  <span>
-                    We heard you! We have updated the dashboard home design for
-                    an improved experience.
-                  </span>
-                </Banner>
-              </div>
-            </div>
-          )}
+            ))}
         </div>
         <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}>
           <Header className="clearfix" title="" showMode={false}>

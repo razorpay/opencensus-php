@@ -1,13 +1,15 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+
+import Group, { GroupItem } from 'rzp/ui/Group';
 import LocalStorageService from 'rzp/utils/localStorage';
-import ActivationStep from './ActivationStep';
-import KeyGenerationStep from './KeyGenerationStep';
-import PaymentsReceivedStep from './PaymentsReceivedStep';
 
 import newProducts from 'merchant/containers/Banners/newProducts';
 import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
+
+import ActivationStep from './ActivationStep';
+import Integration from './Integration';
 
 const analyticsGoTo = name => {
   window.rzpAnalytics({
@@ -23,50 +25,14 @@ const analyticsLearnMore = name => {
   });
 };
 
-const NewProducts = ({ close }) => {
-  const productItemStyle = { width: `${100 / newProducts.length}%` };
-
-  return (
-    <div className="media-body">
-      <button class="close" onClick={close}>
-        <i class="i i-close" />
-      </button>
-
-      <div className="media-heading">Explore Our Product Stack</div>
-      <p>
-        Presenting India’s first holistic converged payment solution for you.
-        Check our brand new products.
-      </p>
-      <div className="new-products-row">
-        {newProducts.map((product, key) => (
-          <div key={key} className={`product-item`} style={productItemStyle}>
-            <MediaCard title={product.name} symbol={product.symbol}>
-              <div className="text-small m-b">{product.description}</div>
-              <div className="links">
-                <Link
-                  to={product.link}
-                  onClick={() => analyticsGoTo(product.name)}
-                >
-                  Try Now
-                </Link>
-                <span className="text-fade" style={{ padding: '0 4px' }}>
-                  &nbsp;•&nbsp;
-                </span>
-                <a
-                  href={product.help}
-                  target="_blank"
-                  onClick={() => analyticsLearnMore(product.name)}
-                >
-                  Learn More
-                </a>
-              </div>
-            </MediaCard>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
+const onBoardingItems = [
+  'Generate Financial Reports',
+  'Check Transaction History',
+  'Access API keys  & Webhooks',
+  'Access Razorpay Products',
+  'Check Settlements',
+  'Issue Refunds',
+];
 
 @connect(state => state.session)
 export default class OnboardingCard extends Component {
@@ -89,7 +55,10 @@ export default class OnboardingCard extends Component {
   }
 
   gotoNextStep = () => {
-    this.setState({ isFirstStep: false });
+    this.setState(
+      { isFirstStep: false },
+      () => this.props.onSizeChange && this.props.onSizeChange()
+    );
     LocalStorageService.removeItem('onboarding_first_step');
   };
 
@@ -98,13 +67,8 @@ export default class OnboardingCard extends Component {
     LocalStorageService.removeItem('show_onboarding_card');
   };
 
-  closeNewProductsBanner = () => {
-    LocalStorageService.setItem('hide_newproducts_banner', true);
-    this.setState({ showNewProductsBanner: false });
-  };
-
   render() {
-    let { user, mode, modeFormatted, payments = [] } = this.props;
+    let { user } = this.props;
     let { isFirstStep, showOnboarding } = this.state;
 
     let FirstStep = null;
@@ -112,94 +76,76 @@ export default class OnboardingCard extends Component {
       LocalStorageService.getItem('ngStorage-new_user_signup')
     );
 
-    if (showOnboarding) {
-      if (isFirstStep) {
-        FirstStep = (
-          <div class="media-body">
-            <div class="media-heading">
-              Welcome to Razorpay. Let's get started.
-            </div>
-            <p>
-              Dashboard is your one stop for all your payments. Using dashboard,
-              here are some of the things you can do:
-            </p>
-            <ul class="row">
-              <li class="col-sm-4">Complete Activation Process</li>
-              <li class="col-sm-4">Generate Financial Reports</li>
-              <li class="col-sm-4">Issue Refunds</li>
-              <li class="col-sm-4">Check Transaction History</li>
-              <li class="col-sm-4">Access Razorpay Products</li>
-              <li class="col-sm-4">Check Settlements</li>
-            </ul>
+    if (!showOnboarding) {
+      return null;
+    }
 
-            <button class="btn btn-lg btn-primary" onClick={this.gotoNextStep}>
-              <span>Got it! So, what's next?</span>
-              <i class="i i-chevron-right" />
-            </button>
+    if (isFirstStep) {
+      FirstStep = (
+        <div class="media-body">
+          <div class="media-heading">
+            <span className="highlight">W</span>elcome to Razorpay! Let's get
+            you going.
           </div>
-        );
-      } else {
-        FirstStep = (
-          <div class="media-body">
-            {user.isActivated ? (
-              <button class="close" onClick={this.closeOnboarding}>
-                <i class="i i-close" />
-              </button>
-            ) : null}
-            <div class="media-heading">Your Next Steps...</div>
-            <p>
-              Your Razorpay account is created. Now, you can browse through the
-              dashboard or do the following:
-            </p>
-            <div class="row">
-              <div class="col-sm-6" style={{ paddingRight: 0 }}>
+          <div className="onboarding-desc">
+            Yayy!! Your Razorpay account is created successfullly. There are a
+            lot of possibilities that you can explore with us. Here are some of
+            the actions that you can take:
+          </div>
+          <div class="row">
+            {onBoardingItems.map((item, index) => {
+              return (
+                <div className="col-md-4" key={index}>
+                  <div className="onboarding-checklist-item">
+                    <div className="icon-cont">
+                      <i className="i i-check" />
+                    </div>
+                    <div>{item}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <button
+            class="btn btn-lg btn-default onboarding-cta"
+            onClick={this.gotoNextStep}
+          >
+            <span>Got it! Let’s Start Exploring</span>
+            <i class="i i-chevron-right" />
+          </button>
+        </div>
+      );
+    } else {
+      FirstStep = (
+        <div class="media-body">
+          <div class="media-heading">
+            <span className="highlight">G</span>etting Started with Razorpay
+          </div>
+          <div className="onboarding-desc">
+            You are currently in test mode. Feel free to explore the dashboard
+            or simply activate your account:
+          </div>
+          <div className="onboarding-steps">
+            <Group>
+              <GroupItem>
                 <ActivationStep user={user} />
-              </div>
-
-              <div class="col-sm-6">
-                {payments.length ? (
-                  <PaymentsReceivedStep />
-                ) : (
-                  <KeyGenerationStep
-                    user={user}
-                    mode={mode}
-                    modeFormatted={modeFormatted}
-                  />
-                )}
-              </div>
-            </div>
-
-            {user.isActivated ? (
-              <div style={{ marginTop: '12px' }}>
-                You may now{' '}
-                <a onClick={this.closeOnboarding}>close this card</a>
-                . You can access the <a>documentation</a> from topbar, if
-                needed.
-              </div>
-            ) : null}
+              </GroupItem>
+              <GroupItem>
+                <Integration />
+              </GroupItem>
+            </Group>
           </div>
-        );
-      }
+        </div>
+      );
     }
 
     return (
-      <div>
-        {FirstStep && (
-          <div
-            class={`media onboarding-card ${isFirstStep ? 'first-step' : ''}`}
-          >
-            <div class="media-left">
-              <div class="media-object onboarding" />
-            </div>
-            {FirstStep}
-          </div>
-        )}
-        {isOldUser &&
-          this.state.showNewProductsBanner && (
-            <div class={`media onboarding-card new-features`}>
-              <NewProducts close={this.closeNewProductsBanner} />
-            </div>
-          )}
+      <div className="onboarding-card-wrapper">
+        <div class={`media onboarding-card ${isFirstStep ? 'first-step' : ''}`}>
+          {FirstStep}
+          <div class="onboarding-illustration" />
+        </div>
       </div>
     );
   }
