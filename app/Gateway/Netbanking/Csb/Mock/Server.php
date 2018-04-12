@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking\Csb\Status;
-use RZP\Gateway\Netbanking\Csb\Constant;
 use RZP\Gateway\Netbanking\Csb\RequestFields;
 use RZP\Gateway\Netbanking\Csb\ResponseFields;
 

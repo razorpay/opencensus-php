@@ -49,14 +49,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getAuthorizeRequest($input);
 
-        $this->createGatewayPaymentEntity([RequestFields::AMOUNT => $input['payment']['amount'] / 100]);
-
-        $this->traceGatewayPaymentRequest(
-            $request,
-            $input,
-            $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST,
-            ['encrypted' => true]
-        );
+        $this->createGatewayPaymentEntity([RequestFields::AMOUNT => $input['payment']['amount']]);
 
         return $request;
     }
@@ -105,16 +98,6 @@ class Gateway extends Base\Gateway
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
         $request = $this->getVerifyRequestData($verify);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            [
-                'request'    => $request,
-                'encrypted'  => true,
-                'payment_id' => $verify->input['payment']['id'],
-                'gateway'    => $this->gateway
-            ]
-        );
 
         $response = $this->sendGatewayRequest($request);
 
@@ -293,8 +276,8 @@ class Gateway extends Base\Gateway
             $verify->input['payment']['id'],
             $verify->input['payment']['amount'] / 100,
             self::CALLBACK_URL,
-            $verify->payment->getBankPaymentId(),
-            Mode::VERIFY
+            '',
+            Mode::VERIFY_WO_TID
         ];
 
         $this->trace->info(
@@ -306,13 +289,23 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        $verify->verifyRequest = $content;
-
         $contentToEncode = $this->computeStringToEncode($content);
 
         $content = [RequestFields::POST_DATA => base64_encode($contentToEncode)];
 
-        return $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'request'    => $request,
+                'encrypted'  => true,
+                'payment_id' => $verify->input['payment']['id'],
+                'gateway'    => $this->gateway
+            ]
+        );
+
+        return $request;
     }
 
     protected function parseVerifyResponse(string $responseString): array
@@ -381,20 +374,20 @@ class Gateway extends Base\Gateway
 
     protected function saveVerifyContent(Verify $verify)
     {
-        $wallet = $verify->payment;
+        $gatewayPayment = $verify->payment;
 
         $content = $verify->verifyResponseContent;
 
         $contentToSave = [];
 
-        if ((empty($wallet[Base\Entity::STATUS]) === true) or
-            ($wallet[Base\Entity::STATUS] !== Status::SUCCESS))
+        if ((empty($gatewayPayment[Base\Entity::STATUS]) === true) or
+            ($gatewayPayment[Base\Entity::STATUS] !== Status::SUCCESS))
         {
             $contentToSave[ResponseFields::STATUS] = $content[ResponseFields::VERIFICATION] ??
                                                      $content[ResponseFields::STATUS_UCFIRST];
         }
 
-        return parent::updateGatewayPaymentEntity($wallet, $contentToSave);
+        return parent::updateGatewayPaymentEntity($gatewayPayment, $contentToSave);
     }
 
     /**
@@ -426,7 +419,16 @@ class Gateway extends Base\Gateway
 
         $content = [RequestFields::POST_DATA => base64_encode($contentToEncode)];
 
-        return $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content);
+
+        $this->traceGatewayPaymentRequest(
+            $request,
+            $input,
+            $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST,
+            ['encrypted' => true]
+        );
+
+        return $request;
     }
 
     protected function formatAmount(float $amount): string

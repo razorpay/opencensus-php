@@ -114,7 +114,7 @@ class NetbankingCsbGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($testData, $netbanking);
     }
 
-    public function testPaymentFailedVerifyCallbackSuccess()
+    public function testPaymentFailedVerifyCallbackFailure()
     {
         $this->mockPaymentFailed();
 
@@ -144,9 +144,6 @@ class NetbankingCsbGatewayTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $verify = $this->verifyPayment($payment[Payment\Entity::ID]);
-
-        // Since BID is not null, we send V as the Mode for verify
-        $this->assertEquals(Mode::VERIFY, $verify['gateway']['verifyRequest'][7]);
 
         $this->assertEquals(true, $verify['gateway']['apiSuccess']);
         $this->assertEquals(true, $verify['gateway']['gatewaySuccess']);
