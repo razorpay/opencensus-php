@@ -212,10 +212,7 @@ export const refundBatchesReducer = makeCollectionReducer(REFUND);
 
 //List Reducer
 export const paymentLinkBatchesReducer = makeActionCollectionReducer(
-  PAYMENT_LINK,
-  {
-    [`${FETCH_BATCH}::SUCCESS`]: updateEntityInList,
-  }
+  PAYMENT_LINK
 );
 
 let paymentBatchIdsInitialState = {

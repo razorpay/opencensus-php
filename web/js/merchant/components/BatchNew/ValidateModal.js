@@ -53,7 +53,7 @@ export default function BatchValidateModal({
         <div class="modal-info">
           <h5 style={{ fontSize: '16px' }}>
             Getting Started with Batch Uploads?{' '}
-            <a class="btn btn-link m-l" href={docUrl} target="_blank">
+            <a class="btn btn-link m-l doc-url" href={docUrl} target="_blank">
               View Documentation <i class="i i-external-link" />
             </a>
           </h5>

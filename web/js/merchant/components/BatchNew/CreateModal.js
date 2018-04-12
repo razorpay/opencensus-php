@@ -4,7 +4,6 @@ import { Field, reduxForm, formValueSelector } from 'redux-form';
 
 import InputField from 'rzp/ui/Forms/InputField';
 import TableSlider from 'rzp/ui/TableSlider';
-import Table from 'rzp/ui/Table/Index';
 import AsyncButton from 'react-async-button';
 
 import { titleCase } from 'rzp/utils/rzp-utils';
@@ -28,9 +27,9 @@ export default class BatchCreateModal extends Component {
     let ctaText = '';
 
     if (sms_notify || email_notify) {
-      ctaText = 'Create & Send Payment Link';
+      ctaText = 'Create Batch & Send Payment Links';
     } else {
-      ctaText = 'Create Payment Link';
+      ctaText = 'Create Batch';
     }
     return ctaText;
   };

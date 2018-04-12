@@ -21,11 +21,9 @@ const MAX_INVOICE_COUNT = 4;
 
 export default function BatchDetails(props) {
   let { batch, stats, invoices, isLoading, onDownload } = props;
-  let shouldShowAllInvoices = true;
 
   if (invoices && invoices.length >= MAX_INVOICE_COUNT) {
     invoices = invoices.slice(0, MAX_INVOICE_COUNT);
-    shouldShowAllInvoices = false;
   }
 
   return (
@@ -41,11 +39,11 @@ export default function BatchDetails(props) {
           </div>
           <div class="SliderPanel__Body">
             <Banner
-              cta="Download Report File"
+              cta="Download Report"
               ctaOnClick={onDownload.bind(this, batch.id)}
             >
               <span>
-                Download the output file containing all the payment links data.
+                Download the report containing all Payment Links data.
               </span>
             </Banner>
             <div class="panel-body">
@@ -97,15 +95,15 @@ export default function BatchDetails(props) {
                   </strong>{' '}
                   created from this batch.
                 </span>
-                {!shouldShowAllInvoices && (
+                {invoices.length > 0 ? (
                   <NavLink
                     to={`/paymentlinks?batch_id=${batch.id}`}
                     className="btn-link pull-right"
                     onClick={() => trackSeeAllLinks(batch.id)}
                   >
-                    View All {stats.batch_total} &gt;
+                    View All &gt;
                   </NavLink>
-                )}
+                ) : null}
               </div>
               <div class="invoice-list table-responsive p-t">
                 <table
@@ -116,14 +114,53 @@ export default function BatchDetails(props) {
                     isLoading={isLoading}
                     rows={invoices}
                     colSpan={5}
-                    emptyTableMsg="No invoices found"
+                    emptyTableMsg="No Payment Links found"
                   >
                     {invoices.map(invoice => (
                       <InvoicesListItem key={invoice.id} invoice={invoice} />
                     ))}
                   </TableBody>
                 </table>
+                {stats.batch_total > 0 &&
+                  stats.batch_total > stats.issued_count && (
+                    <small class="help-block m-l">
+                      <i
+                        class="i i-info-circle"
+                        style={{ marginRight: '5px' }}
+                      />
+                      {stats.issued_count === 0 ? (
+                        <span>
+                          The payment links related to this batch were not
+                          created due to errors. Please{' '}
+                          <span
+                            class="btn-link"
+                            onClick={onDownload.bind(this, batch.id)}
+                          >
+                            download
+                          </span>{' '}
+                          the report containing all Payment Links data
+                        </span>
+                      ) : (
+                        <span>
+                          Some links related to this batch were not created due
+                          to errors. Please{' '}
+                          <span
+                            class="btn-link"
+                            onClick={onDownload.bind(this, batch.id)}
+                          >
+                            download
+                          </span>{' '}
+                          the report containing all Payment Links data.
+                        </span>
+                      )}
+                    </small>
+                  )}
               </div>
+              {invoices.length > 0 ? (
+                <small class="help-block m-l text-center">
+                  Showing {invoices.length} of {stats.batch_total}
+                </small>
+              ) : null}
             </div>
           </div>
         </div>
