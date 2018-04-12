@@ -111,7 +111,7 @@ class NetbankingCsbGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($testData, $netbanking);
     }
 
-    public function testPaymentFailedVerifyCallbackSuccess()
+    public function testPaymentFailedVerifyCallbackFailure()
     {
         $this->mockPaymentFailed();
 
@@ -142,9 +142,6 @@ class NetbankingCsbGatewayTest extends TestCase
 
         $verify = $this->verifyPayment($payment[Payment\Entity::ID]);
 
-        // Since BID is not null, we send V as the Mode for verify
-        $this->assertEquals(Mode::VERIFY, $verify['gateway']['verifyRequest'][7]);
-
         $this->assertEquals(true, $verify['gateway']['apiSuccess']);
         $this->assertEquals(true, $verify['gateway']['gatewaySuccess']);
 
@@ -157,34 +154,6 @@ class NetbankingCsbGatewayTest extends TestCase
         $this->assertEquals($verify[ConstantsEntity::PAYMENT][Payment\Entity::ID], $payment[Payment\Entity::ID]);
         $this->assertEquals(1, $payment[Payment\Entity::VERIFIED]);
         $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
-    }
-
-    public function testPaymentFailedVerify()
-    {
-        $payment = $this->testPaymentFailed();
-
-        $data = $this->testData['testVerifyMismatch'];
-
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($payment)
-            {
-                $this->verifyPayment($payment[Payment\Entity::ID]);
-            });
-
-        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
-
-        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
-        $this->assertEquals(VerifyStatus::FAILED, $payment[Payment\Entity::VERIFIED]);
-
-        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
-
-        $testData = $this->testData['testPaymentFailedNetbankingEntity'];
-
-        // The status changes from 'N' to 'Y' after verification
-        $testData['status'] = Status::SUCCESS;
-
-        $this->assertArraySelectiveEquals($testData, $netbanking);
     }
 
     public function testPaymentFailedVerifyFailed()
@@ -329,8 +298,15 @@ class NetbankingCsbGatewayTest extends TestCase
         $this->mockServerContentFunction(
             function(& $content, $action = null)
             {
-                $content[ResponseFields::STATUS] = Status::FAILURE;
-                $content[ResponseFields::NARRATION] = 'Payment failed';
+                if ($action === 'authorize')
+                {
+                    $content[ResponseFields::STATUS] = Status::FAILURE;
+                    $content[ResponseFields::NARRATION] = 'Payment failed';
+                }
+                else if ($action === 'verify')
+                {
+                    $content[ResponseFields::VERIFICATION] = Status::FAILURE;
+                }
             });
     }
 

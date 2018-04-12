@@ -63,7 +63,7 @@ return [
 
     // When verify callback failure happens, the gateway entity is not updated
     'testVerifyCallbackFailureEntity' => [
-        'amount'          => 500,
+        'amount'          => 50000,
         'action'          => 'authorize',
         'bank'            => 'CSBK',
         'bank_payment_id' => null,
