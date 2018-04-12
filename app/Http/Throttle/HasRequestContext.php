@@ -107,6 +107,26 @@ trait HasRequestContext
      */
     protected $proxy = false;
 
+    public function getMode()
+    {
+        return $this->mode;
+    }
+
+    public function getKeyId()
+    {
+        return $this->keyId;
+    }
+
+    public function getAuth()
+    {
+        return $this->auth;
+    }
+
+    public function getInternalAppNameAttribute()
+    {
+        return $this->internalAppName;
+    }
+
     protected function initRequestContextVars(Request $request)
     {
         $this->request = $request;

@@ -100,6 +100,9 @@ class Throttler
 
     public function throttle($request)
     {
+        // We initialize request context vars first as the values would be used in metrics.
+        $this->initRequestContextVars($request);
+
         // For local and test env, we skip basis local configuration
         if ($this->config['skip'] === true)
         {
@@ -108,7 +111,6 @@ class Throttler
 
         try
         {
-            $this->initRequestContextVars($request);
             $this->initRedisConnection();
             $this->setMidIfApplicable();
             $this->initThrottleSettings();
