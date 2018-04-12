@@ -49,14 +49,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getAuthorizeRequest($input);
 
-        $this->createGatewayPaymentEntity([RequestFields::AMOUNT => $input['payment']['amount'] / 100]);
-
-        $this->traceGatewayPaymentRequest(
-            $request,
-            $input,
-            $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST,
-            ['encrypted' => true]
-        );
+        $this->createGatewayPaymentEntity([RequestFields::AMOUNT => $input['payment']['amount']]);
 
         return $request;
     }
@@ -105,16 +98,6 @@ class Gateway extends Base\Gateway
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
         $request = $this->getVerifyRequestData($verify);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            [
-                'request'    => $request,
-                'encrypted'  => true,
-                'payment_id' => $verify->input['payment']['id'],
-                'gateway'    => $this->gateway
-            ]
-        );
 
         $response = $this->sendGatewayRequest($request);
 
@@ -306,13 +289,23 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        $verify->verifyRequest = $content;
-
         $contentToEncode = $this->computeStringToEncode($content);
 
         $content = [RequestFields::POST_DATA => base64_encode($contentToEncode)];
 
-        return $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'request'    => $request,
+                'encrypted'  => true,
+                'payment_id' => $verify->input['payment']['id'],
+                'gateway'    => $this->gateway
+            ]
+        );
+
+        return $request;
     }
 
     protected function parseVerifyResponse(string $responseString): array
@@ -426,7 +419,16 @@ class Gateway extends Base\Gateway
 
         $content = [RequestFields::POST_DATA => base64_encode($contentToEncode)];
 
-        return $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content);
+
+        $this->traceGatewayPaymentRequest(
+            $request,
+            $input,
+            $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST,
+            ['encrypted' => true]
+        );
+
+        return $request;
     }
 
     protected function formatAmount(float $amount): string
