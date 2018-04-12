@@ -334,16 +334,9 @@ class Service extends Base\Service
         return array($error, null);
     }
 
-    public function getInvoiceReportData($mode, array $input)
+    public function getInvoiceReportData($mode, array $input, $merchantId)
     {
-        $merchantId = $this->merchantId;
-
-        if (isset($input['merchant_id']))
-        {
-            $merchantId = $input['merchant_id'];
-
-            unset($input['merchant_id']);
-        }
+        $merchantId = $merchantId ?? $this->merchantId;
 
         try
         {
