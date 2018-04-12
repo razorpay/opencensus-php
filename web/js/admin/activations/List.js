@@ -26,7 +26,18 @@ const defaultFilters = {
   account_status: 'pending_under_review',
   count: 20,
   skip: 0,
+  reviewer_id: '',
 };
+
+function fetchMerchants() {
+  return adminFetch(...arguments).then(response => {
+    if (response) {
+      //update merchantReviewerMap when filters are apllied.
+      this._updateMerchateReviewerMap(this.reviewers, response.items);
+      return response;
+    }
+  });
+}
 
 export default class MerchantList extends Component {
   state = {
@@ -48,35 +59,39 @@ export default class MerchantList extends Component {
 
     Promise.all(requests.map(request => adminFetch(request))).then(
       ([merchants, reviewers]) => {
-        let merchantReviewerMap = {};
-
         // update collection items
         this.collection = new Collection({
           data: {
             url: 'live/admins/merchants',
           },
           items: merchants.items,
-          fetchFn: adminFetch,
+          fetchFn: fetchMerchants.bind(this),
           filters: { account_status: 'pending_under_review' },
         });
 
         //TODO: remove admin_
         reviewers.forEach(r => (r.id = r.id.replace('admin_', '')));
 
-        this.reviewers = [{ id: '', name: 'Unassigned' }, ...reviewers];
+        this.reviewers = [{ id: '', name: 'Not Assigned' }, ...reviewers];
 
-        merchants.items.forEach(
-          item =>
-            (merchantReviewerMap[item.id] = this.getReviewer(
-              item.merchant_detail.reviewer_id
-            ))
-        );
-        this.setState({ pending: false, merchantReviewerMap });
+        this._updateMerchateReviewerMap(this.reviewers, merchants.items);
       }
     );
   }
 
-  getFields = () => {
+  // create merchant -> reviewer map i.e. {merchant_id: reviewer_obj}
+  _updateMerchateReviewerMap = (reviewers, merchants) => {
+    let merchantReviewerMap = {};
+    merchants.forEach(
+      merchant =>
+        (merchantReviewerMap[merchant.id] = this.getReviewer(
+          merchant.merchant_detail.reviewer_id
+        ))
+    );
+    this.setState({ pending: false, merchantReviewerMap });
+  };
+
+  _getFields = () => {
     const { selectedMerchants, merchantReviewerMap } = this.state;
 
     let fields = [
@@ -293,7 +308,7 @@ export default class MerchantList extends Component {
         <PageTable
           customClass="merchants-list"
           model={this.collection}
-          fields={this.getFields()}
+          fields={this._getFields()}
           animateRow={false}
         />
       </div>
