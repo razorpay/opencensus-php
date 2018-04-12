@@ -402,17 +402,55 @@ class BasicAuth
     {
         $this->setType(Type::PUBLIC_AUTH);
 
-        $hasKeyInQueryParams = $this->request->has('key_id');
-        $hasKeyInBasicAuth   = $this->request->getUser() !== null;
-
-        // If no key provided for public route, attempts key less authentication.
-        if (($hasKeyInQueryParams === false) and ($hasKeyInBasicAuth === false))
+        if (($this->request->has('key_id') === false) and ($this->request->getUser() === null))
         {
             return $this->keylessPublicAuth();
         }
+        else
+        {
+            return $this->keyPublicAuth();
+        }
+    }
 
-        // Otherwise continue with public authentication flow
-        if ($hasKeyInQueryParams === true)
+    /**
+     * Handles keyless auth on public routes. Ref; KeylessPublicAuth.php
+     * @return mixed
+     */
+    public function keylessPublicAuth()
+    {
+        // Attempts to retrieve merchant via key less public auth approach
+        list($mode, $merchant) = (new KeylessPublicAuth)->retrieveModeAndMerchant();
+
+        // If we fail to retrieve merchant, return http auth expected exception
+        if ($mode === null or $merchant === null)
+        {
+            return ApiResponse::httpAuthExpected();
+        }
+
+        $this->setModeAndDbConnection($mode);
+        $this->setAndCheckMerchantActivatedForLive($merchant);
+
+        //
+        // Sets the key related instance variables as well if key entity exists for merchant. This is needed because in
+        // code flow we might be using these instance variables currently for different stuffs.
+        //
+
+        $this->key = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId());
+
+        if ($this->key !== null)
+        {
+            $this->creds['key'] = $this->key->getId();
+            $this->creds['public_key'] = $this->key->getPublicKey();
+        }
+    }
+
+    /**
+     * Handles auth on public routes using public key id
+     * @return mixed
+     */
+    public function keyPublicAuth()
+    {
+        if ($this->request->has('key_id') === true)
         {
             $res = $this->setKeyFromQueryParams();
         }
@@ -421,11 +459,13 @@ class BasicAuth
             $res = $this->setCredentials();
         }
 
+        // If there was any error response, return
         if ($res !== null)
         {
             return $res;
         }
 
+        // Else continues with verifying key existence etc.. and sets all the instance variables accordingly
         $response = $this->verifyKeyExistence();
 
         if ($response !== true)
@@ -433,31 +473,13 @@ class BasicAuth
             return $response;
         }
 
+        // Verify that no secret is being sent for public auth requests
         if (($this->getSecret() !== '') and ($this->getSecret() !== null))
         {
             return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE);
         }
 
         $this->fetchMerchantOfKey($this->key);
-    }
-
-    public function keylessPublicAuth()
-    {
-        // Attempts to retrieve merchant via key less public auth approach
-        list($mode, $merchant) = (new KeylessPublicAuth)->retrieveModeAndMerchant();
-
-        // If we fail to retrieve merchant, return http auth expected exception
-        if ($merchant === null)
-        {
-            return ApiResponse::httpAuthExpected();
-        }
-
-        $this->setModeAndDbConnection($mode);
-        $this->setMerchant($merchant);
-        $this->checkMerchantActivatedForLive();
-
-        // Sets the key as well if exists
-        $this->key = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId());
     }
 
     public function directAuth()
@@ -1292,9 +1314,7 @@ class BasicAuth
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $this->setMerchant($merchant);
-
-        $this->checkMerchantActivatedForLive();
+        $this->setAndCheckMerchantActivatedForLive($merchant);
 
         return $this->merchant;
     }
@@ -1332,6 +1352,12 @@ class BasicAuth
         }
 
         $this->setMerchant($account);
+    }
+
+    public function setAndCheckMerchantActivatedForLive(Merchant\Entity $merchant)
+    {
+        $this->setMerchant($merchant);
+        $this->checkMerchantActivatedForLive();
     }
 
     public function checkMerchantActivatedForLive()

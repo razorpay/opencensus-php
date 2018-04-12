@@ -188,7 +188,7 @@ class FetchTest extends TestCase
 
         $fetchs = [];
 
-        unset($entities['CACHED_ENTITIES']);
+        array_forget($entities, ['CACHED_ENTITIES', 'KEYLESS_ALLOWED_ENTITIES']);
 
         foreach ($entities as $entity)
         {

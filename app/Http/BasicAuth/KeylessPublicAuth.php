@@ -40,20 +40,8 @@ final class KeylessPublicAuth
     const X_ENTITY_ID_QUERY_KEY  = 'x_entity_id';
     const X_ENTITY_ID_HEADER_KEY = 'X-Entity-Id';
 
-    /**
-     * Map of input parameter and respective entity.
-     * Ref: retrieveMerchant() for usage.
-     */
-    const INPUT_ENTITY_MAP = [
-        Payment\Entity::ORDER_ID        => E::ORDER,
-        Payment\Entity::INVOICE_ID      => E::INVOICE,
-        Invoice\Entity::PAYMENT_ID      => E::PAYMENT,
-        Invoice\Entity::SUBSCRIPTION_ID => E::SUBSCRIPTION,
-    ];
-
     protected $request;
     protected $route;
-    protected $ba;
 
     public function __construct()
     {
@@ -81,43 +69,44 @@ final class KeylessPublicAuth
      */
     public function retrieveModeAndMerchant(): array
     {
-        $info = $this->retrieveEntityAndSignedId();
+        list($entity, $signedId) = $this->retrieveEntityAndSignedId();
 
-        if ($info !== null)
-        {
-            list($entity, $signedId) = $info;
-
-            return $this->retrieveModeAndMerchantForEntity($entity, $signedId);
-        }
-
-        return [null, null];
+        return $this->retrieveModeAndMerchantForEntity($entity, $signedId);
     }
 
     /**
-     * @return array|null
+     * @return array
      */
-    protected function retrieveEntityAndSignedId()
+    protected function retrieveEntityAndSignedId(): array
     {
+        $entity   = null;
+        $signedId = null;
+
         // If found in request input against available map, returns that.
         $input = $this->request->all();
-
-        foreach (self::INPUT_ENTITY_MAP as $key => $entity)
+        foreach (E::KEYLESS_ALLOWED_ENTITIES as $allowedEntity)
         {
+            $key = "{$allowedEntity}_id";
+
             if (array_key_exists($key, $input) === true)
             {
-                return [$entity, $input[$key]];
+                $entity   = $allowedEntity;
+                $signedId = $input[$key];
             }
         }
 
         // Else tries to find X-Entity-Id in route, query or headers
-        $signedId = $this->retrieveXEntityId();
-        if ($signedId !== null)
+        if ($signedId === null)
         {
-            $sign   = str_before($signedId, '_');
-            $entity = $this->getEntityFromSign($sign);
-
-            return [$entity, $signedId];
+            $signedId = $this->retrieveXEntityId();
+            if ($signedId !== null)
+            {
+                $sign   = str_before($signedId, '_');
+                $entity = E::getKeylessAllowedEntityFromSign($sign);
+            }
         }
+
+        return [$entity, $signedId];
     }
 
     /**
@@ -155,43 +144,27 @@ final class KeylessPublicAuth
         return $signedId;
     }
 
-    /**
-     * @param  string $sign
-     * @return string
-     * @throws BadRequestException
-     */
-    protected function getEntityFromSign(string $sign)
-    {
-        switch ($sign)
-        {
-            case Order\Entity::getSign():
-                return E::ORDER;
-
-            case Invoice\Entity::getSign():
-                return E::INVOICE;
-
-            case Payment\Entity::getSign():
-                return E::PAYMENT;
-
-            case Subscription\Entity::getSign():
-                return E::SUBSCRIPTION;
-
-            case Customer\Entity::getSign():
-                return E::CUSTOMER;
-
-            default:
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
-        }
-    }
 
     /**
-     * @param  string               $entity
-     * @param  string               $signedId
+     * @param  string|null $entity
+     * @param  string|null $signedId
      * @return array [string, Merchant\Entity|null]
      * @throws BadRequestException
      */
-    protected function retrieveModeAndMerchantForEntity(string $entity, string $signedId): array
+    protected function retrieveModeAndMerchantForEntity(string $entity = null, string $signedId = null): array
     {
+        // Signed id is not available, just return null
+        if ($signedId === null)
+        {
+            return [null, null];
+        }
+
+        // If signed id is available and $entity wasn't resolved, it's bad request(invalid id)
+        if ($entity === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID, null, ['attributes' => $signedId]);
+        }
+
         $entityClass = E::getEntityClass($entity);
         $entityId    = $entityClass::verifyIdAndSilentlyStripSign($signedId);
 
@@ -208,7 +181,7 @@ final class KeylessPublicAuth
 
         if ($merchant === null)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID, null, ['attributes' => $entityId]);
         }
 
         return [$mode, $merchant];
