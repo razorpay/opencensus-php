@@ -584,6 +584,17 @@ class Core extends Base\Core
     }
 
     /**
+     * This function is used for getting business categories subcategories list
+     * @param Entity $merchantDetails
+     *
+     * @return array
+     */
+    public function getBusinessCategories(Entity $merchantDetails): array
+    {
+        return $merchantDetails->getSubcategoryMap();
+    }
+
+    /**
      * Checks and auto activates the merchant if possible, after form submission
      *
      * @param Entity $merchantDetails
@@ -678,8 +689,6 @@ class Core extends Base\Core
 
             $response[Entity::REJECTION_REASONS] = $rejectionReasons->toArrayPublic();
         }
-
-        $response[Entity::BUSINESS_CATEGORIES] = $merchantDetails->getBusinessCategorySubcategoriesMap();
 
         $totalFields = count($validationFields);
 

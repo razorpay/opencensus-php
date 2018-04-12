@@ -260,4 +260,23 @@ class BusinessSubcategory
         self::WEB_DEVELOPMENT                 => 'Web designing, development and hosting',
         self::WHOLESALE                       => 'Wholesale/Bulk trade',
     ];
+
+    /**
+     * This function checks if the given subcategory is valid
+     *
+     * @param string $subcategory
+     * @return boolean true/false
+     */
+    public static function isValidSubcategory($subcategory)
+    {
+        // return false if subcategory is `descriptions`
+        if (strtolower($subcategory) === 'descriptions')
+        {
+            return false;
+        }
+
+        $key = __CLASS__ . '::' . strtoupper($subcategory);
+
+        return ((defined($key) === true) and (constant($key) === $subcategory));
+    }
 }

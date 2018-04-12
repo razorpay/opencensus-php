@@ -102,7 +102,6 @@ class Entity extends Base\PublicEntity
     const ARCHIVED                         = 'archived';
     const REJECTION_REASONS                = 'rejection_reasons';
     const ALLOWED_NEXT_ACTIVATION_STATUSES = 'allowed_next_activation_statuses';
-    const BUSINESS_CATEGORIES              = 'business_categories';
     const VERIFICATION                     = 'verification';
     const CAN_SUBMIT                       = 'can_submit';
     const REVIEWER                         = 'reviewer';
@@ -402,9 +401,9 @@ class Entity extends Base\PublicEntity
         $array[self::ALLOWED_NEXT_ACTIVATION_STATUSES] = $allowedNextActivationStatuses;
     }
 
-    public function getBusinessCategorySubcategoriesMap()
+    public function getSubcategoryMap()
     {
-        return BusinessCategory::BUSINESS_CATEGORY_SUBCATEGORIES_MAPPING;
+        return BusinessCategory::SUBCATEGORY_MAP;
     }
 
     public function getActivationStatus()

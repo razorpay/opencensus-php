@@ -31,29 +31,31 @@ class BusinessCategory
     const OTHERS                              = 'others';
 
     // Business Category Descriptions
-    const FINANCIAL_SERVICES_DESCRIPTION      = 'Financial Services';
-    const EDUCATION_DESCRIPTION               = 'Education';
-    const HEALTHCARE_DESCRIPTION              = 'Healthcare';
-    const UTILITIES_DESCRIPTION               = 'Utilities';
-    const GOVERNMENT_DESCRIPTION              = 'Government';
-    const LOGISTICS_DESCRIPTION               = 'Logistics';
-    const TOURS_AND_TRAVEL_DESCRIPTION        = 'Tours and Travel';
-    const TRANSPORT_DESCRIPTION               = 'Transport';
-    const ECOMMERCE_DESCRIPTION               = 'Ecommerce';
-    const FOOD_DESCRIPTION                    = 'Food and Beverage';
-    const IT_AND_SOFTWARE_DESCRIPTION         = 'IT and Software';
-    const GAMING_DESCRIPTION                  = 'Gaming';
-    const MEDIA_AND_ENTERTAINMENT_DESCRIPTION = 'Media and Entertainment';
-    const SERVICES_DESCRIPTION                = 'Services';
-    const HOUSING_DESCRIPTION                 = 'Housing and Real Estate';
-    const NOT_FOR_PROFIT_DESCRIPTION          = 'Not-For-Profit';
-    const SOCIAL_DESCRIPTION                  = 'Social';
-    const OTHERS_DESCRIPTION                  = 'Others';
+    const DESCRIPTIONS = [
+        self::FINANCIAL_SERVICES      => 'Financial Services',
+        self::EDUCATION               => 'Education',
+        self::HEALTHCARE              => 'Healthcare',
+        self::UTILITIES               => 'Utilities',
+        self::GOVERNMENT              => 'Government',
+        self::LOGISTICS               => 'Logistics',
+        self::TOURS_AND_TRAVEL        => 'Tours and Travel',
+        self::TRANSPORT               => 'Transport',
+        self::ECOMMERCE               => 'Ecommerce',
+        self::FOOD                    => 'Food and Beverage',
+        self::IT_AND_SOFTWARE         => 'IT and Software',
+        self::GAMING                  => 'Gaming',
+        self::MEDIA_AND_ENTERTAINMENT => 'Media and Entertainment',
+        self::SERVICES                => 'Services',
+        self::HOUSING                 => 'Housing and Real Estate',
+        self::NOT_FOR_PROFIT          => 'Not-For-Profit',
+        self::SOCIAL                  => 'Social',
+        self::OTHERS                  => 'Others',
+    ];
 
     // Business Category to Subcategories Mapping
-    const BUSINESS_CATEGORY_SUBCATEGORIES_MAPPING = [
+    const SUBCATEGORY_MAP = [
         self::FINANCIAL_SERVICES => [
-            self::DESCRIPTION   => self::FINANCIAL_SERVICES_DESCRIPTION,
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::FINANCIAL_SERVICES],
             self::SUBCATEGORIES => [
                 Sub::MUTUAL_FUND                     => Sub::DESCRIPTIONS[Sub::MUTUAL_FUND],
                 Sub::LENDING                         => Sub::DESCRIPTIONS[Sub::LENDING],
@@ -73,7 +75,7 @@ class BusinessCategory
         ],
 
         self::EDUCATION => [
-            self::DESCRIPTION   => self::EDUCATION_DESCRIPTION,
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::EDUCATION],
             self::SUBCATEGORIES => [
                 Sub::COLLEGE                         => Sub::DESCRIPTIONS[Sub::COLLEGE],
                 Sub::SCHOOLS                         => Sub::DESCRIPTIONS[Sub::SCHOOLS],
@@ -87,7 +89,7 @@ class BusinessCategory
         ],
 
         self::HEALTHCARE => [
-            self::DESCRIPTION   => self::HEALTHCARE_DESCRIPTION,
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::HEALTHCARE],
             self::SUBCATEGORIES => [
                 Sub::PHARMACY                        => Sub::DESCRIPTIONS[Sub::PHARMACY],
                 Sub::CLINIC                          => Sub::DESCRIPTIONS[Sub::CLINIC],
@@ -102,7 +104,7 @@ class BusinessCategory
         ],
 
         self::UTILITIES => [
-            self::DESCRIPTION   => self::UTILITIES_DESCRIPTION,
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::UTILITIES],
             self::SUBCATEGORIES => [
                 Sub::ELECTRICITY                     => Sub::DESCRIPTIONS[Sub::ELECTRICITY],
                 Sub::GAS                             => Sub::DESCRIPTIONS[Sub::GAS],
@@ -117,7 +119,7 @@ class BusinessCategory
         ],
 
         self::GOVERNMENT => [
-            self::DESCRIPTION   => self::GOVERNMENT_DESCRIPTION,
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::GOVERNMENT],
             self::SUBCATEGORIES => [
                 Sub::CENTRAL                         => Sub::DESCRIPTIONS[Sub::CENTRAL],
                 Sub::STATE                           => Sub::DESCRIPTIONS[Sub::STATE],
@@ -125,7 +127,7 @@ class BusinessCategory
         ],
 
         self::LOGISTICS => [
-            self::DESCRIPTION   => self::LOGISTICS_DESCRIPTION,
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::LOGISTICS],
             self::SUBCATEGORIES => [
                 Sub::FREIGHT                         => Sub::DESCRIPTIONS[Sub::FREIGHT],
                 Sub::COURIER                         => Sub::DESCRIPTIONS[Sub::COURIER],
@@ -136,7 +138,7 @@ class BusinessCategory
         ],
 
         self::TOURS_AND_TRAVEL => [
-            self::DESCRIPTION   => self::TOURS_AND_TRAVEL_DESCRIPTION,
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::TOURS_AND_TRAVEL],
             self::SUBCATEGORIES => [
                 Sub::AVIATION                        => Sub::DESCRIPTIONS[Sub::AVIATION],
                 Sub::ACCOMMODATION                   => Sub::DESCRIPTIONS[Sub::ACCOMMODATION],
@@ -146,7 +148,7 @@ class BusinessCategory
         ],
 
         self::TRANSPORT => [
-            self::DESCRIPTION   => self::TRANSPORT_DESCRIPTION,
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::TRANSPORT],
             self::SUBCATEGORIES => [
                 Sub::CAB_HAILING                     => Sub::DESCRIPTIONS[Sub::CAB_HAILING],
                 Sub::BUS                             => Sub::DESCRIPTIONS[Sub::BUS],
@@ -155,7 +157,7 @@ class BusinessCategory
         ],
 
         self::ECOMMERCE => [
-            self::DESCRIPTION   => self::ECOMMERCE_DESCRIPTION,
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::ECOMMERCE],
             self::SUBCATEGORIES => [
                 Sub::ECOMMERCE_MARKETPLACE           => Sub::DESCRIPTIONS[Sub::ECOMMERCE_MARKETPLACE],
                 Sub::AGRICULTURE                     => Sub::DESCRIPTIONS[Sub::AGRICULTURE],
@@ -177,7 +179,7 @@ class BusinessCategory
         ],
 
         self::FOOD => [
-            self::DESCRIPTION   => self::FOOD_DESCRIPTION,
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::FOOD],
             self::SUBCATEGORIES => [
                 Sub::ONLINE_FOOD_ORDERING            => Sub::DESCRIPTIONS[Sub::ONLINE_FOOD_ORDERING],
                 Sub::RESTAURANT                      => Sub::DESCRIPTIONS[Sub::RESTAURANT],
@@ -189,7 +191,7 @@ class BusinessCategory
         ],
 
         self::IT_AND_SOFTWARE => [
-            self::DESCRIPTION   => self::IT_AND_SOFTWARE_DESCRIPTION,
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::IT_AND_SOFTWARE],
             self::SUBCATEGORIES => [
                 Sub::SAAS                            => Sub::DESCRIPTIONS[Sub::SAAS],
                 Sub::PAAS                            => Sub::DESCRIPTIONS[Sub::PAAS],
@@ -200,7 +202,7 @@ class BusinessCategory
         ],
 
         self::GAMING => [
-            self::DESCRIPTION   => self::GAMING_DESCRIPTION,
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::GAMING],
             self::SUBCATEGORIES => [
                 Sub::GAME_DEVELOPER                  => Sub::DESCRIPTIONS[Sub::GAME_DEVELOPER],
                 Sub::ESPORTS                         => Sub::DESCRIPTIONS[Sub::ESPORTS],
@@ -211,7 +213,7 @@ class BusinessCategory
         ],
 
         self::MEDIA_AND_ENTERTAINMENT => [
-            self::DESCRIPTION   => self::MEDIA_AND_ENTERTAINMENT_DESCRIPTION,
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::MEDIA_AND_ENTERTAINMENT],
             self::SUBCATEGORIES => [
                 Sub::VIDEO_ON_DEMAND                 => Sub::DESCRIPTIONS[Sub::VIDEO_ON_DEMAND],
                 Sub::MUSIC_STREAMING                 => Sub::DESCRIPTIONS[Sub::MUSIC_STREAMING],
@@ -223,7 +225,7 @@ class BusinessCategory
         ],
 
         self::SERVICES => [
-            self::DESCRIPTION   => self::SERVICES_DESCRIPTION,
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::SERVICES],
             self::SUBCATEGORIES => [
                 Sub::REPAIR_AND_CLEANING             => Sub::DESCRIPTIONS[Sub::REPAIR_AND_CLEANING],
                 Sub::INTERIOR_DESIGN_AND_ARCHITECT   => Sub::DESCRIPTIONS[Sub::INTERIOR_DESIGN_AND_ARCHITECT],
@@ -238,7 +240,7 @@ class BusinessCategory
         ],
 
         self::HOUSING => [
-            self::DESCRIPTION   => self::HOUSING_DESCRIPTION,
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::HOUSING],
             self::SUBCATEGORIES => [
                 Sub::DEVELOPER                       => Sub::DESCRIPTIONS[Sub::DEVELOPER],
                 Sub::FACILITY_MANAGEMENT             => Sub::DESCRIPTIONS[Sub::FACILITY_MANAGEMENT],
@@ -250,7 +252,7 @@ class BusinessCategory
         ],
 
         self::NOT_FOR_PROFIT => [
-            self::DESCRIPTION   => self::NOT_FOR_PROFIT_DESCRIPTION,
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::NOT_FOR_PROFIT],
             self::SUBCATEGORIES => [
                 Sub::CHARITY                         => Sub::DESCRIPTIONS[Sub::CHARITY],
                 Sub::EDUCATIONAL                     => Sub::DESCRIPTIONS[Sub::EDUCATIONAL],
@@ -260,7 +262,7 @@ class BusinessCategory
         ],
 
         self::SOCIAL => [
-            self::DESCRIPTION   => self::SOCIAL_DESCRIPTION,
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::SOCIAL],
             self::SUBCATEGORIES => [
                 Sub::MATCHMAKING                     => Sub::DESCRIPTIONS[Sub::MATCHMAKING],
                 Sub::SOCIAL_NETWORK                  => Sub::DESCRIPTIONS[Sub::SOCIAL_NETWORK],
@@ -271,7 +273,7 @@ class BusinessCategory
         ],
 
         self::OTHERS => [
-            self::DESCRIPTION   => self::OTHERS_DESCRIPTION,
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::OTHERS],
             self::SUBCATEGORIES => [],
         ],
     ];

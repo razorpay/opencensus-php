@@ -322,6 +322,18 @@ class Service extends Base\Service
         return $merchantDetails->toArrayPublic();
     }
 
+    /**
+     * This function is used for getting business categories subcategories list
+     *
+     * @return array
+     */
+    public function getBusinessCategories(): array
+    {
+        $merchantDetails = $this->merchant->merchantDetail;
+
+        return (new Core)->getBusinessCategories($merchantDetails);
+    }
+
     public function getRejectionReasons()
     {
         return RejectionReasons::REJECTION_REASONS_MAPPING;
