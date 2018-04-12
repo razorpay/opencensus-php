@@ -24,35 +24,60 @@ import BulkAssign from './BulkAssign';
 
 const defaultFilters = {
   account_status: 'pending_under_review',
+  count: 20,
+  skip: 0,
 };
 
 export default class MerchantList extends Component {
   state = {
-    accountStatus: defaultFilters.account_status,
     selectedMerchants: [],
+    merchantReviewerMap: {},
     pending: true,
   };
-  collection = new Collection({
-    data: {
-      url: 'live/admins/merchants',
-    },
-    fetchFn: adminFetch,
-    filters: defaultFilters,
-  });
+
+  collection = null;
 
   componentWillMount() {
-    adminFetch('live/merchant/activation/reviewers').then(response => {
-      if (response) {
-        //TODO: remove admin_
-        response.forEach(r => (r.id = r.id.replace('admin_', '')));
-        this.reviewers = [{ id: '', name: 'Unassigned' }, ...response];
-        this.setState({ pending: false });
-      }
+    let requests = [];
+
+    requests.push({
+      url: 'live/admins/merchants',
+      params: defaultFilters,
     });
+    requests.push({ url: 'live/merchant/activation/reviewers' });
+
+    Promise.all(requests.map(request => adminFetch(request))).then(
+      ([merchants, reviewers]) => {
+        let merchantReviewerMap = {};
+
+        // update collection items
+        this.collection = new Collection({
+          data: {
+            url: 'live/admins/merchants',
+          },
+          items: merchants.items,
+          fetchFn: adminFetch,
+          filters: { account_status: 'pending_under_review' },
+        });
+
+        //TODO: remove admin_
+        reviewers.forEach(r => (r.id = r.id.replace('admin_', '')));
+
+        this.reviewers = [{ id: '', name: 'Unassigned' }, ...reviewers];
+
+        merchants.items.forEach(
+          item =>
+            (merchantReviewerMap[item.id] = this.getReviewer(
+              item.merchant_detail.reviewer_id
+            ))
+        );
+        this.setState({ pending: false, merchantReviewerMap });
+      }
+    );
   }
 
   getFields = () => {
-    const { selectedMerchants } = this.state;
+    const { selectedMerchants, merchantReviewerMap } = this.state;
 
     let fields = [
       // Add checkbox for multiple selection of merchants
@@ -76,8 +101,10 @@ export default class MerchantList extends Component {
             name="reviewer_id"
             options={this.reviewers}
             trackBy="id"
-            defaultValue={item.merchant_detail.reviewer_id || ''}
-            onChange={this.handleReviewerAssignment.bind(item)}
+            selected={merchantReviewerMap[item.id] || ''}
+            onChange={({ option }) =>
+              this.handleSingleReviewerAssignment(item.id, option)
+            }
           />
         ),
       ],
@@ -128,16 +155,16 @@ export default class MerchantList extends Component {
     return fields;
   };
 
+  getReviewer = reviewer_id => {
+    return this.reviewers.find(reviewer => reviewer.id === reviewer_id);
+  };
+
   onSubmit = filters => {
     if (filters['sub_accounts'] == 0) {
       delete filters['sub_accounts'];
     }
 
     return this.collection.applyFilters(filters);
-  };
-
-  handleAccountStatusChange = e => {
-    this.setState({ accountStatus: e.target.value });
   };
 
   handleMultipleSelection = event => {
@@ -163,13 +190,37 @@ export default class MerchantList extends Component {
     this.setState({ selectedMerchants });
   };
 
-  handleReviewerAssignment = ({ option }) => {
-    let body = {
-      //TODO: remove admin_
-      reviewer_id: 'admin_' + option.id,
-      merchants: [this.id],
-    };
-    adminPost({
+  openBulkAssignModal = e => {
+    //prevent filter form submission
+    prevent(e);
+    openModal(
+      <BulkAssign
+        reviewers={this.reviewers}
+        selectedMerchants={this.state.selectedMerchants}
+        onReviewerAssignment={this.handleReviewerAssignment}
+      />
+    );
+  };
+
+  handleSingleReviewerAssignment = (merchandId, reviewer) => {
+    let merchantReviewerMap = { ...this.state.merchantReviewerMap };
+
+    merchantReviewerMap[merchandId] = reviewer;
+
+    this.setState({ merchantReviewerMap });
+
+    this.handleReviewerAssignment(
+      {
+        reviewer_id: `admin_${reviewer.id}`,
+        merchants: [merchandId],
+      },
+      true
+    );
+  };
+
+  handleReviewerAssignment = (body, isSingleAssignment = false) => {
+    let merchantReviewerMap = { ...this.state.merchantReviewerMap };
+    return adminPost({
       url: 'live/merchant/activation/bulk_assign_reviewer',
       data: body,
     })
@@ -177,25 +228,22 @@ export default class MerchantList extends Component {
         if (response) {
           notifySuccess('Merchants assigned successfully');
           closeModal();
+          if (!isSingleAssignment) {
+            body.merchants.forEach(
+              merchantId =>
+                (merchantReviewerMap[merchantId] = this.getReviewer(
+                  body.reviewer_id.replace('admin_', '')
+                ))
+            );
+            this.setState({ merchantReviewerMap });
+          }
         }
       })
       .catch(err => notifyError(JSON.stringify(err.response)));
   };
 
-  handleBulkAssign = e => {
-    //prevent filter form submission
-    prevent(e);
-    openModal(
-      <BulkAssign
-        reviewers={this.reviewers}
-        selectedMerchants={this.state.selectedMerchants}
-      />
-    );
-  };
-
   render() {
     const { selectedMerchants } = this.state;
-
     if (this.state.pending) {
       return <div class="table-pending" />;
     }
@@ -236,7 +284,7 @@ export default class MerchantList extends Component {
                 !selectedMerchants.length ? ' disabled' : ''
               }`}
               disabled={selectedMerchants.length === 0}
-              onClick={this.handleBulkAssign}
+              onClick={this.openBulkAssignModal}
             >
               Bulk Assign
             </button>
@@ -246,6 +294,7 @@ export default class MerchantList extends Component {
           customClass="merchants-list"
           model={this.collection}
           fields={this.getFields()}
+          animateRow={false}
         />
       </div>
     );

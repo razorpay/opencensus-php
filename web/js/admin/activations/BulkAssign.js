@@ -11,7 +11,7 @@ import { notifySuccess, notifyError, closeModal } from 'common/modal';
 
 export default class BulkAssign extends Component {
   render() {
-    const { reviewers, selectedMerchants } = this.props;
+    const { reviewers, selectedMerchants, onReviewerAssignment } = this.props;
     const totalForms = selectedMerchants.length;
 
     return (
@@ -36,18 +36,8 @@ export default class BulkAssign extends Component {
               //TODO: add admin_
               body.reviewer_id = `admin_${body.reviewer_id}`;
 
-              body.merchants = this.props.selectedMerchants;
-              return adminPost({
-                url: 'live/merchant/activation/bulk_assign_reviewer',
-                data: body,
-              })
-                .then(response => {
-                  if (response) {
-                    notifySuccess('Merchants assigned successfully');
-                    closeModal();
-                  }
-                })
-                .catch(err => notifyError(JSON.stringify(err.response)));
+              body.merchants = selectedMerchants;
+              return onReviewerAssignment(body);
             }}
           />
         </Form>
