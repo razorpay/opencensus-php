@@ -243,17 +243,6 @@ class RepositoryManager extends Illuminate\Support\Manager
         return $result;
     }
 
-    public function useSlave(callable $callback)
-    {
-        $this->db->connection()->forceReadPdo(true);
-
-        $result = $callback($this);
-
-        $this->db->connection()->forceReadPdo(false);
-
-        return $result;
-    }
-
     protected function getDefaultDbConn()
     {
         return $this->app['config']->get('database.default');

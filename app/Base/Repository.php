@@ -757,6 +757,17 @@ class Repository extends \Razorpay\Spine\Repository
         return $entity;
     }
 
+    public function useSlave(callable $callback)
+    {
+        DB::connection()->forceReadPdo(true);
+
+        $result = $callback($this);
+
+        DB::connection()->forceReadPdo(false);
+
+        return $result;
+    }
+
     protected function getParentNamespace()
     {
         // get_called_class gives the (namespace+classname)
