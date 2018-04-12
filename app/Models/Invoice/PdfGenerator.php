@@ -47,7 +47,7 @@ class PdfGenerator extends Base\Core
 
     public function generate(): FileStore\Entity
     {
-        $viewPayload = (new ViewDataSerializer($this->invoice))->get();
+        $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForInternal();
 
         $timeStarted = microtime(true);
 

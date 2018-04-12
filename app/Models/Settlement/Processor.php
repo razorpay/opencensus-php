@@ -151,10 +151,10 @@ class Processor extends Base\Core
     {
         $response = [];
 
+        (new Validator)->validateInput('retry', $this->input);
+
         try
         {
-            (new Validator)->validateInput('retry', $this->input);
-
             $setlIds = $this->input['settlement_ids'];
 
             Entity::verifyIdAndStripSignMultiple($setlIds);

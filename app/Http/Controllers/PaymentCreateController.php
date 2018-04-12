@@ -73,6 +73,11 @@ class PaymentCreateController extends Controller
         return $ret;
     }
 
+    public function getCreatePaymentCheckoutCallback() {
+        return View::make('gateway.gatewayAsyncForm')
+                ->with('data', $templateData);
+    }
+
     protected function createPayment()
     {
         $input = Request::all();
@@ -201,6 +206,12 @@ class PaymentCreateController extends Controller
         $this->setMerchantCallbackUrlIfApplicable($input);
 
         $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
+
+        // Converts all the amounts to rupees
+        foreach ($data as $key => $value)
+        {
+            $data[$key] = $value / 100;
+        }
 
         if ($retJson)
         {

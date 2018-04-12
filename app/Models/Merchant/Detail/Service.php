@@ -117,7 +117,10 @@ class Service extends Base\Service
         {
             $merchantDetails->getValidator()->validateFileType($value);
 
-            $fileName = 'api/' . $merchant->getId() .'/' .$key;
+            // Adding a prefix hash for filename to avoid overwrites to the same fileName on S3.
+            $partial = substr(bin2hex(random_bytes(6)), 0, 5);
+
+            $fileName = 'api/' . $merchant->getId() .'/' . $partial . '/' . $key;
 
             $file = $this->createFile(
                 $merchantDetails,
@@ -535,7 +538,7 @@ class Service extends Base\Service
 
         $permission = $this->repo
                             ->permission
-                            ->findByOrgIdAndPermission($orgId, Admin\Permission\Name::REVIEW_MERCHANT_ACTIVATION);
+                            ->findByOrgIdAndPermission($orgId, Admin\Permission\Name::EDIT_ACTIVATE_MERCHANT);
 
         if (empty($permission) === true)
         {

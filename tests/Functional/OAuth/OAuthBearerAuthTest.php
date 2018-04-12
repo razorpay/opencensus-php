@@ -4,10 +4,13 @@ namespace RZP\Tests\Functional\OAuth;
 
 use Carbon\Carbon;
 use Razorpay\OAuth\Client;
+use Razorpay\OAuth\Application;
 
+use RZP\Models\Feature;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 /**
  * @group dns-sensitive
@@ -17,6 +20,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
     use OAuthTrait;
     use PaymentTrait;
     use MocksDnsTrait;
+    use VirtualAccountTrait;
 
     public function setUp()
     {
@@ -82,6 +86,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
     }
 
     /**
+     * Please refer to the GitHub wiki page on middlewares before making any changes here.
+     *
      * Tests that the route (feature route) is accessible if
      *      the app hits the route on behalf of the merchant, and,
      *      the app has the feature enabled
@@ -96,7 +102,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
             'feature',
             [
                 'entity_id' => '10000000000000',
-                'name' => 'dummy'
+                'name'      => 'dummy'
             ]);
 
         $this->fixtures->create(
@@ -104,7 +110,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
             [
                 'entity_type' => 'application',
                 'entity_id'   => $client->application_id,
-                'name' => 'dummy'
+                'name'        => 'dummy'
             ]);
 
         $accessToken = $this->generateOAuthAccessToken(['scopes' => ['dummy.read']]);
@@ -115,6 +121,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
     }
 
     /**
+     * Please refer to the GitHub wiki page on middlewares before making any changes here.
+     *
      * Tests that the route (feature route) is accessible if
      *      the app hits the route on behalf of the merchant, and,
      *      the app has the feature enabled
@@ -145,6 +153,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
     }
 
     /**
+     * Please refer to the GitHub wiki page on middlewares before making any changes here.
+     *
      * Tests that the route (feature route) is not accessible if
      *      the app hits the route on behalf of the merchant, and,
      *      the app does not have the feature enabled, and,
@@ -157,17 +167,11 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $accessToken = $this->generateOAuthAccessToken(
             [
-                'scopes' => ['read_write'],
+                'scopes'    => ['read_write'],
                 'client_id' => $client->getId()
             ]);
 
-        $this->fixtures->create(
-            'feature',
-            [
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000',
-                'name'        => 's2s'
-            ]);
+        $this->fixtures->merchant->addFeatures(['s2s']);
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -181,6 +185,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
     }
 
     /**
+     * Please refer to the GitHub wiki page on middlewares before making any changes here.
+     *
      * Tests that the route (feature route) is accessible if
      *      the app hits the route on behalf of the merchant, and,
      *      the app has the feature enabled, and,
@@ -193,7 +199,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $accessToken = $this->generateOAuthAccessToken(
             [
-                'scopes' => ['read_write'],
+                'scopes'    => ['read_write'],
                 'client_id' => $client->getId()
             ]);
 
@@ -219,6 +225,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
     }
 
     /**
+     * Please refer to the GitHub wiki page on middlewares before making any changes here.
+     *
      * Tests that the route (feature route) is accessible if
      *      the app hits the route on behalf of the merchant, and,
      *      the app has the feature enabled, and,
@@ -243,13 +251,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
                 'name'        => 's2s'
             ]);
 
-        $this->fixtures->create(
-            'feature',
-            [
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000',
-                'name'        => 's2s'
-            ]);
+        $this->fixtures->merchant->addFeatures(['s2s']);
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -265,6 +267,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
     }
 
     /**
+     * Please refer to the GitHub wiki page on middlewares before making any changes here.
+     *
      * Tests that the route (feature route) is not accessible if
      *      the app hits the route on behalf of the merchant, and,
      *      the app does not have the feature enabled, and,
@@ -343,6 +347,215 @@ class OAuthBearerAuthTest extends OAuthTestCase
     public function testBearerAuthLiveModeInActiveMerchant()
     {
         $accessToken = $this->generateOAuthAccessToken(['mode' => 'live']);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->fixtures->create('payment', ['id' => '10000000000000']);
+
+        $this->startTest();
+    }
+
+    public function testRestrictedAccessFeatureEnabledOnMerchantOnly()
+    {
+        $client = factory(Client\Entity::class)->create();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000000',
+                'name'      => 'virtual_accounts'
+            ]);
+
+        $accessToken = $this->generateOAuthAccessToken(
+            [
+                'scopes'    => ['read_write'],
+                'client_id' => $client->getId()
+            ]);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
+
+        $this->startTest($testData);
+    }
+
+    public function testRestrictedAccessFeatureEnabledOnAppOnly()
+    {
+        $client = factory(Client\Entity::class)->create();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $client->application_id,
+                'name'        => 'virtual_accounts'
+            ]);
+
+        $accessToken = $this->generateOAuthAccessToken(
+            [
+                'scopes'    => ['read_write'],
+                'client_id' => $client->getId()
+            ]);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
+
+        $this->startTest($testData);
+    }
+
+    public function testRestrictedAccessFeatureEnabledOnMerchantAndApp()
+    {
+        $client = factory(Client\Entity::class)->create();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000000',
+                'name'      => 'virtual_accounts'
+            ]);
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $client->application_id,
+                'name'        => 'virtual_accounts'
+            ]);
+
+        $accessToken = $this->generateOAuthAccessToken(
+            [
+                'scopes'    => ['read_write'],
+                'client_id' => $client->getId()
+            ]);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * A competitor OAuth application should not be allowed to access S2S routes on behalf of the merchant,
+     * if the merchant does not have the allow_s2s_apps feature enabled.
+     */
+    public function testCompetitorAppAccessS2SRouteWithoutAllowS2SFeature()
+    {
+        $testAppId = Feature\Type::TEST_APP_ID;
+
+        $application = factory(Application\Entity::class)->create([
+            'id' => $testAppId,
+        ]);
+
+        $client = factory(Client\Entity::class)->create([
+            'application_id' => $application->id,
+        ]);
+
+        $accessToken = $this->generateOAuthAccessToken(
+            [
+                'scopes'    => ['read_write'],
+                'client_id' => $client->getId()
+            ]);
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $client->application_id,
+                'name'        => 's2s'
+            ]);
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $payment;
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * A competitor OAuth application should be allowed to access S2S routes on behalf of the merchant,
+     * if the merchant does has the allow_s2s_apps feature enabled.
+     */
+    public function testCompetitorAppAccessS2SRouteWithAllowS2SFeature()
+    {
+        $testAppId = Feature\Type::TEST_APP_ID;
+
+        $application = factory(Application\Entity::class)->create([
+            'id' => $testAppId,
+        ]);
+
+        $client = factory(Client\Entity::class)->create([
+            'application_id' => $application->id,
+        ]);
+
+        $accessToken = $this->generateOAuthAccessToken(
+            [
+                'scopes'    => ['read_write'],
+                'client_id' => $client->getId()
+            ]);
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $client->application_id,
+                'name'        => 's2s'
+            ]);
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $this->fixtures->merchant->addFeatures(['allow_s2s_apps']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $payment;
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * A competitor OAuth application should not be allowed to access a non S2S routes on behalf of the merchant.
+     */
+    public function testCompetitorAppAccessNonS2SRoute()
+    {
+        $testAppId = Feature\Type::TEST_APP_ID;
+
+        $application = factory(Application\Entity::class)->create([
+            'id' => $testAppId,
+        ]);
+
+        $client = factory(Client\Entity::class)->create([
+            'application_id' => $application->id,
+        ]);
+
+        $accessToken = $this->generateOAuthAccessToken(
+            [
+                'scopes'    => ['read_write'],
+                'client_id' => $client->getId()
+            ]);
 
         $this->ba->oauthBearerAuth($accessToken);
 

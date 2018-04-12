@@ -323,6 +323,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MAILER_JOB_RECEIVED                           = 'MAILER_JOB_RECEIVED';
     const MAILER_JOB_ERROR                              = 'MAILER_JOB_ERROR';
+    const MAILER_INVALID_RECIPIENT_EMAIL                = 'MAILER_INVALID_RECIPIENT_EMAIL';
     const INVOICE_ACTION_JOB_ERROR                      = 'INVOICE_ACTION_JOB_ERROR';
     const INVOICE_PDF_GEN_FAILED                        = 'INVOICE_PDF_GEN_FAILED';
     const INVOICE_PDF_GEN_TIME_TAKEN                    = 'INVOICE_PDF_GEN_TIME_TAKEN';
@@ -421,6 +422,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PAYMENT_UPDATE_AMOUNT_PAIDOUT                 = 'PAYMENT_UPDATE_AMOUNT_PAIDOUT';
     const PAYMENT_WALLET_LOW_BALANCE                    = 'PAYMENT_WALLET_LOW_BALANCE';
+    const PAYMENT_ACKNOWLEDGE_REQUEST                   = 'PAYMENT_ACKNOWLEDGE_REQUEST';
+    const PAYMENT_ACKNOWLEDGED                          = 'PAYMENT_ACKNOWLEDGED';
 
     const FILE_DELETING                                 = 'FILE_DELETING';
     const DIRECTORY_DELETING                            = 'DIRECTORY_DELETING';
@@ -627,6 +630,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BHARAT_QR_PAYMENT_PROCESSING_FAILED       = 'BHARAT_QR_PAYMENT_PROCESSING_FAILED';
     const BHARAT_QR_PAYMENT_PROCESSING_SUCCESSFUL   = 'BHARAT_QR_PAYMENT_PROCESSING_SUCCESSFUL';
     const BHARAT_QR_PAYMENT_DUPLICATE_NOTIFICATION  = 'BHARAT_QR_PAYMENT_DUPLICATE_NOTIFICATION';
+    const BHARAT_QR_UNEXPECTED_PAYMENT              = 'BHARAT_QR_UNEXPECTED_PAYMENT';
 
     const PAYMENT_RECEIVED_VIA_RECEIVER             = 'PAYMENT_RECEIVED_VIA_RECEIVER';
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
@@ -981,6 +985,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OAUTH_TOKEN_INVALID                           = 'OAUTH_TOKEN_INVALID';
     const APP_MERCHANT_ACCESS_MAP                       = 'APP_MERCHANT_ACCESS_MAP';
     const APP_MERCHANT_ACCESS_MAP_DELETE                = 'APP_MERCHANT_ACCESS_MAP_DELETE';
+
+    const RAZORX_REQUEST                                = 'RAZORX_REQUEST';
+    const RAZORX_REQUEST_FAILED                         = 'RAZORX_REQUEST_FAILED';
 
     const SERVER_ERROR_MISSING_HANDLER                  = 'SERVER_ERROR_MISSING_HANDLER';
     const GATEWAY_FILE_CREATE_REQUEST                   = 'GATEWAY_FILE_CREATE_REQUEST';

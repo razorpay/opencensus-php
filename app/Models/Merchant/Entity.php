@@ -101,11 +101,14 @@ class Entity extends Base\PublicEntity
     //
 
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
+    const AUTO_REFUND_DELAY_FOR_EMANDATE = 1728000; // 20 days
     const SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
     // 30 minutes in seconds
     const MIN_AUTO_REFUND_DELAY = 1800;
     // 10 days in seconds
     const MAX_AUTO_REFUND_DELAY = 864000;
+    // Default merchant brand color used if not set already
+    const DEFAULT_MERCHANT_BRAND_COLOR = '#6A5DD1';
 
     /**
      * A query parameter to filter results based on
@@ -271,7 +274,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH => false,
         self::FEE_MODEL              => FeeModel::PREPAID,
         self::REFUND_SOURCE          => RefundSource::BALANCE,
-        self::CHANNEL                => Settlement\Channel::ICICI,
+        self::CHANNEL                => Settlement\Channel::AXIS,
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
@@ -863,6 +866,11 @@ class Entity extends Base\PublicEntity
     public function getBrandColor()
     {
         return $this->getAttribute(self::BRAND_COLOR);
+    }
+
+    public function getBrandColorOrDefault(string $default = self::DEFAULT_MERCHANT_BRAND_COLOR): string
+    {
+        return $this->getBrandColor() ?: $default;
     }
 
     public function getHandle()

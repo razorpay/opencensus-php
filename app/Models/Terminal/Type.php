@@ -22,6 +22,9 @@ class Type
     // Terminal to be used for UPI pay
     const PAY               = 'pay';
 
+    // Terminal to be used for ATM PIN transactions
+    const PIN               = 'pin';
+
     // Terminals For Bharat Qr payments
     const BHARAT_QR         = 'bharat_qr';
 
@@ -32,6 +35,7 @@ class Type
         self::IVR,
         self::NO_2FA,
         self::PAY,
+        self::PIN,
         self::BHARAT_QR,
     ];
 
@@ -42,7 +46,8 @@ class Type
         self::IVR               => 4,
         self::NO_2FA            => 5,
         self::PAY               => 6,
-        self::BHARAT_QR         => 7,
+        self::PIN               => 7,
+        self::BHARAT_QR         => 8,
     ];
 
     /**

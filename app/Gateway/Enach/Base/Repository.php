@@ -13,12 +13,12 @@ class Repository extends Base\Repository
         Entity::UMRN                => 'sometimes|string',
     ];
 
-    public function findAuthorizedPaymentByUmrn($umrn)
+    public function findAuthorizedPaymentByPaymentId($paymentId)
     {
         return $this->newQuery()
-                    ->where(Entity::UMRN, $umrn)
+                    ->where(Entity::PAYMENT_ID, $paymentId)
                     ->where(Entity::ACTION, Base\Action::AUTHORIZE)
-                    ->with(['payment'])
+                    ->whereNull(Entity::REGISTRATION_STATUS)
                     ->firstOrFail();
     }
 }

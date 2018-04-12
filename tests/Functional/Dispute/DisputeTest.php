@@ -645,6 +645,17 @@ class DisputeTest extends TestCase
         $this->checkDisputeFetchForMerchant($disputes, $content);
     }
 
+    public function testDisputeFetchForAdmin()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->times(2)->create('dispute');
+
+        $testData = $this->updateFetchTestData();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     protected function checkDisputeFetchForMerchant(array $disputes, array $content)
     {
         $this->assertEquals(2, $content['count']);

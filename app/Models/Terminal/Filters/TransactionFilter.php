@@ -12,6 +12,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
+use RZP\Models\Card\IIN\Flows;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Terminal\Category;
@@ -36,6 +37,7 @@ class TransactionFilter extends Terminal\Filter
         'pharma',
         'corporate',
         'mcc',
+        'auth_type',
         'bharat_qr',
     ];
 
@@ -494,17 +496,38 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
-    public function bharatQrFilter($terminal)
+    public function authTypeFilter(Terminal\Entity $terminal)
     {
-        if ((($this->input['payment']->getReceiverType() === 'qr_code') and
-                ($terminal->isBharatQr() === false)) or
-            (($terminal->isBharatQr() === true) and
-                ($this->input['payment']->getReceiverType() !== 'qr_code')))
+        $payment = $this->input['payment'];
+
+        if ($payment->isMethodCardOrEmi() === false)
         {
+            return true;
+        }
+
+        if ($payment->getAuthType() === Payment\AuthType::PIN)
+        {
+            $gateway = $terminal->getGateway();
+            $acquirer = $terminal->getGatewayAcquirer();
+
+            $issuer = $payment->card->iinRelation->getIssuer();
+
+            if (($terminal->isPin() === true) and
+                (Gateway::isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer) === true))
+            {
+                return true;
+            }
+
             return false;
         }
 
-        return true;
+        // Default terminals should always be the one which supports 3DS
+        // Any other auth type terminals should be filtered out if `auth_type`
+        // is empty or null.
+        // In case, we have plan to add new auth in the filter, we will have to
+        // add a condition here to remove terminals of that auth type while
+        // ensuring that all other gateways are selected.
+        return ($terminal->isPin() === false);
     }
 
     protected function isTerminalWithMerchantMccAbsent(
@@ -521,6 +544,18 @@ class TransactionFilter extends Terminal\Filter
             {
                 return false;
             }
+        }
+
+        return true;
+    }
+
+    public function bharatQrFilter($terminal)
+    {
+        if ((($this->input['payment']->getReceiverType() === 'qr_code') and
+                ($terminal->isBharatQr() === false)) or
+            (($terminal->isBharatQr() === true) and
+                ($this->input['payment']->getReceiverType() !== 'qr_code'))) {
+            return false;
         }
 
         return true;

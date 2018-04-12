@@ -2,12 +2,12 @@
 
 namespace RZP\Models\LineItem\Tax;
 
+use RZP\Models\Tax;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
-use RZP\Models\Tax;
 use RZP\Exception\BadRequestException;
-use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {
@@ -18,11 +18,9 @@ class Core extends Base\Core
      * @param array           $input
      * @param Merchant\Entity $merchant
      *
+     * @throws BadRequestException
      */
-    public function createLineItemTaxes(
-        LineItem\Entity $lineItem,
-        array $input,
-        Merchant\Entity $merchant)
+    public function createLineItemTaxes(LineItem\Entity $lineItem, array $input, Merchant\Entity $merchant)
     {
         list($taxGroup, $taxes) = $this->getTaxGroupAndTaxes($input, $merchant);
 
@@ -49,14 +47,15 @@ class Core extends Base\Core
      * @param array           $input
      * @param Merchant\Entity $merchant
      *
+     * @throws BadRequestException
      */
-    public function cleanUpAndCreateLineItemTaxes(
-        LineItem\Entity $lineItem,
-        array $input,
-        Merchant\Entity $merchant)
+    public function cleanUpAndCreateLineItemTaxes(LineItem\Entity $lineItem, array $input, Merchant\Entity $merchant)
     {
-        if ((array_key_exists(LineItem\Entity::TAX_ID, $input) === false) and
-            (array_key_exists(LineItem\Entity::TAX_GROUP_ID, $input) === false))
+        $taxIdExists      = (array_key_exists(LineItem\Entity::TAX_ID, $input) === true);
+        $taxIdsExists     = (array_key_exists(LineItem\Entity::TAX_IDS, $input) === true);
+        $taxGroupIdExists = (array_key_exists(LineItem\Entity::TAX_GROUP_ID, $input) === true);
+
+        if (($taxIdExists === false) and ($taxIdsExists === false) and ($taxGroupIdExists === false))
         {
             return;
         }
@@ -91,31 +90,30 @@ class Core extends Base\Core
      *
      * @return array
      */
-    protected function getTaxGroupAndTaxes(
-        array $input,
-        Merchant\Entity $merchant): array
+    protected function getTaxGroupAndTaxes(array $input, Merchant\Entity $merchant): array
     {
         $taxId      = $input[LineItem\Entity::TAX_ID] ?? null;
+        $taxIds     = $input[LineItem\Entity::TAX_IDS] ?? null;
         $taxGroupId = $input[LineItem\Entity::TAX_GROUP_ID] ?? null;
 
         $taxGroup = null;
-        $taxes = new Base\PublicCollection;
+        $taxes    = new Base\PublicCollection;
 
         if ($taxGroupId !== null)
         {
-            $taxGroup = $this->repo->tax_group
-                                   ->findByPublicIdAndMerchant(
-                                        $taxGroupId,
-                                        $merchant);
+            $taxGroup = $this->repo->tax_group->findByPublicIdAndMerchant($taxGroupId, $merchant);
 
             $taxes = $taxGroup->taxes()->getResults();
         }
         else if ($taxId !== null)
         {
-            $tax = $this->repo->tax
-                              ->findByPublicIdAndMerchant($taxId, $merchant);
+            $tax = $this->repo->tax->findByPublicIdAndMerchant($taxId, $merchant);
 
             $taxes->push($tax);
+        }
+        else if ($taxIds !== null)
+        {
+            $taxes = $this->repo->tax->findManyByPublicIdsAndMerchant($taxIds, $merchant);
         }
 
         return [$taxGroup, $taxes];
@@ -128,7 +126,6 @@ class Core extends Base\Core
      * @param int                   $taxableAmount
      * @param Tax\Entity            $tax
      * @param Tax\Group\Entity|null $taxGroup
-     *
      */
     protected function createLineItemTax(
         LineItem\Entity $lineItem,
@@ -169,6 +166,8 @@ class Core extends Base\Core
      * Taxation is done only for Invoice and not other types - eg. link/ecod.
      *
      * @param LineItem\Entity $lineItem
+     *
+     * @throws BadRequestException
      */
     protected function validateLineItemIsOfAnInvoice(LineItem\Entity $lineItem)
     {

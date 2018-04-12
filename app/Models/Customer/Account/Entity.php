@@ -3,8 +3,10 @@
 namespace RZP\Models\Customer;
 
 use App;
+
 use RZP\Models\Base;
 use RZP\Models\Address;
+use RZP\Models\Invoice;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\Traits\NotesTrait;
 
@@ -17,6 +19,7 @@ class Entity extends Base\PublicEntity
     const EMAIL                 = 'email';
     const MERCHANT_ID           = 'merchant_id';
     const GLOBAL_CUSTOMER_ID    = 'global_customer_id';
+    const GSTIN                 = 'gstin';
     const ACTIVE                = 'active';
     const NOTES                 = 'notes';
     const CREATED_AT            = 'created_at';
@@ -38,6 +41,7 @@ class Entity extends Base\PublicEntity
     const BILLING_ADDRESS       = 'billing_address';
     const SHIPPING_ADDRESS      = 'shipping_address';
     const BILLING_ADDRESS_ID    = 'billing_address_id';
+    const SHIPPING_ADDRESS_ID   = 'shipping_address_id';
 
     protected $generateIdOnCreate = true;
 
@@ -47,6 +51,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::NOTES,
         self::ACTIVE,
+        self::GSTIN,
         self::CONTACT,
         self::MERCHANT_ID,
     ];
@@ -58,6 +63,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::ACTIVE,
         self::CONTACT,
+        self::GSTIN,
         self::SHIPPING_ADDRESS,
         self::MERCHANT_ID,
         self::GLOBAL_CUSTOMER_ID,
@@ -74,6 +80,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::EMAIL,
         self::CONTACT,
+        self::GSTIN,
         self::NOTES,
         self::SHIPPING_ADDRESS,
         self::CREATED_AT,
@@ -85,6 +92,7 @@ class Entity extends Base\PublicEntity
         self::NAME                  => null,
         self::CONTACT               => null,
         self::EMAIL                 => null,
+        self::GSTIN                 => null,
         self::ACTIVE                => true,
         self::NOTES                 => [],
         self::GLOBAL_CUSTOMER_ID    => null,
@@ -112,11 +120,6 @@ class Entity extends Base\PublicEntity
         return ($this->getMerchantId() === Account::SHARED_ACCOUNT);
     }
 
-    public function invoices()
-    {
-        return $this->hasMany('RZP\Models\Invoice\Entity');
-    }
-
     public function getName()
     {
         return $this->getAttribute(self::NAME);
@@ -130,6 +133,11 @@ class Entity extends Base\PublicEntity
     public function getContact()
     {
         return $this->getAttribute(self::CONTACT);
+    }
+
+    public function getGstin()
+    {
+        return $this->getAttribute(self::GSTIN);
     }
 
     public function isActive()
@@ -236,6 +244,11 @@ class Entity extends Base\PublicEntity
     public function globalCustomer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity', self::GLOBAL_CUSTOMER_ID, self::ID);
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice\Entity::class);
     }
 
     // ----------------------------------- END RELATIONS ----------------------

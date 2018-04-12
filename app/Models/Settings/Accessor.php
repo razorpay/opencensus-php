@@ -2,8 +2,9 @@
 
 namespace RZP\Models\Settings;
 
-use LaravelSettings;
+use App;
 use Razorpay\Spine\DataTypes\Dictionary;
+use anlutro\LaravelSettings\SettingsManager;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -40,6 +41,11 @@ class Accessor extends Base\Core
      */
     protected $module;
 
+    /**
+     * @var SettingsManager
+     */
+    protected $laravelSettings;
+
     public function __construct(Base\PublicEntity $entity, string $module)
     {
         parent::__construct();
@@ -48,9 +54,16 @@ class Accessor extends Base\Core
         $this->id     = $entity->getId();
         $this->module = $module;
 
+        $this->initLaravelSettings();
+
         $this->validateEntityAndModule();
 
         $this->setExtraColumns();
+    }
+
+    protected function initLaravelSettings()
+    {
+        $this->laravelSettings = new SettingsManager(App::getFacadeRoot());
     }
 
     /**
@@ -79,7 +92,7 @@ class Accessor extends Base\Core
      */
     public function all()
     {
-        $settings = LaravelSettings::all();
+        $settings = $this->laravelSettings->all();
 
         return $this->serializeSettings($settings);
     }
@@ -111,7 +124,7 @@ class Accessor extends Base\Core
      */
     public function get(string $key)
     {
-        $settings = LaravelSettings::get($key);
+        $settings = $this->laravelSettings->get($key);
 
         return $this->serializeSettings($settings);
     }
@@ -135,7 +148,7 @@ class Accessor extends Base\Core
     {
         $this->trace->info(TraceCode::SETTINGS_UPSERT_REQUEST, [$key, $value]);
 
-        LaravelSettings::set($key, $value);
+        $this->laravelSettings->set($key, $value);
 
         return $this;
     }
@@ -156,7 +169,7 @@ class Accessor extends Base\Core
     {
         $this->trace->info(TraceCode::SETTINGS_DELETE_REQUEST, [$key]);
 
-        LaravelSettings::forget($key);
+        $this->laravelSettings->forget($key);
 
         return $this;
     }
@@ -169,7 +182,7 @@ class Accessor extends Base\Core
      */
     public function save()
     {
-        LaravelSettings::save();
+        $this->laravelSettings->save();
     }
 
     protected function validateEntityAndModule()
@@ -192,7 +205,7 @@ class Accessor extends Base\Core
             'module'      => $this->module
         ];
 
-        LaravelSettings::setExtraColumns($filterColumns);
+        $this->laravelSettings->setExtraColumns($filterColumns);
     }
 
     /**

@@ -140,14 +140,17 @@ class MerchantInvoiceTest extends TestCase
 
     public function testInvoiceEntityCreateForPrevMonth()
     {
-        $this->markTestSkipped('TODO: Need to fix assertions!');
+        $oldDateTime = Carbon::create(2018, 1, 27, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
 
         $this->createData();
 
+        Carbon::setTestNow();
+
         $this->ba->appAuth();
 
-        // Saturday, 27 January 2018 00:00:00 GMT+05:30
-        $currentTime = Carbon::createFromTimestamp(1516991400, Timezone::IST)->addMonth();
+        $currentTime = $oldDateTime = Carbon::create(2018, 2, 1, 12, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($currentTime);
 
@@ -160,7 +163,7 @@ class MerchantInvoiceTest extends TestCase
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(15, $entities['count']);
+        $this->assertEquals(3, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -176,16 +179,16 @@ class MerchantInvoiceTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->assertArraySelectiveEquals($invoiceEntities['non_card'], $data['non_card']);
+        $this->assertArraySelectiveEquals($invoiceEntities['others'], $data['others']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
 
         $dateString = Carbon::createFromDate(
-                            $entities[0]['year'],
-                            $entities[0]['month'],
-                            1,
-                            Timezone::IST
-                        )->format('my');
+            $entities[0]['year'],
+            $entities[0]['month'],
+            1,
+            Timezone::IST
+        )->format('my');
 
         $this->assertEquals(substr($entities[0]['invoice_number'], -4), $dateString);
 
@@ -194,30 +197,28 @@ class MerchantInvoiceTest extends TestCase
 
     public function testInvoiceEntityCreateForGivenMonthYear()
     {
-        $this->markTestSkipped('TODO: Need to fix assertions!');
+        $oldDateTime = Carbon::create(2017, 8, 27, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
 
         $this->createData();
 
+        Carbon::setTestNow();
+
         $this->ba->appAuth();
-
-        // Wednesday, 27 December 2017 00:00:00 GMT+05:30
-        $currentTime = Carbon::createFromTimestamp(1514313000, Timezone::IST)->addMonth();
-
-        $futureTime = Carbon::createFromTimestamp(1514313000, Timezone::IST)->addMonths(3);
-
-        Carbon::setTestNow($currentTime);
 
         $request = [
             'url'     => '/merchants/invoice/create',
             'method'  => 'POST',
-            'content' => ['month' => $currentTime->month, 'year' => $currentTime->year],
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
         ];
 
         $content = $this->makeRequestAndGetContent($request);
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(15, $entities['count']);
+        // checking for 3 because other merchants are inactive during this $oldDateTime
+        $this->assertEquals(3, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -233,9 +234,71 @@ class MerchantInvoiceTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->assertArraySelectiveEquals($invoiceEntities['non_card'], $data['non_card']);
+        $this->assertArraySelectiveEquals($invoiceEntities['others'], $data['others']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
+
+        Carbon::setTestNow();
+    }
+
+    public function testMerchantInvoiceWithLateAuth()
+    {
+        $knownDate = Carbon::create(2018, 1, 27, 12,0, 0, Timezone::IST);
+
+        Carbon::setTestNow($knownDate);
+
+        $authPayment = $this->createData();
+
+        $knownDate = Carbon::create(2018, 2, 1, 12,0, 0, Timezone::IST);
+
+        Carbon::setTestNow($knownDate);
+
+        $this->capturePayment(
+            $authPayment['id'],
+            $authPayment['amount'], 'INR', $authPayment['amount']);
+
+        $this->fixtures->edit('payment', $authPayment['id'], [
+            'captured_at' => Carbon::create(2018, 2, 1, 6, 0, 0, Timezone::IST)->timestamp
+        ]);
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $this->assertEquals(3, $entities['count']);
+
+        $entities = $entities['items'];
+
+        $invoiceEntities = [];
+
+        foreach ($entities as $e)
+        {
+            $invoiceEntities[$e[Invoice\Entity::TYPE]] = [
+                Invoice\Entity::AMOUNT  => $e[Invoice\Entity::AMOUNT],
+                Invoice\Entity::TAX     => $e[Invoice\Entity::TAX],
+            ];
+        }
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($invoiceEntities['others'], $data['others']);
+        $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
+        $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
+
+        $dateString = Carbon::createFromDate(
+            $entities[0]['year'],
+            $entities[0]['month'],
+            1,
+            Timezone::IST)->format('my');
+
+        $this->assertEquals(substr($entities[0]['invoice_number'], -4), $dateString);
 
         Carbon::setTestNow();
     }
@@ -334,14 +397,29 @@ class MerchantInvoiceTest extends TestCase
 
     public function testInvoiceEntityCreateForGivenMerchant()
     {
-        $this->markTestSkipped('TODO: Need to fix assertions!');
+        $oldDateTime = Carbon::create(2017, 7, 27, 12, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
 
         $this->createData();
 
+        // Card payment greater than 2k
+        // Created in last month captured in next month
+        $p4 = $this->getDefaultPaymentArray();
+
+        $p4['amount'] = 234000;
+
+        $p4 = $this->doAuthAndCapturePayment($p4);
+
+        $this->fixtures->edit('payment', $p4['id'], [
+            'captured_at' => Carbon::create(2017, 8, 1, 2, 0, 0, 0, Timezone::IST)->timestamp
+        ]);
+
+        Carbon::setTestNow();
+
         $this->ba->appAuth();
 
-        // Saturday, 27 January 2018 00:00:00 GMT+05:30
-        $currentTime = Carbon::createFromTimestamp(1516991400, Timezone::IST)->addMonth();
+        $currentTime = $oldDateTime = Carbon::create(2017, 8, 1, 12, 12, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($currentTime);
 
@@ -355,6 +433,7 @@ class MerchantInvoiceTest extends TestCase
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
+        // checking for 3 because invoice are generated only for one merchant
         $this->assertEquals(3, $entities['count']);
 
         $entities = $entities['items'];
@@ -371,7 +450,7 @@ class MerchantInvoiceTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->assertArraySelectiveEquals($invoiceEntities['non_card'], $data['non_card']);
+        $this->assertArraySelectiveEquals($invoiceEntities['others'], $data['others']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
 
@@ -381,20 +460,27 @@ class MerchantInvoiceTest extends TestCase
     protected function createData()
     {
         $this->fixtures->edit('merchant', '10000000000000', [
-                                'activated' => 1,
-                                'activated_at' => Carbon::now(Timezone::IST)->timestamp,
-                                'invoice_code' => 'hello1234567',
-                            ]);
+            'activated' => 1,
+            'activated_at' => Carbon::now(Timezone::IST)->timestamp,
+            'invoice_code' => 'hello1234567',
+        ]);
 
         $this->fixtures->on('live')->create('methods:default_methods', [
             'merchant_id' => '1cXSLlUU8V9sXl'
         ]);
 
-        $md1 = $this->fixtures->create(
+        $this->fixtures->create(
             'merchant_detail',
             [
                 'merchant_id' => '10000000000000',
                 'gstin' => '29kjsngjk213922',
+            ]);
+
+        $this->fixtures->create(
+            'payout',
+            [
+                'channel' => 'icici',
+                'amount' => 1000,
             ]);
 
         // Card payment less than 2k
@@ -404,12 +490,20 @@ class MerchantInvoiceTest extends TestCase
 
         $p1 = $this->doAuthAndCapturePayment();
 
+        $this->fixtures->edit('payment', $p1['id'], [
+            'captured_at' => Carbon::now(Timezone::IST)->timestamp + 5,
+        ]);
+
         // Card payment greater than 2k
         $p2 = $this->getDefaultPaymentArray();
 
         $p2['amount'] = 234000;
 
         $p2 = $this->doAuthAndCapturePayment($p2);
+
+        $this->fixtures->edit('payment', $p2['id'], [
+            'captured_at' => Carbon::now(Timezone::IST)->timestamp + 5,
+        ]);
 
         // NB payment
         $this->fixtures->create('terminal:shared_netbanking_indusind_terminal');
@@ -419,6 +513,13 @@ class MerchantInvoiceTest extends TestCase
         $p3['amount'] = 40000;
 
         $p3 = $this->doAuthAndCapturePayment($p3);
+
+        $this->fixtures->edit('payment', $p3['id'], [
+            'captured_at' => Carbon::now(Timezone::IST)->timestamp + 5,
+        ]);
+
+        // Creating authorized transaction which shouldn't be part of invoice as its not captured
+        return $this->doAuthAndGetPayment();
     }
 
     protected function setAdminForInternalAuth()
@@ -427,5 +528,4 @@ class MerchantInvoiceTest extends TestCase
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
     }
-
 }

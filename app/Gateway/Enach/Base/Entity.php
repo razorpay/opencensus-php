@@ -20,6 +20,8 @@ class Entity extends Base\Entity
     const GATEWAY_REFERENCE_ID  = 'gateway_reference_id';
     const ACKNOWLEDGE_STATUS    = 'acknowledge_status';
     const REGISTRATION_STATUS   = 'registration_status';
+    const ERROR_MESSAGE         = 'error_message';
+    const ERROR_CODE            = 'error_code';
 
     protected $entity = 'enach';
 
@@ -34,6 +36,8 @@ class Entity extends Base\Entity
         self::GATEWAY_REFERENCE_ID,
         self::SIGNED_XML,
         self::UMRN,
+        self::ERROR_MESSAGE,
+        self::ERROR_CODE,
     ];
 
     protected $fillable = [
@@ -41,9 +45,12 @@ class Entity extends Base\Entity
         self::SIGNED_XML,
         self::UMRN,
         self::STATUS,
+        self::ACQUIRER,
         self::GATEWAY_REFERENCE_ID,
         self::ACKNOWLEDGE_STATUS,
         self::REGISTRATION_STATUS,
+        self::ERROR_MESSAGE,
+        self::ERROR_CODE,
     ];
 
     protected $defaults = [
@@ -53,6 +60,8 @@ class Entity extends Base\Entity
         self::GATEWAY_REFERENCE_ID  => null,
         self::ACKNOWLEDGE_STATUS    => null,
         self::REGISTRATION_STATUS   => null,
+        self::ERROR_MESSAGE         => null,
+        self::ERROR_CODE            => null,
     ];
 
     public function payment()

@@ -7,16 +7,23 @@ use RZP\Models\Base;
 use RZP\Models\BharatQr\Constants;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\Order\Entity as Order;
+use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Customer\Entity as Customer;
 
 class Core extends Base\Core
 {
-    public function create(array $input, Merchant $merchant, Customer $customer = null): Entity
+    public function create(
+        array $input,
+        Merchant $merchant,
+        Customer $customer = null,
+        Order $order = null): Entity
     {
         $virtualAccount = $this->createEntityAndAssociate($merchant);
 
-        $virtualAccount = $this->repo->transaction(function() use ($virtualAccount, $input, $customer)
+        $virtualAccount = $this->repo->transaction(function() use ($virtualAccount, $input, $customer, $order)
         {
             $shared = false;
 
@@ -38,12 +45,16 @@ class Core extends Base\Core
 
             $virtualAccount->customer()->associate($customer);
 
+            $virtualAccount->associateOrder($order);
+
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 
             $this->repo->saveOrFail($virtualAccount);
 
             return $virtualAccount;
         });
+
+        $this->eventVirtualAccountCreated($virtualAccount);
 
         return $virtualAccount;
     }
@@ -190,5 +201,23 @@ class Core extends Base\Core
         }
 
         return $merchant->methods;
+    }
+
+    public function eventVirtualAccountCredited(Payment $payment)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $payment
+        ];
+
+        $this->app['events']->fire('api.virtual_account.credited', $eventPayload);
+    }
+
+    public function eventVirtualAccountCreated(Entity $virtualAccount)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $virtualAccount
+        ];
+
+        $this->app['events']->fire('api.virtual_account.created', $eventPayload);
     }
 }

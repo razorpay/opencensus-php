@@ -145,7 +145,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'processable_count'         => 3,
+                'processable_count'         => 5,
                 'error_count'               => 0,
                 'parsed_entries'            => [
                     [
@@ -156,7 +156,7 @@ return [
                         Header::AMOUNT           => 100,
                         Header::DESCRIPTION      => 'test payment link',
                         Header::EXPIRE_BY        => null,
-                        Header::PARTIAL_PAYMENT  => null,
+                        Header::PARTIAL_PAYMENT  => 'YES',
                     ],
                     // Duplicate receipt number will not get detected in the validation api
                     [
@@ -167,7 +167,7 @@ return [
                         Header::AMOUNT           => 100,
                         Header::DESCRIPTION      => 'test payment link - 2',
                         Header::EXPIRE_BY        => null,
-                        Header::PARTIAL_PAYMENT  => 0,
+                        Header::PARTIAL_PAYMENT  => 'NO',
                     ],
                     [
                         Header::INVOICE_NUMBER   => '#3',
@@ -295,6 +295,43 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE,
+        ],
+    ],
+
+    'testFetchBatchesOfPaymentLinkTypeWithConfig' => [
+        'request'   => [
+            'url'    => '/batches',
+            'method' => 'get',
+            'content'=> [
+                'type'        => 'payment_link',
+                'with_config' => '1',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'entity'        => 'collection',
+                'count'         => 2,
+                'items'         => [
+                    [
+                        'id'        => 'batch_00000000000002',
+                        'type'      => 'payment_link',
+                        'status'    => 'created',
+                        'config'    => [
+                            'sms_notify'    => '0',
+                            'email_notify'  => '0',
+                        ],
+                    ],
+                    [
+                        'id'        => 'batch_00000000000001',
+                        'type'      => 'payment_link',
+                        'status'    => 'created',
+                        'config'    => [
+                            'sms_notify'    => '1',
+                            'email_notify'  => '0',
+                        ],
+                    ],
+                ],
+            ],
         ],
     ],
 ];

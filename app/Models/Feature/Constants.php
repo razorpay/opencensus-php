@@ -61,10 +61,14 @@ class Constants
     const NEW_ANALYTICS                 = 'new_analytics';
     const DAILY_SETTLEMENT              = 'daily_settlement';
     const DISABLE_UPI_INTENT            = 'disable_upi_intent';
+    const ALLOW_S2S_APPS                = 'allow_s2s_apps';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
     const ORDER_RECEIPT_UNIQUE          = 'order_receipt_unique';
+
+    // Payment authentication
+    const ATM_PIN_AUTH                  = 'atm_pin_auth';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -141,6 +145,8 @@ class Constants
         self::NEW_ANALYTICS                 => true,
         self::DAILY_SETTLEMENT              => true,
         self::DISABLE_UPI_INTENT            => true,
+        self::ATM_PIN_AUTH                  => true,
+        self::ALLOW_S2S_APPS                => true,
     ];
 
     // Entity type constants
@@ -220,10 +226,8 @@ class Constants
 
     /*
      * PRODUCT_FEATURES should be a subset of the visible features.
-     * If any of these features are enabled on live mode, the user
-     * will be notified through an email.
-     * Product features can be enabled/disabled on test mode by the merchant,
-     * but not on the live mode.
+     * If any of these features are enabled on live mode, the user will be notified through an email.
+     * Product features can be enabled/disabled on test mode by the merchant, but not on the live mode.
      */
     const PRODUCT_FEATURES = [
         self::MARKETPLACE,

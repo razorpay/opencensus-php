@@ -15,6 +15,14 @@ class Type
     const ADJUSTMENT    = 'adjustment';
     const SETTLEMENT    = 'settlement';
 
+    const IGNORE_ENTITIES_FROM_MERCHANT_INVOICE = [
+        self::REFUND,
+        self::DISPUTE,
+        self::REVERSAL,
+        self::SETTLEMENT,
+        self::ADJUSTMENT
+    ];
+
     public static function validateType($type)
     {
         if (defined(__CLASS__.'::'.strtoupper($type)) === false)

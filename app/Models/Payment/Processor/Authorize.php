@@ -544,6 +544,8 @@ trait Authorize
 
         $this->validateRecurringIfApplicable($payment, $input);
 
+        $this->validateCardAuthenticationIfApplicable($payment, $input);
+
         $this->validateS2SIfApplicable($payment);
 
         $this->validateSubscriptionInputIfPresent($payment, $input);
@@ -852,6 +854,24 @@ trait Authorize
         }
     }
 
+    protected function validateCardAuthenticationIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return;
+        }
+
+        if ($payment->getAuthType() === Payment\AuthType::PIN)
+        {
+            if (($payment->card->iinRelation === null) or
+                ($payment->card->iinRelation->supports(IIN\Flow::PIN) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The pin authentication type is not applicable on the given card');
+            }
+        }
+    }
+
     protected function validateRecurringIfApplicable(Payment\Entity $payment, array $input)
     {
         $recurring = $payment->isRecurring();
@@ -900,8 +920,16 @@ trait Authorize
         // for which the token was created in the first place. Hence, here, second recurring
         // is not really second recurring and could be in fact first recurring only.
         //
+        // We don't have to verify that the payment is coming from Zoho for
+        // a Zoho merchant if it's on public auth. It won't be second recurring
+        // if it's coming from public auth. It's possible that it won't be
+        // second recurring if it's coming from private auth also, but we don't
+        // have any way to figure that out. Adding access check here to at least
+        // handle second recurring type payments (recurring payments with recurring token)
+        // coming via public auth. These can be safely treated as first recurring.
+        //
         if ((empty($input[Payment\Entity::TOKEN]) === false) and
-            ($payment->isSecondRecurring() === true))
+            ($payment->isSecondRecurring(true) === true))
         {
             $this->verifyAggregatorIfApplicable($merchant);
         }
@@ -912,8 +940,10 @@ trait Authorize
      * then the token cannot be used for the payment.
      *
      * @param Payment\Entity $payment
-     * @param Token\Entity $token
+     * @param Token\Entity   $token
+     *
      * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
      */
     protected function assertTokenIsRecurring(Payment\Entity $payment, Token\Entity $token)
     {
@@ -3182,7 +3212,13 @@ trait Authorize
         // typically for a test charge. In this case as well, we cannot
         // and should not add the signature to the response.
         //
-        if ($this->app['basicauth']->isProxyOrPrivilegeAuth() === false)
+        // In case of batch payments (emandate, recurring, etc), this
+        // flow comes in via queue. In queue, we don't set the key. We
+        // don't need signature and stuff when being run in queue anyway.
+        //
+
+        if (($this->app['basicauth']->isProxyOrPrivilegeAuth() === false) and
+            ($this->app->runningInQueue() === false))
         {
             if ($payment->hasSubscription() === true)
             {
@@ -3325,7 +3361,7 @@ trait Authorize
      * @param Token\Entity $token
      * @param string|null  $oldRecurringStatus
      */
-    protected function eventTokenStatus(Token\Entity $token, string $oldRecurringStatus = null)
+    public function eventTokenStatus(Token\Entity $token, string $oldRecurringStatus = null)
     {
         $currentRecurringStatus = $token->getRecurringStatus();
 
@@ -3334,6 +3370,9 @@ trait Authorize
         // recurring status in cases like second recurring
         // payment. Here, we don't update anything at all
         // except the used count, terminals and stuff.
+        //
+        // This can also happen in case we do registration recon of
+        // enach rbl again. This will ensure idempotency is maintained.
         //
         if (($oldRecurringStatus !== $currentRecurringStatus) and
             (in_array($currentRecurringStatus, Token\RecurringStatus::$webhookStatuses, true) === true))

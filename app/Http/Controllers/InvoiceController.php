@@ -159,11 +159,8 @@ class InvoiceController extends Controller
         {
             $data = $this->service()->getInvoiceViewData($invoiceId);
 
-            //
-            // Following is only for 10% rollout of new PL hosted page based on tag 'hostedplv2'
-            // If merchant has tag 'hostedplv2', then new PL hosted page would be shown
-            //
-            $useNewView = (in_array('Hostedplv2', $data['merchant']['tags'], true) === true);
+            // Following is temporary, for controlled roll out of new payment link hosted view.
+            $useNewView = array_pull($data['merchant'], 'new_view_enabled');
         }
         catch (BaseException $e)
         {

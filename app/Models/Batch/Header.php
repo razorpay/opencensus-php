@@ -3,7 +3,10 @@
 namespace RZP\Models\Batch;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\FileStore;
+use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
+use RZP\Gateway\Enach\Rbl\DebitFileHeadings as EnachRblDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
 
@@ -168,6 +171,7 @@ class Header
     const ENACH_REGISTER_UMRN               = 'UMRN';
     const ENACH_REGISTER_CUST_REFNO         = 'CUST_REFNO';
     const ENACH_REGISTER_SCH_REFNO          = 'SCH_REFNO';
+    const ENACH_REGISTER_REF_1              = 'REF_1';
     const ENACH_REGISTER_CUST_NAME          = 'CUST_NAME';
     const ENACH_REGISTER_BANK               = 'BANK';
     const ENACH_REGISTER_BRANCH             = 'BRANCH';
@@ -190,6 +194,22 @@ class Header
     const ENACH_REGISTER_UTILITY_NAME       = 'UTILITY_NAME';
     const ENACH_REGISTER_NODAL_ACNO         = 'NODAL_ACNO';
     const ENACH_REGISTER_STATUS             = 'STATUS';
+    const ENACH_REGISTER_RETURN_CODE        = 'RETURN_CODE';
+    const ENACH_REGISTER_CODE_DESC          = 'CODE_DESC';
+
+    //
+    // eNach Debit Response File Headers
+    //
+    const ENACH_DEBIT_SERIAL_NO             = EnachRblDebitHeadings::SERIAL_NO;
+    const ENACH_DEBIT_ECS_DATE              = EnachRblDebitHeadings::ECS_DATE;
+    const ENACH_DEBIT_SETTLEMENT_DATE       = EnachRblDebitHeadings::SETTLEMENT_DATE;
+    const ENACH_DEBIT_CUST_REFNO            = EnachRblDebitHeadings::CUST_REFNO;
+    const ENACH_DEBIT_SCH_REFNO             = EnachRblDebitHeadings::SCH_REFNO;
+    const ENACH_DEBIT_CUSTOMER_NAME         = EnachRblDebitHeadings::CUSTOMER_NAME;
+    const ENACH_DEBIT_REFNO                 = EnachRblDebitHeadings::REFNO;
+    const ENACH_DEBIT_CLG_STATUS            = EnachRblDebitHeadings::CLG_STATUS;
+    const ENACH_DEBIT_AMOUNT                = EnachRblDebitHeadings::AMOUNT;
+    const ENACH_DEBIT_UMRN                  = EnachRblDebitHeadings::UMRN;
 
     //
     // Payout headers
@@ -380,6 +400,21 @@ class Header
             ]
         ],
 
+        'emandate_debit_enach_rbl' => [
+            self::INPUT => [
+                self::ENACH_DEBIT_SERIAL_NO,
+                self::ENACH_DEBIT_ECS_DATE,
+                self::ENACH_DEBIT_SETTLEMENT_DATE,
+                self::ENACH_DEBIT_CUST_REFNO,
+                self::ENACH_DEBIT_SCH_REFNO,
+                self::ENACH_DEBIT_CUSTOMER_NAME,
+                self::ENACH_DEBIT_AMOUNT,
+                self::ENACH_DEBIT_REFNO,
+                self::ENACH_DEBIT_UMRN,
+                self::ENACH_DEBIT_CLG_STATUS,
+            ]
+        ],
+
         Type::BANK_TRANSFER => [
             self::INPUT => [
                 self::PROVIDER,
@@ -443,6 +478,7 @@ class Header
                 self::ENACH_REGISTER_UMRN,
                 self::ENACH_REGISTER_CUST_REFNO,
                 self::ENACH_REGISTER_SCH_REFNO,
+                self::ENACH_REGISTER_REF_1,
                 self::ENACH_REGISTER_CUST_NAME,
                 self::ENACH_REGISTER_BANK,
                 self::ENACH_REGISTER_BRANCH,
@@ -464,7 +500,9 @@ class Header
                 self::ENACH_REGISTER_UTILITY_CODE,
                 self::ENACH_REGISTER_UTILITY_NAME,
                 self::ENACH_REGISTER_NODAL_ACNO,
-                self::ENACH_REGISTER_STATUS
+                self::ENACH_REGISTER_STATUS,
+                self::ENACH_REGISTER_RETURN_CODE,
+                self::ENACH_REGISTER_CODE_DESC,
             ],
         ],
 
@@ -597,16 +635,37 @@ class Header
 
     public static function getInputHeadersForType(string $type): array
     {
-        return self::HEADER_MAP[$type][self::INPUT];
+        return self::HEADER_MAP[$type][self::INPUT] ?? [];
     }
 
     public static function getOutputHeadersForType(string $type): array
     {
-        return self::HEADER_MAP[$type][self::OUTPUT];
+        return self::HEADER_MAP[$type][self::OUTPUT] ?? [];
     }
 
     public static function getValidatedHeadersForType(string $type): array
     {
-        return array_merge(self::HEADER_MAP[$type][self::INPUT], self::VALIDATED_HEADERS);
+        return array_merge(self::HEADER_MAP[$type][self::INPUT] ?? [], self::VALIDATED_HEADERS);
+    }
+
+    public static function getHeadersForFileTypeAndBatchType(string $fileType, string $type): array
+    {
+        switch ($fileType)
+        {
+            case FileStore\Type::BATCH_INPUT:
+
+                return self::getInputHeadersForType($type);
+
+            case FileStore\Type::BATCH_OUTPUT:
+
+                return self::getOutputHeadersForType($type);
+
+            case FileStore\Type::BATCH_VALIDATED:
+
+                return self::getValidatedHeadersForType($type);
+
+            default:
+                throw new LogicException("Invalid file type: $fileType");
+        }
     }
 }

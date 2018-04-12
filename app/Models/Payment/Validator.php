@@ -66,7 +66,7 @@ class Validator extends Base\Validator
         'subscription_card_change'      => 'sometimes|boolean',
         'upi'                           => 'sometimes_if:method,upi|array',
         'upi.expiry_time'               => 'sometimes_if:method,upi|integer|between:5,30|filled',
-        'auth_type'                     => 'sometimes_if:method,emandate|string|max:10|filled|in:netbanking,aadhaar',
+        'auth_type'                     => 'sometimes_if:method,emandate,card,emi|string|max:10|filled',
         'bank_account'                  => 'sometimes_if:method,emandate|associative_array|filled',
         'bank_account.account_number'   => 'required_with:bank_account|filled|alpha_num|between:5,20',
         'bank_account.ifsc'             => 'required_with:bank_account|filled|alpha_num|size:11',
@@ -140,6 +140,7 @@ class Validator extends Base\Validator
         // due to dot notation, we cannot use it.
         'token_max_amount',
         'token_expire_by',
+        'auth_type',
     ];
 
     protected function validateIfsc(array $input)
@@ -198,6 +199,20 @@ class Validator extends Base\Validator
                     'payment_id'        => $this->entity->getId(),
                 ]);
         }
+    }
+
+    protected function validateAuthType(array $input)
+    {
+        if (isset($input[Entity::AUTH_TYPE]) === false)
+        {
+            return;
+        }
+
+        AuthType::validateAuthType($input[Entity::AUTH_TYPE], $input[Entity::METHOD]);
+
+        $merchant = $this->entity->merchant;
+
+        AuthType::validateFeatureBasedAuth($merchant, $input[Entity::AUTH_TYPE]);
     }
 
     protected function validateUpiExpiryTime(array $input)
@@ -364,7 +379,9 @@ class Validator extends Base\Validator
     {
         $amount = (int) $input['amount'];
 
-        if ($input['method'] !== Payment\Method::EMANDATE)
+        $method = $input['method'];
+
+        if ($method !== Payment\Method::EMANDATE)
         {
             if ($amount < 100)
             {
@@ -374,7 +391,7 @@ class Validator extends Base\Validator
             }
         }
 
-        if (($input['method'] === Payment\Method::WALLET) and
+        if (($method === Payment\Method::WALLET) and
             ($input['wallet'] === Wallet::AIRTELMONEY) and
             ($amount < 1000))
         {
@@ -383,20 +400,20 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        if (($input['method'] === Payment\Method::EMI) and ($amount < 200000))
+        if (($method === Payment\Method::EMI) and ($amount < 200000))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT_FOR_EMI,
                 'amount');
         }
 
-        // No limit on amount for payments made via bank_transfer
-        if ($input['method'] === Payment\Method::BANK_TRANSFER)
+        // No limit on amount for payments of method deinfed in Method::$methodsWithoutAmountValidation
+        if (in_array($method, Method::$methodsWithoutAmountValidation, true) === true)
         {
             return;
         }
 
-        if ($input['method'] === Payment\Method::UPI)
+        if ($method === Payment\Method::UPI)
         {
             if ($amount > 10000000)
             {
@@ -731,10 +748,15 @@ class Validator extends Base\Validator
         //
         // Don't continue if already captured
         //
-        if ($payment->hasBeenCaptured())
+        if ($payment->hasBeenCaptured() === true)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'status'        => $payment->getStatus(),
+                    'captured_at'   => $payment->getCapturedAt(),
+                ]);
         }
     }
 
@@ -744,6 +766,40 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED);
+        }
+    }
+
+    /**
+     * Validates if a payment can be marked as acknowledged. Only captured payments can be acknowledged.
+     * Note: A payment that has been captured and then refunded can be marked as acknowledged;
+     *       but a payment authorized and then refunded cannot be marked as acknowledged.
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function acknowledgeValidate()
+    {
+        $payment = $this->entity;
+
+        if ($payment->hasBeenCaptured() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED,
+                [
+                    Entity::ID              => $payment->getId(),
+                    Entity::STATUS          => $payment->getStatus(),
+                    Entity::ACKNOWLEDGED_AT => $payment->getAcknowledgedAt(),
+                ]);
+        }
+
+        if ($payment->isAcknowledged() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_ACKNOWLEDGED,
+                [
+                    Entity::ID              => $payment->getId(),
+                    Entity::STATUS          => $payment->getStatus(),
+                    Entity::ACKNOWLEDGED_AT => $payment->getAcknowledgedAt(),
+                ]);
         }
     }
 }

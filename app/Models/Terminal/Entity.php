@@ -858,6 +858,11 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::PAY) === true);
     }
 
+    public function isPin()
+    {
+        return ($this->isTypeApplicable(Type::PIN) === true);
+    }
+
     public function isBharatQr()
     {
         return ($this->isTypeApplicable(Type::BHARAT_QR) === true);

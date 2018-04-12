@@ -3,14 +3,13 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use RZP\Models\Invoice\Entity;
 use RZP\Models\Order;
+use RZP\Models\Address;
+use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
-use RZP\Models\Address;
-use RZP\Models\Payment;
-use RZP\Models\Plan\Subscription;
+use RZP\Models\Invoice\Entity;
 
 class CreateInvoices extends Migration
 {
@@ -37,7 +36,10 @@ class CreateInvoices extends Migration
             $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH)
                   ->nullable();
 
-            $table->char(Entity::CUSTOMER_BILLING_ADDR_ID, Entity::ID_LENGTH)
+            $table->char(Entity::CUSTOMER_BILLING_ADDR_ID, Address\Entity::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Entity::CUSTOMER_SHIPPING_ADDR_ID, Address\Entity::ID_LENGTH)
                   ->nullable();
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
@@ -104,6 +106,9 @@ class CreateInvoices extends Migration
                   ->nullable();
 
             $table->string(Entity::CUSTOMER_CONTACT)
+                  ->nullable();
+
+            $table->string(Entity::CUSTOMER_GSTIN, 20)
                   ->nullable();
 
             $table->text(Entity::DESCRIPTION)
@@ -193,6 +198,11 @@ class CreateInvoices extends Migration
                   ->references(Address\Entity::ID)
                   ->on(Table::ADDRESS)
                   ->on_delete('restrict');
+
+            $table->foreign(Entity::CUSTOMER_SHIPPING_ADDR_ID)
+                  ->references(Address\Entity::ID)
+                  ->on(Table::ADDRESS)
+                  ->on_delete('restrict');
         });
 
         // This should be here and not in payments table because
@@ -233,6 +243,11 @@ class CreateInvoices extends Migration
             $table->dropForeign
             (
                 Table::INVOICE . '_' . Entity::CUSTOMER_BILLING_ADDR_ID . '_foreign'
+            );
+
+            $table->dropForeign
+            (
+                Table::INVOICE . '_' . Entity::CUSTOMER_SHIPPING_ADDR_ID . '_foreign'
             );
         });
 

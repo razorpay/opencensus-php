@@ -710,14 +710,17 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        $gatewayAttributes = [
-            Entity::STATUS     => $content[ResponseFields::STATUS],
-            Entity::REQUEST_ID => $content[ResponseFields::REQUEST_ID],
-        ];
+        if (isset($content[ResponseFields::STATUS]))
+        {
+            $gatewayAttributes = [
+                Entity::STATUS      => $content[ResponseFields::STATUS],
+                Entity::REQUEST_ID  => $content[ResponseFields::REQUEST_ID],
+            ];
 
-        $gatewayPayment->fill($gatewayAttributes);
+            $gatewayPayment->fill($gatewayAttributes);
 
-        $this->repo->saveOrFail($gatewayPayment);
+            $this->repo->saveOrFail($gatewayPayment);
+        }
 
         return $gatewayPayment;
     }
