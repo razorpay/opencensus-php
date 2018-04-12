@@ -2311,7 +2311,7 @@ class Entity extends Base\PublicEntity
 
     public function receiver()
     {
-        return $this->morphTo('receiver',self::RECEIVER_TYPE, self::RECEIVER_ID);
+        return $this->morphTo('receiver', self::RECEIVER_TYPE, self::RECEIVER_ID);
     }
 
     public function netbanking()
@@ -2582,5 +2582,19 @@ class Entity extends Base\PublicEntity
     public function isAcknowledged(): bool
     {
         return $this->isAttributeNotNull(self::ACKNOWLEDGED_AT);
+    }
+
+    // Query scopes
+
+    /**
+     * Scopes result based on morphed entity relationship.
+     *
+     * @param \RZP\Base\BuilderEx $query
+     * @param Base\PublicEntity   $entity
+     */
+    public function scopeReceiver(\RZP\Base\BuilderEx $query, Base\PublicEntity $entity)
+    {
+        $query->where(Entity::RECEIVER_ID, '=', $entity->getId())
+            ->where(Entity::RECEIVER_TYPE, '=', $entity->getEntity());
     }
 }

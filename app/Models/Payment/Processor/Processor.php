@@ -139,8 +139,6 @@ class Processor
      */
     protected $ba;
 
-    protected $receiver;
-
     public function __construct(Merchant\Entity $merchant)
     {
         $this->app  = App::getFacadeRoot();
@@ -1235,25 +1233,11 @@ class Processor
         return $order;
     }
 
-    protected function fetchReceiverFromInput(array $input)
+    protected function fetchReceiverFromInput(array $receiverInput)
     {
-        $entity = $input['type'];
+        $entity = $receiverInput['type'];
 
-        $receiver = $this->repo->$entity->find($input['id']);
-
-        if ($receiver === null)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Receiver id provided not found.',
-                'receiver[id]');
-        }
-
-        if ($receiver->getMerchantId() !== $this->merchant->getId())
-            {
-                // Merchant mismatch
-                throw new Exception\BadRequestValidationFailureException(
-                        'Receiver id not found');
-        }
+        $receiver = $this->repo->$entity->findbyPublicIdAndMerchant($receiverInput['id'], $this->merchant);
 
         return $receiver;
     }
@@ -1304,16 +1288,16 @@ class Processor
             return;
         }
 
-        $this->receiver = $this->fetchReceiverFromInput($input['receiver']);
+        $receiver = $this->fetchReceiverFromInput($input['receiver']);
 
         $this->trace->info(
             TraceCode::PAYMENT_RECEIVED_VIA_RECEIVER,
             [
-                'receiver_id'   => $this->receiver->getId(),
-                'receiver_type' => $this->receiver->getEntity(),
+                'receiver_id'   => $receiver->getId(),
+                'receiver_type' => $receiver->getEntity(),
             ]);
 
-        $payment->receiver()->associate($this->receiver);
+        $payment->receiver()->associate($receiver);
     }
 
     protected function validateAndSetInvoiceDetailsIfApplicable(Payment\Entity $payment)

@@ -290,6 +290,8 @@ class CreatePayments extends Migration
             $table->index([Payment::MERCHANT_ID, Payment::CREATED_AT]);
             $table->index([Payment::MERCHANT_ID, Payment::STATUS, Payment::CREATED_AT]);
 
+            $table->index(Payment::RECEIVER_ID);
+
             $table->foreign(Payment::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
