@@ -42,6 +42,7 @@ class GenerateEmailTemplates extends Command
             'emails/merchant/activation',
             'emails/merchant/authorized_reminder',
             'emails/merchant/bankaccount_change',
+            'emails/merchant/bankaccount_change_request',
             'emails/merchant/daily_report',
             'emails/merchant/daily_report_debug',
             'emails/merchant/newsletter',

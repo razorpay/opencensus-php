@@ -95,6 +95,7 @@ class MailTags
     const CRITICAL_ERROR                   = 'critical_error';
 
     const ACCOUNT_CHANGED                  = 'account_changed';
+    const ACCOUNT_CHANGE_REQUEST           = 'account_change_request';
     const FORGOT_PASSWORD                  = 'forgot_password';
     const ADMIN_CREATE                     = 'admin_create';
     const WELCOME                          = 'welcome';
