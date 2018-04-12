@@ -122,7 +122,8 @@ class MailTags
     const FEATURE_ENABLED                  = 'feature_enabled';
 
     // Merchant Request tags
-    const MERCHANT_REQUEST_REJECTED        = 'merchant_request_rejected';
+    const MERCHANT_REQUEST_REJECTED            = 'merchant_request_rejected';
+    const MERCHANT_REQUEST_NEEDS_CLARIFICATION = 'merchant_request_needs_clarification';
 
     // Dispute tags
     const DISPUTE_CREATED                  = 'dispute_created';

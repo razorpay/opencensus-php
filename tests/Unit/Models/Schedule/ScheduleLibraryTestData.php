@@ -221,4 +221,23 @@ return [
             'delay'       => 2,
         ],
     ],
+
+    'testSameDayHouredSchedule' => [
+        'cases' => [
+            // Initial time is just past 1pm.
+            // Expected time is 1pm tomorrow.
+            [
+                'initialTime'      => "2018-04-11 13:27:00",
+                'expectedNextTime' => "2018-04-12 13:00:00"
+            ],
+        ],
+        'schedule' => [
+            'name'        => 'T0-1PM',
+            'period'      => 'daily',
+            'interval'    => 1,
+            'anchor'      => null,
+            'delay'       => 0,
+            'hour'        => 13,
+        ],
+    ],
 ];

@@ -1237,14 +1237,18 @@ class Processor
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
-            if ($payment->isTpvMethod() === true)
+            $tpvRequired = (($payment->isTpvMethod() === true) and
+                            ($this->merchant->isTPVRequired() === true));
+
+            if (($tpvRequired === true) or
+                ($payment->isEmandate() === true))
             {
-                if ($this->merchant->isTPVRequired() === true)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
-                        Payment\Entity::ORDER_ID);
-                }
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
+                    Payment\Entity::ORDER_ID,
+                    [
+                        'method' => $payment->getMethod()
+                    ]);
             }
 
             return;
