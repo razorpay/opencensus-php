@@ -144,21 +144,18 @@ export default class Sidebar extends Component {
                   icon="i i-store text-success"
                   to={routes.marketplace}
                   notMyRole="sellerapp support"
-                  isNew={true}
                 />
                 <MainNavLink
                   label="Subscriptions"
                   icon="i i-refresh text-info"
                   notMyRole="sellerapp support"
                   to={routes.subscriptions}
-                  isNew={true}
                 />
                 <MainNavLink
                   label="Smart Collect"
                   icon="i i-account-balance text-danger"
                   to="/virtualaccounts"
                   notMyRole="sellerapp support"
-                  isNew={true}
                 />
 
                 <MainNavLink
