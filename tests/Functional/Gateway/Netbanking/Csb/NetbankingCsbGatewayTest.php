@@ -260,7 +260,7 @@ class NetbankingCsbGatewayTest extends TestCase
 
     private function checkMailQueue(array $file)
     {
-        Mail::assertSent(RefundFileMail::class, function ($mail) use ($file)
+        Mail::assertQueued(RefundFileMail::class, function ($mail) use ($file)
         {
             $body = 'Please forward the CSB Netbanking refunds file to UBPS operations team';
 

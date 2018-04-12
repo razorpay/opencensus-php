@@ -44,7 +44,6 @@ class Gateway extends Base\Gateway
          */
         RequestFields::CHNPGCODE     => Base\Entity::MERCHANT_CODE,
         RequestFields::AMOUNT        => Base\Entity::AMOUNT,
-        RequestFields::PAYEE_ID      => Base\Entity::REFERENCE1,
 
         /**
          * Fields from the authorize response
@@ -403,12 +402,6 @@ class Gateway extends Base\Gateway
             RequestFields::RETURN_URL   => $input['callbackUrl'],
             RequestFields::MODE         => Mode::PAY,
         ];
-
-        //
-        // We are setting the gatewayAttributes variable here so that it
-        // can be used to create the gateway payment entity later.
-        //
-        $this->gatewayAttributes = $content;
 
         $this->traceGatewayPaymentRequest(
             $contentToEncrypt,
