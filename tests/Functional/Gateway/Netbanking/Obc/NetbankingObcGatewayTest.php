@@ -39,7 +39,6 @@ class NetbankingObcGatewayTest extends TestCase
 
     public function testPayment()
     {
-
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
