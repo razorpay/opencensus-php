@@ -139,6 +139,8 @@ class Processor
      */
     protected $ba;
 
+    protected $receiver;
+
     public function __construct(Merchant\Entity $merchant)
     {
         $this->app  = App::getFacadeRoot();
@@ -1034,6 +1036,8 @@ class Processor
 
         $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
 
+        $this->validateAndSetReceiverIfApplicable($payment, $input);
+
         $this->validateBankTransferDetailsIfApplicable($payment);
 
         $this->validateAndSetInvoiceDetailsIfApplicable($payment);
@@ -1231,6 +1235,29 @@ class Processor
         return $order;
     }
 
+    protected function fetchReceiverFromInput(array $input)
+    {
+        $entity = $input['type'];
+
+        $receiver = $this->repo->$entity->find($input['id']);
+
+        if ($receiver === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Receiver id provided not found.',
+                'receiver[id]');
+        }
+
+        if ($receiver->getMerchantId() !== $this->merchant->getId())
+            {
+                // Merchant mismatch
+                throw new Exception\BadRequestValidationFailureException(
+                        'Receiver id not found');
+        }
+
+        return $receiver;
+    }
+
     protected function validateAndSetOrderDetailsIfApplicable(
         Payment\Entity $payment,
         array $input)
@@ -1268,6 +1295,25 @@ class Processor
         $this->repo->saveOrFail($this->order);
 
         $payment->order()->associate($this->order);
+    }
+
+    protected function validateAndSetReceiverIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if (empty($input[Payment\Entity::RECEIVER]) === true)
+        {
+            return;
+        }
+
+        $this->receiver = $this->fetchReceiverFromInput($input['receiver']);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_RECEIVED_VIA_RECEIVER,
+            [
+                'receiver_id'   => $this->receiver->getId(),
+                'receiver_type' => $this->receiver->getEntity(),
+            ]);
+
+        $payment->receiver()->associate($this->receiver);
     }
 
     protected function validateAndSetInvoiceDetailsIfApplicable(Payment\Entity $payment)

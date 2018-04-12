@@ -49,6 +49,7 @@ class Validator extends Base\Validator
         'order_id'                      => 'sometimes|filled',
         'customer_id'                   => 'sometimes|public_id|filled',
         'subscription_id'               => 'sometimes|public_id',
+        'receiver'                      => 'sometimes|array',
         'app_token'                     => 'sometimes',
         'token'                         => 'sometimes',
         'save'                          => 'sometimes|in:0,1',
