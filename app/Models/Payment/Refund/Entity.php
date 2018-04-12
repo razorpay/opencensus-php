@@ -66,7 +66,8 @@ class Entity extends Base\PublicEntity
     protected static $generators = [
         self::ID,
         self::AMOUNT,
-        self::CURRENCY
+        self::CURRENCY,
+        self::GATEWAY
     ];
 
     protected $fillable = [
@@ -218,6 +219,11 @@ class Entity extends Base\PublicEntity
     protected function generateCurrency($input)
     {
         $this->setAttribute(self::CURRENCY, $this->payment->getCurrency());
+    }
+
+    protected function generateGateway($input)
+    {
+        $this->setAttribute(self::GATEWAY, $this->payment->getGateway());
     }
 
     public function getAmount()
