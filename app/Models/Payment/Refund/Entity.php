@@ -26,6 +26,9 @@ class Entity extends Base\PublicEntity
     const CURRENCY               = 'currency';
     const BASE_AMOUNT            = 'base_amount';
     const STATUS                 = 'status';
+    const ERROR_CODE             = 'error_code';
+    const INTERNAL_ERROR_CODE    = 'internal_error_code';
+    const ERROR_DESCRIPTION      = 'error_description';
     const NOTES                  = 'notes';
 
     //merchant reference number for refund if provided by merchant
@@ -35,9 +38,18 @@ class Entity extends Base\PublicEntity
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const BATCH_ID               = 'batch_id';
 
+    const GATEWAY                = 'gateway';
     const GATEWAY_REFUNDED       = 'gateway_refunded';
     const REFERENCE1             = 'reference1';
     const REFERENCE2             = 'reference2';
+    const REFERENCE3             = 'reference3';
+    const REFERENCE4             = 'reference4';
+    const REFERENCE5             = 'reference5';
+    const REFERENCE6             = 'reference6';
+    const REFERENCE7             = 'reference7';
+    const REFERENCE8             = 'reference8';
+    const REFERENCE9             = 'reference9';
+
     const ATTEMPTS               = 'attempts';
     const LAST_ATTEMPTED_AT      = 'last_attempted_at';
 
@@ -75,6 +87,10 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::BASE_AMOUNT,
         self::STATUS,
+        self::ERROR_CODE,
+        self::INTERNAL_ERROR_CODE,
+        self::ERROR_DESCRIPTION,
+        self::GATEWAY,
         self::GATEWAY_REFUNDED,
         self::NOTES,
         self::RECEIPT,
@@ -249,6 +265,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
+    public function getErrorCode()
+    {
+        return $this->getAttribute(self::ERROR_CODE);
+    }
+
+    public function getInternalErrorCode()
+    {
+        return $this->getAttribute(self::INTERNAL_ERROR_CODE);
+    }
+
+    public function getErrorDescription()
+    {
+        return $this->getAttribute(self::ERROR_DESCRIPTION);
+    }
+
     public function getAttempts()
     {
         return $this->getAttribute(self::ATTEMPTS);
@@ -313,6 +344,20 @@ class Entity extends Base\PublicEntity
     public function setStatus($status)
     {
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setError($errorCode, $errorDesc, $internalErrorCode)
+    {
+        $this->setAttribute(self::ERROR_CODE, $errorCode);
+        $this->setAttribute(self::ERROR_DESCRIPTION, $errorDesc);
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
+    }
+
+    public function setErrorNull()
+    {
+        $this->setAttribute(self::ERROR_CODE, null);
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, null);
+        $this->setAttribute(self::ERROR_DESCRIPTION, null);
     }
 
     public function setStatusProcessed()

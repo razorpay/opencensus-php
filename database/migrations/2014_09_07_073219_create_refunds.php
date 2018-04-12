@@ -40,6 +40,18 @@ class CreateRefunds extends Migration
             $table->string(Refund::STATUS)
                   ->nullable();
 
+            $table->string(Payment::ERROR_CODE, 128)
+                  ->nullable();
+
+            $table->string(Payment::INTERNAL_ERROR_CODE)
+                  ->nullable();
+
+            $table->string(Payment::ERROR_DESCRIPTION, 255)
+                  ->nullable();
+
+            $table->string(Refund::GATEWAY)
+                  ->nullable();
+
             $table->tinyInteger(Refund::GATEWAY_REFUNDED)
                   ->nullable();
 
@@ -61,10 +73,33 @@ class CreateRefunds extends Migration
             $table->integer(Refund::LAST_ATTEMPTED_AT)
                   ->nullable();
 
+
             $table->string(Payment::REFERENCE1)
                   ->nullable();
 
             $table->string(Payment::REFERENCE2)
+                  ->nullable();
+
+            $table->tinyInteger(Payment::REFERENCE3)
+                  ->nullable();
+
+            $table->tinyInteger(Payment::REFERENCE4)
+                  ->nullable();
+
+            $table->integer(Payment::REFERENCE5)
+                  ->nullable();
+
+            $table->integer(Payment::REFERENCE6)
+                  ->nullable();
+
+            $table->string(Payment::REFERENCE7)
+                  ->nullable();
+
+            $table->string(Payment::REFERENCE8)
+                  ->nullable();
+
+            $table->bigInteger(Payment::REFERENCE9)
+                  ->unsigned()
                   ->nullable();
 
             $table->integer(Refund::CREATED_AT);
