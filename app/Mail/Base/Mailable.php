@@ -239,7 +239,7 @@ class Mailable extends BaseMailable
             $recipientEmail = $this->to[0]['address'];
 
             return (($recipientEmail !== 'void@razorpay.com') and
-                ($emailValidator->isValid($recipientEmail) === true));
+                ($emailValidator->isSendable($recipientEmail) === true));
         }
 
         return false;

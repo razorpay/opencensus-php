@@ -3463,6 +3463,15 @@ ALTER TABLE payments
     ADD COLUMN reference8 VARCHAR(255) DEFAULT NULL AFTER reference7,
     ADD COLUMN reference9 BIGINT UNSIGNED DEFAULT NULL AFTER reference8;
 
+ALTER TABLE enach
+    ADD COLUMN error_message VARCHAR(255) DEFAULT NULL AFTER registration_status,
+    ADD COLUMN error_code VARCHAR(255) DEFAULT NULL AFTER error_message;
+
+# Invoice GST Changes - address and tax codes
+ALTER TABLE invoices
+    ADD COLUMN customer_shipping_addr_id CHAR(14) DEFAULT NULL AFTER customer_billing_addr_id,
+    ADD CONSTRAINT invoices_customer_shipping_addr_id_foreign FOREIGN KEY (customer_shipping_addr_id) REFERENCES addresses (id);
+
 # Invoice GST changes
 ALTER TABLE merchants
     ADD COLUMN invoice_label_field varchar(50) DEFAULT NULL AFTER logo_url;

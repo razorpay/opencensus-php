@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Config;
 use DB;
 use Mail;
+use Request;
 use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Token as OAuthToken;
 use RZP\Base\RuntimeManager;
@@ -655,7 +656,8 @@ class Service extends Base\Service
 
         $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
 
-        $this->logActionToSlack($merchant, SlackActions::EDIT_BANK_DETAILS, $input);
+        // Using Request::input() since we do not want the file as input to log
+        $this->logActionToSlack($merchant, SlackActions::EDIT_BANK_DETAILS, Request::input());
 
         return $ba->toArray();
     }
@@ -823,6 +825,13 @@ class Service extends Base\Service
         $webhook = (new Webhook\Core)->editWebhook($this->merchant, $webhookId, $input);
 
         return $webhook->toArrayPublic();
+    }
+
+    public function fetchWebhookEvents()
+    {
+        $events = (new Webhook\Core)->fetchApplicableWebhookEvents($this->merchant);
+
+        return $events;
     }
 
     public function getWebhook($id)

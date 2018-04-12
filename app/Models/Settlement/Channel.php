@@ -57,6 +57,21 @@ class Channel
     }
 
     /**
+     * Gives list of channels for which recon is mocked
+     *
+     * @return array
+     */
+    public static function getChannelsWithReconMock()
+    {
+        return [
+            self::KOTAK,
+            self::AXIS,
+            self::ICICI,
+            self::HDFC,
+        ];
+    }
+
+    /**
      * Channels for which balance API is available
      *
      * @return array

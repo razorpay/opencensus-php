@@ -284,12 +284,14 @@ class InvoiceTest extends TestCase
 
         $this->assertInvoiceCreateResponse($response);
 
-        $address = $this->getLastEntity('address', true);
+        $addresses = $this->getEntities('address', [],true);
 
-        $this->assertEquals('billing_address', $address['type']);
-        $this->assertEquals('1', $address['primary']);
-        $this->assertEquals($response['customer_id'], $address['entity_id']);
-        $this->assertEquals('customer', $address['entity_type']);
+        foreach ($addresses['items'] as $address)
+        {
+            $this->assertEquals('1', $address['primary']);
+            $this->assertEquals($response['customer_id'], $address['entity_id']);
+            $this->assertEquals('customer', $address['entity_type']);
+        }
     }
 
     public function testCreateInvoiceWithSmsNotifyFalseAndEmailNotifyTrue()
@@ -605,6 +607,30 @@ class InvoiceTest extends TestCase
             [
                 'id'      => '1000000address',
                 'type'    => 'billing_address',
+                'primary' => false,
+            ]);
+
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testUpdateDraftInvoiceWithCustomerBillingAndShippingAddressIds()
+    {
+        $this->fixtures->create(
+            'address',
+            [
+                'id'      => '1000000address',
+                'type'    => 'billing_address',
+                'primary' => false,
+            ]);
+
+        $this->fixtures->create(
+            'address',
+            [
+                'id'      => '1000001address',
+                'type'    => 'shipping_address',
+                'zipcode' => '560080',
                 'primary' => false,
             ]);
 

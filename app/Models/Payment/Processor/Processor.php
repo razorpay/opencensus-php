@@ -546,6 +546,8 @@ class Processor
      *
      * @param  string $id    Payment ID
      * @param  array  $input Input Array
+     *
+     * @return PublicCollection
      * @throws Exception\BadRequestException
      */
     public function transfer(string $id, array $input)
@@ -556,6 +558,7 @@ class Processor
 
         $payment = $this->retrieve($id);
 
+        /** @var Payment\Validator $validator */
         $validator = $payment->getValidator();
 
         $validator->validateIsCaptured();
@@ -566,6 +569,8 @@ class Processor
             $payment->getId(),
             function() use ($payment, $input)
             {
+                $this->repo->reload($payment);
+
                 return $this->repo->transaction(function() use ($payment, $input)
                 {
                     $transfers = (new TransferCore)->createForPayment(
@@ -1232,14 +1237,18 @@ class Processor
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
-            if ($payment->isTpvMethod() === true)
+            $tpvRequired = (($payment->isTpvMethod() === true) and
+                            ($this->merchant->isTPVRequired() === true));
+
+            if (($tpvRequired === true) or
+                ($payment->isEmandate() === true))
             {
-                if ($this->merchant->isTPVRequired() === true)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
-                        Payment\Entity::ORDER_ID);
-                }
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
+                    Payment\Entity::ORDER_ID,
+                    [
+                        'method' => $payment->getMethod()
+                    ]);
             }
 
             return;

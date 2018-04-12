@@ -1,19 +1,24 @@
 <?php
 
-namespace RZP\Models\FundTransfer\Axis;
+namespace RZP\Models\FundTransfer\Axis\Reconciliation\Mock;
 
 use phpseclib\Crypt\AES;
 
 use Config;
+use RZP\Models\Settlement;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\FundTransfer\Axis\Headings;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\FundTransfer\Axis\Reconciliation\Status;
+use RZP\Models\FundTransfer\Base\Reconciliation\Mock\Generator;
 
-class ReconciliationGenerator
+class FileGenerator extends Generator
 {
     use FileHandlerTrait;
 
-    protected static $fileToReadName = 'Axis_Settlement';
+    const CHANNEL   = Settlement\Channel::AXIS;
+
+    protected static $fileToReadName  = 'Axis_Settlement';
 
     protected static $fileToWriteName = 'Axis_Settlement_Reconciliation';
 
@@ -26,13 +31,15 @@ class ReconciliationGenerator
             return [];
         }
 
+        $this->initRequestParams($input);
+
         $data = $this->getDecryptedFile($setlFile);
 
         $reconData = [];
 
         foreach ($data as $row)
         {
-            $reconData[] = $this->generateReconciliationFields($row, $input);
+            $reconData[] = $this->generateReconciliationFields($row);
         }
 
         $filename = 'NRPSS_' . str_random(10);
@@ -77,11 +84,8 @@ class ReconciliationGenerator
         return Headings::getResponseFileHeadings();
     }
 
-    protected function generateReconciliationFields($row, array $params)
+    protected function generateReconciliationFields($row)
     {
-        $generateFailedReconciliations = (isset($params['failed_recons'])) ?
-            ((bool) $params['failed_recons']) : false;
-
         $data = [
             Headings::FILE_LEVEL_REFERENCE => $row[Headings::REFERENCE_NUMBER],
             Headings::BENEFICIARY_CODE     => 'some code',
@@ -92,7 +96,7 @@ class ReconciliationGenerator
             Headings::RETURN_REASON        => 'nothing',
         ];
 
-        if ($generateFailedReconciliations === true)
+        if ($this->generateFailedReconciliations === true)
         {
             $data[Headings::STATUS]  = Status::REJECTED;
         }

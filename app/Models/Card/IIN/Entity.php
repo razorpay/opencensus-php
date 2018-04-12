@@ -92,7 +92,7 @@ class Entity extends Base\PublicEntity
         self::LOCKED  => 'bool'
     ];
 
-    public function supports($flows)
+    public function supports($flows): bool
     {
         return (($this->getFlows() & $flows) === $flows);
     }

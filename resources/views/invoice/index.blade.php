@@ -285,7 +285,7 @@
       #cancelled-crack {
         width: 100%;
         margin-top: 114px;
-        background-image: url(http://i.imgur.com/4c9Zkf4.png);
+        background-image: url(https://cdn.razorpay.com/static/cancelled_invoice.png);
         background-repeat: no-repeat;
         background-position: -189px -90px;
         height: 80px;
@@ -295,7 +295,7 @@
       #mobile-container #cancelled-invoice {
         width: 100%;
         top: -12px;
-        background-image: url(http://i.imgur.com/4c9Zkf4.png);
+        background-image: url(https://cdn.razorpay.com/static/cancelled_invoice.png);
         background-repeat: no-repeat;
         background-position: -19px -147px;
         font-size: 20px;
@@ -434,15 +434,18 @@
         #header-logo {
             text-align: center;
             position: relative;
-            padding: 8px;
-            width: 80px;
             height: 80px;
-            background: #fff;
             border-radius: 3px;
             line-height: 62px;
             float: left;
-            margin-right: 24px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        #header-logo.visible {
+            background: #fff;
+            padding: 8px;
+            width: 80px;
+            margin-right: 24px;
         }
 
         #header-details {
@@ -773,7 +776,7 @@
 
                         <div id="chkout-box" class={{(in_array($data['invoice']['status'], ['paid', 'expired', 'cancelled'], true) === true) ? 'short' : ''}}>
                             <div id="chkout-header">
-                                <div id="header-logo">
+                                <div id="header-logo" class={{isset($data['merchant']['image']) ? 'visible' : ''}}>
                                     @if (isset($data['merchant']['image']))
                                         <img src={{$data['merchant']['image']}} width="100%">
                                     @endif
@@ -829,7 +832,7 @@
             <div id="mobile-container">
               <div id="payment-container--mob">
                   <div id="chkout-header">
-                    <div id="header-logo">
+                    <div id="header-logo" class={{isset($data['merchant']['image']) ? 'visible' : ''}}>
                         @if (isset($data['merchant']['image']))
                             <img src={{$data['merchant']['image']}} width="100%">
                         @endif
@@ -1028,7 +1031,6 @@
                     email: invoiceObj.customer_details.customer_email,
                   },
                   callback_url: location.href,
-                  image: 'https://i.imgur.com/n5tjHFD.png',
                   theme: {
                     close_button: false,
                   },

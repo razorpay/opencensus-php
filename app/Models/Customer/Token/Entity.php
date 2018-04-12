@@ -184,6 +184,10 @@ class Entity extends Base\PublicEntity
         self::TOKEN,
     ];
 
+    protected static $modifiers = [
+        self::IFSC,
+    ];
+
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
@@ -493,5 +497,13 @@ class Entity extends Base\PublicEntity
         $token = substr($rand, 0, 14);
 
         $this->setAttribute(self::TOKEN, $token);
+    }
+
+    protected function modifyIfsc(& $input)
+    {
+        if (isset($input[self::IFSC]) === true)
+        {
+            $input[self::IFSC] = strtoupper($input[self::IFSC]);
+        }
     }
 }

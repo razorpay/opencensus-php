@@ -95,6 +95,7 @@ class MailTags
     const CRITICAL_ERROR                   = 'critical_error';
 
     const ACCOUNT_CHANGED                  = 'account_changed';
+    const ACCOUNT_CHANGE_REQUEST           = 'account_change_request';
     const FORGOT_PASSWORD                  = 'forgot_password';
     const ADMIN_CREATE                     = 'admin_create';
     const WELCOME                          = 'welcome';
@@ -121,10 +122,14 @@ class MailTags
     const FEATURE_ENABLED                  = 'feature_enabled';
 
     // Merchant Request tags
-    const MERCHANT_REQUEST_REJECTED        = 'merchant_request_rejected';
+    const MERCHANT_REQUEST_REJECTED            = 'merchant_request_rejected';
+    const MERCHANT_REQUEST_NEEDS_CLARIFICATION = 'merchant_request_needs_clarification';
 
     // Dispute tags
     const DISPUTE_CREATED                  = 'dispute_created';
+
+    // Daily Recon summary tags
+    const DAILY_RECON_SUMMARY              = 'daily_recon_summary';
 
     /**
      * Email tags that should respond to the mailgun failure webhook

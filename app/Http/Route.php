@@ -35,11 +35,13 @@ final class Route
         'merchant_methods_downtime'                => ['get',      'methods/downtime',                               'MerchantController@getPublicGatewayDowntimeData'                   ],
         'merchant_checkout_preferences'            => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
+        // @todo: Require feature S2S for payment_create_private route.
         'payment_create_private'                   => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_aeps'                      => ['post',     'payments/create/aeps',                           'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_recurring'                 => ['post',     'payments/create/recurring',                      'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_private_old'               => ['post',     'payments/create/redirect',                       'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_checkout'                  => ['post',     'payments/create/checkout',                       'PaymentCreateController@postCreatePaymentCheckoutCallback'         ],
+        'payment_create_checkout_get'              => ['get',      'payments/create/checkout/{payment_id}',          'PaymentCreateController@getCreatePaymentCheckoutCallback'          ],
         'payment_create_jsonp'                     => ['get',      'payments/create/jsonp',                          'PaymentCreateController@getCreatePaymentJsonp'                     ],
         'payment_create_ajax'                      => ['post',     'payments/create/ajax',                           'PaymentCreateController@postAJAX'                                  ],
         'payment_create_fees'                      => ['post',     'payments/create/fees',                           'PaymentCreateController@postCreatePaymentFees'                     ],
@@ -219,6 +221,7 @@ final class Route
         'webhook_create'                           => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                             => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                            => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
+        'webhook_fetch_events'                     => ['get',      'webhooks/events/all',                            'MerchantController@getWebhookEvents'                               ],
         'webhook_fetch_multiple'                   => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
         'oauth_app_webhook_create'                 => ['post',     'oauth/applications/{id}/webhooks',               'MerchantController@postOAuthApplicationWebhook'                    ],
         'merchant_create_key'                      => ['post',     'keys',                                           'KeyController@postCreateKeys'                                      ],
@@ -277,7 +280,7 @@ final class Route
         'setl_retry'                               => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
         'setl_file_generate'                       => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                  => ['post',     'settlements/reconcile/generate/{channel}',       'SettlementController@postSettlementReconcileGenerate'              ],
-        'setl_reconcile_test'                      => ['post',     'settlements/reconcile/test/{channel}',           'SettlementController@postReconcileInTestMode'                      ],
+        'setl_reconcile_test'                      => ['post',     'settlements/reconcile/test/all',                 'SettlementController@postReconcileInTestMode'                      ],
         'setl_reconcile'                           => ['post',     'settlements/reconcile/{channel}',                'SettlementController@postSettlementReconcile'                      ],
         'setl_reconcile_h2h'                       => ['post',     'settlements/h2hreconcile/{channel}',             'SettlementController@postH2HSettlementReconcile'                   ],
         'setl_calc_previous_fees'                  => ['post',     'settlements/fees/previous',                      'SettlementController@postSettlementCalculateFees',                 ],
@@ -776,6 +779,9 @@ final class Route
         'feature_bulk_assign'                      => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                      => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'feature_delete_entity'                    => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
+
+        //Recon summary
+        'daily_reconciliation_summary_fetch'       => ['get',      'daily_recon_summary',                           'AdminController@getDailyReconciliationStatusSummary'              ],
     ];
 
     public static $public = [
@@ -1064,6 +1070,7 @@ final class Route
         'user_reset_password_token',
         'virtual_account_refund_excess',
         'fund_transfer_attempt_process',
+        'daily_reconciliation_summary_fetch'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1112,6 +1119,7 @@ final class Route
         'merchant_fetch_config',
         'merchant_sub_create',
         'merchant_fetch_referrals',
+        'webhook_fetch_events',
         'customer_delete',
         'device_verify_token',
         'app_fetch_tokens',
@@ -1793,6 +1801,7 @@ final class Route
         'upi_read_async',
         'upi_get_key_list',
         'account',
+        'payment_create_checkout_get',
         'invoice_view_live',
         'invoice_view_test',
         'invoice_view_live_post',
@@ -1942,6 +1951,7 @@ final class Route
             'fund_transfer_attempt_null_utr_report',
             'admin_lock_old_accounts',
             'fund_transfer_attempt_process',
+            'daily_reconciliation_summary_fetch'
         ],
 
         'kotak' => [
@@ -2194,6 +2204,7 @@ final class Route
         // 'onboarding_features_fetch_status',
         // 'feature_onboarding_fetch_responses',
         // 'feature_onboarding_fetch_all_responses',
+        'daily_reconciliation_summary_fetch'
     ];
 
     protected static $jsonpRoutes = [
@@ -2313,6 +2324,17 @@ final class Route
     const WORKFLOW_EXECUTE_ROUTE_NAME = 'action_request_execute';
 
     const WORKFLOW_APPROVE_ROUTE_NAME = 'action_checker_create';
+
+    /**
+     * S2S payment routes
+     */
+    const S2S_PAYMENT_ROUTES = [
+        'payment_create_private',
+        'payment_create_private_old',
+        'payment_create_recurring',
+        'payment_create_aeps',
+        'payment_create_openwallet',
+    ];
 
     /**
      * @var Router
@@ -2612,5 +2634,12 @@ final class Route
         // This fetches an array of all features mapped to the route
         //
         return self::getFeaturesForRoute($currentRoute);
+    }
+
+    public function isS2SPaymentRoute(): bool
+    {
+        $currentRoute = $this->getCurrentRouteName();
+
+        return (in_array($currentRoute, self::S2S_PAYMENT_ROUTES, true) === true);
     }
 }
