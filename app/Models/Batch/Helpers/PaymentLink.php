@@ -41,18 +41,12 @@ class PaymentLink
         $expireBy = $entry[Batch\Header::EXPIRE_BY];
         // Adding check for is_numeric because typecasting any alphabet
         // to int gives '0' which will be interpreted wrongly by validator
-        if ((empty($expireBy) === false) and (is_numeric($expireBy) === true))
-        {
-            $expireBy = (int) $expireBy;
-        }
+        $expireBy = (is_numeric($expireBy) === true) ? (int) $expireBy : $expireBy;
 
         // Amount needs to be formatted this way as excel reader in cases
         // reads 4255 as 4244.99999. This is known php + excel issue.
         $amount = $entry[Batch\Header::AMOUNT];
-        if ((empty($amount) === false) and (is_numeric($amount) === true))
-        {
-            $amount = (int) number_format($amount, 0, '', '');
-        }
+        $amount = (is_numeric($amount) === true) ? (int) number_format($amount, 0, '', '') : $amount;
 
         // Get draft, sms_notify, email_notify from $params or use default as
         // 1, 0 and 0 respectively.
