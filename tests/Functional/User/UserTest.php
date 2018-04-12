@@ -22,7 +22,7 @@ class UserTest extends TestCase
 
     public function testCreate()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -34,6 +34,8 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/users/' . $user['id'];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
 
         $this->ba->appAuth();
 
@@ -133,6 +135,9 @@ class UserTest extends TestCase
 
     public function testEdit()
     {
+        // will enable it when we use user edit functionality.
+        $this->markTestSkipped();
+
         $user = $this->fixtures->create('user');
 
         $testData = & $this->testData[__FUNCTION__];
@@ -165,6 +170,8 @@ class UserTest extends TestCase
 
         $testData['request']['url'] = '/users/' . $user['id'] . '/password';
 
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
+
         $this->ba->appAuth();
 
         $this->startTest();
@@ -184,6 +191,8 @@ class UserTest extends TestCase
         $testData['request']['content'] = $content;
 
         $testData['request']['url'] = '/users/' . $user['id'] . '/password';
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
 
         $this->ba->appAuth();
 
@@ -368,7 +377,7 @@ class UserTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertSent(AccountVerification::class, function ($mail)
+        Mail::assertQueued(AccountVerification::class, function ($mail)
         {
             $viewData = $mail->viewData;
 

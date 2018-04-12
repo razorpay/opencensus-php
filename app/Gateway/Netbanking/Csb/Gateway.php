@@ -10,8 +10,8 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Entity;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
-use RZP\Constants\Mode as RZPMode;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Constants\Mode as RZPMode;
 use RZP\Models\Payment\Gateway as PG;
 use RZP\Exception\GatewayErrorException;
 
@@ -24,14 +24,16 @@ use RZP\Exception\GatewayErrorException;
  */
 class Gateway extends Base\Gateway
 {
+    const PAYEE_ID = 'Razorpay';
+
+    const CALLBACK_URL = 'https://www.api.razorpay.com';
+
     protected $gateway = PG::NETBANKING_CSB;
 
     protected $map = [
         /**
          * Fields from authorize request used to create gateway payment entity
          */
-        RequestFields::CHNPGSYN      => Base\Entity::REFERENCE1,
-        RequestFields::CHNPGCODE     => Base\Entity::MERCHANT_CODE,
         RequestFields::AMOUNT        => Base\Entity::AMOUNT,
 
         /**
@@ -39,34 +41,27 @@ class Gateway extends Base\Gateway
          */
         ResponseFields::TRAN_REF_NUM => Base\Entity::BANK_PAYMENT_ID,
         ResponseFields::STATUS       => Base\Entity::STATUS,
-        ResponseFields::NARRATION    => Base\Entity::ERROR_MESSAGE, // TODO: Ensure this is correct
     ];
 
-    /**
-     * This array is modified while getting the authorize request.
-     * It is used to create the gateway netbanking entity.
-     * @see getAuthorizeRequest
-     * @var array
-     */
-    private $gatewayAttributes = [];
-
-    public function authorize(array $input)
+    public function authorize(array $input): array
     {
         parent::authorize($input);
 
         $request = $this->getAuthorizeRequest($input);
 
-        $this->createGatewayPaymentEntity($this->gatewayAttributes);
+        $this->createGatewayPaymentEntity([RequestFields::AMOUNT => $input['payment']['amount'] / 100]);
 
-        // Freeing memory occupied by this instance variable
-        $this->gatewayAttributes = [];
-
-        $this->traceGatewayPaymentRequest($request, $input);
+        $this->traceGatewayPaymentRequest(
+            $request,
+            $input,
+            $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST,
+            ['encrypted' => true]
+        );
 
         return $request;
     }
 
-    public function callback(array $input)
+    public function callback(array $input): array
     {
         parent::callback($input);
 
@@ -74,13 +69,24 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $content[ResponseFields::BANK_REF_NUM]);
 
-        // TODO: Is there a checksum here? If not we should verify.
+        $this->assertAmount($input['payment']['amount'] / 100, $content[ResponseFields::AMOUNT]);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
+        $callbackSuccess = $this->checkCallbackSuccess($input['gateway']);
+
+        //
+        // We verify the callback response before doing anything else with the response,
+        // this is so that we ensure the response is for the right payment id and amount
+        // We are eliminating false positives in this case (callback returns success, when it actually a failure).
+        // We do not handle the case when callback = failure, and verify callback = success.
+        // We do not handle false negatives.
+        //
+        $this->verifyCallback($gatewayPayment, $input, $callbackSuccess);
+
         $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
-        $this->checkResponseStatus($content);
+        $this->throwExceptionIfCallbackFailure($callbackSuccess, $content);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
@@ -96,30 +102,48 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public function sendPaymentVerifyRequest(Verify $verify)
+    protected function sendPaymentVerifyRequest(Verify $verify)
     {
         $request = $this->getVerifyRequestData($verify);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            $request);
+            [
+                'request'    => $request,
+                'encrypted'  => true,
+                'payment_id' => $verify->input['payment']['id'],
+                'gateway'    => $this->gateway
+            ]
+        );
 
         $response = $this->sendGatewayRequest($request);
+
+        $data = [
+            'gateway'         => $this->gateway,
+            'response'        => $response->body,
+            'payment_id'      => $verify->input['payment']['id']
+        ];
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE, $data);
+
+        $verify->verifyResponseContent = $this->parseVerifyResponse($response->body);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
-                'gateway'    => $this->gateway,
-                'response'   => $response->body,
-                'payment_id' => $verify->input['payment']['id'],
-            ]
-        );
-
-        $verify->verifyResponseContent = $this->parseVerifyResponse($response->body);
+                'response_body' => $response->body,
+                'content'       => $verify->verifyResponseContent,
+                'payment_id'    => $verify->input['payment']['id'],
+                'status_code'   => $response->status_code
+            ]);
     }
 
-    public function verifyPayment(Verify $verify)
+    protected function verifyPayment(Verify $verify)
     {
+        //
+        // we won't be setting amountMismatch here because verify response doesn't contain amount
+        //
+
         $verify->status = $this->getVerifyStatus($verify);
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
@@ -134,9 +158,8 @@ class Gateway extends Base\Gateway
      * @param $str
      * @return string
      */
-    public function getHashOfString($str)
+    public function getHashOfString($str): string
     {
-        // TODO: Verify that this is the right way to generate the checksum
         return hash(HashAlgo::CRC32, $str);
     }
 
@@ -152,10 +175,58 @@ class Gateway extends Base\Gateway
         parent::compareHashes($actual, $generated);
     }
 
+    public function computeChecksum(array $content): string
+    {
+        $contentToHash = array_merge($content, [$this->getSecret()]);
+
+        $contentToHash = $this->getStringToHash($contentToHash, '|');
+
+        return (string) hexdec($this->getHashOfString($contentToHash));
+    }
+
+    /**
+     * Verifying the payment after callback response is saved to
+     * prevent user tampering with the data while making a payment.
+     *
+     * @param Base\Entity $gatewayPayment
+     * @param array $input
+     * @param bool $callbackSuccess
+     * @throws GatewayErrorException
+     */
+    protected function verifyCallback(Base\Entity $gatewayPayment, array $input, bool $callbackSuccess)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        //
+        // If the status in callback and verify does not match
+        //
+        if ($callbackSuccess !== $verify->gatewaySuccess)
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+                null,
+                null,
+                [
+                    'callback_response' => $input['gateway'],
+                    'verify_response'   => $verify->verifyResponseContent,
+                    'payment_id'        => $input['payment']['id'],
+                    'gateway'           => $this->gateway
+                ]);
+        }
+    }
+
     protected function updateGatewayPaymentEntity(
         Entity $gatewayPayment,
         array $attributes,
-        bool $mapped = true)
+        bool $mapped = true): Entity
     {
         $attributes = $this->getMappedAttributes($attributes);
 
@@ -164,52 +235,99 @@ class Gateway extends Base\Gateway
         return parent::updateGatewayPaymentEntity($gatewayPayment, $attributes, false);
     }
 
-    private function checkResponseStatus(array $content)
+    /**
+     * Asserting that payment amount is the same as the amount received in the callback / verify response.
+     *
+     * @override
+     * @param $expectedAmount
+     * @param $actualAmount
+     */
+    protected function assertAmount($expectedAmount, $actualAmount)
     {
-        if ((empty($content[ResponseFields::STATUS]) === false) and
-            ($content[ResponseFields::STATUS] !== Status::SUCCESS))
+        $expectedAmount = $this->formatAmount($expectedAmount);
+        $actualAmount = $this->formatAmount($actualAmount);
+
+        parent::assertAmount($expectedAmount, $actualAmount);
+    }
+
+    /**
+     * Getting live secret from the config
+     * @override
+     * @return mixed
+     */
+    protected function getLiveSecret(): string
+    {
+        return $this->config['live_hash_secret'];
+    }
+
+    protected function throwExceptionIfCallbackFailure(bool $callbackSuccess, array $content)
+    {
+        // callbackSuccess is set during verify callback
+        if ($callbackSuccess === false)
         {
             throw new GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 null,
                 null,
-                $content);
+                [
+                    'callback_response' => $content,
+                    'payment_id'        => $this->input['payment']['id'],
+                    'gateway'           => $this->gateway
+                ]);
         }
     }
 
-    private function getVerifyRequestData(Verify $verify)
+    /**
+     * This method gets the required verify request as per API contract.
+     * @see https://docs.google.com/document/d/153ypkOhWNIetN3kV153gevKz2EIBO4aGj4XjIguLB0Y/edit#
+     *
+     * @param Verify $verify
+     * @return array
+     */
+    protected function getVerifyRequestData(Verify $verify): array
     {
-        $input = $verify->input;
-
-        $gatewayPayment = $verify->payment;
-
         $content = [
-            Constants::CHNPGSYN,
-            Constants::CHNPGCODE,
             $this->getMerchantId(),
-            $input['payment']['id'],
-            $input['payment']['amount'] / 100,
-            $gatewayPayment->getBankPaymentId(),
-            Mode::VERIFY,
+            $this->getMerchantId2(),
+            self::PAYEE_ID,
+            $verify->input['payment']['id'],
+            $verify->input['payment']['amount'] / 100,
+            self::CALLBACK_URL,
+            $verify->payment->getBankPaymentId(),
+            Mode::VERIFY
         ];
 
-        $content = implode('|', $content);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'data'       => $content,
+                'payment_id' => $verify->input['payment']['id'],
+                'gateway'    => $this->gateway
+            ]
+        );
 
-        $checkSum = $this->getHashOfString($content);
+        $verify->verifyRequest = $content;
 
-        $content = [
-            RequestFields::POST_DATA => base64_encode($content . '|' . $checkSum)
-        ];
+        $contentToEncode = $this->computeStringToEncode($content);
+
+        $content = [RequestFields::POST_DATA => base64_encode($contentToEncode)];
 
         return $this->getStandardRequestArray($content);
     }
 
-    private function parseVerifyResponse(string $response)
+    protected function parseVerifyResponse(string $responseString): array
     {
-        return (array) simplexml_load_string($response);
+        $response = simplexml_load_string($responseString);
+
+        //
+        // Converting all elements of $response xml into an array
+        //
+        $responseArray = json_decode(json_encode($response), true);
+
+        return $responseArray;
     }
 
-    private function getVerifyStatus(Verify $verify)
+    protected function getVerifyStatus(Verify $verify): string
     {
         $status = VerifyResult::STATUS_MATCH;
 
@@ -225,13 +343,34 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
-    private function checkGatewaySuccess(Verify $verify)
+    protected function checkCallbackSuccess(array $content)
+    {
+        if ((empty($content[ResponseFields::STATUS]) === false) and
+            ($content[ResponseFields::STATUS] !== Status::SUCCESS))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function checkGatewaySuccess(Verify $verify)
     {
         $verify->gatewaySuccess = false;
 
         $content = $verify->verifyResponseContent;
 
-        $status = $content[ResponseFields::VERIFICATION];
+        $status = Status::FAILURE;
+
+        if (array_key_exists(ResponseFields::VERIFICATION, $content) === true)
+        {
+            $status = trim($content[ResponseFields::VERIFICATION]);
+        }
+        elseif (array_key_exists(ResponseFields::STATUS_UCFIRST, $content) === true)
+        {
+            // When TID is null, they send verify status inside Status
+            $status = trim($content[ResponseFields::STATUS_UCFIRST]);
+        }
 
         // content will contain status 100 or 101
         if ($status === Status::SUCCESS)
@@ -240,7 +379,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    private function saveVerifyContent(Verify $verify)
+    protected function saveVerifyContent(Verify $verify)
     {
         $wallet = $verify->payment;
 
@@ -251,10 +390,11 @@ class Gateway extends Base\Gateway
         if ((empty($wallet[Base\Entity::STATUS]) === true) or
             ($wallet[Base\Entity::STATUS] !== Status::SUCCESS))
         {
-            $contentToSave[ResponseFields::STATUS] = $content[ResponseFields::VERIFICATION];
+            $contentToSave[ResponseFields::STATUS] = $content[ResponseFields::VERIFICATION] ??
+                                                     $content[ResponseFields::STATUS_UCFIRST];
         }
 
-        $this->updateGatewayPaymentEntity($wallet, $contentToSave, false);
+        return parent::updateGatewayPaymentEntity($wallet, $contentToSave);
     }
 
     /**
@@ -264,48 +404,82 @@ class Gateway extends Base\Gateway
      * @param array $input
      * @return array
      */
-    private function getAuthorizeRequest(array $input): array
+    protected function getAuthorizeRequest(array $input): array
     {
-        $content = [
-            RequestFields::CHNPGSYN     => Constants::CHNPGSYN,
-            RequestFields::CHNPGCODE    => Constants::CHNPGCODE,
-            RequestFields::PAYEE_ID     => $this->getMerchantId(),
+        $contentToEncrypt = [
+            RequestFields::CHNPGSYN     => $this->getMerchantId(),
+            RequestFields::CHNPGCODE    => $this->getMerchantId2(),
+            RequestFields::PAYEE_ID     => self::PAYEE_ID,
             RequestFields::BANK_REF_NUM => $input['payment']['id'],
             RequestFields::AMOUNT       => $input['payment']['amount'] / 100,
             RequestFields::RETURN_URL   => $input['callbackUrl'],
             RequestFields::MODE         => Mode::PAY,
         ];
 
-        $this->gatewayAttributes = $content;
+        $this->traceGatewayPaymentRequest(
+            $contentToEncrypt,
+            $input,
+            $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST,
+            ['encrypted' => false]);
 
-        $content = array_values($content);
+        $contentToEncode = $this->computeStringToEncode(array_values($contentToEncrypt));
 
-        $content = implode('|', $content);
-
-        $checkSum = $this->getHashOfString($content);
-
-        $content = [
-            RequestFields::POST_DATA => base64_encode($content . '|' . $checkSum)
-        ];
+        $content = [RequestFields::POST_DATA => base64_encode($contentToEncode)];
 
         return $this->getStandardRequestArray($content);
     }
 
-    protected function getMerchantId()
+    protected function formatAmount(float $amount): string
     {
-        $merchantId = $this->getLiveMerchantId();
+        return number_format($amount / 100, 2, '.', '');
+    }
 
-        if ($this->mode === RZPMode::TEST)
+    /**
+     * This method does the following:
+     * 1. Takes in the array to be hashed
+     * 2. Computes the hash of the array
+     * 3. Removes the hash key from the array
+     * 4. Adds computed checksum to array
+     * 4. Implodes into required format string and returns
+     *
+     *
+     * @param array $content
+     * @return string
+     */
+    protected function computeStringToEncode(array $content): string
+    {
+        $checkSum = $this->computeChecksum($content);
+
+        array_push($content, $checkSum);
+
+        return implode('|', $content);
+    }
+
+    protected function getMerchantId(): string
+    {
+        $merchantId = $this->config['test_merchant_id'];
+
+        if ($this->mode === RZPMode::LIVE)
         {
-            $merchantId = $this->getTestMerchantId();
+            $merchantId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
         }
 
         return $merchantId;
     }
 
-    protected function getTestMerchantId()
+    /**
+     * Sub merchant.
+     * @return string
+     */
+    protected function getMerchantId2(): string
     {
-        // TODO: Ensure this is right
-        return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+        $merchantId2 = $this->config['test_merchant_id_2'];
+
+        if ($this->mode === RZPMode::LIVE)
+        {
+            $merchantId2 = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+        }
+
+        return $merchantId2;
     }
 }

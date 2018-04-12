@@ -3,6 +3,8 @@
 namespace RZP\Reconciliator\BillDesk;
 
 use RZP\Reconciliator\Base;
+use RZP\Trace\TraceCode;
+use Razorpay\Spine\Exception\DbQueryException;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
@@ -26,12 +28,37 @@ class RefundReconciliate extends Base\RefundReconciliate
 
         if (empty($gatewayRefundId) === true)
         {
+            $this->setFailUnprocessedRow(false);
+
             return null;
         }
 
+        $refundId = null;
+
         $billDeskRepo = $this->app['repo']->billdesk;
 
-        $refundId = $billDeskRepo->findByGatewayRefundId($gatewayRefundId)->getRefundId();
+        try
+        {
+            $refundId = $billDeskRepo->findByGatewayRefundId($gatewayRefundId)->getRefundId();
+        }
+        catch (DbQueryException $ex)
+        {
+            /**
+             * Flow comes here when gateway refund not found in DB.
+             * It generally happens if refund failed because of gateway timeout
+             * and DB doesn't have gateway refund id, sent in MIS file.
+             */
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_MISMATCH,
+                    'info_code'       => 'REFUND_ABSENT',
+                    'message'         => 'Refund not found. Skipping.',
+                    'row'             => $row,
+                    'gateway'         => get_called_class()
+                ]);
+
+            $this->setFailUnprocessedRow(true);
+        }
 
         return $refundId;
     }

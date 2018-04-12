@@ -42,6 +42,7 @@ class CreateHdfcResponseXml extends Migration {
             $table->integer('updated_at');
 
             $table->index('payment_id');
+            $table->index('created_at');
         });
     }
 

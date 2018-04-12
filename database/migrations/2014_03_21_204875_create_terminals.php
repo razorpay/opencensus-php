@@ -78,6 +78,9 @@ class CreateTerminals extends Migration
             $table->tinyInteger(Terminal::AEPS)
                   ->default(0);
 
+            $table->tinyInteger(Terminal::EMANDATE)
+                  ->default(0);
+
             $table->tinyInteger(Terminal::EMI)
                   ->default(0);
 
@@ -142,6 +145,7 @@ class CreateTerminals extends Migration
             $table->index(Terminal::ENABLED);
             $table->index(Terminal::NETWORK_CATEGORY);
             $table->index(Terminal::GATEWAY_MERCHANT_ID);
+            $table->index(Terminal::CREATED_AT);
         });
     }
 

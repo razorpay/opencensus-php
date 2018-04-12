@@ -7,11 +7,16 @@ use Requests;
 use Requests_Response;
 use Requests_Exception;
 
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Schedule\Task as ScheduleTask;
 
 /**
  * Interface for api to talk to Reporting service
@@ -25,6 +30,9 @@ class Reporting
      */
     const CONFIG_PATH   = '/v1/configs';
     const LOG_PATH      = '/v1/logs';
+    const SCHEDULE_PATH = '/v1/schedules';
+
+    const SCHEDULE_PREFIX = 'sched_';
 
     /**
      * @var array
@@ -47,6 +55,7 @@ class Reporting
         $this->config = $app['config']['applications.reporting'];
         $this->trace  = $app['trace'];
         $this->mode   = $app['rzp.mode'];
+        $this->repo   = $app['repo'];
 
         // TODO: This service should(to discuss) not depend on BA, better to pass
         // or set merchant context on the instance before using.
@@ -110,10 +119,157 @@ class Reporting
         return $this->createAndSendRequest(Requests::GET, self::LOG_PATH, $input);
     }
 
+    public function createSchedule(array $input): array
+    {
+        $reportingServiceRequest = $input['payload'];
+
+        $scheduleRequest = $input['schedule'];
+
+        $response = $this->createScheduleOnReportingService($reportingServiceRequest);
+
+        // In case reporting service returns error, then we dont create schedule/schedule task
+        if (isset($response['error']) === false)
+        {
+            $this->trace->info(TraceCode::REPORTING_SERVICE_CREATE_SCHEDULE, $input);
+
+            // Need to store entity_id without sign.
+            $scheduleRequest[ScheduleTask\Entity::ENTITY_ID] = $this->generateEntityId($response['id']);
+
+            $this->createScheduleOnAPI($scheduleRequest);
+        }
+
+        return $response;
+    }
+
+    public function fetchScheduleMultiple(array $input): array
+    {
+        $configs = $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input);
+
+        return $this->filterConfigsByFeatureAndTags($configs);
+    }
+
+    public function fetchScheduleById(string $id): array
+    {
+        $path = self::SCHEDULE_PATH . '/' . $id;
+
+        return $this->createAndSendRequest(Requests::GET, $path);
+    }
+
+    public function deleteSchedule(string $id): array
+    {
+        $path = self::SCHEDULE_PATH . '/' . $id;
+
+        $response = $this->createAndSendRequest(Requests::DELETE, $path);
+
+        // Deleting the corresponding schedule task as well.
+        if (isset($response['error']) === false)
+        {
+            $entityId = $this->generateEntityId($id);
+
+            $scheduleTask = $this->repo->schedule_task->fetchByEntity($entityId);
+
+            $this->repo->deleteOrFail($scheduleTask);
+        }
+
+        return $response;
+    }
+
+    public function processTasks(PublicCollection $scheduleTasks): array
+    {
+        if (count($scheduleTasks) === 0)
+        {
+            return [];
+        }
+
+        $response = $this->triggerSchedule($scheduleTasks);
+
+        // If there is no error then
+        // 1. Strip sign for all ids, as api doesn't know the signs for schedule entity
+        // 2. For all the success cases, update the next run
+
+        if (isset($response['error']) === false)
+        {
+            $response = array_map(function($entityIds) {
+                            return array_map(function($entityId){
+                                        return $this->generateEntityId($entityId);
+                                    }, $entityIds);
+                            }, $response);
+
+            $successIds = $response['success_ids'];
+
+            // We need to get all success_ids and mark their next run.
+            foreach ($successIds as $successId)
+            {
+                $scheduleTask = $this->repo->schedule_task->fetchByEntity($successId);
+
+                $scheduleTask->updateNextRunAndLastRun(false);
+
+                $this->repo->saveOrFail($scheduleTask);
+            }
+        }
+
+        return $response;
+    }
+
+    protected function createScheduleOnAPI(array $input)
+    {
+        $entityId = $input[ScheduleTask\Entity::ENTITY_ID];
+
+        $merchant = $this->ba->getMerchant();
+
+        // As discussed, we will not be creating new schedule
+        // Schedule id will be passed in request object
+        $scheduleTaskRequest = [
+            ScheduleTask\Entity::ENTITY_ID   => $entityId,
+            ScheduleTask\Entity::TYPE        => ScheduleTask\Type::REPORTING,
+            ScheduleTask\Entity::ENTITY_TYPE => ScheduleTask\Type::LOG,
+            ScheduleTask\Entity::SCHEDULE_ID => $input[ScheduleTask\Entity::SCHEDULE_ID],
+        ];
+
+        (new ScheduleTask\Core)->createForExternalService($merchant, $scheduleTaskRequest);
+    }
+
+    protected function createScheduleOnReportingService(array $input): array
+    {
+        $response = $this->createAndSendRequest(Requests::POST, self::SCHEDULE_PATH, $input);
+
+        return $response;
+    }
+
+    protected function triggerSchedule(PublicCollection $scheduleTasks): array
+    {
+        $payload = [];
+
+        foreach ($scheduleTasks as $scheduleTask)
+        {
+            $payload[] = [
+                'id'          => self::SCHEDULE_PREFIX . $scheduleTask->getEntityId(),
+                'merchant_id' => $scheduleTask->getMerchantId(),
+            ];
+        }
+
+        // Mode is necessary to trigger a schedule
+        // Depending upon mode, the corresponding test/live data would be fetched
+        $request = [
+            'mode'    => $this->mode,
+            'payload' => $payload,
+        ];
+
+        $path = self::SCHEDULE_PATH . '/trigger';
+
+        return $this->createAndSendRequest(Requests::POST, $path, $request, Merchant\Account::SHARED_ACCOUNT);
+    }
+
+    protected function generateEntityId(string $entityId)
+    {
+        return explode(self::SCHEDULE_PREFIX, $entityId)[1];
+    }
+
     protected function createAndSendRequest(
         string $method,
         string $path,
-        array $input = []): array
+        array $input = [],
+        string $merchantId = null): array
     {
         // In case reporting is to be mocked, don't make any external call
         // and just return empty array.
@@ -128,7 +284,7 @@ class Reporting
         ];
 
         $headers = [
-            'X-Merchant-Id' => $this->ba->getMerchantId()
+            'X-Merchant-Id' => $merchantId ?? $this->ba->getMerchantId()
         ];
 
         $request = [
@@ -152,12 +308,17 @@ class Reporting
     {
         try
         {
-            return Requests::request(
-                        $request['url'],
-                        $request['headers'],
-                        $request['content'],
-                        $request['method'],
-                        $request['options']);
+            $response = Requests::request(
+                            $request['url'],
+                            $request['headers'],
+                            $request['content'],
+                            $request['method'],
+                            $request['options']);
+
+            $this->validateResponse($response);
+
+            return $response;
+
         }
         catch (Requests_Exception $e)
         {
@@ -204,43 +365,37 @@ class Reporting
         $items = collect($configs['items'] ?? []);
 
         $merchant = $this->ba->getMerchant();
+        $tags     = array_map('strtolower', $merchant->tagNames());
+        $features = $merchant->getEnabledFeatures();
 
-        //
-        // Reversals, transfers are shared reports, which should be applicable
-        // only to marketplace merchants and so we remove them from configs list
-        // otherwise.
-        //
-        if ($merchant->isFeatureEnabled(Feature::MARKETPLACE) === false)
+        $hasPlTag                      = in_array('payment_link_report', $tags, true);
+        $hasMarketplaceTag             = in_array(Feature::MARKETPLACE, $features, true);
+        $hasOpenwalletTag              = in_array(Feature::OPENWALLET, $features, true);
+        $hasMarketplaceOrOpenwalletTag = ($hasMarketplaceTag or $hasOpenwalletTag);
+
+        $items = $items->filter(function ($value, $key) use (
+            $hasPlTag,
+            $hasMarketplaceTag,
+            $hasMarketplaceOrOpenwalletTag)
         {
-            $items = $items->reject(function ($value, $key) use ($merchant)
+            switch ($value['type'])
             {
-                //
-                // If the 'openwallet' feature is enabled, don't remove the Transfer
-                // report from the list of config items
-                //
-                if (($merchant->isFeatureEnabled(Feature::OPENWALLET) === true) and
-                    ($value['type'] === Table::TRANSFER))
-                {
-                    return false;
-                }
+                // Keep invoice type only if payment_link_report is enabled
+                case Table::INVOICE:
+                    return $hasPlTag;
 
-                return in_array($value['type'], [Table::TRANSFER, Table::REVERSAL], true);
-            });
-        }
+                // Keep transfer type only if one of marketplace or openwallet is enabled
+                case Table::TRANSFER:
+                    return $hasMarketplaceOrOpenwalletTag;
 
-        //
-        // Payment links report is shared as well but should only be visible to
-        // merchants with specific tags.
-        //
-        $merchantTags = $merchant->tagNames();
+                // Keep reversal type only if marketplace is enabled
+                case Table::REVERSAL:
+                    return $hasMarketplaceTag;
 
-        if (in_array('Payment_Link_Report', $merchantTags, true) === false)
-        {
-            $items = $items->reject(function ($value, $key)
-            {
-                return in_array($value['type'], [Table::INVOICE], true);
-            });
-        }
+                default:
+                    return true;
+            }
+        });
 
         $configs['items'] = $items->values()->all();
         $configs['count'] = $items->count();
@@ -266,6 +421,16 @@ class Reporting
         }
 
         $this->trace->info(TraceCode::REPORTING_SERVICE_API_RESPONSE, $payload);
+    }
+
+    protected function validateResponse(Requests_Response $response)
+    {
+        if ($response->status_code !== 200)
+        {
+            $payload['body'] = $response->body;
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_INTEGRATION, null, $payload);
+        }
     }
 
     /**

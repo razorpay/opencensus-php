@@ -6,6 +6,7 @@ use ApiResponse;
 use Razorpay\OAuth\OAuthServer;
 use Razorpay\OAuth\Token\Entity as OAuthToken;
 
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
@@ -58,8 +59,13 @@ class OAuth
     public function hasOAuthPublicToken(): bool
     {
         $keyParam = $this->request->input('key_id');
-
         $key = $keyParam ?? $this->request->getUser();
+        // For callback routes, gets the key from route parameter
+        $route = $this->router->currentRouteName();
+        if ((empty($key) === true) and (in_array($route, Route::$publicCallback, true) === true))
+        {
+            $key = $this->router->current()->parameter('key');
+        }
 
         //
         // If the key was empty or null, return false and allow
@@ -176,6 +182,15 @@ class OAuth
         return $this->parseOAuthServerResponse($response);
     }
 
+    /**
+     * Parse the OAuth server response received.
+     * Returns an error object, if there is an error.
+     * Returns null otherwise.
+     *
+     * @param array $response
+     *
+     * @return array
+     */
     protected function parseOAuthServerResponse(array $response)
     {
         $tokenScopes = $response[OAuthToken::SCOPES];
@@ -185,21 +200,42 @@ class OAuth
             return ApiResponse::oauthInvalidScope();
         }
 
+        $mode = $response[OAuthToken::MODE];
+
+        // Sets the mode for the request, and database connection
+        $this->ba->setMode($mode);
+
+        \Database\DefaultConnection::set($mode);
+
         //
         // Set merchant for the current request
         // TODO: Move this to a common auth class
         //
         $this->ba->setMerchantById($response[OAuthToken::MERCHANT_ID]);
 
-        $mode = $response[OAuthToken::MODE];
+        //
+        // Public key is used to generate the callback URL parameter that is
+        // being sent with the payment create request to the gateway.
+        //
+        $publicKey = 'rzp_' . $mode . '_oauth_' . $response[OAuthToken::PUBLIC_TOKEN];
 
-        // Sets the mode for the request, and database connection
-        $this->ba->setMode($mode);
-        \Database\DefaultConnection::set($mode);
+        $this->ba->setPublicKey($publicKey);
+
+        try
+        {
+            $this->ba->checkMerchantActivatedForLive();
+        }
+        catch (Exception\LogicException $e)
+        {
+            return ApiResponse::generateErrorResponse(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_MERCHANT_NOT_ACTIVATED);
+        }
+
 
         // Sets the identifiers that are sent in trace logs
         $this->ba->setAccessTokenId($response[OAuthToken::ID]);
         $this->ba->setOAuthClientId($response[OAuthToken::CLIENT_ID]);
+        $this->ba->setOAuthApplicationId($response[OAuthToken::APPLICATION][OAuthToken::ID]);
     }
 
     /**

@@ -2,9 +2,9 @@
 
 namespace RZP\Tests\Unit\Models\Invoice;
 
-use RZP\Tests\Functional\TestCase;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
+use RZP\Tests\Functional\TestCase;
 
 class ViewDataSerializerTest extends TestCase
 {
@@ -22,7 +22,7 @@ class ViewDataSerializerTest extends TestCase
         $invoice  = $this->createInvoice();
 
         $expected = $this->getExpectedSerializedInvoiceData();
-        $actual   = (new Invoice\ViewDataSerializer($invoice))->get();
+        $actual   = (new Invoice\ViewDataSerializer($invoice))->serializeForHosted();
 
         $this->assertArraySelectiveEquals($expected, $actual);
 
@@ -38,7 +38,7 @@ class ViewDataSerializerTest extends TestCase
         $invoice  = $this->createInvoiceWithPayment();
 
         $expected = $this->getExpectedSerializedInvoiceDataWithPayments();
-        $actual   = (new Invoice\ViewDataSerializer($invoice))->get();
+        $actual   = (new Invoice\ViewDataSerializer($invoice))->serializeForHosted();
 
         $this->assertArraySelectiveEquals($expected, $actual);
     }
@@ -48,7 +48,7 @@ class ViewDataSerializerTest extends TestCase
         $invoice  = $this->createSubscriptionInvoice();
 
         $expected = $this->getExpectedSerializedSubscriptionInvoiceData();
-        $actual   = (new Invoice\ViewDataSerializer($invoice))->getWithSubscriptionIfApplicable();
+        $actual   = (new Invoice\ViewDataSerializer($invoice))->serializeForHosted();
 
         $this->assertArraySelectiveEquals($expected, $actual);
     }

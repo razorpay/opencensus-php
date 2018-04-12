@@ -38,6 +38,8 @@ class Terminal extends Base
         $this->createSharedFirstDataTerminal();
         $this->createSharedEbsTerminal();
         $this->createSharedBladeTerminal();
+        $this->createSharedFssTerminal();
+        $this->createSharedEmandateAxisTerminal();
     }
 
     public function createMultipleNetbankingTerminals()
@@ -226,6 +228,27 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedFssTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::FSS_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'card_fss',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'random',
+            'gateway_terminal_id'       => 'FssBobDebit123',
+            'gateway_terminal_password' => 'password',
+            'gateway_secure_secret'     => '12345678',
+            'gateway_acquirer'          => 'barb',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedBladeTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::BLADE_RAZORPAY_TERMINAL;
@@ -235,6 +258,53 @@ class Terminal extends Base
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'blade',
             'card'                      => 1,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'random',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedDigioTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::DIGIO_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'esigner_digio',
+            'card'                      => 0,
+            'emandate'                  => 1,
+            'type'                      => [
+                Type::RECURRING_3DS => '1',
+                Type::RECURRING_NON_3DS => '1',
+            ],
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'random',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedEnachRblTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::ENACH_RBL_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'enach_rbl',
+            'gateway_acquirer'          => 'ratn',
+            'card'                      => 0,
+            'emandate'                  => 1,
+            'type'                      => [
+                Type::RECURRING_3DS => '1',
+                Type::RECURRING_NON_3DS => '1',
+            ],
             'shared'                    => 1,
             'gateway_merchant_id'       => 'random',
         ];
@@ -547,6 +617,46 @@ class Terminal extends Base
         return [$terminal1, $terminal2];
     }
 
+    public function createDirectFirstDataRecurringTerminals($inputAttrs)
+    {
+        $attributes = [
+            'id'                        => 'FDRcrDTrmnl3DS',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'first_data',
+            'gateway_acquirer'          => 'icic',
+            'card'                      => 1,
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::RECURRING_3DS => '1'
+            ],
+            'gateway_merchant_id'       => '3ds_gateway_merchant_id',
+        ];
+
+        $attributes = array_merge($attributes, $inputAttrs);
+
+        $terminal1 = $this->createEntityInTestAndLive('terminal', $attributes);
+
+        $attributes = [
+            'id'                        => 'FDRcrDTrmlN3DS',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'first_data',
+            'gateway_acquirer'          => 'icic',
+            'card'                      => 1,
+            'type'                      => [
+                Type::RECURRING_NON_3DS => '1'
+            ],
+            'mode'                      => Mode::PURCHASE,
+            'gateway_merchant_id'       => 'non_3ds_gateway_merchant_id',
+            'gateway_merchant_id2'      => '3ds_gateway_merchant_id',
+        ];
+
+        $attributes = array_merge($attributes, $inputAttrs);
+
+        $terminal2 = $this->createEntityInTestAndLive('terminal', $attributes);
+
+        return [$terminal1, $terminal2];
+    }
+
     public function createSharedMigsRecurringTerminals()
     {
         $attributes = [
@@ -596,6 +706,28 @@ class Terminal extends Base
         $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createHitachiRecurringTerminalWithBothRecurringTypes(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => 'HitcRcg3DSN3DS',
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'hitachi',
+            'gateway_acquirer'          => 'ratn',
+            'card'                      => 1,
+            'type'                      => [
+                Type::RECURRING_NON_3DS => '1',
+                Type::RECURRING_3DS => '1'
+            ],
+            'gateway_merchant_id'       => 'random',
+            'gateway_terminal_id'       => 'recurring_random',
+            'gateway_terminal_password' => 'razorpay_password',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedCybersourceAxisTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::CYBERSOURCE_AXIS_TERMINAL;
@@ -620,7 +752,7 @@ class Terminal extends Base
     {
         $terminalId = \RZP\Models\Terminal\Shared::HITACHI_TERMINAL;
 
-        $attributes = [
+        $defaultValues = [
             'id'                        => $terminalId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'hitachi',
@@ -632,6 +764,8 @@ class Terminal extends Base
             'gateway_terminal_password' => 'hitachi',
             'gateway_secure_secret'     => 'secret',
         ];
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -811,7 +945,7 @@ class Terminal extends Base
     {
         $termId = \RZP\Models\Terminal\Shared::SHARP_RAZORPAY_TERMINAL;
 
-        $attributes = [
+        $defaultValues = [
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'sharp',
@@ -821,6 +955,8 @@ class Terminal extends Base
             'card'                      => 1,
             'emi'                       => 0,
         ];
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return parent::create($attributes);
     }
@@ -987,12 +1123,13 @@ class Terminal extends Base
         return $this->createSharedNetbankingIciciTerminal($attributes);
     }
 
-    public function createSharedNetbankingIciciRecurringTerminal(array $attributes = [])
+    public function createSharedEmandateIciciTerminal(array $attributes = [])
     {
-        $attributes = [
+        $defaultValues = [
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'netbanking_icici',
-            'netbanking'                => 1,
+            'netbanking'                => 0,
+            'emandate'                  => 1,
             'shared'                    => 1,
             'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'razorpay_submerchant',
@@ -1001,22 +1138,25 @@ class Terminal extends Base
         ];
 
         // Recurring supports both 3ds and non3ds terminal;
-        $attributes['id'] = 'NIcRecurringTl';
+        $defaultValues['id'] = 'NIcRecurringTl';
 
-        $attributes['type'] = [
+        $defaultValues['type'] = [
             Type::RECURRING_NON_3DS => '1',
             Type::RECURRING_3DS     => '1'
         ];
 
+        $attributes = array_merge($defaultValues, $attributes);
+
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedNetbankingHdfcRecurringTerminal(array $attributes = [])
+    public function createSharedEmandateHdfcTerminal(array $attributes = [])
     {
-        $attributes = [
+        $defaultValues = [
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'netbanking_hdfc',
-            'netbanking'                => 1,
+            'netbanking'                => 0,
+            'emandate'                  => 1,
             'shared'                    => 1,
             'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'razorpay_submerchant',
@@ -1024,12 +1164,14 @@ class Terminal extends Base
         ];
 
         // Recurring supports both 3ds and non3ds terminal;
-        $attributes['id'] = 'NHdRecurringTl';
+        $defaultValues['id'] = 'NHdRecurringTl';
 
-        $attributes['type'] = [
+        $defaultValues['type'] = [
             Type::RECURRING_NON_3DS => '1',
             Type::RECURRING_3DS     => '1'
         ];
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -1080,12 +1222,13 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
-    public function createSharedNetbankingAxisRecurringTerminal(array $attributes = [])
+    public function createSharedEmandateAxisTerminal(array $attributes = [])
     {
-        $attributes = [
+        $defaultValues = [
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'netbanking_axis',
-            'netbanking'                => 1,
+            'netbanking'                => 0,
+            'emandate'                  => 1,
             'shared'                    => 1,
             'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'razorpay_submerchant',
@@ -1094,11 +1237,13 @@ class Terminal extends Base
         ];
 
         // Add fss recurring supports both 3ds and non3ds terminal;
-        $attributes['id'] = 'NAxRecurringTl';
-        $attributes['type'] = [
+        $defaultValues['id'] = 'NAxRecurringTl';
+        $defaultValues['type'] = [
             Type::RECURRING_3DS     => '1',
             Type::RECURRING_NON_3DS => '1',
         ];
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -1245,7 +1390,7 @@ class Terminal extends Base
             'merchant_id'           => $merchantId,
             'gateway'               => Gateway::NETBANKING_CSB,
             'gateway_merchant_id'   => 'netbanking_csb_merchant_id',
-            'gateway_secure_secret' => 'random_hash_secret',
+            'gateway_merchant_id2'  => 'netbanking_csb_merchant_id2',
             'netbanking'            => 1,
         ];
 
@@ -1324,6 +1469,19 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedUpiIciciIntentTerminal(array $attributes)
+    {
+        $attributes = [
+            'id'                        => Shared::UPI_ICICI_INTENT_TERMINAL,
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+            ]
+        ];
+
+        return $this->createSharedUpiIciciTerminal($attributes);
+    }
+
     public function createSharedAepsIciciTerminal(array $attributes)
     {
         $termId = Shared::AEPS_ICICI_RAZORPAY_TERMINAL;
@@ -1375,6 +1533,29 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedUpiMindgateIntentTerminal(array $attributes)
+    {
+        $attributes = [
+            'id'                        => Shared::UPI_MINDGATE_INTENT_TERMINAL,
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+            ]
+        ];
+
+        return $this->createSharedUpiMindgateTerminal($attributes);
+    }
+
+    public function createSharedUpiMindgateTpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'               => Shared::UPI_MINDGATE_TPV_TERMINAL,
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedUpiMindgateTerminal($attributes);
     }
 
     public function createSharedUpiMindgateSbiTerminal(array $attributes)

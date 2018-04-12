@@ -10,6 +10,10 @@ class Repository extends Base\Repository
 {
     protected $entity = 'customer_balance';
 
+    protected $appFetchParamRules = [
+        Entity::MERCHANT_ID         => 'sometimes|alpha_num|max:14',
+    ];
+
     public function findByCustomerIdAndMerchantSilent(
         string $customerId,
         Merchant\Entity $merchant,

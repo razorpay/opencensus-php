@@ -11,6 +11,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Currency;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
+use RZP\Models\Emi;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Plan\Subscription;
@@ -28,7 +29,7 @@ trait Capture
      *
      * @return Payment\Entity Payment\Entity object
      */
-    public function capture(Payment\Entity $payment, array $input = array())
+    public function capture(Payment\Entity $payment, array $input = [])
     {
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_REQUEST,
@@ -316,6 +317,18 @@ trait Capture
                 ]);
         }
 
+        $autoCaptured = $payment->getAutoCaptured();
+
+        if (($payment->isEmiMerchantSubvented() === true) and
+            ($autoCaptured === false))
+        {
+            $emiPlan = $payment->emiPlan;
+
+            $merchantPayback = $emiPlan->getMerchantPayback();
+
+            $captureAmount = Emi\Calculator::calculateSubventedAmount($captureAmount, $merchantPayback);
+        }
+
         if ($captureAmount !== $payment->getAmount())
         {
             throw new Exception\BadRequestException(
@@ -509,6 +522,8 @@ trait Capture
         $this->eventOrderPaid();
 
         $this->eventInvoicePaid();
+
+        $this->eventVirtualAccountCredited();
     }
 
     /**
@@ -584,6 +599,22 @@ trait Capture
         ];
 
         $this->app['events']->fire($event, $eventPayload);
+    }
+
+    protected function eventVirtualAccountCredited()
+    {
+        $payment = $this->payment;
+
+        if ($payment->isBankTransfer() === false)
+        {
+            return;
+        }
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $payment
+        ];
+
+        $this->app['events']->fire('api.virtual_account.credited', $eventPayload);
     }
 
     protected function eventPaymentCaptured()

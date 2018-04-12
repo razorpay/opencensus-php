@@ -2,10 +2,11 @@
 
 namespace RZP\Http\Controllers;
 
+use View;
 use Request;
 use Response;
-use View;
 use ApiResponse;
+
 use RZP\Exception\BaseException;
 use Illuminate\Http\Response as ResponseCodes;
 
@@ -52,6 +53,15 @@ class InvoiceController extends Controller
         $invoice = $this->service()->issue($id);
 
         return ApiResponse::json($invoice);
+    }
+
+    public function notifyInvoicesOfBatch(string $batchId)
+    {
+        $input = Request::all();
+
+        $this->service()->notifyInvoicesOfBatch($batchId, $input);
+
+        return ApiResponse::json([]);
     }
 
     public function deleteInvoice(string $id)
@@ -142,11 +152,15 @@ class InvoiceController extends Controller
 
     public function getInvoiceView(string $invoiceId)
     {
-        $error = Request::get('error');
+        $useNewView = false;
+        $error      = Request::get('error');
 
         try
         {
             $data = $this->service()->getInvoiceViewData($invoiceId);
+
+            // Following is temporary, for controlled roll out of new payment link hosted view.
+            $useNewView = array_pull($data['merchant'], 'new_view_enabled');
         }
         catch (BaseException $e)
         {
@@ -158,7 +172,7 @@ class InvoiceController extends Controller
             $data['error'] = $error;
         }
 
-        $view = 'invoice.index';
+        $view = ($useNewView === true) ? 'invoice.index' : 'invoice.index-old';
 
         //
         // Following is only temporary and is to be removed soon.

@@ -249,6 +249,10 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPricingRuleForAeps($rules);
         }
+        else if ($method === Payment\Method::EMANDATE)
+        {
+            $rule = $this->getRelevantPricingRuleForEmandate($rules);
+        }
         else if ($method === Payment\Method::EMI)
         {
             $rule = $this->getRelevantPricingRuleForEmi($rules);
@@ -294,6 +298,37 @@ class FeeCalculator
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 
+    protected function getRelevantPricingRuleForEmandate($rules)
+    {
+        // All the rules for the current pricing plan will be put
+        // through various filters till the right pricing rule
+        // for the current case remains.
+
+        $payment = $this->entity;
+
+        $bank = $payment->getBank();
+
+        $authType = $payment->getGlobalOrLocalTokenEntity()->getAuthType();
+
+        $recurringType = $payment->getRecurringType();
+
+        // Current Implementation
+        // * Filter based on AmountRange
+        // * Choose based on Amount
+        // * Choose based on Authentication type
+        // * Choose based on Recurring type
+
+        $filters = [
+            [Pricing\Entity::PAYMENT_NETWORK,     $bank,          true, null],
+            [Pricing\Entity::PAYMENT_METHOD_TYPE, $authType,      true, null],
+            [Pricing\Entity::PAYMENT_ISSUER,      $recurringType, true, null],
+        ];
+
+        $rules = $this->applyFiltersOnRules($rules, $filters);
+
+        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
     protected function getRelevantPricingRuleForUPI($rules)
     {
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
@@ -317,7 +352,8 @@ class FeeCalculator
                 'Invalid rule count: 0, Merchant Id: ' . $payment->getMerchantId(),
                 ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
                 [
-                    'payment_id' => $payment->getId()
+                    'payment_id' => $payment->getId(),
+                    'method'     => $payment->getMethod(),
                 ]);
         }
 
@@ -331,7 +367,8 @@ class FeeCalculator
                 'Failed to find a valid pricing rule for the payment, Merchant Id: ' . $payment->getMerchantId(),
                 ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
                 [
-                    'payment_id' => $payment->getId()
+                    'payment_id' => $payment->getId(),
+                    'method'     => $payment->getMethod(),
                 ]);
         }
 

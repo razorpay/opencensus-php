@@ -606,6 +606,23 @@ class AdminFetch
                 ],
             ],
 
+            Entity::HITACHI => [
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
+                'refund_id'  => Fetch::FIELD_REFUND_ID,
+                'action'     => [
+                    Fetch::LABEL => 'Action',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'pRequestId' => [
+                    Fetch::LABEL => 'Request ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'pRRN'       => [
+                    Fetch::LABEL => 'RRN',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::IIN => [
                 'emi' => [
                     Fetch::LABEL  => 'Emi',
@@ -924,6 +941,14 @@ class AdminFetch
                 ],
             ],
 
+            Entity::ENACH => [
+                'umrn' => [
+                    Fetch::LABEL  => 'UMRN',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
+            ],
+
             Entity::NETBANKING => [
                 'bank_payment_id' => [
                     Fetch::LABEL  => 'Bank Payment Id',
@@ -1062,6 +1087,16 @@ class AdminFetch
                 'token_id' => [
                     Fetch::LABEL  => 'Token Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'recurring_status' => [
+                    Fetch::LABEL  => 'Token Recurring Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'null',
+                        'initiated',
+                        'confirmed',
+                        'rejected',
+                    ],
                 ],
                 'transfer_id' => [
                     Fetch::LABEL  => 'Transfer Id',
@@ -1401,6 +1436,10 @@ class AdminFetch
                 'token' => [
                     Fetch::LABEL  => 'Token',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'recurring_status' => [
+                    Fetch::LABEL    => 'Recurring Status',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
                 ],
                 'wallet' => Fetch::FIELD_WALLET
             ],

@@ -11,6 +11,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
+use RZP\Models\Card\IIN\Flows;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Terminal\Category;
@@ -26,13 +27,16 @@ class TransactionFilter extends Terminal\Filter
         'method',
         'network',
         'bank',
+        'emandate',
         'recurring',
         'gateway',
         'subscription',
         'tpv',
+        'upi',
         'pharma',
         'corporate',
         'mcc',
+        'auth_type',
     ];
 
     public function methodFilter($terminal)
@@ -64,6 +68,9 @@ class TransactionFilter extends Terminal\Filter
             case Method::AEPS:
                 return $terminal->isAepsEnabled();
 
+            case Method::EMANDATE:
+                return $terminal->isEmandateEnabled();
+
             default:
                 throw new Exception\LogicException(
                     'Unknown payment method passed.',
@@ -78,11 +85,13 @@ class TransactionFilter extends Terminal\Filter
     // Applicable only for card and emi
     public function networkFilter($terminal)
     {
-        if ($this->input['payment']->isMethodCardOrEmi())
-        {
-            $network = $this->input['payment']->card->getNetworkCode();
+        $payment = $this->input['payment'];
 
-            return Gateway::isCardNetworkSupported($network, $terminal->getGateway());
+        if ($payment->isMethodCardOrEmi() === true)
+        {
+            $network = $payment->card->getNetworkCode();
+
+            return Gateway::isCardNetworkSupported($network, $terminal->getGateway(), $payment->isRecurring());
         }
 
         return true;
@@ -90,7 +99,7 @@ class TransactionFilter extends Terminal\Filter
 
     public function bankFilter($terminal)
     {
-        if ($this->input['payment']->isNetbanking())
+        if ($this->input['payment']->isNetbanking() === true)
         {
             $bank = $this->input['payment']->getBank();
 
@@ -104,6 +113,41 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
+    }
+
+    public function emandateFilter($terminal)
+    {
+        if ($this->input['payment']->isEmandate() === false)
+        {
+            return true;
+        }
+
+        $gateways = [];
+
+        $paymentBank = $this->input['payment']->getBank();
+
+        $authType = $this->input['payment']->getAuthType();
+
+        $terminalGateway = $terminal->getGateway();
+
+        $authTypeGateways = ($authType !== null) ? Gateway::getEmandateGatewaysForAuthType($authType) : [];
+
+        // @todo: Can be more cleaner
+        foreach (Gateway::$gatewaysEmandateBanksMap as $gateway => $gatewaySupportedBanks)
+        {
+            if (in_array($paymentBank, $gatewaySupportedBanks, true) === true)
+            {
+                if (($authType !== null) and
+                    (in_array($gateway, $authTypeGateways, true) === false))
+                {
+                    continue;
+                }
+
+                $gateways[] = $gateway;
+            }
+        }
+
+        return in_array($terminalGateway, $gateways);
     }
 
     /**
@@ -181,20 +225,15 @@ class TransactionFilter extends Terminal\Filter
             return false;
         }
 
-        $basicAuth = $this->app['basicauth'];
+        $payment = $this->input['payment'];
 
-        $token = $payment->getGlobalOrLocalTokenEntity();
-
-        $access = (($basicAuth->isPrivateAuth() === true) or
-                   ($basicAuth->isPrivilegeAuth() === true));
+        $gatewayTokens = $this->input['gateway_tokens'];
 
         //
         // All first recurring payments or payments made via public
         // auth need to go via 3DS Recurring terminals only.
         //
-        if (($token === null) or
-            ($token->isRecurring() === false) or
-            ($access === false))
+        if ($payment->isSecondRecurring(true, $gatewayTokens) === false)
         {
             return ($terminal->is3DSRecurring() === true);
         }
@@ -208,56 +247,60 @@ class TransactionFilter extends Terminal\Filter
             return false;
         }
 
-        $reference = $payment->getReferenceForGatewayToken();
+        $applicableTypes = [
+            Terminal\Type::RECURRING_3DS,
+            Terminal\Type::RECURRING_NON_3DS,
+        ];
 
-        $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
-
-        $gatewayTokensCount = $gatewayTokens->count();
-
-        if ($gatewayTokensCount > 0)
-        {
-            //
-            // For second recurring payment, ensure that we select a terminal
-            // of the same gateway as for the first recurring payment and also
-            // of the same merchant (shared, direct)
-            //
-            $validGatewayTokens = $gatewayTokens->filter(
-                                    function($gatewayToken) use ($terminal)
-                                    {
-                                        return (($gatewayToken->getGateway() === $terminal->getGateway()) and
-                                            ($gatewayToken->terminal->getMerchantId() === $terminal->getMerchantId()));
-                                    });
-
-            //
-            // We check if we have one valid gateway_token for the
-            // terminal being selected. If yes, we return back true.
-            // If we don't have even one valid gateway_token for the
-            // terminal being selected, we return back false.
-            //
-            // The check is again 1 exactly because for a given gateway,
-            // there should not be more than one terminal. We don't support
-            // more than 1 set of terminals for a merchant (direct/shared).
-            // If it's greater than 1, there's something wrong and should fail.
-            //
-            return ($validGatewayTokens->count() === 1);
-        }
         //
-        // If a token is present and is supposed to be subsequent charge,
-        // the corresponding gateway_token must always be present.
-        // If it's not present, there's something wrong somewhere!
+        // If the terminal supports both [recurring 3ds and recurring non-3ds] or [no-2fa],
+        // we don't care about gateway tokens. We care about gateway tokens
+        // only because of 2fa. But if the terminal supports both [3ds and
+        // non-3ds] or [no-2fa], it means that the terminal does not care about 2fa and
+        // hence, we don't need to too. We can just use this terminal without
+        // worrying about whether we have a gateway token for this or not.
         //
-        else
+        // Also, we would be doing this only for direct terminals and for card
+        // payments. Though, it would be applicable for shared terminals also,
+        // we don't want to fallback on that just yet.
+        //
+        if ((empty(array_diff($applicableTypes, $terminal->getType())) === true) or
+            ($terminal->isNo2Fa() === true))
         {
-            throw new Exception\LogicException(
-                'Should have gotten at least 1 gateway token.',
-                ErrorCode::SERVER_ERROR_GATEWAY_TOKENS_INVALID_COUNT,
-                [
-                    'gateway_tokens_count'  => $gatewayTokensCount,
-                    'payment_id'            => $payment->getId(),
-                    'token_id'              => $token->getId(),
-                    'reference'             => $reference
-                ]);
+
+            if (($terminal->isFallbackApplicable($this->input['merchant']) === true) and
+                ($payment->isCard() === true))
+            {
+                return true;
+            }
         }
+
+        return (new Terminal\Core)->hasApplicableGatewayTokens($terminal, $payment, $gatewayTokens);
+    }
+
+    protected function upiFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+
+        if ($payment->isUpi() === true)
+        {
+            $flow = $payment->getMetadata('flow', 'collect');
+
+            if ($flow === 'intent')
+            {
+                $gateway = $terminal->getGateway();
+
+                if ((Gateway::isUpiIntentFlowSupported($gateway) === true) and
+                    ($terminal->isPay() === true))
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        return true;
     }
 
     protected function corporateFilter(Terminal\Entity $terminal)
@@ -342,9 +385,7 @@ class TransactionFilter extends Terminal\Filter
 
         $emiDuration = $this->input['payment']->emiPlan->getDuration();
 
-        $subvention = $this->input['payment']->emiPlan->getSubvention();
-
-        return $terminal->isValidEmiTerminal($gateway, $emiDuration, $subvention);
+        return $terminal->isValidEmiTerminal($gateway, $emiDuration);
     }
 
     public function pharmaFilter(Terminal\Entity $terminal)
@@ -390,7 +431,7 @@ class TransactionFilter extends Terminal\Filter
      */
     public function tpvFilter($terminal)
     {
-        if ($this->input['payment']->isNetbanking() === true)
+        if ($this->input['payment']->isTpvMethod() === true)
         {
             if ($this->input['merchant']->isFeatureEnabled(Feature\Constants::TPV))
             {
@@ -408,6 +449,7 @@ class TransactionFilter extends Terminal\Filter
      * matching that of the merchant
      *
      * @param  Terminal\Entity $terminal
+     * @param array            $applicableTerminals
      *
      * @return bool
      */
@@ -450,6 +492,40 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
+    }
+
+    public function authTypeFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return true;
+        }
+
+        if ($payment->getAuthType() === Payment\AuthType::PIN)
+        {
+            $gateway = $terminal->getGateway();
+            $acquirer = $terminal->getGatewayAcquirer();
+
+            $issuer = $payment->card->iinRelation->getIssuer();
+
+            if (($terminal->isPin() === true) and
+                (Gateway::isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer) === true))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        // Default terminals should always be the one which supports 3DS
+        // Any other auth type terminals should be filtered out if `auth_type`
+        // is empty or null.
+        // In case, we have plan to add new auth in the filter, we will have to
+        // add a condition here to remove terminals of that auth type while
+        // ensuring that all other gateways are selected.
+        return ($terminal->isPin() === false);
     }
 
     protected function isTerminalWithMerchantMccAbsent(

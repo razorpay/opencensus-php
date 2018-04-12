@@ -14,6 +14,8 @@ class IrctcRefund extends Base
 {
     protected function processEntry(array & $entry)
     {
+        $entry[Batch\Header::MERCHANT_REFERENCE] = str_replace("\xEF\xBB\xBF", '',  $entry[Batch\Header::MERCHANT_REFERENCE]);
+
         $paymentId = trim($entry[Batch\Header::PAYMENT_ID]);
 
         $payment = $this->repo->payment->findByPublicId($paymentId);
@@ -34,6 +36,13 @@ class IrctcRefund extends Base
         $paymentProcessor = (new PaymentProcessor($payment->merchant));
 
         $input = $this->getRefundParams($entry);
+
+        $refund = $this->repo->refund->findByReceiptAndMerchant($input[Refund\Entity::RECEIPT], $payment->merchant->getId());
+
+        if ($refund !== null)
+        {
+            return $refund;
+        }
 
         return $paymentProcessor->createRefundFromMerchantFile($payment, $input, $this->batch);
     }
@@ -64,6 +73,13 @@ class IrctcRefund extends Base
         $input = $this->getRefundParams($entry);
 
         $input[Refund\Entity::AMOUNT]  = intval($entry[Batch\Header::REFUND_AMOUNT] * 100);
+
+        $refund = $this->repo->refund->findByReceiptAndMerchant($input[Refund\Entity::RECEIPT], $payment->merchant->getId());
+
+        if ($refund !== null)
+        {
+            return $refund;
+        }
 
         return $paymentProcessor->createRefundFromMerchantFile($payment, $input, $this->batch);
     }

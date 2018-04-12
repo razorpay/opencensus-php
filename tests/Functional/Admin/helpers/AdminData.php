@@ -311,18 +311,6 @@ return [
         ]
     ],
 
-    'testGetMerchantIds' => [
-        'request' => [
-            'url' => '/orgs/%s/admins/%s/merchant_ids',
-            'method' => 'get',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-            ],
-        ],
-    ],
-
     'testLoginUserDoesNotExist' => [
         'request' => [
             'url' => '/admin/authenticate',
@@ -855,5 +843,45 @@ return [
                 'success' => 1
             ]
         ],
-    ]
+    ],
+
+    'testDbMetaDataQuery' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/db_meta_query',
+            'content' => [
+                'query' => 'show indexes from merchants;',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                [
+                    'Key_name' => 'PRIMARY',
+                ],
+            ],
+        ],
+    ],
+
+    'testDbMetaDataQueryWithInvalidQuery' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/db_meta_query',
+            'content' => [
+                'query' => 'truncate table merchants;',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => ErrorCode::BAD_REQUEST_INVALID_QUERY,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

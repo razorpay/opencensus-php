@@ -40,6 +40,8 @@ class CreateRoles extends Migration
             $table->foreign(Role::ORG_ID)
                   ->references(Org::ID)
                   ->on(Table::ORG);
+
+            $table->index(Role::CREATED_AT);
         });
     }
 

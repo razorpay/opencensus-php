@@ -21,13 +21,15 @@ return [
                     'email'     => 'test@razorpay.com',
                     'contact'   => '9999999999',
                     'name'      => 'test',
+                    'gstin'     => '29ABCDE1234L1Z1',
                 ],
                 'line_items'    => [
                     [
                         'name'          => 'Some item name',
                         'description'   => 'Some item description',
                         'amount'        => 100000,
-                    ]
+                        'hsn_code'      => '00110022'
+                    ],
                 ],
             ],
         ],
@@ -38,6 +40,7 @@ return [
                     'email'   => 'test@razorpay.com',
                     'contact' => '9999999999',
                     'name'    => 'test',
+                    'gstin'   => '29ABCDE1234L1Z1',
                 ],
                 'line_items' => [
                     [
@@ -46,6 +49,7 @@ return [
                         'amount'      => 100000,
                         'quantity'    => 1,
                         'type'        => 'invoice',
+                        'hsn_code'    => '00110022'
                     ]
                 ],
                 'status'       => 'issued',
@@ -76,6 +80,14 @@ return [
                         'city'    => 'Bangalore',
                         'state'   => 'Karnataka',
                         'zipcode' => '560078',
+                        'country' => 'India',
+                    ],
+                    'shipping_address' => [
+                        'line1'   => 'Shipping Line One Etc',
+                        'line2'   => 'Shipping Line Two Etc',
+                        'city'    => 'Bangalore',
+                        'state'   => 'Karnataka',
+                        'zipcode' => '560080',
                         'country' => 'India',
                     ],
                 ],
@@ -109,7 +121,17 @@ return [
                         'city'    => "Bangalore",
                         'state'   => "Karnataka",
                         'country' => "in",
-                    ]
+                    ],
+                    'shipping_address' => [
+                        'type'    => "shipping_address",
+                        'primary' => true,
+                        'line1'   => "Shipping Line One Etc",
+                        'line2'   => "Shipping Line Two Etc",
+                        'zipcode' => "560080",
+                        'city'    => "Bangalore",
+                        'state'   => "Karnataka",
+                        'country' => "in",
+                    ],
                 ],
                 'line_items' => [
                     [
@@ -1516,6 +1538,57 @@ return [
                     ],
                 ],
                 'status'               => 'draft',
+            ],
+        ],
+    ],
+
+    'testUpdateDraftInvoiceWithCustomerBillingAndShippingAddressIds' => [
+        'request'  => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'receipt'  => 'inv_receipt_0001',
+                'customer' => [
+                    'name'                => 'new customer',
+                    'email'               => 'new@razorpay.com',
+                    'billing_address_id'  => 'addr_1000000address',
+                    'shipping_address_id' => 'addr_1000001address',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'inv_1000000invoice',
+                'entity'           => 'invoice',
+                'receipt'          => 'inv_receipt_0001',
+                'customer_details' => [
+                    'name'             => 'new customer',
+                    'email'            => 'new@razorpay.com',
+                    'contact'          => '1234567890',
+                    'billing_address'  => [
+                        'id'      => 'addr_1000000address',
+                        'type'    => 'billing_address',
+                        'primary' => false,
+                        'line1'   => 'some line one',
+                        'line2'   => 'some line two',
+                        'zipcode' => '560078',
+                        'city'    => 'Bangalore',
+                        'state'   => 'Karnataka',
+                        'country' => 'in',
+                    ],
+                    'shipping_address' => [
+                        'id'      => 'addr_1000001address',
+                        'type'    => 'shipping_address',
+                        'primary' => false,
+                        'line1'   => 'some line one',
+                        'line2'   => 'some line two',
+                        'zipcode' => '560080',
+                        'city'    => 'Bangalore',
+                        'state'   => 'Karnataka',
+                        'country' => 'in',
+                    ],
+                ],
+                'status'           => 'draft',
             ],
         ],
     ],
@@ -3609,6 +3682,67 @@ return [
                     'amount_paid'     => 100000,
                     'amount_due'      => 0,
                     'currency'        => 'INR',
+                ],
+            ],
+        ],
+    ],
+
+    'testInvoiceNotifyForBatch' => [
+        'request' => [
+            'url'       => '/invoices/batch/batch_00000000000001/notify',
+            'method'    => 'put',
+            'content'   => [
+                'sms_notify'    => 1,
+                'email_notify'  => 1,
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testInvoiceSmsNotifyForBatch' => [
+        'request' => [
+            'url'       => '/invoices/batch/batch_00000000000001/notify',
+            'method'    => 'put',
+            'content'   => [
+                'sms_notify'    => 1,
+                'email_notify'  => 0,
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testInvoiceNotifyForBatchInputData'  => [
+        'attributes' => [
+            [
+                'invoiceAttributes' => [
+                    'id'                    => '1000001invoice',
+                    'batch_id'              => '00000000000001',
+                    'order_id'              => '100000001order',
+                    'status'                => 'issued',
+                    'email_status'          => null,
+                    'sms_status'            => null,
+                ],
+                'orderAttributes'   => [
+                    'id'                    => '100000001order'
+                ],
+            ],
+            [
+                'invoiceAttributes' => [
+                    'id'                    => '1000002invoice',
+                    'batch_id'              => '00000000000001',
+                    'order_id'              => '100000002order',
+                    'status'                => 'issued',
+                    'email_status'          => null,
+                    'sms_status'            => null,
+                ],
+                'orderAttributes'   => [
+                    'id'                    => '100000002order'
                 ],
             ],
         ],

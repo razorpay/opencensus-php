@@ -54,6 +54,8 @@ class CreateSettlementDetailsTable extends Migration
                   ->references(Settlement\Entity::ID)
                   ->on(Table::SETTLEMENT)
                   ->on_delete('restrict');
+
+            $table->index(Entity::CREATED_AT);
         });
     }
 

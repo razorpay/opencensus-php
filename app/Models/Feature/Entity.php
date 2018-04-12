@@ -52,6 +52,32 @@ class Entity extends Base\PublicEntity
         self::NAME,
     ];
 
+    /**
+     * The routes of the features added here are not accessible by the OAuth applications, even if the feature is
+     * enabled on the merchant account.
+     *
+     * @var array
+     */
+    public static $appBlacklistedFeatures = [
+        Constants::S2S,
+    ];
+
+    /**
+     * The features added here are selectively added to the merchants and the applications upon proper verification
+     * through the activations team. And hence,
+     * - If a merchant directly tries to access a route which requires one of these features, it is allowed to access
+     *   the route only if feature is enabled for the merchant [regular flow]
+     * - If an app tries to access a route which requires one of these features, it is allowed to access
+     *   the route only if the merchant as well as the application has the feature enabled.
+     *
+     * @var array
+     */
+    public static $restrictedAccessFeatures = [
+        Constants::MARKETPLACE,
+        Constants::SUBSCRIPTIONS,
+        Constants::VIRTUAL_ACCOUNTS,
+    ];
+
     public function getName()
     {
         return $this->getAttribute(self::NAME);
@@ -88,5 +114,13 @@ class Entity extends Base\PublicEntity
     public function isProductFeature(): bool
     {
         return (in_array($this->getName(), Constants::PRODUCT_FEATURES) === true);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isMerchantFeature(): bool
+    {
+        return ($this->getEntityType() === Constants::MERCHANT);
     }
 }

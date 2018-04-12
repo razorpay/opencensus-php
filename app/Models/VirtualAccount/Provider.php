@@ -10,8 +10,10 @@ use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\BharatQr\Tags;
 use RZP\Models\BharatQr\Lengths;
-use RZP\Models\BharatQr\Constants;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Card\NetworkName;
+use RZP\Models\BharatQr\Constants;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Provider
@@ -114,10 +116,10 @@ class Provider
     ];
 
     const PRIVILEGED_NUMERIC_HANDLE_MAPPING = [
-        // Zebpay gets 2224449
-        '8iMbVsEnv1HCo0' => '9',
+        // BPCL gets 2223339
+        Preferences::MID_BPCL => '9',
         // Tests
-        '10000000000000' => '9',
+        Account::TEST_ACCOUNT => '9',
     ];
 
     const IFSC = [
@@ -190,13 +192,9 @@ class Provider
         return false;
     }
 
+    //
     // Blocks test providers for making live requests
     //
-    // Unused right now because Kotak is making changes in their
-    // format, and IMPS testing is ongoing, so we need to use
-    // Dashboard to make corrective requests occasionally.
-    //
-    // TODO: Use in validateProvider when changes are stable
     public static function validateMode(string $provider, string $mode)
     {
         $isLiveProvider = (in_array($provider, self::TEST_PROVIDERS, true) === false);
@@ -235,31 +233,42 @@ class Provider
 
     protected function getBharatQrCode($qrCode)
     {
+        $pointOfInitiation = $this->getPointOfInitiation($qrCode);
+
         $visaIdentifier = $this->generateBharatQrMerchantIdentifier(NetworkName::VISA);
 
         $masterCardIdentifier =  $this->generateBharatQrMerchantIdentifier(NetworkName::MC);
+
+        $rupayIdentifier = $this->generateBharatQrMerchantIdentifier(NetworkName::RUPAY);
 
         $visaTlv = Tags::VISA . $this->getLengthAndValue($visaIdentifier);
 
         $masterCardTlv = Tags::MASTERCARD . $this->getLengthAndValue($masterCardIdentifier);
 
+        $rupayCardTlv = Tags::RUPAY . $this->getLengthAndValue($rupayIdentifier);
+
         $tagArray = [
             Tags::VERSION . $this->getLengthAndValue(Constants::VERSION),
+            Tags::POINT_OF_INITIATION . $this->getLengthAndValue($pointOfInitiation),
             $visaTlv,
             $masterCardTlv,
+            $rupayCardTlv,
+            $this->getBharatQrUpiTlv(),
+            $this->getBharatQrDynamicUpiTlv($qrCode),
             Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Constants::MERCHANT_CATEGORY),
             Tags::CURRENCY_CODE . $this->getLengthAndValue(Constants::CURRENCY_CODE),
             $this->getBharatQrAmountTlv($qrCode),
             Tags::COUNTRY_CODE . $this->getLengthAndValue(Constants::COUNTRY_CODE),
             Tags::MERCHANT_NAME . $this->getLengthAndValue(Constants::MERCHANT_NAME),
             Tags::MERCHANT_CITY . $this->getLengthAndValue(Constants::MERCHANT_CITY),
+            Tags::MERCHANT_PIN_CODE . $this->getLengthAndValue(Constants::MERCHANT_PINCODE),
             $this->getBharatQrAdditionalDetailTlv($qrCode),
         ];
 
         $qrString =  implode('', $tagArray);
 
-        // This is the CRC TL. Length of CRC is always 2
-        $qrString .= Tags::CRC . '02';
+        // This is the CRC TL. Length of CRC is always 4
+        $qrString .= Tags::CRC . '04';
 
         $crc = (new CRC16)->calculateCrc($qrString);
 
@@ -268,9 +277,45 @@ class Provider
         return $qrString;
     }
 
+    protected function getPointOfInitiation($qrCode)
+    {
+        if (empty($qrCode->getAmount()) === true)
+        {
+            return Constants::STATIC_POI;
+        }
+
+        // Dynamic code always have amount tag
+        return Constants::DYNAMIC_POI;
+    }
+
+    protected function getBharatQrUpiTlv()
+    {
+        $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(Constants::RUPAY_RID);
+        $merchantVpaTlv = Tags::UPI_VPA_MERCHANT_VPA . $this->getLengthAndValue(Constants::MERCHANT_VPA);
+
+        $upiString = $rupayRidTlv . $merchantVpaTlv;
+
+        return Tags::UPI_VPA . strlen($upiString) . $upiString;
+    }
+
+    protected function getBharatQrDynamicUpiTlv(QrCode\Entity $qrCode)
+    {
+        $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(Constants::RUPAY_RID);
+
+        //
+        // In case of upi payments we need to send reference with
+        // prefix. This is how they identify our payments
+        //
+        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue(Constants::UPI_PREFIX . $qrCode->getId());
+
+        $upiString = $rupayRidTlv . $transactionReferenceTlv;
+
+        return Tags::UPI_VPA_REFERENCE . strlen($upiString) . $upiString;
+    }
+
     protected function getBharatQrAdditionalDetailTlv(QrCode\Entity $qrCode)
     {
-        $idTlv = Tags::ID . $this->getLengthAndValue($qrCode->getId());
+        $idTlv = Tags::ADDITIONAL_DETAIL_ID . $this->getLengthAndValue($qrCode->getId());
 
         $additionalDetailsString = $idTlv;
 
@@ -307,7 +352,7 @@ class Provider
 
         $identifierPadding = Config::get('gateway.bharat_qr.identifier_padding');
 
-        $identifier  = $acquirerCode . '0' . str_pad(strlen($identifierPadding), 8, '0', STR_PAD_LEFT);
+        $identifier = $acquirerCode . '0' . str_pad(strlen($identifierPadding), 8, '0', STR_PAD_LEFT);
 
         return $identifier . Luhn::computeCheckDigit($identifier);
     }

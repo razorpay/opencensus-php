@@ -4,13 +4,15 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Carbon\Carbon;
 use RZP\Models\Payment;
-use RZP\Models\Bank\IFSC;
+use RZP\Models\Terminal;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
+use RZP\Constants\Mode as RZPMode;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Gateway\File\Processor\FileHandler;
+use RZP\Gateway\Netbanking\Csb\Gateway as CsbGateway;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 
@@ -29,51 +31,54 @@ class Csbk extends Base
     const EXTENSION              = FileStore\Format::XLSX;
     const FILE_TYPE              = FileStore\Type::CSB_NETBANKING_REFUND;
     const GATEWAY                = Payment\Gateway::NETBANKING_CSB;
-    const GATEWAY_CODE           = IFSC::CSBK;
+    const GATEWAY_CODE           = 'CSBK';
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
 
     const BANK_CODE              = 'CSB';
-    const MERCHANT_NAME          = 'RAZORPAY';
     const DATE_FORMAT            = 'd-m-y';
+
+    protected $config;
 
     protected function formatDataForFile(array $data)
     {
-        return array_reduce(
-            $data,
-            function(array $carry, array $row)
-            {
-                $date = Carbon::createFromTimestamp(
-                            $row[ConstantsEntity::PAYMENT][PaymentEntity::CREATED_AT],
-                            Timezone::IST)
-                            ->format(self::DATE_FORMAT);
+        $this->loadGatewayConfig();
 
-                $refundDate = Carbon::createFromTimestamp(
-                                $row[ConstantsEntity::REFUND][RefundEntity::CREATED_AT],
-                                Timezone::IST)
-                                ->format(self::DATE_FORMAT);
+        $content = [];
 
-                $paymentId = $row[ConstantsEntity::PAYMENT][PaymentEntity::ID];
+        foreach ($data as $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                $row[ConstantsEntity::PAYMENT][PaymentEntity::CREATED_AT],
+                Timezone::IST
+            )
+                ->format(self::DATE_FORMAT);
 
-                $netbanking = $this->repo->netbanking->findByPaymentIdAndAction($paymentId,
-                                                                                Action::AUTHORIZE);
+            $refundDate = Carbon::createFromTimestamp(
+                $row[ConstantsEntity::REFUND][RefundEntity::CREATED_AT],
+                Timezone::IST)
+                ->format(self::DATE_FORMAT);
 
-                $carry[] = [
-                    'Sr.No'              => sizeof($carry) + 1,
-                    'Refund Id'          => $row[ConstantsEntity::REFUND][RefundEntity::ID],
-                    'Bank Id'            => self::BANK_CODE,
-                    'Merchant Name'      => self::MERCHANT_NAME,
-                    'Txn date'           => $date,
-                    'Refund Date'        => $refundDate,
-                    'Bank Merchant Code' => $netbanking[NetbankingEntity::REFERENCE1],
-                    'Bank Ref No'        => $netbanking[NetbankingEntity::BANK_PAYMENT_ID],
-                    'PGI Reference No'   => $paymentId, // TODO: Check if this is actually payment id
-                    'Txn Amount(Rs Ps)'  => $row[ConstantsEntity::PAYMENT][PaymentEntity::AMOUNT] / 100,
-                    'Refund'             => $row[ConstantsEntity::REFUND][RefundEntity::AMOUNT] / 100,
-                ];
+            $paymentId = $row[ConstantsEntity::PAYMENT][PaymentEntity::ID];
 
-                return $carry;
-            },
-            []);
+            $netbanking = $this->repo->netbanking->findByPaymentIdAndAction($paymentId,
+                Action::AUTHORIZE);
+
+            $content[] = [
+                'Sr.No'              => sizeof($content) + 1,
+                'Refund Id'          => $row[ConstantsEntity::REFUND][RefundEntity::ID],
+                'Bank Id'            => self::BANK_CODE,
+                'Merchant Name'      => CsbGateway::PAYEE_ID,
+                'Txn date'           => $date,
+                'Refund Date'        => $refundDate,
+                'Bank Merchant Code' => $this->getMerchantId2($row[ConstantsEntity::TERMINAL]),
+                'Bank Ref No'        => $netbanking[NetbankingEntity::BANK_PAYMENT_ID],
+                'PGI Reference No'   => $paymentId,
+                'Txn Amount(Rs Ps)'  => $row[ConstantsEntity::PAYMENT][PaymentEntity::AMOUNT] / 100,
+                'Refund'             => $row[ConstantsEntity::REFUND][RefundEntity::AMOUNT] / 100,
+            ];
+        }
+
+        return $content;
     }
 
     protected function getFileToWriteNameWithoutExt()
@@ -113,5 +118,24 @@ class Csbk extends Base
         ];
 
         return $mailData;
+    }
+
+    protected function loadGatewayConfig()
+    {
+        $configGatewayStr = 'gateway.' . self::GATEWAY;
+
+        $this->config = $this->app['config']->get($configGatewayStr);
+    }
+
+    protected function getMerchantId2($terminal): string
+    {
+        $merchantId2 = $this->config['test_merchant_id_2'];
+
+        if ($this->mode === RZPMode::LIVE)
+        {
+            $merchantId2 = $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+        }
+
+        return $merchantId2;
     }
 }

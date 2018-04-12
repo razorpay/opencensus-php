@@ -8,6 +8,7 @@ use RZP\Constants\HashAlgo;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\FirstData;
+use RZP\Gateway\FirstData\Action;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 
@@ -222,38 +223,18 @@ class Server extends Base\Mock\Server
 
         $oid = $inquiryOrder[FirstData\ApiRequestFields::ORDER_ID];
 
-        $dateTime = Carbon::now(Timezone::IST);
+        $soapContent = FirstData\SoapWrapper::verifyResponseWrapper($oid);
 
-        $tdate = (string) $dateTime->getTimestamp();
-
-        $approvalCode = $this->getApprovalCode();
-
-        $tdateFormatted = (string) $dateTime->format("Y.m.d H:i:s (T)");
-
-        $soapContent = FirstData\SoapWrapper::verifyResponseWrapper($oid, $dateTime, $tdate, $approvalCode, $tdateFormatted);
-
-        $this->content($soapContent);
+        $this->content($soapContent, $this->action);
 
         return $this->prepareResponse($soapContent);
     }
 
     public function verifyRefund($input)
     {
-        $xml = simplexml_load_string($input);
+        $this->action = Action::VERIFY_REFUND;
 
-        $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('a1', true);
-
-        $body = json_decode(json_encode($xmlBody), true);
-
-        $inquiryTransaction = $body[FirstData\ApiRequestFields::ACTION][FirstData\ApiRequestFields::INQUIRY_TRANSACTION];
-
-        $merchantTxnId = $inquiryTransaction[FirstData\ApiRequestFields::MERCHANT_TXN_ID];
-
-        $soapContent = FirstData\SoapWrapper::verifyRefundResponseWrapper($merchantTxnId);
-
-        $this->content($soapContent, 'verify_refund');
-
-        return $this->prepareResponse($soapContent);
+        return $this->verify($input);
     }
 
     public function verifyReverse($input)

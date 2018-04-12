@@ -52,6 +52,15 @@ class Repository extends Base\Repository
         }
     }
 
+    public function getByTypeAndMerchantIds($type, $merchantIds)
+    {
+        return $this->newQuery()
+                    ->type([$type])
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->enabled()
+                    ->get();
+    }
+
     protected function addQueryParamShared($query, $params)
     {
         if ($params[Entity::SHARED] === '1')
@@ -93,8 +102,8 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getEmandateNetbankingTerminalsForMerchantAndSharedMerchant(
-        Merchant\Entity $merchant): PublicCollection
+    public function getEmandateTerminalsForMerchantAndSharedMerchant(
+        Merchant\Entity $merchant, string $authType): PublicCollection
     {
         $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT];
 
@@ -106,24 +115,9 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery()
                       ->enabled()
-                      ->where(Entity::NETBANKING, true)
+                      ->where(Entity::EMANDATE, true)
                       ->where(Entity::TYPE, 6)
-                      ->whereIn(Entity::GATEWAY, Payment\Gateway::$recurringGateways);
-
-        $this->addMerchantWhereCondition($query, $merchantIds);
-
-        return $query->get();
-    }
-
-    public function getDirectRecurringTerminalsOfType(Merchant\Entity $merchant, int $type)
-    {
-        $merchantIds = [$merchant->getId()];
-
-        $query = $this->newQuery()
-                      ->enabled()
-                      ->where(Entity::TYPE, '=', $type)
-                      // TODO: This is a temporary hard-code. Remove it later!
-                      ->whereIn(Entity::GATEWAY, [Payment\Gateway::AXIS_MIGS, Payment\Gateway::HDFC]);
+                      ->whereIn(Entity::GATEWAY, Payment\Gateway::getEmandateGatewaysForAuthType($authType));
 
         $this->addMerchantWhereCondition($query, $merchantIds);
 

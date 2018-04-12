@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Detail;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Admin;
 
 /**
  * Class Entity
@@ -82,6 +83,10 @@ class Entity extends Base\PublicEntity
     const ACTIVATION_STATUS                  = 'activation_status';
     const CLARIFICATION_MODE                 = 'clarification_mode';
     const ARCHIVED_AT                        = 'archived_at';
+    const REVIEWER_ID                        = 'reviewer_id';
+    const ISSUE_FIELDS                       = 'issue_fields';
+    const ISSUE_FIELDS_REASON                = 'issue_fields_reason';
+    const INTERNAL_NOTES                     = 'internal_notes';
     const MARKETPLACE_ACTIVATION_STATUS      = 'marketplace_activation_status';
     const VIRTUAL_ACCOUNTS_ACTIVATION_STATUS = 'virtual_accounts_activation_status';
     const SUBSCRIPTIONS_ACTIVATION_STATUS    = 'subscriptions_activation_status';
@@ -97,6 +102,8 @@ class Entity extends Base\PublicEntity
     const ALLOWED_NEXT_ACTIVATION_STATUSES = 'allowed_next_activation_statuses';
     const VERIFICATION                     = 'verification';
     const CAN_SUBMIT                       = 'can_submit';
+    const REVIEWER                         = 'reviewer';
+    const MERCHANTS                        = 'merchants';
 
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING                   = 'fields_pending';
@@ -180,6 +187,9 @@ class Entity extends Base\PublicEntity
         self::ACTIVATION_STATUS,
         self::CLARIFICATION_MODE,
         self::ARCHIVED_AT,
+        self::ISSUE_FIELDS,
+        self::ISSUE_FIELDS_REASON,
+        self::INTERNAL_NOTES,
         self::MARKETPLACE_ACTIVATION_STATUS,
         self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS,
         self::SUBSCRIPTIONS_ACTIVATION_STATUS,
@@ -232,6 +242,11 @@ class Entity extends Base\PublicEntity
         self::CLARIFICATION_MODE,
         self::ARCHIVED,
         self::ALLOWED_NEXT_ACTIVATION_STATUSES,
+        self::REVIEWER_ID,
+        self::REVIEWER,
+        self::ISSUE_FIELDS,
+        self::ISSUE_FIELDS_REASON,
+        self::INTERNAL_NOTES,
         self::MARKETPLACE_ACTIVATION_STATUS,
         self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS,
         self::SUBSCRIPTIONS_ACTIVATION_STATUS,
@@ -305,13 +320,28 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $publicSetters = [
+        self::REVIEWER,
+        self::REVIEWER_ID,
         self::ARCHIVED_AT,
         self::ALLOWED_NEXT_ACTIVATION_STATUSES,
+    ];
+
+    protected $adminOnlyPublic = [
+        self::REVIEWER,
+        self::REVIEWER_ID,
+        self::ISSUE_FIELDS,
+        self::INTERNAL_NOTES,
+        self::ISSUE_FIELDS_REASON,
     ];
 
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity', self::MERCHANT_ID, 'id');
+    }
+
+    public function reviewer()
+    {
+        return $this->belongsTo(Admin\Entity::class);
     }
 
     public function isLocked()
@@ -322,6 +352,11 @@ class Entity extends Base\PublicEntity
     public function setLocked(bool $locked)
     {
         $this->setAttribute(self::LOCKED, $locked);
+    }
+
+    public function getWebsite()
+    {
+        return $this->getAttribute(self::BUSINESS_WEBSITE);
     }
 
     public function isSubmitted()
@@ -522,6 +557,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CONTACT_MOBILE);
     }
 
+    public function getContactEmail()
+    {
+        return $this->getAttribute(self::CONTACT_EMAIL);
+    }
+
     public function getContactLandline()
     {
         return $this->getAttribute(self::CONTACT_LANDLINE);
@@ -607,5 +647,22 @@ class Entity extends Base\PublicEntity
         });
 
         return $response;
+    }
+
+    public function setPublicReviewerAttribute(array &$attributes)
+    {
+        $reviewer = $this->reviewer;
+
+        if ($reviewer !== null)
+        {
+            $attributes[Entity::REVIEWER] = $reviewer->toArrayPublic();
+        }
+    }
+
+    public function setPublicReviewerIdAttribute(array &$attributes)
+    {
+        $adminId = $this->getAttribute(Entity::REVIEWER_ID);
+
+        $attributes[Entity::REVIEWER_ID] = Admin\Entity::getSignedIdOrNull($adminId);
     }
 }

@@ -124,16 +124,14 @@ class Notifier extends Base\Core
             return false;
         }
 
-        $invoiceData = (new ViewDataSerializer($this->invoice))->get();
+        $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForInternal();
 
         $fileData = [
             'name' => $this->invoice->getPdfDisplayName(),
             'path' => $this->issuedPdfPath,
         ];
 
-        $invoiceIssuedMail = new InvoiceMail\Issued(
-                                    $invoiceData,
-                                    $fileData);
+        $invoiceIssuedMail = new InvoiceMail\Issued($viewPayload, $fileData);
 
         Mail::send($invoiceIssuedMail);
 
@@ -158,9 +156,9 @@ class Notifier extends Base\Core
             return false;
         }
 
-        $invoiceData = (new ViewDataSerializer($this->invoice))->get();
+        $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForInternal();
 
-        $invoiceExpiredMail = new InvoiceMail\Expired($invoiceData);
+        $invoiceExpiredMail = new InvoiceMail\Expired($viewPayload);
 
         Mail::send($invoiceExpiredMail);
 
@@ -222,9 +220,9 @@ class Notifier extends Base\Core
             return false;
         }
 
-        $invoiceData = (new ViewDataSerializer($this->invoice))->get();
+        $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForInternal();
 
-        $invoiceExpiringMail = new InvoiceMail\Expiring($invoiceData);
+        $invoiceExpiringMail = new InvoiceMail\Expiring($viewPayload);
 
         Mail::send($invoiceExpiringMail);
 

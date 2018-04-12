@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Card\Network;
+use RZP\Models\Card\Type as CardType;
 use RZP\Models\Payment;
 use RZP\Models\Payout;
 use RZP\Models\Transfer;
@@ -18,12 +19,12 @@ class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = [
         Entity::FEATURE             => 'sometimes|alpha',
-        Entity::GATEWAY             => 'sometimes|',
-        Entity::PLAN_NAME           => 'sometimes|',
+        Entity::GATEWAY             => 'sometimes',
+        Entity::PLAN_NAME           => 'sometimes',
         Entity::PAYMENT_METHOD      => 'required|string',
-        Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card|nullable|in:debit,credit',
+        Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card,emandate|nullable',
         Entity::PAYMENT_NETWORK     => 'sometimes|nullable|alpha',
-        Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card,emi|nullable|alpha|max:10',
+        Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card,emi,emandate|nullable|alpha|max:10',
         Entity::EMI_DURATION        => 'sometimes|nullable|integer|in:3,6,9,12,18,24',
         Entity::INTERNATIONAL       => 'sometimes|in:0,1',
         Entity::AMOUNT_RANGE_ACTIVE => 'sometimes|in:0,1',
@@ -37,7 +38,9 @@ class Validator extends Base\Validator
 
     protected static $addPlanRuleValidators = [
         'addPlanRuleRate',
+        'addPlanRuleCard',
         'addPlanRuleNB',
+        'addPlanRuleEmandate',
         'addPlanRulePaymentNetwork',
         'addPlanRuleInternational',
         'addPlanRuleAmountRange',
@@ -95,6 +98,28 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateAddPlanRuleEmandate($input)
+    {
+        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMANDATE)
+        {
+            if (empty($input[Entity::PERCENT_RATE]) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Percentage rate pricing is not allowed for E-mandate');
+            }
+
+            if (isset($input[Entity::PAYMENT_METHOD_TYPE]) === true)
+            {
+                Payment\AuthType::validateAuthType($input[Entity::PAYMENT_METHOD_TYPE], Payment\Method::EMANDATE);
+            }
+
+            if (isset($input[Entity::PAYMENT_ISSUER]) === true)
+            {
+                Payment\RecurringType::validateRecurringType($input[Entity::PAYMENT_ISSUER]);
+            }
+        }
+    }
+
     protected function validateAddPlanRuleNB($input)
     {
         // Check that payment_method_type is not defined when mode is net-banking
@@ -112,6 +137,28 @@ class Validator extends Base\Validator
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PRICING_FIELD_NOT_REQUIRED_FOR_NB,
                         $field);
+                }
+            }
+        }
+    }
+
+    protected function validateaddPlanRuleCard($input)
+    {
+        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::CARD)
+        {
+            if (isset($input[Entity::PAYMENT_METHOD_TYPE]) === true)
+            {
+                $cardType = $input[Entity::PAYMENT_METHOD_TYPE];
+
+                $validCardTypes = [
+                    CardType::DEBIT,
+                    CardType::CREDIT,
+                ];
+
+                if (in_array($cardType, $validCardTypes, true) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Payment method type for card should be debit / credit');
                 }
             }
         }
@@ -151,7 +198,8 @@ class Validator extends Base\Validator
             }
         }
 
-        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::NETBANKING)
+        if (($input[Entity::PAYMENT_METHOD] === Payment\Method::NETBANKING) or
+            ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMANDATE))
         {
             if (IFSC::exists($input[Entity::PAYMENT_NETWORK]) === false)
             {

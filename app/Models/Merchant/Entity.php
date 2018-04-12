@@ -8,17 +8,21 @@ use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\State;
+use RZP\Constants\Mode;
 use RZP\Models\Feature;
-use RZP\Models\Terminal;
 use RZP\Constants\Table;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\Settlement;
+use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Models\Invitation;
+use RZP\Models\Settlement;
 use Conner\Tagging\Taggable;
+use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Base\QueryCache\Cacheable;
+
 
 /**
  * @property Detail\Entity $merchantDetail
@@ -27,44 +31,48 @@ class Entity extends Base\PublicEntity
 {
     use Taggable;
     use NotesTrait;
+    use Cacheable;
 
-    const ID                        = 'id';
-    const ORG_ID                    = 'org_id';
-    const NAME                      = 'name';
-    const EMAIL                     = 'email';
-    const PARENT_ID                 = 'parent_id';
-    const ACTIVATED                 = 'activated';
-    const ACTIVATED_AT              = 'activated_at';
-    const LIVE                      = 'live';
-    const HOLD_FUNDS                = 'hold_funds';
-    const PRICING_PLAN_ID           = 'pricing_plan_id';
-    const INTERNATIONAL             = 'international';
-    const BILLING_LABEL             = 'billing_label';
-    const TRANSACTION_REPORT_EMAIL  = 'transaction_report_email';
-    const RECEIPT_EMAIL_ENABLED     = 'receipt_email_enabled';
-    const CHANNEL                   = 'channel';
-    const WEBSITE                   = 'website';
-    const CATEGORY                  = 'category';
-    const CATEGORY2                 = 'category2';
-    const INVOICE_CODE              = 'invoice_code';
-    const SCOPE                     = 'scope';
-    const FEE_BEARER                = 'fee_bearer';
-    const FEE_MODEL                 = 'fee_model';
-    const REFUND_SOURCE             = 'refund_source';
-    const LINKED_ACCOUNT_KYC        = 'linked_account_kyc';
-    const BRAND_COLOR               = 'brand_color';
-    const HANDLE                    = 'handle';
-    const RISK_RATING               = 'risk_rating';
-    const RISK_THRESHOLD            = 'risk_threshold';
-    const LOGO_URL                  = 'logo_url';
-    const AWS_LOGO_URL              = 'aws_logo_url';
-    const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
-    const AUTO_REFUND_DELAY         = 'auto_refund_delay';
-    const AUTO_CAPTURE_LATE_AUTH    = 'auto_capture_late_auth';
-    const CONVERT_CURRENCY          = 'convert_currency';
-    const ARCHIVED_AT               = 'archived_at';
-    const SUSPENDED_AT              = 'suspended_at';
-    const NOTES                     = 'notes';
+    const ID                       = 'id';
+    const ORG_ID                   = 'org_id';
+    const NAME                     = 'name';
+    const EMAIL                    = 'email';
+    const PARENT_ID                = 'parent_id';
+    const ACTIVATED                = 'activated';
+    const ACTIVATED_AT             = 'activated_at';
+    const LIVE                     = 'live';
+    const HOLD_FUNDS               = 'hold_funds';
+    const PRICING_PLAN_ID          = 'pricing_plan_id';
+    const INTERNATIONAL            = 'international';
+    const BILLING_LABEL            = 'billing_label';
+    const TRANSACTION_REPORT_EMAIL = 'transaction_report_email';
+    const RECEIPT_EMAIL_ENABLED    = 'receipt_email_enabled';
+    const CHANNEL                  = 'channel';
+    const WEBSITE                  = 'website';
+    const CATEGORY                 = 'category';
+    const CATEGORY2                = 'category2';
+    const INVOICE_CODE             = 'invoice_code';
+    const SCOPE                    = 'scope';
+    const FEE_BEARER               = 'fee_bearer';
+    const FEE_MODEL                = 'fee_model';
+    const REFUND_SOURCE            = 'refund_source';
+    const LINKED_ACCOUNT_KYC       = 'linked_account_kyc';
+    const HAS_KEY_ACCESS           = 'has_key_access';
+    const BRAND_COLOR              = 'brand_color';
+    const HANDLE                   = 'handle';
+    const RISK_RATING              = 'risk_rating';
+    const RISK_THRESHOLD           = 'risk_threshold';
+    const LOGO_URL                 = 'logo_url';
+    const AWS_LOGO_URL             = 'aws_logo_url';
+    const MAX_PAYMENT_AMOUNT       = 'max_payment_amount';
+    const AUTO_REFUND_DELAY        = 'auto_refund_delay';
+    const AUTO_CAPTURE_LATE_AUTH   = 'auto_capture_late_auth';
+    const CONVERT_CURRENCY         = 'convert_currency';
+    const ARCHIVED_AT              = 'archived_at';
+    const SUSPENDED_AT             = 'suspended_at';
+    const NOTES                    = 'notes';
+    const WHITELISTED_IPS_LIVE     = 'whitelisted_ips_live';
+    const WHITELISTED_IPS_TEST     = 'whitelisted_ips_test';
 
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
@@ -93,11 +101,14 @@ class Entity extends Base\PublicEntity
     //
 
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
+    const AUTO_REFUND_DELAY_FOR_EMANDATE = 1728000; // 20 days
     const SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
     // 30 minutes in seconds
     const MIN_AUTO_REFUND_DELAY = 1800;
     // 10 days in seconds
     const MAX_AUTO_REFUND_DELAY = 864000;
+    // Default merchant brand color used if not set already
+    const DEFAULT_MERCHANT_BRAND_COLOR = '#6A5DD1';
 
     /**
      * A query parameter to filter results based on
@@ -180,6 +191,8 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH,
         self::TRANSACTION_REPORT_EMAIL,
         self::NOTES,
+        self::WHITELISTED_IPS_LIVE,
+        self::WHITELISTED_IPS_TEST,
     ];
 
     // Requires PHP 5.6
@@ -208,6 +221,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY2,
         self::INTERNATIONAL,
         self::LINKED_ACCOUNT_KYC,
+        self::HAS_KEY_ACCESS,
         self::FEE_BEARER,
         self::FEE_MODEL,
         self::REFUND_SOURCE,
@@ -233,6 +247,9 @@ class Entity extends Base\PublicEntity
         self::GROUPS,
         self::ADMINS,
         self::NOTES,
+        self::WHITELISTED_IPS_LIVE,
+        self::WHITELISTED_IPS_TEST,
+        self::MERCHANT_DETAIL,
      ];
 
     protected $defaults = [
@@ -248,6 +265,7 @@ class Entity extends Base\PublicEntity
         self::HANDLE                 => null,
         self::RISK_RATING            => 3,
         self::LINKED_ACCOUNT_KYC     => 0,
+        self::HAS_KEY_ACCESS         => 0,
         self::RISK_THRESHOLD         => null,
         self::LOGO_URL               => null,
         self::MAX_PAYMENT_AMOUNT     => null,
@@ -256,11 +274,13 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH => false,
         self::FEE_MODEL              => FeeModel::PREPAID,
         self::REFUND_SOURCE          => RefundSource::BALANCE,
-        self::CHANNEL                => Settlement\Channel::ICICI,
+        self::CHANNEL                => Settlement\Channel::AXIS,
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
         self::NOTES                  => [],
+        self::WHITELISTED_IPS_LIVE   => [],
+        self::WHITELISTED_IPS_TEST   => [],
     ];
 
     protected $publicSetters = [
@@ -270,16 +290,19 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::ACTIVATED                 => 'bool',
-        self::LIVE                      => 'bool',
-        self::INTERNATIONAL             => 'bool',
-        self::RECEIPT_EMAIL_ENABLED     => 'bool',
-        self::HOLD_FUNDS                => 'bool',
-        self::LINKED_ACCOUNT_KYC        => 'bool',
-        self::CATEGORY                  => 'int',
-        self::RISK_THRESHOLD            => 'int',
-        self::CONVERT_CURRENCY          => 'bool',
-        self::AUTO_CAPTURE_LATE_AUTH    => 'bool',
+        self::ACTIVATED              => 'bool',
+        self::LIVE                   => 'bool',
+        self::INTERNATIONAL          => 'bool',
+        self::RECEIPT_EMAIL_ENABLED  => 'bool',
+        self::HOLD_FUNDS             => 'bool',
+        self::LINKED_ACCOUNT_KYC     => 'bool',
+        self::HAS_KEY_ACCESS         => 'bool',
+        self::CATEGORY               => 'int',
+        self::RISK_THRESHOLD         => 'int',
+        self::CONVERT_CURRENCY       => 'bool',
+        self::AUTO_CAPTURE_LATE_AUTH => 'bool',
+        self::WHITELISTED_IPS_LIVE   => 'array',
+        self::WHITELISTED_IPS_TEST   => 'array',
     ];
 
     protected $eventFields = [
@@ -371,6 +394,16 @@ class Entity extends Base\PublicEntity
     public function linkedAccountsRequireKyc(): bool
     {
         return $this->getAttribute(self::LINKED_ACCOUNT_KYC);
+    }
+
+    public function getHasKeyAccess(): bool
+    {
+        return ($this->getAttribute(self::HAS_KEY_ACCESS) === true);
+    }
+
+    public function setHasKeyAccess(bool $hasKeyAccess)
+    {
+        $this->setAttribute(self::HAS_KEY_ACCESS, $hasKeyAccess);
     }
 
     public function getReferrer()
@@ -524,6 +557,11 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Customer\Entity');
     }
 
+    public function emiPlans()
+    {
+        return $this->hasMany('RZP\Models\Merchant\EmiPlans\Entity');
+    }
+
     // Linked-accounts belonging to the Marketplace
     public function accounts()
     {
@@ -572,9 +610,21 @@ class Entity extends Base\PublicEntity
             'RZP\Models\Transaction\Entity');
     }
 
-    public function webhook()
+    /**
+     * This used to be a hasOne relation but with the introduction of entity_type
+     * and entity_id columns and webhooks being created for different entites for
+     * a merchant, this changed to hasMany. But this is not a correct representation
+     * as the webhooks against a merchant for other entities are not fired for that
+     * merchant's events but rather for merchant's using those entities (eg. oauth
+     * app webhook created by merch1 who owns the app, will be fired for merch2's
+     * events who is using that app)
+     *
+     * This needs to be fixed/redone as per this issue -
+     * https://razorpay.atlassian.net/browse/TF-142
+     */
+    public function webhooks()
     {
-        return $this->hasOne(
+        return $this->hasMany(
             'RZP\Models\Merchant\Webhook\Entity');
     }
 
@@ -586,6 +636,11 @@ class Entity extends Base\PublicEntity
     public function transfers()
     {
         return $this->morphMany('RZP\Models\Transfer\Entity', 'to');
+    }
+
+    public function workflows()
+    {
+        return $this->morphMany(Action\Entity::class, Action\Entity::MAKER);
     }
 
     public function merchantDetail()
@@ -778,6 +833,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
     }
 
+    public function getWhitelistedIpsLive()
+    {
+        return $this->getAttribute(self::WHITELISTED_IPS_LIVE);
+    }
+
+    public function getWhitelistedIpsTest()
+    {
+        return $this->getAttribute(self::WHITELISTED_IPS_TEST);
+    }
+
     public function getOrgId()
     {
         return $this->getAttribute(self::ORG_ID);
@@ -801,6 +866,11 @@ class Entity extends Base\PublicEntity
     public function getBrandColor()
     {
         return $this->getAttribute(self::BRAND_COLOR);
+    }
+
+    public function getBrandColorOrDefault(string $default = self::DEFAULT_MERCHANT_BRAND_COLOR): string
+    {
+        return $this->getBrandColor() ?: $default;
     }
 
     public function getHandle()
@@ -923,12 +993,14 @@ class Entity extends Base\PublicEntity
 
     protected function setEmailAttribute($email)
     {
-        $this->attributes[self::EMAIL] = mb_strtolower($email);
+        $formattedEmail = ($email === null) ? null : mb_strtolower(trim($email));
+
+        $this->attributes[self::EMAIL] =  $formattedEmail;
     }
 
-    protected function setWebsiteAttribute($website)
+    public function setWebsiteAttribute($website)
     {
-        $this->attributes[self::WEBSITE] = mb_strtolower($website);
+        $this->attributes[self::WEBSITE] = $website;
     }
 
     protected function setTransactionReportEmailAttribute($emails)
@@ -1107,7 +1179,7 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        return $this->merchantDetail->getGstin() ?? $this->merchantDetail->getPGstin();
+        return $this->merchantDetail->getGstin() ?: $this->merchantDetail->getPGstin();
     }
 
     public function getBusinessRegisteredState()
@@ -1277,14 +1349,35 @@ class Entity extends Base\PublicEntity
                     ->orderBy(Invitation\Entity::CREATED_AT, 'desc');
     }
 
+    /**
+     * Returns tag names for merchant, ensures to read from LIVE mode.
+     * @return array
+     */
+    public function liveTagNames(): array
+    {
+        return $this->getConnectionName() === Mode::LIVE ?
+                $this->tagNames() :
+                (clone $this)->setConnection(Mode::LIVE)->tagNames();
+    }
+
     public function isEmailOptional()
     {
         return $this->isFeatureEnabled(Feature\Constants::EMAIL_OPTIONAL);
     }
 
+    public function isMagicEnabled()
+    {
+        return $this->isFeatureEnabled(Feature\Constants::MAGIC);
+    }
+
     public function isPhoneOptional()
     {
         return $this->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL);
+    }
+
+    public static function hascustomerTransactionHistoryEnabled($merchantId)
+    {
+        return (in_array($merchantId, Merchant\Preferences::CUSTOMER_TRANSACTION_HISTORY_ENABLED_MID, true) === true);
     }
 
     public function getOptionalInputConfig()
@@ -1307,16 +1400,17 @@ class Entity extends Base\PublicEntity
     public function toArrayUser()
     {
         $attributes = [
-            self::ID            => $this->getAttribute(self::ID),
-            self::NAME          => $this->getAttribute(self::NAME),
-            self::BILLING_LABEL => $this->getAttribute(self::BILLING_LABEL),
-            self::EMAIL         => $this->getAttribute(self::EMAIL),
-            self::ACTIVATED     => $this->getAttribute(self::ACTIVATED),
-            self::ARCHIVED_AT   => $this->getAttribute(self::ARCHIVED_AT),
-            self::SUSPENDED_AT  => $this->getAttribute(self::SUSPENDED_AT),
-            self::LOGO_URL      => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
-            self::CREATED_AT    => $this->getAttribute(self::CREATED_AT),
-            self::UPDATED_AT    => $this->getAttribute(self::UPDATED_AT),
+            self::ID             => $this->getAttribute(self::ID),
+            self::NAME           => $this->getAttribute(self::NAME),
+            self::BILLING_LABEL  => $this->getAttribute(self::BILLING_LABEL),
+            self::EMAIL          => $this->getAttribute(self::EMAIL),
+            self::ACTIVATED      => $this->getAttribute(self::ACTIVATED),
+            self::ARCHIVED_AT    => $this->getAttribute(self::ARCHIVED_AT),
+            self::SUSPENDED_AT   => $this->getAttribute(self::SUSPENDED_AT),
+            self::HAS_KEY_ACCESS => $this->getAttribute(self::HAS_KEY_ACCESS),
+            self::LOGO_URL       => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
+            self::CREATED_AT     => $this->getAttribute(self::CREATED_AT),
+            self::UPDATED_AT     => $this->getAttribute(self::UPDATED_AT),
         ];
 
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;

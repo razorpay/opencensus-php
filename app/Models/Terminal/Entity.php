@@ -6,6 +6,7 @@ use Crypt;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -38,6 +39,7 @@ class Entity extends Base\PublicEntity
     const EMI                           = 'emi';
     const UPI                           = 'upi';
     const AEPS                          = 'aeps';
+    const EMANDATE                      = 'emandate';
     const EMI_DURATION                  = 'emi_duration';
     const EMI_SUBVENTION                = 'emi_subvention';
     const RECURRING                     = 'recurring';
@@ -50,7 +52,7 @@ class Entity extends Base\PublicEntity
     const TYPE                          = 'type';
     const MODE                          = 'mode';
 
-    // Used for allowing gateway level changes for coporate netbanking payments.
+    // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
 
     const DELETED                       = 'deleted';
@@ -74,8 +76,10 @@ class Entity extends Base\PublicEntity
         self::CARD,
         self::CATEGORY,
         self::NETWORK_CATEGORY,
+        self::NETBANKING,
         self::UPI,
         self::AEPS,
+        self::EMANDATE,
         self::EMI,
         self::EMI_DURATION,
         self::EMI_SUBVENTION,
@@ -105,8 +109,10 @@ class Entity extends Base\PublicEntity
         self::CARD,
         self::CATEGORY,
         self::NETWORK_CATEGORY,
+        self::NETBANKING,
         self::UPI,
         self::AEPS,
+        self::EMANDATE,
         self::EMI,
         self::EMI_DURATION,
         self::EMI_SUBVENTION,
@@ -181,6 +187,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL             => 'boolean',
         self::UPI                       => 'boolean',
         self::AEPS                      => 'boolean',
+        self::EMANDATE                  => 'boolean',
         self::ENABLED                   => 'boolean',
         self::TPV                       => 'int',
         self::TYPE                      => 'int',
@@ -335,6 +342,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AEPS);
     }
 
+    public function isEmandateEnabled()
+    {
+        return $this->getAttribute(self::EMANDATE);
+    }
+
     public function isShared(): bool
     {
         $merchantId = $this->getAttribute(self::MERCHANT_ID);
@@ -348,7 +360,7 @@ class Entity extends Base\PublicEntity
      * - terminal's primary merchant is given merchant
      * - any of the sub-merchants of the terminal has this merchant
      *
-     * @param  Merchant\Entity $merchant    Merchant entity for which we wantto check
+     * @param  Merchant\Entity $merchant    Merchant entity for which we want to check
      * @return boolean
      */
     public function isDirectForMerchant(Merchant\Entity $merchant): bool
@@ -364,6 +376,26 @@ class Entity extends Base\PublicEntity
         }
 
         return $result;
+    }
+
+    /**
+     * Fallback is applicable only if the terminal is assigned
+     * directly to the merchant (or via sub merchant).
+     * Hitachi is an exception where we are okay with
+     * shared terminals also being used for fallback.
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return bool
+     */
+    public function isFallbackApplicable(Merchant\Entity $merchant): bool
+    {
+        if ($this->getGateway() === Payment\Gateway::HITACHI)
+        {
+            return true;
+        }
+
+        return $this->isDirectForMerchant($merchant);
     }
 
     public function isCorporate()
@@ -529,7 +561,7 @@ class Entity extends Base\PublicEntity
     {
         $type = $this->attributes[self::TYPE];
 
-        return Type::getEnabledType($type);
+        return Type::getEnabledTypes($type);
     }
 
     protected function modifyInternational(& $input)
@@ -564,8 +596,56 @@ class Entity extends Base\PublicEntity
         return $query->where(Entity::ENABLED, '=', '1');
     }
 
+    /**
+     * Used to query by type, which is a bitwise column.
+     *
+     * The objective is to check if a specific bit is set. We find the bit in position,
+     * create a comparator that has only that bit set and nothing else, and perform a
+     * logical AND with type. If the result is the same comparator, then the bit is set.
+     * If not set, the result would have given 0.
+     *
+     * Example: A terminal that support recurring, both 3DS and N3DS, has type set
+     * to 0110, i.e. 6. To check if it support N3DS, we find bit position of N3DS (3),
+     * shift 1 so that it gives a comparator with only the 3rd bit set (0100),
+     * and AND it with type. The result is 0100.
+     *
+     * @param BuilderEx $query
+     * @param array      $types
+     *
+     * @return BuilderEx
+     */
+    public function scopeType($query, array $types)
+    {
+        $bitComparator = 0;
+
+        foreach ($types as $type)
+        {
+            if (in_array($type, Type::getValidTypes(), true) === false)
+            {
+                return $query;
+            }
+
+            $position = Type::getBitPosition($type);
+
+            $bitComparator |= (1 << ($position - 1));
+        }
+
+        $typeColumn = $this->dbColumn(Entity::TYPE);
+
+        return $query->whereRaw($typeColumn . " & " . $bitComparator . " = " . $bitComparator);
+    }
+
     // ---------------------- END SCOPES ----------------------
 
+    /**
+     * This function won't work in cases where a single gateway
+     * supports multiple methods. Example: Netbanking HDFC,
+     * Netbanking ICICI. They both support emandate and netbanking.
+     *
+     * It'll end up setting both netbanking and emandate as 1.
+     *
+     * @param $input
+     */
     public function generateMethod($input)
     {
         $gateway = $input[self::GATEWAY];
@@ -694,12 +774,11 @@ class Entity extends Base\PublicEntity
         return TpvType::isNonTpvAllowed($tpv);
     }
 
-    public function isValidEmiTerminal($gateway, $emiDuration, $subvention)
+    public function isValidEmiTerminal($gateway, $emiDuration)
     {
         if (($this->isEmiEnabled()) and
             ($this->getGateway() === $gateway) and
-            ($this->getEmiDuration() === $emiDuration) and
-            ($this->getEmiSubvention() === $subvention))
+            ($this->getEmiDuration() === $emiDuration))
         {
             return true;
         }
@@ -735,9 +814,24 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::RECURRING_NON_3DS) === true);
     }
 
+    public function isNo2fa()
+    {
+        return ($this->isTypeApplicable(Type::NO_2FA) === true);
+    }
+
     public function isIvr()
     {
         return ($this->isTypeApplicable(Type::IVR) === true);
+    }
+
+    public function isPay()
+    {
+        return ($this->isTypeApplicable(Type::PAY) === true);
+    }
+
+    public function isPin()
+    {
+        return ($this->isTypeApplicable(Type::PIN) === true);
     }
 
     public function isInternational()

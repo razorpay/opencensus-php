@@ -4,6 +4,7 @@ namespace RZP\Models\Plan;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Schedule\Period;
 
 class Validator extends Base\Validator
 {
@@ -34,12 +35,27 @@ class Validator extends Base\Validator
         if ($interval > $maxAllowedInterval)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Interval provided exceed the maximum interval (' . $maxAllowedInterval . ') allowed for the given period (' . $period . ')',
+                'Interval provided exceeds the maximum interval (' . $maxAllowedInterval . ') allowed for the given period (' . $period . ')',
                 'interval',
                 [
                     'interval'      => $interval,
                     'period'        => $period,
                     'max_allowed'   => $maxAllowedInterval,
+                    'input'         => $input
+                ]);
+        }
+
+        $minAllowedInterval = Cycle::getMinAllowedInterval($period);
+
+        if ($interval < $minAllowedInterval)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Interval provided is less than the minimum interval (' . $minAllowedInterval . ') allowed for the given period (' . $period . ')',
+                'interval',
+                [
+                    'interval'      => $interval,
+                    'period'        => $period,
+                    'min_allowed'   => $minAllowedInterval,
                     'input'         => $input
                 ]);
         }

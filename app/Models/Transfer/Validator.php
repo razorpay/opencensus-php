@@ -13,13 +13,13 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        ToType::ACCOUNT        => 'required_without:customer|string|size:18',
-        ToType::CUSTOMER       => 'required_without:account|string|size:19',
-        Entity::AMOUNT         => 'required|integer|min:100',
-        Entity::CURRENCY       => 'required|size:3|in:INR',
-        Entity::NOTES          => 'sometimes|notes',
-        Entity::ON_HOLD        => 'required_with:on_hold_until|boolean',
-        Entity::ON_HOLD_UNTIL  => 'sometimes|nullable|epoch',
+        ToType::ACCOUNT       => 'required_without:customer|string|size:18',
+        ToType::CUSTOMER      => 'required_without:account|string|size:19',
+        Entity::AMOUNT        => 'required|integer|min:100',
+        Entity::CURRENCY      => 'required|size:3|in:INR',
+        Entity::NOTES         => 'sometimes|notes',
+        Entity::ON_HOLD       => 'required_with:on_hold_until|boolean',
+        Entity::ON_HOLD_UNTIL => 'sometimes|nullable|epoch',
     ];
 
     protected static $createValidators = [
@@ -27,18 +27,15 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::ON_HOLD        => 'required|boolean',
-        Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
+        Entity::ON_HOLD       => 'required|boolean',
+        Entity::ON_HOLD_UNTIL => 'sometimes|integer',
     ];
 
     protected static $editValidators = [
         'hold_parameters'
     ];
 
-    public function validateTransfers(
-        Payment\Entity $payment,
-        Merchant\Balance\Entity $merchantBalance,
-        array $transfers)
+    public function validateTransfers(Payment\Entity $payment, array $transfers)
     {
         // Array of recipient ID types sent in the
         // transfer request. (possible: customer, account)
@@ -78,7 +75,7 @@ class Validator extends Base\Validator
 
         $this->validateTransferEntities($keys, $transferCount);
 
-        $this->validateTransferAmount($payment, $merchantBalance, $transferSum);
+        $this->validateTransferAmount($payment, $transferSum);
     }
 
     protected function validateTransferEntities(array $keys, int $transferCount)
@@ -91,7 +88,7 @@ class Validator extends Base\Validator
             ($transferCount !== 1))
         {
             throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_MORE_THAN_ONE_CUSTOMER);
+                ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_MORE_THAN_ONE_CUSTOMER);
         }
 
         // Allow a transfer to only either customer or account per
@@ -99,7 +96,7 @@ class Validator extends Base\Validator
         if (count($uniqueKeys) > 1)
         {
             throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_MULTIPLE_ENTITY_TYPES_GIVEN);
+                ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_MULTIPLE_ENTITY_TYPES_GIVEN);
         }
     }
 
@@ -126,15 +123,13 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateTransferAmount(
-        Payment\Entity $payment,
-        Merchant\Balance\Entity $merchantBalance,
-        int $transferSum)
+    protected function validateTransferAmount(Payment\Entity $payment, int $transferSum)
     {
+        //
         // For now -
         // 1. Sum of transfers cant be greater than the capture amount
         // 2. Sum of transfers should be greater than merchant balance
-
+        //
         if ($transferSum > $payment->getAmount())
         {
             throw new Exception\BadRequestException(
@@ -144,13 +139,12 @@ class Validator extends Base\Validator
         if ($transferSum > $payment->getAmountUntransferred())
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_UNTRANSFERRED);
-        }
-
-        if ($transferSum > $merchantBalance->getBalance())
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_NOT_ENOUGH_BALANCE);
+                ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_UNTRANSFERRED,
+                Entity::AMOUNT,
+                [
+                    'sum'           => $transferSum,
+                    'untransferred' => $payment->getAmountUntransferred()
+                ]);
         }
     }
 
@@ -176,6 +170,38 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestValidationFailureException(
                     'The on_hold_until timestamp cannot be less than the current timestamp');
             }
+        }
+    }
+
+    public function validateMerchantBalanceForTransfer(Merchant\Balance\Entity $merchantBalance)
+    {
+        $debit = $this->entity->transaction->getDebit();
+
+        if ($debit > $merchantBalance->getBalance())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE,
+                Entity::AMOUNT,
+                [
+                    'debit_amount' => $debit,
+                    'balance'      => $merchantBalance->getBalance()
+                ]);
+        }
+    }
+
+    public function validateTransferMaxAmount(int $amount, Merchant\Entity $merchant)
+    {
+        $maxAmount = $merchant->getMaxPaymentAmount();
+
+        if ($amount > $maxAmount)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Amount exceeds the maximum amount allowed',
+                Entity::AMOUNT,
+                [
+                    'max_payment_amount' => $maxAmount
+                ]
+            );
         }
     }
 }

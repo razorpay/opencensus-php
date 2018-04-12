@@ -250,6 +250,8 @@ class BilldeskGatewayTest extends TestCase
 
     protected function runVerify($filter = 'payments_created')
     {
+        $this->ba->cronAuth();
+
         $request = [
             'url'    => '/payments/verify/'. $filter,
             'method' => 'post'
@@ -374,7 +376,7 @@ class BilldeskGatewayTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(61, $count);
+        $this->assertEquals(62, $count);
     }
 
     public function testServerToServerCallback()

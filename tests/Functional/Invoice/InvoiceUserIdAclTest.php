@@ -19,7 +19,7 @@ class InvoiceUserIdAclTest extends TestCase
         $this->fixtures->create('user', ['id' => '10000000UserId']);
         $this->fixtures->create('user', ['id' => '10000001UserId']);
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_test_10000000000000', '10000000UserId', 'sellerapp');
     }
 
     public function testCreateInvoiceWithUserIdHeader()
@@ -60,6 +60,8 @@ class InvoiceUserIdAclTest extends TestCase
     {
         $this->createDraftInvoice(['user_id' => '10000001UserId']);
 
+        $this->ba->proxyAuth('rzp_test_10000000000000', '10000001UserId', 'owner');
+
         $this->startTest();
     }
 
@@ -88,6 +90,8 @@ class InvoiceUserIdAclTest extends TestCase
         $this->createDraftInvoice(['user_id' => '10000000UserId', 'id' => '1000001invoice']);
         $this->createDraftInvoice(['user_id' => '10000001UserId', 'id' => '1000002invoice']);
 
+        $this->ba->privateAuth();
+
         $this->startTest();
     }
 
@@ -96,6 +100,8 @@ class InvoiceUserIdAclTest extends TestCase
         $this->createDraftInvoice(['user_id' => '10000000UserId']);
         $this->createDraftInvoice(['user_id' => '10000000UserId', 'id' => '1000001invoice']);
         $this->createDraftInvoice(['user_id' => '10000001UserId', 'id' => '1000002invoice']);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', '10000000UserId', 'owner');
 
         $this->startTest();
     }

@@ -3,7 +3,6 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Mail;
-use Illuminate\Http\UploadedFile;
 
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -12,11 +11,18 @@ use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\FileUploadTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Models\Merchant\Request as MerchantRequest;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
+use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class FeaturesTest extends TestCase
 {
+    use FileUploadTrait;
+    use DbEntityFetchTrait;
+    use VirtualAccountTrait;
     use RequestResponseFlowTrait;
 
     const DEFAULT_MERCHANT_ID    = '10000000000000';
@@ -28,7 +34,17 @@ class FeaturesTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        //
+        // testOnboardingRequestStatus creates an action_state in the live mode which requires an admin to
+        // exist due to a foreign key constraint. Admin fixture is created in test and not in live, hence creating it
+        // here.
+        //
+        $this->fixtures->on('live')->create('admin', [
+            'id'     => Org::SUPER_ADMIN,
+            'org_id' => Org::RZP_ORG,
+        ]);
+
+        $this->ba->adminAuth();
     }
 
     public function testAddInvalidFeatureToMerchant()
@@ -41,6 +57,54 @@ class FeaturesTest extends TestCase
         $this->addFeatures(Mode::TEST);
 
         $this->startTest();
+    }
+
+    public function testApplicationFeatures()
+    {
+        $appId = '1000000DemoApp';
+
+        $dummy = 'dummy';
+
+        $this->addFeatures(
+            Mode::TEST,
+            true,
+            [$dummy],
+            Constants::APPLICATION,
+            $appId);
+
+        $this->verifyFeaturePresenceForEntity(Mode::TEST, Constants::APPLICATION, $appId, [$dummy]);
+
+        $testData = $this->getDataToDeleteFeaturesFromEntity(Mode::TEST,
+            true,
+            $dummy,
+            Constants::APPLICATION,
+            $appId);
+
+        $this->startTest($testData);
+    }
+
+    public function testAccountFeatures()
+    {
+        $accountId = '10000000000000';
+
+        $dummy = 'dummy';
+
+        $testData = $this->getDataToAddAccountFeatures(Mode::TEST,
+            true,
+            [$dummy],
+            $accountId);
+
+        $this->startTest($testData);
+
+        $this->verifyFeaturePresenceForAccounts(Mode::TEST, $accountId, [$dummy]);
+
+        $testData = $this->getDataToDeleteFeaturesFromEntity(Mode::TEST,
+            true,
+            $dummy,
+            Constants::ACCOUNT,
+            $accountId);
+
+        $this->startTest($testData);
     }
 
     public function testDeleteNonExistentFeatureFromMerchant()
@@ -360,7 +424,12 @@ class FeaturesTest extends TestCase
     {
         $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
 
-        $this->addFeatures(Mode::LIVE, true, ['subscriptions'], $merchantId);
+        $this->addFeatures(
+            Mode::LIVE,
+            true,
+            ['subscriptions'],
+            'merchant',
+            $merchantId);
 
         $this->verifyFeaturePresence(Mode::TEST, ['subscriptions'], self::ONBOARDING_MERCHANT_ID);
 
@@ -391,6 +460,31 @@ class FeaturesTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertTrue($response);
+
+        $this->verifyMerchantRequest(
+            Constants::SUBSCRIPTIONS,
+            MerchantRequest\Type::PRODUCT,
+            MerchantRequest\Status::UNDER_REVIEW);
+    }
+
+    /**
+     * For Backward Compatibility : Assert that Merchant Request is also created and that the status, name, type is
+     * as expected
+     */
+    public function verifyMerchantRequest($featureName, $featureType, $requestStatus, $mode = Mode::LIVE)
+    {
+        $merchantRequest = $this->getDbLastEntityToArray('merchant_request', $mode);
+
+        $this->assertNotEmpty($merchantRequest);
+
+        $this->assertEquals($featureName, $merchantRequest[MerchantRequest\Entity::NAME]);
+
+        $this->assertEquals($featureType, $merchantRequest[MerchantRequest\Entity::TYPE]);
+
+        $this->assertEquals(
+            $requestStatus,
+            $merchantRequest[MerchantRequest\Entity::STATUS]
+        );
     }
 
     /**
@@ -541,7 +635,11 @@ class FeaturesTest extends TestCase
 
     public function testUpdateOnboardingResponses()
     {
+        $this->markTestSkipped();
+
         $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantId);
 
         $filestoreEntityId = $this->postOnboardingResponses();
 
@@ -582,7 +680,12 @@ class FeaturesTest extends TestCase
         // Test update status API
         $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'rejected');
 
-        $this->addFeatures(Mode::LIVE, false, [Constants::MARKETPLACE], $merchantId);
+        $this->addFeatures(
+            Mode::LIVE,
+            false,
+            [Constants::MARKETPLACE],
+            Constants::MERCHANT,
+            $merchantId);
 
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
@@ -593,7 +696,7 @@ class FeaturesTest extends TestCase
         // Test the fetch status route
         $this->getMarketplaceOnboardingResponseStatus();
 
-        Mail::assertSent(FeatureEnabledEmail::class, function ($mail)
+        Mail::assertQueued(FeatureEnabledEmail::class, function ($mail)
         {
             $this->assertEquals('Route', $mail->viewData['feature']);
 
@@ -602,6 +705,16 @@ class FeaturesTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testOnboardingRequestStatusUpdateLeadingToMerchantRequestCreation()
+    {
+        $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
+
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        // Test update status API
+        $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'rejected');
     }
 
     /**
@@ -618,7 +731,12 @@ class FeaturesTest extends TestCase
 
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
-        $this->addFeatures(Mode::TEST, false, [Constants::MARKETPLACE], $merchantId);
+        $this->addFeatures(
+            Mode::TEST,
+            false,
+            [Constants::MARKETPLACE],
+            Constants::MERCHANT,
+            $merchantId);
 
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
@@ -685,13 +803,17 @@ class FeaturesTest extends TestCase
 
     public function testPostOnboardingResponses()
     {
-        $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
+        $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantId);
 
         $this->postOnboardingResponses();
     }
 
     public function updateMarketplaceOnboardingResponse()
     {
+        $this->ba->adminAuth();
+
         $testData = $this->testData[__FUNCTION__];
 
         $request = $testData['request'];
@@ -699,6 +821,44 @@ class FeaturesTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertTrue($response);
+
+        $this->verifyMerchantRequest(
+            Constants::MARKETPLACE,
+            MerchantRequest\Type::PRODUCT,
+            MerchantRequest\Status::UNDER_REVIEW);
+    }
+
+    public function testRestrictedAccessFeatureEnabledAndAccessedByMerchant()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000000',
+                'name' => 'virtual_accounts'
+            ]);
+
+        $this->ba->privateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
+
+        $this->startTest($testData);
+    }
+
+    public function testRestrictedAccessFeatureDisabledAndAccessedByMerchant()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->ba->privateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
+
+        $this->startTest($testData);
     }
 
     /**
@@ -730,7 +890,7 @@ class FeaturesTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
-        $fileStoreData = $this->getLastEntity('file_store', true, MODE::LIVE);
+        $fileStoreData = $this->getDbLastEntityPublic('file_store',MODE::LIVE);
 
         $testData = $this->testData['testFileStoreData'];
 
@@ -741,6 +901,11 @@ class FeaturesTest extends TestCase
         $fileStoreId = $fileStoreData['id'];
 
         $this->fixtures->stripSign($fileStoreId);
+
+        $this->verifyMerchantRequest(
+            Constants::MARKETPLACE,
+            MerchantRequest\Type::PRODUCT,
+            MerchantRequest\Status::UNDER_REVIEW);
 
         return $fileStoreId;
     }
@@ -774,75 +939,11 @@ class FeaturesTest extends TestCase
         $testData['response']['content']['marketplace_activation_status'] = $status;
 
         $this->startTest($testData);
-    }
 
-    /**
-     * Adds a feature as an admin based on
-     * the params received
-     *
-     * @param string      $addToMode
-     * @param bool        $shouldSync
-     * @param array       $featureNames
-     * @param string|null $merchant_id
-     */
-    protected function addFeatures(
-        string $addToMode,
-        bool $shouldSync = false,
-        array $featureNames = ['dummy'],
-        string $merchant_id = null)
-    {
-        $authMethod = 'appAuth' . studly_case($addToMode);
-
-        $this->ba->$authMethod();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        if (empty($featureNames) === false)
-        {
-            $testData['request']['content']['names'] = $featureNames;
-        }
-
-        if ($shouldSync !== false)
-        {
-            $testData['request']['content']['should_sync'] = 1;
-        }
-
-        if ($merchant_id !== null)
-        {
-            $testData['request']['content']['entity_id'] = $merchant_id;
-        }
-
-        $this->startTest($testData);
-    }
-
-    /**
-     * Deletes a feature as an admin based on
-     * the params received
-     *
-     * @param string $deleteFromMode
-     * @param bool   $shouldSync
-     * @param string $featureName
-     */
-    protected function deleteFeature(
-        string $deleteFromMode,
-        bool $shouldSync = false,
-        string $featureName = 'dummy')
-    {
-        $this->ba->adminAuth($deleteFromMode, null, 'org_100000razorpay');
-
-        $testData = $this->testData[__FUNCTION__];
-
-        if ($featureName === null)
-        {
-            $testData['request']['url'] = '/features/' . self::DEFAULT_MERCHANT_ID . '/' . $featureName;
-        }
-
-        if ($shouldSync === true)
-        {
-            $testData['request']['content']['should_sync'] = 1;
-        }
-
-        $this->startTest($testData);
+        $this->verifyMerchantRequest(
+            Constants::MARKETPLACE,
+            MerchantRequest\Type::PRODUCT,
+            MerchantRequest\Constants::getRequestStatusForOnboardingStatus($status));
     }
 
     /**
@@ -903,67 +1004,6 @@ class FeaturesTest extends TestCase
         $this->startTest($testData);
     }
 
-    /**
-     * Performs a GET request based on the mode received and verifies the
-     * presence of the features received as arguments
-     *
-     * @param string $mode
-     * @param array  $featureNames
-     * @param string $merchantId
-     */
-    protected function verifyFeaturePresence(
-        string $mode,
-        array $featureNames = ['dummy'],
-        string $merchantId = self::DEFAULT_MERCHANT_ID)
-    {
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['url'] = '/features/' . $merchantId;
-
-        $authMethod = 'appAuth' . studly_case($mode);
-
-        $this->ba->$authMethod();
-
-        $response = $this->startTest($testData);
-
-        $assignedFeatures = array_map(function ($feature)
-        {
-            return $feature["name"];
-        }, $response["assigned_features"]);
-
-        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
-
-        // Check if all the featureNames requested, are present in the assignedFeatures array
-        $this->assertEquals(count($featureNames), count($assignedFeaturesInResponse));
-    }
-
-    /**
-     * Performs a GET request based on the mode received and verifies the
-     * absence of the features received as arguments
-     *
-     * @param string $mode
-     * @param array  $featureNames
-     */
-    protected function verifyFeatureAbsence(
-        string $mode,
-        array $featureNames = ['dummy'])
-    {
-        $authMethod = 'appAuth' . studly_case($mode);
-
-        $this->ba->$authMethod();
-
-        $response = $this->startTest();
-
-        $assignedFeatures = array_map(function ($feature)
-        {
-            return $feature["name"];
-        }, $response["assigned_features"]);
-
-        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
-
-        $this->assertEquals(0, count($assignedFeaturesInResponse));
-    }
-
     protected function createMerchantDetails(string $merchantId)
     {
         $attributes = ['id' => $merchantId, 'org_id' => Org::RZP_ORG];
@@ -979,28 +1019,6 @@ class FeaturesTest extends TestCase
         $this->ba->proxyAuth('rzp_live_' . $merchantId);
 
         return $merchantId;
-    }
-
-    /**
-     * @param string $file
-     *
-     * @return UploadedFile
-     */
-    protected function createUploadedFile(string $file): UploadedFile
-    {
-        $this->assertFileExists($file);
-
-        $mimeType = 'application/pdf';
-        $uploadedFile = new UploadedFile(
-            $file,
-            $file,
-            $mimeType,
-            filesize($file),
-            null,
-            true
-        );
-
-        return $uploadedFile;
     }
 
     protected function getMarketplaceOnboardingResponseStatus()
@@ -1025,5 +1043,270 @@ class FeaturesTest extends TestCase
         ];
 
         $this->startTest($testData);
+    }
+
+    /**
+     * Adds a feature as an admin [admin auth].
+     * This function tests the route POST /features
+     *
+     * @param string      $addToMode
+     * @param bool        $shouldSync
+     * @param array       $featureNames
+     * @param string|null $entityType
+     * @param string|null $entityId
+     */
+    protected function addFeatures(
+        string $addToMode,
+        bool $shouldSync = false,
+        array $featureNames = ['dummy'],
+        string $entityType = 'merchant',
+        string $entityId = null)
+    {
+        $this->ba->adminAuth($addToMode);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if (empty($featureNames) === false)
+        {
+            $testData['request']['content']['names'] = $featureNames;
+        }
+
+        if ($shouldSync !== false)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $testData['request']['content']['entity_type'] = $entityType;
+
+        if ($entityId !== null)
+        {
+            $testData['request']['content']['entity_id'] = $entityId;
+        }
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Adds a feature to an account as a merchant/application [private auth]
+     * This function tests the route: POST /accounts/id/features
+     *
+     * @param string      $addToMode
+     * @param bool        $shouldSync
+     * @param array       $featureNames
+     * @param string      $entityId
+     */
+    protected function getDataToAddAccountFeatures(
+        string $addToMode,
+        bool $shouldSync,
+        array $featureNames,
+        string $entityId)
+    {
+        if ($addToMode === Mode::LIVE)
+        {
+            $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+        }
+        else
+        {
+            $this->ba->privateAuth();
+        }
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['names'] = $featureNames;
+
+        $testData['request']['content']['should_sync'] = (int) $shouldSync;
+
+        $testData['request']['url'] = '/accounts/me/features';
+
+        $testData['response']['content'][0]['entity_id'] = $entityId;
+
+        $testData['response']['content'][0]['entity_type'] = Constants::MERCHANT;
+
+        return $testData;
+    }
+
+    /**
+     * This function tests fetching features through the route:
+     * GET /features/entity_id which has been deprecated by GET /features/entity_type/id
+     *
+     * This function ensures Backward compatibility is maintained
+     *
+     * @param string $mode
+     * @param array  $featureNames
+     * @param string $merchantId
+     * @deprecated by verifyFeaturePresenceForEntity
+     */
+    protected function verifyFeaturePresence(
+        string $mode,
+        array $featureNames = ['dummy'],
+        string $merchantId = self::DEFAULT_MERCHANT_ID)
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/features/' . $merchantId;
+
+        $this->ba->adminAuth($mode);
+
+        $response = $this->startTest($testData);
+
+        $assignedFeatures = array_map(function ($feature)
+        {
+            return $feature["name"];
+        }, $response["assigned_features"]);
+
+        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
+
+        // Check if all the featureNames requested, are present in the assignedFeatures array
+        $this->assertEquals(count($featureNames), count($assignedFeaturesInResponse));
+    }
+
+    /**
+     * Performs a GET request based on the mode received and verifies the
+     * absence of the features received as arguments
+     *
+     * @todo: Update the route to the new route. Ref: verifyFeaturePresenceForEntity()
+     *
+     * @param string $mode
+     * @param array  $featureNames
+     */
+    protected function verifyFeatureAbsence(
+        string $mode,
+        array $featureNames = ['dummy'])
+    {
+        $this->ba->adminAuth($mode);
+
+        $response = $this->startTest();
+
+        $assignedFeatures = array_map(function ($feature)
+        {
+            return $feature["name"];
+        }, $response["assigned_features"]);
+
+        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
+
+        $this->assertEquals(0, count($assignedFeaturesInResponse));
+    }
+
+    /**
+     * This function tests fetching features through the route:
+     * GET /features/entity_type/id which can be used only by the admins [admin auth]
+     *
+     * @param string $mode
+     * @param string $entityType
+     * @param string $entityId
+     * @param array  $featureNames
+     */
+    protected function verifyFeaturePresenceForEntity(
+        string $mode,
+        string $entityType,
+        string $entityId,
+        array $featureNames)
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/features/'. $entityType . 's/' . $entityId;
+
+        $this->ba->adminAuth($mode, null, 'org_100000razorpay');
+
+        $response = $this->startTest($testData);
+
+        $assignedFeatures = array_map(function ($feature)
+        {
+            return $feature["name"];
+        }, $response["assigned_features"]);
+
+        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
+
+        // Check if all the featureNames requested, are present in the assignedFeatures array
+        $this->assertEquals(count($featureNames), count($assignedFeaturesInResponse));
+    }
+
+    /**
+     * This function specifically tests fetching features through
+     * the route: GET /accounts/id/features which can be used by
+     * accounts/applications [private auth]
+     *
+     * @param string $mode
+     * @param string $entityId
+     * @param array  $featureNames
+     */
+    protected function verifyFeaturePresenceForAccounts(
+        string $mode,
+        string $entityId,
+        array $featureNames)
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/accounts/me/features';
+
+        if ($mode === Mode::LIVE)
+        {
+            $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+        }
+        else
+        {
+            $this->ba->privateAuth();
+        }
+
+        $response = $this->startTest($testData);
+
+        $assignedFeatures = array_map(function ($feature)
+        {
+            return $feature["name"];
+        }, $response["assigned_features"]);
+
+        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
+
+        // Check if all the featureNames requested, are present in the assignedFeatures array
+        $this->assertEquals(count($featureNames), count($assignedFeaturesInResponse));
+    }
+
+    /**
+     * Deletes a feature as an admin based on
+     * the params received
+     *
+     * @param string $deleteFromMode
+     * @param bool   $shouldSync
+     * @param string $featureName
+     * @deprecated by getDataToDeleteFeaturesFromEntity
+     */
+    protected function deleteFeature(
+        string $deleteFromMode,
+        bool $shouldSync = false,
+        string $featureName = 'dummy')
+    {
+        $this->ba->adminAuth($deleteFromMode, null, 'org_100000razorpay');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if ($featureName === null)
+        {
+            $testData['request']['url'] = '/features/' . self::DEFAULT_MERCHANT_ID . '/' . $featureName;
+        }
+
+        if ($shouldSync === true)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $this->startTest($testData);
+    }
+
+    protected function getDataToDeleteFeaturesFromEntity(
+        string $deleteFromMode,
+        bool $shouldSync,
+        string $featureName,
+        string $entityType,
+        string $entityId): array
+    {
+        $this->ba->adminAuth($deleteFromMode, null, 'org_100000razorpay');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/' . $entityType . 's/' . $entityId . '/features/' . $featureName;
+
+        $testData['request']['content']['should_sync'] = (int) $shouldSync;
+
+        return $testData;
     }
 }

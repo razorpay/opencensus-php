@@ -4,18 +4,20 @@ namespace RZP\Models\Merchant\Methods;
 
 use Config;
 
-use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use RZP\Models\Card\Network;
+use RZP\Models\Pricing\Plan;
+use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class Core extends Base\Core
@@ -52,13 +54,8 @@ class Core extends Base\Core
         return $methods->toArray();
     }
 
-    public function validatePricingPlanForMethods($merchant, $plan, $methods = null)
+    public function validatePricingPlanForMethods(Merchant\Entity $merchant, Plan $plan, Entity $methods)
     {
-        if ($methods === null)
-        {
-            $methods = $this->getPaymentMethods($merchant);
-        }
-
         $methodsToCheck = Payment\Method::getAllPaymentMethods();
 
         foreach ($methodsToCheck as $method)
@@ -81,13 +78,8 @@ class Core extends Base\Core
         $this->validateInternationalPricingForMerchant($merchant, $plan);
     }
 
-    public function checkPricing($merchant, $methods = null)
+    public function checkPricing(Merchant\Entity $merchant, Entity $methods)
     {
-        if ($methods === null)
-        {
-            $methods = $this->getPaymentMethods($merchant);
-        }
-
         $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
 
         $this->validatePricingPlanForMethods($merchant, $plan, $methods);
@@ -103,19 +95,19 @@ class Core extends Base\Core
     public function getFormattedMethods(Merchant\Entity $merchant)
     {
         $data = [
-            'entity'        => 'methods',
-            'card'          => true,
-            'amex'          => false,
-            'netbanking'    => [],
-            'wallet'        => [],
-            'emi'           => false,
-            'upi'           => false,
+            'entity'                      => E::METHODS,
+            Payment\Method::CARD          => true,
+            Payment\Gateway::AMEX         => false,
+            Payment\Method::NETBANKING    => [],
+            Payment\Method::WALLET        => [],
+            Payment\Method::EMI           => false,
+            Payment\Method::UPI           => false,
         ];
 
         $methods = $this->getMethods($merchant);
 
-        $data['card'] = $methods->isCardEnabled();
-        $data['amex'] = $methods->isAmexEnabled();
+        $data[Payment\Method::CARD] = $methods->isCardEnabled();
+        $data[Payment\Gateway::AMEX] = $methods->isAmexEnabled();
         $netbankingEnabled = $methods->isNetbankingEnabled();
 
         if ($netbankingEnabled === true)
@@ -124,20 +116,22 @@ class Core extends Base\Core
 
             $allSupportedBanks = Netbanking::removeDefaultDisableBanks($banks);
 
-            $data['netbanking'] = $this->getBankNames($allSupportedBanks);
+            $data[Payment\Method::NETBANKING] = $this->getBankNames($allSupportedBanks);
         }
 
-        $data['wallet'] = $methods->getEnabledWallets();
-        $data['upi'] = $methods->isUpiEnabled();
+        $data[Payment\Method::WALLET] = $methods->getEnabledWallets();
+        $data[Payment\Method::UPI] = $methods->isUpiEnabled();
         $emi = $methods->isEmiEnabled();
 
         if ($emi === true)
         {
-            $data['emi'] = $emi;
+            $data[Payment\Method::EMI] = $emi;
 
             $data['emi_subvention'] = $merchant->getEmiSubvention();
 
             $data['emi_plans'] = (new Emi\Service)->all();
+
+            $data['emi_options'] = (new Emi\Service)->getEmiOptions();
         }
 
         if ($merchant->isRecurringEnabled() === true)
@@ -146,10 +140,10 @@ class Core extends Base\Core
 
             $this->addRecurringCardsToMethods($data['recurring'], $methods);
 
-            $this->addRecurringEmandateToMethodsIfApplicable($merchant, $data['recurring']);
+            $this->addRecurringEmandateToMethodsIfApplicable($merchant, $methods, $data['recurring']);
         }
 
-        if ($merchant->isFeatureEnabled(Constants::UPI_INTENT) === true)
+        if ($merchant->isFeatureEnabled(Constants::DISABLE_UPI_INTENT) === false)
         {
             $data['upi_intent'] = true;
         }
@@ -169,7 +163,10 @@ class Core extends Base\Core
         }
     }
 
-    public function addRecurringEmandateToMethodsIfApplicable(Merchant\Entity $merchant, array & $recurringData)
+    public function addRecurringEmandateToMethodsIfApplicable(
+        Merchant\Entity $merchant,
+        Methods\Entity $methods,
+        array & $recurringData)
     {
         //
         // We don't allow netbanking for subscriptions currently.
@@ -182,35 +179,22 @@ class Core extends Base\Core
         //
         // We allow netbanking recurring only for certain merchants
         //
-        if ($merchant->isFeatureEnabled(Constants::E_MANDATE) === false)
+        if ($methods->isEmandateEnabled() === false)
         {
             return;
         }
 
-        foreach (Payment\AuthType::$types as $type)
+        $authTypes = Payment\AuthType::getAuthTypeForMethod(Payment\Method::EMANDATE);
+
+        foreach ($authTypes as $authType)
         {
             if ($this->isTestMode() === true)
             {
-                $banks = Payment\Gateway::getAvailableEmandateBanksForAuthType($type);
+                $banks = Payment\Gateway::getAvailableEmandateBanksForAuthType($authType);
             }
             else
             {
-                $func = 'getEmandateBanksEnabledFor' . studly_case($type);
-
-                if (method_exists($this, $func) === false)
-                {
-                    $this->trace->error(
-                        TraceCode::EMANDATE_FUNCTION_NOT_IMPLEMENTED,
-                        [
-                            'function_name' => $func
-                        ]);
-
-                    $banks = [];
-                }
-                else
-                {
-                    $banks = $this->$func($merchant);
-                }
+                $banks = $this->getEmandateBanksEnabled($merchant, $authType);
             }
 
             if (empty($banks) === false)
@@ -219,7 +203,7 @@ class Core extends Base\Core
 
                 foreach ($banks as $ifsc => $name)
                 {
-                    $recurringData['emandate'][$ifsc]['auth_types'][] = $type;
+                    $recurringData['emandate'][$ifsc]['auth_types'][] = $authType;
                     $recurringData['emandate'][$ifsc]['name'] = $name;
                 }
             }
@@ -269,7 +253,7 @@ class Core extends Base\Core
         {
             $methods->setCreditCard(true);
             $methods->setDebitCard(true);
-            $methods->setMobikwik(true);
+            $methods->setMobikwik(false);
             $methods->setPayzapp(true);
             $methods->setPayumoney(true);
             $methods->setOlamoney(true);
@@ -316,14 +300,9 @@ class Core extends Base\Core
         return $this->disablePaymentBanks($method, $input);
     }
 
-    protected function getPaymentMethods(Merchant\Entity $merchant)
+    protected function getPaymentMethods(Merchant\Entity $merchant): Entity
     {
         $methods = $this->repo->methods->getMethodsForMerchant($merchant);
-
-        if ($methods === null)
-        {
-            $methods = $this->setDefaultMethods($merchant);
-        }
 
         return $methods;
     }
@@ -414,13 +393,16 @@ class Core extends Base\Core
         }
     }
 
-    protected function getEmandateBanksEnabledForNetbanking(Merchant\Entity $merchant): array
+    protected function getEmandateBanksEnabled(Merchant\Entity $merchant, $authType): array
     {
         $availableEmandateBanks = [];
 
+        // @todo: Can be done by passing gateway
+        // That way we can check if gateways are empty and return
+        // empty array if it is
         $applicableEmandateTerminals = $this->repo
                                             ->terminal
-                                            ->getEmandateNetbankingTerminalsForMerchantAndSharedMerchant($merchant);
+                                            ->getEmandateTerminalsForMerchantAndSharedMerchant($merchant, $authType);
 
         $availableGatewaysForMerchant = $applicableEmandateTerminals->pluck(Terminal\Entity::GATEWAY);
 
@@ -435,11 +417,6 @@ class Core extends Base\Core
         }
 
         return array_values(array_unique($availableEmandateBanks));
-    }
-
-    protected function getEmandateBanksEnabledForAadhaar(Merchant\Entity $merchant): array
-    {
-        return [];
     }
 
     protected function getBankNames($banks)

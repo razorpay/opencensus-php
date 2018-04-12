@@ -80,6 +80,11 @@ abstract class EntityProcessor extends Base\Core
     {
         $this->updateAttemptEntity();
 
+        if ($this->source->getBatchFundTransferId() !== $this->fta->getBatchFundTransferId())
+        {
+            return;
+        }
+
         $this->updateSourceEntity();
 
         $this->updateMerchantEntity();
@@ -99,10 +104,7 @@ abstract class EntityProcessor extends Base\Core
             return;
         }
 
-        //
         // If the old and new status do not match
-        //
-
         if ($this->fta->isPendingReconciliation() === false)
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -135,6 +137,17 @@ abstract class EntityProcessor extends Base\Core
         }
 
         $this->repo->saveOrFail($this->fta);
+    }
+
+    protected function updateSourceEntity()
+    {
+        $sourceStatus = $this->getSourceStatusFromReconEntityStatus();
+
+        $this->source->setStatus($sourceStatus);
+
+        $this->source->setFailureReason($this->fta->getFailureReason());
+
+        $this->repo->saveOrFail($this->source);
     }
 
     protected function updateTransactionEntity()

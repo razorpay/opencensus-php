@@ -15,11 +15,24 @@ class EmiTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     public function testAddEmiPlans()
     {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEnableMerchantSubvention()
+    {
+        $emiPlan = $this->fixtures->create('emi_plan');
+
+        $emiPlanId = $emiPlan['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchant/10000000000000/emi_plan/' . $emiPlanId;
+
         $this->startTest();
     }
 

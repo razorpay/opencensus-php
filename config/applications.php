@@ -10,6 +10,10 @@ return [
         'cloud'     => true,
     ],
 
+    'dashboard_guest'   => [
+        'secret'   => env('APP_DASHBOARD_GUEST_SECRET'),
+    ],
+
     'mock_gateways' => [
         'secret'    => env('MOCK_GATEWAY_SECRET'),
     ],
@@ -173,5 +177,28 @@ return [
             'username' => 'api',
             'password' => env('UFH_PASSWORD'),
         ],
+    ],
+
+    'pincodesearch' => [
+        'mock'    => env('PINCODE_MOCK', false),
+        'url'     => env('PINCODE_BASE_URL'),
+        'api_key' => env('PINCODE_SEARCH_API_KEY')
+    ],
+
+    'shield' => [
+        'mock'    => env('SHIELD_MOCK', false),
+        'url'     => env('SHIELD_BASE_URL'),
+        'ruleset' => env('SHIELD_RULESET'),
+        'auth' => [
+            'username' => 'api',
+            'password' => env('SHIELD_SECRET'),
+        ],
+    ],
+
+    'razorx' => [
+        'mock'     => env('RAZORX_MOCK', false),
+        'url'      => env('RAZORX_URL'),
+        'username' => 'rzp_api',
+        'secret'   => env('RAZORX_SECRET'),
     ],
 ];

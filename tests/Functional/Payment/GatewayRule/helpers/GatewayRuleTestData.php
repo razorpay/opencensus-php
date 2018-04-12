@@ -798,6 +798,63 @@ return [
                 ],
             ],
         ],
+        // Create filter rule with upi
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'filter',
+                    'filter_type' => 'reject',
+                    'group'       => 'test',
+                    'gateway'     => 'upi_mindgate',
+                    'method'      => 'upi',
+                    'issuer'      => 'ICIC',
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'filter',
+                    'filter_type' => 'reject',
+                    'group'       => 'test',
+                    'gateway'     => 'upi_mindgate',
+                    'method'      => 'upi',
+                    'issuer'      => 'ICIC',
+                    'admin'       => true,
+                ],
+            ],
+        ],
+        // Create filter rule with invalid issuer
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'filter',
+                    'filter_type' => 'reject',
+                    'group'       => 'test',
+                    'gateway'     => 'upi_mindgate',
+                    'method'      => 'upi',
+                    'issuer'      => 'abcd',
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'Invalid bank code for PSP',
+                    ]
+                ],
+                'status_code' => 400
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
         // Create rule with invalid array format for iins
         [
             'request' => [

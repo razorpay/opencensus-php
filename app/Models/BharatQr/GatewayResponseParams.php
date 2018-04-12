@@ -1,0 +1,15 @@
+<?php
+
+namespace RZP\Models\BharatQr;
+
+class GatewayResponseParams
+{
+    const CARD_FIRST6           = 'card_first6';
+    const CARD_LAST4            = 'card_last4';
+    const GATEWAY               = 'gateway';
+    const PROVIDER_REFERENCE_ID = 'provider_reference_id';
+    const MERCHANT_REFERENCE    = 'merchant_reference';
+    const METHOD                = 'method';
+    const AMOUNT                = 'amount';
+    const VPA                   = 'vpa';
+}

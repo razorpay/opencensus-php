@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use Mail;
+use Cache;
 use Crypt;
 use Config;
 use Route;
@@ -37,6 +38,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Analytics;
@@ -293,6 +295,7 @@ trait Authorize
      * @param Payment\Entity $payment
      *
      * @return array
+     * @throws Exception\RuntimeException
      */
     protected function processCreated(Payment\Entity $payment): array
     {
@@ -380,7 +383,8 @@ trait Authorize
         // we have manually skipped/by-passed the 2FA.
 
         if (($payment->terminal !== null) and
-            ($payment->terminal->isNon3DSRecurring() === true))
+            ($payment->terminal->isNon3DSRecurring() === true) and
+            ($payment->isRecurring() === true))
         {
             $payment->setTwoFactorAuth(TwoFactorAuth::SKIPPED);
         }
@@ -498,7 +502,7 @@ trait Authorize
                                         $payment->getGateway());
         }
 
-        if ($payment->hasCard())
+        if ($payment->hasCard() === true)
         {
             $card = $this->repo->card->fetchForPayment($payment);
         }
@@ -541,6 +545,8 @@ trait Authorize
         $this->validateCardAndCvv($payment, $input);
 
         $this->validateRecurringIfApplicable($payment, $input);
+
+        $this->validateCardAuthenticationIfApplicable($payment, $input);
 
         $this->validateS2SIfApplicable($payment);
 
@@ -791,7 +797,8 @@ trait Authorize
         // is not relevant here in case of queue flow.
         //
         if (($payment->isBankTransfer() === true) and
-            ($this->app->runningInQueue() === true))
+            (($this->app->runningInQueue() === true) or
+             (Route::currentRouteName() === 'bank_transfer_process_test')))
         {
             return;
         }
@@ -849,6 +856,24 @@ trait Authorize
         }
     }
 
+    protected function validateCardAuthenticationIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return;
+        }
+
+        if ($payment->getAuthType() === Payment\AuthType::PIN)
+        {
+            if (($payment->card->iinRelation === null) or
+                ($payment->card->iinRelation->supports(IIN\Flow::PIN) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The pin authentication type is not applicable on the given card');
+            }
+        }
+    }
+
     protected function validateRecurringIfApplicable(Payment\Entity $payment, array $input)
     {
         $recurring = $payment->isRecurring();
@@ -864,25 +889,29 @@ trait Authorize
 
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        // TODO: Throw a bad request exception if token is null.
-        // For recurring payments, there should always be a token.
-
-        if ($token !== null)
+        if ($token === null)
         {
-            $this->assertTokenIsRecurring($payment, $token);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT,
+                null,
+                [
+                    'payment_id'    => $payment->getId(),
+                ]);
         }
+
+        $this->assertTokenIsRecurring($payment, $token);
 
         //
         // If payment type is card, validate that the card supports recurring
-        // or if payment type is netbanking, validate that the bank supports recurring
+        // or if payment type is emandate, validate that the bank supports emandate
         //
         if ($payment->isCard() === true)
         {
             $this->validateRecurringForCard($payment);
         }
-        else if ($payment->isNetbanking() === true)
+        else if ($payment->isEmandate() === true)
         {
-            $this->validateRecurringForNetbanking($payment, $token, $input);
+            $this->validateRecurringForEmandate($payment, $token, $input);
         }
 
         //
@@ -893,8 +922,16 @@ trait Authorize
         // for which the token was created in the first place. Hence, here, second recurring
         // is not really second recurring and could be in fact first recurring only.
         //
+        // We don't have to verify that the payment is coming from Zoho for
+        // a Zoho merchant if it's on public auth. It won't be second recurring
+        // if it's coming from public auth. It's possible that it won't be
+        // second recurring if it's coming from private auth also, but we don't
+        // have any way to figure that out. Adding access check here to at least
+        // handle second recurring type payments (recurring payments with recurring token)
+        // coming via public auth. These can be safely treated as first recurring.
+        //
         if ((empty($input[Payment\Entity::TOKEN]) === false) and
-            ($payment->isSecondRecurring() === true))
+            ($payment->isSecondRecurring(true) === true))
         {
             $this->verifyAggregatorIfApplicable($merchant);
         }
@@ -905,8 +942,10 @@ trait Authorize
      * then the token cannot be used for the payment.
      *
      * @param Payment\Entity $payment
-     * @param Token\Entity $token
+     * @param Token\Entity   $token
+     *
      * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
      */
     protected function assertTokenIsRecurring(Payment\Entity $payment, Token\Entity $token)
     {
@@ -1011,7 +1050,7 @@ trait Authorize
         }
     }
 
-    protected function validateRecurringForNetbanking(
+    protected function validateRecurringForEmandate(
         Payment\Entity $payment, Token\Entity $token, array $input)
     {
         //
@@ -1032,11 +1071,11 @@ trait Authorize
         //
         if ($payment->isRecurringTypeInitial() === true)
         {
-            $this->validateInitialRecurringForNetbanking($payment, $input);
+            $this->validateInitialRecurringForEmandate($payment, $input);
         }
         else if ($payment->isRecurringTypeAuto() === true)
         {
-            $this->validateAutoRecurringForNetbanking($payment, $input);
+            $this->validateAutoRecurringForEmandate($payment, $input);
         }
         else
         {
@@ -1050,9 +1089,6 @@ trait Authorize
                 ]);
         }
 
-        // We ensure that the e_mandate feature has been enabled for the merchant
-        $this->verifyFeatureForMerchant($payment->merchant, Feature\Constants::E_MANDATE);
-
         //
         // TODO: This is broken still. We should not be accepting any token
         // in private auth also for first recurring. But, in private auth,
@@ -1062,7 +1098,7 @@ trait Authorize
             (empty($input[Payment\Entity::TOKEN]) === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_NB_TOKEN_PASSED_IN_FIRST_RECURRING,
+                ErrorCode::BAD_REQUEST_EMANDATE_TOKEN_PASSED_IN_FIRST_RECURRING,
                 Payment\Entity::BANK,
                 [
                     'payment' => $payment->toArray(),
@@ -1086,7 +1122,7 @@ trait Authorize
         $this->validateTokenMaxAmount($token, $payment);
     }
 
-    protected function validateInitialRecurringForNetbanking(Payment\Entity $payment, array $input)
+    protected function validateInitialRecurringForEmandate(Payment\Entity $payment, array $input)
     {
         if ((Payment\Gateway::isZeroRupeeFlowSupported($payment->getBank()) === true) and
             ($payment->getAmount() !== 0))
@@ -1118,6 +1154,13 @@ trait Authorize
             );
         }
 
+        if (($payment->getAuthType() === Payment\AuthType::AADHAAR) and
+            (empty($input[Payment\Entity::AADHAAR]['number']) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The aadhaar[number] field is required.');
+        }
+
         $bank = $payment->getBank();
 
         // TODO: Handle first recurring / second recurring based on token and route
@@ -1136,7 +1179,7 @@ trait Authorize
         }
     }
 
-    protected function validateAutoRecurringForNetbanking(Payment\Entity $payment, array $input)
+    protected function validateAutoRecurringForEmandate(Payment\Entity $payment, array $input)
     {
         if ($payment->getAmount() < 100)
         {
@@ -1160,7 +1203,7 @@ trait Authorize
             ($token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_NB_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING,
+                ErrorCode::BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING,
                 Payment\Entity::BANK,
                     [
                          'payment' => $payment->toArray(),
@@ -1603,21 +1646,49 @@ trait Authorize
 
         $payment->setInternational();
 
-        $this->processEmandatePayments($payment);
+        $this->setRecurringType($payment, $input);
     }
 
-    protected function processEmandatePayments(Payment\Entity $payment)
+    protected function setRecurringType(Payment\Entity $payment, array $input)
     {
-        $token = $payment->getGlobalOrLocalTokenEntity();
+        $type = null;
 
-        if ($payment->isEmandatePayment() === true)
+        if ($payment->isEmandate() === true)
         {
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
             // True => auto, False => initial
             // TODO: Add support for when we allow recurring tokens for first payments
-            $type = ($token->isRecurring() === true) ? Payment\RecurringType::AUTO : Payment\RecurringType::INITIAL;
-
-            $payment->setRecurringType($type);
+            $type = ($token->isRecurring() === true) ?
+                    Payment\RecurringType::AUTO :
+                    Payment\RecurringType::INITIAL;
         }
+
+        //
+        // TODO: Will have to figure out the recurring type when we allow
+        // the end-users to pay for the subscription themselves manually
+        // before we charge. This can happen when we create an invoice first
+        // and then an hour later, we auto-charge. In that 1 hr gap, the
+        // customer can make a payment (via public auth and all)
+        //
+        if ($payment->hasSubscription() === true)
+        {
+            $subscription = $payment->subscription;
+
+            $type = Payment\RecurringType::AUTO;
+
+            if ($subscription->hasBeenAuthenticated() === false)
+            {
+                $type = Payment\RecurringType::INITIAL;
+            }
+            else if ((isset($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE]) === true) and
+                     (boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE]) === true))
+            {
+                $type = Payment\RecurringType::CARD_CHANGE;
+            }
+        }
+
+        $payment->setRecurringType($type);
     }
 
     protected function addTestSuccessFlagToGatewayInput(array $input, array & $gatewayInput)
@@ -1892,13 +1963,13 @@ trait Authorize
 
         $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
 
-        if ($payment->isMethodCardOrEmi())
+        if ($payment->isMethodCardOrEmi() === true)
         {
             $payment->localToken()->associate($token);
 
             $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input);
         }
-        else if ($payment->isNetbanking())
+        else if ($payment->isEmandate() === true)
         {
             $payment->setBank($token->getBank());
 
@@ -1924,7 +1995,7 @@ trait Authorize
 
         $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
 
-        if ($payment->isMethodCardOrEmi())
+        if ($payment->isMethodCardOrEmi() === true)
         {
             $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
 
@@ -1934,11 +2005,11 @@ trait Authorize
 
             $this->repo->saveOrFail($payment->card);
         }
-        else if ($payment->isMethod(Payment\Method::WALLET))
+        else if ($payment->isWallet() === true)
         {
             $payment->setWallet($token->getWallet());
         }
-        else if ($payment->isMethod(Payment\Method::NETBANKING))
+        else if ($payment->isEmandate() === true)
         {
             //
             // This should be here since, if a token is passed,
@@ -2007,9 +2078,9 @@ trait Authorize
             // save local saved card for local customer
             $token = $this->savePaymentMethod($customer, $payment, $savedLocalCard->getId(), $input);
         }
-        else if ($payment->isNetbanking() === true)
+        else if ($payment->isEmandate() === true)
         {
-            // save netbanking bank locally for local customer
+            // save emandate bank locally for local customer
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
         }
 
@@ -2044,9 +2115,9 @@ trait Authorize
             // save global saved card for global customer
             $token = $this->savePaymentMethod($customer, $payment, $savedGlobalCard->getId(), $input);
         }
-        else if ($payment->isNetbanking() === true)
+        else if ($payment->isEmandate() === true)
         {
-            // save netbanking bank token globally for global customer
+            // save emandate bank token globally for global customer
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
         }
 
@@ -2068,9 +2139,12 @@ trait Authorize
                 'customer_id'       => $customer->getId(),
                 'local'             => $customer->isLocal(),
                 'card_id'           => $savedCardId,
+                'auth_type'         => $payment->getAuthType(),
                 'account_number'    => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] ?? null,
                 'beneficiary_name'  => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::NAME] ?? null,
                 'ifsc'              => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] ?? null,
+                'max_amount'        => $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::MAX_AMOUNT] ?? null,
+                'expire_by'         => $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null
             ]);
 
         $saveMethodInput = [
@@ -2083,12 +2157,14 @@ trait Authorize
 
             $saveMethodInput[Token\Entity::CARD_ID] = $savedCardId;
         }
-        else if ($payment->isNetbanking() === true)
+        else if ($payment->isEmandate() === true)
         {
             $saveMethodInput[Token\Entity::BANK] = $payment->getBank();
 
-            // TODO: We need to get this from user input - hard coding for now
-            $saveMethodInput[Token\Entity::MAX_AMOUNT] = Token\Entity::DEFAULT_MAX_AMOUNT;
+            $saveMethodInput[Token\Entity::AUTH_TYPE] = $payment->getAuthType();
+
+            $saveMethodInput[Token\Entity::MAX_AMOUNT] =
+                    $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::MAX_AMOUNT] ?? null;
 
             $saveMethodInput[Token\Entity::ACCOUNT_NUMBER] =
                     $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] ?? null;
@@ -2098,6 +2174,12 @@ trait Authorize
 
             $saveMethodInput[Token\Entity::IFSC] =
                     $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] ?? null;
+
+            $saveMethodInput[Token\Entity::AADHAAR_NUMBER] =
+                    $input[Payment\Entity::AADHAAR]['number'] ?? null;
+
+            $saveMethodInput[Token\Entity::EXPIRED_AT] =
+                    $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null;
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {
@@ -2110,10 +2192,6 @@ trait Authorize
         try
         {
             $token = (new Token\Core)->create($customer, $saveMethodInput);
-        }
-        catch (Exception\RecoverableException $e)
-        {
-            // Ignore the exception, can be an already saved method
         }
         catch (\Exception $e)
         {
@@ -2158,6 +2236,10 @@ trait Authorize
                 $this->verifyAepsEnabled();
                 break;
 
+            case Payment\Method::EMANDATE:
+                $this->verifyEmandateEnabled();
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'Should not reach here.',
@@ -2182,11 +2264,28 @@ trait Authorize
 
         $payment->setBank($iinEntity->getIssuer());
 
-        $subvention = $payment->merchant->getEmiSubvention();
-
         // Set emi plan id
         $emiPlan = $this->repo->emi_plan->fetchRelevantEmiPlan(
-                                            $iinEntity, $emiDuration, $subvention);
+                                            $iinEntity, $emiDuration);
+
+        $emiMerchantSubvention = $this->repo->merchant_emi_plans->fetchByMerchantAndEmiPlan(
+                                                                        $payment->merchant->getId(),
+                                                                        $emiPlan->getId());
+
+        $payment->setEmiSubvention(Emi\Subvention::CUSTOMER);
+
+        if ($emiMerchantSubvention !== null)
+        {
+            $amount = $payment->getAmount();
+
+            $merchantPayback = $emiPlan->getMerchantPayback();
+
+            $baseAmount = Emi\Calculator::calculateSubventedAmount($amount, $merchantPayback);
+
+            $payment->setAmountAttribute($baseAmount);
+
+            $payment->setEmiSubvention(Emi\Subvention::MERCHANT);
+        }
 
         $payment->getValidator()->validateMinAmountWithEmiPlanAmount($emiPlan);
 
@@ -2325,6 +2424,8 @@ trait Authorize
 
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
+        $data['magic'] = $this->isMagicEnabled($payment);
+
         $segmentData = $data;
 
         // this might log sensitive data. Remove it
@@ -2352,7 +2453,8 @@ trait Authorize
             [
                 'payment_id'      => $payment->getId(),
                 'token_id'        => $payment->getTokenId(),
-                'global_token_id' => $payment->getGlobalTokenId()
+                'global_token_id' => $payment->getGlobalTokenId(),
+                'gateway_data'    => $data,
             ]);
 
         //
@@ -2384,10 +2486,7 @@ trait Authorize
         //
         // This flow gets called for non recurring tokens also.
         //
-        if ($token->isRecurring() === true)
-        {
-            $this->eventTokenStatus($token, $oldRecurringStatus);
-        }
+        $this->eventTokenStatus($token, $oldRecurringStatus);
     }
 
     protected function updateTokenOnAuthorizedForRecurring(
@@ -2408,22 +2507,22 @@ trait Authorize
 
         //
         // This is just in case. Payment recurring is anyway only
-        // allowed on cards and netbanking.
+        // allowed on cards and emandate.
         //
         if (($payment->isCard() === false) and
-            ($payment->isNetbanking() === false))
+            ($payment->isEmandate() === false))
         {
             return;
         }
 
         //
-        // For netbanking payments, we create a new token for every
+        // For emandate payments, we create a new token for every
         // single new first recurring payment.
-        // For existing recurring nb tokens, we do not update it.
+        // For existing recurring emandate tokens, we do not update it.
         // TODO: Remove this when we allow using the same token again
         // for another recurring payment.
         //
-        if (($payment->isNetbanking() === true) and
+        if (($payment->isEmandate() === true) and
             ($token->isRecurring() === true))
         {
             return;
@@ -2435,9 +2534,9 @@ trait Authorize
             // TODO: Back fill the data for all the other recurring card tokens!
             $token->setRecurringStatus(Token\RecurringStatus::CONFIRMED);
         }
-        else if ($payment->isNetbanking() === true)
+        else if ($payment->isEmandate() === true)
         {
-            $this->updateTokenOnAuthorizedForNetbankingRecurring($token, $data, $payment);
+            $this->updateTokenOnAuthorizedForEmandateRecurring($token, $data, $payment);
         }
 
         // Not required as we only use terminals through
@@ -2458,7 +2557,7 @@ trait Authorize
      * token entity, we will end up overriding the recurring_status
      * and other details. So, we need to ensure that we don't reuse
      * the same token.
-     * Anyway, currently, we don't reuse the same token for NB.
+     * Anyway, currently, we don't reuse the same token for emandate.
      * The customer always gets a new token if they want to
      * subscribe to another subscription.
      * If we don't use the same token again, there's no issue
@@ -2470,7 +2569,7 @@ trait Authorize
      * @param array             $gatewayData
      * @param Payment\Entity    $payment
      */
-    protected function updateTokenOnAuthorizedForNetbankingRecurring(
+    protected function updateTokenOnAuthorizedForEmandateRecurring(
         Token\Entity $token, array $gatewayData, Payment\Entity $payment)
     {
         //
@@ -2495,7 +2594,7 @@ trait Authorize
             return;
         }
 
-        (new Token\Core)->updateTokenFromNetbankingGatewayData($token, $gatewayData);
+        (new Token\Core)->updateTokenFromEmandateGatewayData($token, $gatewayData);
     }
 
     protected function createAndSetTerminalInGatewayToken(Payment\Entity $payment, Token\Entity $token)
@@ -2546,15 +2645,15 @@ trait Authorize
                 return;
             }
 
-            if ($payment->isNetbanking() === true)
+            if ($payment->isEmandate() === true)
             {
                 //
-                // We do not reuse the tokens in case of NB.
+                // We do not reuse the tokens in case of emandate.
                 // Every new registration requires a new
                 // token to be created.
                 //
                 throw new Exception\LogicException(
-                    'Tokens cannot be reused in netbanking payments',
+                    'Tokens cannot be reused in emandate payments',
                     null,
                     [
                         'payment'        => $payment->toArray(),
@@ -2728,7 +2827,7 @@ trait Authorize
                 ]);
         }
 
-        if ($this->isCardChangeFlow($subscription, $payment) === true)
+        if ($this->isCardChangeFlow($subscription) === true)
         {
             $this->processCardChangeForSubscription($subscription, $payment);
 
@@ -2753,11 +2852,10 @@ trait Authorize
      * TODO: This needs to be fixed!!!!!
      *
      * @param Subscription\Entity $subscription
-     * @param Payment\Entity      $payment
      *
      * @return bool
      */
-    protected function isCardChangeFlow(Subscription\Entity $subscription, Payment\Entity $payment)
+    protected function isCardChangeFlow(Subscription\Entity $subscription)
     {
         if ($subscription->hasBeenAuthenticated() === false)
         {
@@ -2774,7 +2872,7 @@ trait Authorize
         // TODO: This is not a very robust check. Should figure out a good way.
         // Also, this won't work when we create invoices and then after an hour, we charge.
         // In these cases, the customer can make a payment on the latest invoice generated
-        // via public auth (two fa not skipped). The customer can pay with NB also then.
+        // via public auth (two fa not skipped). The customer can pay with emandate also then.
         //
         // We can remove this once we add recurring_type in the payment entity!
         //
@@ -2787,17 +2885,18 @@ trait Authorize
         //     return true;
         // }
 
-        // NOTE: 2FA WILL NOT WORK FOR INTERNATIONAL. TRUST ME.
+        // NOTE: 2FA WILL NOT WORK FOR INTERNATIONAL.
 
-        // TODO: Public auth check does not work!!!! Use redis or something here. FIX ASAP!
-        if ($this->ba->isPublicAuth() === true)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        //
+        // TODO: Public auth check does not work! Use Redis or something here. FIX ASAP!
+        // Ideally we should have gotten this from subscription_card_change
+        // attribute which would have been sent in payment create input.
+        // But, since we don't store that attribute and this would be in
+        // the callback flow, we don't know whether this is card change flow.
+        // So, what we can do instead is rely on recurring_type attribute of payment
+        // entity. recurring_type can be set to initial or card_change or something.
+        //
+        return ($this->ba->isPublicAuth() === true);
     }
 
     protected function processCardChangeForSubscription(
@@ -3078,6 +3177,7 @@ trait Authorize
      * in case of the payment is authorized
      * @param  Payment\Entity $payment
      * @return array
+     * @throws Exception\LogicException
      */
     protected function processAuthorizeResponse(Payment\Entity $payment): array
     {
@@ -3104,7 +3204,13 @@ trait Authorize
         // typically for a test charge. In this case as well, we cannot
         // and should not add the signature to the response.
         //
-        if ($this->app['basicauth']->isProxyOrPrivilegeAuth() === false)
+        // In case of batch payments (emandate, recurring, etc), this
+        // flow comes in via queue. In queue, we don't set the key. We
+        // don't need signature and stuff when being run in queue anyway.
+        //
+
+        if (($this->app['basicauth']->isProxyOrPrivilegeAuth() === false) and
+            ($this->app->runningInQueue() === false))
         {
             if ($payment->hasSubscription() === true)
             {
@@ -3118,8 +3224,17 @@ trait Authorize
             }
             else if ($payment->hasOrder() === true)
             {
+                //
+                // In case of async emandate registration payment, though
+                // payment_capture would be set in the order, we wouldn't
+                // have actually captured it if the registration is async.
+                // We would capture it later once the token is confirmed as recurring.
+                // In case of async emandate debit payment, the flow would
+                // never reach here, since the payment would be in created
+                // state and a different function is called for that.
+                //
                 if (($payment->order->getPaymentCapture() === true) and
-                    ($this->isAsyncEmandatePayment($payment) === false))
+                    ($payment->isFileBasedEmandateRegistrationPayment() === false))
                 {
                     assertTrue($payment->hasBeenCaptured() === true);
                 }
@@ -3238,7 +3353,7 @@ trait Authorize
      * @param Token\Entity $token
      * @param string|null  $oldRecurringStatus
      */
-    protected function eventTokenStatus(Token\Entity $token, string $oldRecurringStatus = null)
+    public function eventTokenStatus(Token\Entity $token, string $oldRecurringStatus = null)
     {
         $currentRecurringStatus = $token->getRecurringStatus();
 
@@ -3247,6 +3362,9 @@ trait Authorize
         // recurring status in cases like second recurring
         // payment. Here, we don't update anything at all
         // except the used count, terminals and stuff.
+        //
+        // This can also happen in case we do registration recon of
+        // enach rbl again. This will ensure idempotency is maintained.
         //
         if (($oldRecurringStatus !== $currentRecurringStatus) and
             (in_array($currentRecurringStatus, Token\RecurringStatus::$webhookStatuses, true) === true))
@@ -3656,6 +3774,19 @@ trait Authorize
         }
     }
 
+    protected function verifyEmandateEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isEmandateEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_EMANDATE_NOT_ENABLED_FOR_MERCHANT
+            );
+        }
+    }
+
     protected function verifyCardEnabledInLive(Payment\Entity $payment)
     {
         $card = $payment->card;
@@ -3759,10 +3890,16 @@ trait Authorize
 
     protected function validateIfIntentEnabled(Payment\Entity $payment)
     {
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::UPI_INTENT) === false)
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::DISABLE_UPI_INTENT) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'UPI intent is not enabled for the merchant');
+        }
+
+        if (isset($payment['vpa']) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The vpa field is not required and not shouldn\'t be sent.');
         }
     }
 
@@ -4029,5 +4166,35 @@ trait Authorize
                     'iin'     => $card->getIin()
                 ]);
         }
+    }
+
+    protected function isMagicEnabled(Payment\Entity $payment)
+    {
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return false;
+        }
+
+        try
+        {
+            $cache = Cache::getFacadeRoot();
+
+            $magicDisabledGlobally = (bool) $cache->get(ConfigKey::DISABLE_MAGIC);
+        }
+        catch (\Throwable $e)
+        {
+            $magicDisabledGlobally = true;
+
+            $this->trace->traceException($e);
+        }
+
+        if (($magicDisabledGlobally === false) and
+            ($this->merchant->isMagicEnabled() === true) and
+            ($payment->card->isMagicEnabled() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

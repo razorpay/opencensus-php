@@ -3,17 +3,16 @@
 namespace RZP\Tests\Functional\Subscription;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use Mockery;
-
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Item;
-use RZP\Models\Plan\Subscription\Addon;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Plan\Subscription\Addon;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
 
 /**
  * @group dns-sensitive
@@ -23,13 +22,12 @@ class SubscriptionChargeTest extends TestCase
     use PaymentTrait;
     use MocksDnsTrait;
     use SubscriptionTrait;
+    use DbEntityFetchTrait;
 
     const MAX_AUTH_ATTEMPTS = 4;
 
     public function setUp()
     {
-        $this->markTestSkipped('Time mock issue');
-
         $this->testDataFilePath = __DIR__ . '/Helpers/SubscriptionTestData.php';
 
         parent::setUp();
@@ -46,14 +44,10 @@ class SubscriptionChargeTest extends TestCase
 
         $this->setupMockDns();
 
-        Carbon::setTestNow();
-    }
-
-    public function tearDown()
-    {
-        parent::tearDown();
-
-        Carbon::setTestNow();
+        // This is set to 10 Jan 2018
+        // Because in test cases subsription start date is set
+        // to 20 Jan 2018 and it should always be in future
+        Carbon::setTestNow("10-1-2018 3:00:00");
     }
 
     public function testSubscriptionFirstCharge()
@@ -88,8 +82,8 @@ class SubscriptionChargeTest extends TestCase
         $order = $this->getLastEntity('order', true);
         $chargedPayment = $this->getLastEntity('payment', true);
         $subscription = $this->getLastEntity('subscription', true);
-        $token = $this->getLastEntity('token', true);
-        $scheduleTask = $this->getLastEntity('schedule_task', true);
+        $token = $this->getDbLastEntityPublic('token');
+        $scheduleTask = $this->getDbLastEntityPublic('schedule_task');
 
         $this->assertEquals($order['id'], $invoice['order_id']);
         $this->assertEquals('cust_100000customer', $invoice['customer_id']);
@@ -145,6 +139,115 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(2, $allPayments['count']);
 
         // Carbon::setTestNow();
+    }
+
+    public function testDailySubscriptionsWithRetry()
+    {
+        $planAttributes = [
+            'period'   => 'daily',
+            'interval' => 7
+        ];
+
+        $this->doAuthTxnForNewSubscription(false, $planAttributes);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        // this will be equal to January 10, 2018 8:30:00 AM
+        $this->assertEquals(1515553200, $subscription['start_at']);
+
+        // this will be equal to  January 17, 2018 8:30:00 AM
+        $this->assertEquals(1516158000, $subscription['task']['next_run_at']);
+
+        $this->chargeSubscriptionManuallyTestMode($subscription['id'], false);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        // this will be equal to  January 18, 2018 8:30:00 AM
+        $this->assertEquals(1516244400, $subscription['task']['next_run_at']);
+
+        $this->chargeSubscriptionManuallyTestMode($subscription['id'], true);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        // this will be equal to  January 24, 2018 8:30:00 AM
+        $this->assertEquals(1516762800, $subscription['task']['next_run_at']);
+    }
+
+    public function testUpdateforSubscriptionWithoutStartAt()
+    {
+        $this->doAuthTxnForNewSubscription(false);
+
+        //
+        // Start at of the subscription should be equal to
+        // current time stamp which is 1515553200 (10 Jan 2018 3am)
+        // while the task next run should be equal to 1520620200 (10 March 2018 12 am)
+        //
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->assertEquals(1515553200, $subscription['start_at']);
+
+        $this->assertEquals(1520620200, $subscription['task']['next_run_at']);
+
+        $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        // It will be equal to 10 May 2018
+        $this->assertEquals(1525890600, $subscription['task']['next_run_at']);
+
+        $this->chargeSubscriptionManuallyTestMode($subscription['id'], true);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        // It will be equal to 10 July 2018
+        $this->assertEquals(1531161000, $subscription['task']['next_run_at']);
+
+        $this->chargeSubscriptionManuallyTestMode($subscription['id'], false);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        // It will be equal to 11 July 2018
+        $this->assertEquals(1531247400, $subscription['task']['next_run_at']);
+
+        $this->chargeSubscriptionManuallyTestMode($subscription['id'], true);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        // It will be equal to 10 Sept 2018
+        $this->assertEquals(1536517800, $subscription['task']['next_run_at']);
+    }
+
+    public function testUpdateforSubscriptionWithStartAt()
+    {
+        $this->doAuthTxnForNewSubscription();
+
+        //
+        // start at of subscription is set to 1516386600 (20 Jan 2018)
+        // task next_run is set to 1516386600 (20 Jan 2018). Behaviour of merchant
+        // charge and cron charge should be same
+        //
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->assertEquals(1516386600, $subscription['start_at']);
+
+        $this->assertEquals(1516386600, $subscription['task']['next_run_at']);
+
+        $this->chargeSubscriptionManuallyTestMode($subscription['id'], true);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        // It will be equal to 20 March 2018
+        $this->assertEquals(1521484200, $subscription['task']['next_run_at']);
+
+        $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        // It will be equal to 20 May 2018
+        $this->assertEquals(1526754600, $subscription['task']['next_run_at']);
+
     }
 
     public function testSubscriptionCompleteCycle()
@@ -351,7 +454,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('pending', $subscription['status']);
         $this->assertEquals(1, $subscription['auth_attempts']);
 
-        $task = $this->getLastEntity('schedule_task', true);
+        $task = $this->getDbLastEntityPublic('schedule_task');
         // First success, then fail
         $expectedNextRun = Carbon::createFromTimestamp($subscription['start_at'], Timezone::IST)
                                  ->addMonthsNoOverflow(2)
@@ -539,7 +642,7 @@ class SubscriptionChargeTest extends TestCase
 
         $this->assertEquals($expectedChargeAt, $subscription['charge_at']);
 
-        $task = $this->getLastEntity('schedule_task', true);
+        $task = $this->getDbLastEntityPublic('schedule_task');
 
         $this->assertEquals($expectedChargeAt, $task['next_run_at']);
 
@@ -821,7 +924,7 @@ class SubscriptionChargeTest extends TestCase
                                   ->getTimestamp();
         $this->assertEquals($expectedChargeAt, $subscription['charge_at']);
 
-        $task = $this->getLastEntity('schedule_task', true);
+        $task = $this->getDbLastEntityPublic('schedule_task');
 
         // In manual flow, the task's next_run should not change
         $this->assertEquals($expectedChargeAt, $task['next_run_at']);
@@ -1200,7 +1303,7 @@ class SubscriptionChargeTest extends TestCase
         // Retries exhausted, subscription marked as halted
         $this->assertEquals('halted', $subscription['status']);
 
-        $task = $this->getLastEntity('schedule_task', true);
+        $task = $this->getDbLastEntityPublic('schedule_task');
         Carbon::setTestNow(Carbon::createFromTimestamp($task['next_run_at'] + 1));
 
         $subscription = $this->getLastEntity('subscription', true);
@@ -1278,7 +1381,7 @@ class SubscriptionChargeTest extends TestCase
 
         $this->clearMock();
 
-        $task = $this->getLastEntity('schedule_task', true);
+        $task = $this->getDbLastEntityPublic('schedule_task');
         $firstRunAt = $task['next_run_at'];
         Carbon::setTestNow(Carbon::createFromTimestamp($firstRunAt + 1));
 
@@ -1292,7 +1395,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('halted', $invoice['subscription_status']);
 
         $subscription = $this->getLastEntity('subscription', true);
-        $task = $this->getLastEntity('schedule_task', true);
+        $task = $this->getDbLastEntityPublic('schedule_task');
         $secondRunAt = $task['next_run_at'];
         // second run should be at least 50 days from first run (2 months ahead)
         $this->assertGreaterThan($firstRunAt + 4320000, $secondRunAt);
@@ -1306,7 +1409,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('issued', $invoice['status']);
         $this->assertEquals('halted', $invoice['subscription_status']);
 
-        $task = $this->getLastEntity('schedule_task', true);
+        $task = $this->getDbLastEntityPublic('schedule_task');
         $thirdRunAt = $task['next_run_at'];
         // third run should be at least 50 days from second run (2 months ahead)
         $this->assertGreaterThan($secondRunAt + 4320000, $thirdRunAt);
@@ -1560,6 +1663,110 @@ class SubscriptionChargeTest extends TestCase
         // Carbon::setTestNow();
     }
 
+    public function testSubscriptionChargeForDaily()
+    {
+        $planAttributes = [
+            'period'   => 'daily',
+            'interval' => 7
+        ];
+
+        $this->doAuthTxnForNewSubscription(false, $planAttributes);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $expectedPaidCount = 1;
+
+        while ($expectedPaidCount < $subscription['total_count'])
+        {
+            $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+            // Subscription got charged
+            $this->assertEquals(1, $result['total']);
+
+            $expectedPaidCount++;
+
+            $subscription = $this->getLastEntity('subscription', true);
+            $this->assertEquals($expectedPaidCount, $subscription['paid_count']);
+
+            $expectedStatus = 'active';
+
+            // After large charge, subscription is marked completed
+            if ($expectedPaidCount === $subscription['total_count'])
+            {
+                $expectedStatus = 'completed';
+            }
+
+            $this->assertEquals($expectedStatus, $subscription['status']);
+        }
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+        $this->assertEquals(0, $result['invoices_created']);
+    }
+
+    public function testSubscriptionChargeForDailyWithLargeInterval()
+    {
+        $planAttributes = [
+            'period'   => 'daily',
+            'interval' => 366,
+        ];
+
+        $this->doAuthTxnForNewSubscription(false, $planAttributes);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $expectedPaidCount = 1;
+
+        while ($expectedPaidCount < $subscription['total_count'])
+        {
+            $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+            // Subscription got charged
+            $this->assertEquals(1, $result['total']);
+
+            $expectedPaidCount++;
+
+            $subscription = $this->getLastEntity('subscription', true);
+            $this->assertEquals($expectedPaidCount, $subscription['paid_count']);
+
+            $expectedStatus = 'active';
+
+            // After large charge, subscription is marked completed
+            if ($expectedPaidCount === $subscription['total_count'])
+            {
+                $expectedStatus = 'completed';
+            }
+
+            $this->assertEquals($expectedStatus, $subscription['status']);
+        }
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+        $this->assertEquals(0, $result['invoices_created']);
+    }
+
+    public function testSubscriptionManualTestChargeForDaily()
+    {
+        $planAttributes = [
+            'period'   => 'daily',
+            'interval' => 7
+        ];
+
+        $this->doAuthTxnForNewSubscription(false, $planAttributes);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->assertEquals('active', $subscription['status']);
+
+        $oldSubscription = $subscription;
+
+        // First test charge marks the subscription as active
+        // Billing period has been updated, paid count increased
+        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubscription['id'], true);
+
+        $this->assertEquals(2, $subscription['paid_count']);
+    }
+
     public function testSubscriptionChargeWithDueAddon()
     {
         $this->doAuthTxnForNewSubscription(false);
@@ -1658,6 +1865,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertNull($addon['invoice_id']);
 
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
         $this->assertEquals(1, $result['invoices_created']);
 
         $subscription = $this->getLastEntity('subscription', true);

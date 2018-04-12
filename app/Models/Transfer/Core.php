@@ -28,9 +28,12 @@ class Core extends Base\Core
     /**
      * Create a direct transfer from Merchant balance
      *
-     * @param  array                    $input
-     * @param  Merchant\Entity          $merchant
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     *
      * @return Transfer\Entity
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function createForMerchant(array $input, Merchant\Entity $merchant) : Entity
     {
@@ -40,7 +43,13 @@ class Core extends Base\Core
 
         $this->validateMerchantForTransfer($merchant);
 
-        return $this->repo->transaction(function () use ($input, $merchant)
+        $validator = new Validator;
+
+        $validator->validateInput('create', $input);
+
+        $validator->validateTransferMaxAmount($input[Entity::AMOUNT], $merchant);
+
+        return $this->repo->transaction(function () use ($input, $merchant, $validator)
         {
             $transfer = $this->makeTransfer($input, $merchant, $merchant);
 
@@ -55,10 +64,14 @@ class Core extends Base\Core
     /**
      * Create a transfer from a captured payment source
      *
-     * @param   Payment\Entity          $payment
-     * @param   array                   $input
-     * @param   Merchant\Entity         $merchant
+     * @param   Payment\Entity  $payment
+     * @param   array           $input
+     * @param   Merchant\Entity $merchant
+     *
      * @return  Base\PublicCollection
+     * @throws Exception\LogicException
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function createForPayment(Payment\Entity $payment, array $input, Merchant\Entity $merchant)
     {
@@ -66,9 +79,7 @@ class Core extends Base\Core
 
         $this->validateMerchantForTransfer($merchant);
 
-        $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
-
-        (new Validator)->validateTransfers($payment, $merchantBalance, $input);
+        (new Validator)->validateTransfers($payment, $input);
 
         $totalTransferAmount = 0;
 
@@ -214,6 +225,8 @@ class Core extends Base\Core
      *
      * @param  Payment\Entity $payment
      * @param  int            $amount
+     *
+     * @throws Exception\LogicException
      */
     protected function updatePaymentAmountTransferred(Payment\Entity $payment, int $amount)
     {
@@ -232,10 +245,13 @@ class Core extends Base\Core
     /**
      * Create and process a transfer
      *
-     * @param  array                $input
-     * @param  Base\Entity          $source
-     * @param  Merchant\Entity      $merchant
+     * @param  array           $input
+     * @param  Base\Entity     $source
+     * @param  Merchant\Entity $merchant
+     *
      * @return Transfer\Entity
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      */
     protected function makeTransfer(array $input, Base\Entity $source, Merchant\Entity $merchant) : Entity
     {

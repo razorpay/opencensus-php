@@ -4,16 +4,12 @@ namespace RZP\Models\Merchant\Webhook;
 
 use App;
 use Mail;
-use Requests;
 
-use RZP\Mail\Merchant\Webhook as WebhookMail;
-use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
-use RZP\Constants\MailTags;
 use RZP\Http\Response\Header;
 use RZP\Http\Response\StatusCode;
+use RZP\Mail\Merchant\Webhook as WebhookMail;
+use RZP\Trace\TraceCode;
 
-use Http\Discovery\HttpClientDiscovery;
 use Http\Client\Common\PluginClient;
 use Http\Client\Common\Plugin\ErrorPlugin;
 use Http\Client\Common\Exception\ClientErrorException;

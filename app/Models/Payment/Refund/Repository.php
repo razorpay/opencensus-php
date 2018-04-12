@@ -269,18 +269,69 @@ class Repository extends Base\Repository
 
         $refundCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
 
+        $query =  $this->newQuery()
+                       ->select($refundAttrs)
+                       ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                       ->where($refundStatus, '=',Refund\STATUS::FAILED)
+                       ->where($refundCreatedAt, '>=', $from)
+                       ->where($refundCreatedAt, '<=', $to)
+                       ->with(['payment']);
+
+        if (empty($gateway) === false)
+        {
+            $query->where($paymentGateway, '=', $gateway);
+        }
+
+        return $query->get();
+    }
+
+     /**
+     * Fetches all refunds for card gateways where refund is processed after
+     * six months from payment created at . It could not be processed via API
+     * @return array
+     */
+    public function fetchFailedCardRefundsToProcessManually($from, $to, $gateway, $acquirer, $timerange)
+    {
+        $refundAttributes = $this->dbColumn('*');
+
+        $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
+
+        $refundStatus = $this->dbColumn(Refund\Entity::STATUS);
+
+        $refundCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
+
+        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $paymentCreatedAt =  $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+
+        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $paymentMethod  = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $paymentRefundStatus = $this->repo->payment->dbColumn(Payment\Entity::REFUND_STATUS);
+
+        $TerminalId = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
+
+        $paymentTerminalAttr = $this->repo->payment->dbColumn(Payment\Entity::TERMINAL_ID);
+
+        $terminalAcquirerAttr = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY_ACQUIRER);
+
         return $this->newQuery()
-                    ->select($refundAttrs)
+                    ->select($refundAttributes)
                     ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                    ->join(Table::TERMINAL,$paymentTerminalAttr, '=', $TerminalId)
                     ->where($refundStatus, '=',Refund\STATUS::FAILED)
-                    ->where($paymentGateway, '=', $gateway)
+                    ->where($terminalAcquirerAttr, '=',$acquirer)
+                    ->whereNotNull($paymentRefundStatus)
                     ->where($refundCreatedAt, '>=', $from)
                     ->where($refundCreatedAt, '<=', $to)
+                    ->where($paymentGateway, '=', $gateway)
+                    ->where($paymentMethod, '=', 'card')
+                    ->whereRaw($refundCreatedAt . '-' .  $paymentCreatedAt . '>=' . $timerange)
                     ->with(['payment'])
                     ->get();
-
-        return $refunds;
     }
+
 
     public function fetchRefundsForTpvBetweenTimestamps(
         string $type,
@@ -542,17 +593,8 @@ class Repository extends Base\Repository
                     ->whereIn($pGateway, $gateways)
                     ->where($rLastAttemptedAt, '<', $timeLimit)
                     ->with(['payment','payment.terminal'])
+                    ->inRandomOrder()
                     ->limit(100);
-
-        if ((count($gateways) === 1) and
-            ($gateways[0] === 'first_data'))
-        {
-            $query->orderBy('updated_at');
-        }
-        else
-        {
-            $query->inRandomOrder();
-        }
 
         return $query->get();
     }
@@ -633,5 +675,13 @@ class Repository extends Base\Repository
                       });
 
         return $query->get();
+    }
+
+    public function findByReceiptAndMerchant(string $receipt, string $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Refund\Entity::RECEIPT, '=', $receipt)
+                    ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
+                    ->first();
     }
 }

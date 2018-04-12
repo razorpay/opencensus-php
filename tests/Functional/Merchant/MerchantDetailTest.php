@@ -8,8 +8,6 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
 
 class MerchantDetailTest extends TestCase
 {
@@ -284,7 +282,36 @@ class MerchantDetailTest extends TestCase
         $responseContent['activation_status'] = 'rejected';
     }
 
+    public function testMerchantUpdateWebsiteDetails()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId);
+
+        $this->startTest();
+    }
+
     public function testCommentMerchant()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest();
+    }
+
+
+    public function testMerchantReviewer()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
@@ -455,6 +482,13 @@ class MerchantDetailTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
         $this->ba->proxyAuth('rzp_live_'.$merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
+    public function testBulkAssignReviewer()
+    {
+        $this->ba->adminAuth();
 
         $this->startTest();
     }

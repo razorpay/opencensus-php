@@ -8,7 +8,7 @@ use Crypt;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
-use RZP\Models\Base\Traits\QueryCache\Cacheable;
+use RZP\Models\Base\QueryCache\Cacheable;
 
 class Entity extends Base\PublicEntity
 {
@@ -47,16 +47,6 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::EXPIRED_AT => null
     ];
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::updated(function ($key)
-        {
-            static::flushCache('key_' . $key->getId());
-        });
-    }
 
     public function merchant()
     {
@@ -167,7 +157,7 @@ class Entity extends Base\PublicEntity
         $x = range(1,8);
         foreach ($x as $n)
         {
-            $hex = bin2hex(openssl_random_pseudo_bytes(4));
+            $hex = bin2hex(random_bytes(4));
             $dec = hexdec($hex);
 
             // Convert the random decimal generated to base 62
@@ -197,7 +187,7 @@ class Entity extends Base\PublicEntity
         $x = range(1,4);
         foreach ($x as $n)
         {
-            $hex = bin2hex(openssl_random_pseudo_bytes(4));
+            $hex = bin2hex(random_bytes(4));
             $dec = hexdec($hex);
 
             // Convert the random decimal generated to base 62

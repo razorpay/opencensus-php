@@ -15,7 +15,7 @@ class PromotionsTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     public function testCreateOneTimePromotion()

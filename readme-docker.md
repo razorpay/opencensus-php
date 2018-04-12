@@ -17,7 +17,6 @@ First install Brew on your MAC
 - `brew tap homebrew/php`
 - Install PHP 7.0.+ `brew install php70`
 - Install gmp : `brew install php70-gmp`
-- Install `mcrypt`: `brew install mcrypt php70-mcrypt`
 - Finally, install composer: `brew install composer`
 
 Now if you run `$ php -v`, you will get `PHP 5.5` or something.
@@ -97,7 +96,7 @@ $ make build
 ```
 
 The above will take care of building a `Containerized api app` from your
-local file-system, spin up `mysql:5.6` container and establish connection
+local file-system, spin up `mysql:5.7` container and establish connection
 to run the app locally.
 
 You should be able to access the app at:

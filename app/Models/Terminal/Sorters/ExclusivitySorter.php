@@ -18,7 +18,7 @@ class ExclusivitySorter extends Terminal\Sorter
      * 3. Other gateway shared terminals
      *
      * @param $terminals
-     * @param array $input
+     *
      * @return array
      */
     public function sharedSorter($terminals)

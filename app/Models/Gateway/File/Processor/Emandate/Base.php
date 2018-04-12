@@ -19,6 +19,8 @@ use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
 
 abstract class Base extends BaseProcessor
 {
+    const FILE_METADATA            = [];
+
     public function checkIfValidDataAvailable(PublicCollection $payments)
     {
         if ($payments->count() === 0)
@@ -50,6 +52,7 @@ abstract class Base extends BaseProcessor
                     ->store(FileStore\Store::S3)
                     ->type(static::FILE_TYPE)
                     ->entity($this->gatewayFile)
+                    ->metadata(static::FILE_METADATA)
                     ->save();
 
             $file = $creator->getFileInstance();

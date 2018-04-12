@@ -25,4 +25,13 @@ class Core extends Base\Core
 
         return $signedUrl;
     }
+
+    public function getSignedUrl(string $fileStoreId, string $merchantId)
+    {
+        $signedUrls = (new Accessor)->id($fileStoreId)
+                               ->merchantId($merchantId)
+                               ->getSignedUrl();
+
+        return $signedUrls[$fileStoreId];
+    }
 }

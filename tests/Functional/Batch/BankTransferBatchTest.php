@@ -23,6 +23,8 @@ class BankTransferBatchTest extends TestCase
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->markTestSkipped('Bank transfer insertions are temporarily disabled');
     }
 
     public function testCreateBatchOfBankTransferTypeQueued()

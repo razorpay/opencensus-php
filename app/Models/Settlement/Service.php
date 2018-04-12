@@ -10,6 +10,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Report\Types\BasicEntityReport;
+use RZP\Models\FundTransfer\Base\Reconciliation\Mock;
 use RZP\Models\Settlement;
 
 class Service extends Base\Service
@@ -24,6 +25,13 @@ class Service extends Base\Service
     public function processFailedSettlements($input)
     {
         $data = (new Settlement\Processor)->processFailedSettlements($input);
+
+        return $data;
+    }
+
+    public function processDailySettlements($input)
+    {
+        $data = (new Settlement\Processor)->processDailySettlements($input);
 
         return $data;
     }
@@ -60,9 +68,15 @@ class Service extends Base\Service
                                 ['source', 'source.merchant', 'source.merchant.bankAccount']);
         }
 
-        $urls = (new Kotak\Service)->generateSettlementFile($entities);
+        $channel = $batch->getChannel();
 
-        return $urls;
+        $nodalAccountClass = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\NodalAccount';
+
+        $h2h = (bool) ($input['h2h']);
+
+        $fileCreator = (new $nodalAccountClass)->generateFundTransferFile($entities, $h2h);
+
+        return $fileCreator->get();
     }
 
     public function fetch($id)
@@ -124,14 +138,30 @@ class Service extends Base\Service
         return (new $reconNamepsace)->process($input);
     }
 
-    public function reconcileSettlementsInTestMode($input)
+    public function reconcileSettlementsInTestMode(array $input)
     {
-        return (new Kotak\ReconciliationGenerator)->reconcileSettlementsInTestMode($input);
+        $result = [];
+
+        foreach (Channel::getChannelsWithReconMock() as $channel)
+        {
+            $class = 'RZP\\Models\\FundTransfer\\' . ucfirst($channel)
+                     . '\\Reconciliation\\Mock\\FileGenerator';
+
+            $result[] = (new $class)->reconcileSettlements($input);
+        }
+
+        return $result;
     }
 
     public function generateSettlementReconciliation($input, string $channel)
     {
-        $reconGeneratorNamespace = '\\RZP\\Models\FundTransfer\\' . ucfirst($channel) . '\\ReconciliationGenerator';
+        (new Settlement\Validator)->validateInput('valid_channel', [
+            'channel'   => $channel
+        ]);
+
+        $reconGeneratorNamespace = '\\RZP\\Models\FundTransfer\\'
+                                    . ucfirst($channel)
+                                    . '\\Reconciliation\\Mock\\FileGenerator';
 
         $filename = (new $reconGeneratorNamespace)->generateReconcileFile($input);
 
@@ -183,6 +213,29 @@ class Service extends Base\Service
     public function addBeneficiary(string $channel, array $input): array
     {
         $response = (new Core)->addBeneficiary($channel, $input);
+
+        return $response;
+    }
+
+    /**
+     * Gets account balance of Nodal Account
+     *
+     * @param string $channel channel for which the balance has to be fetched
+     *
+     * @return array
+     * [
+     *  account_number => account_balance,
+     * ]
+     */
+    public function getAccountBalance(string $channel): array
+    {
+        $channelAttributeKey = 'balance_' . Entity::CHANNEL;
+
+        (new Validator)->validateInput('canFetchBalance', [
+            $channelAttributeKey => $channel
+        ]);
+
+        $response = (new Core)->getAccountBalance($channel);
 
         return $response;
     }

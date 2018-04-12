@@ -3,25 +3,26 @@
 namespace RZP\Models\Customer\Token;
 
 use RZP\Models\Base;
+use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
-use RZP\Models\Customer;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'token';
 
-    protected $appFetchParamRules = array(
-        Entity::METHOD          => 'sometimes|alpha',
-        Entity::CUSTOMER_ID     => 'sometimes|alpha_num',
-        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-        Entity::TERMINAL_ID     => 'sometimes|alpha_num',
-        Entity::TOKEN           => 'sometimes|alpha_num',
-        Entity::CARD_ID         => 'sometimes|alpha_num',
-        Entity::BANK            => 'sometimes|alpha',
-        Entity::WALLET          => 'sometimes|alpha',
-        Entity::RECURRING       => 'sometimes|in:0,1'
-    );
+    protected $appFetchParamRules = [
+        Entity::METHOD              => 'sometimes|alpha',
+        Entity::CUSTOMER_ID         => 'sometimes|alpha_num',
+        Entity::MERCHANT_ID         => 'sometimes|alpha_num',
+        Entity::TERMINAL_ID         => 'sometimes|alpha_num',
+        Entity::TOKEN               => 'sometimes|alpha_num',
+        Entity::CARD_ID             => 'sometimes|alpha_num',
+        Entity::BANK                => 'sometimes|alpha',
+        Entity::WALLET              => 'sometimes|alpha',
+        Entity::RECURRING           => 'sometimes|in:0,1',
+        Entity::RECURRING_STATUS    => 'sometimes|alpha|max:20',
+    ];
 
     public function getByCustomer($customer)
     {
@@ -33,7 +34,8 @@ class Repository extends Base\Repository
                         $query->whereNull(Token\Entity::EXPIRED_AT)
                               ->orWhere(Token\Entity::EXPIRED_AT, '>', time());
                     })
-                    ->orderBy(Entity::ID, 'desc')
+                    ->orderBy(Token\Entity::CREATED_AT, 'desc')
+                    ->orderBy(Token\Entity::ID, 'desc')
                     ->get();
     }
 
@@ -83,7 +85,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customerId)
                     ->where(Token\Entity::ID, '=', $tokenId)
-                    ->firstOrFail();
+                    ->firstOrFailPublic();
     }
 
     public function getByWalletTerminalAndCustomerId($wallet, $terminal, $customer)
@@ -101,13 +103,15 @@ class Repository extends Base\Repository
                     ->where(Entity::METHOD, '=', $method)
                     ->where(Entity::CUSTOMER_ID, '=', $customer->getId())
                     ->where(Entity::MERCHANT_ID, '=', $customer->merchant->getId())
+                    ->orderBy(Token\Entity::CREATED_AT, 'desc')
+                    ->orderBy(Token\Entity::ID, 'desc')
                     ->get();
     }
 
     public function getTokenByIdAndAccountNumber(string $tokenId, string $accountNumber)
     {
         return $this->newQuery()
-                    ->where(Entity::METHOD, Method::NETBANKING)
+                    ->where(Entity::METHOD, Method::EMANDATE)
                     ->where(Entity::ID, $tokenId)
                     ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
                     ->firstOrFail();

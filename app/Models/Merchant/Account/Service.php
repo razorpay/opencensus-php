@@ -6,7 +6,6 @@ use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Notify;
-use RZP\Models\Merchant\SlackActions as SlackActions;
 
 class Service extends Merchant\Service
 {
@@ -56,7 +55,6 @@ class Service extends Merchant\Service
      * @param string $id
      *
      * @return array
-     * @throws Exception\BadRequestException
      */
     public function fetchSettlementDestinations(string $id): array
     {
@@ -86,5 +84,21 @@ class Service extends Merchant\Service
         $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $account);
 
         return $ba->toArrayPublic();
+    }
+
+    /**
+     * Used for dashboard
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function listLinkedAccounts(array $input)
+    {
+        (new Validator)->validateInput('fetch', $input);
+
+        $accounts = $this->repo->account->getAccounts($this->merchant->getId(), $input);
+
+        return $accounts->toArrayPublic();
     }
 }

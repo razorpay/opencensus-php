@@ -1,0 +1,176 @@
+pipeline:
+  test:
+    image: razorpay/containers:php7
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=livedb
+      - DB_TEST_HOST=testdb
+      - DB_AUTH_HOST=authdb
+      - REDIS_HOST=redis
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+    commands:
+      - cp ./environment/.env.drone ./environment/.env.testing
+      - touch /etc/php7/conf.d/assertion.ini
+      - echo "zend.assertions=1" >> /etc/php7/conf.d/assertion.ini
+      - echo "assert.exception=On" >> /etc/php7/conf.d/assertion.ini
+      - cp scripts/nanotime.* /usr/lib/php7/modules
+      - touch /etc/php7/conf.d/nanotime.ini
+      - echo -n "extension=nanotime.so" >> /etc/php7/conf.d/nanotime.ini
+      - php -m
+      - composer config --global github-oauth.github.com $GIT_TOKEN
+      - composer install --no-interaction --optimize-autoloader
+      - mkdir -p /opt/razorpay/certs/first_data
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --debug --verbose
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  build:
+    image: plugins/docker
+    repo: razorpay/api
+    secrets: [docker_username, docker_password, git_token]
+    build_args_from_env: [git_token]
+    build_args:
+     - GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}
+    tags: ${DRONE_COMMIT_SHA}
+    when:
+      status: [success]
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+  build-notify:
+    image: plugins/slack
+    secrets: [slack_webhook]
+    channel: dev-test-2
+    username: drone
+    icon_url: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4
+    template: >
+      {{#success build.status}}
+        Build succeeded.
+      {{else}}
+        Build failed.
+      {{/success}}
+        Build No:{{build.number}}
+        Branch: {{build.branch}}
+        Commit: {{build.commit}}
+        Author: {{build.author}}
+        Started at: {{build.started}}
+        Time taken: {{since build.started}}
+        Link: {{build.link}}
+    when:
+      event:
+        include: [push]
+services:
+  livedb:
+    image: mysql
+    environment:
+      - MYSQL_DATABASE=api
+      - MYSQL_ROOT_PASSWORD=root
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+  testdb:
+    image: mysql
+    environment:
+      - MYSQL_DATABASE=api_test
+      - MYSQL_ROOT_PASSWORD=root
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+  authdb:
+    image: mysql
+    environment:
+      - MYSQL_DATABASE=auth
+      - MYSQL_ROOT_PASSWORD=root
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+  redis:
+    image: redis
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+  elasticsearch:
+    image: elasticsearch:5.2-alpine
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+pipeline:
+  deploy-qa-func:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_qa
+      - server_cert_qa
+      - client_cert_qa
+      - client_key_qa
+    user: drone
+    cluster: qa
+    auth_mode: client-cert
+    deployment:
+      - api-web
+      - api-sqs-batch
+      - api-sqs-emails
+      - api-sqs-es-sync
+      - api-sqs-gen-live
+      - api-sqs-gen-test
+      - api-sqs-invoice-email
+      - api-sqs-invoice-reports
+      - api-sqs-main
+      - api-sqs-subscription-charge
+      - api-sqs-webhooks-failure
+      - api-sqs-webhooks-live
+      - api-sqs-webhooks-test
+    repo: razorpay/api
+    namespace: func
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: qa-func
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-stage-echo:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    deployment:
+      - api-web
+      - api-sqs-batch
+      - api-sqs-emails
+      - api-sqs-es-sync
+      - api-sqs-gen-live
+      - api-sqs-gen-test
+      - api-sqs-invoice-email
+      - api-sqs-invoice-reports
+      - api-sqs-main
+      - api-sqs-subscription-charge
+      - api-sqs-webhooks-failure
+      - api-sqs-webhooks-live
+      - api-sqs-webhooks-test
+    repo: razorpay/api
+    namespace: echo
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-echo
+      event:
+        exclude: [push]
+        include: [deployment]

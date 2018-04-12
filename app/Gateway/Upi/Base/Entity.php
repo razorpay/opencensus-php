@@ -16,12 +16,15 @@ class Entity extends Base\Entity
     const PROVIDER              = 'provider';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
+    const MERCHANT_REFERENCE    = 'merchant_reference';
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
     const GATEWAY_PAYMENT_ID    = 'gateway_payment_id';
     const NPCI_REFERENCE_ID     = 'npci_reference_id';
     const PAYMENT_ID            = 'payment_id';
     const REFUND_ID             = 'refund_id';
     const EXPIRY_TIME           = 'expiry_time';
+    const ACCOUNT_NUMBER        = 'account_number';
+    const IFSC                  = 'ifsc';
     const RECEIVED              = 'received';
     const STATUS_CODE           = 'status_code';
     const VPA                   = 'vpa';
@@ -41,11 +44,14 @@ class Entity extends Base\Entity
         self::CONTACT,
         self::EMAIL,
         self::NAME,
+        self::MERCHANT_REFERENCE,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_PAYMENT_ID,
         self::NPCI_REFERENCE_ID,
         self::REFUND_ID,
         self::PAYMENT_ID,
+        self::ACCOUNT_NUMBER,
+        self::IFSC,
         self::RECEIVED,
         self::STATUS_CODE,
         self::VPA,
@@ -62,11 +68,14 @@ class Entity extends Base\Entity
         self::CONTACT,
         self::EMAIL,
         self::NAME,
+        self::MERCHANT_REFERENCE,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_PAYMENT_ID,
         self::NPCI_REFERENCE_ID,
         self::PAYMENT_ID,
         self::REFUND_ID,
+        self::ACCOUNT_NUMBER,
+        self::IFSC,
         self::RECEIVED,
         self::STATUS_CODE,
         self::VPA,
@@ -135,6 +144,11 @@ class Entity extends Base\Entity
     public function getVpa()
     {
         return $this->getAttribute(self::VPA);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
     }
 
     public function setNpciReferenceId(string $value)
