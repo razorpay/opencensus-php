@@ -138,9 +138,6 @@ class NetbankingCsbGatewayTest extends TestCase
 
         $verify = $this->verifyPayment($payment[Payment\Entity::ID]);
 
-        // Since BID is not null, we send V as the Mode for verify
-        $this->assertEquals(Mode::VERIFY, $verify['gateway']['verifyRequest'][7]);
-
         $this->assertEquals(true, $verify['gateway']['apiSuccess']);
         $this->assertEquals(true, $verify['gateway']['gatewaySuccess']);
 
