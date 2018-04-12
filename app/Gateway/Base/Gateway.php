@@ -1119,9 +1119,8 @@ class Gateway
 
     protected function isBharatQrPayment(): bool
     {
-        return (empty($this->input['payment']['receiver_type']) === false) and
-            ($this->input['payment']['receiver_type'] === 'qr_code');
-
+        return ((empty($this->input['payment']['receiver_type']) === false) and
+                ($this->input['payment']['receiver_type'] === 'qr_code'));
     }
 
     /**

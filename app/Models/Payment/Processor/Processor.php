@@ -1011,35 +1011,21 @@ class Processor
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
-        $terminalId = $this->payment->getTerminalId();
+        $terminal = $this->repo->terminal->fetchForPayment($this->payment);
+
+        if ($terminal === null)
+        {
+            throw new Exception\LogicException(
+                'Terminal should not be null here',
+                null,
+                ['payment_id' => $this->payment->getId()]);
+        }
 
         $gateway = $this->payment->getGateway();
-
-        $terminal = null;
-
-        // This will be removed after terminal association with bharat qr payments
-        if (($terminalId !== null) or
-            (Payment\Gateway::isValidBharatQrGateway($gateway) === false))
-        {
-            $terminal = $this->repo->terminal->fetchForPayment($this->payment);
-
-            if ($terminal === null)
-            {
-                throw new Exception\LogicException(
-                    'Terminal should not be null here',
-                    null,
-                    ['payment_id' => $this->payment->getId()]);
-            }
-        }
 
         $gatewayData['terminal'] = $terminal;
 
         $gatewayData['merchant'] = $this->payment->merchant;
-
-        if (Payment\Gateway::isValidBharatQrGateway($this->payment->getGateway()) === true)
-        {
-            $gatewayData['bharat_qr'] = $this->repo->bharat_qr->findByPaymentId($this->payment->getId());
-        }
 
         $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . '::' . strtoupper($action);
 
