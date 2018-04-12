@@ -374,20 +374,20 @@ class Gateway extends Base\Gateway
 
     protected function saveVerifyContent(Verify $verify)
     {
-        $wallet = $verify->payment;
+        $gatewayPayment = $verify->payment;
 
         $content = $verify->verifyResponseContent;
 
         $contentToSave = [];
 
-        if ((empty($wallet[Base\Entity::STATUS]) === true) or
-            ($wallet[Base\Entity::STATUS] !== Status::SUCCESS))
+        if ((empty($gatewayPayment[Base\Entity::STATUS]) === true) or
+            ($gatewayPayment[Base\Entity::STATUS] !== Status::SUCCESS))
         {
             $contentToSave[ResponseFields::STATUS] = $content[ResponseFields::VERIFICATION] ??
                                                      $content[ResponseFields::STATUS_UCFIRST];
         }
 
-        return parent::updateGatewayPaymentEntity($wallet, $contentToSave);
+        return parent::updateGatewayPaymentEntity($gatewayPayment, $contentToSave);
     }
 
     /**
