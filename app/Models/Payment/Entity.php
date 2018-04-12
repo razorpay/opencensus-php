@@ -93,6 +93,13 @@ class Entity extends Base\PublicEntity
     const APPROVAL_CODE         = 'approval_code';
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
+    const REFERENCE3            = 'reference3';
+    const REFERENCE4            = 'reference4';
+    const REFERENCE5            = 'reference5';
+    const REFERENCE6            = 'reference6';
+    const REFERENCE7            = 'reference7';
+    const REFERENCE8            = 'reference8';
+    const REFERENCE9            = 'reference9';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
     const GATEWAY_CAPTURED      = 'gateway_captured';
@@ -108,6 +115,7 @@ class Entity extends Base\PublicEntity
     const LATE_AUTHORIZED       = 'late_authorized';
     const CONVERT_CURRENCY      = 'convert_currency';
     const AUTH_TYPE             = 'auth_type';
+    const ACKNOWLEDGED_AT       = 'acknowledged_at';
 
     const MAX_AMOUNT            = 'max_amount';
     const EXPIRE_BY             = 'expire_by';
@@ -262,6 +270,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::DISPUTED,
         self::RECURRING_TYPE,
+        self::ACKNOWLEDGED_AT,
     ];
 
     protected $public = [
@@ -386,6 +395,7 @@ class Entity extends Base\PublicEntity
         self::DISPUTED             => false,
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
+        self::ACKNOWLEDGED_AT      => null,
     ];
 
     protected $amounts = [
@@ -915,6 +925,11 @@ class Entity extends Base\PublicEntity
     public function setEmiSubvention(string $subvention)
     {
         $this->setAttribute(self::EMI_SUBVENTION, $subvention);
+    }
+
+    public function setAcknowledgedAt(int $timestamp)
+    {
+        $this->setAttribute(self::ACKNOWLEDGED_AT, $timestamp);
     }
 
     // ----------------------- Setters Ends-----------------------------------------
@@ -2538,5 +2553,20 @@ class Entity extends Base\PublicEntity
         $filteredDescription = preg_replace('/[^a-zA-Z0-9 ]+/', '', $description);
 
         return $filteredDescription;
+    }
+
+    public function getAcknowledgedAt()
+    {
+        return $this->getAttribute(self::ACKNOWLEDGED_AT);
+    }
+
+    /**
+     * Returns true if the payment success/failure has been acknowledged by the merchant.
+     *
+     * @return bool
+     */
+    public function isAcknowledged(): bool
+    {
+        return $this->isAttributeNotNull(self::ACKNOWLEDGED_AT);
     }
 }

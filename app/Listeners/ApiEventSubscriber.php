@@ -12,6 +12,7 @@ use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Jobs\DispatchRouter;
+use RZP\Models\VirtualAccount;
 use RZP\Models\Customer\Token;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
@@ -200,7 +201,14 @@ class ApiEventSubscriber extends Base\Core
 
     protected function onVirtualAccountCredited(Payment\Entity $payment)
     {
-        $payload = $this->getVirtualAccountPayload($payment);
+        $payload = $this->getVirtualAccountPaymentPayload($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onVirtualAccountCreated(VirtualAccount\Entity $virtualAccount)
+    {
+        $payload = $this->getVirtualAccountPayload($virtualAccount);
 
         $this->prepareAndDispatchWebhook($payload);
     }
@@ -420,7 +428,7 @@ class ApiEventSubscriber extends Base\Core
         return $partialPayload;
     }
 
-    protected function getVirtualAccountPayload(Payment\Entity $payment)
+    protected function getVirtualAccountPaymentPayload(Payment\Entity $payment)
     {
         $bankTransfer = $payment->bankTransfer;
 
@@ -430,6 +438,15 @@ class ApiEventSubscriber extends Base\Core
             'entity' => $payment->toArrayPublic()
         ];
 
+        $partialPayload[Constants\Entity::VIRTUAL_ACCOUNT] = [
+            'entity' => $virtualAccount->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
+
+    protected function getVirtualAccountPayload(VirtualAccount\Entity $virtualAccount)
+    {
         $partialPayload[Constants\Entity::VIRTUAL_ACCOUNT] = [
             'entity' => $virtualAccount->toArrayPublic()
         ];

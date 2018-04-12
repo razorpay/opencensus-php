@@ -113,7 +113,7 @@ class Server extends Base\Mock\Server
 
     protected function getVerifyResponse($input)
     {
-        $merchantId = $this->getGatewayInstance()->getMerchantId();
+        $merchantId = $this->getGatewayInstance()->getMerchantId2();
 
         $date = Carbon::createFromFormat(self::TIME_FORMAT,
             $input[VerifyFields::TRANSACTION_DATE])->toDateTimeString();
@@ -300,7 +300,7 @@ class Server extends Base\Mock\Server
 
     protected function getVerifyResponseHashArray($content)
     {
-        $merchantId = $this->getGatewayInstance()->getMerchantId();
+        $merchantId = $this->getGatewayInstance()->getMerchantId2();
 
         if ($content[VerifyFields::TRANSACTION] === [])
         {

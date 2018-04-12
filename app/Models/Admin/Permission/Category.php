@@ -12,6 +12,7 @@ class Category
     const ROLE             = 'role';
     const GROUP            = 'group';
     const ADMIN            = 'admin';
+    const ACTION           = 'action';
     const PERMISSION       = 'permission';
     const AUDIT_LOG        = 'audit_log';
     const INVITATION       = 'invitation';

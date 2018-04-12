@@ -869,8 +869,6 @@ class Base extends BaseModel\Core
      * @param bool   $associateBatch - Ref: saveInputFile() for usage
      *
      * @return FileStore\Creator
-     *
-     * @throws LogicException
      */
     protected function saveFile(string $filePath, string $type, bool $associateBatch = true): FileStore\Creator
     {
@@ -878,7 +876,7 @@ class Base extends BaseModel\Core
 
         $name = $filePrefix . $this->batch->getFileKey();
 
-        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
 
         $ufh = new FileStore\Creator;
 
@@ -1055,7 +1053,7 @@ class Base extends BaseModel\Core
 
     /**
      * Handles any exception while processing the batch, and updates the batch
-     * status accordingly. Should be overrideen by respective processors for any
+     * status accordingly. Should be overridden by respective processors for any
      * special handling
      *
      * @param \Throwable $ex

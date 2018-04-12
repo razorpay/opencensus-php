@@ -22,6 +22,8 @@ class EnachRbl extends Base
     const REGISTRATION_STATUS = 'registration_status';
     const ACCOUNT_NUMBER      = 'account_number';
     const ERROR_MESSAGE       = 'error_message';
+    const ERROR_CODE          = 'error_code';
+    const PAYMENT_ID          = 'payment_id';
 
     /**
      * @var Payment\Processor\Processor
@@ -43,11 +45,12 @@ class EnachRbl extends Base
 
         $gatewayToken = $content[self::GATEWAY_TOKEN];
 
+        $payment = $this->repo->payment->findOrFailPublic($content[self::PAYMENT_ID]);
+
         $gatewayPayment = $this->repo
                                ->enach
-                               ->findAuthorizedPaymentByUmrn($gatewayToken);
+                               ->findAuthorizedPaymentByPaymentId($payment->getId());
 
-        $payment = $gatewayPayment->payment;
         $token = $payment->getGlobalOrLocalTokenEntity();
 
         if ($payment->hasBeenAuthorized() === false)
@@ -180,7 +183,9 @@ class EnachRbl extends Base
             self::TOKEN_STATUS        => $status,
             self::REGISTRATION_STATUS => $entry[Batch\Header::ENACH_REGISTER_STATUS],
             self::ACCOUNT_NUMBER      => $accountNumber,
-            self::ERROR_MESSAGE       => $this->getTokenErrorMessage($entry[Batch\Header::ENACH_REGISTER_STATUS]),
+            self::PAYMENT_ID          => $entry[Batch\Header::ENACH_REGISTER_REF_1],
+            self::ERROR_CODE          => $entry[Batch\Header::ENACH_REGISTER_RETURN_CODE],
+            self::ERROR_MESSAGE       => $this->getTokenErrorMessage($entry),
         ];
     }
 
@@ -194,18 +199,16 @@ class EnachRbl extends Base
         return Token\RecurringStatus::REJECTED;
     }
 
-    protected function getTokenErrorMessage(string $gatewayTokenStatus)
+    protected function getTokenErrorMessage(array $entry)
     {
-        if (Rbl\Status::isRegistrationSuccess($gatewayTokenStatus) === true)
+        if (Rbl\Status::isRegistrationSuccess($entry[Batch\Header::ENACH_REGISTER_STATUS]) === true)
         {
             return null;
         }
-
-        //
-        // Return status in case of failure, we are keeping it
-        // as failure status
-        //
-        return 'FAILED';
+        else
+        {
+            return $entry[Batch\Header::ENACH_REGISTER_CODE_DESC] ?? 'FAILED';
+        }
     }
 
     /**

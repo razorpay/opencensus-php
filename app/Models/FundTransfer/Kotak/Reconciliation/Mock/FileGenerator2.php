@@ -1,20 +1,21 @@
 <?php
 
-namespace RZP\Models\FundTransfer\Kotak;
+namespace RZP\Models\FundTransfer\Kotak\Reconciliation\Mock;
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use RZP\Exception;
+use App;
 use Excel;
-use RZP\Trace;
+use Carbon\Carbon;
+
+use RZP\Exception;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant;
-use RZP\Models\Transaction;
+use RZP\Constants\Timezone;
+use RZP\Models\FundTransfer\Kotak\NodalAccount;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 /**
  * This class is used to handle generation of settlement reconciliation
  * files for running tests and in test mode
  */
-class ReconciliationGenerator2
+class FileGenerator2
 {
     use FileHandlerTrait;
 
@@ -52,7 +53,7 @@ class ReconciliationGenerator2
 
     public static function getHeadings()
     {
-        return Kotak\NodalAccount::getHeadings();
+        return NodalAccount::getHeadings();
     }
 
     protected function getReconciliationRows($data)

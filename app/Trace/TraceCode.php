@@ -323,6 +323,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MAILER_JOB_RECEIVED                           = 'MAILER_JOB_RECEIVED';
     const MAILER_JOB_ERROR                              = 'MAILER_JOB_ERROR';
+    const MAILER_INVALID_RECIPIENT_EMAIL                = 'MAILER_INVALID_RECIPIENT_EMAIL';
     const INVOICE_ACTION_JOB_ERROR                      = 'INVOICE_ACTION_JOB_ERROR';
     const INVOICE_PDF_GEN_FAILED                        = 'INVOICE_PDF_GEN_FAILED';
     const INVOICE_PDF_GEN_TIME_TAKEN                    = 'INVOICE_PDF_GEN_TIME_TAKEN';
@@ -421,6 +422,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PAYMENT_UPDATE_AMOUNT_PAIDOUT                 = 'PAYMENT_UPDATE_AMOUNT_PAIDOUT';
     const PAYMENT_WALLET_LOW_BALANCE                    = 'PAYMENT_WALLET_LOW_BALANCE';
+    const PAYMENT_ACKNOWLEDGE_REQUEST                   = 'PAYMENT_ACKNOWLEDGE_REQUEST';
+    const PAYMENT_ACKNOWLEDGED                          = 'PAYMENT_ACKNOWLEDGED';
 
     const FILE_DELETING                                 = 'FILE_DELETING';
     const DIRECTORY_DELETING                            = 'DIRECTORY_DELETING';
@@ -627,6 +630,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BHARAT_QR_PAYMENT_PROCESSING_FAILED       = 'BHARAT_QR_PAYMENT_PROCESSING_FAILED';
     const BHARAT_QR_PAYMENT_PROCESSING_SUCCESSFUL   = 'BHARAT_QR_PAYMENT_PROCESSING_SUCCESSFUL';
     const BHARAT_QR_PAYMENT_DUPLICATE_NOTIFICATION  = 'BHARAT_QR_PAYMENT_DUPLICATE_NOTIFICATION';
+    const BHARAT_QR_UNEXPECTED_PAYMENT              = 'BHARAT_QR_UNEXPECTED_PAYMENT';
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
     const MERCHANT_REPORT_GENERATION                = 'MERCHANT_REPORT_GENERATION';

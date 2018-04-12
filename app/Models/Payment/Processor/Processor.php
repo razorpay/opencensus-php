@@ -31,6 +31,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
 class Processor
@@ -545,6 +546,8 @@ class Processor
      *
      * @param  string $id    Payment ID
      * @param  array  $input Input Array
+     *
+     * @return PublicCollection
      * @throws Exception\BadRequestException
      */
     public function transfer(string $id, array $input)
@@ -555,6 +558,7 @@ class Processor
 
         $payment = $this->retrieve($id);
 
+        /** @var Payment\Validator $validator */
         $validator = $payment->getValidator();
 
         $validator->validateIsCaptured();
@@ -565,6 +569,8 @@ class Processor
             $payment->getId(),
             function() use ($payment, $input)
             {
+                $this->repo->reload($payment);
+
                 return $this->repo->transaction(function() use ($payment, $input)
                 {
                     $transfers = (new TransferCore)->createForPayment(
@@ -1900,5 +1906,42 @@ class Processor
         $terminal->setEnabled(false);
 
         $this->repo->saveOrFail($terminal);
+    }
+
+    /**
+     * Marks the payment as acknowledged.
+     *
+     * @param Payment\Entity $payment
+     */
+    public function acknowledge(Payment\Entity $payment)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_ACKNOWLEDGE_REQUEST,
+            [
+                Payment\Entity::ID => $payment->getId(),
+            ]);
+
+        $this->mutex->acquireAndRelease($payment->getId(),
+            function() use ($payment)
+            {
+                $this->repo->reload($payment);
+
+                $payment->getValidator()->acknowledgeValidate();
+
+                $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+                $payment->setAcknowledgedAt($currentTime);
+
+                $this->repo->saveOrFail($payment);
+            },
+            20,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_ACKNOWLEDGED,
+            [
+                Payment\Entity::ID              => $payment->getId(),
+                Payment\Entity::ACKNOWLEDGED_AT => $payment->getAcknowledgedAt()
+            ]);
     }
 }

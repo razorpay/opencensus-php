@@ -126,6 +126,9 @@ class MailTags
     // Dispute tags
     const DISPUTE_CREATED                  = 'dispute_created';
 
+    // Daily Recon summary tags
+    const DAILY_RECON_SUMMARY              = 'daily_recon_summary';
+
     /**
      * Email tags that should respond to the mailgun failure webhook
      * @var array Email tags

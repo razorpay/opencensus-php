@@ -19,7 +19,7 @@ class SlackNotification extends Base\Core
         'setl_reconciliation'   => 'Settlements reconciled. ',
         'reconcile_file'        => 'Reconciliation file processed.',
         'setl_return'           => 'Settlements returns occurred. ',
-        'null_utr_report'       => 'Settlements without UTR from yesterday');
+        'null_utr_report'       => 'Today\'s settlements without UTR');
 
     public function success($operation, $data)
     {

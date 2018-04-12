@@ -11,17 +11,18 @@ class Repository extends Base\Repository
 {
     protected $entity = 'token';
 
-    protected $appFetchParamRules = array(
-        Entity::METHOD          => 'sometimes|alpha',
-        Entity::CUSTOMER_ID     => 'sometimes|alpha_num',
-        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-        Entity::TERMINAL_ID     => 'sometimes|alpha_num',
-        Entity::TOKEN           => 'sometimes|alpha_num',
-        Entity::CARD_ID         => 'sometimes|alpha_num',
-        Entity::BANK            => 'sometimes|alpha',
-        Entity::WALLET          => 'sometimes|alpha',
-        Entity::RECURRING       => 'sometimes|in:0,1'
-    );
+    protected $appFetchParamRules = [
+        Entity::METHOD              => 'sometimes|alpha',
+        Entity::CUSTOMER_ID         => 'sometimes|alpha_num',
+        Entity::MERCHANT_ID         => 'sometimes|alpha_num',
+        Entity::TERMINAL_ID         => 'sometimes|alpha_num',
+        Entity::TOKEN               => 'sometimes|alpha_num',
+        Entity::CARD_ID             => 'sometimes|alpha_num',
+        Entity::BANK                => 'sometimes|alpha',
+        Entity::WALLET              => 'sometimes|alpha',
+        Entity::RECURRING           => 'sometimes|in:0,1',
+        Entity::RECURRING_STATUS    => 'sometimes|alpha|max:20',
+    ];
 
     public function getByCustomer($customer)
     {

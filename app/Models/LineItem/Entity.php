@@ -42,6 +42,7 @@ class Entity extends Base\PublicEntity
     // as part of the line item itself.
     const REF              = 'ref';
     const TAX_ID           = 'tax_id';
+    const TAX_IDS          = 'tax_ids';
     const TAX_GROUP_ID     = 'tax_group_id';
 
     // Output keys
