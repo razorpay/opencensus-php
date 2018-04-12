@@ -22,8 +22,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
 {
     protected $gateway = Payment\Gateway::NETBANKING_CSB;
 
-    // TODO: What should this value be? If it is a manual recon, it should not matter
-    protected $fileToWriteName = 'Sample Recon';
+    protected $fileToWriteName = 'CSB Mock Recon';
 
     /**
      * The payment recon file does not contain any headers
@@ -33,10 +32,6 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
      */
     protected $shouldAddHeaders = false;
 
-    /**
-     * CSB shares the payments to recon in txt format
-     * @var string
-     */
     protected $fileExtension = FileStore\Format::TXT;
 
     protected function getReconciliationData(array $input)

@@ -25,8 +25,6 @@ class NetbankingCsbReconTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/NetbankingCsbReconTestData.php';
-
         parent::setUp();
 
         $this->payment = $this->getDefaultNetbankingPaymentArray(IFSC::CSBK);

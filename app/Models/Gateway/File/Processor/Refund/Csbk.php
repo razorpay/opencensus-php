@@ -51,7 +51,7 @@ class Csbk extends Base
                                                                                 Action::AUTHORIZE);
 
                 $carry[] = [
-                    'Sr.No'              => sizeof($carry) + 1,
+                    'Sr.No'              => (count($carry) + 1),
                     'Refund Id'          => $row[ConstantsEntity::REFUND][RefundEntity::ID],
                     'Bank Id'            => self::BANK_CODE,
                     'Merchant Name'      => self::MERCHANT_NAME,
