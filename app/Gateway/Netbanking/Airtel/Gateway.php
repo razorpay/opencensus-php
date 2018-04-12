@@ -663,8 +663,4 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function getLiveSecret()
-    {
-        return $this->config['live_hash_secret'];
-    }
 }
