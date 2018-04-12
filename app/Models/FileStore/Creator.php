@@ -607,8 +607,6 @@ class Creator extends Base\Core
 
     /**
      * Validates the Content before saving
-     *
-     * @throws Exception\LogicException
      */
     protected function validateBeforeSave()
     {
@@ -632,8 +630,6 @@ class Creator extends Base\Core
 
     /**
      * Validates the Mime and Extension before uploading
-     *
-     * @throws Exception\BadRequestValidationFailureException
      */
     protected function validateBeforeUpload()
     {
@@ -805,13 +801,13 @@ class Creator extends Base\Core
         $fileNameWithoutExt = $this->file->getName();
 
         $fileMetadata = Formatter\ExcelFormatter::writeToExcelFile(
-            $this->content,
-            $fileNameWithoutExt,
-            $this->columnFormat,
-            $this->headers,
-            $this->file->getExtension(),
-            $this->getStorageDir(),
-            $this->sheetName);
+                                                        $this->content,
+                                                        $fileNameWithoutExt,
+                                                        $this->columnFormat,
+                                                        $this->headers,
+                                                        $this->file->getExtension(),
+                                                        $this->getStorageDir(),
+                                                        $this->sheetName);
 
         $this->createUploadedFile($fileMetadata['full'], $fileMetadata['file']);
     }

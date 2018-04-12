@@ -10,6 +10,7 @@ use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Order;
+use RZP\Gateway\Enach;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
@@ -1073,6 +1074,47 @@ class Repository extends Base\Repository
                     ->where($tokenRecurringColumn, '!=', 1)
                     ->whereNotNull(Entity::AUTHORIZED_AT)
                     ->with(['localToken', 'globalToken', 'customer'])
+                    ->get();
+    }
+
+    public function fetchPendingEmandateRegistrationForEnach(int $from, int $to)
+    {
+        $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $paymentCreatedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+
+        $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
+
+        $tokenRecurringColumn = $this->repo->token->dbColumn(Token\Entity::RECURRING);
+
+        $enachPaymentIdColumn = $this->repo->enach->dbColumn(Enach\Base\Entity::PAYMENT_ID);
+
+        $selectCols = $this->repo->payment->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($selectCols)
+                    ->join(
+                        Table::TOKEN,
+                        function ($join)
+                        use($tokenIdColumn)
+                        {
+                            $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
+                            $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
+                        })
+                    ->join(Table::ENACH, $paymentIdColumn, '=', $enachPaymentIdColumn)
+                    ->where(Entity::RECURRING_TYPE, '=', RecurringType::INITIAL)
+                    ->where($paymentRecurringColumn, '=', 1)
+                    ->where($paymentMethodColumn, '=', Method::EMANDATE)
+                    ->where(Entity::GATEWAY, '=', Payment\Gateway::ENACH_RBL)
+                    ->whereBetween($paymentCreatedAtColumn, [$from, $to])
+                    ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
+                    ->where($tokenRecurringColumn, '!=', 1)
+                    ->whereNotNull(Entity::AUTHORIZED_AT)
+                    ->with(['localToken', 'globalToken', 'customer', 'enach'])
                     ->get();
     }
 

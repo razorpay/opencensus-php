@@ -64,6 +64,36 @@ class Entity extends Base\Entity
         self::ERROR_CODE            => null,
     ];
 
+    public function getReceived()
+    {
+        return $this->getAttribute(self::RECEIVED);
+    }
+
+    public function getSignedXml()
+    {
+        return $this->getAttribute(self::SIGNED_XML);
+    }
+
+    public function setUmrn(string $umrn)
+    {
+        $this->setAttribute(self::UMRN, $umrn);
+    }
+
+    public function setAcquirer(string $acquirer)
+    {
+        $this->setAttribute(self::ACQUIRER, $acquirer);
+    }
+
+    public function setAmount(string $amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setBank(string $bank)
+    {
+        $this->setAttribute(self::BANK, $bank);
+    }
+
     public function payment()
     {
         return $this->belongsTo(\RZP\Models\Payment\Entity::class);
@@ -87,30 +117,5 @@ class Entity extends Base\Entity
         }
 
         return Crypt::decrypt($signedXml);
-    }
-
-    public function setUmrn(string $umrn)
-    {
-        $this->setAttribute(self::UMRN, $umrn);
-    }
-
-    public function setAcquirer(string $acquirer)
-    {
-        $this->setAttribute(self::ACQUIRER, $acquirer);
-    }
-
-    public function setAmount(string $amount)
-    {
-        $this->setAttribute(self::AMOUNT, $amount);
-    }
-
-    public function setBank(string $bank)
-    {
-        $this->setAttribute(self::BANK, $bank);
-    }
-
-    public function getReceived()
-    {
-        return $this->getAttribute(self::RECEIVED);
     }
 }
