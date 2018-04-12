@@ -4,6 +4,12 @@ namespace RZP\Services;
 
 use RZP;
 use Swift_Mailer;
+use Illuminate\Database\Connection;
+use Http\Mock\Client as MockHttplug;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
+
 use RZP\Models\Batch;
 use RZP\Models\Order;
 use RZP\Models\Payout;
@@ -24,15 +30,10 @@ use RZP\Models\VirtualAccount;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Plan\Subscription;
-use Illuminate\Database\Connection;
-use RZP\Base\Database\CustomMysqlConnection;
-use Http\Mock\Client as MockHttplug;
+use RZP\Base\Database\MysqlConnection;
 use RZP\Models\Plan\Subscription\Addon;
-use Illuminate\Database\MySqlConnection;
 use RZP\Models\Gateway\File as GatewayFile;
 use RZP\Models\Merchant\Request as MerchantRequest;
-use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
 class ApiServiceProvider extends BaseServiceProvider
 {
@@ -478,12 +479,12 @@ class ApiServiceProvider extends BaseServiceProvider
     protected function registerCustomMysqlConnection()
     {
         Connection::resolverFor('mysql', function ($connection, $database, $prefix, $config) {
-            if (isset($config['lag_check']) === false)
+            if (isset($config['lag_check']) === true)
             {
                 return new MySqlConnection($connection, $database, $prefix, $config);
             }
 
-            return new CustomMysqlConnection($connection, $database, $prefix, $config);
+            return new IlluminateMySqlConnection($connection, $database, $prefix, $config);
         });
     }
 }

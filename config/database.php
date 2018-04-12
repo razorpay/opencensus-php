@@ -99,6 +99,33 @@ return array(
              ]
         ],
 
+        'slave-live' => [
+            // Slave must have the same driver and DB names as the master.
+            'driver'    => env('DB_LIVE_DRIVER'),
+            'host'      => env('SLAVE_DB_LIVE_HOST'),
+            'port'      => env('SLAVE_DB_LIVE_PORT'),
+            'database'  => env('DB_LIVE_DATABASE'),
+            'username'  => env('SLAVE_DB_LIVE_USERNAME'),
+            'password'  => env('SLAVE_DB_LIVE_PASSWORD'),
+            'charset'   => 'utf8',
+            'collation' => 'utf8_bin',
+            'prefix'    => '',
+            'strict'    => true
+        ],
+
+        'slave-test' => [
+            'driver'    => env('DB_TEST_DRIVER'),
+            'host'      => env('SLAVE_DB_TEST_HOST'),
+            'port'      => env('SLAVE_DB_TEST_PORT'),
+            'database'  => env('DB_TEST_DATABASE'),
+            'username'  => env('SLAVE_DB_TEST_USERNAME'),
+            'password'  => env('SLAVE_DB_TEST_PASSWORD'),
+            'charset'   => 'utf8',
+            'collation' => 'utf8_bin',
+            'prefix'    => '',
+            'strict'    => true
+        ],
+
         'auth' => [
             'driver'    => env('DB_AUTH_DRIVER'),
             'host'      => env('DB_AUTH_HOST'),
