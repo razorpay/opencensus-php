@@ -8,14 +8,15 @@ use RZP\Models\Merchant;
 
 class Entity extends Base\PublicEntity
 {
-    const NAME              = 'name';
-    const TYPE              = 'type';
-    const STATES            = 'states';
-    const STATUS            = 'status';
-    const MERCHANT          = 'merchant';
-    const MERCHANT_ID       = 'merchant_id';
-    const PUBLIC_MESSAGE    = 'public_message';
-    const INTERNAL_COMMENT  = 'internal_comment';
+    const NAME                             = 'name';
+    const TYPE                             = 'type';
+    const STATES                           = 'states';
+    const STATUS                           = 'status';
+    const MERCHANT                         = 'merchant';
+    const MERCHANT_ID                      = 'merchant_id';
+    const PUBLIC_MESSAGE                   = 'public_message';
+    const INTERNAL_COMMENT                 = 'internal_comment';
+    const ALLOWED_NEXT_ACTIVATION_STATUSES = 'allowed_next_activation_statuses';
 
     protected $entity = 'merchant_request';
 
@@ -43,14 +44,14 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::PUBLIC_MESSAGE,
         self::INTERNAL_COMMENT,
-        Constants::ALLOWED_NEXT_ACTIVATION_STATUSES,
+        self::ALLOWED_NEXT_ACTIVATION_STATUSES,
     ];
 
     protected $publicSetters = [
         self::ID,
         self::MERCHANT_ID,
         self::INTERNAL_COMMENT,
-        Constants::ALLOWED_NEXT_ACTIVATION_STATUSES,
+        self::ALLOWED_NEXT_ACTIVATION_STATUSES,
     ];
 
     protected $defaults = [
@@ -124,7 +125,7 @@ class Entity extends Base\PublicEntity
             $allowedNextActivationStatuses = Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$activationStatus];
         }
 
-        $array[Constants::ALLOWED_NEXT_ACTIVATION_STATUSES] = $allowedNextActivationStatuses;
+        $array[self::ALLOWED_NEXT_ACTIVATION_STATUSES] = $allowedNextActivationStatuses;
     }
 
 }

@@ -13,8 +13,6 @@ use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
-use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
-use RZP\Mail\Merchant\AccountChangeRequest as BankAccountChangeRequestMail;
 
 
 class Core extends Base\Core
@@ -117,7 +115,7 @@ class Core extends Base\Core
 
         $ba = $this->createBankAccount($input, $merchant, $this->mode);
 
-        $this->sendBankAccountChangeRequestEmail($ba, $merchant);
+        $this->sendBankAccountChangeEmail($ba, $merchant, true);
 
         $this->app['workflow']
              ->setEntityAndId($oldBankAccount->getEntity(), $oldBankAccount->getId())
@@ -248,7 +246,7 @@ class Core extends Base\Core
         return $ba;
     }
 
-    protected function sendBankAccountChangeRequestEmail($newBankAccount, $merchant)
+    protected function sendBankAccountChangeEmail($newBankAccount, $merchant, $request = false)
     {
         if ($this->shouldNotifyViaEmail($merchant) === false)
         {
@@ -261,25 +259,14 @@ class Core extends Base\Core
 
         $merchant = $merchant->toArray();
 
-        $bankAccountChangeRequestMail = new BankAccountChangeRequestMail($newBankAccount, $merchant, $recipients);
+        $class = "RZP\Mail\Merchant\AccountChange";
 
-        Mail::queue($bankAccountChangeRequestMail);
-    }
-
-    protected function sendBankAccountChangeEmail($newBankAccount, $merchant)
-    {
-        if ($this->shouldNotifyViaEmail($merchant) === false)
+        if ($request === true)
         {
-            return;
+            $class = "RZP\Mail\Merchant\AccountChangeRequest";
         }
 
-        $newBankAccount = $newBankAccount->toArray();
-
-        $recipients = (new Merchant\Core)->getEmailsOfOwnersAndAdmins($merchant);
-
-        $merchant = $merchant->toArray();
-
-        $bankAccountChangeMail = new BankAccountChangeMail($newBankAccount, $merchant, $recipients);
+        $bankAccountChangeMail = new $class($newBankAccount, $merchant, $recipients);
 
         Mail::queue($bankAccountChangeMail);
     }

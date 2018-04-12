@@ -484,11 +484,7 @@ class Service extends Base\Service
 
         if (isset($input[Merchant\Detail\Entity::REVIEWER_ID]) === true)
         {
-            $reviewerId = $input[Merchant\Detail\Entity::REVIEWER_ID];
-
-            Entity::verifyIdAndStripSign($reviewerId);
-
-            $input[Merchant\Detail\Entity::REVIEWER_ID] = $reviewerId;
+            Entity::verifyIdAndStripSign($input[Merchant\Detail\Entity::REVIEWER_ID]);
         }
 
         // We would want to receive the ES payload

@@ -754,14 +754,10 @@ class Core extends Base\Core
 
     public function getEmailsOfOwnersAndAdmins(Entity $merchant)
     {
-        $users = $merchant->users()->whereIn('role', ['admin','owner'])->get();
-
-        $emails = [];
-
-        foreach($users as $user)
-        {
-            $emails[] = $user->email;
-        }
+        $emails = $merchant->users()
+                           ->whereIn(User\Entity::ROLE, [User\Role::ADMIN, User\Role::OWNER])
+                           ->pluck(User\Entity::EMAIL)
+                           ->all();
 
         return $emails;
     }

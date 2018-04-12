@@ -2,10 +2,10 @@
 
 namespace RZP\Mail\Merchant;
 
-use RZP\Constants\MailTags;
-use RZP\Mail\Base\Constants;
-use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Common;
+use RZP\Constants\MailTags;
+use RZP\Mail\Base\Mailable;
+use RZP\Mail\Base\Constants;
 
 class AccountChangeRequest extends Mailable
 {
