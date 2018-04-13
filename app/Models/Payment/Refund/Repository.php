@@ -47,11 +47,13 @@ class Repository extends Base\Repository
     {
         $gateway = $params[Payment\Entity::GATEWAY];
 
+        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
         Payment\Gateway::validateGateway($gateway);
 
         $this->joinQueryPayment($query);
 
-        $query->where(Payment\Entity::GATEWAY, '=', $gateway);
+        $query->where($paymentGateway, '=', $gateway);
 
         $query->select($query->getModel()->getTable().'.*');
     }
