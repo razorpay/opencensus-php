@@ -121,7 +121,7 @@ class HomeContainer extends Component {
         >
           <div class="row">
             <div class="col-md-12">
-              <NewUserOnboardingCard payments={payments.items} />
+              <NewUserOnboardingCard payments={payments} />
             </div>
 
             <InfoCardList

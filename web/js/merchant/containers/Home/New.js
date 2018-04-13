@@ -125,7 +125,7 @@ class HomeContainer extends Component {
       dismissNewAnalyticsBanner: false,
       payments: {
         loading: true,
-        hasPayments: false,
+        items: [],
       },
     };
 
@@ -365,12 +365,10 @@ class HomeContainer extends Component {
   }
 
   onFetchPayments(data) {
-    const hasPayments = data && data.items && data.items.length > 0;
-
     this.setState({
       payments: {
         loading: false,
-        hasPayments,
+        items: (data && data.items) || [],
       },
     });
   }
@@ -446,7 +444,6 @@ class HomeContainer extends Component {
                 <NewUserOnboardingCard
                   onSizeChange={this.setScrollAmountToStickHeader}
                   payments={this.state.payments}
-                  mode={mode}
                 />
               </div>
             ))}
@@ -572,7 +569,10 @@ class HomeContainer extends Component {
                     {recentActivityTitle}
                   </p>
                   <div className="content">
-                    <RecentActivity sectionTitle={recentActivityTitle} />
+                    <RecentActivity
+                      sectionTitle={recentActivityTitle}
+                      onFetchPayments={this.onFetchPayments}
+                    />
                   </div>
                 </div>
               )}

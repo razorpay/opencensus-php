@@ -10,7 +10,6 @@ import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
 
 import ActivationStep from './ActivationStep';
 import Integration from './Integration';
-import KeyGenerationStep from './KeyGenerationStep';
 
 const analyticsGoTo = name => {
   window.rzpAnalytics({
@@ -37,7 +36,15 @@ const onBoardingItems = [
 
 @connect(state => state.session)
 export default class OnboardingCard extends Component {
-  state = {};
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      integrated: false,
+    };
+
+    this.onIntegrationComplete = this.onIntegrationComplete.bind(this);
+  }
 
   componentWillMount() {
     if (JSON.parse(LocalStorageService.getItem('ngStorage-new_user_signup'))) {
@@ -55,6 +62,12 @@ export default class OnboardingCard extends Component {
     });
   }
 
+  onIntegrationComplete() {
+    this.setState({
+      integrated: true,
+    });
+  }
+
   gotoNextStep = () => {
     this.setState(
       { isFirstStep: false },
@@ -69,8 +82,8 @@ export default class OnboardingCard extends Component {
   };
 
   render() {
-    let { user } = this.props;
-    let { isFirstStep, showOnboarding } = this.state;
+    let { user, payments } = this.props;
+    let { isFirstStep, showOnboarding, integrated } = this.state;
 
     let FirstStep = null;
     const isOldUser = !JSON.parse(
@@ -124,8 +137,19 @@ export default class OnboardingCard extends Component {
             <span className="highlight">G</span>etting Started with Razorpay
           </div>
           <div className="onboarding-desc">
-            You are currently in test mode. Feel free to explore the dashboard
-            or simply activate your account:
+            {!user.isActivated &&
+              (integrated ? (
+                <span>
+                  Switch to Live mode to integrate and start doing live
+                  transactions.
+                  <button>Switch to Live Mode</button>
+                </span>
+              ) : (
+                <span>
+                  You are currently in test mode. Feel free to explore the
+                  dashboard or simply activate your account:
+                </span>
+              ))}
           </div>
           <div className="onboarding-steps">
             <Group>
@@ -133,7 +157,10 @@ export default class OnboardingCard extends Component {
                 <ActivationStep user={user} />
               </GroupItem>
               <GroupItem>
-                <KeyGenerationStep user={user} />
+                <Integration
+                  mode={user.isActivated ? 'live' : 'test'}
+                  payments={payments}
+                />
               </GroupItem>
             </Group>
           </div>
