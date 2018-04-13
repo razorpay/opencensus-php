@@ -151,6 +151,8 @@ trait Authorize
 
             $payment->associateTerminal($currentTerminal);
 
+            // @todo: Add function to set auth type
+
             $terminalGatewayInput = $gatewayInput;
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
