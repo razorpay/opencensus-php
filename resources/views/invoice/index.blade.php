@@ -187,7 +187,7 @@
 
       #overlay.overlay-hist {
         pointer-events: all;
-        background-color: rgba(0, 0, 0, 0.2);
+        background-color: rgba(0, 0, 0, 0.4);
         transition: 0.24s all ease-in-out;
         z-index: 1;
       }
@@ -1051,7 +1051,7 @@
 
                   if (checkIsDesktop()) {
                       document.getElementById('scs-box').style.display = 'block';
-                      document.getElementById('scs-msg').innerHTML = "You have successfully paid ₹ " +  (amount/100).toFixed(2);
+                      document.getElementById('scs-msg').innerHTML = "You have successfully paid ₹ " +  (amount/100).toFixed(2) + '<div> Payment ID: ' + data['invoice']['payment_id'] + ' </div>';
                       document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2);
                   } else {
                     document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2) + '<span id="paid-tag">PAID</span></span>';
