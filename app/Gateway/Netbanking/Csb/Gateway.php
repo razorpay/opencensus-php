@@ -92,6 +92,20 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function computeChecksum(array $content): string
+    {
+        $contentToHash = array_merge($content, [$this->getSecret()]);
+
+        $contentToHash = $this->getStringToHash($contentToHash, '|');
+
+        return (string) hexdec($this->getHashOfString($contentToHash));
+    }
+
+    protected function getHashOfString($str): string
+    {
+        return hash(HashAlgo::CRC32, $str);
+    }
+
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
         $request = $this->getVerifyRequestData($verify);
@@ -129,27 +143,6 @@ class Gateway extends Base\Gateway
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
         $verify->payment = $this->saveVerifyContent($verify);
-    }
-
-    /**
-     * Exposing this method as a public API for the mock server to access
-     *
-     * @override
-     * @param $str
-     * @return string
-     */
-    public function getHashOfString($str): string
-    {
-        return hash(HashAlgo::CRC32, $str);
-    }
-
-    public function computeChecksum(array $content): string
-    {
-        $contentToHash = array_merge($content, [$this->getSecret()]);
-
-        $contentToHash = $this->getStringToHash($contentToHash, '|');
-
-        return (string) hexdec($this->getHashOfString($contentToHash));
     }
 
     /**
