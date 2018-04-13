@@ -13,10 +13,12 @@ import BaseModal from 'ui/BaseModal';
 import Field, { SelectField, TextAreaField, FileField } from 'ui/Field';
 import Table from 'ui/Table';
 import { statusPill, publicFeature } from 'common/data';
-import { isWorkflow } from 'common/util';
+import { isWorkflow, prevent } from 'common/util';
 import { snakeToTitleCase, formatDate } from 'common/util';
 
 import { adminFetch, adminPatch } from 'common/fetch';
+
+import PreviewEmail from './PreviewEmail';
 
 @observer
 export default class EditPublicFeatures extends Component {
@@ -25,6 +27,7 @@ export default class EditPublicFeatures extends Component {
     agreement: null,
     selectedStatus: this.props.model.status,
     selectedReasonCategory: null,
+    needs_clarification_text: '',
   };
 
   akaFeature = this.props.model.name;
@@ -45,22 +48,26 @@ export default class EditPublicFeatures extends Component {
     );
 
     Promise.all(requests).then(([feature, allRejectionReasons]) => {
+      let newState = { pending: false };
+
       if (feature) {
         this.submissions = feature.submissions;
         if (feature.name === 'marketplace') {
-          this.setState({
-            agreement: feature.submissions.vendor_agreement,
-          });
+          newState.agreement = feature.submissions.vendor_agreement;
+        }
+        if (feature.needs_clarification_text) {
+          newState.needs_clarification_text = needs_clarification_text;
         }
       }
 
+      newState.selectedReasonCategory = Object.keys(allRejectionReasons)[0];
+
       this.statusLogs = feature.states.items;
+      this.allowed_next_activation_statuses =
+        feature.allowed_next_activation_statuses;
       this.allRejectionReasons = allRejectionReasons;
 
-      this.setState({
-        pending: false,
-        selectedReasonCategory: Object.keys(allRejectionReasons)[0],
-      });
+      this.setState(newState);
     });
   }
 
@@ -68,9 +75,54 @@ export default class EditPublicFeatures extends Component {
     this.setState({ agreement: null });
   };
 
+  generateClarificationEmail = () => {
+    const { akaFeature } = this;
+    let { needs_clarification_text } = this.state;
+
+    const addons = {
+      marketplace: {
+        prefix:
+          'The sample vendor agreement uploaded does not meet our requirements. Please ensure that the agreement contains the below points.',
+        suffix:
+          'Please reply to this email with the updated sample vendor agreement so that we can take further course of action.',
+      },
+      others: {
+        suffix:
+          'Please reply to this email, with the necessary details,  so that we can take further course of action.',
+      },
+    };
+
+    if (
+      publicFeature.featuresAkaMap[akaFeature] ===
+      publicFeature.featuresAkaMap.marketplace
+    ) {
+      return `${
+        addons[akaFeature].prefix
+      }<br/><br/>Clarifications: <br/>${needs_clarification_text}<br/><br/>${
+        addons[akaFeature].suffix
+      }`;
+    } else {
+      return `Clarifications: <br/>${needs_clarification_text}<br/><br/>${
+        addons.others.suffix
+      }`;
+    }
+  };
+
   save = body => {
-    let { akaFeature } = this;
-    let { selectedStatus } = this.state;
+    const { akaFeature } = this;
+    const { selectedStatus, needs_clarification_text } = this.state;
+
+    if (
+      selectedStatus === 'needs_clarification' &&
+      this.props.model.status !== selectedStatus
+    ) {
+      if (needs_clarification_text.length === 0) {
+        notifyError('Please enter Clarification Email text to proceed.');
+        return;
+      } else {
+        body.needs_clarification_text = this.generateClarificationEmail();
+      }
+    }
 
     return adminPatch({
       url: `live/merchant/requests/${this.props.model.id}`,
@@ -84,7 +136,7 @@ export default class EditPublicFeatures extends Component {
         }
         notifySuccess('Submission edited successfully.');
         //reload for list updation
-        setTimeout(() => location.reload(), 0);
+        // setTimeout(() => location.reload(), 0);
       }
     });
   };
@@ -101,8 +153,32 @@ export default class EditPublicFeatures extends Component {
     });
   };
 
+  handleClarificationTextChange = e => {
+    let needs_clarification_text = e.target.value;
+    if (needs_clarification_text.length) {
+      this.setState({ needs_clarification_text });
+    }
+  };
+
+  openEmailPreview = event => {
+    prevent(event);
+    const { name } = this.props.model;
+    const { needs_clarification_text } = this.state;
+
+    openModal(
+      <PreviewEmail
+        productName={name}
+        needs_clarification_text={needs_clarification_text}
+      />
+    );
+  };
+
   render() {
-    let { selectedStatus, selectedReasonCategory } = this.state;
+    let {
+      selectedStatus,
+      selectedReasonCategorym,
+      needs_clarification_text,
+    } = this.state;
     let {
       merchant_id,
       name,
@@ -138,7 +214,10 @@ export default class EditPublicFeatures extends Component {
                 value={selectedStatus}
                 onChange={this.handleStatusChange}
               >
-                {publicFeature.statuses.map(status => (
+                <option value={selectedStatus}>
+                  {snakeToTitleCase(selectedStatus)}
+                </option>
+                {this.allowed_next_activation_statuses.map(status => (
                   <option value={status} key={status}>
                     {snakeToTitleCase(status)}
                   </option>
@@ -273,10 +352,24 @@ export default class EditPublicFeatures extends Component {
                 name="public_message"
                 defaultValue={public_message}
               />
+              {selectedStatus === 'needs_clarification' && (
+                <TextAreaField
+                  label="Clarification Email Text:"
+                  name="needs_clarification_text"
+                  defaultValue={needs_clarification_text}
+                  onChange={this.handleClarificationTextChange}
+                />
+              )}
 
               <Table items={this.statusLogs} fields={statusLogsFields} />
 
               <button class="btn">Save</button>
+
+              {selectedStatus === 'needs_clarification' && (
+                <button class="btn btn-default" onClick={this.openEmailPreview}>
+                  Preview Email
+                </button>
+              )}
             </div>
           )}
         </Form>
