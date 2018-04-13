@@ -50,6 +50,7 @@ class Constants
             self::BOB,
             self::RBL,
             self::INDUSIND,
+            self::CSB
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -85,7 +86,6 @@ class Constants
         Type::REFUND => [
             self::HDFC  => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
-            self::CSB   => ['csb.netbanking.refunds@razorpay.com'],
         ],
 
         Type::COMBINED => [
@@ -95,6 +95,7 @@ class Constants
             self::FEDERAL  => ['federal.netbanking.refunds@razorpay.com'],
             self::BOB      => ['bob.netbanking.refunds@razorpay.com'],
             self::INDUSIND => ['indusind.netbanking.refunds@razorpay.com'],
+            self::CSB      => ['csb.netbanking.refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [
