@@ -509,7 +509,7 @@ class TransactionFilter extends Terminal\Filter
         //
         $authType = (array) $payment->getAuthType();
 
-        $authTypes = $payment->getMetadata('preferred_auth', $authType);
+        $authTypes = $payment->getMetadata(Payment\Entity::PREFERRED_AUTH, $authType);
 
         //
         // We fallback to the default flow if the preferred authentication or authType
@@ -530,7 +530,6 @@ class TransactionFilter extends Terminal\Filter
                         //
                         // Pin auth terminal is only selected when the terminal issuer supports pin auth
                         // and card iin also supports the flow
-                        // @todo: Confirm if we should move the iin logic to sorter
                         //
                         if (($terminal->isPin() === true) and
                             (Gateway::isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer) === true))

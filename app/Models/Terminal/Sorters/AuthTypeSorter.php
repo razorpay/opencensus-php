@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Terminal\Sorters;
 
+use RZP\Models\Payment;
 use RZP\Models\Terminal;
-use RZP\Models\Payment\AuthType;
 
 class AuthTypeSorter extends Terminal\Sorter
 {
@@ -16,7 +16,7 @@ class AuthTypeSorter extends Terminal\Sorter
     {
         $payment = $this->input['payment'];
 
-        $preferredAuthentications = $payment->getMetadata('preferred_auth');
+        $preferredAuthentications = $payment->getMetadata(Payment\Entity::PREFERRED_AUTH);
 
         // No need to sort unless the method is either card or EMI.
         // or preferredAuthentications is empty.
