@@ -7,6 +7,8 @@ import Alert from 'rzp/ui/Forms/Alert';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { required, lenientUrl } from 'rzp/utils/validators';
 import { saveWebhook } from 'merchant/modules/webhooks';
+import { merchantFetch } from 'rzp/utils/ajax';
+import Spinner from 'rzp/ui/Spinner';
 import {
   createAppWebhook,
   editAppWebhook,
@@ -39,12 +41,28 @@ export default class AddWebhook extends Component {
   state = {
     errors: null,
     showSecret: false,
+    availableWebhooks: null,
   };
 
   componentWillMount() {
     if (this.props.webhook) {
       this.props.initialize(this.props.webhook);
     }
+
+    merchantFetch('webhooks/events/all')
+      .then(resp => {
+        if (resp.success && resp.data) {
+          this.setState({ availableWebhooks: resp.data });
+        } else {
+          this.setState({ availableWebhooks: [] });
+        }
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err,
+        });
+      });
   }
 
   save = props => {
@@ -157,42 +175,18 @@ export default class AddWebhook extends Component {
 
             <div class="form-group">
               <label class="col-md-3 control-label">Active Events</label>
-              <div class="col-md-9">
-                <WebhookEventCheckbox eventName="payment.authorized" />
-                <WebhookEventCheckbox eventName="payment.captured" />
-                <WebhookEventCheckbox eventName="payment.failed" />
-                <WebhookEventCheckbox eventName="payment.dispute.created" />
-                <WebhookEventCheckbox eventName="invoice.paid" />
-                <WebhookEventCheckbox eventName="invoice.expired" />
-                <WebhookEventCheckbox eventName="order.paid" />
-
-                <ShowWhen apiFeatureEnabled="subscriptions">
-                  <div>
-                    <WebhookEventCheckbox eventName="subscription.activated" />
-                    <WebhookEventCheckbox eventName="subscription.charged" />
-                    <WebhookEventCheckbox eventName="subscription.pending" />
-                    <WebhookEventCheckbox eventName="subscription.halted" />
-                    <WebhookEventCheckbox eventName="subscription.cancelled" />
-                    <WebhookEventCheckbox eventName="subscription.completed" />
+              <div class="col-md-9" style={{ padding: '8px 15px' }}>
+                {!this.state.availableWebhooks ? (
+                  <div class="page-spinner-container">
+                    <Spinner />
                   </div>
-                </ShowWhen>
-
-                <ShowWhen apiFeatureEnabled="virtual_accounts">
-                  <WebhookEventCheckbox eventName="virtual_account.credited" />
-                  <WebhookEventCheckbox eventName="virtual_account.created" />
-                </ShowWhen>
-                <ShowWhen apiFeatureEnabled="Marketplace">
-                  <div>
-                    <WebhookEventCheckbox eventName="settlement.processed" />
-                  </div>
-                </ShowWhen>
-
-                <ShowWhen apiFeatureEnabled="e_mandate">
-                  <div>
-                    <WebhookEventCheckbox eventName="token.confirmed" />
-                    <WebhookEventCheckbox eventName="token.rejected" />
-                  </div>
-                </ShowWhen>
+                ) : this.state.availableWebhooks.length ? (
+                  this.state.availableWebhooks.map((webhook, idx) => (
+                    <WebhookEventCheckbox key={idx} eventName={webhook} />
+                  ))
+                ) : (
+                  <span>No Webhooks available</span>
+                )}
               </div>
             </div>
           </div>
