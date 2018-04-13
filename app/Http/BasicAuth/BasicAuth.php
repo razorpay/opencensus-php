@@ -252,6 +252,17 @@ class BasicAuth
      */
     protected $user        = null;
 
+    /**
+     * @var boolean
+     */
+    protected $keylessPublicAuth = false;
+
+    /**
+     * The entity id with which keyless public auth happened
+     * @var string
+     */
+    protected $keylessXEntityId;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -418,30 +429,23 @@ class BasicAuth
      */
     public function keylessPublicAuth()
     {
-        // Attempts to retrieve merchant via key less public auth approach
-        list($mode, $merchant) = (new KeylessPublicAuth)->retrieveModeAndMerchant();
+        // Attempts to retrieve merchant and other attributes for ba via key less public auth approach
+        list($mode, $merchant, $entityId) = (new KeylessPublicAuth)->retrieveModeMerchantAndXEntityId();
 
         // If we fail to retrieve merchant, return http auth expected exception
-        if ($mode === null or $merchant === null)
+        if (($mode === null) or ($merchant === null) or ($entityId === null))
         {
             return ApiResponse::httpAuthExpected();
         }
 
+        $this->setKeylessPublicAuthAttributes($entityId);
+
         $this->setModeAndDbConnection($mode);
+
         $this->setAndCheckMerchantActivatedForLive($merchant);
 
-        //
-        // Sets the key related instance variables as well if key entity exists for merchant. This is needed because in
-        // code flow we might be using these instance variables currently for different stuffs.
-        //
-
+        // Sets the key instance if it exists, gets used in forming signature for payment authorize response
         $this->key = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId());
-
-        if ($this->key !== null)
-        {
-            $this->creds['key'] = $this->key->getId();
-            $this->creds['public_key'] = $this->key->getPublicKey();
-        }
     }
 
     /**
@@ -565,6 +569,12 @@ class BasicAuth
         }
 
         return ApiResponse::routeNotFound();
+    }
+
+    protected function setKeylessPublicAuthAttributes(string $entityId)
+    {
+        $this->keylessPublicAuth = true;
+        $this->keylessXEntityId  = $entityId;
     }
 
     /**
@@ -1057,6 +1067,11 @@ class BasicAuth
         return $this->key;
     }
 
+    public function getKeylessXEntityId()
+    {
+        return $this->keylessXEntityId;
+    }
+
     public function getMerchant()
     {
         return $this->merchant;
@@ -1246,6 +1261,11 @@ class BasicAuth
     public function isPublicAuth()
     {
         return ($this->type === Type::PUBLIC_AUTH);
+    }
+
+    public function isKeylessPublicAuth()
+    {
+        return (($this->isPublicAuth() === true) and ($this->keylessPublicAuth === true));
     }
 
     public function isPrivateAuth()

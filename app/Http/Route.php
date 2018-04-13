@@ -2410,7 +2410,13 @@ final class Route
 
     public function getUrlWithPublicAuth($routeName, array $parameters = [], $key = '')
     {
-        if ($key === '')
+        // If current request was on keyless public auth, append the x_entity_id query for public urls.
+        if (($key === '') and ($this->ba->isKeylessPublicAuth() === true))
+        {
+            $parameters['x_entity_id'] = $this->ba->getKeylessXEntityId();
+        }
+        // Else continue with the key_id flow
+        else if ($key === '')
         {
             $key = $this->ba->getPublicKey();
         }
@@ -2420,15 +2426,8 @@ final class Route
 
     public function getUrlWithPublicAuthInQueryParam($routeName, array $parameters = [])
     {
-        $key = $this->ba->getPublicKey();
-
-        list($schema, $host) = $this->getSchemaHostAndPort();
-
-        $parameters['key_id'] = $key;
-
-        $urlSegment = \URL::route($routeName, $parameters, false);
-
-        return $schema . $host . $urlSegment;
+        // TODO: Deprecate this method, remove it's usage and use following directly
+        return $this->getUrlWithPublicAuth($routeName, $parameters);
     }
 
     public function getUrlWithPublicCallbackAuth(array $parameters = [], $key = '', $route = 'payment_callback_with_key_post')

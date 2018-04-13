@@ -67,11 +67,12 @@ final class KeylessPublicAuth
      * @return array [string|null, Merchant\Entity|null]
      * @throws BadRequestException
      */
-    public function retrieveModeAndMerchant(): array
+    public function retrieveModeMerchantAndXEntityId(): array
     {
         list($entity, $signedId) = $this->retrieveEntityAndSignedId();
+        list($mode, $merchant)   = $this->retrieveModeAndMerchantForEntity($entity, $signedId);
 
-        return $this->retrieveModeAndMerchantForEntity($entity, $signedId);
+        return [$mode, $merchant, $signedId];
     }
 
     /**

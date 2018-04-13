@@ -168,10 +168,11 @@ class KeylessPublicAuthClassTest extends TestCase
         {
             $this->mockRouteRequest($route['name'], $route['path']);
 
-            list($mode, $merchant) = (new KeylessPublicAuth)->retrieveModeAndMerchant();
+            list($mode, $merchant, $entityId) = (new KeylessPublicAuth)->retrieveModeMerchantAndXEntityId();
 
             $this->assertEquals(self::DEFAULT_MERCHANT_ID, $merchant->getId());
             $this->assertEquals($mode, $merchant->getConnectionName());
+            $this->assertEquals($route['expected_x_entity_id'], $entityId);
         }
     }
 
@@ -184,7 +185,7 @@ class KeylessPublicAuthClassTest extends TestCase
     {
         $this->mockRouteRequest(...$requestArgs);
 
-        list($mode, $merchant) = (new KeylessPublicAuth)->retrieveModeAndMerchant();
+        list($mode, $merchant, $entityId) = (new KeylessPublicAuth)->retrieveModeMerchantAndXEntityId();
 
         if ($merchantMustExist === true)
         {
@@ -195,6 +196,7 @@ class KeylessPublicAuthClassTest extends TestCase
         {
             $this->assertNull($merchant);
             $this->assertNull($mode);
+            $this->assertNull($entityId);
         }
     }
 }
