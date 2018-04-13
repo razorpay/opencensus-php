@@ -47,7 +47,7 @@ class Server extends Base\Mock\Server
 
     private function getAuthResponse(array $input): array
     {
-        $queryArray = $this->getQueryArray($input[RequestFields::QUERY_STRING]);
+        $queryArray = $this->parseQuery($input[RequestFields::QUERY_STRING]);
 
         $this->validateActionInput($queryArray, $this->action . '_qs');
 
@@ -101,9 +101,9 @@ class Server extends Base\Mock\Server
         return $responseString;
     }
 
-    private function getQueryArray(string $queryString)
+    private function parseQuery(string $query)
     {
-        $querySubArray = explode('|', $queryString);
+        $querySubArray = explode('|', $query);
 
         $array = [];
 
