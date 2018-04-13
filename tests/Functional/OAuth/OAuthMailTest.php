@@ -104,7 +104,7 @@ class OAuthMailTest extends OAuthTestCase
         {
             $this->assertEquals($merchant->getId(), $mail->viewData['merchant']['id']);
 
-            $this->assertEquals($application->id, $mail->viewData['application']['id']);
+            $this->assertEquals($application->name, $mail->viewData['application']['name']);
 
             return true;
         });
