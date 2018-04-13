@@ -68,6 +68,7 @@ export default class MerchantList extends Component {
           filters: { account_status: 'pending_under_review' },
         });
 
+        //assign init value for unassigned merchants
         this.reviewers = [{ id: 'none', name: 'Not Assigned' }, ...reviewers];
 
         this._updateMerchateReviewerMap(this.reviewers, merchants.items);
@@ -79,7 +80,7 @@ export default class MerchantList extends Component {
   _updateMerchateReviewerMap = (reviewers, merchants) => {
     let merchantReviewerMap = {};
     merchants.forEach(
-      // merchants api doesn't return the reviewer_id with `admin_` prefix
+      // merchants api doesn't return the reviewer_id with `admin_` prefix, adding it for consistency
       merchant =>
         (merchantReviewerMap[merchant.id] = this.getReviewer(
           'admin_' + merchant.merchant_detail.reviewer_id
