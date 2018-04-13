@@ -98,14 +98,20 @@ export default class App extends Component {
 
   fetchUser() {
     let user = new User(window.rzp_user);
+
     if (user) {
       this.props.updateSession({ user });
+
+      // if the user is live but chose to browse in test mode,
+      // it will be stored in rzp_mode
       let currentMode = LocalStorageService.getItem('rzp_mode');
+
       if (!currentMode) {
         currentMode = user.isActivated ? 'live' : 'test';
       } else if (!user.isActivated) {
         currentMode = 'test';
       }
+
       if (user && user.user) {
         if (window.setRavenContext) {
           window.setRavenContext({

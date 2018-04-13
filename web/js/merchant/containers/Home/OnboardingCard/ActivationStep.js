@@ -25,7 +25,9 @@ export default ({ user }) => {
               <Progress progress={progress} />
             </div>
           </div>
-          <div className="step-desc">Complete form to accept live payments</div>
+          <div className="step-desc">
+            Fill activation form to accept payments
+          </div>
         </div>
         <div className="media-arrow">
           <i className="i i-chevron-right" />

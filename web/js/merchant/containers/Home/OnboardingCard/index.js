@@ -10,6 +10,7 @@ import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
 
 import ActivationStep from './ActivationStep';
 import Integration from './Integration';
+import KeyGenerationStep from './KeyGenerationStep';
 
 const analyticsGoTo = name => {
   window.rzpAnalytics({
@@ -132,7 +133,7 @@ export default class OnboardingCard extends Component {
                 <ActivationStep user={user} />
               </GroupItem>
               <GroupItem>
-                <Integration />
+                <KeyGenerationStep user={user} />
               </GroupItem>
             </Group>
           </div>

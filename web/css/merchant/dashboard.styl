@@ -477,25 +477,45 @@ body.analytics-v2-active .onboarding-card-wrapper {
       background-color: #FAFBFF;
     }
 
+    &.loading div.media > div.media-body {
+
+      b * , .step-desc * {
+
+        opacity: 0;
+      }
+
+      b .PlaceholderLoader, .step-desc .PlaceholderLoader {
+
+        position: absolute;
+        display: inline-block;
+        opacity: 1;
+        top: 0;
+        left: 0;
+      }
+    }
+
     div.media {
 
       display: table;
       width: 100%;
-      
-      b {
-
-        font-size: 16px;
-        line-height: 19px;
-      }
 
       > div {
 
         display: table-cell;
         vertical-align: middle;      
 
+        b {
+
+          font-size: 16px;
+          line-height: 19px;
+          display: inline-block;
+          position: relative;
+        }
+
         div.step-desc {
 
           margin-top: 6px;
+          position: relative;
         }
 
         &.media-body .activation-progress-cont {

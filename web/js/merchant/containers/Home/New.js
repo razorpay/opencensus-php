@@ -123,11 +123,16 @@ class HomeContainer extends Component {
         user.isActivated &&
         !LocalStorageService.getItem('hide_new_analytics_banner'),
       dismissNewAnalyticsBanner: false,
+      payments: {
+        loading: true,
+        hasPayments: false,
+      },
     };
 
     this.oldestTxnReqId = 0;
     this.onDatesChange = this.onDatesChange.bind(this);
     this.onShowTour = this.onShowTour.bind(this);
+    this.onFetchPayments = this.onFetchPayments.bind(this);
     this.setScrollAmountToStickHeader = this.setScrollAmountToStickHeader.bind(
       this
     );
@@ -359,6 +364,17 @@ class HomeContainer extends Component {
     this.setScrollAmountToStickHeader();
   }
 
+  onFetchPayments(data) {
+    const hasPayments = data && data.items && data.items.length > 0;
+
+    this.setState({
+      payments: {
+        loading: false,
+        hasPayments,
+      },
+    });
+  }
+
   onShowTour() {
     LocalStorageService.setItem('hide_new_analytics_banner', true);
     this.setState(
@@ -429,6 +445,8 @@ class HomeContainer extends Component {
               <div className="v2-onboarding-card">
                 <NewUserOnboardingCard
                   onSizeChange={this.setScrollAmountToStickHeader}
+                  payments={this.state.payments}
+                  mode={mode}
                 />
               </div>
             ))}

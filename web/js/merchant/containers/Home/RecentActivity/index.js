@@ -84,7 +84,12 @@ export default class RecentActivity extends Component {
   }
 
   fetchData(params) {
-    this.props.fetchPayments(params);
+    this.props.fetchPayments(params).then(data => {
+      return (
+        this.props.onFetchPayments &&
+        this.props.onFetchPayments(data && data.data)
+      );
+    });
     this.props.fetchRefunds(params);
     this.props.fetchSettlements(params);
   }
