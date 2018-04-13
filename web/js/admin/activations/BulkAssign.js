@@ -33,7 +33,6 @@ export default class BulkAssign extends Component {
             class="btn pull-right"
             pendingClass="pull-right small spinner"
             onSubmit={body => {
-              body.reviewer_id = body.reviewer_id;
               body.merchants = selectedMerchants;
 
               return onReviewerAssignment(body);

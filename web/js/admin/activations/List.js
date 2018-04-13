@@ -82,7 +82,7 @@ export default class MerchantList extends Component {
     merchants.forEach(
       // merchants api doesn't return the reviewer_id with `admin_` prefix, adding it for consistency
       merchant =>
-        (merchantReviewerMap[merchant.id] = this.getReviewer(
+        (merchantReviewerMap[merchant.id] = this._getReviewer(
           'admin_' + merchant.merchant_detail.reviewer_id
         ))
     );
@@ -168,7 +168,7 @@ export default class MerchantList extends Component {
     return fields;
   };
 
-  getReviewer = reviewer_id => {
+  _getReviewer = reviewer_id => {
     return this.reviewers.find(reviewer => reviewer.id === reviewer_id);
   };
 
@@ -252,7 +252,7 @@ export default class MerchantList extends Component {
           if (!isSingleAssignment) {
             body.merchants.forEach(
               merchantId =>
-                (merchantReviewerMap[merchantId] = this.getReviewer(
+                (merchantReviewerMap[merchantId] = this._getReviewer(
                   body.reviewer_id
                 ))
             );
