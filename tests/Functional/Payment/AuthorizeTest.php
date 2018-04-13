@@ -640,7 +640,7 @@ class AuthorizeTest extends TestCase
     {
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4143667057540458';
-        $payment['preferred_authentication'] = ['pin'];
+        $payment['preferred_auth'] = ['pin'];
 
         $response = $this->doAuthPayment($payment);
 
@@ -667,7 +667,7 @@ class AuthorizeTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4143667057540458';
-        $payment['preferred_authentication'] = ['pin'];
+        $payment['preferred_auth'] = ['pin'];
 
         $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
 
@@ -717,7 +717,7 @@ class AuthorizeTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4143667057540458';
-        $payment['preferred_authentication'] = ['pin'];
+        $payment['preferred_auth'] = ['pin'];
 
         $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
 
@@ -756,7 +756,7 @@ class AuthorizeTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4143667057540458';
-        $payment['preferred_authentication'] = ['pin'];
+        $payment['preferred_auth'] = ['pin'];
 
         $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
 
@@ -812,7 +812,7 @@ class AuthorizeTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4143667057540458';
-        $payment['preferred_authentication'] = ['pin'];
+        $payment['preferred_auth'] = ['pin'];
 
         $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
 

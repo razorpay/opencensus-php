@@ -52,7 +52,7 @@ class CardSorter extends Terminal\Sorter
     {
         $payment = $this->input['payment'];
 
-        $preferredAuthentications = $payment->getMetadata('preferred_authentication');
+        $preferredAuthentications = $payment->getMetadata('preferred_auth');
 
         // No need to sort unless the method is either card or EMI.
         // or preferredAuthentications is empty.

@@ -504,12 +504,12 @@ class TransactionFilter extends Terminal\Filter
         }
 
         //
-        // We use preferred_authentication only if it's available else to fallback to
+        // We use preferred_auth only if it's available else to fallback to
         // $authType attribute
         //
         $authType = (array) $payment->getAuthType();
 
-        $authTypes = $payment->getMetadata('preferred_authentication', $authType);
+        $authTypes = $payment->getMetadata('preferred_auth', $authType);
 
         //
         // We fallback to the default flow if the preferred authentication or authType

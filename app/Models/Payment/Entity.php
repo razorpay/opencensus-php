@@ -123,7 +123,7 @@ class Entity extends Base\PublicEntity
 
     const SUBSCRIPTION_ID       = 'subscription_id';
 
-    const PREFERRED_AUTHENTICATION = 'preferred_authentication';
+    const PREFERRED_AUTH        = 'preferred_auth';
 
     // Used by merchant dashboard to fetch payments based on utr
     const BANK_REFERENCE        = 'bank_reference';
@@ -349,7 +349,7 @@ class Entity extends Base\PublicEntity
         self::VPA,
         'method_based_input',
         'convert_empty_strings_to_null',
-        self::PREFERRED_AUTHENTICATION,
+        self::PREFERRED_AUTH,
     ];
 
     protected static $generators = [
@@ -590,16 +590,25 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function modifyPreferredAuthentication(&$input)
+    protected function modifyPreferredAuth(&$input)
     {
-        if (isset($input[Entity::PREFERRED_AUTHENTICATION]) === false)
+        if (isset($input[Entity::PREFERRED_AUTH]) === false)
         {
             return;
         }
 
-        $uniqueAuthentications = array_unique($input[Entity::PREFERRED_AUTHENTICATION]);
+        //
+        // We give preference to auth type
+        //
+        if (empty($input[Entity::AUTH_TYPE]) === false)
+        {
+            unset($input[Entity::PREFERRED_AUTH]);
+            return;
+        }
 
-        unset($input[Entity::PREFERRED_AUTHENTICATION]);
+        $uniqueAuthentications = array_unique((array) $input[Entity::PREFERRED_AUTH]);
+
+        unset($input[Entity::PREFERRED_AUTH]);
 
         $merchant = $this->merchant;
 
@@ -624,7 +633,7 @@ class Entity extends Base\PublicEntity
                 $preferredAuth[] = AuthType::_3DS;
             }
 
-            $input[Entity::PREFERRED_AUTHENTICATION] = $preferredAuth;
+            $input[Entity::PREFERRED_AUTH] = $preferredAuth;
         }
     }
 
@@ -639,7 +648,7 @@ class Entity extends Base\PublicEntity
         // Overriding extra attributes for S2S integration
         $this->metadata['ip'] = $input['ip'] ?? null;
         $this->metadata['user_agent'] = $input['user_agent'] ?? null;
-        $this->metadata['preferred_authentication'] = $input['preferred_authentication'] ?? null;
+        $this->metadata['preferred_auth'] = $input['preferred_auth'] ?? null;
 
         // We should only set referer if input['referer'] is defined
         // and metadata['referer'] is false because checkout also

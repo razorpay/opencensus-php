@@ -66,7 +66,7 @@ class Validator extends Base\Validator
         'upi'                           => 'sometimes_if:method,upi|array',
         'upi.expiry_time'               => 'sometimes_if:method,upi|integer|between:5,30|filled',
         'auth_type'                     => 'sometimes_if:method,emandate,card,emi|string|max:10|filled',
-        'preferred_authentication'      => 'sometimes_if:method,card,emi|array|max:2|filled',
+        'preferred_auth'                => 'sometimes_if:method,card,emi|array|max:2|filled',
         'bank_account'                  => 'sometimes_if:method,emandate|associative_array|filled',
         'bank_account.account_number'   => 'required_with:bank_account|filled|alpha_num|between:5,20',
         'bank_account.ifsc'             => 'required_with:bank_account|filled|alpha_num|size:11',
@@ -141,7 +141,7 @@ class Validator extends Base\Validator
         'token_max_amount',
         'token_expire_by',
         'auth_type',
-        'preferred_authentication',
+        'preferred_auth',
     ];
 
     protected function validateIfsc(array $input)
@@ -216,14 +216,14 @@ class Validator extends Base\Validator
         AuthType::validateFeatureBasedAuth($merchant, $input[Entity::AUTH_TYPE]);
     }
 
-    protected function validatePreferredAuthentication(array $input)
+    protected function validatePreferredAuth(array $input)
     {
-        if (isset($input[Entity::PREFERRED_AUTHENTICATION]) === false)
+        if (isset($input[Entity::PREFERRED_AUTH]) === false)
         {
             return;
         }
 
-        $uniqueAuthentications = array_unique($input[Entity::PREFERRED_AUTHENTICATION]);
+        $uniqueAuthentications = array_unique($input[Entity::PREFERRED_AUTH]);
 
         foreach ($uniqueAuthentications as $authentication)
         {
