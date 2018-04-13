@@ -599,14 +599,32 @@ class Entity extends Base\PublicEntity
 
         $uniqueAuthentications = array_unique($input[Entity::PREFERRED_AUTHENTICATION]);
 
-        $merchant = $this->entity->merchant;
+        unset($input[Entity::PREFERRED_AUTHENTICATION]);
 
-        foreach ($uniqueAuthentications as $authentication)
+        $merchant = $this->merchant;
+
+        $preferredAuth = [];
+
+        foreach ($uniqueAuthentications as $authType)
         {
-            if (AuthType::isFeatureBasedAuthEnabled($merchant, $input[Entity::AUTH_TYPE]) === true)
+            if (AuthType::isFeatureBasedAuthEnabled($merchant, $authType) === true)
             {
-                $input[Entity::PREFERRED_AUTHENTICATION][] = $authentication;
+                $preferredAuth[] = $authType;
             }
+        }
+
+        if (empty($preferredAuth) === false)
+        {
+            //
+            // We add 3ds auth type by default to card payments and
+            // only if preferredAuth is not empty.
+            //
+            if ($input[Entity::METHOD] === Method::CARD)
+            {
+                $preferredAuth[] = AuthType::_3DS;
+            }
+
+            $input[Entity::PREFERRED_AUTHENTICATION] = $preferredAuth;
         }
     }
 

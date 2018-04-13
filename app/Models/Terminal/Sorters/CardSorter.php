@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Terminal;
 use RZP\Models\Payment\Method;
+use RZP\Models\Payment\AuthType;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 
 class CardSorter extends Terminal\Sorter
@@ -46,40 +47,33 @@ class CardSorter extends Terminal\Sorter
         return $sortedTerminals;
     }
 
-    // Arrange card terminals in order of gateway
+    // Arrange card terminals in order of preferred auth type
     public function authTypeSorter($terminals)
     {
+        $payment = $this->input['payment'];
+
+        $preferredAuthentications = $payment->getMetadata('preferred_authentication');
+
         // No need to sort unless the method is either card or EMI.
-        if ($this->input['payment']->isMethodCardOrEmi() === false)
+        // or preferredAuthentications is empty.
+        if (($payment->isMethodCardOrEmi() === false) or
+            (empty($preferredAuthentications) === true))
         {
             return $terminals;
         }
 
         $boostedTerminals = $unboostedTerminals = [];
 
-        $authType = (array) $this->input['payment']->getAuthType();
-
-        $preferredAuthentications = $this->input['metadata']->get('preferred_authentication', $authType);
-
-        if (empty($preferredAuthentications) === true)
-        {
-            return $terminals;
-        }
-
-        $i = 0;
-
         foreach ($preferredAuthentications as $authType)
         {
-            $i++;
-
             // As the terminals are from the priority list
             // append to the terminal
             foreach ($terminals as $terminal)
             {
                 switch ($authType)
                 {
-                    case Payment\AuthType::PIN:
-                        $boost = $terminal->isPinAuth();
+                    case AuthType::PIN:
+                        $boost = $terminal->isPin();
                         break;
 
                     default:
@@ -89,7 +83,7 @@ class CardSorter extends Terminal\Sorter
 
                 if ($boost === true)
                 {
-                    $boostedTerminals[$i][] = $terminal;
+                    $boostedTerminals[$authType][] = $terminal;
                 }
                 else
                 {
@@ -98,8 +92,16 @@ class CardSorter extends Terminal\Sorter
             }
         }
 
-        $boostedTerminals = call_user_func_array('array_merge', $boostedTerminals);
+        //
+        // We use `call_user_func_array` since there can be multiple sub-arrays
+        // in the boosted terminals for different auth types (even though right now it's only
+        // pin type)
+        //
+        if (empty($boostedTerminals) === false)
+        {
+            $boostedTerminals = call_user_func_array('array_merge', $boostedTerminals);
+        }
 
-        return array_unique(array_merge($boostedTerminals, $unboostedTerminals));
+        return array_values(array_unique(array_merge($boostedTerminals, $unboostedTerminals)));
     }
 }
