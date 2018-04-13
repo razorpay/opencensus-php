@@ -19,8 +19,8 @@ class Validator extends Base\Validator
     const INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE = 'Clarification mode should not be sent for this status';
     const INVALID_BUSINESS_CATEGORY                     = 'Invalid business category';
     const INVALID_BUSINESS_SUBCATEGORY                  = 'Invalid business subcategory';
-    const INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY     = 'Invalid business subcategory for given category';
-    const BUSINESS_SUBCATEGORY_MISSING_FOR_CATEGORY     = 'Business subcategory missing for a given category';
+    const INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY     = 'Invalid business subcategory for business category';
+    const BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY     = 'Business category missing for business subcategory';
 
     protected static $createRules = [
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
@@ -311,62 +311,54 @@ class Validator extends Base\Validator
 
     public function validateBusinessSubcategoryForCategory(array $input)
     {
-        $isCategorySet    = array_key_exists(Entity::BUSINESS_CATEGORY, $input);
-        $isSubcategorySet = array_key_exists(Entity::BUSINESS_SUBCATEGORY, $input);
-
         // If category and subcategory are not set
-        if (($isCategorySet === false) and
-            ($isSubcategorySet === false))
-        {
-            return;
-        }
-
-        // If category is set and subcategory is not set
-        if (($isCategorySet === true) and
-            ($isSubcategorySet === false))
-        {
-            // If category is `others`
-            if (($input[Entity::BUSINESS_CATEGORY] === BusinessCategory::OTHERS))
-            {
-                return;
-            }
-
-            throw new Exception\BadRequestValidationFailureException(
-                self::BUSINESS_SUBCATEGORY_MISSING_FOR_CATEGORY . ': ' . $input[Entity::BUSINESS_CATEGORY],
-                Entity::BUSINESS_SUBCATEGORY,
-                [
-                    Entity::BUSINESS_CATEGORY => $input[Entity::BUSINESS_CATEGORY]
-                ]);
-        }
-
-        // If subcategory is set and category is not set
-        if (($isSubcategorySet === true) and
-            ($isCategorySet === false))
-        {
-            return;
-        }
-
-        // If category is set and category is `others`, subcategory is set and subcategory is `null`
-        if (($isCategorySet === true) and
-            ($input[Entity::BUSINESS_CATEGORY] === BusinessCategory::OTHERS) and
-            ($isSubcategorySet === true) and
+        if ((isset($input[Entity::BUSINESS_CATEGORY]) === false) and
             (isset($input[Entity::BUSINESS_SUBCATEGORY]) === false))
         {
             return;
         }
 
-        $subcategoryMap = BusinessCategory::SUBCATEGORY_MAP;
+        $category    = array_key_exists(Entity::BUSINESS_CATEGORY, $input) ?
+                        $input[Entity::BUSINESS_CATEGORY] : $this->entity->getBusinessCategory();
 
-        $category = $input[Entity::BUSINESS_CATEGORY];
+        $subcategory = array_key_exists(Entity::BUSINESS_SUBCATEGORY, $input) ?
+                        $input[Entity::BUSINESS_SUBCATEGORY] : $this->entity->getBusinessSubcategory();
 
-        $subcategory = $input[Entity::BUSINESS_SUBCATEGORY];
+        // If category is `null`
+        if (isset($category) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                self::BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY . ': ' . $subcategory,
+                Entity::BUSINESS_CATEGORY,
+                [
+                    Entity::BUSINESS_SUBCATEGORY => $subcategory,
+                ]);
+        }
+
+        $subcategoryMap     = BusinessCategory::SUBCATEGORY_MAP;
 
         $validSubcategories = array_keys($subcategoryMap[$category][BusinessCategory::SUBCATEGORIES]);
 
-        if (in_array($subcategory, $validSubcategories, true) === false)
+        $isError            = false;
+
+        // If category is `others` and subcategory is not `null`
+        if (($category === BusinessCategory::OTHERS) and
+            (isset($subcategory) === true))
+        {
+            $isError = true;
+        }
+
+        // If category is not `others` and subcategory is not valid
+        if (($category !== BusinessCategory::OTHERS) and
+            (in_array($subcategory, $validSubcategories, true) === false))
+        {
+            $isError = true;
+        }
+
+        if ($isError === true)
         {
             throw new Exception\BadRequestValidationFailureException(
-                self::INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY . ': ' . $input[Entity::BUSINESS_CATEGORY],
+                self::INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY . ': ' . $category,
                 Entity::BUSINESS_SUBCATEGORY,
                 [
                     Entity::BUSINESS_CATEGORY    => $category,

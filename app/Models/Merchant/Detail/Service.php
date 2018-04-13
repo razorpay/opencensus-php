@@ -329,9 +329,7 @@ class Service extends Base\Service
      */
     public function getBusinessCategories(): array
     {
-        $merchantDetails = $this->merchant->merchantDetail;
-
-        return (new Core)->getBusinessCategories($merchantDetails);
+        return BusinessCategory::SUBCATEGORY_MAP;
     }
 
     public function getRejectionReasons()

@@ -401,11 +401,6 @@ class Entity extends Base\PublicEntity
         $array[self::ALLOWED_NEXT_ACTIVATION_STATUSES] = $allowedNextActivationStatuses;
     }
 
-    public function getSubcategoryMap()
-    {
-        return BusinessCategory::SUBCATEGORY_MAP;
-    }
-
     public function getActivationStatus()
     {
         return $this->getAttribute(self::ACTIVATION_STATUS);
@@ -586,6 +581,16 @@ class Entity extends Base\PublicEntity
     public function getBusinessName()
     {
         return $this->getAttribute(self::BUSINESS_NAME);
+    }
+
+    public function getBusinessCategory()
+    {
+        return $this->getAttribute(self::BUSINESS_CATEGORY);
+    }
+
+    public function getBusinessSubcategory()
+    {
+        return $this->getAttribute(self::BUSINESS_SUBCATEGORY);
     }
 
     public function getTransactionReportEmail()
