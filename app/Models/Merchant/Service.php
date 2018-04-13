@@ -1731,7 +1731,7 @@ class Service extends Base\Service
                 Entity::BILLING_LABEL => $merchant->getBillingLabel(),
             ],
             'application' => [
-                OAuthApplication\Entity::ID => $client->application->getId(),
+                OAuthApplication\Entity::NAME => $client->application->getName(),
             ]
         ];
 
