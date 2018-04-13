@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Base\Database;
+namespace RZP\Base\Database\LagChecker;
 
 use Closure;
 

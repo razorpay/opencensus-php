@@ -6,6 +6,8 @@ use App;
 use Closure;
 use Illuminate\Database\MySqlConnection as BaseMySqlConnection;
 
+use RZP\Base\Database\LagChecker;
+
 class MysqlConnection extends BaseMySqlConnection
 {
     protected $lagChecker;
@@ -32,11 +34,11 @@ class MysqlConnection extends BaseMySqlConnection
         switch ($driver)
         {
             case 'redis':
-                return new RedisLagChecker($app, $config);
+                return new LagChecker\RedisLagChecker($app, $config);
 
             case 'heartbeat':
                 // TODO: This needs to be implemented.
-                return new HeartbeatLagChecker($app, $config);
+                return new LagChecker\HeartbeatLagChecker($app, $config);
         }
     }
 
