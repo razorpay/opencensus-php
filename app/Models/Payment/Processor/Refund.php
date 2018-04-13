@@ -1187,6 +1187,8 @@ trait Refund
                     $e->getError(),
                     TraceCode::PAYMENT_REFUND_FAILURE);
 
+            $this->refund->setStatus(Payment\Refund\Status::FAILED);
+
             $this->updateRefundFailed($e);
         }
 
