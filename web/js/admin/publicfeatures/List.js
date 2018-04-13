@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
-import { SelectField, FromField, ToField, CheckField } from 'ui/Field';
+import Field, { SelectField, FromField, ToField, CheckField } from 'ui/Field';
 
 import Collection from 'model/collection';
 import { adminFetch } from 'common/fetch';
@@ -51,6 +51,7 @@ export default class PublicFeaturesList extends Component {
         <div class="box">
           <header>Public Features</header>
           <Form onSubmit={this.onSubmit} class="filters">
+            <Field label="Merchant ID" name="merchant_id" />
             <SelectField
               label="Status"
               name="status"
