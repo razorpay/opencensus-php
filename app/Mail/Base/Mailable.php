@@ -24,6 +24,8 @@ class Mailable extends BaseMailable
 
     public $taskId;
 
+    public $mode;
+
     protected $emailValidator;
 
     public function __construct()
@@ -39,6 +41,8 @@ class Mailable extends BaseMailable
         $app = App::getFacadeRoot();
 
         $this->taskId = $app['request']->getTaskId();
+
+        $this->mode = $app['basicauth']->getMode();
     }
 
     public function build()

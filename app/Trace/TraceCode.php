@@ -1038,6 +1038,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LAMBDA_FILE_DETAILS                           = 'LAMBDA_FILE_DETAILS';
     const LAMBDA_BATCH_FAILURE                          = 'LAMBDA_BATCH_FAILURE';
 
+    const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

@@ -201,7 +201,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerPincodeSearch();
 
-        $this->registerCustomMysqlConnection();
+        $this->registerDatabaseConnection();
     }
 
     /**
@@ -476,9 +476,13 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
-    protected function registerCustomMysqlConnection()
+    protected function registerDatabaseConnection()
     {
         Connection::resolverFor('mysql', function ($connection, $database, $prefix, $config) {
+            //
+            // If the connection config has lag_check configuration set use the
+            // custom MySqlConnection class. If no, then we use the default connection class.
+            //
             if (isset($config['lag_check']) === true)
             {
                 return new MySqlConnection($connection, $database, $prefix, $config);

@@ -5,13 +5,16 @@ namespace RZP\Base\Database\LagChecker;
 use Closure;
 use RZP\Foundation\Application;
 
+/**
+ * Checks replication lag by querying heartbeat table on the
+ * replica connection. Needs to be implemented
+ */
 class HeartbeatLagChecker implements LagChecker
 {
-    public function __construct(Application $app, array $config)
+    protected $config;
+
+    public function __construct(array $config)
     {
-        $this->app = $app;
-        $this->trace = $app['trace'];
-        $this->cache = $app['cache'];
         $this->config = $config;
     }
 

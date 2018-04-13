@@ -2,6 +2,7 @@
 
 namespace RZP\Mail\Base;
 
+use DB;
 use App;
 use Illuminate\Mail\SendQueuedMailable as BaseSendQueuedMailable;
 use Illuminate\Contracts\Mail\Mailer as MailerContract;
@@ -25,6 +26,14 @@ class SendQueuedMailable extends BaseSendQueuedMailable
 
         // Task Id needs to be set in trace
         $trace->processor('web')->setTaskId($this->mailable->taskId);
+
+        // Sets application and db mode if $mode is set
+        if ($this->mode !== null)
+        {
+            $app['basicauth']->setModeAndDbConnection($this->mode);
+        }
+
+        DB::connection()->recordsHaveNotBeenModified();
 
         parent::handle($mailer);
     }
