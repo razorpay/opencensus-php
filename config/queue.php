@@ -64,6 +64,7 @@ return [
                 'processed'         => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ],
             'virtual_account' => [
+                'created'           => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'credited'          => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ],
             'token' => [
@@ -108,6 +109,7 @@ return [
                 'processed'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ],
             'virtual_account' => [
+                'created'           => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'credited'          => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ],
             'token' => [
