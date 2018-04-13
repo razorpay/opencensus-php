@@ -209,6 +209,7 @@
       .inv-details {
         padding: 30px 40px;
         background-color: #fff;
+        border-radius: 4px;
       }
 
       .inv-details .inv-for {
@@ -845,7 +846,7 @@
                                                     ₹{{number_format($item['amount']/ 100, 2, '.', ',')}} Paid </b>on {{date('M d, Y (h:i A)', $item['created_at'])}}
                                                 </div>
                                                 <div class="row">Paid using <span style="text-transform: capitalize">{{$item['method']}}</span></div>
-                                                <div class="row">Payment ID: {{$item['id']}}</div>
+                                                    <div class="row">Payment ID: {{$item['id']}}</div>
                                               </div>
                                           @endforeach
                                         </div>
@@ -960,6 +961,12 @@
                                   </div>
                                   <div class="line-strike"></div>
                               </div>
+                              @if($data['invoice']['status'] === 'paid')
+                                  <div class="info">
+                                      PAYMENT ID
+                                      <div class="val" style="text-transform:unset">{{$data['invoice']['payment_id']}}</div>
+                                  </div>
+                              @endif
 
                               @if($data['invoice']['expire_by'] and $data['invoice']['status'] !== 'paid')
                                 <div class="info">
@@ -1152,14 +1159,7 @@
                                                            );
                     }
 
-                    if (invoiceObj.partial_payment && invoiceObj.amount_due) {
-                      return location.reload();
-                    }
-                    var chkoutFrame = document.querySelector('#chkout-box iframe');
-                    if (chkoutFrame) {
-                      document.getElementById('chkout-box').removeChild(chkoutFrame);
-                    }
-                    fullPaid();
+                    return location.reload(); // To display the latest payment id
                   },
                   prefill: {
                     contact: invoiceObj.customer_details.customer_contact,
