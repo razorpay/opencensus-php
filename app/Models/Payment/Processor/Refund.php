@@ -624,7 +624,7 @@ trait Refund
 
         $internalCode = $error->getInternalErrorCode();
 
-        $this->refund->setError($error, $desc, $internalCode);
+        $this->refund->setError($code, $desc, $internalCode);
     }
 
     protected function recordTransactionForRefund()
