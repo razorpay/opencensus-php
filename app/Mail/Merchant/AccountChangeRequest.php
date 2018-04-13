@@ -55,7 +55,7 @@ class AccountChangeRequest extends Mailable
 
     protected function addMailData()
     {
-        $data = array_merge($this->merchant, $this->bankAccount);
+        $data = array_merge($this->bankAccount, $this->merchant);
 
         $this->with($data);
 
