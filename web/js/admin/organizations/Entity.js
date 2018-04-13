@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import fetch from 'common/fetch';
 import { adminFetch, adminPut } from 'common/fetch';
 import OrgForm from './OrganizationForm';
-import { notifyError, notifySuccess, notifyDone } from 'common/modal';
+import { notifyError, notifySuccess } from 'common/modal';
 
 import { adminDelete } from 'common/fetch';
 
@@ -181,7 +181,7 @@ export default class EditOrg extends Component {
 
 export function removeEntity() {
   return adminDelete(`orgs/${this.id}`).then(response => {
-    notifyDone();
+    notifySuccess('Organisation is removed successfully');
     this.collection.items.remove(this);
 
     return response;

@@ -1,6 +1,10 @@
   <script src="https://cdn.razorpay.com/static/analytics/bundle.js"></script>
   <script tyoe="text/javascript">
-    if (window.location.hostname=="dashboard.razorpay.com" && window.analytics) {
+    var useAnalytics = true;
+    if (String.prototype.indexOf && window.rzp_user && window.rzp_user.email && window.rzp_user.email.toLowerCase().indexOf('@razorpay.com') > 0) {
+        useAnalytics = false;
+    }
+    if (window.location.hostname=="dashboard.razorpay.com" && window.analytics && useAnalytics) {
         analytics.init(['ga', 'fb'], {
           ga: 'UA-53341507-2'
         });

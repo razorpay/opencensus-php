@@ -1,6 +1,7 @@
 const namedColors = {
   red: '#f98383',
   blue: '#136edc',
+  white: '#ffffff',
   brown: '#ada17e',
   green: '#85d01d',
   orange: '#edc250',
@@ -9,6 +10,9 @@ const namedColors = {
   darkBlue: '#1B3c97',
   lightBlue: '#00bbff',
   androidGreen: '#a4c639',
+  blueishGrey: 'rgba(159, 177, 199, 1)',
+  primaryColor: 'rgba(82, 143, 240, 1)',
+  black: '#000',
 };
 
 const colors = [

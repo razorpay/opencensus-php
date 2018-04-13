@@ -1,11 +1,16 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+
+import LocalStorageService from 'rzp/utils/localStorage';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { openModal, closeModal } from 'rzp/modules/modals';
+
 import { logout, showOrHideTour } from 'merchant/modules/session';
 import SubmitFeedback from 'merchant/containers/Header/SubmitFeedback';
 
+@withRouter
 @connect(
   state => {
     return {
@@ -18,11 +23,14 @@ import SubmitFeedback from 'merchant/containers/Header/SubmitFeedback';
 export default class ProfileDropdown extends Component {
   logout = () => {
     this.props.analytics && this.props.analytics('Log Out');
-    return this.props.logout().catch((e) => {
-      console.error(e);
-    }).then(() => {
-      window.location.reload();
-    });
+    return this.props
+      .logout()
+      .catch(e => {
+        console.error(e);
+      })
+      .then(() => {
+        window.location.reload();
+      });
   };
 
   submitFeedback = () => {
@@ -33,19 +41,20 @@ export default class ProfileDropdown extends Component {
   };
 
   showOrHideTour = show => {
-    let {
-      analytics = () => {},
-      showOrHideTour
-    } = this.props;
+    let { analytics = () => {}, showOrHideTour } = this.props;
+
     analytics('Show - Recent UI Changes');
-    return showOrHideTour(show);
-  }
+
+    if (this.props.history.location.pathname.indexOf('/dashboard') === 0) {
+      return showOrHideTour(show);
+    }
+
+    LocalStorageService.removeItem('hide_new_analytics_banner');
+    this.props.history.push('/dashboard');
+  };
 
   render() {
-    let {
-      user,
-      analytics = () => {}
-    } = this.props;
+    let { user, analytics = () => {} } = this.props;
     let merchant = user.merchants[user.current];
     return (
       <Dropdown closeOnClick={false}>
@@ -69,7 +78,10 @@ export default class ProfileDropdown extends Component {
                   <div class="merchantname">{merchant.name}</div>
                   <div>
                     <small>{merchant.id}</small>
-                    <CustomClipboard value={merchant.id} onCopy={() => analytics('Copy - Merchant ID')}>
+                    <CustomClipboard
+                      value={merchant.id}
+                      onCopy={() => analytics('Copy - Merchant ID')}
+                    >
                       <button
                         class="btn btn-default btn-xs"
                         style={{ marginLeft: '5px' }}
@@ -99,17 +111,20 @@ export default class ProfileDropdown extends Component {
               </div>
             </div>
 
-            <div
-              class="media media-action"
-              onClick={() => this.showOrHideTour(true)}
-            >
-              <div class="media-left">
-                <div class="media-object">
-                  <i class="i i-tour" />
+            {user.isActivated &&
+              user.isNewAnalyticsEnabled && (
+                <div
+                  class="media media-action"
+                  onClick={() => this.showOrHideTour(true)}
+                >
+                  <div class="media-left">
+                    <div class="media-object">
+                      <i class="i i-tour" />
+                    </div>
+                  </div>
+                  <div class="media-body">Show Dashboard Home Tour</div>
                 </div>
-              </div>
-              <div class="media-body">Show Recent UI Changes</div>
-            </div>
+              )}
 
             <div class="media media-action" onClick={this.submitFeedback}>
               <div class="media-left">

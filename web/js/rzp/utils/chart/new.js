@@ -25,6 +25,8 @@ tooltips.intersect = false;
 global.hover.mode = 'index';
 global.hover.intersect = false;
 
+const gridLineColor = '#f0f3f7';
+
 export const timeScale = ({ xLabel, yLabel, breakdown }) => {
   let scalesObj = {
     scales: {
@@ -44,7 +46,7 @@ export const timeScale = ({ xLabel, yLabel, breakdown }) => {
             tooltipFormat: 'ddd DD MMM YYYY',
           },
           gridLines: {
-            color: '#FFFFFF',
+            color: gridLineColor,
             drawOnChartArea: true,
           },
           ticks: {
@@ -91,7 +93,7 @@ export const timeScale = ({ xLabel, yLabel, breakdown }) => {
           },
           offset: true,
           gridLines: {
-            color: '#FFFFFF',
+            color: gridLineColor,
             drawOnChartArea: true,
           },
         },

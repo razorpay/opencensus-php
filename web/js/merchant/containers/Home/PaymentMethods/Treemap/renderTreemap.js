@@ -192,9 +192,7 @@ function main(
   }
 
   function canBeZoomed(d) {
-    return (
-      !d._children.length === 1 || typeof d._children[0].key !== 'undefined'
-    );
+    return d._children.length > 0 && typeof d._children[0].key !== 'undefined';
   }
 
   function display(d, isTransitioning) {
@@ -221,13 +219,16 @@ function main(
         return Math.min((y(d.y + d.dy) - y(d.y)) * 0.2, maxFontSize) + 'px';
       })
       .on('mouseenter', function(d) {
+        var hasZoom = canBeZoomed(d);
+
         onShowTooltip({
           amount: d.value,
           percent: d.percent,
           label: d.displayText,
+          canBeZoomed: hasZoom,
         });
 
-        if (canBeZoomed(d)) {
+        if (hasZoom) {
           d3
             .select(this)
             .selectAll('rect.parent')
