@@ -816,16 +816,14 @@ class Entity extends Base\PublicEntity
 
     public function isAuthTypeEnabled($authType)
     {
-        $isEnabled = false;
-
         switch ($authType)
         {
-            case Type::PIN:
+            case Payment\AuthType::PIN:
                 $isEnabled = $this->isPin();
                 break;
 
             default:
-                return false;
+                $isEnabled = ($this->isPin() === false);
                 break;
         }
 

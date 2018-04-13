@@ -592,17 +592,17 @@ class Entity extends Base\PublicEntity
 
     protected function modifyPreferredAuth(&$input)
     {
-        if (isset($input[Entity::PREFERRED_AUTH]) === false)
-        {
-            return;
-        }
-
         //
         // We give preference to auth type
         //
         if (empty($input[Entity::AUTH_TYPE]) === false)
         {
             unset($input[Entity::PREFERRED_AUTH]);
+            return;
+        }
+
+        if (isset($input[Entity::PREFERRED_AUTH]) === false)
+        {
             return;
         }
 
@@ -625,10 +625,11 @@ class Entity extends Base\PublicEntity
         if (empty($preferredAuth) === false)
         {
             //
-            // We add 3ds auth type by default to card payments and
+            // We add 3ds auth type by default for card/emi payments and
             // only if preferredAuth is not empty.
             //
-            if ($input[Entity::METHOD] === Method::CARD)
+            if (($input[Entity::METHOD] === Method::CARD) or
+                ($input[Entity::METHOD] === Method::EMI))
             {
                 $preferredAuth[] = AuthType::_3DS;
             }
