@@ -983,14 +983,6 @@ class Processor
             $gatewayData['bharat_qr'] = $this->repo->bharat_qr->findByPaymentId($this->payment->getId());
         }
 
-        $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . '::' . strtoupper($action);
-
-        // Do not track payment when Gateway verify is called
-        if ($action !== Payment\Action::VERIFY)
-        {
-            $this->segment->trackPayment($this->payment, $eventCode, ['action' => $action]);
-        }
-
         // Wrapping all gateway call, We can take actions on Exception here.
         try
         {

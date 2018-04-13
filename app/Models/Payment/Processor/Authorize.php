@@ -155,13 +155,6 @@ trait Authorize
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
-            $segmentCustomProps = [
-                'selected_terminal' => $currentTerminal->getId(),
-                'retry_attempt' => $retryAttempts
-            ];
-
-            $this->segment->trackPayment($payment, TraceCode::GATEWAY_POSTPROCESSING, $segmentCustomProps);
-
             // data for terminal analytics
             $terminalData = [
                 'payment_id'    => $payment['id'],
@@ -1273,13 +1266,6 @@ trait Authorize
         // subscriptions/terminals.
         //
         $this->setGatewayTokenInInput($payment, $gatewayInput);
-
-        $customProperties = [
-            'otpSubmitUrl' => $this->getOtpSubmitUrl(),
-            'callbackUrl' => $this->getCallbackUrl()
-        ];
-
-        $this->segment->trackPayment($payment, TraceCode::GATEWAY_SELECTION_PREPROCESSING, $customProperties);
     }
 
     protected function setGatewayTokenInInput(Payment\Entity $payment, array & $gatewayInput)
@@ -2382,8 +2368,6 @@ trait Authorize
             ]
         ];
 
-        $this->segment->trackPayment($payment, TraceCode::ASYNC_PAYMENT_RESPONSE, $response);
-
         return $response;
     }
 
@@ -2402,8 +2386,6 @@ trait Authorize
                 'method' => 'GET',
             ]
         ];
-
-        $this->segment->trackPayment($payment, TraceCode::ASYNC_PAYMENT_RESPONSE, $response);
 
         return $response;
     }
@@ -2425,16 +2407,6 @@ trait Authorize
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
         $data['magic'] = $this->isMagicEnabled($payment);
-
-        $segmentData = $data;
-
-        // this might log sensitive data. Remove it
-        if (isset($segmentData['request']['content']))
-        {
-            unset($segmentData['request']['content']);
-        }
-
-        $this->segment->trackPayment($payment, TraceCode::FIRST_PAYMENT_RESPONSE, $segmentData);
 
         return $data;
     }
@@ -3396,8 +3368,6 @@ trait Authorize
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
             $traceData);
-
-        $this->segment->trackPayment($payment, TraceCode::PAYMENT_FAILED_TO_AUTHORIZED, $traceData);
     }
 
 

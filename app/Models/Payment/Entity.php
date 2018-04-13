@@ -2427,6 +2427,7 @@ class Entity extends Base\PublicEntity
             self::CARD_ID,
             self::STATUS,
             self::AMOUNT,
+            self::LATE_AUTHORIZED,
             self::AUTO_CAPTURED,
             self::ERROR_CODE,
             self::GATEWAY);
