@@ -2,6 +2,8 @@
 
 namespace RZP\Jobs\Extended;
 
+use Razorpay\Trace\Logger as Trace;
+
 /**
  * Overridden: Just before destruction, sets proper connection and queue name.
  *
@@ -31,9 +33,16 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
      */
     public function __destruct()
     {
-        $this->setQueueAndConnectionFromConfig();
+        try
+        {
+            $this->setQueueAndConnectionFromConfig();
 
-        parent::__destruct();
+            parent::__destruct();
+        }
+        catch (\Throwable $e)
+        {
+            app('trace')->traceException($e, Trace::CRITICAL);
+        }
     }
 
     /**
