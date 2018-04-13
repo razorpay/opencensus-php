@@ -115,7 +115,14 @@ class Core extends Base\Core
 
         $ba = $this->createBankAccount($input, $merchant, $this->mode);
 
-        $this->sendBankAccountChangeEmail($ba, $merchant, true);
+        //
+        // Send Email if it is not a workflow execution flow, since we want to send the request received email only
+        // once and not again after the workflow has been approved.
+        //
+        if ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === false)
+        {
+            $this->sendBankAccountChangeEmail($ba, $merchant, true);
+        }
 
         $this->app['workflow']
              ->setEntityAndId($oldBankAccount->getEntity(), $oldBankAccount->getId())
