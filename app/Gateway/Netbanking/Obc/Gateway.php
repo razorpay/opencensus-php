@@ -253,7 +253,7 @@ class Gateway extends Base\Gateway
 
     private function checkActionStatus(array $content)
     {
-        if ((empty($content[ResponseFields::PAID]) === false) and
+        if ((empty($content[ResponseFields::PAID]) === true) or
             ($content[ResponseFields::PAID] !== Status::SUCCESS))
         {
             throw new Exception\GatewayErrorException(

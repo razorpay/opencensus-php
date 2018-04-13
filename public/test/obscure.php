@@ -79,7 +79,7 @@ function disableEmptyInputs(form) {
         <td>
             <select name="method">
                 <option value="netbanking">Net Banking</option>
-                <option value="card">Card</option>
+                <option value="card" selected>Card</option>
                 <option value="wallet">Wallet</option>
                 <option value="emi">Emi</option>
                 <option value="upi">UPI</option>
@@ -96,7 +96,7 @@ function disableEmptyInputs(form) {
                 <option value="SBIN">SBI Bank</option>
                 <option value="ICIC">ICICI Bank</option>
                 <option value="AIRP">Airtel Payments Bank</option>
-                <option value="ORBC" selected>Obc Bank</option>
+                <option value="ORBC">Obc Bank</option>
                 <option value="FDRL">Federal Bank</option>
                 <option value="RATN">RBL Bank</option>
                 <option value="CITI">CITI Bank</option>

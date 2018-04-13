@@ -127,7 +127,6 @@ class Server extends Base\Mock\Server
         $input[RequestFields::QUERY_STRING] = $this->decrypt($input[RequestFields::QUERY_STRING]);
     }
 
-
     private function encrypt(string $stringToEncrypt)
     {
         return $this->getGatewayInstance()->encrypt($stringToEncrypt);
@@ -136,15 +135,5 @@ class Server extends Base\Mock\Server
     private function decrypt(string $stringToDecrypt)
     {
         return $this->getGatewayInstance()->decrypt($stringToDecrypt);
-    }
-
-    protected function getGatewayInstance($bankingType = null)
-    {
-        if ($this->gatewayInstance === null)
-        {
-            $this->gatewayInstance = parent::getGatewayInstance($bankingType);
-        }
-
-        return $this->gatewayInstance;
     }
 }
