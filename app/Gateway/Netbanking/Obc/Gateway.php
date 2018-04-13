@@ -281,7 +281,7 @@ class Gateway extends Base\Gateway
             RequestFields::PAY_REF_NUM => $payment['id'],
             RequestFields::ITEM_CODE   => strtoupper($payment['id']),
             RequestFields::AMOUNT      => $this->formatAmount($payment['amount'] / 100),
-            RequestFields::RETURN_URL  => 'https://api.razorpay.com/s',
+            RequestFields::RETURN_URL  => 'https://api.razorpay.com/',
             RequestFields::BID         => $verify->payment['bank_payment_id']
         ];
 
@@ -342,7 +342,7 @@ class Gateway extends Base\Gateway
 
         parse_str($decryptedString, $content);
 
-        return $contentn;
+        return $content;
     }
 
     public function getMerchantId()
