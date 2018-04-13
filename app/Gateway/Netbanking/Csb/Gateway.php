@@ -333,11 +333,11 @@ class Gateway extends Base\Gateway
 
         $status = Status::FAILURE;
 
-        if (array_key_exists(ResponseFields::VERIFICATION, $content) === true)
+        if (isset($content[ResponseFields::VERIFICATION]) === true)
         {
             $status = trim($content[ResponseFields::VERIFICATION]);
         }
-        elseif (array_key_exists(ResponseFields::STATUS_UCFIRST, $content) === true)
+        elseif (isset($content[ResponseFields::STATUS_UCFIRST]) === true)
         {
             // When TID is null, they send verify status inside Status
             $status = trim($content[ResponseFields::STATUS_UCFIRST]);
