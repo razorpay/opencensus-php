@@ -85,10 +85,10 @@ class RefundFile extends Base\RefundFile
 
             $count++;
 
-            $totalAmount += $row['refund']['amount'] / 100;
+            $totalAmount += $row['refund']['amount'];
         }
 
-        $data = array_merge($data, [$this->getLastLine($count, $totalAmount)]);
+        $data = array_merge($data, [$this->getLastLine($count, $totalAmount / 100)]);
 
         return $this->generateText($data);
     }

@@ -37,7 +37,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $request = $this->getAuthorizeRequest($input);
+        $request = $this->getAuthorizeRequestArray($input);
 
         $attributes = $this->getContentToSave($input['payment']);
 
@@ -95,17 +95,17 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
-        $data = $this->getVerifyRequestData($verify);
+        $request = $this->getVerifyRequestArray($verify);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
                 'gateway'    => $this->gateway,
-                'request'    => $data,
+                'request'    => $request,
                 'payment_id' => $verify->input['payment']['id'],
             ]);
 
-        $verify->verifyResponse = $this->sendGatewayRequest($data);
+        $verify->verifyResponse = $this->sendGatewayRequest($request);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
@@ -261,7 +261,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    private function getAuthorizeRequest(array $input)
+    private function getAuthorizeRequestArray(array $input)
     {
         $content = [
             RequestFields::RETURN_URL   => $this->encrypt($input['callbackUrl']),
@@ -272,18 +272,20 @@ class Gateway extends Base\Gateway
         return $this->getStandardRequestArray($content);
     }
 
-    private function getVerifyRequestData(Verify $verify)
+    private function getVerifyRequestArray(Verify $verify)
     {
-        $data = [
+        $payment = $verify->input['payment'];
+
+        $content = [
             RequestFields::PAYEE_ID    => $this->getMerchantId(),
-            RequestFields::PAY_REF_NUM => $verify->input['payment']['id'],
-            RequestFields::ITEM_CODE   => strtoupper($verify->input['payment']['id']),
-            RequestFields::AMOUNT      => $this->formatAmount($verify->input['payment']['amount'] / 100),
+            RequestFields::PAY_REF_NUM => $payment['id'],
+            RequestFields::ITEM_CODE   => strtoupper($payment['id']),
+            RequestFields::AMOUNT      => $this->formatAmount($payment['amount'] / 100),
             RequestFields::RETURN_URL  => 'https://api.razorpay.com/s',
             RequestFields::BID         => $verify->payment['bank_payment_id']
         ];
 
-        return $this->getStandardRequestArray($data);
+        return $this->getStandardRequestArray($content);
     }
 
     private function formatAmount(float $amount)
@@ -300,7 +302,7 @@ class Gateway extends Base\Gateway
      */
     private function getQueryString(array $input)
     {
-        $queryArray = [
+        $content = [
             RequestFields::TRAN_CRN    => Currency::INR,
             RequestFields::TXN_AMOUNT  => $input['payment']['amount'] / 100,
             RequestFields::PAYEE_ID    => $this->getMerchantId(),
@@ -308,18 +310,18 @@ class Gateway extends Base\Gateway
             RequestFields::ITEM_CODE   => strtoupper($input['payment']['id'])
         ];
 
-        $queryStringToEncrypt = implode(
+        $query = implode(
             '|',
             array_map(
                 function($key, $value)
                 {
                     return Constant::SHOPPING_MALL . $key . '~' . $value;
                 },
-                array_keys($queryArray),
-                array_values($queryArray)
+                array_keys($content),
+                array_values($content)
             ));
 
-        return $this->encrypt($queryStringToEncrypt);
+        return $this->encrypt($query);
     }
 
     private function createCryptoIfNotCreated()
@@ -332,13 +334,15 @@ class Gateway extends Base\Gateway
 
     private function parseGatewayResponse(array $response)
     {
+        $content = [];
+
         $encryptedString = array_keys($response)[0];
 
         $decryptedString = $this->decrypt($encryptedString);
 
-        parse_str($decryptedString, $decryptedArray);
+        parse_str($decryptedString, $content);
 
-        return $decryptedArray;
+        return $contentn;
     }
 
     public function getMerchantId()
