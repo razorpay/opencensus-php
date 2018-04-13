@@ -83,27 +83,29 @@ final class KeylessPublicAuth
         $entity   = null;
         $signedId = null;
 
-        // If found in request input against available map, returns that.
-        $input = $this->request->all();
-        foreach (E::KEYLESS_ALLOWED_ENTITIES as $allowedEntity)
-        {
-            $key = "{$allowedEntity}_id";
+        // Tries to find X-Entity-Id in route, query or headers
+        $signedId = $this->retrieveXEntityId();
 
-            if (array_key_exists($key, $input) === true)
-            {
-                $entity   = $allowedEntity;
-                $signedId = $input[$key];
-            }
+        if ($signedId !== null)
+        {
+            $sign   = str_before($signedId, '_');
+            $entity = E::getKeylessAllowedEntityFromSign($sign);
         }
-
-        // Else tries to find X-Entity-Id in route, query or headers
-        if ($signedId === null)
+        // Else tries using request input against available map
+        else
         {
-            $signedId = $this->retrieveXEntityId();
-            if ($signedId !== null)
+            $input = $this->request->all();
+            foreach (E::KEYLESS_ALLOWED_ENTITIES as $allowedEntity)
             {
-                $sign   = str_before($signedId, '_');
-                $entity = E::getKeylessAllowedEntityFromSign($sign);
+                $key = "{$allowedEntity}_id";
+
+                if (array_key_exists($key, $input) === true)
+                {
+                    $entity   = $allowedEntity;
+                    $signedId = $input[$key];
+
+                    break;
+                }
             }
         }
 

@@ -540,10 +540,10 @@ class Entity
 
     /**
      * Returns the entity name from given sign. Only iterates over the scope of allowed entities for keyless auth.
-     * @param  string|null $sign
+     * @param  string      $sign
      * @return string|null
      */
-    public static function getKeylessAllowedEntityFromSign(string $sign = null)
+    public static function getKeylessAllowedEntityFromSign(string $sign)
     {
         foreach (self::KEYLESS_ALLOWED_ENTITIES as $allowedEntity)
         {
