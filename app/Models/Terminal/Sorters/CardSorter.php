@@ -62,46 +62,28 @@ class CardSorter extends Terminal\Sorter
             return $terminals;
         }
 
-        $boostedTerminals = $unboostedTerminals = [];
+        $orderedTerminals = [];
+        $unorderedTerminals = $terminals;
 
         foreach ($preferredAuthentications as $authType)
         {
             // As the terminals are from the priority list
             // append to the terminal
+            //
+            $terminals = $unorderedTerminals;
+
             foreach ($terminals as $terminal)
             {
-                switch ($authType)
-                {
-                    case AuthType::PIN:
-                        $boost = $terminal->isPin();
-                        break;
 
-                    default:
-                        $boost = false;
-                        break;
-                }
+                if ($terminal->isAuthTypeEnabled($authType) === true)
+                {
+                    $orderedTerminals[] = $terminal;
 
-                if ($boost === true)
-                {
-                    $boostedTerminals[$authType][] = $terminal;
-                }
-                else
-                {
-                    $unboostedTerminals[] = $terminal;
+                    unset($unorderedTerminals[$terminal]);
                 }
             }
         }
 
-        //
-        // We use `call_user_func_array` since there can be multiple sub-arrays
-        // in the boosted terminals for different auth types (even though right now it's only
-        // pin type)
-        //
-        if (empty($boostedTerminals) === false)
-        {
-            $boostedTerminals = call_user_func_array('array_merge', $boostedTerminals);
-        }
-
-        return array_values(array_unique(array_merge($boostedTerminals, $unboostedTerminals)));
+        return $orderedTerminals;
     }
 }

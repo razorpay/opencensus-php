@@ -814,6 +814,24 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::RECURRING_NON_3DS) === true);
     }
 
+    public function isAuthTypeEnabled($authType)
+    {
+        $isEnabled = false;
+
+        switch ($authType)
+        {
+            case Type::PIN:
+                $isEnabled = $this->isPin();
+                break;
+
+            default:
+                return false;
+                break;
+        }
+
+        return $isEnabled;
+    }
+
     public function isNo2fa()
     {
         return ($this->isTypeApplicable(Type::NO_2FA) === true);
