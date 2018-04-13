@@ -555,6 +555,8 @@ trait Refund
             $this->tracePaymentFailed(
                 $e->getError(),
                 TraceCode::PAYMENT_REFUND_FAILURE);
+
+            $this->updateRefundFailed($e);
         }
         catch (\Throwable $e)
         {
@@ -567,8 +569,7 @@ trait Refund
                 $this->app['segment']->trackPayment(
                     $this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
 
-                // this will not work for throwable, figure out
-                $this->updateRefundFailed($e);
+                $this->refund->setStatus(Payment\Refund\Status::FAILED);
             }
         }
 
@@ -592,6 +593,8 @@ trait Refund
             $this->tracePaymentFailed(
                     $e->getError(),
                     TraceCode::PAYMENT_REVERSE_FAILURE);
+
+            $this->updateRefundFailed($e);
         }
         catch (\Throwable $e)
         {
@@ -604,7 +607,7 @@ trait Refund
                 $this->app['segment']->trackPayment(
                     $this->payment, TraceCode::PAYMENT_REVERSE_FAILURE);
 
-                $this->updateRefundFailed($e);
+                $this->refund->setStatus(Payment\Refund\Status::FAILED);
             }
         }
 
@@ -613,9 +616,6 @@ trait Refund
 
     protected function updateRefundFailed($exception)
     {
-        $this->refund->setStatus(Payment\Refund\Status::FAILED);
-
-        // below will not work for throwable, figure out
         $error = $exception->getError();
 
         $code = $error->getPublicErrorCode();
