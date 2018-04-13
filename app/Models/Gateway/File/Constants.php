@@ -15,7 +15,7 @@ class Constants
     const BOB              = 'bob';
     const INDUSIND         = 'indusind';
     const RBL              = 'rbl';
-    const CSB              = IFSC::CSBK;
+    const CSB              = 'csbk';
     const SCBL             = 'scbl';
     const UPI_ICICI        = 'upi_icici';
     const AIRTEL_MONEY     = 'airtel_money';
