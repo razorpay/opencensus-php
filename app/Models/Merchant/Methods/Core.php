@@ -95,20 +95,24 @@ class Core extends Base\Core
     public function getFormattedMethods(Merchant\Entity $merchant)
     {
         $data = [
-            'entity'                      => E::METHODS,
-            Payment\Method::CARD          => true,
-            Payment\Gateway::AMEX         => false,
-            Payment\Method::NETBANKING    => [],
-            Payment\Method::WALLET        => [],
-            Payment\Method::EMI           => false,
-            Payment\Method::UPI           => false,
+            'entity'                   => E::METHODS,
+            Payment\Method::CARD       => true,
+            Entity::DEBIT_CARD         => true,
+            Entity::CREDIT_CARD        => true,
+            Payment\Gateway::AMEX      => false,
+            Payment\Method::NETBANKING => [],
+            Payment\Method::WALLET     => [],
+            Payment\Method::EMI        => false,
+            Payment\Method::UPI        => false,
         ];
 
         $methods = $this->getMethods($merchant);
 
-        $data[Payment\Method::CARD] = $methods->isCardEnabled();
+        $data[Payment\Method::CARD]  = $methods->isCardEnabled();
+        $data[Entity::DEBIT_CARD]    = $methods->isDebitCardEnabled();
+        $data[Entity::CREDIT_CARD]   = $methods->isCreditCardEnabled();
         $data[Payment\Gateway::AMEX] = $methods->isAmexEnabled();
-        $netbankingEnabled = $methods->isNetbankingEnabled();
+        $netbankingEnabled           = $methods->isNetbankingEnabled();
 
         if ($netbankingEnabled === true)
         {
