@@ -23,6 +23,14 @@ export default class BatchValidate extends Component {
     newState.notifyMsg = status
       ? (errorMsg ? `${errorMsg}. ` : '') + notificationMsgs[status]
       : null;
+    // handle server error 500 message
+    if (
+      newState.notifyMsg &&
+      newState.notifyMsg.indexOf('Server error response') > -1
+    ) {
+      newState.notifyMsg =
+        'Something bad happened.Please try again after some time.';
+    }
     newState.fileUrl = fileUrl;
     this.setState(newState);
   };

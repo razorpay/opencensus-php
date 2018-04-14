@@ -128,7 +128,9 @@ export default function BatchDetails(props) {
                         class="i i-info-circle"
                         style={{ marginRight: '5px' }}
                       />
-                      {stats.issued_count === 0 ? (
+                      {/* show error info */}
+                      {stats.issued_count === 0 &&
+                      batch.status !== 'created' ? (
                         <span>
                           The payment links related to this batch were not
                           created due to errors. Please{' '}
