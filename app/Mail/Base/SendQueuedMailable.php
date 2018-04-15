@@ -28,9 +28,9 @@ class SendQueuedMailable extends BaseSendQueuedMailable
         $trace->processor('web')->setTaskId($this->mailable->taskId);
 
         // Sets application and db mode if $mode is set
-        if ($this->mode !== null)
+        if ($this->mailable->mode !== null)
         {
-            $app['basicauth']->setModeAndDbConnection($this->mode);
+            $app['basicauth']->setModeAndDbConnection($this->mailable->mode);
         }
 
         DB::connection()->recordsHaveNotBeenModified();

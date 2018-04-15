@@ -77,7 +77,7 @@ class MysqlConnection extends BaseMySqlConnection
         //
         if ($this->readPdo instanceof Closure)
         {
-            return $this->readPdo = $this->lagChecker->useReadPdoIfApplciable($this->readPdo);
+            $this->readPdo = $this->lagChecker->useReadPdoIfApplciable($this->readPdo);
         }
 
         return $this->readPdo ?: $this->getPdo();
