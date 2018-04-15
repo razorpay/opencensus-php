@@ -15,34 +15,24 @@ final class Throttle
     {
         $start = microtime(true);
 
-        $throttler = new Throttler;
-
-        $throttler->throttle($request);
+        (new Throttler)->throttle($request);
 
         $response = $next($request);
 
-        $this->pushHttpMetrics($throttler, $request, $response, $start);
+        $this->pushHttpMetrics($request, $response, $start);
 
         return $response;
     }
 
-    //
-    // Todo:
-    // Awaiting an ongoing refactoring effort to move request's context out of any existing tied class(e.g. BasicAuth)
-    // so can be used by various middlewares. Past that I should move this part of code elsewhere. Currently keeping in
-    // throttler middleware as this is the first one to get triggered.
-    //
-
     /**
      * Pushes specific HTTP metrics
-     * @param  Throttler $throttler
-     * @param  Request   $request
-     * @param  Response  $response
-     * @param  int       $start
+     * @param  Request  $request
+     * @param  Response $response
+     * @param  int      $start
      */
-    protected function pushHttpMetrics(Throttler $throttler, Request $request, Response $response, int $start)
+    protected function pushHttpMetrics(Request $request, Response $response, int $start)
     {
-        $dimensions = $this->getMetricDimensions($throttler, $request, $response);
+        $dimensions = $this->getMetricDimensions($request, $response);
 
         Metrics::count(Metric::HTTP_REQUESTS_TOTAL, 1, $dimensions);
         Metrics::histogram(Metric::HTTP_REQUEST_DURATION_MICROSECONDS, microtime(true) - $start, [], $dimensions);
@@ -52,13 +42,19 @@ final class Throttle
 
     /**
      * Gets dimensions/labels for HTTP metrics
-     * @param  Throttler $throttler
-     * @param  Request   $request
-     * @param  Response  $response
+     * @param  Request  $request
+     * @param  Response $response
      * @return array
      */
-    protected function getMetricDimensions(Throttler $throttler, Request $request, Response $response): array
+    protected function getMetricDimensions(Request $request, Response $response): array
     {
+        //
+        // Todo:
+        // Awaiting an ongoing refactoring effort to move request's context variables (e.g. merchant identifier, internal
+        // application name etc.) out of any existing tied class (e.g. BasicAuth) so can be used at various places. Past
+        // that should move this part of code elsewhere. Currently keeping here as this is the first one to get triggered.
+        //
+
         //
         // Enhancement:
         // We would like to tag metrics for specific key merchants at leasts. For this need someway to know when to use
@@ -66,24 +62,16 @@ final class Throttle
         // todo ^) so this could be done in a clean way.
         //
 
-        $mode            = $throttler->getMode() ?: Metric::LABEL_DEFAULT_VALUE;
-        $status          = $response->getStatusCode() ?: Metric::LABEL_DEFAULT_VALUE;
-        $method          = $request->getMethod() ?: Metric::LABEL_DEFAULT_VALUE;
-        $keyId           = $throttler->getKeyId() ?: Metric::LABEL_DEFAULT_VALUE;
-        $merchantId      = Metric::LABEL_DEFAULT_VALUE;
-        $oauthClientId   = Metric::LABEL_DEFAULT_VALUE;
-        $auth            = $throttler->getAuth() ?: Metric::LABEL_DEFAULT_VALUE;
-        $internalAppName = $throttler->getInternalAppNameAttribute() ?: Metric::LABEL_DEFAULT_VALUE;
-
         return [
-            Metric::LABEL_RZP_MODE              => $mode,
-            Metric::LABEL_STATUS                => $status,
-            Metric::LABEL_METHOD                => $method,
-            Metric::LABEL_RZP_KEY_ID            => $keyId,
-            Metric::LABEL_RZP_MERCHANT_ID       => $merchantId,
-            Metric::LABEL_RZP_OAUTH_CLIENT_ID   => $oauthClientId,
-            Metric::LABEL_RZP_AUTH              => $auth,
-            Metric::LABEL_RZP_INTERNAL_APP_NAME => $internalAppName,
+            Metric::LABEL_METHOD                => $request->getMethod(),
+            Metric::LABEL_ROUTE                 => $request->route()->getName(),
+            Metric::LABEL_STATUS                => $response->getStatusCode(),
+            Metric::LABEL_RZP_MODE              => Metric::LABEL_DEFAULT_VALUE,
+            Metric::LABEL_RZP_KEY_ID            => Metric::LABEL_DEFAULT_VALUE,
+            Metric::LABEL_RZP_MERCHANT_ID       => Metric::LABEL_DEFAULT_VALUE,
+            Metric::LABEL_RZP_OAUTH_CLIENT_ID   => Metric::LABEL_DEFAULT_VALUE,
+            Metric::LABEL_RZP_AUTH              => Metric::LABEL_DEFAULT_VALUE,
+            Metric::LABEL_RZP_INTERNAL_APP_NAME => Metric::LABEL_DEFAULT_VALUE,
         ];
     }
 }

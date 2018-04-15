@@ -27,6 +27,7 @@ class Metric
     const LABEL_RZP_MODE                        = 'rzp_mode';
     const LABEL_STATUS                          = 'status';
     const LABEL_METHOD                          = 'method';
+    const LABEL_ROUTE                           = 'route';
     const LABEL_RZP_KEY_ID                      = 'rzp_key';
     const LABEL_RZP_MERCHANT_ID                 = 'rzp_merchant_id';
     const LABEL_RZP_OAUTH_CLIENT_ID             = 'rzp_oauth_client_id';
