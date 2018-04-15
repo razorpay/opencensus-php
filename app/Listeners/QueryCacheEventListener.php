@@ -5,6 +5,7 @@ namespace RZP\Listeners;
 use App;
 use Cache;
 use Metrics;
+use Razorpay\Trace\Logger as Trace;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;

@@ -16,7 +16,7 @@ class Metric
     const ASYNC_JOBS_RECIEVING_TOTAL            = 'async_jobs_recieving_total';
     const ASYNC_JOBS_RECIEVED_TOTAL             = 'async_jobs_recieved_total';
     const ASYNC_JOBS_PROCESSED_TOTAL            = 'async_jobs_processed_total';
-    const ASYNC_JOBS_ERRORS_TOTAL               = 'ASYNC_JOBS_ERRORS_TOTAL';
+    const ASYNC_JOBS_ERRORS_TOTAL               = 'async_jobs_errors_total';
 
     // Summary type metric names
     const HTTP_REQUEST_SIZE_BYTES               = 'http_request_size_bytes';

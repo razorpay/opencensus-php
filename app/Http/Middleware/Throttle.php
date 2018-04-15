@@ -35,9 +35,9 @@ final class Throttle
         $dimensions = $this->getMetricDimensions($request, $response);
 
         Metrics::count(Metric::HTTP_REQUESTS_TOTAL, 1, $dimensions);
-        Metrics::histogram(Metric::HTTP_REQUEST_DURATION_MICROSECONDS, microtime(true) - $start, [], $dimensions);
-        Metrics::histogram(Metric::HTTP_REQUEST_SIZE_BYTES, mb_strlen($request->getContent()), [], $dimensions);
-        Metrics::histogram(Metric::HTTP_RESPONSE_SIZE_BYTES, mb_strlen($response->getContent()), [], $dimensions);
+        Metrics::histogram(Metric::HTTP_REQUEST_DURATION_MICROSECONDS, microtime(true) - $start, $dimensions);
+        Metrics::histogram(Metric::HTTP_REQUEST_SIZE_BYTES, mb_strlen($request->getContent()), $dimensions);
+        Metrics::histogram(Metric::HTTP_RESPONSE_SIZE_BYTES, mb_strlen($response->getContent()), $dimensions);
     }
 
     /**
