@@ -38,7 +38,27 @@ class EventServiceProvider extends ServiceProvider
 
         'Illuminate\Cache\Events\KeyForgotten' => [
             'RZP\Listeners\QueryCacheEventListener',
-        ]
+        ],
+
+        'Illuminate\Queue\Events\JobProcessed' => [
+            'RZP\Listeners\QueueEventListener',
+        ],
+
+        'Illuminate\Queue\Events\JobProcessing' => [
+            'RZP\Listeners\QueueEventListener',
+        ],
+
+        'Illuminate\Queue\Events\JobFailed' => [
+            'RZP\Listeners\QueueEventListener',
+        ],
+
+        'Illuminate\Queue\Events\Looping' => [
+            'RZP\Listeners\QueueEventListener',
+        ],
+
+        'Illuminate\Queue\Events\JobExceptionOccurred' => [
+            'RZP\Listeners\QueueEventListener',
+        ],
     ];
 
     public function boot()
