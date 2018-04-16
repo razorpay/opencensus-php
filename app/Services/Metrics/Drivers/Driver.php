@@ -63,9 +63,8 @@ abstract class Driver
     /**
      * @param  string $metric
      * @param  float  $value
-     * @param  array  $buckets
      * @param  array  $dimensions
      * @return Driver
      */
-    abstract public function histogram(string $metric, float $value, array $buckets = [], array $dimensions = []): Driver;
+    abstract public function histogram(string $metric, float $value, array $dimensions = []): Driver;
 }

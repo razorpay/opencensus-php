@@ -5,12 +5,13 @@ namespace RZP\Services\Metrics\Drivers;
 use DataDog;
 
 /**
- * Implements interface for Dogstatsd backed
+ * Implements interface for Dogstatsd backend
  */
 class Dogstatsd extends Driver
 {
     /**
      * As we actually channel metrics to Prometheus, sampling feature is not to be used.
+     * Sample rate? Say this value is 0.5, client like (statsd etc) will send any metric 50% of the times.
      */
     const SAMPLE_RATE = 1.0;
 
@@ -52,7 +53,7 @@ class Dogstatsd extends Driver
     /**
      * {@inheritDoc}
      */
-    public function histogram(string $metric, float $value, array $buckets = [], array $dimensions = []): Driver
+    public function histogram(string $metric, float $value, array $dimensions = []): Driver
     {
         // TODO: Histogram support is limited in some sense via statsd interface; To check and have fixed later;
         // For now it's reported as summary in Prometheus with default 50, 90 and 99 %ile.

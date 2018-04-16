@@ -27,7 +27,7 @@ class Mock extends Driver
     /**
      * {@inheritDoc}
      */
-    public function histogram(string $metric, float $value, array $buckets = [], array $dimensions = []): Driver
+    public function histogram(string $metric, float $value, array $dimensions = []): Driver
     {
         return $this;
     }
