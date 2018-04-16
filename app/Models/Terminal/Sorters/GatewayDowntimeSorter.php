@@ -55,7 +55,10 @@ class GatewayDowntimeSorter extends Terminal\Sorter
             // for logging of terminals of downtime sorter
             $verbose = true;
 
-            $downtimes = (new Downtime\Core)->getApplicableDowntimesForPayment($terminals, $this->input);
+            $downtimes = $this->repo->useSlave(function () use ($terminals)
+            {
+                return (new Downtime\Core)->getApplicableDowntimesForPayment($terminals, $this->input);
+            });
 
             if ($downtimes->isEmpty() === true)
             {

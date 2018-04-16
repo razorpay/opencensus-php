@@ -1039,6 +1039,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LAMBDA_BATCH_FAILURE                          = 'LAMBDA_BATCH_FAILURE';
 
     const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
+    const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

@@ -3,8 +3,11 @@
 namespace RZP\Base\Database;
 
 use Closure;
+use Razorpay\Trace\Facades\Trace;
+use Razorpay\Trace\Logger as LogLevel;
 use Illuminate\Database\MySqlConnection as BaseMySqlConnection;
 
+use RZP\Trace\TraceCode;
 use RZP\Base\Database\LagChecker;
 
 class MysqlConnection extends BaseMySqlConnection
@@ -21,6 +24,8 @@ class MysqlConnection extends BaseMySqlConnection
      */
     protected $forceReadPdo;
 
+    protected $trace;
+
     public function __construct($pdo, $database = '', $tablePrefix = '', array $config = [])
     {
         $lagCheckConfig = $config['lag_check'];
@@ -28,6 +33,8 @@ class MysqlConnection extends BaseMySqlConnection
         $this->forceReadPdo = false;
 
         $this->lagChecker = $this->getLagChecker($lagCheckConfig);
+
+        $this->trace = Trace::getFacadeRoot();
 
         parent::__construct($pdo, $database, $tablePrefix, $config);
     }
@@ -49,38 +56,53 @@ class MysqlConnection extends BaseMySqlConnection
 
     public function getReadPdo()
     {
-        //
-        // If there is an active transaction, we always want
-        // to use the master connection.
-        //
-        if ($this->transactions > 0)
+        try
         {
-            return $this->getPdo();
-        }
+            //
+            // If there is an active transaction, we always want
+            // to use the master connection.
+            //
+            if ($this->transactions > 0)
+            {
+                return $this->getPdo();
+            }
 
-        //
-        // If a DML query has been executed in the request and 'sticky' config
-        // is true and we are not force using the read pdo, then always use
-        // the master connection
-        //
-        if (($this->getConfig('sticky') === true) and
-            ($this->recordsModified === true) and
-            ($this->forceReadPdo === false))
+            //
+            // If a DML query has been executed in the request and 'sticky' config
+            // is true and we are not force using the read pdo, then always use
+            // the master connection
+            //
+            if (($this->getConfig('sticky') === true) and
+                ($this->recordsModified === true) and
+                ($this->forceReadPdo === false))
+            {
+                return $this->getPdo();
+            }
+
+            //
+            // When the pdo connection to replica is going to get established the
+            // first time, use the lagChecker to determine whethr to establish
+            // the connection or not.
+            //
+            if ($this->readPdo instanceof Closure)
+            {
+                $this->readPdo = $this->lagChecker->useReadPdoIfApplciable($this->readPdo);
+            }
+
+            return $this->readPdo ?: $this->getPdo();
+        }
+        catch (\Throwable $ex)
         {
-            return $this->getPdo();
-        }
+            //
+            // If there is any exception in setting up the replica connection,
+            // we trace it and fallback to the master connection.
+            //
+            $this->trace->traceException($ex, LogLevel::CRITICAL, TraceCode::DB_READ_CONN_SETUP_ERROR);
 
-        //
-        // When the pdo connection to replica is going to get established the
-        // first time, use the lagChecker to determine whethr to establish
-        // the connection or not.
-        //
-        if ($this->readPdo instanceof Closure)
-        {
-            $this->readPdo = $this->lagChecker->useReadPdoIfApplciable($this->readPdo);
-        }
+            $this->readPdo = $this->getPdo();
 
-        return $this->readPdo ?: $this->getPdo();
+            return $this->readPdo;
+        }
     }
 
     public function forceReadPdo(bool $value)
