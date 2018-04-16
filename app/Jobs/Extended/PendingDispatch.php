@@ -70,11 +70,8 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
             return;
         }
 
-        $connection = $this->getConnection();
-        $queue      = $this->getQueue();
-
-        $this->job->onConnection($connection)->allOnConnection($connection);
-        $this->job->onQueue($queue)->allOnQueue($queue);
+        $this->job->onConnection($this->getConnection());
+        $this->job->onQueue($this->getQueue());
     }
 
     protected function getConnection(): string

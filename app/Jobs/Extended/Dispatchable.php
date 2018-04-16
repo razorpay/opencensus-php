@@ -3,7 +3,7 @@
 namespace RZP\Jobs\Extended;
 
 /**
- * Replacement for L5's Dispatchable trait. Returns overridden implementation of PendingDispatch & PendingChain.
+ * Replacement for Laravel's Dispatchable trait. Returns overridden implementation of PendingDispatch & PendingChain.
  */
 trait Dispatchable
 {

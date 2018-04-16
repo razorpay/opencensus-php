@@ -144,7 +144,7 @@ class MerchantSync extends Job
     {
         foreach ($ids as $id)
         {
-            EsSync::dispatch($this->mode, EsRepository::UPDATE, E::MERCHANT, $id)->for(EsSync::ES);
+            EsSync::dispatch($this->mode, EsRepository::UPDATE, E::MERCHANT, $id);
         }
     }
 
