@@ -155,16 +155,14 @@ class Gateway extends Base\Gateway
 
         $expectedAmount = number_format($input['payment']['amount'] / 100, 2);
 
-        try
+        $actualAmount = $content[ResponseFields::AMOUNT];
+
+        if($expectedAmount === $actualAmount)
         {
-            $this->assertAmount($expectedAmount, $content[ResponseFields::AMOUNT]);
-        }
-        catch (Exception\LogicException $e)
-        {
-            return true;
+            return false;
         }
 
-        return false;
+       return true;
     }
 
     private function parseVerifyResponse(\Requests_Response $response)
