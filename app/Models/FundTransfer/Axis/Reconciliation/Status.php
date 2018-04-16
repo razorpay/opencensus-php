@@ -2,7 +2,6 @@
 
 namespace RZP\Models\FundTransfer\Axis\Reconciliation;
 
-use RZP\Models\FundTransfer\Axis\Headings;
 use RZP\Models\FundTransfer\Base\Reconciliation\Status as BaseStatus;
 
 class Status extends BaseStatus

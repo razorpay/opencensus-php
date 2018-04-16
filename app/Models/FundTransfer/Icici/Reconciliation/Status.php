@@ -3,7 +3,6 @@
 namespace RZP\Models\FundTransfer\Icici\Reconciliation;
 
 use RZP\Models\FundTransfer\Base\Reconciliation\Status as BaseStatus;
-use RZP\Models\FundTransfer\Icici\Headings;
 
 class Status extends BaseStatus
 {
