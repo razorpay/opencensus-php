@@ -134,14 +134,14 @@ export default class BatchList extends Component {
         <HeaderAction>
           <div class="btn-toolbar pull-right">
             <a
-              class="btn btn-link"
+              class="btn btn-link hidden-xs"
               href={sampleUrl}
               onClick={trackSampleFileDownload}
             >
               Download Sample File
             </a>
             {docUrl && (
-              <a class="btn btn-link" href={docUrl} target="_blank">
+              <a class="btn btn-link hidden-xs" href={docUrl} target="_blank">
                 Documentation &nbsp;
                 <i class="i i-external-link" />
               </a>

@@ -137,9 +137,9 @@ export default class FileUpload extends Component {
               <div class="content">
                 {children || (
                   <React.Fragment>
-                    <span class="file-placeholder" />
+                    <span class="file-placeholder hidden-xs" />
                     <p class="content-primary m-t">
-                      <span>Drop files here or </span>
+                      <span className="hidden-xs">Drop files here or </span>
                       <label for={`fileInput-${this.props.name}`}>
                         <span class="text-primary upload-label btn-link">
                           Click to Upload

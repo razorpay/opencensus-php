@@ -11,7 +11,7 @@ export default props => {
   const { file, progress = 0, currentStatus, onCloseClick = () => {} } = props;
   return (
     <div class={`staged-file ${currentStatus || ''}`} key={`${file.name}`}>
-      <div class="file-icon">
+      <div class="file-icon hidden-xs">
         <div>
           <span class={`file-type-${getFileTypeIcon(file.name)}`} />
         </div>
