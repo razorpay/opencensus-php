@@ -2,10 +2,8 @@
 
 namespace RZP\Tests\Functional\Gateway\File;
 
-use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use RZP\Models\Gateway\File;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -28,8 +26,6 @@ class NetbankingObcRefundFileTest extends TestCase
 
     public function testGenerateRefundFile()
     {
-        Mail::fake();
-
         $payment1 = $this->doAuthAndCapturePayment($this->obcPaymentArray);
 
         $fullRefund = $this->refundPayment($payment1['id']);
@@ -41,5 +37,15 @@ class NetbankingObcRefundFileTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+
+        $date = Carbon::now(Timezone::IST)->format('Ymd');
+
+        $actualFileDetails = $this->getLastEntity('file_store', true);
+
+        $this->assertEquals($actualFileDetails['type'], 'obc_netbanking_refund');
+
+        $this->assertEquals($actualFileDetails['extension'], 'txt');
+
+        $this->assertEquals($actualFileDetails['name'], 'REFUND_NB_OBC_RAZORPAY_'. $date);
     }
 }
