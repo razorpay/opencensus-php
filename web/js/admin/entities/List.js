@@ -127,7 +127,7 @@ export default class EntityList extends Component {
     this.collection.extraFields.type = value;
     this.selectedEntity = value;
 
-    this.collection.setFilters(null);
+    this.collection.resetFilters();
     this.clearForm(value);
     this.onSelectChange(e);
   };
