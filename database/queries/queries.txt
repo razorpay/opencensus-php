@@ -3472,12 +3472,17 @@ ALTER TABLE invoices
     ADD COLUMN customer_shipping_addr_id CHAR(14) DEFAULT NULL AFTER customer_billing_addr_id,
     ADD CONSTRAINT invoices_customer_shipping_addr_id_foreign FOREIGN KEY (customer_shipping_addr_id) REFERENCES addresses (id);
 
+ALTER TABLE `merchant_details`
+    ADD COLUMN `business_category` VARCHAR(255) DEFAULT NULL AFTER `company_pan_name`,
+    ADD COLUMN `business_subcategory` VARCHAR(255) DEFAULT NULL AFTER `business_category`;
+
+ALTER TABLE payments drop foreign key payments_app_id_foreign,
+                     rename index payments_app_id_foreign TO payments_receiver_id_index,
+                     change app_id receiver_id varchar(14),
+                     change reference8 receiver_type varchar(255);
+
 ALTER TABLE terminals
     ADD COLUMN mastercard_mpan varchar(255) DEFAULT NULL after gateway_client_certificate,
     ADD COLUMN visa_mpan varchar(255) DEFAULT NULL after mastercard_mpan,
     ADD COLUMN rupay_mpan varchar(255) DEFAULT NULL after visa_mpan,
     ADD COLUMN vpa varchar(255) DEFAULT NULL after rupay_mpan;
-
-ALTER TABLE payments
-    ADD COLUMN receiver_id char(14) DEFAULT NULL after transfer_id,
-    ADD COLUMN receiver_type varchar(255) DEFAULT NULL after recevier_id;

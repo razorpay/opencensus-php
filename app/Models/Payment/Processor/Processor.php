@@ -1166,25 +1166,6 @@ class Processor
         }
     }
 
-    protected function validateAndSetReceiverIfApplicable(Payment\Entity $payment, array $input)
-    {
-        if (empty($input[Payment\Entity::RECEIVER]) === true)
-        {
-            return;
-        }
-
-        $this->receiver = $this->fetchReceiverFromInput($input['receiver']);
-
-        $this->trace->info(
-            TraceCode::PAYMENT_RECEIVED_VIA_RECEIVER,
-            [
-                'receiver_id'   => $this->receiver->getId(),
-                'receiver_type' => $this->receiver->getEntity(),
-            ]);
-
-        $payment->receiver()->associate($this->receiver);
-    }
-
     protected function addOrderIdToInputForCreatedSubscription(Subscription\Entity $subscription, array & $input)
     {
         //
@@ -1273,29 +1254,6 @@ class Processor
         }
     }
 
-    protected function fetchReceiverFromInput(array $input)
-    {
-        $entity = $input['type'];
-
-        $receiver = $this->repo->$entity->find($input['id']);
-
-        if ($receiver === null)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Receiver id provided not found.',
-                'receiver[id]');
-        }
-
-        if ($receiver->getMerchantId() !== $this->merchant->getId())
-        {
-            // Merchant mismatch
-            throw new Exception\BadRequestValidationFailureException(
-                'Receiver id not found');
-        }
-
-        return $receiver;
-    }
-
     protected function fetchOrderFromInput(array $input): Order\Entity
     {
         $order = $this->orderRepo->findbyPublicId($input['order_id']);
@@ -1319,20 +1277,33 @@ class Processor
         return $order;
     }
 
+    protected function fetchReceiverFromInput(array $receiverInput)
+    {
+        $entity = $receiverInput['type'];
+
+        $receiver = $this->repo->$entity->findbyPublicIdAndMerchant($receiverInput['id'], $this->merchant);
+
+        return $receiver;
+    }
+
     protected function validateAndSetOrderDetailsIfApplicable(
         Payment\Entity $payment,
         array $input)
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
-            if ($payment->isTpvMethod() === true)
+            $tpvRequired = (($payment->isTpvMethod() === true) and
+                            ($this->merchant->isTPVRequired() === true));
+
+            if (($tpvRequired === true) or
+                ($payment->isEmandate() === true))
             {
-                if ($this->merchant->isTPVRequired() === true)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
-                        Payment\Entity::ORDER_ID);
-                }
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
+                    Payment\Entity::ORDER_ID,
+                    [
+                        'method' => $payment->getMethod()
+                    ]);
             }
 
             return;
@@ -1356,6 +1327,18 @@ class Processor
         $this->repo->saveOrFail($this->order);
 
         $payment->order()->associate($this->order);
+    }
+
+    protected function validateAndSetReceiverIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if (empty($input[Payment\Entity::RECEIVER]) === true)
+        {
+            return;
+        }
+
+        $receiver = $this->fetchReceiverFromInput($input['receiver']);
+
+        $payment->receiver()->associate($receiver);
     }
 
     protected function validateAndSetInvoiceDetailsIfApplicable(Payment\Entity $payment)
