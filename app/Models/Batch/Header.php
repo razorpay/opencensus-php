@@ -207,9 +207,14 @@ class Header
     const ENACH_DEBIT_SCH_REFNO             = EnachRblDebitHeadings::SCH_REFNO;
     const ENACH_DEBIT_CUSTOMER_NAME         = EnachRblDebitHeadings::CUSTOMER_NAME;
     const ENACH_DEBIT_REFNO                 = EnachRblDebitHeadings::REFNO;
-    const ENACH_DEBIT_CLG_STATUS            = EnachRblDebitHeadings::CLG_STATUS;
+    const ENACH_DEBIT_STATUS                = EnachRblDebitHeadings::STATUS;
     const ENACH_DEBIT_AMOUNT                = EnachRblDebitHeadings::AMOUNT;
     const ENACH_DEBIT_UMRN                  = EnachRblDebitHeadings::UMRN;
+    const ENACH_DEBIT_UPLOAD_DATE           = EnachRblDebitHeadings::UPLOAD_DATE;
+    const ENACH_DEBIT_ACKUPD_DATE           = EnachRblDebitHeadings::ACKUPD_DATE;
+    const ENACH_DEBIT_RESPONSE_RECEIVED     = EnachRblDebitHeadings::RESPONSE_RECEIVED;
+    const ENACH_DEBIT_REASON_CODE           = EnachRblDebitHeadings::REASON_CODE;
+    const ENACH_DEBIT_REASON_DESCRIPTION    = EnachRblDebitHeadings::REASON_DESCRIPTION;
 
     //
     // Payout headers
@@ -411,7 +416,12 @@ class Header
                 self::ENACH_DEBIT_AMOUNT,
                 self::ENACH_DEBIT_REFNO,
                 self::ENACH_DEBIT_UMRN,
-                self::ENACH_DEBIT_CLG_STATUS,
+                self::ENACH_DEBIT_UPLOAD_DATE,
+                self::ENACH_DEBIT_ACKUPD_DATE,
+                self::ENACH_DEBIT_RESPONSE_RECEIVED,
+                self::ENACH_DEBIT_STATUS,
+                self::ENACH_DEBIT_REASON_CODE,
+                self::ENACH_DEBIT_REASON_DESCRIPTION,
             ]
         ],
 
