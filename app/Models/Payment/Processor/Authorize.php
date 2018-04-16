@@ -1276,13 +1276,6 @@ trait Authorize
         // subscriptions/terminals.
         //
         $this->setGatewayTokenInInput($payment, $gatewayInput);
-
-        $customProperties = [
-            'otpSubmitUrl' => $otpSubmitUrl,
-            'callbackUrl' => $callbackUrl
-        ];
-
-        $this->segment->trackPayment($payment, TraceCode::GATEWAY_SELECTION_PREPROCESSING, $customProperties);
     }
 
     protected function setGatewayTokenInInput(Payment\Entity $payment, array & $gatewayInput)

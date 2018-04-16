@@ -51,7 +51,7 @@ class Validator extends Base\Validator
         'subscription_id'               => 'sometimes|public_id',
         'receiver'                      => 'sometimes_if:method,card,upi|associative_array|filled',
         'receiver.type'                 => 'required_with:receiver|filled|string|in:qr_code,bank_account',
-        'receiver.id'                   => 'required_with:receiver|filled|alpha_num|size:17|public_id',
+        'receiver.id'                   => 'required_with:receiver|filled|size:17|public_id',
         'app_token'                     => 'sometimes',
         'token'                         => 'sometimes',
         'save'                          => 'sometimes|in:0,1',

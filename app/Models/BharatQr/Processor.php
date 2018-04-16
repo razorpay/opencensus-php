@@ -295,7 +295,7 @@ class Processor extends VirtualAccount\Processor
         }
 
         $receiverData = [
-            'id'   => $this->receiver->getId(),
+            'id'   => $this->receiver->getPublicId(),
             'type' => 'qr_code',
         ];
 
