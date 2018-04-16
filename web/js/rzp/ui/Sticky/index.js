@@ -36,6 +36,11 @@ class Sticky extends Component {
   }
 
   unStick() {
+    //can be called after unmount due to debounce
+    if (this.unMounted) {
+      return;
+    }
+
     this.node.removeAttribute('style');
     this.contentElement.removeAttribute('style');
 
@@ -74,6 +79,8 @@ class Sticky extends Component {
   }
 
   componentWillUnmount() {
+    this.unMounted = true;
+
     window.removeEventListener('scroll', this.handleScroll);
   }
 

@@ -26,11 +26,6 @@ class TraceServiceProvider extends BaseServiceProvider
         {
             return new Trace($app);
         });
-
-        $this->app->singleton('trace.instance', function($app)
-        {
-            return new AwsInstance($app);
-        });
     }
 
     /**
@@ -40,7 +35,7 @@ class TraceServiceProvider extends BaseServiceProvider
      */
     public function provides()
     {
-        return array('trace', 'trace.instance');
+        return array('trace');
     }
 
     protected function registerRequestGetIdMacro()

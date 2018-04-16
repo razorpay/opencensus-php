@@ -52,7 +52,7 @@ return array(
     |
     */
 
-    'cipher' => env('ENCRYPTION_CIPHER', MCRYPT_RIJNDAEL_256),
+    'cipher' => env('ENCRYPTION_CIPHER', 'AES-256-CBC'),
 
     'timezone' => 'UTC',
 
@@ -173,7 +173,7 @@ return array(
         'Barryvdh\Debugbar\ServiceProvider',
         Bogardo\Mailgun\MailgunServiceProvider::class,
         'Maatwebsite\Excel\ExcelServiceProvider',
-        'Maknz\Slack\SlackServiceProvider',
+        Razorpay\Slack\Laravel\ServiceProviderLaravel5::class,
         Illuminate\Validation\ValidationServiceProvider::class,
     ],
 

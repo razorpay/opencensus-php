@@ -278,7 +278,7 @@ class PaymentMethods extends Component {
               to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}&ref=home`}
               onClick={() => trackGoToLinks('Payments', sectionTitle)}
             >
-              View these Payments <i className="i i-chevron-right" />
+              View all payments from this date range
             </Link>
           </div>
         </PanelFooter>
