@@ -16,7 +16,6 @@
     </testsuites>
     <php>
         <env name="APP_ENV" value="testing"/>
-        <env name="MAILCHIMP_MOCK" value="true"/>
     </php>
 </phpunit>
 

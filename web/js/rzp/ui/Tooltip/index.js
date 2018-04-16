@@ -130,7 +130,10 @@ class Tooltip extends Component {
   }
 
   onShowTooltip() {
-    this.showTooltipTimer = window.setTimeout(this.showTooltip, TOOLTIP_DELAY);
+    this.showTooltipTimer = window.setTimeout(
+      this.showTooltip,
+      this.props.delay
+    );
   }
 
   onHideTooltip() {
@@ -146,7 +149,7 @@ class Tooltip extends Component {
         screenX: e.clientX,
         screenY: e.clientY,
       });
-    }, TOOLTIP_DELAY);
+    }, this.props.delay);
   }
 
   handleMouseEnter(e) {
@@ -210,6 +213,7 @@ class Tooltip extends Component {
       {
         children,
         align,
+        delay,
         followPointer,
         persistent,
         onAdjustment,
@@ -230,6 +234,7 @@ class Tooltip extends Component {
 
 Tooltip.defaultProps = {
   align: 'bottom',
+  delay: TOOLTIP_DELAY,
   followPointer: false,
   persistent: false,
 };
@@ -238,6 +243,7 @@ Tooltip.propTypes = {
   align: PropTypes.oneOf(['top', 'bottom', 'left', 'right']),
   followPointer: PropTypes.bool.isRequired,
   persistent: PropTypes.bool.isRequired,
+  delay: PropTypes.number.isRequired,
   onAdjustment: PropTypes.func,
 };
 

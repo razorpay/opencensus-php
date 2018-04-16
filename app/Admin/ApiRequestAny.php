@@ -235,7 +235,15 @@ class ApiRequestAny
     {
         $input = $data ?? Request::all();
 
-        $contentType = Request::header('content-type', self::CONTENT_TYPE_JSON);
+        $defaultContentType = self::CONTENT_TYPE_JSON;
+
+        $contentType = Request::header('content_type', $defaultContentType);
+
+        // Laravel is not considering empty string('') as empty header in Request::header
+        if (empty($contentType) === true)
+        {
+            $contentType = $defaultContentType;
+        }
 
         // auth check just for precaution, so that guests do not upload files
         if (strpos($contentType, self::CONTENT_TYPE_MULTIPART_PREFIX) === 0)
