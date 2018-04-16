@@ -11,14 +11,15 @@ WORKDIR /app
 # A lot of cleanup here is useless because these things are already committed
 # on the base layer
 RUN rm -rf /root/.composer && \
-       rm -rf /app/.git && \
+    rm -rf /app/.git && \
 	# PHP Stuff
 	composer config -g github-oauth.github.com ${GIT_TOKEN} && \
-	composer install --no-dev --no-interaction  && \
-	# Node stuff
-	npm install && \
-    npm run build && \
-    # Cleanup PHP+Node
+	composer install --no-dev --no-interaction && \
+    # Node stuff
+    npm install && \
+    cd web && npm install && \
+    cd .. && npm run build && \
+    # Cleanup is useless, but we do it anyway
     rm -rf /root/.composer && \
     rm -rf /tmp/npm-* && \
     rm -rf /app/node_modules && \
@@ -30,8 +31,7 @@ RUN rm -rf /root/.composer && \
     # TODO: Improve this step so it gets faster
     echo "** Fix file permissions **" && \
     chown -R nginx.nginx /app && \
-    # Temporarily enable core dumps and some debug logging
-    # on beta-dashboard
+    # Improve dashboard configuration
     echo "** Copying extra config **" && \
     cp /app/dockerconf/www.conf /etc/php7/php-fpm.d && \
     cp /app/dockerconf/php-fpm.conf /etc/php7/
