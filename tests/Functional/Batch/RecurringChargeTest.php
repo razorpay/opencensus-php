@@ -67,13 +67,13 @@ class RecurringChargeTest extends TestCase
     {
         return [
             [
+                Batch\Header::RECURRING_CHARGE_TOKEN       => $this->token,
+                Batch\Header::RECURRING_CHARGE_CUSTOMER_ID => 'cust_100000customer',
                 Batch\Header::RECURRING_CHARGE_AMOUNT      => 100,
                 Batch\Header::RECURRING_CHARGE_CURRENCY    => 'INR',
-                Batch\Header::RECURRING_CHARGE_EMAIL       => 'test@test.test',
-                Batch\Header::RECURRING_CHARGE_CONTACT     => '9999996666',
+                Batch\Header::RECURRING_CHARGE_RECEIPT     => 'random receipt',
                 Batch\Header::RECURRING_CHARGE_DESCRIPTION => 'random description',
-                Batch\Header::RECURRING_CHARGE_CUSTOMER_ID => 'cust_100000customer',
-                Batch\Header::RECURRING_CHARGE_TOKEN       => $this->token,
+                Batch\Header::RECURRING_CHARGE_NOTES_2     => 'random notes',
             ],
         ];
     }

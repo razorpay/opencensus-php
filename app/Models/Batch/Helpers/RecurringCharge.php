@@ -2,22 +2,64 @@
 
 namespace RZP\Models\Batch\Helpers;
 
+use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Customer;
 use RZP\Models\Batch\Header;
 
 class RecurringCharge
 {
-    public static function getRecurringChargeInput(array $entry): array
+    const ORDER_NOTES_PREFIX    = 'notes_';
+    const ORDER_NOTES_MAX_COUNT = 5;
+
+    public static function getPaymentInput(array $entry, Order\Entity $order): array
     {
-        return [
+        $customerId = $entry[Header::RECURRING_CHARGE_CUSTOMER_ID];
+
+        $customer = (new Customer\Service)->fetch($customerId);
+
+        $request = [
+            Payment\Entity::TOKEN       => $entry[Header::RECURRING_CHARGE_TOKEN],
             Payment\Entity::AMOUNT      => $entry[Header::RECURRING_CHARGE_AMOUNT],
             Payment\Entity::CURRENCY    => $entry[Header::RECURRING_CHARGE_CURRENCY],
-            Payment\Entity::EMAIL       => $entry[Header::RECURRING_CHARGE_EMAIL],
-            Payment\Entity::CONTACT     => $entry[Header::RECURRING_CHARGE_CONTACT],
-            Payment\Entity::DESCRIPTION => $entry[Header::RECURRING_CHARGE_DESCRIPTION],
-            Payment\Entity::CUSTOMER_ID => $entry[Header::RECURRING_CHARGE_CUSTOMER_ID],
-            Payment\Entity::TOKEN       => $entry[Header::RECURRING_CHARGE_TOKEN],
+            Payment\Entity::DESCRIPTION => $entry[Header::RECURRING_CHARGE_DESCRIPTION] ?? "",
+            Payment\Entity::EMAIL       => $customer->getEmail(),
+            Payment\Entity::CONTACT     => $customer->getContact(),
+            Payment\Entity::CUSTOMER_ID => $customer->getPublicId()(),
+            Payment\Entity::CUSTOMER_ID => $order->getPublicId()(),
             Payment\Entity::RECURRING   => true,
         ];
+
+        return $request;
+    }
+
+    public static function getOrderInput(array $entry): array
+    {
+        $request = [
+            Order\Entity::AMOUNT          => $entry[Header::RECURRING_CHARGE_AMOUNT],
+            Order\Entity::CURRENCY        => $entry[Header::RECURRING_CHARGE_CURRENCY],
+            Order\Entity::RECEIPT         => $entry[Header::RECURRING_CHARGE_RECEIPT] ?? "",
+            Order\Entity::PAYMENT_CAPTURE => true,
+            Order\Entity::NOTES           => self::getOrderNotes($entry),
+        ];
+
+        return $request;
+    }
+
+    protected static function getOrderNotes(array $entry): array
+    {
+        $notes = [];
+
+        foreach (range(1, self::ORDER_NOTES_MAX_COUNT) as $notesIndex)
+        {
+            $notesHeader = self::ORDER_NOTES_PREFIX . $notesIndex;
+
+            if (isset($entry[$notesHeader]) === true)
+            {
+                $notes[$notesHeader] = $entry[$notesHeader];
+            }
+        }
+
+        return $notes;
     }
 }
