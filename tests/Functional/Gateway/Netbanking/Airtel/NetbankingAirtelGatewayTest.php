@@ -43,6 +43,24 @@ class NetbankingAirtelGatewayTest extends TestCase
             FILTER_VALIDATE_INT) !== false);
     }
 
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'callback')
+            {
+                $content['TRAN_AMT'] = '100';
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
