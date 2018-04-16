@@ -131,6 +131,10 @@ class Processor extends Base\Core
                 $response[$channel]['count']    += $setlResponse['settlement_count'];
                 $response[$channel]['txnCount'] += $setlResponse['txn_count'];
             }
+
+            $this->trace->info(
+                TraceCode::SETTLEMENT_ATTEMPT_ENTITIES_CREATED,
+                $response);
         }
         catch (\Exception $e)
         {
