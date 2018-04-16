@@ -487,7 +487,6 @@ class HomeContainer extends Component {
                 <small>
                   <i class="i i-help" />
                   <Popover align="top">
-                    <PopoverTitle>What's this?</PopoverTitle>
                     <PopoverBody>
                       <p>
                         This graph helps you gain insights into your overall

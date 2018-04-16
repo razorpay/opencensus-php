@@ -27,7 +27,9 @@ global.hover.intersect = false;
 
 const gridLineColor = '#f0f3f7';
 
-export const timeScale = ({ xLabel, yLabel, breakdown }) => {
+export const timeScale = ({ xLabel, yLabel, breakdown, startDate }) => {
+  const now = moment();
+
   let scalesObj = {
     scales: {
       xAxes: [
@@ -56,23 +58,34 @@ export const timeScale = ({ xLabel, yLabel, breakdown }) => {
             maxRotation: 0,
             autoSkipPadding: 21,
             callback: (value, index, values) => {
-              if (breakdown !== 'hourly') {
-                return value;
+              let currValue = moment(values[index].value),
+                prevValue =
+                  values[index - 1] && moment(values[index - 1].value),
+                format = 'MMM D';
+
+              if (breakdown === 'monthly') {
+                format = 'MMM';
+              } else if (breakdown === 'weekly') {
+                if (currValue < startDate) {
+                  currValue = startDate;
+                }
+              } else if (breakdown === 'hourly') {
+                console.log(
+                  prevValue && prevValue.toDate(),
+                  currValue.toDate()
+                );
+                // make sure only days are displayed if
+                // the breakdown in hourly
+                if (prevValue && prevValue.isSame(currValue, 'day')) {
+                  return null;
+                }
               }
 
-              // make sure only days are displayed if
-              // the breakdown in hourly
-              const prevValue = values[index - 1],
-                currValue = values[index];
-
-              if (
-                prevValue &&
-                moment(prevValue.value).isSame(currValue.value, 'day')
-              ) {
-                return null;
+              if (!currValue.isSame(now, 'year')) {
+                format += ' YYYY';
               }
 
-              return moment(currValue.value).format('MMM D');
+              return currValue.format(format);
             },
           },
         },
