@@ -46,6 +46,9 @@ class Selector extends Base\Core
         // Boosts direct terminals over shared terminals
         Sorters\ExclusivitySorter::class,
 
+        // Boosts specific auth type terminals over 3ds terminals
+        Sorters\AuthTypeSorter::class,
+
         // Sorting based on older failed attempts
         Sorters\FailedTerminalsSorter::class,
 

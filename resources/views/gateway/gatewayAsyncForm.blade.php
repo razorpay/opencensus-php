@@ -1,473 +1,410 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title></title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
+  <title>Payment in progress • Razorpay</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    @-webkit-keyframes spin {
+      0%{-webkit-transform:scale(0.5);opacity:0;border-width:8px}
+      20%{-webkit-transform:scale(0.6);opacity:0.8;border-width:4px}
+      90%{-webkit-transform: scale(1);opacity:0}
+    }
+    @-moz-keyframes spin {
+      0%{-moz-transform:scale(0.5);opacity:0;border-width:8px}
+      20%{-moz-transform:scale(0.6);opacity:0.8;border-width:4px}
+      90%{-moz-transform:scale(1);opacity:0}
+    }
+    @keyframes spin {
+      0% {transform:scale(0.5);opacity:0;border-width:8px}
+      20% {transform:scale(0.6);opacity:0.8;border-width:4px}
+      90% {transform:scale(1);opacity:0}
+    }
 
-        * {
-            margin: 0;
-            padding: 0;
-        }
+    html,body {
+      font-family:'lato', -apple-system, BlinkMacSystemFont,  "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",  "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+      background: #FBFBFB;
+      text-align: center;
+    }
 
-        @-webkit-keyframes spin {
-          0% {
-            -webkit-transform: scale(0.5);
-                    transform: scale(0.5);
-            opacity: 0;
-            border-width: 8px;
-          }
+    .spin {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto;
+    }
 
-          20% {
-            -webkit-transform: scale(0.6);
-                    transform: scale(0.6);
-            opacity: 0.8;
-            border-width: 4px;
-          }
+    .spin div {
+      width: 100%;
+      height: 100%;
+      vertical-align: middle;
+      display: inline-block;
+      border-radius: 50%;
+      border: 4px solid #3395ff;
+      -webkit-animation: spin 1.3s linear infinite;
+         -moz-animation: spin 1.3s linear infinite;
+        -ms-animation: spin 1.3s linear infinite;
+         -o-animation: spin 1.3s linear infinite;
+          animation: spin 1.3s linear infinite;
+      box-sizing: border-box;
+      opacity: 0;
+    }
 
-          90% {
-            -webkit-transform: scale(1);
-                    transform: scale(1);
-            opacity: 0;
-          }
-        }
+    .spin2 {
+      margin: -60px auto 0;
+    }
 
-        @-moz-keyframes spin {
-          0% {
-            -moz-transform: scale(0.5);
-                 transform: scale(0.5);
-            opacity: 0;
-            border-width: 8px;
-          }
+    .spin2 div {
+      animation-delay: 0.65s;
+    }
 
-          20% {
-            -moz-transform: scale(0.6);
-                 transform: scale(0.6);
-            opacity: 0.8;
-            border-width: 4px;
-          }
+    #spinner {
+      margin: 20px 0 60px;
+    }
 
-          90% {
-            -moz-transform: scale(1);
-                 transform: scale(1);
-            opacity: 0;
-          }
-        }
+    #content {
+      max-width: 400px;
+      margin: 0 auto;
+      padding: 10px;
+      box-sizing: border-box;
+      position: relative;
+    }
 
-        @-o-keyframes spin {
-          0% {
-            -o-transform: scale(0.5);
-               transform: scale(0.5);
-            opacity: 0;
-            border-width: 8px;
-          }
+    .card {
+      background: white;
+      border-radius: 2px;
+      box-shadow: 0px 4px 20px rgba(0,0,0,0.10);
+      padding-bottom: 1px;
+    }
 
-          20% {
-            -o-transform: scale(0.6);
-               transform: scale(0.6);
-            opacity: 0.8;
-            border-width: 4px;
-          }
+    #message-txt b {
+      display: block;
+      font-size: 20px;
+      padding: 0 25px 25px;
+    }
 
-          90% {
-            -o-transform: scale(1);
-               transform: scale(1);
-            opacity: 0;
-          }
-        }
+    #message-txt {
+      line-height: 26px;
+      padding: 50px 30px 30px;
+      font-size: 16px;
+      opacity: 0.8;
+    }
 
-        @keyframes spin {
-          0% {
-            -webkit-transform: scale(0.5);
-               -moz-transform: scale(0.5);
-                 -o-transform: scale(0.5);
-                    transform: scale(0.5);
-            opacity: 0;
-            border-width: 8px;
-          }
+    #banner {
+      padding: 24px;
+    }
 
-          20% {
-            -webkit-transform: scale(0.6);
-                    transform: scale(0.6);
-            opacity: 0.8;
-            border-width: 4px;
-          }
+    .buttons {
+      margin-top: 18px;
+      line-height: 56px;
+    }
 
-          90% {
-            -webkit-transform: scale(1);
-                    transform: scale(1);
-            opacity: 0;
-          }
-        }
+    #retry-btn {
+      background: #3395ff;
+      color: #fff;
+      cursor: pointer;
+    }
 
-        html, body {
-            height: 100%;
-            font-family:'lato', -apple-system, BlinkMacSystemFont,  "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",  "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-        }
+    #cancel-btn {
+      color: #3395ff;
+      border-top: 1px solid #ececec;
+      cursor: pointer;
+    }
 
-        html {
-            background: #FBFBFB;
-        }
+    .hide {
+      display: none !important;
+    }
 
-        .card {
-            padding: 24px;
-            background: #fff;
-            margin: 24px 0;
-        }
+    form {
+      visibility: hidden;
+    }
 
-        .center {
-            text-align: center;
-        }
-
-        .red {
-            color: red;
-        }
-
-        .green {
-            color: #11b700;
-        }
-
-        .spin {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto;
-        }
-
-        .spin div {
-            width: 100%;
-            height: 100%;
-            vertical-align: middle;
-            display: inline-block;
-            border-radius: 50%;
-            border: 4px solid #3395ff;
-            -webkit-animation: spin 1.3s linear infinite;
-               -moz-animation: spin 1.3s linear infinite;
-                -ms-animation: spin 1.3s linear infinite;
-                 -o-animation: spin 1.3s linear infinite;
-                    animation: spin 1.3s linear infinite;
-            box-sizing: border-box;
-            opacity: 0;
-        }
-
-        .spin2 {
-            margin: -60px auto 20px;
-        }
-
-        .spin2 div {
-            animation-delay: 0.65s;
-        }
-
-        #spinner {
-            padding: 15px 0 10px;
-        }
-
-        .more-pad {
-            padding-bottom: 40px;
-        }
-
-        #content {
-            max-width: 480px;
-            margin: 0 auto;
-            padding: 24px;
-            box-sizing: border-box;
-            position: relative;
-            /*border: 1px solid #adadad;*/
-        }
-
-        .loadingcard {
-            background: white;
-            padding: 40px 0 0;
-            border-radius: 2px;
-            box-shadow: 0px 4px 20px rgba(0,0,0,0.10);
-        }
-
-        #message-txt {
-            font-size: 20px;
-            padding: 0 25px 25px;
-        }
-
-        #message-txt div {
-            font-size: 16px;
-            margin-top: 12px;
-            opacity: 0.8;
-        }
-
-        #banner {
-            padding: 24px;
-        }
-
-        .buttons div {
-            padding: 15px;
-        }
-
-        #retry-btn {
-            display: block;
-            background: #3395ff;
-            color: #fff;
-            border: 0;
-            border-bottom-left-radius: 2px;
-            border-bottom-right-radius: 2px;
-            cursor: pointer;
-        }
-
-        #cancel-btn {
-            color: #3395ff;
-            margin-top: 40px;
-            border-top: 1px solid #ececec;
-            cursor: pointer;
-        }
-
-        .hide {
-            display: none !important;
-        }
-
-    </style>
+  </style>
 </head>
 <body>
-    <div id='content'>
-        <div id="banner" class='center'>
-            <img src="https://cdn.razorpay.com/logo.svg" id="logo" height="28px" style="height: 28px; margin: 20px auto;display: block;">
-        </div>
-
-        <div class="loadingcard">
-            @if ($data['data']['type'] === 'intent')
-                <div id='message-txt' class="center">
-                    <b>Select your UPI app</b>
-                    <div>Payment will be made to Razorpay's vpa</div>
-                </div>
-            @else
-                <div id='message-txt' class="center">
-                    <div>Please accept collect request from Razorpay's vpa in your UPI app</div>
-                </div>
-            @endif
-
-            <div id="error-msg" class="center red hide">No UPI apps found on this device</div>
-
-            <div id="spinner" class={{ $data['data']['type'] === ' intent' ? 'hide more-pad' : ''}}>
-                <div class="spin">
-                    <div></div>
-                </div>
-                <div class="spin spin2">
-                    <div></div>
-                </div>
-            </div>
-
-            <div class="center buttons">
-                <div id="cancel-btn"><b>Cancel Payment</b></div>
-                <div class="hide" id="retry-btn" onclick="initUpiActivity()"><b>Retry Payment</b></div>
-            </div>
-        </div>
-
-        <form id='form' method="POST">
-        </form>
-        <form id="form2" name="form2">
-            <input type="hidden" name="type" value="{{$data['data']['type']}}">
-            <input type="hidden" name="gateway" value="{{$data['data']['gateway']}}">
-        </form>
+  <div id='content'>
+    <div id="banner">
+      <img src="https://cdn.razorpay.com/logo.svg" id="logo" height="28px" style="height: 28px; margin: 20px auto;display: block;">
     </div>
 
-    <script type="text/javascript">
-        // Async Payment data //
-        var data = {!!utf8_json_encode($data['data'])!!};
-        // Async Payment data //
-        var request_url = '{{$data['data']['request']['url']}}';
+    <div class="card">
+      <div id='message-txt'>
+        Please accept collect request from Razorpay's VPA in your UPI app
+      </div>
 
-        var key_id = '{{ App::getFacadeRoot()['basicauth']->getPublicKey() }}';
-        var cancel_url = '{{$data["api"]}}/v1/payments/{{$data["data"]["payment_id"]}}/cancel?key_id='+key_id;
-        var callback_url = '{{$data["api"]}}/v1/payments/{{$data["data"]["payment_id"]}}/redirect_callback?key_id='+key_id;
-        var gel =  document.getElementById.bind(document);
+      <div id="spinner">
+        <div class="spin"><div></div></div>
+        <div class="spin spin2"><div></div></div>
+      </div>
 
-        function ajax (opts) {
-          var xhr = new XMLHttpRequest();
-          if (!opts.method) {
-            opts.method = 'get';
-          }
-          xhr.open(opts.method, opts.url, true);
+      <div class="buttons">
+        <div id="cancel-btn"><b>Cancel Payment</b></div>
+        <div class="hide" id="retry-btn" onclick="initUpiActivity()"><b>Retry Payment</b></div>
+      </div>
+    </div>
 
-          if(opts.callback) {
-            xhr.onreadystatechange = function() {
-              if(xhr.readyState === 4 && xhr.status) {
-                var json;
-                try {
-                  json = JSON.parse(xhr.responseText);
-                } catch(e) {
-                  json = {
-                    xhr: {
-                      status: xhr.status,
-                      text: xhr.responseText
-                    },
-                    error: {
-                      description: 'Parsing error'
-                    }
-                  };
-                }
-                opts.callback(json);
-              }
-            }
-            xhr.onerror = function(){
-              opts.callback({error: {description: 'Network error'}});
-            }
-          }
-          xhr.send(opts.data || null);
-          return xhr;
+    <form id="form" method="post"></form>
+    <form id="form2" name="form2">
+      <input name="type" id="form2_type" value="{{$data['data']['type']}}">
+      <input name="gateway" id="form2_gateway" value="{{$data['data']['gateway']}}">
+    </form>
+  </div>
+
+  <script type="text/javascript">
+    // Async Payment data //
+    var data = {!!utf8_json_encode($data['data'])!!};
+    // Async Payment data //
+
+    var request_url = data.request.url;
+    var key_id = '{{ App::getFacadeRoot()['basicauth']->getPublicKey() }}';
+    var payment_base = '{{$data["api"]}}/v1/payments/' + data.payment_id;
+    var cancel_url = payment_base + '/cancel?key_id='+key_id;
+    var callback_url = payment_base + '/redirect_callback?key_id='+key_id;
+
+    var $ =  document.getElementById.bind(document);
+    var form = $('form');
+    var CheckoutBridge = window.CheckoutBridge;
+    var isIntentFlow = CheckoutBridge && data.type === 'intent';
+
+    var lastXhr, lastPollTS, lastPollUrl;
+    var threshold = 1000 * 20;{{-- 20 seconds --}}
+    var pollRetriesOnError = 5;
+    var pollRetriesSoFar = 0;
+
+    onfocus = function(e) {
+      if (lastPollTS) {
+        {{-- If last XHR was more than threshold seconds ago, abort XHR and start a new poll. --}}
+        var timeSince = Date.now() - lastPollTS;
+
+        {{-- Only if its the polling URL --}}
+        if (lastPollUrl === request_url && timeSince > threshold) {
+          lastXhr.abort();
+          fetch(request_url, 1);
+          track('ajax_periodic_retry', {
+            last: {
+              status: lastXhr.status,
+              url: lastXhr.url,
+              text: lastXhr.responseText
+            },
+            focus: !!e,
+            time: timeSince
+          })
+        }
+      }
+    }
+
+    {{-- Keep checking every 1s for hung AJAX --}}
+    setInterval(onfocus, 1000);
+
+    {{--
+    onpopstate = function() {
+      history.pushState(null, null, '/v1/payments/create/checkout/' + data.payment_id);
+    }
+
+    //{{- If HTML5 history API exists, only then do this. -}}
+    window.history && onpopstate();
+    --}}
+
+    function track(name, properties, cb) {
+      setTimeout(function() {
+        properties.CheckoutBridge = !!CheckoutBridge;
+        properties.pageData = {
+          type: data.type,
+          data: data.data,
+          key: key_id,
+          payment_id: data.payment_id
+        }
+        var payload = {
+          context: {
+            user_agent: null
+          },
+          events: [{
+            event: name,
+            properties: properties,
+            timestamp: Date.now()
+          }]
+        };
+
+        if (key_id.slice(0, 5) === 'rzp_t') return console.log(payload);
+        var call = new XMLHttpRequest();
+        call.open('post', 'https://lumberjack.razorpay.com/v1/track', true);
+        call.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        {{-- If a callback is provided, fire it on response headers recieved
+             or fire it in 4s anyway
+          --}}
+        if (cb) {
+          call.onreadystatechange = function() { if (call.readyState === 2) { cb() } }
+          setTimeout(cb, 4e3);
         }
 
-        function defer (func, timeout) {
-          if (arguments.length === 1) {
-            timeout = 0;
-          }
-          if (arguments.length < 3) {
-            setTimeout(func, timeout);
-          } else {
-            var args = arguments;
-            setTimeout(function(){
-              func.apply(null, Array.prototype.slice.call(args, 2));
-            }, timeout);
-          }
+        call.send('key=MC40OTMwNzgyMDM3MDgwNjI3Nw9YnGzW&data=' +
+                 encodeURIComponent(btoa(JSON.stringify(payload))));
+      })
+    }
+
+    {{--
+      submit form redirects to callback_url
+      or, in case of anrdoid app, call CheckoutBridge.oncomplete
+    --}}
+
+    var submitted_count = 0;
+    function submitForm(response) {
+      {{-- track if page not closed after 10s of calling submitForm --}}
+      setTimeout(function() {
+        track('no_redirect', {
+          count: ++submitted_count
+        });
+        if (submitted_count && !(submitted_count % 2) && submitted_count < 10) {
+          submitForm(response);
         }
-
-        var start_delay, end_delay, normalize_time, delay, delta = 400;
-        var modDelay = function(){};
-
-        function recurseAjax(url, callback, continueTill, mature) {
-          defer(function() {
-            var xhr = ajax({
-              url: url,
-              callback: function(response) {
-                modDelay();
-
-                if (continueTill.call(xhr, response)) {
-                  recurseAjax(url, callback, continueTill, true);
-                } else {
-                  callback(response);
-                }
-              }
-            })
-            if (!mature) {
-              continueTill.call(xhr);
-            }
-          }, delay)
-        }
-
-        function addCls(el, cl) {
-            var rgx = new RegExp('\\b' + cl + '\\b');
-            if(!rgx.test(el.className)) {
-               el.className = el.className + ' ' + cl;
-            }
-        }
-
-        function removeCls(el, cl) {
-            var rgx = new RegExp('\\b' + cl + '\\b', 'g');
-            el.className = el.className.replace(rgx, '');
-        }
-
-        var pollStatus = function (){};
-        var initUpiActivity = function(){};
-        if (data.type === 'intent') {
-            if (CheckoutBridge) {
-                start_delay = 1000; end_delay = 5000; normalize_time = 33000; delay = start_delay;
-                modDelay =  function() {
-                    if (delay >= end_delay){
-                        delay = end_delay;
-                    } else {
-                        delay += delta;
-                    }
-                }
-
-                var poll_url = data.request.url, intent_url = data.data.intent_url;
-
-                initUpiActivity = function() {
-                    addCls(gel('retry-btn'), 'hide');
-                    removeCls(gel('message-txt'), 'red')
-                    CheckoutBridge.callNativeIntent && CheckoutBridge.callNativeIntent(intent_url);
-                }
-
-                initUpiActivity();
-
-                pollStatus = function(resp) {
-                    var respLen = 0, i;
-                    for (i in resp) {
-                        if (resp.hasOwnProperty(i)) { respLen ++;}
-                    }
-                    var front_fail;
-                    if (respLen && resp.response) {
-                        var qry = resp.response.split('&');
-                        for (var i = 0; i < qry.length; i++) {
-                            var key = qry[i].split('=');
-                            if ( key[0] && key[0].toLowerCase() === 'txnid') {
-                                front_fail = key[1] === 'undefined' || key[1] === 'null'; break;
-                            }
-                        }
-                    }
-                    if (!respLen || front_fail ) {
-                       removeCls(gel('cancel-btn'), 'hide');
-                       removeCls(gel('retry-btn'), 'hide');
-                       addCls(gel('spinner'), 'hide');
-                    } else {
-                        removeCls(gel('spinner'), 'hide')
-                        addCls(gel('cancel-btn'), 'hide');
-                        gel('message-txt').innerHTML = "<b>Confirming your payment...</b>";
-
-                        recurseAjax(
-                            poll_url,
-                            function(response) {
-                                if(response.razorpay_payment_id) {
-                                    gel('message-txt').innerHTML = "<b>Payment is Successful!</b>";
-                                    addCls(gel('message-txt'), 'green');
-                                    addCls(gel('cancel-btn'), 'green');
-                                    addCls(gel('spinner'), 'hide');
-                                }
-                                else {
-                                    gel('message-txt').innerHTML = "<b>Payment Failed!</b>";
-                                    addCls(gel('message-txt'), 'red');
-                                    removeCls(gel('retry-btn'), 'hide')
-                                    addCls(gel('spinner'), 'hide');
-                                }
-
-                                CheckoutBridge.oncomplete(JSON.stringify(response));
-                            },
-                            function(response) {
-                                return response && response.status;
-                            }
-                        )
-                    }
-                }
-            } else {
-                removeCls(gel('error-msg'), 'hide')
-                addCls(gel('retry-btn'), 'hide');
-            }
+      }, 10000);
+      if (isIntentFlow) {
+        CheckoutBridge.oncomplete(JSON.stringify(response));
+      } else {
+        if (response && response.type === 'return') {
+          var req = response.request;
+          var content = req.content;
+          form.action = req.url;
+          form.method = req.method;
+          form.innerHTML = Object.keys(content)
+            .map(name => '<input name="' + name + '" value="' + content[name] + '">')
+            .join('')
         } else {
-            start_delay = 8000; end_delay = 4000; normalize_time = 60000; delay = start_delay;
-            modDelay =  function() {
-                if (delay <= end_delay){
-                    delay = end_delay;
-                } else {
-                    delay -= delta;
+          form.action = callback_url;
+        }
+        form.submit();
+      }
+    }
+
+    function fetch(url, immediate) {
+      var totalCalls = 0;
+
+      function fetchAgain(timeout) {
+        totalCalls++;
+        {{-- 3 minutes --}}
+        if (totalCalls > 50 && !(totalCalls % 10)) {
+          track('call_count', {
+            count: totalCalls,
+            url: url
+          });
+        }
+
+        if (totalCalls > 180) {
+          return submitForm();
+        }
+
+        setTimeout(function() {
+          // If polling, set timestamp.
+          lastPollUrl = url;
+          lastPollTS = Date.now();
+
+          lastXhr = new XMLHttpRequest();
+          lastXhr.open('get', url, true);
+
+          lastXhr.onreadystatechange = function() {
+            if (lastXhr.readyState === 4 && lastXhr.status) {
+              var json;
+              try {
+                json = JSON.parse(lastXhr.responseText);
+                if (!json || typeof json !== 'object') {
+                  throw 'non object:' + json;
                 }
+              } catch(e) {
+                json = {
+                  message: e.message,
+                  error: {
+                    description: 'Parsing error'
+                  },
+                  xhr: {
+                    status: lastXhr.status,
+                    text: lastXhr.responseText,
+                    url: url
+                  }
+                };
+              }
+              if (json.status === 'created') {
+                return fetchAgain();
+              } else {
+                try {
+                  if (
+                    json.razorpay_payment_id ||
+                    json.error ||
+                    json.version === 1
+                  ) {
+                    return submitForm(json);
+                  }
+                } catch(e) {
+                  return handleAjaxError(e);
+                }
+              }
+              handleAjaxError();
             }
-            recurseAjax(request_url, function(response){
-                /*
-                 * Redirecting to callback_url regardless of whether payment is
-                 * succesful or not
-                 */
-                gel('form').setAttribute('action', callback_url);
-                gel('form').submit();
-            }, function(response){
-                return response && response.status;
-            })
+          }
+          lastXhr.onerror = handleAjaxError;
+          lastXhr.send(null);
+        }, timeout || 4000);
+      }
+
+      fetchAgain(immediate);
+    }
+
+    if (isIntentFlow) {
+      var intent_url = data.data.intent_url;
+
+      function initUpiActivity() {
+        try {
+          CheckoutBridge.callNativeIntent(intent_url);
+          $('spinner').className = 'hide';
+          $('retry-btn').className = 'hide';
+          $('message-txt').innerHTML = '<b>Select UPI App</b>Payment will be made to Razorpay\'s VPA';
+          window.pollStatus = function(resp) {
+            if (!Object.keys(resp).length || /txnid=(undefined|null)/i.test(resp.response)) {
+              $('cancel-btn').className = '';
+              $('retry-btn').className = '';
+              $('spinner').className = 'hide';
+            } else {
+              fetchWait(request_url);
+            }
+          }
+        } catch(e) {
+          track('android_error', {
+            error: e.message
+          }, submitForm)
         }
+      }
+      initUpiActivity();
+    } else {
+      fetch(request_url);
+    }
 
-        gel('cancel-btn').onclick = function () {
-            ajax({
-                url: cancel_url,
-                callback: function(){
-                    gel('form').setAttribute('action', callback_url);
-                    gel('form').submit();
-                }
-            })
-        }
+    $('cancel-btn').onclick = function() {
+      fetchWait(cancel_url);
+    }
 
-    </script>
+    function fetchWait(url) {
+      $('spinner').className = '';
+      $('cancel-btn').className = 'hide';
+      $('retry-btn').className = 'hide';
+      $('message-txt').innerHTML = "Please wait...";
+      fetch(url, 1);
+    }
 
-</body>
-</html>
+    function handleAjaxError(e) {
+      var props = {
+        text: lastXhr.responseText,
+        status: lastXhr.status,
+        url: lastPollUrl
+      }
+      if (e) {
+        props.message = e.message;
+      }
+
+      {{-- pass redirection callback if its unexpected response error --}}
+      track('ajax_error', props, !e && submitForm);
+
+      {{-- retry if its json parsing or network error --}}
+      if (e && pollRetriesSoFar < pollRetriesOnError) {
+        pollRetriesSoFar++;
+        fetch(lastPollUrl);
+      }
+    }
+  </script>

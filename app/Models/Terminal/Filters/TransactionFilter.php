@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Card\Network;
+use RZP\Models\Card\IIN\Flow;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Admin\ConfigKey;
@@ -35,6 +36,7 @@ class TransactionFilter extends Terminal\Filter
         'pharma',
         'corporate',
         'mcc',
+        'auth_type',
     ];
 
     public function methodFilter($terminal)
@@ -490,6 +492,86 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
+    }
+
+    public function authTypeFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return true;
+        }
+
+        //
+        // We use preferred_auth only if it's available else to fallback to
+        // $authType attribute
+        //
+        $authType = (array) $payment->getAuthType();
+
+        $authTypes = $payment->getMetadata(Payment\Entity::PREFERRED_AUTH, $authType);
+
+        //
+        // We fallback to the default flow if the preferred authentication or authType
+        // is empty. Normal flow chooses all the 3ds terminals.
+        //
+        if (empty($authTypes) === false)
+        {
+            foreach ($authTypes as $authType)
+            {
+                switch ($authType)
+                {
+                    case Payment\AuthType::PIN:
+                        $gateway = $terminal->getGateway();
+                        $acquirer = $terminal->getGatewayAcquirer();
+
+                        $issuer = $payment->card->getIssuer();
+
+                        //
+                        // Pin auth terminal is only selected when the terminal issuer supports pin auth
+                        // and card iin also supports the flow
+                        //
+                        if (($terminal->isPin() === true) and
+                            (Gateway::isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer) === true))
+                        {
+                            if (($payment->card->iinRelation !== null) and
+                                ($payment->card->iinRelation->supports(Flow::PIN) === true))
+                            {
+                                return true;
+                            }
+                        }
+
+                        break;
+
+                    case Payment\AuthType::_3DS:
+                        if ($this->is3DSTerminal($terminal) === true)
+                        {
+                            return true;
+                        }
+
+                        break;
+                }
+            }
+
+            //
+            // If the terminal doesn't match the given condition then
+            // we filter that terminal.
+            //
+            return false;
+        }
+
+        // Default terminals should always be the one which supports 3DS
+        // Any other auth type terminals should be filtered out if `auth_type`
+        // is empty or null.
+        // In case, we have plan to add new auth in the filter, we will have to
+        // add a condition here to remove terminals of that auth type while
+        // ensuring that all other gateways are selected.
+        return ($this->is3DSTerminal($terminal) === true);
+    }
+
+    protected function is3DSTerminal($terminal)
+    {
+        return ($terminal->isPin() === false);
     }
 
     protected function isTerminalWithMerchantMccAbsent(

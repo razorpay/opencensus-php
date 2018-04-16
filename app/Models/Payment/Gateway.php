@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment;
 
+use App;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC as BaseIFSC;
 
@@ -543,7 +544,6 @@ class Gateway
             IFSC::BKID,
             IFSC::MAHB,
             IFSC::BCBM,
-            IFSC::BCBX,
             IFSC::CNRB,
             IFSC::CBIN,
             IFSC::CITI,
@@ -556,7 +556,7 @@ class Gateway
             IFSC::INDB,
             IFSC::KKBK,
             IFSC::ORBC,
-            IFSC::PUNB,
+            Netbanking::PUNB_R,
             IFSC::RATN,
             IFSC::SRCB,
             IFSC::SCBL,
@@ -574,6 +574,11 @@ class Gateway
             IFSC::CORP,
             IFSC::VARA,
             IFSC::KVBL,
+            Netbanking::BARB_R,
+            IFSC::BKDN,
+            IFSC::CSBX,
+            IFSC::TMBL,
+            IFSC::KAIJ,
         ]
     ];
 
@@ -607,7 +612,6 @@ class Gateway
         IFSC::BKID,
         IFSC::MAHB,
         IFSC::BCBM,
-        IFSC::BCBX,
         IFSC::CNRB,
         IFSC::CBIN,
         IFSC::CITI,
@@ -620,7 +624,7 @@ class Gateway
         IFSC::INDB,
         IFSC::KKBK,
         IFSC::ORBC,
-        IFSC::PUNB,
+        Netbanking::PUNB_R,
         IFSC::RATN,
         IFSC::SRCB,
         IFSC::SCBL,
@@ -638,6 +642,11 @@ class Gateway
         IFSC::CORP,
         IFSC::VARA,
         IFSC::KVBL,
+        Netbanking::BARB_R,
+        IFSC::BKDN,
+        IFSC::CSBX,
+        IFSC::TMBL,
+        IFSC::KAIJ,
     ];
 
     /**
@@ -664,7 +673,6 @@ class Gateway
             IFSC::BKID,
             IFSC::MAHB,
             IFSC::BCBM,
-            IFSC::BCBX,
             IFSC::CNRB,
             IFSC::CBIN,
             IFSC::CITI,
@@ -678,7 +686,7 @@ class Gateway
             IFSC::INDB,
             IFSC::KKBK,
             IFSC::ORBC,
-            IFSC::PUNB,
+            Netbanking::PUNB_R,
             IFSC::RATN,
             IFSC::SRCB,
             IFSC::SCBL,
@@ -699,7 +707,7 @@ class Gateway
             IFSC::CSBX,
             IFSC::TMBL,
             IFSC::KAIJ,
-            IFSC::BARB,
+            Netbanking::BARB_R,
         ],
     ];
 
@@ -869,6 +877,24 @@ class Gateway
         IFSC::HSBC => Gateway::FIRST_DATA,
     ];
 
+    /**
+     * This variable defines the mapping of gateway acquirer and the
+     * supported ifsc on that acquirer
+     */
+    public static $gatewayAcquirerIfscMapping = [
+        Gateway::CARD_FSS => [
+            self::ACQUIRER_FSS => [
+                IFSC::UTIB,
+                IFSC::IOBA,
+                IFSC::ANDB,
+                IFSC::SYNB,
+                IFSC::SURY,
+                IFSC::UCBA,
+                IFSC::ICIC,
+            ]
+        ],
+    ];
+
     public static $subscriptionOverOneYearGateways = [
         Gateway::AXIS_MIGS
     ];
@@ -917,6 +943,19 @@ class Gateway
     public static function isUpiIntentFlowSupported($gateway): bool
     {
         return in_array($gateway, self::$upiIntentGateways, true);
+    }
+
+    public static function isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer)
+    {
+        $pinAuthGateways = self::$gatewayAcquirerIfscMapping;
+
+        if ((isset($pinAuthGateways[$gateway][$acquirer]) === true) and
+            (in_array($issuer, $pinAuthGateways[$gateway][$acquirer], true) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**

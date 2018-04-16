@@ -15,7 +15,7 @@
               <a id="logo-link" href="https://razorpay.com/" target="_parent"></a>
           </li>
           <div id="ham">
-              <li><a href="https://razorpay.com/features/" target="_parent">Features</a></li>
+              <li><a href="https://razorpay.com/payment-gateway/" target="_parent">Payment Gateway</a></li>
               <li><a href="https://razorpay.com/pricing/" target="_parent">Pricing</a></li>
 
               <div class="float-right">
@@ -141,7 +141,7 @@
         "amount": "100", // 2000 paise = INR 20
         "name": "Razorpay",
         "description": "Demo payment to save card",
-        "image": "https://razorpay.com/images/brand/glyph-rounded-square.svg",
+        "image": "https://razorpay.com/assets/razorpay-glyph.svg",
         "handler": function (response){
             window.location.reload();
         },
