@@ -686,4 +686,18 @@ class Repository extends Base\Repository
                     ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
                     ->first();
     }
+
+    public function getAliasesForRefundsDbColumns($params): array
+    {
+        $dbColumns = [];
+
+        foreach ($params as $param)
+        {
+            $dbColumn = $this->repo->refund->dbColumn($param);
+
+            $dbColumns[] = $dbColumn . ' as refund_'. $param;
+        }
+
+        return $dbColumns;
+    }
 }
