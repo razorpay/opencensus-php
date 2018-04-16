@@ -177,6 +177,11 @@ export default class MerchantList extends Component {
       delete filters['sub_accounts'];
     }
 
+    //handle empty filter value
+    if (!filters['reviewer_id']) {
+      filters['reviewer_id'] = '';
+    }
+
     return this.collection.applyFilters(filters);
   };
 
@@ -302,7 +307,7 @@ export default class MerchantList extends Component {
                 defaultValue={''}
               />
             </div>
-            <button class="pull-right">Apply</button>
+            <button class="pull-right">Search</button>
             <button
               class={`pull-left btn-default${
                 !selectedMerchants.length ? ' disabled' : ''

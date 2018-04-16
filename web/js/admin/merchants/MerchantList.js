@@ -81,7 +81,7 @@ export default class MerchantList extends Component {
               defaultChecked={''}
             />
 
-            <button class="pull-right">Apply</button>
+            <button class="pull-right">Search</button>
           </Form>
         </div>
         <PageTable
@@ -148,7 +148,7 @@ if (user.permissions.find(perm => perm === 'view_merchant_stats')) {
           View Stats
         </a>
       ),
-  ])
+  ]);
 }
 
 const openLink = function(e) {
