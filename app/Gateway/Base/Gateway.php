@@ -6,6 +6,7 @@ use App;
 use Crypt;
 use Cache;
 use Requests;
+use RZP\Models\VirtualAccount\Receiver;
 use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
@@ -1119,8 +1120,8 @@ class Gateway
 
     protected function isBharatQrPayment(): bool
     {
-        return ((empty($this->input['payment']['receiver_type']) === false) and
-                ($this->input['payment']['receiver_type'] === 'qr_code'));
+        return ((empty($this->input['payment'][Payment\Entity::RECEIVER_TYPE]) === false) and
+                ($this->input['payment'][Payment\Entity::RECEIVER_TYPE] === Receiver::QR_CODE));
     }
 
     /**

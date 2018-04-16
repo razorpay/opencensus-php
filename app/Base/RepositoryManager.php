@@ -142,6 +142,14 @@ class RepositoryManager extends Illuminate\Support\Manager
             return Mode::TEST;
         }
 
+        //
+        // We need to set connection to null
+        // because it will be set to test if the
+        // id is not found in any of the database.
+        // So even if the db connection is later set
+        // to live, query connection will be set to
+        // test.
+        //
         $repo->connection(null);
 
         return null;

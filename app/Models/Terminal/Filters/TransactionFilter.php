@@ -4,20 +4,16 @@ namespace RZP\Models\Terminal\Filters;
 
 use App;
 
-use function Aws\or_chain;
 use RZP\Exception;
 use RZP\Models\Feature;
-use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\IIN\Flow;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
-use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant\Preferences;
-use RZP\Models\Customer\GatewayToken;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
@@ -597,10 +593,11 @@ class TransactionFilter extends Terminal\Filter
 
     public function bharatQrFilter($terminal)
     {
-        if ((($this->input['payment']->getReceiverType() === 'qr_code') and
+        if ((($this->input['payment']->isBharatQr() === true) and
                 ($terminal->isBharatQr() === false)) or
             (($terminal->isBharatQr() === true) and
-                ($this->input['payment']->getReceiverType() !== 'qr_code'))) {
+                ($this->input['payment']->isBharatQr() === false)))
+        {
             return false;
         }
 

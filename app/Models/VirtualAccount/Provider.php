@@ -162,8 +162,6 @@ class Provider
         ],
     ];
 
-    protected $receiver;
-
     public static function getBankCode(string $provider)
     {
         $ifsc = self::DEFAULT_DETAILS[$provider][BankAccount::IFSC_CODE];
@@ -223,11 +221,6 @@ class Provider
         return false;
     }
 
-    public function __construct($recevier = null)
-    {
-        $this->receiver = $recevier;
-    }
-
     public function generateQrString(QrCode\Entity $qrCode)
     {
         $provider = $qrCode->getProvider();
@@ -246,7 +239,7 @@ class Provider
     {
         $pointOfInitiation = $this->getPointOfInitiation($qrCode);
 
-        $merchantIdentifiers = $this->generateBharatQrMerchantIdentifier();
+        $merchantIdentifiers = $this->generateBharatQrMerchantIdentifier($qrCode);
 
         $visaIdentifier = $merchantIdentifiers['visa_mpan'];
 
@@ -359,9 +352,9 @@ class Provider
      * @param string $network
      * @return array
      */
-    protected function generateBharatQrMerchantIdentifier()
+    protected function generateBharatQrMerchantIdentifier(QrCode\Entity $qrCode)
     {
-        $terminal = $this->getTerminalForMethod(Payment\Method::CARD);
+        $terminal = $this->getTerminalForMethod(Payment\Method::CARD, $qrCode);
 
         $identifiers = [
             'mastercard_mpan' => $terminal->getMasterCardMpan(),
@@ -369,7 +362,7 @@ class Provider
             'rupay_mpan'      => $terminal->getRupayMpan(),
         ];
 
-        $terminal = $this->getTerminalForMethod(Payment\Method::UPI);
+        $terminal = $this->getTerminalForMethod(Payment\Method::UPI, $qrCode);
 
         $identifiers['vpa'] = $terminal->getGatewayVpa();
 
@@ -385,18 +378,18 @@ class Provider
      * @return mixed
      * @throws Exception\RuntimeException
      */
-    protected function getTerminalForMethod(string $method)
+    protected function getTerminalForMethod(string $method, QrCode\Entity $qrCode)
     {
         if ($method === Payment\Method::CARD)
         {
-            $paymentArray = Constants::getDummyCardPaymentArray($this->receiver);
+            $paymentArray = Constants::getDummyCardPaymentArray($qrCode);
         }
         else
         {
-            $paymentArray = Constants::getDummyVpaPaymentArray($this->receiver);
+            $paymentArray = Constants::getDummyVpaPaymentArray($qrCode);
         }
 
-        $paymentProcessor = new PaymentProcessor($this->receiver->merchant);
+        $paymentProcessor = new PaymentProcessor($qrCode->merchant);
 
         return $paymentProcessor->processAndReturnTerminal($paymentArray);
     }

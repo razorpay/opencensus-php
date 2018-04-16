@@ -77,7 +77,7 @@ class CreateHitachiGateway extends Migration
             $table->foreign(Hitachi::PAYMENT_ID)
                   ->references(Payment::ID)
                   ->on(Table::PAYMENT)
-                  ->on_delete('restrict');
+                  ->onDelete('restrict');
 
             $table->index(Hitachi::RECEIVED);
 

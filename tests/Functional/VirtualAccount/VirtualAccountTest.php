@@ -48,6 +48,8 @@ class VirtualAccountTest extends TestCase
 
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal_upi');
 
+        $this->fixtures->on('test');
+
         $this->setupMockDns();
     }
 

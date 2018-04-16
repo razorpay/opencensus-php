@@ -21,8 +21,6 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'qr_code';
 
-    protected $morphClass  = 'qr_code';
-
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
@@ -79,7 +77,7 @@ class Entity extends Base\PublicEntity
     /**
      * This function is used in case of polymorphic relations where we associate one entity
      * with multiple other entities using (entity_type and entity_id). It determines the string that
-     * will be stored for entity_type when the association is with the Account entity.
+     * will be stored for entity_type when the association is with the QrCode entity.
      *
      * @return string
      */
@@ -158,7 +156,7 @@ class Entity extends Base\PublicEntity
 
     public function generateQrString()
     {
-        $qrString = (new Provider($this))->generateQrString($this);
+        $qrString = (new Provider)->generateQrString($this);
 
         $this->setQrString($qrString);
 
