@@ -29,7 +29,7 @@ export default class BatchValidate extends Component {
       newState.notifyMsg.indexOf('Server error response') > -1
     ) {
       newState.notifyMsg =
-        'Something bad happened.Please try again after some time.';
+        'There was an error while processing the file. Please try again after some time.';
     }
     newState.fileUrl = fileUrl;
     this.setState(newState);
