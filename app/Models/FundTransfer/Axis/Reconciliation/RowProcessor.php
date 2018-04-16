@@ -30,7 +30,8 @@ class RowProcessor extends BaseRowProcessor
 
     protected function updateReconEntity()
     {
-        $this->reconEntity->setUtr($this->parsedData[self::UTR]);
+        $utr = $this->getUtrToUpdate();
+        $this->reconEntity->setUtr($utr);
 
         $this->reconEntity->setRemarks($this->parsedData[self::REMARKS]);
 
@@ -39,6 +40,23 @@ class RowProcessor extends BaseRowProcessor
         $this->reconEntity->setDateTime($this->parsedData[self::SETTLEMENT_DATE]);
 
         $this->reconEntity->saveOrFail();
+    }
+
+    protected function getUtrToUpdate()
+    {
+        $currentUtr = $this->reconEntity->getUtr();
+
+        $utrFromFile = $this->parsedData[self::UTR];
+
+        $newUtr = $currentUtr;
+
+        // Update UTR to the value from file only if it is not empty
+        if (empty($utrFromFile) === false)
+        {
+            $newUtr = $utrFromFile;
+        }
+
+        return $newUtr;
     }
 
     protected function getAttemptReference()
