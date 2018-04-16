@@ -540,7 +540,7 @@ return [
                     'verification'          => [
                         'status'                => 'disabled',
                         'disabled_reason'       => 'required_fields',
-                        'activation_progress'   => 4,
+                        'activation_progress'   => 5,
                     ],
                 ],
                 'auto_capture_late_auth'    => false,
