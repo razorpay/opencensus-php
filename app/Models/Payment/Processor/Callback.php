@@ -345,8 +345,6 @@ trait Callback
             $input['customer'] = $customer;
 
             $payment->globalCustomer()->associate($customer);
-
-            $this->app['segment']->trackPayment($payment, TraceCode::OTP_POSTPROCESSING, ['is_customer_set' => true]);
         }
 
         if (isset($data['token']) === true)
@@ -356,8 +354,6 @@ trait Callback
             $payment->globalToken()->associate($token);
 
             $input['token'] = $token->toArray();
-
-            $this->app['segment']->trackPayment($payment, TraceCode::OTP_POSTPROCESSING, ['is_token_set' => true]);
         }
 
         $this->repo->saveOrFail($payment);

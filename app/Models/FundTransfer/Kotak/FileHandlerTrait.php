@@ -65,9 +65,9 @@ trait FileHandlerTrait
         return $url;
     }
 
-    public function writeToExcelFile($data, $name, $dir = 'files/settlement', $sheetName = 'Sheet 1')
+    public function writeToExcelFile($data, $name, $dir = 'files/settlement', $sheetNames = ['Sheet 1'])
     {
-        $fullpath = $this->createExcelFile($data, $name, $dir, $sheetName);
+        $fullpath = $this->createExcelFile($data, $name, $dir, $sheetNames);
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
@@ -92,13 +92,13 @@ trait FileHandlerTrait
         return $url;
     }
 
-    public function createExcelFile($data, $name, $dir, $sheetName = 'Sheet 1')
+    public function createExcelFile($data, $name, $dir, $sheetNames = ['Sheet 1'])
     {
         \Config::set('excel::export.calculate', true);
 
         $columnFormat = $this->getColumnFormatForExcel();
 
-        $excel = $this->createExcelObject($data, $name, $columnFormat, $sheetName);
+        $excel = $this->createExcelObject($data, $name, $columnFormat, $sheetNames);
 
         $fileMetadata = $excel->store('xlsx', storage_path($dir), true);
 
@@ -222,21 +222,26 @@ trait FileHandlerTrait
         return $row;
     }
 
-    protected function createExcelObject($data, $name, $columnFormat = [], $sheetName = 'Sheet 1')
+    protected function createExcelObject($data, $name, $columnFormat = [], $sheetNames = ['Sheet 1'])
     {
-        $excel = Excel::create($name, function($excel) use ($data, $columnFormat, $sheetName)
-        {
-            $excel->sheet($sheetName, function($sheet) use ($data, $columnFormat)
-            {
-                // If a columnFormat variable is specified.
-                // Use it.
-                if (empty($columnFormat) === false)
-                {
-                    $sheet->setColumnFormat($columnFormat);
-                }
+        $sheetNames = (is_array($sheetNames) === false) ? [$sheetNames] : $sheetNames;
 
-                $sheet->fromArray($data, null, 'A1', true, true);
-            });
+        $excel = Excel::create($name, function($excel) use ($data, $columnFormat, $sheetNames)
+        {
+            foreach ($sheetNames as $sheetName)
+            {
+                $excel->sheet($sheetName, function($sheet) use ($data, $columnFormat, $sheetName)
+                {
+                    // If a columnFormat variable is specified.
+                    // Use it.
+                    if (empty($columnFormat) === false)
+                    {
+                        $sheet->setColumnFormat($columnFormat);
+                    }
+
+                    $sheet->fromArray(($data[$sheetName] ?? $data), null, 'A1', true, true);
+                });
+            }
         });
 
         $excel->getDefaultStyle()->getFont()->setName('Ubuntu Mono')->setSize(14);
@@ -345,7 +350,7 @@ trait FileHandlerTrait
     }
 
     protected function saveToAws(
-        $name, $fullpath, $mime = 'text/plain', $bucket = 'settlement_bucket', $metadata = array())
+        $name, $fullPath, $mime = 'text/plain', $bucket = 'settlement_bucket', $metadata = [])
     {
         $config =  \Config::get('aws');
 
@@ -353,20 +358,20 @@ trait FileHandlerTrait
 
         if ($awsS3Mock)
         {
-            return $fullpath;
+            return $fullPath;
         }
 
         $s3 = Handler::getClient();
 
         try
         {
-            $s3Obj = array(
+            $s3Obj = [
                 'Bucket'        => $config[$bucket],
                 'Key'           => $name,
                 'ContentType'   => $mime,
-                'SourceFile'    => $fullpath,
+                'SourceFile'    => $fullPath,
                 'Metadata'      => $metadata,
-            );
+            ];
 
             $this->trace()->info(TraceCode::AWS_FILE_UPLOAD, $s3Obj);
 
