@@ -47,7 +47,7 @@ class Server extends Base\Mock\Server
 
     private function getAuthResponse(array $input): array
     {
-        $queryArray = $this->getQueryArray($input[RequestFields::QUERY_STRING]);
+        $queryArray = $this->parseQuery($input[RequestFields::QUERY_STRING]);
 
         $this->validateActionInput($queryArray, $this->action . '_qs');
 
@@ -101,9 +101,9 @@ class Server extends Base\Mock\Server
         return $responseString;
     }
 
-    private function getQueryArray(string $queryString)
+    private function parseQuery(string $query)
     {
-        $querySubArray = explode('|', $queryString);
+        $querySubArray = explode('|', $query);
 
         $array = [];
 
@@ -127,7 +127,6 @@ class Server extends Base\Mock\Server
         $input[RequestFields::QUERY_STRING] = $this->decrypt($input[RequestFields::QUERY_STRING]);
     }
 
-
     private function encrypt(string $stringToEncrypt)
     {
         return $this->getGatewayInstance()->encrypt($stringToEncrypt);
@@ -136,15 +135,5 @@ class Server extends Base\Mock\Server
     private function decrypt(string $stringToDecrypt)
     {
         return $this->getGatewayInstance()->decrypt($stringToDecrypt);
-    }
-
-    protected function getGatewayInstance($bankingType = null)
-    {
-        if ($this->gatewayInstance === null)
-        {
-            $this->gatewayInstance = parent::getGatewayInstance($bankingType);
-        }
-
-        return $this->gatewayInstance;
     }
 }
