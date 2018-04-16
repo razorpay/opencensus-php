@@ -88,14 +88,15 @@ export default function BatchDetails(props) {
                 />
               </div>
               <hr />
-              <div class="m-all p-t" style={{ overflow: 'auto' }}>
-                <span class="pull-left">
-                  <strong>
-                    {pluralize(titleCase(batch.type), stats.batch_total)}
-                  </strong>{' '}
-                  created from this batch.
-                </span>
-                {invoices.length > 0 ? (
+
+              {invoices.length > 0 ? (
+                <div class="m-all p-t" style={{ overflow: 'auto' }}>
+                  <span class="pull-left">
+                    <strong>
+                      {pluralize(titleCase(batch.type), stats.batch_total)}
+                    </strong>{' '}
+                    created from this batch.
+                  </span>{' '}
                   <NavLink
                     to={`/paymentlinks?batch_id=${batch.id}`}
                     className="btn-link pull-right"
@@ -103,8 +104,9 @@ export default function BatchDetails(props) {
                   >
                     View All &gt;
                   </NavLink>
-                ) : null}
-              </div>
+                </div>
+              ) : null}
+
               <div class="invoice-list table-responsive p-t">
                 <table
                   class={`table table-hover${invoices.length > 0 &&

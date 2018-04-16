@@ -38,7 +38,8 @@ function batchActions({ mode, sendAll, onDownloadClick }) {
           <i class="i i-download" /> Download
         </button>
         {/* hide for below statuses  */}
-        {['created', 'failure'].indexOf(item.status) < 0 && (
+        {['created', 'failure'].indexOf(item.status) < 0 &&
+        item.success_count > 0 ? (
           <button
             class="btn btn-default btn-xs"
             onClick={_ => sendAll(item)}
@@ -46,7 +47,7 @@ function batchActions({ mode, sendAll, onDownloadClick }) {
           >
             {allowSendAllLinks(item) ? 'Send all links' : 'All links sent'}
           </button>
-        )}
+        ) : null}
       </div>
     ),
   };
@@ -55,8 +56,7 @@ function batchActions({ mode, sendAll, onDownloadClick }) {
 function allowSendAllLinks(batch) {
   // config object will not be available for older batches
   // duplicate batches will have no success count
-
-  if (batch.config && batch.success_count > 0) {
+  if (batch.config.length) {
     if (
       parseInt(batch.config.sms_notify) > 0 ||
       parseInt(batch.config.email_notify) > 0
