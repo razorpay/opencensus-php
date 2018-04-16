@@ -2443,7 +2443,9 @@ class Entity extends Base\PublicEntity
             self::AMOUNT,
             self::AUTO_CAPTURED,
             self::ERROR_CODE,
-            self::GATEWAY);
+            self::GATEWAY,
+            self::RECEIVER_ID,
+            self::RECEIVER_TYPE);
 
         $relevantData = array_intersect_key($this->attributes, array_flip($fields));
 

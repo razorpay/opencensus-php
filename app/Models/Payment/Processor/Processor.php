@@ -1290,13 +1290,6 @@ class Processor
 
         $receiver = $this->fetchReceiverFromInput($input['receiver']);
 
-        $this->trace->info(
-            TraceCode::PAYMENT_RECEIVED_VIA_RECEIVER,
-            [
-                'receiver_id'   => $receiver->getId(),
-                'receiver_type' => $receiver->getEntity(),
-            ]);
-
         $payment->receiver()->associate($receiver);
     }
 
