@@ -29,8 +29,6 @@ final class Constants
         Detail\Entity::BUSINESS_NAME               => 2,
         Detail\Entity::BUSINESS_DBA                => 2,
         Detail\Entity::BUSINESS_INTERNATIONAL      => 2,
-        Detail\Entity::BUSINESS_PAYMENTDETAILS     => 2,
-        Detail\Entity::BUSINESS_MODEL              => 2,
         Detail\Entity::BUSINESS_REGISTERED_ADDRESS => 2,
         Detail\Entity::BUSINESS_REGISTERED_STATE   => 2,
         Detail\Entity::BUSINESS_REGISTERED_CITY    => 2,
