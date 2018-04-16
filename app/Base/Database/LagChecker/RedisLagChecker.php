@@ -35,7 +35,7 @@ class RedisLagChecker implements LagChecker
      */
     public function useReadPdoIfApplciable(Closure $readPdo)
     {
-        $skipSlave = false;
+        $skipSlave = true;
 
         try
         {
