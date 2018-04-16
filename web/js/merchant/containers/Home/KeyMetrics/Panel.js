@@ -231,12 +231,13 @@ class Panel extends Component {
 
     let chartOptions = { ...globalChartOptions };
 
-    if (selectedBreakdown === 'hourly') {
-      chartOptions = {
-        ...chartOptions,
-        ...timeScale({ breakdown: selectedBreakdown }),
-      };
-    }
+    chartOptions = {
+      ...chartOptions,
+      ...timeScale({
+        breakdown: selectedBreakdown,
+        startDate,
+      }),
+    };
 
     // following chart options will be used by cutomTooltip.js
     chartOptions.isCurrency = isCurrency;
