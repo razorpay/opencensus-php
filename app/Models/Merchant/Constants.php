@@ -41,7 +41,6 @@ final class Constants
         Detail\Entity::P_GSTIN                     => 2,
         Detail\Entity::PROMOTER_PAN                => 2,
         Detail\Entity::PROMOTER_PAN_NAME           => 2,
-        Detail\Entity::BUSINESS_WEBSITE            => 2,
 
         Detail\Entity::BANK_BRANCH_IFSC            => 3,
         Detail\Entity::BANK_ACCOUNT_NUMBER         => 3,

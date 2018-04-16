@@ -23,6 +23,7 @@ class Validator extends Base\Validator
         AuthFields::CUSTOMER_EMAIL            => 'required',
         AuthFields::SERVICE                   => 'required|size:2',
         AuthFields::HASH                      => 'required',
+        AuthFields::MERCHANT_NAME             => 'required'
     ];
 
     protected static $verifyRules = [

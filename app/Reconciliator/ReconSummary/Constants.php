@@ -56,13 +56,13 @@ class Constants
     ];
 
     // Number of unreconciled entities to be sent in attachment
-    const LIMIT = 100;
+    const LIMIT = 1000;
 
     const ENTITIES = [
         'Payment',
         'Refund'
     ];
 
-    // Default time duration is 4 days. Summary of last 5 days will be sent in email
-    const DURATION = 4;
+    // Default time duration is 5 days. Summary of last 5 days will be sent in email
+    const DURATION = 5;
 }
