@@ -336,7 +336,7 @@ class Validator extends Base\Validator
         if ($merchant->isFeatureEnabled(Feature::VIRTUAL_ACCOUNTS) === false)
         {
             throw new BadRequestValidationFailureException(
-                'Virtual accounts is not enabled for merchant',
+                'Batch type is not enabled for merchant',
                 null,
                 [
                     Entity::MERCHANT_ID => $merchant->getId(),
@@ -349,9 +349,10 @@ class Validator extends Base\Validator
         if ($merchant->isFeatureEnabled(Feature::CHARGE_AT_WILL) === false)
         {
             throw new BadRequestValidationFailureException(
-                'Charge-at-will is not enabled for merchant',
+                'Batch type is not enabled for merchant',
                 null,
                 [
+                    Entity::ID          => $this->entity->getId(),
                     Entity::MERCHANT_ID => $merchant->getId(),
                 ]);
         }
@@ -362,7 +363,7 @@ class Validator extends Base\Validator
         if ($merchant->isFeatureEnabled(Feature::PAYOUT) === false)
         {
             throw new BadRequestValidationFailureException(
-                'Payout are not enabled for merchant',
+                'Batch type is not enabled for merchant',
                 null,
                 [
                     Entity::MERCHANT_ID => $merchant->getId(),

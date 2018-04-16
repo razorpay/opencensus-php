@@ -22,12 +22,12 @@ class RecurringCharge
             Payment\Entity::TOKEN       => $entry[Header::RECURRING_CHARGE_TOKEN],
             Payment\Entity::AMOUNT      => $entry[Header::RECURRING_CHARGE_AMOUNT],
             Payment\Entity::CURRENCY    => $entry[Header::RECURRING_CHARGE_CURRENCY],
-            Payment\Entity::DESCRIPTION => $entry[Header::RECURRING_CHARGE_DESCRIPTION] ?? "",
-            Payment\Entity::EMAIL       => $customer->getEmail(),
-            Payment\Entity::CONTACT     => $customer->getContact(),
-            Payment\Entity::CUSTOMER_ID => $customer->getPublicId()(),
-            Payment\Entity::CUSTOMER_ID => $order->getPublicId()(),
-            Payment\Entity::RECURRING   => true,
+            Payment\Entity::DESCRIPTION => $entry[Header::RECURRING_CHARGE_DESCRIPTION],
+            Payment\Entity::EMAIL       => $customer[Customer\Entity::EMAIL],
+            Payment\Entity::CONTACT     => $customer[Customer\Entity::CONTACT],
+            Payment\Entity::CUSTOMER_ID => $customer[Customer\Entity::ID],
+            Payment\Entity::ORDER_ID    => $order->getPublicId(),
+            Payment\Entity::RECURRING   => '1',
         ];
 
         return $request;
@@ -38,7 +38,7 @@ class RecurringCharge
         $request = [
             Order\Entity::AMOUNT          => $entry[Header::RECURRING_CHARGE_AMOUNT],
             Order\Entity::CURRENCY        => $entry[Header::RECURRING_CHARGE_CURRENCY],
-            Order\Entity::RECEIPT         => $entry[Header::RECURRING_CHARGE_RECEIPT] ?? "",
+            Order\Entity::RECEIPT         => $entry[Header::RECURRING_CHARGE_RECEIPT],
             Order\Entity::PAYMENT_CAPTURE => true,
             Order\Entity::NOTES           => self::getOrderNotes($entry),
         ];

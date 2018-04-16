@@ -3,7 +3,9 @@
 namespace RZP\Models\Batch\Processor;
 
 use RZP\Models\Order;
+use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
+use RZP\Models\Batch\Status;
 use RZP\Models\Batch\Helpers\RecurringCharge as Helper;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
@@ -15,7 +17,7 @@ class RecurringCharge extends Base
     {
         parent::__construct($batch);
 
-        $paymentProcessor = new PaymentProcessor($this->merchant);
+        $this->paymentProcessor = new PaymentProcessor($this->merchant);
 
         $this->orderCore = new Order\Core;
     }
@@ -24,9 +26,9 @@ class RecurringCharge extends Base
     {
         $order = $this->createOrder($entry);
 
-        $paymentResponse = $this->processPayment($entry, $order);
+        $response = $this->processPayment($entry, $order);
 
-        $entry[Header::STATUS] = Batch\Status::SUCCESS;
+        $entry[Header::STATUS] = Status::SUCCESS;
 
         $entry[Header::RECURRING_CHARGE_PAYMENT_ID] = $response[self::RESPONSE_PAYMENT_ID];
     }
@@ -46,7 +48,7 @@ class RecurringCharge extends Base
     {
         $recurringPaymentRequest = Helper::getPaymentInput($entry, $order);
 
-        return $paymentProcessor->process($recurringPaymentRequest);
+        return $this->paymentProcessor->process($recurringPaymentRequest);
     }
 
     protected function sendProcessedMail()
