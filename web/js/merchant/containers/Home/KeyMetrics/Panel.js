@@ -399,8 +399,7 @@ class Panel extends Component {
                 )
               }
             >
-              {`View these ${titleCase(this.meta.index)} `}
-              <i className="i i-chevron-right" />
+              {`View all ${this.meta.index} from this date range`}
             </Link>
           </div>
         </PanelFooter>
