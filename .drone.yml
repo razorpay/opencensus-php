@@ -12,7 +12,7 @@ pipeline:
       event:
         exclude: [deployment]
         include: [push]
-  deploy-stage-echo:
+  deploy-beta:
     image: razorpay/drone-kubernetes
     pull: true
     secrets:
@@ -27,11 +27,34 @@ pipeline:
     auth_mode: client-cert
     deployment: dashboard
     repo: razorpay/dashboard
-    namespace: echo
+    namespace: beta
     tag:
-      - ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
+      - ${DRONE_COMMIT_SHA}
     when:
-      environment: stage-echo
+      environment: beta
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-qa-func:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_qa
+      - server_cert_qa
+      - client_cert_qa
+      - client_key_qa
+    user: drone
+    cluster: qa
+    auth_mode: client-cert
+    deployment: dashboard
+    repo: razorpay/dashboard
+    namespace: func
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: qa-func
       event:
         exclude: [push]
         include: [deployment]

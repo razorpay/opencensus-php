@@ -103,7 +103,12 @@ export default class EditPublicFeatures extends Component {
 
   render() {
     let { selectedStatus, selectedReasonCategory } = this.state;
-    let { merchant_id, name } = this.props.model;
+    let {
+      merchant_id,
+      name,
+      internal_comment,
+      public_message,
+    } = this.props.model;
     let {
       akaFeature,
       submissions,
@@ -256,6 +261,19 @@ export default class EditPublicFeatures extends Component {
                   )}
                 </div>,
               ]}
+
+              <TextAreaField
+                label="Internal Comment"
+                name="internal_comment"
+                defaultValue={internal_comment}
+              />
+
+              <TextAreaField
+                label="Public Message"
+                name="public_message"
+                defaultValue={public_message}
+              />
+
               <Table items={this.statusLogs} fields={statusLogsFields} />
 
               <button class="btn">Save</button>

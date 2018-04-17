@@ -27,10 +27,19 @@ export default class RequestEntity extends Component {
       action(response => {
         if (response) {
           //init levels map {level_num : [role1, role2, ...]}
-          response.workflow.steps.forEach(step => {
-            this.levels[step.level] = this.levels[step.level] || [];
-            this.levels[step.level].push(step.role.name);
-          });
+
+          if (
+            response.workflow &&
+            response.workflow.steps &&
+            response.workflow.steps.length
+          ) {
+            response.workflow.steps.forEach(step => {
+              this.levels[step.level] = this.levels[step.level] || [];
+              this.levels[step.level].push(step.role.name);
+            });
+          } else {
+            this.levels[1] = [response.state_changer]; // For handling case where Superadmin has approved
+          }
 
           //init comments array
           this.comments.replace(
