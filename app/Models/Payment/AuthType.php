@@ -71,4 +71,14 @@ class AuthType
             }
         }
     }
+
+    public static function isFeatureBasedAuthEnabled($merchant, $type)
+    {
+        if (isset(self::$featureToAuthMap[$type]) === true)
+        {
+            return $merchant->isFeatureEnabled(self::$featureToAuthMap[$type]);
+        }
+
+        return true;
+    }
 }

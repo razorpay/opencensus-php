@@ -6,7 +6,6 @@ use App;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC as BaseIFSC;
 
-use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
@@ -545,7 +544,6 @@ class Gateway
             IFSC::BKID,
             IFSC::MAHB,
             IFSC::BCBM,
-            IFSC::BCBX,
             IFSC::CNRB,
             IFSC::CBIN,
             IFSC::CITI,
@@ -558,7 +556,7 @@ class Gateway
             IFSC::INDB,
             IFSC::KKBK,
             IFSC::ORBC,
-            IFSC::PUNB,
+            Netbanking::PUNB_R,
             IFSC::RATN,
             IFSC::SRCB,
             IFSC::SCBL,
@@ -576,6 +574,11 @@ class Gateway
             IFSC::CORP,
             IFSC::VARA,
             IFSC::KVBL,
+            Netbanking::BARB_R,
+            IFSC::BKDN,
+            IFSC::CSBX,
+            IFSC::TMBL,
+            IFSC::KAIJ,
         ]
     ];
 
@@ -609,7 +612,6 @@ class Gateway
         IFSC::BKID,
         IFSC::MAHB,
         IFSC::BCBM,
-        IFSC::BCBX,
         IFSC::CNRB,
         IFSC::CBIN,
         IFSC::CITI,
@@ -622,7 +624,7 @@ class Gateway
         IFSC::INDB,
         IFSC::KKBK,
         IFSC::ORBC,
-        IFSC::PUNB,
+        Netbanking::PUNB_R,
         IFSC::RATN,
         IFSC::SRCB,
         IFSC::SCBL,
@@ -640,6 +642,11 @@ class Gateway
         IFSC::CORP,
         IFSC::VARA,
         IFSC::KVBL,
+        Netbanking::BARB_R,
+        IFSC::BKDN,
+        IFSC::CSBX,
+        IFSC::TMBL,
+        IFSC::KAIJ,
     ];
 
     /**
@@ -666,7 +673,6 @@ class Gateway
             IFSC::BKID,
             IFSC::MAHB,
             IFSC::BCBM,
-            IFSC::BCBX,
             IFSC::CNRB,
             IFSC::CBIN,
             IFSC::CITI,
@@ -680,7 +686,7 @@ class Gateway
             IFSC::INDB,
             IFSC::KKBK,
             IFSC::ORBC,
-            IFSC::PUNB,
+            Netbanking::PUNB_R,
             IFSC::RATN,
             IFSC::SRCB,
             IFSC::SCBL,
@@ -701,7 +707,7 @@ class Gateway
             IFSC::CSBX,
             IFSC::TMBL,
             IFSC::KAIJ,
-            IFSC::BARB,
+            Netbanking::BARB_R,
         ],
     ];
 
