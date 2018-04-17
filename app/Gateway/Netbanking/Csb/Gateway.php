@@ -92,11 +92,16 @@ class Gateway extends Base\Gateway
 
     public function computeChecksum(array $content): string
     {
-        $contentToHash = array_merge($content, [$this->getSecret()]);
-
-        $contentToHash = $this->getStringToHash($contentToHash, '|');
+        $contentToHash = $this->getStringToHash($content, '|');
 
         return $this->getHashOfString($contentToHash);
+    }
+
+    protected function getStringToHash($content, $glue = '')
+    {
+        $contentToHash = array_merge($content, [$this->getSecret()]);
+
+        return implode($glue, $contentToHash);
     }
 
     protected function getHashOfString($str): string
