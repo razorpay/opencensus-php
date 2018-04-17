@@ -357,6 +357,7 @@ final class Route
         'transparent_redirect_get'                 => ['get',      'redirect',                                       'AdminController@getTransparentRedirect'                            ],
         'transparent_redirect_post'                => ['post',     'redirect',                                       'AdminController@postTransparentRedirect'                           ],
         'feature_dummy'                            => ['get',      'dummy',                                          'MerchantController@getDummyFeatures'                               ],
+        'razorx_dummy'                             => ['get',      'dummy/razorx',                                   'MerchantController@getDummyRazorX'                                 ],
         'emi_plan_add'                             => ['post',     'emi',                                            'EmiController@addEmiPlan'                                          ],
         'emi_plans_fetch_multiple'                 => ['get',      'emi',                                            'EmiController@fetchEmiPlans'                                       ],
         'emi_plan_fetch_by_id'                     => ['get',      'emi/{id}',                                       'EmiController@fetchEmiPlanById'                                    ],
@@ -782,7 +783,11 @@ final class Route
         'feature_delete_entity'                    => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
 
         //Recon summary
-        'daily_reconciliation_summary_fetch'       => ['get',      'daily_recon_summary',                           'AdminController@getDailyReconciliationStatusSummary'              ],
+        'daily_reconciliation_summary_fetch'       => ['get',      'daily_recon_summary',                            'AdminController@getDailyReconciliationStatusSummary'               ],
+
+        // Generic Lambda handler
+        'lambda_post_h2h'                          => ['post',     'lambda/{type}',                                  'LambdaController@processLambda'                                    ],
+
     ];
 
     public static $public = [
@@ -905,6 +910,7 @@ final class Route
         'order_fetch_by_id',
         'order_payments',
         'feature_dummy',
+        'razorx_dummy',
         'webhook_create',
         'webhook_edit',
         'webhook_fetch',
@@ -1073,7 +1079,8 @@ final class Route
         'user_reset_password_token',
         'virtual_account_refund_excess',
         'fund_transfer_attempt_process',
-        'daily_reconciliation_summary_fetch'
+        'daily_reconciliation_summary_fetch',
+        'lambda_post_h2h',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1992,6 +1999,7 @@ final class Route
 
         'h2h' => [
             'setl_reconcile_h2h',
+            'lambda_post_h2h'
         ],
 
         'auth_service' => [

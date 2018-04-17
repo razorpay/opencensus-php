@@ -25,7 +25,9 @@ class IcicFirstData extends Base
     const PAYMENT_AMOUNT          = 'Payment Amount';
     const STORE_ID                = 'Store ID';
     const AUTH_CODE               = 'Auth Code';
+    const CARD_IIN                = 'Card IIN';
     const LAST_FOUR_CARD_NUM      = 'Card Number Last Four';
+    const SESSION_ID              = 'Session Id';
 
     const CARD_GATEWAY_API_REFUND_SPAN = 15552000;
 
@@ -63,7 +65,9 @@ class IcicFirstData extends Base
                 self::REFUND_AMOUNT           => $this->getFormattedAmount($row['refund']['amount']),
                 self::STORE_ID                => $row['terminal']['gateway_merchant_id'],
                 self::AUTH_CODE               => $row['gateway']['auth_code'],
+                self::CARD_IIN                => $row['card']['iin'],
                 self::LAST_FOUR_CARD_NUM      => $row['card']['last4'],
+                self::SESSION_ID              => $row['gateway']['caps_payment_id'],
             ];
         }
 

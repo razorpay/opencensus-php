@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use Request;
 use Requests;
 use RZP\Trace\TraceCode;
 
@@ -11,11 +12,14 @@ class RazorXClient
 
     const EVALUATE_URI    = 'evaluate';
 
-    // Params required for evaluate API
+    // Params required for evaluator API
     const ID              = 'id';
     const FEATURE_FLAG    = 'feature_flag';
     const ENVIRONMENT     = 'environment';
     const MODE            = 'mode';
+
+    // Key for variant in request headers
+    const VARIANT_HEADER  = 'X-RazorX-Variant';
 
     /**
      * The default case to be returned so that the old flow is taken
@@ -40,7 +44,13 @@ class RazorXClient
 
     protected $env;
 
-    protected $mode;
+    /**
+     * @var string
+     *
+     * Value used for subsequent calls in the same request
+     * to avoid cookie processing or calling RazorX service again
+     */
+    protected $variant;
 
     public function __construct($app)
     {
@@ -54,6 +64,29 @@ class RazorXClient
 
     public function getTreatment(string $id, string $featureFlag, string $mode, array $input = null): string
     {
+        $variant = $this->getVariant();
+
+        if (empty($variant) === false)
+        {
+            return $variant;
+        }
+
+        $this->getVariantFromCookieOrHeadersIfSet($id, $featureFlag, $mode);
+
+        $variant = $this->getVariant();
+
+        if (empty($variant) === false)
+        {
+            return $variant;
+        }
+
+        $this->callRazorXService($id, $featureFlag, $mode, $input);
+
+        return $this->getVariant();
+    }
+
+    protected function callRazorXService(string $id, string $featureFlag, string $mode, array $input = null)
+    {
         $data = [
             self::ID           => $id,
             self::FEATURE_FLAG => $featureFlag,
@@ -66,13 +99,46 @@ class RazorXClient
             $data = array_merge($data, $input);
         }
 
-        return $this->sendRequest(self::EVALUATE_URI, Requests::GET, $data);
+        $variant = $this->sendRequest(self::EVALUATE_URI, Requests::GET, $data);
+
+        $this->setVariant($variant);
     }
 
-    protected function returnMockVariant(): string
+    protected function getVariantFromCookieOrHeadersIfSet(string $id, string $featureFlag, string $mode)
     {
-        // TODO: Use headers approach to evaluate the result, default to control
-        return self::DEFAULT_CASE;
+        // Check in the cookie first, in case the request is coming from a browser.
+        $variantKey = $this->getVariantHeaderKey($id, $featureFlag, $mode);
+
+        $variant = Request::cookie($variantKey);
+
+        // Check headers if not found in cookie.
+        if (empty($variant) === true)
+        {
+            $variantArray = json_decode(base64_decode(Request::header(self::VARIANT_HEADER)), true);
+
+            $variant = $variantArray[$variantKey] ?? null;
+        }
+
+        if (empty($variant) === false)
+        {
+            $this->setVariant($variant);
+        }
+    }
+
+    protected function getVariantHeaderKey(string $id, string $featureFlag, string $mode)
+    {
+        // TODO: Decide on this key structure
+        return $id . '_' . $featureFlag . '_' . $this->env . '_' . $mode;
+    }
+
+    protected function getVariant()
+    {
+        return $this->variant;
+    }
+
+    protected function setVariant(string $variant)
+    {
+        $this->variant = $variant;
     }
 
     protected function sendRequest(
@@ -82,7 +148,7 @@ class RazorXClient
     {
         if ($this->config['mock'] === true)
         {
-            return $this->returnMockVariant();
+            return self::DEFAULT_CASE;
         }
 
         $request = $this->getRequestParams($url, $method, $data);
