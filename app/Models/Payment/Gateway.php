@@ -814,6 +814,7 @@ class Gateway
         IFSC::RATN         => Gateway::NETBANKING_RBL,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
+        Netbanking::BARB_C => Gateway::NETBANKING_BOB,
     ];
 
     /**

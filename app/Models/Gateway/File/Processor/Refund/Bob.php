@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
+use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Netbanking\Bob\Constants;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
@@ -18,7 +19,6 @@ class Bob extends Base
     const EXTENSION              = FileStore\Format::TXT;
     const FILE_TYPE              = FileStore\Type::BOB_NETBANKING_REFUND;
 
-    const GATEWAY_CODE           = Payment\Processor\Netbanking::BARB_R;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     const GATEWAY                = 'netbanking_bob';
 
@@ -89,5 +89,22 @@ class Bob extends Base
 
         // Amount is of type NUMBER(14,2). i.e 14 digits before decimal point and 2 digits after decimal point.
         return str_pad($amt, 17, '0', STR_PAD_LEFT);
+    }
+
+    public function fetchEntities(): PublicCollection
+    {
+        $begin = $this->gatewayFile->getBegin();
+
+        $end = $this->gatewayFile->getEnd();
+
+        $refunds = $this->repo->refund->fetchRefundsForGatewaysBetweenTimestamps(
+            static::PAYMENT_TYPE_ATTRIBUTE,
+            [Payment\Processor\Netbanking::BARB_R, Payment\Processor\Netbanking::BARB_C],
+            $begin,
+            $end,
+            static::GATEWAY
+        );
+
+        return $refunds;
     }
 }
