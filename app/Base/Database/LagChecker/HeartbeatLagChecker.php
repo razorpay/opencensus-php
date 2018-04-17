@@ -18,7 +18,7 @@ class HeartbeatLagChecker implements LagChecker
         $this->config = $config;
     }
 
-    public function useReadPdoIfApplciable(Closure $readPdo)
+    public function useReadPdoIfApplicable(Closure $readPdo)
     {
         return null;
     }

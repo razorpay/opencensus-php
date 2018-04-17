@@ -6,5 +6,5 @@ use Closure;
 
 interface LagChecker
 {
-    public function useReadPdoIfApplciable(Closure $readPdo);
+    public function useReadPdoIfApplicable(Closure $readPdo);
 }
