@@ -205,6 +205,17 @@ class DatabaseSeeder extends Seeder
                 )
             );
 
+            DB::table(Table::FEATURE)->insert(
+                array(
+                    'id'            => 'feature_404040',
+                    'name'          => 'corporate_banks',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime
+                )
+            );
+
             DB::table(Table::MERCHANT_DETAIL)->insert(
                 array(
                     'merchant_id'   => Account::NODAL_ACCOUNT,
@@ -1200,6 +1211,7 @@ class DatabaseSeeder extends Seeder
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::NETBANKING_BOB,
                 'netbanking'            => '1',
+                'corporate'             => '1',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_bob',
                 'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_bob_hash_secret'),
                 'created_at'            => time(),
