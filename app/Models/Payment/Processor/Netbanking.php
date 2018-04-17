@@ -62,6 +62,8 @@ class Netbanking
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
+        IFSC::PUNB,
+        IFSC::CSBK,
         self::PUNB_R,
         self::BARB_R,
     ];
