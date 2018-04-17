@@ -351,7 +351,7 @@ class EnachRblGatewayTest extends TestCase
 
         $tokenId = $paymentEntity[Payment::TOKEN_ID];
 
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => 1000]);
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 3000]);
 
         $this->fixtures->edit(
             'token',
@@ -362,7 +362,7 @@ class EnachRblGatewayTest extends TestCase
                 Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED
             ]);
 
-        $payment = $this->getEmandatePaymentArray('UTIB', null, 1000);
+        $payment = $this->getEmandatePaymentArray('UTIB', null, 3000);
         $payment['token'] = $tokenId;
         $payment['order_id'] = $order->getPublicId();
 

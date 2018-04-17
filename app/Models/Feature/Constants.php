@@ -54,6 +54,7 @@ class Constants
     const BHARAT_QR                     = 'bharat_qr';
     const MOBIKWIK_OFFERS               = 'mobikwik_offers';
     const ALLOW_DC_RECURRING            = 'allow_dc_recurring';
+    const ALLOW_ALL_DC_RECURRING        = 'allow_all_dc_recurring';
     const SKIP_HOLD_FUNDS_ON_PAYOUT     = 'skip_hold_funds_on_payout';
     const REPORT_V2                     = 'report_v2';
     const CORPORATE_BANKS               = 'corporate_banks';
@@ -77,6 +78,11 @@ class Constants
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
+    ];
+
+    public static $debitRecurringFeatures = [
+        self::ALLOW_ALL_DC_RECURRING,
+        self::ALLOW_DC_RECURRING
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -136,6 +142,7 @@ class Constants
         self::BHARAT_QR                     => true,
         self::MOBIKWIK_OFFERS               => true,
         self::ALLOW_DC_RECURRING            => true,
+        self::ALLOW_ALL_DC_RECURRING        => true,
         self::SKIP_HOLD_FUNDS_ON_PAYOUT     => true,
         self::REPORT_V2                     => true,
         self::CORPORATE_BANKS               => true,

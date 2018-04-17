@@ -457,6 +457,11 @@ class Entity extends Base\PublicEntity
         return ($this->isAtLeastOneFeatureEnabled(Feature\Constants::$recurringFeatures) === true);
     }
 
+    public function isDebitRecurringEnabled(): bool
+    {
+        return ($this->isAtLeastOneFeatureEnabled(Feature\Constants::$debitRecurringFeatures) === true);
+    }
+
     /**
      * Return an array of features enabled for the merchant entity
      *
