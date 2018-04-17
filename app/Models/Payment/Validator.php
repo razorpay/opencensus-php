@@ -133,7 +133,6 @@ class Validator extends Base\Validator
         'customer_id',
         'test_success',
         'upi_expiry_time',
-        'upi_vpa',
         'recurring',
         // Ideally, we should be using custom. But
         // due to dot notation, we cannot use it.
@@ -247,20 +246,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'upi is/are not required and should not be sent');
-        }
-    }
-
-    protected function validateUpiVpa(array $input)
-    {
-        if ((isset($input['_']['flow']) === false) or
-            ($input['_']['flow'] !== 'intent'))
-        {
-            if (($input[Entity::METHOD] === Method::UPI) and
-                (empty($input[Entity::VPA]) === true))
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The vpa field is required when method is upi.');
-            }
         }
     }
 
