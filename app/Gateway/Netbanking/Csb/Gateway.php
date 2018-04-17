@@ -90,18 +90,18 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public function computeChecksum(array $content): string
+    public function getHashOfArray($content)
     {
-        $contentToHash = $this->getStringToHash($content, '|');
+        $hashString = $this->getStringToHash($content, '|');
 
-        return $this->getHashOfString($contentToHash);
+        return $this->getHashOfString($hashString);
     }
 
     protected function getStringToHash($content, $glue = '')
     {
-        $contentToHash = array_merge($content, [$this->getSecret()]);
+        $content[] = $this->getSecret();
 
-        return implode($glue, $contentToHash);
+        return implode($glue, $content);
     }
 
     protected function getHashOfString($str): string
@@ -425,15 +425,14 @@ class Gateway extends Base\Gateway
      * 4. Adds computed checksum to array
      * 4. Implodes into required format string and returns
      *
-     *
      * @param array $content
      * @return string
      */
     protected function computeStringToEncode(array $content): string
     {
-        $checkSum = $this->computeChecksum($content);
+        $checksum = $this->getHashOfArray($content);
 
-        array_push($content, $checkSum);
+        array_push($content, $checksum);
 
         return implode('|', $content);
     }
