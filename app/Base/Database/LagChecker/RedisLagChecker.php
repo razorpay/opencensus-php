@@ -4,8 +4,9 @@ namespace RZP\Base\Database\LagChecker;
 
 use Cache;
 use Closure;
-use Razorpay\Trace\Facades\Trace;
-use Razorpay\Trace\Logger as LogLevel;
+use Illuminate\Cache\CacheManager;
+use Razorpay\Trace\Logger as Trace;
+use Razorpay\Trace\Facades\Trace as TraceFacade;
 
 use RZP\Trace\TraceCode;
 
@@ -14,16 +15,25 @@ use RZP\Trace\TraceCode;
  */
 class RedisLagChecker implements LagChecker
 {
+    /**
+     * @var array
+     */
     protected $config;
 
+    /**
+     * @var Trace
+     */
     protected $trace;
 
+    /**
+     * @var CacheManager
+     */
     protected $cache;
 
     public function __construct(array $config)
     {
-        $this->trace = Trace::getFacadeRoot();
-        $this->cache = Cache::getFacadeRoot();
+        $this->trace  = TraceFacade::getFacadeRoot();
+        $this->cache  = Cache::getFacadeRoot();
         $this->config = $config;
     }
 
@@ -32,6 +42,8 @@ class RedisLagChecker implements LagChecker
      * the read connection only if the value is false.
      *
      * @param  Closure $readPdo
+     *
+     * @return mixed|null
      */
     public function useReadPdoIfApplicable(Closure $readPdo)
     {
@@ -39,13 +51,13 @@ class RedisLagChecker implements LagChecker
 
         try
         {
-            $skipSlave = boolval($this->cache->get($this->config['flag']));
+            $skipSlave = (bool) $this->cache->get($this->config['flag']);
         }
         catch (\Throwable $ex)
         {
             $this->trace->traceException(
                 $ex,
-                LogLevel::CRITICAL,
+                Trace::CRITICAL,
                 TraceCode::REDIS_LAG_CHECK_FAILED);
         }
 

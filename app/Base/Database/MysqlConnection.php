@@ -3,11 +3,12 @@
 namespace RZP\Base\Database;
 
 use Closure;
-use Razorpay\Trace\Facades\Trace;
-use Razorpay\Trace\Logger as LogLevel;
+use Razorpay\Trace\Logger as Trace;
+use Razorpay\Trace\Facades\Trace as TraceFacade;
 use Illuminate\Database\MySqlConnection as BaseMySqlConnection;
 
 use RZP\Trace\TraceCode;
+use RZP\Exception\LogicException;
 use RZP\Base\Database\LagChecker;
 
 class MysqlConnection extends BaseMySqlConnection
@@ -24,6 +25,9 @@ class MysqlConnection extends BaseMySqlConnection
      */
     protected $forceReadPdo;
 
+    /**
+     * @var Trace
+     */
     protected $trace;
 
     public function __construct($pdo, $database = '', $tablePrefix = '', array $config = [])
@@ -34,12 +38,12 @@ class MysqlConnection extends BaseMySqlConnection
 
         $this->lagChecker = $this->getLagChecker($lagCheckConfig);
 
-        $this->trace = Trace::getFacadeRoot();
+        $this->trace = TraceFacade::getFacadeRoot();
 
         parent::__construct($pdo, $database, $tablePrefix, $config);
     }
 
-    protected function getlagChecker(array $config)
+    protected function getLagChecker(array $config)
     {
         $driver = $config['driver'];
 
@@ -51,6 +55,9 @@ class MysqlConnection extends BaseMySqlConnection
             case 'heartbeat':
                 // TODO: This needs to be implemented.
                 return new LagChecker\HeartbeatLagChecker($config);
+
+            default:
+                throw new LogicException('LagChecker driver not implemented: ' . $driver);
         }
     }
 
@@ -81,12 +88,12 @@ class MysqlConnection extends BaseMySqlConnection
 
             //
             // When the pdo connection to replica is going to get established the
-            // first time, use the lagChecker to determine whethr to establish
+            // first time, use the lagChecker to determine whether to establish
             // the connection or not.
             //
             if ($this->readPdo instanceof Closure)
             {
-                $this->readPdo = $this->lagChecker->useReadPdoIfApplciable($this->readPdo);
+                $this->readPdo = $this->lagChecker->useReadPdoIfApplicable($this->readPdo);
             }
 
             return $this->readPdo ?: $this->getPdo();
@@ -97,7 +104,7 @@ class MysqlConnection extends BaseMySqlConnection
             // If there is any exception in setting up the replica connection,
             // we trace it and fallback to the master connection.
             //
-            $this->trace->traceException($ex, LogLevel::CRITICAL, TraceCode::DB_READ_CONN_SETUP_ERROR);
+            $this->trace->traceException($ex, Trace::CRITICAL, TraceCode::DB_READ_CONN_SETUP_ERROR);
 
             $this->readPdo = $this->getPdo();
 
@@ -111,8 +118,8 @@ class MysqlConnection extends BaseMySqlConnection
     }
 
     /**
-     * This function is complemntary to the 'recordsHaveBeenModified' method
-     * in the parent class. It only sets the recordsModified flag to false if
+     * This function is complementary to the `recordsHaveBeenModified` method
+     * in the parent class. It only sets the `recordsModified` flag to false if
      * it was previously set to true.
      *
      * @param  bool|boolean $value
