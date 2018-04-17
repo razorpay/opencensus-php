@@ -115,6 +115,6 @@ class Job
             $app['basicauth']->setModeAndDbConnection($this->mode);
         }
 
-        DB::connection()->recordsHaveNotBeenModified();
+        $this->repoManager->resetConnectionAttributes();
     }
 }

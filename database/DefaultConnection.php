@@ -3,7 +3,6 @@
 namespace Database;
 
 use App;
-use Route;
 use Config;
 
 use RZP\Constants\Mode;
@@ -13,8 +12,6 @@ class DefaultConnection
 {
     public static function set($mode)
     {
-        $currentRoute = Route::currentRouteName();
-
         self::setMasterConnection($mode);
     }
 

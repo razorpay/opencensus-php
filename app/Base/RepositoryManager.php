@@ -4,10 +4,12 @@ namespace RZP\Base;
 
 use Closure;
 use Illuminate;
+
+use RZP\Models;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Constants\Entity;
-use RZP\Models;
+use RZP\Base\Database\MySqlConnection;
 
 /**
  * @property Models\Plan\Subscription\Repository    $subscription
@@ -279,5 +281,17 @@ class RepositoryManager extends Illuminate\Support\Manager
     public function assertTransactionActive()
     {
         assert ($this->isTransactionActive());
+    }
+
+    public function resetConnectionAttributes()
+    {
+        //
+        // Only if the connection being used is the overridden one
+        // we need to reset some connection attributes.
+        //
+        if ($this->db->connection() instanceof MySqlConnection)
+        {
+            $this->db->connection()->resetConnectionAttributes();
+        }
     }
 }

@@ -118,13 +118,23 @@ class MysqlConnection extends BaseMySqlConnection
     }
 
     /**
+     * Resets the recordsModified and forceReadPdo attributes
+     */
+    public function resetConnectionAttributes()
+    {
+        $this->recordsHaveNotBeenModified();
+
+        $this->forceReadPdo(false);
+    }
+
+    /**
      * This function is complementary to the `recordsHaveBeenModified` method
      * in the parent class. It only sets the `recordsModified` flag to false if
      * it was previously set to true.
      *
      * @param  bool|boolean $value
      */
-    public function recordsHaveNotBeenModified(bool $value = false)
+    protected function recordsHaveNotBeenModified(bool $value = false)
     {
         if ($this->recordsModified === true)
         {
