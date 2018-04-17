@@ -783,7 +783,11 @@ final class Route
         'feature_delete_entity'                    => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
 
         //Recon summary
-        'daily_reconciliation_summary_fetch'       => ['get',      'daily_recon_summary',                           'AdminController@getDailyReconciliationStatusSummary'              ],
+        'daily_reconciliation_summary_fetch'       => ['get',      'daily_recon_summary',                            'AdminController@getDailyReconciliationStatusSummary'               ],
+
+        // Generic Lambda handler
+        'lambda_post_h2h'                          => ['post',     'lambda/{type}',                                  'LambdaController@processLambda'                                    ],
+
     ];
 
     public static $public = [
@@ -1075,7 +1079,8 @@ final class Route
         'user_reset_password_token',
         'virtual_account_refund_excess',
         'fund_transfer_attempt_process',
-        'daily_reconciliation_summary_fetch'
+        'daily_reconciliation_summary_fetch',
+        'lambda_post_h2h',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1994,6 +1999,7 @@ final class Route
 
         'h2h' => [
             'setl_reconcile_h2h',
+            'lambda_post_h2h'
         ],
 
         'auth_service' => [

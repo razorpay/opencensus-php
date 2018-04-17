@@ -1029,6 +1029,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Account codes
     const ACCOUNT_CREATED                               = 'ACCOUNT_CREATED';
 
+    // Lamdba Processor
+    const LAMBDA_REQUEST                                = 'LAMBDA_REQUEST';
+    const LAMBDA_FILE_DETAILS                           = 'LAMBDA_FILE_DETAILS';
+    const LAMBDA_BATCH_FAILURE                          = 'LAMBDA_BATCH_FAILURE';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

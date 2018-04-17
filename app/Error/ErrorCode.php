@@ -436,6 +436,8 @@ class ErrorCode
     const BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY                              = 'BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY';
     const BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE                            = 'BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE';
 
+    const BAD_REQUEST_LAMBDA_ANOTHER_OPERATION_IN_PROGRESS                          = 'BAD_REQUEST_LAMBDA_ANOTHER_OPERATION_IN_PROGRESS';
+
     const BAD_REQUEST_URL_NOT_FOUND                                                 = 'BAD_REQUEST_URL_NOT_FOUND';
     const BAD_REQUEST_ROUTE_DISABLED                                                = 'BAD_REQUEST_ROUTE_DISABLED';
     const BAD_REQUEST_NOTES_SHOULD_BE_ARRAY                                         = 'BAD_REQUEST_NOTES_SHOULD_BE_ARRAY';
