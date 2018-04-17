@@ -139,6 +139,6 @@ class Deleter extends Base\Core
         $this->storageHandler->delete($bucketConfig, $this->getFullFileName());
 
         $this->file->setDeletedAt();
-        $this->repo->file_store->save($this->file);
+        $this->repo->saveOrFail($this->file);
     }
 }
