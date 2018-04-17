@@ -39,6 +39,9 @@ class DirectDebit extends Base
             $phone  = $row[Header::PHONE];
             $name   = $row[Header::CARDHOLDER_NAME];
 
+            $order = $this->createOrder($row);
+            $customer = $this->createCustomer($row);
+
 
             $card = [
                 Card::NUMBER        =>  $row[Header::CARD],
@@ -47,26 +50,6 @@ class DirectDebit extends Base
                 Card::EXPIRY_YEAR   =>  substr($row[Header::EXPIRY], 2, 2),
                 Card::NAME          => $name,
             ];
-
-            $orderService = new OrderService();
-            $orderInput = [
-                Order::AMOUNT           =>  $amount,
-                Order::CURRENCY         =>  $currency,
-                Order::RECEIPT          =>  $row[Header::RECEIPT],
-                Order::PAYMENT_CAPTURE  =>  true,
-            ];
-
-            $order = $orderService->create($orderInput);
-
-            $customerInput = [
-                Customer::NAME          =>  $name,
-                Customer::EMAIL         =>  $email,
-                Customer::CONTACT       =>  $phone,
-                Customer::FAIL_EXISTING =>  "0",
-            ];
-            $customerService = new \RZP\Models\Customer\Service();
-            $customer = $customerService->createLocalCustomer($customerInput);
-
 
             $request = [
                 Payment::METHOD         => Method::CARD,
@@ -98,10 +81,36 @@ class DirectDebit extends Base
         return $row;
     }
 
+
+    private function createOrder($row)
+    {
+        $orderService = new OrderService();
+        $orderInput = [
+            Order::AMOUNT           =>  (int) $row[Header::AMOUNT],
+            Order::CURRENCY         =>  $row[Header::CURRENCY],
+            Order::RECEIPT          =>  $row[Header::RECEIPT],
+            Order::PAYMENT_CAPTURE  =>  true,
+        ];
+
+        return $orderService->create($orderInput);
+    }
+
     protected function sendProcessedMail()
     {
         // Do not send email
         return ;
+    }
+
+    private function createCustomer($row)
+    {
+        $customerInput = [
+            Customer::NAME          =>  $row[Header::CARDHOLDER_NAME],
+            Customer::EMAIL         =>  $row[Header::EMAIL],
+            Customer::CONTACT       =>  $row[Header::PHONE],
+            Customer::FAIL_EXISTING =>  "0",
+        ];
+        $customerService = new \RZP\Models\Customer\Service();
+        return $customerService->createLocalCustomer($customerInput);
     }
 
 
