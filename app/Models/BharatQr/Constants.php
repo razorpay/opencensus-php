@@ -34,8 +34,8 @@ class Constants
     const SHARED_QR_CODE         = 'sharedqrcode12';
     const RAZORPAY_TERMINAL_ID   = 'razorpay_terminal_id';
     const DUMMY_CARD_NUMBER      = '4231560000511234';
-    const DUMMY_VPA              = 'random@icici';
-    const DUMMY_EMAIL            = 'random@gmail.com';
+    const DUMMY_VPA              = 'bqrrandom@razorpay';
+    const DUMMY_EMAIL            = 'bqrrandom@razorpay.com';
     const DUMMY_CONTACT          = '9876543210';
 
     public static function getDummyCardPaymentArray($receiver)

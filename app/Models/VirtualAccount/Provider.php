@@ -374,9 +374,10 @@ class Provider
      * The terminals will have all the mpans which will be used to
      * generate qr codes
      *
-     * @param string $method
+     * @param string        $method
+     * @param QrCode\Entity $qrCode
+     *
      * @return mixed
-     * @throws Exception\RuntimeException
      */
     protected function getTerminalForMethod(string $method, QrCode\Entity $qrCode)
     {

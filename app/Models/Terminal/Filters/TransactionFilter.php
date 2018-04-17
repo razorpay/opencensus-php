@@ -593,14 +593,13 @@ class TransactionFilter extends Terminal\Filter
 
     public function bharatQrFilter($terminal)
     {
-        if ((($this->input['payment']->isBharatQr() === true) and
-                ($terminal->isBharatQr() === false)) or
-            (($terminal->isBharatQr() === true) and
-                ($this->input['payment']->isBharatQr() === false)))
+        if ($this->input['payment']->isBharatQr() === true)
         {
-            return false;
+            return $terminal->isBharatQr();
         }
-
-        return true;
+        else
+        {
+            return ($terminal->isBharatQr() === false);
+        }
     }
 }

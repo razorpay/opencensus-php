@@ -1125,7 +1125,7 @@ class Gateway
     }
 
     /**
-     * Retuns the external mock url
+     * Returns the external mock url
      * Used for gateway testing using mock in func
      * Appends the gateway string and relative url for the external mock domain
      *
@@ -1134,6 +1134,6 @@ class Gateway
      */
     protected function getExternalMockUrl(string $type)
     {
-       return $this->externalMockDomain . "/" . $this->gateway . $this->getRelativeUrl($type);
+       return $this->externalMockDomain . '/' . $this->gateway . $this->getRelativeUrl($type);
     }
 }
