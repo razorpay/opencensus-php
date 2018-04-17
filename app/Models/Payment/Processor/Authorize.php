@@ -1616,6 +1616,12 @@ trait Authorize
             if ((isset($input['_']['flow']) === false) or
                 ($input['_']['flow'] !== 'intent'))
             {
+                if (empty($payment->getVpa()) === true)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'The vpa field is required when method is upi.');
+                }
+
                 $this->setGatewayInputForUpi($input, $gatewayInput);
 
                 $this->validateUpiPspIsAllowed($payment);

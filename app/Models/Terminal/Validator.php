@@ -368,6 +368,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|max:32',
     ];
 
+    protected static $netbankingCsbTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_CSB,
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+    ];
+
     protected static $cardFssTerminalRules = [
         Entity::GATEWAY                     => 'required|in:card_fss',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',

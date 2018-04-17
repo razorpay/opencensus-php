@@ -1381,6 +1381,24 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createSharedNetbankingCsbTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_CSB_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_CSB,
+            'gateway_merchant_id'   => 'netbanking_csb_merchant_id',
+            'gateway_merchant_id2'  => 'netbanking_csb_merchant_id2',
+            'netbanking'            => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
     public function createSharedNetbankingRblTpvTerminal(array $attributes = [])
     {
         $attributes = [

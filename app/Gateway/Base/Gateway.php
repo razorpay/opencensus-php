@@ -731,15 +731,13 @@ class Gateway
         {
             return $this->getTestSecret();
         }
-        else
-        {
-            return $this->getLiveSecret();
-        }
+
+        return $this->getLiveSecret();
     }
 
     protected function getTestSecret()
     {
-        assert ($this->mode === Mode::TEST);
+        assert($this->mode === Mode::TEST);
 
         return $this->config['test_hash_secret'];
     }
