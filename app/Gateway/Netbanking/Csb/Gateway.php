@@ -66,17 +66,15 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
-        $callbackSuccess = $this->checkCallbackSuccess($input['gateway']);
+        $this->checkCallbackSuccess($input['gateway'], $gatewayPayment);
 
         //
         // We verify the callback response before doing anything else with the response,
         // this is so that we ensure the response is for the right payment id and amount
         //
-        $this->verifyCallback($gatewayPayment, $input, $callbackSuccess);
+        $this->verifyCallback($gatewayPayment, $input);
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $content);
-
-        $this->throwExceptionIfCallbackFailure($callbackSuccess, $content);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
@@ -151,10 +149,9 @@ class Gateway extends Base\Gateway
      *
      * @param Base\Entity $gatewayPayment
      * @param array $input
-     * @param bool $callbackSuccess
      * @throws GatewayErrorException
      */
-    protected function verifyCallback(Base\Entity $gatewayPayment, array $input, bool $callbackSuccess)
+    protected function verifyCallback(Base\Entity $gatewayPayment, array $input)
     {
         parent::verify($input);
 
@@ -169,7 +166,7 @@ class Gateway extends Base\Gateway
         //
         // If the status in callback and verify does not match
         //
-        if ($callbackSuccess !== $verify->gatewaySuccess)
+        if ($verify->gatewaySuccess !== true)
         {
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
@@ -190,6 +187,9 @@ class Gateway extends Base\Gateway
         bool $mapped = true): Entity
     {
         $attributes = $this->getMappedAttributes($attributes);
+
+        // Since we get the amount in Rs in the callback, we convert to paise before saving
+        $attributes[Base\Entity::AMOUNT] = $attributes[Base\Entity::AMOUNT] * 100;
 
         $attributes[Base\Entity::RECEIVED] = true;
 
@@ -304,15 +304,23 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
-    protected function checkCallbackSuccess(array $content)
+    protected function checkCallbackSuccess(array $content, $gatewayPayment)
     {
         if ((empty($content[ResponseFields::STATUS]) === false) and
             ($content[ResponseFields::STATUS] !== Status::SUCCESS))
         {
-            return false;
-        }
+            $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
-        return true;
+            throw new GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                null,
+                null,
+                [
+                    'callback_response' => $content,
+                    'payment_id'        => $this->input['payment']['id'],
+                    'gateway'           => $this->gateway
+                ]);
+        }
     }
 
     protected function checkGatewaySuccess(Verify $verify)

@@ -10,7 +10,7 @@ use RZP\Exception\PaymentVerificationException;
 
 return [
     'testPayment' => [
-        'amount'          => 500,
+        'amount'          => 50000,
         'action'          => 'authorize',
         'bank'            => 'CSBK',
         'bank_payment_id' => '9999999999',
@@ -36,10 +36,10 @@ return [
     ],
 
     'testPaymentFailedNetbankingEntity' => [
-        'amount'          => 500,
+        'amount'          => 50000,
         'action'          => 'authorize',
         'bank'            => 'CSBK',
-        'bank_payment_id' => '9999999999',
+        'bank_payment_id' => null,
         'status'          => 'N',
         'reference1'      => null,
         'received'        => true,
