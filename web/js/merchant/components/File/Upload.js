@@ -66,7 +66,11 @@ export default class FileUpload extends Component {
     let infotext = 'Only ';
 
     if (accept.length > 1) {
-      infotext += `${accept.slice(0, -1).join(', ')} and ${accept.slice(-1)}`;
+      //add dot before each extendsion & join them
+      infotext += `${accept
+        .slice(0, -1)
+        .map(a => '.' + a)
+        .join(', ')} and .${accept.slice(-1)}`;
     } else {
       infotext += `${accept[0]}`;
     }

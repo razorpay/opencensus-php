@@ -43,7 +43,11 @@ export default class BatchValidate extends Component {
         .validateBatch(file, this.props.mode)
         .then(response => {
           if (response.data.error_count) {
-            this.handleStateChange('error', '', response.data.signed_url);
+            this.handleStateChange(
+              'error',
+              'Some fields have invalid entries',
+              response.data.signed_url
+            );
           } else {
             this.handleStateChange('success');
             setTimeout(() => {
@@ -91,6 +95,6 @@ const notificationMsgs = {
   process:
     'The batch file is being processed. Please wait as this may take some time.',
   success: 'The batch file has been processed successfully.',
-  error: 'Please upload the file again.',
+  error: 'Please correct them and upload the file again',
   exceed: 'The file size exceeds the 1MB limit. Please upload a smaller file.',
 };

@@ -21,6 +21,10 @@ const MAX_INVOICE_COUNT = 4;
 
 export default function BatchDetails(props) {
   let { batch, stats, invoices, isLoading, onDownload } = props;
+  let batchName =
+    batch.name && batch.name.length > 24
+      ? `${batch.name.substr(0, 24)}...`
+      : batch.name;
 
   if (invoices && invoices.length >= MAX_INVOICE_COUNT) {
     invoices = invoices.slice(0, MAX_INVOICE_COUNT);
@@ -35,7 +39,7 @@ export default function BatchDetails(props) {
       ) : (
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
-            <i class="i i-plan text-primary" /> <strong>{batch.name}</strong>
+            <i class="i i-plan text-primary" /> <strong>{batchName}</strong>
           </div>
           <div class="SliderPanel__Body">
             <Banner
