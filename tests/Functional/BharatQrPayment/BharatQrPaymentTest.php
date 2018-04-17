@@ -125,6 +125,13 @@ class BharatQrPaymentTest extends TestCase
     {
         $request = $this->testData['testQrPaymentProcess'];
 
+        $this->fixtures->edit(
+            'merchant',
+            '10000000000000',
+            [
+                'pricing_plan_id' => '1hDYlICobzOCYt',
+            ]);
+
         $this->qrCode = $this->createVirtualAccount();
 
         $this->ba->directAuth();
