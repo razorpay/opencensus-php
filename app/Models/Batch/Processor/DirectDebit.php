@@ -4,7 +4,6 @@ namespace RZP\Models\Batch\Processor;
 
 use RZP\Models\Batch;
 use RZP\Models\Batch\Header;
-use RZP\Models\Batch\Processor\Base as BaseProcessor;
 use RZP\Models\Card\Entity as Card;
 use RZP\Models\Customer\Entity as Customer;
 use RZP\Models\FileStore;
@@ -13,8 +12,9 @@ use RZP\Models\Payment\AuthType;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Processor\Processor;
+use \RZP\Models\Order\Service as OrderService;
 
-class DirectDebit extends BaseProcessor
+class DirectDebit extends Base
 {
     protected function processEntry(array & $entry)
     {
@@ -28,8 +28,10 @@ class DirectDebit extends BaseProcessor
     protected function processPayment(array & $row)
     {
 
-        try {
+        try
+        {
             $amount = (int) $row[Header::AMOUNT];
+            $currency = $row[Header::CURRENCY];
             $note1  = $row[Header::NOTES1];
             $note2  = $row[Header::NOTES2];
             $note3  = $row[Header::NOTES3];
@@ -46,10 +48,10 @@ class DirectDebit extends BaseProcessor
                 Card::NAME          => $name,
             ];
 
-            $orderService = new \RZP\Models\Order\Service();
+            $orderService = new OrderService();
             $orderInput = [
                 Order::AMOUNT           =>  $amount,
-                Order::CURRENCY         =>  'INR',
+                Order::CURRENCY         =>  $currency,
                 Order::RECEIPT          =>  $row[Header::RECEIPT],
                 Order::PAYMENT_CAPTURE  =>  true,
             ];
@@ -70,8 +72,8 @@ class DirectDebit extends BaseProcessor
                 Payment::METHOD         => Method::CARD,
                 Payment::AMOUNT         => $amount,
                 Payment::EMAIL          => $email,
-                Payment::CONTACT        => (int) $phone,
-                Payment::CURRENCY       => "INR",
+                Payment::CONTACT        => $phone,
+                Payment::CURRENCY       => $currency,
                 Payment::CARD           => $card,
                 Payment::NOTES          => array(
                     'note1' =>  $note1,
@@ -87,13 +89,11 @@ class DirectDebit extends BaseProcessor
             $result = $processor->process($request);
             $row[Header::STATUS]                    =   "CAPTURED";
             $row[Header::DIRECT_DEBIT_PAYMENT_ID]   =   $result['payment_id'];
-        } catch (\Exception $e)
+        } finally
         {
-            $row[Header::STATUS]    = Batch\Status::FAILURE;
-            $row[Header::REMARKS]   = $e->getMessage();
+            $row[Header::CARD] = substr($row[Header::CARD], 0,4) . 'xxxxxxxx' . substr($row[Header::CARD], 12);
         }
 
-        $row[Header::CARD] = substr($row[Header::CARD], 0,4) . 'xxxxxxxx' . substr($row[Header::CARD], 12);
 
         return $row;
     }

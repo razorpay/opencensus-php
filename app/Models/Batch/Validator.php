@@ -68,18 +68,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $directDebitCreateRules = [
-        Entity::TYPE            => 'required|in:direct_debit',
-        Entity::FILE            => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
-        Header::EMAIL           => 'filled|email',
-        Header::PHONE           => 'filled|contact_syntax',
-        Header::CARD            => 'filled|numeric|luhn',
-        Header::EXPIRY          => 'filled|size:4|numeric',
-        Header::CARDHOLDER_NAME => 'filled|alpha',
-        Header::AMOUNT          => 'filled|numeric|min:100',
-        Header::RECEIPT         => 'filled',
-        Header::NOTES1          => 'filled|sometimes',
-        Header::NOTES2          => 'filled|sometimes',
-        Header::NOTES3          => 'filled|sometimes',
+        Entity::TYPE    => 'required|in:direct_debit',
+        Entity::FILE    => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        'token'         => 'required',
     ];
 
     protected static $reconciliationCreateRules = [

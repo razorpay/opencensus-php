@@ -96,7 +96,6 @@ class Base extends BaseModel\Core
     protected $inputFileType;
     protected $outputFileType;
 
-    protected $inputUfhFile;
 
     public function __construct(Batch\Entity $batch)
     {
@@ -198,7 +197,6 @@ class Base extends BaseModel\Core
         // Here $ufhFile is the input file_store instance upload by merchant.
         // $ufhFile has no entity associated with it and has type = `batch_input`
         $ufhFile = $this->getInputFile($input);
-        $this->inputUfhFile = $ufhFile;
 
         $this->inputFileLocalPath = $ufhFile->getFullFilePath();
         $this->inputFileType      = $ufhFile->getType();
@@ -891,9 +889,9 @@ class Base extends BaseModel\Core
         if ($this->batch->getType() === Batch\Type::DIRECT_DEBIT and $type == FileStore\Type::BATCH_INPUT)
         {
             $ufh->encrypt(Type::AES_ENCRYPTION, [
-                'mode'   =>   \phpseclib\Crypt\Base::MODE_CBC,
-                'secret' =>  openssl_random_pseudo_bytes(256)
-            ]);
+                    'mode'   =>   \phpseclib\Crypt\Base::MODE_CBC,
+                    'secret' =>  openssl_random_pseudo_bytes(256)
+                ]);
         }
 
         return $ufh->localFilePath($filePath)
@@ -1115,10 +1113,5 @@ class Base extends BaseModel\Core
     protected function increaseAllowedSystemLimits()
     {
         return;
-    }
-
-    protected function getInputUfhFile()
-    {
-        return $this->inputUfhFile;
     }
 }

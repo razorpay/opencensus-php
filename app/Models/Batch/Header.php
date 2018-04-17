@@ -229,15 +229,13 @@ class Header
     const PAYOUT_FEE                 = 'payout_fee';
     const PAYOUT_TAX                 = 'payout_tax';
 
-    /**
-     * Direct Debit headers
-     */
+    // Direct Debit headers
     const EMAIL                     =   "EMAIL";
     const PHONE                     =   "PHONE";
     const CARD                      =   "CARD";
     const EXPIRY                    =   "EXPIRY";
     const CARDHOLDER_NAME           =   "CARDHOLDER NAME";
-//    const AMOUNT            =   "AMOUNT";
+    const CURRENCY                  =   "CURRENCY";
     const RECEIPT                   =   "RECEIPT";
     const NOTES1                    =   "NOTES 1 []";
     const NOTES2                    =   "NOTES 2 []";
@@ -619,6 +617,7 @@ class Header
                 self::CARD,
                 self::EXPIRY,
                 self::CARDHOLDER_NAME,
+                self::CURRENCY,
                 self::AMOUNT,
                 self::RECEIPT,
                 self::NOTES1,
@@ -633,6 +632,7 @@ class Header
                 self::EXPIRY,
                 self::CARDHOLDER_NAME,
                 self::AMOUNT,
+                self::CURRENCY,
                 self::RECEIPT,
                 self::NOTES1,
                 self::NOTES2,

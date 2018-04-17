@@ -104,7 +104,6 @@ class BatchController extends Controller
 
         $this->service(E::MERCHANT_REQUEST)->consumeOneTimeToken($token);
 
-        unset($input['token']);
         $result =  $this->service()->createBatch($input);
 
         $view = View::make('direct_debit_form_submit', $result);
