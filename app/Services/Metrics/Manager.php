@@ -2,12 +2,12 @@
 
 namespace RZP\Services\Metrics;
 
-use Illuminate\Support\Manager;
+use Illuminate\Support\Manager as IlluminateManager;
 
 /**
  * Metrics manager. Works with various underlying driver implementation.
  */
-class MetricsManager extends Manager
+class Manager extends IlluminateManager
 {
     /**
      * @var array

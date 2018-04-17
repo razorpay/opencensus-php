@@ -3,15 +3,15 @@
 namespace RZP\Tests\Unit\Services;
 
 use RZP\Tests\TestCase;
+use RZP\Services\Metrics\Manager;
 use RZP\Services\Metrics\Drivers\Mock;
-use RZP\Services\Metrics\MetricsManager;
 use RZP\Services\Metrics\Drivers\Dogstatsd;
 
 class ServiceTest extends TestCase
 {
     public function testFacadeResolvesToCorrectInstance()
     {
-        $this->assertInstanceOf(MetricsManager::class, \Metrics::getFacadeRoot());
+        $this->assertInstanceOf(Manager::class, \Metrics::getFacadeRoot());
     }
 
     public function testServiceUsageConfiguredMockDriver()

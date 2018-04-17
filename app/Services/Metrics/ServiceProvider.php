@@ -13,7 +13,7 @@ class ServiceProvider extends IlluminateServiceProvider
                 'metrics',
                 function()
                 {
-                    return new MetricsManager($this->app);
+                    return new Manager($this->app);
                 });
     }
 }
