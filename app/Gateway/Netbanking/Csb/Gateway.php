@@ -66,20 +66,15 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
-        $callbackSuccess = $this->checkCallbackSuccess($input['gateway']);
+        $this->checkCallbackSuccess($input['gateway'], $gatewayPayment);
 
         //
         // We verify the callback response before doing anything else with the response,
         // this is so that we ensure the response is for the right payment id and amount
-        // We are eliminating false positives in this case (callback returns success, when it actually a failure).
-        // We do not handle the case when callback = failure, and verify callback = success.
-        // We do not handle false negatives.
         //
-        $this->verifyCallback($gatewayPayment, $input, $callbackSuccess);
+        $this->verifyCallback($gatewayPayment, $input);
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $content);
-
-        $this->throwExceptionIfCallbackFailure($callbackSuccess, $content);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
@@ -93,6 +88,25 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function getHashOfArray($content)
+    {
+        $hashString = $this->getStringToHash($content, '|');
+
+        return $this->getHashOfString($hashString);
+    }
+
+    protected function getStringToHash($content, $glue = '')
+    {
+        $content[] = $this->getSecret();
+
+        return implode($glue, $content);
+    }
+
+    protected function getHashOfString($str): string
+    {
+        return (string) hexdec(hash(HashAlgo::CRC32, $str));
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)
@@ -135,48 +149,14 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * Exposing this method as a public API for the mock server to access
-     *
-     * @override
-     * @param $str
-     * @return string
-     */
-    public function getHashOfString($str): string
-    {
-        return hash(HashAlgo::CRC32, $str);
-    }
-
-    /**
-     * Overriding this method so that it can be exposed as a public API for the mock server
-     *
-     * @override
-     * @param $actual
-     * @param $generated
-     */
-    public function compareHashes($actual, $generated)
-    {
-        parent::compareHashes($actual, $generated);
-    }
-
-    public function computeChecksum(array $content): string
-    {
-        $contentToHash = array_merge($content, [$this->getSecret()]);
-
-        $contentToHash = $this->getStringToHash($contentToHash, '|');
-
-        return (string) hexdec($this->getHashOfString($contentToHash));
-    }
-
-    /**
      * Verifying the payment after callback response is saved to
      * prevent user tampering with the data while making a payment.
      *
      * @param Base\Entity $gatewayPayment
      * @param array $input
-     * @param bool $callbackSuccess
      * @throws GatewayErrorException
      */
-    protected function verifyCallback(Base\Entity $gatewayPayment, array $input, bool $callbackSuccess)
+    protected function verifyCallback(Base\Entity $gatewayPayment, array $input)
     {
         parent::verify($input);
 
@@ -191,7 +171,7 @@ class Gateway extends Base\Gateway
         //
         // If the status in callback and verify does not match
         //
-        if ($callbackSuccess !== $verify->gatewaySuccess)
+        if ($verify->gatewaySuccess !== true)
         {
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
@@ -213,6 +193,9 @@ class Gateway extends Base\Gateway
     {
         $attributes = $this->getMappedAttributes($attributes);
 
+        // Since we get the amount in Rs in the callback, we convert to paise before saving
+        $attributes[Base\Entity::AMOUNT] = $attributes[Base\Entity::AMOUNT] * 100;
+
         $attributes[Base\Entity::RECEIVED] = true;
 
         return parent::updateGatewayPaymentEntity($gatewayPayment, $attributes, false);
@@ -231,16 +214,6 @@ class Gateway extends Base\Gateway
         $actualAmount = $this->formatAmount($actualAmount);
 
         parent::assertAmount($expectedAmount, $actualAmount);
-    }
-
-    /**
-     * Getting live secret from the config
-     * @override
-     * @return mixed
-     */
-    protected function getLiveSecret(): string
-    {
-        return $this->config['live_hash_secret'];
     }
 
     protected function throwExceptionIfCallbackFailure(bool $callbackSuccess, array $content)
@@ -336,15 +309,23 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
-    protected function checkCallbackSuccess(array $content)
+    protected function checkCallbackSuccess(array $content, $gatewayPayment)
     {
         if ((empty($content[ResponseFields::STATUS]) === false) and
             ($content[ResponseFields::STATUS] !== Status::SUCCESS))
         {
-            return false;
-        }
+            $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
-        return true;
+            throw new GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                null,
+                null,
+                [
+                    'callback_response' => $content,
+                    'payment_id'        => $this->input['payment']['id'],
+                    'gateway'           => $this->gateway
+                ]);
+        }
     }
 
     protected function checkGatewaySuccess(Verify $verify)
@@ -355,11 +336,11 @@ class Gateway extends Base\Gateway
 
         $status = Status::FAILURE;
 
-        if (array_key_exists(ResponseFields::VERIFICATION, $content) === true)
+        if (isset($content[ResponseFields::VERIFICATION]) === true)
         {
             $status = trim($content[ResponseFields::VERIFICATION]);
         }
-        elseif (array_key_exists(ResponseFields::STATUS_UCFIRST, $content) === true)
+        elseif (isset($content[ResponseFields::STATUS_UCFIRST]) === true)
         {
             // When TID is null, they send verify status inside Status
             $status = trim($content[ResponseFields::STATUS_UCFIRST]);
@@ -444,15 +425,14 @@ class Gateway extends Base\Gateway
      * 4. Adds computed checksum to array
      * 4. Implodes into required format string and returns
      *
-     *
      * @param array $content
      * @return string
      */
     protected function computeStringToEncode(array $content): string
     {
-        $checkSum = $this->computeChecksum($content);
+        $checksum = $this->getHashOfArray($content);
 
-        array_push($content, $checkSum);
+        array_push($content, $checksum);
 
         return implode('|', $content);
     }

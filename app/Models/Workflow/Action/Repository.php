@@ -213,6 +213,10 @@ class Repository extends Base\Repository
             {
                 $query->withTrashed();
             },
+            'stateChangerRole' => function ($query)
+            {
+                $query->withTrashed();
+            },
             'permission'
         ];
 

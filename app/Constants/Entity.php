@@ -198,6 +198,19 @@ class Entity
         ],
     ];
 
+    /**
+     * Id corresponding to following listed entities are allowed for x_entity_id (header or query parameter) during
+     * keyless auth to public routes.
+     * Ref: KeylessPublicAuth's retrieveMerchant() for usage.
+     */
+    const KEYLESS_ALLOWED_ENTITIES = [
+        self::ORDER,
+        self::INVOICE,
+        self::PAYMENT,
+        self::CUSTOMER,
+        self::SUBSCRIPTION,
+    ];
+
     public static $namespace = [
         self::IIN                   => \RZP\Models\Card\IIN::class,
         self::P2P                   => \RZP\Models\P2p::class,
@@ -526,5 +539,23 @@ class Entity
     public static function isEntitySyncedInLiveAndTest($entity)
     {
         return in_array($entity, self::$syncedInLiveAndTest, true);
+    }
+
+    /**
+     * Returns the entity name from given sign. Only iterates over the scope of allowed entities for keyless auth.
+     * @param  string      $sign
+     * @return string|null
+     */
+    public static function getKeylessAllowedEntityFromSign(string $sign)
+    {
+        foreach (self::KEYLESS_ALLOWED_ENTITIES as $allowedEntity)
+        {
+            $allowedEntityClass = self::getEntityClass($allowedEntity);
+
+            if ($sign === $allowedEntityClass::getSign())
+            {
+                return $allowedEntity;
+            }
+        }
     }
 }

@@ -52,7 +52,11 @@
 
 <p>You have agreed to provide {{{$application['name']}}} access to your account
 
+@if (isset($merchant['website']) === true)
 <a title="Merchant Website" href="{{$merchant['website']}}">{{{$merchant['billing_label']}}}.</a>
+@else
+{{{$merchant['billing_label']}}}.
+@endif
 
 In case you did not request this or would like to revoke the access, please visit your dashboard.
 

@@ -983,14 +983,6 @@ class Processor
             $gatewayData['bharat_qr'] = $this->repo->bharat_qr->findByPaymentId($this->payment->getId());
         }
 
-        $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . '::' . strtoupper($action);
-
-        // Do not track payment when Gateway verify is called
-        if ($action !== Payment\Action::VERIFY)
-        {
-            $this->segment->trackPayment($this->payment, $eventCode, ['action' => $action]);
-        }
-
         // Wrapping all gateway call, We can take actions on Exception here.
         try
         {
@@ -1033,6 +1025,8 @@ class Processor
         $this->addOrderIdToInputForSubscriptionIfApplicable($input, $payment);
 
         $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
+
+        $this->validateAndSetReceiverIfApplicable($payment, $input);
 
         $this->validateBankTransferDetailsIfApplicable($payment);
 
@@ -1237,14 +1231,18 @@ class Processor
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
-            if ($payment->isTpvMethod() === true)
+            $tpvRequired = (($payment->isTpvMethod() === true) and
+                            ($this->merchant->isTPVRequired() === true));
+
+            if (($tpvRequired === true) or
+                ($payment->isEmandate() === true))
             {
-                if ($this->merchant->isTPVRequired() === true)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
-                        Payment\Entity::ORDER_ID);
-                }
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
+                    Payment\Entity::ORDER_ID,
+                    [
+                        'method' => $payment->getMethod()
+                    ]);
             }
 
             return;
@@ -1268,6 +1266,22 @@ class Processor
         $this->repo->saveOrFail($this->order);
 
         $payment->order()->associate($this->order);
+    }
+
+    protected function validateAndSetReceiverIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if (empty($input[Payment\Entity::RECEIVER]) === true)
+        {
+            return;
+        }
+
+        $receiverInput = $input[Payment\Entity::RECEIVER];
+
+        $entity = $receiverInput['type'];
+
+        $receiver = $this->repo->$entity->findbyPublicIdAndMerchant($receiverInput['id'], $this->merchant);
+
+        $payment->receiver()->associate($receiver);
     }
 
     protected function validateAndSetInvoiceDetailsIfApplicable(Payment\Entity $payment)

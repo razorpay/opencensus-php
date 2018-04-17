@@ -1199,6 +1199,34 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetCheckoutPreferencesWithDebitCardDisabled()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'ALL',
+            'issuer'  => 'ALL',
+            'network' => 'VISA']);
+
+        $this->fixtures->merchant->disableDebitCard();
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithCreditCardDisabled()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'ALL',
+            'issuer'  => 'ALL',
+            'network' => 'VISA']);
+
+        $this->fixtures->merchant->disableCreditCard();
+
+        $this->startTest();
+    }
+
     public function testGetNetbankingDowntimeInfoForDirectNetbankingGateway()
     {
         $this->ba->publicAuth();

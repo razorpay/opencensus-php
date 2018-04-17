@@ -308,6 +308,7 @@ class NetbankingCsbGatewayTest extends TestCase
                 {
                     $content[ResponseFields::STATUS] = Status::FAILURE;
                     $content[ResponseFields::NARRATION] = 'Payment failed';
+                    $content[ResponseFields::TRAN_REF_NUM] = null;
                 }
                 else if ($action === 'verify')
                 {

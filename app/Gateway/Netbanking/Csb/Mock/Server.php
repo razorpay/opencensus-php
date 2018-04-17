@@ -13,7 +13,7 @@ class Server extends Base\Mock\Server
 {
     const BANK_ID   = 'CSB';
 
-    private $gatewayInstance = null;
+    protected $gatewayInstance = null;
 
     public function authorize($input)
     {
@@ -61,7 +61,7 @@ class Server extends Base\Mock\Server
         return $this->gatewayInstance;
     }
 
-    private function getAuthorizeResponse(array $request)
+    protected function getAuthorizeResponse(array $request)
     {
         $date = Carbon::now(Timezone::IST)->format('d-M-Y H:i:s A');
 
@@ -85,7 +85,7 @@ class Server extends Base\Mock\Server
         return $content;
     }
 
-    private function getVerifyResponse()
+    protected function getVerifyResponse()
     {
         $xmlRoot = "<Xml />";
 
@@ -121,7 +121,7 @@ class Server extends Base\Mock\Server
         return trim(explode('?>', $gatewayParamXml->asXML())[1]);
     }
 
-    private function getVerifyRequest(array $input)
+    protected function getVerifyRequest(array $input)
     {
         $data = $input[RequestFields::POST_DATA];
 
@@ -132,7 +132,7 @@ class Server extends Base\Mock\Server
         return array_combine($this->getVerifyRequestFields(), $requestArray);
     }
 
-    private function getAuthorizeRequest(array $input)
+    protected function getAuthorizeRequest(array $input)
     {
         $data = $input[RequestFields::POST_DATA];
 
@@ -143,7 +143,7 @@ class Server extends Base\Mock\Server
         return array_combine($this->getAuthorizeRequestFields(), $requestArray);
     }
 
-    private function verifyChecksum(array $request)
+    protected function verifyChecksum(array $request)
     {
         $checkSum = $request[RequestFields::CHECKSUM];
 
@@ -151,17 +151,17 @@ class Server extends Base\Mock\Server
 
         $generatedCheckSum = $this->getChecksum($request);
 
-        $this->getGatewayInstance()->compareHashes($checkSum, $generatedCheckSum);
+        $this->compareHashes($checkSum, $generatedCheckSum);
     }
 
-    private function getChecksum(array $request)
+    protected function getChecksum(array $request)
     {
         $content = array_values($request);
 
-        return $this->getGatewayInstance()->computeChecksum($content);
+        return $this->getGatewayInstance()->generateHash($content);
     }
 
-    private function getAuthorizeRequestFields()
+    protected function getAuthorizeRequestFields()
     {
         return [
             RequestFields::CHNPGSYN,
@@ -175,7 +175,7 @@ class Server extends Base\Mock\Server
         ];
     }
 
-    private function getVerifyRequestFields()
+    protected function getVerifyRequestFields()
     {
         return [
             RequestFields::CHNPGSYN,

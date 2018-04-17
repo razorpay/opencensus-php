@@ -482,6 +482,12 @@ class Service extends Base\Service
             $input[Merchant\Entity::ADMINS] = [$admin->getId()];
         }
 
+        if ((isset($input[Merchant\Detail\Entity::REVIEWER_ID]) === true) and
+            ($input[Merchant\Detail\Entity::REVIEWER_ID] !== 'none'))
+        {
+            Entity::verifyIdAndStripSign($input[Merchant\Detail\Entity::REVIEWER_ID]);
+        }
+
         // We would want to receive the ES payload
 
         $input[Base\EsRepository::SEARCH_HITS] = 1;

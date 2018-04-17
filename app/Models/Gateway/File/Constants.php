@@ -16,6 +16,7 @@ class Constants
     const RBL              = 'rbl';
     const SCBL             = 'scbl';
     const UPI_ICICI        = 'upi_icici';
+    const UPI_MINDGATE     = 'upi_mindgate';
     const AIRTEL_MONEY     = 'airtel_money';
     const CSB              = 'csb';
     const AXIS_MIGS        = 'axis_migs';
@@ -63,6 +64,7 @@ class Constants
         Type::REFUND_FAILED => [
             'All',
             self::UPI_ICICI,
+            self::UPI_MINDGATE,
             self::AIRTEL_MONEY,
             self::AXIS_MIGS,
             self::ICIC_FIRST_DATA,
@@ -118,6 +120,7 @@ class Constants
 
         Type::REFUND_FAILED => [
             self::UPI_ICICI        => ['supportteam@razorpay.com'],
+            self::UPI_MINDGATE     => ['supportteam@razorpay.com'],
             self::AIRTEL_MONEY     => ['supportteam@razorpay.com'],
             self::AXIS_MIGS        => ['supportteam@razorpay.com'],
             self::ICIC_FIRST_DATA  => ['supportteam@razorpay.com'],
