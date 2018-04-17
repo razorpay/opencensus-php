@@ -68,7 +68,8 @@ class Netbanking
 
     protected static $selfCorp = [
         self::ICIC_C,
-        self::UTIB_C
+        self::UTIB_C,
+        self::BARB_C
     ];
 
     protected static $selfTPV = [
