@@ -54,6 +54,8 @@ class Entity extends Base\PublicEntity
     const ORDER_ID              = 'order_id';
     const INVOICE_ID            = 'invoice_id';
     const TRANSFER_ID           = 'transfer_id';
+    const RECEIVER_ID           = 'receiver_id';
+    const RECEIVER_TYPE         = 'receiver_type';
     const INTERNATIONAL         = 'international';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
@@ -98,7 +100,6 @@ class Entity extends Base\PublicEntity
     const REFERENCE5            = 'reference5';
     const REFERENCE6            = 'reference6';
     const REFERENCE7            = 'reference7';
-    const REFERENCE8            = 'reference8';
     const REFERENCE9            = 'reference9';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
@@ -145,6 +146,7 @@ class Entity extends Base\PublicEntity
 
     const METADATA              = 'metadata';
 
+    const RECEIVER              = 'receiver';
     const AADHAAR               = 'aadhaar';
     const BANK_ACCOUNT          = 'bank_account';
     const NAME                  = 'name';
@@ -248,6 +250,8 @@ class Entity extends Base\PublicEntity
         self::REFERENCE2,
         self::ACQUIRER_DATA,
         self::TRANSFER_ID,
+        self::RECEIVER_ID,
+        self::RECEIVER_TYPE,
         self::TRANSACTION_ID,
         self::AUTO_CAPTURED,
         self::ORDER_ID,
@@ -1158,6 +1162,11 @@ class Entity extends Base\PublicEntity
     public function getCapturedAt()
     {
         return $this->getAttribute(self::CAPTURED_AT);
+    }
+
+    public function getReceiverType()
+    {
+        return $this->getAttribute(self::RECEIVER_TYPE);
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
@@ -2352,6 +2361,11 @@ class Entity extends Base\PublicEntity
         return $this->morphMany('RZP\Models\Transfer\Entity', 'source');
     }
 
+    public function receiver()
+    {
+        return $this->morphTo('receiver', self::RECEIVER_TYPE, self::RECEIVER_ID);
+    }
+
     public function netbanking()
     {
         return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
@@ -2482,7 +2496,9 @@ class Entity extends Base\PublicEntity
             self::LATE_AUTHORIZED,
             self::AUTO_CAPTURED,
             self::ERROR_CODE,
-            self::GATEWAY);
+            self::GATEWAY,
+            self::RECEIVER_ID,
+            self::RECEIVER_TYPE);
 
         $relevantData = array_intersect_key($this->attributes, array_flip($fields));
 
@@ -2621,5 +2637,19 @@ class Entity extends Base\PublicEntity
     public function isAcknowledged(): bool
     {
         return $this->isAttributeNotNull(self::ACKNOWLEDGED_AT);
+    }
+
+    // Query scopes
+
+    /**
+     * Scopes result based on morphed entity relationship.
+     *
+     * @param \RZP\Base\BuilderEx $query
+     * @param Base\PublicEntity   $entity
+     */
+    public function scopeReceiver(\RZP\Base\BuilderEx $query, Base\PublicEntity $entity)
+    {
+        $query->where(Entity::RECEIVER_ID, '=', $entity->getId())
+              ->where(Entity::RECEIVER_TYPE, '=', $entity->getEntity());
     }
 }

@@ -1026,6 +1026,8 @@ class Processor
 
         $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
 
+        $this->validateAndSetReceiverIfApplicable($payment, $input);
+
         $this->validateBankTransferDetailsIfApplicable($payment);
 
         $this->validateAndSetInvoiceDetailsIfApplicable($payment);
@@ -1264,6 +1266,22 @@ class Processor
         $this->repo->saveOrFail($this->order);
 
         $payment->order()->associate($this->order);
+    }
+
+    protected function validateAndSetReceiverIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if (empty($input[Payment\Entity::RECEIVER]) === true)
+        {
+            return;
+        }
+
+        $receiverInput = $input[Payment\Entity::RECEIVER];
+
+        $entity = $receiverInput['type'];
+
+        $receiver = $this->repo->$entity->findbyPublicIdAndMerchant($receiverInput['id'], $this->merchant);
+
+        $payment->receiver()->associate($receiver);
     }
 
     protected function validateAndSetInvoiceDetailsIfApplicable(Payment\Entity $payment)
