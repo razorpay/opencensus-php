@@ -4,9 +4,9 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Illuminate\Http\Request;
+use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
 use View;
-use RZP\Constants\Entity as E;
 
 class BatchController extends Controller
 {
@@ -80,7 +80,7 @@ class BatchController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function renderDirectDebitUploadForm(Request $request)
+    public function renderBatchUploadForm(Request $request)
     {
         $token = $request->input('token');
 
@@ -88,16 +88,16 @@ class BatchController extends Controller
 
         if ($isValid === false)
         {
-            $view = \View::make('403');
+            $view = View::make('403');
         }
         else {
-            $view = \View::make('direct_debit_upload_form');
+            $view = View::make('direct_debit_upload_form');
         }
 
-        return \Response::make($view);
+        return $view;
     }
 
-    public function submitDirectDebitUploadForm(Request $request)
+    public function submitBatchUploadForm(Request $request)
     {
         $token = $request->input('token');
         $input = $request->all();
@@ -107,11 +107,11 @@ class BatchController extends Controller
         unset($input['token']);
         $result =  $this->service()->createBatch($input);
 
-        $view = \View::make('direct_debit_form_submit', $result);
-        return \Response::make($view);
+        $view = View::make('direct_debit_form_submit', $result);
+        return $view;
     }
 
-    public function validateDirectDebitFile(Request $request)
+    public function validateBatchFile(Request $request)
     {
         $input = $request->all();
 
