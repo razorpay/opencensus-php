@@ -48,16 +48,16 @@ final class Route
         'payment_create_wallet'                    => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
         'payment_create_upi'                       => ['post',     'payments/create/upi',                            'PaymentCreateController@postCreateUpiPayment'                      ],
         'payment_create_openwallet'                => ['post',     'payments/create/openwallet',                     'PaymentCreateController@postCreateS2SPayment'                      ],
-        'payment_callback_post'                    => ['post',     'payments/{id}/callback/{hash}',                  'PaymentCreateController@postCallback'                              ],
-        'payment_callback_get'                     => ['get',      'payments/{id}/callback/{hash}',                  'PaymentCreateController@postCallback'                              ],
+        'payment_callback_post'                    => ['post',     'payments/{x_entity_id}/callback/{hash}',         'PaymentCreateController@postCallback'                              ],
+        'payment_callback_get'                     => ['get',      'payments/{x_entity_id}/callback/{hash}',         'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_post'           => ['post',     'payments/{id}/callback/{hash}/{key}',            'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_get'            => ['get',      'payments/{id}/callback/{hash}/{key}',            'PaymentCreateController@postCallback'                              ],
-        'payment_get_status'                       => ['get',      'payments/{id}/status',                           'PaymentController@getPaymentStatusForAsyncPayments'                ],
-        'payment_otp_submit'                       => ['post',     'payments/{id}/otp_submit/{hash}',                'PaymentCreateController@postOtpSubmit'                             ],
-        'payment_otp_resend'                       => ['post',     'payments/{id}/otp_resend',                       'PaymentCreateController@postOtpResend'                             ],
-        'payment_topup_ajax'                       => ['post',     'payments/{id}/topup/ajax',                       'PaymentCreateController@postTopupAjax'                             ],
-        'payment_topup_post'                       => ['post',     'payments/{id}/topup',                            'PaymentCreateController@postTopup'                                 ],
-        'payment_redirect_callback'                => ['post',     'payments/{id}/redirect_callback',                'PaymentCreateController@postRedirectCallback'                      ],
+        'payment_get_status'                       => ['get',      'payments/{x_entity_id}/status',                  'PaymentController@getPaymentStatusForAsyncPayments'                ],
+        'payment_otp_submit'                       => ['post',     'payments/{x_entity_id}/otp_submit/{hash}',       'PaymentCreateController@postOtpSubmit'                             ],
+        'payment_otp_resend'                       => ['post',     'payments/{x_entity_id}/otp_resend',              'PaymentCreateController@postOtpResend'                             ],
+        'payment_topup_ajax'                       => ['post',     'payments/{x_entity_id}/topup/ajax',              'PaymentCreateController@postTopupAjax'                             ],
+        'payment_topup_post'                       => ['post',     'payments/{x_entity_id}/topup',                   'PaymentCreateController@postTopup'                                 ],
+        'payment_redirect_callback'                => ['post',     'payments/{x_entity_id}/redirect_callback',       'PaymentCreateController@postRedirectCallback'                      ],
         'payment_refund'                           => ['post',     'payments/{id}/refund',                           'PaymentController@postRefund'                                      ],
         'payment_payout'                           => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
         'payment_bank_transfer_fetch'              => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
@@ -76,12 +76,12 @@ final class Route
         'payment_transfer'                         => ['post',     'payments/{id}/transfers',                        'PaymentController@postTransfer'                                    ],
         'payment_verify'                           => ['get',      'payments/{id}/verify',                           'PaymentController@getVerify'                                       ],
         'payment_force_authorize'                  => ['post',     'payments/{id}/force_authorize',                  'PaymentController@postForceAuthorize'                              ],
-        'payment_cancel'                           => ['get',      'payments/{id}/cancel',                           'PaymentController@postCancel'                                      ],
+        'payment_cancel'                           => ['get',      'payments/{x_entity_id}/cancel',                  'PaymentController@postCancel'                                      ],
         'payment_authorize_failed'                 => ['post',     'payments/{id}/authorize_failed',                 'PaymentController@postAuthorizeFailedPayment'                      ],
         'payment_fix_authorize_at'                 => ['post',     'payments/fix_authorized_at',                     'PaymentController@postFixAuthorizedAt'                             ],
         'payment_authorize_refund'                 => ['post',     'payments/{id}/authorize_refund',                 'PaymentController@postRefundAuthorized'                            ],
         'payments_multiple_authorize_refund'       => ['post',     'payments/authorize_refund/bulk',                 'PaymentController@postRefundAuthorizedInBulk'                      ],
-        'payment_add_metadata'                     => ['post',     'payments/{id}/metadata',                         'PaymentController@postPaymentMetadata'                             ],
+        'payment_add_metadata'                     => ['post',     'payments/{x_entity_id}/metadata',                'PaymentController@postPaymentMetadata'                             ],
         'payment_fetch_by_id'                      => ['get',      'payments/{id}',                                  'PaymentController@getPayment'                                      ],
         'payment_fetch_multiple'                   => ['get',      'payments',                                       'PaymentController@getPayments'                                     ],
         'payment_fetch_card_details'               => ['get',      'payments/{id}/card',                             'PaymentController@getCardForPayment'                               ],
@@ -100,7 +100,7 @@ final class Route
         'payment_acknowledge'                      => ['post',     'payments/{id}/acknowledge',                      'PaymentController@postAcknowledge'                                 ],
         'payment_authorize_time_out'               => ['post',     'payments/authorize/timeout/{ids}',               'PaymentController@postAuthorizeLockTimeOut'                        ],
         'refund_create'                            => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
-        'refund_edit_status'                       => ['put',      'refunds/{id}/status',                            'RefundController@putRefundStatus'                                        ],
+        'refund_edit_status'                       => ['put',      'refunds/{id}/status',                            'RefundController@putRefundStatus'                                  ],
         'refund_fetch_by_id'                       => ['get',      'refunds/{id}',                                   'RefundController@getRefund'                                        ],
         'refund_fetch_multiple'                    => ['get',      'refunds',                                        'RefundController@getRefunds'                                       ],
         'refund_generate_excel'                    => ['post',     'refunds/excel',                                  'RefundController@generateRefunds'                                  ],
@@ -357,6 +357,7 @@ final class Route
         'transparent_redirect_get'                 => ['get',      'redirect',                                       'AdminController@getTransparentRedirect'                            ],
         'transparent_redirect_post'                => ['post',     'redirect',                                       'AdminController@postTransparentRedirect'                           ],
         'feature_dummy'                            => ['get',      'dummy',                                          'MerchantController@getDummyFeatures'                               ],
+        'razorx_dummy'                             => ['get',      'dummy/razorx',                                   'MerchantController@getDummyRazorX'                                 ],
         'emi_plan_add'                             => ['post',     'emi',                                            'EmiController@addEmiPlan'                                          ],
         'emi_plans_fetch_multiple'                 => ['get',      'emi',                                            'EmiController@fetchEmiPlans'                                       ],
         'emi_plan_fetch_by_id'                     => ['get',      'emi/{id}',                                       'EmiController@fetchEmiPlanById'                                    ],
@@ -383,7 +384,7 @@ final class Route
         'customer_add_bank_account'                => ['post',     'customers/{id}/bank_account',                    'CustomerController@postBankAccount'                                ],
         'customer_fetch_bank_account'              => ['get',      'customers/{id}/bank_account',                    'CustomerController@getBankAccounts'                                ],
         'customer_create_token'                    => ['post',     'customers/{id}/tokens',                          'CustomerController@addToken'                                       ],
-        'customer_create_token_public'             => ['post',     'customers/{id}/tokens/public',                   'CustomerController@addToken'                                       ],
+        'customer_create_token_public'             => ['post',     'customers/{x_entity_id}/tokens/public',          'CustomerController@addToken'                                       ],
         'customer_update_token'                    => ['put',      'customers/{id}/tokens/{token}',                  'CustomerController@updateToken'                                    ],
         'customer_fetch_token'                     => ['get',      'customers/{id}/tokens/{token}',                  'CustomerController@fetchToken'                                     ],
         'customer_fetch_tokens'                    => ['get',      'customers/{id}/tokens',                          'CustomerController@fetchTokens'                                    ],
@@ -407,10 +408,10 @@ final class Route
         'invoice_remove_line_item_bulk'            => ['delete',   'invoices/{id}/line_items/bulk',                  'InvoiceController@removeManyLineItems'                             ],
         'invoice_remove_line_item'                 => ['delete',   'invoices/{id}/line_items/{lineItemId}',          'InvoiceController@removeLineItem'                                  ],
         'invoice_send_notifications'               => ['post',     'invoices/notify',                                'InvoiceController@sendNotifications'                               ],
-        'invoice_send_notification'                => ['post',     'invoices/{id}/notify/{medium}',                  'InvoiceController@sendNotification'                                ],
+        'invoice_send_notification'                => ['post',     'invoices/{x_entity_id}/notify/{medium}',         'InvoiceController@sendNotification'                                ],
         'invoice_send_notification_private'        => ['post',     'invoices/{id}/notify_by/{medium}',               'InvoiceController@sendNotification'                                ],
         'invoice_notification_update'              => ['put',      'invoices/{medium}',                              'InvoiceController@updateInvoiceNotificationStatus'                 ],
-        'invoice_get_status'                       => ['get',      'invoices/{id}/status',                           'InvoiceController@getInvoiceStatus'                                ],
+        'invoice_get_status'                       => ['get',      'invoices/{x_entity_id}/status',                  'InvoiceController@getInvoiceStatus'                                ],
         'invoice_view_live'                        => ['get',      'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test'                        => ['get',      't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_cancel'                           => ['post',     'invoices/{id}/cancel',                           'InvoiceController@cancelInvoice'                                   ],
@@ -420,7 +421,7 @@ final class Route
         'invoice_get_stats_by_batch_ids'           => ['get',      'invoices/batches/issuable',                      'InvoiceController@getIssuableByBatchIds'                           ],
         'invoice_view_live_post'                   => ['post',     'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test_post'                   => ['post',     't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
-        'invoice_get_pdf'                          => ['get',      'invoices/{id}/pdf',                              'InvoiceController@getInvoicePdf'                                   ],
+        'invoice_get_pdf'                          => ['get',      'invoices/{x_entity_id}/pdf',                     'InvoiceController@getInvoicePdf'                                   ],
         'item_create'                              => ['post',     'items',                                          'ItemController@createItem'                                         ],
         'item_fetch'                               => ['get',      'items/{id}',                                     'ItemController@getItem'                                            ],
         'item_fetch_multiple'                      => ['get',      'items',                                          'ItemController@getItems'                                           ],
@@ -782,7 +783,11 @@ final class Route
         'feature_delete_entity'                    => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
 
         //Recon summary
-        'daily_reconciliation_summary_fetch'       => ['get',      'daily_recon_summary',                           'AdminController@getDailyReconciliationStatusSummary'              ],
+        'daily_reconciliation_summary_fetch'       => ['get',      'daily_recon_summary',                            'AdminController@getDailyReconciliationStatusSummary'               ],
+
+        // Generic Lambda handler
+        'lambda_post_h2h'                          => ['post',     'lambda/{type}',                                  'LambdaController@processLambda'                                    ],
+
     ];
 
     public static $public = [
@@ -800,6 +805,8 @@ final class Route
         'payment_cancel',
         'payment_add_metadata',
         'payment_get_status',
+        'payment_callback_post',
+        'payment_callback_get',
         'invoice_get_status',
         'invoice_send_notification',
         'invoice_get_pdf',
@@ -903,6 +910,7 @@ final class Route
         'order_fetch_by_id',
         'order_payments',
         'feature_dummy',
+        'razorx_dummy',
         'webhook_create',
         'webhook_edit',
         'webhook_fetch',
@@ -1071,7 +1079,8 @@ final class Route
         'user_reset_password_token',
         'virtual_account_refund_excess',
         'fund_transfer_attempt_process',
-        'daily_reconciliation_summary_fetch'
+        'daily_reconciliation_summary_fetch',
+        'lambda_post_h2h',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1990,6 +1999,7 @@ final class Route
 
         'h2h' => [
             'setl_reconcile_h2h',
+            'lambda_post_h2h'
         ],
 
         'auth_service' => [
@@ -2408,7 +2418,13 @@ final class Route
 
     public function getUrlWithPublicAuth($routeName, array $parameters = [], $key = '')
     {
-        if ($key === '')
+        // If current request was on keyless public auth, append the x_entity_id query for public urls.
+        if (($key === '') and ($this->ba->isKeylessPublicAuth() === true))
+        {
+            $parameters['x_entity_id'] = $this->ba->getKeylessXEntityId();
+        }
+        // Else continue with the key_id flow
+        else if ($key === '')
         {
             $key = $this->ba->getPublicKey();
         }
@@ -2418,22 +2434,24 @@ final class Route
 
     public function getUrlWithPublicAuthInQueryParam($routeName, array $parameters = [])
     {
-        $key = $this->ba->getPublicKey();
-
-        list($schema, $host) = $this->getSchemaHostAndPort();
-
-        $parameters['key_id'] = $key;
-
-        $urlSegment = \URL::route($routeName, $parameters, false);
-
-        return $schema . $host . $urlSegment;
+        // TODO: Deprecate this method, remove it's usage and use following directly
+        return $this->getUrlWithPublicAuth($routeName, $parameters);
     }
 
     public function getUrlWithPublicCallbackAuth(array $parameters = [], $key = '', $route = 'payment_callback_with_key_post')
     {
+        // If key is not passed, we get the same from basic auth instance
         if ($key === '')
         {
             $key = $this->ba->getPublicKey();
+        }
+
+        // For public callback routes, if key is not available(case of key less flow)
+        // we use the non-key corresponding route, which would work anyway with key less flow
+        // because the route has payment id.
+        if (($key === '') and (in_array($route, self::$publicCallback, true) === true))
+        {
+            $route = str_replace('with_key_', '', $route);
         }
 
         $url = $this->getUrl($route, $parameters, $key);
@@ -2454,7 +2472,7 @@ final class Route
 
         $parameters = ['id' => $pid, 'hash' => $hash];
 
-        return $this->getUrl('payment_callback_with_key_post', $parameters, $key);
+        return $this->getUrlWithPublicCallbackAuth($parameters);
     }
 
     public function getUrlWithAuth($relativeUrl, $key = '', $secret = '')

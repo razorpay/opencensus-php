@@ -538,6 +538,13 @@ class MerchantController extends Controller
         return ApiResponse::json($input);
     }
 
+    public function getDummyRazorX()
+    {
+        $response = $this->service()->getDummyRazorX();
+
+        return ApiResponse::json($response);
+    }
+
     public function postMerchantsNotifyHoliday()
     {
         $input = Request::all();

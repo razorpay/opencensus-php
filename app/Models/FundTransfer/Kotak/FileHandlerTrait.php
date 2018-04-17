@@ -155,7 +155,7 @@ trait FileHandlerTrait
     {
         $extension = pathinfo($key, PATHINFO_EXTENSION);
 
-        if(empty($extension) === false)
+        if (empty($extension) === false)
         {
             $extension = '.' . $extension;
         }
@@ -167,15 +167,22 @@ trait FileHandlerTrait
         return $extension;
     }
 
-    public function getH2HFileFromAws($key)
+    public function getH2HFileFromAws($key, $useKeyForFileName = false)
     {
         $bucket = 'h2h_bucket';
 
-        $extension = $this->getFileExtension($key);
+        if ($useKeyForFileName === false)
+        {
+            $extension = $this->getFileExtension($key);
 
-        $name = $this->getFileToWriteName($extension);
+            $name = $this->getFileToWriteName($extension);
 
-        $fullPath = $this->getFullFilePath($name);
+            $fullPath = $this->getFullFilePath($name);
+        }
+        else
+        {
+            $fullPath = $this->getFullFilePath($key);
+        }
 
         return $this->getFileFromAws($key, $fullPath, $bucket);
     }
@@ -399,7 +406,7 @@ trait FileHandlerTrait
 
         if ($awsS3Mock)
         {
-            return $filePath;
+            return $key;
         }
 
         $s3 = Handler::getClient();
@@ -416,7 +423,7 @@ trait FileHandlerTrait
 
             $this->trace()->info(TraceCode::AWS_FILE_DOWNLOAD, $request);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace()->traceException($e);
 

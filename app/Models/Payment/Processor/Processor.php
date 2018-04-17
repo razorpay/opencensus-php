@@ -1269,15 +1269,6 @@ class Processor
         return $order;
     }
 
-    protected function fetchReceiverFromInput(array $receiverInput)
-    {
-        $entity = $receiverInput['type'];
-
-        $receiver = $this->repo->$entity->findbyPublicIdAndMerchant($receiverInput['id'], $this->merchant);
-
-        return $receiver;
-    }
-
     protected function validateAndSetOrderDetailsIfApplicable(
         Payment\Entity $payment,
         array $input)
@@ -1328,7 +1319,11 @@ class Processor
             return;
         }
 
-        $receiver = $this->fetchReceiverFromInput($input['receiver']);
+        $receiverInput = $input[Payment\Entity::RECEIVER];
+
+        $entity = $receiverInput['type'];
+
+        $receiver = $this->repo->$entity->findbyPublicIdAndMerchant($receiverInput['id'], $this->merchant);
 
         $payment->receiver()->associate($receiver);
     }
