@@ -4,7 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use RZP\Models\Payment;
 
-class Csbk extends Base
+class Csb extends Base
 {
     const GATEWAY = Payment\Gateway::NETBANKING_CSB;
 

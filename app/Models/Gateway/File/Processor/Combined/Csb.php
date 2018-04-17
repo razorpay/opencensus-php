@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 
-class Csbk extends Base
+class Csb extends Base
 {
     const BANK_NAME = 'Csbk';
 

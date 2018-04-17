@@ -25,7 +25,7 @@ use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
  * Class Csbk
  * @package RZP\Models\Gateway\File\Processor\Refund
  */
-class Csbk extends Base
+class Csb extends Base
 {
     use FileHandler;
 

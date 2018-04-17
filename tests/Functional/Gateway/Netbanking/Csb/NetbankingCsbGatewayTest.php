@@ -219,7 +219,7 @@ class NetbankingCsbGatewayTest extends TestCase
         // gateway file generation route is an internal auth
         $this->ba->appAuth();
 
-        $data = $this->generateGatewayFile('csbk', 'combined');
+        $data = $this->generateGatewayFile('csb', 'combined');
 
         $file = $this->getLastEntity(ConstantsEntity::FILE_STORE, true);
 
