@@ -804,23 +804,25 @@
                                       @if($data['invoice']['expire_by'] and $data['invoice']['status'] !== 'paid')
                                           <div class="info">
                                               {{$data['invoice']['status'] === 'expired' ? 'EXPIRED ON' : 'EXPIRES BY'}}
-                                              <div class="val">{{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}} </div>
+                                              <div class="val">
+                                              {{format_date($data['invoice']['expire_by'])}}
+                                              </div>
                                           </div>
                                       @endif
 
                                       <div class="info">
                                           <span id="pay-title">AMOUNT PAYABLE</span>
                                           <div class="val" id="display-pay-amt">
-                                          ₹{{number_format($data['invoice']['amount']/100, 2, '.', ',')}}
+                                          ₹{{format_amount($data['invoice']['amount'])}}
                                           </div>
 
                                           <div class="info" id="partial-payment-info">
                                               <div class="val">
-                                                  <b>₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}}</b>
+                                                  <b>₹{{format_amount($data['invoice']['amount_due'])}}</b>
                                                   <span class="light">Due</span>
                                               </div>
                                               <div class="val">
-                                                  <span> ₹{{number_format($data['invoice']['amount_paid']/ 100, 2, '.', ',')}}</span>
+                                                  <span> ₹{{format_amount($data['invoice']['amount_paid'])}}</span>
                                                   <span class="light">Paid</span>
                                               </div>
                                           </div>
@@ -843,7 +845,7 @@
                                           @foreach ($data['invoice']['payments'] as $key => $item)
                                               <div class="modal-col">
                                                 <div class="row"><b style="color: #2e3345">
-                                                    ₹{{number_format($item['amount']/ 100, 2, '.', ',')}} Paid </b>on {{date('M d, Y (h:i A)', $item['created_at'])}}
+                                                    ₹{{format_amount($item['amount'])}} Paid </b>on {{format_date($item['created_at'])}}
                                                 </div>
                                                 <div class="row">Paid using <span style="text-transform: capitalize">{{$item['method']}}</span></div>
                                                     <div class="row">Payment ID: {{$item['id']}}</div>
@@ -896,7 +898,7 @@
                                 <div id="cancelled-invoice">
                                     <div class="title" style='color:#f54443; font-size:18px'>Payment Link Expired</div>
                                     <div class="desc">
-                                        Oops! This payment link expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
+                                        Oops! This payment link expired on {{format_date($data['invoice']['expire_by'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
                                     </div>
                                 </div>
                               @endif
@@ -947,15 +949,15 @@
                               <div class="info">
                                   <span id="pay-title">AMOUNT PAYABLE</span>
                                   <div class="val" id="display-pay-amt">
-                                    ₹{{number_format($data['invoice']['amount']/100, 2, '.', ',')}}
+                                    ₹{{format_amount($data['invoice']['amount'])}}
                                   </div>
                                   <div class="info" id="partial-payment-info">
                                       <div class="val">
-                                          <b>₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}}</b>
+                                          <b>₹{{format_amount($data['invoice']['amount_due'])}}</b>
                                           <span class="light">Due</span>
                                       </div>
                                       <div class="val">
-                                          <span>₹{{number_format($data['invoice']['amount_paid']/ 100, 2, '.', ',')}}</span>
+                                          <span>₹{{format_amount($data['invoice']['amount_paid'])}}</span>
                                           <span class="light">Paid</span>
                                       </div>
                                   </div>
@@ -971,7 +973,7 @@
                               @if($data['invoice']['expire_by'] and $data['invoice']['status'] !== 'paid')
                                 <div class="info">
                                   {{$data['invoice']['status'] === 'expired' ? 'EXPIRED ON' : 'EXPIRES BY'}}
-                                  <div class="val">{{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}} </div>
+                                  <div class="val">{{format_date($data['invoice']['expire_by'])}} </div>
                                 </div>
                               @endif
                               @if($data['invoice']['customer_details']['customer_name'] or $data['invoice']['customer_details']['customer_email'])
@@ -998,7 +1000,7 @@
                                   @foreach ($data['invoice']['payments'] as $key => $item)
                                       <div class="modal-col">
                                         <div class="row"><b style="color: #2e3345">
-                                            ₹{{number_format($item['amount']/ 100, 2, '.', ',')}} Paid </b>on {{date('M d, Y (h:i A)', $item['created_at'])}}
+                                            ₹{{format_amount($item['amount'])}} Paid </b>on {{format_date($item['created_at'])}}
                                         </div>
                                         <div class="row">Paid using <span style="text-transform: capitalize">{{$item['method']}}</span></div>
                                         <div class="row">Payment ID: {{$item['id']}}</div>
@@ -1019,7 +1021,7 @@
                         <div id="cancelled-invoice">
                           <div class="title" style='color:#f54443; font-size:18px'>Payment Link Expired</div>
                             <div class="desc">
-                              Oops! This payment link expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
+                              Oops! This payment link expired on {{format_date($data['invoice']['expire_by'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
                           </div>
                         </div>
                       @endif
@@ -1085,17 +1087,8 @@
                 }
               }
           </script>
-
-          @if ($data['invoice']['status'] !== 'paid' and ($data['invoice']['status'] !== 'expired' and $data['invoice']['status'] !== 'cancelled'))
-            @if (isset($data['error']))
-              <div id="failure" class="card">
-                {!! $error_icon !!}
-                <h2>Payment Failed</h2>
-                <p>{{ $data['error']['description'] }}</p>
-                <button id="button" onclick="razorpay.open()">Retry</button>
-              </div>
-            @endif
-            <script>
+          <script>
+            if(data.invoice['partial_payment']) {
                 function showOverlay(clsToAdd) {
                   var overlay = document.getElementById('overlay');
                   overlay.style.opacity = 1;
@@ -1115,16 +1108,6 @@
                   }
                 }
 
-              if (checkIsDesktop()) {
-                document.getElementById('chkout-box').addEventListener('mouseover', showOverlay);
-                document.getElementById('chkout-box').addEventListener('mouseout', hideOverlay);
-              } else {
-                var payBtn = document.getElementById('mob-payment-btn');
-                payBtn.style['background-color'] = color;
-                payBtn.style['display'] = 'block';
-              }
-
-              if(data.invoice['partial_payment']) {
                 function showPayHist() {
                     document.getElementById('hist-modal').className = 'show';
                     showOverlay('overlay-hist');
@@ -1134,6 +1117,25 @@
                     document.getElementById('hist-modal').className = '';
                     hideOverlay('overlay-hist');
                 }
+            }
+          </script>
+          @if ($data['invoice']['status'] !== 'paid' and ($data['invoice']['status'] !== 'expired' and $data['invoice']['status'] !== 'cancelled'))
+            @if (isset($data['error']))
+              <div id="failure" class="card">
+                {!! $error_icon !!}
+                <h2>Payment Failed</h2>
+                <p>{{ $data['error']['description'] }}</p>
+                <button id="button" onclick="razorpay.open()">Retry</button>
+              </div>
+            @endif
+            <script>
+              if (checkIsDesktop()) {
+                document.getElementById('chkout-box').addEventListener('mouseover', showOverlay);
+                document.getElementById('chkout-box').addEventListener('mouseout', hideOverlay);
+              } else {
+                var payBtn = document.getElementById('mob-payment-btn');
+                payBtn.style['background-color'] = color;
+                payBtn.style['display'] = 'block';
               }
 
               (function (globalScope) {
