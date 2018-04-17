@@ -290,7 +290,6 @@ trait Authorize
      * @param Payment\Entity $payment
      *
      * @return array
-     * @throws Exception\RuntimeException
      */
     protected function processCreated(Payment\Entity $payment): array
     {
@@ -554,6 +553,11 @@ trait Authorize
         $this->runInternationalChecks($payment);
 
         $this->runFraudChecks($payment);
+
+        // Fees validation can only happen after international validation has gone through
+        // otherwise can cause issues with international pricing rule being not available when
+        // international is not enabled.
+        $this->verifyFeesLessThanAmount($payment);
     }
 
     protected function validateSubscriptionInputIfPresent(Payment\Entity $payment, $input)
@@ -1231,11 +1235,6 @@ trait Authorize
 
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
     {
-        // Fees validation can only happen after international validation has gone through
-        // otherwise can cause issues with international pricing rule being not available when
-        // international is not enabled.
-        $this->verifyFeesLessThanAmount($payment);
-
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
