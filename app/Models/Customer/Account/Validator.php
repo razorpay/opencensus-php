@@ -35,6 +35,7 @@ class Validator extends Base\Validator
         Entity::NAME            => 'sometimes|string|max:50|nullable|custom',
         Entity::ACTIVE          => 'sometimes|in:0,1',
         Entity::EMAIL           => 'sometimes|email',
+        Entity::GSTIN           => 'nullable|gstin',
     ];
 
     protected static $globalCreateRules = [
