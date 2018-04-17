@@ -4,12 +4,13 @@ namespace RZP\Models\Payment;
 
 use App;
 use RZP\Exception;
-use Razorpay\IFSC\IFSC as BaseIFSC;
-
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
+use RZP\Models\Feature\Constants;
+use Razorpay\IFSC\IFSC as BaseIFSC;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -521,6 +522,13 @@ class Gateway
     public static $recurringCardNetworks = [
         Network::MC,
         Network::VISA,
+    ];
+
+    public static $recurringDebitCardBanks = [
+        IFSC::ICIC,
+        IFSC::CITI,
+        IFSC::KKBK,
+        IFSC::CNRB
     ];
 
     /**
@@ -1209,6 +1217,16 @@ class Gateway
         }
 
         return $supported;
+    }
+
+    public static function getNetworksSupportedForCardRecurring(): array
+    {
+        return self::$recurringCardNetworks;
+    }
+
+    public static function getIssuersSupportedForDebitCardRecurring(): array
+    {
+        return self::$recurringDebitCardBanks;
     }
 
     public static function getExclusiveNetworksForGateway(string $gateway)
