@@ -98,12 +98,12 @@ class Gateway extends Base\Gateway
 
         $contentToHash = $this->getStringToHash($contentToHash, '|');
 
-        return (string) hexdec($this->getHashOfString($contentToHash));
+        return $this->getHashOfString($contentToHash);
     }
 
     protected function getHashOfString($str): string
     {
-        return hash(HashAlgo::CRC32, $str);
+        return (string) hexdec(hash(HashAlgo::CRC32, $str));
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)
@@ -209,16 +209,6 @@ class Gateway extends Base\Gateway
         $actualAmount = $this->formatAmount($actualAmount);
 
         parent::assertAmount($expectedAmount, $actualAmount);
-    }
-
-    /**
-     * Getting live secret from the config
-     * @override
-     * @return mixed
-     */
-    protected function getLiveSecret(): string
-    {
-        return $this->config['live_hash_secret'];
     }
 
     protected function throwExceptionIfCallbackFailure(bool $callbackSuccess, array $content)
