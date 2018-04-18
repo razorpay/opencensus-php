@@ -62,7 +62,6 @@ class Netbanking
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
-        IFSC::PUNB,
         IFSC::CSBK,
         self::PUNB_R,
         self::BARB_R,
@@ -280,7 +279,7 @@ class Netbanking
 
     public static function isSupportedBank($bank)
     {
-        return (in_array($bank, self::getAllBanks()));
+        return (in_array($bank, self::getAllBanks(), true));
     }
 
     /**
