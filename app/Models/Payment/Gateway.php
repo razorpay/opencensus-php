@@ -85,7 +85,6 @@ class Gateway
         self::CARD_FSS     => [self::ACQUIRER_FSS, self::ACQUIRER_BARB],
         self::HITACHI      => [self::ACQUIRER_RATN],
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
-        self::UPI_MINDGATE => [self::ACQUIRER_HDFC],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
     ];
 
@@ -506,6 +505,7 @@ class Gateway
         self::WALLET_OPENWALLET,
         self::NETBANKING_RBL,
         self::ENACH_RBL,
+        self::UPI_HULK,
     ];
 
     /**
