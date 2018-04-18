@@ -72,6 +72,18 @@ export default class EditPublicFeatures extends Component {
     });
   }
 
+  //bool to check whether the status has changed & its `needs_clarification`
+  hasStatusChangedToNeedClarification = () => {
+    //current status
+    const { selectedStatus } = this.state;
+    //old status
+    const { status } = this.props.model;
+
+    return (
+      selectedStatus === 'needs_clarification' && status !== selectedStatus
+    );
+  };
+
   changeAgreement = () => {
     this.setState({ agreement: null });
   };
@@ -80,7 +92,7 @@ export default class EditPublicFeatures extends Component {
     const { akaFeature } = this;
     let { needs_clarification_text } = this.state;
 
-    //
+    // add extra texts based on product type
     const addons = {
       marketplace: {
         prefix:
@@ -111,13 +123,10 @@ export default class EditPublicFeatures extends Component {
   };
 
   save = body => {
-    const { akaFeature } = this;
+    const { akaFeature, hasStatusChangedToNeedClarification } = this;
     const { selectedStatus, needs_clarification_text } = this.state;
 
-    if (
-      selectedStatus === 'needs_clarification' &&
-      this.props.model.status !== selectedStatus
-    ) {
+    if (hasStatusChangedToNeedClarification()) {
       if (needs_clarification_text.length === 0) {
         notifyError('Please enter Clarification Email text to proceed.');
         return;
@@ -176,17 +185,22 @@ export default class EditPublicFeatures extends Component {
   render() {
     let {
       selectedStatus,
-      selectedReasonCategorym,
+      selectedReasonCategory,
       needs_clarification_text,
     } = this.state;
+
     let { merchant_id, name, internal_comment } = this.props.model;
+
     let {
       akaFeature,
       submissions,
       changeAgreement,
       allRejectionReasons,
+      hasStatusChangedToNeedClarification,
       save,
     } = this;
+
+    let oldStatus = this.props.model.status;
 
     return (
       <BaseModal header="Edit Submission">
@@ -209,9 +223,7 @@ export default class EditPublicFeatures extends Component {
                 value={selectedStatus}
                 onChange={this.handleStatusChange}
               >
-                <option value={selectedStatus}>
-                  {snakeToTitleCase(selectedStatus)}
-                </option>
+                <option value={oldStatus}>{snakeToTitleCase(oldStatus)}</option>
                 {this.allowed_next_activation_statuses.map(status => (
                   <option value={status} key={status}>
                     {snakeToTitleCase(status)}
@@ -351,9 +363,9 @@ export default class EditPublicFeatures extends Component {
                 onSubmit={save}
               />
 
-              {selectedStatus === 'needs_clarification' && (
+              {hasStatusChangedToNeedClarification() && (
                 <button class="btn btn-default" onClick={this.openEmailPreview}>
-                  Preview Email
+                  Generate Email
                 </button>
               )}
             </div>
