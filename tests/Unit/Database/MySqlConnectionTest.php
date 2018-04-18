@@ -3,11 +3,10 @@
 namespace RZP\Tests\Unit\Database;
 
 use PDOStatement;
-
 use RZP\Tests\TestCase;
 use RZP\Models\Admin\ConfigKey;
-use RZP\Base\Database\MySqlConnection;
 use RZP\Tests\Unit\Database\Helpers\MockPDO;
+use RZP\Tests\Unit\Database\Helpers\MySqlConnection;
 
 class MySqlConnectionTest extends TestCase
 {
@@ -208,7 +207,6 @@ class MySqlConnectionTest extends TestCase
     protected function getMockConnection($methods = [], $pdo = null)
     {
         $pdo = $pdo ?: new MockPDO;
-        $defaults = ['getDefaultQueryGrammar', 'getDefaultPostProcessor', 'getDefaultSchemaGrammar'];
         $config = [
             'sticky' => true,
             'lag_check' => [
@@ -218,7 +216,7 @@ class MySqlConnectionTest extends TestCase
         ];
 
         $connection = $this->getMockBuilder(MySqlConnection::class)
-            ->setMethods(array_merge($defaults, $methods))
+            ->setMethods($methods)
             ->setConstructorArgs([$pdo, '', '', $config])
             ->getMock();
 

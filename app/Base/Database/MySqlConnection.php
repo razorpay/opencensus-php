@@ -130,25 +130,6 @@ class MySqlConnection extends BaseMySqlConnection
     }
 
     /**
-     * This is used to set some protected attributes only in tests.
-     * TODO: Think of a better way if possible
-     * @param string $name
-     * @param mixed $value
-     */
-    public function __set(string $name, $value)
-    {
-        if ((App::environment('testing') === true) and
-            (in_array($name, ['transactions', 'recordsModified', 'lagChecker'], true) === true))
-        {
-            $this->$name = $value;
-
-            return;
-        }
-
-        throw new Exception\LogicException('Should not have reached here');
-    }
-
-    /**
      * This function is complementary to the `recordsHaveBeenModified` method
      * in the parent class. It only sets the `recordsModified` flag to false if
      * it was previously set to true.
