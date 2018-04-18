@@ -392,4 +392,6 @@ return [
             ],
         ],
     ],
+
+    E::NODAL_STATEMENT => [],
 ];

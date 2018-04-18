@@ -79,6 +79,7 @@ class Entity
     const SCHEDULE_TASK         = 'schedule_task';
     const LINE_ITEM_TAX         = 'line_item_tax';
     const DISPUTE_REASON        = 'dispute_reason';
+    const NODAL_STATEMENT       = 'nodal_statement';
     const VIRTUAL_ACCOUNT       = 'virtual_account';
     const MERCHANT_DETAIL       = 'merchant_detail';
     const TERMINAL_ACTION       = 'terminal_action';
@@ -264,6 +265,7 @@ class Entity
         self::MERCHANT_PROMOTION    => \RZP\Models\Merchant\Promotion::class,
         self::MERCHANT_INVOICE      => \RZP\Models\Merchant\Invoice::class,
         self::MERCHANT_EMI_PLANS    => \RZP\Models\Merchant\EmiPlans::class,
+        self::NODAL_STATEMENT       => \RZP\Models\Nodal\Statement::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::MERCHANT_ACCESS_MAP   => \RZP\Models\Merchant\AccessMap::class,
@@ -373,6 +375,8 @@ class Entity
         self::WALLET_OLAMONEY        => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Base::class,
+
+        self::NODAL_STATEMENT       => \RZP\Models\Nodal\Statement::class,
     ];
 
     protected static $syncedInLiveAndTest = [

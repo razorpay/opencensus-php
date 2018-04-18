@@ -143,7 +143,7 @@ class ApiServiceProvider extends BaseServiceProvider
                 return new Mock\HarvesterClient($app);
             }
 
-            return new HarvesterClient($app);
+            return new Harvester\HarvesterClient($app);
         });
 
         $this->app->singleton('ufh.service', function ($app)
