@@ -444,14 +444,14 @@ if (! function_exists('get_key_from_subarray_match'))
     }
 }
 
-if (! function_exists('format_date'))
+if (! function_exists('format_epoch'))
 {
     /**
      * Formats given epoch to human readable string representation. Currently returns in one specific format only.
      * @param  int    $epoch
      * @return string
      */
-    function format_date(int $epoch): string
+    function format_epoch(int $epoch): string
     {
         return date('M d, Y (h:i A)', $epoch);
     }

@@ -805,7 +805,7 @@
                                           <div class="info">
                                               {{$data['invoice']['status'] === 'expired' ? 'EXPIRED ON' : 'EXPIRES BY'}}
                                               <div class="val">
-                                              {{format_date($data['invoice']['expire_by'])}}
+                                              {{format_epoch($data['invoice']['expire_by'])}}
                                               </div>
                                           </div>
                                       @endif
@@ -845,7 +845,7 @@
                                           @foreach ($data['invoice']['payments'] as $key => $item)
                                               <div class="modal-col">
                                                 <div class="row"><b style="color: #2e3345">
-                                                    ₹{{format_amount($item['amount'])}} Paid </b>on {{format_date($item['created_at'])}}
+                                                    ₹{{format_amount($item['amount'])}} Paid </b>on {{format_epoch($item['created_at'])}}
                                                 </div>
                                                 <div class="row">Paid using <span style="text-transform: capitalize">{{$item['method']}}</span></div>
                                                     <div class="row">Payment ID: {{$item['id']}}</div>
@@ -898,7 +898,7 @@
                                 <div id="cancelled-invoice">
                                     <div class="title" style='color:#f54443; font-size:18px'>Payment Link Expired</div>
                                     <div class="desc">
-                                        Oops! This payment link expired on {{format_date($data['invoice']['expire_by'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
+                                        Oops! This payment link expired on {{format_epoch($data['invoice']['expire_by'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
                                     </div>
                                 </div>
                               @endif
@@ -973,7 +973,7 @@
                               @if($data['invoice']['expire_by'] and $data['invoice']['status'] !== 'paid')
                                 <div class="info">
                                   {{$data['invoice']['status'] === 'expired' ? 'EXPIRED ON' : 'EXPIRES BY'}}
-                                  <div class="val">{{format_date($data['invoice']['expire_by'])}} </div>
+                                  <div class="val">{{format_epoch($data['invoice']['expire_by'])}} </div>
                                 </div>
                               @endif
                               @if($data['invoice']['customer_details']['customer_name'] or $data['invoice']['customer_details']['customer_email'])
@@ -1000,7 +1000,7 @@
                                   @foreach ($data['invoice']['payments'] as $key => $item)
                                       <div class="modal-col">
                                         <div class="row"><b style="color: #2e3345">
-                                            ₹{{format_amount($item['amount'])}} Paid </b>on {{format_date($item['created_at'])}}
+                                            ₹{{format_amount($item['amount'])}} Paid </b>on {{format_epoch($item['created_at'])}}
                                         </div>
                                         <div class="row">Paid using <span style="text-transform: capitalize">{{$item['method']}}</span></div>
                                         <div class="row">Payment ID: {{$item['id']}}</div>
@@ -1021,7 +1021,7 @@
                         <div id="cancelled-invoice">
                           <div class="title" style='color:#f54443; font-size:18px'>Payment Link Expired</div>
                             <div class="desc">
-                              Oops! This payment link expired on {{format_date($data['invoice']['expire_by'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
+                              Oops! This payment link expired on {{format_epoch($data['invoice']['expire_by'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
                           </div>
                         </div>
                       @endif
