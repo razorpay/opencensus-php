@@ -2,16 +2,18 @@
 
 namespace RZP\Base\Database;
 
+use App;
 use Closure;
 use Razorpay\Trace\Logger as Trace;
 use Razorpay\Trace\Facades\Trace as TraceFacade;
 use Illuminate\Database\MySqlConnection as BaseMySqlConnection;
 
+use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Base\Database\LagChecker;
 
-class MysqlConnection extends BaseMySqlConnection
+class MySqlConnection extends BaseMySqlConnection
 {
     /**
      * LagChecker object to determine which pdo connection to use
@@ -125,6 +127,25 @@ class MysqlConnection extends BaseMySqlConnection
         $this->recordsHaveNotBeenModified();
 
         $this->forceReadPdo(false);
+    }
+
+    /**
+     * This is used to set some protected attributes only in tests.
+     * TODO: Think of a better way if possible
+     * @param string $name
+     * @param mixed $value
+     */
+    public function __set(string $name, $value)
+    {
+        if ((App::environment('testing') === true) and
+            (in_array($name, ['transactions', 'recordsModified', 'lagChecker'], true) === true))
+        {
+            $this->$name = $value;
+
+            return;
+        }
+
+        throw new Exception\LogicException('Should not have reached here');
     }
 
     /**

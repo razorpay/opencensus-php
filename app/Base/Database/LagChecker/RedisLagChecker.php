@@ -25,15 +25,10 @@ class RedisLagChecker implements LagChecker
      */
     protected $trace;
 
-    /**
-     * @var CacheManager
-     */
-    protected $cache;
 
     public function __construct(array $config)
     {
         $this->trace  = TraceFacade::getFacadeRoot();
-        $this->cache  = Cache::getFacadeRoot();
         $this->config = $config;
     }
 
@@ -51,7 +46,7 @@ class RedisLagChecker implements LagChecker
 
         try
         {
-            $skipSlave = (bool) $this->cache->get($this->config['flag']);
+            $skipSlave = (bool) Cache::get($this->config['flag']);
         }
         catch (\Throwable $ex)
         {
