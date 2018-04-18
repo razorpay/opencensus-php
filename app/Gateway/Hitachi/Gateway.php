@@ -757,9 +757,12 @@ class Gateway extends Base\Gateway
     {
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
-        $acquirer = $input['terminal']->getGatewayAcquirer();
+        if (isset($input['terminal']) === true)
+        {
+            $acquirer = $input['terminal']->getGatewayAcquirer();
 
-        $gatewayPayment->setAcquirer($acquirer);
+            $gatewayPayment->setAcquirer($acquirer);
+        }
 
         $gatewayPayment->setAction($this->action);
 
