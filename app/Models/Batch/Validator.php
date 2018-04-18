@@ -117,6 +117,13 @@ class Validator extends Base\Validator
         HdfcEMDebitHeadings::STATUS                 => 'Status must be present',
     ];
 
+    protected static $subMerchantCreateRules = [
+        Entity::TYPE                 => 'required|in:sub_merchant',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::APPLICATION_ID       => 'filled|string|size:14',
+    ];
+
     protected function validateType($attribute, $value)
     {
         Type::validateType($value);

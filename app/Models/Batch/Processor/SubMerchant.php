@@ -38,9 +38,13 @@ class SubMerchant extends Base
 
     protected function processEntry(array & $entry)
     {
-        $this->repo->transactionOnLiveAndTest(function() use (& $entry)
+        $appId = $this->params[Entity::APPLICATION_ID] ?? null;
+
+        $this->repo->transactionOnLiveAndTest(function() use (& $entry, $appId)
         {
             $this->createSubMerchantForEntry($entry);
+
+            $this->processPartnerAppIfApplicable($appId);
         });
     }
 
@@ -81,6 +85,13 @@ class SubMerchant extends Base
 
         $entry[Header::MERCHANT_ID] = $subMerchant->getId();
         $entry[Header::STATUS]      = $status;
+    }
+
+    protected function processPartnerAppIfApplicable(string $appId)
+    {
+        $input[Merchant\AccessMap\Entity::APPLICATION_ID] = $appId;
+
+        (new Merchant\AccessMap\Core)->addMappingForOAuthApp($this->merchant, $input);
     }
 
     protected function sendProcessedMail()

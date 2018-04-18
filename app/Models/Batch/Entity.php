@@ -51,6 +51,7 @@ class Entity extends Base\PublicEntity
     const OUTPUT_FILE_PREFIX        = 'batch/download/';
     const VALIDATED_FILE_PREFIX     = 'batch/validated/';
     const CONFIG                    = 'config';
+    const APPLICATION_ID            = 'application_id';
 
     /**
      * Constants used for batch stats api
