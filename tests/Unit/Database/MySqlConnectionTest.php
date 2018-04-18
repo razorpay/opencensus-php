@@ -26,7 +26,7 @@ class MySqlConnectionTest extends TestCase
         //
         $writePdo->expects($this->never())->method('prepare');
         $readPdo->expects($this->once())->method('prepare')->with('foo')->will($this->returnValue($statement));
-        $statement->expects($this->once())->method('bindValue')->with('foo', 'barx', 2);
+        $statement->expects($this->once())->method('bindValue')->with('foo', 'bar', 2);
         $statement->expects($this->once())->method('execute');
         $statement->expects($this->once())->method('fetchAll')->will($this->returnValue(['boom']));
 
