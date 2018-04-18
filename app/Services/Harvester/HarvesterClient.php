@@ -1,12 +1,14 @@
 <?php
 
-namespace RZP\Services;
+namespace RZP\Services\Harvester;
 
+use Requests;
 use Carbon\Carbon;
+use Requests_Response as Response;
+
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use Requests;
-use Requests_Response as Response;
+use RZP\Services\AbstractEventClient;
 
 class HarvesterClient extends AbstractEventClient
 {
