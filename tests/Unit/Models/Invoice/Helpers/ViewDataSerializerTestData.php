@@ -7,7 +7,7 @@ return [
         'invoicejs_url' => 'https://cdn.razorpay.com/v1/invoice.js',
         'key_id'        => 'rzp__TheTestAuthKey',
         'merchant' => [
-            'brand_color'      => 'rgb(106,93,209)',
+            'brand_color'      => 'rgb(35,113,236)',
             'brand_text_color' => '#ffffff',
             'image'            => null,
             'name'             => 'Test Merchant',
