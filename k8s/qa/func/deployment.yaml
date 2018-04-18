@@ -32,7 +32,7 @@ spec:
               name: dashboard
               key: APP_MODE
         name: func
-        image: razorpay/dashboard:1dd5360f9c7b9639cc703d0304a39f562d24b642
+        image: razorpay/dashboard:8df4af5821c1707bb7799127653e7462667d90fe
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
@@ -46,13 +46,15 @@ spec:
             path: /status
             port: 80
           initialDelaySeconds: 60
-          periodSeconds: 120
+          periodSeconds: 10
+          timeoutSeconds: 5
         livenessProbe:
           httpGet:
             path: /commit.txt
             port: 80
           initialDelaySeconds: 60
           periodSeconds: 2
+          timeoutSeconds: 5
         lifecycle:
           preStop:
             exec:

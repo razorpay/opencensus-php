@@ -10,15 +10,6 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * @see http://symfony.com/blog/security-releases-symfony-2-0-24-2-1-12-2-2-5-and-2-3-3-released
-     *
-     * We return a 403 error if the Host is not present in this list.
-     */
-    const TRUSTED_HOSTS = [
-        '^(.*\.)?razorpay\.com$',
-    ];
-
     protected $defer = false;
 
     /**
@@ -35,8 +26,6 @@ class AppServiceProvider extends ServiceProvider
         $this->registerCustomAuthProvider();
 
         $this->registerCustomDashboardUserProvider();
-        
-        $this->registerTrustedHosts();
     }
 
     protected function setupBlade()
@@ -77,14 +66,6 @@ class AppServiceProvider extends ServiceProvider
         {
             return new DashboardUserProvider($app, $config);
         });
-    }
-
-    protected function registerTrustedHosts()
-    {
-        if (App::environment('production', 'beta'))
-        {
-            Request::setTrustedHosts(self::TRUSTED_HOSTS);
-        }
     }
 
     public function register()

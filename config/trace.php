@@ -1,5 +1,11 @@
 <?php
 
+$hostname = 'localhost';
+if (getenv('HOSTNAME') !== false)
+{
+    $hostname = getenv('HOSTNAME');
+}
+
 return array(
 
     /**
@@ -25,7 +31,7 @@ return array(
     |--------------------------------------------------------------------------
     */
 
-    'logpath' => storage_path().'/logs/trace.log',
+    'logpath' => storage_path() . '/logs/' . $hostname . '-trace.log',
 
     'instance_data_file' => storage_path().'/logs/instance.json',
 );

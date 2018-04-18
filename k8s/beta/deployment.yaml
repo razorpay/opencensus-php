@@ -2,9 +2,9 @@ apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
   name: dashboard
-  namespace: echo
+  namespace: beta
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -16,7 +16,7 @@ spec:
   template:
     metadata:
       annotations:
-        iam.amazonaws.com/role: echo-dashboard
+        iam.amazonaws.com/role: beta-dashboard
       labels:
         name: dashboard
     spec:
@@ -25,14 +25,11 @@ spec:
       imagePullSecrets:
       - name: registry
       containers:
-      - env:
-        - name: APP_MODE
-          valueFrom:
-            configMapKeyRef:
-              name: dashboard
-              key: APP_MODE
-        name: echo
-        image: razorpay/dashboard:latest
+      - envFrom:
+        - configMapRef:
+            name: dashboard
+        name: beta
+        image: razorpay/dashboard:6b0505f6a9f77410c910f54c1f4a4eb2c76d4fef
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
@@ -47,14 +44,14 @@ spec:
           httpGet:
             path: /status
             port: 80
-          initialDelaySeconds: 60
+          initialDelaySeconds: 10
           periodSeconds: 120
         livenessProbe:
           httpGet:
             path: /commit.txt
             port: 80
-          initialDelaySeconds: 60
-          periodSeconds: 2
+          initialDelaySeconds: 30
+          periodSeconds: 100
         lifecycle:
           preStop:
             exec:
@@ -63,9 +60,9 @@ spec:
       volumes:
       - name: trace
         hostPath:
-          path: /var/log/fluentd/splunk/echo/trace
+          path: /var/log/fluentd/splunk/beta/trace
       - name: nginx
         hostPath:
-          path: /var/log/fluentd/splunk/echo/nginx
+          path: /var/log/fluentd/splunk/beta/nginx
       dnsPolicy: Default
       restartPolicy: Always

@@ -3,13 +3,14 @@
 set -euo pipefail
 cd /app/
 
-if [[ "${APP_MODE}" == "dev" ]]
-then
-  cp environment/.env.docker environment/.env.dev
-else
-  ALOHOMORA_BIN=$(which alohomora)
-  $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app dashboard "environment/.env.vault.j2" "environment/env.php.j2"
-fi
+ALOHOMORA_BIN=$(which alohomora)
+$ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app dashboard "environment/.env.vault.j2" "environment/env.php.j2" "dockerconf/dashboard.conf.j2"
+
+echo "$(date) Add nginx host to dashboard."
+sed -i "s|NGINX_HOST|$HOSTNAME|g" dockerconf/dashboard.conf
+
+echo "$(date) Copy dashboard to default."
+cp dockerconf/dashboard.conf /etc/nginx/conf.d/default.conf
 
 echo "$(date) DB Migrate"
 echo "$(date) Seeding live db"
@@ -21,5 +22,12 @@ echo "$(date) Starting Nginx"
 mkdir /tmp/run
 chown 0775 /tmp/run/
 
+# Any volume mounts must be chown-ed again
+chown -R nginx:nginx /app/storage/logs
+
 /usr/sbin/php-fpm7
+
+# Moving these logs to after the php-fpm7 creation.
+chmod 644 /var/log/phpfpm/php7.0-fpm.log
+
 /usr/sbin/nginx -g 'daemon off;'
