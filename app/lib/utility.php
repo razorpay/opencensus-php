@@ -444,26 +444,26 @@ if (! function_exists('get_key_from_subarray_match'))
     }
 }
 
-/**
-* Convert the unix timestamp into Apr 28, 2018 (09:57 AM)
-* @param int $epoch unix timestamp
-* @return string
-*/
 if (! function_exists('format_date'))
 {
+    /**
+     * Formats given epoch to human readable string representation. Currently returns in one specific format only.
+     * @param  int    $epoch
+     * @return string
+     */
     function format_date(int $epoch): string
     {
         return date('M d, Y (h:i A)', $epoch);
     }
 }
 
-/**
-* Convert the amount in 122.23 like format from paisa amount
-* @param int $amount amount in paisa
-* @return string
-*/
 if (! function_exists('format_amount'))
 {
+    /**
+     * Formats given paisa amount into human readable format. E.g. 123456 -> 1,234.56
+     * @param  int    $amount
+     * @return string
+     */
     function format_amount(int $amount): string
     {
         return number_format($amount/ 100, 2, '.', ',');
