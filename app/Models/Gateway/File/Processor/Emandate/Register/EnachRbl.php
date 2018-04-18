@@ -35,8 +35,6 @@ class EnachRbl extends Base
 
     public function fetchEntities(): PublicCollection
     {
-        // TODO: Fetch entities based on enach entity's registration date
-
         $begin = $this->gatewayFile->getBegin();
         $end = $this->gatewayFile->getEnd();
 
@@ -73,6 +71,7 @@ class EnachRbl extends Base
         {
             $fileData = $this->formatDataForFile($data);
 
+            // TODO: To fix this. Need to create in temp and not in public/
             $zipFilePath = 'temp_enach_reg_zip_file_name.zip';
 
             $this->createZipFileWithData($fileData, $zipFilePath);
@@ -157,9 +156,7 @@ class EnachRbl extends Base
 
     protected function getZipFileToWriteName($withExt = true)
     {
-        // TODO: Instead of `now`, use the file date from enach entity
-
-        $date = Carbon::now(Timezone::IST)->format('dmY');
+        $date = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)->format('dmY');
 
         $fileName = strtr(static::FILE_NAME, ['{$date}' => $date]);
 
@@ -180,9 +177,7 @@ class EnachRbl extends Base
 
     protected function getIndividualFileToWriteNameWithExt($index)
     {
-        // TODO: Instead of `now`, use the file date from enach entity
-
-        $date = Carbon::now(Timezone::IST)->format('dmY');
+        $date = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)->format('dmY');
 
         $sequence = str_pad($index, 6, '0', STR_PAD_LEFT);
 

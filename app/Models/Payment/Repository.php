@@ -1085,13 +1085,13 @@ class Repository extends Base\Repository
 
         $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
 
-        $paymentCreatedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
-
         $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
 
         $tokenRecurringColumn = $this->repo->token->dbColumn(Token\Entity::RECURRING);
 
         $enachPaymentIdColumn = $this->repo->enach->dbColumn(Enach\Base\Entity::PAYMENT_ID);
+
+        $enachRegistrationDateColumn = $this->repo->enach->dbColumn(Enach\Base\Entity::REGISTRATION_DATE);
 
         $selectCols = $this->repo->payment->dbColumn('*');
 
@@ -1110,7 +1110,7 @@ class Repository extends Base\Repository
                     ->where($paymentRecurringColumn, '=', 1)
                     ->where($paymentMethodColumn, '=', Method::EMANDATE)
                     ->where(Entity::GATEWAY, '=', Payment\Gateway::ENACH_RBL)
-                    ->whereBetween($paymentCreatedAtColumn, [$from, $to])
+                    ->whereBetween($enachRegistrationDateColumn, [$from, $to])
                     ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
                     ->where($tokenRecurringColumn, '!=', 1)
                     ->whereNotNull(Entity::AUTHORIZED_AT)

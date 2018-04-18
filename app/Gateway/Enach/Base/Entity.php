@@ -20,6 +20,7 @@ class Entity extends Base\Entity
     const GATEWAY_REFERENCE_ID  = 'gateway_reference_id';
     const ACKNOWLEDGE_STATUS    = 'acknowledge_status';
     const REGISTRATION_STATUS   = 'registration_status';
+    const REGISTRATION_DATE     = 'registration_date';
     const ERROR_MESSAGE         = 'error_message';
     const ERROR_CODE            = 'error_code';
 
@@ -49,6 +50,7 @@ class Entity extends Base\Entity
         self::GATEWAY_REFERENCE_ID,
         self::ACKNOWLEDGE_STATUS,
         self::REGISTRATION_STATUS,
+        self::REGISTRATION_DATE,
         self::ERROR_MESSAGE,
         self::ERROR_CODE,
     ];
@@ -60,6 +62,7 @@ class Entity extends Base\Entity
         self::GATEWAY_REFERENCE_ID  => null,
         self::ACKNOWLEDGE_STATUS    => null,
         self::REGISTRATION_STATUS   => null,
+        self::REGISTRATION_DATE     => null,
         self::ERROR_MESSAGE         => null,
         self::ERROR_CODE            => null,
     ];

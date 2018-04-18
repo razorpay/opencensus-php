@@ -23,6 +23,9 @@ class Gateway extends Base\Gateway
 
         $input['gateway'] = $this->getGatewayInput($input);
 
+        // TODO: Create gateway entity here and store registration_date,
+        // along with any other data that is present at this stage
+
         return $this->callAuthenticationGateway($input);
     }
 

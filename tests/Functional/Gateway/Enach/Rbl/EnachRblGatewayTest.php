@@ -180,6 +180,11 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals('rejected', $token['recurring_status']);
     }
 
+    public function testRegisterFileGeneration()
+    {
+        // TODO: FILL THIS UP!
+    }
+
     public function testRegisterSuccessReconciliation()
     {
         list($payment, $token, $order) = $this->createEmandatePayment();
