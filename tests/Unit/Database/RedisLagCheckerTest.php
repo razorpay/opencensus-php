@@ -2,12 +2,13 @@
 
 namespace RZP\Tests\Unit\Database;
 
+use PDO;
 use Cache;
-use Razorpay\Trace\Facades\Trace;
-use Doctrine\DBAL\Driver\PDOConnection;
 
 use RZP\Tests\TestCase;
 use RZP\Models\Admin\ConfigKey;
+use Razorpay\Trace\Facades\Trace;
+use RZP\Tests\Unit\Database\Helpers\MockPDO;
 use RZP\Base\Database\LagChecker\RedisLagChecker;
 
 class RedisLagCheckerTest extends TestCase
@@ -25,10 +26,10 @@ class RedisLagCheckerTest extends TestCase
 
         $result = $lagChecker->useReadPdoIfApplicable(function ()
         {
-            return new PDOConnection('mysql:host=localhost;port=3306;dbname=api_test', 'root', 'root');
+            return new MockPDO();
         });
 
-        $this->assertInstanceOf(PDOConnection::class, $result);
+        $this->assertInstanceOf(PDO::class, $result);
     }
 
     public function testReturnsNullWhenFlagSet()
@@ -44,7 +45,7 @@ class RedisLagCheckerTest extends TestCase
 
         $result = $lagChecker->useReadPdoIfApplicable(function ()
         {
-            return new PDOConnection('mysql:host=localhost;port=3306;dbname=api_test', 'root', 'root');
+            return new MockPDO();
         });
 
         $this->assertNull($result);
@@ -66,7 +67,7 @@ class RedisLagCheckerTest extends TestCase
 
         $result = $lagChecker->useReadPdoIfApplicable(function ()
         {
-            return new PDOConnection('mysql:host=localhost;port=3306;dbname=api_test', 'root', 'root');
+            return new MockPDO();
         });
 
         $this->assertNull($result);
