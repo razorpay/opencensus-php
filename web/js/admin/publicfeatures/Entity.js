@@ -10,6 +10,7 @@ import {
 } from 'common/modal';
 import Form from 'ui/Form';
 import BaseModal from 'ui/BaseModal';
+import AsyncButton from 'ui/AsyncButton';
 import Field, { SelectField, TextAreaField, FileField } from 'ui/Field';
 import Table from 'ui/Table';
 import { statusPill, publicFeature } from 'common/data';
@@ -79,6 +80,7 @@ export default class EditPublicFeatures extends Component {
     const { akaFeature } = this;
     let { needs_clarification_text } = this.state;
 
+    //
     const addons = {
       marketplace: {
         prefix:
@@ -153,11 +155,8 @@ export default class EditPublicFeatures extends Component {
     });
   };
 
-  handleClarificationTextChange = e => {
-    let needs_clarification_text = e.target.value;
-    if (needs_clarification_text.length) {
-      this.setState({ needs_clarification_text });
-    }
+  handleClarificationTextChange = needs_clarification_text => {
+    this.setState({ needs_clarification_text });
   };
 
   openEmailPreview = event => {
@@ -169,6 +168,7 @@ export default class EditPublicFeatures extends Component {
       <PreviewEmail
         productName={name}
         needs_clarification_text={needs_clarification_text}
+        onClarificationTextChange={this.handleClarificationTextChange}
       />
     );
   };
@@ -179,12 +179,7 @@ export default class EditPublicFeatures extends Component {
       selectedReasonCategorym,
       needs_clarification_text,
     } = this.state;
-    let {
-      merchant_id,
-      name,
-      internal_comment,
-      public_message,
-    } = this.props.model;
+    let { merchant_id, name, internal_comment } = this.props.model;
     let {
       akaFeature,
       submissions,
@@ -347,23 +342,14 @@ export default class EditPublicFeatures extends Component {
                 defaultValue={internal_comment}
               />
 
-              <TextAreaField
-                label="Public Message"
-                name="public_message"
-                defaultValue={public_message}
-              />
-              {selectedStatus === 'needs_clarification' && (
-                <TextAreaField
-                  label="Clarification Email Text:"
-                  name="needs_clarification_text"
-                  defaultValue={needs_clarification_text}
-                  onChange={this.handleClarificationTextChange}
-                />
-              )}
-
               <Table items={this.statusLogs} fields={statusLogsFields} />
 
-              <button class="btn">Save</button>
+              <AsyncButton
+                text="Save"
+                class="btn"
+                pendingClass="small spinner"
+                onSubmit={save}
+              />
 
               {selectedStatus === 'needs_clarification' && (
                 <button class="btn btn-default" onClick={this.openEmailPreview}>
