@@ -44,7 +44,7 @@ class DailyReconStatusSummary extends Base\Core
     protected function setInputParams(array $input): array
     {
         $input = [
-            'emails'    => (empty($input['email']) === false) ? explode(',', $input['email']) : null,
+            'emails'    => (empty($input['email']) === false) ? explode(',', $input['email']) : [],
             'from'      => (empty($input['from']) === false) ?
                                   $input['from'] :
                                   Carbon::today(Timezone::IST)->subDays(Constants::DURATION)->getTimestamp(),
