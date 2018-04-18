@@ -3,7 +3,6 @@
 namespace RZP\Jobs;
 
 use App;
-
 use Illuminate\Bus\Queueable;
 
 class Job
@@ -114,5 +113,7 @@ class Job
         {
             $app['basicauth']->setModeAndDbConnection($this->mode);
         }
+
+        $this->repoManager->resetConnectionAttributes();
     }
 }

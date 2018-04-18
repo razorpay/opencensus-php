@@ -1,5 +1,7 @@
 <?php
 
+use RZP\Models\Admin\ConfigKey;
+
 return array(
 
     /*
@@ -46,29 +48,55 @@ return array(
 
     'connections' => [
         'live' => [
-            'driver'    => env('DB_LIVE_DRIVER'),
-            'host'      => env('DB_LIVE_HOST'),
-            'port'      => env('DB_LIVE_PORT'),
+            'read'  => [
+                'host'     => env('SLAVE_DB_LIVE_HOST'),
+                'port'     => env('SLAVE_DB_LIVE_PORT'),
+                'username' => env('SLAVE_DB_LIVE_USERNAME'),
+                'password' => env('SLAVE_DB_LIVE_PASSWORD'),
+            ],
+            'write' => [
+                'host'     => env('DB_LIVE_HOST'),
+                'port'     => env('DB_LIVE_PORT'),
+                'username' => env('DB_LIVE_USERNAME'),
+                'password' => env('DB_LIVE_PASSWORD'),
+            ],
+            'sticky'    => true,
             'database'  => env('DB_LIVE_DATABASE'),
-            'username'  => env('DB_LIVE_USERNAME'),
-            'password'  => env('DB_LIVE_PASSWORD'),
+            'driver'    => env('DB_LIVE_DRIVER'),
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
-            'strict'    => true
+            'strict'    => true,
+            'lag_check' => [
+                'driver' => 'redis',
+                'flag'   => ConfigKey::SKIP_SLAVE
+             ]
         ],
 
         'test' => [
-            'driver'    => env('DB_TEST_DRIVER'),
-            'host'      => env('DB_TEST_HOST'),
-            'port'      => env('DB_TEST_PORT'),
+            'read'  => [
+                'host'     => env('SLAVE_DB_TEST_HOST'),
+                'port'     => env('SLAVE_DB_TEST_PORT'),
+                'username' => env('SLAVE_DB_TEST_USERNAME'),
+                'password' => env('SLAVE_DB_TEST_PASSWORD'),
+            ],
+            'write' => [
+                'host'     => env('DB_TEST_HOST'),
+                'port'     => env('DB_TEST_PORT'),
+                'username' => env('DB_TEST_USERNAME'),
+                'password' => env('DB_TEST_PASSWORD'),
+            ],
+            'sticky'    => true,
             'database'  => env('DB_TEST_DATABASE'),
-            'username'  => env('DB_TEST_USERNAME'),
-            'password'  => env('DB_TEST_PASSWORD'),
+            'driver'    => env('DB_TEST_DRIVER'),
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
-            'strict'    => true
+            'strict'    => true,
+            'lag_check' => [
+                'driver' => 'redis',
+                'flag'   => ConfigKey::SKIP_SLAVE
+             ]
         ],
 
         'slave-live' => [
