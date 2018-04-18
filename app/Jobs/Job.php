@@ -2,7 +2,6 @@
 
 namespace RZP\Jobs;
 
-use DB;
 use App;
 use Illuminate\Bus\Queueable;
 

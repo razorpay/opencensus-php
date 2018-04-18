@@ -5,8 +5,8 @@ namespace RZP\Models\Terminal\Sorters;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
-use RZP\Models\Gateway\Downtime;
 use RZP\Trace\TraceCode;
+use RZP\Models\Gateway\Downtime;
 
 /**
  * Documentation here :

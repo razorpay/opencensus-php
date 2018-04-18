@@ -4,7 +4,6 @@ namespace RZP\Base\Database\LagChecker;
 
 use Cache;
 use Closure;
-use Illuminate\Cache\CacheManager;
 use Razorpay\Trace\Logger as Trace;
 use Razorpay\Trace\Facades\Trace as TraceFacade;
 

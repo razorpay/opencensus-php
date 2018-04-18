@@ -3,8 +3,8 @@
 namespace RZP\Mail\Base;
 
 use App;
-use Illuminate\Mail\SendQueuedMailable as BaseSendQueuedMailable;
 use Illuminate\Contracts\Mail\Mailer as MailerContract;
+use Illuminate\Mail\SendQueuedMailable as BaseSendQueuedMailable;
 
 class SendQueuedMailable extends BaseSendQueuedMailable
 {

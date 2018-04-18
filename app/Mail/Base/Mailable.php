@@ -11,8 +11,8 @@ use Illuminate\Mail\Mailable as BaseMailable;
 use Illuminate\Contracts\Queue\Factory as Queue;
 use Illuminate\Contracts\Mail\Mailer as MailerContract;
 use GuzzleHttp\Exception\ClientException as GuzzleClientException;
-
 use Razorpay\Trace\Logger as Trace;
+
 use RZP\Trace\TraceCode;
 
 class Mailable extends BaseMailable

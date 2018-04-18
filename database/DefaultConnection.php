@@ -2,7 +2,6 @@
 
 namespace Database;
 
-use App;
 use Config;
 
 use RZP\Constants\Mode;

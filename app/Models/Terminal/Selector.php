@@ -12,7 +12,6 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
-use RZP\Base\RepositoryManager;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Constants\Entity as Constants;
 
@@ -103,10 +102,7 @@ class Selector extends Base\Core
 
         $this->traceTerminals($allTerminals, 'Terminals fetched from db', $verbose);
 
-        $applicableRules = $this->repo->useSlave(function ()
-        {
-            return (new Rule\Core)->fetchApplicableRulesForPayment($this->input);
-        });
+        $applicableRules = (new Rule\Core)->fetchApplicableRulesForPayment($this->input);
 
         $filteredTerminals = $this->filterTerminals($allTerminals, $applicableRules, $verbose);
 
@@ -180,7 +176,9 @@ class Selector extends Base\Core
     protected function getTerminals()
     {
         // Fetch terminals for both the current merchant and the shared Merchant
-        $merchantTerminals = $this->repo->terminal->getTerminalsForMerchantAndSharedMerchant($this->input['merchant']);
+        $merchantTerminals = $this->repo
+                                  ->terminal
+                                  ->getTerminalsForMerchantAndSharedMerchant($this->input['merchant']);
 
         $payment = $this->input['payment'];
 

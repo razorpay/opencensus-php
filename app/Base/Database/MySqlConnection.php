@@ -8,7 +8,6 @@ use Razorpay\Trace\Logger as Trace;
 use Razorpay\Trace\Facades\Trace as TraceFacade;
 use Illuminate\Database\MySqlConnection as BaseMySqlConnection;
 
-use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Base\Database\LagChecker;
@@ -34,6 +33,8 @@ class MySqlConnection extends BaseMySqlConnection
 
     public function __construct($pdo, $database = '', $tablePrefix = '', array $config = [])
     {
+        parent::__construct($pdo, $database, $tablePrefix, $config);
+
         $lagCheckConfig = $config['lag_check'];
 
         $this->forceReadPdo = false;
@@ -41,8 +42,6 @@ class MySqlConnection extends BaseMySqlConnection
         $this->lagChecker = $this->getLagChecker($lagCheckConfig);
 
         $this->trace = TraceFacade::getFacadeRoot();
-
-        parent::__construct($pdo, $database, $tablePrefix, $config);
     }
 
     protected function getLagChecker(array $config)

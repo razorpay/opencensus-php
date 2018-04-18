@@ -285,13 +285,15 @@ class RepositoryManager extends Illuminate\Support\Manager
 
     public function resetConnectionAttributes()
     {
+        $dbConnection = $this->db->connection();
+
         //
         // Only if the connection being used is the overridden one
         // we need to reset some connection attributes.
         //
-        if ($this->db->connection() instanceof MySqlConnection)
+        if ($dbConnection instanceof MySqlConnection)
         {
-            $this->db->connection()->resetConnectionAttributes();
+            $dbConnection->resetConnectionAttributes();
         }
     }
 }
