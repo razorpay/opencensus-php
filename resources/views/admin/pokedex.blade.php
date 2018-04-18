@@ -25,4 +25,4 @@
 </head>
 <body>
 <div id="react-root" class="react-root"></div>
-<script src="{{$cdn}}/dist/pokedex-entry.js"></script>
+<script src="/dist/pokedex-entry.js"></script>

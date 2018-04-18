@@ -3,7 +3,7 @@
 @if ($isConfirmed and $isPreSignupComplete)
 
 @else
-  <link rel='stylesheet' href="{{$cdnDashboardUrl}}/css/generated/signup.css" type='text/css' />
+  <link rel='stylesheet' href="/css/generated/signup.css" type='text/css' />
 @endif
 
 @include('partials/common')
@@ -32,11 +32,11 @@
   </script>
   <!-- Raven Code -->
   @if(env('APP_ENV') === 'production')
-    <script src="{{$cdnDashboardUrl}}/dist/raven-entry.js"></script>
+    <script src="/dist/raven-entry.js"></script>
   @endif
-  <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
+  <script src="/dist/merchant-entry.js"></script>
 @else
-  <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
+  <script src='/js/generated/signup.js'></script>
   <script async="true" src="https://static.helpninja.com/helpninja.js" id="oc_script" convid="-Kvx6dgy972KCFPlQR0s"></script>
 @endif
 
