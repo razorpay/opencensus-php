@@ -5,14 +5,14 @@ namespace RZP\Models\Batch\Processor;
 use RZP\Models\Batch;
 use RZP\Models\Batch\Header;
 use RZP\Models\Card\Entity as Card;
-use RZP\Models\Customer\Entity as Customer;
+use RZP\Models\Customer;
 use RZP\Models\FileStore;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\Payment\AuthType;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Processor\Processor;
-use \RZP\Models\Order\Service as OrderService;
+use \RZP\Models\Order\Core as OrderCore;
 
 class DirectDebit extends Base
 {
@@ -84,7 +84,7 @@ class DirectDebit extends Base
 
     private function createOrder($row)
     {
-        $orderService = new OrderService();
+        $orderService = new OrderCore();
         $orderInput = [
             Order::AMOUNT           =>  (int) $row[Header::AMOUNT],
             Order::CURRENCY         =>  $row[Header::CURRENCY],
@@ -92,7 +92,7 @@ class DirectDebit extends Base
             Order::PAYMENT_CAPTURE  =>  true,
         ];
 
-        return $orderService->create($orderInput);
+        return $orderService->create($orderInput, $this->merchant);
     }
 
     protected function sendProcessedMail()
@@ -109,8 +109,8 @@ class DirectDebit extends Base
             Customer::CONTACT       =>  $row[Header::PHONE],
             Customer::FAIL_EXISTING =>  "0",
         ];
-        $customerService = new \RZP\Models\Customer\Service();
-        return $customerService->createLocalCustomer($customerInput);
+        $customerService = new Customer\Core();
+        return $customerService->createLocalCustomer($customerInput, $this->merchant);
     }
 
 
