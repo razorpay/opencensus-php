@@ -182,6 +182,13 @@ trait FileHandlerTrait
         else
         {
             $fullPath = $this->getFullFilePath($key);
+
+            $dir = dirname($fullpath);
+
+            if (file_exists($dir) === false)
+            {
+                mkdir($dir, 777);
+            }
         }
 
         return $this->getFileFromAws($key, $fullPath, $bucket);
