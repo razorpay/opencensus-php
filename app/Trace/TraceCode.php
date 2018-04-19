@@ -805,6 +805,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const IRCTC_BATCH_JOB_ERROR                         = 'IRCTC_BATCH_JOB_ERROR';
     const SHIELD_JOB_RECEIVED                           = 'SHIELD_JOB_RECEIVED';
     const SHIELD_JOB_ERROR                              = 'SHIELD_JOB_ERROR';
+    const SHIELD_JOB_DISPATCH_ERROR                     = 'SHIELD_JOB_DISPATCH_ERROR';
 
     const BATCH_FILE_DELETE_ERROR                       = 'BATCH_FILE_DELETE_ERROR';
 
