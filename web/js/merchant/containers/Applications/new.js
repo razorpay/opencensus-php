@@ -3,11 +3,16 @@ import { connect } from 'react-redux';
 import { Field, formValueSelector, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import { Link, withRouter } from 'react-router-dom';
-import { required, lenientUrl, isUrlLenient } from 'rzp/utils/validators';
+import {
+  required,
+  lenientUrl,
+  isUrlLenient,
+  flexibleDevUrl,
+} from 'rzp/utils/validators';
 import InputField from 'rzp/ui/Forms/InputField';
 import TaggedInput from 'rzp/ui/Forms/TaggedInput';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
-import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
+import { autoPrefixUrls, checkIfHTTPS } from 'rzp/utils/rzp-utils';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as ApplicationActions from 'merchant/modules/applications';
 import { openModal, closeModal } from 'rzp/modules/modals';
@@ -157,24 +162,17 @@ class NewApplicationForm extends Component {
       });
   };
 
+  handleBlurOnProdURI = (val, isValid) => {
+    if (!isValid) {
+      this.props.showNotification({
+        type: 'error',
+        message: 'Production Redirect URI must be HTTPS secured',
+      });
+    }
+  };
+
   update = props => {
     let data = { ...props };
-
-    if (data.website) {
-      data.website = autoPrefixUrls(data.website);
-    }
-
-    if (data.client_details.dev.redirect_url) {
-      data.client_details.dev.redirect_url = data.client_details.dev.redirect_url.map(
-        url => autoPrefixUrls(url)
-      );
-    }
-
-    if (data.client_details.prod.redirect_url) {
-      data.client_details.prod.redirect_url = data.client_details.prod.redirect_url.map(
-        url => autoPrefixUrls(url)
-      );
-    }
 
     const payload = {
       name: data.name,
@@ -331,8 +329,9 @@ class NewApplicationForm extends Component {
 
             {this.state.edit && (
               <div class="edit-details">
+                <div className="section-divide" />
                 <div class="col-md-offset-2 col-md-10">
-                  <h5 class="form-header text-left">Development</h5>
+                  <h4 class="form-header text-left">Development:</h4>
                 </div>
 
                 <div class="form-group">
@@ -375,7 +374,7 @@ class NewApplicationForm extends Component {
                       component={TaggedInput}
                       class="form-control tagged-input"
                       placeholder="http://test-app.com/"
-                      validator={isUrlLenient}
+                      validator={flexibleDevUrl}
                     />
                   </div>
                   <div class="clearfix" />
@@ -385,8 +384,10 @@ class NewApplicationForm extends Component {
                   </small>
                 </div>
 
+                <div className="section-divide" />
+
                 <div class="col-md-offset-2 col-md-10">
-                  <h5 class="form-header text-left">Production</h5>
+                  <h4 class="form-header text-left">Production:</h4>
                 </div>
 
                 <div class="form-group">
@@ -429,7 +430,8 @@ class NewApplicationForm extends Component {
                       component={TaggedInput}
                       class="form-control tagged-input"
                       placeholder="https://test-app.com/"
-                      validator={isUrlLenient}
+                      validators={[isUrlLenient, checkIfHTTPS]}
+                      handleBlur={this.handleBlurOnProdURI}
                     />
                   </div>
                   <div class="clearfix" />
@@ -494,6 +496,7 @@ class NewApplicationForm extends Component {
               </div>
             )}
 
+            <div className="section-divide" />
             <div class="form-group">
               <div class="col-md-offset-3 col-md-9">
                 <div class="btn-toolbar">

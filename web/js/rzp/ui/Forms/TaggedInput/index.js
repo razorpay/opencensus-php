@@ -4,18 +4,51 @@ import { PowerSelectMultiple } from 'react-power-select';
 
 export default class TaggedInput extends Component {
   handleOptionsChange = (value, select) => {
-    if (value.length > 1 && value.charAt(value.length - 1) === ',') {
-      let data = this.props.input.value || [];
-      data = data.slice();
+    if (
+      value.length > 1 &&
+      (value.charAt(value.length - 1) === ',' ||
+        value.charAt(value.length - 1) === ' ')
+    ) {
       let result = value.slice(0, -1);
-      if (this.props.validator(result)) {
-        data.push(result);
+      this.createPills(result, select);
+    }
+  };
 
-        this.props.input.onChange(data);
+  updateOnBlur = (e, { select }) => {
+    let valueOnBlur = e.target.value;
 
-        select.actions.search('');
-        select.actions.focus();
+    if (valueOnBlur) {
+      const isValidValue = this.createPills(valueOnBlur, select);
+      this.props.handleBlur && this.props.handleBlur(valueOnBlur, isValidValue);
+    }
+  };
+
+  createPills = (value, select) => {
+    let data = this.props.input.value || [];
+    data = data.slice();
+
+    let isValidEntry;
+    if (this.props.validators) {
+      for (let validator of this.props.validators) {
+        isValidEntry = validator(value);
+
+        if (!isValidEntry) {
+          break;
+        }
       }
+    } else if (this.props.validator) {
+      isValidEntry = this.props.validator(value);
+    }
+
+    if (isValidEntry) {
+      data.push(value);
+
+      this.props.input.onChange(data);
+
+      select.actions.search('');
+      select.actions.focus();
+    } else {
+      return false;
     }
   };
 
@@ -33,6 +66,7 @@ export default class TaggedInput extends Component {
             onSearchInputChange((event, { select }));
           }
         }}
+        onBlur={this.updateOnBlur}
         onChange={({ options }) => {
           this.props.input.onChange(options);
         }}
@@ -43,5 +77,6 @@ export default class TaggedInput extends Component {
 }
 
 TaggedInput.propTypes = {
-  validator: PropTypes.func.isRequired,
+  validator: PropTypes.func,
+  validators: PropTypes.array,
 };
