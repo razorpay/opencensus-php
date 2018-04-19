@@ -42,6 +42,7 @@ class Validator
                                                         . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/"
                                                      ],
         RequestProcessor\Base::NETBANKING_BOB     => ["/^Razorpay_Scroll_ of /"],
+        RequestProcessor\Base::NETBANKING_CSB     => ["/^RAZORPAY_Recon File/"],
         RequestProcessor\Base::NETBANKING_ICICI   => ["/^Payment Through Internet Banking Center Razorpay/"],
         RequestProcessor\Base::NETBANKING_FEDERAL => [
                                                         "/^MIS Report File Dated "
@@ -208,6 +209,15 @@ class Validator
         $validSubject = $this->validateEmailSubject(
             $emailDetails[RequestProcessor\Mailgun::SUBJECT],
             RequestProcessor\Base::NETBANKING_BOB);
+
+        return $validSubject;
+    }
+
+    public function validateNetbankingCsbEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_CSB);
 
         return $validSubject;
     }
