@@ -2,27 +2,21 @@
 
 namespace RZP\Tests\Functional\Gateway\Netbanking\Obc;
 
-use Carbon\Carbon;
 use RZP\Models\Payment;
-use RZP\Models\FileStore;
 use RZP\Models\Bank\IFSC;
-use RZP\Constants\Entity;
-use RZP\Constants\Timezone;
-use RZP\Models\Payment\Refund;
-use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Netbanking\Obc;
+use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Payment\Verify\Status as VerifyStatus;
-use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class NetbankingObcGatewayTest extends TestCase
 {
     use PaymentTrait;
 
-    private $payment;
+    protected $payment;
 
-    private $bank = IFSC::ORBC;
+    protected $bank = IFSC::ORBC;
 
     public function setUp()
     {
@@ -80,7 +74,9 @@ class NetbankingObcGatewayTest extends TestCase
 
     public function testPaymentVerifyMistamtch()
     {
-        $payment = $this->createPaymentFailed();
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockVerifyFailure();
 
         $data = $this->testData['testVerifyMismatch'];
 
@@ -134,13 +130,39 @@ class NetbankingObcGatewayTest extends TestCase
         return $this->getLastEntity(ConstantsEntity::PAYMENT, true);
     }
 
-    private function mockPaymentFailed()
+    // Authorization fails, but verify shows success
+    // Results in a payment verification error
+    public function testAuthFailedVerifySuccess()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->testPaymentFailed();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+    }
+
+    protected function mockPaymentFailed()
     {
         $this->mockServerContentFunction(
             function(& $content, $action = null)
             {
                 $content[Obc\ResponseFields::PAID] = Obc\Status::FAILED;
             });
+    }
+
+    protected function mockVerifyFailure()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['TXN_STATUS'] = '103922 : Transaction details cannot be fetched/No Records Fetched';
+        });
     }
 
     protected function mockAmountMismatch()

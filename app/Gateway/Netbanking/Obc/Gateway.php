@@ -14,9 +14,12 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\AuthorizeFailed;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     protected $gateway = Payment\Gateway::NETBANKING_OBC;
 
     /**
@@ -113,7 +116,7 @@ class Gateway extends Base\Gateway
                 'payment_id' => $verify->input['payment']['id'],
             ]);
 
-        $verify->verifyResponseContent = $this->parseVerifyResponse($verify->verifyResponse);
+        $verify->verifyResponseContent = $this->parseVerifyResponse($verify->verifyResponse, $verify->input['payment']);
     }
 
     protected function verifyPayment(Verify $verify)
@@ -150,9 +153,9 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        $expectedAmount = number_format($input['payment']['amount'] / 100, 2);
+        $expectedAmount = $this->formatAmount($input['payment']['amount'] / 100);
 
-        $actualAmount = $content[ResponseFields::AMOUNT];
+        $actualAmount = $this->formatAmount($content[ResponseFields::AMOUNT]);
 
         if($expectedAmount === $actualAmount)
         {
@@ -162,8 +165,17 @@ class Gateway extends Base\Gateway
        return true;
     }
 
-    protected function parseVerifyResponse(\Requests_Response $response)
+    protected function parseVerifyResponse(\Requests_Response $response, $payment)
     {
+        if (strpos($response->body, 'No Records Fetched') !== false)
+        {
+           return [
+               ResponseFields::TXN_STATUS => 'FAILURE',
+               ResponseFields::AMOUNT     => $this->formatAmount($payment['amount']),
+               ResponseFields::PAYEE_ID   => $payment['id'],
+           ];
+        }
+
         $keyValuePair = explode('|', $response->body);
 
         $verifyResponseArray = [];
@@ -277,7 +289,7 @@ class Gateway extends Base\Gateway
             RequestFields::ITEM_CODE   => strtoupper($payment['id'] . Constant::MERCHANT_ID),
             RequestFields::AMOUNT      => $this->formatAmount($payment['amount'] / 100),
             RequestFields::RETURN_URL  => Constant::RAZORPAY_END_POINT,
-            RequestFields::BID         => $verify->payment['bank_payment_id']
+            RequestFields::BID         => $verify->payment['bank_payment_id'] ?? "",
         ];
 
         return $this->getStandardRequestArray($content);
