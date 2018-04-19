@@ -125,7 +125,7 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
-        $verify->payment = $this->saveVerifyContent($verify);
+        $this->saveVerifyContent($verify);
 
         $verify->amountMismatch = $this->setVerifyAmountMismatch($verify);
     }
@@ -276,7 +276,7 @@ class Gateway extends Base\Gateway
             RequestFields::QUERY_STRING => $this->getQueryString($input)
         ];
 
-        return $this->getStandardRequestArray($content, 'get');
+        return $this->getStandardRequestArray($content);
     }
 
     protected function getVerifyRequestArray(Verify $verify)
@@ -292,7 +292,7 @@ class Gateway extends Base\Gateway
             RequestFields::BID         => $verify->payment['bank_payment_id'] ?? "",
         ];
 
-        return $this->getStandardRequestArray($content, 'get');
+        return $this->getStandardRequestArray($content);
     }
 
     protected function formatAmount(float $amount)
