@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\NetbankingCsb;
 
 use RZP\Reconciliator\Base;
+use RZP\Reconciliator\FileProcessor;
 
 /**
  * This class was developed as per the sample file shared by the CSB POC.
@@ -53,5 +54,21 @@ class Reconciliate extends Base\Reconciliate
     public function getDelimiter()
     {
         return self::DELIMITER;
+    }
+
+    /**
+     * Since the heades have a separator of " ^ " and the other rows have separator
+     * "^",  i.e without spaces, we can ignore the headers row and map the rows
+     * manually by setting the column headers above.
+     *
+     * @param array $fileDetails
+     * @return array
+     */
+    public function getNumLinesToSkip(array $fileDetails)
+    {
+        return [
+            FileProcessor::LINES_FROM_TOP    => 1,
+            FileProcessor::LINES_FROM_BOTTOM => 0
+        ];
     }
 }
