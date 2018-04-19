@@ -631,4 +631,18 @@ return [
             'gateway_error_code'  => 'GW00154',
         ],
     ],
+    'testEditWalletAirtelmoneyTerminalWithNotRequiredFields' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED ,
+        ],
+    ],
 ];
