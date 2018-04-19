@@ -946,7 +946,7 @@ class Terminal extends Base
     {
         $termId = \RZP\Models\Terminal\Shared::SHARP_RAZORPAY_TERMINAL;
 
-        $attributes = [
+        $defaultValues = [
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'sharp',
@@ -956,6 +956,8 @@ class Terminal extends Base
             'card'                      => 1,
             'emi'                       => 0,
         ];
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return parent::create($attributes);
     }

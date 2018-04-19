@@ -48,6 +48,7 @@ class Validator extends Base\Validator
         Payment\Gateway::HDFC,
         Payment\Gateway::HITACHI,
         Payment\Gateway::BILLDESK,
+        Payment\Gateway::CARD_FSS,
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::ENACH_RBL,
@@ -325,6 +326,8 @@ class Validator extends Base\Validator
     protected static $netbankingAirtelTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_airtel',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
     ];
 
     protected static $netbankingAxisTerminalRules = [
@@ -367,11 +370,21 @@ class Validator extends Base\Validator
 
     protected static $cardFssTerminalRules = [
         Entity::GATEWAY                     => 'required|in:card_fss',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
-        Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
-        Entity::GATEWAY_MERCHANT_ID         => 'required',
-        Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
+        Entity::TYPE                        => 'sometimes|array',
+        Entity::MODE                        => 'sometimes|integer|in:2,3',
+    ];
+
+    protected static $cardFssEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:card_fss',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
+        Entity::TYPE                        => 'sometimes|array',
+        Entity::MODE                        => 'sometimes|integer|in:2,3',
     ];
 
     protected static $enachRblTerminalRules = [

@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Emi;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\VirtualAccount;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
@@ -610,11 +611,7 @@ trait Capture
             return;
         }
 
-        $eventPayload = [
-            ApiEventSubscriber::MAIN => $payment
-        ];
-
-        $this->app['events']->fire('api.virtual_account.credited', $eventPayload);
+        (new VirtualAccount\Core)->eventVirtualAccountCredited($payment);
     }
 
     protected function eventPaymentCaptured()
