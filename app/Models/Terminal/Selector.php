@@ -46,6 +46,9 @@ class Selector extends Base\Core
         // Boosts direct terminals over shared terminals
         Sorters\ExclusivitySorter::class,
 
+        // Boosts specific auth type terminals over 3ds terminals
+        Sorters\AuthTypeSorter::class,
+
         // Sorting based on older failed attempts
         Sorters\FailedTerminalsSorter::class,
 
@@ -175,8 +178,7 @@ class Selector extends Base\Core
         // Fetch terminals for both the current merchant and the shared Merchant
         $merchantTerminals = $this->repo
                                   ->terminal
-                                  ->getTerminalsForMerchantAndSharedMerchant(
-                                                        $this->input['merchant']);
+                                  ->getTerminalsForMerchantAndSharedMerchant($this->input['merchant']);
 
         $payment = $this->input['payment'];
 

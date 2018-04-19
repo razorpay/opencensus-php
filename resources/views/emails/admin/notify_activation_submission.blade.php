@@ -16,7 +16,9 @@
 
             <p>Contact name for merchant is: {{{$merchant_details['business_name']}}}</p>
 
-            <p>The website link for the business is: <a href="{{$merchant_details['business_website']}}" title="{{{$merchant_details['business_dba']}}}">{{{$merchant_details['business_dba']}}}</a>.
+            @if (isset($merchant_details['business_website']) === true)
+            <p>The website link for the business is: <a href="{{$merchant_details['business_website']}}" title="{{{$merchant_details['business_dba']}}}">{{{$merchant_details['business_dba']}}}</a>.</p>
+            @endif
 
         </div>
 

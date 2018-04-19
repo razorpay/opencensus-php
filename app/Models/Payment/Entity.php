@@ -54,6 +54,8 @@ class Entity extends Base\PublicEntity
     const ORDER_ID              = 'order_id';
     const INVOICE_ID            = 'invoice_id';
     const TRANSFER_ID           = 'transfer_id';
+    const RECEIVER_ID           = 'receiver_id';
+    const RECEIVER_TYPE         = 'receiver_type';
     const INTERNATIONAL         = 'international';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
@@ -98,7 +100,6 @@ class Entity extends Base\PublicEntity
     const REFERENCE5            = 'reference5';
     const REFERENCE6            = 'reference6';
     const REFERENCE7            = 'reference7';
-    const REFERENCE8            = 'reference8';
     const REFERENCE9            = 'reference9';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
@@ -123,6 +124,8 @@ class Entity extends Base\PublicEntity
 
     const SUBSCRIPTION_ID       = 'subscription_id';
 
+    const PREFERRED_AUTH        = 'preferred_auth';
+
     // Used by merchant dashboard to fetch payments based on utr
     const BANK_REFERENCE        = 'bank_reference';
 
@@ -143,6 +146,7 @@ class Entity extends Base\PublicEntity
 
     const METADATA              = 'metadata';
 
+    const RECEIVER              = 'receiver';
     const AADHAAR               = 'aadhaar';
     const BANK_ACCOUNT          = 'bank_account';
     const NAME                  = 'name';
@@ -246,6 +250,8 @@ class Entity extends Base\PublicEntity
         self::REFERENCE2,
         self::ACQUIRER_DATA,
         self::TRANSFER_ID,
+        self::RECEIVER_ID,
+        self::RECEIVER_TYPE,
         self::TRANSACTION_ID,
         self::AUTO_CAPTURED,
         self::ORDER_ID,
@@ -346,7 +352,8 @@ class Entity extends Base\PublicEntity
         self::IFSC,
         self::VPA,
         'method_based_input',
-        'convert_empty_strings_to_null'
+        'convert_empty_strings_to_null',
+        self::PREFERRED_AUTH,
     ];
 
     protected static $generators = [
@@ -587,6 +594,54 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function modifyPreferredAuth(&$input)
+    {
+        //
+        // We give preference to auth type
+        //
+        if (empty($input[Entity::AUTH_TYPE]) === false)
+        {
+            unset($input[Entity::PREFERRED_AUTH]);
+            return;
+        }
+
+        if (isset($input[Entity::PREFERRED_AUTH]) === false)
+        {
+            return;
+        }
+
+        $uniqueAuthentications = array_unique((array) $input[Entity::PREFERRED_AUTH]);
+
+        unset($input[Entity::PREFERRED_AUTH]);
+
+        $merchant = $this->merchant;
+
+        $preferredAuth = [];
+
+        foreach ($uniqueAuthentications as $authType)
+        {
+            if (AuthType::isFeatureBasedAuthEnabled($merchant, $authType) === true)
+            {
+                $preferredAuth[] = $authType;
+            }
+        }
+
+        if (empty($preferredAuth) === false)
+        {
+            //
+            // We add 3ds auth type by default for card/emi payments and
+            // only if preferredAuth is not empty.
+            //
+            if (($input[Entity::METHOD] === Method::CARD) or
+                ($input[Entity::METHOD] === Method::EMI))
+            {
+                $preferredAuth[] = AuthType::_3DS;
+            }
+
+            $input[Entity::PREFERRED_AUTH] = $preferredAuth;
+        }
+    }
+
     // --------------------- Modifiers Ends ----------------------------------------
 
     // --------------------- Generators Ends ---------------------------------------
@@ -598,6 +653,7 @@ class Entity extends Base\PublicEntity
         // Overriding extra attributes for S2S integration
         $this->metadata['ip'] = $input['ip'] ?? null;
         $this->metadata['user_agent'] = $input['user_agent'] ?? null;
+        $this->metadata['preferred_auth'] = $input['preferred_auth'] ?? null;
 
         // We should only set referer if input['referer'] is defined
         // and metadata['referer'] is false because checkout also
@@ -1106,6 +1162,11 @@ class Entity extends Base\PublicEntity
     public function getCapturedAt()
     {
         return $this->getAttribute(self::CAPTURED_AT);
+    }
+
+    public function getReceiverType()
+    {
+        return $this->getAttribute(self::RECEIVER_TYPE);
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
@@ -2300,6 +2361,11 @@ class Entity extends Base\PublicEntity
         return $this->morphMany('RZP\Models\Transfer\Entity', 'source');
     }
 
+    public function receiver()
+    {
+        return $this->morphTo('receiver', self::RECEIVER_TYPE, self::RECEIVER_ID);
+    }
+
     public function netbanking()
     {
         return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
@@ -2427,9 +2493,12 @@ class Entity extends Base\PublicEntity
             self::CARD_ID,
             self::STATUS,
             self::AMOUNT,
+            self::LATE_AUTHORIZED,
             self::AUTO_CAPTURED,
             self::ERROR_CODE,
-            self::GATEWAY);
+            self::GATEWAY,
+            self::RECEIVER_ID,
+            self::RECEIVER_TYPE);
 
         $relevantData = array_intersect_key($this->attributes, array_flip($fields));
 
@@ -2568,5 +2637,19 @@ class Entity extends Base\PublicEntity
     public function isAcknowledged(): bool
     {
         return $this->isAttributeNotNull(self::ACKNOWLEDGED_AT);
+    }
+
+    // Query scopes
+
+    /**
+     * Scopes result based on morphed entity relationship.
+     *
+     * @param \RZP\Base\BuilderEx $query
+     * @param Base\PublicEntity   $entity
+     */
+    public function scopeReceiver(\RZP\Base\BuilderEx $query, Base\PublicEntity $entity)
+    {
+        $query->where(Entity::RECEIVER_ID, '=', $entity->getId())
+              ->where(Entity::RECEIVER_TYPE, '=', $entity->getEntity());
     }
 }

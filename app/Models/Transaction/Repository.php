@@ -724,7 +724,7 @@ class Repository extends Base\Repository
      *          THEN transactions.amount
      *          ELSE 0
      *          END)/100 unrecon_amount,
-     *  (Case WHEN payments.method = "card"
+     *  (Case WHEN payments.method in ('card','emi')
      *          THEN terminals.gateway_acquirer
      *          ELSE payments.gateway
      *          END) gateway from `transactions`
@@ -734,7 +734,7 @@ class Repository extends Base\Repository
      *  `transactions`.`created_at` between ? and ?
      *  group by `date`, `gateway` order by `date` desc
     */
-    public function fetchPaymentReconStatusSummary($from, $to, $gateways)
+    public function fetchPaymentReconStatusSummary(int $from, int $to, array $gateways): array
     {
         $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
 
@@ -780,7 +780,7 @@ class Repository extends Base\Repository
             ELSE 0
             END)/100 unrecon_amount,
         (Case
-        WHEN payments.method = 'card'
+        WHEN payments.method in ('card','emi')
             THEN terminals.gateway_acquirer
             ELSE payments.gateway
             END) gateway
@@ -792,7 +792,7 @@ class Repository extends Base\Repository
         group by `date`, `gateway` order by `date` desc
      */
 
-    public function fetchRefundReconStatusSummary($from, $to, $gateways)
+    public function fetchRefundReconStatusSummary(int $from, int $to, array $gateways): array
     {
         $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
 
@@ -837,19 +837,19 @@ class Repository extends Base\Repository
         $params =  'COUNT('.$transactionPaymentId.') AS total_count'. ','.
             'SUM('.$transactionAmount.')/100 AS total_amount'.','.
 
-            'COUNT(CASE 
+            'COUNT(CASE
                        WHEN '.$transactionReconciledAt.' is not null
                             THEN '.$transactionId.'
                         END) recon_count,
-                 COUNT(CASE 
+                 COUNT(CASE
                        WHEN '.$transactionReconciledAt.' is null
                             THEN '.$transactionId.'
                         END) unrecon_count,
-                 
-                 SUM(CASE 
-                     WHEN '.$transactionReconciledAt.' is not null 
+
+                 SUM(CASE
+                     WHEN '.$transactionReconciledAt.' is not null
                         THEN '.$transactionAmount.'
-                        ELSE 0 
+                        ELSE 0
                      END)/100 recon_amount,
                  SUM(CASE
                      WHEN '.$transactionReconciledAt.' is null
@@ -866,6 +866,155 @@ class Repository extends Base\Repository
                                     $params);
 
         return $query;
+    }
+
+    /**
+     * Raw Sql Query :
+     * This query is used in union query of all gateways.
+     *
+     * Payments:
+     * select STRAIGHT_JOIN transactions.created_at,payments.id as payment_id,
+     * payments.method as payment_method,payments.amount as payment_amount,
+     * payments.status as payment_status,payments.disputed as payment_disputed,
+     * payments.merchant_id as payment_merchant_id,
+     * payments.terminal_id as payment_terminal_id,
+     * payments.captured_at as payment_captured_at,
+     * payments.authorized_at as payment_authorized_at,
+     * payments.amount_refunded as payment_amount_refunded,
+     * (Case
+     *   WHEN payments.method in ('card','emi')
+     *   THEN terminals.gateway_acquirer
+     *   ELSE payments.gateway
+     * END) gateway
+     * from `transactions`
+     * inner join `payments` on `entity_id` = `payments`.`id`
+     * inner join `terminals` on `terminal_id` = `terminals`.`id`
+     * where `payments`.`gateway` = ? and `reconciled_at` is null and
+     * `transactions`.`created_at` between ? and ?
+     * order by `transactions`.`created_at` asc limit 100
+     *
+     * Refunds:
+     * select STRAIGHT_JOIN transactions.created_at,refunds.id as refund_id,
+     * refunds.amount as refund_amount,refunds.status as refund_status,
+     * payments.id as payment_id,payments.method as payment_method,
+     * payments.amount as payment_amount,payments.status as payment_status,
+     * payments.disputed as payment_disputed,
+     * payments.merchant_id as payment_merchant_id,
+     * payments.terminal_id as payment_terminal_id,
+     * payments.captured_at as payment_captured_at,
+     * payments.authorized_at as payment_authorized_at,
+     * payments.amount_refunded as payment_amount_refunded,
+     * (Case
+     *   WHEN payments.method in ('card','emi')
+     *   THEN terminals.gateway_acquirer
+     *   ELSE payments.gateway
+     * END) gateway
+     * from `transactions`
+     * inner join `refunds` on `entity_id` = `refunds`.`id`
+     * inner join `payments` on `payments`.`id` = `payment_id`
+     * inner join `terminals` on `terminal_id` = `terminals`.`id`
+     * where `refunds`.`status` = ? and `payments`.`gateway` = ? and
+     * `reconciled_at` is null and
+     * `transactions`.`created_at` between ? and ?
+     * order by `transactions`.`created_at` asc limit 100
+     *
+     * Note : Using case query as requires gateway_acquirer only in case of card gateways.
+     */
+    public function fetchUnreconciledEntitiesBetweenDates(
+                                        int $from,
+                                        int $to,
+                                        array $gateways,
+                                        int $limit,
+                                        array $paymentParams = [],
+                                        array $refundParams = []
+                                        ): array
+    {
+        $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $refundParams = $this->repo->refund->getAliasesForRefundsDbColumns($refundParams);
+
+        $paymentParams = $this->repo->payment->getAliasesForPaymentsDbColumns($paymentParams);
+
+        $terminalId = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
+
+        $unionQueries = [];
+
+        foreach ($gateways as $gateway)
+        {
+            $query = $this->getSelectQueryForUnreconciledEntites($paymentParams, $refundParams);
+
+            if (empty($refundParams) === false)
+            {
+                $this->addRefundJoinForReconSummary($query);
+
+                $query->join(Table::PAYMENT, $paymentId, '=', Refund\Entity::PAYMENT_ID);
+            }
+            else
+            {
+                $query->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentId);
+            }
+
+            $query->join(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalId);
+
+            $this->getQueryClausesForUnreconciledEntites($query, $from, $to, $gateway, $limit);
+
+            $unionQueries[] = $query;
+        }
+
+        $unionQuery = null;
+
+        // Generate a union query
+        foreach ($unionQueries as $unionQueryElement)
+        {
+            $unionQuery = $unionQuery ? $unionQuery->unionAll($unionQueryElement) : $unionQueryElement;
+        }
+
+        $unreconciledEntities = $unionQuery->get()
+                                           ->toArray();
+
+        return $unreconciledEntities;
+    }
+
+    protected function getSelectQueryForUnreconciledEntites(array $paymentParams = [], array $refundParams = [])
+    {
+        $transactionsCreatedAt = $this->dbColumn(Entity::CREATED_AT);
+
+        $paymentMethod = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $terminalGateway = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY);
+
+        $terminalGatewayAcquirer = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY_ACQUIRER);
+
+        $selectParams = 'STRAIGHT_JOIN ' . $transactionsCreatedAt . ',';
+
+        if (empty($refundParams) === false)
+        {
+            $selectParams .= (implode(',', $refundParams)) . ',';
+        }
+
+        $selectParams .= (implode(',', $paymentParams)) . ','
+                         . '(Case WHEN '. $paymentMethod .' in ( "'. Payment\Method::CARD . '","'. Payment\Method::EMI .'")'.'
+                                THEN '. $terminalGatewayAcquirer . '
+                                ELSE '. $terminalGateway . '
+                            END) gateway';
+
+        $query = $this->newQuery()
+                      ->selectRaw($selectParams);
+
+        return $query;
+    }
+
+    protected function getQueryClausesForUnreconciledEntites($query, int $from, int $to, string $gateway, int $limit)
+    {
+        $transactionsCreatedAt = $this->dbColumn(Entity::CREATED_AT);
+
+        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $query->where($paymentGateway, $gateway)
+              ->whereNull(Transaction\Entity::RECONCILED_AT)
+              ->betweenTime($from, $to)
+              ->orderBy($transactionsCreatedAt)
+              ->limit($limit);
     }
 
     protected function getQueryClausesForReconSummary($query, $from, $to, $gateways)
