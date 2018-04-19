@@ -64,8 +64,8 @@ class DirectDebit extends Base
                     'note3' =>  $note3,
                 ),
                 Payment::AUTH_TYPE      => AuthType::SKIP,
-                Payment::CUSTOMER_ID    => $customer['id'],
-                Payment::ORDER_ID       => $order['id'],
+                Payment::CUSTOMER_ID    => $customer->getPublicId(),
+                Payment::ORDER_ID       => $order->getPublicId(),
             ];
 
             $processor = new Processor($this->merchant);
