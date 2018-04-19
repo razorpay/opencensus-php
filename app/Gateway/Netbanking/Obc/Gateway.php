@@ -157,7 +157,7 @@ class Gateway extends Base\Gateway
 
         $actualAmount = $this->formatAmount($content[ResponseFields::AMOUNT]);
 
-        if($expectedAmount === $actualAmount)
+        if ($expectedAmount === $actualAmount)
         {
             return false;
         }
