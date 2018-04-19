@@ -91,7 +91,7 @@ class BatchController extends Controller
             $view = View::make('403');
         }
         else {
-            $view = View::make('direct_debit_upload_form');
+            $view = View::make('public.direct_debit_form');
         }
 
         return $view;
@@ -113,19 +113,9 @@ class BatchController extends Controller
     public function validateBatchFile(Request $request)
     {
         $input = $request->all();
+        $token = $input['token'];
 
-        $token = $input['ott'];
-
-        $isValid = $this->isValidOneTimeToken($token);
-
-        if ($isValid === false)
-        {
-            // TODO: Throw 401
-            throw new BadRequestException("Invalid OTT");
-        }
-
-        unset($input['ott']);
-
+        $this->service(E::MERCHANT_REQUEST)->consumeOneTimeToken($token);
         $response = $this->service()->validateFile($input);
 
         return ApiResponse::json($response);

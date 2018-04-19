@@ -133,16 +133,17 @@ class Service extends Base\Service
     public function consumeOneTimeToken($token)
     {
         $value = $this->cache->pull($token);
-        $this->app['rzp.mode'] = $value['mode'];
-        $this->app['basicauth']->setModeAndDbConnection($value['mode']);
-
-        $merchant = $this->repo->merchant->find($value['merchantId']);
-        $this->app['basicauth']->setMerchant($merchant);
 
         if ($value === null)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_BATCH_UPLOAD_INVALID_TOKEN);
         }
+
+        $this->app['rzp.mode'] = $value['mode'];
+        $this->app['basicauth']->setModeAndDbConnection($value['mode']);
+
+        $merchant = $this->repo->merchant->find($value['merchantId']);
+        $this->app['basicauth']->setMerchant($merchant);
 
         return $merchant;
     }
