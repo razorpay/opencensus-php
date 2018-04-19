@@ -167,6 +167,7 @@ class Name
     const MERCHANT_BATCH_UPLOAD               = 'merchant_batch_upload';
     const CREATE_DISPUTE_REASON               = 'create_dispute_reason';
     const MANAGE_ONBOARDING_SUBMISSIONS       = 'manage_onboarding_submissions';
+    const MANAGE_RAZORX_OPERATIONS            = 'manage_razorx_operations';
     const EDIT_MERCHANT_RISK_THRESHOLD        = 'edit_merchant_risk_threshold';
     const RETRY_BATCH                         = 'retry_batch';
     const VIEW_SHIELD_RULES                   = 'view_shield_rules';

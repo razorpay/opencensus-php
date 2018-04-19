@@ -84,8 +84,6 @@ class RouteServiceProvider extends ServiceProvider
             ],
         ];
 
-        $this->route->defineRazorxApiRoute();
-
         $router->group(
             $routeGroupGlobalParams,
             function ($router)

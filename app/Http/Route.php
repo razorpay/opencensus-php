@@ -752,7 +752,7 @@ final class Route
         // TODO: Should change to just /signed_url (No 'get' and underscore)
         'ufh_get_file_signed_url'                  => ['get',      'ufh/file/{fileId}/get-signed-url',               'UfhController@getSignedUrl'                                        ],
 
-        'razorx_route'                             => ['any',      'razorx/{path}',                                  'RazorxController@sendRequest'                                      ],
+        'razorx_route'                             => ['any',      'service/razorx',                                 'RazorxController@sendRequest'                                      ],
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@create'                                          ],
         'beta_account_fetch'                       => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
@@ -1793,7 +1793,7 @@ final class Route
         'merchant_activation_reviewers'            => '*',
         'merchant_activation_bulk_assign_reviewer' => Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER,
         'db_meta_query'                            => Permission::DB_META_QUERY,
-        'razorx_route'                             => '*',
+        'razorx_route'                             => Permission::MANAGE_RAZORX_OPERATIONS,
     ];
 
     public static $direct = [
@@ -2559,17 +2559,6 @@ final class Route
                        'uses' => '\RZP\Http\Controllers\PublicController@getCatchAllRoute'
                    ])
              ->where('all', '.*');
-    }
-
-    public function defineRazorxApiRoute()
-    {
-        $this->router
-            ->any('v1/razorx/{path}',
-                [
-                    'as' => 'razorx_route',
-                    'uses' => '\RZP\Http\Controllers\RazorxController@sendRequest'
-                ])
-            ->where('path', '.*');
     }
 
     public function defineRootApiRoute()
