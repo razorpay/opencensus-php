@@ -277,7 +277,7 @@ class Gateway extends Base\Gateway
             RequestFields::PAY_REF_NUM => $payment['id'],
             RequestFields::ITEM_CODE   => strtoupper($payment['id']),
             RequestFields::AMOUNT      => $this->formatAmount($payment['amount'] / 100),
-            RequestFields::RETURN_URL  => 'https://api.razorpay.com/',
+            RequestFields::RETURN_URL  => Constant::RAZORPAY_END_POINT,
             RequestFields::BID         => $verify->payment['bank_payment_id']
         ];
 

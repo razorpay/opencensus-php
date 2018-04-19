@@ -7,4 +7,6 @@ class Constant
     const CATEGORY_ID   = 400;
 
     const SHOPPING_MALL = 'ShoppingMallTranFG.';
+
+    const RAZORPAY_END_POINT = 'https://api.razorpay.com/';
 }
