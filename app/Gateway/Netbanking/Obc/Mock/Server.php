@@ -79,21 +79,9 @@ class Server extends Base\Mock\Server
 
         $this->content($content, $this->action);
 
-        $stringResponse = $this->getResponseString($content);
+        $stringResponse = http_build_query($content, null, '|');
 
         return $stringResponse;
-    }
-
-    private function getResponseString($reponse)
-    {
-        $responseString = '';
-
-        foreach ($reponse as $key => $value)
-        {
-            $responseString .= $key . '=' . $value . '|';
-        }
-
-        return $responseString;
     }
 
     private function parseQuery(string $query)
