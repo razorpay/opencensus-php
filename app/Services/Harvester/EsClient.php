@@ -6,6 +6,7 @@ use App;
 use Requests;
 
 use RZP\Trace\TraceCode;
+use RZP\Exception\RuntimeException;
 
 class EsClient
 {
@@ -35,7 +36,7 @@ class EsClient
 
         $this->mode         = $app['rzp.mode'];
 
-        $this->accessToken  = $config['secret'];
+        $this->accessToken  = $config['analytics_token'];
 
         $this->trace        = $app['trace'];
     }
@@ -61,6 +62,8 @@ class EsClient
         try
         {
             $response = $this->sendRequest($request);
+
+            $this->validateResponse($response);
         }
         catch(\Requests_Exception $e)
         {
@@ -74,6 +77,20 @@ class EsClient
         }
 
         return json_decode($response->body, true);
+    }
+
+    protected function validateResponse(\Requests_Response $response)
+    {
+        $this->trace->info(
+            TraceCode::HARVESTER_RESPONSE,
+            [
+                'response' => substr($response->body, 0, 500),
+            ]);
+
+        if ($response->status_code !== 200)
+        {
+            throw new RuntimeException('Unexpected response received from harvester service');
+        }
     }
 
     protected function prepareRequest(string $urlPath, array $data)
