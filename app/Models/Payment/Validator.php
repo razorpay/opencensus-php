@@ -39,7 +39,7 @@ class Validator extends Base\Validator
         'bank'                          => 'required_if:method,netbanking,aeps,emandate|string|between:4,6',
         'wallet'                        => 'required_if:method,wallet|custom',
         'emi_duration'                  => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
-        'description'                   => 'sometimes|string|max:255|utf8',
+        'description'                   => 'sometimes|nullable|string|max:255|utf8',
         'email'                         => 'sometimes|nullable|email',
         'contact'                       => 'sometimes|nullable|contact_syntax',
         'signature'                     => 'sometimes|nullable|string',

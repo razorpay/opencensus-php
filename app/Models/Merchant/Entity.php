@@ -108,7 +108,7 @@ class Entity extends Base\PublicEntity
     // 10 days in seconds
     const MAX_AUTO_REFUND_DELAY = 864000;
     // Default merchant brand color used if not set already
-    const DEFAULT_MERCHANT_BRAND_COLOR = '#6A5DD1';
+    const DEFAULT_MERCHANT_BRAND_COLOR = '#2371EC';
 
     /**
      * A query parameter to filter results based on
