@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import BaseModal from 'ui/BaseModal';
 import { closeModal, notifyError } from 'common/modal';
-
+import { snakeToTitleCase } from 'common/util';
 /**
  * Email preview with issues listed & comments in them.
  * It's editable
@@ -14,13 +14,14 @@ export default class PreviewEmail extends Component {
 
   handleChange = e => {
     const needs_clarification_text = e.target.value;
+
     this.setState({ needs_clarification_text }, () => {
       // update parent component state
       this.props.onClarificationTextChange(needs_clarification_text);
     });
   };
 
-  close = () => {
+  handleSave = () => {
     if (this.state.needs_clarification_text.length <= 0) {
       notifyError('Please enter clarificaton email text to save.');
     } else {
@@ -38,9 +39,10 @@ export default class PreviewEmail extends Component {
             Hey,
             <br />
             <br />
-            Thank you for submitting your request for {productName}. We need a
-            few more details from you, before we can enable {productName} on
-            your account.
+            Thank you for submitting your request for{' '}
+            {snakeToTitleCase(productName)}. We need a few more details from
+            you, before we can enable {snakeToTitleCase(productName)} on your
+            account.
             <br />
             <br />
             {productName === 'marketplace' &&
@@ -78,8 +80,8 @@ export default class PreviewEmail extends Component {
               https://razorpay.com/grievances/
             </a>
           </p>
-          <button class="btn" onClick={this.close}>
-            Save
+          <button class="btn" onClick={this.handleSave}>
+            Add
           </button>
         </div>
       </BaseModal>

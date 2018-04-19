@@ -56,9 +56,6 @@ export default class EditPublicFeatures extends Component {
         if (feature.name === 'marketplace') {
           newState.agreement = feature.submissions.vendor_agreement;
         }
-        if (feature.needs_clarification_text) {
-          newState.needs_clarification_text = needs_clarification_text;
-        }
       }
 
       newState.selectedReasonCategory = Object.keys(allRejectionReasons)[0];
@@ -374,7 +371,7 @@ export default class EditPublicFeatures extends Component {
               <Table items={this.statusLogs} fields={statusLogsFields} />
 
               <AsyncButton
-                text="Save"
+                text="Submit"
                 class="btn"
                 pendingClass="small spinner"
                 onSubmit={save}
