@@ -276,7 +276,7 @@ class Gateway extends Base\Gateway
             RequestFields::QUERY_STRING => $this->getQueryString($input)
         ];
 
-        return $this->getStandardRequestArray($content);
+        return $this->getStandardRequestArray($content, 'get');
     }
 
     protected function getVerifyRequestArray(Verify $verify)
@@ -292,7 +292,7 @@ class Gateway extends Base\Gateway
             RequestFields::BID         => $verify->payment['bank_payment_id'] ?? "",
         ];
 
-        return $this->getStandardRequestArray($content);
+        return $this->getStandardRequestArray($content, 'get');
     }
 
     protected function formatAmount(float $amount)
