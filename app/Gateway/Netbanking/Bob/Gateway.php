@@ -101,13 +101,13 @@ class Gateway extends Base\Gateway
             // via URL params and without adding the '?' separator
             RequestFields::CALLBACK_URL     => $input['callbackUrl'] . '?',
             RequestFields::PAYMENT_ID       => $payment[Payment::ID],
-            RequestFields::CUSTOMER_TYPE    => $customerType,
         ];
 
         $encryptedData = $this->getEncryptor()->encryptData($content);
 
         $requestData = [
-            RequestFields::ENCRYPTED_DATA => $encryptedData
+            RequestFields::ENCRYPTED_DATA => $encryptedData,
+            RequestFields::CUSTOMER_TYPE  => $customerType,
         ];
 
         // Since live mode relative URL is different, we set the type of URL to AUTHORIZE_LIVE
