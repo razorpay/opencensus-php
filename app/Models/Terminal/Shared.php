@@ -9,6 +9,7 @@ class Shared
 {
     const AMEX_RAZORPAY_TERMINAL             = '1000AmexShared';
     const ATOM_RAZORPAY_TERMINAL             = '1000AtomShared';
+    const ATOM_RAZORPAY_TPV_TERMINAL         = '1000AtomTpvtml';
     const AXIS_GENIUS_RAZORPAY_TERMINAL      = '1000AxisGenius';
     const AXIS_MIGS_RAZORPAY_TERMINAL        = '1000AxisMigsTl';
     const BILLDESK_RAZORPAY_TERMINAL         = '1000BdeskTrmnl';

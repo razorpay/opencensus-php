@@ -220,7 +220,6 @@ class Gateway
     public static $methodMap = [
         Method::CARD => [
             self::HDFC,
-            self::ATOM,
             self::AXIS_MIGS,
             self::AXIS_GENIUS,
             self::PAYTM,
@@ -236,6 +235,7 @@ class Gateway
             self::PAYTM,
             self::BILLDESK,
             self::EBS,
+            self::ATOM,
             self::NETBANKING_ICICI,
             self::NETBANKING_BOB,
             self::NETBANKING_HDFC,
@@ -306,7 +306,8 @@ class Gateway
 
     const SHARED_NETBANKING_GATEWAYS_LIVE = [
         self::BILLDESK,
-        self::EBS
+        self::EBS,
+        self::ATOM
     ];
 
     /**
@@ -379,10 +380,6 @@ class Gateway
             Network::VISA
         ],
         self::AXIS_GENIUS => [
-            Network::MC,
-            Network::VISA
-        ],
-        self::ATOM => [
             Network::MC,
             Network::VISA
         ],
