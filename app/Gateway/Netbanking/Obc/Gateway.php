@@ -55,7 +55,7 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $content[RequestFields::PAY_REF_NUM]);
 
-        $this->assertAmount($input['payment']['amount'] / 100, $content[ResponseFields::AMOUNT]);
+        $this->assertAmount($input['payment']['amount'], $content[ResponseFields::AMOUNT]);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
@@ -129,11 +129,7 @@ class Gateway extends Base\Gateway
 
     protected function assertAmount($expectedAmount, $actualAmount)
     {
-        $expectedAmount = $this->formatAmount($expectedAmount);
-
-        $actualAmount = $this->formatAmount($actualAmount);
-
-        parent::assertAmount($expectedAmount, $actualAmount);
+        parent::assertAmount($expectedAmount, $actualAmount * 100);
     }
 
     protected function getContentToSave($payment): array
@@ -150,11 +146,11 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        $expectedAmount = number_format($input['payment']['amount'] / 100, 2);
+        $expectedAmount = $input['payment']['amount'];
 
-        $actualAmount = $content[ResponseFields::AMOUNT];
+        $actualAmount = $content[ResponseFields::AMOUNT] * 100;
 
-        if($expectedAmount === $actualAmount)
+        if ($expectedAmount === $actualAmount)
         {
             return false;
         }
@@ -275,17 +271,12 @@ class Gateway extends Base\Gateway
             RequestFields::PAYEE_ID    => $this->getMerchantId(),
             RequestFields::PAY_REF_NUM => $payment['id'],
             RequestFields::ITEM_CODE   => strtoupper($payment['id']),
-            RequestFields::AMOUNT      => $this->formatAmount($payment['amount'] / 100),
+            RequestFields::AMOUNT      => $payment['amount'] / 100,
             RequestFields::RETURN_URL  => Constant::RAZORPAY_END_POINT,
             RequestFields::BID         => $verify->payment['bank_payment_id']
         ];
 
         return $this->getStandardRequestArray($content);
-    }
-
-    protected function formatAmount(float $amount)
-    {
-        return number_format($amount, 2, '.', '');
     }
 
     /**
