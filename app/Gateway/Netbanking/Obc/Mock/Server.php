@@ -10,11 +10,6 @@ use RZP\Gateway\Netbanking\Obc\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
-    /**
-     * @var Gateway
-     */
-    private $gatewayInstance;
-
     public function authorize($input)
     {
         parent::authorize($input);

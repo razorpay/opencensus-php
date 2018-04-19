@@ -62,7 +62,7 @@ class Gateway extends Base\Gateway
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
-        $this->checkActionStatus($content);
+        $this->checkGatewayStatus($content);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
@@ -127,7 +127,6 @@ class Gateway extends Base\Gateway
 
         $verify->amountMismatch = $this->setVerifyAmountMismatch($verify);
     }
-
 
     protected function assertAmount($expectedAmount, $actualAmount)
     {
@@ -248,7 +247,7 @@ class Gateway extends Base\Gateway
         return ($verifyStatus === Status::VERIFY_SUCCESS) ? Status::SUCCESS : Status::FAILED;
     }
 
-    protected function checkActionStatus(array $content)
+    protected function checkGatewayStatus(array $content)
     {
         if ((empty($content[ResponseFields::PAID]) === true) or
             ($content[ResponseFields::PAID] !== Status::SUCCESS))
@@ -342,7 +341,7 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    public function getMerchantId()
+    protected function getMerchantId()
     {
         $merchantId = $this->getLiveMerchantId();
 
