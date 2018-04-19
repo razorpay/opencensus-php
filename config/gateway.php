@@ -37,6 +37,7 @@ return [
         'netbanking_rbl',
         'netbanking_indusind',
         'netbanking_pnb',
+        'netbanking_csb',
         'paytm',
         'sharp',
         'upi_icici',
@@ -79,6 +80,7 @@ return [
     'mock_netbanking_rbl'         => env('NETBANKING_RBL_MOCK'),
     'mock_netbanking_indusind'    => env('NETBANKING_INDUSIND_MOCK'),
     'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
+    'mock_netbanking_csb'         => env('NETBANKING_CSB_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
     'mock_blade'                  => env('BLADE_MOCK'),
     'mock_ebs'                    => env('EBS_MOCK'),
@@ -120,6 +122,7 @@ return [
         'test_hash_secret'     => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
         'test_hash_secret2'    => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
         'bharatqr_terminal_id' => env('HITACHI_GATEWAY_BHARAT_QR_TERMINAL_ID'),
+        'bharatqr_merchant_id' => env('HITACHI_GATEWAY_BHARAT_QR_MERCHANT_ID'),
         'bharatqr_salt'        => env('HITACHI_GATEWAY_BHARAT_QR_SALT'),
     ],
 
@@ -249,7 +252,7 @@ return [
     ],
 
     'aeps_icici' => [
-        'terminal_id'                  => env('AEPS_TERMINAL_ID'),
+        'terminal_id'                  => env('AEPS_ICICI_TEST_TERMINAL_ID'),
         'channel_code'                 => env('AEPS_ICICI_CHANNEL_CODE'),
         'refund_mcc_test'              => env('AEPS_ICICI_REFUND_MCC_TEST'),
         'refund_mcc_live'              => env('AEPS_ICICI_REFUND_MCC_LIVE'),
@@ -420,9 +423,9 @@ return [
     ],
 
     'netbanking_airtel' => [
-        'test_merchant_id'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_MERCHANT_ID'),
-        'test_hash_secret'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_HASH_SECRET'),
-        'live_hash_secret'  => env('NETBANKING_AIRTEL_GATEWAY_LIVE_HASH_SECRET'),
+        'test_merchant_id2'     => env('NETBANKING_AIRTEL_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'      => env('NETBANKING_AIRTEL_GATEWAY_TEST_HASH_SECRET'),
+        'test_end_merchant_id'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_END_MERCHANT_ID'),
     ],
 
     'netbanking_federal' => [
@@ -447,6 +450,12 @@ return [
     'netbanking_pnb' => [
         'test_hash_secret'  => env('NETBANKING_PNB_GATEWAY_TEST_HASH_SECRET'),
         'live_hash_secret'  => env('NETBANKING_PNB_GATEWAY_LIVE_HASH_SECRET'),
+    ],
+
+    'netbanking_csb' => [
+        'test_merchant_id'    => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id_2'  => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID_2'),
+        'test_hash_secret'    => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
     ],
 
     'sharp' => [

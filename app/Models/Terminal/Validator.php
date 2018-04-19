@@ -47,8 +47,8 @@ class Validator extends Base\Validator
     protected static $editTerminalGateways = [
         Payment\Gateway::HDFC,
         Payment\Gateway::HITACHI,
-        Payment\Gateway::CARD_FSS,
         Payment\Gateway::BILLDESK,
+        Payment\Gateway::CARD_FSS,
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::ENACH_RBL,
@@ -326,6 +326,8 @@ class Validator extends Base\Validator
     protected static $netbankingAirtelTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_airtel',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
     ];
 
     protected static $netbankingAxisTerminalRules = [
@@ -366,19 +368,30 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|max:32',
     ];
 
+    protected static $netbankingCsbTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_CSB,
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+    ];
+
     protected static $cardFssTerminalRules = [
         Entity::GATEWAY                     => 'required|in:card_fss',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
-        Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
-        Entity::GATEWAY_MERCHANT_ID         => 'required',
-        Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
         Entity::TYPE                        => 'sometimes|array',
+        Entity::MODE                        => 'sometimes|integer|in:2,3',
     ];
 
     protected static $cardFssEditTerminalRules = [
-        Entity::GATEWAY                     => 'sometimes|in:card_fss',
+        Entity::GATEWAY                     => 'required|in:card_fss',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
+        Entity::MODE                        => 'sometimes|integer|in:2,3',
     ];
 
     protected static $enachRblTerminalRules = [
@@ -393,6 +406,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:enach_rbl',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|in:ratn',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
+    ];
+
+    protected static $editWalletAirtelmoneyTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:wallet_airtelmoney',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
     ];
 
     protected function validateGateway($input)

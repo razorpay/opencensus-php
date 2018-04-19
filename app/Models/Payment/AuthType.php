@@ -2,35 +2,85 @@
 
 namespace RZP\Models\Payment;
 
-use RZP\Exception\InvalidArgumentException;
+use RZP\Exception;
+use RZP\Models\Feature;
 
 class AuthType
 {
     const NETBANKING    = 'netbanking';
     const AADHAAR       = 'aadhaar';
     const SKIP          = 'skip';
+    const PIN           = 'pin';
+    const _3DS          = '3ds';
 
     public static $types = [
-        self::NETBANKING,
-        self::AADHAAR,
-        self::SKIP,
+        Method::EMANDATE => [
+            self::NETBANKING,
+            self::AADHAAR,
+        ],
+        Method::CARD    => [
+            self::PIN,
+            self::_3DS,
+            self::SKIP,
+        ],
+        Method::EMI     => [
+            self::PIN,
+            self::_3DS
+        ],
     ];
 
-    public static function isAuthTypeValid($type): bool
+    public static $featureToAuthMap = [
+        self::PIN => Feature\Constants::ATM_PIN_AUTH,
+    ];
+
+    public static function isAuthTypeValid($type, $method): bool
     {
-        return (in_array($type, self::$types, true) === true);
+        if (isset(self::$types[$method]) === false)
+        {
+            return false;
+        }
+
+        return (in_array($type, self::$types[$method], true) === true);
     }
 
-    public static function validateAuthType($type)
+    public static function validateAuthType($type, $method)
     {
-        if (self::isAuthTypeValid($type) === false)
+        if (self::isAuthTypeValid($type, $method) === false)
         {
-            throw new InvalidArgumentException(
+            throw new Exception\InvalidArgumentException(
                 'Invalid auth type',
                 [
                     'field'                 => Entity::AUTH_TYPE,
-                    'auth_type'             => $type
+                    'auth_type'             => $type,
+                    'method'                => $method,
                 ]);
         }
+    }
+
+    public static function getAuthTypeForMethod($method)
+    {
+        return self::$types[$method];
+    }
+
+    public static function validateFeatureBasedAuth($merchant, $type)
+    {
+        if (isset(self::$featureToAuthMap[$type]) === true)
+        {
+            if ($merchant->isFeatureEnabled(self::$featureToAuthMap[$type]) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The auth_type field is invalid');
+            }
+        }
+    }
+
+    public static function isFeatureBasedAuthEnabled($merchant, $type)
+    {
+        if (isset(self::$featureToAuthMap[$type]) === true)
+        {
+            return $merchant->isFeatureEnabled(self::$featureToAuthMap[$type]);
+        }
+
+        return true;
     }
 }

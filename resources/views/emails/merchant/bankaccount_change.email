@@ -31,14 +31,14 @@
                 <table class="ten columns">
                   <tr>
                     <td class="center welcome">
-<p>Hi {{{$name}}},</p>
+<p>Hey,</p>
 
 <p>
   Your Bank Account details have been updated successfully. The details are provided below.
 </p>
 
 <p>
-<strong>Name</strong>  {{ $beneficiary_name }}
+<strong>Beneficiary Name</strong>  {{ $beneficiary_name }}
 </p>
 <p>
   <strong>Account Number</strong>  {{ $account_number }}

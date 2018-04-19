@@ -39,7 +39,7 @@ class Validator extends Base\Validator
         'bank'                          => 'required_if:method,netbanking,aeps,emandate|string|between:4,6',
         'wallet'                        => 'required_if:method,wallet|custom',
         'emi_duration'                  => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
-        'description'                   => 'sometimes|string|max:255|utf8',
+        'description'                   => 'sometimes|nullable|string|max:255|utf8',
         'email'                         => 'sometimes|nullable|email',
         'contact'                       => 'sometimes|nullable|contact_syntax',
         'signature'                     => 'sometimes|nullable|string',
@@ -49,6 +49,9 @@ class Validator extends Base\Validator
         'order_id'                      => 'sometimes|filled',
         'customer_id'                   => 'sometimes|public_id|filled',
         'subscription_id'               => 'sometimes|public_id',
+        'receiver'                      => 'sometimes_if:method,card,upi|associative_array|filled',
+        'receiver.type'                 => 'required_with:receiver|filled|string|in:qr_code,bank_account',
+        'receiver.id'                   => 'required_with:receiver|filled|alpha_num|size:17|public_id',
         'app_token'                     => 'sometimes',
         'token'                         => 'sometimes',
         'save'                          => 'sometimes|in:0,1',
@@ -65,7 +68,8 @@ class Validator extends Base\Validator
         'subscription_card_change'      => 'sometimes|boolean',
         'upi'                           => 'sometimes_if:method,upi|array',
         'upi.expiry_time'               => 'sometimes_if:method,upi|integer|between:5,30|filled',
-        'auth_type'                     => 'sometimes_if:method,emandate,card|string|max:10|filled|in:netbanking,aadhaar,skip',
+        'auth_type'                     => 'sometimes_if:method,emandate,card,emi|string|max:10|filled',
+        'preferred_auth'                => 'sometimes_if:method,card,emi|array|max:3|filled',
         'bank_account'                  => 'sometimes_if:method,emandate|associative_array|filled',
         'bank_account.account_number'   => 'required_with:bank_account|filled|alpha_num|between:5,20',
         'bank_account.ifsc'             => 'required_with:bank_account|filled|alpha_num|size:11',
@@ -129,7 +133,6 @@ class Validator extends Base\Validator
         'customer_id',
         'test_success',
         'upi_expiry_time',
-        'upi_vpa',
         'recurring',
         // Ideally, we should be using custom. But
         // due to dot notation, we cannot use it.
@@ -139,6 +142,8 @@ class Validator extends Base\Validator
         // due to dot notation, we cannot use it.
         'token_max_amount',
         'token_expire_by',
+        'auth_type',
+        'preferred_auth',
     ];
 
     protected function validateIfsc(array $input)
@@ -199,6 +204,35 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateAuthType(array $input)
+    {
+        if (isset($input[Entity::AUTH_TYPE]) === false)
+        {
+            return;
+        }
+
+        AuthType::validateAuthType($input[Entity::AUTH_TYPE], $input[Entity::METHOD]);
+
+        $merchant = $this->entity->merchant;
+
+        AuthType::validateFeatureBasedAuth($merchant, $input[Entity::AUTH_TYPE]);
+    }
+
+    protected function validatePreferredAuth(array $input)
+    {
+        if (isset($input[Entity::PREFERRED_AUTH]) === false)
+        {
+            return;
+        }
+
+        $uniqueAuthentications = array_unique($input[Entity::PREFERRED_AUTH]);
+
+        foreach ($uniqueAuthentications as $authentication)
+        {
+            AuthType::validateAuthType($authentication, $input[Entity::METHOD]);
+        }
+    }
+
     protected function validateUpiExpiryTime(array $input)
     {
         if (isset($input['upi']['expiry_time']) === false)
@@ -212,20 +246,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'upi is/are not required and should not be sent');
-        }
-    }
-
-    protected function validateUpiVpa(array $input)
-    {
-        if ((isset($input['_']['flow']) === false) or
-            ($input['_']['flow'] !== 'intent'))
-        {
-            if (($input[Entity::METHOD] === Method::UPI) and
-                (empty($input[Entity::VPA]) === true))
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The vpa field is required when method is upi.');
-            }
         }
     }
 

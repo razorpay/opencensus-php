@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -38,6 +39,39 @@ class CardTest extends TestCase
     public function testFetchCardRecurring()
     {
         $this->ba->privateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        return $this->runRequestResponseFlow($testData);
+    }
+
+    public function testFetchCardRecurringForDebit()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(Constants::ALLOW_DC_RECURRING);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        return $this->runRequestResponseFlow($testData);
+    }
+
+    public function testFetchCardRecurringForDebitWithNullIssuer()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(Constants::ALLOW_DC_RECURRING);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        return $this->runRequestResponseFlow($testData);
+    }
+
+    public function testFetchCardRecurringForNonSupportedDebitBank()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(Constants::ALLOW_DC_RECURRING);
 
         $testData = $this->testData[__FUNCTION__];
 

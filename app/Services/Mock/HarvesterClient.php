@@ -2,8 +2,9 @@
 
 namespace RZP\Services\Mock;
 
-use RZP\Services\HarvesterClient as BaseHarvesterClient;
 use Requests_Response as Response;
+
+use RZP\Services\Harvester\HarvesterClient as BaseHarvesterClient;
 
 class HarvesterClient extends BaseHarvesterClient
 {

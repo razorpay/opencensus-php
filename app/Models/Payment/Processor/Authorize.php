@@ -151,16 +151,11 @@ trait Authorize
 
             $payment->associateTerminal($currentTerminal);
 
+            // @todo: Add function to set auth type
+
             $terminalGatewayInput = $gatewayInput;
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
-
-            $segmentCustomProps = [
-                'selected_terminal' => $currentTerminal->getId(),
-                'retry_attempt' => $retryAttempts
-            ];
-
-            $this->segment->trackPayment($payment, TraceCode::GATEWAY_POSTPROCESSING, $segmentCustomProps);
 
             // data for terminal analytics
             $terminalData = [
@@ -264,7 +259,6 @@ trait Authorize
     protected function verifyFeesLessThanAmount(Payment\Entity $payment)
     {
         // try calculating the fees, throws exception if fees is more than amount
-
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
     }
 
@@ -295,7 +289,6 @@ trait Authorize
      * @param Payment\Entity $payment
      *
      * @return array
-     * @throws Exception\RuntimeException
      */
     protected function processCreated(Payment\Entity $payment): array
     {
@@ -546,6 +539,8 @@ trait Authorize
 
         $this->validateRecurringIfApplicable($payment, $input);
 
+        $this->validateCardAuthenticationIfApplicable($payment, $input);
+
         $this->validateS2SIfApplicable($payment);
 
         $this->validateSubscriptionInputIfPresent($payment, $input);
@@ -557,6 +552,11 @@ trait Authorize
         $this->runInternationalChecks($payment);
 
         $this->runFraudChecks($payment);
+
+        // Fees validation can only happen after international validation has gone through
+        // otherwise can cause issues with international pricing rule being not available when
+        // international is not enabled.
+        $this->verifyFeesLessThanAmount($payment);
     }
 
     protected function validateSubscriptionInputIfPresent(Payment\Entity $payment, $input)
@@ -855,6 +855,24 @@ trait Authorize
                 [
                     'payment_id' => $payment->getId()
                 ]);
+        }
+    }
+
+    protected function validateCardAuthenticationIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return;
+        }
+
+        if ($payment->getAuthType() === Payment\AuthType::PIN)
+        {
+            if (($payment->card->iinRelation === null) or
+                ($payment->card->iinRelation->supports(IIN\Flow::PIN) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The pin authentication type is not applicable on the given card');
+            }
         }
     }
 
@@ -1220,11 +1238,6 @@ trait Authorize
 
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
     {
-        // Fees validation can only happen after international validation has gone through
-        // otherwise can cause issues with international pricing rule being not available when
-        // international is not enabled.
-        $this->verifyFeesLessThanAmount($payment);
-
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
@@ -1257,13 +1270,6 @@ trait Authorize
         // subscriptions/terminals.
         //
         $this->setGatewayTokenInInput($payment, $gatewayInput);
-
-        $customProperties = [
-            'otpSubmitUrl' => $this->getOtpSubmitUrl(),
-            'callbackUrl' => $this->getCallbackUrl()
-        ];
-
-        $this->segment->trackPayment($payment, TraceCode::GATEWAY_SELECTION_PREPROCESSING, $customProperties);
     }
 
     protected function setGatewayTokenInInput(Payment\Entity $payment, array & $gatewayInput)
@@ -1613,6 +1619,12 @@ trait Authorize
             if ((isset($input['_']['flow']) === false) or
                 ($input['_']['flow'] !== 'intent'))
             {
+                if (empty($payment->getVpa()) === true)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'The vpa field is required when method is upi.');
+                }
+
                 $this->setGatewayInputForUpi($input, $gatewayInput);
 
                 $this->validateUpiPspIsAllowed($payment);
@@ -2366,8 +2378,6 @@ trait Authorize
             ]
         ];
 
-        $this->segment->trackPayment($payment, TraceCode::ASYNC_PAYMENT_RESPONSE, $response);
-
         return $response;
     }
 
@@ -2386,8 +2396,6 @@ trait Authorize
                 'method' => 'GET',
             ]
         ];
-
-        $this->segment->trackPayment($payment, TraceCode::ASYNC_PAYMENT_RESPONSE, $response);
 
         return $response;
     }
@@ -2409,16 +2417,6 @@ trait Authorize
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
         $data['magic'] = $this->isMagicEnabled($payment);
-
-        $segmentData = $data;
-
-        // this might log sensitive data. Remove it
-        if (isset($segmentData['request']['content']))
-        {
-            unset($segmentData['request']['content']);
-        }
-
-        $this->segment->trackPayment($payment, TraceCode::FIRST_PAYMENT_RESPONSE, $segmentData);
 
         return $data;
     }
@@ -3240,7 +3238,7 @@ trait Authorize
     {
         $data['razorpay_subscription_id'] = $payment->subscription->getPublicId();
 
-        $data['razorpay_signature'] = $this->getSignature($data);
+        $this->fillReturnDataWithSignatureIfApplicable($data);
     }
 
     protected function fillReturnDataWithInvoice(Payment\Entity $payment, array & $data)
@@ -3261,12 +3259,23 @@ trait Authorize
         $data['razorpay_invoice_status']  = $invoice->getStatus();
         $data['razorpay_invoice_receipt'] = $invoice->getReceipt();
 
-        $data['razorpay_signature'] = $this->getSignature($data);
+        $this->fillReturnDataWithSignatureIfApplicable($data);
     }
 
     protected function fillReturnDataWithOrder(Payment\Entity $payment, array & $data)
     {
         $data['razorpay_order_id'] = $payment->order->getPublicId();
+
+        $this->fillReturnDataWithSignatureIfApplicable($data);
+    }
+
+    protected function fillReturnDataWithSignatureIfApplicable(array & $data)
+    {
+        // If the accessed via keyless flow(public auth routes) and key doesn't exists, skips calculating signatures.
+        if (($this->ba->isPublicAuth() === true) and ($this->ba->getKeyEntity() === null))
+        {
+            return;
+        }
 
         $data['razorpay_signature'] = $this->getSignature($data);
     }
@@ -3380,8 +3389,6 @@ trait Authorize
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
             $traceData);
-
-        $this->segment->trackPayment($payment, TraceCode::PAYMENT_FAILED_TO_AUTHORIZED, $traceData);
     }
 
 

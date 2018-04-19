@@ -30,14 +30,6 @@ class Gateway extends Base\Gateway
         AuthFields::AMOUNT => Base\Entity::AMOUNT
     ];
 
-    const REVERSAL     = 'ECOMM_REVERSAL';
-
-    const INQUIRY      = 'ECOMM_INQ';
-
-    const TIME_FORMAT  = 'dmYhis';
-
-    const ACTION_ERROR = 'Action not set correctly';
-
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -64,7 +56,11 @@ class Gateway extends Base\Gateway
         $this->assertPaymentId($input['payment']['id'],
                                $content[AuthFields::TRANSACTION_REFERENCE_NO]);
 
-        $this->traceGatewayPaymentResponse($content, $input);
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+
+        $actualAmount   = number_format($content[AuthFields::TRANSACTION_AMOUNT], 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         $this->verifySecureHash($content);
 
@@ -101,6 +97,29 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function getMerchantId2()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            $mid = $this->getTestMerchantId2();
+
+            return $mid;
+        }
+
+        return $this->getLiveMerchantId2();
+    }
+
+    protected function getEndMerchantId()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_end_merchant_id'];
+        }
+
+        return $this->getLiveMerchantId();
+
+    }
+
     protected function sendPaymentVerifyRequest($verify)
     {
         $content = $this->getVerifyRequestData($verify);
@@ -120,6 +139,13 @@ class Gateway extends Base\Gateway
         $responseArray = $this->jsonToArray($response->body);
 
         $verify->verifyResponseContent = $responseArray;
+
+        if (empty($responseArray[VerifyFields::TRANSACTION]) === false)
+        {
+            $expectedAmount = number_format($verify->input['payment']['amount'] / 100, 2, '.', '');
+
+            $this->assertAmount($expectedAmount, $responseArray[VerifyFields::TRANSACTION][0][VerifyFields::TRANSACTION_AMOUNT]);
+        }
 
         $this->verifySecureHash($responseArray);
 
@@ -171,7 +197,7 @@ class Gateway extends Base\Gateway
     protected function getAuthorizeRequestData($input)
     {
         $data = [
-            AuthFields::MERCHANT_ID              => $this->getMerchantId(),
+            AuthFields::MERCHANT_ID              => $this->getMerchantId2(),
             AuthFields::TRANSACTION_REFERENCE_NO => $input['payment']['id'],
             AuthFields::AMOUNT                   => $this->getFormattedAmount($input),
             AuthFields::DATE                     => $this->getFormattedDate($input),
@@ -181,6 +207,8 @@ class Gateway extends Base\Gateway
             AuthFields::CURRENCY                 => Currency::INR,
             AuthFields::CUSTOMER_MOBILE          => $input['payment']['contact'],
             AuthFields::CUSTOMER_EMAIL           => $input['payment']['email'],
+            AuthFields::END_MERCHANT_ID          => $this->getEndMerchantId(),
+            AuthFields::MERCHANT_NAME            => Constants::MERCHANT_NAME
         ];
 
         $data[AuthFields::HASH] = $this->getHashOfArray($data, 'request');
@@ -224,8 +252,8 @@ class Gateway extends Base\Gateway
             VerifyFields::SESSION_ID               => uniqid(),
             VerifyFields::TRANSACTION_REFERENCE_NO => $input['payment']['id'],
             VerifyFields::TRANSACTION_DATE         => $this->getFormattedDate($input),
-            VerifyFields::REQUEST                  => self::INQUIRY,
-            VerifyFields::MERCHANT_ID              => $this->getMerchantId(),
+            VerifyFields::REQUEST                  => Constants::INQUIRY,
+            VerifyFields::MERCHANT_ID              => $this->getMerchantId2(),
             VerifyFields::AMOUNT                   => (string) $this->getFormattedAmount($input)
         ];
 
@@ -336,8 +364,8 @@ class Gateway extends Base\Gateway
             RefundFields::SESSION_ID        => uniqid(),
             RefundFields::TRANSACTION_ID    => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
             RefundFields::TRANSACTION_DATE  => $this->getFormattedDate($input),
-            RefundFields::MERCHANT_ID       => $this->getMerchantId(),
-            RefundFields::REQUEST           => self::REVERSAL,
+            RefundFields::MERCHANT_ID       => $this->getMerchantId2(),
+            RefundFields::REQUEST           => Constants::REVERSAL,
             RefundFields::AMOUNT            => (string) $this->getFormattedAmount($input),
         ];
 
@@ -402,7 +430,7 @@ class Gateway extends Base\Gateway
     protected function getFormattedDate($input)
     {
         $date = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST)
-                                            ->format(self::TIME_FORMAT);
+                                            ->format(Constants::TIME_FORMAT);
 
         return $date;
     }
@@ -424,7 +452,7 @@ class Gateway extends Base\Gateway
                 return $content[RefundFields::HASH];
 
             default:
-                throw new Exception\RuntimeException(self::ACTION_ERROR);
+                throw new Exception\RuntimeException(Constants::ACTION_ERROR);
         }
     }
 
@@ -464,7 +492,7 @@ class Gateway extends Base\Gateway
                 break;
 
             default:
-                throw new Exception\RuntimeException(self::ACTION_ERROR);
+                throw new Exception\RuntimeException(Constants::ACTION_ERROR);
         }
 
         return implode($glue, $data);
@@ -590,7 +618,7 @@ class Gateway extends Base\Gateway
                 break;
 
             default:
-                throw new Exception\RuntimeException(self::ACTION_ERROR);
+                throw new Exception\RuntimeException(Constants::ACTION_ERROR);
         }
 
         if ((isset($content[$statusField]) === false) or
@@ -611,18 +639,6 @@ class Gateway extends Base\Gateway
 
         // Payment fails, throw exception
         throw new Exception\GatewayErrorException($errorCode, $statusField, $errorDescription);
-    }
-
-    public function getMerchantId()
-    {
-        $mid = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
-
-        if ($this->mode === Mode::TEST)
-        {
-            $mid = $this->getTestMerchantId();
-        }
-
-        return $mid;
     }
 
     /*
@@ -651,8 +667,4 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function getLiveSecret()
-    {
-        return $this->config['live_hash_secret'];
-    }
 }

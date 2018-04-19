@@ -1237,4 +1237,18 @@ class Repository extends Base\Repository
 
         $query->join($bankTransferTable, $paymentId, '=', $bankTransferPaymentId);
     }
+
+    public function getAliasesForPaymentsDbColumns($params): array
+    {
+        $dbColumns = [];
+
+        foreach ($params as $param)
+        {
+            $dbColumn = $this->repo->payment->dbColumn($param);
+
+            $dbColumns[] = $dbColumn . ' as payment_'. $param;
+        }
+
+        return $dbColumns;
+    }
 }

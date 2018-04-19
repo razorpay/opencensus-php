@@ -23,7 +23,7 @@ class Gateway extends Base\Gateway
     protected $gateway = 'wallet_payzapp';
     protected $pgname  = 'hdfcpg';
 
-    protected $map = array(
+    protected $map = [
         'custEmail'         => 'email',
         'custMobile'        => 'contact',
         'merId'             => 'gateway_merchant_id',
@@ -36,20 +36,20 @@ class Gateway extends Base\Gateway
         'dataPickUpCode'    => 'reference1',
         'actionCode'        => 'reference2',
         'txnAmount'         => 'amount',
-    );
+    ];
 
-    protected $performMap = array(
+    protected $performMap = [
         'void'              => 'processMerchantAPI#DirectVoid',
         'refund'            => 'processMerchantAPI#DirectRefund',
         'voidOrRefund'      => 'processMerchantAPI#DirectVoidORRefund',
         'verify'            => 'getPaymentResult',
-    );
+    ];
 
     protected $perform;
 
-    protected $acosaActions = array(
+    protected $acosaActions = [
         Action::VERIFY, Action::REFUND
-    );
+    ];
 
     public function authorize(array $input)
     {
@@ -549,31 +549,31 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $request = array(
+            $request = [
                 'method'  => 'post',
                 'url'     => 'https://' . $url,
                 'content' => json_encode($content),
-                'headers' => ['Content-Type' => 'application/json']);
-
-            if ($this->mode === Mode::LIVE)
-            {
-                $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
-            }
+                'headers' => ['Content-Type' => 'application/json']
+            ];
 
             $response = $this->sendGatewayRequest($request);
 
             $content = json_decode($response->body, true);
         }
 
-        return [ 'response' => $response,
-                 'content'   => $content ];
+        return [
+            'response' => $response,
+            'content'   => $content
+        ];
     }
 
     protected function setDomainType()
     {
+        $domainTypePrefix = 'acosa_';
+
         if (in_array($this->action, $this->acosaActions))
         {
-            $this->domainType = 'acosa_'.$this->mode;
+            $this->domainType = $domainTypePrefix . $this->mode;
         }
     }
 

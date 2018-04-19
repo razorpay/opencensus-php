@@ -22,6 +22,8 @@ class Type
     // Bank Transfer Bulk Insert
     const BANK_TRANSFER         = 'bank_transfer';
 
+    const RECURRING_CHARGE      = 'recurring_charge';
+
     const RECONCILIATION        = 'reconciliation';
 
     const EMANDATE              = 'emandate';
@@ -66,6 +68,7 @@ class Type
         self::PAYOUT,
         self::SUB_MERCHANT,
         self::DIRECT_DEBIT,
+        self::RECURRING_CHARGE,
     ];
 
     public static function exists(string $type)

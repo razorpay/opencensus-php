@@ -1664,6 +1664,40 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithDebitCardDisabled' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'entity' => 'methods',
+                    'card' => true,
+                    'debit_card' => false,
+                    'credit_card' => true,
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithCreditCardDisabled' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'entity' => 'methods',
+                    'card' => true,
+                    'debit_card' => true,
+                    'credit_card' => false,
+                ],
+            ],
+        ],
+    ],
+
     'testGetNetbankingDowntimeInfoForDirectNetbankingGateway' => [
         'request' => [
             'url' => '/methods/downtime',

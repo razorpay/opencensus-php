@@ -402,9 +402,11 @@ class Library
         }
     }
 
-    protected static function getMinimumDelayedTime(int $currentTime, Entity $schedule): Carbon
+    protected static function getMinimumDelayedTime(int $current, Entity $schedule): Carbon
     {
-        $current = Carbon::createFromTimestamp($currentTime, Timezone::IST);
+        $currentTime = Carbon::createFromTimestamp($current, Timezone::IST);
+
+        $minimumDelayedTime = $currentTime->copy();
 
         $minimumDelay = $schedule->getDelay();
 
@@ -413,25 +415,38 @@ class Library
             //
             // Hourly schedules have delays in hours
             //
-            $current->addHour($minimumDelay);
+            $minimumDelayedTime->addHour($minimumDelay);
 
             //
             // Adding a few hours resulted in a holiday.
             // Now jump forward in days instead of hours.
             //
-            if (Holidays::isWorkingDay($current) === false)
+            if (Holidays::isWorkingDay($minimumDelayedTime) === false)
             {
-                $current = Holidays::getNextWorkingDay($current);
+                $minimumDelayedTime = Holidays::getNextWorkingDay($minimumDelayedTime);
             }
         }
         else
         {
             // Delay of N days means N working days.
-            $current = Holidays::getNthWorkingDayFrom($current, $minimumDelay);
+            $minimumDelayedTime = Holidays::getNthWorkingDayFrom($minimumDelayedTime, $minimumDelay);
 
-            $current->hour($schedule->getHour());
+            //
+            // Used to implement settlement slots during the day,
+            // eg. 1pm settlements vs 9am settlements
+            //
+            $minimumDelayedTime->hour($schedule->getHour());
+
+            //
+            // For schedules with delay=0, it is possible that setting hour in
+            // the previous line results in a time that's less than current time.
+            //
+            if ($minimumDelayedTime < $currentTime)
+            {
+                $minimumDelayedTime = $currentTime;
+            }
         }
 
-        return $current;
+        return $minimumDelayedTime;
     }
 }

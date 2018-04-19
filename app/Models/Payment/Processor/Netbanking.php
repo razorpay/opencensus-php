@@ -24,6 +24,17 @@ class Netbanking
     const PUNB_R = 'PUNB_R';
     const LAVB_R = 'LAVB_R';
 
+    public static $inconsistentIfsc = [
+        self::BARB_R,
+        self::PUNB_R,
+        self::LAVB_R,
+        self::BARB_C,
+        self::PUNB_C,
+        self::LAVB_C,
+        self::ICIC_C,
+        self::UTIB_C,
+    ];
+
     protected static $names = [
         self::BARB_R => 'Bank of Baroda - Retail Banking',
         self::PUNB_R => 'Punjab National Bank - Retail Banking',
@@ -51,8 +62,8 @@ class Netbanking
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
+        IFSC::CSBK,
         self::PUNB_R,
-
         self::BARB_R,
     ];
 
@@ -268,7 +279,7 @@ class Netbanking
 
     public static function isSupportedBank($bank)
     {
-        return (in_array($bank, self::getAllBanks()));
+        return (in_array($bank, self::getAllBanks(), true));
     }
 
     /**

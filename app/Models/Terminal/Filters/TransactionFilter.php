@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Card\Network;
+use RZP\Models\Card\IIN\Flow;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Admin\ConfigKey;
@@ -36,6 +37,7 @@ class TransactionFilter extends Terminal\Filter
         'corporate',
         'mcc',
         'skip',
+        'auth_type',
     ];
 
     public function methodFilter($terminal)
@@ -204,6 +206,7 @@ class TransactionFilter extends Terminal\Filter
     public function recurringFilter($terminal)
     {
         $payment = $this->input['payment'];
+        $merchant = $this->input['merchant'];
 
         if ($payment->isRecurring() === false)
         {
@@ -222,6 +225,16 @@ class TransactionFilter extends Terminal\Filter
             ($terminal->getGatewayAcquirer() !== 'hdfc'))
         {
             return false;
+        }
+
+        if (($payment->isCard() === true) and
+            ($payment->card->isDebit() === true))
+        {
+            if (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) !== true) and
+                ($terminal->getGateway() !== Gateway::HITACHI))
+            {
+                return false;
+            }
         }
 
         $payment = $this->input['payment'];
@@ -266,7 +279,6 @@ class TransactionFilter extends Terminal\Filter
         if ((empty(array_diff($applicableTypes, $terminal->getType())) === true) or
             ($terminal->isNo2Fa() === true))
         {
-
             if (($terminal->isFallbackApplicable($this->input['merchant']) === true) and
                 ($payment->isCard() === true))
             {
@@ -496,42 +508,34 @@ class TransactionFilter extends Terminal\Filter
     public function skipFilter(Terminal\Entity $terminal)
     {
         $payment = $this->input['payment'];
-
         if($payment->getAuthType() !== Payment\AuthType::SKIP)
         {
             return true;
         }
-
         if ($terminal->isNonRecurring() === true)
         {
             return false;
         }
-
         if (Gateway::isRecurringGateway($terminal->getGateway()) === false)
         {
             return false;
         }
-
         if (($terminal->getGateway() === Gateway::CYBERSOURCE) and
             ($terminal->getGatewayAcquirer() !== 'hdfc'))
         {
             return false;
         }
-
         if ($terminal->isNon3DSRecurring() === false)
         {
             return false;
         }
-
         $applicableTypes = [
             Terminal\Type::RECURRING_3DS,
             Terminal\Type::RECURRING_NON_3DS,
         ];
-
         if ((empty(array_diff($applicableTypes, $terminal->getType())) === true) or
             ($terminal->isNo2Fa() === true))
         {
-
             if (($terminal->isFallbackApplicable($this->input['merchant']) === true) and
                 ($payment->isCard() === true))
             {
@@ -539,6 +543,76 @@ class TransactionFilter extends Terminal\Filter
             }
         }
     }
+
+    public function authTypeFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return true;
+        }
+        //
+        // We use preferred_auth only if it's available else to fallback to
+        // $authType attribute
+        //
+        $authType = (array) $payment->getAuthType();
+        $authTypes = $payment->getMetadata(Payment\Entity::PREFERRED_AUTH, $authType);
+        //
+        // We fallback to the default flow if the preferred authentication or authType
+        // is empty. Normal flow chooses all the 3ds terminals.
+        //
+        if (empty($authTypes) === false)
+        {
+            foreach ($authTypes as $authType)
+            {
+                switch ($authType)
+                {
+                    case Payment\AuthType::PIN:
+                        $gateway = $terminal->getGateway();
+                        $acquirer = $terminal->getGatewayAcquirer();
+                        $issuer = $payment->card->getIssuer();
+                        //
+                        // Pin auth terminal is only selected when the terminal issuer supports pin auth
+                        // and card iin also supports the flow
+                        //
+                        if (($terminal->isPin() === true) and
+                            (Gateway::isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer) === true))
+                        {
+                            if (($payment->card->iinRelation !== null) and
+                                ($payment->card->iinRelation->supports(Flow::PIN) === true))
+                            {
+                                return true;
+                            }
+                        }
+                        break;
+                    case Payment\AuthType::_3DS:
+                        if ($this->is3DSTerminal($terminal) === true)
+                        {
+                            return true;
+                        }
+                        break;
+                }
+            }
+            //
+            // If the terminal doesn't match the given condition then
+            // we filter that terminal.
+            //
+            return false;
+        }
+        // Default terminals should always be the one which supports 3DS
+        // Any other auth type terminals should be filtered out if `auth_type`
+        // is empty or null.
+        // In case, we have plan to add new auth in the filter, we will have to
+        // add a condition here to remove terminals of that auth type while
+        // ensuring that all other gateways are selected.
+        return ($this->is3DSTerminal($terminal) === true);
+    }
+
+    protected function is3DSTerminal($terminal)
+    {
+        return ($terminal->isPin() === false);
+    }
+
 
     protected function isTerminalWithMerchantMccAbsent(
         array $applicableTerminals,

@@ -3900,6 +3900,7 @@ return [
                                 ],
                                 'boost'                => 1,
                                 'minimum_should_match' => '75%',
+                                'lenient'              => true
                             ],
                         ]
                     ],

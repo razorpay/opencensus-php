@@ -247,7 +247,6 @@ class Base extends BaseModel\Core
      * @param  array $input
      *
      * @return FileStore\Entity
-     * @throws LogicException
      */
     protected function getInputFile(array $input): FileStore\Entity
     {
@@ -835,7 +834,21 @@ class Base extends BaseModel\Core
         // from S3. This helps in smooth S3 mock working.
         //
 
-        $ext       = $file->getClientOriginalExtension();
+        //
+        // In case of "storage" location type, getExtension would be
+        // available and in case of "upload" location type,
+        // getClientOriginalExtension would be available.
+        //
+        if ((method_exists($file, 'getExtension') === true) and
+            (empty($file->getExtension()) === false))
+        {
+            $ext = $file->getExtension();
+        }
+        else
+        {
+            $ext = $file->getClientOriginalExtension();
+        }
+
         $localDir  = $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE_PREFIX);
         $filename  = $this->batch->getFileKeyWithExt($ext);
         $movedFile = $file->move($localDir, $filename);

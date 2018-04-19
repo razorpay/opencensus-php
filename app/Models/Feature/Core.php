@@ -65,9 +65,7 @@ class Core extends Base\Core
 
         $this->notifyFeatureUpdateOnSlack($feature);
 
-        $merchantId = $input['entity_id'];
-
-        $this->notifyMerchantOfFeatureActivationIfApplicable($merchantId, $feature, $shouldSync);
+        $this->notifyMerchantOfFeatureActivationIfApplicable($entityType, $entityId, $feature, $shouldSync);
 
         return $feature;
     }
@@ -105,21 +103,29 @@ class Core extends Base\Core
     /**
      * Notify the merchant of feature Activation by email if applicable based on mode, feature type and sync status.
      *
-     * @param string $merchantId
+     * @param string $entityType
+     * @param string $entityId
      * @param Entity $feature
      * @param bool   $shouldSync
      */
     public function notifyMerchantOfFeatureActivationIfApplicable(
-        string $merchantId,
+        string $entityType,
+        string $entityId,
         Entity $feature,
         bool $shouldSync)
     {
+        // We currently do not notify the applications of the feature activation
+        if ($entityType !== Constants::MERCHANT)
+        {
+            return;
+        }
+
         $isLiveMode = $this->isLiveMode();
 
         if (($feature->isProductFeature() === true) and
             (($shouldSync === true) or ($isLiveMode === true)))
         {
-            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+            $merchant = $this->repo->merchant->findOrFailPublic($entityId);
 
             $visibleFeatures = Constants::$visibleFeaturesMap;
             $featureName     = $feature->getName();
@@ -137,7 +143,7 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::FEATURE_ENABLED_MERCHANT_NOTIFIED,
                 [
-                    PublicEntity::MERCHANT_ID => $merchantId,
+                    PublicEntity::MERCHANT_ID => $entityId,
                     Entity::SHOULD_SYNC       => $shouldSync,
                     Mode::LIVE                => $isLiveMode,
                     Entity::NEW_FEATURE       => $feature,
@@ -149,7 +155,7 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED,
                 [
-                    PublicEntity::MERCHANT_ID => $merchantId,
+                    PublicEntity::MERCHANT_ID => $entityId,
                     Entity::SHOULD_SYNC       => $shouldSync,
                     Mode::LIVE                => $isLiveMode,
                     Entity::NEW_FEATURE       => $feature,
