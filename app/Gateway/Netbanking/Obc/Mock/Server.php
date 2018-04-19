@@ -40,7 +40,7 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($content);
     }
 
-    private function getAuthResponse(array $input): array
+    protected function getAuthResponse(array $input): array
     {
         $queryArray = $this->parseQuery($input[RequestFields::QUERY_STRING]);
 
@@ -66,7 +66,7 @@ class Server extends Base\Mock\Server
         return [$encryptedString => ''];
     }
 
-    private function getVerifyResponse(array $input)
+    protected function getVerifyResponse(array $input)
     {
         $content = [
             ResponseFields::PAYEE_ID        => $input[RequestFields::PAYEE_ID],
@@ -84,7 +84,7 @@ class Server extends Base\Mock\Server
         return $stringResponse;
     }
 
-    private function parseQuery(string $query)
+    protected function parseQuery(string $query)
     {
         $querySubArray = explode('|', $query);
 
@@ -104,18 +104,18 @@ class Server extends Base\Mock\Server
         return $array;
     }
 
-    private function decryptAuthRequest(array & $input)
+    protected function decryptAuthRequest(array & $input)
     {
         $input[RequestFields::RETURN_URL] = $this->decrypt($input[RequestFields::RETURN_URL]);
         $input[RequestFields::QUERY_STRING] = $this->decrypt($input[RequestFields::QUERY_STRING]);
     }
 
-    private function encrypt(string $stringToEncrypt)
+    protected function encrypt(string $stringToEncrypt)
     {
         return $this->getGatewayInstance()->encrypt($stringToEncrypt);
     }
 
-    private function decrypt(string $stringToDecrypt)
+    protected function decrypt(string $stringToDecrypt)
     {
         return $this->getGatewayInstance()->decrypt($stringToDecrypt);
     }

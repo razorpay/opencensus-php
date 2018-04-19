@@ -53,8 +53,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseGatewayResponse($input['gateway']);
 
-        $this->assertPaymentId($input['payment']['id'],
-                               $content[RequestFields::PAY_REF_NUM]);
+        $this->assertPaymentId($input['payment']['id'], $content[RequestFields::PAY_REF_NUM]);
 
         $this->assertAmount($input['payment']['amount'] / 100, $content[ResponseFields::AMOUNT]);
 
@@ -145,7 +144,7 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    private function setVerifyAmountMismatch(Verify $verify)
+    protected function setVerifyAmountMismatch(Verify $verify)
     {
         $input = $verify->input;
 
@@ -163,7 +162,7 @@ class Gateway extends Base\Gateway
        return true;
     }
 
-    private function parseVerifyResponse(\Requests_Response $response)
+    protected function parseVerifyResponse(\Requests_Response $response)
     {
         $keyValuePair = explode('|', $response->body);
 
@@ -188,7 +187,7 @@ class Gateway extends Base\Gateway
         return $verifyResponseArray;
     }
 
-    private function getVerifyMatchStatus(Verify $verify)
+    protected function getVerifyMatchStatus(Verify $verify)
     {
         $this->checkApiSuccess($verify);
 
