@@ -73,6 +73,11 @@ class PaymentCreateController extends Controller
         return $ret;
     }
 
+    public function getCreatePaymentCheckoutCallback() {
+        return View::make('gateway.gatewayAsyncForm')
+                ->with('data', $templateData);
+    }
+
     protected function createPayment()
     {
         $input = Request::all();

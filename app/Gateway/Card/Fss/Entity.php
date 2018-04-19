@@ -86,6 +86,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ERROR_MESSAGE);
     }
 
+    public function getAuthCode()
+    {
+        return $this->getAttribute(self::AUTH);
+    }
+
     public function setAcquirer($acquirer)
     {
         $this->setAttribute(self::ACQUIRER, $acquirer);

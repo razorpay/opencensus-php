@@ -43,7 +43,7 @@ class Obc extends Base
 
         $totalAmount = 0;
 
-        $header = [self::HEADER,  $this->claimDate , $data[0]['terminal']['gateway_merchant_id']];
+        $header = [self::HEADER,  $this->claimDate, $data[0]['terminal']['gateway_merchant_id']];
 
         $formattedData[0] = $header;
 
@@ -66,7 +66,7 @@ class Obc extends Base
             $totalAmount += $row['refund']['amount'];
         }
 
-        $footer = [self::FOOTER , $this->claimDate , $count , $this->getFormattedAmount($totalAmount)];
+        $footer = [self::FOOTER, $this->claimDate, $count, $this->getFormattedAmount($totalAmount)];
 
         $formattedData[] = $footer;
 

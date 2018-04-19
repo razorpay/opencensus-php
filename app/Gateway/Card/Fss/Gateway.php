@@ -94,9 +94,9 @@ class Gateway extends Base\Gateway
 
         $this->checkCapturedStatus($gatewayPayment, ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
 
-        $response = $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
-        return $response;
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     /**

@@ -18,7 +18,7 @@ class Validator extends Base\Validator
         AuthFields::DATE                      => 'required|string',
         AuthFields::MERCHANT_SERVICE_CODE     => 'sometimes',
         AuthFields::CURRENCY                  => 'required|in:INR',
-        AuthFields::END_MERCHANT_NAME         => 'sometimes',
+        AuthFields::END_MERCHANT_ID           => 'required',
         AuthFields::CUSTOMER_MOBILE           => 'required',
         AuthFields::CUSTOMER_EMAIL            => 'required',
         AuthFields::SERVICE                   => 'required|size:2',

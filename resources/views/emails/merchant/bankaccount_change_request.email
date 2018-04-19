@@ -34,7 +34,7 @@
 <p>Hey,</p>
 
 <p>
-  Your Bank Account details have been updated successfully. The details are provided below.
+  We have received a request for changing the bank account for {{$name}}. The details for the request are as follows :
 </p>
 
 <p>
@@ -46,7 +46,9 @@
 <p>
 <strong>IFSC Code</strong>  {{ $ifsc_code }}
 </p>
-
+<p>
+We will update you once the changes have been approved.
+</p>
   <p>
 Cheers,
 <br>
