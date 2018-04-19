@@ -71,4 +71,14 @@ class Reconciliate extends Base\Reconciliate
             FileProcessor::LINES_FROM_BOTTOM => 0
         ];
     }
+
+    public function inExcludeList(array $fileDetails)
+    {
+        if (strpos($fileDetails[FileProcessor::EXTENSION], 'txt') !== false)
+        {
+            return true;
+        }
+
+        return false;
+    }
 }
