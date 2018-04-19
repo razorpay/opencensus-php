@@ -1368,7 +1368,7 @@ trait Authorize
 
             (new DispatchRouter)->dispatchOn($job, DispatchRouter::SHIELD);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
              $this->trace->traceException(
                 $e,
