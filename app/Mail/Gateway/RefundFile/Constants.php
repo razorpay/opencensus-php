@@ -43,7 +43,7 @@ class Constants extends Base\Constants
         Gateway::NETBANKING_ICICI       => 'Icici Netbanking refunds file for ',
         Gateway::NETBANKING_FEDERAL     => 'Federal Netbanking refunds file for ',
         Gateway::NETBANKING_BOB         => 'Bank of Baroda Netbanking refunds file for ',
-        Gateway::NETBANKING_CSB         => 'Csb Netbanking refunds file for',
+        Gateway::NETBANKING_CSB         => 'Csb Netbanking refunds file for ',
         Gateway::NETBANKING_INDUSIND    => 'Indusind Netbanking refunds file for ',
         Gateway::UPI_ICICI              => 'UPI Icici refunds file for ',
         Gateway::WALLET_AIRTELMONEY     => 'Airtelmoney refunds file for ',

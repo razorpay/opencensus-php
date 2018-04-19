@@ -3,9 +3,9 @@
 namespace RZP\Gateway\Base\Mock;
 
 use App;
-use RZP\Models\Base\PublicEntity;
 use RZP\Models\FileStore;
 use RZP\Base\RepositoryManager;
+use RZP\Models\Base\PublicEntity;
 
 class Reconciliator
 {
