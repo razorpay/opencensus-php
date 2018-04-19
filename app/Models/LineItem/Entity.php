@@ -219,6 +219,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::QUANTITY);
     }
 
+    public function getName(): string
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function getDescriptionElseName(): string
+    {
+        return $this->getDescription() ?: $this->getName();
+    }
+
     // -------------------------- Getters Ends -----------------------
 
     // Setters
