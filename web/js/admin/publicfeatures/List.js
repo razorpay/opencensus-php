@@ -77,7 +77,14 @@ export default class PublicFeaturesList extends Component {
     window.open(`/admin/merchants/${merchantId}`, '_blank');
   };
 
+  // bind fetchFn for list re-render
+  afterCall = _ => {
+    this.collection.fetch();
+  };
+
   render() {
+    const afterCall = this.afterCall;
+
     return (
       <div class="list-container">
         <div class="box">
@@ -113,7 +120,9 @@ export default class PublicFeaturesList extends Component {
         <PageTable
           model={this.collection}
           fields={this.fields}
-          onClick={showEntity}
+          onClick={function() {
+            showEntity.call(this, afterCall);
+          }}
         />
       </div>
     );

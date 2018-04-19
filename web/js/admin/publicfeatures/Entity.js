@@ -128,10 +128,13 @@ export default class EditPublicFeatures extends Component {
 
     if (hasStatusChangedToNeedClarification()) {
       if (needs_clarification_text.length === 0) {
-        notifyError('Please enter Clarification Email text to proceed.');
+        notifyError('Add Clarification Email text to proceed.');
         return;
       } else {
-        body.needs_clarification_text = this.generateClarificationEmail();
+        //sanitize code
+        body.needs_clarification_text = encodeURIComponent(
+          this.generateClarificationEmail()
+        );
       }
     }
 
@@ -146,8 +149,8 @@ export default class EditPublicFeatures extends Component {
           return;
         }
         notifySuccess('Submission edited successfully.');
-        //reload for list updation
-        // setTimeout(() => location.reload(), 0);
+        //re-render list
+        this.props.fetchFn();
       }
     });
   };
@@ -222,6 +225,20 @@ export default class EditPublicFeatures extends Component {
                 name="status"
                 value={selectedStatus}
                 onChange={this.handleStatusChange}
+                helpMsg={
+                  hasStatusChangedToNeedClarification() && (
+                    <span>
+                      Add Clarification Email text by clicking{' '}
+                      <span
+                        class="link no-underline"
+                        onClick={this.openEmailPreview}
+                      >
+                        here
+                      </span>{' '}
+                      to proceed.
+                    </span>
+                  )
+                }
               >
                 <option value={oldStatus}>{snakeToTitleCase(oldStatus)}</option>
                 {this.allowed_next_activation_statuses.map(status => (
@@ -365,7 +382,7 @@ export default class EditPublicFeatures extends Component {
 
               {hasStatusChangedToNeedClarification() && (
                 <button class="btn btn-default" onClick={this.openEmailPreview}>
-                  Generate Email
+                  Add Clarification Text
                 </button>
               )}
             </div>
@@ -376,8 +393,8 @@ export default class EditPublicFeatures extends Component {
   }
 }
 
-export function showEntity(collection) {
-  openModal(<EditPublicFeatures collection={collection} model={this} />);
+export function showEntity(fetchFn) {
+  openModal(<EditPublicFeatures fetchFn={fetchFn} model={this} />);
 }
 
 const statusLogsFields = [

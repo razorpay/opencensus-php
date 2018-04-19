@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import BaseModal from 'ui/BaseModal';
+import { closeModal, notifyError } from 'common/modal';
 
 /**
  * Email preview with issues listed & comments in them.
@@ -17,6 +18,14 @@ export default class PreviewEmail extends Component {
       // update parent component state
       this.props.onClarificationTextChange(needs_clarification_text);
     });
+  };
+
+  close = () => {
+    if (this.state.needs_clarification_text.length <= 0) {
+      notifyError('Please enter clarificaton email text to save.');
+    } else {
+      closeModal();
+    }
   };
 
   render() {
@@ -43,6 +52,7 @@ export default class PreviewEmail extends Component {
             value={this.state.needs_clarification_text}
             onChange={this.handleChange}
             style={{ width: '100%' }}
+            autoFocus={true}
           />
           <p>
             {productName === 'marketplace'
@@ -63,10 +73,14 @@ export default class PreviewEmail extends Component {
             <a
               href="https://razorpay.com/grievances/"
               class="link grievance-link"
+              target="_blank"
             >
               https://razorpay.com/grievances/
             </a>
           </p>
+          <button class="btn" onClick={this.close}>
+            Save
+          </button>
         </div>
       </BaseModal>
     );
