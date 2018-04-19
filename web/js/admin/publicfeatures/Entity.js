@@ -128,10 +128,8 @@ export default class EditPublicFeatures extends Component {
         notifyError('Add Clarification Email text to proceed.');
         return;
       } else {
-        //sanitize code
-        body.needs_clarification_text = encodeURIComponent(
-          this.generateClarificationEmail()
-        );
+        //TODO: sanitize code with encodeURIComponent
+        body.needs_clarification_text = this.generateClarificationEmail();
       }
     }
 
