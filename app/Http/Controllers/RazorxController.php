@@ -32,7 +32,7 @@ class RazorxController extends Controller
 
     public function sendRequest()
     {
-        $path = Request::get('url');
+        $path = Request::input('service_path');
 
         $requestParams = $this->getRequestParams($path);
 
@@ -52,12 +52,24 @@ class RazorxController extends Controller
             return ApiResponse::json(["error_message" => $e->getMessage()]);
         }
 
-        return ApiResponse::json(json_decode($response->body, true));
+        $result = json_decode($response->body, true);
+
+        if (empty($result) === true)
+        {
+            $result = $response->body;
+        }
+
+        $razorxResponse = [
+            "status_code" => $response->status_code,
+            "response"    => $result
+        ];
+
+        return ApiResponse::json($razorxResponse);
     }
 
     protected function getRequestParams($path)
     {
-        $url = $this->baseUrl ."/feature_flags/" . $path;
+        $url = $this->baseUrl . $path;
 
         $parameters = Request::all();
 
