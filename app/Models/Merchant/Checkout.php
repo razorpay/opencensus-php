@@ -85,8 +85,6 @@ class Checkout
 
         $this->checkAndFillGatewayDowntime($merchant, $data);
 
-        $this->tracePreferencesResponse($merchant, $data);
-
         return $data;
     }
 
@@ -220,7 +218,6 @@ class Checkout
     protected function tracePreferencesRequest(Entity $merchant, $mode, array $input)
     {
         $sessionData = $this->app['request']->session()->all();
-
         $this->trace->info(
             TraceCode::CHECKOUT_PREFERENCES_REQUEST,
             [
@@ -228,16 +225,6 @@ class Checkout
                 'mode'        => $mode,
                 'session'     => $sessionData,
                 'input'       => $input
-            ]);
-    }
-
-    protected function tracePreferencesResponse(Entity $merchant, array $response)
-    {
-        $this->trace->info(
-            TraceCode::CHECKOUT_PREFERENCES_RESPONSE,
-            [
-                'merchant_id' => $merchant->getId(),
-                'response' => $response,
             ]);
     }
 

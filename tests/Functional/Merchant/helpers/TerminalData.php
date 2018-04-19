@@ -171,23 +171,22 @@ return [
     ],
 
     'testAssignTerminalForDifferentGateway' => [
-        'request' => [
+        'request'  => [
             'content' => [
-                'gateway' => 'atom',
-                'card' => 0,
-                'gateway_merchant_id' => '12345',
-                'gateway_terminal_id' => '12345678',
-                'gateway_terminal_password' => ''
+                'gateway'               => 'atom',
+                'netbanking'            => 1,
+                'gateway_merchant_id'   => '12345',
+                'gateway_secure_secret' => 'random_secret',
+                'gateway_access_code'   => 'random_access_code'
             ],
-            'url' => '/merchants/10000000000000/terminals',
-            'method' => 'POST'
+            'url'     => '/merchants/10000000000000/terminals',
+            'method'  => 'POST'
         ],
         'response' => [
-              'content' => [
-                'gateway' => 'atom',
-                'gateway_merchant_id' => '12345',
-                'gateway_terminal_id' => '12345678',
-                'enabled'             => true,
+            'content' => [
+                'gateway'               => 'atom',
+                'gateway_merchant_id'   => '12345',
+                'enabled'               => true,
             ]
         ],
     ],
@@ -629,6 +628,20 @@ return [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
             'gateway_error_code'  => 'GW00154',
+        ],
+    ],
+    'testEditWalletAirtelmoneyTerminalWithNotRequiredFields' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED ,
         ],
     ],
 ];

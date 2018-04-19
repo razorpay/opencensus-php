@@ -87,7 +87,9 @@ class Core extends Base\Core
         return $this->repo->transaction(function() use ($creditsLog, $creditsValue)
         {
             $creditsDifference = $creditsValue - $creditsLog->getValue();
+
             $creditsLog->setValue($creditsValue);
+
             $this->repo->saveOrFail($creditsLog);
 
             $type = $creditsLog->getType();

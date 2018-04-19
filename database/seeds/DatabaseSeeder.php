@@ -1122,6 +1122,7 @@ class DatabaseSeeder extends Seeder
         $this->createOpenwalletTerminals();
         $this->createVodafoneMpesaTerminal();
         $this->createNetbankingRblTerminal();
+        $this->createNetbankingCsbTerminal();
         $this->createEbsTerminal();
         $this->createAepsTerminal();
     }
@@ -1930,6 +1931,25 @@ class DatabaseSeeder extends Seeder
                 'gateway_access_code'  => 'random_rbl_code',
                 'created_at'           => time(),
                 'updated_at'           => time()
+            ]
+        );
+    }
+
+    protected function createNetbankingCsbTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_CSB_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_CSB,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'recurring'             => '0',
+                'gateway_merchant_id'   => 'netbanking_csb_merchant_id',
+                'gateway_merchant_id2'  => 'netbanking_csb_merchant_id2',
+                'gateway_secure_secret' => 'test_hash_secret',
+                'created_at'            => time(),
+                'updated_at'            => time()
             ]
         );
     }

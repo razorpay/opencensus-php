@@ -244,11 +244,6 @@ class Core extends Base\Core
             Transaction\Entity::CHANNEL         => $payment->merchant->getChannel(),
         ];
 
-        if ($payment->getGateway() === Payment\Gateway::ATOM)
-        {
-            $this->paymentOnAtomGateway($txnData, $payment, $txn->getFee());
-        }
-
         $txn->fill($txnData);
 
         $this->trace->info(
@@ -530,26 +525,6 @@ class Core extends Base\Core
         }
 
         return false;
-    }
-
-    protected function paymentOnAtomGateway(array & $txnData, $payment, $fee)
-    {
-        $txnData[Transaction\Entity::RECONCILED_AT] = time();
-        $txnData[Transaction\Entity::GATEWAY_FEE] = $fee;
-        $txnData[Transaction\Entity::API_FEE] = 0;
-
-        $channel = Settlement\Channel::ATOM;
-
-        if ($payment->terminal->isShared() === true)
-        {
-            $channel = $payment->merchant->getChannel();
-
-            $gatewayFee = (new Pricing\Fee)->getGatewayFeeForAtomSharedTerminal($payment);
-            $txnData[Transaction\Entity::GATEWAY_FEE] = $gatewayFee;
-            $txnData[Transaction\Entity::API_FEE] = $fee - $gatewayFee;
-        }
-
-        $txnData[Transaction\Entity::CHANNEL] = $channel;
     }
 
     public function createFromRefund(Refund\Entity $refund)

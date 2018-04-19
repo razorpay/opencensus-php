@@ -116,13 +116,13 @@ class FileProcessor
         $guesser->register(new FileBinaryMimeTypeGuesser());
     }
 
-    public function getFileDetails($file, $type = self::UPLOADED)
+    public function getFileDetails($file, $type = self::UPLOADED, bool $move = true)
     {
         assertTrue(in_array($type, [self::STORAGE, self::UPLOADED]), "Wrong file type [Uploaded/Storage]");
 
         if ($type === self::UPLOADED)
         {
-            return $this->getUploadedFileDetails($file);
+            return $this->getUploadedFileDetails($file, $move);
         }
         else
         {
@@ -178,6 +178,7 @@ class FileProcessor
 
          return (in_array($fileExtension, Validator::SUPPORTED_ZIP_EXTENSIONS, true) === true);
     }
+
     /**
      * Unzips the file to a folder which is created in the same folder in which the zip file is present.
      *
@@ -324,6 +325,7 @@ class FileProcessor
         else
         {
             $mimeType = mime_content_type($file->getRealPath());
+
             $extension = $file->getExtension();
         }
 
@@ -360,18 +362,31 @@ class FileProcessor
      * This method is used to get the file details of files received through a route directly
      *
      * @param UploadedFile $file
+     * @param bool         $move This is used when we are trying to get the input
+     *                           file details of a file directly uploaded from the
+     *                           request. Here, we don't want to move the file around.
+     *
      * @return array
      */
-    protected function getUploadedFileDetails(UploadedFile $file)
+    protected function getUploadedFileDetails(UploadedFile $file, bool $move = true)
     {
         $fileName = strtolower($file->getClientOriginalName());
         $extension = strtolower($file->getClientOriginalExtension());
         $mimeType = strtolower($file->getMimeType());
         $size = $file->getClientSize();
-        $sourceFolderPath = storage_path(self::SETTLEMENT_STORAGE_PATH);
-        $filePath = $sourceFolderPath . '/' . $fileName;
 
-        $file->move($sourceFolderPath, $fileName);
+        if ($move === true)
+        {
+            $sourceFolderPath = storage_path(self::SETTLEMENT_STORAGE_PATH);
+            $filePath = $sourceFolderPath . '/' . $fileName;
+
+            $file->move($sourceFolderPath, $fileName);
+        }
+        else
+        {
+            $sourceFolderPath = $file->getPath();
+            $filePath = $file->getRealPath();
+        }
 
         return $this->fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath);
     }
@@ -387,10 +402,10 @@ class FileProcessor
     {
         $fileName = strtolower($file->getFilename());
         $extension = strtolower($file->getExtension());
-        $mimeType = strtolower(mime_content_type($file->getRealPath()));
+        $filePath = $file->getRealPath();
+        $mimeType = strtolower(mime_content_type($filePath));
         $size = $file->getSize();
         $sourceFolderPath =  $file->getPath();
-        $filePath = $file->getRealPath();
 
         return $this->fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath);
     }
@@ -402,8 +417,6 @@ class FileProcessor
      * @param string $extractToPath The folder path to where the zip file needs to be extracted
      * @param string $password      Optional Password for the zip file, if present
      * @param bool   $use7z
-     *
-     * @throws Exception\ReconciliationException
      */
     protected function extractZipFile($filePath, $extractToPath, $password, $use7z)
     {

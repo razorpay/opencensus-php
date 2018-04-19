@@ -37,6 +37,7 @@ return [
         'netbanking_rbl',
         'netbanking_indusind',
         'netbanking_pnb',
+        'netbanking_csb',
         'paytm',
         'sharp',
         'upi_icici',
@@ -79,6 +80,7 @@ return [
     'mock_netbanking_rbl'         => env('NETBANKING_RBL_MOCK'),
     'mock_netbanking_indusind'    => env('NETBANKING_INDUSIND_MOCK'),
     'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
+    'mock_netbanking_csb'         => env('NETBANKING_CSB_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
     'mock_blade'                  => env('BLADE_MOCK'),
     'mock_ebs'                    => env('EBS_MOCK'),
@@ -120,6 +122,7 @@ return [
         'test_hash_secret'     => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
         'test_hash_secret2'    => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
         'bharatqr_terminal_id' => env('HITACHI_GATEWAY_BHARAT_QR_TERMINAL_ID'),
+        'bharatqr_merchant_id' => env('HITACHI_GATEWAY_BHARAT_QR_MERCHANT_ID'),
         'bharatqr_salt'        => env('HITACHI_GATEWAY_BHARAT_QR_SALT'),
     ],
 
@@ -174,6 +177,16 @@ return [
         //SECRET FOR SECURITIES MERCHANTS
         'live_hash_secret_sec'  => env('BILLDESK_GATEWAY_SECURITIES_LIVE_HASH_SECRET'),
         'live_access_code_sec'  => env('BILLDESK_GATEWAY_SECURITIES_LIVE_ACCESS_CODE'),
+    ],
+
+    'atom' => [
+        'test_authorize_hash_secret'  => env('ATOM_GATEWAY_TEST_AUTHORIZE_HASH_SECRET'),
+        'test_callback_hash_secret'   => env('ATOM_GATEWAY_TEST_CALLBACK_HASH_SECRET'),
+        'test_merchant_id'            => env('ATOM_TEST_MERCHANT_ID'),
+        'test_secure_password'        => env('ATOM_TEST_SECURE_PASSWORD'),
+        'test_access_code'            => env('ATOM_TEST_ACCESS_CODE'),
+        'live_authorize_hash_secret'  => env('ATOM_GATEWAY_LIVE_AUTHORIZE_HASH_SECRET'),
+        'live_callback_hash_secret'   => env('ATOM_GATEWAY_LIVE_CALLBACK_HASH_SECRET'),
     ],
 
     'blade' => [
@@ -420,9 +433,9 @@ return [
     ],
 
     'netbanking_airtel' => [
-        'test_merchant_id'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_MERCHANT_ID'),
-        'test_hash_secret'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_HASH_SECRET'),
-        'live_hash_secret'  => env('NETBANKING_AIRTEL_GATEWAY_LIVE_HASH_SECRET'),
+        'test_merchant_id2'     => env('NETBANKING_AIRTEL_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'      => env('NETBANKING_AIRTEL_GATEWAY_TEST_HASH_SECRET'),
+        'test_end_merchant_id'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_END_MERCHANT_ID'),
     ],
 
     'netbanking_federal' => [
@@ -447,6 +460,12 @@ return [
     'netbanking_pnb' => [
         'test_hash_secret'  => env('NETBANKING_PNB_GATEWAY_TEST_HASH_SECRET'),
         'live_hash_secret'  => env('NETBANKING_PNB_GATEWAY_LIVE_HASH_SECRET'),
+    ],
+
+    'netbanking_csb' => [
+        'test_merchant_id'    => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id_2'  => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID_2'),
+        'test_hash_secret'    => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
     ],
 
     'sharp' => [

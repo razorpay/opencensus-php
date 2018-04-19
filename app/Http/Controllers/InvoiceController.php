@@ -185,8 +185,13 @@ class InvoiceController extends Controller
             '7SVOQZGZuwHr4I', // Amit. M's
         ];
 
-        if ((empty($data['merchant']) === false) and
-            (in_array($data['merchant']['id'], $idsForUberFlow, true) === true))
+        //
+        // We pull the merchant.id because we don't want the same to be sent to view.
+        // If ever this condition is being removed from here, need to remove merchant.id from ViewDataSerializer
+        //
+        $merchantId = array_pull($data, 'merchant.id');
+
+        if (in_array($merchantId, $idsForUberFlow, true) === true)
         {
             $view = 'invoice.uber';
         }
