@@ -2,10 +2,10 @@
 
 namespace RZP\Http\Controllers;
 
-use Route;
 use ApiResponse;
 use Request;
 use Requests;
+use Route;
 use RZP\Trace\TraceCode;
 
 class RazorxController extends Controller
@@ -61,7 +61,7 @@ class RazorxController extends Controller
 
         $razorxResponse = [
             "status_code" => $response->status_code,
-            "response"    => $result
+            "response"    => $result,
         ];
 
         return ApiResponse::json($razorxResponse);
@@ -73,7 +73,15 @@ class RazorxController extends Controller
 
         $parameters = Request::all();
 
+        unset($parameters['service_path']);
+
         $method = Request::method();
+
+        if ((Request::header('content_type') === self::CONTENT_TYPE_JSON) and
+            ($method != Requests::GET and $method != Requests::HEAD))
+        {
+            $parameters = json_encode($parameters);
+        }
 
         $options = [
             'timeout' => self::REQUEST_TIMEOUT,
@@ -83,9 +91,9 @@ class RazorxController extends Controller
         $this->trace->info(TraceCode::RAZORX_REQUEST, ['url' => $url, 'paramters' => $parameters]);
 
         $response = [
-            'url' => $url,
+            'url'     => $url,
             'headers' => [],
-            'data' => $parameters,
+            'data'    => $parameters,
             'options' => $options,
             'method'  => $method,
         ];
