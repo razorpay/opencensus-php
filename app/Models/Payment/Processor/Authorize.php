@@ -259,7 +259,10 @@ trait Authorize
     protected function verifyFeesLessThanAmount(Payment\Entity $payment)
     {
         // try calculating the fees, throws exception if fees is more than amount
-        list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
+        list($fee, $tax, $feesSplit) = $this->repo->useSlave(function () use ($payment)
+        {
+            return (new Pricing\Fee)->calculateMerchantFees($payment);
+        });
     }
 
     /**
