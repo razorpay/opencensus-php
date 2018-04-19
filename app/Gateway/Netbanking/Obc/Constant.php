@@ -9,4 +9,6 @@ class Constant
     const SHOPPING_MALL = 'ShoppingMallTranFG.';
 
     const RAZORPAY_END_POINT = 'https://api.razorpay.com/';
+
+    const MERCHANT_ID = 'RAZORPAY';
 }

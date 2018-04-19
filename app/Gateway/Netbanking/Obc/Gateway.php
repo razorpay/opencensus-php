@@ -274,7 +274,7 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::PAYEE_ID    => $this->getMerchantId(),
             RequestFields::PAY_REF_NUM => $payment['id'],
-            RequestFields::ITEM_CODE   => strtoupper($payment['id']),
+            RequestFields::ITEM_CODE   => strtoupper($payment['id'] . Constant::MERCHANT_ID),
             RequestFields::AMOUNT      => $this->formatAmount($payment['amount'] / 100),
             RequestFields::RETURN_URL  => Constant::RAZORPAY_END_POINT,
             RequestFields::BID         => $verify->payment['bank_payment_id']
@@ -302,7 +302,7 @@ class Gateway extends Base\Gateway
             RequestFields::TXN_AMOUNT  => $input['payment']['amount'] / 100,
             RequestFields::PAYEE_ID    => $this->getMerchantId(),
             RequestFields::PAY_REF_NUM => $input['payment']['id'],
-            RequestFields::ITEM_CODE   => strtoupper($input['payment']['id'])
+            RequestFields::ITEM_CODE   => strtoupper($input['payment']['id'] . Constant::MERCHANT_ID)
         ];
 
         $query = implode(
