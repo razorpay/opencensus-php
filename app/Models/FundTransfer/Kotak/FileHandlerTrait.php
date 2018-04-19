@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\FileStore;
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -183,11 +184,11 @@ trait FileHandlerTrait
         {
             $fullPath = $this->getFullFilePath($key);
 
-            $dir = dirname($fullpath);
+            $dir = dirname($fullPath);
 
             if (file_exists($dir) === false)
             {
-                mkdir($dir, 777);
+                (new FileStore\Utility)->callFileOperation('mkdir', [$dir, 0777, true]);
             }
         }
 
