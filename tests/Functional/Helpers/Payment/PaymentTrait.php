@@ -507,16 +507,16 @@ trait PaymentTrait
         return $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
     }
 
-    protected function generateRefundsGatewayFile(string $bank)
+    protected function generateGatewayFile(string $bank, string $type, $begin = null, $end = null)
     {
         $request = [
             'url'       => '/gateway/files',
             'method'    => 'POST',
             'content'   => [
                 'targets' => [$bank],
-                'type'    => 'refund',
-                'begin'   => Carbon::yesterday(Timezone::IST)->getTimestamp(),
-                'end'     => Carbon::today(Timezone::IST)->getTimestamp()
+                'type'    => $type,
+                'begin'   => $begin ?? Carbon::yesterday(Timezone::IST)->getTimestamp(),
+                'end'     => $end ?? Carbon::today(Timezone::IST)->getTimestamp()
             ],
         ];
 

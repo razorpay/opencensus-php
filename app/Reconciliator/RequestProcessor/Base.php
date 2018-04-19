@@ -251,7 +251,6 @@ class Base extends Core
      *
      * @param array $zipFileDetails Zip file that needs to be extracted.
      * @return array File details of all the files present in the zip file.
-     * @throws Exception\ReconciliationException
      */
     protected function getFileDetailsFromZipFile(array $zipFileDetails)
     {

@@ -5,25 +5,27 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Csb;
 use Mail;
 use Excel;
 use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Tests\Functional\TestCase;
-use RZP\Gateway\Netbanking\Csb\Mode;
 use RZP\Gateway\Netbanking\Csb\Status;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Gateway\Netbanking\Csb\ResponseFields;
-use RZP\Models\Payment\Verify\Status as VerifyStatus;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
+use RZP\Models\Payment\Verify\Status as VerifyStatus;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Mail\Gateway\DailyFile;
 
 class NetbankingCsbGatewayTest extends TestCase
 {
-    private $payment;
+    protected $payment;
 
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -215,7 +217,7 @@ class NetbankingCsbGatewayTest extends TestCase
         // gateway file generation route is an internal auth
         $this->ba->appAuth();
 
-        $data = $this->generateRefundsGatewayFile('csbk');
+        $data = $this->generateGatewayFile('csb', 'combined');
 
         $file = $this->getLastEntity(ConstantsEntity::FILE_STORE, true);
 
@@ -224,7 +226,7 @@ class NetbankingCsbGatewayTest extends TestCase
         $this->checkMailQueue($file);
     }
 
-    private function checkRefundExcelData(array $data, array $file)
+    protected function checkRefundExcelData(array $data, array $file)
     {
         $this->assertNotNull($data[File\Entity::FILE_GENERATED_AT]);
         $this->assertNotNull($data[File\Entity::SENT_AT]);
@@ -258,42 +260,44 @@ class NetbankingCsbGatewayTest extends TestCase
         unlink($filePath);
     }
 
-    private function checkMailQueue(array $file)
+    protected function checkMailQueue(array $file)
     {
-        Mail::assertQueued(RefundFileMail::class, function ($mail) use ($file)
+        Mail::assertSent(DailyFile::class, function ($mail) use ($file)
         {
-            $body = 'Please forward the CSB Netbanking refunds file to UBPS operations team';
+            $this->assertEquals(1500, $mail->viewData['amount']['claims']);
+            $this->assertEquals(1100, $mail->viewData['amount']['refunds']);
+            $this->assertEquals(400, $mail->viewData['amount']['total']);
 
-            $this->assertEquals($body, $mail->viewData['body']);
-
-            $this->assertEquals('1100.00', $mail->viewData['amount']);
-
-            $this->assertEquals('3', $mail->viewData['count']);
-
-            $this->assertEquals('emails.message', $mail->view);
+            $this->assertEquals('3', $mail->viewData['count']['claims']);
+            $this->assertEquals('3', $mail->viewData['count']['refunds']);
+            $this->assertEquals('6', $mail->viewData['count']['total']);
 
             return true;
         });
     }
 
-    private function createRefundForFileGeneration()
+    protected function createRefundForFileGeneration()
     {
         return array_map(
             function($amount)
             {
                 $refund = $this->doAuthCaptureAndRefundPayment($this->payment, $amount);
 
-                $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)
-                                                                ->addMinutes(45)
-                                                                ->getTimestamp();
+                $payment = $this->getDbLastEntity('payment');
+
+                $createdAt = Carbon::yesterday(Timezone::IST)
+                                ->addHours(10)
+                                ->addMinutes(45)
+                                ->getTimestamp();
 
                 $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+                $this->fixtures->edit('payment', $payment['id'], ['authorized_at' => $createdAt]);
             },
             [50000, 50000, 10000]
         );
     }
 
-    private function mockPaymentFailed()
+    protected function mockPaymentFailed()
     {
         $this->mockServerContentFunction(
             function(& $content, $action = null)
@@ -302,6 +306,7 @@ class NetbankingCsbGatewayTest extends TestCase
                 {
                     $content[ResponseFields::STATUS] = Status::FAILURE;
                     $content[ResponseFields::NARRATION] = 'Payment failed';
+                    $content[ResponseFields::TRAN_REF_NUM] = null;
                 }
                 else if ($action === 'verify')
                 {
@@ -310,7 +315,7 @@ class NetbankingCsbGatewayTest extends TestCase
             });
     }
 
-    private function mockPaymentVerifyFailed()
+    protected function mockPaymentVerifyFailed()
     {
         $this->mockServerContentFunction(
             function(& $content, $action = null)

@@ -50,6 +50,7 @@ class MailTags
     const PAYU_MONEY_REFUNDS_MAIL          = 'payu_money_refunds_mail';
     const ICICI_UPI_REFUNDS_MAIL           = 'icici_upi_refunds_mail';
     const ICICI_UPI_FAILED_REFUNDS_MAIL    = 'icici_upi_failed_refunds_mail';
+    const MINDGATE_UPI_FAILED_REFUNDS_MAIL = 'mindgate_upi_failed_refunds_mail';
     const BATCH_IRCTC_REFUNDS_FILE         = 'batch_irctc_refunds_file';
     const BATCH_IRCTC_SETTLEMENT_FILE      = 'batch_irctc_settlement_file';
     const BATCH_REFUNDS_FILE               = 'batch_refunds_file';
@@ -96,6 +97,7 @@ class MailTags
     const CRITICAL_ERROR                   = 'critical_error';
 
     const ACCOUNT_CHANGED                  = 'account_changed';
+    const ACCOUNT_CHANGE_REQUEST           = 'account_change_request';
     const FORGOT_PASSWORD                  = 'forgot_password';
     const ADMIN_CREATE                     = 'admin_create';
     const WELCOME                          = 'welcome';

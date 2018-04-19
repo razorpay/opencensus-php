@@ -158,7 +158,7 @@ class Server extends Base\Mock\Server
     {
         $content = array_values($request);
 
-        return $this->getGatewayInstance()->computeChecksum($content);
+        return $this->getGatewayInstance()->generateHash($content);
     }
 
     protected function getAuthorizeRequestFields()

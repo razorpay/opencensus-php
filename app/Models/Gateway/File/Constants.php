@@ -17,7 +17,9 @@ class Constants
     const CSB              = 'csbk';
     const SCBL             = 'scbl';
     const UPI_ICICI        = 'upi_icici';
+    const UPI_MINDGATE     = 'upi_mindgate';
     const AIRTEL_MONEY     = 'airtel_money';
+    const CSB              = 'csb';
     const AXIS_MIGS        = 'axis_migs';
     const ICIC_FIRST_DATA  = 'icic_first_data';
     const HDFC_CYBERSOURCE = 'hdfc_cybersource';
@@ -50,6 +52,7 @@ class Constants
             self::BOB,
             self::RBL,
             self::INDUSIND,
+            self::CSB
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -62,6 +65,7 @@ class Constants
         Type::REFUND_FAILED => [
             'All',
             self::UPI_ICICI,
+            self::UPI_MINDGATE,
             self::AIRTEL_MONEY,
             self::AXIS_MIGS,
             self::ICIC_FIRST_DATA,
@@ -85,7 +89,6 @@ class Constants
         Type::REFUND => [
             self::HDFC  => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
-            self::CSB   => ['settlements@razorpay.com'], // TODO: Add csb refunds email
         ],
 
         Type::COMBINED => [
@@ -95,6 +98,7 @@ class Constants
             self::FEDERAL  => ['federal.netbanking.refunds@razorpay.com'],
             self::BOB      => ['bob.netbanking.refunds@razorpay.com'],
             self::INDUSIND => ['indusind.netbanking.refunds@razorpay.com'],
+            self::CSB      => ['csb.netbanking.refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [
@@ -117,6 +121,7 @@ class Constants
 
         Type::REFUND_FAILED => [
             self::UPI_ICICI        => ['supportteam@razorpay.com'],
+            self::UPI_MINDGATE     => ['supportteam@razorpay.com'],
             self::AIRTEL_MONEY     => ['supportteam@razorpay.com'],
             self::AXIS_MIGS        => ['supportteam@razorpay.com'],
             self::ICIC_FIRST_DATA  => ['supportteam@razorpay.com'],

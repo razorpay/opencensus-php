@@ -57,7 +57,6 @@ class EntityProcessor extends BaseEntityProcessor
         {
             $failureReason = 'Reconciliation';
         }
-
         return [$status, $failureReason];
     }
 
