@@ -12,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Models\State\Reason;
 use RZP\Models\Base\PublicEntity;
 use RZP\Mail\Merchant\RequestRejection;
+use RZP\Mail\Merchant\RequestNeedsClarification;
 
 class Core extends Base\Core
 {
@@ -100,6 +101,7 @@ class Core extends Base\Core
      * @param bool   $validateStatusChange
      *
      * @return Entity
+     * @throws \Exception
      */
     public function changeStatus(Entity $request, array $input, $useWorkflow = true, $validateStatusChange = true)
     {
@@ -118,7 +120,11 @@ class Core extends Base\Core
 
         $rejectionReason = $input[Constants::REJECTION_REASON] ?? [];
 
+        $needsClarificationText = $input[Constants::NEEDS_CLARIFICATION_TEXT] ?? [];
+
         unset($input[Constants::REJECTION_REASON]);
+
+        unset($input[Constants::NEEDS_CLARIFICATION_TEXT]);
 
         $oldRequestDetails = clone $request;
 
@@ -137,7 +143,8 @@ class Core extends Base\Core
             $admin,
             $status,
             $rejectionReason,
-            $useWorkflow)
+            $useWorkflow,
+            $needsClarificationText)
         {
             if ($useWorkflow === true)
             {
@@ -200,7 +207,12 @@ class Core extends Base\Core
                     break;
 
                 case Status::NEEDS_CLARIFICATION:
-                    // @todo:Send out a needs clarification email
+
+                    if (empty($needsClarificationText) === false)
+                    {
+                        $this->sendNeedsClarificationEmail($request, $needsClarificationText);
+                    }
+
                     break;
             }
         });
@@ -479,11 +491,14 @@ class Core extends Base\Core
                 ($input[Entity::STATUS] !== $request->getStatus()))
             {
                 $statusChangeInput = [
-                    Entity::STATUS              => $input[Entity::STATUS],
-                    Constants::REJECTION_REASON => $input[Constants::REJECTION_REASON] ?? [],
+                    Entity::STATUS                      => $input[Entity::STATUS],
+                    Constants::REJECTION_REASON         => $input[Constants::REJECTION_REASON] ?? [],
+                    Constants::NEEDS_CLARIFICATION_TEXT => $input[Constants::NEEDS_CLARIFICATION_TEXT] ?? "",
                 ];
 
                 unset($input[Constants::REJECTION_REASON]);
+
+                unset($input[Constants::NEEDS_CLARIFICATION_TEXT]);
 
                 $this->changeStatus($request, $statusChangeInput, true);
             }
@@ -624,5 +639,46 @@ class Core extends Base\Core
         $requestRejectionEmail = new RequestRejection($data);
 
         Mail::queue($requestRejectionEmail);
+    }
+
+    /**
+     * Sends out an email to the merchant with the particular message for asking clarifications for the request
+     *
+     * @param Entity $request
+     * @param string $needClarificationText
+     */
+    public function sendNeedsClarificationEmail(Entity $request, string $needClarificationText)
+    {
+        $merchant = $request->merchant;
+
+        $merchantEmail  = $merchant->getEmail();
+
+        $merchantId     = $merchant->getId();
+
+        $featureName    = $request->getName();
+
+        if ($request->isProductRequest() === false)
+        {
+            return;
+        }
+
+        $visibleFeatures = Feature\Constants::$visibleFeaturesMap;
+
+        // Replacing empty new lines with breaks and enclosing them in paragraphs. Since this text would be coming
+        // from frontend, we need to do this to format it in html.
+        $needClarificationText = str_replace("\n", "\n<br/>\n", $needClarificationText);
+
+        $data = [
+            'feature'                  => $visibleFeatures[$featureName]['display_name'],
+            'documentation'            => $visibleFeatures[$featureName]['documentation'],
+            'contact_name'             => $merchant->getName(),
+            'contact_email'            => $merchantEmail,
+            'merchant_id'              => $merchantId,
+            'needs_clarification_text' => $needClarificationText,
+        ];
+
+        $requestNeedsClarificationEmail = new RequestNeedsClarification($data);
+
+        Mail::queue($requestNeedsClarificationEmail);
     }
 }

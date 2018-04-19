@@ -22,13 +22,13 @@ final class Validator extends Base\Validator
         RequestFields::TXN_AMOUNT  => 'required|integer',
         RequestFields::PAYEE_ID    => 'required|string',
         RequestFields::PAY_REF_NUM => 'required|string|size:14',
-        RequestFields::ITEM_CODE   => 'required|string|size:14'
+        RequestFields::ITEM_CODE   => 'required|string|size:22'
     ];
 
     protected static $verifyRules = [
         RequestFields::PAYEE_ID    => 'required|string',
         RequestFields::PAY_REF_NUM => 'required|string|size:14',
-        RequestFields::ITEM_CODE   => 'required|string|size:14',
+        RequestFields::ITEM_CODE   => 'required|string|size:22  ',
         RequestFields::AMOUNT      => 'required|string',
         RequestFields::RETURN_URL  => 'required|string|url',
         RequestFields::BID         => 'required|string|in:9999999999'

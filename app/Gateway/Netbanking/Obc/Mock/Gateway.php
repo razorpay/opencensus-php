@@ -9,7 +9,7 @@ final class Gateway extends Obc\Gateway
 {
     use GatewayTrait;
 
-    public final function authorize(array $input)
+    public function authorize(array $input)
     {
         $request = parent::authorize($input);
 
