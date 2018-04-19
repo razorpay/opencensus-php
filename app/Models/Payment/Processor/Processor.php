@@ -381,8 +381,10 @@ class Processor
                 'method'  => 'POST',
                 'content' => $input,
             ],
-            'method' => 'upi',
-            'version' => '1',
+            'image'     => $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE),
+            'theme'     => $payment->merchant->getBrandColorElseDefault(),
+            'method'    => 'upi',
+            'version'   => '1',
         ];
 
         return $coproto;
