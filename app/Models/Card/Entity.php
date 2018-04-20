@@ -7,37 +7,41 @@ use RZP\Constants\Timezone;
 
 use RZP\Models\Card;
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 
+/**
+ * @property Merchant\Entity    $merchant
+ */
 class Entity extends Base\PublicEntity
 {
-    const ID                = 'id';
-    const MERCHANT_ID       = 'merchant_id';
-    const GLOBAL_CARD_ID    = 'global_card_id';
-    const NAME              = 'name';
-    const EXPIRY_MONTH      = 'expiry_month';
-    const EXPIRY_YEAR       = 'expiry_year';
-    const IIN               = 'iin';
-    const LAST4             = 'last4';
-    const LENGTH            = 'length';
-    const NETWORK           = 'network';
-    const TYPE              = 'type';
-    const EMI               = 'emi';
-    const ISSUER            = 'issuer';
-    const COUNTRY           = 'country';
-    const INTERNATIONAL     = 'international';
-    const VAULT_TOKEN       = 'vault_token';
-    const VAULT             = 'vault';
-    const TRIVIA            = 'trivia';
+    const ID             = 'id';
+    const MERCHANT_ID    = 'merchant_id';
+    const GLOBAL_CARD_ID = 'global_card_id';
+    const NAME           = 'name';
+    const EXPIRY_MONTH   = 'expiry_month';
+    const EXPIRY_YEAR    = 'expiry_year';
+    const IIN            = 'iin';
+    const LAST4          = 'last4';
+    const LENGTH         = 'length';
+    const NETWORK        = 'network';
+    const TYPE           = 'type';
+    const EMI            = 'emi';
+    const ISSUER         = 'issuer';
+    const COUNTRY        = 'country';
+    const INTERNATIONAL  = 'international';
+    const VAULT_TOKEN    = 'vault_token';
+    const VAULT          = 'vault';
+    const TRIVIA         = 'trivia';
 
     /**
      * Number and cvv are never saved in the database
      * but are referenced at various points
      * and the values are held in-memory.
      */
-    const NUMBER            = 'number';
-    const CVV               = 'cvv';
+    const NUMBER = 'number';
+    const CVV    = 'cvv';
 
     const COUNTRY_LENGTH = 2;
 
@@ -46,13 +50,13 @@ class Entity extends Base\PublicEntity
     const DUMMY_CVV          = '123';
     const DUMMY_CVV_AMEX     = '1234';
 
-    const NETWORK_CODE      = 'network_code';
+    const NETWORK_CODE = 'network_code';
 
     protected static $sign = 'card';
 
     protected $entity = 'card';
 
-    protected $fillable = array(
+    protected $fillable = [
         self::ID,
         self::NAME,
         self::EXPIRY_MONTH,
@@ -65,23 +69,23 @@ class Entity extends Base\PublicEntity
         self::VAULT_TOKEN,
         self::VAULT,
         self::INTERNATIONAL,
-    );
+    ];
 
-    protected $guarded = array(self::ID);
+    protected $guarded = [self::ID];
 
-    protected static $modifiers = array('expiry_year', 'expiry_month', 'number');
+    protected static $modifiers = ['expiry_year', 'expiry_month', 'number'];
 
-    protected static $generators = array(
+    protected static $generators = [
         self::ID,
         self::IIN,
         self::TYPE,
         self::LAST4,
         self::LENGTH,
-        self::VAULT_TOKEN);
+        self::VAULT_TOKEN];
 
-    protected $hidden = array();
+    protected $hidden = [];
 
-    protected $visible = array(
+    protected $visible = [
         self::ID,
         self::MERCHANT_ID,
         self::GLOBAL_CARD_ID,
@@ -103,7 +107,7 @@ class Entity extends Base\PublicEntity
         self::TRIVIA,
         self::CREATED_AT,
         self::UPDATED_AT,
-    );
+    ];
 
     protected $public = [
         self::ID,
@@ -131,14 +135,14 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::INTERNATIONAL     => null,
-        self::EMI               => false,
-        self::GLOBAL_CARD_ID    => null,
-        self::VAULT             => null,
-        self::VAULT_TOKEN       => null,
-        self::ISSUER            => null,
-        self::COUNTRY           => null,
-        self::TRIVIA            => null,
+        self::INTERNATIONAL  => null,
+        self::EMI            => false,
+        self::GLOBAL_CARD_ID => null,
+        self::VAULT          => null,
+        self::VAULT_TOKEN    => null,
+        self::ISSUER         => null,
+        self::COUNTRY        => null,
+        self::TRIVIA         => null,
     ];
 
     public function merchant()
@@ -199,7 +203,7 @@ class Entity extends Base\PublicEntity
 
     public static function modifyMaestro(& $input)
     {
-        $iin = substr($input['number'] ?? null, 0, 6);
+        $iin         = substr($input['number'] ?? null, 0, 6);
         $cardNetwork = Network::detectNetwork($iin);
 
         if ($cardNetwork === Network::MAES)
@@ -452,7 +456,7 @@ class Entity extends Base\PublicEntity
         $cardMerchant = $this->getMerchantId();
 
         // Allowing for Admin and App Auth(Priviledge)
-        $app = \App::getFacadeRoot();
+        $app  = \App::getFacadeRoot();
         $auth = $app['basicauth'];
 
         if (($auth->isPrivilegeAuth() === false) and
@@ -493,7 +497,7 @@ class Entity extends Base\PublicEntity
         return (int) $this->getAttributeFromArray(self::EXPIRY_YEAR);
     }
 
-    protected  function issetPublicExpiryAllowed()
+    protected function issetPublicExpiryAllowed()
     {
         $cardMerchant = $this->getMerchantId();
 
@@ -579,22 +583,46 @@ class Entity extends Base\PublicEntity
         return ($network === Card\Network::$fullName[Card\Network::DICL]);
     }
 
+    public function isCredit()
+    {
+        return ($this->getType() === Type::CREDIT);
+    }
+
     public function isDebit()
     {
-        $type = $this->getType();
-
-        return ($type === Type::DEBIT);
+        return ($this->getType() === Type::DEBIT);
     }
 
     public function isRecurringSupported()
     {
-        $isDebitSupported = $this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_DC_RECURRING);
+        return $this->isRecurringSupportedOnNetworkAndIssuerAndType(
+                                                        $this->merchant,
+                                                        $this->getNetworkCode(),
+                                                        $this->getIssuer(),
+                                                        $this->getType());
+    }
 
-        $isCreditCard = ($this->getType() === Card\Type::CREDIT);
+    public function isRecurringSupportedOnNetworkAndIssuerAndType(
+                                                Merchant\Entity $merchant,
+                                                string $networkCode = null,
+                                                string $issuer = null,
+                                                string $type = null)
+    {
+        $isSupportedNetwork = in_array($networkCode, Payment\Gateway::getNetworksSupportedForCardRecurring(), true);
 
-        $isSupportedNetwork = in_array($this->getNetworkCode(), Card\Network::$recurringNetworks);
+        $isSupportedDebitBank = in_array($issuer, Payment\Gateway::getIssuersSupportedForDebitCardRecurring(), true);
 
-        return ((($isDebitSupported === true) or ($isCreditCard === true)) and ($isSupportedNetwork === true));
+        $debitCheck = (($type === Type::DEBIT) and
+                       ($isSupportedNetwork === true) and
+                       ((($isSupportedDebitBank === true) and
+                         ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_DC_RECURRING) === true)) or
+                        ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true)));
+
+        $creditCheck = (($type === Type::CREDIT) and
+                        ($isSupportedNetwork === true));
+
+        return (($debitCheck === true) or
+                ($creditCheck === true));
     }
 
     public function isBlocked()
@@ -638,12 +666,12 @@ class Entity extends Base\PublicEntity
 
     protected function getTokenRelevantAttributes()
     {
-        $attributes = array(
+        $attributes = [
             self::EXPIRY_MONTH => $this->getExpiryMonth(),
             self::EXPIRY_YEAR  => $this->getExpiryYear(),
             self::EMI          => $this->getEmi(),
             self::ISSUER       => $this->getIssuer()
-        );
+        ];
 
         return $attributes;
     }

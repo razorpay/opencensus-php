@@ -40,7 +40,7 @@ class Repository extends Base\Repository
                       ->where(Entity::STATUS, '=', Status::FAILED)
                       ->whereIn($settlementId, $setlIds)
                       ->where(M\Entity::HOLD_FUNDS, '=', 0)
-                      ->with('merchant', 'merchant.bankAccount', 'setlTransactions')
+                      ->with('merchant', 'merchant.bankAccount')
                       ->get();
 
         return $setls;

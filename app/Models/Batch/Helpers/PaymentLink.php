@@ -9,10 +9,10 @@ use RZP\Models\Customer;
 class PaymentLink
 {
     const PARTIAL_PAYMENT_INPUT_MAP = [
-        'YES'   => '1',
-        'NO'    => '0',
-        // Case: When null values are read from csv/xlsx file.
-        null    => '0',
+        'yes'   => '1',
+        'no'    => '0',
+        ''      => '0',
+
         // For backward compatibility with old inputs files formats. To be removed later
         '1'     => '1',
         '0'     => '0',
@@ -32,18 +32,21 @@ class PaymentLink
     public static function getEntityInput(array & $entry, array & $params): array
     {
         // Set partial_payment attribute to false if field comes as null from excel file.
-        $partialPayment = array_get($entry, Batch\Header::PARTIAL_PAYMENT) ?: null;
-        $partialPayment = self::PARTIAL_PAYMENT_INPUT_MAP[$partialPayment];
+        $partialPayment = array_get($entry, Batch\Header::PARTIAL_PAYMENT);
+        $partialPayment = self::PARTIAL_PAYMENT_INPUT_MAP[strtolower(trim($partialPayment))];
 
         $receipt = $entry[Batch\Header::INVOICE_NUMBER];
         $receipt = empty($receipt) === true ? null : (string) $receipt;
 
         $expireBy = $entry[Batch\Header::EXPIRE_BY];
-        $expireBy = empty($expireBy) === true ? null : (int) $expireBy;
+        // Adding check for is_numeric because typecasting any alphabet
+        // to int gives '0' which will be interpreted wrongly by validator
+        $expireBy = (is_numeric($expireBy) === true) ? (int) $expireBy : $expireBy;
 
         // Amount needs to be formatted this way as excel reader in cases
         // reads 4255 as 4244.99999. This is known php + excel issue.
-        $amount   = (int) number_format($entry[Batch\Header::AMOUNT], 0, '', '');
+        $amount = $entry[Batch\Header::AMOUNT];
+        $amount = (is_numeric($amount) === true) ? (int) number_format($amount, 0, '', '') : $amount;
 
         // Get draft, sms_notify, email_notify from $params or use default as
         // 1, 0 and 0 respectively.

@@ -17,6 +17,7 @@ class Entity extends Base\Entity
     const WORKFLOW_ID           = 'workflow_id';
     const PERMISSION_ID         = 'permission_id';
     const STATE_CHANGER_ID      = 'state_changer_id';
+    const STATE_CHANGER_ROLE    = 'state_changer_role';
     const STATE_CHANGER_ROLE_ID = 'state_changer_role_id';
     const MAKER_ID              = 'maker_id';
     const MAKER_TYPE            = 'maker_type';
@@ -82,7 +83,7 @@ class Entity extends Base\Entity
         self::PERMISSION_NAME,
         self::PERMISSION_DESCRIPTION,
         self::STATE_CHANGER_ID,
-        self::STATE_CHANGER_ROLE_ID
+        self::STATE_CHANGER_ROLE,
     ];
 
     protected $publicSetters = [
@@ -117,7 +118,7 @@ class Entity extends Base\Entity
         self::PERMISSION_NAME,
         self::PERMISSION_DESCRIPTION,
         self::STATE_CHANGER_ID,
-        self::STATE_CHANGER_ROLE_ID
+        self::STATE_CHANGER_ROLE,
     ];
 
     protected $defaults = [

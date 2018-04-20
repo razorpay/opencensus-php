@@ -26,7 +26,11 @@
                         <table class="six columns bluebg" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; background: #39ACE5; margin: 0 auto; width: 280px;"><tr style="padding: 0; text-align: left; vertical-align: top;"><td class="center" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: center; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
                               <center style="min-width: 280px; width: 100%;">
                                 <h3 class="center" style="color: #39ACE5; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: bold; line-height: 1.3; margin: 0; padding: 0; text-align: center; word-break: normal; font-size: 16px; margin-top: 10px;">
+                                @if (isset($merchant['website']) === true)
                                 <a href="{{$merchant['website']}}" title="{{$merchant['billing_label']}} Website" style="color: #f2f2f2; text-decoration: none; font-size: 22px;">{{$merchant['billing_label']}}</a>
+                                @else
+                                <span style="color: #f2f2f2; font-size: 22px;">{{$merchant['billing_label']}}</span>
+                                @endif
                                 </h3>
                               </center>
                             </td>
@@ -98,7 +102,7 @@
               <td class="wrapper white last" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; background: #ffffff; background-color: #ffffff; position: relative; padding-right: 0px;">
                 <table class="eight columns" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 380px;"><tr style="padding: 0; text-align: left; vertical-align: top;"><td class="right-text-pad darktext" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: right; vertical-align: top; color: #484B4C; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 25px; margin: 0; font-size: 14px; padding-right: 10px;">
                       {{$payment['orderId']}}
-                      
+
                     </td>
                     <td class="expander" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: left; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; visibility: hidden; width: 0px;"></td>
                   </tr></table></td>

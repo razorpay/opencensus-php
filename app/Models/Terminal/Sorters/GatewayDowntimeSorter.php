@@ -5,8 +5,8 @@ namespace RZP\Models\Terminal\Sorters;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
-use RZP\Models\Gateway\Downtime;
 use RZP\Trace\TraceCode;
+use RZP\Models\Gateway\Downtime;
 
 /**
  * Documentation here :
@@ -55,7 +55,10 @@ class GatewayDowntimeSorter extends Terminal\Sorter
             // for logging of terminals of downtime sorter
             $verbose = true;
 
-            $downtimes = (new Downtime\Core)->getApplicableDowntimesForPayment($terminals, $this->input);
+            $downtimes = $this->repo->useSlave(function () use ($terminals)
+            {
+                return (new Downtime\Core)->getApplicableDowntimesForPayment($terminals, $this->input);
+            });
 
             if ($downtimes->isEmpty() === true)
             {

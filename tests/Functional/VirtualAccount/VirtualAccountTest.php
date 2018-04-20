@@ -612,7 +612,32 @@ class VirtualAccountTest extends TestCase
         $this->assertStringEndsWith($customer['contact'], $payment['contact']);
     }
 
-    public function testWebhookOnVirtualAccountPay()
+    public function testWebhookVirtualAccountCreated()
+    {
+        $this->createWebhook(
+            [
+                'events' => [
+                    'virtual_account.created' => '1',
+                ]
+            ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertEquals('virtual_account.created', $data['event']['event']);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+
+            return true;
+        });
+
+        $virtualAccount = $this->createVirtualAccount();
+    }
+
+    public function testWebhookVirtualAccountCredited()
     {
         $virtualAccount = $this->createVirtualAccount();
 

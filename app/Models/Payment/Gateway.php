@@ -4,13 +4,13 @@ namespace RZP\Models\Payment;
 
 use App;
 use RZP\Exception;
-use Razorpay\IFSC\IFSC as BaseIFSC;
-
-use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
+use RZP\Models\Feature\Constants;
+use Razorpay\IFSC\IFSC as BaseIFSC;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -42,6 +42,7 @@ class Gateway
     const NETBANKING_INDUSIND    = 'netbanking_indusind';
     const NETBANKING_KOTAK       = 'netbanking_kotak';
     const NETBANKING_RBL         = 'netbanking_rbl';
+    const NETBANKING_CSB         = 'netbanking_csb';
     const NETBANKING_PNB         = 'netbanking_pnb';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
@@ -219,7 +220,6 @@ class Gateway
     public static $methodMap = [
         Method::CARD => [
             self::HDFC,
-            self::ATOM,
             self::AXIS_MIGS,
             self::AXIS_GENIUS,
             self::PAYTM,
@@ -235,6 +235,7 @@ class Gateway
             self::PAYTM,
             self::BILLDESK,
             self::EBS,
+            self::ATOM,
             self::NETBANKING_ICICI,
             self::NETBANKING_BOB,
             self::NETBANKING_HDFC,
@@ -246,6 +247,7 @@ class Gateway
             self::NETBANKING_RBL,
             self::NETBANKING_INDUSIND,
             self::NETBANKING_PNB,
+            self::NETBANKING_CSB,
         ],
 
         //
@@ -304,7 +306,8 @@ class Gateway
 
     const SHARED_NETBANKING_GATEWAYS_LIVE = [
         self::BILLDESK,
-        self::EBS
+        self::EBS,
+        self::ATOM
     ];
 
     /**
@@ -377,10 +380,6 @@ class Gateway
             Network::VISA
         ],
         self::AXIS_GENIUS => [
-            Network::MC,
-            Network::VISA
-        ],
-        self::ATOM => [
             Network::MC,
             Network::VISA
         ],
@@ -458,6 +457,7 @@ class Gateway
         self::ACQUIRER_AXIS => IFSC::UTIB,
         self::ACQUIRER_AMEX => Network::AMEX,
         self::ACQUIRER_RATN => IFSC::RATN,
+        self::ACQUIRER_BARB => IFSC::BARB,
     ];
 
     /**
@@ -524,6 +524,13 @@ class Gateway
         Network::VISA,
     ];
 
+    public static $recurringDebitCardBanks = [
+        IFSC::ICIC,
+        IFSC::CITI,
+        IFSC::KKBK,
+        IFSC::CNRB
+    ];
+
     /**
      * List of ALL auth types and the corresponding
      * banks supported by that auth type.
@@ -543,7 +550,6 @@ class Gateway
             IFSC::BKID,
             IFSC::MAHB,
             IFSC::BCBM,
-            IFSC::BCBX,
             IFSC::CNRB,
             IFSC::CBIN,
             IFSC::CITI,
@@ -556,7 +562,7 @@ class Gateway
             IFSC::INDB,
             IFSC::KKBK,
             IFSC::ORBC,
-            IFSC::PUNB,
+            Netbanking::PUNB_R,
             IFSC::RATN,
             IFSC::SRCB,
             IFSC::SCBL,
@@ -574,6 +580,11 @@ class Gateway
             IFSC::CORP,
             IFSC::VARA,
             IFSC::KVBL,
+            Netbanking::BARB_R,
+            IFSC::BKDN,
+            IFSC::CSBX,
+            IFSC::TMBL,
+            IFSC::KAIJ,
         ]
     ];
 
@@ -607,7 +618,6 @@ class Gateway
         IFSC::BKID,
         IFSC::MAHB,
         IFSC::BCBM,
-        IFSC::BCBX,
         IFSC::CNRB,
         IFSC::CBIN,
         IFSC::CITI,
@@ -620,7 +630,7 @@ class Gateway
         IFSC::INDB,
         IFSC::KKBK,
         IFSC::ORBC,
-        IFSC::PUNB,
+        Netbanking::PUNB_R,
         IFSC::RATN,
         IFSC::SRCB,
         IFSC::SCBL,
@@ -638,6 +648,11 @@ class Gateway
         IFSC::CORP,
         IFSC::VARA,
         IFSC::KVBL,
+        Netbanking::BARB_R,
+        IFSC::BKDN,
+        IFSC::CSBX,
+        IFSC::TMBL,
+        IFSC::KAIJ,
     ];
 
     /**
@@ -664,7 +679,6 @@ class Gateway
             IFSC::BKID,
             IFSC::MAHB,
             IFSC::BCBM,
-            IFSC::BCBX,
             IFSC::CNRB,
             IFSC::CBIN,
             IFSC::CITI,
@@ -678,7 +692,7 @@ class Gateway
             IFSC::INDB,
             IFSC::KKBK,
             IFSC::ORBC,
-            IFSC::PUNB,
+            Netbanking::PUNB_R,
             IFSC::RATN,
             IFSC::SRCB,
             IFSC::SCBL,
@@ -699,7 +713,7 @@ class Gateway
             IFSC::CSBX,
             IFSC::TMBL,
             IFSC::KAIJ,
-            IFSC::BARB,
+            Netbanking::BARB_R,
         ],
     ];
 
@@ -806,6 +820,7 @@ class Gateway
         IFSC::KKBK         => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB         => Gateway::NETBANKING_AXIS,
         IFSC::RATN         => Gateway::NETBANKING_RBL,
+        IFSC::CSBK         => Gateway::NETBANKING_CSB,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
@@ -1203,6 +1218,16 @@ class Gateway
         }
 
         return $supported;
+    }
+
+    public static function getNetworksSupportedForCardRecurring(): array
+    {
+        return self::$recurringCardNetworks;
+    }
+
+    public static function getIssuersSupportedForDebitCardRecurring(): array
+    {
+        return self::$recurringDebitCardBanks;
     }
 
     public static function getExclusiveNetworksForGateway(string $gateway)

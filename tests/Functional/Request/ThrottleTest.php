@@ -18,7 +18,7 @@ class ThrottleTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/ThrottleTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/ThrottleTestData.php';
 
         $this->baseSetUp();
 

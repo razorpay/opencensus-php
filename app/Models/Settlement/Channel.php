@@ -83,20 +83,6 @@ class Channel
         ];
     }
 
-    /**
-     * Only channels of whose beneficiaries have been
-     * added on RBL account are valid.
-     * @return array
-     */
-    public static function validChannelsForRblTransfer()
-    {
-        return [
-            self::KOTAK,
-//            self::AXIS,
-            self::ICICI
-        ];
-    }
-
     public static function getGateways($channel)
     {
         return self::$gateways[$channel];

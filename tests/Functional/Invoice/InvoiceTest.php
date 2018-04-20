@@ -180,6 +180,7 @@ class InvoiceTest extends TestCase
                 'customer_email'   => null,
                 'customer_contact' => null,
                 'type'             => 'link',
+                'description'      => 'Sample description',
             ]);
 
         //
@@ -1706,7 +1707,7 @@ class InvoiceTest extends TestCase
     {
         $this->createOrder();
 
-        $this->createIssuedInvoice(['type' => 'link']);
+        $this->createIssuedInvoice(['type' => 'link', 'description' => 'Sample description']);
 
         $this->callViewUrlAndMakeAssertions();
     }

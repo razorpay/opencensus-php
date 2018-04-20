@@ -340,6 +340,11 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['debit_card' => true]);
     }
 
+    public function disableDebitCard($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['debit_card' => false]);
+    }
+
     public function enableCreditCard($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['credit_card' => true]);
@@ -480,6 +485,11 @@ class Merchant extends Base
     public function editCategory2($category, $id = '10000000000000')
     {
         return $this->edit($id, ['category2' => $category]);
+    }
+
+    public function setHasKeyAccess(bool $hasKeyAccess, string $id = '10000000000000')
+    {
+        return $this->edit($id, ['has_key_access' => $hasKeyAccess]);
     }
 
     public function editPricingPlanId($planId, $id = '10000000000000')
