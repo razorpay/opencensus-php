@@ -4,6 +4,8 @@ FROM razorpay/dashboard:ci
 ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN
 
+ENV NODE_ENV=production
+
 COPY . /app/
 
 WORKDIR /app
