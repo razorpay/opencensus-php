@@ -4,8 +4,8 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Obc;
 
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
-use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Netbanking\Obc;
+use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Payment\Verify\Status as VerifyStatus;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -14,9 +14,9 @@ class NetbankingObcGatewayTest extends TestCase
 {
     use PaymentTrait;
 
-    private $payment;
+    protected $payment;
 
-    private $bank = IFSC::ORBC;
+    protected $bank = IFSC::ORBC;
 
     public function setUp()
     {
@@ -72,9 +72,11 @@ class NetbankingObcGatewayTest extends TestCase
         $this->assertTestResponse($netbanking, 'netbankingVerify');
     }
 
-    public function testPaymentVerifyMistamtch()
+    public function testPaymentVerifyMismatch()
     {
-        $payment = $this->createPaymentFailed();
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockVerifyFailure();
 
         $data = $this->testData['testVerifyMismatch'];
 
@@ -84,14 +86,6 @@ class NetbankingObcGatewayTest extends TestCase
             {
                 $this->verifyPayment($payment[Payment\Entity::ID]);
             });
-
-        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
-
-        $this->assertEquals(VerifyStatus::FAILED, $payment[Payment\Entity::VERIFIED]);
-
-        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
-
-        $this->assertTestResponse($netbanking, 'netbankingPaymentFailedVerifySuccess');
     }
 
     public function testPaymentAmountMismatch()
@@ -110,7 +104,38 @@ class NetbankingObcGatewayTest extends TestCase
             });
     }
 
-    private function createPaymentFailed()
+    // Authorization fails, but verify shows success
+    // Results in a payment verification error
+    public function testAuthFailedVerifySuccess()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->testPaymentFailed();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+    }
+
+    public function testAuthorizeFailedPayment()
+    {
+        $this->createPaymentFailed();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
+    protected function createPaymentFailed()
     {
         $data = $this->testData['testPaymentFailed'];
 
@@ -128,13 +153,21 @@ class NetbankingObcGatewayTest extends TestCase
         return $this->getLastEntity(ConstantsEntity::PAYMENT, true);
     }
 
-    private function mockPaymentFailed()
+    protected function mockPaymentFailed()
     {
         $this->mockServerContentFunction(
             function(& $content, $action = null)
             {
                 $content[Obc\ResponseFields::PAID] = Obc\Status::FAILED;
             });
+    }
+
+    protected function mockVerifyFailure()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['TXN_STATUS'] = 'FAILURE';
+        });
     }
 
     protected function mockAmountMismatch()
