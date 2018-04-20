@@ -255,7 +255,8 @@ class Header
     const EMAIL                     =   "EMAIL";
     const PHONE                     =   "PHONE";
     const CARD                      =   "CARD";
-    const EXPIRY                    =   "EXPIRY";
+    const EXPIRY_MONTH              =   "EXPIRY MONTH";
+    const EXPIRY_YEAR               =   "EXPIRY YEAR";
     const CARDHOLDER_NAME           =   "CARDHOLDER NAME";
     const CURRENCY                  =   "CURRENCY";
     const RECEIPT                   =   "RECEIPT";
@@ -673,7 +674,8 @@ class Header
                 self::EMAIL,
                 self::PHONE,
                 self::CARD,
-                self::EXPIRY,
+                self::EXPIRY_MONTH,
+                self::EXPIRY_YEAR,
                 self::CARDHOLDER_NAME,
                 self::CURRENCY,
                 self::AMOUNT,
@@ -687,7 +689,8 @@ class Header
                 self::EMAIL,
                 self::PHONE,
                 self::CARD,
-                self::EXPIRY,
+                self::EXPIRY_MONTH,
+                self::EXPIRY_YEAR,
                 self::CARDHOLDER_NAME,
                 self::AMOUNT,
                 self::CURRENCY,

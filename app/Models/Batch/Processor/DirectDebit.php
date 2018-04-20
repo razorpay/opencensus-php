@@ -2,17 +2,16 @@
 
 namespace RZP\Models\Batch\Processor;
 
-use RZP\Models\Batch;
 use RZP\Models\Batch\Header;
 use RZP\Models\Card\Entity as Card;
 use RZP\Models\Customer;
 use RZP\Models\FileStore;
+use RZP\Models\Order\Core as OrderCore;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\Payment\AuthType;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Processor\Processor;
-use \RZP\Models\Order\Core as OrderCore;
 
 class DirectDebit extends Base
 {
@@ -46,9 +45,9 @@ class DirectDebit extends Base
             $card = [
                 Card::NUMBER        =>  $row[Header::CARD],
                 Card::CVV           =>  Card::DUMMY_CVV,
-                Card::EXPIRY_MONTH  =>  substr($row[Header::EXPIRY], 0, 2),
-                Card::EXPIRY_YEAR   =>  substr($row[Header::EXPIRY], 2, 2),
-                Card::NAME          => $name,
+                Card::EXPIRY_MONTH  =>  (int) $row[Header::EXPIRY_MONTH],
+                Card::EXPIRY_YEAR   =>  (int) $row[Header::EXPIRY_YEAR],
+                Card::NAME          =>  $name,
             ];
 
             $request = [
@@ -104,13 +103,12 @@ class DirectDebit extends Base
     private function createCustomer($row)
     {
         $customerInput = [
-            Customer::NAME          =>  $row[Header::CARDHOLDER_NAME],
-            Customer::EMAIL         =>  $row[Header::EMAIL],
-            Customer::CONTACT       =>  $row[Header::PHONE],
-            Customer::FAIL_EXISTING =>  "0",
+            Customer\Entity::NAME          =>  $row[Header::CARDHOLDER_NAME],
+            Customer\Entity::EMAIL         =>  $row[Header::EMAIL],
+            Customer\Entity::CONTACT       =>  $row[Header::PHONE],
         ];
         $customerService = new Customer\Core();
-        return $customerService->createLocalCustomer($customerInput, $this->merchant);
+        return $customerService->createLocalCustomer($customerInput, $this->merchant, false);
     }
 
 
