@@ -11,6 +11,7 @@ use RZP\Models\Payment\Status as PaymentStatus;
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
     const PAYMENT_ID      = 'payment_id';
+    const BANK_REF_NO     = 'bank_payment_id';
     const STATUS          = 'status';
     const AMOUNT          = 'amount';
     const DATE            = 'date';
@@ -72,5 +73,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return PaymentStatus::CAPTURED;
+    }
+
+    protected function getReferenceNumber($row)
+    {
+        return $row[self::BANK_REF_NO];
     }
 }
