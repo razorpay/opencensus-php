@@ -132,7 +132,7 @@ class NetbankingObcGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('authorised', $payment['status']);
+        $this->assertEquals('authorized', $payment['status']);
     }
 
     protected function createPaymentFailed()
