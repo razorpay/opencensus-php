@@ -2,7 +2,9 @@
 
 namespace RZP\Services;
 
+use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base\Entity;
 use Razorpay\Ufh\Client as UfhClient;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -49,7 +51,10 @@ class UfhService
      * @param string $storageFileName
      * @param string $type
      * @param Entity $entity
+     *
      * @return array
+     *
+     * @throws Exception\ServerErrorException
      */
     public function uploadFileAndGetUrl(
                                         UploadedFile $file,
@@ -74,12 +79,37 @@ class UfhService
             TraceCode::AWS_FILE_UPLOAD,
             array_except($requestData, ['file']));
 
-        $response = $this->ufhClient->upload($requestData);
+        try
+        {
+            $response = $this->ufhClient->upload($requestData);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new Exception\ServerErrorException(
+                'Error completing the request',
+                ErrorCode::SERVER_ERROR_UFH_SERVICE_FAILURE
+            );
+        }
+
+        $this->validateResponse($response);
 
         return [
             self::FILE_ID           => $response['id'],
             self::RELATIVE_LOCATION => $response['location'],
         ];
+    }
+
+    protected function validateResponse(array $res = null)
+    {
+        if ((empty($res['id']) === true) or (empty($res['location']) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Response not valid',
+                'response',
+                $res);
+        }
     }
 
     protected function getStoreForEnv(): string

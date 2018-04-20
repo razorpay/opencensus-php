@@ -11,8 +11,8 @@ use Illuminate\Mail\Mailable as BaseMailable;
 use Illuminate\Contracts\Queue\Factory as Queue;
 use Illuminate\Contracts\Mail\Mailer as MailerContract;
 use GuzzleHttp\Exception\ClientException as GuzzleClientException;
-
 use Razorpay\Trace\Logger as Trace;
+
 use RZP\Trace\TraceCode;
 
 class Mailable extends BaseMailable
@@ -23,6 +23,8 @@ class Mailable extends BaseMailable
     public $tries = 5;
 
     public $taskId;
+
+    public $mode;
 
     protected $emailValidator;
 
@@ -39,6 +41,8 @@ class Mailable extends BaseMailable
         $app = App::getFacadeRoot();
 
         $this->taskId = $app['request']->getTaskId();
+
+        $this->mode = $app['basicauth']->getMode();
     }
 
     public function build()

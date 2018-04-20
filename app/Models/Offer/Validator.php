@@ -53,6 +53,7 @@ class Validator extends Base\Validator
         Entity::MAX_PAYMENT_COUNT  => 'filled|integer|min:1',
         Entity::LINKED_OFFER_IDS   => 'filled|array',
         Entity::ACTIVE             => 'filled|in:0',
+        Entity::ENDS_AT            => 'filled|epoch',
         Entity::DISPLAY_TEXT       => 'filled|string|max:255',
         Entity::ERROR_MESSAGE      => 'filled|string|max:255',
         Entity::TERMS              => 'filled|string'
@@ -71,7 +72,7 @@ class Validator extends Base\Validator
     protected static $editValidators = [
         Entity::IINS,
         Entity::MAX_PAYMENT_COUNT,
-        Entity::LINKED_OFFER_IDS
+        Entity::LINKED_OFFER_IDS,
     ];
 
     protected function validatePaymentNetwork(array $input)

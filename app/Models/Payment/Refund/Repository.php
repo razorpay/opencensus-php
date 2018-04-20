@@ -318,6 +318,8 @@ class Repository extends Base\Repository
 
         $terminalAcquirerAttr = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY_ACQUIRER);
 
+        $paymentCreatedBefore = Carbon::now()->subSeconds($timerange)->timestamp;
+
         return $this->newQuery()
                     ->select($refundAttributes)
                     ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
@@ -328,8 +330,10 @@ class Repository extends Base\Repository
                     ->where($refundCreatedAt, '>=', $from)
                     ->where($refundCreatedAt, '<=', $to)
                     ->where($paymentGateway, '=', $gateway)
-                    ->where($paymentMethod, '=', 'card')
-                    ->whereRaw($refundCreatedAt . '-' .  $paymentCreatedAt . '>=' . $timerange)
+                    ->whereIn($paymentMethod, [Payment\Method::CARD, Payment\Method::EMI])
+                    // Doesn't matter when the refund was created, since payment is older.
+                    // API can not process it, thus picking refund only based on payment date
+                    ->where($paymentCreatedAt, '<=', $paymentCreatedBefore)
                     ->with(['payment'])
                     ->get();
     }
@@ -685,5 +689,19 @@ class Repository extends Base\Repository
                     ->where(Refund\Entity::RECEIPT, '=', $receipt)
                     ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
                     ->first();
+    }
+
+    public function getAliasesForRefundsDbColumns($params): array
+    {
+        $dbColumns = [];
+
+        foreach ($params as $param)
+        {
+            $dbColumn = $this->repo->refund->dbColumn($param);
+
+            $dbColumns[] = $dbColumn . ' as refund_'. $param;
+        }
+
+        return $dbColumns;
     }
 }

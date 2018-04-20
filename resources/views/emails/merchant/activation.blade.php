@@ -58,7 +58,11 @@
 
 <p style="margin: 0; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">Your {{{$merchant['org']['business_name']}}} account for
 
+@if (isset($merchant['website']) === true)
 <a title="Merchant Website" href="{{$merchant['website']}}" style="color: #2ba6cb; text-decoration: none;">{{{$merchant['billing_label']}}}</a>
+@else
+{{{$merchant['billing_label']}}}
+@endif
 
 is now active. The pricing details associated with your account are:
 

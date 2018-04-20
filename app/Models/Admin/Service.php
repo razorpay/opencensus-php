@@ -11,7 +11,7 @@ use RZP\Constants\Entity;
 use RZP\Constants\AdminFetch;
 use RZP\Models\GeoIP\Service as GeoIP;
 use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
-use RZP\Reconciliator\ReconciliationSummaryMail\DailyReconStatusSummary;
+use RZP\Reconciliator\ReconSummary\DailyReconStatusSummary;
 
 class Service extends Base\Service
 {

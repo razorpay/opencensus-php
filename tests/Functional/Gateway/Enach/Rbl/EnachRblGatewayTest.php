@@ -351,7 +351,7 @@ class EnachRblGatewayTest extends TestCase
 
         $tokenId = $paymentEntity[Payment::TOKEN_ID];
 
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => 1000]);
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 3000]);
 
         $this->fixtures->edit(
             'token',
@@ -362,7 +362,7 @@ class EnachRblGatewayTest extends TestCase
                 Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED
             ]);
 
-        $payment = $this->getEmandatePaymentArray('UTIB', null, 1000);
+        $payment = $this->getEmandatePaymentArray('UTIB', null, 3000);
         $payment['token'] = $tokenId;
         $payment['order_id'] = $order->getPublicId();
 
@@ -449,16 +449,21 @@ class EnachRblGatewayTest extends TestCase
                 ],
                 'items' => [
                     [
-                        'SRNO'            => '1',
-                        'ECS_DATE'        => Carbon::today()->format('m/d/Y'),
-                        'SETTLEMENT_DATE' => Carbon::today()->format('m/d/Y'),
-                        'CUST_REFNO'      => '',
-                        'SCH_REFNO'       => '',
-                        'CUSTOMER_NAME'   => 'User name',
-                        'AMOUNT'          => $payment['amount'] / 100,
-                        'REFNO'           => substr($response['razorpay_payment_id'], 4),
-                        'UMRN'            => 'UTIB6000000005844847',
-                        'CLG_STATUS'      => 'SUCCESS',
+                        'SRNO'                  => '1',
+                        'ECS_DATE'              => Carbon::today()->format('m/d/Y'),
+                        'SETTLEMENT DATE'       => Carbon::today()->format('m/d/Y'),
+                        'CUST_REFNO'            => '',
+                        'SCH_REFNO'             => '',
+                        'CUSTOMER_NAME'         => 'User name',
+                        'AMOUNT'                => $payment['amount'] / 100,
+                        'REFNO'                 => substr($response['razorpay_payment_id'], 4),
+                        'UMRN'                  => 'UTIB6000000005844847',
+                        'UPLOAD_DATE'           => '',
+                        'ACKUPD_DATE'           => '',
+                        'RESPONSE_RECEIVED'     => '',
+                        'STATUS'                => 'PAID',
+                        'REASON_CODE'           => '',
+                        'REASON_DESCRIPTION'    => '',
                     ],
                 ]
             ]
