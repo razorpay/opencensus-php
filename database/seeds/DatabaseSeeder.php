@@ -1207,7 +1207,21 @@ class DatabaseSeeder extends Seeder
     {
         DB::table(Table::TERMINAL)->insert(
             array(
-                'id'                    => '22BOfBaroda2m8',
+                'id'                    => '22BOfBarodaRm8',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_BOB,
+                'netbanking'            => '1',
+                'corporate'             => '0',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_bob',
+                'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_bob_hash_secret'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            )
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => '22BOfBarodaCm8',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::NETBANKING_BOB,
                 'netbanking'            => '1',
