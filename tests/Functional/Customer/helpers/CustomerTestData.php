@@ -252,14 +252,16 @@ return [
             'content' => [
                 'name'    => 'test1',
                 'contact' => '1234567809',
-                'email'   => 'test@rzp.com'
+                'email'   => 'test@rzp.com',
+                'gstin'   => '29CFZPR4093Q1ZA',
             ],
         ],
         'response' => [
             'content' => [
                 'name'    => 'test1',
                 'contact' => '1234567809',
-                'email'   => 'test@rzp.com'
+                'email'   => 'test@rzp.com',
+                'gstin'   => '29CFZPR4093Q1ZA',
             ],
         ],
     ],

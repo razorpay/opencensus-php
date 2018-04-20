@@ -769,7 +769,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The auth_type field is invalid',
+                    'description' => 'The selected auth_type is invalid',
                 ],
             ],
             'status_code' => 400,

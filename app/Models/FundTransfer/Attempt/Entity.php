@@ -133,6 +133,11 @@ class Entity extends Base\PublicEntity
 
     // ------------------------------- getters ---------------------------------
 
+    public function getChannel()
+    {
+        return $this->getAttribute(self::CHANNEL);
+    }
+
     public function getRemarks()
     {
         return $this->getAttribute(self::REMARKS);

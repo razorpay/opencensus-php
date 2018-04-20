@@ -3,8 +3,8 @@
 namespace RZP\Mail\Base;
 
 use App;
-use Illuminate\Mail\SendQueuedMailable as BaseSendQueuedMailable;
 use Illuminate\Contracts\Mail\Mailer as MailerContract;
+use Illuminate\Mail\SendQueuedMailable as BaseSendQueuedMailable;
 
 class SendQueuedMailable extends BaseSendQueuedMailable
 {
@@ -23,8 +23,18 @@ class SendQueuedMailable extends BaseSendQueuedMailable
 
         $trace = $app['trace'];
 
+        $repo = $app['repo'];
+
         // Task Id needs to be set in trace
         $trace->processor('web')->setTaskId($this->mailable->taskId);
+
+        // Sets application and db mode if $mode is set
+        if ($this->mailable->mode !== null)
+        {
+            $app['basicauth']->setModeAndDbConnection($this->mailable->mode);
+        }
+
+        $repo->resetConnectionAttributes();
 
         parent::handle($mailer);
     }

@@ -37,6 +37,19 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    /**
+     * @param  string      $merchantId
+     * @return Entity|null
+     */
+    public function getLatestActiveKeyForMerchant(string $merchantId)
+    {
+        return $this->newQuery()
+                    ->merchantId($merchantId)
+                    ->notExpired()
+                    ->latest()
+                    ->first();
+    }
+
     public function findNotExpired($keyId)
     {
         return $this->newQuery()->notExpired()->find($keyId);
