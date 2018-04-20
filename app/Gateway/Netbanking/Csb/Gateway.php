@@ -15,13 +15,6 @@ use RZP\Constants\Mode as RZPMode;
 use RZP\Models\Payment\Gateway as PG;
 use RZP\Exception\GatewayErrorException;
 
-/**
- * This gateway was developed as per the API contract shared by the bank.
- * @see https://drive.google.com/file/d/0B1kf6HOmx7JBQVg3dUgtN2tYN3dMN2ZGNjh4VERVbXh4MllB/view?usp=sharing
- *
- * Class Gateway
- * @package RZP\Gateway\Netbanking\Csb
- */
 class Gateway extends Base\Gateway
 {
     const PAYEE_ID = 'Razorpay';
