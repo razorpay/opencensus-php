@@ -116,18 +116,6 @@ class Validator extends Base\Validator
         HdfcEMDebitHeadings::STATUS                 => 'Status must be present',
     ];
 
-    protected static $directDebitRequireHeaders = [
-        Header::EMAIL           =>      'Email must be present',
-        Header::PHONE           =>      'Phone must be present',
-        Header::CARD            =>      'Card number must be present',
-        Header::EXPIRY          =>      'Expiry must be present',
-        Header::CARDHOLDER_NAME =>      'Cardholder name must be present',
-        Header::AMOUNT          =>      'Amount (in paise) must be present',
-        Header::RECEIPT         =>      'Receipt number must be present',
-        Header::NOTES1          =>      'NOTES 1 [] must be present',
-        Header::NOTES2          =>      'NOTES 2 [] must be present',
-        Header::NOTES3          =>      'NOTES 3 [] must be present',
-    ];
 
     protected function validateType($attribute, $value)
     {
