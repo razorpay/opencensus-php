@@ -25,6 +25,8 @@ class Type
 
     const ICICI_NETBANKING_REFUND           = 'icici_netbanking_refund';
 
+    const OBC_NETBANKING_REFUND             = 'obc_netbanking_refund';
+
     const AXIS_NETBANKING_REFUND            = 'axis_netbanking_refund';
 
     const AXIS_NETBANKING_CLAIMS            = 'axis_netbanking_claims';
@@ -66,8 +68,6 @@ class Type
     const PNB_NETBANKING_REFUND             = 'pnb_netbanking_refund';
 
     const PNB_NETBANKING_CLAIMS             = 'pnb_netbanking_claims';
-
-    const OBC_NETBANKING_REFUND             = 'obc_netbanking_refund';
 
     const GATEWAY_FAILED_REFUNDS            = 'gateway_failed_refunds';
 
@@ -144,7 +144,6 @@ class Type
             self::RBL_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_CLAIM,
-            self::OBC_NETBANKING_REFUND,
             self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
@@ -174,6 +173,7 @@ class Type
             self::HDFC_FSS_FAILED_REFUND,
             self::MOCK_RECONCILIATION_FILE,
             self::GATEWAY_FAILED_REFUNDS,
+            self::OBC_NETBANKING_REFUND,
         ],
 
         Constants\Entity::BATCH => [
@@ -240,7 +240,6 @@ class Type
         self::CORPORATION_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,
-        self::OBC_NETBANKING_REFUND,
         self::AXIS_EMANDATE_DEBIT,
         self::FEDERAL_NETBANKING_REFUND,
         self::RBL_NETBANKING_REFUND,
@@ -265,6 +264,7 @@ class Type
         self::AXIS_CYBERSOURCE_FAILED_REFUND,
         self::MOCK_RECONCILIATION_FILE,
         self::GATEWAY_FAILED_REFUNDS,
+        self::OBC_NETBANKING_REFUND,
     ];
 
     /**
@@ -282,7 +282,6 @@ class Type
             self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
-            self::OBC_NETBANKING_REFUND,
             self::ICICI_UPI_REFUND,
             self::SBI_UPI_REFUND,
             self::FUND_TRANSFER_DEFAULT,
@@ -308,6 +307,7 @@ class Type
             self::HDFC_CYBERSOURCE_FAILED_REFUND,
             self::AXIS_CYBERSOURCE_FAILED_REFUND,
             self::HDFC_FSS_FAILED_REFUND,
+            self::OBC_NETBANKING_REFUND,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [
