@@ -1,5 +1,136 @@
+import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import LocalStorageService from 'rzp/utils/localStorage';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import ProgressBar from 'rzp/ui/ProgressBar';
+
+const Icon = ({ isActivated, isSubmitted }) => {
+  let className = '';
+
+  if (!isActivated && !isSubmitted) {
+    className = 'activation-form';
+  } else if (isActivated) {
+    className = 'done';
+  } else {
+    className = 'activation-form-submitted';
+  }
+
+  return <div className={`activation-step-icon ${className}`} />;
+};
+
+class SwitchToLive extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  switchToLive() {
+    LocalStorageService.setItem('rzp_mode', 'live');
+    window.location.reload();
+  }
+
+  render() {
+    return (
+      <a className="switch-to-live" onClick={this.switchToLive}>
+        {this.props.children}
+      </a>
+    );
+  }
+}
+
+const WrapperElement = ({
+  children,
+  isActivated,
+  isSubmitted,
+  hasPersonalised,
+  ...otherProps
+}) => {
+  if (isActivated || (isSubmitted && hasPersonalised)) {
+    return (
+      <div {...otherProps}>
+        <div className="media">{children}</div>
+      </div>
+    );
+  }
+
+  return (
+    <Link to={!hasPersonalised ? '/config' : '/activation'} {...otherProps}>
+      <div className="media">
+        {children}
+        <div className="media-arrow">
+          <i className="i i-chevron-right" />
+        </div>
+      </div>
+    </Link>
+  );
+};
+
+const Title = ({ children, isActivated, isSubmitted }) => {
+  return (
+    <span>
+      {isSubmitted ? (
+        <span>
+          {isActivated ? (
+            'Your Account is Activated'
+          ) : (
+            <span>
+              Activation Form Submitted{' '}
+              <small>
+                <i className="i i-info-circle text-fade" />
+                <Popover align="top" followPointer={true}>
+                  <PopoverBody>
+                    Your account is Under Review. The process usually takes 2 to
+                    3 working days. We will reach out on your contact email for
+                    further clarifications.
+                  </PopoverBody>
+                </Popover>
+              </small>
+            </span>
+          )}
+        </span>
+      ) : (
+        'Activate your Account'
+      )}
+    </span>
+  );
+};
+
+const Text = ({
+  mode,
+  children,
+  isActivated,
+  isSubmitted,
+  hasPersonalised,
+}) => {
+  return (
+    <span>
+      {!isActivated && !isSubmitted ? (
+        'Fill activation form to accept payments.'
+      ) : !hasPersonalised ? (
+        !isActivated ? (
+          'Personalize your account'
+        ) : (
+          <span>
+            <Link to="/config">Personalize</Link>
+            {mode === 'test' ? (
+              <span>
+                {' '}
+                or <SwitchToLive>Switch to live</SwitchToLive> mode
+              </span>
+            ) : (
+              <span> your Account</span>
+            )}
+          </span>
+        )
+      ) : isActivated && mode === 'test' ? (
+        <span>
+          <SwitchToLive>Switch to live</SwitchToLive> mode
+        </span>
+      ) : (
+        'You are all set up.'
+      )}
+    </span>
+  );
+};
 
 const Progress = ({ progress }) => {
   return (
@@ -9,30 +140,52 @@ const Progress = ({ progress }) => {
   );
 };
 
-export default ({ user }) => {
-  const progress = user.activation_progress;
+export default ({ mode, user, config }) => {
+  const { activation_progress: progress, isActivated, isSubmitted } = user;
+
+  const hasPersonalised = { config };
 
   return (
-    <Link class="Onboarding__Step" to="/activation">
-      <div class="media">
-        <div class="media-body">
-          <div className="activation-progress-cont">
-            <div>
-              <b>Activate Your Account</b>
-              <span className="activation-progress-num">{progress}%</span>
-            </div>
-            <div>
-              <Progress progress={progress} />
-            </div>
+    <WrapperElement
+      class="Onboarding__Step"
+      isActivated={isActivated}
+      isSubmitted={isSubmitted}
+      hasPersonalised={hasPersonalised}
+    >
+      <div className="media-icon">
+        <Icon isActivated={isActivated} isSubmitted={isSubmitted} />
+      </div>
+      <div class="media-body">
+        <div className="activation-progress-cont">
+          <div>
+            <b>
+              <Title
+                isActivated={isActivated}
+                isSubmitted={isSubmitted}
+                hasPersonalised={hasPersonalised}
+              />
+            </b>
+            {!isActivated &&
+              !isSubmitted && (
+                <span className="activation-progress-num">{progress}%</span>
+              )}
           </div>
-          <div className="step-desc">
-            Fill activation form to accept payments
-          </div>
+          {!isActivated &&
+            !isSubmitted && (
+              <div>
+                <Progress progress={progress} />
+              </div>
+            )}
         </div>
-        <div className="media-arrow">
-          <i className="i i-chevron-right" />
+        <div className="step-desc">
+          <Text
+            mode={mode}
+            isActivated={isActivated}
+            isSubmitted={isSubmitted}
+            hasPersonalised={hasPersonalised}
+          />
         </div>
       </div>
-    </Link>
+    </WrapperElement>
   );
 };

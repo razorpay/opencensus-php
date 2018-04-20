@@ -1,3 +1,5 @@
+$tooltip-bg-color = #2C3243;
+
 .Dashboard {
   .h1, h4 {
     margin: 0;
@@ -249,6 +251,12 @@
   top: 0;
   right: 0;
   background: transparent url("assets/onboarding.svg") 0 0 no-repeat;
+  opacity: 1;
+
+  @media (max-width: 1234px) {
+
+    opacity: 0.7;
+  }
 }
 
 body.analytics-v2-active .onboarding-card-wrapper {
@@ -258,7 +266,7 @@ body.analytics-v2-active .onboarding-card-wrapper {
 
 .onboarding-card.media {
   background-color: #5D89E5;
-  padding: 54px 328px 54px 48px;
+  padding: 54px 48px 54px 48px;
   margin-bottom: 20px;
   box-shadow: 0 0 8px 0 rgba(0,0,0,0.16);
   border-radius: 2px;
@@ -272,6 +280,22 @@ body.analytics-v2-active .onboarding-card-wrapper {
   &.first-step {
     box-shadow: 0 0 0 9999px rgba(0,0,0,.25), 0 0 15px rgba(0,0,0,.25);
     z-index: 9999;
+    padding-right: 328px;
+
+    @media (max-width: 1095px) {
+
+      padding-right: 48px;
+    }
+
+    > div.media-body {
+ 
+      width: 100%;
+    }
+
+    .onboarding-illustration {
+
+      opacity: 1;
+    }
   }
 
   .close {
@@ -295,9 +319,17 @@ body.analytics-v2-active .onboarding-card-wrapper {
   }
 
   > .media-body {
+    width: 1px;
     padding: 0;
     max-width: 800px;
     min-height: 200px;
+    position: relative;
+    z-index: 1;
+
+    @media (max-width: 974px) {
+
+      width: 100%;
+    }
 
     p {
       margin-bottom: 16px;
@@ -382,7 +414,7 @@ body.analytics-v2-active .onboarding-card-wrapper {
       }
     }
   }
-  
+
   .onboarding-cta {
 
     color: $primary-color;
@@ -463,34 +495,65 @@ body.analytics-v2-active .onboarding-card-wrapper {
     }
   }
 
+  a.Onboarding__Step:hover {
+
+    background-color: rgba(250, 250, 250, 0.9);
+  }
+
   .Onboarding__Step {
     display: block;
     color: #58666e;
-    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.05);
     border-radius: 2px;
     background-color: #FAFAFA;
     padding: 14px;
-    border: 1px solid #D8E1E3;
+    min-width: 275px;
 
-    &:hover {
-      border: 1px solid #BAACEA;
-      background-color: #FAFBFF;
+    @media (max-width: 893px) {
+
+      min-width: auto;
     }
 
-    &.loading div.media > div.media-body {
+    &.loading {
 
-      b * , .step-desc * {
+      pointer-events: none;
 
-        opacity: 0;
-      }
+      div.media > div {
 
-      b .PlaceholderLoader, .step-desc .PlaceholderLoader {
+        &.media-body {
 
-        position: absolute;
-        display: inline-block;
-        opacity: 1;
-        top: 0;
-        left: 0;
+          b * , .step-desc * {
+
+            opacity: 0;
+          }
+
+          b .PlaceholderLoader, .step-desc .PlaceholderLoader {
+
+            position: absolute;
+            display: inline-block;
+            opacity: 1;
+            top: 0;
+            left: 0;
+          }
+        }
+
+        &.media-icon {
+
+          padding-right: 8px;
+
+          > .activation-step-icon {
+
+            background-image: none !important;
+            background-color: #dfe1ea;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+          }
+        }
+
+        &.media-arrow {
+
+          display: none;
+        }
       }
     }
 
@@ -502,7 +565,40 @@ body.analytics-v2-active .onboarding-card-wrapper {
       > div {
 
         display: table-cell;
-        vertical-align: middle;      
+        vertical-align: middle;
+
+        b, div.step-desc {
+
+          white-space: nowrap;
+
+          .rzp-popover {
+
+            .rzp-tooltip-inner {
+
+              background-color: $tooltip-bg-color;
+
+              .rzp-popover-arrow:after {
+
+                border-top-color: $tooltip-bg-color;
+              }
+
+              .rzp-popover-content {
+
+                white-space: normal;
+
+                .rzp-popover-body {
+ 
+                  color: #FFFFFF;
+                }
+              }
+            }
+          }
+
+          @media (max-width: 974px) {
+
+            white-space: normal;
+          }
+        }
 
         b {
 
@@ -510,18 +606,80 @@ body.analytics-v2-active .onboarding-card-wrapper {
           line-height: 19px;
           display: inline-block;
           position: relative;
+          color: rgba(0,0,0,0.87);
+
+          i.i-info-circle {
+
+            display: inline-block;
+            margin-left: 2px;
+            vertical-align: text-bottom;
+          }
         }
 
         div.step-desc {
 
-          margin-top: 6px;
+          margin-top: 4px;
           position: relative;
+          color: rgba(0,0,0,0.54);
+        }
+
+        &.media-icon {
+
+          width: 1px;
+          vertical-align: middle;
+
+          .activation-step-icon {
+
+            display: block;
+            width: 40px;
+            height: 32px;
+            background-position: top left;
+            background-repeat: no-repeat;
+
+            &.keygen {
+
+              background-image: url('assets/activation_icons/keygen.svg');
+            }
+
+            &.integrate {
+
+              background-image: url('assets/activation_icons/integrate.svg');
+            }
+
+            &.browse {
+
+              background-image: url('assets/activation_icons/browse.svg');
+            }
+
+            &.done {
+
+              background-image: url('assets/activation_icons/done.svg');
+            }
+
+            &.activation-form {
+
+              background-image: url('assets/activation_icons/activation-form.svg');
+            }
+
+            &.activation-form-submitted {
+
+              background-image: url('assets/activation_icons/activation-form-submitted.svg');
+            }
+          }
         }
 
         &.media-body .activation-progress-cont {
 
           display: table;
           width: 100%;
+
+          @media (min-width: 768px) and (max-width: 978px) {
+
+            .activation-progress, .activation-progress-num {
+
+              display: none !important;
+            }
+          }
 
           > div {
 
@@ -534,6 +692,10 @@ body.analytics-v2-active .onboarding-card-wrapper {
               width: 1%;
             }
 
+            b {
+
+              white-space: nowrap;
+            }
             span.activation-progress-num {
 
               display: inline-block;
@@ -551,6 +713,7 @@ body.analytics-v2-active .onboarding-card-wrapper {
                 height: 6px;
                 border-radius: 4px;
                 overflow: hidden;
+                background-color: #ced7d9;
 
                 div.progress-bar {
 
@@ -565,7 +728,7 @@ body.analytics-v2-active .onboarding-card-wrapper {
 
           width: auto;
         }
- 
+
         &.media-arrow {
 
           width: 32px;
@@ -575,6 +738,9 @@ body.analytics-v2-active .onboarding-card-wrapper {
 
             font-size: 20px;
             vertical-align: middle;
+            position: relative;
+            right: -7px;
+            padding-left: 8px;
           }
         }
       }
@@ -582,7 +748,6 @@ body.analytics-v2-active .onboarding-card-wrapper {
 
     a {
       text-decoration: underline;
-      color: inherit;
     }
 
     .i-external-link {
@@ -1046,7 +1211,7 @@ div.feature-activation-banner {
     cursor: pointer;
 
     &:hover {
-    	background-color: #F0F1F6;
+        background-color: #F0F1F6;
     }
   }
 }

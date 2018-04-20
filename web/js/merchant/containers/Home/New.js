@@ -418,9 +418,9 @@ class HomeContainer extends Component {
     return (
       <div class="react-root dashboard-home">
         <div ref={node => (this.extraContent = node)} className="extra-content">
-          {!isAdmin &&
-            (user.isActivated ? (
-              hasNewAnalyticsTour && (
+          {!isAdmin && (
+            <div>
+              {hasNewAnalyticsTour && (
                 <div
                   className={`v2-tour-banner${
                     dismissNewAnalyticsBanner ? ' dismiss' : ''
@@ -438,15 +438,15 @@ class HomeContainer extends Component {
                     </Banner>
                   </div>
                 </div>
-              )
-            ) : (
-              <div className="v2-onboarding-card">
-                <NewUserOnboardingCard
-                  onSizeChange={this.setScrollAmountToStickHeader}
-                  payments={this.state.payments}
-                />
-              </div>
-            ))}
+              )}
+            </div>
+          )}
+          <div className="v2-onboarding-card">
+            <NewUserOnboardingCard
+              onSizeChange={this.setScrollAmountToStickHeader}
+              payments={this.state.payments}
+            />
+          </div>
         </div>
         <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}>
           <Header className="clearfix" title="" showMode={false}>

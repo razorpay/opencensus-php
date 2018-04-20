@@ -34,7 +34,7 @@ const onBoardingItems = [
   'Issue Refunds',
 ];
 
-@connect(state => state.session)
+@connect(state => ({ ...state.session, config: state.config.config }))
 export default class OnboardingCard extends Component {
   constructor(props) {
     super(props);
@@ -82,7 +82,7 @@ export default class OnboardingCard extends Component {
   };
 
   render() {
-    let { user, payments } = this.props;
+    let { user, config, payments, mode } = this.props;
     let { isFirstStep, showOnboarding, integrated } = this.state;
 
     let FirstStep = null;
@@ -137,30 +137,25 @@ export default class OnboardingCard extends Component {
             <span className="highlight">G</span>etting Started with Razorpay
           </div>
           <div className="onboarding-desc">
-            {!user.isActivated &&
-              (integrated ? (
-                <span>
-                  Switch to Live mode to integrate and start doing live
-                  transactions.
-                  <button>Switch to Live Mode</button>
-                </span>
-              ) : (
-                <span>
-                  You are currently in test mode. Feel free to explore the
-                  dashboard or simply activate your account:
-                </span>
-              ))}
+            {mode === 'test' ? (
+              <span>
+                You are currently in test mode. Feel free to explore the
+                dashboard or do the following:
+              </span>
+            ) : (
+              <span>
+                You are now in Live Mode. Generate live API keys and Integrate
+                to go live.
+              </span>
+            )}
           </div>
           <div className="onboarding-steps">
             <Group>
               <GroupItem>
-                <ActivationStep user={user} />
+                <ActivationStep mode={mode} user={user} config={config} />
               </GroupItem>
               <GroupItem>
-                <Integration
-                  mode={user.isActivated ? 'live' : 'test'}
-                  payments={payments}
-                />
+                <Integration mode={mode} payments={payments} />
               </GroupItem>
             </Group>
           </div>

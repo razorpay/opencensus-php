@@ -591,7 +591,7 @@ class KeyMetricsContainer extends Component {
                */
               if (isInitialLoad) {
                 tabState.data.showTab =
-                  tabState.data.showTab || tabState.data.percent > 15;
+                  tabState.data.showTab || tabState.data.percent < 15;
 
                 if (!tabState.data.showTab) {
                   trackSavedCardsHidden(tabState.data.percent);

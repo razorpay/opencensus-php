@@ -7,6 +7,30 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 import LocalStorageService from 'rzp/utils/localStorage';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 
+const Icon = ({ mode, keysGenerated, paymentsMade, visitedTransactions }) => {
+  let className = '';
+
+  if (!keysGenerated) {
+    className = 'keygen';
+  } else if (!paymentsMade) {
+    className = 'integrate';
+  } else {
+    if (!visitedTransactions || mode !== 'live') {
+      className = 'browse';
+    } else {
+      className = 'done';
+    }
+  }
+
+  return <div className={`activation-step-icon ${className}`} />;
+};
+
+const Arrow = () => (
+  <div className="media-arrow">
+    <i className="i i-chevron-right" />
+  </div>
+);
+
 const WrapperElement = ({
   children,
   keysGenerated,
@@ -15,7 +39,11 @@ const WrapperElement = ({
   ...otherProps
 }) => {
   if (keysGenerated && paymentsMade && visitedTransactions) {
-    return <div {...otherProps}>{children}</div>;
+    return (
+      <div {...otherProps}>
+        <div className="media">{children}</div>
+      </div>
+    );
   }
 
   if (keysGenerated && !paymentsMade) {
@@ -25,14 +53,20 @@ const WrapperElement = ({
         target="_blank"
         {...otherProps}
       >
-        {children}
+        <div className="media">
+          {children}
+          <Arrow />
+        </div>
       </a>
     );
   }
 
   return (
     <Link to={paymentsMade ? '/payments' : '/keys'} {...otherProps}>
-      {children}
+      <div className="media">
+        {children}
+        <Arrow />
+      </div>
     </Link>
   );
 };
@@ -49,7 +83,7 @@ const Title = ({
 
   let text = '';
 
-  if (keysGenerated && paymentsMade && visitedTransactions) {
+  if (mode === 'live' && keysGenerated && paymentsMade && visitedTransactions) {
     text = `Integrated in ${formattedMode} Mode`;
   } else {
     if (!keysGenerated) {
@@ -77,10 +111,11 @@ const Text = ({
   let text = '';
 
   if (keysGenerated && paymentsMade && visitedTransactions) {
-    text =
-      mode === 'live'
-        ? 'Start accepting live payments'
-        : 'Switch to Live mode to go Live';
+    if (mode !== 'live') {
+      text = 'You can view all payments in Transaction tab';
+    } else {
+      text = 'You are all set up.';
+    }
   } else {
     if (!keysGenerated) {
       text = `Generate ${mode} API keys.`;
@@ -114,10 +149,6 @@ export default class IntegrationStep extends Component {
 
     this.paymentsRequest = new Promise((res, rej) => {
       this.onFetchPayments = res;
-
-      if (!payments.loading) {
-        res(payments.items);
-      }
     });
   }
 
@@ -152,28 +183,32 @@ export default class IntegrationStep extends Component {
 
   render() {
     const { mode } = this.props,
-      { isLoading, keysGenerated, paymentsMade } = this.state,
+      {
+        isLoading,
+        keysGenerated,
+        paymentsMade,
+        visitedTransactions,
+      } = this.state,
       isIntegrated = keysGenerated && paymentsMade;
 
     return (
       <WrapperElement
         keysGenerated={keysGenerated}
         paymentsMade={paymentsMade}
+        visitedTransactions={visitedTransactions}
         className={`Onboarding__Step ${isLoading ? ' loading' : ''}`}
       >
-        <div className="media">
-          <div className="media-body">
-            <b>
-              <Title mode={mode} {...this.state} />
-              {isLoading && <PlaceholderLoader />}
-            </b>
-            <div className="step-desc">
-              <Text mode={mode} {...this.state} />
-              {isLoading && <PlaceholderLoader />}
-            </div>
-          </div>
-          <div className="media-arrow">
-            <i className="i i-chevron-right" />
+        <div className="media-icon">
+          <Icon mode={mode} {...this.state} />
+        </div>
+        <div className="media-body">
+          <b>
+            <Title mode={mode} {...this.state} />
+            {isLoading && <PlaceholderLoader />}
+          </b>
+          <div className="step-desc">
+            <Text mode={mode} {...this.state} />
+            {isLoading && <PlaceholderLoader />}
           </div>
         </div>
       </WrapperElement>

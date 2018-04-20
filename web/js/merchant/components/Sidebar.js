@@ -58,7 +58,7 @@ export default class Sidebar extends Component {
   }
 
   render() {
-    let { user, logoURL } = this.props;
+    let { user, config, logoURL } = this.props;
     let routes = this.routes;
     let isMerchant = !!user.current;
 
@@ -78,29 +78,46 @@ export default class Sidebar extends Component {
               null;
             } else {
               <div class="nav">
-                {!user.isActivated && (
-                  <Link className="activation-status-link" to="/activation">
-                    <div className="activation-status">
+                {(!user.isSubmitted || !config.hasPersonalised) && (
+                  <Link
+                    className="activation-status-link"
+                    to={!user.isSubmitted ? '/activation' : '/config'}
+                  >
+                    <div
+                      className={`activation-status${
+                        !config.hasPersonalised ? ' not-personalised' : ''
+                      }`}
+                    >
                       <div className="clearfix">
-                        <div className="pull-left">Activate your account</div>
+                        <div className="pull-left">
+                          {!user.isSubmitted
+                            ? 'Activate your account'
+                            : 'Form submitted'}
+                        </div>
                         <div className="pull-right">
                           <i className="i i-chevron-right" />
                         </div>
                       </div>
-                      <div class="activation-bar-content">
-                        <div className="activation-bar-text">
-                          {user.activation_progress >= 70
-                            ? `${remainingActivation}% Remaining`
-                            : `${user.activation_progress}% Complete`}
+                      {!user.isSubmitted ? (
+                        <div className="activation-bar-content activation-status-secondary">
+                          <div className="activation-bar-text">
+                            {user.activation_progress >= 70
+                              ? `${remainingActivation}% Remaining`
+                              : `${user.activation_progress}% Complete`}
+                          </div>
+                          <div className="activation-bar">
+                            <ProgressBar
+                              type="success"
+                              max={100}
+                              value={user.activation_progress}
+                            />
+                          </div>
                         </div>
-                        <div className="activation-bar">
-                          <ProgressBar
-                            type="success"
-                            max={100}
-                            value={user.activation_progress}
-                          />
+                      ) : (
+                        <div className="activation-status-secondary">
+                          Personalise your Account
                         </div>
-                      </div>
+                      )}
                     </div>
                   </Link>
                 )}

@@ -26,7 +26,7 @@ import { fetchGST } from 'merchant/modules/profile';
 import { fetchConfig } from 'merchant/modules/config';
 
 @withRouter
-@connect(state => state.session, {
+@connect(state => ({ ...state.session, config: state.config }), {
   ...ModalActions,
   ...SessionActions,
   ...ConfigActions,
@@ -43,7 +43,6 @@ export default class App extends Component {
     let currentMode = LocalStorageService.getItem('rzp_mode');
 
     this.props.fetchGST();
-    this.props.fetchConfig();
     Promise.all([
       this.fetchUser().then(({ data }) => {
         let user = data;
@@ -69,6 +68,7 @@ export default class App extends Component {
           applyTheme(orgCode);
         }
       }),
+      this.props.fetchConfig(),
     ]).then(response => {
       // Fetch features before displaying other views
       fetchFeaturesAjax(response[0].current)
@@ -248,7 +248,7 @@ export default class App extends Component {
   };
 
   render() {
-    let { user, org, mode, modeFormatted } = this.props;
+    let { user, config, org, mode, modeFormatted } = this.props;
 
     if (this.state.isLoading || !user.isAuthenticated) {
       return null;
@@ -266,7 +266,11 @@ export default class App extends Component {
           toggleMobileNav={this.toggleMobileNav}
           showMobileNav={this.state.showMobileNav}
         />
-        <Sidebar user={user} logoURL={org.main_logo_url} />
+        <Sidebar
+          user={user}
+          logoURL={org.main_logo_url}
+          config={config.config}
+        />
         <Content user={user} modeFormatted={modeFormatted} />
         <Footer />
 
