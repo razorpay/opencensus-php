@@ -1636,3 +1636,7 @@ VALUES
 	('9nDpYz26oaOHgI','100000Razorpay','UTGST 14%','percentage',1400,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
 	('9nDpYznDzU7NKP','100000Razorpay','UTGST 18%','percentage',1800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
 	('9nDpZ0hEw4vZky','100000Razorpay','UTGST 28%','percentage',2800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL);
+
+# Updates a user's name on urgent request. Currently there is no flow for same via Dashboard interface
+# Run on production live & test databases
+UPDATE users SET name = 'Nomi J Augustine' WHERE id = '8BpBceh6pcJ8ut' LIMIT 1;
