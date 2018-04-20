@@ -131,6 +131,10 @@ class Processor extends Base\Core
                 $response[$channel]['count']    += $setlResponse['settlement_count'];
                 $response[$channel]['txnCount'] += $setlResponse['txn_count'];
             }
+
+            $this->trace->info(
+                TraceCode::SETTLEMENT_ATTEMPT_ENTITIES_CREATED,
+                $response);
         }
         catch (\Exception $e)
         {
@@ -173,24 +177,18 @@ class Processor extends Base\Core
     {
         $setlAttempts = new Base\PublicCollection;
 
-        $totalTxns = 0;
-
         $settlements = $this->repo->settlement->getFailedSettlementsForRetry($setlIds);
 
         $settlementsRetried = [];
 
         foreach ($settlements as $setl)
         {
-            $setlTxns = $setl->setlTransactions;
-
-            $setlTxnsCount = $setlTxns->count();
-
             $channel = $setl->getChannel();
 
             $merchantSettler = new Merchant($setl->merchant, $channel, $this->repo);
 
             list($setl, $bankTransferAtpt) = $this->repo->transaction(
-                function() use ($merchantSettler, $setl, $setlTxns, $setlTxnsCount)
+                function() use ($merchantSettler, $setl)
             {
                 if ($setl->hasTransaction() === false)
                 {
@@ -201,8 +199,6 @@ class Processor extends Base\Core
             });
 
             $setlAttempts->push($bankTransferAtpt);
-
-            $totalTxns += $setlTxnsCount;
 
             $settlementsRetried[] = $setl->getId();
         }

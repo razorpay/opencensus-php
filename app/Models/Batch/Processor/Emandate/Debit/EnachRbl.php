@@ -16,10 +16,11 @@ class EnachRbl extends Base
         $row = array_map('trim', $row);
 
         return [
-            'payment_id' => $row[Headings::REFNO],
-            'amount'     => $row[Headings::AMOUNT],
-            'umrn'       => $row[Headings::UMRN],
-            'status'     => $row[Headings::CLG_STATUS],
+            'payment_id'    => $row[Headings::REFNO],
+            'amount'        => $row[Headings::AMOUNT],
+            'umrn'          => $row[Headings::UMRN],
+            'status'        => $row[Headings::STATUS],
+            'error_message' => $row[Headings::REASON_DESCRIPTION],
         ];
     }
 
@@ -49,6 +50,11 @@ class EnachRbl extends Base
 
     protected function isAuthorized(array $content): bool
     {
-        return ($content['status'] !== Status::DEBIT_REJECT);
+        return Status::isDebitSuccess($content['status']);
+    }
+
+    protected function getErrorDescription(array $content)
+    {
+        return $content['error_message'];
     }
 }

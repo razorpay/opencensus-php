@@ -156,10 +156,11 @@ trait EntityActionTrait
 
     protected function merchantAssignPricingPlan($planId, $id = '10000000000000')
     {
-        $request = array(
+        $request = [
             'url' => '/merchants/'.$id.'/pricing',
             'method' => 'POST',
-            'content' => ['pricing_plan_id' => $planId]);
+            'content' => ['pricing_plan_id' => $planId]
+        ];
 
         return $this->makeRequestAndGetContent($request);
     }

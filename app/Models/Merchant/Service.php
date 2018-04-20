@@ -1821,4 +1821,11 @@ class Service extends Base\Service
 
         return $this->core()->enableEmiMerchantSubvention($merchant, $emiPlan, $input);
     }
+
+    public function getDummyRazorX()
+    {
+        $variant = $this->app->razorx->getTreatment($this->merchant->getId(), 'dummy', $this->mode);
+
+        return ['variant' => $variant];
+    }
 }

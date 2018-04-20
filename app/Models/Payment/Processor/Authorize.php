@@ -259,8 +259,10 @@ trait Authorize
     protected function verifyFeesLessThanAmount(Payment\Entity $payment)
     {
         // try calculating the fees, throws exception if fees is more than amount
-
-        list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
+        list($fee, $tax, $feesSplit) = $this->repo->useSlave(function () use ($payment)
+        {
+            return (new Pricing\Fee)->calculateMerchantFees($payment);
+        });
     }
 
     /**
@@ -290,7 +292,6 @@ trait Authorize
      * @param Payment\Entity $payment
      *
      * @return array
-     * @throws Exception\RuntimeException
      */
     protected function processCreated(Payment\Entity $payment): array
     {
@@ -554,6 +555,11 @@ trait Authorize
         $this->runInternationalChecks($payment);
 
         $this->runFraudChecks($payment);
+
+        // Fees validation can only happen after international validation has gone through
+        // otherwise can cause issues with international pricing rule being not available when
+        // international is not enabled.
+        $this->verifyFeesLessThanAmount($payment);
     }
 
     protected function validateSubscriptionInputIfPresent(Payment\Entity $payment, $input)
@@ -1231,11 +1237,6 @@ trait Authorize
 
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
     {
-        // Fees validation can only happen after international validation has gone through
-        // otherwise can cause issues with international pricing rule being not available when
-        // international is not enabled.
-        $this->verifyFeesLessThanAmount($payment);
-
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
@@ -1617,6 +1618,12 @@ trait Authorize
             if ((isset($input['_']['flow']) === false) or
                 ($input['_']['flow'] !== 'intent'))
             {
+                if (empty($payment->getVpa()) === true)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'The vpa field is required when method is upi.');
+                }
+
                 $this->setGatewayInputForUpi($input, $gatewayInput);
 
                 $this->validateUpiPspIsAllowed($payment);
@@ -3230,7 +3237,7 @@ trait Authorize
     {
         $data['razorpay_subscription_id'] = $payment->subscription->getPublicId();
 
-        $data['razorpay_signature'] = $this->getSignature($data);
+        $this->fillReturnDataWithSignatureIfApplicable($data);
     }
 
     protected function fillReturnDataWithInvoice(Payment\Entity $payment, array & $data)
@@ -3251,12 +3258,23 @@ trait Authorize
         $data['razorpay_invoice_status']  = $invoice->getStatus();
         $data['razorpay_invoice_receipt'] = $invoice->getReceipt();
 
-        $data['razorpay_signature'] = $this->getSignature($data);
+        $this->fillReturnDataWithSignatureIfApplicable($data);
     }
 
     protected function fillReturnDataWithOrder(Payment\Entity $payment, array & $data)
     {
         $data['razorpay_order_id'] = $payment->order->getPublicId();
+
+        $this->fillReturnDataWithSignatureIfApplicable($data);
+    }
+
+    protected function fillReturnDataWithSignatureIfApplicable(array & $data)
+    {
+        // If the accessed via keyless flow(public auth routes) and key doesn't exists, skips calculating signatures.
+        if (($this->ba->isPublicAuth() === true) and ($this->ba->getKeyEntity() === null))
+        {
+            return;
+        }
 
         $data['razorpay_signature'] = $this->getSignature($data);
     }

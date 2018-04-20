@@ -406,6 +406,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ADDRESS_DELETE_REQUEST                        = 'ADDRESS_DELETE_REQUEST';
 
     //Adjustments
+    const BULK_ADJUSTMENT_CREATE_REQUEST                = 'BULK_ADJUSTMENT_CREATE_REQUEST';
+    const BULK_ADJUSTMENT_CREATE_RESPONSE               = 'BULK_ADJUSTMENT_CREATE_RESPONSE';
     const ADJUSTMENT_CREATE_REQUEST                     = 'ADJUSTMENT_CREATE_REQUEST';
     const FEE_ADJUSTMENT_CREATE_REQUEST                 = 'FEE_ADJUSTMENT_CREATE_REQUEST';
     const DISPUTE_ADJUSTMENT_CREATE_REQUEST             = 'DISPUTE_ADJUSTMENT_CREATE_REQUEST';
@@ -556,6 +558,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_RECONCILIATION_SKIPPED         = 'SETTLEMENT_RECONCILIATION_SKIPPED';
     const SETTLEMENT_RETURNED                       = 'SETTLEMENT_RETURNED';
     const SETTLEMENT_INITIATE_FAILED                = 'SETTLEMENT_INITIATE_FAILED';
+    const SETTLEMENT_ATTEMPT_ENTITIES_CREATED       = 'SETTLEMENT_ATTEMPT_ENTITIES_CREATED';
     const DAILY_SETTLEMENT_INITIATE_FAILED          = 'DAILY_SETTLEMENT_INITIATE_FAILED';
     const SETTLEMENT_RETRY_FAILED                   = 'SETTLEMENT_RETRY_FAILED';
     const SETTLEMENT_RECONCILIATION_FAILED          = 'SETTLEMENT_RECONCILIATION_FAILED';
@@ -632,6 +635,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BHARAT_QR_PAYMENT_DUPLICATE_NOTIFICATION  = 'BHARAT_QR_PAYMENT_DUPLICATE_NOTIFICATION';
     const BHARAT_QR_UNEXPECTED_PAYMENT              = 'BHARAT_QR_UNEXPECTED_PAYMENT';
 
+    const PAYMENT_RECEIVED_VIA_RECEIVER             = 'PAYMENT_RECEIVED_VIA_RECEIVER';
+
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
     const MERCHANT_REPORT_GENERATION                = 'MERCHANT_REPORT_GENERATION';
     const MERCHANT_REPORT_FILE_MAX_LIMIT_EXCEED     = 'MERCHANT_REPORT_FILE_MAX_LIMIT_EXCEED';
@@ -645,6 +650,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_EDIT_ACTION                      = 'MERCHANT_EDIT_ACTION';
     const MERCHANT_ORG_NOT_GIVEN                    = 'MERCHANT_ORG_NOT_GIVEN';
     const MERCHANT_SAVE_ACTIVATION_DETAILS          = 'MERCHANT_SAVE_ACTIVATION_DETAILS';
+    const MERCHANT_MARK_HAS_KEY_ACCESS              = 'MERCHANT_MARK_HAS_KEY_ACCESS';
     const MERCHANT_UPDATE_ACTIVATION_STATUS         = 'MERCHANT_UPDATE_ACTIVATION_STATUS';
     const MERCHANT_UPDATE_WEBSITE_DETAILS           = 'MERCHANT_UPDATE_WEBSITE_DETAILS';
     const MERCHANT_UPDATE_KEY_ACCESS                = 'MERCHANT_UPDATE_KEY_ACCESS';
@@ -732,6 +738,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HARVESTER_REQUEST                         = 'HARVESTER_REQUEST';
     const HARVESTER_RETRY                           = 'HARVESTER_RETRY';
     const HARVESTER_FAILURE                         = 'HARVESTER_FAILURE';
+    const HARVESTER_RESPONSE                        = 'HARVESTER_RESPONSE';
 
     const SHIELD_INTEGRATION_ERROR                  = 'SHIELD_INTEGRATION_ERROR';
 
@@ -1027,6 +1034,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Account codes
     const ACCOUNT_CREATED                               = 'ACCOUNT_CREATED';
+
+    // Lamdba Processor
+    const LAMBDA_REQUEST                                = 'LAMBDA_REQUEST';
+    const LAMBDA_FILE_DETAILS                           = 'LAMBDA_FILE_DETAILS';
+    const LAMBDA_BATCH_FAILURE                          = 'LAMBDA_BATCH_FAILURE';
+
+    const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
+    const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

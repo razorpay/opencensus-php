@@ -102,7 +102,7 @@ class Server extends Base\Mock\Server
             AuthFields::TRANSACTION_CURRENCY      => Currency::INR,
         ];
 
-        $this->content($response);
+        $this->content($response, 'callback');
 
         $response[AuthFields::HASH] = $this->generateHash($response, 'response');
 
