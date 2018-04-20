@@ -1664,6 +1664,40 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithDebitCardDisabled' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'entity' => 'methods',
+                    'card' => true,
+                    'debit_card' => false,
+                    'credit_card' => true,
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithCreditCardDisabled' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'entity' => 'methods',
+                    'card' => true,
+                    'debit_card' => true,
+                    'credit_card' => false,
+                ],
+            ],
+        ],
+    ],
+
     'testGetNetbankingDowntimeInfoForDirectNetbankingGateway' => [
         'request' => [
             'url' => '/methods/downtime',
@@ -1694,7 +1728,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 29,
+                'count' => 20,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1728,27 +1762,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'DCBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'DCBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'DEUT',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'DBSS',
                         ],
                     ],
@@ -1763,13 +1776,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'IBKL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'JSBP',
                         ],
                     ],
@@ -1777,21 +1783,7 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'KVBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'NKGS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'PMCB',
                         ],
                     ],
                     [
@@ -1806,13 +1798,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'SBHY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBIN',
                         ],
                     ],
                     [
@@ -1847,13 +1832,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'SIBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'SVCB',
                         ],
                     ],
@@ -1862,13 +1840,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'SYNB',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'TMBL',
                         ],
                     ],
                     [
@@ -1912,7 +1883,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 30,
+                'count' => 21,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1953,27 +1924,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'DCBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'DCBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'DEUT',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'DBSS',
                         ],
                     ],
@@ -1988,13 +1938,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'IBKL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'JSBP',
                         ],
                     ],
@@ -2002,21 +1945,7 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'KVBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'NKGS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'PMCB',
                         ],
                     ],
                     [
@@ -2031,13 +1960,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'SBHY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBIN',
                         ],
                     ],
                     [
@@ -2072,13 +1994,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'SIBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'SVCB',
                         ],
                     ],
@@ -2087,13 +2002,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'SYNB',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'TMBL',
                         ],
                     ],
                     [
@@ -2321,27 +2229,18 @@ return [
                                 'BBKM',
                                 'BKDN',
                                 'COSB',
-                                'DCBL',
-                                'DCBL',
-                                'DEUT',
                                 'DBSS',
                                 'IDFB',
-                                'IBKL',
                                 'JSBP',
-                                'KVBL',
                                 'NKGS',
-                                'PMCB',
                                 'SBBJ',
                                 'SBHY',
-                                'SBIN',
                                 'SBMY',
                                 'STBP',
                                 'SBTR',
                                 'SCBL',
-                                'SIBL',
                                 'SVCB',
                                 'SYNB',
-                                'TMBL',
                                 'TNSC',
                                 'BARB_C',
                                 'PUNB_C',

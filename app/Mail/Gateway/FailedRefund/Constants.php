@@ -11,6 +11,7 @@ class Constants extends Base\Constants
     const HEADER_MAP = [
         'All'                    => 'Failed Refunds',
         Target::UPI_ICICI        => 'UPI Icici Failed Refunds',
+        Target::UPI_MINDGATE     => 'UPI Mindgate Failed Refunds',
         Target::AIRTEL_MONEY     => 'Airtel Money Failed Refunds',
         Target::AXIS_MIGS        => 'Axis Migs Failed Refunds',
         Target::ICIC_FIRST_DATA  => 'ICICI FirstData Failed Refunds',
@@ -23,6 +24,7 @@ class Constants extends Base\Constants
     const SUBJECT_MAP = [
         'All'                    => 'Failed Refunds file for ',
         Target::UPI_ICICI        => 'UPI Icici failed refunds file for ',
+        Target::UPI_MINDGATE     => 'UPI Mindgate failed refunds file for ',
         Target::AIRTEL_MONEY     => 'Airtel Money failed refunds file for ',
         Target::AXIS_MIGS        => 'Axis Migs failed refunds for ',
         Target::ICIC_FIRST_DATA  => 'FirstData failed refunds for ',
@@ -34,6 +36,7 @@ class Constants extends Base\Constants
     const BODY_MAP = [
         'All'                    => 'Please find attached failed refunds information.',
         Target::UPI_ICICI        => 'Please find attached failed refunds information for UPI ICICI',
+        Target::UPI_MINDGATE     => 'Please find attached failed refunds information for UPI Mindgate',
         Target::AIRTEL_MONEY     => 'Please find attached failed refunds information for Airtel Money',
         Target::AXIS_MIGS        => 'Please process the attached refunds for Axis Migs',
         Target::ICIC_FIRST_DATA  => 'Please process the attached refunds for ICICI FirstData',
@@ -45,6 +48,7 @@ class Constants extends Base\Constants
     const MAIL_TEMPLATE_MAP = [
         'All'                    => 'emails.message',
         Target::UPI_ICICI        => 'emails.message',
+        Target::UPI_MINDGATE     => 'emails.message',
         Target::AIRTEL_MONEY     => 'emails.message',
         Target::AXIS_MIGS        => 'emails.message',
         Target::ICIC_FIRST_DATA  => 'emails.message',
@@ -56,6 +60,7 @@ class Constants extends Base\Constants
     const MAILTAG_MAP = [
         'All'                    => MailTags::FAILED_REFUNDS_MAIL,
         Target::UPI_ICICI        => MailTags::ICICI_UPI_FAILED_REFUNDS_MAIL,
+        Target::UPI_MINDGATE     => MailTags::MINDGATE_UPI_FAILED_REFUNDS_MAIL,
         Target::AIRTEL_MONEY     => MailTags::AIRTEL_MONEY_FAILED_REFUNDS_MAIL,
         Target::AXIS_MIGS        => MailTags::AXIS_MIGS_FAILED_REFUNDS_MAIL,
         Target::ICIC_FIRST_DATA  => MailTags::ICICI_FIRST_DATA_FAILED_REFUNDS_MAIL,

@@ -9,6 +9,7 @@ class Shared
 {
     const AMEX_RAZORPAY_TERMINAL             = '1000AmexShared';
     const ATOM_RAZORPAY_TERMINAL             = '1000AtomShared';
+    const ATOM_RAZORPAY_TPV_TERMINAL         = '1000AtomTpvtml';
     const AXIS_GENIUS_RAZORPAY_TERMINAL      = '1000AxisGenius';
     const AXIS_MIGS_RAZORPAY_TERMINAL        = '1000AxisMigsTl';
     const BILLDESK_RAZORPAY_TERMINAL         = '1000BdeskTrmnl';
@@ -35,6 +36,7 @@ class Shared
     const NETBANKING_FEDERAL_TERMINAL        = '100NbFdrlTrmnl';
     const NETBANKING_FEDERAL_TPV_TERMINAL    = '100NbFdrlTpvTl';
     const NETBANKING_RBL_TERMINAL            = '100NbRblTermnl';
+    const NETBANKING_CSB_TERMINAL            = '100NbCsbTermnl';
     const NETBANKING_RBL_TPV_TERMINAL        = '100NbRblTpvTml';
     const NETBANKING_INDUSIND_TERMINAL       = '100NbIndnTrmnl';
     const NETBANKING_INDUSIND_TPV_TERMINAL   = '100NbIndnTpvTl';

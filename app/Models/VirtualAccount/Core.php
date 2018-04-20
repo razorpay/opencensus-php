@@ -6,9 +6,11 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\Order\Entity as Order;
+use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Customer\Entity as Customer;
-use RZP\Models\Order\Entity as Order;
 
 class Core extends Base\Core
 {
@@ -36,6 +38,8 @@ class Core extends Base\Core
 
             return $virtualAccount;
         });
+
+        $this->eventVirtualAccountCreated($virtualAccount);
 
         return $virtualAccount;
     }
@@ -182,5 +186,23 @@ class Core extends Base\Core
         }
 
         return $merchant->methods;
+    }
+
+    public function eventVirtualAccountCredited(Payment $payment)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $payment
+        ];
+
+        $this->app['events']->fire('api.virtual_account.credited', $eventPayload);
+    }
+
+    public function eventVirtualAccountCreated(Entity $virtualAccount)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $virtualAccount
+        ];
+
+        $this->app['events']->fire('api.virtual_account.created', $eventPayload);
     }
 }

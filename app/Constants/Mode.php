@@ -9,6 +9,6 @@ class Mode
 
     public static function exists(string $mode = null): bool
     {
-        return defined(get_class() . '::' . strtoupper($mode));
+        return (($mode === self::TEST) or ($mode === self::LIVE));
     }
 }

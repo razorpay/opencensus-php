@@ -54,6 +54,7 @@ class Constants
     const BHARAT_QR                     = 'bharat_qr';
     const MOBIKWIK_OFFERS               = 'mobikwik_offers';
     const ALLOW_DC_RECURRING            = 'allow_dc_recurring';
+    const ALLOW_ALL_DC_RECURRING        = 'allow_all_dc_recurring';
     const SKIP_HOLD_FUNDS_ON_PAYOUT     = 'skip_hold_funds_on_payout';
     const REPORT_V2                     = 'report_v2';
     const CORPORATE_BANKS               = 'corporate_banks';
@@ -61,6 +62,7 @@ class Constants
     const NEW_ANALYTICS                 = 'new_analytics';
     const DAILY_SETTLEMENT              = 'daily_settlement';
     const DISABLE_UPI_INTENT            = 'disable_upi_intent';
+    const ALLOW_S2S_APPS                = 'allow_s2s_apps';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -76,6 +78,11 @@ class Constants
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
+    ];
+
+    public static $debitRecurringFeatures = [
+        self::ALLOW_ALL_DC_RECURRING,
+        self::ALLOW_DC_RECURRING
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -135,6 +142,7 @@ class Constants
         self::BHARAT_QR                     => true,
         self::MOBIKWIK_OFFERS               => true,
         self::ALLOW_DC_RECURRING            => true,
+        self::ALLOW_ALL_DC_RECURRING        => true,
         self::SKIP_HOLD_FUNDS_ON_PAYOUT     => true,
         self::REPORT_V2                     => true,
         self::CORPORATE_BANKS               => true,
@@ -145,6 +153,7 @@ class Constants
         self::DAILY_SETTLEMENT              => true,
         self::DISABLE_UPI_INTENT            => true,
         self::ATM_PIN_AUTH                  => true,
+        self::ALLOW_S2S_APPS                => true,
     ];
 
     // Entity type constants
@@ -224,10 +233,8 @@ class Constants
 
     /*
      * PRODUCT_FEATURES should be a subset of the visible features.
-     * If any of these features are enabled on live mode, the user
-     * will be notified through an email.
-     * Product features can be enabled/disabled on test mode by the merchant,
-     * but not on the live mode.
+     * If any of these features are enabled on live mode, the user will be notified through an email.
+     * Product features can be enabled/disabled on test mode by the merchant, but not on the live mode.
      */
     const PRODUCT_FEATURES = [
         self::MARKETPLACE,
