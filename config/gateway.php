@@ -122,6 +122,7 @@ return [
         'test_hash_secret'     => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
         'test_hash_secret2'    => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
         'bharatqr_terminal_id' => env('HITACHI_GATEWAY_BHARAT_QR_TERMINAL_ID'),
+        'bharatqr_merchant_id' => env('HITACHI_GATEWAY_BHARAT_QR_MERCHANT_ID'),
         'bharatqr_salt'        => env('HITACHI_GATEWAY_BHARAT_QR_SALT'),
     ],
 
@@ -176,6 +177,16 @@ return [
         //SECRET FOR SECURITIES MERCHANTS
         'live_hash_secret_sec'  => env('BILLDESK_GATEWAY_SECURITIES_LIVE_HASH_SECRET'),
         'live_access_code_sec'  => env('BILLDESK_GATEWAY_SECURITIES_LIVE_ACCESS_CODE'),
+    ],
+
+    'atom' => [
+        'test_authorize_hash_secret'  => env('ATOM_GATEWAY_TEST_AUTHORIZE_HASH_SECRET'),
+        'test_callback_hash_secret'   => env('ATOM_GATEWAY_TEST_CALLBACK_HASH_SECRET'),
+        'test_merchant_id'            => env('ATOM_TEST_MERCHANT_ID'),
+        'test_secure_password'        => env('ATOM_TEST_SECURE_PASSWORD'),
+        'test_access_code'            => env('ATOM_TEST_ACCESS_CODE'),
+        'live_authorize_hash_secret'  => env('ATOM_GATEWAY_LIVE_AUTHORIZE_HASH_SECRET'),
+        'live_callback_hash_secret'   => env('ATOM_GATEWAY_LIVE_CALLBACK_HASH_SECRET'),
     ],
 
     'blade' => [

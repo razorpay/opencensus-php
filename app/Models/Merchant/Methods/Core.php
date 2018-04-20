@@ -142,7 +142,7 @@ class Core extends Base\Core
         {
             $data['recurring'] = [];
 
-            $this->addRecurringCardsToMethods($data['recurring'], $methods);
+            $this->addRecurringCardsToMethods($merchant, $methods, $data['recurring']);
 
             $this->addRecurringEmandateToMethodsIfApplicable($merchant, $methods, $data['recurring']);
         }
@@ -155,15 +155,23 @@ class Core extends Base\Core
         return $data;
     }
 
-    public function addRecurringCardsToMethods(array & $recurringData, Methods\Entity $methods)
+    public function addRecurringCardsToMethods(
+        Merchant\Entity $merchant,
+        Methods\Entity $methods,
+        array & $recurringData)
     {
-        //
-        // Add debit when we start supporting debit cards for recurring
-        //
-
         if ($methods->isCreditCardEnabled() === true)
         {
-            $recurringData['card']['credit'] = Network::getFullNames(Payment\Gateway::$recurringCardNetworks);
+            $supportedNetworksForCreditCardRecurring = Payment\Gateway::getNetworksSupportedForCardRecurring();
+
+            $recurringData['card']['credit'] = Network::getFullNames($supportedNetworksForCreditCardRecurring);
+        }
+
+        if ($merchant->isDebitRecurringEnabled() === true)
+        {
+            $supportedIssuersForDebitCardRecurring = Payment\Gateway::getIssuersSupportedForDebitCardRecurring();
+
+            $recurringData['card']['debit'] = $this->getBankNames($supportedIssuersForDebitCardRecurring);
         }
     }
 

@@ -4,12 +4,13 @@ namespace RZP\Models\Payment;
 
 use App;
 use RZP\Exception;
-use Razorpay\IFSC\IFSC as BaseIFSC;
-
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
+use RZP\Models\Feature\Constants;
+use Razorpay\IFSC\IFSC as BaseIFSC;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -219,7 +220,6 @@ class Gateway
     public static $methodMap = [
         Method::CARD => [
             self::HDFC,
-            self::ATOM,
             self::AXIS_MIGS,
             self::AXIS_GENIUS,
             self::PAYTM,
@@ -235,6 +235,7 @@ class Gateway
             self::PAYTM,
             self::BILLDESK,
             self::EBS,
+            self::ATOM,
             self::NETBANKING_ICICI,
             self::NETBANKING_BOB,
             self::NETBANKING_HDFC,
@@ -305,7 +306,8 @@ class Gateway
 
     const SHARED_NETBANKING_GATEWAYS_LIVE = [
         self::BILLDESK,
-        self::EBS
+        self::EBS,
+        self::ATOM
     ];
 
     /**
@@ -378,10 +380,6 @@ class Gateway
             Network::VISA
         ],
         self::AXIS_GENIUS => [
-            Network::MC,
-            Network::VISA
-        ],
-        self::ATOM => [
             Network::MC,
             Network::VISA
         ],
@@ -523,6 +521,13 @@ class Gateway
     public static $recurringCardNetworks = [
         Network::MC,
         Network::VISA,
+    ];
+
+    public static $recurringDebitCardBanks = [
+        IFSC::ICIC,
+        IFSC::CITI,
+        IFSC::KKBK,
+        IFSC::CNRB
     ];
 
     /**
@@ -1212,6 +1217,16 @@ class Gateway
         }
 
         return $supported;
+    }
+
+    public static function getNetworksSupportedForCardRecurring(): array
+    {
+        return self::$recurringCardNetworks;
+    }
+
+    public static function getIssuersSupportedForDebitCardRecurring(): array
+    {
+        return self::$recurringDebitCardBanks;
     }
 
     public static function getExclusiveNetworksForGateway(string $gateway)

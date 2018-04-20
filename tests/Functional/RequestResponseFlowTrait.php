@@ -217,7 +217,6 @@ trait RequestResponseFlowTrait
     protected function sendRequest($request)
     {
         // raw - Raw request body
-
         $defaults = array(
             'method' => 'POST',
             'content' => array(),
