@@ -1365,9 +1365,20 @@ trait Authorize
      */
     protected function runShieldCheck(Payment\Entity $payment)
     {
-        $job = new RunShieldCheck($this->mode, $payment);
+        try
+        {
+            $job = new RunShieldCheck($this->mode, $payment);
 
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::SHIELD);
+            (new DispatchRouter)->dispatchOn($job, DispatchRouter::SHIELD);
+        }
+        catch (\Throwable $e)
+        {
+             $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SHIELD_JOB_DISPATCH_ERROR
+            );
+        }
     }
 
     protected function validateEmailTld(Payment\Entity $payment)

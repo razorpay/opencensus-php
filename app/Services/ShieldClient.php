@@ -216,8 +216,6 @@ class ShieldClient
 
         $url = $this->baseUrl . $path;
 
-        $responseArr = [];
-
         try
         {
             $response = Requests::request(
@@ -228,7 +226,7 @@ class ShieldClient
                 $options
             );
 
-            $responseArr = json_decode($response->body, true);
+            return $this->parseAndReturnResponse($response);
         }
         catch(\Requests_Exception $e)
         {
@@ -241,7 +239,20 @@ class ShieldClient
             $this->trace->error(TraceCode::SHIELD_INTEGRATION_ERROR, $data);
         }
 
-        return $responseArr;
+        return [];
+    }
+
+    protected function parseAndReturnResponse($res): array
+    {
+        $code = $res->status_code;
+        $responseArray = json_decode($res->body, true);
+
+        if ($code !== 200)
+        {
+            $this->trace->error(TraceCode::SHIELD_INTEGRATION_ERROR, $responseArray);
+        }
+
+        return $responseArray;
     }
 
     private function getAuthHeaders() : array

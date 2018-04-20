@@ -27,6 +27,7 @@ class RunShieldCheck extends Job implements ShouldQueue
 
     const ACTION_REVIEW = 'review';
     const ACTION_BLOCK  = 'block';
+    const ACTION_ALLOW  = 'allow';
 
     public function __construct(string $mode, Payment\Entity $payment)
     {
@@ -76,6 +77,9 @@ class RunShieldCheck extends Job implements ShouldQueue
                     $fraudType = Risk\Type::SUSPECTED;
                     $reason    = Risk\RiskCode::PAYMENT_SUSPECTED_FRAUD_BY_SHEILD;
                     break;
+
+                case self::ACTION_ALLOW:
+                    return;
 
                 default:
                     throw new LogicException('Unexpected shield action: ' . $action);
