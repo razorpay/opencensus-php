@@ -690,6 +690,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AWS_FILE_UPLOADED                         = 'AWS_FILE_UPLOADED';
     const AWS_FILE_DOWNLOAD                         = 'AWS_FILE_DOWNLOAD';
     const AWS_FILE_DELETE                           = 'AWS_FILE_DELETE';
+    const AWS_CACHE_GET                             = 'AWS_CACHE_GET';
+    const AWS_CACHE_SET                             = 'AWS_CACHE_SET';
+    const AWS_CACHE_FAILURE                         = 'AWS_CACHE_FAILURE';
     const LOGO_IMAGE_DETAILS                        = 'LOGO_IMAGE_DETAILS';
 
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
