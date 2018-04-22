@@ -143,7 +143,7 @@ class Core extends Base\Core
      *
      * @param string $mode
      */
-    protected function setMode($mode = Mode::TEST)
+    public function setMode(string $mode = Mode::TEST)
     {
         Database\DefaultConnection::set($mode);
     }
