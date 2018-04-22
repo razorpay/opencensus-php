@@ -252,6 +252,14 @@ class Service extends Base\Service
      */
     public function postOnboardingSubmissions(array $input, string $feature): bool
     {
+        // Product onboarding submissions must only be inserted in the live mode. Force set the connection to live.
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        // Sets the mode for the request, and database connection
+        $this->app['basicauth']->setMode($liveMode);
+
+        \Database\DefaultConnection::set($liveMode);
+
         $status = (new Core)->postOnboardingSubmissions($this->merchant, $input, $feature);
 
         return $status;
@@ -267,6 +275,14 @@ class Service extends Base\Service
      */
     public function updateOnboardingSubmissions(array $input, string $feature): bool
     {
+        // Product onboarding submissions must only be inserted in the live mode. Force set the connection to live.
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        // Sets the mode for the request, and database connection
+        $this->app['basicauth']->setMode($liveMode);
+
+        \Database\DefaultConnection::set($liveMode);
+
         $merchantId = $input['merchant_id'];
 
         $merchant = $this->repo->merchant->findByPublicId($merchantId);
