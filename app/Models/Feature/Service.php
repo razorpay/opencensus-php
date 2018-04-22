@@ -256,9 +256,7 @@ class Service extends Base\Service
         $liveMode = $this->app['basicauth']->getLiveConnection();
 
         // Sets the mode for the request, and database connection
-        $this->app['basicauth']->setMode($liveMode);
-
-        \Database\DefaultConnection::set($liveMode);
+        $this->core()->setMode($liveMode);
 
         $status = (new Core)->postOnboardingSubmissions($this->merchant, $input, $feature);
 
@@ -279,9 +277,7 @@ class Service extends Base\Service
         $liveMode = $this->app['basicauth']->getLiveConnection();
 
         // Sets the mode for the request, and database connection
-        $this->app['basicauth']->setMode($liveMode);
-
-        \Database\DefaultConnection::set($liveMode);
+        $this->core()->setMode($liveMode);
 
         $merchantId = $input['merchant_id'];
 
