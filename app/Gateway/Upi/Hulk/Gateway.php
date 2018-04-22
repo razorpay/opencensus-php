@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Upi\Icici;
+namespace RZP\Gateway\Upi\Hulk;
 
 use Request;
 use Carbon\Carbon;
@@ -32,12 +32,18 @@ class Gateway extends Base\Gateway
      */
     const TIMEOUT = 20;
 
+    const ACQUIRER = 'hdfc';
+
     protected $gateway = 'upi_hulk';
 
     //
     // @todo: Fix the mapping
     //
     protected $map = [
+        Fields::ID                        => Entity::GATEWAY_PAYMENT_ID,
+        Fields::STATUS                    => Entity::STATUS_CODE,
+        Fields::RRN                       => Entity::NPCI_REFERENCE_ID,
+
         Entity::VPA                       => Entity::VPA,
         Entity::EXPIRY_TIME               => Entity::EXPIRY_TIME,
         Entity::PROVIDER                  => Entity::PROVIDER,
@@ -55,6 +61,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        // @todo Enable intent
         if ((isset($input['upi']['flow']) === true) and
             ($input['upi']['flow'] === 'intent'))
         {
@@ -75,20 +82,21 @@ class Gateway extends Base\Gateway
 
         $this->updateGatewayPaymentResponse($payment, $response);
 
-        $status = (int) $response['response'];
-
-        if ($status !== Status::INITIATED)
+        if ((isset($response['error']) === true) or
+            ($response['status'] !== Status::INITIATED))
         {
             // @todo: Fetch internal error code on proxy auth from hulk and
             // pass it as error code to API
             throw new Exception\GatewayErrorException(
-                $errorCode,
-                $status);
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $response['error']['code'] ?? null,
+                $response['error']['description'] ?? null
+            );
         }
 
         return [
             'data'   => [
-                'vpa'   => $input['terminal']->getGatewayMerchantId2()
+                'vpa'   => ''
             ]
         ];
     }
@@ -153,9 +161,6 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        //
-        // @todo: Validate hmac
-        //
         $content = $input['gateway'];
 
         $p2p = $content['payload']['p2p'];
@@ -181,13 +186,21 @@ class Gateway extends Base\Gateway
         }
 
         // Authorization was successful
-        $this->updateGatewayPaymentResponse($gatewayPayment, $content);
+        $this->updateGatewayPaymentResponse($gatewayPayment, $p2p);
 
         return [
             'acquirer' => [
                 Payment\Entity::VPA => $gatewayPayment->getVpa()
             ]
         ];
+    }
+
+    /**
+     * @todo Override this function to validate the signature of webhook
+     */
+    public function preProcessServerCallback($input): array
+    {
+        return $input;
     }
 
     /**
@@ -221,7 +234,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_merchant_id'];
         }
 
-        return $this->input['terminal']['gateway_merchant_id'];
+        return 'rzp_live_' . $this->input['merchant']['id'];
     }
 
     protected function getAuthorizeRequestArray(array $input): array
@@ -232,18 +245,18 @@ class Gateway extends Base\Gateway
 
         $collectByTimestamp = Carbon::now(Timezone::IST)->addMinutes($expiryTime)->getTimestamp();
 
-        $data = [
+        $content = [
+            Fields::TYPE             => Type::PULL,
             Fields::AMOUNT           => $payment['amount'],
+            Fields::CURRENCY         => $input['payment']['currency'],
             Fields::EXPIRE_AT        => $collectByTimestamp,
+            Fields::SENDER           => [
+                Fields::ADDRESS => $input['payment']['vpa'],
+            ],
+            Fields::DESCRIPTION      => $this->getPaymentRemark($input),
             Fields::NOTES            => [
                 'razorpay_payment_id' => $payment['id'],
             ],
-            Fields::DESCRIPTION      => $this->getPaymentRemark($input),
-            // sub-merchant name field only supports alphanumeric
-            // hence replacing all the spaces to empty string here.
-            Fields::PAYER_VPA        => $input['payment']['vpa'],
-            Fields::CURRENCY         => $input['payment']['currency'],
-            Fields::TYPE             => Type::PULL
         ];
 
         $request = $this->getStandardRequestArray($content);
@@ -337,7 +350,7 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $request = $this->getPaymentVerifyRequestArray($input);
+        $request = $this->getPaymentVerifyRequestArray($verify);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -351,22 +364,23 @@ class Gateway extends Base\Gateway
                 'payment_id'  => $input['payment']['id'],
             ]);
 
-        $verify->verifyResponse = $this->response;
+        $verify->verifyResponse = $response;
 
-        $verify->verifyResponseBody = $this->response->body;
+        $verify->verifyResponseBody = $response->body;
 
         $verify->verifyResponseContent = $content;
 
         return $content;
     }
 
-    protected function getPaymentVerifyRequestArray(array $input)
+    protected function getPaymentVerifyRequestArray($verify)
     {
-        $content = [
-            'razorpay_payment_id' => $input['payment']['id'],
-        ];
+        $input = $verify->input;
+        $gatewayEntity = $verify->payment;
 
-        $request = $this->getStandardRequestArray($content, 'post');
+        $request = $this->getStandardRequestArray([], 'get');
+
+        $request['url'] .= $gatewayEntity['gateway_payment_id'];
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -379,23 +393,6 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function checkResponseAndThrowExceptionIfRequired(Verify $verify)
-    {
-        $content = $verify->verifyResponseContent;
-
-        // 5006 = The payment was not created at the gateway end
-        // 5000 = Invalid Request
-        // 15   = Original record not found
-        //        And we can safely mark this payment as failed
-        if (in_array($content[Fields::RESPONSE], ['5006', '5000', '15'], true) === true)
-        {
-            throw new Exception\PaymentVerificationException(
-                $verify->getDataToTrace(),
-                $verify,
-                VerifyAction::FINISH);
-        }
-    }
-
     protected function verifyPayment(Verify $verify): string
     {
         $content = $verify->verifyResponseContent;
@@ -404,7 +401,7 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-                $content['error']['internal_error_code'],
+                $content['error']['code'],
                 $content['error']['description']);
         }
 
@@ -420,12 +417,6 @@ class Gateway extends Base\Gateway
 
         $input = $verify->input;
 
-        //
-        // If gatewaySuccess is false
-        // we don't need to check for amount
-        // also in case the gateway says merchant trans id
-        // not availble it doesn't give us amount
-        //
         if ($verify->gatewaySuccess === true)
         {
             $paymentAmount = $input['payment']['amount'];

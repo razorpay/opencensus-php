@@ -42,6 +42,7 @@ return [
         'sharp',
         'upi_icici',
         'upi_mindgate',
+        'upi_hulk',
         'upi_sbi',
         'upi_npci',
         'aeps_icici',
@@ -93,6 +94,7 @@ return [
     'mock_upi_mindgate'           => env('UPI_MINDGATE_MOCK'),
     'mock_upi_sbi'                => env('UPI_SBI_MOCK'),
     'mock_upi_icici'              => env('UPI_ICICI_MOCK'),
+    'mock_upi_hulk'               => env('UPI_HULK_MOCK'),
     'mock_upi_npci'               => env('UPI_NPCI_MOCK'),
     'mock_aeps_icici'             => env('AEPS_ICICI_MOCK'),
     'mock_wallet_freecharge'      => env('FREECHARGE_MOCK'),
@@ -291,6 +293,11 @@ return [
     ],
 
     'upi_mindgate' => [
+        'test_secure_secret'       => env('UPI_HULK_GATEWAY_TEST_SECURE_SECRET'),
+        'gateway_secure_secret'    => env('UPI_HULK_GATEWAY_SECURE_SECRET'),
+    ],
+
+    'upi_hulk' => [
         'test_merchant_id'       => env('UPI_MINDGATE_TEST_MERCHANT_ID'),
         'gateway_encryption_key' => env('UPI_MINDGATE_GATEWAY_SECURE_SECRET'),
     ],
