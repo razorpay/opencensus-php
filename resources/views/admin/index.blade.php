@@ -17,4 +17,4 @@
 </head>
 <body>
 <div id="react-root" class="react-root"></div>
-<script src="/dist/admin-entry.js"></script>
+<script src="{{$cdn}}/dist/admin-entry.js"></script>

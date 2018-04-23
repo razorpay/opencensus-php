@@ -4,8 +4,6 @@ FROM razorpay/dashboard:ci
 ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN
 
-ENV NODE_ENV=production
-
 COPY . /app/
 
 WORKDIR /app
@@ -19,13 +17,8 @@ RUN rm -rf /root/.composer && \
 	composer install --no-dev --no-interaction && \
     # Cleanup is useless, but we do it anyway
     rm -rf /root/.composer && \
-    rm -rf /tmp/npm-* && \
-    rm -rf /app/node_modules && \
-    rm -rf /app/web/node_modules && \
     # Generate /commit.txt
     echo ${GIT_COMMIT_HASH} > public/commit.txt && \
-    # Cleanup deps
-    apk del nodejs-deps && \
     # TODO: Improve this step so it gets faster
     echo "** Fix file permissions **" && \
     chown -R nginx.nginx /app && \
