@@ -69,16 +69,14 @@ class EnachRbl extends Base
 
         $this->paymentProcessor = (new Payment\Processor\Processor($payment->merchant));
 
-        $this->repo->transaction(function() use ($payment, $token, $gatewayPayment, $gatewayToken, $content)
-        {
-            $this->updateGatewayPaymentEntityAndCapturePayment($payment, $gatewayPayment, $content);
-
-            $this->updateTokenEntity($token, $gatewayToken, $content);
-        });
-
         //
-        // This should be done outside the transaction only!
+        // Can't put in a transaction because of webhooks and emails
         //
+
+        $this->updateGatewayPaymentEntityAndCapturePayment($payment, $gatewayPayment, $content);
+
+        $this->updateTokenEntity($token, $gatewayToken, $content);
+
         $this->paymentProcessor->eventTokenStatus($token, $oldRecurringStatus);
 
         $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
