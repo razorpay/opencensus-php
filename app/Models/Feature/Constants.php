@@ -62,7 +62,7 @@ class Constants
     const NEW_ANALYTICS                 = 'new_analytics';
     const DAILY_SETTLEMENT              = 'daily_settlement';
     const DISABLE_UPI_INTENT            = 'disable_upi_intent';
-    const SKIP                          = 'skip';
+    const SKIP_PAYMENT_AUTHENTICATION   = 'skip_payment_authentication';
     const ALLOW_S2S_APPS                = 'allow_s2s_apps';
 
     // Orders

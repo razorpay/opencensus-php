@@ -516,23 +516,28 @@ class TransactionFilter extends Terminal\Filter
         {
             return false;
         }
+
         if (Gateway::isRecurringGateway($terminal->getGateway()) === false)
         {
             return false;
         }
+
         if (($terminal->getGateway() === Gateway::CYBERSOURCE) and
             ($terminal->getGatewayAcquirer() !== 'hdfc'))
         {
             return false;
         }
+
         if ($terminal->isNon3DSRecurring() === false)
         {
             return false;
         }
+
         $applicableTypes = [
             Terminal\Type::RECURRING_3DS,
             Terminal\Type::RECURRING_NON_3DS,
         ];
+
         if ((empty(array_diff($applicableTypes, $terminal->getType())) === true) or
             ($terminal->isNo2Fa() === true))
         {
@@ -547,16 +552,20 @@ class TransactionFilter extends Terminal\Filter
     public function authTypeFilter(Terminal\Entity $terminal)
     {
         $payment = $this->input['payment'];
+
         if ($payment->isMethodCardOrEmi() === false)
         {
             return true;
         }
+
         //
         // We use preferred_auth only if it's available else to fallback to
         // $authType attribute
         //
         $authType = (array) $payment->getAuthType();
+
         $authTypes = $payment->getMetadata(Payment\Entity::PREFERRED_AUTH, $authType);
+
         //
         // We fallback to the default flow if the preferred authentication or authType
         // is empty. Normal flow chooses all the 3ds terminals.
@@ -570,7 +579,9 @@ class TransactionFilter extends Terminal\Filter
                     case Payment\AuthType::PIN:
                         $gateway = $terminal->getGateway();
                         $acquirer = $terminal->getGatewayAcquirer();
+
                         $issuer = $payment->card->getIssuer();
+
                         //
                         // Pin auth terminal is only selected when the terminal issuer supports pin auth
                         // and card iin also supports the flow
@@ -584,7 +595,9 @@ class TransactionFilter extends Terminal\Filter
                                 return true;
                             }
                         }
+
                         break;
+
                     case Payment\AuthType::_3DS:
                         if ($this->is3DSTerminal($terminal) === true)
                         {
@@ -612,7 +625,6 @@ class TransactionFilter extends Terminal\Filter
     {
         return ($terminal->isPin() === false);
     }
-
 
     protected function isTerminalWithMerchantMccAbsent(
         array $applicableTerminals,

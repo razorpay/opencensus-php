@@ -237,8 +237,8 @@ class Selector extends Base\Core
     protected function getTerminalsForAuthTypeSkip()
     {
         $addTerminals = $this->repo
-            ->terminal
-            ->getByType(Type::RECURRING_NON_3DS);
+                             ->terminal
+                             ->getByType(Type::RECURRING_NON_3DS);
 
         return $addTerminals;
     }

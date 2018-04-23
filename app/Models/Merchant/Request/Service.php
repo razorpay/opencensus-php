@@ -6,6 +6,7 @@ use Cache;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
+use RZP\Models\Batch\Entity as Batch;
 
 
 class Service extends Base\Service
@@ -110,13 +111,16 @@ class Service extends Base\Service
 
     public function issueOneTimeToken()
     {
-        $token = bin2hex(random_bytes(20));
+        do
+        {
+            $token = bin2hex(random_bytes(20));
+        } while($this->cache->has($token));
 
         // Generate One Time Token valid for 5 minutes
         $this->cache->put($token, ['merchantId' => $this->merchant->getId(), 'mode' => $this->mode], 5);
 
         return [
-            'token' =>  $token
+            Batch::TOKEN =>  $token
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use RZP\Models\Batch;
 use RZP\Models\Batch\Header;
 use RZP\Models\Card\Entity as Card;
 use RZP\Models\Customer;
@@ -15,16 +16,41 @@ use RZP\Models\Payment\Processor\Processor;
 
 class DirectDebit extends Base
 {
+    /** @var Processor  */
+    private $processor;
+
+    /** @var OrderCore  */
+    private $orderCore;
+
+    /** @var Customer\Core */
+    private $customerCore;
+
+    public function __construct(Batch\Entity $batch)
+    {
+        parent::__construct($batch);
+
+        $this->processor = new Processor($this->merchant);
+
+        $this->orderCore = new OrderCore();
+
+        $this->customerCore = new Customer\Core();
+
+    }
+
     protected function processEntry(array & $entry)
     {
-        $this->processPayment($entry);
+        $order = $this->createOrder($entry);
+
+        $customer = $this->createCustomer($entry);
+
+        $this->processPayment($entry, $order, $customer);
     }
 
     /**
      * @param array $row
      * @return array
      */
-    protected function processPayment(array & $row)
+    protected function processPayment(array & $row, $order, $customer)
     {
 
         try
@@ -37,10 +63,6 @@ class DirectDebit extends Base
             $email  = $row[Header::EMAIL];
             $phone  = $row[Header::PHONE];
             $name   = $row[Header::CARDHOLDER_NAME];
-
-            $order = $this->createOrder($row);
-            $customer = $this->createCustomer($row);
-
 
             $card = [
                 Card::NUMBER        =>  $row[Header::CARD],
@@ -67,11 +89,11 @@ class DirectDebit extends Base
                 Payment::ORDER_ID       => $order->getPublicId(),
             ];
 
-            $processor = new Processor($this->merchant);
-            $result = $processor->process($request);
-            $row[Header::STATUS]                    =   "CAPTURED";
+            $result = $this->processor->process($request);
+            $row[Header::STATUS]                    =   Batch\Status::SUCCESS;
             $row[Header::DIRECT_DEBIT_PAYMENT_ID]   =   $result['payment_id'];
-        } finally
+        }
+        finally
         {
             $row[Header::CARD] = substr($row[Header::CARD], 0,4) . 'xxxxxxxx' . substr($row[Header::CARD], 12);
         }
@@ -83,7 +105,6 @@ class DirectDebit extends Base
 
     private function createOrder($row)
     {
-        $orderService = new OrderCore();
         $orderInput = [
             Order::AMOUNT           =>  (int) $row[Header::AMOUNT],
             Order::CURRENCY         =>  $row[Header::CURRENCY],
@@ -91,7 +112,7 @@ class DirectDebit extends Base
             Order::PAYMENT_CAPTURE  =>  true,
         ];
 
-        return $orderService->create($orderInput, $this->merchant);
+        return $this->orderCore->create($orderInput, $this->merchant);
     }
 
     protected function sendProcessedMail()
@@ -107,8 +128,8 @@ class DirectDebit extends Base
             Customer\Entity::EMAIL         =>  $row[Header::EMAIL],
             Customer\Entity::CONTACT       =>  $row[Header::PHONE],
         ];
-        $customerService = new Customer\Core();
-        return $customerService->createLocalCustomer($customerInput, $this->merchant, false);
+
+        return $this->customerCore->createLocalCustomer($customerInput, $this->merchant, false);
     }
 
 
@@ -125,7 +146,6 @@ class DirectDebit extends Base
         throw new \BadMethodCallException();
     }
 
-
     protected function postProcessEntries(array & $entries)
     {
         parent::postProcessEntries($entries);
@@ -133,7 +153,6 @@ class DirectDebit extends Base
         $ufhFile = $this->repo->file_store->findByBatchId($this->batch->getId());
 
         $deleter = new FileStore\Deleter();
-
 
         $deleter->type($ufhFile->getType())
             ->id($ufhFile->getId())

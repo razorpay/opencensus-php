@@ -252,22 +252,22 @@ class Header
     const PAYOUT_TAX                 = 'payout_tax';
 
     // Direct Debit headers
-    const EMAIL                     =   "EMAIL";
-    const PHONE                     =   "PHONE";
-    const CARD                      =   "CARD";
-    const EXPIRY_MONTH              =   "EXPIRY MONTH";
-    const EXPIRY_YEAR               =   "EXPIRY YEAR";
-    const CARDHOLDER_NAME           =   "CARDHOLDER NAME";
-    const CURRENCY                  =   "CURRENCY";
-    const RECEIPT                   =   "RECEIPT";
-    const NOTES1                    =   "NOTES 1 []";
-    const NOTES2                    =   "NOTES 2 []";
-    const NOTES3                    =   "NOTES 3 []";
+    const EMAIL                     =   'EMAIL';
+    const PHONE                     =   'PHONE';
+    const CARD                      =   'CARD';
+    const EXPIRY_MONTH              =   'EXPIRY MONTH';
+    const EXPIRY_YEAR               =   'EXPIRY YEAR';
+    const CARDHOLDER_NAME           =   'CARDHOLDER NAME';
+    const CURRENCY                  =   'CURRENCY';
+    const RECEIPT                   =   'RECEIPT';
+    const NOTES1                    =   'NOTES 1 []';
+    const NOTES2                    =   'NOTES 2 []';
+    const NOTES3                    =   'NOTES 3 []';
 
 
     //output
-    const DIRECT_DEBIT_PAYMENT_ID   =   "PAYMENT_ID";
-    const REMARKS                   =   "REMARKS";
+    const DIRECT_DEBIT_PAYMENT_ID   =   'PAYMENT_ID';
+    const REMARKS                   =   'REMARKS';
 
     /**
      * Input and output file headers
