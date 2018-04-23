@@ -91,7 +91,9 @@ class BatchController extends Controller
             $view = View::make('403');
         }
         else {
-            $view = View::make('public.direct_debit_form');
+            $view = View::make('public.direct_debit_form', [
+                'dashboardHost' =>  config("applications.dashboard.url"),
+            ]);
         }
 
         return $view;
@@ -106,7 +108,7 @@ class BatchController extends Controller
 
         $result =  $this->service()->createBatch($input);
 
-        $view = View::make('direct_debit_form_submit', $result);
+        $view = View::make('public.direct_debit_form_submit', $result);
         return $view;
     }
 
