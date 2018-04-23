@@ -1,5 +1,5 @@
   <script src="https://cdn.razorpay.com/static/analytics/bundle.js"></script>
-  <script tyoe="text/javascript">
+  <script type="text/javascript">
     var useAnalytics = true;
     if (String.prototype.indexOf && window.rzp_user && window.rzp_user.email && window.rzp_user.email.toLowerCase().indexOf('@razorpay.com') > 0) {
         useAnalytics = false;
