@@ -5,7 +5,11 @@ import BatchValidateModal from 'merchant/components/BatchNew/ValidateModal';
 
 import { validatePaymentLinkBatch as validateBatch } from 'merchant/modules/batches';
 
-import { trackUploadBatchFile } from './ga';
+import {
+  trackUploadBatchFile,
+  trackSampleFileDownload,
+  trackDownloadErrorReport,
+} from './ga';
 @connect(state => state.session, { validateBatch })
 export default class BatchValidate extends Component {
   state = {
@@ -74,6 +78,14 @@ export default class BatchValidate extends Component {
     this.handleStateChange('exceed');
   };
 
+  handleSampleFileDownload = () => {
+    trackSampleFileDownload();
+  };
+
+  handleErrorReportDownload = () => {
+    trackDownloadErrorReport();
+  };
+
   render() {
     return (
       <BatchValidateModal
@@ -81,6 +93,8 @@ export default class BatchValidate extends Component {
         onFileChange={this.handleBatchValidation}
         onBiggerFileSize={this.handleBiggerFileSize}
         onCloseClick={this.handleStateChange}
+        onSampleFileDownload={this.handleSampleFileDownload}
+        onErrorReportDownload={this.handleErrorReportDownload}
         {...this.state}
         {...this.props}
       />

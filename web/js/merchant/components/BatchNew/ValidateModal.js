@@ -5,11 +5,6 @@ import FileUpload from 'merchant/components/File/Upload';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
-import {
-  trackSampleFileDownload,
-  trackDownloadErrorReport,
-} from 'merchant/containers/BatchNew/ga';
-
 const MAX_FILE_SIZE = 1048576; // 1MB in bytes.
 
 export default function BatchValidateModal({
@@ -26,6 +21,8 @@ export default function BatchValidateModal({
   onBiggerFileSize,
   onCloseClick,
   closeModal,
+  onSampleFileDownload = null,
+  onErrorReportDownload = null,
 }) {
   return (
     <div class="modal-body">
@@ -81,7 +78,7 @@ export default function BatchValidateModal({
                 <a
                   class="btn-link"
                   href={sampleUrl}
-                  onClick={trackSampleFileDownload}
+                  onClick={onSampleFileDownload}
                 >
                   download sample file
                 </a>
@@ -107,7 +104,7 @@ export default function BatchValidateModal({
               <a
                 class="btn btn-primary btn-block"
                 href={fileUrl}
-                onClick={trackDownloadErrorReport}
+                onClick={onErrorReportDownload}
               >
                 {' '}
                 <i class="i i-download m-r" /> Download File
