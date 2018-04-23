@@ -90,6 +90,12 @@ class BharatQrPaymentTest extends TestCase
         $this->verifyPayment($payment['id']);
 
         $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('hitachi', true);
+
+        $this->assertEquals('refund', $refund['action']);
+
+        $this->assertNull($refund['acquirer']);
     }
 
     public function testHitachiBadCheckSum()
@@ -124,6 +130,13 @@ class BharatQrPaymentTest extends TestCase
     public function testUnexpectedPayment()
     {
         $request = $this->testData['testQrPaymentProcess'];
+
+        $this->fixtures->edit(
+            'merchant',
+            '10000000000000',
+            [
+                'pricing_plan_id' => '1hDYlICobzOCYt',
+            ]);
 
         $this->qrCode = $this->createVirtualAccount();
 

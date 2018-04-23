@@ -12,7 +12,7 @@ class Core extends Base\Core
 {
     /**
      * This function is used to run explain/show on a query.
-     * The query with prefixes `explain select`, `show create table`,
+     * The query with prefixes `explain`, `show create table`,
      * `show indexes from` are only allowed.
      * @param array $input
      *

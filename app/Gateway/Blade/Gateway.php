@@ -801,7 +801,11 @@ class Gateway extends Base\Gateway
                 case strpos($error, 'SignatureValue') !== false:
                 case strpos($error, 'KeyInfo') !== false:
                     throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR);
+                        ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
+                        null,
+                        [
+                            'error_message' => $error
+                        ]);
             }
             // Throw Critical for now
             throw new Exception\GatewayErrorException(

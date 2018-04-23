@@ -163,7 +163,7 @@ class PublicErrorDescription
     const BAD_REQUEST_AIRTEL_MONEY_RESET_MPIN                                   = 'Payment failed as airtel money mPIN has not been changed. Please call 121 to reset your mPIN.';
     const BAD_REQUEST_CONTACT_AIRTEL_MONEY_CUSTOMER_CARE_FOR_REFUND             = 'Refund failed. Please contact airtel money customer care.';
     const BAD_REQUEST_PAYMENT_TOPUP_INVALID_WALLET_TOKEN                        = 'Payment failed';
-    const BAD_REQUEST_PAYMENT_UPI_INVALID_VPA                                   = 'Please enter a valid Virtual Payment Address';
+    const BAD_REQUEST_PAYMENT_UPI_INVALID_VPA                                   = 'Invalid VPA. Please enter a valid Virtual Payment Address';
     const BAD_REQUEST_UNMAPPED_VPA                                              = 'This VPA is not mapped to any bank account.';
     const BAD_REQUEST_INVALID_P2P                                               = 'P2p fields are invalid.';
     const BAD_REQUEST_VPA_DOESNT_EXIST                                          = 'VPA does not exist.';
@@ -261,6 +261,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED                             = 'The merchant has no pricing assigned';
     const BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED                              = 'The merchant keys have already been created';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED                  = 'The merchant keys cannot be created since account is not activated yet.';
+    const BAD_REQUEST_MERCHANT_NO_KEY_ACCESS                                    = 'You are not allowed to perform this operation';
     const BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND                            = 'The merchant has not yet provided his bank account details';
     const BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED                    = 'The merchant already has provided a bank account';
     const BAD_REQUEST_MERCHANT_NOT_AGGREGRATOR                                  = 'The merchant is not an aggregator';
@@ -314,6 +315,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_PARAMETERS                                        = 'One or more fields have invalid data';
     const BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED                           = 'Payment declined because partial amount was approved';
     const BAD_REQUEST_PAYMENT_INTERNATIONAL_RECURRING_NOT_ALLOWED_FOR_MERCHANT  = 'Recurring payments on international cards not supported for merchant.';
+    const BAD_REQUEST_PAYMENT_ALREADY_ACKNOWLEDGED                              = 'Payment has already been acknowledged.';
     const BAD_REQUEST_ORDER_DOES_NOT_EXIST                                      = 'Order does not exist.';
     const BAD_REQUEST_ORDER_EXISTS                                              = 'This order already exists in the gateway database.';
     const BAD_REQUEST_ORDER_INVALID_OFFER                                       = 'Offer applied not valid for order';
@@ -444,6 +446,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED                              = 'The uploaded file is already processed';
     const BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING                               = 'The uploaded file is being processed';
     const BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS                       = 'Request failed because another operation on the batch is in progress';
+    const BAD_REQUEST_LAMBDA_ANOTHER_OPERATION_IN_PROGRESS                      = 'Request failed because another operation of lambda is in progress';
     const BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT                                   = 'The uploaded file exceeds the number of entries allowed';
     const BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE                        = 'Batch stats are not available for this batch type';
 

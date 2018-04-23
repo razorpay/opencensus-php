@@ -79,6 +79,7 @@ class Entity
     const SCHEDULE_TASK         = 'schedule_task';
     const LINE_ITEM_TAX         = 'line_item_tax';
     const DISPUTE_REASON        = 'dispute_reason';
+    const NODAL_STATEMENT       = 'nodal_statement';
     const VIRTUAL_ACCOUNT       = 'virtual_account';
     const MERCHANT_DETAIL       = 'merchant_detail';
     const TERMINAL_ACTION       = 'terminal_action';
@@ -163,6 +164,7 @@ class Entity
     const NETBANKING_RBL         = 'netbanking_rbl';
     const NETBANKING_INDUSIND    = 'netbanking_indusind';
     const NETBANKING_PNB         = 'netbanking_pnb';
+    const NETBANKING_CSB         = 'netbanking_csb';
     const WALLET_PAYZAPP         = 'wallet_payzapp';
     const WALLET_JIOMONEY        = 'wallet_jiomoney';
     const WALLET_SBIBUDDY        = 'wallet_sbibuddy';
@@ -195,6 +197,19 @@ class Entity
             QueryCacheConstants::VERSION => 'v1',
             QueryCacheConstants::TTL     => 1,
         ],
+    ];
+
+    /**
+     * Id corresponding to following listed entities are allowed for x_entity_id (header or query parameter) during
+     * keyless auth to public routes.
+     * Ref: KeylessPublicAuth's retrieveMerchant() for usage.
+     */
+    const KEYLESS_ALLOWED_ENTITIES = [
+        self::ORDER,
+        self::INVOICE,
+        self::PAYMENT,
+        self::CUSTOMER,
+        self::SUBSCRIPTION,
     ];
 
     public static $namespace = [
@@ -250,6 +265,7 @@ class Entity
         self::MERCHANT_PROMOTION    => \RZP\Models\Merchant\Promotion::class,
         self::MERCHANT_INVOICE      => \RZP\Models\Merchant\Invoice::class,
         self::MERCHANT_EMI_PLANS    => \RZP\Models\Merchant\EmiPlans::class,
+        self::NODAL_STATEMENT       => \RZP\Models\Nodal\Statement::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::MERCHANT_ACCESS_MAP   => \RZP\Models\Merchant\AccessMap::class,
@@ -299,6 +315,7 @@ class Entity
         self::NETBANKING_RBL         => \RZP\Gateway\Netbanking\Rbl::class,
         self::NETBANKING_INDUSIND    => \RZP\Gateway\Netbanking\Indusind::class,
         self::NETBANKING_PNB         => \RZP\Gateway\Netbanking\Pnb::class,
+        self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Csb::class,
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Payumoney::class,
         self::WALLET_OPENWALLET      => \RZP\Gateway\Wallet\Openwallet::class,
         self::WALLET_FREECHARGE      => \RZP\Gateway\Wallet\Freecharge::class,
@@ -338,6 +355,7 @@ class Entity
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_RBL         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_PNB         => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Base::class,
 
         self::ENACH_RBL              => \RZP\Gateway\Enach\Base::class,
@@ -357,6 +375,8 @@ class Entity
         self::WALLET_OLAMONEY        => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Base::class,
+
+        self::NODAL_STATEMENT       => \RZP\Models\Nodal\Statement::class,
     ];
 
     protected static $syncedInLiveAndTest = [
@@ -523,5 +543,23 @@ class Entity
     public static function isEntitySyncedInLiveAndTest($entity)
     {
         return in_array($entity, self::$syncedInLiveAndTest, true);
+    }
+
+    /**
+     * Returns the entity name from given sign. Only iterates over the scope of allowed entities for keyless auth.
+     * @param  string      $sign
+     * @return string|null
+     */
+    public static function getKeylessAllowedEntityFromSign(string $sign)
+    {
+        foreach (self::KEYLESS_ALLOWED_ENTITIES as $allowedEntity)
+        {
+            $allowedEntityClass = self::getEntityClass($allowedEntity);
+
+            if ($sign === $allowedEntityClass::getSign())
+            {
+                return $allowedEntity;
+            }
+        }
     }
 }

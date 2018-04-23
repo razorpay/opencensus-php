@@ -47,9 +47,13 @@ class Type
 
     const ICICI_UPI_REFUND                  = 'icici_upi_refund';
 
+    const MINDGATE_UPI_REFUND               = 'mindgate_upi_refund';
+
     const SBI_UPI_REFUND                    = 'sbi_upi_refund';
 
     const UPI_ICICI_FAILED_REFUND           = 'upi_icici_failed_refund';
+
+    const UPI_MINDGATE_FAILED_REFUND        = 'upi_mindgate_failed_refund';
 
     const AIRTELMONEY_WALLET_FAILED_REFUND  = 'airtelmoney_wallet_failed_refund';
 
@@ -147,6 +151,7 @@ class Type
             self::PAYUMONEY_WALLET_REFUND,
             self::RBL_NETBANKING_CLAIM,
             self::ICICI_UPI_REFUND,
+            self::MINDGATE_UPI_REFUND,
             self::SBI_UPI_REFUND,
             self::REPORT,
             self::BENEFICIARY_FILE,
@@ -247,6 +252,7 @@ class Type
         self::AIRTELMONEY_WALLET_REFUND,
         self::PAYUMONEY_WALLET_REFUND,
         self::ICICI_UPI_REFUND,
+        self::MINDGATE_UPI_REFUND,
         self::SBI_UPI_REFUND,
         self::FUND_TRANSFER_DEFAULT,
         self::FUND_TRANSFER_H2H,
@@ -279,6 +285,7 @@ class Type
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
+            self::MINDGATE_UPI_REFUND,
             self::SBI_UPI_REFUND,
             self::FUND_TRANSFER_DEFAULT,
             self::REPORT,

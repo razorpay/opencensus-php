@@ -145,6 +145,23 @@ class Header
     const TIME           = 'time';
 
     //
+    // Batch recurring payments
+    //
+    const RECURRING_CHARGE_TOKEN       = 'token';
+    const RECURRING_CHARGE_CUSTOMER_ID = 'customer_id';
+    const RECURRING_CHARGE_AMOUNT      = 'amount';
+    const RECURRING_CHARGE_CURRENCY    = 'currency';
+    const RECURRING_CHARGE_RECEIPT     = 'receipt';
+    const RECURRING_CHARGE_DESCRIPTION = 'description';
+    const RECURRING_CHARGE_NOTES_1     = 'notes_1';
+    const RECURRING_CHARGE_NOTES_2     = 'notes_2';
+    const RECURRING_CHARGE_NOTES_3     = 'notes_3';
+    const RECURRING_CHARGE_NOTES_4     = 'notes_4';
+    const RECURRING_CHARGE_NOTES_5     = 'notes_5';
+    const RECURRING_CHARGE_PAYMENT_ID  = 'payment_id';
+    const RECURRING_CHARGE_ORDER_ID    = 'order_id';
+
+    //
     // HDFC Emandate Register Response File Headers
     //
     const HDFC_EM_REGISTER_CLIENT_NAME                      = HdfcEMRegisterHeadings::CLIENT_NAME;
@@ -223,6 +240,8 @@ class Header
     const ENACH_REGISTER_UTILITY_NAME       = 'UTILITY_NAME';
     const ENACH_REGISTER_NODAL_ACNO         = 'NODAL_ACNO';
     const ENACH_REGISTER_STATUS             = 'STATUS';
+    const ENACH_REGISTER_RETURN_CODE        = 'RETURN_CODE';
+    const ENACH_REGISTER_CODE_DESC          = 'CODE_DESC';
 
     //
     // eNach Debit Response File Headers
@@ -234,9 +253,14 @@ class Header
     const ENACH_DEBIT_SCH_REFNO             = EnachRblDebitHeadings::SCH_REFNO;
     const ENACH_DEBIT_CUSTOMER_NAME         = EnachRblDebitHeadings::CUSTOMER_NAME;
     const ENACH_DEBIT_REFNO                 = EnachRblDebitHeadings::REFNO;
-    const ENACH_DEBIT_CLG_STATUS            = EnachRblDebitHeadings::CLG_STATUS;
+    const ENACH_DEBIT_STATUS                = EnachRblDebitHeadings::STATUS;
     const ENACH_DEBIT_AMOUNT                = EnachRblDebitHeadings::AMOUNT;
     const ENACH_DEBIT_UMRN                  = EnachRblDebitHeadings::UMRN;
+    const ENACH_DEBIT_UPLOAD_DATE           = EnachRblDebitHeadings::UPLOAD_DATE;
+    const ENACH_DEBIT_ACKUPD_DATE           = EnachRblDebitHeadings::ACKUPD_DATE;
+    const ENACH_DEBIT_RESPONSE_RECEIVED     = EnachRblDebitHeadings::RESPONSE_RECEIVED;
+    const ENACH_DEBIT_REASON_CODE           = EnachRblDebitHeadings::REASON_CODE;
+    const ENACH_DEBIT_REASON_DESCRIPTION    = EnachRblDebitHeadings::REASON_DESCRIPTION;
 
     //
     // Payout headers
@@ -438,7 +462,12 @@ class Header
                 self::ENACH_DEBIT_AMOUNT,
                 self::ENACH_DEBIT_REFNO,
                 self::ENACH_DEBIT_UMRN,
-                self::ENACH_DEBIT_CLG_STATUS,
+                self::ENACH_DEBIT_UPLOAD_DATE,
+                self::ENACH_DEBIT_ACKUPD_DATE,
+                self::ENACH_DEBIT_RESPONSE_RECEIVED,
+                self::ENACH_DEBIT_STATUS,
+                self::ENACH_DEBIT_REASON_CODE,
+                self::ENACH_DEBIT_REASON_DESCRIPTION,
             ]
         ],
 
@@ -469,6 +498,37 @@ class Header
                 self::AMOUNT,
                 self::DESCRIPTION,
                 self::STATUS,
+            ],
+        ],
+
+        Type::RECURRING_CHARGE => [
+            self::INPUT => [
+                self::RECURRING_CHARGE_TOKEN,
+                self::RECURRING_CHARGE_CUSTOMER_ID,
+                self::RECURRING_CHARGE_AMOUNT,
+                self::RECURRING_CHARGE_CURRENCY,
+                self::RECURRING_CHARGE_RECEIPT,
+                self::RECURRING_CHARGE_DESCRIPTION,
+                self::RECURRING_CHARGE_NOTES_1,
+                self::RECURRING_CHARGE_NOTES_2,
+                self::RECURRING_CHARGE_NOTES_3,
+                self::RECURRING_CHARGE_NOTES_4,
+                self::RECURRING_CHARGE_NOTES_5,
+            ],
+            self::OUTPUT => [
+                self::RECURRING_CHARGE_TOKEN,
+                self::RECURRING_CHARGE_CUSTOMER_ID,
+                self::RECURRING_CHARGE_AMOUNT,
+                self::RECURRING_CHARGE_CURRENCY,
+                self::RECURRING_CHARGE_RECEIPT,
+                self::RECURRING_CHARGE_DESCRIPTION,
+                self::RECURRING_CHARGE_NOTES_1,
+                self::RECURRING_CHARGE_NOTES_2,
+                self::RECURRING_CHARGE_NOTES_3,
+                self::RECURRING_CHARGE_NOTES_4,
+                self::RECURRING_CHARGE_NOTES_5,
+                self::RECURRING_CHARGE_ORDER_ID,
+                self::RECURRING_CHARGE_PAYMENT_ID,
             ],
         ],
 
@@ -550,7 +610,9 @@ class Header
                 self::ENACH_REGISTER_UTILITY_CODE,
                 self::ENACH_REGISTER_UTILITY_NAME,
                 self::ENACH_REGISTER_NODAL_ACNO,
-                self::ENACH_REGISTER_STATUS
+                self::ENACH_REGISTER_STATUS,
+                self::ENACH_REGISTER_RETURN_CODE,
+                self::ENACH_REGISTER_CODE_DESC,
             ],
         ],
 

@@ -11,6 +11,7 @@ use RZP\Constants\Entity;
 use RZP\Constants\AdminFetch;
 use RZP\Models\GeoIP\Service as GeoIP;
 use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
+use RZP\Reconciliator\ReconSummary\DailyReconStatusSummary;
 
 class Service extends Base\Service
 {
@@ -221,5 +222,12 @@ class Service extends Base\Service
     public function dbMetaDataQuery(array $input): array
     {
         return (new Query\Core)->dbMetaDataQuery($input);
+    }
+
+    public function fetchReconciliationSummary(array $input)
+    {
+        $data = (new DailyReconStatusSummary)->generateReconSummary($input);
+
+        return $data;
     }
 }

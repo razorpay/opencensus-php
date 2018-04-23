@@ -181,8 +181,15 @@
         background-color: rgba(0, 0, 0, 0.05);
         opacity: 0;
         z-index: 0;
-        transition: 0.5s all ease-in-out;
         pointer-events: none;
+        transition: 0.5s all ease-in-out;
+      }
+
+      #overlay.overlay-hist {
+        pointer-events: all;
+        background-color: rgba(0, 0, 0, 0.4);
+        transition: 0.24s all ease-in-out;
+        z-index: 1;
       }
 
       #payment-container iframe.razorpay-checkout-frame {
@@ -202,6 +209,7 @@
       .inv-details {
         padding: 30px 40px;
         background-color: #fff;
+        border-radius: 4px;
       }
 
       .inv-details .inv-for {
@@ -285,7 +293,7 @@
       #cancelled-crack {
         width: 100%;
         margin-top: 114px;
-        background-image: url(http://i.imgur.com/4c9Zkf4.png);
+        background-image: url(https://cdn.razorpay.com/static/cancelled_invoice.png);
         background-repeat: no-repeat;
         background-position: -189px -90px;
         height: 80px;
@@ -295,7 +303,7 @@
       #mobile-container #cancelled-invoice {
         width: 100%;
         top: -12px;
-        background-image: url(http://i.imgur.com/4c9Zkf4.png);
+        background-image: url(https://cdn.razorpay.com/static/cancelled_invoice.png);
         background-repeat: no-repeat;
         background-position: -19px -147px;
         font-size: 20px;
@@ -434,15 +442,18 @@
         #header-logo {
             text-align: center;
             position: relative;
-            padding: 8px;
-            width: 80px;
             height: 80px;
-            background: #fff;
             border-radius: 3px;
             line-height: 62px;
             float: left;
-            margin-right: 24px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        #header-logo.visible {
+            background: #fff;
+            padding: 8px;
+            width: 80px;
+            margin-right: 24px;
         }
 
         #header-details {
@@ -510,7 +521,6 @@
             position: relative;
         }
         .btn-link {
-          width: 95px;
           color: #528ff0;
           background: linear-gradient(transparent, rgba(255,255,255,0.8));
           border: 0;
@@ -518,17 +528,73 @@
           padding: 0;
           font-size: 14px;
           outline: none;
-          margin-left: -9px;
         }
 
-        #mobile-container .btn-link{
-          //right: 2px;
-          //bottom: 3px;
+        .showmore {
+            padding-left: 10px
+            margin-left: -9px;
         }
 
-        #desktop-container .btn-link {
-          //right: 85px;
-          //bottom: 3px;
+        #desktop-container .showhist {
+            margin-top: 16px;
+        }
+
+        #hist-modal {
+            position: absolute;
+            width: 92%;
+            max-width: 460px;
+            left: 50%;
+            top: 45%;
+            line-height: 24px;
+
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.4);
+            color: #909090;
+
+            transition: .1s all ease-in;
+            transform: translate(-50%,-50%) scale(0.7);
+            opacity: 0;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        #hist-modal.show {
+          display: block;
+          transform: translate(-50%,-50%) scale(1);
+          opacity: 1;
+          pointer-events: all;
+        }
+
+        #hist-close {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            padding: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            color: #57666e;
+        }
+
+        .modal-title {
+            padding: 24px 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #2e3345;
+        }
+        .modal-desc {
+            font-size: 14px;
+            font-weight: 400;
+            color: #909090;
+        }
+
+        .modal-col {
+            padding: 24px 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .modal-col .row:nth-of-type(n+2) {
+            font-size: 13px;
         }
 
     </style>
@@ -580,7 +646,7 @@
               }
               desc =  desc.trim();
               desc += '...';
-              button = '<button class="btn-link" onclick="toggleTrimDescription(false)"> Show More </button'
+              button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button'
             }
         }
 
@@ -714,6 +780,7 @@
     @else
       <div id="invoice-status-container" class={{$data['invoice']['status']}}>
           @if (isset($data['invoice']) && $data['invoice']['type'] !== 'invoice')
+            <!-- Desktop Container -->
             <div id="desktop-container">
                 <div>
                   <svg class="bg-svg" width="1665px" height="665px" viewBox="0 0 1665 665" preserveAspectRatio="none">
@@ -737,29 +804,55 @@
                                       @if($data['invoice']['expire_by'] and $data['invoice']['status'] !== 'paid')
                                           <div class="info">
                                               {{$data['invoice']['status'] === 'expired' ? 'EXPIRED ON' : 'EXPIRES BY'}}
-                                              <div class="val">{{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}} </div>
+                                              <div class="val">
+                                              {{format_epoch($data['invoice']['expire_by'])}}
+                                              </div>
                                           </div>
                                       @endif
 
                                       <div class="info">
                                           <span id="pay-title">AMOUNT PAYABLE</span>
                                           <div class="val" id="display-pay-amt">
-                                          ₹{{number_format($data['invoice']['amount']/100, 2, '.', ',')}}
+                                          ₹{{format_amount($data['invoice']['amount'])}}
                                           </div>
 
                                           <div class="info" id="partial-payment-info">
                                               <div class="val">
-                                                  <b>₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}}</b>
+                                                  <b>₹{{format_amount($data['invoice']['amount_due'])}}</b>
                                                   <span class="light">Due</span>
                                               </div>
                                               <div class="val">
-                                                  <span> ₹{{number_format($data['invoice']['amount_paid']/ 100, 2, '.', ',')}}</span>
+                                                  <span> ₹{{format_amount($data['invoice']['amount_paid'])}}</span>
                                                   <span class="light">Paid</span>
                                               </div>
                                           </div>
                                           <div class="line-strike"></div>
 
                                       </div>
+                                      @if($data['invoice']['partial_payment'] && count($data['invoice']['payments']))
+                                        <button class="btn-link showhist" onclick="showPayHist()"> Show Payment History </button>
+                                        <div id="hist-modal">
+                                          <div id="hist-close" onclick="closePayHist()"><b>✕</b></div>
+
+                                          <div class="modal-title">
+                                            Payment History
+                                            <div class="modal-desc">
+                                            {{count($data['invoice']['payments'])}} Payment{{(count($data['invoice']['payments']) > 1) ? 's' : ''}} made for this request
+                                            </div>
+                                          </div>
+
+
+                                          @foreach ($data['invoice']['payments'] as $key => $item)
+                                              <div class="modal-col">
+                                                <div class="row"><b style="color: #2e3345">
+                                                    ₹{{format_amount($item['amount'])}} Paid </b>on {{format_epoch($item['created_at'])}}
+                                                </div>
+                                                <div class="row">Paid using <span style="text-transform: capitalize">{{$item['method']}}</span></div>
+                                                    <div class="row">Payment ID: {{$item['id']}}</div>
+                                              </div>
+                                          @endforeach
+                                        </div>
+                                      @endif
                                   </div>
                               </div>
                               <div class="footer">
@@ -773,7 +866,7 @@
 
                         <div id="chkout-box" class={{(in_array($data['invoice']['status'], ['paid', 'expired', 'cancelled'], true) === true) ? 'short' : ''}}>
                             <div id="chkout-header">
-                                <div id="header-logo">
+                                <div id="header-logo" class={{isset($data['merchant']['image']) ? 'visible' : ''}}>
                                     @if (isset($data['merchant']['image']))
                                         <img src={{$data['merchant']['image']}} width="100%">
                                     @endif
@@ -805,11 +898,10 @@
                                 <div id="cancelled-invoice">
                                     <div class="title" style='color:#f54443; font-size:18px'>Payment Link Expired</div>
                                     <div class="desc">
-                                        Oops! This payment link expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
+                                        Oops! This payment link expired on {{format_epoch($data['invoice']['expire_by'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
                                     </div>
                                 </div>
                               @endif
-
                         </div>
                         </div>
                       </div>
@@ -826,10 +918,13 @@
                   </div>
                 </div>
               </div>
+
+            <!-- Mobile Container -->
             <div id="mobile-container">
+              <div id="overlay"></div>
               <div id="payment-container--mob">
                   <div id="chkout-header">
-                    <div id="header-logo">
+                    <div id="header-logo" class={{isset($data['merchant']['image']) ? 'visible' : ''}}>
                         @if (isset($data['merchant']['image']))
                             <img src={{$data['merchant']['image']}} width="100%">
                         @endif
@@ -854,25 +949,31 @@
                               <div class="info">
                                   <span id="pay-title">AMOUNT PAYABLE</span>
                                   <div class="val" id="display-pay-amt">
-                                    ₹{{number_format($data['invoice']['amount']/100, 2, '.', ',')}}
+                                    ₹{{format_amount($data['invoice']['amount'])}}
                                   </div>
                                   <div class="info" id="partial-payment-info">
                                       <div class="val">
-                                          <b>₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}}</b>
+                                          <b>₹{{format_amount($data['invoice']['amount_due'])}}</b>
                                           <span class="light">Due</span>
                                       </div>
                                       <div class="val">
-                                          <span>₹{{number_format($data['invoice']['amount_paid']/ 100, 2, '.', ',')}}</span>
+                                          <span>₹{{format_amount($data['invoice']['amount_paid'])}}</span>
                                           <span class="light">Paid</span>
                                       </div>
                                   </div>
                                   <div class="line-strike"></div>
                               </div>
+                              @if($data['invoice']['status'] === 'paid')
+                                  <div class="info">
+                                      PAYMENT ID
+                                      <div class="val" style="text-transform:unset">{{$data['invoice']['payment_id']}}</div>
+                                  </div>
+                              @endif
 
                               @if($data['invoice']['expire_by'] and $data['invoice']['status'] !== 'paid')
                                 <div class="info">
                                   {{$data['invoice']['status'] === 'expired' ? 'EXPIRED ON' : 'EXPIRES BY'}}
-                                  <div class="val">{{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}} </div>
+                                  <div class="val">{{format_epoch($data['invoice']['expire_by'])}} </div>
                                 </div>
                               @endif
                               @if($data['invoice']['customer_details']['customer_name'] or $data['invoice']['customer_details']['customer_email'])
@@ -886,6 +987,27 @@
                                   @endif
                                 </div>
                               @endif
+                            @if($data['invoice']['partial_payment'] && count($data['invoice']['payments']))
+                              <button class="btn-link showhist" onclick="showPayHist()"> Show Payment History </button>
+                              <div id="hist-modal">
+                                <div id="hist-close" onclick="closePayHist()"><b>✕</b></div>
+
+                                <div class="modal-title">
+                                  Payment History
+                                  <div class="modal-desc">{{$data['invoice']['partial_payment']}} Payment{{$data['invoice']['partial_payment'] > 1 ?: 's'}} made for this request</div>
+                                </div>
+
+                                  @foreach ($data['invoice']['payments'] as $key => $item)
+                                      <div class="modal-col">
+                                        <div class="row"><b style="color: #2e3345">
+                                            ₹{{format_amount($item['amount'])}} Paid </b>on {{format_epoch($item['created_at'])}}
+                                        </div>
+                                        <div class="row">Paid using <span style="text-transform: capitalize">{{$item['method']}}</span></div>
+                                        <div class="row">Payment ID: {{$item['id']}}</div>
+                                      </div>
+                                  @endforeach
+                              </div>
+                            @endif
                           </div>
                       </div>
                       @if($data['invoice']['status'] === 'cancelled')
@@ -899,7 +1021,7 @@
                         <div id="cancelled-invoice">
                           <div class="title" style='color:#f54443; font-size:18px'>Payment Link Expired</div>
                             <div class="desc">
-                              Oops! This payment link expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
+                              Oops! This payment link expired on {{format_epoch($data['invoice']['expire_by'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
                           </div>
                         </div>
                       @endif
@@ -938,7 +1060,7 @@
 
                   if (checkIsDesktop()) {
                       document.getElementById('scs-box').style.display = 'block';
-                      document.getElementById('scs-msg').innerHTML = "You have successfully paid ₹ " +  (amount/100).toFixed(2);
+                      document.getElementById('scs-msg').innerHTML = "You have successfully paid ₹ " +  (amount/100).toFixed(2) + '<div> Payment ID: ' + data['invoice']['payment_id'] + ' </div>';
                       document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2);
                   } else {
                     document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2) + '<span id="paid-tag">PAID</span></span>';
@@ -965,7 +1087,38 @@
                 }
               }
           </script>
+          <script>
+            if(data.invoice['partial_payment']) {
+                function showOverlay(clsToAdd) {
+                  var overlay = document.getElementById('overlay');
+                  overlay.style.opacity = 1;
 
+                  if (clsToAdd && overlay.className.indexOf(clsToAdd) === -1) {
+                    overlay.className += " " + clsToAdd;
+                  }
+                }
+
+                function hideOverlay(clsToRemove) {
+                  var overlay = document.getElementById('overlay');
+                  overlay.style.opacity = 0;
+
+
+                  if (clsToRemove && overlay.className.indexOf(clsToRemove) > -1) {
+                    overlay.className = overlay.className.replace(clsToRemove, '');
+                  }
+                }
+
+                function showPayHist() {
+                    document.getElementById('hist-modal').className = 'show';
+                    showOverlay('overlay-hist');
+                }
+
+                function closePayHist() {
+                    document.getElementById('hist-modal').className = '';
+                    hideOverlay('overlay-hist');
+                }
+            }
+          </script>
           @if ($data['invoice']['status'] !== 'paid' and ($data['invoice']['status'] !== 'expired' and $data['invoice']['status'] !== 'cancelled'))
             @if (isset($data['error']))
               <div id="failure" class="card">
@@ -977,18 +1130,12 @@
             @endif
             <script>
               if (checkIsDesktop()) {
-                  function showOverlay() {
-                      document.getElementById('overlay').style.opacity = 1;
-                  }
-                  function hideOverlay() {
-                      document.getElementById('overlay').style.opacity = 0;
-                  }
-                  document.getElementById('chkout-box').addEventListener('mouseover', showOverlay);
-                  document.getElementById('chkout-box').addEventListener('mouseout', hideOverlay);
+                document.getElementById('chkout-box').addEventListener('mouseover', showOverlay);
+                document.getElementById('chkout-box').addEventListener('mouseout', hideOverlay);
               } else {
-                  var payBtn = document.getElementById('mob-payment-btn');
-                  payBtn.style['background-color'] = color;
-                  payBtn.style['display'] = 'block';
+                var payBtn = document.getElementById('mob-payment-btn');
+                payBtn.style['background-color'] = color;
+                payBtn.style['display'] = 'block';
               }
 
               (function (globalScope) {
@@ -1014,21 +1161,13 @@
                                                            );
                     }
 
-                    if (invoiceObj.partial_payment && invoiceObj.amount_due) {
-                      return location.reload();
-                    }
-                    var chkoutFrame = document.querySelector('#chkout-box iframe');
-                    if (chkoutFrame) {
-                      document.getElementById('chkout-box').removeChild(chkoutFrame);
-                    }
-                    fullPaid();
+                    return location.reload(); // To display the latest payment id
                   },
                   prefill: {
                     contact: invoiceObj.customer_details.customer_contact,
                     email: invoiceObj.customer_details.customer_email,
                   },
                   callback_url: location.href,
-                  image: 'https://i.imgur.com/n5tjHFD.png',
                   theme: {
                     close_button: false,
                   },

@@ -389,6 +389,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getWebhookEvents()
+    {
+        $data = $this->service()->fetchWebhookEvents();
+
+        return ApiResponse::json($data);
+    }
+
     public function getWebhook($id)
     {
         $data = $this->service()->getWebhook($id);
@@ -529,6 +536,13 @@ class MerchantController extends Controller
         $input = Request::all();
 
         return ApiResponse::json($input);
+    }
+
+    public function getDummyRazorX()
+    {
+        $response = $this->service()->getDummyRazorX();
+
+        return ApiResponse::json($response);
     }
 
     public function postMerchantsNotifyHoliday()
@@ -767,6 +781,13 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service(E::MERCHANT_DETAIL)->updateWebsiteDetails($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getBusinessCategories()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getBusinessCategories();
 
         return ApiResponse::json($response);
     }

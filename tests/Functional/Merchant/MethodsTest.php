@@ -125,6 +125,8 @@ class MethodsTest extends TestCase
     {
         $this->ba->publicTestAuth();
 
+        $this->fixtures->merchant->enableMobikwik('10000000000000');
+
         $this->fixtures->merchant->enableEmandate();
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::CHARGE_AT_WILL]);
@@ -133,7 +135,7 @@ class MethodsTest extends TestCase
 
         $content = $this->startTest($testData);
 
-        $this->assertCount(37, $content['recurring']['emandate']);
+        $this->assertGreaterThanOrEqual(41, $content['recurring']['emandate']);
     }
 
     public function testRecurringNetbankingOnChargeAtWillInLive()
@@ -141,6 +143,8 @@ class MethodsTest extends TestCase
         $this->fixtures->merchant->activate();
 
         $this->ba->publicLiveAuth();
+
+        $this->fixtures->merchant->enableMobikwik('10000000000000');
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::CHARGE_AT_WILL]);
 
@@ -183,8 +187,9 @@ class MethodsTest extends TestCase
         $this->ba->publicTestAuth();
 
         $this->fixtures->merchant->enableMobikwik('10000000000000');
+        $this->fixtures->merchant->enableEmandate('10000000000000');
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::SUBSCRIPTIONS, Feature\Constants::E_MANDATE]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::SUBSCRIPTIONS]);
 
         $testData = $this->testData['testRecurringCards'];
 

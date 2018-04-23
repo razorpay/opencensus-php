@@ -82,6 +82,14 @@ return [
                         'zipcode' => '560078',
                         'country' => 'India',
                     ],
+                    'shipping_address' => [
+                        'line1'   => 'Shipping Line One Etc',
+                        'line2'   => 'Shipping Line Two Etc',
+                        'city'    => 'Bangalore',
+                        'state'   => 'Karnataka',
+                        'zipcode' => '560080',
+                        'country' => 'India',
+                    ],
                 ],
                 'line_items'    => [
                     [
@@ -113,7 +121,17 @@ return [
                         'city'    => "Bangalore",
                         'state'   => "Karnataka",
                         'country' => "in",
-                    ]
+                    ],
+                    'shipping_address' => [
+                        'type'    => "shipping_address",
+                        'primary' => true,
+                        'line1'   => "Shipping Line One Etc",
+                        'line2'   => "Shipping Line Two Etc",
+                        'zipcode' => "560080",
+                        'city'    => "Bangalore",
+                        'state'   => "Karnataka",
+                        'country' => "in",
+                    ],
                 ],
                 'line_items' => [
                     [
@@ -1439,7 +1457,8 @@ return [
                 'receipt'      => 'inv_receipt_0001',
                 'customer'  => [
                     'name'  => 'new customer',
-                    'email' => 'new@razorpay.com'
+                    'email' => 'new@razorpay.com',
+                    'gstin' => '29CFZPR4093Q1ZA',
                 ],
             ],
         ],
@@ -1452,6 +1471,7 @@ return [
                     'name'            => 'new customer',
                     'email'           => 'new@razorpay.com',
                     'contact'         => '1234567890',
+                    'gstin'           => '29CFZPR4093Q1ZA',
                     'billing_address' => null,
                 ],
                 'status'               => 'draft',
@@ -1520,6 +1540,57 @@ return [
                     ],
                 ],
                 'status'               => 'draft',
+            ],
+        ],
+    ],
+
+    'testUpdateDraftInvoiceWithCustomerBillingAndShippingAddressIds' => [
+        'request'  => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'receipt'  => 'inv_receipt_0001',
+                'customer' => [
+                    'name'                => 'new customer',
+                    'email'               => 'new@razorpay.com',
+                    'billing_address_id'  => 'addr_1000000address',
+                    'shipping_address_id' => 'addr_1000001address',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'inv_1000000invoice',
+                'entity'           => 'invoice',
+                'receipt'          => 'inv_receipt_0001',
+                'customer_details' => [
+                    'name'             => 'new customer',
+                    'email'            => 'new@razorpay.com',
+                    'contact'          => '1234567890',
+                    'billing_address'  => [
+                        'id'      => 'addr_1000000address',
+                        'type'    => 'billing_address',
+                        'primary' => false,
+                        'line1'   => 'some line one',
+                        'line2'   => 'some line two',
+                        'zipcode' => '560078',
+                        'city'    => 'Bangalore',
+                        'state'   => 'Karnataka',
+                        'country' => 'in',
+                    ],
+                    'shipping_address' => [
+                        'id'      => 'addr_1000001address',
+                        'type'    => 'shipping_address',
+                        'primary' => false,
+                        'line1'   => 'some line one',
+                        'line2'   => 'some line two',
+                        'zipcode' => '560080',
+                        'city'    => 'Bangalore',
+                        'state'   => 'Karnataka',
+                        'country' => 'in',
+                    ],
+                ],
+                'status'           => 'draft',
             ],
         ],
     ],
@@ -3831,6 +3902,7 @@ return [
                                 ],
                                 'boost'                => 1,
                                 'minimum_should_match' => '75%',
+                                'lenient'              => true
                             ],
                         ]
                     ],

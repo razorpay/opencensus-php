@@ -350,4 +350,16 @@ class PaymentController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    /**
+     * @param string $paymentId
+     *
+     * @return \Illuminate\Http\JsonResponse;
+     */
+    public function postAcknowledge(string $paymentId)
+    {
+        $this->service()->acknowledge($paymentId);
+
+        return ApiResponse::json([], 204);
+    }
 }

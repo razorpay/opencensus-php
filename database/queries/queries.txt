@@ -3449,3 +3449,62 @@ ALTER TABLE customers
 
 ALTER TABLE invoices
     ADD COLUMN customer_gstin VARCHAR(20) DEFAULT NULL AFTER customer_contact;
+
+ALTER TABLE tokens
+    ADD INDEX tokens_recurring_status_index (recurring_status);
+
+ALTER TABLE payments
+    ADD COLUMN acknowledged_at INTEGER UNSIGNED AFTER auth_type,
+    ADD COLUMN reference3 TINYINT(1) NULL AFTER reference2,
+    ADD COLUMN reference4 TINYINT(1) NULL AFTER reference3,
+    ADD COLUMN reference5 INT(11) DEFAULT NULL AFTER reference4,
+    ADD COLUMN reference6 INT(11) DEFAULT NULL AFTER reference5,
+    ADD COLUMN reference7 VARCHAR(255) DEFAULT NULL AFTER reference6,
+    ADD COLUMN reference8 VARCHAR(255) DEFAULT NULL AFTER reference7,
+    ADD COLUMN reference9 BIGINT UNSIGNED DEFAULT NULL AFTER reference8;
+
+ALTER TABLE enach
+    ADD COLUMN error_message VARCHAR(255) DEFAULT NULL AFTER registration_status,
+    ADD COLUMN error_code VARCHAR(255) DEFAULT NULL AFTER error_message;
+
+# Invoice GST Changes - address and tax codes
+ALTER TABLE invoices
+    ADD COLUMN customer_shipping_addr_id CHAR(14) DEFAULT NULL AFTER customer_billing_addr_id,
+    ADD CONSTRAINT invoices_customer_shipping_addr_id_foreign FOREIGN KEY (customer_shipping_addr_id) REFERENCES addresses (id);
+
+//Atom Entity refactor
+
+ALTER TABLE atom DROP FOREIGN KEY atom_id_foreign;
+
+ALTER TABLE atom DROP PRIMARY KEY;
+
+ALTER TABLE atom CHANGE id payment_id CHAR(14);
+
+ALTER TABLE atom ADD id int(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST;
+
+ALTER TABLE atom ADD CONSTRAINT atom_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments(id);
+
+ALTER TABLE atom
+    ADD COLUMN refund_id CHAR(14) DEFAULT NULL AFTER payment_id,
+    ADD COLUMN action VARCHAR(64) AFTER refund_id,
+    ADD COLUMN received TINYINT(1) NOT NULL DEFAULT 0 AFTER action,
+    ADD COLUMN amount VARCHAR(10) NOT NULL DEFAULT 0 AFTER received,
+    ADD COLUMN status VARCHAR(64) DEFAULT NULL AFTER amount,
+    ADD COLUMN account_number VARCHAR(50) DEFAULT NULL AFTER status,
+    ADD COLUMN error_code VARCHAR(255) DEFAULT NULL AFTER method,
+    ADD INDEX atom_bank_payment_id_index (bank_payment_id),
+    ADD CONSTRAINT atom_refund_id_foreign FOREIGN KEY (refund_id) REFERENCES refunds(id),
+    MODIFY COLUMN gateway_payment_id int(11) DEFAULT NULL,
+    MODIFY COLUMN token char(75) DEFAULT NULL,
+    MODIFY COLUMN `payment_id` char(14) NOT NULL;
+
+ALTER TABLE atom MODIFY COLUMN gateway_payment_id VARCHAR(255) DEFAULT NULL;
+    
+ALTER TABLE `merchant_details`
+    ADD COLUMN `business_category` VARCHAR(255) DEFAULT NULL AFTER `company_pan_name`,
+    ADD COLUMN `business_subcategory` VARCHAR(255) DEFAULT NULL AFTER `business_category`;
+
+ALTER TABLE payments drop foreign key payments_app_id_foreign,
+                     rename index payments_app_id_foreign TO payments_receiver_id_index,
+                     change app_id receiver_id varchar(14),
+                     change reference8 receiver_type varchar(255);

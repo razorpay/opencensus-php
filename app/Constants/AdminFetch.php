@@ -941,6 +941,14 @@ class AdminFetch
                 ],
             ],
 
+            Entity::ENACH => [
+                'umrn' => [
+                    Fetch::LABEL  => 'UMRN',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
+            ],
+
             Entity::NETBANKING => [
                 'bank_payment_id' => [
                     Fetch::LABEL  => 'Bank Payment Id',
@@ -958,6 +966,13 @@ class AdminFetch
                 'received' => [
                     Fetch::LABEL  => 'Received',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
+                ],
+            ],
+
+            Entity::NODAL_STATEMENT => [
+                'q'  => [
+                    Fetch::LABEL  => 'Search Query',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
 
@@ -1079,6 +1094,16 @@ class AdminFetch
                 'token_id' => [
                     Fetch::LABEL  => 'Token Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'recurring_status' => [
+                    Fetch::LABEL  => 'Token Recurring Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'null',
+                        'initiated',
+                        'confirmed',
+                        'rejected',
+                    ],
                 ],
                 'transfer_id' => [
                     Fetch::LABEL  => 'Transfer Id',
@@ -1418,6 +1443,10 @@ class AdminFetch
                 'token' => [
                     Fetch::LABEL  => 'Token',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'recurring_status' => [
+                    Fetch::LABEL    => 'Recurring Status',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
                 ],
                 'wallet' => Fetch::FIELD_WALLET
             ],

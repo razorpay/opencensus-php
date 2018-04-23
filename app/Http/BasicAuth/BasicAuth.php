@@ -46,7 +46,7 @@ use RZP\Models\User\Entity as User;
  */
 class BasicAuth
 {
-    const HMAC_ALGO = 'sha256';
+    const HMAC_ALGO               = 'sha256';
 
     /**
      * To support Account Auth: Allows API requests to be served under the
@@ -56,14 +56,14 @@ class BasicAuth
      * On admin auth                    - set to any merchant under the current org
      * For private auth (marketplace)   - set to any linked account under the merchant
      */
-    const ACCOUNT_HEADER_KEY = 'X-Razorpay-Account';
+    const ACCOUNT_HEADER_KEY      = 'X-Razorpay-Account';
 
     /**
      * Dashboard headers are prefixed with following literal.
      */
     const DASHBOARD_HEADER_PREFIX = 'x-dashboard';
 
-    const ADMIN_TOKEN_HEADER = 'X-Admin-Token';
+    const ADMIN_TOKEN_HEADER      = 'X-Admin-Token';
 
     /**
      * The application instance.
@@ -252,6 +252,17 @@ class BasicAuth
      */
     protected $user        = null;
 
+    /**
+     * @var boolean
+     */
+    protected $keylessPublicAuth = false;
+
+    /**
+     * The entity id with which keyless public auth happened
+     * @var string
+     */
+    protected $keylessXEntityId;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -402,27 +413,63 @@ class BasicAuth
     {
         $this->setType(Type::PUBLIC_AUTH);
 
-        $key = $this->request->input('key_id');
-
-        if ($key === null)
+        if (($this->request->has('key_id') === false) and ($this->request->getUser() === null))
         {
-            $res = $this->setCredentials();
-
-            if ($res !== null)
-            {
-                return $res;
-            }
+            return $this->keylessPublicAuth();
         }
         else
         {
-            $res = $this->setKeyFromQueryParams();
+            return $this->keyPublicAuth();
+        }
+    }
 
-            if ($res !== null)
-            {
-                return $res;
-            }
+    /**
+     * Handles keyless auth on public routes. Ref; KeylessPublicAuth.php
+     * @return mixed
+     */
+    public function keylessPublicAuth()
+    {
+        // Attempts to retrieve merchant and other attributes for ba via key less public auth approach
+        list($mode, $merchant, $entityId) = (new KeylessPublicAuth)->retrieveModeMerchantAndXEntityId();
+
+        // If we fail to retrieve merchant, return http auth expected exception
+        if (($mode === null) or ($merchant === null) or ($entityId === null))
+        {
+            return ApiResponse::httpAuthExpected();
         }
 
+        $this->setKeylessPublicAuthAttributes($entityId);
+
+        $this->setModeAndDbConnection($mode);
+
+        $this->setAndCheckMerchantActivatedForLive($merchant);
+
+        // Sets the key instance if it exists, gets used in forming signature for payment authorize response
+        $this->key = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId());
+    }
+
+    /**
+     * Handles auth on public routes using public key id
+     * @return mixed
+     */
+    public function keyPublicAuth()
+    {
+        if ($this->request->has('key_id') === true)
+        {
+            $res = $this->setKeyFromQueryParams();
+        }
+        else
+        {
+            $res = $this->setCredentials();
+        }
+
+        // If there was any error response, return
+        if ($res !== null)
+        {
+            return $res;
+        }
+
+        // Else continues with verifying key existence etc.. and sets all the instance variables accordingly
         $response = $this->verifyKeyExistence();
 
         if ($response !== true)
@@ -430,11 +477,10 @@ class BasicAuth
             return $response;
         }
 
-        if (($this->getSecret() !== '') and
-            ($this->getSecret() !== null))
+        // Verify that no secret is being sent for public auth requests
+        if (($this->getSecret() !== '') and ($this->getSecret() !== null))
         {
-            return ApiResponse::generateErrorResponse(
-                ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE);
+            return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE);
         }
 
         $this->fetchMerchantOfKey($this->key);
@@ -523,6 +569,12 @@ class BasicAuth
         }
 
         return ApiResponse::routeNotFound();
+    }
+
+    protected function setKeylessPublicAuthAttributes(string $entityId)
+    {
+        $this->keylessPublicAuth = true;
+        $this->keylessXEntityId  = $entityId;
     }
 
     /**
@@ -1010,6 +1062,16 @@ class BasicAuth
         return $this->mode;
     }
 
+    public function getKeyEntity()
+    {
+        return $this->key;
+    }
+
+    public function getKeylessXEntityId()
+    {
+        return $this->keylessXEntityId;
+    }
+
     public function getMerchant()
     {
         return $this->merchant;
@@ -1201,6 +1263,11 @@ class BasicAuth
         return ($this->type === Type::PUBLIC_AUTH);
     }
 
+    public function isKeylessPublicAuth()
+    {
+        return (($this->isPublicAuth() === true) and ($this->keylessPublicAuth === true));
+    }
+
     public function isPrivateAuth()
     {
         return ($this->type === Type::PRIVATE_AUTH);
@@ -1267,9 +1334,7 @@ class BasicAuth
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $this->setMerchant($merchant);
-
-        $this->checkMerchantActivatedForLive();
+        $this->setAndCheckMerchantActivatedForLive($merchant);
 
         return $this->merchant;
     }
@@ -1307,6 +1372,12 @@ class BasicAuth
         }
 
         $this->setMerchant($account);
+    }
+
+    public function setAndCheckMerchantActivatedForLive(Merchant\Entity $merchant)
+    {
+        $this->setMerchant($merchant);
+        $this->checkMerchantActivatedForLive();
     }
 
     public function checkMerchantActivatedForLive()

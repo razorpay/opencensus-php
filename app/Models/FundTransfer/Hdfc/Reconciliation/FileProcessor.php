@@ -13,7 +13,7 @@ class FileProcessor extends BaseProcessor
 {
     protected static $fileToReadName  = 'Hdfc_Settlement_Reconciliation';
 
-    protected static $filetowritename = 'Hdfc_Settlement_Reconciliation';
+    protected static $fileToWriteName = 'Hdfc_Settlement_Reconciliation';
 
     protected static $channel = Channel::HDFC;
 

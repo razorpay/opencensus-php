@@ -3,8 +3,8 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use RZP\Gateway\Hdfc;
-use RZP\Models\Base\UniqueIdEntity;
+use RZP\Constants\Table;
+use RZP\Gateway\Atom\Entity as Atom;
 
 class CreateAtomGateway extends Migration
 {
@@ -15,50 +15,81 @@ class CreateAtomGateway extends Migration
      */
     public function up()
     {
-        Schema::create('atom', function(Blueprint $table)
+        Schema::create(Table::ATOM, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
-            $table->char('id', UniqueIdEntity::ID_LENGTH)
-                  ->primary();
+            $table->increments(Atom::ID);
 
-            $table->integer('gateway_payment_id');
+            $table->char(Atom::PAYMENT_ID, Atom::ID_LENGTH);
 
-            $table->char('token', 75);
-
-            $table->tinyInteger('success')
+            $table->string(Atom::REFUND_ID, Atom::ID_LENGTH)
                   ->nullable();
 
-            $table->string('bank_code')
+            $table->string(Atom::ACTION, 10)
                   ->nullable();
 
-            $table->string('bank_name')
+            $table->integer(Atom::RECEIVED)
+                  ->default(0);
+
+            $table->string(Atom::AMOUNT, 10);
+
+            $table->string(Atom::STATUS, 5)
                   ->nullable();
 
-            $table->string('bank_payment_id')
+            $table->string(Atom::ACCOUNT_NUMBER)
                   ->nullable();
 
-            $table->char('method', 2)
+            $table->integer(Atom::GATEWAY_PAYMENT_ID)
                   ->nullable();
 
-            $table->string('gateway_result_description')
+            $table->char(Atom::TOKEN, 75)
                   ->nullable();
 
-            $table->text('callback_data')
+            $table->tinyInteger(Atom::SUCCESS)
+                  ->default(0)
                   ->nullable();
 
-            $table->integer('created_at');
-            $table->integer('updated_at');
+            $table->string(Atom::BANK_CODE)
+                  ->nullable();
 
-            $table->foreign('id')
-                  ->references('id')
+            $table->string(Atom::BANK_NAME)
+                  ->nullable();
+
+            $table->string(Atom::BANK_PAYMENT_ID)
+                  ->nullable();
+
+            $table->char(Atom::METHOD, 2)
+                  ->nullable();
+
+            $table->string(Atom::ERROR_CODE, 5)
+                  ->nullable();
+
+            $table->string(Atom::ERROR_DESCRIPTION)
+                  ->nullable();
+
+            $table->text(Atom::CALLBACK_DATA)
+                  ->nullable();
+
+            $table->integer(Atom::CREATED_AT);
+            $table->integer(Atom::UPDATED_AT);
+
+
+            $table->foreign(Atom::PAYMENT_ID)
+                  ->references(RZP\Models\Payment\Entity::ID)
                   ->on('payments')
                   ->on_delete('restrict');
 
-            $table->index('token');
+            $table->foreign(Atom::REFUND_ID)
+                  ->references(RZP\Models\Payment\Refund\Entity::ID)
+                  ->on('refunds')
+                  ->on_delete('restrict');
 
-            $table->index('gateway_payment_id');
-            $table->index('created_at');
+            $table->index(Atom::GATEWAY_PAYMENT_ID);
+
+            $table->index(Atom::CREATED_AT);
+
+            $table->index(Atom::BANK_PAYMENT_ID);
         });
     }
 
@@ -69,11 +100,11 @@ class CreateAtomGateway extends Migration
      */
     public function down()
     {
-        Schema::table('atom', function($table)
+        Schema::table(Table::ATOM, function($table)
         {
-            $table->dropForeign('atom_id_foreign');
+            $table->dropForeign('atom_payment_id_foreign');
         });
 
-        Schema::drop('atom');
+        Schema::drop(Table::ATOM);
     }
 }

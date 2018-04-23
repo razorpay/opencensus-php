@@ -329,6 +329,31 @@ return [
         ],
     ],
 
+    'testGetMerchantBusinessCategories' => [
+        'request' => [
+            'url'     => '/merchant/activation/business_categories',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'financial_services' => [
+                    'description'   => 'Financial Services',
+                    'subcategories' => [
+                        'mutual_fund' => 'Mutual Fund',
+                        'lending'     => 'Lending',
+                    ],
+                ],
+                'education' => [
+                    'description'   => 'Education',
+                    'subcategories' => [
+                        'college' => 'College',
+                        'schools' => 'Schools',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testCommentMerchant' => [
         'request' => [
             'content' => [
@@ -515,7 +540,7 @@ return [
                     'verification'          => [
                         'status'                => 'disabled',
                         'disabled_reason'       => 'required_fields',
-                        'activation_progress'   => 4,
+                        'activation_progress'   => 5,
                     ],
                 ],
                 'auto_capture_late_auth'    => false,

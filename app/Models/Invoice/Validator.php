@@ -16,6 +16,13 @@ use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
+/**
+ * Class Validator
+ *
+ * @package RZP\Models\Invoice
+ *
+ * @property $entity    Entity
+ */
 class Validator extends Base\Validator
 {
     // We have rules on create and update for the two status: DRAFT, ISSUED.
@@ -180,11 +187,12 @@ class Validator extends Base\Validator
      * @var array
      */
     protected static $editCustomerDetailsRules = [
-        Customer\Entity::NAME               => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:50|nullable',
-        Customer\Entity::EMAIL              => 'sometimes|email',
-        Customer\Entity::CONTACT            => 'sometimes|contact_syntax',
-        Customer\Entity::GSTIN              => 'sometimes|nullable|gstin',
-        Customer\Entity::BILLING_ADDRESS_ID => 'sometimes|public_id|size:19|nullable',
+        Customer\Entity::NAME                => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:50|nullable',
+        Customer\Entity::EMAIL               => 'sometimes|email',
+        Customer\Entity::CONTACT             => 'sometimes|contact_syntax',
+        Customer\Entity::GSTIN               => 'sometimes|nullable|gstin',
+        Customer\Entity::BILLING_ADDRESS_ID  => 'sometimes|public_id|size:19|nullable',
+        Customer\Entity::SHIPPING_ADDRESS_ID => 'sometimes|public_id|size:19|nullable',
     ];
 
     protected static $issueBatchRules = [
@@ -704,7 +712,8 @@ class Validator extends Base\Validator
         $lineItemsCount = $invoice->lineItems()->count();
         $description    = $invoice->getDescription();
 
-        if (($lineItemsCount === 0) and ($description === null))
+        // For description need to do blank() check as it is 'sometimes' in Validator.
+        if (($lineItemsCount === 0) and (blank($description) === true))
         {
             throw new BadRequestValidationFailureException('description is required.');
         }

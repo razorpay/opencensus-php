@@ -12,6 +12,8 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
+        (new Validator)->checkHasKeyAccess($merchant, $this->mode);
+
         $keyData = (new Core)->createFirstKey($merchant, $this->mode);
 
         if ($this->mode === Mode::LIVE)
@@ -33,6 +35,8 @@ class Service extends Base\Service
 
     public function fetchKeys()
     {
+        (new Validator)->checkHasKeyAccess($this->merchant, $this->mode);
+
         $merchantId = $this->merchant->getId();
 
         $keys = $this->repo->key->getKeysForMerchant($merchantId);
@@ -42,6 +46,8 @@ class Service extends Base\Service
 
     public function updateKey($keyId, array $input)
     {
+        (new Validator)->checkHasKeyAccess($this->merchant, $this->mode);
+
         $merchantId = $this->merchant->getId();
 
         return (new Core)->rollKey($merchantId, $keyId, $input, $this->mode);

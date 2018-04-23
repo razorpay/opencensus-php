@@ -111,78 +111,6 @@ class Gateway extends Base\Gateway
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
     }
-
-    public function otpGenerate(array $input)
-    {
-        $this->validateCustomer($input);
-
-        $this->action($input, Action::OTP_GENERATE);
-
-        $data = $this->getOtpGenerateData($input);
-
-        $response = $this->sendSoapRequest($data,
-                                           SoapAction::OTP_GENERATE_API,
-                                           SoapMethod::SEND_OTP);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_OTP_GENERATE_RESPONSE,
-            [
-                'gateway'    => $this->gateway,
-                'response'   => $response,
-                'payment_id' => $input['payment']['id']
-            ]);
-
-        $content = $response[ResponseFields::OTP_GENERATE][ResponseFields::LC_RESPONSE];
-
-        // Create Gateway Payment Entity
-        $contentToSave = $this->getOtpGenerateContentToSave($input, $response[ResponseFields::OTP_GENERATE]);
-
-        $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
-
-        $status = $content[ResponseFields::S2S_STATUS_CODE];
-
-        // Otp generation fails, throw exception
-        $this->checkGatewayResponse($status);
-
-        return $this->getOtpSubmitRequest($input);
-    }
-
-    public function callbackOtpSubmit(array $input)
-    {
-        $this->action($input, Action::OTP_SUBMIT);
-
-        $this->verifyOtpAttempts($input['payment']);
-
-        $wallet = $this->repo->findByPaymentIdAndAction(
-            $input['payment']['id'],
-            Action::AUTHORIZE);
-
-        $data = $this->getOtpSubmitData($input, $wallet);
-
-        $response = $this->sendSoapRequest($data,
-                                           SoapAction::OTP_SUBMIT_API,
-                                           SoapMethod::OTP_SUBMIT);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_OTP_SUBMIT_RESPONSE,
-            [
-                'gateway'    => $this->gateway,
-                'response'   => $response,
-                'payment_id' => $input['payment']['id']
-            ]);
-
-        $content = $response[ResponseFields::UCF_RESPONSE];
-
-        $status = $content[ResponseFields::S2S_STATUS_CODE];
-
-        $this->saveOtpCallbackContent($content, $wallet);
-
-        // Otp submission fails, throw exception
-        $this->checkGatewayResponse($status);
-
-        return $this->getCallbackResponseData($input);
-    }
-
     public function verify(array $input)
     {
         parent::verify($input);
@@ -476,50 +404,6 @@ class Gateway extends Base\Gateway
         return [RequestFields::COMMON_SERVICE_DATA => $data];
     }
 
-    protected function getOtpGenerateData(array $input)
-    {
-        $contact = $input['payment']['contact'];
-
-        $data = [
-            RequestFields::REQUEST_ID     => uniqid(),
-            RequestFields::CHANNEL_ID     => Constants::CHANNEL_ID,
-            RequestFields::ENTITY_TYPE_ID => Constants::ENTITY_TYPE_ID,
-            RequestFields::MOBILE_NUMBER  => $this->getFormattedContact($contact)
-        ];
-
-        return [
-            RequestFields::COMMON_SERVICE_DATA => $data,
-            RequestFields::MERCHANT_ID         => $this->getMerchantId2()
-        ];
-    }
-
-    protected function getOtpSubmitData(array $input, Base\Entity $wallet)
-    {
-        $gatewayPaymentId2 = $wallet->getGatewayPaymentId2();
-
-        $amount = $input['payment']['amount'] / 100;
-
-        $contact = $input['payment']['contact'];
-
-        $data = [
-            // This is to maintain the backward compatibility
-            RequestFields::MERCHANT_CODE         => $this->getMerchantId2() ?: $this->getMerchantId(),
-            RequestFields::TRANSACTION_DATE      => $this->getFormattedDate(),
-            RequestFields::TRANSACTION_REFERENCE => $input['payment']['id'],
-            RequestFields::TRANSACTION_TYPE      => Constants::WALLET,
-            RequestFields::AMOUNT                => $amount,
-            RequestFields::MOBILE_NUMBER         => $this->getFormattedContact($contact),
-            RequestFields::FROM_ENTITY_TYPE      => Constants::ENTITY_TYPE_ID,
-            RequestFields::TO_ENTITY_TYPE        => Constants::TO_ENTITY_TYPE,
-            RequestFields::COMMAND_ID            => Constants::COMMAND_ID,
-            RequestFields::OTP                   => $input['gateway']['otp'],
-            RequestFields::OTP_REF_NUMBER        => $gatewayPaymentId2,
-            RequestFields::CHANNEL_ID            => Constants::CHANNEL_ID,
-        ];
-
-        return [RequestFields::MCOM_PAYMENT_REQ => $data];
-    }
-
     protected function getRefundData(array $input)
     {
         $wallet = $this->repo->findByPaymentIdAndAction(
@@ -541,35 +425,6 @@ class Gateway extends Base\Gateway
         ];
 
         return $data;
-    }
-
-    protected function getOtpGenerateContentToSave(array $input, array $content)
-    {
-        $response = $content[ResponseFields::LC_RESPONSE];
-
-        $attributes = [
-            Base\Entity::GATEWAY_PAYMENT_ID2  => $content[ResponseFields::S2S_REF_NUMBER],
-            Base\Entity::CONTACT              => $content[ResponseFields::OTP_MOBILE_NUMBER],
-            Base\Entity::AMOUNT               => $input['payment']['amount'],
-            Base\Entity::STATUS_CODE          => $response[ResponseFields::LC_STATUS],
-            Base\Entity::RESPONSE_CODE        => $response[ResponseFields::S2S_STATUS_CODE],
-            Base\Entity::RESPONSE_DESCRIPTION => $response[ResponseFields::DESCRIPTION],
-            Base\Entity::REFERENCE1           => $response[ResponseFields::RESPONSE_ID]
-        ];
-
-        return $attributes;
-    }
-
-    protected function saveOtpCallbackContent(array $content, Base\Entity $wallet)
-    {
-        $attributes = [
-            Base\Entity::RECEIVED            => true,
-            Base\Entity::GATEWAY_PAYMENT_ID  => $content[ResponseFields::S2S_TRANS_ID],
-            Base\Entity::STATUS_CODE         => $content[ResponseFields::LC_STATUS],
-            Base\Entity::RESPONSE_CODE       => $content[ResponseFields::S2S_STATUS_CODE],
-        ];
-
-        $this->updateGatewayPaymentEntity($wallet, $attributes, false);
     }
 
     protected function getRefundAttributes(array $content, array $input)
@@ -753,11 +608,6 @@ class Gateway extends Base\Gateway
 
     protected function getMappedAttributes($attributes)
     {
-        if ($this->action === Action::OTP_GENERATE)
-        {
-            return $attributes;
-        }
-
         return parent::getMappedAttributes($attributes);
     }
 
