@@ -31,7 +31,7 @@ class Tooltip extends Component {
 
     const node = this.node,
       parent = node.parentElement,
-      { align, persistent } = this.props;
+      align = data.align || this.props.align;
 
     let width = 0,
       height = 0,
@@ -54,9 +54,10 @@ class Tooltip extends Component {
         this.nodeWidth || (this.nodeWidth = this.node.clientWidth),
       tooltipHeight =
         this.nodeHeight || (this.nodeHeight = this.node.clientHeight),
+      screenTop = 0,
       screenLeft = 0,
-      screenRight = document.body.clientWidth,
-      screenBottom = document.body.clientHeight;
+      screenRight = window.innerWidth,
+      screenBottom = window.innerHeight;
 
     let tooltipLeft = 0,
       tooltipTop = 0,
@@ -92,7 +93,8 @@ class Tooltip extends Component {
       }
     }
 
-    let horizontalAdjustment = 0;
+    let horizontalAdjustment = 0,
+      verticalAdjustment = 0;
 
     if (tooltipLeft < screenLeft) {
       horizontalAdjustment = screenLeft - tooltipLeft;
@@ -100,10 +102,60 @@ class Tooltip extends Component {
       horizontalAdjustment = -(tooltipLeft + tooltipWidth - screenRight);
     }
 
-    tooltipLeft += horizontalAdjustment;
+    if (tooltipTop < screenTop) {
+      verticalAdjustment = screenTop - tooltipTop;
+    } else if (tooltipTop + tooltipHeight > screenBottom) {
+      verticalAdjustment = -(tooltipTop + tooltipHeight - screenBottom);
+    }
 
-    if (this.props.onAdjustment) {
-      this.props.onAdjustment(horizontalAdjustment);
+    let adjustedAlignment = null;
+
+    if (horizontalAdjustment || verticalAdjustment) {
+      if (align === 'left' || align === 'right') {
+        tooltipTop += verticalAdjustment;
+
+        if (horizontalAdjustment) {
+          const isLeftAdjustment = horizontalAdjustment > 0;
+
+          if (
+            isLeftAdjustment &&
+            horizontalAdjustment + tooltipLeft + tooltipWidth <= screenRight
+          ) {
+            return this.changeAlignment('right');
+          }
+
+          if (
+            !isLeftAdjustment &&
+            tooltipLeft + horizontalAdjustment >= screenLeft
+          ) {
+            return this.changeAlignment('left');
+          }
+        }
+      } else if (align === 'top' || align === 'bottom') {
+        tooltipLeft += horizontalAdjustment;
+
+        if (verticalAdjustment) {
+          const isTopAdjustment = verticalAdjustment > 0;
+
+          if (
+            isTopAdjustment &&
+            verticalAdjustment + tooltipTop + tooltipHeight <= screenBottom
+          ) {
+            return this.changeAlignment('bottom');
+          }
+
+          if (
+            !isTopAdjustment &&
+            verticalAdjustment + tooltipTop >= screenTop
+          ) {
+            return this.changeAlignment('top');
+          }
+        }
+      }
+
+      if (this.props.onAdjustment) {
+        this.props.onAdjustment(horizontalAdjustment, verticalAdjustment);
+      }
     }
 
     if (!this.props.followPointer) {
@@ -123,10 +175,22 @@ class Tooltip extends Component {
     });
   }
 
+  changeAlignment(resultantAlignment) {
+    this.showTooltip({ align: resultantAlignment });
+
+    return (
+      this.props.onAlignmentChange &&
+      this.props.onAlignmentChange(resultantAlignment)
+    );
+  }
+
   hideTooltip() {
     this.setState({
       show: false,
     });
+
+    // reset alignment adjustment
+    return this.props.onAlignmentChange && this.props.onAlignmentChange();
   }
 
   onShowTooltip() {
@@ -204,6 +268,12 @@ class Tooltip extends Component {
     this.bindEvents();
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (this.props.align !== nextProps.align) {
+      this.showTooltip({ align: nextProps.align });
+    }
+  }
+
   componentWillUnmount() {
     this.unbindEvents();
   }
@@ -217,6 +287,7 @@ class Tooltip extends Component {
         followPointer,
         persistent,
         onAdjustment,
+        onAlignmentChange,
         ...otherProps
       } = this.props;
 
@@ -245,6 +316,7 @@ Tooltip.propTypes = {
   persistent: PropTypes.bool.isRequired,
   delay: PropTypes.number.isRequired,
   onAdjustment: PropTypes.func,
+  onAlignmentChange: PropTypes.func,
 };
 
 export default Tooltip;
