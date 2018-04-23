@@ -118,7 +118,7 @@ class Core extends Base\Core
         {
             $banks = $methods->getSupportedBanks();
 
-            $allSupportedBanks = Netbanking::removeDefaultDisableBanks($banks);
+            $allSupportedBanks = Netbanking::removeDefaultDisableBanks($banks, $merchant->getId());
 
             $data[Payment\Method::NETBANKING] = $this->getBankNames($allSupportedBanks);
         }
