@@ -17,10 +17,6 @@ RUN rm -rf /root/.composer && \
 	# PHP Stuff
 	composer config -g github-oauth.github.com ${GIT_TOKEN} && \
 	composer install --no-dev --no-interaction && \
-    # Node stuff
-    npm install && \
-    cd web && npm install && \
-    cd .. && npm run build && \
     # Cleanup is useless, but we do it anyway
     rm -rf /root/.composer && \
     rm -rf /tmp/npm-* && \
