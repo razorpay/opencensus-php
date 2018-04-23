@@ -127,9 +127,10 @@ export default class EntityList extends Component {
     this.collection.extraFields.type = value;
     this.selectedEntity = value;
 
-    this.collection.resetFilters();
+    this.collection.resetFilters(); // Remove filters of previous entity
     this.clearForm(value);
-    this.onSelectChange(e);
+
+    this.submit(this.collection.filters); // Apply search with newly reset filters
   };
 
   /*
@@ -154,7 +155,6 @@ export default class EntityList extends Component {
   };
 
   onSelectChange = e => {
-    //TODO: Form data is creating issue, so currently not being used.
     const form = e.currentTarget.closest('form');
     let formData;
 
@@ -162,8 +162,7 @@ export default class EntityList extends Component {
       formData = serialize(form);
     }
 
-    this.submit(this.collection.filters);
-    this.updateUrl();
+    this.submit(formData);
   };
 
   onModeChange = e => {
