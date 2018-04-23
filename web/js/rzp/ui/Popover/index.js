@@ -46,6 +46,7 @@ class Popover extends Component {
 
     this.state = {
       leftAdjustment: 0, // arrow adjustment
+      topAdjustment: 0,
       resultantAlignment: props.align,
     };
 
@@ -59,15 +60,16 @@ class Popover extends Component {
     });
   }
 
-  onAdjustment(leftAdjustment) {
+  onAdjustment(leftAdjustment, topAdjustment) {
     this.setState({
       leftAdjustment,
+      topAdjustment,
     });
   }
 
   render() {
     const { children, ...otherProps } = this.props,
-      { leftAdjustment, resultantAlignment } = this.state;
+      { leftAdjustment, topAdjustment, resultantAlignment } = this.state;
 
     let popoverTitle = null,
       popoverBody = null;
@@ -96,7 +98,10 @@ class Popover extends Component {
       >
         <div
           className="rzp-popover-arrow"
-          style={{ marginLeft: `${-leftAdjustment}px` }}
+          style={{
+            marginLeft: `${-leftAdjustment}px`,
+            marginTop: `${-topAdjustment}px`,
+          }}
         />
         <div className="rzp-popover-content">
           {popoverTitle && (
