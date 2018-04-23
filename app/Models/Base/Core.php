@@ -3,10 +3,11 @@
 namespace RZP\Models\Base;
 
 use App;
-use RZP\Constants\Mode;
-use RZP\Base\RepositoryManager;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Foundation\Application;
+
+use RZP\Constants\Mode;
+use RZP\Base\RepositoryManager;
 
 class Core
 {
@@ -120,11 +121,11 @@ class Core
     }
 
     /**
-     * Changes the mode to the param passed
+     * Changes the mode and the database connection to the param passed
      *
      * @param string $mode
      */
-    public function setMode(string $mode)
+    public function setModeAndDefaultConnection(string $mode)
     {
         //
         // This function updates the mode and app['rzp.mode'] properties

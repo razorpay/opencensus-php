@@ -40,7 +40,7 @@ class Core extends Merchant\Core
         //
         // Hence, forcing the input mode to be live mode here, if not already.
         //
-        $this->setMode(Mode::LIVE);
+        $this->setModeAndDefaultConnection(Mode::LIVE);
 
         (new Validator)->validateInput('create', $input);
 
