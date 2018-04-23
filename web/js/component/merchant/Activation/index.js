@@ -1,4 +1,4 @@
-import Field from 'component/Field';
+import Input from 'component/Input';
 import Form from 'component/Form';
 import Button from 'component/Button';
 
@@ -40,19 +40,19 @@ const businessFields1 = [
   {
     label: 'Business Type',
     name: 'business_type',
-    _cmp: Field.Select,
+    _cmp: Input.Select,
     options: []
   },
   {
     label: 'Business Model',
     name: 'business_model',
-    _cmp: Field.Select,
+    _cmp: Input.Select,
     options: []
   },
   {
     label: 'We want to accept International Payments as well',
     name: 'business_international',
-    _cmp: Field.Check
+    _cmp: Input.Check
   },
   {
     label: 'CIN',
@@ -83,7 +83,7 @@ const differentAddress = activation => activation.state.same_address === '0'
 const businessFields2 = [
   [{
     label: 'Website/App Details',
-    _cmp: Field.Radio,
+    _cmp: Input.Radio,
     _name: 'app_type',
     options: [
       'Website',
@@ -117,7 +117,7 @@ const businessFields2 = [
     name: 'business_registered_address',
     placeholder: 'Enter Street Address',
     label: 'Registered Address',
-    _cmp: Field.Textarea
+    _cmp: Input.Textarea
   },
   {
     name: 'business_registered_pin',
@@ -136,13 +136,13 @@ const businessFields2 = [
     _name: 'same_address',
     label: 'Operational Address same as Registered Address',
     description: 'Physical verification may be performed at this address',
-    _cmp: Field.Check
+    _cmp: Input.Check
   },
   [{
     name: 'business_operation_address',
     placeholder: 'Enter Street Address',
     label: 'Registered Address',
-    _cmp: Field.Textarea,
+    _cmp: Input.Textarea,
     _when: differentAddress
   },
   {
@@ -168,7 +168,7 @@ const businessFields2 = [
       'We have a registered GSTIN',
       'We don\'t have a GSTIN'
     ],
-    _cmp: Field.Radio
+    _cmp: Input.Radio
   },
   {
     name: 'gstin',
@@ -214,7 +214,7 @@ const uploadFields = [
     label: "Authorized Signatory's Address Proof"
   }
 ]
-uploadFields.forEach(a => a._cmp = Field.File)
+uploadFields.forEach(a => a._cmp = Input.File)
 
 const tabContent = [
   contactFields,
@@ -229,7 +229,7 @@ const defaultFieldProps = f => {
     return f.forEach(defaultFieldProps);
   }
   if (!f._cmp) {
-    f._cmp = Field;
+    f._cmp = Input;
   }
   if (!f.hasOwnProperty('required')) {
     f.required = true;
@@ -305,7 +305,7 @@ export default class ActivationWizard extends React.Component {
     let isLastTab = activeTab !== tabs.length - 1;
     let content = tabContent[activeTab].map((field, i) => {
       if (Array.isArray(field)) {
-        return <Field.Group key={i}>{field.map(ActivationField, this)}</Field.Group>
+        return <Input.Group key={i}>{field.map(ActivationField, this)}</Input.Group>
       }
       return ActivationField.call(this, field);
     })

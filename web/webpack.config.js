@@ -1,10 +1,11 @@
 const webpack = require('webpack');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const isProd = require('process').env.NODE_ENV === 'production';
 
 const babelPlugins = [
   '@babel/plugin-transform-react-display-name',
   '@babel/plugin-transform-react-jsx',
-  '@babel/plugin-proposal-decorators',
+  ['@babel/plugin-proposal-decorators', { legacy: true }],
   './babel-plugin-react-html-attrs',
 ]
 
@@ -40,9 +41,10 @@ module.exports = {
   ),
 
   entry: {
-    admin: './admin.js',
-    pokedex: './pokedex.js',
-    merchant: './js/merchant/index.js',
+    // admin: './admin.js',
+    // pokedex: './pokedex.js',
+    // merchant: './js/merchant/index.js',
+    merchant: './js/component/Input/index.js'
   },
 
   output: {
@@ -65,18 +67,37 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             presets: [
-              '@babel/preset-env',
-              '@babel/preset-stage-0'
+              ['@babel/preset-env', { loose: true }],
+              ['@babel/preset-stage-0', { decoratorsLegacy: true }]
             ],
             plugins: babelPlugins,
           },
         },
       },
+      {
+        test: /\.styl$/,
+        use: ExtractTextPlugin.extract({
+          use: [
+            {
+              loader: 'css-loader'
+            },
+            {
+              loader: 'stylus-loader'
+            }
+          ]
+        })
+      }
     ],
   },
 
   devtool: isProd ? false : false,
   devServer: {
     stats
-  }
+  },
+
+  plugins: [
+    new ExtractTextPlugin({
+      filename: '[name].css'
+    })
+  ]
 };

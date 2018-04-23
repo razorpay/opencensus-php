@@ -1,3 +1,5 @@
+import './Input.styl'
+
 function inputClass({ props, state, className }) {
   let wrapperClass = 'Input';
 
