@@ -179,12 +179,14 @@ export class PageTable extends Component {
 class Pagination extends Component {
   prev() {
     this.applyFilters({
+      ...this.filters,
       skip: Number(this.filters.skip) - Number(this.filters.count),
     });
   }
 
   next() {
     this.applyFilters({
+      ...this.filters,
       skip: Number(this.filters.skip) + Number(this.filters.count),
     });
   }
