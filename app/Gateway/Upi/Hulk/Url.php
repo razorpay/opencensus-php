@@ -11,6 +11,6 @@ class Url
     // @todo: Fix the URi once it's completed. It has to be on merchant proxy auth
     // along with the payment verify route
     //
-    const AUTHORIZE    = '/v1/p2p/initiate';
-    const VERIFY       = '/v1/p2p/verify';
+    const AUTHORIZE    = 'v1/p2p/direct';
+    const VERIFY       = 'v1/merchants/p2p';
 }

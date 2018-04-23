@@ -22,4 +22,6 @@ class Fields
     const RECEIVER_ID      = 'receiver_id';
     const RECEIVER_TYPE    = 'receiver_type';
     const TRANSACTION_TYPE = 'transaction_type';
+
+    const RECEIVER         = 'receiver';
 }

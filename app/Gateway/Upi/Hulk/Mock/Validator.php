@@ -18,5 +18,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $verifyRules = [
+        'id'            => 'required|string|max:18',
     ];
 }

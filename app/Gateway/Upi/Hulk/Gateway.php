@@ -276,12 +276,12 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
-        $data = [
+        $content = [
             Fields::AMOUNT           => $payment['amount'],
             Fields::NOTES            => [
                 'razorpay_payment_id' => $payment['id']
             ],
-            Fields::TYPE             => Type::PUSH,
+            Fields::TYPE             => Type::EXPECTED_PUSH,
             Fields::CURRENCY         => $payment['currency']
         ];
 
@@ -378,9 +378,11 @@ class Gateway extends Base\Gateway
         $input = $verify->input;
         $gatewayEntity = $verify->payment;
 
-        $request = $this->getStandardRequestArray([], 'get');
-
-        $request['url'] .= $gatewayEntity['gateway_payment_id'];
+        $request = $this->getStandardRequestArray(
+            [
+                Fields::ID  => $gatewayEntity['gateway_payment_id'],
+            ],
+            'get');
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,

@@ -32,7 +32,8 @@ class Server extends Base\Mock\Server
             Fields::TYPE             => $input['type'],
             Fields::NOTES            => $input['notes'],
             Fields::CURRENCY         => $input['currency'],
-            Fields::TRANSACTION_TYPE => 'credit'
+            Fields::TRANSACTION_TYPE => 'credit',
+            Fields::RRN              => '0810010123456',
         ];
 
         $this->content($content, 'authorize');
@@ -59,7 +60,20 @@ class Server extends Base\Mock\Server
             Fields::TYPE             => 'pull',
             Fields::NOTES            => [],
             Fields::CURRENCY         => 'INR',
-            Fields::TRANSACTION_TYPE => 'credit'
+            Fields::TRANSACTION_TYPE => 'credit',
+
+            Fields::SENDER           => [
+                'id'                 => 'vpa_9X0HrhNT68ZWeX',
+                'entity'             => 'vpa',
+                'address'            => 'vishnu@icici',
+            ],
+
+            Fields::RECEIVER         => [
+                'id'                 => 'vpa_A11xBDINnz4so1',
+                'entity'             => 'vpa',
+                'address'            => 'testmerchant@razor',
+            ],
+
         ];
 
         $this->content($content, 'verify');
