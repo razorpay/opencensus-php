@@ -690,9 +690,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AWS_FILE_UPLOADED                         = 'AWS_FILE_UPLOADED';
     const AWS_FILE_DOWNLOAD                         = 'AWS_FILE_DOWNLOAD';
     const AWS_FILE_DELETE                           = 'AWS_FILE_DELETE';
-    const AWS_CACHE_GET                             = 'AWS_CACHE_GET';
-    const AWS_CACHE_SET                             = 'AWS_CACHE_SET';
-    const AWS_CACHE_FAILURE                         = 'AWS_CACHE_FAILURE';
     const LOGO_IMAGE_DETAILS                        = 'LOGO_IMAGE_DETAILS';
 
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
@@ -1056,6 +1053,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
     const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
+
+    const INSTANCE_PROFILE_PROVIDER_CACHE_MISS          = 'INSTANCE_PROFILE_PROVIDER_CACHE_MISS';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

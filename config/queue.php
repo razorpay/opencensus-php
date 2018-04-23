@@ -1,11 +1,17 @@
 <?php
 
-use RZP\Services\Aws\InstanceProfileProvider;
 use Aws\Credentials\CredentialProvider;
+use RZP\Services\Aws\Credentials\InstanceProfileProvider;
 
-$instanceProfileProvider = new InstanceProfileProvider(["timeout" => 10]);
-$provider = $instanceProfileProvider->getProvider();
-$memoizedProvider = CredentialProvider::memoize($provider);
+// Initializes credentials provider to be used as sqs's 'credentials' option
+$options = [
+    'timeout'     => env('AWS_CREDS_META_TIMEOUT'),
+    'cache_key'   => env('AWS_CREDS_META_CACHE_KEY'),
+    'cache_ttl'   => env('AWS_CREDS_META_CACHE_TTL'),
+    'cache_store' => env('AWS_CREDS_META_CACHE_STORE'),
+];
+$instanceProfileProvider = (new InstanceProfileProvider($options))->getProvider();
+$memoizedProvider = CredentialProvider::memoize($instanceProfileProvider);
 
 return [
 
@@ -210,33 +216,33 @@ return [
         ],
 
         'sqs' => [
-            'driver'        => 'sqs',
-            'key'           => env('AWS_KEY_ID'),
-            'secret'        => env('AWS_KEY_SECRET'),
-            'prefix'        => env('AWS_QUEUE_URL'),
-            'queue'         => env('AWS_QUEUE_NAME'),
-            'region'        => env('AWS_REGION'),
-            'credentials'   => $memoizedProvider,
+            'driver'      => 'sqs',
+            'key'         => env('AWS_KEY_ID'),
+            'secret'      => env('AWS_KEY_SECRET'),
+            'prefix'      => env('AWS_QUEUE_URL'),
+            'queue'       => env('AWS_QUEUE_NAME'),
+            'region'      => env('AWS_REGION'),
+            'credentials' => $memoizedProvider,
         ],
 
         'sqs_multi_default' => [
-            'driver'        => 'sqs',
-            'key'           => env('AWS_KEY_ID'),
-            'secret'        => env('AWS_KEY_SECRET'),
-            'prefix'        => env('AWS_QUEUE_PREFIX'),
-            'queue'         => env('AWS_GENERAL_LIVE_QUEUE'),
-            'region'        => env('AWS_REGION'),
-            'credentials'   => $memoizedProvider,
+            'driver'      => 'sqs',
+            'key'         => env('AWS_KEY_ID'),
+            'secret'      => env('AWS_KEY_SECRET'),
+            'prefix'      => env('AWS_QUEUE_PREFIX'),
+            'queue'       => env('AWS_GENERAL_LIVE_QUEUE'),
+            'region'      => env('AWS_REGION'),
+            'credentials' => $memoizedProvider,
         ],
 
         'sqs_mail'  => [
-            'driver'        => 'sqs',
-            'key'           => env('AWS_KEY_ID'),
-            'secret'        => env('AWS_KEY_SECRET'),
-            'prefix'        => env('AWS_QUEUE_PREFIX'),
-            'queue'         => env('AWS_EMAILS_QUEUE'),
-            'region'        => env('AWS_REGION'),
-            'credentials'   => $memoizedProvider,
+            'driver'      => 'sqs',
+            'key'         => env('AWS_KEY_ID'),
+            'secret'      => env('AWS_KEY_SECRET'),
+            'prefix'      => env('AWS_QUEUE_PREFIX'),
+            'queue'       => env('AWS_EMAILS_QUEUE'),
+            'region'      => env('AWS_REGION'),
+            'credentials' => $memoizedProvider,
         ],
 
         'redis' => [
