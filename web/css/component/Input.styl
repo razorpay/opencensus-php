@@ -1,0 +1,123 @@
+.Input
+  font-weight: normal
+  display: block
+  margin: 24px 0 8px
+  label
+    font-weight: normal
+    margin-bottom: 0
+  input[type=file]
+    padding-top: 6px
+
+.Input--required
+  .Input-label
+    position: relative
+    &:after
+      content: '*'
+      font-size: 12px
+      position: absolute
+      margin-left: 1px
+      top: 0
+      color: $textDangerColor
+
+.Input--checkbox
+  white-space: nowrap
+  .Input-inlineLabel
+    margin: -4px 0 0 0
+
+.Input-label
+  font-weight: bold
+
+.Input-el
+  display: block
+  background: #fff
+  width: 100%
+  max-width: 280px
+  font-size: 14px
+  line-height: 16px
+  height: 36px
+  padding: 0 14px
+  border: 1px solid #E2E2E2
+  border-radius: 2px
+  &[type=checkbox], &[type=radio]
+    display: none
+
+textarea.Input-el
+  height: 70px
+  padding: 10px 14px
+
+.Input-checkbox
+  margin-right: 6px
+  width: 18px
+  height: 18px
+  border: 1px solid #ccc
+  background: #fff
+  border-radius: 2px
+  float: left
+  &:after
+    content: ''
+    display: block
+    width: 7px
+    height: 12px
+    opacity: 0
+    transition: .2s
+    border: solid $primary-color
+    border-width: 0 3px 3px 0
+    transform: rotate(45deg) scale(1.3)
+    margin: 0 0 0 4px
+
+:checked + .Input-checkbox:after
+  opacity: 1
+  transform: rotate(45deg)
+
+.Input--radio
+  label
+    display: inline-block
+    cursor: pointer
+    margin-right: 20px
+
+.Input-inlineLabel
+  white-space: normal
+  display: inline-block
+  font-weight: normal
+  vertical-align: middle
+
+.Input-radio
+  display: inline-block
+  vertical-align: middle
+  margin-right: 6px
+  cursor: pointer
+  position: relative
+  width: 18px
+  height: @width
+  background: #fff
+  border-radius: 50%
+  border: 1px solid #ccc
+  transition: .2s
+
+:checked + .Input-radio
+  background: $primary-color
+  border: 3px solid #fff
+  box-shadow: 0 0 1px 1px #bbb
+
+.Input-desc
+  margin: 6px 0
+  color: #555
+  b
+    color: #111
+    font-weight: normal
+
+.Input-error
+  display: none
+  color: $textDangerColor
+
+.is-mature
+  .is-invalid, &.is-invalid
+    .Input-el
+      border-color: $textDangerColor
+    .Input-error
+      display: block
+
+.InputGroup
+  margin: 24px 0 0
+  .Input
+    margin: 8px 0

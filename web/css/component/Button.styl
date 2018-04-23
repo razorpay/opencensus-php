@@ -1,0 +1,32 @@
+.Button
+  border: 0
+  background: #fff linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.04))
+  color: #414141
+  padding: 10px 20px
+  line-height: 16px
+  height: 38px
+  border-radius: 2px
+  border: 1px solid #e6e7e8
+  outline: none
+  margin: 0 5px
+  transition: 0.2s, 0.3s border
+  &:active
+    box-shadow: 0 2px 4px rgba(0,0,0,.15) inset
+  &:hover
+    color: $primary-color
+    border-color: lighten($primary-color, 30%)
+
+.Button--primary
+  background-color: #528FF0
+  color: #fff
+  border: darken($primary-color, 10%)
+  &:hover
+    color: #fff
+
+.Button-icon
+  float: left
+  margin: 0 4px 0 -4px
+
+.Button-icon--after
+  float: right
+  margin: 0 -4px 0 4px

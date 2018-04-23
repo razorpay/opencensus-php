@@ -7,10 +7,10 @@
   <link rel="stylesheet" href="/dist/css/merchant-icons.css">
   <?php
     if (!isset($_GET['path'])) {
-      $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator('../../web/js/components'));
+      $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator('../../web/js/component'));
       foreach ($rii as $file) {
         if (!$file->isDir()){
-          $file = substr($file, 24, -3);
+          $file = substr($file, 23, -3);
           echo '<a href="?path='.$file.'">'.$file.'</a><br>';
         }
       }
@@ -52,8 +52,8 @@
 <body>
   <div id="react-root">
   </div>
-  <script src="http://localhost:3000/js/components/<?=$_GET['path']?>.js"></script>
+  <script src="http://localhost:3000/js/component/<?=$_GET['path']?>.js"></script>
   <script>
     ReactDOM.render(React.createElement(component.default),
-                    document.getElementById('react-root'));
+    document.getElementById('react-root'));
   </script>

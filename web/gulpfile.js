@@ -72,7 +72,7 @@ gulp.task('watch', () => {
   iconFont(compileCss);
   gulp.watch('css/**/*.styl', compileCss);
   gulp.watch('icons/*.svg', _ => iconFont(compileCss));
-  gulp.watch('js/components/**/*.js', e => {
+  gulp.watch('js/component/**/*.js', e => {
     if (e.type === 'added' || e.type === 'deleted' || e.type === 'renamed') {
       workbenchServer();
     }
@@ -80,7 +80,11 @@ gulp.task('watch', () => {
 
   require('livereload')
     .createServer()
-    .watch([__dirname + '/../public/dist/css', __dirname + '/js/components']);
+    .watch([
+      __dirname + '/../public/dist/css',
+      __dirname + '/js/component',
+      __dirname + '/../public/workbench/index.php',
+    ]);
 
   workbenchServer();
 
@@ -102,7 +106,7 @@ let workbenchApp;
 
 function workbenchServer() {
   let entry = {};
-  glob('js/components/**/*.js').forEach(f => { entry[f] = './' + f });
+  glob('js/component/**/*.js').forEach(f => { entry[f] = './' + f });
   webpackConfig.entry = entry;
 
   const middleware = require('webpack-dev-middleware');
@@ -114,9 +118,7 @@ function workbenchServer() {
   }
   workbenchApp = require('express')();
 
-  workbenchApp.use(middleware(compiler, {
-    lazy: true
-  }));
+  workbenchApp.use(middleware(compiler));
 
   workbenchApp = workbenchApp.listen(3000);
 }

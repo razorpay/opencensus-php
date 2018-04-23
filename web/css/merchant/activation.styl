@@ -1,7 +1,8 @@
+$height = 580px
 .activation-wizard
-  background: #F6F6F6
+  background: #fafafa
   position: relative
-  height: 580px
+  height: $height
   width: 100vw
   max-width: 960px
 
@@ -30,6 +31,8 @@
       padding: 0 12px
       margin: 4px 0
       color: #528FF0
+      i
+        float: right
       &:hover
         background: #fafbfc
       &.active
@@ -37,8 +40,24 @@
         color: #fff
 
   main
-    margin-left: $side-width
+    left: $side-width
+    right: 0
     padding: 30px
+    position: absolute
+    bottom: 80px
+    top: 0
+    overflow: auto
+
+  footer
+    left: $side-width
+    padding: 20px
+    height: 80px
+    right: 0
+    background: #F6F6F6
+    border-top: 1px solid #e0e0e0
+    bottom: 0
+    position: absolute
+    text-align: right
 
   main-title
     text-transform: uppercase
@@ -49,56 +68,3 @@
   clear: both
   position: relative
   padding-left: 180px
-  &.has-label:not(.field-grouped)
-    margin-top: 20px
-  > label
-    position: absolute
-    left: 0
-    top: 0
-    width: 160px
-    text-align: right
-    margin: 4px 0 0 0
-    line-height: 16px
-  input, select, textarea, .input-placeholder
-    margin: 4px 0
-    border: 1px solid #ddd
-    background: #fff
-    width: 160px
-    height: 30px
-    padding: 0 10px
-  textarea
-    height: 70px
-    resize: none
-  &.is-required > label:after
-    content: '*'
-    font-size: 12px
-    position: absolute
-    right: -8px
-    top: 0
-    color: #E78D8D
-  [type=checkbox], [type=radio]
-    width: 14px
-    height: 14px
-    position: relative
-    top: 3px
-    &+label
-      padding-left: 4px
-      display: inline
-      position: static
-      font-weight: normal
-
-  .input-placeholder
-    height: 40px
-    width: 210px
-    position: relative
-    input
-      opacity: 0
-      position: absolute
-      width: 100%
-      margin: 0
-      height: 100%
-      left: 0
-
-.field-radio
-  display: inline-block
-  margin-right: 10px
