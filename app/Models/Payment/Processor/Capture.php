@@ -300,8 +300,6 @@ trait Capture
      */
     protected function capturePayment(Payment\Entity $payment, int $captureAmount, string $currency)
     {
-        $this->modifyCaptureAmountForDiscountedOrder($payment, $captureAmount);
-
         //
         // If the fee bearer is customer then please to adjust input amount
         // with the available fee for the payment.
@@ -369,23 +367,6 @@ trait Capture
         $this->captureOnGateway($data);
 
         return $payment;
-    }
-
-    protected function modifyCaptureAmountForDiscountedOrder(Payment\Entity $payment, int & $captureAmount)
-    {
-        if ($payment->order === null)
-        {
-            return;
-        }
-
-        $order = $payment->order;
-
-        if ($order->isDiscountApplicable() === false)
-        {
-            return;
-        }
-
-        $captureAmount = $order->offer->getDiscountedAmount($order->getAmount());
     }
 
     /**
@@ -715,8 +696,6 @@ trait Capture
 
         $order->incrementAmountPaidBy($paidAmount);
 
-        $this->updateOrderStatusPaidIfApplicable($order, $payment);
-
         $this->repo->saveOrFail($order);
 
         $this->trace->info(
@@ -741,31 +720,6 @@ trait Capture
         {
             $this->updateInvoiceAfterCapture($invoice, $payment);
         }
-    }
-
-    protected function updateOrderStatusPaidIfApplicable(Order\Entity $order, Payment\Entity $payment)
-    {
-        if ($this->shouldMarkOrderPaid($order, $payment) === true)
-        {
-            $order->setStatus(Order\Status::PAID);
-        }
-    }
-
-    protected function shouldMarkOrderPaid(Order\Entity $order, Payment\Entity $payment)
-    {
-        if ($order->getAmountPaid() === $order->getAmount())
-        {
-            return true;
-        }
-
-        if (($order->isDiscountApplicable() === true) and
-            ($payment->discount !== null) and
-            (($payment->getAmount() + $payment->discount->getAmount()) === $order->getAmount()))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     /**

@@ -29,10 +29,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
     ];
 
-    protected $fillable = [
-        self::AMOUNT,
-    ];
-
     protected $visible = [
         self::ID,
         self::PAYMENT_ID,

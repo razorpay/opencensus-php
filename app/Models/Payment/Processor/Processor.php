@@ -503,26 +503,6 @@ class Processor
         }
     }
 
-    protected function modifyAmountForDiscountedOfferIfApplicable(Payment\Entity $payment, array & $input)
-    {
-        if (empty($input[Payment\Entity::ORDER_ID]) === true)
-        {
-            return;
-        }
-
-        $order = $this->fetchOrderFromInput($input);
-
-        if (($order !== null) and
-            ($order->isDiscountApplicable() === true))
-        {
-            $orderAmount = $order->getAmount();
-
-            $discountedAmount = $order->offer->getDiscountedAmount($orderAmount);
-
-            $payment->setAmount($discountedAmount);
-        }
-    }
-
     protected function checkSignature($input, $payment)
     {
         if (isset($input['signature']) === false)
@@ -1088,8 +1068,6 @@ class Processor
 
         $this->addOrderIdToInputForSubscriptionIfApplicable($input, $payment);
 
-        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
-
         $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
 
         $this->validateAndSetReceiverIfApplicable($payment, $input);
@@ -1270,31 +1248,25 @@ class Processor
 
     protected function fetchOrderFromInput(array $input): Order\Entity
     {
-        if (($this->order === null) and
-            (isset($input['order_id']) === true))
+        $order = $this->orderRepo->findbyPublicId($input['order_id']);
+
+        if ($order === null)
         {
-            $order = $this->orderRepo->findbyPublicId($input['order_id']);
-
-            if ($order === null)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Order id provided not found.',
-                    'order_id');
-            }
-
-            if ($order->getMerchantId() !== $this->merchant->id)
-            {
-                // Merchant mismatch
-                throw new Exception\BadRequestValidationFailureException(
-                    'Order id not found');
-            }
-
-            $order->merchant()->associate($this->merchant);
-
-            $this->order = $order;
+            throw new Exception\BadRequestValidationFailureException(
+                'Order id provided not found.',
+                'order_id');
         }
 
-        return $this->order;
+        if ($order->getMerchantId() !== $this->merchant->id)
+        {
+            // Merchant mismatch
+            throw new Exception\BadRequestValidationFailureException(
+                'Order id not found');
+        }
+
+        $order->merchant()->associate($this->merchant);
+
+        return $order;
     }
 
     protected function validateAndSetOrderDetailsIfApplicable(

@@ -684,11 +684,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INTERNATIONAL, $isInternational);
     }
 
-    public function setAmount(int $amount)
-    {
-        $this->setAttribute(self::AMOUNT, $amount);
-    }
-
     public function setBaseAmount(int $amount)
     {
         $this->setAttribute(self::BASE_AMOUNT, $amount);
@@ -2390,11 +2385,6 @@ class Entity extends Base\PublicEntity
     public function disputes()
     {
         return $this->hasMany(\RZP\Models\Dispute\Entity::class);
-    }
-
-    public function discount()
-    {
-        return $this->hasOne('RZP\Models\Discount\Entity');
     }
 
 // --------------- Relation to other entity section ends -----------------------
