@@ -21,7 +21,7 @@ trait PaymentAtomTrait
 
         if ($mock)
         {
-            $request = $this->makeFirstGatewayPaymentMockRequest($url, 'post', $content);
+            $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
         }
         else
         {
