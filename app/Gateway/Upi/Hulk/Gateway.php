@@ -137,7 +137,7 @@ class Gateway extends Base\Gateway
     {
         $content = [
             Base\IntentParams::PAYEE_ADDRESS => $input['terminal']->getGatewayMerchantId2(),
-            Base\IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
+            Base\IntentParams::PAYEE_NAME    => $this->getFormattedDba($input),
             Base\IntentParams::TXN_REF_ID    => $response['id'],
             Base\IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
             Base\IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
@@ -146,6 +146,11 @@ class Gateway extends Base\Gateway
         ];
 
         return ['data' => ['intent_url' => $this->generateIntentString($content)]];
+    }
+
+    protected function getFormattedDba($input)
+    {
+        return preg_replace('/\s+/', '', $input['merchant']->getFilteredDba());
     }
 
     /**

@@ -12,8 +12,8 @@ class Validator extends Base\Validator
         'currency'       => 'required|string|in:INR',
         'expire_at'      => 'sometimes_if:type,pull|epoch',
         'sender'         => 'sometimes|array',
-        'sender.address' => 'string',
-        'description'    => 'sometimes|string',
+        'sender.address' => 'string|max:255',
+        'description'    => 'sometimes|string|max:255',
         'notes'          => 'sometimes|array'
     ];
 

@@ -4,15 +4,6 @@ namespace RZP\Gateway\Upi\Hulk;
 
 class Fields
 {
-    const AMOUNT           = 'amount';
-    const EXPIRE_AT        = 'expire_at';
-    const NOTES            = 'notes';
-    const SENDER           = 'sender';
-    const ADDRESS          = 'address';
-    const DESCRIPTION      = 'description';
-    const TYPE             = 'type';
-    const CURRENCY         = 'currency';
-
     const ID               = 'id';
     const STATUS           = 'status';
     const RRN              = 'rrn';
@@ -22,6 +13,13 @@ class Fields
     const RECEIVER_ID      = 'receiver_id';
     const RECEIVER_TYPE    = 'receiver_type';
     const TRANSACTION_TYPE = 'transaction_type';
-
+    const AMOUNT           = 'amount';
+    const EXPIRE_AT        = 'expire_at';
+    const NOTES            = 'notes';
+    const SENDER           = 'sender';
+    const ADDRESS          = 'address';
+    const DESCRIPTION      = 'description';
+    const TYPE             = 'type';
+    const CURRENCY         = 'currency';
     const RECEIVER         = 'receiver';
 }
