@@ -78,15 +78,6 @@ class Mailable extends BaseMailable
                          ->runCallbacks($message);
                 });
             }
-            else
-            {
-                $trace->info(TraceCode::MAILER_INVALID_RECIPIENT_EMAIL, [
-                    'from'    => $this->from,
-                    'to'      => $this->to,
-                    'subject' => $this->subject,
-                    'mailable' => get_class($this)
-                ]);
-            }
         }
         catch (\Throwable $e)
         {

@@ -321,9 +321,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_REGISTER_REQUEST                     = 'EMANDATE_REGISTER_REQUEST';
     const EMANDATE_REGISTER_REQUEST_ROW                 = 'EMANDATE_REGISTER_REQUEST_ROW';
 
-    const MAILER_JOB_RECEIVED                           = 'MAILER_JOB_RECEIVED';
     const MAILER_JOB_ERROR                              = 'MAILER_JOB_ERROR';
-    const MAILER_INVALID_RECIPIENT_EMAIL                = 'MAILER_INVALID_RECIPIENT_EMAIL';
     const INVOICE_ACTION_JOB_ERROR                      = 'INVOICE_ACTION_JOB_ERROR';
     const INVOICE_PDF_GEN_FAILED                        = 'INVOICE_PDF_GEN_FAILED';
     const INVOICE_PDF_GEN_TIME_TAKEN                    = 'INVOICE_PDF_GEN_TIME_TAKEN';
@@ -915,12 +913,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFER_CARD_ISSUER_CHECK                       = 'OFFER_CARD_ISSUER_CHECK';
     const OFFER_CARD_USAGE_CHECK                        = 'OFFER_CARD_USAGE_CHECK';
 
-// Trace codes for Gateway Priorities
+    // Trace codes for Gateway Priorities
     const ADD_GATEWAY_PRIORITY_REQUEST                  = 'ADD_GATEWAY_PRIORITY_REQUEST';
     const FETCH_GATEWAY_PRIORITY_RESPONSE               = 'FETCH_GATEWAY_PRIORITY_RESPONSE';
     const UPDATE_GATEWAY_PRIORITY_REQUEST               = 'UPDATE_GATEWAY_PRIORITY_REQUEST';
     const REMOVE_GATEWAY_PRIORITY_REQUEST               = 'REMOVE_GATEWAY_PRIORITY_REQUEST';
-    const REDIS_DATA_FETCHED                            = 'REDIS_DATA_FETCHED';
+    const CARD_GATEWAY_PRIORITY                         = 'CARD_GATEWAY_PRIORITY';
+    const NETBANKING_GATEWAY_PRIORITY                   = 'NETBANKING_GATEWAY_PRIORITY';
 
 // Trace codes for Merchant Reports
 

@@ -2,10 +2,11 @@
 
 namespace RZP\Models\Terminal\Sorters;
 
-use RZP\Models\Gateway\Priority as GatewayPriority;
-use RZP\Models\Payment\Gateway;
-use RZP\Models\Payment\Method;
 use RZP\Models\Terminal;
+use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Gateway\Priority as GatewayPriority;
 
 class NetbankingSorter extends Terminal\Sorter
 {
@@ -22,7 +23,7 @@ class NetbankingSorter extends Terminal\Sorter
      *
      * @return array
      */
-    public function gatewaySorter($terminals)
+    public function gatewaySorter($terminals, bool $verbose = false)
     {
         $method = $this->input['payment']->getMethod();
 
@@ -38,6 +39,11 @@ class NetbankingSorter extends Terminal\Sorter
 
         $gatewaysPriority = (new GatewayPriority\Core)
                             ->getGatewaysForMethod($method);
+
+        if ($verbose === true)
+        {
+            $this->trace->info(TraceCode::NETBANKING_GATEWAY_PRIORITY, $gatewaysPriority);
+        }
 
         $this->arrangePriorityByMerchantAndBank($gatewaysPriority, $this->input['merchant']->getId(), $bank);
 
