@@ -166,7 +166,7 @@ class NewApplicationForm extends Component {
     if (!isValid) {
       this.props.showNotification({
         type: 'error',
-        message: 'Production Redirect URI must be HTTPS secured',
+        message: 'Production Redirect URI must be HTTPS',
       });
     }
   };
