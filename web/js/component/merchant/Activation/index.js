@@ -13,7 +13,7 @@ const tabs = [
 const contactFields = [
   {
     label: 'Contact Name',
-    name: 'contact_name'
+    name: 'contact_name',
   },
   {
     label: 'Contact Number',
@@ -112,6 +112,7 @@ const businessFields2 = [
       for more details.
     </React.Fragment>,
     _when: activation => activation.state.app_type !== '2',
+    info: 'Example: https://www.company.com'
   }],
   [{
     name: 'business_registered_address',
@@ -122,7 +123,17 @@ const businessFields2 = [
   {
     name: 'business_registered_pin',
     type: 'number',
-    label: 'Pincode'
+    label: 'Pincode',
+    size: 'small',
+    min: '100000',
+    max: '999999',
+    maxLength: '6',
+    validator: value => {
+      let pin = Number(value);
+      if (!pin || pin < 100000 || pin > 999999) {
+        return 'Please enter 6 digit pincode';
+      }
+    }
   },
   {
     name: 'business_registered_city',
@@ -161,7 +172,7 @@ const businessFields2 = [
     label: 'State',
     _when: differentAddress
   }],
-  {
+  [{
     _name: 'has_gstin',
     label: 'GSTIN',
     options: [
@@ -172,8 +183,10 @@ const businessFields2 = [
   },
   {
     name: 'gstin',
-    _when: activation => activation.state.has_gstin === '0'
-  }
+    _when: activation => activation.state.has_gstin === '0',
+    placeholder: 'Enter GSTIN',
+    size: 'small'
+  }]
 ]
 
 const bankAccountFields = [
@@ -240,11 +253,7 @@ defaultFieldProps(tabContent);
 
 export default class ActivationWizard extends React.Component {
   state = {
-    data: this.props.data || {
-      contact_email: 'pranav@gmail.com',
-      contact_mobile: '8875242434',
-      contact_name: 'Pranav'
-    },
+    data: this.props.data || {},
     tabs: [],
     same_address: '1',
     app_type: '0',

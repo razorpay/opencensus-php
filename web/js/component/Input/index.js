@@ -1,10 +1,12 @@
-import './Input.styl'
-
 function inputClass({ props, state, className }) {
   let wrapperClass = 'Input';
 
   if (props.required) {
     wrapperClass += ' Input--required';
+  }
+
+  if (props.size) {
+    wrapperClass += ' Input--' + props.size;
   }
 
   if (props.className) {
@@ -42,6 +44,7 @@ function separateDomProps(props) {
     addonBefore,
     addonAfter,
     validator,
+    info,
     ...rest
   } = props;
 
@@ -51,7 +54,17 @@ function separateDomProps(props) {
     description,
     options,
     defaultValue,
+    info,
     props: rest
+  }
+}
+
+class Info extends React.PureComponent {
+  render() {
+    if (this.props.text) {
+      return <div class='Input-info'><p>{this.props.text}</p></div>
+    }
+    return null;
   }
 }
 
@@ -120,7 +133,7 @@ export default class Field extends React.PureComponent {
     } else if (validity.patternMismatch) {
       error = patternError || this.patternError;
     } else if (validator) {
-      error = validator(defaultValue) || '';
+      error = validator(value) || '';
       el.setCustomValidity(error);
     }
 
@@ -142,15 +155,18 @@ export default class Field extends React.PureComponent {
       <label class={inputClass(this)}>
         <Label text={allProps.label} />
         <div class='Input-content'>
-          <InputTag
-            {...allProps.props}
-            onFocus={this.focus}
-            onBlur={this.blur}
-            onChange={this.change}
-            class='Input-el'
-            defaultValue={allProps.defaultValue}
-            ref={this.setRef}
-          />
+          <div class='Input-elWrapper'>
+            <InputTag
+              {...allProps.props}
+              onFocus={this.focus}
+              onBlur={this.blur}
+              onChange={this.change}
+              class='Input-el'
+              defaultValue={allProps.defaultValue}
+              ref={this.setRef}
+            />
+            <Info text={allProps.info} />
+          </div>
           <Error text={this.state.error} />
           <Description text={allProps.description} />
         </div>
@@ -175,6 +191,7 @@ class Check extends Field {
     let {
       label,
       description,
+      info,
       props
     } = separateDomProps(this.props);
 
@@ -188,7 +205,7 @@ class Check extends Field {
       />
       <div className='Input-checkbox' />
       <Label class='Input-inlineLabel' text={label} />
-      <Description description={description} />
+      <Description text={description} />
     </label>
   }
 }
