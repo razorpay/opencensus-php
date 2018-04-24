@@ -216,17 +216,20 @@ const actions = {
       updateEntity={entityComponent::updateEntity}
     />
   ),
-  batch: (entity, entityComponent) => (
-    <ShowWhen permission="retry_batch">
-      <AsyncButton
-        class="btn"
-        pendingClass="small spinner"
-        onClick={retryBatch.bind(entity, entityComponent::updateEntity)}
-        text="Retry batch"
-        confirm="Confirm retry batch?"
-      />
-    </ShowWhen>
-  ),
+  batch: (entity, entityComponent) =>
+    entity &&
+    entity.status !== 'processed' &&
+    !entity.processing && (
+      <ShowWhen permission="retry_batch">
+        <AsyncButton
+          class="btn"
+          pendingClass="small spinner"
+          onClick={retryBatch.bind(entity, entityComponent::updateEntity)}
+          text="Retry batch"
+          confirm="Confirm retry batch?"
+        />
+      </ShowWhen>
+    ),
 };
 
 function updateEntity(data) {

@@ -109,8 +109,19 @@ export function RadioField({ label, value, defaultValue, ...props }) {
 export function CheckField({ label, children, ...props }) {
   return (
     <div class="field">
-      <label class={props.required ? 'required' : ''}>{label}</label>
-      <input class="ui-checkbox" {...props} type="checkbox" />
+      <label
+        class={props.required ? 'required' : ''}
+        for={'id-' + props.name}
+        style={{ cursor: 'pointer' }}
+      >
+        {label}
+      </label>
+      <input
+        class="ui-checkbox"
+        id={'id-' + props.name}
+        {...props}
+        type="checkbox"
+      />
       {children}
     </div>
   );
