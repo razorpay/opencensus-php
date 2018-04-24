@@ -293,13 +293,13 @@ return [
     ],
 
     'upi_mindgate' => [
-        'test_secure_secret'       => env('UPI_HULK_GATEWAY_TEST_SECURE_SECRET'),
-        'gateway_secure_secret'    => env('UPI_HULK_GATEWAY_SECURE_SECRET'),
+        'test_merchant_id'       => env('UPI_MINDGATE_TEST_MERCHANT_ID'),
+        'gateway_encryption_key' => env('UPI_MINDGATE_GATEWAY_SECURE_SECRET'),
     ],
 
     'upi_hulk' => [
-        'test_merchant_id'       => env('UPI_MINDGATE_TEST_MERCHANT_ID'),
-        'gateway_encryption_key' => env('UPI_MINDGATE_GATEWAY_SECURE_SECRET'),
+        'test_secure_secret'       => env('UPI_HULK_GATEWAY_TEST_SECURE_SECRET'),
+        'gateway_secure_secret'    => env('UPI_HULK_GATEWAY_SECURE_SECRET'),
     ],
 
     'upi_sbi' => [
