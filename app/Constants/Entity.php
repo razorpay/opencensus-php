@@ -151,6 +151,7 @@ class Entity
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_SBI                = 'upi_sbi';
     const UPI_ICICI              = 'upi_icici';
+    const UPI_HULK               = 'upi_hulk';
     const ENACH_RBL              = 'enach_rbl';
     const ESIGNER_DIGIO          = 'esigner_digio';
     const NETBANKING_AXIS        = 'netbanking_axis';
@@ -289,6 +290,7 @@ class Entity
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Mindgate::class,
         self::UPI_SBI                => \RZP\Gateway\Upi\Sbi::class,
         self::UPI_ICICI              => \RZP\Gateway\Upi\Icici::class,
+        self::UPI_HULK               => \RZP\Gateway\Upi\Hulk::class,
         self::AEPS                   => \RZP\Gateway\Aeps\Base::class,
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Icici::class,
         self::AXIS_MIGS              => \RZP\Gateway\AxisMigs::class,
@@ -363,6 +365,7 @@ class Entity
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Base::class,
         self::UPI_SBI                => \RZP\Gateway\Upi\Base::class,
         self::UPI_ICICI              => \RZP\Gateway\Upi\Base::class,
+        self::UPI_HULK               => \RZP\Gateway\Upi\Base::class,
         self::UPI_NPCI               => \RZP\Gateway\Upi\Base::class,
 
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Base::class,
