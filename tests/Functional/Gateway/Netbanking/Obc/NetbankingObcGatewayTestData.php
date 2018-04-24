@@ -14,7 +14,8 @@ return [
         'amount'          => 50000,
         'status'          => 'Y',
         'bank_payment_id' => '9999999999',
-        'account_number'  => '1234567890'
+        'account_number'  => '1234567890',
+        'received'        => true,
     ],
 
     'testPaymentFailed' => [

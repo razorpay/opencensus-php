@@ -241,6 +241,8 @@ class Gateway extends Base\Gateway
     {
         $attributesToSave = $this->getMappedAttributes($content);
 
+        $attributesToSave[Base\Entity::RECEIVED] = true;
+
         // If auth status was not success, we update the entity with verify status
         if ($gatewayPayment->getStatus() !== Status::SUCCESS)
         {
@@ -336,6 +338,20 @@ class Gateway extends Base\Gateway
         {
             $this->aesCrypto = new AESCrypto(AES::MODE_ECB, $this->getSecret());
         }
+    }
+
+    protected function updateGatewayPaymentEntity(
+        GatewayEntity $gatewayPayment,
+        array $attributes,
+        bool $mapped = true)
+    {
+        $attr = $this->getMappedAttributes($attributes);
+
+        $attr[Base\Entity::RECEIVED] = 1;
+
+        $gatewayPayment->fill($attr);
+
+        $gatewayPayment->saveOrFail();
     }
 
     protected function parseGatewayResponse(array $response)
