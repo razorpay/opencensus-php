@@ -19,6 +19,12 @@ return [
     'default'               => env('QUEUE_DRIVER', 'sync'),
 
     /*
+    | If set to true (only in local/testing environment), all queue jobs are pushed to default connection & queue.
+    | Only applies for asynchronous job drivers.
+     */
+    'mock_route'            => env('QUEUE_MOCK_ROUTE', false),
+
+    /*
     |--------------------------------------------------------------------------
     | Contains mapping of route keys(nested) and which queue connection & queue name to use respectively.
     | Usage: Ref \RZP\Jobs\Extended\PendingDispatch.php
@@ -121,11 +127,11 @@ return [
         'test'       => env('AWS_GENERAL_TEST_QUEUE'),
         'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
     ],
-    'es' => [
+    'es_sync' => [
         'test'       => env('AWS_ES_SYNC_QUEUE'),
         'live'       => env('AWS_ES_SYNC_QUEUE'),
     ],
-    'reports' => [
+    'reports_job' => [
         'test'       => env('AWS_REPORTS_QUEUE'),
         'live'       => env('AWS_REPORTS_QUEUE'),
     ],
@@ -148,6 +154,13 @@ return [
     'gateway_file' => [
         'test'       => env('AWS_GENERAL_TEST_QUEUE'),
         'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+    ],
+
+    /*
+     | Lists various queues to be used per mailable
+     */
+    'mail' => [
+        'default' => env('AWS_EMAILS_QUEUE'),
     ],
 
     /*
@@ -182,6 +195,17 @@ return [
         ],
 
         'sqs' => [
+            'driver' => 'sqs',
+            'key'    => env('AWS_KEY_ID'),
+            'secret' => env('AWS_KEY_SECRET'),
+            'prefix' => env('AWS_QUEUE_PREFIX'),
+            'queue'  => env('AWS_DEFAULT_QUEUE'),
+            'region' => env('AWS_REGION'),
+        ],
+
+        // TODO: Update brahma's & k8s code & remove this block
+        // Ref: https://github.com/razorpay/brahma/blob/master/ansible-playbooks/roles/app-supervisor/templates/api.supervisor.conf.j2#L19
+        'sqs_multi_default' => [
             'driver' => 'sqs',
             'key'    => env('AWS_KEY_ID'),
             'secret' => env('AWS_KEY_SECRET'),

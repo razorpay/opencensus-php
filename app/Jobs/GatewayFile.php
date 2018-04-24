@@ -12,11 +12,6 @@ class GatewayFile extends Job
     const MAX_ALLOWED_ATTEMPTS = 2;
     const RELEASE_WAIT_SECS    = 10;
 
-    /**
-     * {@inheritDoc}
-     */
-    protected $queueConfigKey = 'gateway_file';
-
     protected $gatewayFileId;
 
     protected $mode;

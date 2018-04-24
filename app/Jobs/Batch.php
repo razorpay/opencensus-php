@@ -12,11 +12,6 @@ use Razorpay\Trace\Logger as Trace;
 class Batch extends Job
 {
     /**
-     * {@inheritDoc}
-     */
-    protected $queueConfigKey = 'batch';
-
-    /**
      * Batch entity id.
      *
      * @var string

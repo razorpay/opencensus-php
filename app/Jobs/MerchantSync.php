@@ -30,7 +30,7 @@ class MerchantSync extends Job
     /**
      * {@inheritDoc}
      */
-    protected $queueConfigKey = 'es';
+    protected $queueConfigKey = 'es_sync';
 
     private $event;
     private $payload;

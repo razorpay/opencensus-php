@@ -17,11 +17,6 @@ class Capture extends Job
     // delay over 15 minutes.
     public $delay = 100;
 
-    /**
-     * {@inheritDoc}
-     */
-    protected $queueConfigKey = 'capture';
-
     protected $trace;
 
     protected $data;

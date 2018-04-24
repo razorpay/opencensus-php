@@ -8,11 +8,6 @@ use RZP\Models\Merchant\Invoice\Processor;
 
 class MerchantInvoice extends Job
 {
-    /**
-     * {@inheritDoc}
-     */
-    protected $queueConfigKey = 'merchant_invoice';
-
     protected $merchantId;
 
     protected $month;

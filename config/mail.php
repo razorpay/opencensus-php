@@ -108,10 +108,6 @@ return [
 
     'sendmail' => '/usr/sbin/sendmail -bs',
 
-    'queues' => [
-        'default' => env('AWS_EMAILS_QUEUE'),
-    ],
-
     // Uncomment this for local mailgun testing
     // 'to' => ['address' => 'prashanth.yv@razorpay.com', 'name' => 'Prashanth YV'],
 ];

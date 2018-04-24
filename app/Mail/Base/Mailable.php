@@ -3,7 +3,6 @@
 namespace RZP\Mail\Base;
 
 use App;
-use Config;
 use Illuminate\Bus\Queueable;
 use Illuminate\Container\Container;
 use Illuminate\Mail\Mailable as BaseMailable;
@@ -235,15 +234,15 @@ class Mailable extends BaseMailable
 
     /**
      * Returns on which queue this mailable should be pushed to.
-     * Refer to config/mail.php for the data structure.
+     * Refer to config/queue.php's mail block for the data structure.
      *
      * @return string
      */
     protected function getQueueName(): string
     {
         $key     = snake_case(class_basename($this));
-        $default = Config::get('mail.queues.default');
+        $default = config('queue.mail.default');
 
-        return Config::get("mail.queues.{$key}", $default);
+        return config("queue.mail.{$key}", $default);
     }
 }

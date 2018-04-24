@@ -6,7 +6,6 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -75,14 +74,15 @@ class Core extends Base\Core
 
             foreach ($merchants as $merchant)
             {
-                // Assign a delay between 0 and 900 so that tasks are distributed over 15 minute period
-                MerchantInvoiceCorrectionJob::dispatch(
-                    $merchant->getId(),
-                    $invoiceDate->month,
-                    $invoiceDate->year,
-                    $this->mode)->delay($i % 901);
 
-                $i++;
+                MerchantInvoiceCorrectionJob::dispatch(
+                                                $merchant->getId(),
+                                                $invoiceDate->month,
+                                                $invoiceDate->year,
+                                                $this->mode)
+                                            // Assign a delay between 0 and 900 so that tasks are distributed
+                                            // over 15 minute period
+                                            ->delay($i++ % 901);
             }
 
         } while ($count === $batch);

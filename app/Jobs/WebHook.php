@@ -6,11 +6,6 @@ use App;
 
 class WebHook extends Job
 {
-    /**
-     * {@inheritDoc}
-     */
-    protected $queueConfigKey = 'webhook';
-
     protected $data;
 
     /**

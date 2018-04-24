@@ -14,11 +14,6 @@ class ReportsJob extends Job
     const JOB_DELETED          = 'job_deleted';
     const JOB_RELEASED         = 'job_released';
 
-    /**
-     * {@inheritDoc}
-     */
-    protected $queueConfigKey = 'reports';
-
     protected $input;
 
     protected $entity;

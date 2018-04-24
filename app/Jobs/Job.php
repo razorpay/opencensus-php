@@ -13,7 +13,8 @@ class Job implements ShouldQueue
     use Extended\Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
-     * If specified, it's value would be used from config/queue.php to choose proper queue connection and name
+     * If specified, it's value would be used from config/queue.php to choose proper queue connection and name.
+     * By default the same would be looked up by snake cased class name, finally fall backs to default connection.
      * @var string|null
      */
     protected $queueConfigKey;
@@ -83,9 +84,9 @@ class Job implements ShouldQueue
         return $this->previousMode;
     }
 
-    public function getQueueConfigKey()
+    public function getQueueConfigKey(): string
     {
-        return $this->queueConfigKey;
+        return $this->queueConfigKey ?: snake_case((new \ReflectionClass($this))->getShortName());
     }
 
     /**
