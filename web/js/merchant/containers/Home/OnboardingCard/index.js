@@ -39,11 +39,17 @@ export default class OnboardingCard extends Component {
   constructor(props) {
     super(props);
 
+    const { mode, user, config } = props,
+      { isActivated, isSubmitted } = user,
+      { hasPersonalised } = config;
+
     this.state = {
       integrated: false,
+      activated: mode === 'live' && isActivated && isSubmitted,
     };
 
     this.onIntegrationComplete = this.onIntegrationComplete.bind(this);
+    this.closeOnboarding = this.closeOnboarding.bind(this);
   }
 
   componentWillMount() {
@@ -83,7 +89,7 @@ export default class OnboardingCard extends Component {
 
   render() {
     let { user, config, payments, mode } = this.props;
-    let { isFirstStep, showOnboarding, integrated } = this.state;
+    let { isFirstStep, showOnboarding, integrated, activated } = this.state;
 
     let FirstStep = null;
     const isOldUser = !JSON.parse(
@@ -144,8 +150,19 @@ export default class OnboardingCard extends Component {
               </span>
             ) : (
               <span>
-                You are now in Live Mode. Generate live API keys and Integrate
-                to go live.
+                You are now in Live Mode.{' '}
+                {integrated && activated ? (
+                  <span>
+                    You may now <a onClick={this.closeOnboarding}>close</a> this
+                    or view our{' '}
+                    <a href="https://docs.razorpay.com/" target="_blank">
+                      documentation
+                    </a>{' '}
+                    from top right.
+                  </span>
+                ) : (
+                  <span>Generate live API keys and Integrate to go live.</span>
+                )}
               </span>
             )}
           </div>
@@ -155,7 +172,11 @@ export default class OnboardingCard extends Component {
                 <ActivationStep mode={mode} user={user} config={config} />
               </GroupItem>
               <GroupItem>
-                <Integration mode={mode} payments={payments} />
+                <Integration
+                  mode={mode}
+                  payments={payments}
+                  onFinish={this.onIntegrationComplete}
+                />
               </GroupItem>
             </Group>
           </div>
@@ -168,6 +189,12 @@ export default class OnboardingCard extends Component {
         <div class={`media onboarding-card ${isFirstStep ? 'first-step' : ''}`}>
           {FirstStep}
           <div class="onboarding-illustration" />
+          {integrated &&
+            activated && (
+              <a onClick={this.closeOnboarding} className="close">
+                &times;
+              </a>
+            )}
         </div>
       </div>
     );

@@ -96,8 +96,9 @@ export default class User {
     // return this.isFeatureEnabled('report_v2');
   }
 
+  // TODO: Remove this code when confirmed no rollbacks
   get isNewAnalyticsEnabled() {
-    return (this.tags || []).indexOf('New_Analytics') !== -1;
+    return true;
   }
 
   get enabledFeatures() {

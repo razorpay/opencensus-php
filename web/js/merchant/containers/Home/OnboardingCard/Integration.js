@@ -7,7 +7,7 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 import LocalStorageService from 'rzp/utils/localStorage';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 
-const Icon = ({ mode, keysGenerated, paymentsMade, visitedTransactions }) => {
+const Icon = ({ mode, keysGenerated, paymentsMade }) => {
   let className = '';
 
   if (!keysGenerated) {
@@ -15,11 +15,7 @@ const Icon = ({ mode, keysGenerated, paymentsMade, visitedTransactions }) => {
   } else if (!paymentsMade) {
     className = 'integrate';
   } else {
-    if (!visitedTransactions || mode !== 'live') {
-      className = 'browse';
-    } else {
-      className = 'done';
-    }
+    className = 'browse';
   }
 
   return <div className={`activation-step-icon ${className}`} />;
@@ -35,10 +31,9 @@ const WrapperElement = ({
   children,
   keysGenerated,
   paymentsMade,
-  visitedTransactions,
   ...otherProps
 }) => {
-  if (keysGenerated && paymentsMade && visitedTransactions) {
+  if (keysGenerated && paymentsMade) {
     return (
       <div {...otherProps}>
         <div className="media">{children}</div>
@@ -62,7 +57,7 @@ const WrapperElement = ({
   }
 
   return (
-    <Link to={paymentsMade ? '/payments' : '/keys'} {...otherProps}>
+    <Link to="/keys" {...otherProps}>
       <div className="media">
         {children}
         <Arrow />
@@ -76,23 +71,18 @@ const Title = ({
   children,
   keysGenerated,
   paymentsMade,
-  visitedTransactions,
   ...otherProps
 }) => {
   const formattedMode = titleCase(mode);
 
   let text = '';
 
-  if (mode === 'live' && keysGenerated && paymentsMade && visitedTransactions) {
-    text = `Integrated in ${formattedMode} Mode`;
+  if (!keysGenerated) {
+    text = `Integrate Razorpay in ${formattedMode} Mode`;
+  } else if (!paymentsMade) {
+    text = `Integrate & Create ${formattedMode} Payment`;
   } else {
-    if (!keysGenerated) {
-      text = `Integrate Razorpay in ${formattedMode} Mode`;
-    } else if (!paymentsMade) {
-      text = `Integrate & Create ${formattedMode} Payment`;
-    } else {
-      text = `You Received a ${formattedMode} Payment`;
-    }
+    text = `You Received a ${formattedMode} Payment`;
   }
 
   return <span>{text}</span>;
@@ -103,27 +93,16 @@ const Text = ({
   children,
   keysGenerated,
   paymentsMade,
-  visitedTransactions,
   ...otherProps
 }) => {
-  const formattedMode = titleCase(mode);
-
   let text = '';
 
-  if (keysGenerated && paymentsMade && visitedTransactions) {
-    if (mode !== 'live') {
-      text = 'You can view all payments in Transaction tab';
-    } else {
-      text = 'You are all set up.';
-    }
+  if (!keysGenerated) {
+    text = `Generate ${mode} API keys.`;
+  } else if (!paymentsMade) {
+    text = 'Go through our Documentation';
   } else {
-    if (!keysGenerated) {
-      text = `Generate ${mode} API keys.`;
-    } else if (!paymentsMade) {
-      text = 'Go through our Documentation';
-    } else {
-      text = 'Go to transactions tab to view all payments';
-    }
+    text = 'You can view all payments in Transaction tab';
   }
 
   return <span>{text}</span>;
@@ -140,15 +119,15 @@ export default class IntegrationStep extends Component {
       isLoading: true,
       keysGenerated: false,
       paymentsMade: false,
-      visitedTransactions:
-        (mode === 'test' &&
-          LocalStorageService.getItem('visited_test_transactions')) ||
-        (mode === 'live' &&
-          LocalStorageService.getItem('visited_live_transactions')),
     };
 
     this.paymentsRequest = new Promise((res, rej) => {
       this.onFetchPayments = res;
+
+      //res([{"id":"pay_A2YobW8CYKWnvd","entity":"payment","amount":50000,"currency":"INR","status":"authorized","order_id":null,"invoice_id":null,"international":false,"method":"netbanking","amount_refunded":0,"amount_transferred":0,"refund_status":null,"captured":false,"description":"Add Funds to Account","card_id":null,"bank":"SBIN","wallet":null,"vpa":null,"email":"prashanth.pamidi+28@razorpay.com","contact":"+911122334456","notes":{"dashboard":"true"},"fee":null,"tax":null,"error_code":null,"error_description":null,"created_at":1524464555}]);
+      if (!props.payments.loading) {
+        res(props.payments.items);
+      }
     });
   }
 
@@ -173,29 +152,32 @@ export default class IntegrationStep extends Component {
     ]).then(resp => {
       const { 0: keysGenerated, 1: paymentsMade } = resp;
 
-      this.setState({
-        isLoading: false,
-        keysGenerated,
-        paymentsMade,
-      });
+      this.setState(
+        {
+          isLoading: false,
+          keysGenerated,
+          paymentsMade,
+        },
+        () => {
+          const { keysGenerated, paymentsMade } = this.state;
+
+          if (this.props.mode === 'live' && keysGenerated && paymentsMade) {
+            this.props.onFinish();
+          }
+        }
+      );
     });
   }
 
   render() {
     const { mode } = this.props,
-      {
-        isLoading,
-        keysGenerated,
-        paymentsMade,
-        visitedTransactions,
-      } = this.state,
+      { isLoading, keysGenerated, paymentsMade } = this.state,
       isIntegrated = keysGenerated && paymentsMade;
 
     return (
       <WrapperElement
         keysGenerated={keysGenerated}
         paymentsMade={paymentsMade}
-        visitedTransactions={visitedTransactions}
         className={`Onboarding__Step ${isLoading ? ' loading' : ''}`}
       >
         <div className="media-icon">

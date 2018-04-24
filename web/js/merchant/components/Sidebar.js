@@ -92,7 +92,9 @@ export default class Sidebar extends Component {
                         <div className="pull-left">
                           {!user.isSubmitted
                             ? 'Activate your account'
-                            : 'Form submitted'}
+                            : !user.isActivated
+                              ? 'Form submitted'
+                              : 'Account Activated'}
                         </div>
                         <div className="pull-right">
                           <i className="i i-chevron-right" />

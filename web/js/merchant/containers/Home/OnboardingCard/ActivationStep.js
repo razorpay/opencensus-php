@@ -38,13 +38,14 @@ class SwitchToLive extends Component {
 }
 
 const WrapperElement = ({
+  mode,
   children,
   isActivated,
   isSubmitted,
   hasPersonalised,
   ...otherProps
 }) => {
-  if (isActivated || (isSubmitted && hasPersonalised)) {
+  if (isSubmitted && (mode === 'test' || hasPersonalised)) {
     return (
       <div {...otherProps}>
         <div className="media">{children}</div>
@@ -53,7 +54,10 @@ const WrapperElement = ({
   }
 
   return (
-    <Link to={!hasPersonalised ? '/config' : '/activation'} {...otherProps}>
+    <Link
+      to={(!isSubmitted && '/activation') || (!hasPersonalised && '/config')}
+      {...otherProps}
+    >
       <div className="media">
         {children}
         <div className="media-arrow">
@@ -107,17 +111,19 @@ const Text = ({
         'Fill activation form to accept payments.'
       ) : !hasPersonalised ? (
         !isActivated ? (
-          'Personalize your account'
+          'Personalise your account'
         ) : (
           <span>
-            <Link to="/config">Personalize</Link>
             {mode === 'test' ? (
               <span>
-                {' '}
-                or <SwitchToLive>Switch to live</SwitchToLive> mode
+                <Link to="/config">Personalise</Link>
+                <span>
+                  {' '}
+                  or <SwitchToLive>Switch to live</SwitchToLive> mode
+                </span>
               </span>
             ) : (
-              <span> your Account</span>
+              <span>Personalise your Account</span>
             )}
           </span>
         )
@@ -143,11 +149,12 @@ const Progress = ({ progress }) => {
 export default ({ mode, user, config }) => {
   const { activation_progress: progress, isActivated, isSubmitted } = user;
 
-  const hasPersonalised = { config };
+  const { hasPersonalised } = config;
 
   return (
     <WrapperElement
       class="Onboarding__Step"
+      mode={mode}
       isActivated={isActivated}
       isSubmitted={isSubmitted}
       hasPersonalised={hasPersonalised}

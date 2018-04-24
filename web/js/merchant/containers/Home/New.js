@@ -119,9 +119,7 @@ class HomeContainer extends Component {
       showGroupingByPtfm: false,
       scrollAmountToStickHeader: 0,
       hasNewAnalyticsTour:
-        !isAdmin &&
-        user.isActivated &&
-        !LocalStorageService.getItem('hide_new_analytics_banner'),
+        !isAdmin && !LocalStorageService.getItem('hide_new_analytics_banner'),
       dismissNewAnalyticsBanner: false,
       payments: {
         loading: true,
