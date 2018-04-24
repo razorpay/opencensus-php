@@ -17,6 +17,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use Symfony\Component\DomCrawler\Crawler;
 
 class Gateway extends Base\Gateway
 {
@@ -42,6 +43,8 @@ class Gateway extends Base\Gateway
 
         $request['url'] = $this->createRedirectUrl($request['content']);
         $request['content'] = [];
+
+        $request = $this->makeRequestAndGetFormData($request);
 
         return $request;
     }
@@ -120,6 +123,44 @@ class Gateway extends Base\Gateway
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function makeRequestAndGetFormData(array $request): array
+    {
+        $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [$response->body]);
+
+        if ($response->status_code === 421)
+        {
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL);
+        }
+
+        $crawler = new Crawler($response->body, $request['url']);
+
+        $formCrawler = $crawler->filter('form');
+
+        if ($formCrawler->count() === 0)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_HEADLESS_PARSING_FAILED,
+                null, 
+                null, 
+                [
+                    'gateway' => $this->gateway,
+                ]
+            );
+        }
+
+        $form = $formCrawler->form();
+
+        $request = [
+            'url'     => $form->getUri(),
+            'method'  => strtolower($form->getMethod()),
+            'content' => $form->getValues(),
+        ];
+
+        return $request;
     }
 
     protected function sendPaymentVerifyRequest($verify)

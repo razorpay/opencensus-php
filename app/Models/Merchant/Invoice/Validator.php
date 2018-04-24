@@ -30,6 +30,13 @@ class Validator extends Base\Validator
         'correction'        => 'sometimes|boolean',
     ];
 
+    protected static $correctionQueueRules = [
+        Entity::MONTH       => 'required|integer|between:1,12',
+        Entity::YEAR        => 'required|integer|digits:4',
+        'merchant_ids'      => 'sometimes|array',
+        'merchant_ids.*'    => 'sometimes|string|size:14',
+    ];
+
     protected static $bulkCreateRules = [
         'invoice_entities'      => 'required|array',
         'invoice_entities.*'    => 'required|array',

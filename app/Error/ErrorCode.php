@@ -105,6 +105,8 @@ class ErrorCode
     const GATEWAY_ERROR_CARD_INVALID_CVV                                            = 'GATEWAY_ERROR_CARD_INVALID_CVV';
     const GATEWAY_ERROR_CARD_MISSING_CVV                                            = 'GATEWAY_ERROR_CARD_MISSING_CVV';
 
+    const GATEWAY_ERROR_HEADLESS_PARSING_FAILED                                     = 'GATEWAY_ERROR_HEADLESS_PARSING_FAILED';
+
     const GATEWAY_ERROR_PAYMENT_MISSING_DATA                                        = 'GATEWAY_ERROR_PAYMENT_MISSING_DATA';
     const GATEWAY_ERROR_INVALID_PARAMETERS                                          = 'GATEWAY_ERROR_INVALID_PARAMETERS';
     const GATEWAY_ERROR_INVALID_CALLBACK_URL                                        = 'GATEWAY_ERROR_INVALID_CALLBACK_URL';

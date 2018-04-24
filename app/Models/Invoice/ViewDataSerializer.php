@@ -144,7 +144,7 @@ class ViewDataSerializer extends Base\Core
         //
         if (($this->invoice->isTypeLink() === true) and (blank($serialized[Entity::DESCRIPTION]) === true))
         {
-            $serialized[Entity::DESCRIPTION] = $this->invoice->lineItems->first()->getDescriptionElseName();
+            $serialized[Entity::DESCRIPTION] = optional($this->invoice->lineItems->first())->getDescriptionElseName();
         }
     }
 

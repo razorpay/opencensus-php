@@ -26,6 +26,19 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
+        $request = [
+            'url'     => $this->route->getUrl('mock_atom_payment'),
+            'content' => $input,
+            'method'  => 'post',
+        ];
+
+        $this->request($request);
+
+        return $this->makePostResponse($request);
+    }
+
+    public function bank($input)
+    {
         parent::authorize($input);
 
         $this->validateActionInput($input, 'authorize');
