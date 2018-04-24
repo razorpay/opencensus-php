@@ -3,7 +3,7 @@ import { Route, NavLink, withRouter } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import Profile from 'merchant/containers/Profile';
-import Activation from 'component/merchant/Activation';
+import Activation from 'merchant/containers/Activation/new';
 import AddFunds from 'merchant/containers/AddFunds';
 import Credits from 'merchant/containers/Credits/List';
 import Referrals from 'merchant/containers/Referrals/List';

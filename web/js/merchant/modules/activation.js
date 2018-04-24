@@ -16,7 +16,7 @@ export const fetchActivationDetails = (accountId = '') => {
   };
 };
 
-export const saveStep = ({ step, data, accountId = '' }) => {
+export const saveStep = ({ data, accountId = '' }) => {
   let activation = new Activation({
     ...data,
     accountId,
@@ -25,7 +25,6 @@ export const saveStep = ({ step, data, accountId = '' }) => {
     type: ACTIVATION_SAVE_STEP,
     payload: activation.saveStep(),
     mode: 'live',
-    step,
     data,
   };
 };
@@ -133,9 +132,7 @@ export default function(state = initialState, action) {
 
     case `${ACTIVATION_SAVE_STEP}::SUCCESS`:
     case `${ACTIVATION_FORM_SUBMIT}::SUCCESS`:
-      updatedSteps = set(state.steps, action.step, 'success');
       return merge(state, {
-        steps: updatedSteps,
         data: action.data,
       });
 

@@ -177,7 +177,7 @@ export default class Content extends Component {
           <Route path="/applications" component={Settings} />
 
           <Redirect to="/dashboard" />
-        </Switch>;
+        </Switch>
       </ErrorBoundary>
     );
   };

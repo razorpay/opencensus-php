@@ -8,7 +8,7 @@ const tabs = [
   'Business Details - 2',
   'Bank Account Details',
   'Documents Upload',
-]
+];
 
 const contactFields = [
   {
@@ -19,223 +19,234 @@ const contactFields = [
     label: 'Contact Number',
     name: 'contact_mobile',
     type: 'tel',
-    addonBefore: '+91'
+    addonBefore: '+91',
   },
   {
     label: 'Contact Email',
     name: 'contact_email',
-    type: 'email'
-  }
-]
+    type: 'email',
+  },
+];
 
 const businessFields1 = [
   {
     label: 'Business Name',
-    name: 'business_name'
+    name: 'business_name',
   },
   {
     label: 'Doing Business As',
-    name: 'business_dba'
+    name: 'business_dba',
   },
   {
     label: 'Business Type',
     name: 'business_type',
     _cmp: Input.Select,
-    options: []
+    options: [],
   },
   {
     label: 'Business Model',
     name: 'business_model',
     _cmp: Input.Select,
-    options: []
+    options: [],
   },
   {
     label: 'We want to accept International Payments as well',
     name: 'business_international',
-    _cmp: Input.Check
+    _cmp: Input.Check,
   },
   {
     label: 'CIN',
-    name: 'company_cin'
+    name: 'company_cin',
   },
   {
     label: 'Business PAN Details',
     name: 'company_pan',
-    placeholder: 'PAN Number'
+    placeholder: 'PAN Number',
   },
   {
     label: 'PAN Owner Name',
-    name: 'company_pan_name'
+    name: 'company_pan_name',
   },
   {
     label: 'PAN info of Authorized Signatory/Promoter/Director',
     name: 'promoter_pan',
-    placeholder: 'PAN Number'
+    placeholder: 'PAN Number',
   },
   {
     label: 'PAN Owner Name',
-    name: 'promoter_pan_name'
-  }
-]
+    name: 'promoter_pan_name',
+  },
+];
 
-const differentAddress = activation => activation.state.same_address === '0'
+const differentAddress = activation => activation.state.same_address === '0';
 
 const businessFields2 = [
-  [{
-    label: 'Website/App Details',
-    _cmp: Input.Radio,
-    _name: 'app_type',
-    options: [
-      'Website',
-      'App',
-      {
-        label: 'We don\'t have either',
-        description: <React.Fragment>
-          You can still accept payments through <b>Razorpay Invoices</b> and
-          <b> Razorpay Payment Links</b>. You can request access to
-          other products (<b>Route</b>, <b>Subscription</b>, <b>Smart Collect</b>)
-          once you have a website or app.
+  [
+    {
+      label: 'Website/App Details',
+      _cmp: Input.Radio,
+      _name: 'app_type',
+      options: [
+        'Website',
+        'App',
+        {
+          label: "We don't have either",
+          description: (
+            <React.Fragment>
+              You can still accept payments through <b>Razorpay Invoices</b> and
+              <b> Razorpay Payment Links</b>. You can request access to other
+              products (<b>Route</b>, <b>Subscription</b>, <b>Smart Collect</b>)
+              once you have a website or app.
+            </React.Fragment>
+          ),
+        },
+      ],
+    },
+    {
+      name: 'business_website',
+      placeholder: 'Enter URL',
+      type: 'url',
+      required: false,
+      description: (
+        <React.Fragment>
+          Your website should have following information easily accessible:
+          <b> About Us</b>,<b> Contact</b>,<b> Privacy Policy</b>,
+          <b> Terms & Conditions</b>, <b>Refund Policy</b> & <b>Pricing</b>.
+          Please refer our{' '}
+          <a href="" target="_blank">
+            Compliance Policies{' '}
+          </a>
+          for more details.
         </React.Fragment>
-      }
-    ]
-  },
-  {
-    name: 'business_website',
-    placeholder: 'Enter URL',
-    type: 'url',
-    required: false,
-    description: <React.Fragment>
-      Your website should have following information easily accessible:
-      <b> About Us</b>,<b> Contact</b>,<b> Privacy Policy</b>,
-      <b> Terms & Conditions</b>, <b>Refund Policy</b> & <b>Pricing</b>.
-      Please refer our <a href='' target='_blank'>Compliance Policies </a>
-      for more details.
-    </React.Fragment>,
-    _when: activation => activation.state.app_type !== '2',
-    info: 'Example: https://www.company.com'
-  }],
-  [{
-    name: 'business_registered_address',
-    placeholder: 'Enter Street Address',
-    label: 'Registered Address',
-    _cmp: Input.Textarea
-  },
-  {
-    name: 'business_registered_pin',
-    type: 'number',
-    label: 'Pincode',
-    size: 'small',
-    min: '100000',
-    max: '999999',
-    maxLength: '6',
-    validator: value => {
-      let pin = Number(value);
-      if (!pin || pin < 100000 || pin > 999999) {
-        return 'Please enter 6 digit pincode';
-      }
-    }
-  },
-  {
-    name: 'business_registered_city',
-    label: 'City'
-  },
-  {
-    name: 'business_registered_state',
-    label: 'State'
-  }],
+      ),
+      _when: activation => activation.state.app_type !== '2',
+      info: 'Example: https://www.company.com',
+    },
+  ],
+  [
+    {
+      name: 'business_registered_address',
+      placeholder: 'Enter Street Address',
+      label: 'Registered Address',
+      _cmp: Input.Textarea,
+    },
+    {
+      name: 'business_registered_pin',
+      type: 'number',
+      label: 'Pincode',
+      size: 'small',
+      min: '100000',
+      max: '999999',
+      validator: value => {
+        let pin = Number(value);
+        if (!pin || pin < 100000 || pin > 999999) {
+          return 'Please enter 6 digit pincode';
+        }
+      },
+    },
+    {
+      name: 'business_registered_city',
+      label: 'City',
+    },
+    {
+      name: 'business_registered_state',
+      label: 'State',
+    },
+  ],
   {
     _name: 'same_address',
     label: 'Operational Address same as Registered Address',
     description: 'Physical verification may be performed at this address',
-    _cmp: Input.Check
+    _cmp: Input.Check,
   },
-  [{
-    name: 'business_operation_address',
-    placeholder: 'Enter Street Address',
-    label: 'Registered Address',
-    _cmp: Input.Textarea,
-    _when: differentAddress
-  },
-  {
-    name: 'business_operation_pin',
-    type: 'number',
-    label: 'Pincode',
-    _when: differentAddress
-  },
-  {
-    name: 'business_operation_city',
-    label: 'City',
-    _when: differentAddress
-  },
-  {
-    name: 'business_operation_state',
-    label: 'State',
-    _when: differentAddress
-  }],
-  [{
-    _name: 'has_gstin',
-    label: 'GSTIN',
-    options: [
-      'We have a registered GSTIN',
-      'We don\'t have a GSTIN'
-    ],
-    _cmp: Input.Radio
-  },
-  {
-    name: 'gstin',
-    _when: activation => activation.state.has_gstin === '0',
-    placeholder: 'Enter GSTIN',
-    size: 'small'
-  }]
-]
+  [
+    {
+      name: 'business_operation_address',
+      placeholder: 'Enter Street Address',
+      label: 'Registered Address',
+      _cmp: Input.Textarea,
+      _when: differentAddress,
+    },
+    {
+      name: 'business_operation_pin',
+      type: 'number',
+      label: 'Pincode',
+      _when: differentAddress,
+    },
+    {
+      name: 'business_operation_city',
+      label: 'City',
+      _when: differentAddress,
+    },
+    {
+      name: 'business_operation_state',
+      label: 'State',
+      _when: differentAddress,
+    },
+  ],
+  [
+    {
+      _name: 'has_gstin',
+      label: 'GSTIN',
+      options: ['We have a registered GSTIN', "We don't have a GSTIN"],
+      _cmp: Input.Radio,
+    },
+    {
+      name: 'gstin',
+      _when: activation => activation.state.has_gstin === '0',
+      placeholder: 'Enter GSTIN',
+      size: 'small',
+    },
+  ],
+];
 
 const bankAccountFields = [
   {
     name: 'bank_branch_ifsc',
-    label: 'Branch IFSC Code'
+    label: 'Branch IFSC Code',
   },
   {
     name: 'bank_account_number',
     label: 'Account Number',
-    type: 'password'
+    type: 'password',
   },
   {
     _name: 'account_no',
-    label: 'Re-Enter Account Number'
+    label: 'Re-Enter Account Number',
   },
   {
     name: 'bank_account_name',
-    label: 'Beneficiary Name'
-  }
-]
+    label: 'Beneficiary Name',
+  },
+];
 
 const uploadFields = [
   {
     name: 'business_proof_url',
-    label: 'Business Registration Proof'
+    label: 'Business Registration Proof',
   },
   {
     name: 'business_pan_url',
-    label: 'Business PAN'
+    label: 'Business PAN',
   },
   {
     name: 'address_proof_url',
-    label: "Company's Bank Account Statement with Address"
+    label: "Company's Bank Account Statement with Address",
   },
   {
     name: 'promoter_address_url',
-    label: "Authorized Signatory's Address Proof"
-  }
-]
-uploadFields.forEach(a => a._cmp = Input.File)
+    label: "Authorized Signatory's Address Proof",
+  },
+];
+uploadFields.forEach(a => (a._cmp = Input.File));
 
 const tabContent = [
   contactFields,
   businessFields1,
   businessFields2,
   bankAccountFields,
-  uploadFields
-]
+  uploadFields,
+];
 
 const defaultFieldProps = f => {
   if (Array.isArray(f)) {
@@ -247,19 +258,20 @@ const defaultFieldProps = f => {
   if (!f.hasOwnProperty('required')) {
     f.required = true;
   }
-}
+};
 
 defaultFieldProps(tabContent);
 
 export default class ActivationWizard extends React.Component {
   state = {
+    isSaving: null,
     data: this.props.data || {},
     tabs: [],
     same_address: '1',
     app_type: '0',
     has_gstin: '0',
-    account_no: ''
-  }
+    account_no: '',
+  };
 
   constructor(props) {
     super(props);
@@ -277,7 +289,8 @@ export default class ActivationWizard extends React.Component {
     }
   }
 
-  changeTab = ({ target }) => this.goto(parseInt(target.getAttribute('data-index')))
+  changeTab = ({ target }) =>
+    this.goto(parseInt(target.getAttribute('data-index')));
   goto = activeTab => {
     let currentActive = this.state.activeTab;
     let isValid = this.tabValidity(currentActive);
@@ -286,9 +299,32 @@ export default class ActivationWizard extends React.Component {
 
     this.setState({
       activeTab,
-      tabs
+      tabs,
     });
-  }
+
+    this.setState({ isSaving: true });
+
+    // TODO: Make this request only when last form isDirty to avoid multiple request
+    this.props
+      .save(this.state.data, this.props.accountId) // Account id for linked_account
+      .then(response => {
+        this.setState({ isSaving: false });
+        this.removeLoader();
+      })
+      .catch(err => {
+        this.setState({ isSaving: false });
+        this.removeLoader();
+      });
+
+    this.props.callback && this.props.callback(); // Support for callback for linked_account activation
+  };
+
+  /* Fadeout based loader text */
+  removeLoader = _ => {
+    setTimeout(_ => {
+      this.setState({ isSaving: null });
+    }, 3000);
+  };
 
   next = e => this.goto(this.state.activeTab + 1);
   prev = e => this.goto(this.state.activeTab - 1);
@@ -297,84 +333,118 @@ export default class ActivationWizard extends React.Component {
     let stateName = target.getAttribute('data-name');
     if (stateName) {
       this.setState({
-        [stateName]: target.value
-      })
+        [stateName]: target.value,
+      });
     } else {
       this.setState({
         data: {
           ...this.state.data,
-          [target.name]: target.value
-        }
-      })
+          [target.name]: target.value,
+        },
+      });
     }
-  }
+  };
 
   render() {
     let activeTab = this.state.activeTab;
     let isLastTab = activeTab !== tabs.length - 1;
     let content = tabContent[activeTab].map((field, i) => {
       if (Array.isArray(field)) {
-        return <Input.Group key={i}>{field.map(ActivationField, this)}</Input.Group>
+        return (
+          <Input.Group key={i}>{field.map(ActivationField, this)}</Input.Group>
+        );
       }
       return ActivationField.call(this, field);
-    })
+    });
 
-    return <div class="activation-wizard">
-      <aside>
-        <side-title>Account Activation</side-title>
-        <p>
-          Fill and submit the activation form to start
-          transacting live from your Razorpay account.
-        </p>
-        <ul>
-          {tabs.map((t, i) => {
-            let isTabValid = this.state.tabs[i];
-            return <li
-              class={i === activeTab ? 'active' : ''}
-              key={i}
-              data-index={i}
-              onClick={this.changeTab}
-            >
-              {t}
-              {isTabValid && <i class={'i-done'} />}
-            </li>
-          })}
-        </ul>
-      </aside>
-      <main>
-        <main-title>{tabs[activeTab]}</main-title>
-        <Form
-          onChange={this.onChange}
-          layout='tabular'
-        >
-          {content}
-        </Form>
-      </main>
-      <footer>
-        {activeTab && <Button iconBefore='chevron-left' onClick={this.prev}>Back</Button> || null}
-        {isLastTab && <Button.Primary iconAfter='chevron-right' onClick={this.next}>Next</Button.Primary>}
-        {isLastTab || <Button.Primary onClick={this.submit}>Submit Form</Button.Primary>}
-      </footer>
-    </div>
-  }
-
-  submit = e => {
-
+    return (
+      <div class="activation-wizard">
+        <aside>
+          <side-title>Account Activation</side-title>
+          <p>
+            Fill and submit the activation form to start transacting live from
+            your Razorpay account.
+          </p>
+          <ul>
+            {tabs.map((t, i) => {
+              let isTabValid = this.state.tabs[i];
+              return (
+                <li
+                  class={i === activeTab ? 'active' : ''}
+                  key={i}
+                  data-index={i}
+                  onClick={this.changeTab}
+                >
+                  {t}
+                  {isTabValid && <i class={'i-done'} />}
+                </li>
+              );
+            })}
+          </ul>
+        </aside>
+        <main>
+          <main-title>{tabs[activeTab]}</main-title>
+          <Form onChange={this.onChange} layout="tabular">
+            {content}
+          </Form>
+        </main>
+        <footer>
+          <Loader isSaving={this.state.isSaving} />
+          {(activeTab && (
+            <Button iconBefore="chevron-left" onClick={this.prev}>
+              Back
+            </Button>
+          )) ||
+            null}
+          {isLastTab && (
+            <Button.Primary iconAfter="chevron-right" onClick={this.next}>
+              Next
+            </Button.Primary>
+          )}
+          {isLastTab || (
+            <Button.Primary onClick={this.submit}>Submit Form</Button.Primary>
+          )}
+        </footer>
+      </div>
+    );
   }
 
   // returns validity
   tabValidity(i) {
-    return tabContent[i].every(c => Array.isArray(c) ? c.every(d => isFieldValid(d, this)) : isFieldValid(c, this));
+    return tabContent[i].every(
+      c =>
+        Array.isArray(c)
+          ? c.every(d => isFieldValid(d, this))
+          : isFieldValid(c, this)
+    );
   }
 }
 
+/*
+* Component for showing step saving loader in footer
+* @prop {Boolean or null} isSaving - Current status of Loader
+* */
+function Loader({ isSaving }) {
+  if (isSaving === null) {
+    return <span class="Loader" />;
+  }
+
+  return (
+    <span class="Loader Loader--visible">
+      {isSaving ? (
+        'Saving Changes...'
+      ) : (
+        <React.Fragment>
+          <i class="i-check" />
+          All changes saved
+        </React.Fragment>
+      )}
+    </span>
+  );
+}
+
 function ActivationField(field, activation) {
-  let {
-    _cmp: Component,
-    _name,
-    _when,
-    ...rest
-  } = field;
+  let { _cmp: Component, _name, _when, ...rest } = field;
 
   if (_when && !_when(this)) {
     return null;
@@ -389,12 +459,15 @@ function ActivationField(field, activation) {
     key = _name;
   }
 
-  return <Component
-    key={key}
-    data-name={_name}
-    defaultValue={defaultValue}
-    {...rest}
-  />
+  return (
+    <Component
+      key={key}
+      data-name={_name}
+      defaultValue={defaultValue}
+      disabled={this.state.data.locked}
+      {...rest}
+    />
+  );
 }
 
 function isFieldValid(field, activation) {
@@ -410,7 +483,7 @@ function isFieldValid(field, activation) {
     }
   }
 
-  let value = data[field.name]
+  let value = data[field.name];
   if (field.required && !value) {
     // value missing in required field
     return false;

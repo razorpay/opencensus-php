@@ -4,7 +4,7 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
 import { fetchActivationDetails } from 'merchant/modules/activation';
-import ActivationWizard from 'merchant/containers/Activation/ActivationWizard';
+import ActivationWizard from 'component/merchant/Activation';
 
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
