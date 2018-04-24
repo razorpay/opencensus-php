@@ -4,7 +4,6 @@ namespace RZP\Mail\Base;
 
 use App;
 use Config;
-use EmailValidator;
 use Illuminate\Bus\Queueable;
 use Illuminate\Container\Container;
 use Illuminate\Mail\Mailable as BaseMailable;
@@ -78,15 +77,6 @@ class Mailable extends BaseMailable
                          ->buildAttachments($message)
                          ->runCallbacks($message);
                 });
-            }
-            else
-            {
-                $trace->info(TraceCode::MAILER_INVALID_RECIPIENT_EMAIL, [
-                    'from'    => $this->from,
-                    'to'      => $this->to,
-                    'subject' => $this->subject,
-                    'mailable' => get_class($this)
-                ]);
             }
         }
         catch (\Throwable $e)
@@ -239,7 +229,7 @@ class Mailable extends BaseMailable
     {
         if (filled($this->to) === true)
         {
-            $emailValidator = new EmailValidator\Validator;
+            $emailValidator = new Validator;
             $recipientEmail = $this->to[0]['address'];
 
             return (($recipientEmail !== 'void@razorpay.com') and
