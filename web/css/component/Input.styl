@@ -23,6 +23,21 @@
       top: 0
       color: $textDangerColor
 
+.Input--disabled
+  label
+    cursor: unset !important
+
+  input, select, .Input-checkbox, .Input-radio, textarea
+    background-color: #fafafa
+    box-shadow: 0 0 8px rgba(0,0,0,0.06) inset
+    cursor: unset
+
+  input:checked + .Input-radio
+    border-color: #fafafa
+
+  input[type='file']
+    cursor: not-allowed
+
 .Input--checkbox
   white-space: nowrap
   .Input-inlineLabel
@@ -69,6 +84,11 @@
   &[type=checkbox], &[type=radio]
     display: none
 
+.Input--file-upload
+  margin-left: 4px
+  vertical-align: middle
+
+
 .Input--small
   .Input-el
     max-width: 170px
@@ -85,6 +105,8 @@ textarea.Input-el
   background: #fff
   border-radius: 2px
   float: left
+  cursor: pointer
+
   &:after
     content: ''
     display: block

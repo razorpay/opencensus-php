@@ -5,6 +5,10 @@ function inputClass({ props, state, className }) {
     wrapperClass += ' Input--required';
   }
 
+  if (props.disabled) {
+    wrapperClass += ' Input--disabled';
+  }
+
   if (props.size) {
     wrapperClass += ' Input--' + props.size;
   }
@@ -55,14 +59,18 @@ function separateDomProps(props) {
     options,
     defaultValue,
     info,
-    props: rest
-  }
+    props: rest,
+  };
 }
 
 class Info extends React.PureComponent {
   render() {
     if (this.props.text) {
-      return <div class='Input-info'><p>{this.props.text}</p></div>
+      return (
+        <div class="Input-info">
+          <p>{this.props.text}</p>
+        </div>
+      );
     }
     return null;
   }
@@ -71,7 +79,7 @@ class Info extends React.PureComponent {
 class Description extends React.PureComponent {
   render() {
     if (this.props.text) {
-      return <div class='Input-desc'>{this.props.text}</div>
+      return <div class="Input-desc">{this.props.text}</div>;
     }
     return null;
   }
@@ -80,7 +88,11 @@ class Description extends React.PureComponent {
 class Label extends React.PureComponent {
   render() {
     if (this.props.text) {
-      return <div class={this.props.className || 'Input-label'}>{this.props.text}</div>
+      return (
+        <div class={this.props.className || 'Input-label'}>
+          {this.props.text}
+        </div>
+      );
     }
     return null;
   }
@@ -89,7 +101,7 @@ class Label extends React.PureComponent {
 class Error extends React.PureComponent {
   render() {
     if (this.props.text) {
-      return <div class='Input-error'>{this.props.text}</div>
+      return <div class="Input-error">{this.props.text}</div>;
     }
     return null;
   }
@@ -99,20 +111,20 @@ export default class Field extends React.PureComponent {
   state = {
     mature: this.props.mature,
     focus: false,
-    error: ''
-  }
+    error: '',
+  };
 
   requiredError = 'Please fill out this field';
   patternError = 'Please enter valid value';
 
-  focus = e => this.setState({ focus: true })
-  blur = e => this.setState({ focus: false, mature: true })
+  focus = e => this.setState({ focus: true });
+  blur = e => this.setState({ focus: false, mature: true });
   change = e => {
     this.valid();
     if (this.props.onChange) {
       this.props.onChange(e);
     }
-  }
+  };
 
   valid() {
     let {
@@ -120,7 +132,7 @@ export default class Field extends React.PureComponent {
       required,
       validator,
       requiredError,
-      patternError
+      patternError,
     } = this.props;
 
     let el = this.el;
@@ -145,76 +157,98 @@ export default class Field extends React.PureComponent {
     if (el) {
       this.valid();
     }
-  }
+  };
 
   render() {
     let allProps = separateDomProps(this.props);
     let InputTag = allProps.tag;
 
+    let defaultValue = allProps.defaultValue;
+    if (this.props.type === 'file') {
+      defaultValue = undefined; // File input doesn't take defaultValue
+    }
+
+    let InputComponent = (
+      <InputTag
+        {...allProps.props}
+        onFocus={this.focus}
+        onBlur={this.blur}
+        onChange={this.change}
+        class="Input-el"
+        defaultValue={defaultValue}
+        ref={this.setRef}
+      />
+    );
+
+    // In case of form is disabled, file input must not be displayed
+    if (this.props.type === 'file' && this.props.disabled) {
+      InputComponent = (
+        <div class="Input--file-upload">
+          {allProps.defaultValue ? (
+            <span>
+              File Already uploaded <i class="i-done text-success" />
+            </span>
+          ) : (
+            'File Not Uploaded'
+          )}
+        </div>
+      );
+    }
+
     return (
       <label class={inputClass(this)}>
         <Label text={allProps.label} />
-        <div class='Input-content'>
-          <div class='Input-elWrapper'>
-            <InputTag
-              {...allProps.props}
-              onFocus={this.focus}
-              onBlur={this.blur}
-              onChange={this.change}
-              class='Input-el'
-              defaultValue={allProps.defaultValue}
-              ref={this.setRef}
-            />
+        <div class="Input-content">
+          <div class="Input-elWrapper">
+            {InputComponent}
             <Info text={allProps.info} />
           </div>
           <Error text={this.state.error} />
           <Description text={allProps.description} />
         </div>
       </label>
-    )
+    );
   }
 }
 
 class Check extends Field {
-  className = 'Input--checkbox Input-content'
+  className = 'Input--checkbox Input-content';
 
   toggle = e => {
     e.target.value = e.target.checked ? 1 : 0;
     if (this.props.onChange) {
       this.props.onChange(e);
     }
-  }
+  };
 
-  checked = Boolean(Number(this.props.defaultValue))
+  checked = Boolean(Number(this.props.defaultValue));
 
   render() {
-    let {
-      label,
-      description,
-      info,
-      props
-    } = separateDomProps(this.props);
+    let { label, description, info, props } = separateDomProps(this.props);
 
-    return <label class={inputClass(this)}>
-      <input
-        {...props}
-        defaultChecked={this.checked}
-        class='Input-el'
-        type='checkbox'
-        onChange={this.toggle}
-      />
-      <div className='Input-checkbox' />
-      <Label class='Input-inlineLabel' text={label} />
-      <Description text={description} />
-    </label>
+    return (
+      <label class={inputClass(this)}>
+        <input
+          {...props}
+          defaultChecked={this.checked}
+          class="Input-el"
+          type="checkbox"
+          onChange={this.toggle}
+          disabled={this.props.disabled}
+        />
+        <div className="Input-checkbox" />
+        <Label class="Input-inlineLabel" text={label} />
+        <Description text={description} />
+      </label>
+    );
   }
 }
 
 class Radio extends Field {
-  className = 'Input--radio'
+  className = 'Input--radio';
   state = {
-    value: this.props.defaultValue || 0
-  }
+    value: this.props.defaultValue || 0,
+  };
 
   toggle = e => {
     let target = e.target;
@@ -226,64 +260,65 @@ class Radio extends Field {
             el.checked = false;
           }
         }
-      )
+      );
     }
     this.setState({
-      value: target.value
-    })
+      value: target.value,
+    });
     if (this.props.onChange) {
       this.props.onChange(e);
     }
-  }
+  };
 
   render() {
-    let {
-      label,
-      description,
-      options,
-      props
-    } = separateDomProps(this.props);
+    let { label, description, options, props } = separateDomProps(this.props);
 
     let defaultValue = this.state.value;
     let selectedDescription;
 
-    return <div class={inputClass(this)}>
-      <Label text={label} />
-      <div class='Input-content'>
-        <div class='Input--radioLabels'>
-          {options.map((o, i) => {
-            let stringOption = typeof o == 'string';
-            let label = stringOption ? o : o.label;
-            let value = i;
-            if (!stringOption) {
-              if (o.hasOwnProperty('value')) {
-                value = o.value;
+    return (
+      <div class={inputClass(this)}>
+        <Label text={label} />
+        <div class="Input-content">
+          <div class="Input--radioLabels">
+            {options.map((o, i) => {
+              let stringOption = typeof o == 'string';
+              let label = stringOption ? o : o.label;
+              let value = i;
+              if (!stringOption) {
+                if (o.hasOwnProperty('value')) {
+                  value = o.value;
+                }
               }
-            }
 
-            // important to have double equals in below line
-            // as dom value is always string, but integer may be passed in JS
-            let selected = value == defaultValue;
-            if (selected) {
-              selectedDescription = o.description;
-            }
+              // important to have double equals in below line
+              // as dom value is always string, but integer may be passed in JS
+              let selected = value == defaultValue;
+              if (selected) {
+                selectedDescription = o.description;
+              }
 
-            return <label key={i}>
-              <input type='radio'
-                {...props}
-                defaultChecked={selected}
-                onChange={this.toggle}
-                value={value}
-                class='Input-el'
-              />
-              <div className='Input-radio' />
-              <Label text={label} class='Input-inlineLabel' />
-          </label>})}
+              return (
+                <label key={i}>
+                  <input
+                    type="radio"
+                    {...props}
+                    defaultChecked={selected}
+                    onChange={this.toggle}
+                    value={value}
+                    class="Input-el"
+                  />
+                  <div className="Input-radio" />
+                  <Label text={label} class="Input-inlineLabel" />
+                </label>
+              );
+            })}
+          </div>
+          <Description text={selectedDescription} />
+          <Description text={description} />
         </div>
-        <Description text={selectedDescription} />
-        <Description text={description} />
       </div>
-    </div>
+    );
   }
 }
 
@@ -291,20 +326,29 @@ Field.Radio = Radio;
 Field.Check = Check;
 
 Field.Textarea = _ => <Field {..._} tag="textarea" />;
-Field.File = _ => <Field {..._} type="file" />;
+Field.File = _ => {
+  return <Field {..._} type="file" />;
+};
+
 Field.Time = _ => <Field {..._} type="time" />;
 
-Field.Select = ({options, ...props}) => (
-  <Field
-    {...props}
-    tag="select">
+Field.Select = ({ options, ...props }) => (
+  <Field {...props} tag="select">
     {options.map((o, i) => {
       if (Array.isArray(o)) {
-        return <option key={i} value={i}>{o}</option>
+        return (
+          <option key={i} value={i}>
+            {o}
+          </option>
+        );
       }
-      return <option key={o.value} value={o.value}>{o.label}</option>
+      return (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      );
     })}
   </Field>
-)
+);
 
-Field.Group = ({children}) => <div class='InputGroup'>{children}</div>
+Field.Group = ({ children }) => <div class="InputGroup">{children}</div>;

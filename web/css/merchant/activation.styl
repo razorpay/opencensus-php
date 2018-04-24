@@ -1,10 +1,10 @@
+// Parent control the width of ActivationWizard component
 $height = 580px
 .activation-wizard
   background: #fafafa
   position: relative
   height: $height
-  width: 100vw
-  max-width: 960px
+  width: 100%
 
   $side-width = 240px
 
@@ -58,6 +58,21 @@ $height = 580px
     bottom: 0
     position: absolute
     text-align: right
+
+    .Loader
+      float: left
+      opacity: 0
+      transition: 1s opacity
+      margin-top: 4px
+      line-height: 27px
+
+      .i-check
+        margin-right: 8px
+        vertical-align: middle
+        line-height: 4px
+
+      &--visible
+        opacity: 1
 
   main-title
     text-transform: uppercase
