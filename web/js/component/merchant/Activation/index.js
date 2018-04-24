@@ -271,22 +271,29 @@ export default class ActivationWizard extends React.Component {
     app_type: '0',
     has_gstin: '0',
     account_no: '',
+    activeTab: 0, // Fallback
   };
 
   constructor(props) {
     super(props);
     this.setInitialTab();
+
+    uploadFields.forEach(a => (a.onChange = e => props.saveFile(e, a.name)));
   }
 
   setInitialTab() {
+    let firstInValid;
+
     for (let i = 0; i < tabs.length; i++) {
       let tabStatus = this.tabValidity(i);
-      if (!tabStatus) {
-        this.state.activeTab = i;
-        return;
+
+      if (!tabStatus && !firstInValid) {
+        firstInValid = i;
       }
-      this.state.tabs[i] = tabStatus;
+      this.state.tabs[i] = tabStatus; // Mark tabs as valid-invalid
     }
+
+    this.state.activeTab = firstInValid;
   }
 
   changeTab = ({ target }) =>
@@ -310,13 +317,13 @@ export default class ActivationWizard extends React.Component {
       .then(response => {
         this.setState({ isSaving: false });
         this.removeLoader();
+
+        this.props.callback && this.props.callback(); // Support for callback for linked_account activation
       })
       .catch(err => {
         this.setState({ isSaving: false });
         this.removeLoader();
       });
-
-    this.props.callback && this.props.callback(); // Support for callback for linked_account activation
   };
 
   /* Fadeout based loader text */
@@ -376,7 +383,7 @@ export default class ActivationWizard extends React.Component {
                   onClick={this.changeTab}
                 >
                   {t}
-                  {isTabValid && <i class={'i-done'} />}
+                  {isTabValid && <i class={'i-done text-success'} />}
                 </li>
               );
             })}

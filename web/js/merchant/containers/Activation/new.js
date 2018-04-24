@@ -46,6 +46,30 @@ export default class ActivationContainer extends React.Component {
     });
   };
 
+  saveFile = (event, fieldName, accountId) => {
+    let files = event.target.files;
+
+    // TODO: Temporary notification in then-catch, success-error msg would be adjusted in custom UI for file upload.
+    return this.props
+      .saveFile({
+        fieldName,
+        file: files[0],
+        accountId,
+      })
+      .then(response => {
+        this.props.showNotification({
+          type: 'success',
+          message: 'File uploaded successfully',
+        });
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
+  };
+
   render() {
     let { loading, data } = this.props;
 
@@ -56,7 +80,11 @@ export default class ActivationContainer extends React.Component {
             <Spinner />
           </div>
         ) : (
-          <ActivationWizard data={data} save={this.saveStep} />
+          <ActivationWizard
+            data={data}
+            save={this.saveStep}
+            saveFile={this.saveFile}
+          />
         )}
       </div>
     );

@@ -180,6 +180,7 @@ export default class Field extends React.PureComponent {
       />
     );
 
+    // TODO: Case to handle: Custom UI for file component to display indication that file is uploaded but can be changed since form is not locked
     // In case of form is disabled, file input must not be displayed
     if (this.props.type === 'file' && this.props.disabled) {
       InputComponent = (

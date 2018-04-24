@@ -29,16 +29,18 @@ export const saveStep = ({ data, accountId = '' }) => {
   };
 };
 
-export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
+// TODO: js/components/merchant/Activation component has same input-name as API key.
+export const saveFile = ({ file, fieldName, accountId = '' }) => {
   let formData = new FormData();
+
   let fieldNameMapping = {
-    business_proof: 'business_proof_url',
+    business_proof_url: 'business_proof_url',
     business_operation_proof: 'business_operation_proof_url',
-    business_pan_proof: 'business_pan_url',
-    address_proof: 'address_proof_url',
+    business_pan_url: 'business_pan_url',
+    address_proof_url: 'address_proof_url',
     promoter_proof: 'promoter_proof_url',
     promoter_pan_proof: 'promoter_pan_url',
-    promoter_address_proof: 'promoter_address_url',
+    promoter_address_url: 'promoter_address_url',
     ngo_12a_proof: 'form_12a_url',
     ngo_80g_proof: 'form_80g_url',
   };
@@ -55,7 +57,6 @@ export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
     }),
     fileName: file.name,
     fieldName,
-    step,
   };
 };
 
@@ -148,8 +149,6 @@ export default function(state = initialState, action) {
         action.fileName
       );
 
-      updatedSteps = state.steps;
-
       //max doc uploads for merchant/linked account
       let maxUploads = action.step === 4 ? 4 : 2;
 
@@ -158,13 +157,9 @@ export default function(state = initialState, action) {
         maxUploads = 6;
       }
 
-      if (Object.keys(uploadedFiles).length === maxUploads) {
-        updatedSteps = set(state.steps, action.step, 'success');
-      }
-
       return merge(state, {
-        steps: updatedSteps,
         uploadedFiles,
+        data: action.payload.data,
       });
 
     default:
