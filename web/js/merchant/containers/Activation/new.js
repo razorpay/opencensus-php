@@ -16,6 +16,17 @@ import ActivationWizard from 'component/merchant/Activation';
 export default class ActivationContainer extends React.Component {
   componentWillMount() {
     this.props.fetchActivationDetails();
+    this.fetchBusinessCategories();
+  }
+
+  fetchBusinessCategories() {
+    merchantFetch('merchant/activation/business_categories')
+      .then(resp => {
+        if (resp.success) {
+          console.log(resp.data);
+        }
+      })
+      .catch(err => {});
   }
 
   _save = (props, accountId) => {
