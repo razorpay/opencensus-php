@@ -298,9 +298,12 @@ class Service extends Base\Service
             );
         }
 
-        $field = self::UPLOAD_KEYS[key($input)];
+        $options = [
+            'client_type'      => 'merchant',
+            'custom_file_keys' => true,
+        ];
 
-        $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
+        $request = new \App\Admin\ApiRequestAny($options);
 
         list($error, $data) = $request->send('merchant/activation/upload', 'POST');
 
