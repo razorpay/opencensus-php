@@ -29,7 +29,6 @@ class Gateway extends Base\Gateway
 
     protected $map = [
         Base\Entity::AMOUNT             => Base\Entity::AMOUNT,
-        RequestFields::PAYEE_ID         => Base\Entity::REFERENCE1,
         ResponseFields::PAID            => Base\Entity::STATUS,
         ResponseFields::BANK_PAYMENT_ID => Base\Entity::BANK_PAYMENT_ID,
         ResponseFields::DEBIT_ACC_NUM   => Base\Entity::ACCOUNT_NUMBER,
