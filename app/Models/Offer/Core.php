@@ -258,4 +258,11 @@ class Core extends Base\Core
                 ]);
         }
     }
+
+    public function getDiscountedAmount(Entity $offer, int $amount)
+    {
+        $calculator = new Calculator($offer);
+
+        return $calculator->calculateDiscountedAmount($amount);
+    }
 }
