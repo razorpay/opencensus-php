@@ -177,7 +177,11 @@ class Validator extends Base\Validator
         if (($isOrderPaid === true) or ($isOrderAuthorized === true))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID);
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID,
+                null,
+                [
+                    'order_id' => $order->getId(),
+                ]);
         }
     }
 
@@ -198,10 +202,7 @@ class Validator extends Base\Validator
 
         $partialPaymentAllowed = $this->entity->isPartialPaymentAllowed();
 
-        $isDiscounted = $this->entity->isDiscountApplicable();
-
         if (($partialPaymentAllowed === false) and
-            ($isDiscounted === false) and
             ($orderAmountDue !== $paymentAmount))
         {
             throw new Exception\BadRequestException(
@@ -211,22 +212,6 @@ class Validator extends Base\Validator
                     'order_amount'   => $orderAmountDue,
                     'payment_amount' => $paymentAmount,
                 ]);
-        }
-
-        if ($isDiscounted === true)
-        {
-            $discountedAmount = $this->entity->offer->getDiscountedAmount($orderAmountDue);
-
-            if ($discountedAmount !== $paymentAmount)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH,
-                    Entity::AMOUNT,
-                    [
-                        'discounted_amount' => $discountedAmount,
-                        'payment_amount'    => $paymentAmount,
-                    ]);
-            }
         }
 
         if (($partialPaymentAllowed === true) and

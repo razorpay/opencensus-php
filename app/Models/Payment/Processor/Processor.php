@@ -1088,9 +1088,9 @@ class Processor
 
         $this->addOrderIdToInputForSubscriptionIfApplicable($input, $payment);
 
-        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
-
         $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
+
+        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
 
         $this->validateAndSetReceiverIfApplicable($payment, $input);
 
@@ -1270,26 +1270,12 @@ class Processor
 
     protected function fetchOrderFromInput(array $input): Order\Entity
     {
-        if (($this->order === null) and
-            (isset($input['order_id']) === true))
+        if ($this->order === null)
         {
-            $order = $this->orderRepo->findbyPublicId($input['order_id']);
-
-            if ($order === null)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Order id provided not found.',
-                    'order_id');
-            }
-
-            if ($order->getMerchantId() !== $this->merchant->id)
-            {
-                // Merchant mismatch
-                throw new Exception\BadRequestValidationFailureException(
-                    'Order id not found');
-            }
-
-            $order->merchant()->associate($this->merchant);
+            $order = $this->orderRepo
+                          ->findByPublicIdAndMerchant(
+                            $input[Payment\Entity::ORDER_ID],
+                            $this->merchant);
 
             $this->order = $order;
         }

@@ -62,6 +62,8 @@ class OffersPaymentTest extends TestCase
 
     public function testOfferPaymentCustomerFeeBearer()
     {
+        // Skipped because the payments/fees endpoint needs to be updated to
+        // first discount the amount, then calculate fees and return it.
         $this->markTestSkipped('discounting for cust_fee_bearer flow is currently not supported');
 
         $this->fixtures->merchant->setFeeBearer('customer');

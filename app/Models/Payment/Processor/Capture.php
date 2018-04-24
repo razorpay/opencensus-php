@@ -373,7 +373,7 @@ trait Capture
 
     protected function modifyCaptureAmountForDiscountedOrder(Payment\Entity $payment, int & $captureAmount)
     {
-        if ($payment->order === null)
+        if ($payment->hasOrder() === false)
         {
             return;
         }

@@ -2752,7 +2752,7 @@ trait Authorize
 
     protected function postPaymentAuthorizeOfferProcessing(Payment\Entity $payment)
     {
-        if ($payment->order === null)
+        if ($payment->hasOrder() === false)
         {
             return;
         }
@@ -2767,7 +2767,7 @@ trait Authorize
         $appliedOffer = $order->offer;
 
         $discountInput = [
-            'amount' => $appliedOffer->getDiscount($order->getAmount()),
+            Discount\Entity::AMOUNT => $appliedOffer->getDiscount($order->getAmount()),
         ];
 
         (new Discount\Service)->create($discountInput, $payment, $appliedOffer);
