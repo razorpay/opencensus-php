@@ -71,12 +71,11 @@ class EnachRbl extends Base
         {
             $fileData = $this->formatDataForFile($data);
 
-            // TODO: To fix this. Need to create in temp and not in public/
-            $zipFilePath = 'temp_enach_reg_zip_file_name.zip';
+            $fileName = $this->getZipFileToWriteName(false);
+
+            $zipFilePath = sys_get_temp_dir() . '/' . $fileName . '.zip';
 
             $this->createZipFileWithData($fileData, $zipFilePath);
-
-            $fileName = $this->getZipFileToWriteName(false);
 
             $creator = new FileStore\Creator;
 
@@ -94,6 +93,8 @@ class EnachRbl extends Base
             $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
+
+            unlink($zipFilePath);
         }
         catch (\Throwable $e)
         {
