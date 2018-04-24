@@ -90,25 +90,13 @@ class BatchController extends Controller
         {
             $view = View::make('403');
         }
-        else {
+        else
+        {
             $view = View::make('public.direct_debit_form', [
                 'dashboardHost' =>  config("applications.dashboard.url"),
             ]);
         }
 
-        return $view;
-    }
-
-    public function submitBatchUploadForm(Request $request)
-    {
-        $token = $request->input('token');
-        $input = $request->all();
-
-        $this->service(E::MERCHANT_REQUEST)->consumeOneTimeToken($token);
-
-        $result =  $this->service()->createBatch($input);
-
-        $view = View::make('public.direct_debit_form_submit', $result);
         return $view;
     }
 

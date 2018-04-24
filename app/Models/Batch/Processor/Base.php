@@ -899,7 +899,7 @@ class Base extends BaseModel\Core
             $ufh->entity($this->batch);
         }
 
-        if ($this->batch->getType() === Batch\Type::DIRECT_DEBIT and $type == FileStore\Type::BATCH_INPUT)
+        if ($this->shouldEncrypt() and ($type == FileStore\Type::BATCH_INPUT))
         {
             $ufh->encrypt(Type::AES_ENCRYPTION, [
                     'mode'   =>   \phpseclib\Crypt\Base::MODE_CBC,
@@ -1126,5 +1126,10 @@ class Base extends BaseModel\Core
     protected function increaseAllowedSystemLimits()
     {
         return;
+    }
+
+    protected function shouldEncrypt()
+    {
+        return false;
     }
 }

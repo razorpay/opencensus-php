@@ -7,34 +7,32 @@ use RZP\Models\Batch\Header;
 use RZP\Models\Card\Entity as Card;
 use RZP\Models\Customer;
 use RZP\Models\FileStore;
-use RZP\Models\Order\Core as OrderCore;
-use RZP\Models\Order\Entity as Order;
+use RZP\Models\Order;
 use RZP\Models\Payment\AuthType;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Processor\Processor;
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class DirectDebit extends Base
 {
-    /** @var Processor  */
-    private $processor;
+    /** @var PaymentProcessor  */
+    protected $processor;
 
-    /** @var OrderCore  */
-    private $orderCore;
+    /** @var Order\Core  */
+    protected $orderCore;
 
     /** @var Customer\Core */
-    private $customerCore;
+    protected $customerCore;
 
     public function __construct(Batch\Entity $batch)
     {
         parent::__construct($batch);
 
-        $this->processor = new Processor($this->merchant);
+        $this->processor = new PaymentProcessor($this->merchant);
 
-        $this->orderCore = new OrderCore();
+        $this->orderCore = new Order\Core();
 
         $this->customerCore = new Customer\Core();
-
     }
 
     protected function processEntry(array & $entry)
@@ -48,21 +46,22 @@ class DirectDebit extends Base
 
     /**
      * @param array $row
+     * @param Order\Entity $order
+     * @param Customer\Entity $customer
      * @return array
      */
-    protected function processPayment(array & $row, $order, $customer)
+    protected function processPayment(array & $row, Order\Entity $order, Customer\Entity $customer)
     {
-
         try
         {
-            $amount = (int) $row[Header::AMOUNT];
-            $currency = $row[Header::CURRENCY];
-            $note1  = $row[Header::NOTES1];
-            $note2  = $row[Header::NOTES2];
-            $note3  = $row[Header::NOTES3];
-            $email  = $row[Header::EMAIL];
-            $phone  = $row[Header::PHONE];
-            $name   = $row[Header::CARDHOLDER_NAME];
+            $amount     = (int) $row[Header::AMOUNT];
+            $currency   = $row[Header::CURRENCY];
+            $note1      = $row[Header::NOTES1];
+            $note2      = $row[Header::NOTES2];
+            $note3      = $row[Header::NOTES3];
+            $email      = $row[Header::EMAIL];
+            $phone      = $row[Header::PHONE];
+            $name       = $row[Header::CARDHOLDER_NAME];
 
             $card = [
                 Card::NUMBER        =>  $row[Header::CARD],
@@ -79,11 +78,11 @@ class DirectDebit extends Base
                 Payment::CONTACT        => $phone,
                 Payment::CURRENCY       => $currency,
                 Payment::CARD           => $card,
-                Payment::NOTES          => array(
+                Payment::NOTES          => [
                     'note1' =>  $note1,
                     'note2' =>  $note2,
                     'note3' =>  $note3,
-                ),
+                ],
                 Payment::AUTH_TYPE      => AuthType::SKIP,
                 Payment::CUSTOMER_ID    => $customer->getPublicId(),
                 Payment::ORDER_ID       => $order->getPublicId(),
@@ -98,18 +97,16 @@ class DirectDebit extends Base
             $row[Header::CARD] = substr($row[Header::CARD], 0,4) . 'xxxxxxxx' . substr($row[Header::CARD], 12);
         }
 
-
         return $row;
     }
 
-
-    private function createOrder($row)
+    private function createOrder(array $row): Order\Entity
     {
         $orderInput = [
-            Order::AMOUNT           =>  (int) $row[Header::AMOUNT],
-            Order::CURRENCY         =>  $row[Header::CURRENCY],
-            Order::RECEIPT          =>  $row[Header::RECEIPT],
-            Order::PAYMENT_CAPTURE  =>  true,
+            Order\Entity::AMOUNT           =>  (int) $row[Header::AMOUNT],
+            Order\Entity::CURRENCY         =>  $row[Header::CURRENCY],
+            Order\Entity::RECEIPT          =>  $row[Header::RECEIPT],
+            Order\Entity::PAYMENT_CAPTURE  =>  true,
         ];
 
         return $this->orderCore->create($orderInput, $this->merchant);
@@ -121,7 +118,7 @@ class DirectDebit extends Base
         return ;
     }
 
-    private function createCustomer($row)
+    private function createCustomer(array $row): Customer\Entity
     {
         $customerInput = [
             Customer\Entity::NAME          =>  $row[Header::CARDHOLDER_NAME],
@@ -131,8 +128,6 @@ class DirectDebit extends Base
 
         return $this->customerCore->createLocalCustomer($customerInput, $this->merchant, false);
     }
-
-
 
     /**
      * Child class must implement it
@@ -159,5 +154,10 @@ class DirectDebit extends Base
             ->merchantId($this->merchant->getId())
             ->file($ufhFile)
             ->delete();
+    }
+
+    protected function shouldEncrypt()
+    {
+        return true;
     }
 }

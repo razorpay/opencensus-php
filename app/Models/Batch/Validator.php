@@ -118,7 +118,6 @@ class Validator extends Base\Validator
         HdfcEMDebitHeadings::STATUS                 => 'Status must be present',
     ];
 
-
     protected function validateType($attribute, $value)
     {
         Type::validateType($value);

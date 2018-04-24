@@ -114,7 +114,8 @@ class Service extends Base\Service
         do
         {
             $token = bin2hex(random_bytes(20));
-        } while($this->cache->has($token));
+        }
+        while($this->cache->has($token));
 
         // Generate One Time Token valid for 5 minutes
         $this->cache->put($token, ['merchantId' => $this->merchant->getId(), 'mode' => $this->mode], 5);

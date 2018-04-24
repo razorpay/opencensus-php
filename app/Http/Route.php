@@ -65,7 +65,6 @@ final class Route
         'batch_validate_file'                      => ['post',     'batches/validate',                               'BatchController@validateFile'                                      ],
         'batch_upload_form_get'                    => ['get',      'batches/upload',                                 'BatchController@renderBatchUploadForm'                             ],
         'batch_upload_form_validate_file'          => ['post',     'batches/upload/validate',                        'BatchController@validateBatchFile'                                 ],
-        'batch_upload_form_submit'                 => ['post',     'batches/upload',                                 'BatchController@submitBatchUploadForm'                             ],
         'batch_fetch_multiple'                     => ['get',      'batches',                                        'BatchController@getBatches'                                        ],
         'batch_fetch_by_id'                        => ['get',      'batches/{id}',                                   'BatchController@getBatchById'                                      ],
         'batch_process_file'                       => ['post',     'batches/process',                                'BatchController@processBatches'                                    ],
@@ -1812,7 +1811,6 @@ final class Route
     ];
 
     public static $direct = [
-        'batch_upload_form_submit',
         'batch_upload_form_get',
         'batch_upload_form_validate_file',
         'device_verify',
