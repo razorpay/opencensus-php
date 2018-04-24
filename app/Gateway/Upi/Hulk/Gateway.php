@@ -119,7 +119,7 @@ class Gateway extends Base\Gateway
 
         $this->updateGatewayPaymentResponse($payment, $response);
 
-        $status = (int) $response['response'];
+        $status = $response['status'];
 
         if ($status !== Status::CREATED)
         {
@@ -141,7 +141,7 @@ class Gateway extends Base\Gateway
             Base\IntentParams::TXN_REF_ID    => $response['id'],
             Base\IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
             Base\IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
-            Base\IntentParams::TXN_CURRENCY  => 'INR',
+            Base\IntentParams::TXN_CURRENCY  => $input['payment']['currency'],
             Base\IntentParams::MCC           => '5411',
         ];
 
