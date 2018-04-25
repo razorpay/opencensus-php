@@ -100,6 +100,7 @@ class Header
     const BANK_ACCOUNT_CITY        = 'bank_account_city';
     const BANK_ACCOUNT_STATE       = 'bank_account_state';
     const BANK_ACCOUNT_PINCODE     = 'bank_account_pincode';
+    const PARTNER_TOKEN            = 'partner_token';
 
     //
     // Virtual Account Bulk Creation Headers

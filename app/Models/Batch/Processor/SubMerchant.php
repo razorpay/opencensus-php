@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use RZP\Models\Partner;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Batch\Entity;
@@ -38,25 +39,21 @@ class SubMerchant extends Base
 
     protected function processEntry(array & $entry)
     {
-        $appId = $this->params[Entity::APPLICATION_ID] ?? null;
-
-        $this->repo->transactionOnLiveAndTest(function() use (& $entry, $appId)
+        $this->repo->transactionOnLiveAndTest(function() use (& $entry)
         {
-            $this->createSubMerchantForEntry($entry);
+            $subMerchant = $this->createSubMerchantForEntry($entry);
 
-            $this->processPartnerAppIfApplicable($appId);
+            $this->processPartnerAppIfApplicable($subMerchant->getId(), $entry);
         });
     }
 
     /**
      * @param  array $entry
      *
-     * @return void
+     * @return Merchant\Entity
      */
-    protected function createSubMerchantForEntry(array & $entry)
+    protected function createSubMerchantForEntry(array & $entry) : Merchant\Entity
     {
-        $status = Status::SUCCESS;
-
         $input = Helper::getSubMerchantInput($entry);
 
         // Create Sub-merchant account
@@ -85,13 +82,24 @@ class SubMerchant extends Base
 
         $entry[Header::MERCHANT_ID] = $subMerchant->getId();
         $entry[Header::STATUS]      = $status;
+
+        return $subMerchant;
     }
 
-    protected function processPartnerAppIfApplicable(string $appId)
+    protected function processPartnerAppIfApplicable(Merchant\Entity $subMerchant, array & $entry)
     {
-        $input[Merchant\AccessMap\Entity::APPLICATION_ID] = $appId;
+        $appId = $this->params[Entity::APPLICATION_ID] ?? null;
 
-        (new Merchant\AccessMap\Core)->addMappingForOAuthApp($this->merchant, $input);
+        if (empty($appId) === true)
+        {
+            return;
+        }
+
+        $token = (new Partner\Core)->connectMerchant($appId, $subMerchant);
+
+        $partnerToken = $token->getId(); // Construct the actual token with prefix first
+
+        $entry[Header::PARTNER_TOKEN] = $partnerToken;
     }
 
     protected function sendProcessedMail()
