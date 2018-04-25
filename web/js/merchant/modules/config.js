@@ -81,7 +81,8 @@ export const uploadLogo = (file, fieldName) => {
 const normalizeConfig = config => {
   config.transaction_report_email = config.transaction_report_email.join(',');
 
-  config.hasPersonalised = !!(config.logo_url && config.brand_color);
+  config.brand_color = config.brand_color || '#528FF0';
+  config.hasPersonalised = !!config.logo_url;
   /**
    * API is currently returning invalid logo urls
    * so we need to translate it into a valid URL

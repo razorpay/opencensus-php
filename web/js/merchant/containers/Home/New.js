@@ -23,6 +23,7 @@ import {
 } from 'rzp/utils/pokedex';
 
 import { fetch } from 'merchant/modules/pokedex';
+import { fetchPayments } from 'rzp/modules/collection';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
@@ -87,6 +88,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
     ...HomeActions,
     showNotification,
     showOrHideTour,
+    fetchPayments,
   }
 )
 class HomeContainer extends Component {
@@ -104,7 +106,35 @@ class HomeContainer extends Component {
 
     startDate.add(...dateRangePresets[defaultPreset].slice(1));
 
-    const { user, isAdmin } = props;
+    const { user, mode, isAdmin } = props,
+      onboardingCardToken = 'show_onboarding_card',
+      firstStepToken = 'onboarding_first_step';
+
+    this.onboardingBannerToken = `${onboardingCardToken}--${user.current}`;
+    this.firstStepToken = `${firstStepToken}--${user.current}`;
+
+    if (LocalStorageService.getItem(onboardingCardToken)) {
+      Object.keys(user.merchants).forEach(key => {
+        LocalStorageService.setItem(`${onboardingCardToken}--${key}`, 'true');
+      });
+
+      LocalStorageService.removeItem(onboardingCardToken);
+    }
+
+    if (LocalStorageService.getItem(firstStepToken)) {
+      Object.keys(user.merchants).forEach(key => {
+        LocalStorageService.setItem(`${firstStepToken}--${key}`, 'true');
+      });
+
+      LocalStorageService.removeItem(firstStepToken);
+    }
+
+    const showOnboardingBanner = LocalStorageService.getItem(
+        this.onboardingBannerToken
+      ),
+      showOnboardingBannerFirstStep = LocalStorageService.getItem(
+        this.firstStepToken
+      );
 
     this.state = {
       startDate,
@@ -120,12 +150,22 @@ class HomeContainer extends Component {
       scrollAmountToStickHeader: 0,
       hasNewAnalyticsTour:
         !isAdmin && !LocalStorageService.getItem('hide_new_analytics_banner'),
-      dismissNewAnalyticsBanner: false,
+      dismissNewAnalyticsBanner: false, // used for transition
+      showOnboardingBanner,
+      showOnboardingBannerFirstStep,
       payments: {
         loading: true,
         items: [],
       },
     };
+
+    if (mode !== 'live' && user.isActivated && showOnboardingBanner) {
+      this.props.fetchPayments({ mode: 'live' }).then(data => {
+        if (data && data.items && data.items.length === 0) {
+          this.setShowOnboardingBanner();
+        }
+      });
+    }
 
     this.oldestTxnReqId = 0;
     this.onDatesChange = this.onDatesChange.bind(this);
@@ -134,6 +174,8 @@ class HomeContainer extends Component {
     this.setScrollAmountToStickHeader = this.setScrollAmountToStickHeader.bind(
       this
     );
+    this.onHideOnboardingBanner = this.onHideOnboardingBanner.bind(this);
+    this.onFirstStepClose = this.onFirstStepClose.bind(this);
   }
 
   fetchTxnsGroupedByPlatform() {
@@ -362,13 +404,64 @@ class HomeContainer extends Component {
     this.setScrollAmountToStickHeader();
   }
 
+  onFirstStepClose() {
+    this.setState(
+      {
+        showOnboardingBannerFirstStep: false,
+      },
+      () => {
+        this.setScrollAmountToStickHeader();
+      }
+    );
+
+    LocalStorageService.removeItem(this.firstStepToken);
+  }
+
+  onHideOnboardingBanner() {
+    this.setState({
+      showOnboardingBanner: false,
+    });
+
+    LocalStorageService.removeItem(this.onboardingBannerToken);
+  }
+
+  setShowOnboardingBanner() {
+    this.setState(
+      {
+        showOnboardingBanner: true,
+        showOnboardingBannerFirstStep: true,
+      },
+      () => {
+        this.setScrollAmountToStickHeader();
+      }
+    );
+
+    LocalStorageService.setItem(this.onboardingBannerToken, 'true');
+    LocalStorageService.setItem(this.firstStepToken, 'true');
+  }
+
   onFetchPayments(data) {
+    const { user, mode } = this.props;
+
+    const items = (data && data.items) || [];
+
+    const { showOnboardingBanner } = this.state;
+
     this.setState({
       payments: {
         loading: false,
-        items: (data && data.items) || [],
+        items,
       },
     });
+
+    if (
+      user.isActivated &&
+      mode === 'live' &&
+      !this.state.showOnboardingBanner &&
+      items.length === 0
+    ) {
+      this.setShowOnboardingBanner();
+    }
   }
 
   onShowTour() {
@@ -411,6 +504,7 @@ class HomeContainer extends Component {
       hasNewAnalyticsTour,
       scrollAmountToStickHeader,
       dismissNewAnalyticsBanner,
+      showOnboardingBanner,
     } = this.state;
 
     return (
@@ -439,12 +533,17 @@ class HomeContainer extends Component {
               )}
             </div>
           )}
-          <div className="v2-onboarding-card">
-            <NewUserOnboardingCard
-              onSizeChange={this.setScrollAmountToStickHeader}
-              payments={this.state.payments}
-            />
-          </div>
+          {showOnboardingBanner && (
+            <div className="v2-onboarding-card">
+              <NewUserOnboardingCard
+                onSizeChange={this.setScrollAmountToStickHeader}
+                payments={this.state.payments}
+                onClose={this.onHideOnboardingBanner}
+                onFirstStepClose={this.onFirstStepClose}
+                isFirstStep={this.state.showOnboardingBannerFirstStep}
+              />
+            </div>
+          )}
         </div>
         <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}>
           <Header className="clearfix" title="" showMode={false}>

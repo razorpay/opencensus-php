@@ -22,10 +22,6 @@ import DisputesList from 'merchant/containers/Disputes/List';
 export default class TransactionsContainer extends Component {
   constructor(props) {
     super(props);
-
-    const { mode } = props;
-
-    LocalStorageService.setItem(`visited_${mode}_transactions`, true);
   }
 
   render() {

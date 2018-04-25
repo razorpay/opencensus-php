@@ -197,7 +197,12 @@ export default class App extends Component {
     if (mode === 'live' && !user.isActivated) {
       this.props.openModal({
         size: 'small',
-        component: <ActivationRequired onCloseClick={this.props.closeModal} />,
+        component: (
+          <ActivationRequired
+            user={this.props.user}
+            onCloseClick={this.props.closeModal}
+          />
+        ),
       });
     } else {
       LocalStorageService.setItem('rzp_mode', mode);

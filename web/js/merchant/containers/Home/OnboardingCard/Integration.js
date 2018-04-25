@@ -7,6 +7,8 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 import LocalStorageService from 'rzp/utils/localStorage';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 
+import { LIVE_MODE } from './data';
+
 const Icon = ({ mode, keysGenerated, paymentsMade }) => {
   let className = '';
 
@@ -124,7 +126,6 @@ export default class IntegrationStep extends Component {
     this.paymentsRequest = new Promise((res, rej) => {
       this.onFetchPayments = res;
 
-      //res([{"id":"pay_A2YobW8CYKWnvd","entity":"payment","amount":50000,"currency":"INR","status":"authorized","order_id":null,"invoice_id":null,"international":false,"method":"netbanking","amount_refunded":0,"amount_transferred":0,"refund_status":null,"captured":false,"description":"Add Funds to Account","card_id":null,"bank":"SBIN","wallet":null,"vpa":null,"email":"prashanth.pamidi+28@razorpay.com","contact":"+911122334456","notes":{"dashboard":"true"},"fee":null,"tax":null,"error_code":null,"error_description":null,"created_at":1524464555}]);
       if (!props.payments.loading) {
         res(props.payments.items);
       }
@@ -161,7 +162,7 @@ export default class IntegrationStep extends Component {
         () => {
           const { keysGenerated, paymentsMade } = this.state;
 
-          if (this.props.mode === 'live' && keysGenerated && paymentsMade) {
+          if (this.props.mode === LIVE_MODE && keysGenerated && paymentsMade) {
             this.props.onFinish();
           }
         }

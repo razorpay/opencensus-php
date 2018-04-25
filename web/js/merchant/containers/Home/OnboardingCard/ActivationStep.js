@@ -4,13 +4,27 @@ import LocalStorageService from 'rzp/utils/localStorage';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import ProgressBar from 'rzp/ui/ProgressBar';
 
-const Icon = ({ isActivated, isSubmitted }) => {
+import {
+  NEEDS_CLARIFICATION,
+  ACTIVATION_URL,
+  CLARIFICATION_THROUGH_CALL,
+  CLARIFICATION_THROUGH_EMAIL,
+  TEST_MODE,
+  LIVE_MODE,
+  PERSONALISE_URL,
+} from './data';
+
+const Icon = ({ isActivated, isSubmitted, isRejected, needsClarification }) => {
   let className = '';
 
   if (!isActivated && !isSubmitted) {
     className = 'activation-form';
   } else if (isActivated) {
     className = 'done';
+  } else if (isRejected) {
+    className = 'activation-form-rejected';
+  } else if (needsClarification) {
+    className = 'activation-form-need-clarification';
   } else {
     className = 'activation-form-submitted';
   }
@@ -24,7 +38,7 @@ class SwitchToLive extends Component {
   }
 
   switchToLive() {
-    LocalStorageService.setItem('rzp_mode', 'live');
+    LocalStorageService.setItem('rzp_mode', LIVE_MODE);
     window.location.reload();
   }
 
@@ -37,15 +51,33 @@ class SwitchToLive extends Component {
   }
 }
 
+/*
+ * WrapperElement returns either a link to different tab
+ * or just a plain div with info according to different conditions
+ */
 const WrapperElement = ({
   mode,
   children,
   isActivated,
   isSubmitted,
+  isRejected,
+  needsClarification,
   hasPersonalised,
   ...otherProps
 }) => {
-  if (isSubmitted && (mode === 'test' || hasPersonalised)) {
+  /*
+   * Show plain div without any link to any tab if
+   * 1) Activation form is rejected
+   * 2) Submitted, Activated and Mode is test, where we show a link
+   *    to "Switch to Live mode" using "Text" component
+   * 3) If submitted and Personalized account, there is nothing he 
+   *    needs to do , so no link is required
+   */
+  if (
+    isRejected ||
+    needsClarification ||
+    (isSubmitted && ((isActivated && mode === TEST_MODE) || hasPersonalised))
+  ) {
     return (
       <div {...otherProps}>
         <div className="media">{children}</div>
@@ -53,9 +85,18 @@ const WrapperElement = ({
     );
   }
 
+  /*
+   * show link to 
+   * 1) Activations tab if the user has not submitted his actiavation form
+   * 2) Config page if not personalised, where he needs to update logo
+   *    and theme color
+   */
   return (
     <Link
-      to={(!isSubmitted && '/activation') || (!hasPersonalised && '/config')}
+      to={
+        (!isSubmitted && ACTIVATION_URL) ||
+        (!hasPersonalised && PERSONALISE_URL)
+      }
       {...otherProps}
     >
       <div className="media">
@@ -68,15 +109,24 @@ const WrapperElement = ({
   );
 };
 
-const Title = ({ children, isActivated, isSubmitted }) => {
+/*
+ * Title for Activation step
+ */
+const Title = ({ children, isActivated, isSubmitted, isRejected }) => {
   return (
     <span>
       {isSubmitted ? (
         <span>
           {isActivated ? (
             'Your Account is Activated'
+          ) : isRejected ? (
+            <span>Activation Form Rejected</span>
           ) : (
             <span>
+              {/*
+                    * If account is not activated or rejected but submitted,
+                    * we show "Activation Form Submitted" with popover
+                    */}
               Activation Form Submitted{' '}
               <small>
                 <i className="i i-info-circle text-fade" />
@@ -98,13 +148,35 @@ const Title = ({ children, isActivated, isSubmitted }) => {
   );
 };
 
+/*
+ * Description for Activation step
+ */
 const Text = ({
   mode,
   children,
   isActivated,
   isSubmitted,
+  isRejected,
   hasPersonalised,
+  needsClarification,
+  clarificationMode,
 }) => {
+  if (isRejected) {
+    return <span>Unable to address your business use case</span>;
+  }
+
+  if (needsClarification) {
+    return (
+      <span>
+        {'Action Required. We will ' +
+          (clarificationMode === CLARIFICATION_THROUGH_EMAIL
+            ? 'email'
+            : 'call') +
+          ' you'}
+      </span>
+    );
+  }
+
   return (
     <span>
       {!isActivated && !isSubmitted ? (
@@ -114,9 +186,9 @@ const Text = ({
           'Personalise your account'
         ) : (
           <span>
-            {mode === 'test' ? (
+            {mode === TEST_MODE ? (
               <span>
-                <Link to="/config">Personalise</Link>
+                <Link to={PERSONALISE_URL}>Personalise</Link>
                 <span>
                   {' '}
                   or <SwitchToLive>Switch to live</SwitchToLive> mode
@@ -127,7 +199,7 @@ const Text = ({
             )}
           </span>
         )
-      ) : isActivated && mode === 'test' ? (
+      ) : isActivated && mode === TEST_MODE ? (
         <span>
           <SwitchToLive>Switch to live</SwitchToLive> mode
         </span>
@@ -147,7 +219,14 @@ const Progress = ({ progress }) => {
 };
 
 export default ({ mode, user, config }) => {
-  const { activation_progress: progress, isActivated, isSubmitted } = user;
+  const {
+    activation_progress: progress,
+    isActivated,
+    isSubmitted,
+    isRejected,
+    needsClarification,
+    clarification_mode: clarificationMode,
+  } = user;
 
   const { hasPersonalised } = config;
 
@@ -157,10 +236,18 @@ export default ({ mode, user, config }) => {
       mode={mode}
       isActivated={isActivated}
       isSubmitted={isSubmitted}
+      isRejected={isRejected}
+      needsClarification={needsClarification}
       hasPersonalised={hasPersonalised}
     >
       <div className="media-icon">
-        <Icon isActivated={isActivated} isSubmitted={isSubmitted} />
+        <Icon
+          isActivated={isActivated}
+          isSubmitted={isSubmitted}
+          isRejected={isRejected}
+          needsClarification={needsClarification}
+          clarificationMode={clarificationMode}
+        />
       </div>
       <div class="media-body">
         <div className="activation-progress-cont">
@@ -170,6 +257,7 @@ export default ({ mode, user, config }) => {
                 isActivated={isActivated}
                 isSubmitted={isSubmitted}
                 hasPersonalised={hasPersonalised}
+                isRejected={isRejected}
               />
             </b>
             {!isActivated &&
@@ -189,7 +277,10 @@ export default ({ mode, user, config }) => {
             mode={mode}
             isActivated={isActivated}
             isSubmitted={isSubmitted}
+            isRejected={isRejected}
             hasPersonalised={hasPersonalised}
+            needsClarification={needsClarification}
+            clarificationMode={clarificationMode}
           />
         </div>
       </div>

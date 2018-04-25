@@ -69,8 +69,16 @@ export default class User {
     return !!parseInt(this.activated);
   }
 
+  get needsClarification() {
+    return this.activation_status === 'needs_clarification';
+  }
+
   get isSubmitted() {
     return !!parseInt(this.submitted);
+  }
+
+  get isRejected() {
+    return this.activation_status === 'rejected';
   }
 
   get isMarketplaceEnabled() {

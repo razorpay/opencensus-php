@@ -52,22 +52,6 @@ export default class OnboardingCard extends Component {
     this.closeOnboarding = this.closeOnboarding.bind(this);
   }
 
-  componentWillMount() {
-    if (JSON.parse(LocalStorageService.getItem('ngStorage-new_user_signup'))) {
-      LocalStorageService.setItem('onboarding_first_step', true);
-      LocalStorageService.setItem('show_onboarding_card', true);
-      LocalStorageService.setItem('ngStorage-new_user_signup', false);
-    }
-
-    this.setState({
-      showOnboarding: LocalStorageService.getItem('show_onboarding_card'),
-      isFirstStep: LocalStorageService.getItem('onboarding_first_step'),
-      showNewProductsBanner: !LocalStorageService.getItem(
-        'hide_newproducts_banner'
-      ),
-    });
-  }
-
   onIntegrationComplete() {
     this.setState({
       integrated: true,
@@ -75,30 +59,18 @@ export default class OnboardingCard extends Component {
   }
 
   gotoNextStep = () => {
-    this.setState(
-      { isFirstStep: false },
-      () => this.props.onSizeChange && this.props.onSizeChange()
-    );
-    LocalStorageService.removeItem('onboarding_first_step');
+    return this.props.onFirstStepClose && this.props.onFirstStepClose();
   };
 
   closeOnboarding = () => {
-    this.setState({ showOnboarding: false });
-    LocalStorageService.removeItem('show_onboarding_card');
+    return this.props.onClose && this.props.onClose();
   };
 
   render() {
-    let { user, config, payments, mode } = this.props;
-    let { isFirstStep, showOnboarding, integrated, activated } = this.state;
+    let { user, config, payments, mode, isFirstStep } = this.props;
+    let { integrated, activated } = this.state;
 
     let FirstStep = null;
-    const isOldUser = !JSON.parse(
-      LocalStorageService.getItem('ngStorage-new_user_signup')
-    );
-
-    if (!showOnboarding) {
-      return null;
-    }
 
     if (isFirstStep) {
       FirstStep = (
@@ -161,7 +133,10 @@ export default class OnboardingCard extends Component {
                     from top right.
                   </span>
                 ) : (
-                  <span>Generate live API keys and Integrate to go live.</span>
+                  <span>
+                    Generate live API keys and Integrate to start accepting
+                    payments.
+                  </span>
                 )}
               </span>
             )}
