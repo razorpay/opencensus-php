@@ -68,11 +68,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $directDebitCreateRules = [
-        Entity::TYPE    => 'required|in:direct_debit',
-        Entity::FILE    => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
-        Entity::NAME    => 'filled|string|max:255',
-        Entity::TOKEN   => 'required_without:file_id',
-        Entity::FILE_ID => 'required_without:file|public_id',
+        Entity::TYPE            => 'required|in:direct_debit',
+        Entity::FILE            => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::NAME            => 'filled|string|max:255',
+        Entity::TOKEN           => 'required_without:file_id',
+        Entity::FILE_ID         => 'required_without:file|public_id',
     ];
 
     protected static $reconciliationCreateRules = [
@@ -448,13 +448,6 @@ class Validator extends Base\Validator
                 [
                     Entity::MERCHANT_ID => $merchant->getId(),
                 ]);
-        }
-    }
-
-    protected function validateDirectDebitEntries(array & $entries)
-    {
-        foreach($entries as & $row) {
-            $row[Header::CARD] = substr($row[Header::CARD], 0, 6) . 'xxxxxx' . substr($row[Header::CARD], 12);
         }
     }
 }
