@@ -143,7 +143,7 @@ class NetbankingCsbReconTest extends TestCase
         $this->mockReconContentFunction(
             function (& $content, $action = null)
             {
-                $content[0][4] = "N";
+                $content[0][4] = 'N';
             });
 
         $this->generateAndUploadReconFile();
