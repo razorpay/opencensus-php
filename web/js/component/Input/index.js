@@ -336,16 +336,16 @@ Field.Time = _ => <Field {..._} type="time" />;
 Field.Select = ({ options, ...props }) => (
   <Field {...props} tag="select">
     {options.map((o, i) => {
-      if (Array.isArray(o)) {
+      if (typeof o === 'object') {
         return (
-          <option key={i} value={i}>
-            {o}
+          <option key={o.value} value={o.value}>
+            {o.label}
           </option>
         );
       }
       return (
-        <option key={o.value} value={o.value}>
-          {o.label}
+        <option key={i} value={i}>
+          {o}
         </option>
       );
     })}

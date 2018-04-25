@@ -1,52 +1,43 @@
 import { connect } from 'react-redux';
 import { merchantFetch } from 'rzp/utils/ajax';
-import { fetchActivationDetails } from 'merchant/modules/activation';
 import { showNotification } from 'rzp/modules/notifications';
 import { without } from 'rzp/utils/rzp-utils';
-import * as ActivationActions from 'merchant/modules/activation';
-
 import Spinner from 'rzp/ui/Spinner';
 import ActivationWizard from 'component/merchant/Activation';
 
-@connect(state => state.activation, {
-  fetchActivationDetails,
-  showNotification,
-  ...ActivationActions,
-})
 export default class ActivationContainer extends React.Component {
+  state = {
+    data: null,
+    categories: null
+  }
+
   componentWillMount() {
-    this.props.fetchActivationDetails();
-    this.fetchBusinessCategories();
+    this.fetchActivationDetails();
   }
 
-  fetchBusinessCategories() {
-    merchantFetch('merchant/activation/business_categories')
-      .then(resp => {
-        if (resp.success) {
-          console.log(resp.data);
-        }
+  fetchActivationDetails() {
+    Promise.all([
+      merchantFetch({
+        url: 'merchant/activation',
+        mode: 'live'
+      }),
+      merchantFetch('merchant/activation/business_categories')
+    ])
+    .then(([data, categories]) => {
+      this.setState({
+        data: data.data,
+        categories: categories.data
       })
-      .catch(err => {});
+    })
   }
 
-  _save = (props, accountId) => {
-    let data = without(props, [
-      'or_same',
-      'bank_account_number_confirmation',
-      'steps_finished',
-    ]);
-
-    if (false) {
-      // Request for Submit form
-      return this.props.submitForm({ data, accountId }).then(() => {
-        return this.props.fetchActivationDetails(accountId);
-      });
-    } else {
-      return this.props.saveStep({ data, accountId });
-    }
-  };
-
-  saveStep = (props, accountId) => {
+  saveStep = (data, accountId) => {
+    return merchantFetch({
+      url: 'merchant/activation',
+      mode: 'live',
+      method: 'post',
+      data
+    })
     return this._save(props, accountId).catch(err => {
       this.props.showNotification({
         type: 'error',
@@ -82,20 +73,21 @@ export default class ActivationContainer extends React.Component {
   };
 
   render() {
-    let { loading, data } = this.props;
+    let { data, categories } = this.state;
 
     return (
       <div>
-        {loading ? (
-          <div class="page-spinner-container">
-            <Spinner />
-          </div>
-        ) : (
+        {data ? (
           <ActivationWizard
             data={data}
+            categories={categories}
             save={this.saveStep}
             saveFile={this.saveFile}
           />
+        ) : (
+          <div class="page-spinner-container">
+            <Spinner />
+          </div>
         )}
       </div>
     );

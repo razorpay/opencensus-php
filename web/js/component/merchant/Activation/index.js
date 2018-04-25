@@ -41,7 +41,21 @@ const businessFields1 = [
     label: 'Business Type',
     name: 'business_type',
     _cmp: Input.Select,
-    options: [],
+    options: [
+      '',
+      'Proprietorship',
+      'Individual',
+      'Partnership',
+      'Private Limited',
+      'Public Limited',
+      'LLP',
+      'NGO',
+      'Educational Institutes',
+      'Trust',
+      'Society',
+      'Not yet registered',
+      'Other'
+    ],
   },
   {
     label: 'Business Model',
@@ -266,6 +280,7 @@ export default class ActivationWizard extends React.Component {
   state = {
     isSaving: null,
     data: this.props.data || {},
+    dirty: {},
     tabs: [],
     same_address: '1',
     app_type: '0',
@@ -275,6 +290,10 @@ export default class ActivationWizard extends React.Component {
   };
 
   constructor(props) {
+    businessFields1[3].options = [''].concat(Object.keys(props.categories).map(c => ({
+      name: c,
+      label: props.categories[c].description
+    })))
     super(props);
     this.setInitialTab();
 
@@ -298,32 +317,40 @@ export default class ActivationWizard extends React.Component {
 
   changeTab = ({ target }) =>
     this.goto(parseInt(target.getAttribute('data-index')));
+
   goto = activeTab => {
     let currentActive = this.state.activeTab;
     let isValid = this.tabValidity(currentActive);
     let tabs = this.state.tabs.slice();
     tabs[currentActive] = isValid;
 
+    let shouldSave = Object.keys(this.state.dirty).length ? true : null;
+
     this.setState({
       activeTab,
       tabs,
+      isSaving: shouldSave
     });
 
-    this.setState({ isSaving: true });
+    if (!shouldSave) {
+      return;
+    }
 
-    // TODO: Make this request only when last form isDirty to avoid multiple request
     this.props
-      .save(this.state.data, this.props.accountId) // Account id for linked_account
+      .save(this.state.dirty, this.props.accountId) // Account id for linked_account
       .then(response => {
-        this.setState({ isSaving: false });
-        this.removeLoader();
-
         this.props.callback && this.props.callback(); // Support for callback for linked_account activation
-      })
-      .catch(err => {
-        this.setState({ isSaving: false });
+        this.setState({
+          dirty: {},
+          isSaving: false
+        })
         this.removeLoader();
-      });
+      })
+      .catch(_ => {
+        this.setState({
+          isSaving: null
+        })
+      })
   };
 
   /* Fadeout based loader text */
@@ -346,6 +373,10 @@ export default class ActivationWizard extends React.Component {
       this.setState({
         data: {
           ...this.state.data,
+          [target.name]: target.value,
+        },
+        dirty: {
+          ...this.state.dirty,
           [target.name]: target.value,
         },
       });
