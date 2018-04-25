@@ -123,6 +123,17 @@ class WebhookTest extends TestCase
         $this->assertNotContains('application_id', $response);
     }
 
+    public function testGetWebhookEvents()
+    {
+        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+
+        $response = $this->startTest();
+
+        $this->assertContains('order.paid', $response);
+        $this->assertContains('virtual_account.credited', $response);
+        $this->assertNotContains('subscription.charged', $response);
+    }
+
     public function testGetAppWebhooks()
     {
         $this->createWebhook();

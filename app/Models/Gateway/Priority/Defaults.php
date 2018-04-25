@@ -48,7 +48,8 @@ class Defaults
             */
             Mode::LIVE => [
                 Gateway::BILLDESK,
-                Gateway::EBS
+                Gateway::EBS,
+                Gateway::ATOM
             ],
             /**
             * Gateways which support netbanking in test mode

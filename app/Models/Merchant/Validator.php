@@ -414,11 +414,21 @@ class Validator extends Base\Validator
         }
 
         $attributes = [
-            Entity::WEBSITE,
             Entity::CATEGORY,
             Entity::BILLING_LABEL,
             Entity::TRANSACTION_REPORT_EMAIL
         ];
+
+        $website = $merchant->merchantDetail->getWebsite();
+
+        // If the merchant has submitted activation form with website/app data
+        // i.e merchant will have access to keys.
+        // or if website is not null [this check to be removed later]
+        if (($merchant->getHasKeyAccess() === true) or
+            (isset($website) === true))
+        {
+            $attributes[] = Entity::WEBSITE;
+        }
 
         foreach ($attributes as $attribute)
         {

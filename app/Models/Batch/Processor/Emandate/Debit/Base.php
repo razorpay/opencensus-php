@@ -3,8 +3,10 @@
 namespace RZP\Models\Batch\Processor\Emandate\Debit;
 
 use RZP\Exception;
+use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Models\FileStore;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Batch\Processor\Base as BaseProcessor;
@@ -16,6 +18,8 @@ class Base extends BaseProcessor
         $content = $this->getDataFromRow($entry);
 
         $this->updatePaymentEntities($content);
+
+        $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
     }
 
     protected function updatePaymentEntities(array $content)

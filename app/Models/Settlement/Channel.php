@@ -57,6 +57,21 @@ class Channel
     }
 
     /**
+     * Gives list of channels for which recon is mocked
+     *
+     * @return array
+     */
+    public static function getChannelsWithReconMock()
+    {
+        return [
+            self::KOTAK,
+            self::AXIS,
+            self::ICICI,
+            self::HDFC,
+        ];
+    }
+
+    /**
      * Channels for which balance API is available
      *
      * @return array
@@ -65,20 +80,6 @@ class Channel
     {
         return [
             self::KOTAK,
-        ];
-    }
-
-    /**
-     * Only channels of whose beneficiaries have been
-     * added on RBL account are valid.
-     * @return array
-     */
-    public static function validChannelsForRblTransfer()
-    {
-        return [
-            self::KOTAK,
-//            self::AXIS,
-            self::ICICI
         ];
     }
 

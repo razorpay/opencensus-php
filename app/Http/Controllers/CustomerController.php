@@ -262,7 +262,7 @@ class CustomerController extends Controller
         return ApiResponse::json($address);
     }
 
-    public function getAddresses($customerId)
+    public function getAddresses(string $customerId)
     {
         $input = Request::all();
 

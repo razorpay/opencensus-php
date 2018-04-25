@@ -1578,8 +1578,65 @@ AND txn.type='payment'
 AND tr.recipient_settlement_id IS NULL
 
 # Batches status set to failed with error - A function with return type must return a value.
-UPDATE batches SET status = 'processed' , failure_reason = NULL where id = '9mgioKH3k2uIF1';
+UPDATE batches SET status = 'processed', failure_reason = NULL where id = '9mgioKH3k2uIF1';
 
-UPDATE batches SET status = 'processed' , failure_reason = NULL where id = '9mgXmUTz5fuSNH';
+UPDATE batches SET status = 'processed', failure_reason = NULL where id = '9mgXmUTz5fuSNH';
 
-UPDATE batches SET status = 'processed' , failure_reason = NULL where id = '9mjTnhhc1GygE1';
+UPDATE batches SET status = 'processed', failure_reason = NULL where id = '9mjTnhhc1GygE1';
+
+https://razorpay.slack.com/archives/C0SG9Q7TM/p1522674619000397
+UPDATE refunds SET status='failed', gateway_refunded = 0 WHERE id in ('8fUtGcrig5clJ6', '8fUsm1am4FYOO7')
+
+https://razorpay.slack.com/archives/C3BPZHG8P/p1523020215000036
+UPDATE terminals SET gateway_acquirer = 'ratn' where id in ('92Ay2pCOmk80iq', '9IjdmbQNKKJ7Uz');
+
+UPDATE tokens set recurring_failure_reason = 'signed Content does not tally with data mandate' where id = '9tWADFziLif7gI'
+UPDATE tokens set recurring_failure_reason = 'signed Content does not tally with data mandate' where id = '9trR4PM6G0MxDf'
+UPDATE tokens set recurring_failure_reason = 'Aadhaar not mapped to account number' where id = '9uGhuBWGEQ3XwI'
+UPDATE tokens set recurring_failure_reason = 'No such account' where id = '9ueEcZFs66Kr3M'
+UPDATE tokens set recurring_failure_reason = 'Aadhaar not mapped to account number' where id = '9ukO696PuwzRMs'
+UPDATE tokens set recurring_failure_reason = 'No such account' where id = '9v2BpJ5usVazDp'
+UPDATE tokens set recurring_failure_reason = 'Aadhaar not mapped to account number' where id = '9v2rkyJKvrCWef'
+UPDATE tokens set recurring_failure_reason = 'No such account' where id = '9vUrjLuww2VhWc'
+UPDATE tokens set recurring_failure_reason = 'Aadhaar not mapped to account number' where id = '9vXQP3a1Yb0hbA'
+UPDATE tokens set recurring_failure_reason = 'Aadhaar not mapped to account number' where id = '9vt8OaObXL7SEC'
+
+# GST Default Taxes
+INSERT INTO `taxes` (`id`, `merchant_id`, `name`, `rate_type`, `rate`, `created_at`, `updated_at`, `deleted_at`)
+VALUES
+	('9nDpYboKAK9j7t','100000Razorpay','IGST 0%','percentage',0,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYciCWeNBzE','100000Razorpay','IGST 5%','percentage',500,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYdbYNqD4Rw','100000Razorpay','IGST 12%','percentage',1200,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYf1tTUs2Vh','100000Razorpay','IGST 18%','percentage',1800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYfqgnYW5Dx','100000Razorpay','IGST 28%','percentage',2800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYglSpU58lc','100000Razorpay','CGST 0%','percentage',0,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYhZ0d60X7V','100000Razorpay','CGST 2.5%','percentage',250,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYiArP6j0qT','100000Razorpay','CGST 5%','percentage',500,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYivRHUQQV8','100000Razorpay','CGST 6%','percentage',600,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYjuyZsOlMK','100000Razorpay','CGST 9%','percentage',900,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYkng64GyTa','100000Razorpay','CGST 12%','percentage',1200,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYlTs7cWM80','100000Razorpay','CGST 14%','percentage',1400,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYmPK2K2mVi','100000Razorpay','CGST 18%','percentage',1800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYnFEoqJQ5v','100000Razorpay','CGST 28%','percentage',2800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYnvgiGXrZh','100000Razorpay','SGST 0%','percentage',0,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYoeYBsXRvC','100000Razorpay','SGST 2.5%','percentage',250,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYpMRZgJEgU','100000Razorpay','SGST 5%','percentage',500,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYpuN72gdfY','100000Razorpay','SGST 6%','percentage',600,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYqgYcqpr8q','100000Razorpay','SGST 9%','percentage',900,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYrIMXQTtPd','100000Razorpay','SGST 12%','percentage',1200,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYs1yK0pndD','100000Razorpay','SGST 14%','percentage',1400,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYsoU7subph','100000Razorpay','SGST 18%','percentage',1800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYtb0S0JhMP','100000Razorpay','SGST 28%','percentage',2800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYuFVNQcVaU','100000Razorpay','UTGST 0%','percentage',0,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYv53mqSsip','100000Razorpay','UTGST 2.5%','percentage',250,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYvgwu0p8WP','100000Razorpay','UTGST 5%','percentage',500,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYwRScK0Mz2','100000Razorpay','UTGST 6%','percentage',600,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYxMkO0LLhz','100000Razorpay','UTGST 9%','percentage',900,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYyC50acDzW','100000Razorpay','UTGST 12%','percentage',1200,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYz26oaOHgI','100000Razorpay','UTGST 14%','percentage',1400,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpYznDzU7NKP','100000Razorpay','UTGST 18%','percentage',1800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
+	('9nDpZ0hEw4vZky','100000Razorpay','UTGST 28%','percentage',2800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL);
+
+# Updates a user's name on urgent request. Currently there is no flow for same via Dashboard interface
+# Run on production live & test databases
+UPDATE users SET name = 'Nomi J Augustine' WHERE id = '8BpBceh6pcJ8ut' LIMIT 1;

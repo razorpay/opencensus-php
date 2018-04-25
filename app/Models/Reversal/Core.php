@@ -92,6 +92,8 @@ class Core extends Base\Core
             $transfer->getId(),
             function() use ($transfer, $input, $merchant)
             {
+                $this->repo->reload($transfer);
+
                 (new Validator)->validateReversalAmount($transfer, $input);
 
                 return $this->repo->transaction(function () use ($transfer, $input, $merchant)

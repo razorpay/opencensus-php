@@ -110,7 +110,7 @@ class Validator extends Base\Validator
 
             if (isset($input[Entity::PAYMENT_METHOD_TYPE]) === true)
             {
-                Payment\AuthType::validateAuthType($input[Entity::PAYMENT_METHOD_TYPE]);
+                Payment\AuthType::validateAuthType($input[Entity::PAYMENT_METHOD_TYPE], Payment\Method::EMANDATE);
             }
 
             if (isset($input[Entity::PAYMENT_ISSUER]) === true)

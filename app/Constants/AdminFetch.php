@@ -993,6 +993,13 @@ class AdminFetch
                 ],
             ],
 
+            Entity::NODAL_STATEMENT => [
+                'q'  => [
+                    Fetch::LABEL  => 'Search Query',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::OFFER => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],

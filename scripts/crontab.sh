@@ -131,6 +131,9 @@ add_cron "*/10 * * * *"     "subscriptions_cancel"           POST "$BASE_URL/sub
 add_cron "0 15 * * *"       "dsp_report_today"               GET  "$BASE_URL/reports/transaction/dsp"    "mail=1&email=dummy@dspblackrock.com&day=today"      $LIVE_AUTH
 add_cron "0 1 * * *"        "dsp_report_yesterday"           GET  "$BASE_URL/reports/transaction/dsp"    "mail=1&email=dummy@dspblackrock.com&day=yesterday"  $LIVE_AUTH
 
+# Daily Recon Summary
+add_cron "30 22 * * *"        "daily_recon_summary"            GET "$BASE_URL/daily_recon_summary"                         ""                              $LIVE_AUTH
+
 
 # Install the generated crontab
 crontab $TMP_CRONTAB

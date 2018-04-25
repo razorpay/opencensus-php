@@ -120,6 +120,21 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function getAttemptsBetweenTimestamps(string $status, string $channel, int $from = null, int $to = null)
+    {
+        $query = $this->newQuery()
+                      ->select([Entity::ID, Entity::BATCH_FUND_TRANSFER_ID])
+                      ->where(Entity::STATUS, $status)
+                      ->where(Entity::CHANNEL, $channel);
+
+        if (($from !== null) and ($to !== null))
+        {
+            $query = $query->whereBetween(Entity::CREATED_AT, [$from, $to]);
+        }
+
+        return $query->get();
+    }
+
     public function getSettlementsWithNoUtr(
         string $channel,
         int $startTime,

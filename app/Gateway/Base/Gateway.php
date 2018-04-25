@@ -607,14 +607,6 @@ class Gateway
 
         $this->verifyPayment($verify);
 
-        if (($verify->match === false) and
-            ($verify->throwExceptionOnMismatch))
-        {
-            throw new Exception\PaymentVerificationException(
-                $verify->getDataToTrace(),
-                $verify);
-        }
-
         if (($verify->amountMismatch === true) and
             ($verify->throwExceptionOnMismatch))
         {
@@ -625,6 +617,14 @@ class Gateway
                     'gateway'    => $this->gateway
                 ]
             );
+        }
+
+        if (($verify->match === false) and
+            ($verify->throwExceptionOnMismatch))
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify);
         }
 
         return $verify->getDataToTrace();
@@ -731,15 +731,13 @@ class Gateway
         {
             return $this->getTestSecret();
         }
-        else
-        {
-            return $this->getLiveSecret();
-        }
+
+        return $this->getLiveSecret();
     }
 
     protected function getTestSecret()
     {
-        assert ($this->mode === Mode::TEST);
+        assert($this->mode === Mode::TEST);
 
         return $this->config['test_hash_secret'];
     }
@@ -805,7 +803,7 @@ class Gateway
         if (($this->env === 'func') and
             (isset($this->externalMockDomain) === true))
         {
-          return $this->getExternalMockUrl($type);
+            return $this->getExternalMockUrl($type);
         }
 
         return $urlDomain . $this->getRelativeUrl($type);
@@ -1133,6 +1131,6 @@ class Gateway
      */
     protected function getExternalMockUrl(string $type)
     {
-       return $this->externalMockDomain . "/" . $this->gateway . $this->getRelativeUrl($type);
+        return $this->externalMockDomain . '/' . $this->gateway . $this->getRelativeUrl($type);
     }
 }

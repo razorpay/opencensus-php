@@ -814,6 +814,22 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::RECURRING_NON_3DS) === true);
     }
 
+    public function isAuthTypeEnabled($authType)
+    {
+        switch ($authType)
+        {
+            case Payment\AuthType::PIN:
+                $isEnabled = $this->isPin();
+                break;
+
+            default:
+                $isEnabled = ($this->isPin() === false);
+                break;
+        }
+
+        return $isEnabled;
+    }
+
     public function isNo2fa()
     {
         return ($this->isTypeApplicable(Type::NO_2FA) === true);
@@ -827,6 +843,11 @@ class Entity extends Base\PublicEntity
     public function isPay()
     {
         return ($this->isTypeApplicable(Type::PAY) === true);
+    }
+
+    public function isPin()
+    {
+        return ($this->isTypeApplicable(Type::PIN) === true);
     }
 
     public function isInternational()

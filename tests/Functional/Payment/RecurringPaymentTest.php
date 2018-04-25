@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Redis;
+use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Payment\Entity as Payment;
@@ -50,7 +51,8 @@ class RecurringPaymentTest extends TestCase
             'iin' => '402790',
             'country' => 'IN',
             'network' => 'Visa',
-            'type' => 'debit'
+            'type' => 'debit',
+            'issuer' => 'KKBK',
         ]);
 
         $payment = $this->getDefaultRecurringPaymentArray();
@@ -61,6 +63,51 @@ class RecurringPaymentTest extends TestCase
         }, \RZP\Exception\BadRequestException::class);
 
         $this->fixtures->merchant->addFeatures([Feature::ALLOW_DC_RECURRING]);
+
+        $this->makeRequestAndCatchException(function () use ($payment) {
+            $this->doAuthPayment($payment);
+        }, \RZP\Exception\RuntimeException::class, 'Terminal should not be null');
+
+        $this->fixtures->merchant->addFeatures([Feature::ALLOW_ALL_DC_RECURRING]);
+
+        $this->doAuthPayment($payment);
+    }
+
+    /**
+     * - create recurring auth payment with debit card, without hitachi terminal. should fail.
+     * - create hitachi terminal. create recurring auth payment with debit card. should succeed.
+     * - remove hitachi terminal. add allow_all_dc_recurring feature. create recurring auth
+     *   payment with debit card. should succeed.
+     */
+    public function testDebitCardRecurringTerminal()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+        $this->fixtures->merchant->addFeatures([Feature::ALLOW_DC_RECURRING]);
+
+        $this->fixtures->iin->create([
+                                         'iin' => '402400',
+                                         'country' => 'IN',
+                                         'network' => 'Visa',
+                                         'type' => 'debit',
+                                         'issuer' => 'KKBK',
+                                     ]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+        $payment['card']['number'] = '4024001104457538';
+
+        $this->makeRequestAndCatchException(function () use ($payment) {
+            $this->doAuthPayment($payment);
+        }, \RZP\Exception\RuntimeException::class, 'Terminal should not be null');
+
+        $this->fixtures->create('terminal:hitachi_recurring_terminal_with_both_recurring_types', ['merchant_id' => '10000000000000']);
+
+        $this->doAuthPayment($payment);
+
+        $this->fixtures->terminal->disableTerminal('HitcRcg3DSN3DS');
+
+        $this->fixtures->merchant->addFeatures([Feature::ALLOW_ALL_DC_RECURRING]);
 
         $this->doAuthPayment($payment);
     }

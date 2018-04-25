@@ -9,7 +9,7 @@ use RZP\Models\Merchant\Webhook;
 
 class Core extends Base\Core
 {
-    public function createWebhook($merchant, $input)
+    public function createWebhook(Merchant\Entity $merchant, array $input)
     {
         $entityId = isset($input[Entity::ENTITY_ID]) ? $input[Entity::ENTITY_ID] : null;
 
@@ -30,7 +30,7 @@ class Core extends Base\Core
         return $webhook;
     }
 
-    public function editWebhook($merchant, $webhookId, $input)
+    public function editWebhook(Merchant\Entity $merchant, string $webhookId, array $input)
     {
         $webhook = $this->repo->webhook->findByIdAndMerchant($webhookId, $merchant);
 
@@ -41,14 +41,19 @@ class Core extends Base\Core
         return $webhook;
     }
 
-    public function getWebhooks($merchant)
+    public function fetchApplicableWebhookEvents(Merchant\Entity $merchant)
+    {
+        return array_keys(Event::filterByFeatures(
+                                    array_flip(Event::getLaunchedEventNames()),
+                                    $merchant->getEnabledFeatures()));
+    }
+
+    public function getWebhooks(Merchant\Entity $merchant)
     {
         return $this->repo->webhook->fetch([], $merchant->getId());
     }
 
-    public function getWebhooksWithEntityId(
-        Merchant\Entity $merchant,
-        string $entityId = null)
+    public function getWebhooksWithEntityId(Merchant\Entity $merchant, string $entityId = null)
     {
         return $this->repo->webhook->findMultipleByMerchantAndEntityId($merchant, $entityId);
     }

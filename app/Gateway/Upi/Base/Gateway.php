@@ -55,4 +55,11 @@ class Gateway extends Base\Gateway
     {
         return new Entity;
     }
+
+    protected function generateIntentString(array $content)
+    {
+        $query = str_replace(' ', '', urldecode(http_build_query($content)));
+
+        return 'upi://pay?' . $query;
+    }
 }

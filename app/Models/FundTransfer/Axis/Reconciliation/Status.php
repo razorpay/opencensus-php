@@ -2,7 +2,9 @@
 
 namespace RZP\Models\FundTransfer\Axis\Reconciliation;
 
-class Status
+use RZP\Models\FundTransfer\Base\Reconciliation\Status as BaseStatus;
+
+class Status extends BaseStatus
 {
     // Success Status
     const SETTLED           = 'Settled';

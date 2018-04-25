@@ -37,10 +37,12 @@ return [
         'netbanking_rbl',
         'netbanking_indusind',
         'netbanking_pnb',
+        'netbanking_csb',
         'paytm',
         'sharp',
         'upi_icici',
         'upi_mindgate',
+        'upi_hulk',
         'upi_sbi',
         'upi_npci',
         'aeps_icici',
@@ -79,6 +81,7 @@ return [
     'mock_netbanking_rbl'         => env('NETBANKING_RBL_MOCK'),
     'mock_netbanking_indusind'    => env('NETBANKING_INDUSIND_MOCK'),
     'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
+    'mock_netbanking_csb'         => env('NETBANKING_CSB_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
     'mock_blade'                  => env('BLADE_MOCK'),
     'mock_ebs'                    => env('EBS_MOCK'),
@@ -91,6 +94,7 @@ return [
     'mock_upi_mindgate'           => env('UPI_MINDGATE_MOCK'),
     'mock_upi_sbi'                => env('UPI_SBI_MOCK'),
     'mock_upi_icici'              => env('UPI_ICICI_MOCK'),
+    'mock_upi_hulk'               => env('UPI_HULK_MOCK'),
     'mock_upi_npci'               => env('UPI_NPCI_MOCK'),
     'mock_aeps_icici'             => env('AEPS_ICICI_MOCK'),
     'mock_wallet_freecharge'      => env('FREECHARGE_MOCK'),
@@ -120,6 +124,7 @@ return [
         'test_hash_secret'     => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
         'test_hash_secret2'    => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
         'bharatqr_terminal_id' => env('HITACHI_GATEWAY_BHARAT_QR_TERMINAL_ID'),
+        'bharatqr_merchant_id' => env('HITACHI_GATEWAY_BHARAT_QR_MERCHANT_ID'),
         'bharatqr_salt'        => env('HITACHI_GATEWAY_BHARAT_QR_SALT'),
     ],
 
@@ -174,6 +179,16 @@ return [
         //SECRET FOR SECURITIES MERCHANTS
         'live_hash_secret_sec'  => env('BILLDESK_GATEWAY_SECURITIES_LIVE_HASH_SECRET'),
         'live_access_code_sec'  => env('BILLDESK_GATEWAY_SECURITIES_LIVE_ACCESS_CODE'),
+    ],
+
+    'atom' => [
+        'test_authorize_hash_secret'  => env('ATOM_GATEWAY_TEST_AUTHORIZE_HASH_SECRET'),
+        'test_callback_hash_secret'   => env('ATOM_GATEWAY_TEST_CALLBACK_HASH_SECRET'),
+        'test_merchant_id'            => env('ATOM_TEST_MERCHANT_ID'),
+        'test_secure_password'        => env('ATOM_TEST_SECURE_PASSWORD'),
+        'test_access_code'            => env('ATOM_TEST_ACCESS_CODE'),
+        'live_authorize_hash_secret'  => env('ATOM_GATEWAY_LIVE_AUTHORIZE_HASH_SECRET'),
+        'live_callback_hash_secret'   => env('ATOM_GATEWAY_LIVE_CALLBACK_HASH_SECRET'),
     ],
 
     'blade' => [
@@ -249,7 +264,7 @@ return [
     ],
 
     'aeps_icici' => [
-        'terminal_id'                  => env('AEPS_TERMINAL_ID'),
+        'terminal_id'                  => env('AEPS_ICICI_TEST_TERMINAL_ID'),
         'channel_code'                 => env('AEPS_ICICI_CHANNEL_CODE'),
         'refund_mcc_test'              => env('AEPS_ICICI_REFUND_MCC_TEST'),
         'refund_mcc_live'              => env('AEPS_ICICI_REFUND_MCC_LIVE'),
@@ -280,6 +295,11 @@ return [
     'upi_mindgate' => [
         'test_merchant_id'       => env('UPI_MINDGATE_TEST_MERCHANT_ID'),
         'gateway_encryption_key' => env('UPI_MINDGATE_GATEWAY_SECURE_SECRET'),
+    ],
+
+    'upi_hulk' => [
+        'test_secure_secret'       => env('UPI_HULK_GATEWAY_TEST_SECURE_SECRET'),
+        'gateway_secure_secret'    => env('UPI_HULK_GATEWAY_SECURE_SECRET'),
     ],
 
     'upi_sbi' => [
@@ -420,9 +440,9 @@ return [
     ],
 
     'netbanking_airtel' => [
-        'test_merchant_id'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_MERCHANT_ID'),
-        'test_hash_secret'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_HASH_SECRET'),
-        'live_hash_secret'  => env('NETBANKING_AIRTEL_GATEWAY_LIVE_HASH_SECRET'),
+        'test_merchant_id2'     => env('NETBANKING_AIRTEL_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'      => env('NETBANKING_AIRTEL_GATEWAY_TEST_HASH_SECRET'),
+        'test_end_merchant_id'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_END_MERCHANT_ID'),
     ],
 
     'netbanking_federal' => [
@@ -447,6 +467,12 @@ return [
     'netbanking_pnb' => [
         'test_hash_secret'  => env('NETBANKING_PNB_GATEWAY_TEST_HASH_SECRET'),
         'live_hash_secret'  => env('NETBANKING_PNB_GATEWAY_LIVE_HASH_SECRET'),
+    ],
+
+    'netbanking_csb' => [
+        'test_merchant_id'    => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id_2'  => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID_2'),
+        'test_hash_secret'    => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
     ],
 
     'sharp' => [

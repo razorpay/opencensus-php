@@ -38,7 +38,7 @@ class Processor extends Base\Core
 
         $this->year = $year;
 
-        $this->initiliazeVars();
+        $this->initializeVars();
     }
 
     public function createInvoiceEntities(bool $isCorrection)
@@ -155,7 +155,7 @@ class Processor extends Base\Core
         $this->invoiceBreakup[$type][Entity::TAX] = $tax;
     }
 
-    protected function initiliazeVars()
+    protected function initializeVars()
     {
         $this->merchant = $this->repo->merchant->findOrFailPublicWithRelations($this->merchantId, ['merchantDetail']);
 
