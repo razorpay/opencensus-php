@@ -5,10 +5,11 @@
         useAnalytics = false;
     }
     if (window.location.hostname=="dashboard.razorpay.com" && window.analytics && useAnalytics) {
-        analytics.init(['ga', 'fb'], {
+        analytics.init(['ga', 'fb', 'linkedin'], {
           ga: 'UA-53341507-2'
         });
         analytics.track('ga', 'pageview');
+        analytics.track('linkedin');
         try {
           var pendingAction = JSON.parse(analytics.utils.getCookie('pendingAction'));
           if (pendingAction && pendingAction.type === 'signup-form') {

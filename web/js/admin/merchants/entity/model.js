@@ -223,23 +223,6 @@ export default class Model extends BaseModel {
   };
 
   @action
-  deleteCreditLogs = (creditId, mode) => {
-    creditId = creditId.split('_')[1];
-
-    return this.request(
-      'deleteCreditLogs',
-      adminDelete(
-        `${mode}/merchants/${this.merchantId}/credits/${creditId}`
-      ).then(data => {
-        if (data.success) {
-          notifySuccess('Credit Log deleted successfully');
-          this.fetchCreditsLogs(mode);
-        }
-      })
-    );
-  };
-
-  @action
   deleteFeature = (featureName, featureMode) => {
     return this.request(
       'deleteFeature',
