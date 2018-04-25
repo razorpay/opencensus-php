@@ -14,6 +14,10 @@ class Reconciliator extends BaseMockRecon
 
     protected $fileExtension = FileStore\Format::DAT;
 
+    const PAYMENT_ENTITY = 'payment';
+
+    const GATEWAY_ENTITY = 'gateway';
+
     protected function generate(array $input)
     {
         $data = $this->getReconciliationData($input);
@@ -44,7 +48,7 @@ class Reconciliator extends BaseMockRecon
                 '3028367',
                 $this->formatAmount($row['payment']['amount']),
                 $row['payment']['id'],
-                9999999999,
+                9999,
             ];
 
             $this->content($col, 'col_payment_oriental_recon');
@@ -68,7 +72,7 @@ class Reconciliator extends BaseMockRecon
 
     protected function formatAmount(int $amount)
     {
-        $number = number_format($amount / 100, 2, '.', ',');
+        $number =  number_format((float) $amount, 2, '.', '');
 
         $numZeroes = 13 - strlen($number);
 
@@ -94,5 +98,16 @@ class Reconciliator extends BaseMockRecon
             ->save();
 
         return $creator;
+    }
+
+    protected function getEntitiesToReconcile()
+    {
+        $input = [
+            'gateway' => 'netbanking_obc',
+        ];
+
+        $payments = $this->repo->payment->fetch($input, '10000000000000');
+
+        return $payments;
     }
 }

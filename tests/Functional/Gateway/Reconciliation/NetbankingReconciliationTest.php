@@ -175,9 +175,69 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->reconcile('NetbankingPnb', $uploadedFile);
 
-        $paymentEntity = $this->getLastEntity('payment', true);
+        $transactionEntity = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals($paymentEntity['status'], 'authorized');
+        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+
+        $netbankingentity = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($netbankingentity['bank_payment_id'], 9999);
+    }
+
+    public function testObcManualReconcilation()
+    {
+        $this->gateway = 'netbanking_obc';
+
+        $this->setMockGatewayTrue();
+
+        $payment = $this->createPayment('netbanking_obc');
+
+        $netbanking = $this->createNetbanking($payment['id'], 'ORBC', 'Y');
+
+        $fileContents = $this->generateFile('obc', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingObc', $uploadedFile);
+
+        $transactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+
+        $netbankingentity = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($netbankingentity['bank_payment_id'], 9999);
+    }
+
+    public function testObcFailedPaymentReconciliation()
+    {
+        $this->gateway = 'netbanking_obc';
+
+        $this->setMockGatewayTrue();
+
+        $payment = $this->createFailedPayment($this->gateway);
+
+        $netbanking = $this->createNetbanking($payment['id'], 'ORBC', 'Y');
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'col_payment_oriental_recon')
+                {
+                    // Setting amount to 1 will cause payment amount validation to fail
+                    $content[3] = '0000000001.00';
+                }
+            });
+
+        $fileContents = $this->generateFile('obc', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $response = $this->reconcile('NetbankingObc', $uploadedFile);
+
+        $transactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertNull($transactionEntity['reconciled_at']);
     }
 
     public function testBobManualReconciliation()
