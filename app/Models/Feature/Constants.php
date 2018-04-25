@@ -64,6 +64,7 @@ class Constants
     const ALLOW_S2S_APPS                = 'allow_s2s_apps';
     const UPI_PLUS                      = 'upi_plus';
     const FSS_IPAY                      = 'fss_ipay';
+    const PARTNER                       = 'partner';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -156,6 +157,7 @@ class Constants
         self::ALLOW_S2S_APPS                => true,
         self::UPI_PLUS                      => true,
         self::FSS_IPAY                      => true,
+        self::PARTNER                       => true,
     ];
 
     // Entity type constants
