@@ -161,15 +161,21 @@ export default class OnboardingCard extends Component {
 
     return (
       <div className="onboarding-card-wrapper">
-        <div class={`media onboarding-card ${isFirstStep ? 'first-step' : ''}`}>
-          {FirstStep}
-          <div class="onboarding-illustration" />
-          {integrated &&
-            activated && (
-              <a onClick={this.closeOnboarding} className="close">
-                &times;
-              </a>
-            )}
+        <div
+          className={`onboarding-card-wrapper-content${
+            isFirstStep ? ' first-step' : ''
+          }`}
+        >
+          <div class="media onboarding-card">
+            {FirstStep}
+            <div class="onboarding-illustration" />
+            {integrated &&
+              activated && (
+                <a onClick={this.closeOnboarding} className="close">
+                  &times;
+                </a>
+              )}
+          </div>
         </div>
       </div>
     );

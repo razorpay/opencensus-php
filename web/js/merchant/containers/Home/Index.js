@@ -77,11 +77,137 @@ const analyticsOpenDetails = name => {
   }
 )
 class HomeContainer extends Component {
+  constructor(props) {
+    super(props);
+
+    const { user, mode } = props,
+      // onboarding card is shown if this is present in localstorage
+      onboardingCardToken = 'show_onboarding_card',
+      // onboarding card first step is shown if this is present in localstorage
+      firstStepToken = 'onboarding_first_step';
+
+    // tokens particular for the current merchant
+    this.onboardingBannerToken = `${onboardingCardToken}--${user.current}`;
+    this.firstStepToken = `${firstStepToken}--${user.current}`;
+
+    /*
+     * Earlier , the tokens apply at browser level, if old tokens are present
+     * converting them specific to the merchants the current user can switch to
+     */
+    if (LocalStorageService.getItem(onboardingCardToken)) {
+      Object.keys(user.merchants).forEach(key => {
+        LocalStorageService.setItem(`${onboardingCardToken}--${key}`, 'true');
+      });
+
+      LocalStorageService.removeItem(onboardingCardToken);
+    }
+
+    if (LocalStorageService.getItem(firstStepToken)) {
+      Object.keys(user.merchants).forEach(key => {
+        LocalStorageService.setItem(`${firstStepToken}--${key}`, 'true');
+      });
+
+      LocalStorageService.removeItem(firstStepToken);
+    }
+
+    const showOnboardingBanner = LocalStorageService.getItem(
+        this.onboardingBannerToken
+      ),
+      showOnboardingBannerFirstStep = LocalStorageService.getItem(
+        this.firstStepToken
+      );
+
+    this.state = {
+      showOnboardingBanner,
+      showOnboardingBannerFirstStep,
+      // payments is used to change content in the integration step
+      payments: {
+        loading: true,
+        items: [],
+      },
+    };
+
+    /*
+     * If token not present to show the banner,
+     * Need to show the banner until the user integrates in live mode
+     * which we can check by checking his live transactions
+     *
+     * If the user is in live mode, we make fetchAll payments in 
+     * RecentActivity component, which will be done using `onFetchPayments`
+     * below
+     */
+    if (mode !== 'live' && user.isActivated && showOnboardingBanner) {
+      this.props.fetchPayments({ mode: 'live' }).then(data => {
+        if (data && data.items && data.items.length === 0) {
+          this.setShowOnboardingBanner();
+        }
+      });
+    }
+
+    this.onFetchPayments = this.onFetchPayments.bind(this);
+    this.onHideOnboardingBanner = this.onHideOnboardingBanner.bind(this);
+    this.onFirstStepClose = this.onFirstStepClose.bind(this);
+  }
+
+  setShowOnboardingBanner() {
+    this.setState({
+      showOnboardingBanner: true,
+      showOnboardingBannerFirstStep: true,
+    });
+
+    LocalStorageService.setItem(this.onboardingBannerToken, 'true');
+    LocalStorageService.setItem(this.firstStepToken, 'true');
+  }
+
+  onFirstStepClose() {
+    this.setState({
+      showOnboardingBannerFirstStep: false,
+    });
+
+    LocalStorageService.removeItem(this.firstStepToken);
+  }
+
+  onHideOnboardingBanner() {
+    this.setState({
+      showOnboardingBanner: false,
+    });
+
+    LocalStorageService.removeItem(this.onboardingBannerToken);
+  }
+
+  onFetchPayments(data) {
+    const { user, mode } = this.props;
+
+    const items = (data && data.items) || [];
+
+    const { showOnboardingBanner } = this.state;
+
+    this.setState({
+      payments: {
+        loading: false,
+        items,
+      },
+    });
+
+    /*
+     * When fetched payments in live mode, using recent activity component
+     * we use it to show the banner , if there are no trasaction
+     */
+    if (
+      user.isActivated &&
+      mode === 'live' &&
+      !this.state.showOnboardingBanner &&
+      items.length === 0
+    ) {
+      this.setShowOnboardingBanner();
+    }
+  }
+
   componentWillMount() {
     this.props.fetchEntityTotals();
     this.props.fetchPaymentBreakup();
     this.props.fetchCurrentBalance();
-    this.props.fetchPayments({ count: 5 });
+    this.props.fetchPayments({ count: 5 }).then(this.onFetchPayments);
     this.props.fetchRefunds({ count: 5 });
     this.props.fetchSettlements({ count: 5 });
   }
@@ -120,8 +246,15 @@ class HomeContainer extends Component {
           }}
         >
           <div class="row">
-            <div class="col-md-12">
-              <NewUserOnboardingCard payments={payments} />
+            <div class="col-md-12 v2-onboarding-card old-analytics">
+              {this.state.showOnboardingBanner && (
+                <NewUserOnboardingCard
+                  payments={this.state.payments}
+                  onClose={this.onHideOnboardingBanner}
+                  onFirstStepClose={this.onFirstStepClose}
+                  isFirstStep={this.state.showOnboardingBannerFirstStep}
+                />
+              )}
             </div>
 
             <InfoCardList

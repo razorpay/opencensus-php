@@ -62,8 +62,6 @@ export default class Sidebar extends Component {
     let routes = this.routes;
     let isMerchant = !!user.current;
 
-    const remainingActivation = 100 - user.activation_progress;
-
     return (
       <div class="sidebar">
         <section class="brand-logo">
@@ -85,7 +83,9 @@ export default class Sidebar extends Component {
                   >
                     <div
                       className={`activation-status${
-                        !config.hasPersonalised ? ' not-personalised' : ''
+                        user.isSubmitted && !config.hasPersonalised
+                          ? ' not-personalised'
+                          : ''
                       }`}
                     >
                       <div className="clearfix">
@@ -103,9 +103,7 @@ export default class Sidebar extends Component {
                       {!user.isSubmitted ? (
                         <div className="activation-bar-content activation-status-secondary">
                           <div className="activation-bar-text">
-                            {user.activation_progress >= 70
-                              ? `${remainingActivation}% Remaining`
-                              : `${user.activation_progress}% Complete`}
+                            {user.activation_progress}% Complete
                           </div>
                           <div className="activation-bar">
                             <ProgressBar

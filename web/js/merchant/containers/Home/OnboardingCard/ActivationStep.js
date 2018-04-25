@@ -191,7 +191,7 @@ const Text = ({
                 <Link to={PERSONALISE_URL}>Personalise</Link>
                 <span>
                   {' '}
-                  or <SwitchToLive>Switch to live</SwitchToLive> mode
+                  or <SwitchToLive>Switch to live</SwitchToLive>
                 </span>
               </span>
             ) : (
@@ -201,7 +201,7 @@ const Text = ({
         )
       ) : isActivated && mode === TEST_MODE ? (
         <span>
-          <SwitchToLive>Switch to live</SwitchToLive> mode
+          <SwitchToLive>Switch to live</SwitchToLive>
         </span>
       ) : (
         'You are all set up.'

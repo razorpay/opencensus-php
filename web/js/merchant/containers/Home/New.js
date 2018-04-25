@@ -107,12 +107,19 @@ class HomeContainer extends Component {
     startDate.add(...dateRangePresets[defaultPreset].slice(1));
 
     const { user, mode, isAdmin } = props,
+      // onboarding card is shown if this is present in localstorage
       onboardingCardToken = 'show_onboarding_card',
+      // onboarding card first step is shown if this is present in localstorage
       firstStepToken = 'onboarding_first_step';
 
+    // tokens particular for the current merchant
     this.onboardingBannerToken = `${onboardingCardToken}--${user.current}`;
     this.firstStepToken = `${firstStepToken}--${user.current}`;
 
+    /*
+     * Earlier , the tokens apply at browser level, if old tokens are present
+     * converting them specific to the merchants the current user can switch to
+     */
     if (LocalStorageService.getItem(onboardingCardToken)) {
       Object.keys(user.merchants).forEach(key => {
         LocalStorageService.setItem(`${onboardingCardToken}--${key}`, 'true');
@@ -151,14 +158,25 @@ class HomeContainer extends Component {
       hasNewAnalyticsTour:
         !isAdmin && !LocalStorageService.getItem('hide_new_analytics_banner'),
       dismissNewAnalyticsBanner: false, // used for transition
+      expandOnboardingBanner: false, // used for transition
       showOnboardingBanner,
       showOnboardingBannerFirstStep,
+      // payments is used to change content in the integration step
       payments: {
         loading: true,
         items: [],
       },
     };
 
+    /*
+     * If token not present to show the banner,
+     * Need to show the banner until the user integrates in live mode
+     * which we can check by checking his live transactions
+     *
+     * If the user is in live mode, we make fetchAll payments in 
+     * RecentActivity component, which will be done using `onFetchPayments`
+     * below
+     */
     if (mode !== 'live' && user.isActivated && showOnboardingBanner) {
       this.props.fetchPayments({ mode: 'live' }).then(data => {
         if (data && data.items && data.items.length === 0) {
@@ -410,6 +428,9 @@ class HomeContainer extends Component {
         showOnboardingBannerFirstStep: false,
       },
       () => {
+        // when first step is closed, the banner height gets changes,
+        // adjusting the scroll amount when the datepicker bar should stick
+        // on top of the page
         this.setScrollAmountToStickHeader();
       }
     );
@@ -418,9 +439,16 @@ class HomeContainer extends Component {
   }
 
   onHideOnboardingBanner() {
-    this.setState({
-      showOnboardingBanner: false,
-    });
+    this.setState(
+      {
+        expandOnboardingBanner: false,
+      },
+      () => {
+        this.setState({
+          showOnboardingBanner: false,
+        });
+      }
+    );
 
     LocalStorageService.removeItem(this.onboardingBannerToken);
   }
@@ -432,6 +460,10 @@ class HomeContainer extends Component {
         showOnboardingBannerFirstStep: true,
       },
       () => {
+        this.setState({
+          expandOnboardingBanner: true,
+        });
+
         this.setScrollAmountToStickHeader();
       }
     );
@@ -454,6 +486,10 @@ class HomeContainer extends Component {
       },
     });
 
+    /*
+     * When fetched payments in live mode, using recent activity component
+     * we use it to show the banner , if there are no trasaction
+     */
     if (
       user.isActivated &&
       mode === 'live' &&
@@ -505,6 +541,7 @@ class HomeContainer extends Component {
       scrollAmountToStickHeader,
       dismissNewAnalyticsBanner,
       showOnboardingBanner,
+      expandOnboardingBanner,
     } = this.state;
 
     return (
@@ -533,17 +570,20 @@ class HomeContainer extends Component {
               )}
             </div>
           )}
-          {showOnboardingBanner && (
-            <div className="v2-onboarding-card">
+          <div
+            className={`v2-onboarding-card${
+              expandOnboardingBanner ? ' expand' : ''
+            }`}
+          >
+            {showOnboardingBanner && (
               <NewUserOnboardingCard
-                onSizeChange={this.setScrollAmountToStickHeader}
                 payments={this.state.payments}
                 onClose={this.onHideOnboardingBanner}
                 onFirstStepClose={this.onFirstStepClose}
                 isFirstStep={this.state.showOnboardingBannerFirstStep}
               />
-            </div>
-          )}
+            )}
+          </div>
         </div>
         <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}>
           <Header className="clearfix" title="" showMode={false}>
