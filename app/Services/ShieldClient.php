@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use App;
 use Requests;
 
 use RZP\Models\Payment;
@@ -13,13 +14,15 @@ class ShieldClient implements ExternalService
 {
     const REQUEST_TIMEOUT   = 30; // In secs
 
-    const RULES             = '/rules/';
+    const RULES_PATH        = '/rules/';
 
-    const EVALUATE          = '/rules/evaluate';
+    const EVALUATE_PATH     = '/rules/evaluate';
 
     const X_RULESET         = 'x-ruleset';
 
     const CONTENT_TYPE      = 'content-type';
+
+    const RULES             = 'rules';
 
     protected $config;
 
@@ -44,8 +47,10 @@ class ShieldClient implements ExternalService
         Analytics::DEVICE,
     ];
 
-    public function __construct($app)
+    public function __construct()
     {
+        $app = App::getFacadeRoot();
+
         $this->config = $app['config']->get('applications.shield');
 
         $this->trace = $app['trace'];
@@ -59,7 +64,7 @@ class ShieldClient implements ExternalService
     {
         switch ($entity)
         {
-            case 'rules':
+            case self::RULES:
                 return $this->getRules($input);
         }
 
@@ -70,7 +75,7 @@ class ShieldClient implements ExternalService
     {
         switch ($entity)
         {
-            case 'rules':
+            case self::RULES:
                 return $this->getRules($id);
         }
 
@@ -79,32 +84,32 @@ class ShieldClient implements ExternalService
 
     public function createRule(array $input)
     {
-        return $this->sendRequest(self::RULES, Requests::POST, $input);
+        return $this->sendRequest(self::RULES_PATH, Requests::POST, $input);
     }
 
     public function getRules(array $input)
     {
-        return $this->sendRequest(self::RULES, Requests::GET, $input);
+        return $this->sendRequest(self::RULES_PATH, Requests::GET, $input);
     }
 
     public function getRuleById(string $id): array
     {
-        return $this->sendRequest(self::RULES . $id, Requests::GET);
+        return $this->sendRequest(self::RULES_PATH . $id, Requests::GET);
     }
 
     public function deleteRuleById(string $id): array
     {
-        return $this->sendRequest(self::RULES . $id, Requests::DELETE);
+        return $this->sendRequest(self::RULES_PATH . $id, Requests::DELETE);
     }
 
     public function updateRuleById(string $id, array $input): array
     {
-        return $this->sendRequest(self::RULES . $id, Requests::PUT, $input);
+        return $this->sendRequest(self::RULES_PATH . $id, Requests::PUT, $input);
     }
 
     public function evaluateRules(array $input): array
     {
-        return $this->sendRequest(self::EVALUATE, Requests::POST, $input);
+        return $this->sendRequest(self::EVALUATE_PATH, Requests::POST, $input);
     }
 
     public function runFraudCheck(Payment\Entity $payment): array

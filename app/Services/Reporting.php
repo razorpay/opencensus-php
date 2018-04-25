@@ -6,10 +6,8 @@ use App;
 use Requests;
 use Requests_Response;
 use Requests_Exception;
-
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Constants\Entity;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -67,34 +65,18 @@ class Reporting implements ExternalService
         $this->ba     = $app['basicauth'];
     }
 
+    // Once the API on reporting is ready to fetch by admin,
+    // then use ref from Shield Client to implement the functions
     public function fetchMultiple(string $entity, array $input)
     {
-        switch ($entity)
-        {
-            case self::LOGS:
-                return $this->fetchLogMultiple($input);
-
-            case self::CONFIGS:
-                return $this->fetchConfigMultiple($input);
-
-            case self::SCHEDULES:
-                return $this->fetchScheduleMultiple($input);
-        }
+        return [];
     }
 
+    // Once the API on reporting is ready to fetch by admin,
+    // then use ref from Shield Client to implement the functions
     public function fetch(string $entity, string $id)
     {
-        switch ($entity)
-        {
-            case self::LOGS:
-                return $this->fetchLogById($id);
-
-            case self::CONFIGS:
-                return $this->fetchConfigById($id);
-
-            case self::SCHEDULES:
-                return $this->fetchScheduleById($id);
-        }
+        return [];
     }
 
     public function createConfig(array $input): array
