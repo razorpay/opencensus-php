@@ -1,11 +1,15 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import BatchList from 'merchant/containers/Batch/List';
+import BatchUpload from './BatchUpload';
 
 import { fetchPaymentBatches as fetchAll } from 'merchant/modules/batches';
+import { openModal } from 'rzp/modules/modals';
 
+@withRouter
 @connect(
   state => {
     return {
@@ -13,9 +17,19 @@ import { fetchPaymentBatches as fetchAll } from 'merchant/modules/batches';
       ...state.paymentBatches,
     };
   },
-  { fetchAll }
+  { fetchAll, openModal }
 )
 export default class BatchListContainer extends ListContainer {
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.match.params.mode === 'new') {
+      this.props.openModal({
+        size: 'large',
+        closeModal: () => {},
+        component: <BatchUpload />,
+      });
+    }
+  }
+
   render() {
     return (
       <BatchList
@@ -25,7 +39,7 @@ export default class BatchListContainer extends ListContainer {
         skip={this.paginate}
         onSubmit={this.search}
         docUrl="https://docs.razorpay.com/v1/page/batch-refunds"
-        uploadUrl="/refunds/batchupload"
+        uploadUrl="/payments/batchuploads/new"
         {...this.props}
       />
     );

@@ -60,6 +60,10 @@ export default function TransactionsContainer(props) {
           <Route path="/refunds/batchuploads" component={BatchUploads} />
           <Route path="/refunds" component={RefundsList} />
           <Route path="/orders" component={OrdersList} />
+          <Route
+            path="/payments/batchuploads/:mode"
+            component={PaymentsBatchList}
+          />
           <Route path="/payments/batchuploads" component={PaymentsBatchList} />
           <Route path="/payments" component={PaymentsList} />
           <Route path="/disputes" component={DisputesList} />
