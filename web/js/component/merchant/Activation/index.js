@@ -624,51 +624,74 @@ function isFieldValid(field, activation) {
 *     {Function} CloseSubmitForm, just closes the submit form layer and focuses back the activeTab
 *     {Function} submitActvationForm, call the submit form api
 * */
-function SubmitForm({ closeSubmitForm, submitActvationForm }) {
-  return (
-    <div class="SubmitForm-backdrop">
-      <div class="SubmitForm-modal">
-        <p>
-          I have read and understood the{' '}
-          <a
-            href="https://razorpay.com/terms/"
-            target="_blank"
-            class="highlight"
+class SubmitForm extends React.Component {
+  state = {
+    allowSubmit: false,
+  };
+  render() {
+    const { closeSubmitForm, submitActvationForm } = this.props;
+
+    return (
+      <div class="SubmitForm-backdrop">
+        <div class="SubmitForm-modal">
+          <Input.Check
+            onChange={e => {
+              this.setState({
+                allowSubmit: e.target.checked,
+              });
+            }}
+          />
+          <p>
+            I have read and understood the{' '}
+            <a
+              href="https://razorpay.com/terms/"
+              target="_blank"
+              class="highlight"
+            >
+              Terms & Conditions
+            </a>,{' '}
+            <a
+              href="https://razorpay.com/agreement/"
+              target="_blank"
+              class="highlight"
+            >
+              Merchant Agreement
+            </a>{' '}
+            and the{' '}
+            <a
+              href="https://razorpay.com/privacy/"
+              target="_blank"
+              class="highlight"
+            >
+              Privacy Policy
+            </a>. By submitting the form, I agree to abide by the rules at all
+            times.
+          </p>
+          <p class="text-fade">
+            Please review the form before submitting as you cannot make any
+            changes after submitting. For changes hereafter, contact us at
+            support@razorpay.com.
+          </p>
+          <Button
+            iconBefore="chevron-left"
+            onClick={e => closeSubmitForm(e, false)}
           >
-            Terms & Conditions
-          </a>,{' '}
-          <a
-            href="https://razorpay.com/agreement/"
-            target="_blank"
-            class="highlight"
+            Back to form
+          </Button>
+          <Button.Primary
+            class={this.state.allowSubmit ? '' : 'disabled'}
+            onClick={e => {
+              if (!this.state.allowSubmit) {
+                return;
+              }
+
+              submitActvationForm();
+            }}
           >
-            Merchant Agreement
-          </a>{' '}
-          and the{' '}
-          <a
-            href="https://razorpay.com/privacy/"
-            target="_blank"
-            class="highlight"
-          >
-            Privacy Policy
-          </a>. By submitting the form, I agree to abide by the rules at all
-          times.
-        </p>
-        <p class="text-fade">
-          Please review the form before submitting as you cannot make any
-          changes after submitting. For changes hereafter, contact us at
-          support@razorpay.com.
-        </p>
-        <Button
-          iconBefore="chevron-left"
-          onClick={e => closeSubmitForm(e, false)}
-        >
-          Back to form
-        </Button>
-        <Button.Primary onClick={submitActvationForm}>
-          Submit Form
-        </Button.Primary>
+            Submit Form
+          </Button.Primary>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
