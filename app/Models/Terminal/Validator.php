@@ -327,7 +327,7 @@ class Validator extends Base\Validator
     protected static $upiHulkTerminalRules = [
         Entity::GATEWAY                    => 'required|in:upi_hulk',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
-        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
         Entity::UPI                        => 'required|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',

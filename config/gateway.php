@@ -298,8 +298,8 @@ return [
     ],
 
     'upi_hulk' => [
-        'test_secure_secret'       => env('UPI_HULK_GATEWAY_TEST_SECURE_SECRET'),
-        'gateway_secure_secret'    => env('UPI_HULK_GATEWAY_SECURE_SECRET'),
+        'test_terminal_password'    => env('UPI_HULK_GATEWAY_TEST_SECURE_SECRET'),
+        'gateway_terminal_password' => env('UPI_HULK_GATEWAY_SECURE_SECRET'),
     ],
 
     'upi_sbi' => [
