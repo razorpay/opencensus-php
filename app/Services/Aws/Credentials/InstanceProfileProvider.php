@@ -46,28 +46,20 @@ class InstanceProfileProvider
     protected $cacheTtl;
 
     /**
-     * E.g. file, redis etc
-     * @var string
-     */
-    protected $cacheStore;
-
-    /**
      * Options:
      * - timeout:       Connection timeout, in seconds.
      * - profile:       Optional EC2 profile name, if known.
-     * - cache_store:   Credentials would be cached in this laravel cache store, e.g. file, redis
      * - cache_key:     Cache key to be used to cache the credentials
      *
      * @param array $config
      */
     public function __construct(array $config = [])
     {
-        $this->timeout    = $config['timeout'] ?? 1.0;
+        $this->timeout    = $config['timeout'] ?? 2;
         $this->profile    = $config['profile'] ?? null;
 
         $this->cacheKey   = $config['cache_key'] ?? 'aws_cached_credentials';
         $this->cacheTtl   = $config['cache_ttl'] ?? 15;
-        $this->cacheStore = $config['cache_store'] ?? 'file';
 
         // Initializes guzzle client
         $this->client     = new Client(['base_uri' => self::SERVER_URI, 'timeout' => $this->timeout]);
@@ -156,11 +148,19 @@ class InstanceProfileProvider
         return $result;
     }
 
+    /**
+     * Returns the cache repository
+     * We use file store intentionally here. We don't want the creds to be anywhere other than instance disk.
+     * @return Repository
+     */
     protected function getCache(): Repository
     {
-        return app('cache')->store($this->cacheStore);
+        return app('cache')->store('file');
     }
 
+    /**
+     * @return Logger
+     */
     protected function getTrace(): Logger
     {
         return app('trace');

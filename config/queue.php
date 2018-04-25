@@ -8,10 +8,12 @@ $options = [
     'timeout'     => env('AWS_CREDS_META_TIMEOUT'),
     'cache_key'   => env('AWS_CREDS_META_CACHE_KEY'),
     'cache_ttl'   => env('AWS_CREDS_META_CACHE_TTL'),
-    'cache_store' => env('AWS_CREDS_META_CACHE_STORE'),
 ];
+
+// We memoize the credentials provider to add another layer of optimization. In queue workers it'll make multiple
+// calls (polling) to SQS. Also in one HTTP request flow too, there could be multiple SQS calls.
 $instanceProfileProvider = (new InstanceProfileProvider($options))->getProvider();
-$memoizedProvider = CredentialProvider::memoize($instanceProfileProvider);
+$memoizedProvider        = CredentialProvider::memoize($instanceProfileProvider);
 
 return [
 
