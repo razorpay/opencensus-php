@@ -21,6 +21,7 @@ class Limit
         Type::VIRTUAL_BANK_ACCOUNT  => 50000,
         Type::PAYOUT                => 50000,
         'emandate_register_hdfc'    => 50000,
+        Type::ELFIN                 => 5000,
     ];
 
     /**

@@ -68,13 +68,14 @@ class Service extends Impl\Base
      * Shorten given url.
      *
      * @param string       $url
+     * @param array        $input
      * @param bool|boolean $fail - If fail is passed as true it'll bubble up ex.
      *
      * @return string
      * @throws \Throwable
      * @throws null
      */
-    public function shorten(string $url, bool $fail = false)
+    public function shorten(string $url, array $input = [], bool $fail = false)
     {
         $e = null;
 
