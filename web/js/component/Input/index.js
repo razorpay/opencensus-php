@@ -66,11 +66,7 @@ function separateDomProps(props) {
 class Info extends React.PureComponent {
   render() {
     if (this.props.text) {
-      return (
-        <div class="Input-info">
-          <p>{this.props.text}</p>
-        </div>
-      );
+      return <div class="Input-info">{this.props.text}</div>;
     }
     return null;
   }

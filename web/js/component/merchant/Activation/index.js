@@ -20,11 +20,13 @@ const contactFields = [
     name: 'contact_mobile',
     type: 'tel',
     addonBefore: '+91',
+    info: 'We\'ll reach out on this number for any account related issues.'
   },
   {
     label: 'Contact Email',
     name: 'contact_email',
     type: 'email',
+    info: 'We\'ll reach out to this email for any account related issues.'
   },
 ];
 
@@ -32,6 +34,7 @@ const businessFields1 = [
   {
     label: 'Business Name',
     name: 'business_name',
+    info: 'Example: Acme Private Limited'
   },
   {
     label: 'Doing Business As',
@@ -76,6 +79,7 @@ const businessFields1 = [
     label: 'Business PAN Details',
     name: 'company_pan',
     placeholder: 'PAN Number',
+    info: 'PAN details should belong to the business mentioned above'
   },
   {
     label: 'PAN Owner Name',
@@ -223,6 +227,7 @@ const bankAccountFields = [
     name: 'bank_account_number',
     label: 'Account Number',
     type: 'password',
+    info: 'Your company account to which your payments will be settled'
   },
   {
     _name: 'account_no',
@@ -231,6 +236,7 @@ const bankAccountFields = [
   {
     name: 'bank_account_name',
     label: 'Beneficiary Name',
+    description: 'The beneficiary name should be same as the company name or individual name, in case of an LLP/Individual.'
   },
 ];
 
@@ -238,14 +244,22 @@ const uploadFields = [
   {
     name: 'business_proof_url',
     label: 'Business Registration Proof',
+    description: <ul>Upload scan of the following:
+      <li>Sales Tax/Service Tax or Shop Act Registration or GST Certificate (mandatory, if Proprietorship firm)</li>
+      <li>Partnership Deed (mandatory, if Partnership firm)</li>
+      <li>Certificate of Incorporation (mandatory, if Private Limited or LLP)</li>
+      <li>Registration Proof or Certificate (Trust/Society/NGO etc.)</li>
+    </ul>
   },
   {
     name: 'business_pan_url',
     label: 'Business PAN',
+    description: 'The PAN details should match the ones provided earlier'
   },
   {
     name: 'address_proof_url',
     label: "Company's Bank Account Statement with Address",
+    description: 'Your Bank account number, IFSC code, and Company Name should be clearly visible'
   },
   {
     name: 'promoter_address_url',
