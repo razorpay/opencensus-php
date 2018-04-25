@@ -55,15 +55,7 @@ export default class ActivationContainer extends React.Component {
       mode: 'live',
       method: 'post',
       data,
-    })
-      .then(response => {
-        if (response.data) {
-          this.setState({
-            data: response.data,
-          });
-        }
-      })
-      .catch(err => {});
+    }).catch(err => {});
   };
 
   saveFile = (event, fieldName, accountId) => {
@@ -97,9 +89,6 @@ export default class ActivationContainer extends React.Component {
         this.props.showNotification({
           type: 'success',
           message: 'File uploaded successfully',
-        });
-        this.setState({
-          data: response.data,
         });
       })
       .catch(err => {});
