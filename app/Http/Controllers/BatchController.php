@@ -88,7 +88,7 @@ class BatchController extends Controller
 
         if ($isValid === false)
         {
-            $view = View::make('403');
+            $view = View::make('public.403');
         }
         else
         {
