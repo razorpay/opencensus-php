@@ -7,7 +7,6 @@ use Config;
 use ApiResponse;
 
 use RZP\Exception;
-use RZP\Http\RequestHeader;
 use RZP\Http\Route;
 use RZP\Models\Key;
 use RZP\Models\Device;
@@ -15,6 +14,8 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Http\RequestHeader;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use RZP\Base\RepositoryManager;
 use RZP\Models\User\Entity as User;
@@ -49,16 +50,6 @@ use RZP\Models\Feature\Constants as Feature;
 class BasicAuth
 {
     const HMAC_ALGO               = 'sha256';
-
-    /**
-     * To support Account Auth: Allows API requests to be served under the
-     * scope of a merchant ID that is sent as the value to this header
-     *
-     * On Privilege auth                - set to any merchant ID
-     * On admin auth                    - set to any merchant under the current org
-     * For private auth (marketplace)   - set to any linked account under the merchant
-     */
-    const ACCOUNT_HEADER_KEY      = 'X-Razorpay-Account';
 
     /**
      * Dashboard headers are prefixed with following literal.
@@ -311,9 +302,6 @@ class BasicAuth
         {
             return $keyError;
         }
-
-        // Fetch ID sent in the account auth header
-        $accountId = $this->request->headers->get(self::ACCOUNT_HEADER_KEY);
 
         return $this->setCredentialsFromHeaders();
     }

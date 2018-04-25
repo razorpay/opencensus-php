@@ -28,7 +28,14 @@ class RequestHeader
     const X_DASHBOARD_USER_EMAIL        = 'X-Dashboard-User-Email';
     const X_DASHBOARD_USER_ROLE         = 'X-Dashboard-User-Role';
 
-    // Marketplace
+    /**
+     * To support Account Auth: Allows API requests to be served under the
+     * scope of a merchant ID that is sent as the value to this header
+     *
+     * On Privilege auth                - set to any merchant ID
+     * On admin auth                    - set to any merchant under the current org
+     * For private auth (marketplace)   - set to any linked account under the merchant
+     */
     const X_RAZORPAY_ACCOUNT            = 'X-Razorpay-Account';
 
     // Partner Access

@@ -522,13 +522,14 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
     'testMerchantDetailsFetch' => [
         'request' => [
             'url'       => '/merchants/details',
             'method'    => 'GET',
             'content'   => [],
             'server' => [
-                'HTTP_' . \RZP\Http\BasicAuth\BasicAuth::ACCOUNT_HEADER_KEY => '10000000000002',
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000002',
             ],
         ],
         'response' => [
