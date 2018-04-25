@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 
 import ValidateModal from 'merchant/components/BatchNew/ValidateModal';
 import CreateModal from 'merchant/components/BatchNew/CreateModal';
@@ -14,6 +15,7 @@ import { showNotification } from 'rzp/modules/notifications';
 
 const iframeHost = 'http://api.razorpay.in';
 
+@withRouter
 @connect(null, { closeModal, createBatch, showNotification })
 export default class BatchUploadContainer extends Component {
   state = {
@@ -23,7 +25,6 @@ export default class BatchUploadContainer extends Component {
 
   onWindowEvent = ({ data: message }) => {
     if (event.origin === iframeHost) {
-      console.log(message.event);
       switch (message.event) {
         case 'load':
           this.setState({ iFrameLoaded: true });
@@ -91,14 +92,19 @@ export default class BatchUploadContainer extends Component {
             type: 'error',
             message: error.errors,
           });
-          this.props.closeModal();
+          this.closeModal();
         });
     });
   };
 
+  closeModal = () => {
+    this.props.closeModal();
+    this.props.history.push('/payments/batchuploads');
+  };
+
   render() {
     const Header = () => (
-      <ModalHeader title="Batch Upload" onCloseClick={this.props.closeModal} />
+      <ModalHeader title="Batch Upload" onCloseClick={this.closeModal} />
     );
     const Loader = () => (
       <div class="page-spinner-container">
@@ -157,7 +163,7 @@ export default class BatchUploadContainer extends Component {
       case 'success':
         return (
           <div class="batch-upload-modal success">
-            <SuccessModal onModalClose={this.props.closeModal} />
+            <SuccessModal onModalClose={this.closeModal} />
           </div>
         );
       default:
