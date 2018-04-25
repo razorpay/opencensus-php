@@ -91,7 +91,7 @@ class Reconciliator
     }
 
     protected function createFile(
-        $content,
+        array $content,
         string $type = FileStore\Type::MOCK_RECONCILIATION_FILE,
         string $store = FileStore\Store::S3)
     {
@@ -140,7 +140,7 @@ class Reconciliator
      */
     protected function addGatewayEntityIfNeeded(array & $data)
     {
-        return ;
+        return;
     }
 
     /**
@@ -151,6 +151,6 @@ class Reconciliator
      */
     public function content(& $content, $action = null)
     {
-        return ;
+        return;
     }
 }
