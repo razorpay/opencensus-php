@@ -87,4 +87,27 @@ trait ReconTrait
 
         return $payments;
     }
+
+    private function createPayment()
+    {
+        $attributes = [
+            'terminal_id'       => $this->sharedTerminal->getId(),
+            'method'            => $this->method,
+            'amount'            => $this->payment['amount'],
+            'base_amount'       => $this->payment['amount'],
+            'amount_authorized' => $this->payment['amount'],
+            'status'            => 'captured',
+            'gateway'           => $this->gateway
+        ];
+
+        $payment = $this->fixtures->create('payment', $attributes);
+
+        $transaction = $this->fixtures->create('transaction', ['entity_id' => $payment->getId(), 'merchant_id' => '10000000000000']);
+
+        $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
+
+        $this->fixtures->create($this->method, ['payment_id' => $payment->getId()]);
+
+        return $payment->getId();
+    }
 }
