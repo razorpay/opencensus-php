@@ -32,7 +32,6 @@ use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
-use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\RunShieldCheck;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
@@ -1367,9 +1366,7 @@ trait Authorize
     {
         try
         {
-            $job = new RunShieldCheck($this->mode, $payment);
-
-            (new DispatchRouter)->dispatchOn($job, DispatchRouter::SHIELD);
+            RunShieldCheck::dispatch($this->mode, $payment);
         }
         catch (\Throwable $e)
         {

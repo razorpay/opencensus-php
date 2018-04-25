@@ -3,9 +3,6 @@
 namespace RZP\Jobs;
 
 use App;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
 use RZP\Models\Risk;
 use RZP\Models\Payment;
@@ -16,10 +13,8 @@ use RZP\Exception\LogicException;
 /**
  * Represents asynchronous job to send PAYMENT_CREATED event to Shield
  */
-class RunShieldCheck extends Job implements ShouldQueue
+class RunShieldCheck extends Job
 {
-    use InteractsWithQueue, SerializesModels;
-
     /**
      * @var string
      */

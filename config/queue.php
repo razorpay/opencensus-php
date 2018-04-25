@@ -155,6 +155,10 @@ return [
         'test'       => env('AWS_GENERAL_TEST_QUEUE'),
         'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
     ],
+    'run_shield_check' => [
+        'test'       => env('AWS_SHIELD_QUEUE'),
+        'live'       => env('AWS_SHIELD_QUEUE'),
+    ],
 
     /*
      | Lists various queues to be used per mailable
