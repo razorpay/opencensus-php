@@ -236,7 +236,7 @@ return [
         ],
 
         // TODO: Slack lib should expose method to set just queue name instead of connection
-        'sqs_mail'  => [
+        'sqs_slack' => [
             'driver'      => 'sqs',
             'key'         => env('AWS_KEY_ID'),
             'secret'      => env('AWS_KEY_SECRET'),
