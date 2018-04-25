@@ -14,12 +14,17 @@ class Reconciliator extends BaseMockRecon
 
     protected $fileExtension = FileStore\Format::DAT;
 
-    public function __construct()
+    protected function generate(array $input)
     {
-        parent::__construct();
+        $data = $this->getReconciliationData($input);
 
-        // The file to write name attribute is generated dynamically
-        $this->setFileToWriteName();
+        $txtContent = $this->generateText($data, '|');
+
+        $creator = $this->createFile($txtContent);
+
+        $file = $creator->get();
+
+        return ['local_file_path' => $file['local_file_path']];
     }
 
     public function getReconciliationData(array $input)
@@ -36,7 +41,7 @@ class Reconciliator extends BaseMockRecon
             $col = [
                 'OBC',
                 $date,
-                '3028367', // TODO: Ensure that this is the correct PID
+                '3028367',
                 $this->formatAmount($row['payment']['amount']),
                 $row['payment']['id'],
                 9999999999,
@@ -49,17 +54,19 @@ class Reconciliator extends BaseMockRecon
 
         $this->content($data, 'oriental_recon');
 
-        return $this->generateText($data, '|');
+        return $data;
     }
 
-    protected function setFileToWriteName()
+    protected function getFileNametoWrite()
     {
         $date = Carbon::now(Timezone::IST)->format('Ymd');
 
-        $this->fileToWriteName = 'OBC_STLMT_' . $date . '_3028349_RAZORPAY_TX';
+        $fileName = 'OBC_STLMT_' . $date . '_3028367_RAZORPAY_TX';
+
+        return $fileName;
     }
 
-    private function formatAmount(int $amount)
+    protected function formatAmount(int $amount)
     {
         $number = number_format($amount / 100, 2, '.', ',');
 
@@ -70,5 +77,22 @@ class Reconciliator extends BaseMockRecon
         $padString = str_repeat('0', $numZeroes);
 
         return str_pad($number, $padLength, $padString, STR_PAD_LEFT);
+    }
+
+    protected function createFile(
+        $content,
+        string $type = FileStore\Type::MOCK_RECONCILIATION_FILE,
+        string $store = FileStore\Store::S3)
+    {
+        $creator = new FileStore\Creator;
+
+        $creator->extension($this->fileExtension)
+            ->content($content)
+            ->name($this->getFileNametoWrite())
+            ->store($store)
+            ->type($type)
+            ->save();
+
+        return $creator;
     }
 }
