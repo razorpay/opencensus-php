@@ -1457,7 +1457,8 @@ return [
                 'receipt'      => 'inv_receipt_0001',
                 'customer'  => [
                     'name'  => 'new customer',
-                    'email' => 'new@razorpay.com'
+                    'email' => 'new@razorpay.com',
+                    'gstin' => '29CFZPR4093Q1ZA',
                 ],
             ],
         ],
@@ -1470,6 +1471,7 @@ return [
                     'name'            => 'new customer',
                     'email'           => 'new@razorpay.com',
                     'contact'         => '1234567890',
+                    'gstin'           => '29CFZPR4093Q1ZA',
                     'billing_address' => null,
                 ],
                 'status'               => 'draft',

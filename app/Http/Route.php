@@ -172,6 +172,8 @@ final class Route
         'merchant_notify_holiday'                  => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
         'merchant_invoice_update_gstin'            => ['put',      'merchants/{id}/invoice/gstin',                   'MerchantInvoiceController@updateGstin'                             ],
         'merchant_create_invoice_entities'         => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
+        // TODO: Should be removed once the correction has run for all the merchant
+        'merchant_invoice_correction'              => ['post',     'merchants/invoice/correction',                    'MerchantInvoiceController@createCorrectionInvoice'                  ],
         'merchant_details_fetch'                   => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
         'merchant_invoice_add_bulk'                => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
         'merchant_create_app_access_mapping'       => ['post',     'merchants/{id}/applications',                    'MerchantController@postMapOAuthApplication'                        ],
@@ -305,10 +307,7 @@ final class Route
         'mock_hdfc_auth_enrolled'                  => ['post',     'gateway/mock_hdfc/auth_enrolled',                'MockGatewayController@authEnrolled'                                ],
         'mock_hdfc_3dsecure'                       => ['post',     'gateway/3dsecure',                               'MockGatewayController@post3dSecure'                                ],
         'mock_acs'                                 => ['post',     'gateway/acs/{gateway}',                          'MockGatewayController@postAcs'                                     ],
-        'mock_atom_init_payment'                   => ['post',     'gateway/mockanb',                                'MockGatewayController@postAtomInitPayment'                         ],
-        'mock_atom_choose_org'                     => ['get',      'gateway/mockanb',                                'MockGatewayController@getAtomChooseOrg'                            ],
-        'mock_atom_rzp_payment'                    => ['post',     'gateway/mockanb/payment',                        'MockGatewayController@postAtomRzpPayment'                          ],
-        'mock_atom_rzp_payment_submit'             => ['post',     'gateway/mockanb/payment/submit',                 'MockGatewayController@postAtomRzpPaymentSubmit'                    ],
+        'mock_atom_payment'                        => ['post',     'gateway/mockanb/payment',                        'MockGatewayController@postAtomPayment'                             ],
         'mock_axis_migs_payment'                   => ['post',     'gateway/mockaxismigs/payment',                   'MockGatewayController@postAxisPayment'                             ],
         'mock_first_data_payment'                  => ['post',     'gateway/mockfirstdata/payment',                  'MockGatewayController@postFirstDataPayment'                        ],
         'mock_axis_genius_payment'                 => ['post',     'gateway/mockaxisgenius/payment',                 'MockGatewayController@postAxisGeniusPayment'                       ],
@@ -638,18 +637,18 @@ final class Route
         'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
 
         // Tax groups and taxes
-        'tax_get_meta_gst_taxes'                  => ['get',      'taxes/meta/gst_taxes',                           'TaxController@getMetaGstTaxes'                                     ],
-        'tax_get_meta_states'                     => ['get',      'taxes/meta/states',                              'TaxController@getMetaStates'                                       ],
-        'tax_get'                                 => ['get',      'taxes/{id}',                                     'TaxController@get'                                                 ],
-        'tax_list'                                => ['get',      'taxes',                                          'TaxController@list'                                                ],
-        'tax_create'                              => ['post',     'taxes',                                          'TaxController@create'                                              ],
-        'tax_update'                              => ['patch',    'taxes/{id}',                                     'TaxController@update'                                              ],
-        'tax_delete'                              => ['delete',   'taxes/{id}',                                     'TaxController@delete'                                              ],
-        'tax_group_get'                           => ['get',      'tax_groups/{id}',                                'TaxGroupController@get'                                            ],
-        'tax_group_list'                          => ['get',      'tax_groups',                                     'TaxGroupController@list'                                           ],
-        'tax_group_create'                        => ['post',     'tax_groups',                                     'TaxGroupController@create'                                         ],
-        'tax_group_update'                        => ['patch',    'tax_groups/{id}',                                'TaxGroupController@update'                                         ],
-        'tax_group_delete'                        => ['delete',   'tax_groups/{id}',                                'TaxGroupController@delete'                                         ],
+        'tax_get_meta_gst_taxes'                   => ['get',      'taxes/meta/gst_taxes',                           'TaxController@getMetaGstTaxes'                                     ],
+        'tax_get_meta_states'                      => ['get',      'taxes/meta/states',                              'TaxController@getMetaStates'                                       ],
+        'tax_get'                                  => ['get',      'taxes/{id}',                                     'TaxController@get'                                                 ],
+        'tax_list'                                 => ['get',      'taxes',                                          'TaxController@list'                                                ],
+        'tax_create'                               => ['post',     'taxes',                                          'TaxController@create'                                              ],
+        'tax_update'                               => ['patch',    'taxes/{id}',                                     'TaxController@update'                                              ],
+        'tax_delete'                               => ['delete',   'taxes/{id}',                                     'TaxController@delete'                                              ],
+        'tax_group_get'                            => ['get',      'tax_groups/{id}',                                'TaxGroupController@get'                                            ],
+        'tax_group_list'                           => ['get',      'tax_groups',                                     'TaxGroupController@list'                                           ],
+        'tax_group_create'                         => ['post',     'tax_groups',                                     'TaxGroupController@create'                                         ],
+        'tax_group_update'                         => ['patch',    'tax_groups/{id}',                                'TaxGroupController@update'                                         ],
+        'tax_group_delete'                         => ['delete',   'tax_groups/{id}',                                'TaxGroupController@delete'                                         ],
 
         // Promotion routes
         'promotion_create'                         => ['post',     'promotions',                                     'PromotionController@create'                                        ],
@@ -710,6 +709,7 @@ final class Route
         'oauth_application_delete'                 => ['delete',   'oauth/applications/{id}',                        'OAuthApplicationController@delete'                                 ],
         'oauth_merchant_notify'                    => ['post',     'oauth/notify/{type}',                            'MerchantController@sendOAuthNotification'                          ],
         'oauth_application_update'                 => ['post',     'oauth/applications/{id}',                        'OAuthApplicationController@update'                                 ],
+        'oauth_sync_merchant_map'                  => ['post',     'oauth/update_merchant_map',                      'MerchantController@updateMerchantAccessMapFromTokens'              ],
 
         'merchant_analytics'                       => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
 
@@ -817,11 +817,8 @@ final class Route
         'merchant_public_get_banks',
         'merchant_methods',
         'merchant_checkout_preferences',
-        'mock_atom_init_payment',
         'mock_acs',
-        'mock_atom_choose_org',
-        'mock_atom_rzp_payment',
-        'mock_atom_rzp_payment_submit',
+        'mock_atom_payment',
         'mock_amex_payment',
         'mock_axis_migs_payment',
         'mock_first_data_payment',
@@ -1029,6 +1026,7 @@ final class Route
         'merchant_admin_lead_put',
         'merchant_create_app_access_mapping',
         'merchant_create_invoice_entities',
+        'merchant_invoice_correction',
         'merchant_daily_report',
         'merchant_delete_app_access_mapping',
         'merchant_notify_holiday',
@@ -1484,6 +1482,7 @@ final class Route
         'admin_get_app_auth',
         'nodal_get_account_balance',
         'enable_emi_merchant_sub',
+        'oauth_sync_merchant_map',
 
         // Shield Routes
         'shield_rules_get_multiple',
@@ -1808,6 +1807,7 @@ final class Route
         'merchant_activation_reviewers'            => '*',
         'merchant_activation_bulk_assign_reviewer' => Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER,
         'db_meta_query'                            => Permission::DB_META_QUERY,
+        'oauth_sync_merchant_map'                  => Permission::OAUTH_SYNC_MERCHANT_MAP,
     ];
 
     public static $direct = [
@@ -1927,6 +1927,7 @@ final class Route
             'merchant_daily_report',
             'merchant_post_beneficiary_file',
             'merchant_notify_holiday',
+            'merchant_invoice_correction',
             'payment_auto_capture',
             'payment_verify_multiple',
             'refund_generate_excel',

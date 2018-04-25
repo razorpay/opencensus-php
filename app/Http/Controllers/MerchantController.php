@@ -981,4 +981,11 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function updateMerchantAccessMapFromTokens()
+    {
+        $data = (new AccessMap\Service)->updateMapFromTokens();
+
+        return ApiResponse::json($data);
+    }
 }

@@ -97,13 +97,19 @@ class Selector extends Base\Core
 
     public function select()
     {
-        $allTerminals = $this->getTerminals();
+        $allTerminals = $this->repo->useSlave(function ()
+        {
+            return $this->getTerminals();
+        });
 
         $verbose = $this->isVerboseLogEnabled();
 
         $this->traceTerminals($allTerminals, 'Terminals fetched from db', $verbose);
 
-        $applicableRules = (new Rule\Core)->fetchApplicableRulesForPayment($this->input);
+        $applicableRules = $this->repo->useSlave(function ()
+        {
+            return (new Rule\Core)->fetchApplicableRulesForPayment($this->input);
+        });
 
         $filteredTerminals = $this->filterTerminals($allTerminals, $applicableRules, $verbose);
 
