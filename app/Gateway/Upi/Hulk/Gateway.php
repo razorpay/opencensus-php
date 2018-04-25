@@ -227,7 +227,7 @@ class Gateway extends Base\Gateway
     {
         $terminal = $this->terminal;
 
-        $request['options']['auth'] = [$this->getMerchantId(), $this->getSecret()];
+        $request['options']['auth'] = [$this->getMerchantId(), $this->getTerminalPassword()];
 
         return parent::sendGatewayRequest($request);
     }
