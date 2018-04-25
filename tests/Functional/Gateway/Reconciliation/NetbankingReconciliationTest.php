@@ -175,13 +175,9 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->reconcile('NetbankingPnb', $uploadedFile);
 
-        $transactionEntity = $this->getLastEntity('transaction', true);
+        $paymentEntity = $this->getLastEntity('payment', true);
 
-        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
-
-        $netbankingentity = $this->getLastEntity('netbanking', true);
-
-        $this->assertEquals($netbankingentity['bank_payment_id'], 9999);
+        $this->assertEquals($paymentEntity['status'], 'authorized');
     }
 
     public function testObcManualReconcilation()
@@ -209,7 +205,7 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertEquals($netbankingentity['bank_payment_id'], 9999);
     }
 
-    public function testObcFailedPaymentReconciliation()
+    public function testObcAmountMismatchReconciliation()
     {
         $this->gateway = 'netbanking_obc';
 
