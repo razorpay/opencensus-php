@@ -56,22 +56,6 @@ class Reconciliate extends Base\Reconciliate
         return self::DELIMITER;
     }
 
-    /**
-     * Since the heades have a separator of " ^ " and the other rows have separator
-     * "^",  i.e without spaces, we can ignore the headers row and map the rows
-     * manually by setting the column headers above.
-     *
-     * @param array $fileDetails
-     * @return array
-     */
-    public function getNumLinesToSkip(array $fileDetails)
-    {
-        return [
-            FileProcessor::LINES_FROM_TOP    => 1,
-            FileProcessor::LINES_FROM_BOTTOM => 0
-        ];
-    }
-
     public function inExcludeList(array $fileDetails)
     {
         if (strpos($fileDetails[FileProcessor::EXTENSION], 'txt') !== false)
