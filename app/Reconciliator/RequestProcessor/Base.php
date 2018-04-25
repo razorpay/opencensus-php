@@ -82,7 +82,7 @@ class Base extends Core
         self::NETBANKING_FEDERAL  => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_RBL      => ['internetbanking@rblbank.com'],
         self::NETBANKING_INDUSIND => [],
-        self::NETBANKING_OBC => [], // TODO: Add email here
+        self::NETBANKING_OBC      => ['payments@obc.co.in'],
         self::NETBANKING_PNB      => [],
         self::NETBANKING_BOB      => ['billpay@bankofbaroda.com'],
         self::JIOMONEY            => [],
