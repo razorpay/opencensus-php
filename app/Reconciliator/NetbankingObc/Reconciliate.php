@@ -3,22 +3,18 @@
 namespace RZP\Reconciliator\NetbankingObc;
 
 use RZP\Reconciliator\Base;
+use RZP\Gateway\Netbanking\Obc\ReconciliationFields;
 
 class Reconciliate extends Base\Reconciliate
 {
-    private $columnHeaders = [
-        'Bank Name',
-        'Transaction Date',
-        'Payee ID',
-        'Transaction Amount',
-        'PGI/Merchant Transaction Ref#',
-        'Bank Transaction Ref#'
+    protected $columnHeaders = [
+         ReconciliationFields::BANK,
+         ReconciliationFields::GATEWAY_TRANSACTION_DATE,
+         ReconciliationFields::PAYEE_ID,
+         ReconciliationFields::TRANSACTION_AMOUNT,
+         ReconciliationFields::MERCHANT_REFERENCE_NUMBER,
+         ReconciliationFields::BANK_REFERENCE_NUMBER,
     ];
-
-    protected function getTypeName($fileName)
-    {
-        return self::PAYMENT;
-    }
 
     public function getColumnHeadersForType($type)
     {
@@ -28,5 +24,10 @@ class Reconciliate extends Base\Reconciliate
     public function getDelimiter()
     {
         return '|';
+    }
+
+    protected function getTypeName($fileName)
+    {
+        return self::PAYMENT;
     }
 }

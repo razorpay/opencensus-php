@@ -6,27 +6,23 @@ use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Action;
 use RZP\Gateway\Netbanking\Obc\Status;
+use RZP\Gateway\Netbanking\Obc\ReconciliationFields;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
-    const PAYMENT_ID      = 'PGI/Merchant Transaction Ref#';
-    const BANK_PAYMENT_ID = 'Bank Transaction Ref#';
-    const PAYMENT_DATE    = 'Transaction Date';
-    const AMOUNT          = 'Transaction Amount';
-
     protected function getPaymentId(array $row)
     {
-        return $row[self::PAYMENT_ID];
+        return $row[ReconciliationFields::MERCHANT_REFERENCE_NUMBER];
     }
 
     protected function getReferenceNumber($row)
     {
-        return $row[self::BANK_PAYMENT_ID] ?? null;
+        return $row[ReconciliationFields::BANK_REFERENCE_NUMBER];
     }
 
     protected function getGatewayPaymentDate($row)
     {
-        return $row[self::PAYMENT_DATE] ?? null;
+        return $row[ReconciliationFields::GATEWAY_TRANSACTION_DATE];
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
@@ -49,9 +45,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return true;
     }
 
-    private function getReconPaymentAmount(array $row)
+    protected function getReconPaymentAmount(array $row)
     {
-        return Base\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
+        return Base\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT]);
     }
 
     protected function getGatewayPayment($paymentId)
