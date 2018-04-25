@@ -4,10 +4,13 @@ set -euo pipefail
 cd /app/
 
 ALOHOMORA_BIN=$(which alohomora)
-$ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app dashboard "environment/.env.vault.j2" "environment/env.php.j2" "dockerconf/dashboard.conf.j2"
+$ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app dashboard "environment/.env.vault.j2" "environment/env.php.j2" "dockerconf/dashboard.conf.j2" "dockerconf/newrelic.ini.j2"
 
 echo "$(date) Add nginx host to dashboard."
 sed -i "s|NGINX_HOST|$HOSTNAME|g" dockerconf/dashboard.conf
+
+echo "$(date) Copy newrelic config"
+cp dockerconf/newrelic.ini /etc/php7/conf.d/newrelic.ini
 
 echo "$(date) Copy dashboard to default."
 cp dockerconf/dashboard.conf /etc/nginx/conf.d/default.conf
