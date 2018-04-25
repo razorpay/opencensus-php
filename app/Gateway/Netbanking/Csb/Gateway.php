@@ -236,8 +236,8 @@ class Gateway extends Base\Gateway
     protected function getVerifyRequestData(Verify $verify): array
     {
         $content = [
-            $this->getMerchantId(),
             $this->getMerchantId2(),
+            $this->getMerchantId(),
             self::PAYEE_ID,
             $verify->input['payment']['id'],
             $verify->input['payment']['amount'] / 100,
@@ -374,8 +374,8 @@ class Gateway extends Base\Gateway
     protected function getAuthorizeRequest(array $input): array
     {
         $contentToEncrypt = [
-            RequestFields::CHNPGSYN     => $this->getMerchantId(),
-            RequestFields::CHNPGCODE    => $this->getMerchantId2(),
+            RequestFields::CHNPGSYN     => $this->getMerchantId2(),
+            RequestFields::CHNPGCODE    => $this->getMerchantId(),
             RequestFields::PAYEE_ID     => self::PAYEE_ID,
             RequestFields::BANK_REF_NUM => $input['payment']['id'],
             RequestFields::AMOUNT       => $input['payment']['amount'] / 100,
@@ -432,29 +432,11 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId(): string
     {
-        $merchantId = $this->config['test_merchant_id'];
-
-        if ($this->mode === RZPMode::LIVE)
-        {
-            $merchantId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
-        }
-
-        return $merchantId;
+        return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
     }
 
-    /**
-     * Sub merchant.
-     * @return string
-     */
     protected function getMerchantId2(): string
     {
-        $merchantId2 = $this->config['test_merchant_id_2'];
-
-        if ($this->mode === RZPMode::LIVE)
-        {
-            $merchantId2 = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
-        }
-
-        return $merchantId2;
+        return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
     }
 }
