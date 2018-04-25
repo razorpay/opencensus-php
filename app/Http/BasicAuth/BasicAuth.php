@@ -7,6 +7,7 @@ use Config;
 use ApiResponse;
 
 use RZP\Exception;
+use RZP\Http\RequestHeader;
 use RZP\Http\Route;
 use RZP\Models\Key;
 use RZP\Models\Device;
@@ -17,6 +18,7 @@ use RZP\Models\Merchant;
 use Illuminate\Routing\Router;
 use RZP\Base\RepositoryManager;
 use RZP\Models\User\Entity as User;
+use RZP\Models\Feature\Constants as Feature;
 
 /**
  * Class BasicAuth
@@ -106,6 +108,7 @@ class BasicAuth
         'public_key'    => '',
         'secret'        => '',
         'account_id'    => '',
+        'partner_token' => '',
     ];
 
     /**
@@ -312,7 +315,7 @@ class BasicAuth
         // Fetch ID sent in the account auth header
         $accountId = $this->request->headers->get(self::ACCOUNT_HEADER_KEY);
 
-        return $this->checkAndSetAccountId($accountId);
+        return $this->setCredentialsFromHeaders();
     }
 
     public function checkAndSetKeyId($key)
@@ -335,18 +338,38 @@ class BasicAuth
         $this->creds['key'] = $keyId;
     }
 
+    protected function setCredentialsFromHeaders()
+    {
+        $accountId    = $this->request->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
+        $partnerToken = $this->request->headers->get(RequestHeader::X_RAZORPAY_PARTNER_TOKEN);
+
+        if ((empty($accountHeader) === false) and
+            (empty($partnerToken) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Both X-Razorpay-Account and X-Razorpay-Partner-Token headers cannot be sent');
+        }
+
+        $error = $this->checkAndSetAccountId($accountId);
+
+        if ($error !== null)
+        {
+            return $error;
+        }
+
+        return $this->checkAndSetPartnerToken($partnerToken);
+    }
+
     /**
      * If Account ID was sent, verify and set its value in $this->creds[]
      *
      * @param  string|null      $accountId
      * @return ApiResponse|null
      */
-    protected function checkAndSetAccountId($accountId)
+    protected function checkAndSetAccountId(string $accountId = null)
     {
         if ($accountId === null)
         {
-            $this->creds['account_id'] = '';
-
             return null;
         }
 
@@ -356,6 +379,24 @@ class BasicAuth
         }
 
         $this->creds['account_id'] = $accountId;
+
+        return null;
+    }
+
+    protected function checkAndSetPartnerToken(string $token = null)
+    {
+        if ($token === null)
+        {
+            return null;
+        }
+
+        // TODO: Change
+        if ($this->verifyAccountId($token) === false)
+        {
+            return $this->invalidAccountId($token);
+        }
+
+        $this->creds['partner_token'] = $token;
 
         return null;
     }
@@ -384,12 +425,19 @@ class BasicAuth
 
             $response = $this->verifySecret();
 
-            if ($response === true)
+            if ($response !== true)
             {
-                return $this->checkAndSetAccountScope();
+                return $response;
             }
 
-            return $response;
+            $error = $this->checkAndSetAccountScope();
+
+            if ($error !== null)
+            {
+                return $error;
+            }
+
+            return $this->checkAndSetPartnerMerchantScope();
         }
         else if ($this->verifyInternalAppAsProxy() === true)
         {
@@ -492,6 +540,8 @@ class BasicAuth
         }
 
         $this->fetchMerchantOfKey($this->key);
+
+        return $this->checkAndSetPartnerMerchantScope();
     }
 
     public function directAuth()
@@ -1364,7 +1414,7 @@ class BasicAuth
     {
         if ($this->isAccountAuthAllowed() === false)
         {
-            return;
+            return null;
         }
 
         $account = $this->repo
@@ -1378,6 +1428,44 @@ class BasicAuth
         }
 
         $this->setMerchant($account);
+    }
+
+    protected function checkAndSetPartnerMerchantScope()
+    {
+        if ($this->isPartnerTokenAuthAllowed() === false)
+        {
+            return null;
+        }
+
+        // Find token
+
+        // Validate token
+
+        // Get merchant of token and fetch
+        $merchant = null;
+
+        $this->setMerchant($merchant);
+    }
+
+    protected function isPartnerTokenAuthAllowed()
+    {
+        if (empty($this->merchant) === true)
+        {
+            return false;
+        }
+
+        if ($this->merchant->isFeatureEnabled(Feature::PARTNER) === false)
+        {
+            return false;
+        }
+
+        if (($this->isStrictPrivateAuth() === false) or
+            ($this->isPublicAuth() === false))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function setAndCheckMerchantActivatedForLive(Merchant\Entity $merchant)
@@ -1423,6 +1511,11 @@ class BasicAuth
 
         return ApiResponse::unauthorized(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID);
+    }
+
+    protected function invalidPartnerToken(string $token)
+    {
+        // Throw 401 exception
     }
 
     protected function isKeyBlank()
