@@ -1,5 +1,6 @@
 <?php
 
+use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
@@ -392,6 +393,32 @@ return [
             ],
             'status_code' => 400,
         ],
+    ],
+
+    'testRequestWithAccountAndPartnerHeaders' => [
+        'request'   => [
+            'url'     => '/customers',
+            'method'  => 'get',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Razorpay-Account'       => 'random',
+                'HTTP_X-Razorpay-Partner-Token' => 'random',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Both X-Razorpay-Account and X-Razorpay-Partner-Token headers cannot be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+
     ],
 
 

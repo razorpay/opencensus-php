@@ -331,7 +331,7 @@ class BasicAuth
         $accountId    = $this->request->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
         $partnerToken = $this->request->headers->get(RequestHeader::X_RAZORPAY_PARTNER_TOKEN);
 
-        if ((empty($accountHeader) === false) and
+        if ((empty($accountId) === false) and
             (empty($partnerToken) === false))
         {
             throw new Exception\BadRequestValidationFailureException(

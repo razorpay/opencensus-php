@@ -275,6 +275,13 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
+    public function testRequestWithAccountAndPartnerHeaders()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function startTest($testDataToReplace = array())
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
