@@ -1,6 +1,6 @@
 import Input from 'component/Input';
 import Form from 'component/Form';
-import Button from 'component/Button';
+import Button, { AsyncBtn } from 'component/Button';
 import { classList } from 'common/util';
 
 const tabs = [
@@ -628,8 +628,17 @@ class SubmitForm extends React.Component {
   state = {
     allowSubmit: false,
   };
+
+  submit = e => {
+    if (!this.state.allowSubmit) {
+      return;
+    }
+
+    return this.props.submitActvationForm();
+  };
+
   render() {
-    const { closeSubmitForm, submitActvationForm } = this.props;
+    const { closeSubmitFormg } = this.props;
 
     return (
       <div class="SubmitForm-backdrop">
@@ -678,18 +687,13 @@ class SubmitForm extends React.Component {
           >
             Back to form
           </Button>
-          <Button.Primary
+          <AsyncBtn.Primary
             class={this.state.allowSubmit ? '' : 'disabled'}
-            onClick={e => {
-              if (!this.state.allowSubmit) {
-                return;
-              }
-
-              submitActvationForm();
-            }}
+            onClick={this.submit}
+            pendingState={'Submitting...'}
           >
             Submit Form
-          </Button.Primary>
+          </AsyncBtn.Primary>
         </div>
       </div>
     );
