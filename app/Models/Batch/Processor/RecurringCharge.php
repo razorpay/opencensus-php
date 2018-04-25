@@ -26,11 +26,11 @@ class RecurringCharge extends Base
     {
         $order = $this->createOrder($entry);
 
-        $response = $this->processPayment($entry, $order);
+        $this->processPayment($entry, $order);
 
         $entry[Header::STATUS] = Status::SUCCESS;
 
-        $entry[Header::RECURRING_CHARGE_PAYMENT_ID] = $response[self::RESPONSE_PAYMENT_ID];
+        $this->paymentProcessor->flushPaymentObjects();
     }
 
     protected function createOrder(array & $entry)
@@ -44,11 +44,19 @@ class RecurringCharge extends Base
         return $order;
     }
 
-    protected function processPayment(array $entry, Order\Entity $order)
+    protected function processPayment(array & $entry, Order\Entity $order)
     {
         $recurringPaymentRequest = Helper::getPaymentInput($entry, $order);
 
-        return $this->paymentProcessor->process($recurringPaymentRequest);
+        $this->paymentProcessor->process($recurringPaymentRequest);
+
+        $payment = $this->paymentProcessor->getPayment();
+
+        $payment->batch()->associate($this->batch);
+
+        $this->repo->saveOrFail($payment);
+
+        $entry[Header::RECURRING_CHARGE_PAYMENT_ID] = $payment->getPublicId();
     }
 
     protected function sendProcessedMail()

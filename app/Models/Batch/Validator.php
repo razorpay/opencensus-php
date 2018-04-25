@@ -86,6 +86,13 @@ class Validator extends Base\Validator
         Entity::FILE                 => 'required|file' . self::DEFAULT_MIME_RULE,
     ];
 
+    protected static $elfinCreateRules = [
+        Entity::TYPE   => 'required|custom',
+        Entity::NAME   => 'filled|string|max:255',
+        Entity::FILE   => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG => 'filled|array',
+    ];
+
     /**
      * Defines the required keys to be present in emandate hdfc register file
      * and the corresponding error message to be thrown when they are absent or empty
