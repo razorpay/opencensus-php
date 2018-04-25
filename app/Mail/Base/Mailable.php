@@ -4,7 +4,6 @@ namespace RZP\Mail\Base;
 
 use App;
 use Config;
-use EmailValidator;
 use Illuminate\Bus\Queueable;
 use Illuminate\Container\Container;
 use Illuminate\Mail\Mailable as BaseMailable;
@@ -239,7 +238,7 @@ class Mailable extends BaseMailable
     {
         if (filled($this->to) === true)
         {
-            $emailValidator = new EmailValidator\Validator;
+            $emailValidator = new Validator;
             $recipientEmail = $this->to[0]['address'];
 
             return (($recipientEmail !== 'void@razorpay.com') and
