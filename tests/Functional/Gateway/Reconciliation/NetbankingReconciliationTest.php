@@ -167,7 +167,7 @@ class NetbankingReconciliationTest extends TestCase
 
         $payment = $this->createFailedPayment($this->gateway);
 
-        $netbanking = $this->createNetbanking($payment['id'], 'PUNB', 'F');
+        $this->createNetbanking($payment['id'], 'PUNB', 'F');
 
         $fileContents = $this->generateFile('pnb', []);
 
@@ -188,7 +188,7 @@ class NetbankingReconciliationTest extends TestCase
 
         $payment = $this->createPayment('netbanking_obc');
 
-        $netbanking = $this->createNetbanking($payment['id'], 'ORBC', 'Y');
+        $this->createNetbanking($payment['id'], 'ORBC', 'Y');
 
         $fileContents = $this->generateFile('obc', []);
 
@@ -198,11 +198,30 @@ class NetbankingReconciliationTest extends TestCase
 
         $transactionEntity = $this->getLastEntity('transaction', true);
 
-        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+        $this->assertNotNull($transactionEntity['reconciled_at']);
 
-        $netbankingentity = $this->getLastEntity('netbanking', true);
+        $netbankingEntity = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals($netbankingentity['bank_payment_id'], 9999);
+        $this->assertEquals($netbankingEntity['bank_payment_id'], 9999);
+    }
+
+    public function testObcFailedPaymentReconciliation()
+    {
+        $this->setMockGatewayTrue();
+
+        $payment = $this->createPayment('netbanking_obc');
+
+        $this->createNetbanking($payment['id'], 'ORBC', 'F');
+
+        $fileContents = $this->generateFile('obc', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingObc', $uploadedFile);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($paymentEntity['status'], 'authorized');
     }
 
     public function testObcAmountMismatchReconciliation()
@@ -213,7 +232,7 @@ class NetbankingReconciliationTest extends TestCase
 
         $payment = $this->createFailedPayment($this->gateway);
 
-        $netbanking = $this->createNetbanking($payment['id'], 'ORBC', 'Y');
+        $this->createNetbanking($payment['id'], 'ORBC', 'Y');
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)
@@ -229,7 +248,7 @@ class NetbankingReconciliationTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $response = $this->reconcile('NetbankingObc', $uploadedFile);
+        $this->reconcile('NetbankingObc', $uploadedFile);
 
         $transactionEntity = $this->getLastEntity('transaction', true);
 
