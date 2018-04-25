@@ -69,6 +69,10 @@ class Core extends Base\Core
                                   $invoiceDate->endOfMonth()->timestamp,
                                   $merchantIds);
 
+            $count = $merchants->count();
+
+            $offset += $count;
+
             foreach ($merchants as $merchant)
             {
                 $createJob = new MerchantInvoiceCorrectionJob(
@@ -85,7 +89,7 @@ class Core extends Base\Core
                 (new DispatchRouter)->dispatchOn($createJob, DispatchRouter::MERCHANT_INVOICE);
             }
 
-        } while ($merchants->count() === $batch);
+        } while ($count === $batch);
     }
 
     public function createAdjustmentInvoiceEntity(Adjustment\Entity $adjustment, array $input): Entity
