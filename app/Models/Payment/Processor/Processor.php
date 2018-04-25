@@ -171,6 +171,14 @@ class Processor
         $this->verifyRefundStatus = null;
     }
 
+    public function flushPaymentObjects()
+    {
+        $this->order   = null;
+        $this->payment = null;
+        $this->refund  = null;
+        $this->type    = null;
+    }
+
     public function process(array $input): array
     {
         $this->setMethodForInput($input);

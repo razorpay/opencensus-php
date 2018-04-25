@@ -31,6 +31,8 @@ class RecurringCharge extends Base
         $entry[Header::STATUS] = Status::SUCCESS;
 
         $entry[Header::RECURRING_CHARGE_PAYMENT_ID] = $response[self::RESPONSE_PAYMENT_ID];
+
+        $this->paymentProcessor->flushPaymentObjects();
     }
 
     protected function createOrder(array & $entry)
