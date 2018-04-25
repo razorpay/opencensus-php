@@ -64,7 +64,7 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
     protected function setQueueAndConnectionFromConfig()
     {
         // If queue routing is mocked, push everything to default queue; Used in local environment;
-        $this->queueRouteMock = config('queue.mock_route', false);
+        $this->queueRouteMock = config('queue.routing_mock', false);
         $this->queueConfigKey = $this->queueConfigKey ?: $this->job->getQueueConfigKey();
 
         if (($this->queueRouteMock === true) or (empty($this->queueConfigKey) === true))

@@ -86,7 +86,7 @@ class Job implements ShouldQueue
 
     public function getQueueConfigKey(): string
     {
-        return $this->queueConfigKey ?: snake_case((new \ReflectionClass($this))->getShortName());
+        return $this->queueConfigKey ?: snake_case(class_basename($this));
     }
 
     /**

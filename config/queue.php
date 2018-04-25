@@ -21,8 +21,8 @@ return [
     /*
     | If set to true (only in local/testing environment), all queue jobs are pushed to default connection & queue.
     | Only applies for asynchronous job drivers.
-     */
-    'mock_route'            => env('QUEUE_MOCK_ROUTE', false),
+    */
+    'routing_mock'            => env('QUEUE_ROUTING_MOCK', false),
 
     /*
     |--------------------------------------------------------------------------
