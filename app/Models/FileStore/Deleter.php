@@ -56,7 +56,6 @@ class Deleter extends Base\Core
         return $this;
     }
 
-
     /**
      * Set the Id in Query Param
      *

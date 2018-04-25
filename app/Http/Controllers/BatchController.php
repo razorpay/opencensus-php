@@ -84,7 +84,7 @@ class BatchController extends Controller
     {
         $token = $request->input('token');
 
-        $isValid = $this->isValidOneTimeToken($token);
+        $isValid = $this->service(E::MERCHANT_REQUEST)->isValidOneTimeToken($token);
 
         if ($isValid === false)
         {
@@ -109,10 +109,5 @@ class BatchController extends Controller
         $response = $this->service()->validateFile($input);
 
         return ApiResponse::json($response);
-    }
-
-    private function isValidOneTimeToken($token)
-    {
-        return $this->service(E::MERCHANT_REQUEST)->isValidOneTimeToken($token);
     }
 }

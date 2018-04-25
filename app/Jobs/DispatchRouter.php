@@ -76,6 +76,7 @@ class DispatchRouter extends Base\Core
         }
 
         $queueName = Config::get($queueNameConfig);
+
         $queueConnection = Config::get($queueConnectionConfig);
 
         if ($queueConnection === null)
