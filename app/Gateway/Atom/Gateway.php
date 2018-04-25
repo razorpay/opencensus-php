@@ -17,6 +17,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use Symfony\Component\DomCrawler\Crawler;
 
 class Gateway extends Base\Gateway
 {
@@ -42,6 +43,8 @@ class Gateway extends Base\Gateway
 
         $request['url'] = $this->createRedirectUrl($request['content']);
         $request['content'] = [];
+
+        $request = $this->makeRequestAndGetFormData($request);
 
         return $request;
     }
@@ -92,13 +95,9 @@ class Gateway extends Base\Gateway
 
         $content = $this->getRefundRequestContent($gatewayPayment, $input);
 
-        $request = $this->getStandardRequestArray($content, 'get');
+        $request = $this->getStandardRequestArray($content);
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_REFUND_REQUEST);
-
-        $request['url'] = $this->createRedirectUrl($request['content']);
-
-        $request['content'] = [];
 
         $response = $this->sendGatewayRequest($request);
 
@@ -120,6 +119,44 @@ class Gateway extends Base\Gateway
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function makeRequestAndGetFormData(array $request): array
+    {
+        $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [$response->body]);
+
+        if ($response->status_code === 421)
+        {
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL);
+        }
+
+        $crawler = new Crawler($response->body, $request['url']);
+
+        $formCrawler = $crawler->filter('form');
+
+        if ($formCrawler->count() === 0)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_HEADLESS_PARSING_FAILED,
+                null, 
+                null, 
+                [
+                    'gateway' => $this->gateway,
+                ]
+            );
+        }
+
+        $form = $formCrawler->form();
+
+        $request = [
+            'url'     => $form->getUri(),
+            'method'  => strtolower($form->getMethod()),
+            'content' => $form->getValues(),
+        ];
+
+        return $request;
     }
 
     protected function sendPaymentVerifyRequest($verify)
@@ -209,7 +246,7 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        $attributes = $this->getVerifyAttributes($content);
+        $attributes = $this->getVerifyAttributes($content, $gatewayPayment);
 
         $gatewayPayment->fill($attributes);
 
@@ -271,7 +308,7 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getVerifyAttributes(array $content)
+    protected function getVerifyAttributes(array $content, Entity $gatewayPayment)
     {
         $attributes = [
             Entity::STATUS => Status::FAILURE,
@@ -280,6 +317,25 @@ class Gateway extends Base\Gateway
         if ($content[VerifyResponseFields::STATUS] === Status::VERIFY_SUCCESS)
         {
             $attributes[Entity::STATUS] = Status::SUCCESS;
+
+            if ((empty($gatewayPayment[Entity::GATEWAY_PAYMENT_ID]) === false) and
+                ($gatewayPayment[Entity::GATEWAY_PAYMENT_ID] !== $content[VerifyResponseFields::GATEWAY_TRANSACTION_ID]))
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+                    null,
+                    null,
+                    [
+                        'gateway_payment_id' => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID],
+                        'atomtxnId'          => $content[VerifyResponseFields::GATEWAY_TRANSACTION_ID],
+                        'gateway'            => $this->gateway,
+                    ]
+                );
+            }
+            else
+            {
+                $attributes[Entity::GATEWAY_PAYMENT_ID] = $content[VerifyResponseFields::GATEWAY_TRANSACTION_ID];
+            }
         }
 
         return $attributes;

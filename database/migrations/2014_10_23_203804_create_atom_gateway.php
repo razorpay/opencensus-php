@@ -40,7 +40,7 @@ class CreateAtomGateway extends Migration
             $table->string(Atom::ACCOUNT_NUMBER)
                   ->nullable();
 
-            $table->integer(Atom::GATEWAY_PAYMENT_ID)
+            $table->string(Atom::GATEWAY_PAYMENT_ID)
                   ->nullable();
 
             $table->char(Atom::TOKEN, 75)

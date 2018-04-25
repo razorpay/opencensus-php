@@ -26,6 +26,19 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
+        $request = [
+            'url'     => $this->route->getUrl('mock_atom_payment'),
+            'content' => $input,
+            'method'  => 'post',
+        ];
+
+        $this->request($request);
+
+        return $this->makePostResponse($request);
+    }
+
+    public function bank($input)
+    {
         parent::authorize($input);
 
         $this->validateActionInput($input, 'authorize');
@@ -271,6 +284,8 @@ class Server extends Base\Mock\Server
             VerifyResponseFields::BANK_NAME              => 'random_bank_name',
             VerifyResponseFields::GATEWAY_TRANSACTION_ID => (string) mt_rand(1111111, 9999999),
         ];
+
+        $this->content($response);
 
         return $response;
     }

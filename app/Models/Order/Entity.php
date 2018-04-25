@@ -320,11 +320,6 @@ class Entity extends Base\PublicEntity
         $amountPaid = $this->getAmountPaid() + $amount;
 
         $this->setAmountPaid($amountPaid);
-
-        if ($this->getAmountPaid() === $this->getAmount())
-        {
-            $this->setStatus(Status::PAID);
-        }
     }
 
     public function isAuthorized()

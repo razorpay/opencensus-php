@@ -33,5 +33,12 @@ class MerchantInvoiceController extends Controller
 
         return ApiResponse::json([]);
     }
+
+    public function createCorrectionInvoice()
+    {
+        $data = $this->service()->createCorrectionInvoice($this->input);
+
+        return ApiResponse::json([]);
+    }
 }
 

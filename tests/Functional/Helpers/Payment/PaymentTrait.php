@@ -757,7 +757,6 @@ trait PaymentTrait
         return $content;
     }
 
-
     protected function verifyMultiplePayments($filter)
     {
         $request = array(
