@@ -43,10 +43,9 @@ class Csb extends Base
         foreach ($data as $row)
         {
             $date = Carbon::createFromTimestamp(
-                $row[ConstantsEntity::PAYMENT][PaymentEntity::CREATED_AT],
-                Timezone::IST
-            )
-                ->format(self::DATE_FORMAT);
+                        $row[ConstantsEntity::PAYMENT][PaymentEntity::CREATED_AT],
+                        Timezone::IST)
+                    ->format(self::DATE_FORMAT);
 
             $refundDate = Carbon::createFromTimestamp(
                 $row[ConstantsEntity::REFUND][RefundEntity::CREATED_AT],
@@ -96,11 +95,15 @@ class Csb extends Base
                         $data,
                         function(int $carry, array $item)
                         {
-                            $carry += $item[ConstantsEntity::REFUND][RefundEntity::AMOUNT] / 100;
+                            $carry += $item[ConstantsEntity::REFUND][RefundEntity::AMOUNT];
 
                             return $carry;
                         },
                         0);
+
+        $totalAmount = $totalAmount / 100;
+
+        $totalAmount = number_format($totalAmount, 2, '.', '');
 
         $today = Carbon::now(Timezone::IST)->format('jS F Y');
 
