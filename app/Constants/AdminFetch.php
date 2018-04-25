@@ -31,13 +31,10 @@ class AdminFetch
             Entity::REPORTING_SCHEDULES => [
                 'merchant_id'       => Fetch::FIELD_MERCHANT_ID
             ],
-            Entity::SHIELD_RULESETS => [
-
-            ],
             Entity::SHIELD_RULES => [
 
             ],
-            Entity::SHIELD_RULES_ANALYTICS => [
+            Entity::SHIELD_RULE_ANALYTICS => [
 
             ]
         ];
