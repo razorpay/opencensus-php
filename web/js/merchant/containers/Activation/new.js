@@ -5,11 +5,14 @@ import { without } from 'rzp/utils/rzp-utils';
 import Spinner from 'rzp/ui/Spinner';
 import ActivationWizard from 'component/merchant/Activation';
 
+@connect(state => {}, {
+  showNotification,
+})
 export default class ActivationContainer extends React.Component {
   state = {
     data: null,
-    categories: null
-  }
+    categories: null,
+  };
 
   componentWillMount() {
     this.fetchActivationDetails();
@@ -19,33 +22,62 @@ export default class ActivationContainer extends React.Component {
     Promise.all([
       merchantFetch({
         url: 'merchant/activation',
-        mode: 'live'
+        mode: 'live',
       }),
-      merchantFetch('merchant/activation/business_categories')
-    ])
-    .then(([data, categories]) => {
+      merchantFetch('merchant/activation/business_categories'),
+    ]).then(([data, categories]) => {
       this.setState({
         data: data.data,
-        categories: categories.data
-      })
-    })
+        categories: categories.data,
+      });
+    });
   }
+
+  submitForm = (data, accountId) => {
+    return merchantFetch({
+      url: 'merchant/activation',
+      mode: 'live',
+      method: 'post',
+      data: { submit: 1 },
+    })
+      .then(response => {
+        if (!response.data.can_submit) {
+          throw { errors: ['Some mandatory fields are required'] };
+        }
+        return response;
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+
+        throw err;
+      });
+  };
 
   saveStep = (data, accountId) => {
     return merchantFetch({
       url: 'merchant/activation',
       mode: 'live',
       method: 'post',
-      data
+      data,
     })
-    return this._save(props, accountId).catch(err => {
-      this.props.showNotification({
-        type: 'error',
-        message: err.errors,
-      });
+      .then(response => {
+        if (response.data) {
+          this.setState({
+            data,
+          });
+        }
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
 
-      throw err;
-    });
+        throw err;
+      });
   };
 
   saveFile = (event, fieldName, accountId) => {
@@ -83,6 +115,7 @@ export default class ActivationContainer extends React.Component {
             categories={categories}
             save={this.saveStep}
             saveFile={this.saveFile}
+            submitForm={this.submitForm}
           />
         ) : (
           <div class="page-spinner-container">

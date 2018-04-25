@@ -35,6 +35,8 @@ $height = 580px
         float: right
       &:hover
         background: #fafbfc
+      &.text-success
+        color: #27c24c
       &.active
         background: #528FF0
         color: #fff
@@ -42,6 +44,12 @@ $height = 580px
         .i-done::before
           background: white
           border-radius: 50%
+      &.disabled
+        cursor: not-allowed
+        color: #b6c0c4
+
+      &:last-child
+        margin-top: 28px
 
   main
     left: $side-width
@@ -51,6 +59,13 @@ $height = 580px
     bottom: 80px
     top: 0
     overflow: auto
+
+    &.block-scroll
+      overflow: hidden
+      bottom: 0
+
+    &.overlay-container
+      bottom: 0
 
   footer
     left: $side-width
@@ -82,6 +97,31 @@ $height = 580px
     text-transform: uppercase
     display: block
     margin-bottom: 20px
+
+  .SubmitForm-backdrop
+    background-color: rgba(17,30,60, 0.1)
+    width: 100%
+    height: 100%
+    position: absolute
+    top: 0
+    left: 0
+    pointer-events: auto
+
+  .SubmitForm-modal
+    position: absolute
+    bottom: 0
+    left: 0
+    width: 100%
+    padding: 24px 24px 24px 52px
+    background-color: #F6F6F6
+    box-shadow: 0 -2px 10px 0 rgba(121,121,121,0.21)
+
+    button:nth-of-type(1)
+      margin-left: 0
+
+    .text-fade
+      font-size: 14px
+      margin-bottom 24px
 
 .activation-field
   clear: both

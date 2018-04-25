@@ -1,6 +1,7 @@
 import Input from 'component/Input';
 import Form from 'component/Form';
 import Button from 'component/Button';
+import { classList } from 'common/util';
 
 const tabs = [
   'Contact Details',
@@ -20,13 +21,13 @@ const contactFields = [
     name: 'contact_mobile',
     type: 'tel',
     addonBefore: '+91',
-    info: 'We\'ll reach out on this number for any account related issues.'
+    info: "We'll reach out on this number for any account related issues.",
   },
   {
     label: 'Contact Email',
     name: 'contact_email',
     type: 'email',
-    info: 'We\'ll reach out to this email for any account related issues.'
+    info: "We'll reach out to this email for any account related issues.",
   },
 ];
 
@@ -34,7 +35,7 @@ const businessFields1 = [
   {
     label: 'Business Name',
     name: 'business_name',
-    info: 'Example: Acme Private Limited'
+    info: 'Example: Acme Private Limited',
   },
   {
     label: 'Doing Business As',
@@ -57,7 +58,7 @@ const businessFields1 = [
       'Trust',
       'Society',
       'Not yet registered',
-      'Other'
+      'Other',
     ],
   },
   {
@@ -79,7 +80,7 @@ const businessFields1 = [
     label: 'Business PAN Details',
     name: 'company_pan',
     placeholder: 'PAN Number',
-    info: 'PAN details should belong to the business mentioned above'
+    info: 'PAN details should belong to the business mentioned above',
   },
   {
     label: 'PAN Owner Name',
@@ -181,7 +182,7 @@ const businessFields2 = [
     {
       name: 'business_operation_address',
       placeholder: 'Enter Street Address',
-      label: 'Registered Address',
+      label: 'Operational Address',
       _cmp: Input.Textarea,
       _when: differentAddress,
     },
@@ -227,7 +228,7 @@ const bankAccountFields = [
     name: 'bank_account_number',
     label: 'Account Number',
     type: 'password',
-    info: 'Your company account to which your payments will be settled'
+    info: 'Your company account to which your payments will be settled',
   },
   {
     _name: 'account_no',
@@ -236,7 +237,8 @@ const bankAccountFields = [
   {
     name: 'bank_account_name',
     label: 'Beneficiary Name',
-    description: 'The beneficiary name should be same as the company name or individual name, in case of an LLP/Individual.'
+    description:
+      'The beneficiary name should be same as the company name or individual name, in case of an LLP/Individual.',
   },
 ];
 
@@ -244,22 +246,31 @@ const uploadFields = [
   {
     name: 'business_proof_url',
     label: 'Business Registration Proof',
-    description: <ul>Upload scan of the following:
-      <li>Sales Tax/Service Tax or Shop Act Registration or GST Certificate (mandatory, if Proprietorship firm)</li>
-      <li>Partnership Deed (mandatory, if Partnership firm)</li>
-      <li>Certificate of Incorporation (mandatory, if Private Limited or LLP)</li>
-      <li>Registration Proof or Certificate (Trust/Society/NGO etc.)</li>
-    </ul>
+    description: (
+      <ul>
+        Upload scan of the following:
+        <li>
+          Sales Tax/Service Tax or Shop Act Registration or GST Certificate
+          (mandatory, if Proprietorship firm)
+        </li>
+        <li>Partnership Deed (mandatory, if Partnership firm)</li>
+        <li>
+          Certificate of Incorporation (mandatory, if Private Limited or LLP)
+        </li>
+        <li>Registration Proof or Certificate (Trust/Society/NGO etc.)</li>
+      </ul>
+    ),
   },
   {
     name: 'business_pan_url',
     label: 'Business PAN',
-    description: 'The PAN details should match the ones provided earlier'
+    description: 'The PAN details should match the ones provided earlier',
   },
   {
     name: 'address_proof_url',
     label: "Company's Bank Account Statement with Address",
-    description: 'Your Bank account number, IFSC code, and Company Name should be clearly visible'
+    description:
+      'Your Bank account number, IFSC code, and Company Name should be clearly visible',
   },
   {
     name: 'promoter_address_url',
@@ -304,10 +315,12 @@ export default class ActivationWizard extends React.Component {
   };
 
   constructor(props) {
-    businessFields1[3].options = [''].concat(Object.keys(props.categories).map(c => ({
-      name: c,
-      label: props.categories[c].description
-    })))
+    businessFields1[3].options = [''].concat(
+      Object.keys(props.categories).map(c => ({
+        name: c,
+        label: props.categories[c].description,
+      }))
+    );
     super(props);
     this.setInitialTab();
 
@@ -343,7 +356,8 @@ export default class ActivationWizard extends React.Component {
     this.setState({
       activeTab,
       tabs,
-      isSaving: shouldSave
+      isSaving: shouldSave,
+      showSubmitLayer: false,
     });
 
     if (!shouldSave) {
@@ -356,15 +370,19 @@ export default class ActivationWizard extends React.Component {
         this.props.callback && this.props.callback(); // Support for callback for linked_account activation
         this.setState({
           dirty: {},
-          isSaving: false
-        })
+          isSaving: false,
+        });
         this.removeLoader();
       })
       .catch(_ => {
         this.setState({
-          isSaving: null
-        })
-      })
+          isSaving: null,
+        });
+      });
+  };
+
+  submitForm = () => {
+    return this.props.submitForm();
   };
 
   /* Fadeout based loader text */
@@ -397,6 +415,35 @@ export default class ActivationWizard extends React.Component {
     }
   };
 
+  /* Find if all tabs are valid */
+  isAllTabsValid() {
+    let isValid = true;
+
+    for (let i = 0; i < this.state.tabs.length; i++) {
+      if (!this.state.tabs[i]) {
+        isValid = false;
+        break;
+      }
+    }
+
+    return isValid;
+  }
+
+  /*
+  * Opens backdrop submit layer
+  * - By default is opens the submit layer.
+  * - Closes the layer if false passed explicitly
+  * */
+  toggleSubmitLayer = (e, mode = true) => {
+    if (mode && !this.isAllTabsValid()) {
+      return;
+    }
+
+    this.setState({
+      showSubmitLayer: mode,
+    });
+  };
+
   render() {
     let activeTab = this.state.activeTab;
     let isLastTab = activeTab !== tabs.length - 1;
@@ -422,7 +469,10 @@ export default class ActivationWizard extends React.Component {
               let isTabValid = this.state.tabs[i];
               return (
                 <li
-                  class={i === activeTab ? 'active' : ''}
+                  class={classList(
+                    i === activeTab && !this.state.showSubmitLayer && 'active',
+                    isTabValid && 'text-success'
+                  )}
                   key={i}
                   data-index={i}
                   onClick={this.changeTab}
@@ -432,31 +482,55 @@ export default class ActivationWizard extends React.Component {
                 </li>
               );
             })}
+            <li
+              onClick={this.toggleSubmitLayer}
+              class={classList(
+                !this.isAllTabsValid() && 'disabled',
+                this.state.showSubmitLayer && 'active'
+              )}
+            >
+              Submit Form
+            </li>
           </ul>
         </aside>
-        <main>
+        <main class={this.state.showSubmitLayer ? 'block-scroll' : ''}>
           <main-title>{tabs[activeTab]}</main-title>
           <Form onChange={this.onChange} layout="tabular">
             {content}
           </Form>
         </main>
-        <footer>
-          <Loader isSaving={this.state.isSaving} />
-          {(activeTab && (
-            <Button iconBefore="chevron-left" onClick={this.prev}>
-              Back
-            </Button>
-          )) ||
-            null}
-          {isLastTab && (
-            <Button.Primary iconAfter="chevron-right" onClick={this.next}>
-              Next
-            </Button.Primary>
-          )}
-          {isLastTab || (
-            <Button.Primary onClick={this.submit}>Submit Form</Button.Primary>
-          )}
-        </footer>
+        {this.state.showSubmitLayer && (
+          <main class="overlay-container">
+            <SubmitForm
+              closeSubmitForm={this.toggleSubmitLayer}
+              submitActvationForm={this.submitForm}
+            />
+          </main>
+        )}
+        {!this.state.showSubmitLayer && (
+          <footer>
+            <Loader isSaving={this.state.isSaving} />
+            {(activeTab && (
+              <Button iconBefore="chevron-left" onClick={this.prev}>
+                Back
+              </Button>
+            )) ||
+              null}
+            {isLastTab && (
+              <Button.Primary iconAfter="chevron-right" onClick={this.next}>
+                Next
+              </Button.Primary>
+            )}
+            {isLastTab || (
+              <Button.Primary
+                class={classList(!this.isAllTabsValid() && 'disabled')}
+                onClick={this.toggleSubmitLayer}
+              >
+                Submit Form
+              </Button.Primary>
+            )}
+          </footer>
+        )}
       </div>
     );
   }
@@ -541,4 +615,60 @@ function isFieldValid(field, activation) {
     return false;
   }
   return true;
+}
+
+/*
+* Submit Form opens with backdrop inside Activation form's main content
+* - The activeTab keeps showing in the background
+* - @props
+*     {Function} CloseSubmitForm, just closes the submit form layer and focuses back the activeTab
+*     {Function} submitActvationForm, call the submit form api
+* */
+function SubmitForm({ closeSubmitForm, submitActvationForm }) {
+  return (
+    <div class="SubmitForm-backdrop">
+      <div class="SubmitForm-modal">
+        <p>
+          I have read and understood the{' '}
+          <a
+            href="https://razorpay.com/terms/"
+            target="_blank"
+            class="highlight"
+          >
+            Terms & Conditions
+          </a>,{' '}
+          <a
+            href="https://razorpay.com/agreement/"
+            target="_blank"
+            class="highlight"
+          >
+            Merchant Agreement
+          </a>{' '}
+          and the{' '}
+          <a
+            href="https://razorpay.com/privacy/"
+            target="_blank"
+            class="highlight"
+          >
+            Privacy Policy
+          </a>. By submitting the form, I agree to abide by the rules at all
+          times.
+        </p>
+        <p class="text-fade">
+          Please review the form before submitting as you cannot make any
+          changes after submitting. For changes hereafter, contact us at
+          support@razorpay.com.
+        </p>
+        <Button
+          iconBefore="chevron-left"
+          onClick={e => closeSubmitForm(e, false)}
+        >
+          Back to form
+        </Button>
+        <Button.Primary onClick={submitActvationForm}>
+          Submit Form
+        </Button.Primary>
+      </div>
+    </div>
+  );
 }
