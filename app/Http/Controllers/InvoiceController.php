@@ -175,8 +175,8 @@ class InvoiceController extends Controller
         // For testing purposes have made one more test account behave same way.
         //
         $idsForUberFlow = [
-            Preferences::MID_UBER, // Uber's
-            Preferences::MID_AMIT_MAHBUBANI, // Amit. M's
+            Preferences::MID_UBER,
+            Preferences::MID_AMIT_MAHBUBANI,
         ];
 
         //
