@@ -1224,7 +1224,6 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
-
     public function createSharedNetbankingObcTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
