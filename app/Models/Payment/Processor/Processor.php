@@ -205,6 +205,13 @@ class Processor
         return $this->authorize($payment, $input);
     }
 
+    public function getPayment(): Payment\Entity
+    {
+        $this->payment->reload();
+
+        return $this->payment;
+    }
+
     protected function preProcessPaymentInputs(array $input, Payment\Entity $payment)
     {
         $coproto = null;

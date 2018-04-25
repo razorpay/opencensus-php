@@ -40,6 +40,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchByPaymentIdsAndActions($paymentIds, $actions)
+    {
+        return $this->newQuery()
+                    ->whereIn('payment_id', $paymentIds)
+                    ->whereIn('action', $actions)
+                    ->get();
+    }
+
     public function findByPaymentIdActionAndStatus(string $paymentId,
                                                    string $action,
                                                    array $statuses)
