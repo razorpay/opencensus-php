@@ -270,7 +270,11 @@ class ApiRequestAny
                     // used in case of file upload through epos
                     if ($useCustomFileKeys === true)
                     {
+                        $oldKey = $key;
+
                         $key = MerchantService::UPLOAD_KEYS[$key];
+
+                        unset($input[$oldKey]);
                     }
 
                     $input[$key] = new PostFile($key, fopen($val, 'r'), $fileName);
