@@ -424,6 +424,15 @@ class Gateway
         ],
     ];
 
+    public static $bharatQrCardNetwork = [
+        self::HITACHI => [
+            Network::MC,
+            Network::VISA,
+            Network::RUPAY,
+        ],
+    ];
+
+
     public static $cardNetworkRecurringMap = [
         self::HITACHI => [
             Network::VISA,
@@ -1209,6 +1218,12 @@ class Gateway
         }
 
         return $supported;
+    }
+
+    public static function isBharatQrCardNetworkSupported(string $network, string $gateway)
+    {
+        return ((array_key_exists($gateway, self::$bharatQrCardNetwork) === true) and
+                (in_array($network, self::$bharatQrCardNetwork[$gateway], true) === true));
     }
 
     public static function getExclusiveNetworksForGateway(string $gateway)

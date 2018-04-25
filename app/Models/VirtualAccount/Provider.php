@@ -354,13 +354,17 @@ class Provider
      */
     protected function generateBharatQrMerchantIdentifier(QrCode\Entity $qrCode)
     {
-        $terminal = $this->getTerminalForMethod(Payment\Method::CARD, $qrCode);
+        $terminal = $this->getTerminalForMethod(Payment\Method::CARD, $qrCode, Card\Network::MC);
 
-        $identifiers = [
-            'mastercard_mpan' => $terminal->getMasterCardMpan(),
-            'visa_mpan'       => $terminal->getVisaMpan(),
-            'rupay_mpan'      => $terminal->getRupayMpan(),
-        ];
+        $identifiers['mastercard_mpan'] = $terminal->getMasterCardMpan();
+
+        $terminal = $this->getTerminalForMethod(Payment\Method::CARD, $qrCode, Card\Network::VISA);
+
+        $identifiers['visa_mpan'] = $terminal->getVisaMpan();
+
+        $terminal = $this->getTerminalForMethod(Payment\Method::CARD, $qrCode, Card\Network::RUPAY);
+
+        $identifiers['rupay_mpan'] = $terminal->getRupayMpan();
 
         $terminal = $this->getTerminalForMethod(Payment\Method::UPI, $qrCode);
 
@@ -379,11 +383,11 @@ class Provider
      *
      * @return mixed
      */
-    protected function getTerminalForMethod(string $method, QrCode\Entity $qrCode)
+    protected function getTerminalForMethod(string $method, QrCode\Entity $qrCode, string $network = null)
     {
         if ($method === Payment\Method::CARD)
         {
-            $paymentArray = Constants::getDummyCardPaymentArray($qrCode);
+            $paymentArray = Constants::getDummyCardPaymentArray($qrCode, $network);
         }
         else
         {

@@ -33,12 +33,14 @@ class Constants
     const SHARED_VIRTUAL_ACCOUNT = 'sharedvirtuala';
     const SHARED_QR_CODE         = 'sharedqrcode12';
     const RAZORPAY_TERMINAL_ID   = 'razorpay_terminal_id';
-    const DUMMY_CARD_NUMBER      = '4231560000511234';
+    const DUMMY_MASTERCARD_CARD  = '4231560000511234';
+    const DUMMY_VISA_CARD        = '4231560000511234';
+    const DUMMY_RUPAY_CARD       = '5085000000521234';
     const DUMMY_VPA              = 'bqrrandom@razorpay';
     const DUMMY_EMAIL            = 'bqrrandom@razorpay.com';
     const DUMMY_CONTACT          = '9876543210';
 
-    public static function getDummyCardPaymentArray($receiver)
+    public static function getDummyCardPaymentArray($receiver, string $network)
     {
         $paymentArray =  [
             Payment\Entity::CURRENCY    => Currency::INR,
@@ -51,12 +53,26 @@ class Constants
         ];
 
         $card = [
-            Card\Entity::NUMBER       => self::DUMMY_CARD_NUMBER,
             Card\Entity::CVV          => self::CARD_CVV,
             Card\Entity::NAME         => self::CARD_NAME,
             Card\Entity::EXPIRY_MONTH => self::CARD_EXPIRY_MONTH,
             Card\Entity::EXPIRY_YEAR  => self::CARD_EXPIRY_YEAR,
         ];
+
+        switch ($network)
+        {
+            case Card\Network::MC:
+                $card[Card\Entity::NUMBER] = self::DUMMY_MASTERCARD_CARD;
+                break;
+
+            case Card\Network::VISA:
+                $card[Card\Entity::NUMBER] = self::DUMMY_VISA_CARD;
+                break;
+
+            case Card\Network::RUPAY:
+                $card[Card\Entity::NUMBER] = self::DUMMY_RUPAY_CARD;
+                break;
+        }
 
         $paymentArray[Payment\Entity::CARD] = $card;
 

@@ -83,7 +83,7 @@ class Entity extends Base\PublicEntity
      */
     public function getMorphClass()
     {
-        return 'qr_code';
+        return $this->entity;
     }
 
     /**

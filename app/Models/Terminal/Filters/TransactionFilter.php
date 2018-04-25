@@ -89,7 +89,16 @@ class TransactionFilter extends Terminal\Filter
         {
             $network = $payment->card->getNetworkCode();
 
-            return Gateway::isCardNetworkSupported($network, $terminal->getGateway(), $payment->isRecurring());
+            if ($payment->isBharatQr() === true)
+            {
+                $supported = Gateway::isBharatQrCardNetworkSupported($network, $terminal->getGateway());
+            }
+            else
+            {
+                $supported =  Gateway::isCardNetworkSupported($network, $terminal->getGateway(), $payment->isRecurring());
+            }
+
+            return $supported;
         }
 
         return true;

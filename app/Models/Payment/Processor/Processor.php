@@ -365,31 +365,20 @@ class Processor
 
         //
         // We only create a dummy payment entity for purpose
-        // of pre-calculating fees and returning it.
+        // of bharat qr terminal selection and returning it.
         // It's not going to be saved in the database.
         //
         $payment = $this->buildPaymentEntity($input);
 
         $payment->receiver()->associate($receiver);
 
-        try
-        {
-            $this->repo->transaction(
-                function() use ($payment, $input)
-                {
-                    // Performing dummy set of processing for the same
-                    $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
+        $this->repo->beginTransaction();
 
-                    // We throw this exception because we want to rollback
-                    // the current transaction. We don't want to save card
-                    // data in db
-                    throw new \Exception('Random Exception');
-                });
-        }
-        catch (\Exception $e)
-        {
-            // Do nothing
-        }
+        $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
+
+        // This needs to be rollback because the card
+        // card data is being saved in the db
+        $this->repo->rollback();
 
         $selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
@@ -399,7 +388,6 @@ class Processor
                 'No terminal found.',
                 ['payment' => $payment->toArrayAdmin()]);
         }
-
 
         return $selectedTerminals[0];
     }
