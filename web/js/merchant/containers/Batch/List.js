@@ -4,7 +4,7 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import { Link } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import BatchListFilter from 'merchant/components/Batch/ListFilter';
-import { batchId, totalCount, status } from 'rzp/ui/item/pair';
+import { batchId, totalCount, status, createdAt } from 'rzp/ui/item/pair';
 import { batchDownload } from 'merchant/modules/batches';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
@@ -27,36 +27,34 @@ function batchActions({
         >
           Download
         </button>
-        {
-          do {
-            if (item.type === 'payment_link') {
-              if (viewAll) {
-                <button
-                  class="btn btn-default btn-xs"
-                  onClick={_ => viewAll(item)}
-                >
-                  view all links
-                </button>;
-              }
+        {do {
+          if (item.type === 'payment_link') {
+            if (viewAll) {
+              <button
+                class="btn btn-default btn-xs"
+                onClick={_ => viewAll(item)}
+              >
+                view all links
+              </button>;
+            }
 
-              {
-                /*issuableIdList is present only in case of Payment Links*/
-              }
-              if (
-                issueAll &&
-                item.status === 'processed' &&
-                (!issuableIdList || issuableIdList.indexOf(item.id) > -1)
-              ) {
-                <button
-                  class="btn btn-default btn-xs"
-                  onClick={_ => issueAll(item)}
-                >
-                  Issue all links
-                </button>;
-              }
+            {
+              /*issuableIdList is present only in case of Payment Links*/
+            }
+            if (
+              issueAll &&
+              item.status === 'processed' &&
+              (!issuableIdList || issuableIdList.indexOf(item.id) > -1)
+            ) {
+              <button
+                class="btn btn-default btn-xs"
+                onClick={_ => issueAll(item)}
+              >
+                Issue all links
+              </button>;
             }
           }
-        }
+        }}
       </div>
     ),
   };
@@ -126,6 +124,7 @@ export default class BatchList extends Component {
             batchId,
             totalCount,
             status,
+            createdAt,
             batchActions({
               mode,
               viewAll,
