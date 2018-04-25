@@ -15,6 +15,8 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\Entity as GatewayEntity;
+
 
 class Gateway extends Base\Gateway
 {
@@ -29,7 +31,6 @@ class Gateway extends Base\Gateway
 
     protected $map = [
         Base\Entity::AMOUNT             => Base\Entity::AMOUNT,
-        RequestFields::PAYEE_ID         => Base\Entity::REFERENCE1,
         ResponseFields::PAID            => Base\Entity::STATUS,
         ResponseFields::BANK_PAYMENT_ID => Base\Entity::BANK_PAYMENT_ID,
         ResponseFields::DEBIT_ACC_NUM   => Base\Entity::ACCOUNT_NUMBER,
@@ -242,6 +243,8 @@ class Gateway extends Base\Gateway
     {
         $attributesToSave = $this->getMappedAttributes($content);
 
+        $attributesToSave[Base\Entity::RECEIVED] = true;
+
         // If auth status was not success, we update the entity with verify status
         if ($gatewayPayment->getStatus() !== Status::SUCCESS)
         {
@@ -286,7 +289,7 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::PAYEE_ID    => $this->getMerchantId(),
             RequestFields::PAY_REF_NUM => $payment['id'],
-            RequestFields::ITEM_CODE   => strtoupper($payment['id'] . Constant::MERCHANT_ID),
+            RequestFields::ITEM_CODE   => Constant::MERCHANT_ID . '-'  . strtoupper($payment['id']),
             RequestFields::AMOUNT      => $this->formatAmount($payment['amount'] / 100),
             RequestFields::RETURN_URL  => Constant::RAZORPAY_END_POINT,
             RequestFields::BID         => $verify->payment['bank_payment_id'] ?? "",
@@ -314,7 +317,7 @@ class Gateway extends Base\Gateway
             RequestFields::TXN_AMOUNT  => $input['payment']['amount'] / 100,
             RequestFields::PAYEE_ID    => $this->getMerchantId(),
             RequestFields::PAY_REF_NUM => $input['payment']['id'],
-            RequestFields::ITEM_CODE   => strtoupper($input['payment']['id'] . Constant::MERCHANT_ID)
+            RequestFields::ITEM_CODE   => Constant::MERCHANT_ID . '-' . strtoupper($input['payment']['id'])
         ];
 
         $query = implode(
@@ -337,6 +340,20 @@ class Gateway extends Base\Gateway
         {
             $this->aesCrypto = new AESCrypto(AES::MODE_ECB, $this->getSecret());
         }
+    }
+
+    protected function updateGatewayPaymentEntity(
+        GatewayEntity $gatewayPayment,
+        array $attributes,
+        bool $mapped = true)
+    {
+        $attr = $this->getMappedAttributes($attributes);
+
+        $attr[Base\Entity::RECEIVED] = 1;
+
+        $gatewayPayment->fill($attr);
+
+        $gatewayPayment->saveOrFail();
     }
 
     protected function parseGatewayResponse(array $response)
