@@ -76,14 +76,13 @@ class MockGatewayController extends Controller
 
     public function postAtomPayment()
     {
-        $server = $this->gateway->server('atom');
-
         $input = Request::all();
 
-        $url = $server->authorize($input);
+        $server = $this->gateway->server('atom');
 
-        return Redirect::to($url);
+        $data = $server->bank($input);
 
+        return Redirect::to($data);
     }
 
     public function postAxisPayment()

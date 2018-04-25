@@ -9,10 +9,12 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Payment\Verify\Status as VerifyStatus;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class NetbankingObcGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected $payment;
 
@@ -40,7 +42,7 @@ class NetbankingObcGatewayTest extends TestCase
         // For netbanking payments, acquirer data contains bank_transaction_id which is equal to reference1 attribute
         $this->assertEquals(9999999999, $payment[Payment\Entity::ACQUIRER_DATA]['bank_transaction_id']);
 
-        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
+        $netbanking = $this->getDbLastEntityToArray(ConstantsEntity::NETBANKING);
 
         $this->assertTestResponse($netbanking);
     }
@@ -54,7 +56,7 @@ class NetbankingObcGatewayTest extends TestCase
         // The payment fails and an exception is thrown before acquirer data is updated
         $this->assertNull($payment[Payment\Entity::ACQUIRER_DATA]['bank_transaction_id']);
 
-        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
+        $netbanking = $this->getDbLastEntityToArray(ConstantsEntity::NETBANKING);
 
         $this->assertTestResponse($netbanking, 'netbankingPaymentFailed');
     }
@@ -67,7 +69,7 @@ class NetbankingObcGatewayTest extends TestCase
 
         $this->assertEquals(VerifyStatus::SUCCESS, $verify[ConstantsEntity::PAYMENT][Payment\Entity::VERIFIED]);
 
-        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
+        $netbanking = $this->getDbLastEntityToArray(ConstantsEntity::NETBANKING);
 
         $this->assertTestResponse($netbanking, 'netbankingVerify');
     }

@@ -26,6 +26,7 @@ use RZP\Models\Base\QueryCache\Cacheable;
 
 /**
  * @property Detail\Entity $merchantDetail
+ * @property Methods\Entity $methods
  */
 class Entity extends Base\PublicEntity
 {

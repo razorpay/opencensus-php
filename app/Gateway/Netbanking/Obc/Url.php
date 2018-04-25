@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Obc;
 
-final class Url
+class Url
 {
     const TEST_DOMAIN = 'http://220.226.198.27/PreProdcorp';
 

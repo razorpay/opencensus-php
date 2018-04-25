@@ -26,4 +26,9 @@ class Service extends Base\Service
 
         return ['count' => $count];
     }
+
+    public function createCorrectionInvoice(array $input)
+    {
+        return (new Core)->queueCorrectionInvoiceInvoice($input);
+    }
 }
