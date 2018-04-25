@@ -94,7 +94,7 @@ class DirectDebit extends Base
         }
         finally
         {
-            $row[Header::CARD] = substr($row[Header::CARD], 0,4) . 'xxxxxxxx' . substr($row[Header::CARD], 12);
+            $row[Header::CARD] = substr($row[Header::CARD], 0,6) . 'xxxxxx' . substr($row[Header::CARD], 12);
         }
         return $row;
     }

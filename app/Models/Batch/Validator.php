@@ -450,5 +450,12 @@ class Validator extends Base\Validator
                 ]);
         }
     }
+
+    protected function validateDirectDebitEntries(array & $entries)
+    {
+        foreach($entries as & $row) {
+            $row[Header::CARD] = substr($row[Header::CARD], 0, 6) . 'xxxxxx' . substr($row[Header::CARD], 12);
+        }
+    }
 }
 
