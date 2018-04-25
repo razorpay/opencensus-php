@@ -46,7 +46,14 @@ export default class ActivationContainer extends React.Component {
         }
         return response;
       })
-      .catch(err => {});
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+
+        throw err;
+      });
   };
 
   saveStep = (data, accountId) => {
