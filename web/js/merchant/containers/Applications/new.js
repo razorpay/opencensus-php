@@ -23,9 +23,13 @@ const INFO = {
   icon:
     'Your uploaded app icon will be shown to your users on Razorpay Connect screens. The icon will also be displayed in the connected applications list',
   dev:
-    "End-point on your development server that we'll redirect your users back to after they connect with Razorpay. Can be localhost. If you provide a comma-separated list, we will allow redirects to any of them via the redirect_uri parameter and default to the first one.",
-  prod:
-    "End-point on your production server that we'll redirect your users back to after they connect with Razorpay. Must be HTTPS. If you provide a comma-separated list, we will allow redirects to any of them via the redirect_uri parameter and default to the first one.",
+    "Add comma separated URIs. URI can be localhost. We'll redirect your users back to any of the URI provided, after they connect with Razorpay.",
+  prod: (
+    <span>
+      Add comma separated URIs. <b>URIs must be HTTPs.</b> We'll redirect your
+      users back to any of the URI provided, after they connect with Razorpay.
+    </span>
+  ),
 };
 
 const selector = formValueSelector('newApplicationForm');
@@ -139,8 +143,10 @@ class NewApplicationForm extends Component {
   create = props => {
     let data = { ...props };
 
-    if (data.website) {
-      data.website = autoPrefixUrls(data.website);
+    if (data.client_details.dev.redirect_url) {
+      data.client_details.dev.redirect_url = this.prependHTTPinUrl(
+        data.client_details.dev.redirect_url
+      );
     }
 
     return this.props
@@ -171,8 +177,19 @@ class NewApplicationForm extends Component {
     }
   };
 
+  // Currently only being for development URIs
+  prependHTTPinUrl(urlList) {
+    return urlList.map(url => autoPrefixUrls(url));
+  }
+
   update = props => {
     let data = { ...props };
+
+    if (data.client_details.dev.redirect_url) {
+      data.client_details.dev.redirect_url = this.prependHTTPinUrl(
+        data.client_details.dev.redirect_url
+      );
+    }
 
     const payload = {
       name: data.name,

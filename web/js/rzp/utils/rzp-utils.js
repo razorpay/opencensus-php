@@ -450,9 +450,10 @@ export const checkIfHTTPS = url => {
 /**
  *
  * @param {*} url
- * Add 'http' to the URL is not available
+ * Add 'http' to the URL if http/https not there
  */
 export const autoPrefixUrls = url => {
+  const regex = /^https?:\/\//i;
   let tempUrl;
   if (!url || url.length === 0) {
     return url;
@@ -460,7 +461,7 @@ export const autoPrefixUrls = url => {
 
   tempUrl = url.toLowerCase();
 
-  if (!checkIfHTTPS(tempUrl)) {
+  if (!regex.test(tempUrl)) {
     url = 'http://' + url;
   }
   return url;
