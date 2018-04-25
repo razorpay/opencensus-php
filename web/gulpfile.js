@@ -72,22 +72,16 @@ gulp.task('watch', () => {
   iconFont(compileCss);
   gulp.watch('css/**/*.styl', compileCss);
   gulp.watch('icons/*.svg', _ => iconFont(compileCss));
-  gulp.watch('js/component/**/*.js', e => {
-    if (e.type === 'added' || e.type === 'deleted' || e.type === 'renamed') {
-      workbenchServer();
-    }
-  })
 
   require('livereload')
     .createServer()
     .watch([
       __dirname + '/../public/dist/css',
-      __dirname + '/js/component',
-      __dirname + '/../public/workbench/index.php',
+      __dirname + '/../public/dist/js/component',
+      __dirname + '/../public/playground/index.php',
     ]);
 
-  workbenchServer();
-
+  playgroundServer();
 });
 
 gulp.task('default', () => {
@@ -97,28 +91,37 @@ gulp.task('default', () => {
   iconFont(compileCss);
 });
 
+const { readFile } = require('fs');
 const webpackConfig = require('./webpack.config');
 webpackConfig.output.filename = '[name]';
 webpackConfig.output.library = 'component';
 webpackConfig.output.libraryTarget = 'umd';
 
 let workbenchApp;
+let serverPath;
+let webpackCompiler;
 
-function workbenchServer() {
-  let entry = {};
-  glob('js/component/**/*.js').forEach(f => { entry[f] = './' + f });
-  webpackConfig.entry = entry;
+function playgroundServer() {
+  const webpack = require('webpack');
+  require('http').createServer((req, res) => {
+    if (req.url === '/favicon.ico') return res.end('');
+    if (req.url === serverPath) return serveFile(req, res);
 
-  const middleware = require('webpack-dev-middleware');
-  const compiler = require('webpack')(webpackConfig);
+    serverPath = req.url;
+    if (webpackCompiler) webpackCompiler.close();
+    webpackConfig.entry = {
+      [req.url]: '.' + [req.url]
+    };
+    webpackCompiler = webpack(webpackConfig).watch({}, (err, stats) => {
+      serveFile(req, res);
+      console.log(stats.toString({
+        colors: true
+      }));
+    });
+  }).listen(3000);
+}
 
-  if (workbenchApp) {
-    workbenchApp.close();
-    console.log('restarting workbench');
-  }
-  workbenchApp = require('express')();
-
-  workbenchApp.use(middleware(compiler));
-
-  workbenchApp = workbenchApp.listen(3000);
+const serveFile = (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  readFile(__dirname + '/../public/dist' + req.url, (e, content) => res.end(content));
 }

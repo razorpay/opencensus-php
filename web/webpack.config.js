@@ -67,7 +67,7 @@ module.exports = {
           options: {
             presets: [
               ['@babel/preset-env', { loose: true }],
-              ['@babel/preset-stage-0', { decoratorsLegacy: true }]
+              ['@babel/preset-stage-0', { loose: true, decoratorsLegacy: true }]
             ],
             plugins: babelPlugins,
           },
