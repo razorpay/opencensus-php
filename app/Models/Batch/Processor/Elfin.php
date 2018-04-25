@@ -48,5 +48,6 @@ class Elfin extends Base
      */
     protected function sendProcessedMail()
     {
+        return;
     }
 }

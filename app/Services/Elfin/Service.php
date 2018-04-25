@@ -83,7 +83,7 @@ class Service extends Impl\Base
         {
             try
             {
-                return $this->driver($service)->shorten($url);
+                return $this->driver($service)->shorten($url, $input, $fail);
             }
             /**
              * Catching \Throwable as it is the base most interface and covers
