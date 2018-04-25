@@ -9,6 +9,7 @@ const PAYMENT = 'PAYMENT_BATCHES';
 const BATCH_DOWNLOAD = 'BATCH_DOWNLOAD';
 const ISSUABLE_BATCHES = 'ISSUABLE_BATCHES';
 const EDIT_ISSUABLE_BATCHES = 'EDIT_ISSUABLE_BATCHES';
+const CREATE_BATCH = 'CREATE_BATCH';
 
 const fetchBatchAjax = id => {
   return merchantFetch(`batches/${id}`).then(response => {
@@ -83,7 +84,21 @@ export const fetchPaymentBatches = params => {
     type: getActionName(PAYMENT),
     payload: params.id
       ? fetchBatchAjax(params.id)
-      : fetchBatchesAjax(params, 'refund'),
+      : fetchBatchesAjax(params, 'direct_debit'),
+  };
+};
+
+const createBatch = (actionType, batchType) => data => {
+  return {
+    type: actionType,
+    payload: merchantFetch({
+      url: 'batches',
+      method: 'post',
+      data: {
+        type: batchType,
+        ...data,
+      },
+    }).then(response => response.data),
   };
 };
 
@@ -125,6 +140,8 @@ export const batchDownload = batchId => {
     payload: merchantFetch(`batches/${batchId}/download`),
   };
 };
+
+export const createPaymentsBatch = createBatch(CREATE_BATCH, 'direct_debit');
 
 export const uploadRefundBatch = uploadBatch(REFUND, 'refund');
 export const uploadPaymentLinkBatch = uploadBatch(PAYMENT_LINK, 'payment_link');
