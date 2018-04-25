@@ -379,10 +379,10 @@ class BasicAuth
         }
 
         // TODO: Change
-        if ($this->verifyAccountId($token) === false)
-        {
-            return $this->invalidAccountId($token);
-        }
+        //if ($this->verifyAccountId($token) === false)
+        //{
+        //    return $this->invalidAccountId($token);
+        //}
 
         $this->creds['partner_token'] = $token;
 
@@ -1447,7 +1447,7 @@ class BasicAuth
             return false;
         }
 
-        if (($this->isStrictPrivateAuth() === false) or
+        if (($this->isStrictPrivateAuth() === false) and
             ($this->isPublicAuth() === false))
         {
             return false;
