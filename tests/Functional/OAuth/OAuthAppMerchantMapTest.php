@@ -8,6 +8,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class OAuthAppMerchantMapTest extends OAuthTestCase
 {
+    use OAuthTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -101,6 +102,23 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
         $this->assertEquals(null, $liveMapping);
 
         $this->assertEquals(null, $testMapping);
+    }
+
+    public function testOAuthSyncMerchantMap()
+    {
+        $this->ba->adminAuth();
+
+        $application = $this->createOAuthApplication();
+
+        $clients = $application->clients->all();
+
+        $this->generateOAuthAccessTokenForClient([], $clients[0]);
+
+        $this->generateOAuthAccessTokenForClient([], $clients[1]);
+
+        $this->generateOAuthAccessToken();
+
+        $this->startTest();
     }
 
     protected function getMapping(string $mode)

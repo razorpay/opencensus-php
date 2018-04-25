@@ -487,6 +487,11 @@ class Merchant extends Base
         return $this->edit($id, ['category2' => $category]);
     }
 
+    public function setHasKeyAccess(bool $hasKeyAccess, string $id = '10000000000000')
+    {
+        return $this->edit($id, ['has_key_access' => $hasKeyAccess]);
+    }
+
     public function editPricingPlanId($planId, $id = '10000000000000')
     {
         return $this->edit($id, ['pricing_plan_id' => $planId]);

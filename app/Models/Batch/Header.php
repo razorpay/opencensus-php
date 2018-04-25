@@ -145,6 +145,23 @@ class Header
     const TIME           = 'time';
 
     //
+    // Batch recurring payments
+    //
+    const RECURRING_CHARGE_TOKEN       = 'token';
+    const RECURRING_CHARGE_CUSTOMER_ID = 'customer_id';
+    const RECURRING_CHARGE_AMOUNT      = 'amount';
+    const RECURRING_CHARGE_CURRENCY    = 'currency';
+    const RECURRING_CHARGE_RECEIPT     = 'receipt';
+    const RECURRING_CHARGE_DESCRIPTION = 'description';
+    const RECURRING_CHARGE_NOTES_1     = 'notes_1';
+    const RECURRING_CHARGE_NOTES_2     = 'notes_2';
+    const RECURRING_CHARGE_NOTES_3     = 'notes_3';
+    const RECURRING_CHARGE_NOTES_4     = 'notes_4';
+    const RECURRING_CHARGE_NOTES_5     = 'notes_5';
+    const RECURRING_CHARGE_PAYMENT_ID  = 'payment_id';
+    const RECURRING_CHARGE_ORDER_ID    = 'order_id';
+
+    //
     // HDFC Emandate Register Response File Headers
     //
     const HDFC_EM_REGISTER_CLIENT_NAME                      = HdfcEMRegisterHeadings::CLIENT_NAME;
@@ -452,6 +469,37 @@ class Header
                 self::AMOUNT,
                 self::DESCRIPTION,
                 self::STATUS,
+            ],
+        ],
+
+        Type::RECURRING_CHARGE => [
+            self::INPUT => [
+                self::RECURRING_CHARGE_TOKEN,
+                self::RECURRING_CHARGE_CUSTOMER_ID,
+                self::RECURRING_CHARGE_AMOUNT,
+                self::RECURRING_CHARGE_CURRENCY,
+                self::RECURRING_CHARGE_RECEIPT,
+                self::RECURRING_CHARGE_DESCRIPTION,
+                self::RECURRING_CHARGE_NOTES_1,
+                self::RECURRING_CHARGE_NOTES_2,
+                self::RECURRING_CHARGE_NOTES_3,
+                self::RECURRING_CHARGE_NOTES_4,
+                self::RECURRING_CHARGE_NOTES_5,
+            ],
+            self::OUTPUT => [
+                self::RECURRING_CHARGE_TOKEN,
+                self::RECURRING_CHARGE_CUSTOMER_ID,
+                self::RECURRING_CHARGE_AMOUNT,
+                self::RECURRING_CHARGE_CURRENCY,
+                self::RECURRING_CHARGE_RECEIPT,
+                self::RECURRING_CHARGE_DESCRIPTION,
+                self::RECURRING_CHARGE_NOTES_1,
+                self::RECURRING_CHARGE_NOTES_2,
+                self::RECURRING_CHARGE_NOTES_3,
+                self::RECURRING_CHARGE_NOTES_4,
+                self::RECURRING_CHARGE_NOTES_5,
+                self::RECURRING_CHARGE_ORDER_ID,
+                self::RECURRING_CHARGE_PAYMENT_ID,
             ],
         ],
 

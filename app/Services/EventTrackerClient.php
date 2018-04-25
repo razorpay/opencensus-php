@@ -3,14 +3,13 @@
 namespace RZP\Services;
 
 use App;
-use Carbon\Carbon;
 use Exception;
-use RZP\Constants\Mode;
+use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
-use RZP\Models\Merchant\Account;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Analytics\Entity as Analytics;
 
@@ -93,7 +92,7 @@ class EventTrackerClient extends AbstractEventClient
 
     /**
      *
-     * Forms an event object with properites
+     * Forms an event object with properties
      * appends it to $this->events array
      *
      * @param Payment\Entity $payment

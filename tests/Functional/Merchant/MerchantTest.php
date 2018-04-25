@@ -61,6 +61,8 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->fixtures->merchant->setHasKeyAccess(true, '1X4hRFHFx4UiXt');
+
         $this->ba->proxyAuth('rzp_live_1X4hRFHFx4UiXt');
 
         $this->startTest();
@@ -2376,7 +2378,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->create('customer');
 
-        $this->fixtures->merchant->addFeatures(['charge_at_will', 'e_mandate']);
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
         $response = $this->makePreferencesRouteRequest();
 

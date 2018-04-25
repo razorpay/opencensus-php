@@ -9,6 +9,7 @@ class Shared
 {
     const AMEX_RAZORPAY_TERMINAL             = '1000AmexShared';
     const ATOM_RAZORPAY_TERMINAL             = '1000AtomShared';
+    const ATOM_RAZORPAY_TPV_TERMINAL         = '1000AtomTpvtml';
     const AXIS_GENIUS_RAZORPAY_TERMINAL      = '1000AxisGenius';
     const AXIS_MIGS_RAZORPAY_TERMINAL        = '1000AxisMigsTl';
     const BILLDESK_RAZORPAY_TERMINAL         = '1000BdeskTrmnl';
@@ -55,6 +56,7 @@ class Shared
     const UPI_MINDGATE_TPV_TERMINAL          = '100UPIMndgtTpv';
     const UPI_MINDGATE_SBI_RAZORPAY_TERMINAL = '100UPIMgateSbi';
     const UPI_ICICI_RAZORPAY_TERMINAL        = '100UPIICICITml';
+    const UPI_HULK_RAZORPAY_TERMINAL         = '100UPIHulkTrml';
     const UPI_ICICI_INTENT_TERMINAL          = '1UpiIntICICTml';
     const AEPS_ICICI_RAZORPAY_TERMINAL       = '1000AepsShared';
     const AIRTELMONEY_RAZORPAY_TERMINAL      = '100ArtlMnyTmnl';
@@ -98,6 +100,7 @@ class Shared
         self::UPI_MINDGATE_RAZORPAY_TERMINAL,
         self::UPI_MINDGATE_TPV_TERMINAL,
         self::UPI_ICICI_RAZORPAY_TERMINAL,
+        self::UPI_HULK_RAZORPAY_TERMINAL,
         self::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL,
         self::AEPS_ICICI_RAZORPAY_TERMINAL,
         self::AIRTELMONEY_RAZORPAY_TERMINAL,
@@ -147,6 +150,7 @@ class Shared
         self::UPI_MINDGATE_RAZORPAY_TERMINAL     => Gateway::UPI_MINDGATE,
         self::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL => Gateway::UPI_SBI,
         self::UPI_ICICI_RAZORPAY_TERMINAL        => Gateway::UPI_ICICI,
+        self::UPI_HULK_RAZORPAY_TERMINAL         => Gateway::UPI_HULK,
         self::OPENWALLET_RAZORPAY_TERMINAL       => Gateway::WALLET_OPENWALLET,
         self::MPESA_RAZORPAY_TERMINAL            => Gateway::WALLET_MPESA,
     ];

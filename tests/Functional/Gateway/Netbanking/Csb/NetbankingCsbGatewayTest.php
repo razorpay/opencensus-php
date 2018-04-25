@@ -22,10 +22,12 @@ use RZP\Mail\Gateway\DailyFile;
 
 class NetbankingCsbGatewayTest extends TestCase
 {
-    protected $payment;
-
     use PaymentTrait;
     use DbEntityFetchTrait;
+
+    protected $payment;
+
+    protected $sharedTerminal;
 
     public function setUp()
     {
