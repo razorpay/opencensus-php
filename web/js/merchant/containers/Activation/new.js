@@ -46,14 +46,7 @@ export default class ActivationContainer extends React.Component {
         }
         return response;
       })
-      .catch(err => {
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors,
-        });
-
-        throw err;
-      });
+      .catch(err => {});
   };
 
   saveStep = (data, accountId) => {
@@ -66,42 +59,50 @@ export default class ActivationContainer extends React.Component {
       .then(response => {
         if (response.data) {
           this.setState({
-            data,
+            data: response.data,
           });
         }
       })
-      .catch(err => {
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors,
-        });
-
-        throw err;
-      });
+      .catch(err => {});
   };
 
   saveFile = (event, fieldName, accountId) => {
     let files = event.target.files;
+    let file = files[0];
+
+    let formData = new FormData();
+
+    let fieldNameMapping = {
+      business_proof_url: 'business_proof_url',
+      business_operation_proof: 'business_operation_proof_url',
+      business_pan_url: 'business_pan_url',
+      address_proof_url: 'address_proof_url',
+      promoter_proof: 'promoter_proof_url',
+      promoter_pan_proof: 'promoter_pan_url',
+      promoter_address_url: 'promoter_address_url',
+      ngo_12a_proof: 'form_12a_url',
+      ngo_80g_proof: 'form_80g_url',
+    };
+    formData.append(fieldNameMapping[fieldName], file);
 
     // TODO: Temporary notification in then-catch, success-error msg would be adjusted in custom UI for file upload.
-    return this.props
-      .saveFile({
-        fieldName,
-        file: files[0],
-        accountId,
-      })
+    return merchantFetch({
+      url: 'merchant/activation/upload',
+      method: 'post',
+      mode: 'live',
+      data: formData,
+      accountId,
+    })
       .then(response => {
         this.props.showNotification({
           type: 'success',
           message: 'File uploaded successfully',
         });
-      })
-      .catch(({ errors }) => {
-        this.props.showNotification({
-          type: 'error',
-          message: errors,
+        this.setState({
+          data: response.data,
         });
-      });
+      })
+      .catch(err => {});
   };
 
   render() {
