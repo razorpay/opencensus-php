@@ -95,13 +95,9 @@ class Gateway extends Base\Gateway
 
         $content = $this->getRefundRequestContent($gatewayPayment, $input);
 
-        $request = $this->getStandardRequestArray($content, 'get');
+        $request = $this->getStandardRequestArray($content);
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_REFUND_REQUEST);
-
-        $request['url'] = $this->createRedirectUrl($request['content']);
-
-        $request['content'] = [];
 
         $response = $this->sendGatewayRequest($request);
 
