@@ -3,25 +3,26 @@
 namespace RZP\Jobs\Invoice;
 
 use App;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
+use RZP\Jobs\Job;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Jobs\Job as BaseJob;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Invoice as InvoiceModel;
 
 /**
  * - Asynchronously issues all invoices/payment links of given batch.
  */
-class BatchIssue extends BaseJob implements ShouldQueue
+class BatchIssue extends Job
 {
-    use InteractsWithQueue;
-
     const INPUT              = 'input';
     const MUTEX_LOCK_TIMEOUT = 3600;    // In seconds
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'invoice';
 
     /**
      * Batch entity id.

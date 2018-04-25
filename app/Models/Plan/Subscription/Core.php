@@ -19,12 +19,8 @@ use RZP\Jobs\Plan\ChargeSubscription;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 
-use Illuminate\Foundation\Bus\DispatchesJobs;
-
 class Core extends Base\Core
 {
-    use DispatchesJobs;
-
     /**
      * Lock wait timeout for acquiring
      * Since this makes auth and capture requests,
@@ -411,7 +407,7 @@ class Core extends Base\Core
             // of issues with figuring out the auth for recurring.
             // Will fix this later and then move to queue.
             //
-            // $this->dispatch((new ChargeSubscription($queuePayload)));
+            // ChargeSubscription::dispatch($queuePayload);
             // return true;
         }
         else
