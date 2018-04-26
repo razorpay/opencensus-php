@@ -2,13 +2,10 @@
 
 namespace RZP\Jobs\Invoice;
 
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
-
-use RZP\Jobs\Job as BaseJob;
 use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Jobs\Job as BaseJob;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -17,10 +14,8 @@ use RZP\Exception\BadRequestValidationFailureException;
  * - Generate PDFs,
  * - Communications - send SMSes, emails etc.
  */
-class Job extends BaseJob implements ShouldQueue
+class Job extends BaseJob
 {
-    use InteractsWithQueue;
-
     const MAX_ALLOWED_ATTEMPTS = 10;
     const RELEASE_WAIT_SECS    = 60;
 
@@ -35,6 +30,11 @@ class Job extends BaseJob implements ShouldQueue
     const UPDATED               = 'updated';
     const EXPIRED               = 'expired';
     const CAPTURED              = 'captured';
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'invoice';
 
     protected $event;
     protected $id;

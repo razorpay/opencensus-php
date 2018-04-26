@@ -33,158 +33,154 @@ return [
 
     'default'               => env('QUEUE_DRIVER', 'sync'),
 
-    'mock'                  => env('QUEUE_MOCK', false),
+    /*
+    | If set to true (only in local/testing environment), all queue jobs are pushed to default connection & queue.
+    | Only applies for asynchronous job drivers.
+    */
+    'routing_mock'            => env('QUEUE_ROUTING_MOCK', false),
 
     /*
     |--------------------------------------------------------------------------
-    | For accessing values via dot notation nested array need to created
+    | Contains mapping of route keys(nested) and which queue connection & queue name to use respectively.
+    | Usage: Ref \RZP\Jobs\Extended\PendingDispatch.php
     |--------------------------------------------------------------------------
     */
+
     'webhook' => [
-        'connection' => 'sqs_multi_default',
         'test' => [
             'payment' => [
-                'authorized'    => env('AWS_WEBHOOKS_TEST_QUEUE'),
-                'captured'      => env('AWS_WEBHOOKS_TEST_QUEUE'),
-                'failed'        => env('AWS_WEBHOOKS_TEST_QUEUE'),
-                'dispute'       => [
-                    'created'   => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'authorized'        => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'captured'          => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'failed'            => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'dispute' => [
+                    'created'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 ],
             ],
             'order' => [
-                'paid'          => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'paid'              => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ],
             'invoice' => [
-                'paid'          => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'paid'              => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'partially_paid'    => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'expired'           => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ],
             'vpa' => [
-                'edited'        => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'edited'            => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ],
             'p2p' => [
-                'created'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
-                'rejected'      => env('AWS_WEBHOOKS_TEST_QUEUE'),
-                'transferred'   => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'created'           => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'rejected'          => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'transferred'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ],
             'subscription' => [
-                'activated'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
-                'pending'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
-                'halted'        => env('AWS_WEBHOOKS_TEST_QUEUE'),
-                'expired'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
-                'cancelled'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
-                'completed'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'activated'         => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'charged'           => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'pending'           => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'halted'            => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'expired'           => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'cancelled'         => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'completed'         => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ],
             'settlement' => [
-                'processed'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'processed'         => env('AWS_WEBHOOKS_TEST_QUEUE'),
+            ],
+            'virtual_account' => [
+                'created'           => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'credited'          => env('AWS_WEBHOOKS_TEST_QUEUE'),
+            ],
+            'token' => [
+                'confirmed'         => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ],
         ],
         'live' => [
             'payment' => [
-                'authorized'    => env('AWS_WEBHOOKS_LIVE_QUEUE'),
-                'captured'      => env('AWS_WEBHOOKS_LIVE_QUEUE'),
-                'failed'        => env('AWS_WEBHOOKS_FAILURE_QUEUE'),
-                'dispute'       => [
-                    'created'   => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'authorized'        => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'captured'          => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'failed'            => env('AWS_WEBHOOKS_FAILURE_QUEUE'),
+                'dispute' => [
+                    'created'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 ],
             ],
             'order' => [
-                'paid'          => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'paid'              => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ],
             'invoice' => [
-                'paid'          => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'paid'              => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'partially_paid'    => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'expired'           => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ],
             'vpa' => [
-                'edited'        => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'edited'            => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ],
             'p2p' => [
-                'created'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
-                'rejected'      => env('AWS_WEBHOOKS_LIVE_QUEUE'),
-                'transferred'   => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'created'           => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'rejected'          => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'transferred'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ],
             'subscription' => [
-                'activated'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
-                'pending'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
-                'halted'        => env('AWS_WEBHOOKS_LIVE_QUEUE'),
-                'expired'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
-                'cancelled'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
-                'completed'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'activated'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'charged'           => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'pending'           => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'halted'            => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'expired'           => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'cancelled'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'completed'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ],
             'settlement' => [
-                'processed'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'processed'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+            ],
+            'virtual_account' => [
+                'created'           => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'credited'          => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+            ],
+            'token' => [
+                'confirmed'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ],
         ],
     ],
-
     'dashboard' => [
-        'connection' => 'sqs_multi_default',
         'test'       => env('AWS_GENERAL_TEST_QUEUE'),
         'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
     ],
-
-    'es' => [
-        'connection' => 'sqs_multi_default',
-        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
-        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
-    ],
-
-    'es_v2' => [
-        'connection' => 'sqs_multi_default',
+    'es_sync' => [
         'test'       => env('AWS_ES_SYNC_QUEUE'),
         'live'       => env('AWS_ES_SYNC_QUEUE'),
     ],
-
-    'reports' => [
-        'connection' => 'sqs_multi_default',
+    'reports_job' => [
         'test'       => env('AWS_REPORTS_QUEUE'),
         'live'       => env('AWS_REPORTS_QUEUE'),
     ],
-
     'merchant_invoice' => [
-        'connection' => 'sqs_multi_default',
         'test'       => env('AWS_INVOICE_REPORTS_QUEUE'),
         'live'       => env('AWS_INVOICE_REPORTS_QUEUE'),
     ],
-
     'invoice' => [
-        'connection' => 'sqs_multi_default',
         'test'       => env('AWS_INVOICE_EMAILS_QUEUE'),
         'live'       => env('AWS_INVOICE_EMAILS_QUEUE'),
     ],
-
-    'mail' => [
-        'connection' => 'sqs_mail',
-    ],
-
     'batch' => [
-        'connection' => 'sqs_multi_default',
         'test'       => env('AWS_BATCH_QUEUE'),
         'live'       => env('AWS_BATCH_QUEUE'),
     ],
-
-    'shield' => [
-        'connection' => 'sqs_multi_default',
+    'capture' => [
+        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
+        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+    ],
+    'gateway_file' => [
+        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
+        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+    ],
+    'run_shield_check' => [
         'test'       => env('AWS_SHIELD_QUEUE'),
         'live'       => env('AWS_SHIELD_QUEUE'),
     ],
 
-    'capture' => [
-        'connection' => 'sqs_multi_default',
-        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
-        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+    /*
+     | Lists various queues to be used per mailable
+     */
+    'mail' => [
+        'default' => env('AWS_EMAILS_QUEUE'),
     ],
-
-    'gateway_file' => [
-        'connection' => 'sqs_multi_default',
-        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
-        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
-    ],
-
-    'sqs_general_live'      => env('AWS_GENERAL_LIVE_QUEUE'),
-    'sqs_general_test'      => env('AWS_GENERAL_TEST_QUEUE'),
-    'sqs_general_failure'   => env('AWS_GENERAL_FAILURE_QUEUE'),
-    'sqs_webhooks_live'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
-    'sqs_webhooks_test'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
-    'sqs_webhooks_failure'  => env('AWS_WEBHOOKS_FAILURE_QUEUE'),
-
 
     /*
     |--------------------------------------------------------------------------
@@ -221,23 +217,26 @@ return [
             'driver'      => 'sqs',
             'key'         => env('AWS_KEY_ID'),
             'secret'      => env('AWS_KEY_SECRET'),
-            'prefix'      => env('AWS_QUEUE_URL'),
-            'queue'       => env('AWS_QUEUE_NAME'),
+            'prefix'      => env('AWS_QUEUE_PREFIX'),
+            'queue'       => env('AWS_DEFAULT_QUEUE'),
             'region'      => env('AWS_REGION'),
             'credentials' => $memoizedProvider,
         ],
 
+        // TODO: Update brahma's & k8s code & remove this block
+        // Ref: https://github.com/razorpay/brahma/blob/master/ansible-playbooks/roles/app-supervisor/templates/api.supervisor.conf.j2#L19
         'sqs_multi_default' => [
             'driver'      => 'sqs',
             'key'         => env('AWS_KEY_ID'),
             'secret'      => env('AWS_KEY_SECRET'),
             'prefix'      => env('AWS_QUEUE_PREFIX'),
-            'queue'       => env('AWS_GENERAL_LIVE_QUEUE'),
+            'queue'       => env('AWS_DEFAULT_QUEUE'),
             'region'      => env('AWS_REGION'),
             'credentials' => $memoizedProvider,
         ],
 
-        'sqs_mail'  => [
+        // TODO: Slack lib should expose method to set just queue name instead of connection
+        'sqs_slack' => [
             'driver'      => 'sqs',
             'key'         => env('AWS_KEY_ID'),
             'secret'      => env('AWS_KEY_SECRET'),
@@ -271,5 +270,6 @@ return [
         'database' => env('DB_CONNECTION', 'mysql'),
         'table'    => 'failed_jobs',
     ],
+
 
 ];
