@@ -94,7 +94,7 @@ class DirectDebit extends Base
         }
         finally
         {
-            $row[Header::CARD] = substr($row[Header::CARD], 0,6) . 'xxxxxx' . substr($row[Header::CARD], 12);
+            $row[Header::CARD] = $this->mask($row[Header::CARD]);
         }
         return $row;
     }
@@ -158,5 +158,22 @@ class DirectDebit extends Base
     protected function shouldEncrypt()
     {
         return true;
+    }
+
+    protected function createSetOutputFileAndSave(array & $entries, string $fileType = FileStore\Type::BATCH_OUTPUT)
+    {
+        $result = parent::createSetOutputFileAndSave($entries, $fileType);
+
+        foreach ($entries as & $entry)
+        {
+            $entry[Header::CARD] = $this->mask($entry[Header::CARD]);
+        }
+
+        return $result;
+    }
+
+    protected function mask(string $card)
+    {
+        return  substr($card, 0,6) . 'xxxxxx' . substr($card, 12);
     }
 }
