@@ -24,32 +24,33 @@ class Core extends Base\Core
     }
 
     /**
-     * Connects a merchant to an application, and return a
+     * Connects a sub-merchant to an application, and return a
      *
-     * @param string          $appId
-     * @param Merchant\Entity $merchant
+     * @param OAuth\Application\Entity $app
+     * @param Merchant\Entity          $subMerchant
      *
-     * @return OAuth\Token\Entity
+     * @return string
+     * @throws BadRequestValidationFailureException
      */
-    public function connectMerchant(string $appId, Merchant\Entity $merchant) : OAuth\Token\Entity
+    public function connectMerchant(OAuth\Application\Entity $app, Merchant\Entity $subMerchant) : string
     {
-        $app = $this->appRepo->findOrFailPublic($appId);
+        $appId = $app->getId();
 
-        // Validate that the app is a partner app
+        try
+        {
+            $token = $this->app['authservice']->createPartnerToken($appId, $this->merchant->getId(), $subMerchant->getId());
 
-        // Get the app->client, client should be of type 'partner'
+            $mapInput[Merchant\AccessMap\Entity::APPLICATION_ID] = $appId;
+        }
+        catch (\Throwable $t)
+        {
+            $this->trace->traceException($t);
 
-        $token = $this->app['authservice']->createPartnerToken($appId, $merchant->getId());
+            throw new BadRequestValidationFailureException('4xx');
+        }
 
-        $mapInput[Merchant\AccessMap\Entity::APPLICATION_ID] = $appId;
+        (new Merchant\AccessMap\Core)->addMappingForOAuthApp($subMerchant, $mapInput);
 
-        (new Merchant\AccessMap\Core)->addMappingForOAuthApp($merchant, $mapInput);
-
-        return $token['id'];
-    }
-
-    protected function validateMerchant(Merchant\Entity $merchant)
-    {
-        // What?
+        return $token['partner_token'];
     }
 }

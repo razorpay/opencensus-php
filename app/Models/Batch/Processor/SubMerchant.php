@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use Razorpay\OAuth;
+
 use RZP\Models\Partner;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
@@ -28,6 +30,11 @@ class SubMerchant extends Base
      */
     protected $merchantDetailCore;
 
+    /**
+     * @var OAuth\Application\Entity
+     */
+    protected $partnerApp;
+
     public function __construct(Entity $batch)
     {
         parent::__construct($batch);
@@ -43,8 +50,31 @@ class SubMerchant extends Base
         {
             $subMerchant = $this->createSubMerchantForEntry($entry);
 
-            $this->processPartnerAppIfApplicable($subMerchant->getId(), $entry);
+            $this->processPartnerAppIfApplicable($subMerchant, $entry);
         });
+    }
+
+    protected function performPreProcessingActions()
+    {
+        $this->setPartnerAppIfApplicable();
+
+        return parent::performPreProcessingActions();
+    }
+
+    protected function setPartnerAppIfApplicable()
+    {
+        $appId = $this->params[Entity::APPLICATION_ID] ?? null;
+
+        if (empty($appId) === true)
+        {
+            return;
+        }
+
+        $this->partnerApp = (new OAuth\Application\Repository)->findOrFailPublic($appId);
+
+        // Validate that the app is a partner app
+
+        // Get the app->client, client should be of type 'partner'
     }
 
     /**
@@ -88,18 +118,14 @@ class SubMerchant extends Base
 
     protected function processPartnerAppIfApplicable(Merchant\Entity $subMerchant, array & $entry)
     {
-        $appId = $this->params[Entity::APPLICATION_ID] ?? null;
-
-        if (empty($appId) === true)
+        if ($this->partnerApp === null)
         {
             return;
         }
 
-        $token = (new Partner\Core)->connectMerchant($appId, $subMerchant);
+        $token = (new Partner\Core)->connectMerchant($this->partnerApp, $subMerchant);
 
-        $partnerToken = $token->getId(); // Construct the actual token with prefix first
-
-        $entry[Header::PARTNER_TOKEN] = $partnerToken;
+        $entry[Header::PARTNER_TOKEN] = $token;
     }
 
     protected function sendProcessedMail()

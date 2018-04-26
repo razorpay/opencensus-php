@@ -94,11 +94,12 @@ class AuthService
         return $this->sendRequest('tokens/' . $id, Requests::PUT, $input);
     }
 
-    public function createPartnerToken(string $appId, string $merchantId) : array
+    public function createPartnerToken(string $appId, string $partnerMerchantId, string $subMerchantId) : array
     {
         $input = [
             Client\Entity::APPLICATION_ID => $appId,
-            Client\Entity::MERCHANT_ID    => $merchantId,
+            'partner_merchant_id'         => $partnerMerchantId,
+            'sub_merchant_id'             => $subMerchantId,
         ];
 
         return $this->sendRequest('tokens/partner', Requests::POST, $input);
