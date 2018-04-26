@@ -129,7 +129,7 @@ class Csb extends Base
 
     protected function getMerchantId2($terminal): string
     {
-        $merchantId2 = $this->config['test_merchant_id_2'];
+        $merchantId2 = $this->config['test_merchant_id'];
 
         if ($this->mode === RZPMode::LIVE)
         {
