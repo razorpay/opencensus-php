@@ -15,9 +15,9 @@ import { adminPost } from 'common/fetch';
 
 const typeToTargetMap = {
   '': ' ',
-  refund: ['hdfc', 'icici'],
+  refund: ['hdfc', 'icici', 'csb'],
   emi: ['indusind', 'kotak', 'axis', 'rbl', 'scbl'],
-  combined: ['kotak', 'axis', 'rbl', 'indusind', 'federal'],
+  combined: ['kotak', 'axis', 'federal', 'bob', 'rbl', 'indusind', 'obc'],
   emandate_register: ['hdfc'],
   emandate_debit: ['hdfc', 'axis'],
   // TODO: uncomment this when api branch supporting this gets merge

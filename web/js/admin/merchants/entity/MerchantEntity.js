@@ -640,10 +640,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
           <i class="pull-right i i-terminal" />
         </div>
 
-        <div onClick={actions.AssignBanks}>
-          Assign Banks
-          <i class="pull-right i i-bank" />
-        </div>
+        <ShowWhen permission="assign_merchant_banks">
+          <div onClick={actions.AssignBanks}>
+            Assign Banks
+            <i class="pull-right i i-bank" />
+          </div>
+        </ShowWhen>
         <ShowWhen permission="merchant_autofill_form">
           <div
             onClick={isDetailsLoading ? null : actions.AutoFillActivationForm}
