@@ -22,15 +22,9 @@ import Settings from 'merchant/containers/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 
 // Below will be removed with old navigation removal
-import PaymentsList from 'merchant/containers/Payments/List';
 import RefundsList from 'merchant/containers/Refunds/List';
 import BatchUpload from 'merchant/containers/Refunds/BatchUpload';
 import BatchUploads from 'merchant/containers/Refunds/BatchList';
-import OrdersList from 'merchant/containers/Orders/List';
-import Referrals from 'merchant/containers/Referrals/List';
-import Configuration from 'merchant/containers/Configuration';
-import ApiKeys from 'merchant/containers/Keys/List';
-import Webhooks from 'merchant/containers/Webhooks/List';
 
 import ErrorBoundary from 'common/ErrorBoundary';
 
@@ -102,7 +96,13 @@ export default class Content extends Component {
     var matchResult = matchDetail(location.pathname);
 
     if (matchResult) {
-      this.detailView = matchResult.component;
+      if (matchResult.match && matchResult.match.path === '/activation') {
+        this.activationView = matchResult.component;
+        this.detailView = null;
+      } else {
+        this.activationView = null;
+        this.detailView = matchResult.component;
+      }
 
       const params = matchResult.match.params;
       setActiveEntity(params.id);
@@ -115,6 +115,7 @@ export default class Content extends Component {
       }
     } else {
       this.detailView = null;
+      this.activationView = null;
       this.detailProps = null;
       setActiveEntity(null);
       setSecActiveEntity(null);
@@ -201,6 +202,8 @@ export default class Content extends Component {
     var DetailView = this.detailView;
     var BaseView = this.baseLocation ? this.getBaseView() : null;
 
+    let ActivationFormView = this.activationView;
+
     if (DetailView) {
       DetailView = BaseView ? (
         <Slider closeUrl={this.baseLocation}>
@@ -217,12 +220,20 @@ export default class Content extends Component {
           <DetailView {...this.detailProps} />
         </ErrorBoundary>
       );
+    } else if (ActivationFormView) {
+      ActivationFormView = (
+        <ActivationFormView
+          {...this.detailProps}
+          closeUrl={BaseView ? this.baseLocation.pathname : undefined}
+        />
+      );
     }
 
     return (
       <main class="main-content">
         {BaseView}
         {DetailView}
+        {ActivationFormView}
       </main>
     );
   }

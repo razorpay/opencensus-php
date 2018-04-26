@@ -13,6 +13,7 @@ import DisputeDetails from 'merchant/containers/Disputes/Details';
 import BatchDetails from 'merchant/containers/BatchNew/Details';
 
 import PlanNew from 'merchant/containers/Plans/New';
+import ActivationContainer from 'merchant/containers/Activation/new';
 
 const entityMap = {
   '/payments/:id(pay_.+)/:entity_name(transfers)/new': PaymentsDetails,
@@ -37,6 +38,8 @@ const entityMap = {
   '/route/transfers/:id': TransferDetails,
 
   '/disputes/:id(disp_.+)': DisputeDetails,
+
+  '/activation': ActivationContainer,
 };
 
 export function matchDetail(pathname) {

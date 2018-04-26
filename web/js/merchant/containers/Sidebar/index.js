@@ -157,6 +157,12 @@ export default class Sidebar extends Component {
                   )}
                 </ShowWhen>
                 <MainNavLink
+                  label="PAMIDI BOX"
+                  icon="i i-chart text-info"
+                  to="/activation"
+                  exact
+                />
+                <MainNavLink
                   label="Home"
                   icon="i i-chart text-info"
                   to="/dashboard"
