@@ -235,10 +235,11 @@ return [
             'merchant_id'       => env('FSS_BOB_GATEWAY_MERCHANT_ID', '123'),
             'terminal_password' => env('FSS_BOB_GATEWAY_TERMINAL_PASSWORD', 'password'),
         ],
-        'fss' => [
-            'merchant_id'      => env('FSS_GATEWAY_MERCHANT_ID', '144'),
-            'test_hash_secret' => env('FSS_GATEWAY_TEST_HASH_SECRET', 'secret'),
-            'bank_code'        => env('FSS_GATEWAY_BANK_CODE', '12345678'),
+        'fss'  => [
+            'merchant_id'       => env('FSS_GATEWAY_MERCHANT_ID', '144'),
+            'test_hash_secret'  => env('FSS_GATEWAY_TEST_HASH_SECRET', 'secret'),
+            'bank_code'         => env('FSS_GATEWAY_BANK_CODE', '12345678'),
+            'terminal_password' => env('FSS_GATEWAY_TERMINAL_PASSWORD', 'password'),
         ]
     ],
 
