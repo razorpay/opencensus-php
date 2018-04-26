@@ -646,9 +646,6 @@ class Repository extends Base\Repository
 
         $paymentCardIdCol = $this->repo->payment->dbColumn(Payment\Entity::CARD_ID);
 
-        $startOfMonth = Carbon::createFromTimestamp($start)->startOfMonth()
-                                                           ->getTimestamp();
-
         $query = $this->newQuery()
                       ->selectRaw(
                           'SUM(' . $taxCol .') AS tax, SUM(' . $feeCol . ') AS fee')
@@ -667,12 +664,12 @@ class Repository extends Base\Repository
                               $query->whereBetween($createdAt, [$start, $end]);
                           }
                       })
-                      ->orWhere(function($query) use ($startOfMonth, $end)
+                      ->orWhere(function($query) use ($start, $end)
                       {
                           $createdAt = $this->dbColumn(Entity::CREATED_AT);
 
                           $query->where(Entity::TYPE, '<>', Type::PAYMENT)
-                                ->whereBetween($createdAt, [$startOfMonth, $end]);
+                                ->whereBetween($createdAt, [$start, $end]);
                       })
                       ->merchantId($merchantId)
                       ->whereNotIn(Entity::TYPE, Type::IGNORE_ENTITIES_FROM_MERCHANT_INVOICE)
