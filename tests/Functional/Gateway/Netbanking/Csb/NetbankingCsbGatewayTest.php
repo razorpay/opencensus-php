@@ -39,7 +39,7 @@ class NetbankingCsbGatewayTest extends TestCase
 
         $this->gateway = Payment\Gateway::NETBANKING_CSB;
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_netbanking_csb_terminal');
+        $this->fixtures->create('terminal:shared_netbanking_csb_terminal');
     }
 
     public function testPayment()
