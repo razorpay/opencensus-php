@@ -23,9 +23,9 @@ class Obc extends Base
     protected function formatDataForMail(array $data)
     {
         $amount = [
-            'claims'  => 0,
-            'refunds' => 0,
-            'total'   => 0,
+            'claims'  => 0.00,
+            'refunds' => 0.00,
+            'total'   => 0.00,
         ];
 
         $count = [
@@ -40,7 +40,7 @@ class Obc extends Base
         {
             $amount['refunds'] = array_reduce($data['refunds'], function ($sum, $item)
             {
-                $sum += ($item['refund']['amount'] / 100);
+                $sum += $this->getFormattedAmount($item['refund']['amount']);
 
                 return $sum;
             });
@@ -54,7 +54,7 @@ class Obc extends Base
         {
             $amount['claims'] = array_reduce($data['claims'], function ($sum, $item)
             {
-                $sum += ($item['payment']->getAmount() / 100);
+                $sum += $this->getFormattedAmount($item['payment']->getAmount());
 
                 return $sum;
             });
@@ -76,5 +76,10 @@ class Obc extends Base
             'refundsFile' => $refundsFile,
             'emails'      => $this->gatewayFile->getRecipients()
         ];
+    }
+
+    protected function getFormattedAmount($amount): string
+    {
+        return number_format($amount / 100, 2, '.', '');
     }
 }
