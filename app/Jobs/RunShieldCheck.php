@@ -5,6 +5,7 @@ namespace RZP\Jobs;
 use App;
 
 use RZP\Models\Risk;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Services\ShieldClient;
@@ -34,6 +35,12 @@ class RunShieldCheck extends Job
     public function handle()
     {
         parent::handle();
+
+        // We do not want to call shield in case for Payments in Test mode
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
 
         $riskCore = new Risk\Core();
 
