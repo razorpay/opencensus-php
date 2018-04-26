@@ -120,7 +120,7 @@ class NetbankingCsbReconTest extends TestCase
         $this->mockReconContentFunction(
             function (& $content, $action = null)
             {
-                $content[0][0] = "";
+                $content[0][0] = '';
             });
 
         $this->generateAndUploadReconFile();
@@ -168,7 +168,7 @@ class NetbankingCsbReconTest extends TestCase
     {
         $this->assertFileExists($file);
 
-        $mimeType = "text/plain";
+        $mimeType = 'text/plain';
 
         $uploadedFile = new UploadedFile(
             $file,
