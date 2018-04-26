@@ -209,7 +209,7 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->setMockGatewayTrue();
 
-        $payment = $this->createPayment('netbanking_obc');
+        $payment = $this->createFailedPayment('netbanking_obc');
 
         $this->createNetbanking($payment['id'], 'ORBC', 'F');
 

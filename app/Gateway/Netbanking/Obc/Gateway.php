@@ -81,6 +81,26 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+            $input['payment']['id'],
+            Payment\Action::AUTHORIZE);
+
+        // If it's already authorized on gateway side, We just return back.
+        if (($gatewayPayment->getReceived() === true) and
+            ($gatewayPayment->getStatus() === Status::SUCCESS))
+        {
+            return true;
+        }
+
+        $gatewayPayment->setStatus(Status::SUCCESS);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
+    }
+
     public function encrypt(string $stringToEncrypt)
     {
         $this->createCryptoIfNotCreated();

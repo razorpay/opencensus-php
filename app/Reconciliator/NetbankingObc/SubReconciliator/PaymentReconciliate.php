@@ -59,4 +59,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                         Action::AUTHORIZE
                     );
     }
+
+    //We are force authorizing this because their verify API depends on bank reference number
+    protected function shouldAttemptForceAuthorizeFailed()
+    {
+        return true;
+    }
 }
