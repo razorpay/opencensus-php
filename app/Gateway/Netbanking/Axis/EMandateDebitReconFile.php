@@ -15,7 +15,7 @@ class EMandateDebitReconFile extends BaseEMandateDebitReconFile
     // Status codes
     // Keep these values in lowercase to do a case-insensitive check
     const STATUS_SUCCESS = 'success';
-    const STATUS_FAILURE = 'return';
+    const STATUS_FAILURE = 'rejected';
 
     // Headings
     const HEADING_PAYMENT_ID        = 'INVOICE_NO';
@@ -32,7 +32,7 @@ class EMandateDebitReconFile extends BaseEMandateDebitReconFile
 
     protected $allowedStatuses = [
         self::STATUS_SUCCESS,
-        self::STATUS_FAILURE
+        self::STATUS_FAILURE,
     ];
 
     protected function updatePaymentEntities(array $row)
