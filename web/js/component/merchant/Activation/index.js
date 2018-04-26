@@ -62,10 +62,36 @@ const businessFields1 = [
     ],
   },
   {
-    label: 'Business Model',
-    name: 'business_model',
+    label: 'Business Category',
+    name: 'business_category',
     _cmp: Input.Select,
     options: [],
+  },
+  {
+    label: 'Sub Category',
+    name: 'business_subcategory',
+    _cmp: Input.Select,
+    options: [],
+    _optionsFn: function(activation, categories) {
+      const userSelection = activation.state.data.business_category;
+
+      if (userSelection && categories[userSelection]) {
+        const subCategories = categories[userSelection].subcategories;
+
+        this.options = Object.keys(subCategories).map(c => ({
+          name: c,
+          label: subCategories[c],
+        }));
+      }
+
+      return this.options;
+    },
+    _when: activation => {
+      return (
+        activation.state.data.business_category &&
+        activation.state.data.business_category != 0
+      ); // It's a string
+    },
   },
   {
     label: 'We want to accept International Payments as well',
@@ -453,6 +479,7 @@ export default class ActivationWizard extends React.Component {
           <Input.Group key={i}>{field.map(ActivationField, this)}</Input.Group>
         );
       }
+
       return ActivationField.call(this, field);
     });
 
@@ -570,10 +597,16 @@ function Loader({ isSaving }) {
 }
 
 function ActivationField(field, activation) {
-  let { _cmp: Component, _name, _when, ...rest } = field;
+  let { _cmp: Component, _name, _when, _optionsFn, ...rest } = field;
 
   if (_when && !_when(this)) {
     return null;
+  }
+
+  if (_optionsFn) {
+    if (field.name === 'business_subcategory') {
+      rest.options = field._optionsFn(this, this.props.categories);
+    }
   }
 
   let defaultValue, key;

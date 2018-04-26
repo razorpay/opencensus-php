@@ -5,9 +5,14 @@ import { without } from 'rzp/utils/rzp-utils';
 import Spinner from 'rzp/ui/Spinner';
 import ActivationWizard from 'component/merchant/Activation';
 
-@connect(state => {}, {
-  showNotification,
-})
+@connect(
+  state => {
+    return {};
+  },
+  {
+    showNotification,
+  }
+)
 export default class ActivationContainer extends React.Component {
   state = {
     data: null,
