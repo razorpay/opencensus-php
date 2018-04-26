@@ -101,6 +101,7 @@ class Entity extends Base\Entity
     {
         $this->setAttribute(self::DATE, $date);
     }
+
     public function setAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
