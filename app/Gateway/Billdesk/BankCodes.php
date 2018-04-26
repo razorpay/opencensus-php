@@ -34,6 +34,7 @@ class BankCodes
         IFSC::KARB => 'KBL',                    // Karnataka Bank Ltd
         IFSC::KKBK => '162',                    // Kotak Mahindra Bank
         IFSC::KVBL => 'KVB',                    // Karur Vysya Bank
+        IFSC::ORBC => 'OBC',
         IFSC::PMCB => 'PMC',                    // Punjab And Maharashtra Co-Op Bank Ltd
         IFSC::PSIB => 'PSB',                    // Punjab And Sind Bank
         IFSC::RATN => 'RBL',                    // Ratnakar Bank Ltd. (RBL Bank)
