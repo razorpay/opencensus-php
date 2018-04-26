@@ -292,6 +292,48 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->payment = $this->verifyPayment($payment['id']);
 
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertEquals($upi['account_number'], '004001551691');
+
+        $this->assertEquals($upi['ifsc'], 'ICIC0000000');
+
+        $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
+    // In case callback does not return the bank account details, we call verify
+    // and check that the details are saved in Upi Entity
+    public function testSaveBankDetailsLaterInVerify()
+    {
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $paymentId = $response['payment_id'];
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->mockServerContentFunction(
+            function (& $content, $action = null)
+            {
+                if ($action === 'callback')
+                {
+                    $content[16] = 'NA!NA!NA!NA';
+                }
+            });
+
+        $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $this->makeS2SCallbackAndGetContent($content);
+
+        $this->payment = $this->verifyPayment($payment['id']);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertEquals($upi['account_number'], '004001551691');
+
+        $this->assertEquals($upi['ifsc'], 'ICIC0000000');
+
         $this->assertSame($this->payment['payment']['verified'], 1);
     }
 
