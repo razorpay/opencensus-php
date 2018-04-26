@@ -361,7 +361,7 @@ export const getEventCategoryFromPath = pathname => {
     case 'virtualaccounts':
       return 'Dashboard - Smart Collect';
     default:
-      return null;
+      return 'Dashboard - Home';
   }
 };
 
