@@ -111,7 +111,11 @@ class FeeCalculator
         if (($this->entity->merchant->isFeeBearerCustomer() === false) and
             ($amount !== 0))
         {
-            if ($totalFees > $amount)
+            list($amountCredits, $feeCredits) = $this->getAvailableAmountOrFeeCredits();
+
+            if (($totalFees > $amount) and
+                ($amountCredits <= 0) and
+                ($totalFees > $feeCredits))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
@@ -124,6 +128,17 @@ class FeeCalculator
         }
 
         return [$totalFees, $totalTaxes];
+    }
+
+    protected function getAvailableAmountOrFeeCredits()
+    {
+        $merchantBalance = $this->entity->merchant->balance;
+
+        $amountCredits = $merchantBalance->getAmountCredits();
+
+        $feeCredits = $merchantBalance->getFeeCredits();
+
+        return [$amountCredits, $feeCredits];
     }
 
     public static function getTaxRate()

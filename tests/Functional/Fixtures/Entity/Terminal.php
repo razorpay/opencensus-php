@@ -203,15 +203,35 @@ class Terminal extends Base
         $termId = \RZP\Models\Terminal\Shared::ATOM_RAZORPAY_TERMINAL;
 
         $attributes = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'atom',
+            'card'                      => 1,
+            'netbanking'                => 1,
+            'gateway_merchant_id'       => 'razorpay',
+            'gateway_terminal_password' => 'razorpay_password',
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedAtomTpvTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::ATOM_RAZORPAY_TPV_TERMINAL;
+
+        $defaultValues = [
             'id'                    => $termId,
             'merchant_id'           => '100000Razorpay',
             'gateway'               => 'atom',
-            'card'                  => 1,
+            'card'                  => 0,
             'netbanking'            => 1,
+            'tpv'                   => 1,
             'gateway_merchant_id'   => 'razorpay',
-            'gateway_terminal_id'   => 'nodal account',
-            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_access_code'   => 'random_code',
+            'gateway_secure_secret' => 'random_secret',
         ];
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -224,11 +244,10 @@ class Terminal extends Base
             'id'                    => $termId,
             'merchant_id'           => '100000Razorpay',
             'gateway'               => 'atom',
-            // 'card'                  => 1,
             'netbanking'            => 1,
             'gateway_merchant_id'   => 'razorpay',
-            'gateway_terminal_id'   => 'nodal account',
-            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_access_code'   => 'random_code',
+            'gateway_secure_secret' => 'random_secret',
         ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
@@ -1425,6 +1444,24 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createSharedNetbankingCsbTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_CSB_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_CSB,
+            'gateway_merchant_id'   => 'netbanking_csb_merchant_id',
+            'gateway_merchant_id2'  => 'netbanking_csb_merchant_id2',
+            'netbanking'            => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
     public function createSharedNetbankingRblTpvTerminal(array $attributes = [])
     {
         $attributes = [
@@ -1506,6 +1543,25 @@ class Terminal extends Base
         ];
 
         return $this->createSharedUpiIciciTerminal($attributes);
+    }
+
+    public function createSharedUpiHulkTerminal(array $attributes)
+    {
+        $termId = Shared::UPI_HULK_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_hulk',
+            'gateway_acquirer'          => 'hdfc',
+            'gateway_merchant_id'       => '100000Razorpay',
+            'gateway_secure_secret'     => 'razorpay_password',
+            'upi'                       => true,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
     public function createSharedAepsIciciTerminal(array $attributes)

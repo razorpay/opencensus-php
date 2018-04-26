@@ -171,6 +171,14 @@ class Processor
         $this->verifyRefundStatus = null;
     }
 
+    public function flushPaymentObjects()
+    {
+        $this->order   = null;
+        $this->payment = null;
+        $this->refund  = null;
+        $this->type    = null;
+    }
+
     public function process(array $input, $gatewayInput = []): array
     {
         $this->setMethodForInput($input);
@@ -197,13 +205,31 @@ class Processor
         return $this->authorize($payment, $input, $gatewayInput);
     }
 
+    public function getPayment(): Payment\Entity
+    {
+        $this->payment->reload();
+
+        return $this->payment;
+    }
+
     protected function preProcessPaymentInputs(array $input, Payment\Entity $payment)
     {
-        $coproto = $this->preProcessPaymentInputsForEmandate($input, $payment);
+        $coproto = null;
 
-        if ($coproto === null)
+        switch ($payment->getMethod())
         {
-            $coproto = $this->preProcessPaymentInputsForWallet($input, $payment);
+            case Payment\Method::EMANDATE:
+                $coproto = $this->preProcessPaymentInputsForEmandate($input, $payment);
+                break;
+
+            case Payment\Method::WALLET:
+                $coproto = $this->preProcessPaymentInputsForWallet($input, $payment);
+                break;
+
+            case Payment\Method::UPI:
+                $coproto = $this->preProcessPaymentInputsForUpi($input, $payment);
+                break;
+
         }
 
         return $coproto;
@@ -286,7 +312,7 @@ class Processor
         }
 
         $coproto = [
-            'type'    => 'emandate',
+            'type'    => 'respawn',
             'request' => [
                 'url'     => $this->route->getUrlWithPublicAuthInQueryParam($currentRouteName),
                 'method'  => 'POST',
@@ -295,6 +321,7 @@ class Processor
                     'bank_details' => $emandateMethods['emandate'][$input[Payment\Entity::BANK]],
                 ]
             ],
+            'method' => 'emandate',
             'version' => '1',
         ];
 
@@ -321,12 +348,13 @@ class Processor
               ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL))))
         {
             $coproto = [
-                'type'    => 'wallet',
+                'type'    => 'respawn',
                 'request' => [
                     'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
                     'method'  => 'POST',
                     'content' => $input,
                 ],
+                'method' => 'wallet',
                 'version' => '1',
             ];
 
@@ -342,6 +370,37 @@ class Processor
                 unset($coproto['request']['content']['email']);
             }
         }
+
+        return $coproto;
+    }
+
+    protected function preProcessPaymentInputsForUpi(array $input, Payment\Entity $payment)
+    {
+        $coproto = null;
+
+        if ($payment->isUpi() === false)
+        {
+            return;
+        }
+
+        if ((empty($input[Payment\Entity::VPA]) === false) or
+            (empty($input['_']['flow']) === false))
+        {
+            return;
+        }
+
+        $coproto = [
+            'type'    => 'respawn',
+            'request' => [
+                'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                'method'  => 'POST',
+                'content' => $input,
+            ],
+            'image'     => $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE),
+            'theme'     => $payment->merchant->getBrandColorElseDefault(),
+            'method'    => 'upi',
+            'version'   => '1',
+        ];
 
         return $coproto;
     }
@@ -502,6 +561,26 @@ class Processor
         else
         {
             $input[Payment\Entity::METHOD] = Payment\Method::CARD;
+        }
+    }
+
+    protected function modifyAmountForDiscountedOfferIfApplicable(Payment\Entity $payment, array & $input)
+    {
+        if (empty($input[Payment\Entity::ORDER_ID]) === true)
+        {
+            return;
+        }
+
+        $order = $this->fetchOrderFromInput($input);
+
+        if (($order !== null) and
+            ($order->isDiscountApplicable() === true))
+        {
+            $orderAmount = $order->getAmount();
+
+            $discountedAmount = $order->offer->getDiscountedAmount($orderAmount);
+
+            $payment->setAmount($discountedAmount);
         }
     }
 
@@ -1058,6 +1137,8 @@ class Processor
 
         $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
 
+        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
+
         $this->validateAndSetReceiverIfApplicable($payment, $input);
 
         $this->validateBankTransferDetailsIfApplicable($payment);
@@ -1236,25 +1317,17 @@ class Processor
 
     protected function fetchOrderFromInput(array $input): Order\Entity
     {
-        $order = $this->orderRepo->findbyPublicId($input['order_id']);
-
-        if ($order === null)
+        if ($this->order === null)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Order id provided not found.',
-                'order_id');
+            $order = $this->orderRepo
+                          ->findByPublicIdAndMerchant(
+                            $input[Payment\Entity::ORDER_ID],
+                            $this->merchant);
+
+            $this->order = $order;
         }
 
-        if ($order->getMerchantId() !== $this->merchant->id)
-        {
-            // Merchant mismatch
-            throw new Exception\BadRequestValidationFailureException(
-                'Order id not found');
-        }
-
-        $order->merchant()->associate($this->merchant);
-
-        return $order;
+        return $this->order;
     }
 
     protected function validateAndSetOrderDetailsIfApplicable(

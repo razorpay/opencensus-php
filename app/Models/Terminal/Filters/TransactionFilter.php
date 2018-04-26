@@ -212,6 +212,7 @@ class TransactionFilter extends Terminal\Filter
     public function recurringFilter($terminal)
     {
         $payment = $this->input['payment'];
+        $merchant = $this->input['merchant'];
 
         if ($payment->isRecurring() === false)
         {
@@ -230,6 +231,16 @@ class TransactionFilter extends Terminal\Filter
             ($terminal->getGatewayAcquirer() !== 'hdfc'))
         {
             return false;
+        }
+
+        if (($payment->isCard() === true) and
+            ($payment->card->isDebit() === true))
+        {
+            if (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) !== true) and
+                ($terminal->getGateway() !== Gateway::HITACHI))
+            {
+                return false;
+            }
         }
 
         $payment = $this->input['payment'];
@@ -274,7 +285,6 @@ class TransactionFilter extends Terminal\Filter
         if ((empty(array_diff($applicableTypes, $terminal->getType())) === true) or
             ($terminal->isNo2Fa() === true))
         {
-
             if (($terminal->isFallbackApplicable($this->input['merchant']) === true) and
                 ($payment->isCard() === true))
             {

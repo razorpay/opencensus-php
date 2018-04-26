@@ -39,7 +39,7 @@ class Validator extends Base\Validator
         'bank'                          => 'required_if:method,netbanking,aeps,emandate|string|between:4,6',
         'wallet'                        => 'required_if:method,wallet|custom',
         'emi_duration'                  => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
-        'description'                   => 'sometimes|string|max:255|utf8',
+        'description'                   => 'sometimes|nullable|string|max:255|utf8',
         'email'                         => 'sometimes|nullable|email',
         'contact'                       => 'sometimes|nullable|contact_syntax',
         'signature'                     => 'sometimes|nullable|string',
@@ -133,7 +133,6 @@ class Validator extends Base\Validator
         'customer_id',
         'test_success',
         'upi_expiry_time',
-        'upi_vpa',
         'recurring',
         // Ideally, we should be using custom. But
         // due to dot notation, we cannot use it.
@@ -247,20 +246,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'upi is/are not required and should not be sent');
-        }
-    }
-
-    protected function validateUpiVpa(array $input)
-    {
-        if ((isset($input['_']['flow']) === false) or
-            ($input['_']['flow'] !== 'intent'))
-        {
-            if (($input[Entity::METHOD] === Method::UPI) and
-                (empty($input[Entity::VPA]) === true))
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The vpa field is required when method is upi.');
-            }
         }
     }
 

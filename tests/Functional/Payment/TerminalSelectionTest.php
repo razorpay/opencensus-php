@@ -1268,7 +1268,9 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->on(Mode::LIVE)->create('terminal:disable_default_hdfc_terminal');
         $this->fixtures->on(Mode::LIVE)->create('terminal:shared_cybersource_hdfc_terminal');
 
-        $this->fixtures->on(Mode::LIVE)->create('merchant', $attributes);
+        $merchant = $this->fixtures->on(Mode::LIVE)->create('merchant', $attributes);
+        $this->fixtures->on(Mode::LIVE)->create('balance', ['id' => $merchant->getId()]);
+
         $this->fixtures->on(Mode::LIVE)->create('methods', [
             'merchant_id'    => '10000000001017',
             'disabled_banks' => [],
@@ -1303,7 +1305,9 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->on(Mode::LIVE)->create('terminal:disable_default_hdfc_terminal');
         $this->fixtures->on(Mode::LIVE)->create('terminal:shared_axis_terminal');
 
-        $this->fixtures->on(Mode::LIVE)->create('merchant', $attributes);
+        $merchant = $this->fixtures->on(Mode::LIVE)->create('merchant', $attributes);
+        $this->fixtures->on(Mode::LIVE)->create('balance', ['id' => $merchant->getId()]);
+
         $this->fixtures->on(Mode::LIVE)->create('methods', [
             'merchant_id'    => Preferences::MID_ZOMATO,
             'disabled_banks' => [],

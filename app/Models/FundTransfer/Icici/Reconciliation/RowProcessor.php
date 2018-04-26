@@ -60,8 +60,12 @@ class RowProcessor extends BaseRowProcessor
 
         $currentStatus = $this->reconEntity->getStatus();
 
-        if ((in_array($currentBankStatusCode, Status::SUCCESS_STATUS, true) === true) and
-            ($newBankStatusCode === Status::CANCELLED))
+        $successStatuses = Status::getSuccessfulStatus();
+
+        $flipStatus = Status::getFlipStatus();
+
+        if ((in_array($currentBankStatusCode, $successStatuses, true) === true) and
+            (in_array($newBankStatusCode, $flipStatus, true) === true))
         {
             $this->reconEntity->setStatus(Attempt\Status::INITIATED);
         }

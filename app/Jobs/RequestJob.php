@@ -2,19 +2,14 @@
 
 namespace RZP\Jobs;
 
-use RZP\Jobs\Job;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
-
 use Requests;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 
-class RequestJob extends Job implements ShouldQueue
-{
-    use InteractsWithQueue;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 
+class RequestJob extends Job
+{
     const MAX_ALLOWED_ATTEMPTS = 5;
     const RELEASE_WAIT_SECS    = 60;
 

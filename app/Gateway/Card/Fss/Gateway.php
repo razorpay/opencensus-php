@@ -284,6 +284,11 @@ class Gateway extends Base\Gateway
                     $requestContent[Fields::UDF3]       = $this->config['fss']['merchant_id'];
                 }
 
+                if ($this->action === Action::REFUND)
+                {
+                    $requestContent[Fields::PASSWORD] = $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
+                }
+
                 break;
             case Acquirer::BOB:
                 $requestContent[Fields::PASSWORD] = $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];

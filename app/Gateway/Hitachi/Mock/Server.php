@@ -44,7 +44,7 @@ class Server extends Base\Mock\Server
             'F011'       => 'abc123',
             'F012'       => '120000',
             'F013'       => '1212',
-            'F037'       => 'something',
+            'F037'       => 'somethingabc',
             'F038'       => 'randoma',
             'F039'       => '0',
             'F041'       => 'abcd_hitachi_bharat',

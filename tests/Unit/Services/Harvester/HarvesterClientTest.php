@@ -16,7 +16,7 @@ class HarvesterClientTest extends TestCase
 
         $this->algo = 'sha1';
 
-        $this->classname = '\RZP\Services\HarvesterClient';
+        $this->classname = '\RZP\Services\Harvester\HarvesterClient';
     }
 
     /**
@@ -46,7 +46,7 @@ class HarvesterClientTest extends TestCase
 
         $this->assertNotEquals($expectedSignature, $value);
     }
-    
+
     /**
      * Method to failure test signature generation for incorrect secret
      *
@@ -55,9 +55,9 @@ class HarvesterClientTest extends TestCase
     public function testGenerateSignatureFailureIncorrectSecret(array $config, string $message)
     {
         $value = $this->getGenerateSignatureMockValue($config, [$message]);
-        
+
         $expectedSignature = hash_hmac($this->algo, $message, $config['secret'] . '_incorrect');
-        
+
         $this->assertNotEquals($expectedSignature, $value);
     }
 

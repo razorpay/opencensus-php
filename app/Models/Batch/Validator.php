@@ -86,6 +86,13 @@ class Validator extends Base\Validator
         Entity::FILE                 => 'required|file' . self::DEFAULT_MIME_RULE,
     ];
 
+    protected static $elfinCreateRules = [
+        Entity::TYPE   => 'required|custom',
+        Entity::NAME   => 'filled|string|max:255',
+        Entity::FILE   => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG => 'filled|array',
+    ];
+
     /**
      * Defines the required keys to be present in emandate hdfc register file
      * and the corresponding error message to be thrown when they are absent or empty
@@ -336,9 +343,23 @@ class Validator extends Base\Validator
         if ($merchant->isFeatureEnabled(Feature::VIRTUAL_ACCOUNTS) === false)
         {
             throw new BadRequestValidationFailureException(
-                'Virtual accounts is not enabled for merchant',
+                'Batch type is not enabled for merchant',
                 null,
                 [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+    }
+
+    protected function validateRecurringChargeEntries(array & $entries, array $params, Merchant\Entity $merchant)
+    {
+        if ($merchant->isFeatureEnabled(Feature::CHARGE_AT_WILL) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Batch type is not enabled for merchant',
+                null,
+                [
+                    Entity::ID          => $this->entity->getId(),
                     Entity::MERCHANT_ID => $merchant->getId(),
                 ]);
         }
@@ -349,7 +370,7 @@ class Validator extends Base\Validator
         if ($merchant->isFeatureEnabled(Feature::PAYOUT) === false)
         {
             throw new BadRequestValidationFailureException(
-                'Payout are not enabled for merchant',
+                'Batch type is not enabled for merchant',
                 null,
                 [
                     Entity::MERCHANT_ID => $merchant->getId(),

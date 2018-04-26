@@ -101,6 +101,13 @@ class Activate extends Base\Core
 
         $merchant->activate();
 
+        // making sure that merchant's has_key_access is set to true when website is set.
+        if ((empty($merchant->merchantDetail->getWebsite()) === false) and
+            ($merchant->getHasKeyAccess() === false))
+        {
+            $merchant->setHasKeyAccess(true);
+        }
+
         if ($activateByStatus === true)
         {
             // Triggering workflow for the activation_status change in merchantDetail entity

@@ -344,4 +344,19 @@ class Server extends Base\Core
     {
         return Payment\Entity::getSignedId($pid);
     }
+
+    protected function compareHashes($actual, $generated)
+    {
+        if (hash_equals($actual, $generated) === false)
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_CHECKSUM_VERIFY_FAILED,
+                [
+                    'actual'    => $actual,
+                    'generated' => $generated
+                ]);
+
+            throw new Exception\RuntimeException('Failed checksum verification');
+        }
+    }
 }

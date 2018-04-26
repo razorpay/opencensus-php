@@ -145,6 +145,23 @@ class Header
     const TIME           = 'time';
 
     //
+    // Batch recurring payments
+    //
+    const RECURRING_CHARGE_TOKEN       = 'token';
+    const RECURRING_CHARGE_CUSTOMER_ID = 'customer_id';
+    const RECURRING_CHARGE_AMOUNT      = 'amount';
+    const RECURRING_CHARGE_CURRENCY    = 'currency';
+    const RECURRING_CHARGE_RECEIPT     = 'receipt';
+    const RECURRING_CHARGE_DESCRIPTION = 'description';
+    const RECURRING_CHARGE_NOTES_1     = 'notes_1';
+    const RECURRING_CHARGE_NOTES_2     = 'notes_2';
+    const RECURRING_CHARGE_NOTES_3     = 'notes_3';
+    const RECURRING_CHARGE_NOTES_4     = 'notes_4';
+    const RECURRING_CHARGE_NOTES_5     = 'notes_5';
+    const RECURRING_CHARGE_PAYMENT_ID  = 'payment_id';
+    const RECURRING_CHARGE_ORDER_ID    = 'order_id';
+
+    //
     // HDFC Emandate Register Response File Headers
     //
     const HDFC_EM_REGISTER_CLIENT_NAME                      = HdfcEMRegisterHeadings::CLIENT_NAME;
@@ -233,6 +250,9 @@ class Header
     const PAYOUT_NOTES               = 'payout_notes';
     const PAYOUT_FEE                 = 'payout_fee';
     const PAYOUT_TAX                 = 'payout_tax';
+
+    const ELFIN_LONG_URL             = 'Long Url';
+    const ELFIN_SHORT_URL            = 'Short Url';
 
     /**
      * Input and output file headers
@@ -455,6 +475,37 @@ class Header
             ],
         ],
 
+        Type::RECURRING_CHARGE => [
+            self::INPUT => [
+                self::RECURRING_CHARGE_TOKEN,
+                self::RECURRING_CHARGE_CUSTOMER_ID,
+                self::RECURRING_CHARGE_AMOUNT,
+                self::RECURRING_CHARGE_CURRENCY,
+                self::RECURRING_CHARGE_RECEIPT,
+                self::RECURRING_CHARGE_DESCRIPTION,
+                self::RECURRING_CHARGE_NOTES_1,
+                self::RECURRING_CHARGE_NOTES_2,
+                self::RECURRING_CHARGE_NOTES_3,
+                self::RECURRING_CHARGE_NOTES_4,
+                self::RECURRING_CHARGE_NOTES_5,
+            ],
+            self::OUTPUT => [
+                self::RECURRING_CHARGE_TOKEN,
+                self::RECURRING_CHARGE_CUSTOMER_ID,
+                self::RECURRING_CHARGE_AMOUNT,
+                self::RECURRING_CHARGE_CURRENCY,
+                self::RECURRING_CHARGE_RECEIPT,
+                self::RECURRING_CHARGE_DESCRIPTION,
+                self::RECURRING_CHARGE_NOTES_1,
+                self::RECURRING_CHARGE_NOTES_2,
+                self::RECURRING_CHARGE_NOTES_3,
+                self::RECURRING_CHARGE_NOTES_4,
+                self::RECURRING_CHARGE_NOTES_5,
+                self::RECURRING_CHARGE_ORDER_ID,
+                self::RECURRING_CHARGE_PAYMENT_ID,
+            ],
+        ],
+
         'emandate_register_hdfc' => [
             self::INPUT => [
                 self::HDFC_EM_REGISTER_ACCOUNT_NUMBER,
@@ -597,6 +648,21 @@ class Header
                 self::MERCHANT_NAME,
                 self::MERCHANT_EMAIL,
                 self::MERCHANT_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::ELFIN => [
+
+            self::INPUT => [
+                self::ELFIN_LONG_URL,
+            ],
+
+            self::OUTPUT => [
+                self::ELFIN_LONG_URL,
+                self::ELFIN_SHORT_URL,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

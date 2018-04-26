@@ -164,9 +164,7 @@ class Processor extends VirtualAccount\Processor
 
                             $res = $paymentProcessor->process($paymentInput, $this->callbackData);
 
-                            $payment = $this->repo
-                                            ->payment
-                                            ->findByPublicId($res['razorpay_payment_id']);
+                            $payment = $paymentProcessor->getPayment();
 
                             $bharatQr->payment()->associate($payment);
 
