@@ -40,6 +40,8 @@ class Csb extends Base
 
         $content = [];
 
+        $srNo = 1;
+
         foreach ($data as $row)
         {
             $date = Carbon::createFromTimestamp(
@@ -58,7 +60,7 @@ class Csb extends Base
                 Action::AUTHORIZE);
 
             $content[] = [
-                'Sr.No'              => (count($content) + 1),
+                'Sr.No'              => $srNo++,
                 'Refund Id'          => $row[ConstantsEntity::REFUND][RefundEntity::ID],
                 'Bank Id'            => self::BANK_CODE,
                 'Merchant Name'      => CsbGateway::PAYEE_ID,

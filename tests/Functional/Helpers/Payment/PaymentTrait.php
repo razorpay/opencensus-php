@@ -88,7 +88,7 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function doAuthCaptureAndRefundPayment($payment = null, $amount = null)
+    protected function doAuthCaptureAndRefundPayment($payment = null, $refundAmount = null)
     {
         if ($payment === null)
         {
@@ -97,7 +97,7 @@ trait PaymentTrait
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
-        $refund = $this->refundPayment($payment['id'], $amount);
+        $refund = $this->refundPayment($payment['id'], $refundAmount);
 
         return $refund;
     }
@@ -782,15 +782,15 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function refundPayment($id, $refundAmount = null, $reversals = [], $reverseAll = false)
+    protected function refundPayment($id, $amount = null, $reversals = [], $reverseAll = false)
     {
         $this->ba->privateAuth();
 
         $content = [];
 
-        if ($refundAmount !== null)
+        if ($amount !== null)
         {
-            $content = array('amount' => $refundAmount);
+            $content = array('amount' => $amount);
         }
 
         if (empty($reversals) === false)
@@ -813,9 +813,9 @@ trait PaymentTrait
 
         $this->assertEquals('refund', $refund['entity']);
 
-        if ($refundAmount !== null)
+        if ($amount !== null)
         {
-            $this->assertEquals($refundAmount, $refund['amount']);
+            $this->assertEquals($amount, $refund['amount']);
         }
 
         return $refund;
