@@ -88,7 +88,7 @@ class BatchController extends Controller
 
         if ($isValid === false)
         {
-            $view = View::make('public.403');
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_BATCH_UPLOAD_INVALID_TOKEN);
         }
         else
         {
