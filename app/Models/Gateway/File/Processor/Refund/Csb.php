@@ -133,7 +133,7 @@ class Csb extends Base
 
         if ($this->mode === RZPMode::LIVE)
         {
-            $merchantId2 = $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+            $merchantId2 = $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
         }
 
         return $merchantId2;
