@@ -6,6 +6,7 @@ use App;
 use Requests;
 
 use RZP\Models\Payment;
+use RZP\Models\Merchant\Account;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Analytics\Entity as Analytics;
@@ -14,23 +15,23 @@ class ShieldClient implements ExternalService
 {
     const REQUEST_TIMEOUT   = 30; // In secs
 
-    const RULES_PATH        = '/rules/';
+    const RULES_PATH        = '/merchants/{merchant_id}/rules/';
 
     const EVALUATE_PATH     = '/rules/evaluate';
 
-    const X_RULESET         = 'x-ruleset';
+    const ANALYTICS_PATH    = '/rules/analytics';
 
     const CONTENT_TYPE      = 'content-type';
 
     const RULES             = 'rules';
+
+    const RULE_ANALYTICS    = 'rule_analytics';
 
     protected $config;
 
     protected $baseUrl;
 
     protected $trace;
-
-    protected $ruleset;
 
     const PAYMENT_ANALYTICS_KEYS = [
         Analytics::IP,
@@ -55,8 +56,6 @@ class ShieldClient implements ExternalService
 
         $this->trace = $app['trace'];
 
-        $this->ruleset = $this->config['ruleset'];
-
         $this->baseUrl = $this->config['url'];
     }
 
@@ -66,6 +65,8 @@ class ShieldClient implements ExternalService
         {
             case self::RULES:
                 return $this->getRules($input);
+            case self::RULE_ANALYTICS:
+                return $this->getRuleAnalytics($input);
         }
 
         return [];
@@ -84,27 +85,27 @@ class ShieldClient implements ExternalService
 
     public function createRule(array $input)
     {
-        return $this->sendRequest(self::RULES_PATH, Requests::POST, $input);
+        return $this->sendRequest($this->getRulesPath(), Requests::POST, $input);
     }
 
     public function getRules(array $input)
     {
-        return $this->sendRequest(self::RULES_PATH, Requests::GET, $input);
+        return $this->sendRequest($this->getRulesPath(), Requests::GET, $input);
     }
 
     public function getRuleById(string $id): array
     {
-        return $this->sendRequest(self::RULES_PATH . $id, Requests::GET);
+        return $this->sendRequest($this->getRulesPath() . $id, Requests::GET);
     }
 
     public function deleteRuleById(string $id): array
     {
-        return $this->sendRequest(self::RULES_PATH . $id, Requests::DELETE);
+        return $this->sendRequest($this->getRulesPath() . $id, Requests::DELETE);
     }
 
     public function updateRuleById(string $id, array $input): array
     {
-        return $this->sendRequest(self::RULES_PATH . $id, Requests::PUT, $input);
+        return $this->sendRequest($this->getRulesPath() . $id, Requests::PUT, $input);
     }
 
     public function evaluateRules(array $input): array
@@ -117,6 +118,11 @@ class ShieldClient implements ExternalService
         $paymentRequest = $this->getPaymentProperties($payment);
 
         return $this->evaluateRules($paymentRequest);
+    }
+
+    public function getRuleAnalytics(array $input): array
+    {
+        return $this->sendRequest(self::ANALYTICS_PATH, Requests::GET, $input);
     }
 
     protected function getPaymentProperties(Payment\Entity $payment): array
@@ -293,8 +299,17 @@ class ShieldClient implements ExternalService
     private function getShieldHeaders() : array
     {
         return [
-            self::X_RULESET    => $this->ruleset,
             self::CONTENT_TYPE => 'application/json',
         ];
     }
+
+    /**
+     * Shield stores all global rules which are create by Admin under the Shared merchant account.
+     * This will be changed when we expose Shield entities to Merchants.
+     */
+    private function getRulesPath(): string
+    {
+        return str_replace('{merchant_id}', Account::SHARED_ACCOUNT, self::RULES_PATH);
+    }
+
 }
