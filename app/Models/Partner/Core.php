@@ -37,23 +37,19 @@ class Core extends Base\Core
 
         // Validate that the app is a partner app
 
-        // Validate merchant
-
         // Get the app->client, client should be of type 'partner'
 
-        // Call auth-service, create a partner token for the $merchantID
+        $token = $this->app['authservice']->createPartnerToken($appId, $merchant->getId());
 
         $mapInput[Merchant\AccessMap\Entity::APPLICATION_ID] = $appId;
 
         (new Merchant\AccessMap\Core)->addMappingForOAuthApp($merchant, $mapInput);
 
-        return (new OAuth\Token\Entity);
+        return $token['id'];
     }
 
     protected function validateMerchant(Merchant\Entity $merchant)
     {
         // What?
     }
-
-
 }
