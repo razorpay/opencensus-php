@@ -47,7 +47,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getReconPaymentAmount(array $row)
     {
-        return (int) number_format(($row[ReconciliationFields::TRANSACTION_AMOUNT]), 0, '.', '');
+        return (int) ($row[ReconciliationFields::TRANSACTION_AMOUNT] * 100);
     }
 
     protected function getGatewayPayment($paymentId)
