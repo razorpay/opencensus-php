@@ -66,7 +66,7 @@ class Csb extends Base
                 'Merchant Name'      => CsbGateway::PAYEE_ID,
                 'Txn date'           => $date,
                 'Refund Date'        => $refundDate,
-                'Bank Merchant Code' => $this->getMerchantId2($row[ConstantsEntity::TERMINAL]),
+                'Bank Merchant Code' => $this->getMerchantId($row[ConstantsEntity::TERMINAL]),
                 'Bank Ref No'        => $netbanking[NetbankingEntity::BANK_PAYMENT_ID],
                 'PGI Reference No'   => $paymentId,
                 'Txn Amount(Rs Ps)'  => $row[ConstantsEntity::PAYMENT][PaymentEntity::AMOUNT] / 100,
@@ -127,15 +127,15 @@ class Csb extends Base
         $this->config = $this->app['config']->get($configGatewayStr);
     }
 
-    protected function getMerchantId2($terminal): string
+    protected function getMerchantId($terminal): string
     {
-        $merchantId2 = $this->config['test_merchant_id'];
+        $merchantId = $this->config['test_merchant_id'];
 
         if ($this->mode === RZPMode::LIVE)
         {
-            $merchantId2 = $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+            $merchantId = $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
         }
 
-        return $merchantId2;
+        return $merchantId;
     }
 }
