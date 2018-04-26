@@ -14,7 +14,6 @@ class Constants
     const BOB              = 'bob';
     const INDUSIND         = 'indusind';
     const RBL              = 'rbl';
-    const CSB              = 'csbk';
     const SCBL             = 'scbl';
     const UPI_ICICI        = 'upi_icici';
     const UPI_MINDGATE     = 'upi_mindgate';

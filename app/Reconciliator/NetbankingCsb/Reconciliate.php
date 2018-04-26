@@ -60,9 +60,9 @@ class Reconciliate extends Base\Reconciliate
     {
         if (strpos($fileDetails[FileProcessor::EXTENSION], 'txt') !== false)
         {
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 }

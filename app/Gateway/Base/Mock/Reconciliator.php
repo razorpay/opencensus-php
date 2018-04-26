@@ -92,7 +92,7 @@ class Reconciliator
     }
 
     protected function createFile(
-        array $content,
+        $content,
         string $type = FileStore\Type::MOCK_RECONCILIATION_FILE,
         string $store = FileStore\Store::S3)
     {
