@@ -176,12 +176,6 @@ export default class MerchantList extends Component {
     if (filters['sub_accounts'] == 0) {
       delete filters['sub_accounts'];
     }
-
-    //handle empty filter value
-    if (!filters['reviewer_id']) {
-      filters['reviewer_id'] = '';
-    }
-
     return this.collection.applyFilters(filters);
   };
 
