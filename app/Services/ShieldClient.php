@@ -15,7 +15,7 @@ class ShieldClient implements ExternalService
 {
     const REQUEST_TIMEOUT   = 30; // In secs
 
-    const RULES_PATH        = '/merchants/{merchant_id}/rules/';
+    const RULES_PATH        = '/merchants/{merchant_id}/rules';
 
     const EVALUATE_PATH     = '/rules/evaluate';
 
@@ -65,6 +65,7 @@ class ShieldClient implements ExternalService
         {
             case self::RULES:
                 return $this->getRules($input);
+
             case self::RULE_ANALYTICS:
                 return $this->getRuleAnalytics($input);
         }
@@ -77,7 +78,7 @@ class ShieldClient implements ExternalService
         switch ($entity)
         {
             case self::RULES:
-                return $this->getRules($id);
+                return $this->getRuleById($id);
         }
 
         return [];
@@ -95,17 +96,17 @@ class ShieldClient implements ExternalService
 
     public function getRuleById(string $id): array
     {
-        return $this->sendRequest($this->getRulesPath() . $id, Requests::GET);
+        return $this->sendRequest($this->getRulesPath() . '/' . $id, Requests::GET);
     }
 
     public function deleteRuleById(string $id): array
     {
-        return $this->sendRequest($this->getRulesPath() . $id, Requests::DELETE);
+        return $this->sendRequest($this->getRulesPath() . '/' . $id, Requests::DELETE);
     }
 
     public function updateRuleById(string $id, array $input): array
     {
-        return $this->sendRequest($this->getRulesPath() . $id, Requests::PUT, $input);
+        return $this->sendRequest($this->getRulesPath() . '/' . $id, Requests::PUT, $input);
     }
 
     public function evaluateRules(array $input): array
@@ -240,13 +241,6 @@ class ShieldClient implements ExternalService
             'auth'    => $this->getAuthHeaders(),
         ];
 
-        $content = '';
-
-        if (empty($data) === false)
-        {
-             $content = json_encode($data, JSON_UNESCAPED_SLASHES);
-        }
-
         $url = $this->baseUrl . $path;
 
         try
@@ -254,7 +248,7 @@ class ShieldClient implements ExternalService
             $response = Requests::request(
                 $url,
                 $headers,
-                $content,
+                $data,
                 $method,
                 $options
             );
