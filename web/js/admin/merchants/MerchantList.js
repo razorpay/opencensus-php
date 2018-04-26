@@ -135,7 +135,7 @@ export default class MerchantList extends Component {
               defaultChecked={''}
             />
 
-            <button class="pull-right">Apply</button>
+            <button class="pull-right">Search</button>
           </Form>
         </div>
         <PageTable
