@@ -40,7 +40,7 @@ cd "$API_INSTALL_DIR" && php artisan migrate --force && php artisan migrate --da
 if [[ ${DEPLOYMENT_GROUP_NAME} == "prod-api-dark" ]]; then
   echo "== Queue on Sync driver =="
   echo QUEUE_DRIVER=sync >> ./environment/.env.production
-  echo SECONDARY_QUEUE_DRIVER=sync >> ./environment/.env.production
+  echo SLACK_QUEUE_DRIVER=sync >> ./environment/.env.production
 else
   # start supervisor as root
   echo  "== Supervisor Start =="

@@ -7,12 +7,9 @@ use RZP\Jobs\RequestJob;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use Illuminate\Foundation\Bus\DispatchesJobs;
 
 class Drip
 {
-    use DispatchesJobs;
-
     protected $config;
     protected $baseUrl;
     protected $token;
@@ -119,12 +116,7 @@ class Drip
             'content' => $content
         ];
 
-        //
-        // Dispatching the job into the queue
-        //
-        $job = new RequestJob($request);
-
-        $this->dispatch($job);
+        RequestJob::dispatch($request);
     }
 
     protected function createDripSubscribersArray(Merchant\Entity $merchant, string $key, bool $value)

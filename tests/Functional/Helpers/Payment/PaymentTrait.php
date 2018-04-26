@@ -88,7 +88,7 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function doAuthCaptureAndRefundPayment($payment = null, $amount = null)
+    protected function doAuthCaptureAndRefundPayment($payment = null, $refundAmount = null)
     {
         if ($payment === null)
         {
@@ -97,7 +97,7 @@ trait PaymentTrait
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
-        $refund = $this->refundPayment($payment['id'], $amount);
+        $refund = $this->refundPayment($payment['id'], $refundAmount);
 
         return $refund;
     }

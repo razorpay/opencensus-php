@@ -40,17 +40,19 @@ class Csb extends Base
 
         $content = [];
 
+        $srNo = 1;
+
         foreach ($data as $row)
         {
             $date = Carbon::createFromTimestamp(
-                        $row[ConstantsEntity::PAYMENT][PaymentEntity::CREATED_AT],
-                        Timezone::IST)
-                    ->format(self::DATE_FORMAT);
+                                $row[ConstantsEntity::PAYMENT][PaymentEntity::CREATED_AT],
+                                Timezone::IST)
+                            ->format(self::DATE_FORMAT);
 
             $refundDate = Carbon::createFromTimestamp(
-                $row[ConstantsEntity::REFUND][RefundEntity::CREATED_AT],
-                Timezone::IST)
-                ->format(self::DATE_FORMAT);
+                                      $row[ConstantsEntity::REFUND][RefundEntity::CREATED_AT],
+                                      Timezone::IST)
+                                  ->format(self::DATE_FORMAT);
 
             $paymentId = $row[ConstantsEntity::PAYMENT][PaymentEntity::ID];
 
@@ -58,7 +60,7 @@ class Csb extends Base
                 Action::AUTHORIZE);
 
             $content[] = [
-                'Sr.No'              => (count($content) + 1),
+                'Sr.No'              => $srNo++,
                 'Refund Id'          => $row[ConstantsEntity::REFUND][RefundEntity::ID],
                 'Bank Id'            => self::BANK_CODE,
                 'Merchant Name'      => CsbGateway::PAYEE_ID,

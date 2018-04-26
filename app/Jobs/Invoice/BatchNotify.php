@@ -2,24 +2,23 @@
 
 namespace RZP\Jobs\Invoice;
 
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
-
+use RZP\Jobs\Job;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
-use RZP\Jobs\DispatchRouter;
-use RZP\Jobs\Job as BaseJob;
 use RZP\Models\Invoice as InvoiceModel;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 
 /**
  * - Asynchronously sends notification all issued invoices/payment links of given batch.
  */
-class BatchNotify extends BaseJob implements ShouldQueue
+class BatchNotify extends Job
 {
-    use InteractsWithQueue;
+    const INPUT = 'input';
 
-    const INPUT              = 'input';
+    /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'invoice';
 
     /**
      * Batch entity id.
@@ -97,9 +96,7 @@ class BatchNotify extends BaseJob implements ShouldQueue
         {
             $this->repoManager->saveOrFail($invoice);
 
-            $job = new InvoiceJob($this->mode, InvoiceJob::ISSUED, $invoice->getId());
-
-            (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+            InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
         }
         catch (\Throwable $e)
         {

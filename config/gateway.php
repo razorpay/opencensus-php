@@ -470,9 +470,9 @@ return [
     ],
 
     'netbanking_csb' => [
-        'test_merchant_id'    => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),
-        'test_merchant_id_2'  => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID_2'),
-        'test_hash_secret'    => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id_2' => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id'   => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID_2'),
+        'test_hash_secret'   => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
     ],
 
     'sharp' => [

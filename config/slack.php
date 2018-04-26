@@ -167,5 +167,5 @@ return array(
 
     // Use non-default connection for slack,
     // if set to null, it will use the default connection
-    'queue' => env('SECONDARY_QUEUE_DRIVER', null),
+    'queue' => env('SLACK_QUEUE_DRIVER', null),
 );
