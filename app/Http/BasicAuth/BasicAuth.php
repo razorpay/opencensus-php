@@ -5,6 +5,7 @@ namespace RZP\Http\BasicAuth;
 use Crypt;
 use Config;
 use ApiResponse;
+use Razorpay\OAuth;
 
 use RZP\Exception;
 use RZP\Http\Route;
@@ -378,10 +379,10 @@ class BasicAuth
             return null;
         }
 
-        // TODO: Change
-        //if ($this->verifyAccountId($token) === false)
+        // TODO: Do this
+        //if ($this->validatePartnerToken($token) === false)
         //{
-        //    return $this->invalidAccountId($token);
+        //    return $this->invalidPartnerToken($token);
         //}
 
         $this->creds['partner_token'] = $token;
@@ -1103,6 +1104,11 @@ class BasicAuth
         return $this->creds['account_id'];
     }
 
+    protected function getPartnerToken()
+    {
+        return $this->creds['partner_token'];
+    }
+
     public function getMode()
     {
         return $this->mode;
@@ -1425,24 +1431,25 @@ class BasicAuth
             return null;
         }
 
-        // Find token
+        $token = str_after($this->getPartnerToken(), 'rzp_partner_');
 
-        // Validate token
+        // Change repo function to fetchPartnerToken()
+        $token = (new OAuth\Token\Repository)->findOrFailPublic($token);
 
-        // Get merchant of token and fetch
-        $merchant = null;
+        $merchant = $this->repo->merchant->findOrFail($token->getMerchantId());
 
         $this->setMerchant($merchant);
     }
 
     protected function isPartnerTokenAuthAllowed()
     {
-        if (empty($this->merchant) === true)
+        if ((empty($this->merchant) === true) or
+            ($this->merchant->isFeatureEnabled(Feature::PARTNER) === false))
         {
             return false;
         }
 
-        if ($this->merchant->isFeatureEnabled(Feature::PARTNER) === false)
+        if ($this->getPartnerToken() === '')
         {
             return false;
         }
