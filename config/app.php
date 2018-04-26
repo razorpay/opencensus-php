@@ -245,8 +245,7 @@ return array(
         'OAuthFacade'     => Artdarek\OAuth\Facade\OAuth::class,
 
         'Mailgun'         => Bogardo\Mailgun\Facades\Mailgun::class,
-        'PDF'             => Nitmedia\Wkhtml2pdf\Facades\Wkhtml2pdf::class,
-        'Slack'           => Maknz\Slack\Facades\Slack::class,
+        'Slack'           => Razorpay\Slack\Laravel\Facade::class,
         'Trace'           => App\Trace\Facade::class,
         'Uuid'            => App\Facades\Uuid::class,
     ),

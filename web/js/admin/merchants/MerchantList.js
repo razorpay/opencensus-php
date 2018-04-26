@@ -27,10 +27,26 @@ export default class MerchantList extends Component {
     filters: defaultFilters,
   });
 
+  /*
+  * 1. sub_accounts = 0, fetch results without linked-accounts
+  * 2. sub_accounts = 1, fetch results with ONLY linked-accounts
+  * 3. sub_accounts = some_id, fetch linked-accounts only for the given merchant id
+  * 4. sub_accounts query param doesn't exist, fetch all results
+  * */
   onSubmit = filters => {
     if (filters['sub_accounts'] == 0) {
       delete filters['sub_accounts'];
     }
+
+    // Explicitly telling to exclude sub_accounts
+    if (filters['sub_accounts_exclude'] == 1) {
+      filters['sub_accounts'] = 0;
+    } else if (filters['sub_accounts_merc-id']) {
+      filters['sub_accounts'] = filters['sub_accounts_merc-id'];
+    }
+
+    delete filters['sub_accounts_exclude']; // FE only field name. Actual filter: 'sub_accounts'
+    delete filters['sub_accounts_merc-id']; // FE only field name. Actual filter: 'sub_accounts'
 
     //hijack account_status based on activation_status value
     if (filters.account_status === 'pending') {
@@ -43,6 +59,32 @@ export default class MerchantList extends Component {
 
   handleAccountStatusChange = e => {
     this.setState({ accountStatus: e.target.value });
+  };
+
+  /* If 'exclude-LA' checked, then uncheck corresponding field */
+  handleExcludeLA = e => {
+    const isLAExcluded = e.target.checked;
+
+    if (isLAExcluded) {
+      document.getElementsByName('sub_accounts_merc-id')[0].value = '';
+      document.getElementsByName('sub_accounts')[0].checked = false;
+    }
+  };
+
+  /* If value of LA exists either from 'LA-id' or 'only LA' checkbox, uncheck 'exclude-LA' */
+  handleIncludeOnlyLA = e => {
+    // If 'only LA' checked, empty the 'LA id' field
+    if (e.target.checked) {
+      // checked is true only when checkbox is checked
+      document.getElementsByName('sub_accounts_merc-id')[0].value = '';
+      document.getElementsByName('sub_accounts_exclude')[0].checked = false;
+    }
+
+    // If event.target is 'LA id' field and has value, uncheck 'only LA'checkbox
+    if (e.target.name === 'sub_accounts_merc-id' && e.target.value) {
+      document.getElementsByName('sub_accounts')[0].checked = false;
+      document.getElementsByName('sub_accounts_exclude')[0].checked = false;
+    }
   };
 
   render() {
@@ -74,10 +116,22 @@ export default class MerchantList extends Component {
                 </option>
               </SelectField>
             )}
-            <Field name="sub_accounts" label="Linked-accounts for ID" />
+            <Field
+              name="sub_accounts_merc-id"
+              label="Linked-accounts for ID"
+              onChange={this.handleIncludeOnlyLA}
+            />
             <CheckField
-              label="Linked Accounts Only"
+              label="Linked-accounts Only"
               name="sub_accounts"
+              onChange={this.handleIncludeOnlyLA}
+              defaultChecked={''}
+            />
+
+            <CheckField
+              label="Exclude Linked-accounts"
+              name="sub_accounts_exclude"
+              onChange={this.handleExcludeLA}
               defaultChecked={''}
             />
 

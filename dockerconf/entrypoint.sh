@@ -9,6 +9,15 @@ $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app dashboard "environ
 echo "$(date) Add nginx host to dashboard."
 sed -i "s|NGINX_HOST|$HOSTNAME|g" dockerconf/dashboard.conf
 
+## Enable newrelic only for prod
+if [[ "${APP_MODE}" == "prod" ]]; then
+  echo "$(date) Cast newrelic config"
+  $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app dashboard "dockerconf/newrelic.ini.j2"
+
+  echo "$(date) Copy newrelic config"
+  cp dockerconf/newrelic.ini /etc/php7/conf.d/newrelic.ini
+fi
+
 echo "$(date) Copy dashboard to default."
 cp dockerconf/dashboard.conf /etc/nginx/conf.d/default.conf
 
