@@ -4100,10 +4100,9 @@ trait Authorize
     {
         //
         // No gateway for bank transfer or Bharat Qr, everything is internal
-        // TODO: To be changed after refactor
         //
         if (($payment->isBankTransfer() === true) or
-            (Route::currentRouteName() === 'gateway_payment_callback_bharatqr'))
+            ($payment->isBharatQr() === true))
         {
             return false;
         }

@@ -106,8 +106,6 @@ class BharatQrPaymentTest extends TestCase
         $refund = $this->getLastEntity('hitachi', true);
 
         $this->assertEquals('refund', $refund['action']);
-
-        $this->assertNull($refund['acquirer']);
     }
 
     public function testHitachiBadCheckSum()

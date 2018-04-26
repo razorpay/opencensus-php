@@ -80,7 +80,7 @@ class Validator extends Base\Validator
     protected static $upiIciciTerminalRules = [
         Entity::GATEWAY                    => 'required|in:upi_icici',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
-        Entity::VPA                        => 'sometimes|string|max:20',
+        Entity::VPA                        => 'required_if:type.bharat_qr,1|string|max:20',
         Entity::TYPE                       => 'sometimes|array',
     ];
 
@@ -112,9 +112,9 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::CURRENCY                   => 'sometimes|alpha|size:3',
-        Entity::MASTERCARD_MPAN            => 'sometimes|string|size:16',
-        Entity::VISA_MPAN                  => 'sometimes|string|size:16',
-        Entity::RUPAY_MPAN                 => 'sometimes|string|size:16',
+        Entity::MASTERCARD_MPAN            => 'required_if:type.bharat_qr,1|string|size:16',
+        Entity::VISA_MPAN                  => 'required_if:type.bharat_qr,1|string|size:16',
+        Entity::RUPAY_MPAN                 => 'required_if:type.bharat_qr,1|string|size:16',
     ];
 
     protected static $aepsIciciTerminalRules = [

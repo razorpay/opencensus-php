@@ -733,12 +733,9 @@ class Gateway extends Base\Gateway
 
         $action = $action ?: $this->action;
 
-        if (empty($input['terminal']) === false)
-        {
-            $acquirer = $input['terminal']->getGatewayAcquirer();
+        $acquirer = $input['terminal']->getGatewayAcquirer();
 
-            $gatewayPayment->setAcquirer($acquirer);
-        }
+        $gatewayPayment->setAcquirer($acquirer);
 
         $gatewayPayment->setAction($action);
 
@@ -877,11 +874,6 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId()
     {
-        if ($this->isBharatQrPayment() === true)
-        {
-            return $this->config['bharatqr_merchant_id'];
-        }
-
         $merchantId = $this->getLiveMerchantId();
 
         if ($this->mode === Mode::TEST)

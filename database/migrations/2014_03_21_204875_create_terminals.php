@@ -158,6 +158,10 @@ class CreateTerminals extends Migration
             $table->index(Terminal::NETWORK_CATEGORY);
             $table->index(Terminal::GATEWAY_MERCHANT_ID);
             $table->index(Terminal::CREATED_AT);
+            $table->index(Terminal::MASTERCARD_MPAN);
+            $table->index(Terminal::VISA_MPAN);
+            $table->index(Terminal::RUPAY_MPAN);
+            $table->index(Terminal::VPA);
         });
     }
 
