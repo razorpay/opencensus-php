@@ -35,9 +35,8 @@ return [
 
     'netbankingPaymentFailed' => [
         'amount'          => 50000,
-        'status'          => 'N',
-        'bank_payment_id' => '9999999999',
-        'account_number'  => '1234567890'
+        'bank_payment_id' => null,
+        'account_number'  => null
     ],
 
     'netbankingPaymentFailedVerifySuccess' => [
