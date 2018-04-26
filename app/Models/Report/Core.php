@@ -6,7 +6,6 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\ReportsJob;
-use RZP\Jobs\DispatchRouter;
 use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
@@ -61,12 +60,7 @@ class Core extends Base\Core
         {
             (new Validator)->validateInput('report_queue', array_merge($input, [Entity::TYPE => $entity]));
 
-            $reportsJob = new ReportsJob($input,
-                                        $entity,
-                                        $this->merchant->getId(),
-                                        $this->mode);
-
-            (new DispatchRouter)->dispatchOn($reportsJob, DispatchRouter::REPORTS);
+            ReportsJob::dispatch($input, $entity, $this->merchant->getId(), $this->mode);
         }
         catch (Exception $e)
         {

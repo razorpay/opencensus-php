@@ -53,8 +53,6 @@ class AuditLogListener
 
         $this->trace = $this->app['trace'];
 
-        $this->queue = $this->app['queue'];
-
         $this->esDao = new EsDao();
 
         $this->config = $this->app['config'];

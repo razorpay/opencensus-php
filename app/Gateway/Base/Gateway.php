@@ -803,7 +803,7 @@ class Gateway
         if (($this->env === 'func') and
             (isset($this->externalMockDomain) === true))
         {
-          return $this->getExternalMockUrl($type);
+            return $this->getExternalMockUrl($type);
         }
 
         return $urlDomain . $this->getRelativeUrl($type);
@@ -1131,6 +1131,6 @@ class Gateway
      */
     protected function getExternalMockUrl(string $type)
     {
-       return $this->externalMockDomain . "/" . $this->gateway . $this->getRelativeUrl($type);
+        return $this->externalMockDomain . '/' . $this->gateway . $this->getRelativeUrl($type);
     }
 }

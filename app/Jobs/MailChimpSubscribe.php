@@ -3,11 +3,10 @@
 namespace RZP\Jobs;
 
 use Config;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use DrewM\MailChimp\MailChimp;
-use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
+
+use RZP\Trace\TraceCode;
 
 /**
  * Class MailChimp
@@ -15,10 +14,8 @@ use Razorpay\Trace\Logger as Trace;
  * Sends request to mailchimp for adding entries to users mailing list.
  * @package RZP\Jobs
  */
-class MailChimpSubscribe extends Job implements ShouldQueue
+class MailChimpSubscribe extends Job
 {
-    use InteractsWithQueue;
-
     const MAX_ALLOWED_ATTEMPTS = 5;
     const RELEASE_WAIT_SECS    = 60;
 

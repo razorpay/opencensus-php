@@ -11,21 +11,18 @@ use Route;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 
-use RZP\Error;
 use RZP\Exception;
+
 use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Risk;
 use RZP\Models\Card;
-use RZP\Models\Admin;
 use RZP\Models\Offer;
-use RZP\Models\Order;
 use RZP\Constants\TLD;
 use RZP\Http\BasicAuth;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
-use RZP\Models\Invoice;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -33,8 +30,10 @@ use RZP\Models\Terminal;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Models\Discount;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
+use RZP\Jobs\RunShieldCheck;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
@@ -108,6 +107,8 @@ trait Authorize
         $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
 
         $this->createAnalyticsLog($payment);
+
+        $this->runShieldCheck($payment);
 
         //
         // If $request is not null, then payment is two-step process
@@ -254,12 +255,17 @@ trait Authorize
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
         $this->createAnalyticsLog($this->payment);
+
+        $this->runShieldCheck($this->payment);
     }
 
     protected function verifyFeesLessThanAmount(Payment\Entity $payment)
     {
         // try calculating the fees, throws exception if fees is more than amount
-        list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
+        list($fee, $tax, $feesSplit) = $this->repo->useSlave(function () use ($payment)
+        {
+            return (new Pricing\Fee)->calculateMerchantFees($payment);
+        });
     }
 
     /**
@@ -1340,6 +1346,36 @@ trait Authorize
             $this->validateFraudDetection($payment, $this->merchant);
 
             $this->validateBlockedCard($payment);
+        }
+    }
+
+    /**
+     * This is called in 2 places, both after creation for payment/payment analytics
+     * as both entity should have persisted at this time
+     *
+     * This is not called in case of emandate, BharatQR, and Bank Transfer.
+     *
+     * Currently this call happens after payment auth success or fail.
+     * Ideally this should be a pre-auth step as we want to block the payment before authorization itself
+     * But because current code limitation, and time constraint this has to be done this way.
+     *
+     * As per YV, to block the payment in pre-auth the whole class need to be refractored.
+     *
+     * @param Payment\Entity $payment
+     */
+    protected function runShieldCheck(Payment\Entity $payment)
+    {
+        try
+        {
+            RunShieldCheck::dispatch($this->mode, $payment);
+        }
+        catch (\Throwable $e)
+        {
+             $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SHIELD_JOB_DISPATCH_ERROR
+            );
         }
     }
 
@@ -2706,7 +2742,32 @@ trait Authorize
 
         $this->postPaymentAuthorizeSubscriptionProcessing($payment);
 
+        $this->postPaymentAuthorizeOfferProcessing($payment);
+
         return $this->processAuthorizeResponse($payment);
+    }
+
+    protected function postPaymentAuthorizeOfferProcessing(Payment\Entity $payment)
+    {
+        if ($payment->hasOrder() === false)
+        {
+            return;
+        }
+
+        $order = $payment->order;
+
+        if ($order->isDiscountApplicable() === false)
+        {
+            return;
+        }
+
+        $appliedOffer = $order->offer;
+
+        $discountInput = [
+            Discount\Entity::AMOUNT => $appliedOffer->getDiscount($order->getAmount()),
+        ];
+
+        (new Discount\Service)->create($discountInput, $payment, $appliedOffer);
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)

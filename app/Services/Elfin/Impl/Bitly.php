@@ -15,8 +15,13 @@ class Bitly extends Base
         $this->accessToken = $config['secret'];
     }
 
-    public function shorten(string $url, bool $fail = false)
+    /**
+     * {@inheritDoc}
+     */
+    public function shorten(string $url, array $input = [], bool $fail = false)
     {
+        // Note: $input doesn't get used in bitly driver; only in gimli driver
+
         $params = $this->getParams($url);
 
         $res = $this->makeRequestAndValidateHeader(self::API, [], $params);

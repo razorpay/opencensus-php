@@ -42,7 +42,6 @@ class Constants
     const HIDE_DOWNTIMES                = 'hide_downtimes';
     const OLD_CREDITS_FLOW              = 'old_credits_flow';
     const CHARGE_AT_WILL                = 'charge_at_will';
-    const E_MANDATE                     = 'e_mandate';
     const EMI_MERCHANT_SUBVENTION       = 'emi_merchant_subvention';
     const FSS_RISK_UDF                  = 'fss_risk_udf';
     const RULE_FILTER                   = 'rule_filter';
@@ -63,6 +62,7 @@ class Constants
     const DAILY_SETTLEMENT              = 'daily_settlement';
     const DISABLE_UPI_INTENT            = 'disable_upi_intent';
     const ALLOW_S2S_APPS                = 'allow_s2s_apps';
+    const UPI_PLUS                      = 'upi_plus';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -130,7 +130,6 @@ class Constants
         self::HIDE_DOWNTIMES                => true,
         self::OLD_CREDITS_FLOW              => true,
         self::CHARGE_AT_WILL                => true,
-        self::E_MANDATE                     => true,
         self::EMI_MERCHANT_SUBVENTION       => true,
         self::FSS_RISK_UDF                  => true,
         self::RULE_FILTER                   => true,
@@ -154,6 +153,7 @@ class Constants
         self::DISABLE_UPI_INTENT            => true,
         self::ATM_PIN_AUTH                  => true,
         self::ALLOW_S2S_APPS                => true,
+        self::UPI_PLUS                      => true,
     ];
 
     // Entity type constants
@@ -224,11 +224,6 @@ class Constants
             'display_name'  => 'Report V2',
             'documentation' => ''
         ],
-        self::E_MANDATE => [
-            'feature'   => self::E_MANDATE,
-            'display_name'  => 'E-Mandate',
-            'documentation' => '',
-        ]
     ];
 
     /*

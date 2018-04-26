@@ -438,6 +438,7 @@ return [
 
         PermissionCategory::ACTION => [
             Permission::DB_META_QUERY => '',
+            Permission::OAUTH_SYNC_MERCHANT_MAP => '',
         ],
 
         // Permissions
