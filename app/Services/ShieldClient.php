@@ -15,9 +15,7 @@ class ShieldClient implements ExternalService
 {
     const REQUEST_TIMEOUT   = 30; // In secs
 
-    const MERCHANTS_PATH     = '/merchants/';
-
-    const RULES_PATH        = '/rules/';
+    const RULES_PATH        = '/merchants/{merchant_id}/rules/';
 
     const EVALUATE_PATH     = '/rules/evaluate';
 
@@ -311,7 +309,7 @@ class ShieldClient implements ExternalService
      */
     private function getRulesPath(): string
     {
-        return self::MERCHANTS_PATH . Merchant::SHARED_ACCOUNT . self::RULES_PATH;
+        return str_replace('{merchant_id}', Account::SHARED_ACCOUNT, self::RULES_PATH);
     }
 
 }
