@@ -139,7 +139,7 @@ export default class ActivationContainer extends React.Component {
     return this.state.isModal ? (
       <Modal onClose={this.handleClose}>{content}</Modal>
     ) : (
-      <div>{content}</div>
+      <div class="activation-container">{content}</div>
     );
   }
 }
