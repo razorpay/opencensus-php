@@ -368,7 +368,6 @@ class Base extends BaseModel\Core
             $tracePayload = [
                 Batch\Entity::ID          => $this->batch->getId(),
                 Batch\Entity::MERCHANT_ID => $this->batch->getMerchantId(),
-                'entry'                   => $entry,
             ];
 
             try
