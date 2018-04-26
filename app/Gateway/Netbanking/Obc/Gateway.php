@@ -176,7 +176,7 @@ class Gateway extends Base\Gateway
            ];
         }
 
-        $response = str_replace("|","& ",$response->body);
+        $response = str_replace('|', '& ', $response->body);
 
         parse_str($response, $verifyResponseArray);
 
@@ -272,7 +272,7 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::PAYEE_ID    => $this->getMerchantId(),
             RequestFields::PAY_REF_NUM => $payment['id'],
-            RequestFields::ITEM_CODE   => Constant::MERCHANT_ID . '-'  . strtoupper($payment['id']),
+            RequestFields::ITEM_CODE   => strtoupper($payment['id']),
             RequestFields::AMOUNT      => $this->formatAmount($payment['amount'] / 100),
             RequestFields::RETURN_URL  => Constant::RAZORPAY_END_POINT,
             RequestFields::BID         => $verify->payment['bank_payment_id'] ?? '',
@@ -300,7 +300,7 @@ class Gateway extends Base\Gateway
             RequestFields::TXN_AMOUNT  => $this->formatAmount($input['payment']['amount'] / 100),
             RequestFields::PAYEE_ID    => $this->getMerchantId(),
             RequestFields::PAY_REF_NUM => $input['payment']['id'],
-            RequestFields::ITEM_CODE   => Constant::MERCHANT_ID . '-' . strtoupper($input['payment']['id'])
+            RequestFields::ITEM_CODE   => strtoupper($input['payment']['id']),
         ];
 
         $this->traceGatewayPaymentRequest($content, $input, TraceCode::GATEWAY_AUTH_REQUEST);
