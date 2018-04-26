@@ -31,6 +31,6 @@ final class Validator extends Base\Validator
         RequestFields::ITEM_CODE   => 'required|string|size:14  ',
         RequestFields::AMOUNT      => 'required|numeric',
         RequestFields::RETURN_URL  => 'required|string|url',
-        RequestFields::BID         => 'required|string|in:9999999999'
+        RequestFields::BID         => 'sometimes|string|in:9999999999'
     ];
 }

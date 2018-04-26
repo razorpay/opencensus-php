@@ -62,9 +62,11 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
-        $this->updateGatewayPaymentEntity($gatewayPayment, $content);
-
         $this->checkGatewayStatus($content);
+
+        $this->verifyCallback($gatewayPayment, $input);
+
+        $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
@@ -145,6 +147,33 @@ class Gateway extends Base\Gateway
             Base\Entity::AMOUNT     => $payment[Payment\Entity::AMOUNT],
             Base\Entity::REFERENCE1 => $this->getMerchantId(),
         ];
+    }
+
+    protected function verifyCallback(Base\Entity $gatewayPayment, $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+                null,
+                null,
+                [
+                    'callback_response' => $input['gateway'],
+                    'verify_response'   => $verify->verifyResponseContent,
+                    'payment_id'        => $input['payment']['id'],
+                    'gateway'           => $this->gateway
+                ]);
+        }
     }
 
     protected function setVerifyAmountMismatch(Verify $verify)
