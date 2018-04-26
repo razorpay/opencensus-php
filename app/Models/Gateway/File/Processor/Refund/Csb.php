@@ -48,9 +48,9 @@ class Csb extends Base
                     ->format(self::DATE_FORMAT);
 
             $refundDate = Carbon::createFromTimestamp(
-                $row[ConstantsEntity::REFUND][RefundEntity::CREATED_AT],
-                Timezone::IST)
-                ->format(self::DATE_FORMAT);
+                              $row[ConstantsEntity::REFUND][RefundEntity::CREATED_AT],
+                              Timezone::IST)
+                          ->format(self::DATE_FORMAT);
 
             $paymentId = $row[ConstantsEntity::PAYMENT][PaymentEntity::ID];
 
