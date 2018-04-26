@@ -1365,6 +1365,12 @@ trait Authorize
      */
     protected function runShieldCheck(Payment\Entity $payment)
     {
+        // We do not want to call shield in case for Payments in Test mode
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
+
         try
         {
             RunShieldCheck::dispatch($this->mode, $payment);
