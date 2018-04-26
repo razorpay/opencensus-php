@@ -70,13 +70,13 @@ class CreateTerminals extends Migration
                   ->nullable();
 
             $table->string(Terminal::VISA_MPAN)
-                ->nullable();
+                  ->nullable();
 
             $table->string(Terminal::RUPAY_MPAN)
-                ->nullable();
+                  ->nullable();
 
             $table->string(Terminal::VPA)
-                ->nullable();
+                  ->nullable();
 
             $table->tinyInteger(Terminal::CARD)
                   ->default(0);

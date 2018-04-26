@@ -25,6 +25,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes',
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
         Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes',
+        Entity::MASTERCARD_MPAN             => 'sometimes|string|size:16',
+        Entity::VISA_MPAN                   => 'sometimes|string|size:16',
+        Entity::RUPAY_MPAN                  => 'sometimes|string|size:16',
+        Entity::VPA                         => 'sometimes|string|max:20',
         Entity::CATEGORY                    => 'sometimes|integer|digits:4',
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
@@ -73,6 +77,13 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID                => 'required|alpha_num|size:14',
     ];
 
+    protected static $upiIciciTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_icici',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::VPA                        => 'sometimes|string|max:20',
+        Entity::TYPE                       => 'sometimes|array',
+    ];
+
     protected static $atomTerminalRules = [
         Entity::GATEWAY                    => 'required|in:atom',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
@@ -100,7 +111,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID        => 'required|string|max:8',
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
-        Entity::CURRENCY                   => 'sometimes|alpha|size:3'
+        Entity::CURRENCY                   => 'sometimes|alpha|size:3',
+        Entity::MASTERCARD_MPAN            => 'sometimes|string|size:16',
+        Entity::VISA_MPAN                  => 'sometimes|string|size:16',
+        Entity::RUPAY_MPAN                 => 'sometimes|string|size:16',
     ];
 
     protected static $aepsIciciTerminalRules = [

@@ -1252,7 +1252,13 @@ trait Authorize
         $callbackUrl = null;
         $otpSubmitUrl = null;
 
-        if($payment->getReceiverType() === null)
+        // This is required because callback url
+        // is not need for Bharat Qr payments as they
+        // are already authorized at gateway side.
+        // Also we use public auth to detemine the
+        // callback url but in case of bharat qr it is
+        // direct auth
+        if ($payment->isBharatQr() === false)
         {
             $callbackUrl = $this->getCallbackUrl();
 

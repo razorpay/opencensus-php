@@ -9,8 +9,6 @@ use RZP\Models\Payment;
 class Constants
 {
     const VERSION = '01';
-    // TODO: Accept this from input
-    // issue: https://github.com/razorpay/api/issues/7054
     const STATIC_POI        = '11';
     const DYNAMIC_POI       = '12';
     const MERCHANT_CATEGORY = '5399';
@@ -92,6 +90,4 @@ class Constants
             Payment\Entity::VPA         => self::DUMMY_VPA,
         ];
     }
-
-
 }
