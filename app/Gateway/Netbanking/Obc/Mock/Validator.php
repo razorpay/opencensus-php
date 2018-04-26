@@ -19,7 +19,7 @@ final class Validator extends Base\Validator
      */
     protected static $authorizeQsRules = [
         RequestFields::TRAN_CRN    => 'required|in:INR',
-        RequestFields::TXN_AMOUNT  => 'required|integer',
+        RequestFields::TXN_AMOUNT  => 'required|numeric',
         RequestFields::PAYEE_ID    => 'required|string',
         RequestFields::PAY_REF_NUM => 'required|string|size:14',
         RequestFields::ITEM_CODE   => 'required|string|size:23'
@@ -29,7 +29,7 @@ final class Validator extends Base\Validator
         RequestFields::PAYEE_ID    => 'required|string',
         RequestFields::PAY_REF_NUM => 'required|string|size:14',
         RequestFields::ITEM_CODE   => 'required|string|size:23  ',
-        RequestFields::AMOUNT      => 'required|string',
+        RequestFields::AMOUNT      => 'required|numeric',
         RequestFields::RETURN_URL  => 'required|string|url',
         RequestFields::BID         => 'required|string|in:9999999999'
     ];
