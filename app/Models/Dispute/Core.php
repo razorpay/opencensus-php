@@ -87,6 +87,8 @@ class Core extends Base\Core
 
                 $dispute = $this->repo->transaction(function() use ($dispute)
                 {
+                    $this->repo->saveOrFail($dispute);
+
                     if ($dispute->getDeductAtOnset() === true)
                     {
                         $this->createNegativeAdjustmentAndUpdateDispute($dispute);
