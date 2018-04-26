@@ -19,17 +19,22 @@ export default class Collection extends BaseModel {
     if (this.noPagination) {
       newFilters = Object.assign({}, filters);
     } else {
-      let curFilters = defaultFilters;
+      newFilters = Object.assign({}, defaultFilters, filters);
 
-      // For very 1st search, this.filters would be empty, so defaultFilters would be applied
-      if (filters && this.filters && Object.keys(this.filters).length) {
-        curFilters = this.filters;
+      if (
+        (!filters || !filters.count) &&
+        this.filters &&
+        Object.keys(this.filters).length
+      ) {
+        newFilters.count = this.filters.count;
       }
-
-      newFilters = Object.assign({}, curFilters, filters);
     }
 
     this.filters = observable.shallowObject(newFilters);
+  }
+
+  resetFilters() {
+    this.filters = observable.shallowObject(defaultFilters);
   }
 
   applyFilters(filters) {

@@ -10,6 +10,7 @@ use Auth;
 use GuzzleHttp\Client as Guzzle;
 use GuzzleHttp\Post\PostFile;
 use Razorpay\Api\Errors as RZPErrors;
+use App\Merchant\Service as MerchantService;
 use Trace;
 use App\Trace\TraceCode;
 
@@ -90,7 +91,7 @@ class ApiRequestAny
         ];
 
         $headers = $options['headers'] ?? [];
-        
+
         $headers = array_merge($defaultHeaders, $headers);
 
         // === Request options
@@ -123,9 +124,11 @@ class ApiRequestAny
 
         $processInput = $options['process_input'] ?? true;
 
+        $useCustomFileKeys = $options['custom_file_keys'] ?? false;
+
         if ($processInput === true)
         {
-            $this->processInput();
+            $this->processInput(null, $useCustomFileKeys);
         }
     }
 
@@ -153,7 +156,7 @@ class ApiRequestAny
                 }
 
                 $accountId = Request::header(self::RAZORPAY_ACCOUNT_HEADER);
-                
+
                 if ($accountId)
                 {
                     $this->options['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $accountId;
@@ -231,11 +234,19 @@ class ApiRequestAny
     }
 
     // process body according to content-type
-    public function processInput($data = null)
+    public function processInput($data = null, $useCustomFileKeys = false)
     {
         $input = $data ?? Request::all();
 
-        $contentType = Request::header('content-type', self::CONTENT_TYPE_JSON);
+        $defaultContentType = self::CONTENT_TYPE_JSON;
+
+        $contentType = Request::header('content_type', $defaultContentType);
+
+        // Laravel is not considering empty string('') as empty header in Request::header
+        if (empty($contentType) === true)
+        {
+            $contentType = $defaultContentType;
+        }
 
         // auth check just for precaution, so that guests do not upload files
         if (strpos($contentType, self::CONTENT_TYPE_MULTIPART_PREFIX) === 0)
@@ -255,6 +266,16 @@ class ApiRequestAny
                 if ($val instanceof \SplFileInfo)
                 {
                     $fileName = $val->getClientOriginalName();
+
+                    // used in case of file upload through epos
+                    if ($useCustomFileKeys === true)
+                    {
+                        $oldKey = $key;
+
+                        $key = MerchantService::UPLOAD_KEYS[$key];
+
+                        unset($input[$oldKey]);
+                    }
 
                     $input[$key] = new PostFile($key, fopen($val, 'r'), $fileName);
                 }

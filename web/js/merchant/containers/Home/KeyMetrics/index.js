@@ -114,7 +114,6 @@ const TabContent = ({
               <small className="help-content">
                 <i class="i i-help" />
                 <Popover align="top">
-                  <PopoverTitle>What's this?</PopoverTitle>
                   <PopoverBody>
                     <div>{helpText}</div>
                   </PopoverBody>

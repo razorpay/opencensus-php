@@ -39,12 +39,6 @@ return array(
         'command_token' =>  env('SLACK_COMMAND_TOKEN', 'By9i0lp0y0T4mvgUn0Ljj1Rt'),
     ],
 
-    'mailchimp' => [
-        'list_id'   =>  env('MAILCHIMP_LIST_ID', 'random_id'),
-        'api_key'   =>  env('MAILCHIMP_API_TOKEN', 'mailchimp_token'),
-        'mock'      =>  env('MAILCHIMP_MOCK', false),
-    ],
-
     'signup'    => [
         'nocaptcha_secret'  => env('NOCAPTCHA_SECRET')
     ],

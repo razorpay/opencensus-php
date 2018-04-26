@@ -20,8 +20,8 @@ use Razorpay\Api\Request as ApiRequest;
 
 class AdminController extends Controller
 {
+    const REDIRECT_TO = '/admin';
 
-    protected $redirectTo = '/admin';
     protected $guard = 'admin';
 
     /*
@@ -86,7 +86,7 @@ class AdminController extends Controller
 
         // /admin/merchants → /admin, to avoid google oauth error (redirect_uri_mismatch)
         if (\Route::currentRouteName() === 'admin_catchall') {
-            return redirect('/admin');
+            return redirect(self::REDIRECT_TO);
         }
 
         switch($org['auth_type'])
@@ -131,7 +131,7 @@ class AdminController extends Controller
             if (empty($error) === true)
             {
                 // sort of a page reload/refresh
-                return redirect('/admin');
+                return redirect(self::REDIRECT_TO);
             }
             else
             {
@@ -328,7 +328,7 @@ class AdminController extends Controller
 
         if ($format === 'csv' and empty($error) === true)
         {
-            (new Admin\Service)->logDataExport($entity, $input);
+            //(new Admin\Service)->logDataExport($entity, $input);
 
             return AppResponse::csvResponse($data['items']);
         }
