@@ -7,10 +7,32 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Base\Database\QueryBuilder;
+use Illuminate\Support\Collection;
+use RZP\Models\Base\HasRelationships;
+use Illuminate\Database\Eloquent\Model;
 
 class EloquentEx extends \Razorpay\Spine\Entity
 {
+    use HasRelationships;
+
     public $incrementing = false;
+
+    protected $polymorphicRelations = [];
+
+    public function save(array $options = [])
+    {
+        $nonExistentRelations = array_filter($this->relations, function ($model)
+        {
+            return ($model instanceof Model) ? ($model->exists === false) : false;
+        });
+
+        if (count($nonExistentRelations) > 0)
+        {
+            throw new Exception\LogicException('All relations must exist');
+        }
+
+        return parent::save($options);
+    }
 
     /**
      * Create a new Eloquent query builder for the model.
