@@ -127,13 +127,18 @@ export default class EntityList extends Component {
     this.collection.extraFields.type = value;
     this.selectedEntity = value;
 
-    this.collection.setFilters({});
+    this.collection.resetFilters(); // Remove filters of previous entity
     this.clearForm(value);
-    this.onSelectChange(e);
+
+    this.submit(this.collection.filters); // Apply search with newly reset filters
   };
 
+  /*
+    * Clear the previous values (It doesn't clear WHOLE FORM. it only clears the value to default value.
+   * But after search, new values becomes default value if defaultValue props is missing)
+  */
   clearForm(currentEntity) {
-    document.getElementById('entity-form').reset(); // Clear the previous values (It doesn't clear)
+    document.getElementById('entity-form').reset();
     // document.getElementsByName("from")[0].value = ''; // TODO: Clear from and to values explicitly
     // document.getElementsByName("to")[0].value = '';
     document.getElementById('selected-entity').value = currentEntity; // Keep the current selected entity selected
@@ -158,7 +163,6 @@ export default class EntityList extends Component {
     }
 
     this.submit(formData);
-    this.updateUrl();
   };
 
   onModeChange = e => {
@@ -202,9 +206,13 @@ export default class EntityList extends Component {
             value = 'pay_' + value;
           }
           return (
-            <Link to={`/entity/payment/${
+            <Link
+              to={`/entity/payment/${
                 this.collection.extraFields.mode
-              }/${value}`} class="link" target="_blank">
+              }/${value}`}
+              class="link"
+              target="_blank"
+            >
               {value}
             </Link>
           );

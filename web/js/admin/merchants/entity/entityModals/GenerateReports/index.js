@@ -111,9 +111,9 @@ export default class GenerateReports extends Component {
 
       const year = invoiceDate[1],
         month = invoiceDate[0],
-        invoiceUrl = `/admin/${mode}/reports/invoice?year=${year}&month=${month}&merchant_id=${
+        invoiceUrl = `/admin/${mode}/reports/invoice/${
           this.props.merchantId
-        }`;
+        }?year=${year}&month=${month}`;
 
       return Promise.resolve(window.open(invoiceUrl, '_blank'));
     }

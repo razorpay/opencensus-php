@@ -52,7 +52,7 @@ return array(
     |
     */
 
-    'cipher' => env('ENCRYPTION_CIPHER', MCRYPT_RIJNDAEL_256),
+    'cipher' => env('ENCRYPTION_CIPHER', 'AES-256-CBC'),
 
     'timezone' => 'UTC',
 
@@ -173,7 +173,7 @@ return array(
         'Barryvdh\Debugbar\ServiceProvider',
         Bogardo\Mailgun\MailgunServiceProvider::class,
         'Maatwebsite\Excel\ExcelServiceProvider',
-        'Maknz\Slack\SlackServiceProvider',
+        Razorpay\Slack\Laravel\ServiceProviderLaravel5::class,
         Illuminate\Validation\ValidationServiceProvider::class,
     ],
 
@@ -245,8 +245,7 @@ return array(
         'OAuthFacade'     => Artdarek\OAuth\Facade\OAuth::class,
 
         'Mailgun'         => Bogardo\Mailgun\Facades\Mailgun::class,
-        'PDF'             => Nitmedia\Wkhtml2pdf\Facades\Wkhtml2pdf::class,
-        'Slack'           => Maknz\Slack\Facades\Slack::class,
+        'Slack'           => Razorpay\Slack\Laravel\Facade::class,
         'Trace'           => App\Trace\Facade::class,
         'Uuid'            => App\Facades\Uuid::class,
     ),

@@ -145,7 +145,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/emaillogs', 'AdminController@getEmailLogs')->name('email_logs_get');
 
         Route::get('/admin/{mode}/reports/broking', 'TransactionController@getTransactionBrokingReport')->name('reports_broking');
-        Route::get('/admin/{mode}/reports/invoice', 'TransactionController@getInvoiceReport')->name('reports_invoice');
+        Route::get('/admin/{mode}/reports/invoice/{merchant_id}', 'TransactionController@getInvoiceReport')->name('reports_invoice');
         Route::get('/admin/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('reports_entity');
 
         Route::any('/admin/api/{mode}/{path}', 'GenericController@handleAny')

@@ -112,16 +112,9 @@ class Service extends Base\Service
     {
         $error = $response = null;
 
-        if (empty($this->currentUser) === false)
-        {
-            $currentMerchant = $this->currentUser->currentMerchant();
+        $adminUser = Auth::guard('api')->user();
 
-            if (empty($currentMerchant) === false)
-            {
-                $response = $currentMerchant->toArray();
-            }
-        }
-        else
+        if (empty($adminUser) === false)
         {
             $this->setAdminCredentials();
 
@@ -130,6 +123,16 @@ class Service extends Base\Service
                              ->fetch($merchantId)
                              ->toArray();
         }
+        else
+        {
+            $currentMerchant = $this->currentUser->currentMerchant();
+
+            if (empty($currentMerchant) === false)
+            {
+                $response = $currentMerchant->toArray();
+            }
+        }
+
 
         if (empty($response) === false)
         {
@@ -295,9 +298,12 @@ class Service extends Base\Service
             );
         }
 
-        $field = self::UPLOAD_KEYS[key($input)];
+        $options = [
+            'client_type'      => 'merchant',
+            'custom_file_keys' => true,
+        ];
 
-        $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
+        $request = new \App\Admin\ApiRequestAny($options);
 
         list($error, $data) = $request->send('merchant/activation/upload', 'POST');
 

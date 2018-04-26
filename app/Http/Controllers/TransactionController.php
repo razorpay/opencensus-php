@@ -119,7 +119,7 @@ class TransactionController extends Controller
         $file->download('xlsx');
     }
 
-    public function getInvoiceReport($mode)
+    public function getInvoiceReport($mode, $merchantId = null)
     {
         $errorMsg = 'Oops!, We are not able to generate the Invoice for this period.';
 
@@ -139,7 +139,7 @@ class TransactionController extends Controller
             $input['format'] = 'new';
         }
 
-        list($error, $data) = (new Api\Service)->getInvoiceReportData($mode, $input);
+        list($error, $data) = (new Api\Service)->getInvoiceReportData($mode, $input, $merchantId);
 
         if ($error === null && sizeOf($data) !== 0)
         {
@@ -164,11 +164,6 @@ class TransactionController extends Controller
 
             $data['merchant_details'] = $merchantDetails;
 
-            // return PDF::url('http://google.com');
-            // PDF::setOutputMode('F');
-            // return PDF::html('merchant.invoice', $data);//->download('invoice.pdf');
-
-            //->download('invoice.pdf');
             return Response::view($isGstApplicable ? 'merchant.invoice.invoice' : 'merchant.invoice_old', $data);
         }
         else

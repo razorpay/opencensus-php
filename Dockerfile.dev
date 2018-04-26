@@ -1,6 +1,6 @@
-FROM razorpay/pithos:rzp-alpine3.6-php7.0-nginx
+FROM razorpay/pithos:rzp-alpine3.6-php7.1-nginx
 
-COPY . /app/
+VOLUME ["/app"]
 
 RUN apk add --update lsof && \
     apk add --virtual nodejs-deps nodejs-current nodejs-npm && \
@@ -10,14 +10,15 @@ COPY ./dockerconf/entrypoint.sh /entrypoint.sh
 
 WORKDIR /app
 
-RUN npm install && \
-    cd web && npm install && cd .. && \
-    npm run build && \
-    echo $GIT_COMMIT_HASH > public/commit.txt && \
-#   Skipping tests till deploy to QA
-#   npm test && \
-    apk del nodejs-deps
+#Please run these manually. TODO:Avoid Errors while doing directly.
+#RUN npm install && \
+#    cd web && npm install && cd .. && \
+#    npm run build && \
+#    echo $GIT_COMMIT_HASH > public/commit.txt && \
+##   Skipping tests till deploy to QA
+##   npm test && \
+#    apk del nodejs-deps
 
 EXPOSE 80
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint-dev.sh"]
