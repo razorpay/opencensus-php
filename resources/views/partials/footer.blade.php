@@ -5,14 +5,34 @@
         useAnalytics = false;
     }
     if (window.location.hostname=="dashboard.razorpay.com" && window.analytics && useAnalytics) {
-        analytics.init(['ga', 'fb'], {
+        analytics.init(['ga', 'fb', 'linkedin'], {
           ga: 'UA-53341507-2'
         });
         analytics.track('ga', 'pageview');
+        analytics.track('linkedin');
         try {
-          if (JSON.parse(analytics.utils.getCookie('pendingAction')).type === 'signup-form') {
+          var pendingAction = JSON.parse(analytics.utils.getCookie('pendingAction'));
+          if (pendingAction && pendingAction.type === 'signup-form') {
             analytics.track('fb', 'CompleteRegistration');
             analytics.utils.deleteCookie('pendingAction');
+          }
+
+          var rzpUTM = JSON.parse(analytics.utils.getCookie('rzp_utm'));
+          var techSignUp = JSON.parse(localStorage.getItem('track-tech-signup'));
+          if (rzpUTM && !techSignUp) {
+            var urlTokens =  rzpUTM.website ? rzpUTM.website.split('/') : [];
+            for(var i = 0; i < urlTokens.length; i++) {
+                if (urlTokens[i] === 'tech') {
+                  localStorage.setItem('track-tech-signup', true);
+
+                  window.rzpAnalytics({
+                    eventCategory: 'Tech Hiring Page',
+                    eventAction: 'Click - Signup'
+                  });
+
+                  break;
+                }
+            }
           }
         } catch(e) {}
     } else {
