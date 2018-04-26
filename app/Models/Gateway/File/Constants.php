@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Gateway\File;
 
-use RZP\Models\Payment\Gateway;
 use RZP\Mail\Base\Constants as MailConstants;
 
 class Constants
@@ -19,6 +18,7 @@ class Constants
     const UPI_ICICI        = 'upi_icici';
     const UPI_MINDGATE     = 'upi_mindgate';
     const AIRTEL_MONEY     = 'airtel_money';
+    const CSB              = 'csb';
     const AXIS_MIGS        = 'axis_migs';
     const ICIC_FIRST_DATA  = 'icic_first_data';
     const HDFC_CYBERSOURCE = 'hdfc_cybersource';
@@ -32,7 +32,8 @@ class Constants
     const SUPPORTED_TARGETS = [
         Type::REFUND => [
             self::HDFC,
-            self::ICICI
+            self::ICICI,
+            self::CSB,
         ],
         Type::CLAIM => [
         ],
@@ -50,6 +51,7 @@ class Constants
             self::BOB,
             self::RBL,
             self::INDUSIND,
+            self::CSB
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -95,6 +97,7 @@ class Constants
             self::FEDERAL  => ['federal.netbanking.refunds@razorpay.com'],
             self::BOB      => ['bob.netbanking.refunds@razorpay.com'],
             self::INDUSIND => ['indusind.netbanking.refunds@razorpay.com'],
+            self::CSB      => ['csb.netbanking.refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [
