@@ -351,6 +351,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
           return;
         }
         notifySuccess('Merchant granted key access successfully.');
+        model.updateDetails(response);
       }
     });
   }
@@ -476,19 +477,23 @@ const ActionsList = ({ model, merchantId, actions }) => {
         <ShowWhen permission="add_merchant_credits">
           <div onClick={actions.AddCredits}>Add Credits</div>
         </ShowWhen>
-        <ShowWhen permission="edit_merchant_key_access">
-          {merchant.details.has_key_access ? null : (
-            <AsyncButton
-              onClick={grantKeyAccessToMerchant}
-              pendingClass="btn-pending"
-              confirm="Are you sure you want to Grant Key Access to this merchant?"
-            >
-              Grant Key Access
-              <span class="spin-btn" />
-              <i class="pull-right i i-hand-stop" />
-            </AsyncButton>
-          )}
-        </ShowWhen>
+        {//only for activated merchants
+        merchant.details.activated == 1 && (
+          <ShowWhen permission="edit_merchant_key_access">
+            {/* provide access only when it's not available */}
+            {merchant.details.has_key_access ? null : (
+              <AsyncButton
+                onClick={grantKeyAccessToMerchant}
+                pendingClass="btn-pending"
+                confirm="Are you sure you want to Grant Key Access to this merchant?"
+              >
+                Grant Key Access
+                <span class="spin-btn" />
+                <i class="pull-right i i-hand-stop" />
+              </AsyncButton>
+            )}
+          </ShowWhen>
+        )}
       </div>
 
       <div class="group">
