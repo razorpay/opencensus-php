@@ -1381,4 +1381,21 @@ class TerminalSelectionTest extends TestCase
 
         $this->assertEquals($mgTerminal->getId(), $payment['terminal_id']);
     }
+
+    public function testHitachiFilterWithBharatQrFilter()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $hitachiTerminal = $this->fixtures->create('terminal:shared_hitachi_terminal');
+
+        $this->fixtures->create('terminal:bharat_qr_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($hitachiTerminal->getId(), $payment['terminal_id']);
+    }
 }
