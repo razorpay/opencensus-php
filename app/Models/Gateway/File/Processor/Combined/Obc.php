@@ -66,7 +66,7 @@ class Obc extends Base
 
         $count['total'] = $count['refunds'] + $count['claims'];
 
-        $date = Carbon::now(Timezone::IST)->format('jS F Y');
+        $date = Carbon::now(Timezone::IST)->format('d/m/y');
 
         return [
             'bankName'    => 'OBC',
