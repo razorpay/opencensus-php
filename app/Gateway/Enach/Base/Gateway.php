@@ -28,9 +28,20 @@ class Gateway extends \RZP\Gateway\Base\Gateway
 
         $gatewayPayment->fill($attributes);
 
-        $gatewayPayment->saveOrFail();
+        $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
+    }
+
+    private function updateGatewayPaymentEntity($enach, $attributes)
+    {
+        $attributes[Entity::RECEIVED] = 1;
+
+        $enach->fill($attributes);
+
+        $this->repo->saveOrFail($enach);
+
+        return $enach;
     }
 
     protected function getNewGatewayPaymentEntity()

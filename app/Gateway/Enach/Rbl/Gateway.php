@@ -23,8 +23,11 @@ class Gateway extends Base\Gateway
 
         $input['gateway'] = $this->getGatewayInput($input);
 
-        // TODO: Create gateway entity here and store registration_date,
-        // along with any other data that is present at this stage
+        $content = [
+            Base\Entity::REGISTRATION_DATE => $input['gateway']['next_working_dt']->getTimestamp()
+        ];
+
+        $this->createGatewayPaymentEntity($content, 'authorize');
 
         return $this->callAuthenticationGateway($input);
     }
@@ -35,7 +38,12 @@ class Gateway extends Base\Gateway
 
         $authResponse = $this->callAuthenticationGateway($input);
 
-        $this->createGatewayPaymentEntity($authResponse, 'authorize');
+        $enach = $this->repo->findByPaymentIdAndAction(
+            $input['payment']['id'],
+            Action::AUTHORIZE
+        );
+
+        $this->updateGatewayPaymentEntity($enach, $authResponse);
 
         $data = [];
 
