@@ -143,12 +143,6 @@ class NewApplicationForm extends Component {
   create = props => {
     let data = { ...props };
 
-    if (data.client_details.dev.redirect_url) {
-      data.client_details.dev.redirect_url = this.prependHTTPinUrl(
-        data.client_details.dev.redirect_url
-      );
-    }
-
     return this.props
       .createApplication(data, 'logo')
       .then(application => {
