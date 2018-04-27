@@ -138,6 +138,14 @@ export default class PaymentDetailsContainer extends Component {
   };
 
   confirmCapture = payment => {
+    const { id, closeUrl } = this.props;
+    const eventCategory = getEventCategoryFromPath(closeUrl);
+
+    window.rzpAnalytics({
+      eventCategory: eventCategory,
+      eventAction: 'Open Form - Capture',
+      eventLabel: `payment_id=${payment.id}`,
+    });
     this.context
       .confirm({
         header: 'Are you sure you want to capture this payment?',
@@ -155,6 +163,12 @@ export default class PaymentDetailsContainer extends Component {
         affirmativePendingLabel: 'Capturing...',
         abortLabel: "No, don't!",
         action: () => {
+          window.rzpAnalytics({
+            eventCategory: eventCategory,
+            eventAction: 'Capture - Payment',
+            eventLabel: `payment_id=${payment.id}`,
+          });
+
           return this.props
             .capturePayment(payment)
             .then(() => {
