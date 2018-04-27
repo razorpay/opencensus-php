@@ -235,10 +235,11 @@ return [
             'merchant_id'       => env('FSS_BOB_GATEWAY_MERCHANT_ID', '123'),
             'terminal_password' => env('FSS_BOB_GATEWAY_TERMINAL_PASSWORD', 'password'),
         ],
-        'fss' => [
-            'merchant_id'      => env('FSS_GATEWAY_MERCHANT_ID', '144'),
-            'test_hash_secret' => env('FSS_GATEWAY_TEST_HASH_SECRET', 'secret'),
-            'bank_code'        => env('FSS_GATEWAY_BANK_CODE', '12345678'),
+        'fss'  => [
+            'merchant_id'       => env('FSS_GATEWAY_MERCHANT_ID', '144'),
+            'test_hash_secret'  => env('FSS_GATEWAY_TEST_HASH_SECRET', 'secret'),
+            'bank_code'         => env('FSS_GATEWAY_BANK_CODE', '12345678'),
+            'terminal_password' => env('FSS_GATEWAY_TERMINAL_PASSWORD', 'password'),
         ]
     ],
 
@@ -298,8 +299,8 @@ return [
     ],
 
     'upi_hulk' => [
-        'test_secure_secret'       => env('UPI_HULK_GATEWAY_TEST_SECURE_SECRET'),
-        'gateway_secure_secret'    => env('UPI_HULK_GATEWAY_SECURE_SECRET'),
+        'test_terminal_password'    => env('UPI_HULK_GATEWAY_TEST_SECURE_SECRET'),
+        'gateway_terminal_password' => env('UPI_HULK_GATEWAY_SECURE_SECRET'),
     ],
 
     'upi_sbi' => [
@@ -470,9 +471,9 @@ return [
     ],
 
     'netbanking_csb' => [
-        'test_merchant_id'    => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),
-        'test_merchant_id_2'  => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID_2'),
-        'test_hash_secret'    => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id_2' => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id'   => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID_2'),
+        'test_hash_secret'   => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
     ],
 
     'sharp' => [

@@ -327,7 +327,7 @@ class Validator extends Base\Validator
     protected static $upiHulkTerminalRules = [
         Entity::GATEWAY                    => 'required|in:upi_hulk',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
-        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
         Entity::UPI                        => 'required|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
@@ -389,6 +389,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+    ];
+
+    protected static $netbankingCsbEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_CSB,
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
     ];
 
     protected static $cardFssTerminalRules = [

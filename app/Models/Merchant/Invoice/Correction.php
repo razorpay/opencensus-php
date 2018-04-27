@@ -157,6 +157,12 @@ class Correction extends Base\Core
         {
             $newAmounts = $this->calculateFeesForInvoiceByType($type, $isCorrection);
 
+            $this->trace->info(
+                TraceCode::MERCHANT_INVOICE_CORRECTION_NEW_AMOUNT,
+                [
+                    'type' => $type,
+                ] + $newAmounts);
+
             $correctionAmounts[$type] = $this->calculateCorrectionAmounts($newAmounts, $existingInvoiceAmounts[$type]);
         }
 

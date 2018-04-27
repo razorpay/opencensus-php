@@ -251,6 +251,9 @@ class Header
     const PAYOUT_FEE                 = 'payout_fee';
     const PAYOUT_TAX                 = 'payout_tax';
 
+    const ELFIN_LONG_URL             = 'Long Url';
+    const ELFIN_SHORT_URL            = 'Short Url';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -645,6 +648,21 @@ class Header
                 self::MERCHANT_NAME,
                 self::MERCHANT_EMAIL,
                 self::MERCHANT_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::ELFIN => [
+
+            self::INPUT => [
+                self::ELFIN_LONG_URL,
+            ],
+
+            self::OUTPUT => [
+                self::ELFIN_LONG_URL,
+                self::ELFIN_SHORT_URL,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

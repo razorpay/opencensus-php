@@ -227,7 +227,7 @@ class Gateway extends Base\Gateway
     {
         $terminal = $this->terminal;
 
-        $request['options']['auth'] = [$this->getMerchantId(), $this->getSecret()];
+        $request['options']['auth'] = [$this->getMerchantId(), $this->getTerminalPassword()];
 
         return parent::sendGatewayRequest($request);
     }
@@ -240,6 +240,16 @@ class Gateway extends Base\Gateway
         }
 
         return 'rzp_live_' . $this->input['merchant']['id'];
+    }
+
+    public function getTerminalPassword()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_terminal_password'];
+        }
+
+        return $this->input['terminal']['gateway_terminal_password'];
     }
 
     protected function getAuthorizeRequestArray(array $input): array

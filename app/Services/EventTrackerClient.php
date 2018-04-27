@@ -378,8 +378,7 @@ class EventTrackerClient extends AbstractEventClient
     }
 
     /**
-     * Dispatch a job request via SQS for normal flow
-     * For DEMO merchant dispatch using SNS
+     * Dispatch event data via SNS and if that fails we use SQS via RequestJob.
      *
      * @param array $headers
      * @param string $url

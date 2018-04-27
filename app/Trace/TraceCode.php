@@ -971,6 +971,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISPUTE_FILE_CREATE                           = 'DISPUTE_FILE_CREATE';
     const DISPUTE_FILES_UPLOAD                          = 'DISPUTE_FILES_UPLOAD';
 
+    const ACCESS_MAP_UPDATE_REQUEST                     = 'ACCESS_MAP_UPDATE_REQUEST';
+    const ACCESS_MAP_UPDATE_ERROR                       = 'ACCESS_MAP_UPDATE_ERROR';
+
     const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';
@@ -986,6 +989,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_INVOICE_CORRECTION_FAILED            = 'MERCHANT_INVOICE_CORRECTION_FAILED';
     const MERCHANT_INVOICE_CORRECTION_REQUEST           = 'MERCHANT_INVOICE_CORRECTION_REQUEST';
     const MERCHANT_INVOICE_CORRECTION_JOB               = 'MERCHANT_INVOICE_CORRECTION_JOB';
+    const MERCHANT_INVOICE_CORRECTION_NEW_AMOUNT        = 'MERCHANT_INVOICE_CORRECTION_NEW_AMOUNT';
 
     // Trace code for OAuth and Authentication service
     const AUTH_SERVICE_REQUEST                          = 'AUTH_SERVICE_REQUEST';
@@ -1050,6 +1054,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
     const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
+
+    const INSTANCE_PROFILE_PROVIDER_CACHE_MISS          = 'INSTANCE_PROFILE_PROVIDER_CACHE_MISS';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

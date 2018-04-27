@@ -2,9 +2,6 @@
 
 namespace RZP\Jobs;
 
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
-
 use RZP\Trace\TraceCode;
 use RZP\Models\Batch as BatchModel;
 use Razorpay\Trace\Logger as Trace;
@@ -12,10 +9,8 @@ use Razorpay\Trace\Logger as Trace;
 /**
  * Represents asynchronous Batch job.
  */
-class Batch extends Job implements ShouldQueue
+class Batch extends Job
 {
-    use InteractsWithQueue;
-
     /**
      * Batch entity id.
      *

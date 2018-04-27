@@ -8,13 +8,10 @@ use RZP\Models\Payment;
 use RZP\Jobs\RequestJob;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Method;
-use Illuminate\Foundation\Bus\DispatchesJobs;
 use RZP\Trace\TraceCode;
 
 abstract class AbstractEventClient extends Base\Core
 {
-    use DispatchesJobs;
-
     protected $mock = false;
 
     protected $config = [];
@@ -114,9 +111,7 @@ abstract class AbstractEventClient extends Base\Core
                 ]
             ];
 
-            $job = new RequestJob($request);
-
-            $this->dispatch($job);
+            RequestJob::dispatch($request);
         }
         catch (\Exception $e)
         {
@@ -169,7 +164,7 @@ abstract class AbstractEventClient extends Base\Core
         if (empty($this->events) === false)
         {
             $eventChunks = $this->getEventChunks();
-            
+
             foreach ($eventChunks as $eventChunk)
             {
                 $eventData = [
@@ -213,7 +208,7 @@ abstract class AbstractEventClient extends Base\Core
         foreach ($this->events as $event)
         {
             $eventChunksData[$counter][] = $event;
-            
+
             $totalEventsLength = strlen(json_encode($eventChunksData[$counter]));
 
             if ($totalEventsLength > self::MAX_EVENT_DATA_SIZE)

@@ -4,6 +4,7 @@ namespace RZP\Constants;
 
 use RZP\Base\Fetch;
 use RZP\Models\Dispute;
+use RZP\Models\Settlement\Channel;
 
 /**
  * Class AdminFetch
@@ -556,6 +557,11 @@ class AdminFetch
                 'utr' => [
                     Fetch::LABEL  => 'UTR',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'channel' => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => Channel::getChannels()
                 ],
             ],
 
@@ -1293,6 +1299,11 @@ class AdminFetch
                 'utr' => [
                     Fetch::LABEL  => 'UTR',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'channel' => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => Channel::getChannels()
                 ],
             ],
 
