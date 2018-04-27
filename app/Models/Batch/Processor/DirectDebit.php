@@ -174,6 +174,23 @@ class DirectDebit extends Base
 
     protected function mask(string $card)
     {
-        return  substr($card, 0,6) . 'xxxxxx' . substr($card, 12);
+       $entity = new Card();
+
+       try
+       {
+           $entity->build([
+               Card::NUMBER =>  $card,
+               Card::EXPIRY_MONTH   =>  Card::DUMMY_EXPIRY_MONTH,
+               Card::EXPIRY_YEAR    =>  Card::DUMMY_EXPIRY_YEAR,
+               Card::NAME           =>  'John Doe',
+               Card::CVV            =>  Card::DUMMY_CVV,
+           ]);
+       }
+       catch (\Exception $e)
+       {
+           return $card;
+       }
+
+        return  $entity->getMaskedCardNumber();
     }
 }

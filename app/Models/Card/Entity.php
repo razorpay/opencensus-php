@@ -320,6 +320,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LAST4);
     }
 
+    public function getMaskedCardNumber()
+    {
+        return  $this->getAttribute(self::IIN) . 'xxxxxx' . $this->getLast4();
+    }
+
     public function getVaultToken()
     {
         return $this->getAttribute(self::VAULT_TOKEN);
