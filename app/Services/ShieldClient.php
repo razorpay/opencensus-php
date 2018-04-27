@@ -276,7 +276,7 @@ class ShieldClient implements ExternalService
 
         if ($code !== 200)
         {
-            $this->trace->error(TraceCode::SHIELD_INTEGRATION_ERROR, $responseArray);
+            $this->trace->error(TraceCode::SHIELD_INTEGRATION_ERROR, ['response' => $responseArray]);
         }
 
         return $responseArray;
