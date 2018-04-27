@@ -2,8 +2,11 @@ import React, { Component } from 'react';
 import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { matchDetail } from 'merchant/routes';
+import { classList } from 'common/util';
+import { matchDetail, matchModal } from 'merchant/routes';
 import Slider from 'rzp/ui/Slider';
+import Modal, { ModalContent } from 'component/Modal';
+
 import ShowWhen from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
 import HomeNew from 'merchant/containers/Home/New';
@@ -16,10 +19,10 @@ import Subscriptions from 'merchant/containers/Subscriptions/Index';
 import Customers from 'merchant/containers/Customers/List';
 import Marketplace from 'merchant/containers/Marketplace/Index';
 import Reports from 'merchant/containers/Reports';
-import TeamManagement from 'merchant/containers/Team';
 import MyAccount from 'merchant/containers/MyAccount';
 import Settings from 'merchant/containers/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
+import ActivationContainer from 'merchant/containers/Activation/new';
 
 // Below will be removed with old navigation removal
 import RefundsList from 'merchant/containers/Refunds/List';
@@ -93,23 +96,30 @@ const RefundsTabbedContainer = () => {
 export default class Content extends Component {
   setBaseLocation = location => {
     let { setBaseLocation, setActiveEntity, setSecActiveEntity } = this.props;
-    var matchResult = matchDetail(location.pathname);
+    var matchDetailsRoute = matchDetail(location.pathname);
+    var matchModalsRoute = matchModal(location.pathname);
 
-    if (matchResult) {
-      if (matchResult.match && matchResult.match.path === '/activation') {
-        this.activationView = matchResult.component;
+    if (matchDetailsRoute || matchModalsRoute) {
+      let resultRoute;
+
+      if (matchModalsRoute.match) {
+        resultRoute = matchModalsRoute;
+
+        this.activationView = matchModalsRoute.component;
         this.detailView = null;
-      } else {
+      } else if (matchDetailsRoute.match) {
+        resultRoute = matchDetailsRoute;
+
         this.activationView = null;
-        this.detailView = matchResult.component;
+        this.detailView = matchDetailsRoute.component;
       }
 
-      const params = matchResult.match.params;
+      const params = resultRoute.match.params;
       setActiveEntity(params.id);
 
       this.detailProps = params;
 
-      setActiveEntity(matchResult.match.params.id);
+      setActiveEntity(resultRoute.match.params.id);
       if (Object.keys(params > 1)) {
         setSecActiveEntity(params[Object.keys(params)[1]]);
       }
@@ -166,7 +176,7 @@ export default class Content extends Component {
           <Route path="/reports" component={Reports} />
 
           <Route path="/profile" component={MyAccount} />
-          <Route path="/activation" component={MyAccount} />
+          <Route path="/activation" component={ActivationContainer} />
           <Route path="/addfunds" component={MyAccount} />
           <Route path="/credits" component={MyAccount} />
           <Route path="/referrals" component={MyAccount} />
@@ -198,6 +208,10 @@ export default class Content extends Component {
     }
   }
 
+  closeModalView = e => {
+    this.props.history.replace(this.baseLocation.pathname);
+  };
+
   render() {
     var DetailView = this.detailView;
     var BaseView = this.baseLocation ? this.getBaseView() : null;
@@ -221,11 +235,22 @@ export default class Content extends Component {
         </ErrorBoundary>
       );
     } else if (ActivationFormView) {
-      ActivationFormView = (
-        <ActivationFormView
-          {...this.detailProps}
-          closeUrl={BaseView ? this.baseLocation.pathname : undefined}
-        />
+      ActivationFormView = BaseView ? (
+        <Modal
+          maskClosable={true}
+          onClose={this.closeModalView}
+          class={classList(
+            'animate-down',
+            ActivationFormView.MODAL_CONTAINER_CLASS
+          )}
+        >
+          <ActivationFormView
+            {...this.detailProps}
+            closeUrl={BaseView ? this.baseLocation.pathname : undefined}
+          />
+        </Modal>
+      ) : (
+        <ActivationFormView {...this.detailProps} />
       );
     }
 

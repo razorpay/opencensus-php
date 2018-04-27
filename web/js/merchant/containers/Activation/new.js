@@ -3,7 +3,7 @@ import { merchantFetch } from 'rzp/utils/ajax';
 import { showNotification } from 'rzp/modules/notifications';
 import { without } from 'rzp/utils/rzp-utils';
 import Spinner from 'rzp/ui/Spinner';
-import Modal, { ModalContent } from 'component/Modal';
+import { ModalContent } from 'component/Modal';
 import ActivationWizard from 'component/merchant/Activation';
 
 import { withRouter } from 'react-router-dom';
@@ -25,10 +25,6 @@ export default class ActivationContainer extends React.Component {
 
   componentWillMount() {
     this.fetchActivationDetails();
-
-    if (this.props.closeUrl) {
-      this.state.isModal = true;
-    }
   }
 
   fetchActivationDetails() {
@@ -114,11 +110,6 @@ export default class ActivationContainer extends React.Component {
       .catch(err => {});
   };
 
-  handleClose = e => {
-    // this.props.history.goBack();
-    this.props.history.replace(this.props.closeUrl);
-  };
-
   render() {
     let { data, categories } = this.state;
 
@@ -136,12 +127,12 @@ export default class ActivationContainer extends React.Component {
       </div>
     );
 
-    return this.state.isModal ? (
-      <Modal class="activation" maskClosable={true} onClose={this.handleClose}>
-        <ModalContent>{content}</ModalContent>
-      </Modal>
+    return this.props.closeUrl ? (
+      <ModalContent>{content}</ModalContent>
     ) : (
       <div class="activation-container">{content}</div>
     );
   }
 }
+
+ActivationContainer.MODAL_CONTAINER_CLASS = 'activation';

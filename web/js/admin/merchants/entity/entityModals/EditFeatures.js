@@ -79,7 +79,7 @@ export default class EditFeatures extends Component {
     }
 
     return (
-      <ModalContent header="Edit Features" customClass="edit-features">
+      <ModalContent header="Edit Features" class="edit-features">
         <Form class="full-span">
           <SelectField
             name="mode"

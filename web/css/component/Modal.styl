@@ -44,3 +44,12 @@
     &:hover
       color: #333
 
+.Modal-container--animate-down
+  animation: appear-down 250ms ease-in-out
+
+@keyframes appear-down
+  0%
+    transform: translateY(-48px)
+
+  100%
+    transform: translateY(0)

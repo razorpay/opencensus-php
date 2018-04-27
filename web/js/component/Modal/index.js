@@ -35,11 +35,15 @@ export default class ModalContainer extends React.PureComponent {
   render() {
     const { children, maskClosable = false, ...rest } = this.props;
 
+    let classArray = rest.className
+      ? rest.className.split(' ').map(cls => 'Modal-mask--' + cls)
+      : '';
+
     return (
       <div
         class={classList(
           'Modal-mask',
-          rest.className && 'Modal-mask--' + rest.className,
+          classArray,
           this.state.isHidden && 'Modal-mask--hide'
         )}
         onClick={maskClosable && this.onMaskClose}
@@ -50,9 +54,12 @@ export default class ModalContainer extends React.PureComponent {
   }
 }
 
+// TODO: 1-a: Benefit of decoupling with ModalContent is, we can use loop over Modal with common close fn. and ModalContent just as children having its own custom properties
+// TODO: 1-b: Alternatively, ModalContent can restrively child of Modal, and all modals must have property to tell Modal-container custom class and header/banner
+// TODO: 1-c: Both approaches have trade-offs. Currently 'a' chosen to adapt merchant+admin with minimal changes on admin side.
 /*
 * Modal without modal mask. It takes care of close button functionality
-* ModalContainer uses this component. However, Modal can also be used independently.
+* - ModalContainer uses this component. However, Modal can also be used independently.
 * @props
 *   - {Boolean, optional} showCloseBtn, by default close button is shown. Can be hidden if false is passed
 *   - {Function} onClose, action on close btn press
@@ -62,24 +69,25 @@ export const Modal = ({
   showCloseBtn = true,
   className,
   onClose,
-}) => (
-  <div
-    class={classList(
-      'Modal-container',
-      className && 'Modal-container--' + className
-    )}
-  >
-    {showCloseBtn && (
-      <span class="Modal-close" onClick={onClose}>
-        &times;
-      </span>
-    )}
+}) => {
+  let classArray = className
+    ? className.split(' ').map(cls => 'Modal-container--' + cls)
+    : '';
 
-    {children}
-  </div>
-);
+  return (
+    <div class={classList('Modal-container', classArray)}>
+      {showCloseBtn && (
+        <span class="Modal-close" onClick={onClose}>
+          &times;
+        </span>
+      )}
 
-/* ModalContent only provides the container for the content
+      {children}
+    </div>
+  );
+};
+
+/* ModalContent only provides the wrapper for the content
 * @props
 *   - {String/React Node, optional} header, Add custom Class to the modal content
 *   - {String/React Node, optional} banner, pass function (Example: check 'invite a merchant')
