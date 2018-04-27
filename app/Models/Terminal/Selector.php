@@ -9,7 +9,6 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
-use RZP\Models\Payment\AuthType;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
