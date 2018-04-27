@@ -30,9 +30,9 @@ use RZP\Models\Terminal;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Models\Discount;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
-use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\RunShieldCheck;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
@@ -1369,11 +1369,15 @@ trait Authorize
      */
     protected function runShieldCheck(Payment\Entity $payment)
     {
+        // We do not want to call shield in case for Payments in Test mode
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
+
         try
         {
-            $job = new RunShieldCheck($this->mode, $payment);
-
-            (new DispatchRouter)->dispatchOn($job, DispatchRouter::SHIELD);
+            RunShieldCheck::dispatch($this->mode, $payment);
         }
         catch (\Throwable $e)
         {
@@ -2748,7 +2752,32 @@ trait Authorize
 
         $this->postPaymentAuthorizeSubscriptionProcessing($payment);
 
+        $this->postPaymentAuthorizeOfferProcessing($payment);
+
         return $this->processAuthorizeResponse($payment);
+    }
+
+    protected function postPaymentAuthorizeOfferProcessing(Payment\Entity $payment)
+    {
+        if ($payment->hasOrder() === false)
+        {
+            return;
+        }
+
+        $order = $payment->order;
+
+        if ($order->isDiscountApplicable() === false)
+        {
+            return;
+        }
+
+        $appliedOffer = $order->offer;
+
+        $discountInput = [
+            Discount\Entity::AMOUNT => $appliedOffer->getDiscount($order->getAmount()),
+        ];
+
+        (new Discount\Service)->create($discountInput, $payment, $appliedOffer);
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)

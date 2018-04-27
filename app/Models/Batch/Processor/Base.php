@@ -848,6 +848,8 @@ class Base extends BaseModel\Core
             $ext = $file->getClientOriginalExtension();
         }
 
+        $ext = strtolower($ext);
+
         $localDir  = $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE_PREFIX);
         $filename  = $this->batch->getFileKeyWithExt($ext);
         $movedFile = $file->move($localDir, $filename);

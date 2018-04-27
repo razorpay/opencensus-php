@@ -42,6 +42,7 @@ class Validator
                                                         . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/"
                                                      ],
         RequestProcessor\Base::NETBANKING_BOB     => ["/^Razorpay_Scroll_ of /"],
+        RequestProcessor\Base::NETBANKING_CSB     => ["/^RAZORPAY_Recon File/"],
         RequestProcessor\Base::NETBANKING_ICICI   => ["/^Payment Through Internet Banking Center Razorpay/"],
         RequestProcessor\Base::NETBANKING_FEDERAL => [
                                                         "/^MIS Report File Dated "
@@ -79,6 +80,7 @@ class Validator
                                                         "/Please find attached the settlement file for today."
                                                         . " You net amount settled is/"
                                                      ],
+        RequestProcessor\Base::NETBANKING_CSB     => ["/Please find attached, the recon file for the date/"],
         RequestProcessor\Base::FIRST_DATA         => ["/the statement of transactions for MID (.)*razorpay/"],
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => ["/Please find the hourly report of Virtual Accounts./"],
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK=> ["/Please find attached subject scheduled reports./"],
@@ -210,6 +212,19 @@ class Validator
             RequestProcessor\Base::NETBANKING_BOB);
 
         return $validSubject;
+    }
+
+    public function validateNetbankingCsbEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_CSB);
+
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY],
+            RequestProcessor\Base::NETBANKING_CSB);
+
+        return ($validSubject and $validBody);
     }
 
     public function validateNetbankingIciciEmail(array $emailDetails)

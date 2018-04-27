@@ -177,7 +177,11 @@ class Validator extends Base\Validator
         if (($isOrderPaid === true) or ($isOrderAuthorized === true))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID);
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID,
+                null,
+                [
+                    'order_id' => $order->getId(),
+                ]);
         }
     }
 

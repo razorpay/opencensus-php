@@ -270,6 +270,9 @@ class Header
     const DIRECT_DEBIT_PAYMENT_ID   =   'payment_id';
     const DIRECT_DEBIT_REMARKS      =   'remarks';
 
+    const ELFIN_LONG_URL             = 'Long Url';
+    const ELFIN_SHORT_URL            = 'Short Url';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -701,6 +704,21 @@ class Header
                 self::DIRECT_DEBIT_NOTES3,
                 self::DIRECT_DEBIT_PAYMENT_ID,
                 self::DIRECT_DEBIT_REMARKS,
+            ],
+        ],
+
+        Type::ELFIN => [
+
+            self::INPUT => [
+                self::ELFIN_LONG_URL,
+            ],
+
+            self::OUTPUT => [
+                self::ELFIN_LONG_URL,
+                self::ELFIN_SHORT_URL,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ],
         ],
     ];
