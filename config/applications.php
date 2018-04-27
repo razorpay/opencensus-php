@@ -188,6 +188,7 @@ return [
     'shield' => [
         'mock'    => env('SHIELD_MOCK', false),
         'url'     => env('SHIELD_BASE_URL'),
+        'ruleset' => env('SHIELD_RULESET'),
         'auth' => [
             'username' => 'api',
             'password' => env('SHIELD_SECRET'),
