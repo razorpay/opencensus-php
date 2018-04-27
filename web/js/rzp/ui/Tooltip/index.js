@@ -340,12 +340,13 @@ class Tooltip extends Component {
         persistent,
         onAdjustment,
         onAlignmentChange,
+        theme,
         ...otherProps
       } = this.props;
 
     otherProps.className = `${
       otherProps.className ? otherProps.className + ' ' : ''
-    }rzp-tooltip${show ? ' show' : ''}`;
+    }rzp-tooltip${show ? ' show' : ''} theme-${theme}`;
 
     return (
       <div {...otherProps} ref={node => (this.node = node)}>
@@ -361,6 +362,7 @@ Tooltip.defaultProps = {
   followPointer: false,
   persistent: false,
   offset: DEFAULT_OFFSET,
+  theme: 'light',
 };
 
 Tooltip.propTypes = {
@@ -371,6 +373,7 @@ Tooltip.propTypes = {
   offset: PropTypes.number.isRequired,
   onAdjustment: PropTypes.func,
   onAlignmentChange: PropTypes.func,
+  theme: PropTypes.oneOf(['light', 'dark']),
 };
 
 export default Tooltip;
