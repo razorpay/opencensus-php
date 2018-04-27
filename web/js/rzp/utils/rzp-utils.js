@@ -438,9 +438,19 @@ export const arrayToCsvDataUrl = array => {
 };
 
 /**
+ * @param {*} url
+ * Check if valid secure production URL (i.e, HTTPS)
+ */
+export const checkIfHTTPS = url => {
+  const regex = /^https:\/\//i;
+
+  return regex.test(url);
+};
+
+/**
  *
  * @param {*} url
- * Add 'http' to the URL is not available
+ * Add 'http' to the URL if http/https not there
  */
 export const autoPrefixUrls = url => {
   const regex = /^https?:\/\//i;
