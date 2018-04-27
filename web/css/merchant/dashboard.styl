@@ -1,5 +1,3 @@
-$tooltip-bg-color = #2C3243;
-
 .Dashboard {
   .h1, h4 {
     margin: 0;
@@ -350,6 +348,16 @@ body.analytics-v2-active .onboarding-card-wrapper {
       padding-left: 12px;
       font-size: 14px;
       border-radius: 2px;
+      margin-top: 12px;
+      background-color: #fff;
+      color: #528ff0;
+      border: none;
+      box-shadow: 0 1px 3px 0 rgba(0,0,0,0.14);
+
+      &:hover {
+
+        box-shadow: inset 0 1px 3px 0 rgba(0,0,0,0.24);
+      }
 
       > span {
         margin-right: 48px;
@@ -425,7 +433,7 @@ body.analytics-v2-active .onboarding-card-wrapper {
 
     display: table;
     width: 100%;
-    padding-bottom: 20px;
+    padding-bottom: 16px;
 
     > div {
 
@@ -441,14 +449,15 @@ body.analytics-v2-active .onboarding-card-wrapper {
         > i {
 
           display: inline-block;
-          width: 20px;
-          height: 20px;
-          line-height: 18px;
+          width: 16px;
+          height: 16px;
+          line-height: 12px;
           border-radius: 50%;
           background-color: rgba(255, 255, 255, 0.2);
 
           &:before {
 
+            font-size: 12px;
             vertical-align: middle;
           }
         }
@@ -582,21 +591,9 @@ body.analytics-v2-active .onboarding-card-wrapper {
 
             .rzp-tooltip-inner {
 
-              background-color: $tooltip-bg-color;
-
-              .rzp-popover-arrow:after {
-
-                border-top-color: $tooltip-bg-color;
-              }
-
               .rzp-popover-content {
 
                 white-space: normal;
-
-                .rzp-popover-body {
- 
-                  color: #FFFFFF;
-                }
               }
             }
           }
@@ -638,7 +635,7 @@ body.analytics-v2-active .onboarding-card-wrapper {
           .activation-step-icon {
 
             display: block;
-            width: 40px;
+            width: 46px;
             height: 32px;
             background-position: top left;
             background-repeat: no-repeat;
@@ -809,6 +806,16 @@ body.analytics-v2-active .onboarding-card-wrapper {
   div.onboarding-card.media {
 
     padding-right: 328px;
+
+    @media (max-width: 1278px) {
+
+      padding-right: 250px;
+    }
+
+    @media (max-width: 1200px) {
+
+      padding-right: 301px;
+    }
 
     @media (max-width: 1095px) {
 

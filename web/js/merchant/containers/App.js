@@ -34,13 +34,37 @@ import { fetchConfig } from 'merchant/modules/config';
   fetchGST,
 })
 export default class App extends Component {
-  state = {
-    isLoading: true,
-    showMobileNav: false,
-  };
+  constructor(props) {
+    super(props);
+
+    const { user } = props;
+
+    const oldModeToken = 'rzp_mode',
+      oldModeValue = LocalStorageService.getItem(oldModeToken);
+
+    // localizing mode for each merchant so that different modes can be maintained
+    // across logins/merchants
+    if (oldModeValue) {
+      Object.keys(window.rzp_user.merchants).forEach(merchantId => {
+        LocalStorageService.setItem(
+          `${oldModeToken}--${merchantId}`,
+          oldModeValue
+        );
+      });
+
+      LocalStorageService.removeItem(oldModeToken);
+    }
+
+    this.modeToken = `${oldModeToken}--${window.rzp_user.current}`;
+
+    this.state = {
+      isLoading: true,
+      showMobileNav: false,
+    };
+  }
 
   componentWillMount() {
-    let currentMode = LocalStorageService.getItem('rzp_mode');
+    let currentMode = LocalStorageService.getItem(this.modeToken);
 
     this.props.fetchGST();
     Promise.all([
@@ -104,13 +128,18 @@ export default class App extends Component {
 
       // if the user is live but chose to browse in test mode,
       // it will be stored in rzp_mode
-      let currentMode = LocalStorageService.getItem('rzp_mode');
+      let currentMode = LocalStorageService.getItem(this.modeToken);
 
       if (!currentMode) {
         currentMode = user.isActivated ? 'live' : 'test';
       } else if (!user.isActivated) {
         currentMode = 'test';
       }
+
+      // making sure his current mode is remembered so that when he gets
+      // activated, he wont be switched to live mode automatically
+      // which may lead to mass confusion for merchants
+      LocalStorageService.setItem(this.modeToken, currentMode);
 
       if (user && user.user) {
         if (window.setRavenContext) {
@@ -205,7 +234,7 @@ export default class App extends Component {
         ),
       });
     } else {
-      LocalStorageService.setItem('rzp_mode', mode);
+      LocalStorageService.setItem(this.modeToken, mode);
       location.reload();
     }
   };

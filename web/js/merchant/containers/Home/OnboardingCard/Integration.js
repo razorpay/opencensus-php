@@ -35,14 +35,6 @@ const WrapperElement = ({
   paymentsMade,
   ...otherProps
 }) => {
-  if (keysGenerated && paymentsMade) {
-    return (
-      <div {...otherProps}>
-        <div className="media">{children}</div>
-      </div>
-    );
-  }
-
   if (keysGenerated && !paymentsMade) {
     return (
       <a
@@ -59,7 +51,7 @@ const WrapperElement = ({
   }
 
   return (
-    <Link to="/keys" {...otherProps}>
+    <Link to={(!keysGenerated && '/keys') || '/payments'} {...otherProps}>
       <div className="media">
         {children}
         <Arrow />
@@ -80,7 +72,7 @@ const Title = ({
   let text = '';
 
   if (!keysGenerated) {
-    text = `Integrate Razorpay in ${formattedMode} Mode`;
+    text = `Integrate in ${formattedMode} Mode`;
   } else if (!paymentsMade) {
     text = `Integrate & Create ${formattedMode} Payment`;
   } else {
@@ -102,9 +94,9 @@ const Text = ({
   if (!keysGenerated) {
     text = `Generate ${mode} API keys.`;
   } else if (!paymentsMade) {
-    text = 'Go through our Documentation';
+    text = 'Go through our Documentation.';
   } else {
-    text = 'You can view all payments in Transaction tab';
+    text = 'View all payments in Transactions tab.';
   }
 
   return <span>{text}</span>;

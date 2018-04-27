@@ -118,6 +118,7 @@ class HomeContainer extends Component {
       );
 
     this.state = {
+      expandOnboardingBanner: showOnboardingBanner, // used for transition
       showOnboardingBanner,
       showOnboardingBannerFirstStep,
       // payments is used to change content in the integration step
@@ -136,12 +137,24 @@ class HomeContainer extends Component {
      * RecentActivity component, which will be done using `onFetchPayments`
      * below
      */
-    if (mode !== 'live' && user.isActivated && showOnboardingBanner) {
-      this.props.fetchPayments({ mode: 'live' }).then(data => {
-        if (data && data.items && data.items.length === 0) {
-          this.setShowOnboardingBanner();
-        }
-      });
+    if (!showOnboardingBanner) {
+      if (!user.isActivated) {
+        this.state = {
+          ...this.state,
+          showOnboardingBanner: true,
+          showOnboardingBannerFirstStep: true,
+          expandOnboardingBanner: true,
+        };
+
+        LocalStorageService.setItem(this.onboardingBannerToken, 'true');
+        LocalStorageService.setItem(this.firstStepToken, 'true');
+      } else if (mode !== 'live') {
+        this.props.fetchPayments({ mode: 'live' }).then(data => {
+          if (data && data.items && data.items.length === 0) {
+            this.setShowOnboardingBanner();
+          }
+        });
+      }
     }
 
     this.onFetchPayments = this.onFetchPayments.bind(this);
@@ -150,10 +163,17 @@ class HomeContainer extends Component {
   }
 
   setShowOnboardingBanner() {
-    this.setState({
-      showOnboardingBanner: true,
-      showOnboardingBannerFirstStep: true,
-    });
+    this.setState(
+      {
+        showOnboardingBanner: true,
+        showOnboardingBannerFirstStep: true,
+      },
+      () => {
+        this.setState({
+          expandOnboardingBanner: true,
+        });
+      }
+    );
 
     LocalStorageService.setItem(this.onboardingBannerToken, 'true');
     LocalStorageService.setItem(this.firstStepToken, 'true');
@@ -168,9 +188,16 @@ class HomeContainer extends Component {
   }
 
   onHideOnboardingBanner() {
-    this.setState({
-      showOnboardingBanner: false,
-    });
+    this.setState(
+      {
+        expandOnboardingBanner: false,
+      },
+      () => {
+        this.setState({
+          showOnboardingBanner: false,
+        });
+      }
+    );
 
     LocalStorageService.removeItem(this.onboardingBannerToken);
   }
@@ -194,9 +221,9 @@ class HomeContainer extends Component {
      * we use it to show the banner , if there are no trasaction
      */
     if (
+      !this.state.showOnboardingBanner &&
       user.isActivated &&
       mode === 'live' &&
-      !this.state.showOnboardingBanner &&
       items.length === 0
     ) {
       this.setShowOnboardingBanner();
@@ -246,7 +273,11 @@ class HomeContainer extends Component {
           }}
         >
           <div class="row">
-            <div class="col-md-12 v2-onboarding-card old-analytics">
+            <div
+              className={`col-md-12 v2-onboarding-card old-analytics${
+                this.state.expandOnboardingBanner ? ' expand' : ''
+              }`}
+            >
               {this.state.showOnboardingBanner && (
                 <NewUserOnboardingCard
                   payments={this.state.payments}

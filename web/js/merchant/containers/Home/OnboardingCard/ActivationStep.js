@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
+import TetherComponent from 'react-tether';
 import { Link } from 'react-router-dom';
+
 import LocalStorageService from 'rzp/utils/localStorage';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import ProgressBar from 'rzp/ui/ProgressBar';
@@ -35,10 +37,18 @@ const Icon = ({ isActivated, isSubmitted, isRejected, needsClarification }) => {
 class SwitchToLive extends Component {
   constructor(props) {
     super(props);
+
+    this.modeToken = `rzp_mode--${props.merchantId}`;
+
+    this.switchToLive = this.switchToLive.bind(this);
   }
 
   switchToLive() {
-    LocalStorageService.setItem('rzp_mode', LIVE_MODE);
+    if (!LocalStorageService.getItem(`hide-mode-dd-popover`)) {
+      LocalStorageService.setItem(`show-mode-dd-popover`, 'true');
+    }
+
+    LocalStorageService.setItem(this.modeToken, LIVE_MODE);
     window.location.reload();
   }
 
@@ -112,25 +122,45 @@ const WrapperElement = ({
 /*
  * Title for Activation step
  */
-const Title = ({ children, isActivated, isSubmitted, isRejected }) => {
+const Title = ({
+  children,
+  isActivated,
+  isSubmitted,
+  isRejected,
+  needsClarification,
+}) => {
   return (
     <span>
       {isSubmitted ? (
         <span>
           {isActivated ? (
-            'Your Account is Activated'
+            'Account Activated'
           ) : isRejected ? (
-            <span>Activation Form Rejected</span>
+            <span>
+              Activation Not Accepted{' '}
+              <small>
+                <i className="i i-info-circle text-fade" />
+                <Popover align="top" followPointer={true} theme="dark">
+                  <PopoverBody>
+                    We would not be able to support your business as the bank
+                    has not approved your activation request. We have sent you
+                    an email with more details.
+                  </PopoverBody>
+                </Popover>
+              </small>
+            </span>
+          ) : needsClarification ? (
+            <span>Activation: Need Clarification</span>
           ) : (
             <span>
               {/*
-                    * If account is not activated or rejected but submitted,
-                    * we show "Activation Form Submitted" with popover
-                    */}
+                  * If account is not activated or rejected but submitted,
+                  * we show "Activation Form Submitted" with popover
+                  */}
               Activation Form Submitted{' '}
               <small>
                 <i className="i i-info-circle text-fade" />
-                <Popover align="top" followPointer={true}>
+                <Popover align="top" followPointer={true} theme="dark">
                   <PopoverBody>
                     Your account is Under Review. The process usually takes 2 to
                     3 working days. We will reach out on your contact email for
@@ -154,6 +184,7 @@ const Title = ({ children, isActivated, isSubmitted, isRejected }) => {
 const Text = ({
   mode,
   children,
+  merchantId,
   isActivated,
   isSubmitted,
   isRejected,
@@ -162,17 +193,15 @@ const Text = ({
   clarificationMode,
 }) => {
   if (isRejected) {
-    return <span>Unable to address your business use case</span>;
+    return <span>Please check your email for details.</span>;
   }
 
   if (needsClarification) {
     return (
       <span>
-        {'Action Required. We will ' +
-          (clarificationMode === CLARIFICATION_THROUGH_EMAIL
-            ? 'email'
-            : 'call') +
-          ' you'}
+        {clarificationMode === CLARIFICATION_THROUGH_EMAIL
+          ? "Please reply to the email we've sent."
+          : "We'll contact you over phone."}
       </span>
     );
   }
@@ -180,31 +209,52 @@ const Text = ({
   return (
     <span>
       {!isActivated && !isSubmitted ? (
-        'Fill activation form to accept payments.'
-      ) : !hasPersonalised ? (
+        // if he is neither actived nor submitted
+
+        'Fill Activation form to accept payments.'
+      ) : //if he is either activated or submitted or both
+
+      !hasPersonalised ? (
+        // if he is either activated or submitted or both but not personalised
+
         !isActivated ? (
-          'Personalise your account'
+          // if user had not personalized and not activated but submitted
+
+          'Personalise your account.'
         ) : (
+          // if has not personalised , but activated
+
           <span>
             {mode === TEST_MODE ? (
               <span>
                 <Link to={PERSONALISE_URL}>Personalise</Link>
                 <span>
                   {' '}
-                  or <SwitchToLive>Switch to live</SwitchToLive>
+                  or{' '}
+                  <SwitchToLive merchantId={merchantId}>
+                    Switch to live
+                  </SwitchToLive>
                 </span>
               </span>
             ) : (
-              <span>Personalise your Account</span>
+              <span>Personalise your Account.</span>
             )}
           </span>
         )
-      ) : isActivated && mode === TEST_MODE ? (
-        <span>
-          <SwitchToLive>Switch to live</SwitchToLive>
-        </span>
+      ) : isActivated ? (
+        mode === TEST_MODE ? (
+          // user has personalized, activated and is in test mode
+
+          <span>
+            <SwitchToLive merchantId={merchantId}>Switch to live</SwitchToLive>
+          </span>
+        ) : (
+          'You are all set up.'
+        )
       ) : (
-        'You are all set up.'
+        // if user has submitted and is under review
+
+        'It may take 2-3 working days for reivew.'
       )}
     </span>
   );
@@ -258,6 +308,7 @@ export default ({ mode, user, config }) => {
                 isSubmitted={isSubmitted}
                 hasPersonalised={hasPersonalised}
                 isRejected={isRejected}
+                needsClarification={needsClarification}
               />
             </b>
             {!isActivated &&
@@ -274,6 +325,7 @@ export default ({ mode, user, config }) => {
         </div>
         <div className="step-desc">
           <Text
+            merchantId={user.current}
             mode={mode}
             isActivated={isActivated}
             isSubmitted={isSubmitted}

@@ -1,13 +1,18 @@
+import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 import { PowerSelect } from 'react-power-select';
+
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
+import storage from 'rzp/utils/localStorage';
+
 import ShowWhen from 'merchant/components/ShowWhen';
 import ProfileDropdown from 'merchant/containers/Header/ProfileDropdown';
 
-const analytics = (action) => {
+const analytics = action => {
   window.rzpAnalytics({
     eventCategory: 'Dashboard - Header',
-    eventAction: action
+    eventAction: action,
   });
 };
 
@@ -64,67 +69,126 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
   );
 };
 
-export default ({
-  user,
-  mode,
-  showGSTModal,
-  modeFormatted,
-  onSwitchMode,
-  onSwitchMerchant,
-  toggleMobileNav,
-  showMobileNav,
-}) => {
-  return (
-    <nav class="navbar navbar-default navbar-fixed-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <button
-            type="button"
-            class="navbar-toggle"
-            data-toggle="collapse"
-            onClick={toggleMobileNav}
+export default class HeaderNav extends Component {
+  constructor(props) {
+    super(props);
+
+    var hideModePopoverToken = (this.hideModePopoverToken =
+        'hide-mode-dd-popover'),
+      showModePopoverToken = (this.showModePopoverToken =
+        'show-mode-dd-popover');
+
+    const hideSwitchModeTooltip = storage.getItem(hideModePopoverToken),
+      showSwitchModeTooltip = storage.getItem(showModePopoverToken);
+
+    this.state = {
+      showSwitchModeTooltip: !hideSwitchModeTooltip && showSwitchModeTooltip,
+    };
+
+    if (hideSwitchModeTooltip && showSwitchModeTooltip) {
+      storage.removeItem(this.showModePopoverToken);
+    }
+
+    this.hideSwitchModeTooltip = this.hideSwitchModeTooltip.bind(this);
+  }
+
+  hideSwitchModeTooltip() {
+    this.setState({
+      showSwitchModeTooltip: false,
+    });
+
+    storage.setItem(this.hideModePopoverToken, 'true');
+    storage.removeItem(this.showModePopoverToken);
+  }
+
+  render() {
+    const {
+      user,
+      mode,
+      showGSTModal,
+      modeFormatted,
+      onSwitchMode,
+      onSwitchMerchant,
+      toggleMobileNav,
+      showMobileNav,
+    } = this.props;
+
+    const { showSwitchModeTooltip } = this.state;
+
+    return (
+      <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button
+              type="button"
+              class="navbar-toggle"
+              data-toggle="collapse"
+              onClick={toggleMobileNav}
+            >
+              <span class="i-bar" />
+              <span class="i-bar" />
+              <span class="i-bar" />
+            </button>
+          </div>
+          <div
+            class={`${showMobileNav ? '' : 'collapse '}navbar-collapse`}
+            id="headerNav"
           >
-            <span class="i-bar" />
-            <span class="i-bar" />
-            <span class="i-bar" />
-          </button>
-        </div>
-        <div
-          class={`${showMobileNav ? '' : 'collapse '}navbar-collapse`}
-          id="headerNav"
-        >
-          <ul class="nav navbar-nav navbar-right">
-            <ShowWhen myRole="owner finance">
+            <ul class="nav navbar-nav navbar-right">
+              <ShowWhen myRole="owner finance">
+                <li>
+                  <a onClick={showGSTModal}>GST Details</a>
+                </li>
+              </ShowWhen>
               <li>
-                <a onClick={showGSTModal}>GST Details</a>
-              </li>
-            </ShowWhen>
-            <li>
-              <ModesDropdown
-                mode={mode}
-                modeFormatted={modeFormatted}
-                onSwitchMode={onSwitchMode}
-              />
-            </li>
-            {Object.keys(user.merchants).length > 1 ? (
-              <li class="SwitchMerchantDropdown">
-                <SwitchMerchant
-                  user={user}
-                  onSwitchMerchant={onSwitchMerchant}
+                <ModesDropdown
+                  mode={mode}
+                  modeFormatted={modeFormatted}
+                  onSwitchMode={onSwitchMode}
                 />
+                {showSwitchModeTooltip && (
+                  <Popover persistent={true} theme="dark">
+                    <PopoverBody>
+                      <p>
+                        You can switch between Live Mode and Test Mode anytime
+                        from here.
+                      </p>
+                      <div className="clearfix">
+                        <a
+                          className="pull-right"
+                          onClick={this.hideSwitchModeTooltip}
+                        >
+                          OK. Got it
+                        </a>
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                )}
               </li>
-            ) : null}
-            <li>
-              <a target="_blank" href="https://docs.razorpay.com" onClick={() => analytics('Go To - Documentation')}>
-                <span>Documentation</span>
-              </a>
-            </li>
-            <li id="profile-dropdown">
-              <ProfileDropdown analytics={analytics} />
-            </li>
-          </ul>
+              {Object.keys(user.merchants).length > 1 ? (
+                <li class="SwitchMerchantDropdown">
+                  <SwitchMerchant
+                    user={user}
+                    onSwitchMerchant={onSwitchMerchant}
+                  />
+                </li>
+              ) : null}
+              <li>
+                <a
+                  target="_blank"
+                  href="https://docs.razorpay.com"
+                  onClick={() => analytics('Go To - Documentation')}
+                >
+                  <span>Documentation</span>
+                </a>
+              </li>
+              <li id="profile-dropdown">
+                <ProfileDropdown analytics={analytics} />
+              </li>
+            </ul>
+          </div>
         </div>
-      </div>
-    </nav>
-  );
-};
+      </nav>
+    );
+  }
+}

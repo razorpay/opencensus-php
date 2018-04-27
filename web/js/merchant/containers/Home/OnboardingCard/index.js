@@ -80,9 +80,8 @@ export default class OnboardingCard extends Component {
             you going.
           </div>
           <div className="onboarding-desc">
-            Yayy!! Your Razorpay account is created successfullly. There are a
-            lot of possibilities that you can explore with us. Here are some of
-            the actions that you can take:
+            Your Razorpay account is ready to use! There is a lot that you can
+            do on the Dashboard. Here are some of the actions that you can take:
           </div>
           <div class="row">
             {onBoardingItems.map((item, index) => {
@@ -103,7 +102,7 @@ export default class OnboardingCard extends Component {
             class="btn btn-lg btn-default onboarding-cta"
             onClick={this.gotoNextStep}
           >
-            <span>Got it! Let’s Start Exploring</span>
+            <span>Okay. Let's setup your account</span>
             <i class="i i-chevron-right" />
           </button>
         </div>
@@ -122,10 +121,10 @@ export default class OnboardingCard extends Component {
               </span>
             ) : (
               <span>
-                You are now in Live Mode.{' '}
                 {integrated && activated ? (
                   <span>
-                    You may now <a onClick={this.closeOnboarding}>close</a> this
+                    You are all set up. You may now{' '}
+                    <a onClick={this.closeOnboarding}>close this</a>
                     or view our{' '}
                     <a href="https://docs.razorpay.com/" target="_blank">
                       documentation
@@ -134,8 +133,8 @@ export default class OnboardingCard extends Component {
                   </span>
                 ) : (
                   <span>
-                    Generate live API keys and Integrate to start accepting
-                    payments.
+                    You are now in Live Mode. Generate live API keys and
+                    Integrate to start accepting payments.
                   </span>
                 )}
               </span>

@@ -17,11 +17,11 @@ export default ({ onCloseClick, user }) => {
     </div>
   );
 
-  if (user.isRejected || user.needsClarification) {
+  if (user.isSubmitted || user.isRejected || user.needsClarification) {
     const modalAction = (
       <div class="Modal__actions text-right">
         <button class="btn btn-primary btn-block" onClick={onCloseClick}>
-          Ok. Got it!
+          Okay!
         </button>
       </div>
     );
@@ -29,20 +29,28 @@ export default ({ onCloseClick, user }) => {
     if (user.isRejected) {
       modalBody = (
         <div>
-          You cannot switch to live mode as your activation form got rejected
-          and we cannot support your business at this moment.
+          You cannot switch to live mode as your activation request was not
+          accepted by our partner banks. We would not be able support your
+          business at this moment. We have sent you an email with details.
           {modalAction}
         </div>
       );
     } else if (user.needsClarification) {
       modalBody = (
         <div>
-          You cannot switch to live mode as we require some clarification from
-          your end.
+          You cannot switch to live mode as your account isn't activated yet.
+          {modalAction}
+        </div>
+      );
+    } else {
+      modalBody = (
+        <div>
+          You can only use Razorpay in test mode until your account is
+          activated.
           <br />
-          We will send you an email for the same shortly.
-          <br />
-          Please check your registered email and take necessary action.
+          Your account is Under Review. The process usually takes 2 to 3 working
+          days. We will reach out on your contact email for further
+          clarifications.
           {modalAction}
         </div>
       );

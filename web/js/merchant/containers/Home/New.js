@@ -158,7 +158,7 @@ class HomeContainer extends Component {
       hasNewAnalyticsTour:
         !isAdmin && !LocalStorageService.getItem('hide_new_analytics_banner'),
       dismissNewAnalyticsBanner: false, // used for transition
-      expandOnboardingBanner: false, // used for transition
+      expandOnboardingBanner: showOnboardingBanner, // used for transition
       showOnboardingBanner,
       showOnboardingBannerFirstStep,
       // payments is used to change content in the integration step
@@ -177,12 +177,24 @@ class HomeContainer extends Component {
      * RecentActivity component, which will be done using `onFetchPayments`
      * below
      */
-    if (mode !== 'live' && user.isActivated && showOnboardingBanner) {
-      this.props.fetchPayments({ mode: 'live' }).then(data => {
-        if (data && data.items && data.items.length === 0) {
-          this.setShowOnboardingBanner();
-        }
-      });
+    if (!showOnboardingBanner) {
+      if (!user.isActivated) {
+        this.state = {
+          ...this.state,
+          showOnboardingBanner: true,
+          showOnboardingBannerFirstStep: true,
+          expandOnboardingBanner: true,
+        };
+
+        LocalStorageService.setItem(this.onboardingBannerToken, 'true');
+        LocalStorageService.setItem(this.firstStepToken, 'true');
+      } else if (mode !== 'live') {
+        this.props.fetchPayments({ mode: 'live' }).then(data => {
+          if (data && data.items && data.items.length === 0) {
+            this.setShowOnboardingBanner();
+          }
+        });
+      }
     }
 
     this.oldestTxnReqId = 0;
@@ -447,6 +459,8 @@ class HomeContainer extends Component {
         this.setState({
           showOnboardingBanner: false,
         });
+
+        this.setScrollAmountToStickHeader();
       }
     );
 
@@ -460,11 +474,14 @@ class HomeContainer extends Component {
         showOnboardingBannerFirstStep: true,
       },
       () => {
-        this.setState({
-          expandOnboardingBanner: true,
-        });
-
-        this.setScrollAmountToStickHeader();
+        this.setState(
+          {
+            expandOnboardingBanner: true,
+          },
+          () => {
+            this.setScrollAmountToStickHeader();
+          }
+        );
       }
     );
 
@@ -490,10 +507,11 @@ class HomeContainer extends Component {
      * When fetched payments in live mode, using recent activity component
      * we use it to show the banner , if there are no trasaction
      */
+
     if (
+      !this.state.showOnboardingBanner &&
       user.isActivated &&
       mode === 'live' &&
-      !this.state.showOnboardingBanner &&
       items.length === 0
     ) {
       this.setShowOnboardingBanner();
