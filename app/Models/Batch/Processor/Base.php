@@ -96,7 +96,6 @@ class Base extends BaseModel\Core
     protected $inputFileType;
     protected $outputFileType;
 
-
     public function __construct(Batch\Entity $batch)
     {
         parent::__construct();
