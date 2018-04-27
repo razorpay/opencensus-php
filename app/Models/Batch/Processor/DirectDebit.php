@@ -89,6 +89,11 @@ class DirectDebit extends Base
             ];
 
             $result = $this->processor->process($request);
+
+            $payment = $this->repo->payment->findOrFail(substr($result['payment_id'], 4));
+            $payment->setAttribute(Payment::BATCH_ID, $this->batch->getId());
+            $this->repo->saveOrFail($payment);
+
             $row[Header::STATUS]                    =   Batch\Status::SUCCESS;
             $row[Header::DIRECT_DEBIT_PAYMENT_ID]   =   $result['payment_id'];
         }
