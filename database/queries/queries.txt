@@ -3512,3 +3512,6 @@ ALTER TABLE payments drop foreign key payments_app_id_foreign,
 # Renaming to batch_id
 ALTER TABLE payments
     CHANGE reference7 batch_id VARCHAR(255);
+
+ALTER TABLE settlements
+    ADD INDEX settlements_channel_index (channel);

@@ -127,7 +127,7 @@ trait AttemptTrait
                 return $this->createPayoutData($channel, $purpose, $sourceCount);
 
             default:
-                throw Exception\LogicException('Invalid source type: ' . $sourceType);
+                throw new Exception\LogicException('Invalid source type: ' . $sourceType);
         }
     }
 
