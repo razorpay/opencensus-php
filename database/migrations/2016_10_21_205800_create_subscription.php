@@ -31,7 +31,8 @@ class CreateSubscription extends Migration
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
             $table->char(Entity::PLAN_ID, Entity::ID_LENGTH);
-            $table->char(Entity::SCHEDULE_ID, Entity::ID_LENGTH);
+            $table->char(Entity::SCHEDULE_ID, Entity::ID_LENGTH)
+                  ->nullable();
             $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH)
                   ->nullable();
             $table->char(Entity::TOKEN_ID, Entity::ID_LENGTH)
@@ -46,7 +47,8 @@ class CreateSubscription extends Migration
             $table->integer(Entity::QUANTITY)
                   ->default(1);
 
-            $table->integer(Entity::TOTAL_COUNT);
+            $table->integer(Entity::TOTAL_COUNT)
+                  ->default(0);
 
             $table->integer(Entity::PAID_COUNT)
                   ->default(0);

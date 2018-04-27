@@ -30,6 +30,8 @@ trait Transfer
 
         $this->processCurrencyConversionsForTransfer($originPayment, $payment);
 
+        $this->repo->saveOrFail($payment);
+
         list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentTransferred($payment);
 
         $this->repo->saveOrFail($txn);

@@ -89,6 +89,8 @@ trait Reversal
 
         $this->validateMerchantBalance($refund, 'reversal');
 
+        $this->repo->saveOrFail($refund);
+
         $txn = (new Transaction\Core)->createFromRefund($refund);
 
         $this->repo->saveOrFail($txn);
@@ -103,7 +105,7 @@ trait Reversal
 
         $this->repo->saveOrFail($payment);
 
-        $this->repo->saveOrFail($refund);
+        // $this->repo->saveOrFail($refund);
     }
 
     /**

@@ -241,6 +241,8 @@ class Core extends Base\Core
 
         $payout->destination()->associate($destination);
 
+        $this->repo->saveOrFail($payout);
+
         return $payout;
     }
 
@@ -261,6 +263,8 @@ class Core extends Base\Core
         $payout->merchant()->associate($merchant);
 
         $payout->destination()->associate($destination);
+
+        $this->repo->saveOrFail($payout);
 
         return $payout;
     }

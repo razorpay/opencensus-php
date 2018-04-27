@@ -51,6 +51,8 @@ class Creator extends Base\Core
                 //
                 $subscription->build($input);
 
+                $this->repo->saveOrFail($subscription);
+
                 //
                 // This should be called before filling end_at and total_count,
                 // since they require the schedule to be created first.
