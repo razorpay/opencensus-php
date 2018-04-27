@@ -71,7 +71,7 @@ class Validator extends Base\Validator
         Entity::TYPE            => 'required|in:direct_debit',
         Entity::FILE            => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
         Entity::NAME            => 'filled|string|max:255',
-        Entity::TOKEN           => 'required_without:file_id',
+        Entity::TOKEN           => 'required_without:file_id|max:255|alpha_num',
         Entity::FILE_ID         => 'required_without:file|public_id',
     ];
 
