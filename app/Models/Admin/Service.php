@@ -221,6 +221,11 @@ class Service extends Base\Service
         return (new Mailgun)->processCallback($type, $input);
     }
 
+    public function processSetCronJobCallback(array $input)
+    {
+        $this->trace->info(TraceCode::SETCRONJOB_CALLBACK, $input);
+    }
+
     public function updateTaxColumnValue(string $entity, int $limit = 10000)
     {
         if (in_array($entity, [Entity::PAYMENT, Entity::TRANSACTION]) === false)

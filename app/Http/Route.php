@@ -478,6 +478,7 @@ final class Route
         'billdesk_create_cancelled_refunds'        => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
         'upi_fill_bank'                            => ['patch',    'gateway/upi_fill_bank',                          'GatewayController@fillUpiBank'                                     ],
         'mailgun_webhook'                          => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
+        'setcronjob_webhook'                       => ['post',     'setcronjob/callback',                            'AdminController@postSetCronJobCallback'                            ],
         'offer_create'                             => ['post',     'offers',                                         'OfferController@createOffer'                                       ],
         'offer_update'                             => ['patch',    'offers/{id}',                                    'OfferController@updateOffer'                                       ],
         'offer_fetch_multiple'                     => ['get',      'offers',                                         'OfferController@fetchOffers'                                       ],
@@ -1081,6 +1082,7 @@ final class Route
         'fund_transfer_attempt_process',
         'daily_reconciliation_summary_fetch',
         'lambda_post_h2h',
+        'setcronjob_webhook',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1965,7 +1967,10 @@ final class Route
             'fund_transfer_attempt_null_utr_report',
             'admin_lock_old_accounts',
             'fund_transfer_attempt_process',
-            'daily_reconciliation_summary_fetch'
+            'daily_reconciliation_summary_fetch',
+            // Not actually a cron, but added in this list
+            // so the cron app has access to the route.
+            'setcronjob_webhook',
         ],
 
         'kotak' => [
