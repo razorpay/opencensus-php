@@ -54,20 +54,20 @@ class DirectDebit extends Base
     {
         try
         {
-            $amount     = (int) $row[Header::AMOUNT];
-            $currency   = $row[Header::CURRENCY];
-            $note1      = $row[Header::NOTES1];
-            $note2      = $row[Header::NOTES2];
-            $note3      = $row[Header::NOTES3];
-            $email      = $row[Header::EMAIL];
-            $phone      = $row[Header::PHONE];
-            $name       = $row[Header::CARDHOLDER_NAME];
+            $amount     = (int) $row[Header::DIRECT_DEBIT_AMOUNT];
+            $currency   = $row[Header::DIRECT_DEBIT_CURRENCY];
+            $note1      = $row[Header::DIRECT_DEBIT_NOTES1];
+            $note2      = $row[Header::DIRECT_DEBIT_NOTES2];
+            $note3      = $row[Header::DIRECT_DEBIT_NOTES3];
+            $email      = $row[Header::DIRECT_DEBIT_EMAIL];
+            $phone      = $row[Header::DIRECT_DEBIT_PHONE];
+            $name       = $row[Header::DIRECT_DEBIT_CARDHOLDER_NAME];
 
             $card = [
-                Card::NUMBER        =>  $row[Header::CARD],
+                Card::NUMBER        =>  $row[Header::DIRECT_DEBIT_CARD],
                 Card::CVV           =>  Card::DUMMY_CVV,
-                Card::EXPIRY_MONTH  =>  (int) $row[Header::EXPIRY_MONTH],
-                Card::EXPIRY_YEAR   =>  (int) $row[Header::EXPIRY_YEAR],
+                Card::EXPIRY_MONTH  =>  (int) $row[Header::DIRECT_DEBIT_EXPIRY_MONTH],
+                Card::EXPIRY_YEAR   =>  (int) $row[Header::DIRECT_DEBIT_EXPIRY_YEAR],
                 Card::NAME          =>  $name,
             ];
 
@@ -94,7 +94,7 @@ class DirectDebit extends Base
         }
         finally
         {
-            $row[Header::CARD] = $this->mask($row[Header::CARD]);
+            $row[Header::DIRECT_DEBIT_CARD] = $this->mask($row[Header::DIRECT_DEBIT_CARD]);
         }
         return $row;
     }
@@ -102,9 +102,9 @@ class DirectDebit extends Base
     private function createOrder(array $row): Order\Entity
     {
         $orderInput = [
-            Order\Entity::AMOUNT           =>  (int) $row[Header::AMOUNT],
-            Order\Entity::CURRENCY         =>  $row[Header::CURRENCY],
-            Order\Entity::RECEIPT          =>  $row[Header::RECEIPT],
+            Order\Entity::AMOUNT           =>  (int) $row[Header::DIRECT_DEBIT_AMOUNT],
+            Order\Entity::CURRENCY         =>  $row[Header::DIRECT_DEBIT_CURRENCY],
+            Order\Entity::RECEIPT          =>  $row[Header::DIRECT_DEBIT_RECEIPT],
             Order\Entity::PAYMENT_CAPTURE  =>  true,
         ];
 
@@ -120,9 +120,9 @@ class DirectDebit extends Base
     private function createCustomer(array $row): Customer\Entity
     {
         $customerInput = [
-            Customer\Entity::NAME          =>  $row[Header::CARDHOLDER_NAME],
-            Customer\Entity::EMAIL         =>  $row[Header::EMAIL],
-            Customer\Entity::CONTACT       =>  $row[Header::PHONE],
+            Customer\Entity::NAME          =>  $row[Header::DIRECT_DEBIT_CARDHOLDER_NAME],
+            Customer\Entity::EMAIL         =>  $row[Header::DIRECT_DEBIT_EMAIL],
+            Customer\Entity::CONTACT       =>  $row[Header::DIRECT_DEBIT_PHONE],
         ];
 
         return $this->customerCore->createLocalCustomer($customerInput, $this->merchant, false);
@@ -149,10 +149,10 @@ class DirectDebit extends Base
         $deleter = new FileStore\Deleter();
 
         $deleter->type($ufhFile->getType())
-            ->id($ufhFile->getId())
-            ->merchantId($this->merchant->getId())
-            ->file($ufhFile)
-            ->delete();
+                ->id($ufhFile->getId())
+                ->merchantId($this->merchant->getId())
+                ->file($ufhFile)
+                ->delete();
     }
 
     protected function shouldEncrypt()
@@ -166,7 +166,7 @@ class DirectDebit extends Base
 
         foreach ($entries as & $entry)
         {
-            $entry[Header::CARD] = $this->mask($entry[Header::CARD]);
+            $entry[Header::DIRECT_DEBIT_CARD] = $this->mask($entry[Header::DIRECT_DEBIT_CARD]);
         }
 
         return $result;

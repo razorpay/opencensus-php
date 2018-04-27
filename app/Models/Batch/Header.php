@@ -252,22 +252,23 @@ class Header
     const PAYOUT_TAX                 = 'payout_tax';
 
     // Direct Debit headers
-    const EMAIL                     =   'EMAIL';
-    const PHONE                     =   'PHONE';
-    const CARD                      =   'CARD';
-    const EXPIRY_MONTH              =   'EXPIRY MONTH';
-    const EXPIRY_YEAR               =   'EXPIRY YEAR';
-    const CARDHOLDER_NAME           =   'CARDHOLDER NAME';
-    const CURRENCY                  =   'CURRENCY';
-    const RECEIPT                   =   'RECEIPT';
-    const NOTES1                    =   'NOTES 1 []';
-    const NOTES2                    =   'NOTES 2 []';
-    const NOTES3                    =   'NOTES 3 []';
+    const DIRECT_DEBIT_EMAIL            =   'email';
+    const DIRECT_DEBIT_PHONE            =   'phone';
+    const DIRECT_DEBIT_CARD             =   'card';
+    const DIRECT_DEBIT_EXPIRY_MONTH     =   'expiry_month';
+    const DIRECT_DEBIT_EXPIRY_YEAR      =   'expiry_year';
+    const DIRECT_DEBIT_CARDHOLDER_NAME  =   'cardholder_name';
+    const DIRECT_DEBIT_AMOUNT           =   'amount';
+    const DIRECT_DEBIT_CURRENCY         =   'currency';
+    const DIRECT_DEBIT_RECEIPT          =   'receipt';
+    const DIRECT_DEBIT_NOTES1           =   'notes_1';
+    const DIRECT_DEBIT_NOTES2           =   'notes_1';
+    const DIRECT_DEBIT_NOTES3           =   'notes_3';
 
 
     //output
-    const DIRECT_DEBIT_PAYMENT_ID   =   'PAYMENT_ID';
-    const REMARKS                   =   'REMARKS';
+    const DIRECT_DEBIT_PAYMENT_ID   =   'payment_id';
+    const DIRECT_DEBIT_REMARKS      =   'remarks';
 
     /**
      * Input and output file headers
@@ -671,35 +672,35 @@ class Header
 
         Type::DIRECT_DEBIT  =>  [
             self::INPUT =>  [
-                self::EMAIL,
-                self::PHONE,
-                self::CARD,
-                self::EXPIRY_MONTH,
-                self::EXPIRY_YEAR,
-                self::CARDHOLDER_NAME,
-                self::CURRENCY,
-                self::AMOUNT,
-                self::RECEIPT,
-                self::NOTES1,
-                self::NOTES2,
-                self::NOTES3,
+                self::DIRECT_DEBIT_EMAIL,
+                self::DIRECT_DEBIT_PHONE,
+                self::DIRECT_DEBIT_CARD,
+                self::DIRECT_DEBIT_EXPIRY_MONTH,
+                self::DIRECT_DEBIT_EXPIRY_YEAR,
+                self::DIRECT_DEBIT_CARDHOLDER_NAME,
+                self::DIRECT_DEBIT_CURRENCY,
+                self::DIRECT_DEBIT_AMOUNT,
+                self::DIRECT_DEBIT_RECEIPT,
+                self::DIRECT_DEBIT_NOTES1,
+                self::DIRECT_DEBIT_NOTES2,
+                self::DIRECT_DEBIT_NOTES3,
             ],
 
             self::OUTPUT    =>  [
-                self::EMAIL,
-                self::PHONE,
-                self::CARD,
-                self::EXPIRY_MONTH,
-                self::EXPIRY_YEAR,
-                self::CARDHOLDER_NAME,
-                self::AMOUNT,
-                self::CURRENCY,
-                self::RECEIPT,
-                self::NOTES1,
-                self::NOTES2,
-                self::NOTES3,
+                self::DIRECT_DEBIT_EMAIL,
+                self::DIRECT_DEBIT_PHONE,
+                self::DIRECT_DEBIT_CARD,
+                self::DIRECT_DEBIT_EXPIRY_MONTH,
+                self::DIRECT_DEBIT_EXPIRY_YEAR,
+                self::DIRECT_DEBIT_CARDHOLDER_NAME,
+                self::DIRECT_DEBIT_AMOUNT,
+                self::DIRECT_DEBIT_CURRENCY,
+                self::DIRECT_DEBIT_RECEIPT,
+                self::DIRECT_DEBIT_NOTES1,
+                self::DIRECT_DEBIT_NOTES2,
+                self::DIRECT_DEBIT_NOTES3,
                 self::DIRECT_DEBIT_PAYMENT_ID,
-                self::REMARKS,
+                self::DIRECT_DEBIT_REMARKS,
             ],
         ],
     ];

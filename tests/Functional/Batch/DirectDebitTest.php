@@ -45,18 +45,18 @@ class DirectDebitTest extends TestCase
     {
         return [
             [
-                Header::EMAIL           => 'test@razorpay.com',
-                Header::PHONE           => 9876543210,
-                Header::CARD            => '4111111111111111',
-                Header::EXPIRY_MONTH    => '12',
-                Header::EXPIRY_YEAR     => '25',
-                Header::CARDHOLDER_NAME => 'John Doe',
-                Header::CURRENCY        => 'INR',
-                Header::AMOUNT          => 9900,
-                Header::RECEIPT         => '123456',
-                Header::NOTES1          => '123456',
-                Header::NOTES2          => '123456',
-                Header::NOTES3          => '123456',
+                Header::DIRECT_DEBIT_EMAIL           => 'test@razorpay.com',
+                Header::DIRECT_DEBIT_PHONE           => 9876543210,
+                Header::DIRECT_DEBIT_CARD            => '4111111111111111',
+                Header::DIRECT_DEBIT_EXPIRY_MONTH    => '12',
+                Header::DIRECT_DEBIT_EXPIRY_YEAR     => '25',
+                Header::DIRECT_DEBIT_CARDHOLDER_NAME => 'John Doe',
+                Header::DIRECT_DEBIT_CURRENCY        => 'INR',
+                Header::DIRECT_DEBIT_AMOUNT          => 9900,
+                Header::DIRECT_DEBIT_RECEIPT         => '123456',
+                Header::DIRECT_DEBIT_NOTES1          => '123456',
+                Header::DIRECT_DEBIT_NOTES2          => '123456',
+                Header::DIRECT_DEBIT_NOTES3          => '123456',
             ],
         ];
     }
