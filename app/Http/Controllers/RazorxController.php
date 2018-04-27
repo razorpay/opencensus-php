@@ -18,16 +18,18 @@ class RazorxController extends Controller
 
     protected $baseUrl;
 
-    protected $key,$secret;
+    protected $key;
+
+    protected $secret;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->razorxConfig  = $this->config->get('applications.razorx');
-        $this->baseUrl = $this->razorxConfig['url'];
-        $this->key     = $this->razorxConfig['username'];
-        $this->secret  = $this->razorxConfig['secret'];
+        $this->razorxConfig = $this->config->get('applications.razorx');
+        $this->baseUrl      = $this->razorxConfig['url'];
+        $this->key          = $this->razorxConfig['username'];
+        $this->secret       = $this->razorxConfig['secret'];
     }
 
     public function sendRequest()
@@ -44,6 +46,20 @@ class RazorxController extends Controller
                 $requestParams['data'],
                 $requestParams['method'],
                 $requestParams['options']);
+
+            $result = json_decode($response->body, true);
+
+            if (empty($result) === true)
+            {
+                $result = $response->body;
+            }
+
+            $razorxResponse = [
+                "status_code" => $response->status_code,
+                "response"    => $result,
+            ];
+
+            return ApiResponse::json($razorxResponse);
         }
         catch(\Throwable $e)
         {
@@ -51,20 +67,6 @@ class RazorxController extends Controller
 
             return ApiResponse::json(["error_message" => $e->getMessage()]);
         }
-
-        $result = json_decode($response->body, true);
-
-        if (empty($result) === true)
-        {
-            $result = $response->body;
-        }
-
-        $razorxResponse = [
-            "status_code" => $response->status_code,
-            "response"    => $result,
-        ];
-
-        return ApiResponse::json($razorxResponse);
     }
 
     protected function getRequestParams($path)
