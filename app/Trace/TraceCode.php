@@ -321,9 +321,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_REGISTER_REQUEST                     = 'EMANDATE_REGISTER_REQUEST';
     const EMANDATE_REGISTER_REQUEST_ROW                 = 'EMANDATE_REGISTER_REQUEST_ROW';
 
-    const MAILER_JOB_RECEIVED                           = 'MAILER_JOB_RECEIVED';
     const MAILER_JOB_ERROR                              = 'MAILER_JOB_ERROR';
-    const MAILER_INVALID_RECIPIENT_EMAIL                = 'MAILER_INVALID_RECIPIENT_EMAIL';
     const INVOICE_ACTION_JOB_ERROR                      = 'INVOICE_ACTION_JOB_ERROR';
     const INVOICE_PDF_GEN_FAILED                        = 'INVOICE_PDF_GEN_FAILED';
     const INVOICE_PDF_GEN_TIME_TAKEN                    = 'INVOICE_PDF_GEN_TIME_TAKEN';
@@ -804,6 +802,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_JOB_ERROR                               = 'BATCH_JOB_ERROR';
     const IRCTC_BATCH_JOB_RECEIVED                      = 'IRCTC_BATCH_JOB_RECEIVED';
     const IRCTC_BATCH_JOB_ERROR                         = 'IRCTC_BATCH_JOB_ERROR';
+    const SHIELD_JOB_RECEIVED                           = 'SHIELD_JOB_RECEIVED';
+    const SHIELD_JOB_ERROR                              = 'SHIELD_JOB_ERROR';
+    const SHIELD_JOB_DISPATCH_ERROR                     = 'SHIELD_JOB_DISPATCH_ERROR';
+
     const BATCH_FILE_DELETE_ERROR                       = 'BATCH_FILE_DELETE_ERROR';
 
     const MUTEX_LOCK_ALREADY_RELEASED                   = 'MUTEX_LOCK_ALREADY_RELEASED';
@@ -915,12 +917,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFER_CARD_ISSUER_CHECK                       = 'OFFER_CARD_ISSUER_CHECK';
     const OFFER_CARD_USAGE_CHECK                        = 'OFFER_CARD_USAGE_CHECK';
 
-// Trace codes for Gateway Priorities
+    // Trace codes for Gateway Priorities
     const ADD_GATEWAY_PRIORITY_REQUEST                  = 'ADD_GATEWAY_PRIORITY_REQUEST';
     const FETCH_GATEWAY_PRIORITY_RESPONSE               = 'FETCH_GATEWAY_PRIORITY_RESPONSE';
     const UPDATE_GATEWAY_PRIORITY_REQUEST               = 'UPDATE_GATEWAY_PRIORITY_REQUEST';
     const REMOVE_GATEWAY_PRIORITY_REQUEST               = 'REMOVE_GATEWAY_PRIORITY_REQUEST';
-    const REDIS_DATA_FETCHED                            = 'REDIS_DATA_FETCHED';
+    const CARD_GATEWAY_PRIORITY                         = 'CARD_GATEWAY_PRIORITY';
+    const NETBANKING_GATEWAY_PRIORITY                   = 'NETBANKING_GATEWAY_PRIORITY';
 
 // Trace codes for Merchant Reports
 
@@ -968,6 +971,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISPUTE_FILE_CREATE                           = 'DISPUTE_FILE_CREATE';
     const DISPUTE_FILES_UPLOAD                          = 'DISPUTE_FILES_UPLOAD';
 
+    const ACCESS_MAP_UPDATE_REQUEST                     = 'ACCESS_MAP_UPDATE_REQUEST';
+    const ACCESS_MAP_UPDATE_ERROR                       = 'ACCESS_MAP_UPDATE_ERROR';
+
     const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';
@@ -978,6 +984,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED      = 'MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED';
     const MERCHANT_INVOICE_REPORT_REQUEST               = 'MERCHANT_INVOICE_REPORT_REQUEST';
     const MERCHANT_INVOICE_ENTITY_CREATION_REQUEST      = 'MERCHANT_INVOICE_ENTITY_CREATION_REQUEST';
+
+    const MERCHANT_INVOICE_CORRECTION_DETAILS           = 'MERCHANT_INVOICE_CORRECTION_DETAILS';
+    const MERCHANT_INVOICE_CORRECTION_FAILED            = 'MERCHANT_INVOICE_CORRECTION_FAILED';
+    const MERCHANT_INVOICE_CORRECTION_REQUEST           = 'MERCHANT_INVOICE_CORRECTION_REQUEST';
+    const MERCHANT_INVOICE_CORRECTION_JOB               = 'MERCHANT_INVOICE_CORRECTION_JOB';
+    const MERCHANT_INVOICE_CORRECTION_NEW_AMOUNT        = 'MERCHANT_INVOICE_CORRECTION_NEW_AMOUNT';
 
     // Trace code for OAuth and Authentication service
     const AUTH_SERVICE_REQUEST                          = 'AUTH_SERVICE_REQUEST';
@@ -1042,6 +1054,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
     const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
+
+    const INSTANCE_PROFILE_PROVIDER_CACHE_MISS          = 'INSTANCE_PROFILE_PROVIDER_CACHE_MISS';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

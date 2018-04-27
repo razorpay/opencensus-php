@@ -28,7 +28,7 @@ class Validator extends Base\Validator
         Fields::UDF3                => 'sometimes|string',
         Fields::LANGUAGE_ID         => 'required|string|in:USA',
         Fields::ID                  => 'required|string',
-        Fields::PASSWORD            => 'sometimes|string',
+        Fields::PASSWORD            => 'required|string',
         Fields::TRANSACTION_ID      => 'required|string',
         Fields::ACTION              => 'required|string',
         Fields::TRACK_ID            => 'required|string',

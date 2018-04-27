@@ -3499,7 +3499,7 @@ ALTER TABLE atom
     MODIFY COLUMN `payment_id` char(14) NOT NULL;
 
 ALTER TABLE atom MODIFY COLUMN gateway_payment_id VARCHAR(255) DEFAULT NULL;
-    
+
 ALTER TABLE `merchant_details`
     ADD COLUMN `business_category` VARCHAR(255) DEFAULT NULL AFTER `company_pan_name`,
     ADD COLUMN `business_subcategory` VARCHAR(255) DEFAULT NULL AFTER `business_category`;
@@ -3508,3 +3508,10 @@ ALTER TABLE payments drop foreign key payments_app_id_foreign,
                      rename index payments_app_id_foreign TO payments_receiver_id_index,
                      change app_id receiver_id varchar(14),
                      change reference8 receiver_type varchar(255);
+
+# Renaming to batch_id
+ALTER TABLE payments
+    CHANGE reference7 batch_id VARCHAR(255);
+
+ALTER TABLE settlements
+    ADD INDEX settlements_channel_index (channel);
