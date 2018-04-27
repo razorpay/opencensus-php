@@ -65,17 +65,43 @@ class Reporting implements ExternalService
         $this->ba     = $app['basicauth'];
     }
 
-    // Once the API on reporting is ready to fetch by admin,
-    // then use ref from Shield Client to implement the functions
     public function fetchMultiple(string $entity, array $input)
     {
+        $merchantId = $input['merchant_id'] ?? Merchant\Account::SHARED_ACCOUNT;
+
+        unset($input['merchant_id']);
+
+        switch ($entity)
+        {
+            case self::LOGS:
+                return $this->fetchLogMultipleAdmin($input, $merchantId);
+
+            case self::CONFIGS:
+                return $this->fetchConfigMultipleAdmin($input, $merchantId);
+
+            case self::SCHEDULES:
+                return $this->fetchScheduleMultipleAdmin($input, $merchantId);
+        }
+
         return [];
     }
 
-    // Once the API on reporting is ready to fetch by admin,
-    // then use ref from Shield Client to implement the functions
-    public function fetch(string $entity, string $id)
+    public function fetch(string $entity, string $id, array $input)
     {
+        $merchantId = $input['merchant_id'] ?? Merchant\Account::SHARED_ACCOUNT;
+
+        switch ($entity)
+        {
+            case self::LOGS:
+                return $this->fetchLogByIdAdmin($id, $merchantId);
+
+            case self::CONFIGS:
+                return $this->fetchConfigByIdAdmin($id, $merchantId);
+
+            case self::SCHEDULES:
+                return $this->fetchScheduleByIdAdmin($id, $merchantId);
+        }
+
         return [];
     }
 
@@ -226,6 +252,43 @@ class Reporting implements ExternalService
         }
 
         return $response;
+    }
+
+    public function fetchLogByIdAdmin(string $id, string $merchantId = Merchant\Account::SHARED_ACCOUNT): array
+    {
+        $path = self::LOG_PATH . '/' . $id;
+
+        return $this->createAndSendRequest(Requests::GET, $path, [], $merchantId);
+    }
+
+    public function fetchConfigByIdAdmin(string $id, string $merchantId = Merchant\Account::SHARED_ACCOUNT): array
+    {
+        $path = self::CONFIG_PATH . '/' . $id;
+
+        return $this->createAndSendRequest(Requests::GET, $path, [], $merchantId);
+    }
+
+    public function fetchScheduleByIdAdmin(string $id, string $merchantId = Merchant\Account::SHARED_ACCOUNT): array
+    {
+        $path = self::SCHEDULE_PATH . '/' . $id;
+
+        return $this->createAndSendRequest(Requests::GET, $path, [], $merchantId);
+    }
+
+    public function fetchLogMultipleAdmin(array $input, string $merchantId): array
+    {
+        return $this->createAndSendRequest(Requests::GET, self::LOG_PATH, $input, $merchantId);
+    }
+
+    // TODO: Add filter based upon feature/tags for admin calls
+    public function fetchConfigMultipleAdmin(array $input, string $merchantId): array
+    {
+        return $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input, $merchantId);
+    }
+
+    public function fetchScheduleMultipleAdmin(array $input, string $merchantId): array
+    {
+        return $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input, $merchantId);
     }
 
     protected function createScheduleOnAPI(array $input)

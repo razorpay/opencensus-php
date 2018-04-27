@@ -41,7 +41,7 @@ class Service extends Base\Service
 
             $entityName = Entity::getExternalEntityName($entity);
 
-            return $class->fetch($entityName, $id);
+            return $class->fetch($entityName, $id, $input);
         }
 
         $entity = $this->fetchEntityByNameAndId($entity, $id, $input);

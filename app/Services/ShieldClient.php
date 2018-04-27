@@ -73,7 +73,7 @@ class ShieldClient implements ExternalService
         return [];
     }
 
-    public function fetch(string $entity, string $id)
+    public function fetch(string $entity, string $id, array $input)
     {
         switch ($entity)
         {
