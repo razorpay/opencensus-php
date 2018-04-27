@@ -5,7 +5,7 @@ import Field, {
   TextAreaField,
   FileField,
 } from 'ui/Field';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
 import {
@@ -116,11 +116,11 @@ export default class MakeAPICall extends Component {
                     notifySuccess('API Request successful');
                     // closeModal();
                     openModal(
-                      <BaseModal header="Api Response:" noPadding>
+                      <ModalContent header="Api Response:" noPadding>
                         <div class="code" style={{ width: '650px' }}>
                           {JSON.stringify(response.data.data, null, 4)}}
                         </div>
-                      </BaseModal>
+                      </ModalContent>
                     );
                   } else {
                     notifyError(response.data.errors.join(', '));

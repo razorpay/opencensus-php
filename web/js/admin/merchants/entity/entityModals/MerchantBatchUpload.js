@@ -1,5 +1,5 @@
 import React from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
 import { adminFormUpload } from 'common/fetch';
@@ -50,7 +50,7 @@ export default ({ merchantId }) => {
   }
 
   return (
-    <BaseModal header="Batch Upload">
+    <ModalContent header="Batch Upload">
       <Form class="full-span full-elements" style={{ width: '400px' }}>
         {entitiesList.map(entity => (
           <FileField
@@ -69,7 +69,7 @@ export default ({ merchantId }) => {
           onSubmit={handleSubmit}
         />
       </Form>
-    </BaseModal>
+    </ModalContent>
   );
 };
 

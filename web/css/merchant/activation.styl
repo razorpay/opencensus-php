@@ -1,5 +1,5 @@
 // Parent control the width of ActivationWizard component
-$height = 580px
+$height = 600px
 
 .activation-container
   width: 96%
@@ -142,3 +142,21 @@ $height = 580px
   clear: both
   position: relative
   padding-left: 180px
+
+
+.Modal-container--activation {
+  margin: 60px auto
+  width: 90%
+  max-width: 960px
+  min-height: $height
+  height; 90%
+  max-height; 800px
+  animation: appear-down 250ms ease-in-out
+}
+
+@keyframes appear-down
+  0%
+    transform: translateY(-48px)
+
+  100%
+    transform: translateY(0)

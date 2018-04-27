@@ -1,4 +1,4 @@
-.Modal-backdrop
+.Modal-mask
   position: fixed
   background-color: rgba(17, 30, 60, 0.4)
   top:0
@@ -6,40 +6,41 @@
   width: 100%
   height: 100%
   z-index: 9999
+  overflow: scroll
   transition: opacity 250ms ease-in-out
 
   &--hide
     opacity: 0
 
-    .Modal-content
+    .Modal-container
       opacity: 0
 
-
-.Modal-content
+.Modal-container
   position: relative
-  margin: 65px auto
-  width: 90%
-  max-width: 960px
   background: #fff
-  animation: moveDown 250ms ease-in-out
   border-radius: 4px
   overflow: hidden
 
-.Modal-close
-  position: absolute
-  color: #58666E
-  font-size: 30px
-  padding: 10px
-  right: 8px
-  top: 8px
-  line-height: 20px
-  cursor: pointer
-  z-index: 1
+  header
+    border-bottom: 2px solid #eee
+    padding: 12px 44px 12px 20px
+    font-size: 20px
 
+  .Modal-content header + .Modal-body
+    padding: 24px
 
-@keyframes moveDown
-  0%
-    transform: translateY(-48px)
+  .Modal-close
+    position: absolute
+    color: #58666E
+    font-size: 30px
+    padding: 10px
+    right: 8px
+    top: 8px
+    line-height: 20px
+    cursor: pointer
+    z-index: 1
+    user-select: none
 
-  100%
-    transform: translateY(0)
+    &:hover
+      color: #333
+

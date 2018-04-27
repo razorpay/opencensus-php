@@ -1,5 +1,5 @@
 import React from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import Form from 'ui/Form';
 import Field from 'ui/Field';
@@ -30,7 +30,7 @@ export default ({ merchantId }) => {
   }
 
   return (
-    <BaseModal header="Assign Merchant Handle">
+    <ModalContent header="Assign Merchant Handle">
       <Form class="full-span full-elements" style={{ width: '350px' }}>
         <Field label="Merchant Handle" name="handle" placeholder="XXXX" />
 
@@ -41,6 +41,6 @@ export default ({ merchantId }) => {
           onSubmit={onSubmit}
         />
       </Form>
-    </BaseModal>
+    </ModalContent>
   );
 };

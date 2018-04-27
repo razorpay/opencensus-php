@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
 
@@ -95,7 +95,7 @@ export default class ScheduleModal extends Component {
 
   render() {
     return (
-      <BaseModal header="Assign Schedule Plan">
+      <ModalContent header="Assign Schedule Plan">
         <Form class="full-span full-elements" style={{ width: '350px' }}>
           <SelectField name="type" label="Type" defaultValue={''}>
             {Object.keys(type_list).map(key => (
@@ -143,7 +143,7 @@ export default class ScheduleModal extends Component {
             onSubmit={this.handleSubmit}
           />
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

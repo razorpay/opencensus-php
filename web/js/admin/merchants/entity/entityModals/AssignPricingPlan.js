@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import { closeModal, confirm, notifyError, notifySuccess } from 'common/modal';
 
@@ -60,7 +60,7 @@ export default class PricingPlanModal extends Component {
     const pricingPlanId = this.props.props.merchant.details.pricing_plan_id;
 
     return (
-      <BaseModal header="Assign Pricing Plan">
+      <ModalContent header="Assign Pricing Plan">
         <Form class="full-span full-elements" style={{ width: '450px' }}>
           <div class="m-b">
             <strong>
@@ -91,7 +91,7 @@ export default class PricingPlanModal extends Component {
             onSubmit={this.handleConfirm}
           />
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

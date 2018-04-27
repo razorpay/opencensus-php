@@ -1,5 +1,5 @@
 import React from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import { notifyError } from 'common/modal';
 import { adminFormUpload } from 'common/fetch';
@@ -28,7 +28,7 @@ export default ({ merchantId }) => {
   }
 
   return (
-    <BaseModal header="Upload Screenshots">
+    <ModalContent header="Upload Screenshots">
       <div style={{ width: '350px' }}>
         {entitiesList.map(entity => (
           <FileField
@@ -40,7 +40,7 @@ export default ({ merchantId }) => {
           />
         ))}
       </div>
-    </BaseModal>
+    </ModalContent>
   );
 };
 

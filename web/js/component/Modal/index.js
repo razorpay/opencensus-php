@@ -1,19 +1,16 @@
-import PropTypes from 'prop-types';
 import { classList } from 'common/util';
+import ErrorBoundary from 'common/ErrorBoundary';
 
-/* Dumb Component
-* - Modal can be used anywhere and controller by external state whether to show/hide
-* - This component only provides UI and control is extended only to parent/redux/etc.
+/* Modal with backdrop mask, closes with animation
 * @props
 *   - {Function} onClose,
-*   - {Boolean, optional} showCloseBtn, by default close button is shown. Can be hidden if false is passed
-*   - {String, optional} id, Helps identify specific Modal to be closed
+*   - {Boolean, optional} maskClosable, Whether to close modal on clicking outside the modal
 * */
 export default class ModalContainer extends React.PureComponent {
   state = {};
 
-  handleClose = e => {
-    const modalContent = document.getElementsByClassName('Modal-content')[0];
+  onMaskClose = e => {
+    const modalContent = document.getElementsByClassName('Modal-container')[0];
 
     // Don't close modal if clicked inside modal-content (but not on cross btn)
     if (
@@ -23,11 +20,11 @@ export default class ModalContainer extends React.PureComponent {
       return;
     }
 
-    this.close(e);
+    this.onClose(e);
   };
 
   // Fadeout based closing modal
-  close = e => {
+  onClose = e => {
     this.setState({
       isHidden: true,
     });
@@ -36,39 +33,72 @@ export default class ModalContainer extends React.PureComponent {
   };
 
   render() {
-    const { children, showCloseBtn = true, id } = this.props;
-    const modalIdentifier = id || new Date().getTime();
+    const { children, maskClosable = false, ...rest } = this.props;
 
     return (
       <div
         class={classList(
-          'Modal-backdrop',
-          this.state.isHidden && 'Modal-backdrop--hide'
+          'Modal-mask',
+          rest.className && 'Modal-mask--' + rest.className,
+          this.state.isHidden && 'Modal-mask--hide'
         )}
-        id={modalIdentifier}
-        onClick={this.handleClose}
+        onClick={maskClosable && this.onMaskClose}
       >
-        <div class="Modal-content">
-          {showCloseBtn && (
-            <span
-              class="Modal-close"
-              onClick={this.close}
-              data-id={modalIdentifier}
-            >
-              ×
-            </span>
-          )}
-          {children}
-        </div>
+        <Modal {...rest}>{children}</Modal>
       </div>
     );
   }
 }
 
-ModalContainer.defaultProps = {
-  showCloseBtn: true,
-};
+/*
+* Modal without modal mask. It takes care of close button functionality
+* ModalContainer uses this component. However, Modal can also be used independently.
+* @props
+*   - {Boolean, optional} showCloseBtn, by default close button is shown. Can be hidden if false is passed
+*   - {Function} onClose, action on close btn press
+* */
+export const Modal = ({
+  children,
+  showCloseBtn = true,
+  className,
+  onClose,
+}) => (
+  <div
+    class={classList(
+      'Modal-container',
+      className && 'Modal-container--' + className
+    )}
+  >
+    {showCloseBtn && (
+      <span class="Modal-close" onClick={onClose}>
+        &times;
+      </span>
+    )}
 
-ModalContainer.propTypes = {
-  onClose: PropTypes.func.isRequired,
-};
+    {children}
+  </div>
+);
+
+/* ModalContent only provides the container for the content
+* @props
+*   - {String/React Node, optional} header, Add custom Class to the modal content
+*   - {String/React Node, optional} banner, pass function (Example: check 'invite a merchant')
+*   - {Boolean, optional} noPadding, By default modal body has padding if it has header over it. Set noPadding true to remove padding.
+* */
+export const ModalContent = ({
+  header,
+  banner,
+  children,
+  className = '',
+  noPadding = false,
+}) => (
+  <ErrorBoundary>
+    <div class={classList('Modal-content', className)}>
+      {header && <header>{header}</header>}
+      {banner}
+      <div class={classList('Modal-body', noPadding && 'no-padding')}>
+        {children}
+      </div>
+    </div>
+  </ErrorBoundary>
+);

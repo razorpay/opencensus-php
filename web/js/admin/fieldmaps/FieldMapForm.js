@@ -2,7 +2,7 @@ import React from 'react';
 
 import Form from 'ui/Form';
 import Field, { TextAreaField } from 'ui/Field';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import AsyncButton from 'ui/AsyncButton';
 
 export default function FieldMapForm({
@@ -13,7 +13,7 @@ export default function FieldMapForm({
   onSubmit,
 }) {
   return (
-    <BaseModal header={id ? `Edit - ${id}` : 'Add a new Field Map'}>
+    <ModalContent header={id ? `Edit - ${id}` : 'Add a new Field Map'}>
       <Form class="full-span full-elements" style={{ width: '400px' }}>
         {id ? <input type="hidden" name="id" defaultValue={id} /> : ''}
 
@@ -36,6 +36,6 @@ export default function FieldMapForm({
           onSubmit={onSubmit}
         />
       </Form>
-    </BaseModal>
+    </ModalContent>
   );
 }
