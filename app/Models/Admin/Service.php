@@ -19,12 +19,11 @@ class Service extends Base\Service
     {
         $fields = AdminFetch::fields();
         $entities = AdminFetch::entities();
-        $externalEntities = AdminFetch::externalEntities();
 
         // Fetching all entities and fill them with null
         $allEntities = array_fill_keys(Entity::getAllEntities(), null);
 
-        $mergedEntities = array_merge($allEntities, $entities, $externalEntities);
+        $mergedEntities = array_merge($allEntities, $entities);
 
         return [
             'version'   => 1,
@@ -35,15 +34,6 @@ class Service extends Base\Service
 
     public function fetchEntityById(string $entity, string $id, array $input = []): array
     {
-        if (Entity::validateExternalServiceEntity($entity) === true)
-        {
-            $class = Entity::getExternalServiceClass($entity);
-
-            $entityName = Entity::getExternalEntityName($entity);
-
-            return $class->fetch($entityName, $id, $input);
-        }
-
         $entity = $this->fetchEntityByNameAndId($entity, $id, $input);
 
         return $entity->toArrayAdmin();
@@ -79,15 +69,6 @@ class Service extends Base\Service
 
     public function fetchMultipleEntities($entity, $input)
     {
-        if (Entity::validateExternalServiceEntity($entity) === true)
-        {
-            $class = Entity::getExternalServiceClass($entity);
-
-            $entityName = Entity::getExternalEntityName($entity);
-
-            return $class->fetchMultiple($entityName, $input);
-        }
-
         Entity::validateEntityOrFailPublic($entity);
 
         $entities = $this->repo->$entity->fetch($input);
