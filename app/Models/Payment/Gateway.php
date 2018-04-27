@@ -427,6 +427,7 @@ class Gateway
         self::CARD_FSS => [
             Network::MC,
             Network::VISA,
+            Network::RUPAY,
         ],
     ];
 
