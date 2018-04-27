@@ -143,6 +143,10 @@ class NewApplicationForm extends Component {
   create = props => {
     let data = { ...props };
 
+    if (data.website) {
+      data.website = autoPrefixUrls(data.website);
+    }
+
     return this.props
       .createApplication(data, 'logo')
       .then(application => {
@@ -178,6 +182,10 @@ class NewApplicationForm extends Component {
 
   update = props => {
     let data = { ...props };
+
+    if (data.website) {
+      data.website = autoPrefixUrls(data.website);
+    }
 
     if (data.client_details.dev.redirect_url) {
       data.client_details.dev.redirect_url = this.prependHTTPinUrl(
