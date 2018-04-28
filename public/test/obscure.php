@@ -79,7 +79,8 @@ function disableEmptyInputs(form) {
         <td>
             <select name="method">
                 <option value="netbanking">Net Banking</option>
-                <option value="card" selected>Card</option>
+                <option value="emandate" selected>E-mandate</option>
+                <option value="card">Card</option>
                 <option value="wallet">Wallet</option>
                 <option value="emi">Emi</option>
                 <option value="upi">UPI</option>
@@ -92,7 +93,7 @@ function disableEmptyInputs(form) {
             <select name="bank">
                 <option value="CSBK">Catholic Syrian Bank</option>
                 <option value="BARB_R">Bank of Baroda - Retail</option>
-                <option value="HDFC">HDFC Bank</option>
+                <option value="HDFC" selected>HDFC Bank</option>
                 <option value="CORP">Corporation Bank</option>
                 <option value="SBIN">SBI Bank</option>
                 <option value="ICIC">ICICI Bank</option>
@@ -187,7 +188,7 @@ function disableEmptyInputs(form) {
     </tr>
     <tr>
         <td colspan='40'>Customer Id:</td>
-        <td><input type="text" name="customer_id" size="25" value=""></td>
+        <td><input type="text" name="customer_id" size="25" value="cust_64UtLHKtfc7Nn1"></td>
     </tr>
     <tr>
         <td colspan='40'>App Token:</td>
@@ -199,7 +200,9 @@ function disableEmptyInputs(form) {
     </tr>
     <tr>
         <td colspan='40'>Account Number:</td>
-<!--        <td><input type="text" name="account_number" size="25" value=""></td>-->
+        <td><input type="text" name="bank_account[account_number]" size="25" value="036001532569"></td>
+        <td><input type="text" name="bank_account[ifsc]" size="25" value="HDFC0001759"></td>
+        <td><input type="text" name="bank_account[name]" size="25" value="Jesly Varghese"></td>
     </tr>
     <tr>
     <tr>
@@ -209,7 +212,7 @@ function disableEmptyInputs(form) {
     </tr>
     <tr>
         <td colspan='40'><label for="recurring">Recurring:</label></td>
-        <td><input type="checkbox" name="recurring" value="1" id="recurring"></td>
+        <td><input type="checkbox" name="recurring" value="1" id="recurring" checked></td>
     </tr>
     <tr>
         <td colspan="100" align="center">
