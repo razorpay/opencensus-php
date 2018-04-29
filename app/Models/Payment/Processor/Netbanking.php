@@ -24,6 +24,17 @@ class Netbanking
     const PUNB_R = 'PUNB_R';
     const LAVB_R = 'LAVB_R';
 
+    public static $inconsistentIfsc = [
+        self::BARB_R,
+        self::PUNB_R,
+        self::LAVB_R,
+        self::BARB_C,
+        self::PUNB_C,
+        self::LAVB_C,
+        self::ICIC_C,
+        self::UTIB_C,
+    ];
+
     protected static $names = [
         self::BARB_R => 'Bank of Baroda - Retail Banking',
         self::PUNB_R => 'Punjab National Bank - Retail Banking',
@@ -51,8 +62,8 @@ class Netbanking
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
+        IFSC::CSBK,
         self::PUNB_R,
-
         self::BARB_R,
     ];
 
@@ -180,21 +191,18 @@ class Netbanking
     ];
 
     protected static $atom = [
-        IFSC::UTIB,
+        IFSC::ANDB,
         IFSC::BKID,
         IFSC::MAHB,
         IFSC::CNRB,
         IFSC::CSBK,
         IFSC::CBIN,
-        IFSC::CITI,
-        IFSC::CIUB,
         IFSC::CORP,
         IFSC::DCBL,
         IFSC::DEUT,
         IFSC::DLXB,
-        // IFSC::FDRL,
-        IFSC::HDFC,
-        IFSC::ICIC,
+        IFSC::ESFB,
+        IFSC::FDRL,
         IFSC::IBKL,
         IFSC::IDIB,
         IFSC::IOBA,
@@ -202,22 +210,48 @@ class Netbanking
         IFSC::JAKA,
         IFSC::KARB,
         IFSC::KVBL,
-        IFSC::KKBK,
         self::LAVB_R,
+        IFSC::ORBC,
+        IFSC::PMCB,
+        IFSC::PSIB,
+        self::PUNB_R,
+        IFSC::RATN,
+        IFSC::SRCB,
         IFSC::SIBL,
-        // IFSC::SBBJ,
-        IFSC::SBHY,
         IFSC::SBIN,
-        // IFSC::SBMY,
-        IFSC::STBP,
-        // IFSC::SBTR,
+        IFSC::TMBL,
         IFSC::UCBA,
         IFSC::UBIN,
+        IFSC::UTBI,
         IFSC::VIJB,
-        IFSC::YESB,
     ];
 
-    protected static $atomTPV = [];
+    protected static $atomTPV = [
+        IFSC::UTIB,
+        IFSC::BKID,
+        IFSC::MAHB,
+        IFSC::CSBK,
+        IFSC::CIUB,
+        IFSC::DCBL,
+        IFSC::DEUT,
+        IFSC::DLXB,
+        IFSC::FDRL,
+        IFSC::HDFC,
+        IFSC::ICIC,
+        IFSC::IBKL,
+        IFSC::IDIB,
+        IFSC::INDB,
+        IFSC::JAKA,
+        IFSC::KARB,
+        IFSC::KVBL,
+        IFSC::KKBK,
+        IFSC::LAVB,
+        IFSC::SRCB,
+        IFSC::SIBL,
+        IFSC::SBIN,
+        IFSC::TMBL,
+        IFSC::YESB,
+    ];
 
     protected static $ebs = [
         IFSC::ANDB,
@@ -268,7 +302,7 @@ class Netbanking
 
     public static function isSupportedBank($bank)
     {
-        return (in_array($bank, self::getAllBanks()));
+        return (in_array($bank, self::getAllBanks(), true));
     }
 
     /**
@@ -392,9 +426,23 @@ class Netbanking
         return array_values(array_unique($banks));
     }
 
-    public static function removeDefaultDisableBanks(array $banks)
+    public static function removeDefaultDisableBanks(array $banks, $merchantId)
     {
-        return array_diff($banks, self::getDefaultDisabledBanks());
+        $airtelNBEnabledMerchants = [
+            '6e9vU1F6c16Wgy', '4IAipsLXQZ8HfL', '7JzGtcGfAj1DuY', '7HgtXHJ0Mi7eEB', '5DT4a51hWyB2S2',
+            '4uObL8AHBqFNnP', '7kBHljwok8Fsom', '6knz9sdyiFESCn', '6LCgLZgRjTI8ws', '4bnk7yysqr5Wx5',
+            '4jrfbTLsua1pWJ', '6vYkkfMt0AH7Ze', '5yZ76HWrvL9g2l', '7JzHlJ4JTX9WOJ', '6grntKs55sEy3m',
+            '5S3KMEi1AqOkO3', '6yhs5uEKQo8ocV', '6uli25q6xe9PPv', '3d2EGdZF6CAYVc', '5PK4jJHD4KFumX',
+            '4G3OVwffGeJJ2p', '6vwsEbqse39D4d', '5XeKEGAanmFH5g', '67a0aqRNfZCdrS', '41pNQxEoQ2GDlT',
+            '2qXGMn4WT4sJYp', '6ZLRbyflpSBEEv', '60XSLJJUlJDtbr', '6ToAGQhTHC7G3s', '3HSIA6jNkKAVav',
+        ];
+
+        if (in_array($merchantId, $airtelNBEnabledMerchants, true) === false)
+        {
+            return array_diff($banks, self::getDefaultDisabledBanks());
+        }
+
+        return $banks;
     }
 
     public static function getSupportedBanksInLiveMode()

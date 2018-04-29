@@ -55,6 +55,12 @@ class CreatePayments extends Migration
             $table->char(Payment::TRANSFER_ID, Payment::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Payment::RECEIVER_ID, Payment::ID_LENGTH)
+                  ->nullable();
+
+            $table->string(Payment::RECEIVER_TYPE)
+                  ->nullable();
+
             $table->tinyInteger(Payment::INTERNATIONAL)
                   ->nullable();
 
@@ -130,9 +136,6 @@ class CreatePayments extends Migration
             $table->string(Payment::GLOBAL_CUSTOMER_ID, 14)
                   ->nullable();
 
-            $table->string(Payment::APP_ID, 14)
-                  ->nullable();
-
             $table->string(Payment::APP_TOKEN, 14)
                   ->nullable();
 
@@ -171,6 +174,9 @@ class CreatePayments extends Migration
             $table->string(Payment::APPROVAL_CODE, 10)
                   ->nullable();
 
+            $table->string(Payment::BATCH_ID)
+                  ->nullable();
+
             $table->string(Payment::REFERENCE1)
                   ->nullable();
 
@@ -187,12 +193,6 @@ class CreatePayments extends Migration
                   ->nullable();
 
             $table->integer(Payment::REFERENCE6)
-                  ->nullable();
-
-            $table->string(Payment::REFERENCE7)
-                  ->nullable();
-
-            $table->string(Payment::REFERENCE8)
                   ->nullable();
 
             $table->bigInteger(Payment::REFERENCE9)
@@ -289,6 +289,8 @@ class CreatePayments extends Migration
             $table->index(Payment::MERCHANT_ID);
             $table->index([Payment::MERCHANT_ID, Payment::CREATED_AT]);
             $table->index([Payment::MERCHANT_ID, Payment::STATUS, Payment::CREATED_AT]);
+
+            $table->index(Payment::RECEIVER_ID);
 
             $table->foreign(Payment::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

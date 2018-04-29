@@ -31,14 +31,14 @@
                 <table class="ten columns">
                   <tr>
                     <td class="center welcome">
-<p>Hi {{{$name}}},</p>
+<p>Hey,</p>
 
 <p>
-  The following Bank Account details have been received :
+  We have received a request for changing the bank account for {{$name}}. The details for the request are as follows :
 </p>
 
 <p>
-<strong>Name</strong>  {{ $beneficiary_name }}
+<strong>Beneficiary Name</strong>  {{ $beneficiary_name }}
 </p>
 <p>
   <strong>Account Number</strong>  {{ $account_number }}

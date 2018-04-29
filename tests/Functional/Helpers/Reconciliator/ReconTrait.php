@@ -54,6 +54,8 @@ trait ReconTrait
 
     protected function mockReconContentFunction($closure, $gateway = null, array $input = [])
     {
+        $gateway = $gateway ?: $this->gateway;
+
         $recon = $this->mockRecon($gateway, $input)
                       ->shouldReceive('content')
                       ->andReturnUsing($closure)
@@ -75,17 +77,25 @@ trait ReconTrait
 
     protected function makePaymentsSince(int $createdAt, int $count = 3)
     {
-        for ($i = 0; $i < $count; $i++)
-        {
-            $payments[] = $this->createPayment();
-        }
+        return array_reduce(
+                array_fill(0, $count, 0),
+                function($carry, $item) use ($createdAt)
+                {
+                    $payment = $this->createPayment();
 
-        foreach ($payments as $payment)
-        {
-            $this->fixtures->edit('payment', $payment, ['created_at' => $createdAt]);
-        }
+                    $this->fixtures->edit(
+                        'payment',
+                        $payment,
+                        [
+                            'created_at'    => $createdAt,
+                            'authorized_at' => $createdAt + 10
+                        ]);
 
-        return $payments;
+                    $carry[] = $payment;
+
+                    return $carry;
+                },
+                []);
     }
 
     private function createPayment()

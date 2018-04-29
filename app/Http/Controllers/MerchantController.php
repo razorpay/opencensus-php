@@ -538,6 +538,13 @@ class MerchantController extends Controller
         return ApiResponse::json($input);
     }
 
+    public function getDummyRazorX()
+    {
+        $response = $this->service()->getDummyRazorX();
+
+        return ApiResponse::json($response);
+    }
+
     public function postMerchantsNotifyHoliday()
     {
         $input = Request::all();
@@ -778,6 +785,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getBusinessCategories()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getBusinessCategories();
+
+        return ApiResponse::json($response);
+    }
+
     public function updateKeyAccess(string $id)
     {
         $input = Request::all();
@@ -966,5 +980,12 @@ class MerchantController extends Controller
         $response = $this->service(E::MERCHANT_DETAIL)->getMerchantActivationReviewers();
 
         return ApiResponse::json($response);
+    }
+
+    public function updateMerchantAccessMapFromTokens()
+    {
+        $data = (new AccessMap\Service)->updateMapFromTokens();
+
+        return ApiResponse::json($data);
     }
 }

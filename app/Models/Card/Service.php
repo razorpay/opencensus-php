@@ -5,6 +5,7 @@ namespace RZP\Models\Card;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -40,14 +41,11 @@ class Service extends Base\Service
 
         $iinEntity = $this->repo->iin->find($iin);
 
-        $data['recurring'] = false;
-
-        if (($iinEntity !== null) and
-            ($iinEntity->getType() === Card\Type::CREDIT) and
-            (in_array($iinEntity->getNetworkCode(), Card\Network::$recurringNetworks, true)))
-        {
-            $data['recurring'] = true;
-        }
+        $data['recurring'] = (new Card\Entity)->isRecurringSupportedOnNetworkAndIssuerAndType(
+                                                                                    $this->merchant,
+                                                                                    $iinEntity->getNetworkCode(),
+                                                                                    $iinEntity->getIssuer(),
+                                                                                    $iinEntity->getType());
 
         return $data;
     }

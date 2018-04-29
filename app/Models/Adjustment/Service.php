@@ -4,6 +4,7 @@ namespace RZP\Models\Adjustment;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
@@ -65,31 +66,24 @@ class Service extends Base\Service
     /**
      * Adds Multiple adjustments
      * @param array $input [list of adjustments to be added]
+     * @return array
      */
     public function addMultipleAdjustment(array $input)
     {
-        $merchantToAmountAdjList = $input['adjustments'];
+        $this->trace->info(TraceCode::BULK_ADJUSTMENT_CREATE_REQUEST, $input);
 
-        unset($input['adjustments']);
+        $adjustments = $input['adjustments'];
 
         $success = 0;
-        $total = 0;
         $failed = 0;
-        $failedIds = [];
 
-        foreach ($merchantToAmountAdjList as $merchantId => $amount)
+        foreach ($adjustments as $adjInput)
         {
             try
             {
-                $input[Entity::MERCHANT_ID] = $merchantId;
-
-                $input[Entity::AMOUNT] = $amount;
-
-                $this->addAdjustment($input);
+                $this->addAdjustment($adjInput);
 
                 $success++;
-
-                $total += $amount;
             }
             catch (\Exception $ex)
             {
@@ -97,23 +91,18 @@ class Service extends Base\Service
                     $ex,
                     null,
                     null,
-                    [
-                        Entity::MERCHANT_ID => $merchantId,
-                        Entity::AMOUNT      => $amount
-                    ]);
+                    $adjInput);
 
                 $failed++;
-
-                $failedIds[] = $merchantId;
             }
         }
 
         $response = [
-            'success'    => $success,
-            'total'      => $total/100,
-            'failed'     => $failed,
-            'failed_Ids' => $failedIds
+            'success'       => $success,
+            'failed'        => $failed,
         ];
+
+        $this->trace->info(TraceCode::BULK_ADJUSTMENT_CREATE_RESPONSE, $response);
 
         return $response;
     }

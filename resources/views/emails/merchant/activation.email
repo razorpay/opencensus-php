@@ -112,7 +112,11 @@
 
 <p>Your {{{$merchant['org']['business_name']}}} account for
 
+@if (isset($merchant['website']) === true)
 <a title="Merchant Website" href="{{$merchant['website']}}">{{{$merchant['billing_label']}}}</a>
+@else
+{{{$merchant['billing_label']}}}
+@endif
 
 is now active. The pricing details associated with your account are:
 

@@ -61,6 +61,8 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->fixtures->merchant->setHasKeyAccess(true, '1X4hRFHFx4UiXt');
+
         $this->ba->proxyAuth('rzp_live_1X4hRFHFx4UiXt');
 
         $this->startTest();
@@ -1204,6 +1206,34 @@ class MerchantTest extends TestCase
             'gateway' => 'ALL',
             'issuer'  => 'ALL',
             'network' => 'VISA']);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithDebitCardDisabled()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'ALL',
+            'issuer'  => 'ALL',
+            'network' => 'VISA']);
+
+        $this->fixtures->merchant->disableDebitCard();
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithCreditCardDisabled()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'ALL',
+            'issuer'  => 'ALL',
+            'network' => 'VISA']);
+
+        $this->fixtures->merchant->disableCreditCard();
 
         $this->startTest();
     }
@@ -2357,7 +2387,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->create('customer');
 
-        $this->fixtures->merchant->addFeatures(['charge_at_will', 'e_mandate']);
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
         $response = $this->makePreferencesRouteRequest();
 

@@ -132,6 +132,15 @@ class AdminController extends Controller
         return ApiResponse::json([], $responseStatus);
     }
 
+    public function postSetCronJobCallback()
+    {
+        $input = Request::all();
+
+        $this->service()->processSetCronJobCallback($input);
+
+        return ApiResponse::json([]);
+    }
+
     public function updateEntityTax($entity)
     {
         $input = Request::all();

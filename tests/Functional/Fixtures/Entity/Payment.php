@@ -11,10 +11,16 @@ class Payment extends Base
 
     public function createCaptured(array $attributes = array())
     {
-        if ((isset($attributes['method'])) and
-            ($attributes['method'] === 'netbanking'))
+        if (isset($attributes['method']))
         {
-            return $this->fixtures->create('payment:netbanking_captured');
+            switch ($attributes['method'])
+            {
+                case 'netbanking':
+                    return $this->fixtures->create('payment:netbanking_captured');
+
+                case 'upi':
+                    return $this->fixtures->create('payment:netbanking_captured');
+            }
         }
 
         return $this->fixtures->create('payment:card_captured', $attributes);
@@ -119,6 +125,50 @@ class Payment extends Base
             'status'         => 'authorized',
             'gateway'        => 'sharp',
             'method'         => 'netbanking',
+            'terminal_id'    => '1n25f6uN5S1Z5a',
+            'transaction_id' => null,
+            'created_at'     => time() - 10,
+            'updated_at'     => time() - 5
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $payment = $this->build('payment', $attributes);
+
+        $payment->saveOrFail();
+
+        list($txn, $feesSplit) = $this->createTransactionForPaymentAuthorized($payment);
+
+        $txn->saveOrFail();
+
+        $payment->saveOrFail();
+
+        return $payment;
+    }
+
+
+    public function createUpiCaptured(array $attributes = array())
+    {
+        $payment = $this->createUpiAuthorized($attributes);
+        $payment['authorized_at'] = $payment['created_at'];
+        $payment['captured_at'] = $payment['created_at'] + 10;
+
+        list($txn, $feesSplit) = $this->updateTransactionOnCapture($payment);
+
+        $txn->saveOrFail();
+
+        $payment->setStatus('captured');
+        $payment->saveOrFail();
+
+        return $payment;
+    }
+
+    public function createUpiAuthorized(array $attributes = array())
+    {
+        $defaultValues = [
+            'status'         => 'authorized',
+            'gateway'        => 'sharp',
+            'method'         => 'upi',
             'terminal_id'    => '1n25f6uN5S1Z5a',
             'transaction_id' => null,
             'created_at'     => time() - 10,

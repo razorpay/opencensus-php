@@ -105,6 +105,8 @@ class ErrorCode
     const GATEWAY_ERROR_CARD_INVALID_CVV                                            = 'GATEWAY_ERROR_CARD_INVALID_CVV';
     const GATEWAY_ERROR_CARD_MISSING_CVV                                            = 'GATEWAY_ERROR_CARD_MISSING_CVV';
 
+    const GATEWAY_ERROR_HEADLESS_PARSING_FAILED                                     = 'GATEWAY_ERROR_HEADLESS_PARSING_FAILED';
+
     const GATEWAY_ERROR_PAYMENT_MISSING_DATA                                        = 'GATEWAY_ERROR_PAYMENT_MISSING_DATA';
     const GATEWAY_ERROR_INVALID_PARAMETERS                                          = 'GATEWAY_ERROR_INVALID_PARAMETERS';
     const GATEWAY_ERROR_INVALID_CALLBACK_URL                                        = 'GATEWAY_ERROR_INVALID_CALLBACK_URL';
@@ -436,6 +438,8 @@ class ErrorCode
     const BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY                              = 'BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY';
     const BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE                            = 'BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE';
 
+    const BAD_REQUEST_LAMBDA_ANOTHER_OPERATION_IN_PROGRESS                          = 'BAD_REQUEST_LAMBDA_ANOTHER_OPERATION_IN_PROGRESS';
+
     const BAD_REQUEST_URL_NOT_FOUND                                                 = 'BAD_REQUEST_URL_NOT_FOUND';
     const BAD_REQUEST_ROUTE_DISABLED                                                = 'BAD_REQUEST_ROUTE_DISABLED';
     const BAD_REQUEST_NOTES_SHOULD_BE_ARRAY                                         = 'BAD_REQUEST_NOTES_SHOULD_BE_ARRAY';
@@ -497,6 +501,7 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED                                 = 'BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED';
     const BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED                                  = 'BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED                      = 'BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED';
+    const BAD_REQUEST_MERCHANT_NO_KEY_ACCESS                                        = 'BAD_REQUEST_MERCHANT_NO_KEY_ACCESS';
     const BAD_REQUEST_MERCHANT_ALREADY_LIVE                                         = 'BAD_REQUEST_MERCHANT_ALREADY_LIVE';
     const BAD_REQUEST_MERCHANT_NOT_LIVE                                             = 'BAD_REQUEST_MERCHANT_NOT_LIVE';
     const BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED                               = 'BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED';
@@ -603,6 +608,8 @@ class ErrorCode
 
     const SERVER_ERROR_AUTH_SERVICE_FAILURE                                         = 'SERVER_ERROR_AUTH_SERVICE_FAILURE';
     const SERVER_ERROR_WEBHOOK_IN_TRANSACTION                                       = 'SERVER_ERROR_WEBHOOK_IN_TRANSACTION';
+
+    const SERVER_ERROR_UFH_SERVICE_FAILURE                                          = 'SERVER_ERROR_UFH_SERVICE_FAILURE';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                     = 'BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED';

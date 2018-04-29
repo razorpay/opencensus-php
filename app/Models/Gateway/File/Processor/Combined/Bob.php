@@ -37,6 +37,8 @@ class Bob extends Base
 
             $amount['refunds'] = $amount['refunds'] / 100;
 
+            $amount['refunds'] = number_format($amount['refunds'], 2, '.', '');
+
             $count['refunds'] = count($data['refunds']);
 
             $refundsFile = $this->getFileData(FileStore\Type::BOB_NETBANKING_REFUND);
@@ -53,12 +55,16 @@ class Bob extends Base
 
             $amount['claims'] = $amount['claims'] / 100;
 
+            $amount['claims'] = number_format($amount['claims'], 2, '.', '');
+
             $count['claims'] = count($data['claims']);
 
             $claimsFile = $this->getFileData(FileStore\Type::BOB_NETBANKING_CLAIMS);
         }
 
         $amount['total'] = $amount['claims'] - $amount['refunds'];
+
+        $amount['total'] = number_format($amount['total'], 2, '.', '');
 
         $count['total'] = $count['refunds'] + $count['claims'];
 

@@ -31,6 +31,7 @@ class Mailgun extends Base
         self::UPI_ICICI,
         self::FREECHARGE,
         self::FIRST_DATA,
+        self::NETBANKING_CSB,
         self::NETBANKING_AXIS,
         self::NETBANKING_BOB,
         self::NETBANKING_ICICI,

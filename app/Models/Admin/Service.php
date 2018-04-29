@@ -11,7 +11,7 @@ use RZP\Constants\Entity;
 use RZP\Constants\AdminFetch;
 use RZP\Models\GeoIP\Service as GeoIP;
 use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
-use RZP\Reconciliator\ReconciliationSummaryMail\DailyReconStatusSummary;
+use RZP\Reconciliator\ReconSummary\DailyReconStatusSummary;
 
 class Service extends Base\Service
 {
@@ -200,6 +200,11 @@ class Service extends Base\Service
         $validator->validateInput('mailgun_webhook', $input);
 
         return (new Mailgun)->processCallback($type, $input);
+    }
+
+    public function processSetCronJobCallback(array $input)
+    {
+        $this->trace->info(TraceCode::SETCRONJOB_CALLBACK, $input);
     }
 
     public function updateTaxColumnValue(string $entity, int $limit = 10000)

@@ -4,6 +4,7 @@ namespace RZP\Constants;
 
 use RZP\Base\Fetch;
 use RZP\Models\Dispute;
+use RZP\Models\Settlement\Channel;
 
 /**
  * Class AdminFetch
@@ -536,6 +537,11 @@ class AdminFetch
                     Fetch::LABEL  => 'UTR',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
+                'channel' => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => Channel::getChannels()
+                ],
             ],
 
             Entity::GATEWAY_DOWNTIME => [
@@ -969,6 +975,13 @@ class AdminFetch
                 ],
             ],
 
+            Entity::NODAL_STATEMENT => [
+                'q'  => [
+                    Fetch::LABEL  => 'Search Query',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::OFFER => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
@@ -1265,6 +1278,11 @@ class AdminFetch
                 'utr' => [
                     Fetch::LABEL  => 'UTR',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'channel' => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => Channel::getChannels()
                 ],
             ],
 
