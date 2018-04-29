@@ -542,7 +542,8 @@ export default class ActivationWizard extends React.Component {
               null}
             {isLastTab && (
               <Button.Primary iconAfter="chevron-right" onClick={this.next}>
-                Save & Next
+                <span class="btn--desktop">Save & Next</span>
+                <span class="btn--mobile">Next</span>
               </Button.Primary>
             )}
             {isLastTab || (
