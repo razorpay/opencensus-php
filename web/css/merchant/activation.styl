@@ -89,6 +89,9 @@ $height = 600px
     position: absolute
     text-align: right
 
+    button
+      vertical-align: top
+
     .Loader
       float: left
       opacity: 0
@@ -145,13 +148,11 @@ $height = 600px
   padding-left: 180px
 
 
-.Activation--success
-  max-width: 640px
-
 .Activation--success, .Activation--welcome
   background: #fafafa
   position: relative
 
+.Activation--success
   .LinkCard
     color: #58666e
     width: 80%
@@ -184,15 +185,52 @@ $height = 600px
     side-title
       text-align: center
 
+.Activation--welcome
+  padding: 40px
+
+  .short-content
+    width: 55%
+
+  h3
+    line-height: 32px
+    width: 210px
+
+  .underline
+    width: 24px
+    height: 4px
+    background: #96c5ff
+    margin: 24px 0
+
+  p
+    font-size: #909090
+    margin: 24px 0
+
+  button
+    margin-top: 16px
+    margin-bottom: 6px
+
+    &:last-child
+      padding: 10px 48px
+
+.ActivationContainer
+  .Activation--success
+    max-width: 640px
+
+  .Activation--welcome
+    max-width: 720px
+
 
 .Modal-container
   &--Activation--wizard
     width: 90%
     max-width: 960px
     min-height: $height
-    height: 90%
     max-height: 800px
 
   &--Activation--success
     width: 90%
     max-width: 480px
+
+  &--Activation--welcome
+    width: 90%
+    max-width: 720px

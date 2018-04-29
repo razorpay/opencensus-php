@@ -6,6 +6,7 @@ import Spinner from 'rzp/ui/Spinner';
 import { Modal, ModalContent } from 'component/Modal';
 import { LinkCard } from 'component/Cards';
 import ActivationWizard from 'component/merchant/Activation';
+import Button from 'component/Button';
 
 import { withRouter } from 'react-router-dom';
 
@@ -114,6 +115,8 @@ export default class ActivationContainer extends React.Component {
   render() {
     let { data, categories } = this.state;
 
+    const filledEvenSingleDetail = false;
+
     let content, modalClass;
 
     if (!data) {
@@ -126,6 +129,14 @@ export default class ActivationContainer extends React.Component {
     } else if (data.submitted) {
       modalClass = 'Activation--success';
       content = <SuccessScreen />;
+    } else if (filledEvenSingleDetail && !this.state.openWizard) {
+      modalClass = 'Activation--welcome';
+      content = (
+        <WelcomeScreen
+          onClose={this.props.onClose}
+          openWizard={() => this.setState({ openWizard: true })}
+        />
+      );
     } else {
       modalClass = 'Activation--wizard';
       content = (
@@ -180,8 +191,27 @@ const SuccessScreen = _ => {
   );
 };
 
-const WelcomeScreen = _ => {
-  return <div class="Activation--welcome" />;
+const WelcomeScreen = ({ onClose, openWizard }) => {
+  return (
+    <div class="Activation--welcome">
+      <div class="short-content">
+        <h3> Welcome to Razorpay! Let's get you going.</h3>
+        <div class="underline" />
+        <p>
+          Congrats on signing up with Razorpay. Let's start by filling in your
+          basic information such has Business type, Account details, GST info,
+          etc.
+        </p>
+        <p>
+          We'll review your details and documents after which you can begin
+          accepting payments on your Razorpay dashboard.
+        </p>
+
+        {onClose && <Button onClick={onClose}>Activate Later</Button>}
+        <Button.Primary onClick={openWizard}>Activate Now</Button.Primary>
+      </div>
+    </div>
+  );
 };
 
 ActivationContainer.MODAL_MASK_CLASS = 'Activation';
