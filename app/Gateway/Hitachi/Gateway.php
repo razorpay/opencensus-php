@@ -198,7 +198,7 @@ class Gateway extends Base\Gateway
         $this->compareHashes($actualChecksum, $expectedChecksum);
 
         $qrData = [
-            BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT])/100,
+            BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]),
             BharatQr\GatewayResponseParams::CARD_FIRST6           => substr($input[ResponseFields::MASKED_CARD_NUMBER], 0, 6),
             BharatQr\GatewayResponseParams::CARD_LAST4            => substr($input[ResponseFields::MASKED_CARD_NUMBER], 12, 4),
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::CARD,
@@ -207,6 +207,11 @@ class Gateway extends Base\Gateway
         ];
 
         return $qrData;
+    }
+
+    protected function getIntegerFormattedAmount(string $amount)
+    {
+        return (int) number_format($amount, 0, '.', '');
     }
 
     protected function createGatewayPaymentEntityForQr($input)
