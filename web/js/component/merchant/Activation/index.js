@@ -376,6 +376,7 @@ export default class ActivationWizard extends React.Component {
     let isValid = this.tabValidity(currentActive);
     let tabs = this.state.tabs.slice();
     tabs[currentActive] = isValid;
+    activeTab = typeof activeTab === 'undefined' ? currentActive : activeTab; // To handle Save btn click
 
     let shouldSave = Object.keys(this.state.dirty).length ? true : null;
 
@@ -537,15 +538,11 @@ export default class ActivationWizard extends React.Component {
         {!this.state.showSubmitLayer && (
           <footer>
             <Loader isSaving={this.state.isSaving} />
-            {(activeTab && (
-              <Button iconBefore="chevron-left" onClick={this.prev}>
-                Back
-              </Button>
-            )) ||
+            {(activeTab && <Button onClick={_ => this.goto()}>Save</Button>) ||
               null}
             {isLastTab && (
               <Button.Primary iconAfter="chevron-right" onClick={this.next}>
-                Next
+                Save & Next
               </Button.Primary>
             )}
             {isLastTab || (
