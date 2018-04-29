@@ -273,8 +273,8 @@ class Generator extends Base\Core
         // Capture dashboard user id from dashboard headers if applies
         $this->setInvoiceUserIdFromDashboardHeadersIfAvailable($invoice);
 
-        // Save the merchant-preferred label on invoice
-        $invoice->setMerchantLabel($this->merchant->getInvoiceDisplayName());
+        // Save the merchant-defined label on invoice
+        $invoice->setMerchantLabel($this->merchant->getLabelForInvoice());
 
         $this->invoice = $invoice;
     }

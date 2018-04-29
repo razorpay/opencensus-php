@@ -397,7 +397,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DUE,
         self::CURRENCY,
         self::DESCRIPTION,
-        self::MERCHANT_LABEL,
         self::COMMENT,
         self::SHORT_URL,
         self::TYPE,
@@ -1108,6 +1107,11 @@ class Entity extends Base\PublicEntity
     public function getInvoiceNumberAttribute()
     {
         return $this->getAttribute(self::RECEIPT);
+    }
+
+    public function getMerchantLabelAttribute($label)
+    {
+        return $label ?: $this->merchant->getLabelForInvoice();
     }
 
     // -------------------------------------- End Accessors ----------

@@ -132,14 +132,11 @@ class ViewDataSerializer extends Base\Core
                                    ->values()
                                    ->toArrayHosted();
 
-        // For merchant name display, use invoice.merchant_label or fallback to merchant.billing_label
-        $merchantNameLabel = $this->invoice->getMerchantLabel() ?? $this->merchant->getBillingLabel();
-
         $serialized[Entity::IS_PAID]         = $this->invoice->isPaid();
         $serialized[Entity::PAYMENTS]        = $serializedPayments;
         $serialized[Entity::CALLBACK_URL]    = $this->invoice->getCallbackUrl();
         $serialized[Entity::CALLBACK_METHOD] = $this->invoice->getCallbackMethod();
-        $serialized[Entity::MERCHANT_LABEL]  = $merchantNameLabel;
+        $serialized[Entity::MERCHANT_LABEL]  = $this->invoice->getMerchantLabel();
 
         //
         // Additionally, if it's type=link and description is blank we fill it with first line item's description else

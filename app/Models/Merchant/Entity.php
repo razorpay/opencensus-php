@@ -816,7 +816,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MAX_PAYMENT_AMOUNT);
     }
 
-    public function getInvoiceNameField()
+    public function getInvoiceLabelField()
     {
         return $this->getAttribute(self::INVOICE_LABEL_FIELD);
     }
@@ -842,9 +842,9 @@ class Entity extends Base\PublicEntity
      *
      * @return mixed
      */
-    public function getInvoiceDisplayName()
+    public function getLabelForInvoice()
     {
-        $field = $this->getInvoiceNameField() ?: self::BILLING_LABEL;
+        $field = $this->getInvoiceLabelField() ?: self::BILLING_LABEL;
 
         return $this->getAttribute($field);
     }
