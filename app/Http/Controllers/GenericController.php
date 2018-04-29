@@ -29,8 +29,9 @@ class GenericController extends Controller
      */
     public function getInspectorIndex(LaravelDebugbar $debugBar)
     {
-        // Only allow access when the app is in debug mode
-        if ($this->config['app.debug'] !== true)
+        // Only allow access when the app is in debug mode, and dev env
+        if (($this->config['app.debug'] !== true) or
+            ($this->app->environment() !== 'dev'))
         {
             return ApiResponse::routeNotFound();
         }
