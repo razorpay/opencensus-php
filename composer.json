@@ -46,8 +46,7 @@
         "razorpay/hodor": "dev-master",
         "razorpay/trace": "~2.0",
         "razorpay/oauth": "dev-master",
-        "fideloper/proxy": "~3.0",
-        "nojacko/email-validator": "^1.1"
+        "fideloper/proxy": "~3.0"
     },
     "repositories": [
         {
@@ -91,7 +90,8 @@
         "phpunit/phpunit": "^6.2",
         "symfony/phpunit-bridge": "3.3.*@dev",
         "codedungeon/phpunit-result-printer": "^0.5.4",
-        "orchestra/testbench": "^3.5"
+        "orchestra/testbench": "^3.5",
+        "barryvdh/laravel-debugbar": "^3.1"
     },
     "autoload": {
         "classmap": ["database", "tests", "app/Models/Customer"],
@@ -108,6 +108,13 @@
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "php artisan package:discover"
         ]
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": [
+                "barryvdh/laravel-debugbar"
+            ]
+        }
     },
     "config": {
         "preferred-install": "dist"
