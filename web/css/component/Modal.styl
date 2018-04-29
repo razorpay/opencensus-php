@@ -16,18 +16,13 @@
       opacity: 0
 
 .Modal-container
-  position: relative
+  position: absolute
   background: #fff
   border-radius: 4px
   overflow: hidden
-
-  header
-    border-bottom: 2px solid #eee
-    padding: 12px 44px 12px 20px
-    font-size: 20px
-
-  .Modal-content header + .Modal-body
-    padding: 24px
+  left: 50%
+  top: 50%
+  transform: translate(-50%, -50%)
 
   .Modal-close
     position: absolute
@@ -43,6 +38,15 @@
 
     &:hover
       color: #333
+
+.Modal-content
+  header
+    border-bottom: 2px solid #eee
+    padding: 12px 44px 16px 20px
+    font-size: 20px
+
+    & + .Modal-body
+      padding: 24px
 
 .Modal-container--animate-down
   animation: appear-down 250ms ease-in-out

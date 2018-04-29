@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { classList } from 'common/util';
 import { matchDetail, matchModal } from 'merchant/routes';
 import Slider from 'rzp/ui/Slider';
-import Modal, { ModalContent } from 'component/Modal';
+import { ModalMask, ModalContent } from 'component/Modal';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
@@ -105,12 +105,12 @@ export default class Content extends Component {
       if (matchModalsRoute.match) {
         resultRoute = matchModalsRoute;
 
-        this.activationView = matchModalsRoute.component;
+        this.modalView = matchModalsRoute.component;
         this.detailView = null;
       } else if (matchDetailsRoute.match) {
         resultRoute = matchDetailsRoute;
 
-        this.activationView = null;
+        this.modalView = null;
         this.detailView = matchDetailsRoute.component;
       }
 
@@ -125,7 +125,7 @@ export default class Content extends Component {
       }
     } else {
       this.detailView = null;
-      this.activationView = null;
+      this.modalView = null;
       this.detailProps = null;
       setActiveEntity(null);
       setSecActiveEntity(null);
@@ -216,7 +216,7 @@ export default class Content extends Component {
     var DetailView = this.detailView;
     var BaseView = this.baseLocation ? this.getBaseView() : null;
 
-    let ActivationFormView = this.activationView;
+    let ModalFormView = this.modalView;
 
     if (DetailView) {
       DetailView = BaseView ? (
@@ -234,23 +234,21 @@ export default class Content extends Component {
           <DetailView {...this.detailProps} />
         </ErrorBoundary>
       );
-    } else if (ActivationFormView) {
-      ActivationFormView = BaseView ? (
-        <Modal
+    } else if (ModalFormView) {
+      ModalFormView = BaseView ? (
+        <ModalMask
           maskClosable={true}
           onClose={this.closeModalView}
-          class={classList(
-            'animate-down',
-            ActivationFormView.MODAL_CONTAINER_CLASS
-          )}
+          class={classList('animate-down', ModalFormView.MODAL_MASK_CLASS)}
         >
-          <ActivationFormView
+          <ModalFormView
             {...this.detailProps}
+            onClose={this.closeModalView}
             closeUrl={BaseView ? this.baseLocation.pathname : undefined}
           />
-        </Modal>
+        </ModalMask>
       ) : (
-        <ActivationFormView {...this.detailProps} />
+        <ModalFormView {...this.detailProps} />
       );
     }
 
@@ -258,7 +256,7 @@ export default class Content extends Component {
       <main class="main-content">
         {BaseView}
         {DetailView}
-        {ActivationFormView}
+        {ModalFormView}
       </main>
     );
   }

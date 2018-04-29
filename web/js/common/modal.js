@@ -6,7 +6,7 @@ import CSSTransition from 'react-transition-group/CSSTransition';
 import { observe, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { animObj } from 'common/util';
-import { Modal } from 'component/Modal';
+import { ModalMask, Modal } from 'component/Modal';
 
 class ModalStore {
   @observable.shallow modals = [];
@@ -141,19 +141,19 @@ export default class ModalContainer extends Component {
         <TransitionGroup>
           {store.modals.length && (
             <CSSTransition classNames="modal" timeout={animObj}>
-              <div id="modal-container">
+              <ModalMask maskClosable={false}>
                 {store.modals.map((modal, index) => (
-                  <div class="modal" key={index}>
-                    <Modal
-                      onClose={_ => {
-                        store.modals.remove(modal);
-                      }}
-                    >
-                      {modal}
-                    </Modal>
-                  </div>
+                  <Modal
+                    key={index}
+                    class={'admin'}
+                    onClose={_ => {
+                      store.modals.remove(modal);
+                    }}
+                  >
+                    {modal}
+                  </Modal>
                 ))}
-              </div>
+              </ModalMask>
             </CSSTransition>
           )}
         </TransitionGroup>

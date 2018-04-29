@@ -3,7 +3,8 @@ import { merchantFetch } from 'rzp/utils/ajax';
 import { showNotification } from 'rzp/modules/notifications';
 import { without } from 'rzp/utils/rzp-utils';
 import Spinner from 'rzp/ui/Spinner';
-import { ModalContent } from 'component/Modal';
+import { Modal, ModalContent } from 'component/Modal';
+import { LinkCard } from 'component/Cards';
 import ActivationWizard from 'component/merchant/Activation';
 
 import { withRouter } from 'react-router-dom';
@@ -113,26 +114,74 @@ export default class ActivationContainer extends React.Component {
   render() {
     let { data, categories } = this.state;
 
-    const content = data ? (
-      <ActivationWizard
-        data={data}
-        categories={categories}
-        save={this.saveStep}
-        saveFile={this.saveFile}
-        submitForm={this.submitForm}
-      />
-    ) : (
-      <div class="page-spinner-container">
-        <Spinner />
-      </div>
-    );
+    let content, modalClass;
+
+    if (!data) {
+      modalClass = 'Activation--wizard';
+      content = (
+        <div class="page-spinner-container">
+          <Spinner />
+        </div>
+      );
+    } else if (data.submitted) {
+      modalClass = 'Activation--success';
+      content = <SuccessScreen />;
+    } else {
+      modalClass = 'Activation--wizard';
+      content = (
+        <ActivationWizard
+          data={data}
+          categories={categories}
+          save={this.saveStep}
+          saveFile={this.saveFile}
+          submitForm={this.submitForm}
+        />
+      );
+    }
 
     return this.props.closeUrl ? (
-      <ModalContent>{content}</ModalContent>
+      <Modal class={modalClass} onClose={this.props.onClose}>
+        <ModalContent>{content}</ModalContent>
+      </Modal>
     ) : (
-      <div class="activation-container">{content}</div>
+      <div class="ActivationContainer">{content}</div>
     );
   }
 }
 
-ActivationContainer.MODAL_CONTAINER_CLASS = 'activation';
+const SuccessScreen = _ => {
+  return (
+    <div class="Activation--success">
+      <div class="Activation-info">
+        <side-title>Activation Form submitted Successfully!</side-title>
+        <img src="" />
+        <div class="title">
+          <i class="i i-check" /> Your form is submitted successfully
+        </div>
+        <p class="desc">
+          The process usually takes 2 to 3 working days* (may vary depending on
+          our partner bank). We will reach out on your contact email for further
+          clarifications.
+        </p>
+      </div>
+
+      <div class="Activation-actions">
+        <side-title>What's Next?</side-title>
+        <LinkCard
+          title={'Finish Profile Settings'}
+          description={
+            'Complete your account settings such as theme color, logo, etc.'
+          }
+          icon={'icon-done'}
+          to="/profile"
+        />
+      </div>
+    </div>
+  );
+};
+
+const WelcomeScreen = _ => {
+  return <div class="Activation--welcome" />;
+};
+
+ActivationContainer.MODAL_MASK_CLASS = 'Activation';

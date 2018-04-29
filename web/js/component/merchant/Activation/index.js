@@ -484,7 +484,7 @@ export default class ActivationWizard extends React.Component {
     });
 
     return (
-      <div class="activation-wizard">
+      <div class="Activation--wizard">
         <aside>
           <side-title>Account Activation</side-title>
           <p>

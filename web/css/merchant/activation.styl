@@ -1,24 +1,25 @@
 // Parent control the width of ActivationWizard component
 $height = 600px
 
-.activation-container
+.ActivationContainer
+  position: relative
   width: 96%
   margin: 80px 0 0 2%
-  max-width: 1024px
 
-.activation-wizard
-  background: #fafafa
-  position: relative
-  height: $height
-  width: 100%
-
-  $side-width = 240px
-
+.Activation--wizard, .Activation--success
   side-title
     font-size: 18px
     font-weight: bold
     display: block
     margin-bottom: 20px
+
+.Activation--wizard
+  max-width: 1024px
+  height: $height
+  background: #fafafa
+  position: relative
+
+  $side-width = 240px
 
   aside
     padding: 18px
@@ -144,11 +145,54 @@ $height = 600px
   padding-left: 180px
 
 
-.Modal-container--activation {
-  margin: 60px auto
-  width: 90%
-  max-width: 960px
-  min-height: $height
-  height; 90%
-  max-height; 800px
-}
+.Activation--success
+  max-width: 640px
+
+.Activation--success, .Activation--welcome
+  background: #fafafa
+  position: relative
+
+  .LinkCard
+    color: #58666e
+    width: 80%
+    margin: 0 auto
+
+  .Activation-info
+    padding: 16px 30px
+
+    .title, .desc
+      text-align: center
+    .title
+      font-size: 16px
+
+      .i
+        margin-right: 8px
+        border-radius: 50%
+        background: #3a9b67
+        font-size: 14px
+        color: #fff
+        padding: 2px 2px 0;
+        vertical-align: middle
+
+    .desc
+      margin: 10px 0 0
+
+  .Activation-actions
+    padding: 24px
+    background: #fff
+
+    side-title
+      text-align: center
+
+
+.Modal-container
+  &--Activation--wizard
+    width: 90%
+    max-width: 960px
+    min-height: $height
+    height: 90%
+    max-height: 800px
+
+  &--Activation--success
+    width: 90%
+    max-width: 480px

@@ -6,7 +6,7 @@ import ErrorBoundary from 'common/ErrorBoundary';
 *   - {Function} onClose,
 *   - {Boolean, optional} maskClosable, Whether to close modal on clicking outside the modal
 * */
-export default class ModalContainer extends React.PureComponent {
+export class ModalMask extends React.PureComponent {
   state = {};
 
   onMaskClose = e => {
@@ -46,9 +46,9 @@ export default class ModalContainer extends React.PureComponent {
           classArray,
           this.state.isHidden && 'Modal-mask--hide'
         )}
-        onClick={maskClosable && this.onMaskClose}
+        onClick={maskClosable ? this.onMaskClose : undefined}
       >
-        <Modal {...rest}>{children}</Modal>
+        {children}
       </div>
     );
   }
@@ -59,7 +59,7 @@ export default class ModalContainer extends React.PureComponent {
 // TODO: 1-c: Both approaches have trade-offs. Currently 'a' chosen to adapt merchant+admin with minimal changes on admin side.
 /*
 * Modal without modal mask. It takes care of close button functionality
-* - ModalContainer uses this component. However, Modal can also be used independently.
+* - ModalMask uses this component. However, Modal can also be used independently.
 * @props
 *   - {Boolean, optional} showCloseBtn, by default close button is shown. Can be hidden if false is passed
 *   - {Function} onClose, action on close btn press
