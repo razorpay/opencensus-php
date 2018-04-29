@@ -55,13 +55,13 @@ class Obc extends Base
                 $this->getFormattedAmount($row['refund']['amount']),
                 $row['gateway']['bank_payment_id'],
                 $this->claimDate,
-                $this->getFormattedAmount($row['refund']['amount']),
+                $this->getFormattedAmount($row['payment']['amount']),
                 $row['refund']['id'],
             ];
 
             $formattedData[] = $fields;
 
-            $count ++;
+            $count++;
 
             $totalAmount += $row['refund']['amount'];
         }
@@ -87,11 +87,11 @@ class Obc extends Base
 
     protected function getFormattedAmount($amount)
     {
-        return number_format($amount / 100,2);
+        return number_format($amount / 100 ,2);
     }
 
     protected function getRefundType($refundType)
     {
-        return ($refundType === Payment\RefundStatus::FULL ? 'C' : 'R');
+        return (($refundType === Payment\RefundStatus::FULL) ? 'C' : 'R');
     }
 }

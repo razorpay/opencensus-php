@@ -52,6 +52,7 @@ class Constants
             self::BOB,
             self::RBL,
             self::INDUSIND,
+            self::OBC,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -98,6 +99,7 @@ class Constants
             self::FEDERAL  => ['federal.netbanking.refunds@razorpay.com'],
             self::BOB      => ['bob.netbanking.refunds@razorpay.com'],
             self::INDUSIND => ['indusind.netbanking.refunds@razorpay.com'],
+            self::OBC   => ['ibank.payments@obc.co.in', 'settlements@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [

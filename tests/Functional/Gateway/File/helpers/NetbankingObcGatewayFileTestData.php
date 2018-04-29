@@ -7,7 +7,7 @@ return [
     'testGenerateRefundFile' => [
         'request' => [
             'content' => [
-                'type'    => 'refund',
+                'type'    => 'combined',
                 'targets' => ['obc'],
                 'begin'    => Carbon::today(Timezone::IST)->getTimestamp(),
                 'end'      => Carbon::tomorrow(Timezone::IST)->getTimestamp()
@@ -22,11 +22,12 @@ return [
                 'admin' => true,
                 'items' => [
                     [
-                        'status'              => 'file_generated',
+                        'status'              => 'file_sent',
+                        'sender'              => 'refunds@razorpay.com',
                         'scheduled'           => true,
                         'partially_processed' => false,
                         'attempts'            => 1,
-                        'type'                => 'refund',
+                        'type'                => 'combined',
                         'target'              => 'obc',
                         'entity'              => 'gateway_file',
                         'admin'               => true
