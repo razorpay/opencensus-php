@@ -32,7 +32,7 @@ class GenericController extends Controller
         // Only allow access when the app is in debug mode
         if ($this->config['app.debug'] !== true)
         {
-            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+            return ApiResponse::routeNotFound();
         }
 
         $debugBar->enable();
@@ -43,7 +43,12 @@ class GenericController extends Controller
         // The view gets its data from JavascriptRenderer
         $renderer = $debugBar->getJavascriptRenderer();
 
-        // Defining the openHandler allows you to "open" other debug sessions
+        //
+        // By defining an openHandlerUrl, debugbar enables us to list and view other debug
+        // sessions
+        // Here, we use debugbar's own route (defined with the alias `debugbar.openhandler`)
+        // as the openHandlerUrl
+        //
         $openHandlerUrl = route('debugbar.openhandler');
         $renderer->setOpenHandlerUrl($openHandlerUrl);
 

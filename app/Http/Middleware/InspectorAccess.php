@@ -62,7 +62,7 @@ class InspectorAccess
      *
      * @return bool
      */
-    protected function isDebugbarInternalRoute(HttpRequest $request)
+    protected function isDebugbarInternalRoute(HttpRequest $request) : bool
     {
         $debugBarRoutePrefix = '/' . $this->config->get('debugbar.route_prefix');
 
