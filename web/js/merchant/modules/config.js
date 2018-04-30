@@ -79,15 +79,17 @@ export const uploadLogo = (file, fieldName) => {
 
 /* normalize config in proper format*/
 const normalizeConfig = config => {
+  let logoUrl = config.logo_url;
+
   config.transaction_report_email = config.transaction_report_email.join(',');
 
   config.brand_color = config.brand_color || '#528FF0';
-  config.hasPersonalised = !!config.logo_url;
+  config.hasPersonalised = !logoUrl;
+
   /**
    * API is currently returning invalid logo urls
    * so we need to translate it into a valid URL
    */
-  let logoUrl = config.logo_url;
   if (logoUrl !== null && !/^http/.test(logoUrl)) {
     logoUrl = `https://cdn.razorpay.com${logoUrl.replace(
       /\.([^\.]+$)/,

@@ -7,7 +7,7 @@ import ModalDialog from 'rzp/ui/ModalDialog';
 import Notifications from 'rzp/ui/Notifications';
 import ReactIdle from 'rzp/ui/ReactIdle';
 import LocalStorageService from 'rzp/utils/localStorage';
-import Sidebar from 'merchant/components/Sidebar';
+import Sidebar from 'merchant/containers/Sidebar';
 import HeaderNav from 'merchant/components/HeaderNav';
 import Content from 'merchant/components/Content';
 import Footer from 'merchant/components/Footer';
@@ -181,7 +181,11 @@ export default class App extends Component {
   redirectToRoute(role) {
     let pathname = this.props.history.location.pathname;
 
-    if (pathname === '/' || pathname === '/dashboard') {
+    if (
+      pathname === '/' ||
+      pathname === '/dashboard' ||
+      pathname === '/dashboard_v2'
+    ) {
       switch (role) {
         case 'sellerapp':
           let url = '/paymentlinks';

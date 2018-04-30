@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { fetchKeys } from 'merchant/modules/keys';
@@ -8,6 +8,11 @@ import LocalStorageService from 'rzp/utils/localStorage';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 
 import { LIVE_MODE } from './data';
+import {
+  trackGoToKeyGen,
+  trackGoToDocumentation,
+  trackGoToPayments,
+} from './ga';
 
 const Icon = ({ mode, keysGenerated, paymentsMade }) => {
   let className = '';
@@ -29,36 +34,61 @@ const Arrow = () => (
   </div>
 );
 
-const WrapperElement = ({
-  children,
-  keysGenerated,
-  paymentsMade,
-  ...otherProps
-}) => {
-  if (keysGenerated && !paymentsMade) {
+class WrapperElement extends Component {
+  constructor(props) {
+    super(props);
+
+    this.trackStep = this.trackStep.bind(this);
+  }
+
+  trackStep() {
+    const { stepNum, mode } = this.props;
+
+    return (stepNum === 2
+      ? trackGoToDocumentation
+      : stepNum === 1 ? trackGoToKeyGen : trackGoToPayments)(stepNum, mode);
+  }
+
+  render() {
+    const {
+      mode,
+      children,
+      keysGenerated,
+      paymentsMade,
+      stepNum,
+      ...otherProps
+    } = this.props;
+
+    if (keysGenerated && !paymentsMade) {
+      return (
+        <a
+          href="https://docs.razorpay.com/docs/getting-started"
+          target="_blank"
+          onClick={this.trackStep}
+          {...otherProps}
+        >
+          <div className="media">
+            {children}
+            <Arrow />
+          </div>
+        </a>
+      );
+    }
+
     return (
-      <a
-        href="https://docs.razorpay.com/docs/getting-started"
-        target="_blank"
+      <Link
+        to={(!keysGenerated && '/keys') || '/payments'}
+        onClick={this.trackStep}
         {...otherProps}
       >
         <div className="media">
           {children}
           <Arrow />
         </div>
-      </a>
+      </Link>
     );
   }
-
-  return (
-    <Link to={(!keysGenerated && '/keys') || '/payments'} {...otherProps}>
-      <div className="media">
-        {children}
-        <Arrow />
-      </div>
-    </Link>
-  );
-};
+}
 
 const Title = ({
   mode,
@@ -124,6 +154,20 @@ export default class IntegrationStep extends Component {
     });
   }
 
+  getStep() {
+    const { keysGenerated, paymentsMade } = this.state;
+
+    if (!keysGenerated) {
+      return 1;
+    }
+
+    if (!paymentsMade) {
+      return 2;
+    }
+
+    return 3;
+  }
+
   componentWillReceiveProps(nextProps) {
     if (this.props.payments.loading && !nextProps.payments.loading) {
       this.onFetchPayments(nextProps.payments.items);
@@ -165,12 +209,15 @@ export default class IntegrationStep extends Component {
   render() {
     const { mode } = this.props,
       { isLoading, keysGenerated, paymentsMade } = this.state,
-      isIntegrated = keysGenerated && paymentsMade;
+      isIntegrated = keysGenerated && paymentsMade,
+      stepNum = this.getStep();
 
     return (
       <WrapperElement
+        mode={mode}
         keysGenerated={keysGenerated}
         paymentsMade={paymentsMade}
+        stepNum={stepNum}
         className={`Onboarding__Step ${isLoading ? ' loading' : ''}`}
       >
         <div className="media-icon">

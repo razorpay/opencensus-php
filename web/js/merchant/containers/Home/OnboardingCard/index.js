@@ -10,29 +10,12 @@ import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
 
 import ActivationStep from './ActivationStep';
 import Integration from './Integration';
-
-const analyticsGoTo = name => {
-  window.rzpAnalytics({
-    eventCategory: 'Dashboard - Home',
-    eventAction: `Go To - ${name.replace('Razorpay ', '')}`,
-  });
-};
-
-const analyticsLearnMore = name => {
-  window.rzpAnalytics({
-    eventCategory: 'Dashboard - Home',
-    eventAction: `Learn More - ${name.replace('Razorpay ', '')}`,
-  });
-};
-
-const onBoardingItems = [
-  'Generate Financial Reports',
-  'Check Transaction History',
-  'Access API keys  & Webhooks',
-  'Access Razorpay Products',
-  'Check Settlements',
-  'Issue Refunds',
-];
+import { onBoardingItems } from './data';
+import {
+  trackWelcomeCTAClick,
+  trackCloseOnboarding,
+  trackGoToDocumentation,
+} from './ga';
 
 @connect(state => ({ ...state.session, config: state.config.config }))
 export default class OnboardingCard extends Component {
@@ -59,12 +42,14 @@ export default class OnboardingCard extends Component {
   }
 
   gotoNextStep = () => {
+    trackWelcomeCTAClick();
     return this.props.onFirstStepClose && this.props.onFirstStepClose();
   };
 
-  closeOnboarding = () => {
+  closeOnboarding(e, fromCloseBtn) {
+    trackCloseOnboarding(`from ${fromCloseBtn ? 'close icon' : 'description'}`);
     return this.props.onClose && this.props.onClose();
-  };
+  }
 
   render() {
     let { user, config, payments, mode, isFirstStep } = this.props;
@@ -124,8 +109,7 @@ export default class OnboardingCard extends Component {
                 {integrated && activated ? (
                   <span>
                     You are all set up. You may now{' '}
-                    <a onClick={this.closeOnboarding}>close this</a>
-                    or view our{' '}
+                    <a onClick={this.closeOnboarding}>close this</a> or view our{' '}
                     <a href="https://docs.razorpay.com/" target="_blank">
                       documentation
                     </a>{' '}
@@ -170,8 +154,11 @@ export default class OnboardingCard extends Component {
             <div class="onboarding-illustration" />
             {integrated &&
               activated && (
-                <a onClick={this.closeOnboarding} className="close">
-                  &times;
+                <a
+                  onClick={e => this.closeOnboarding(e, true)}
+                  className="close"
+                >
+                  <i className="i i-close" />
                 </a>
               )}
           </div>

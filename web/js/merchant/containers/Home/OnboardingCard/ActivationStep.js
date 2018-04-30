@@ -15,6 +15,12 @@ import {
   LIVE_MODE,
   PERSONALISE_URL,
 } from './data';
+import {
+  trackActivationCardAction,
+  trackGoToActivation,
+  trackGoToPersonalise,
+  trackSwitchToLive,
+} from './ga';
 
 const Icon = ({ isActivated, isSubmitted, isRejected, needsClarification }) => {
   let className = '';
@@ -48,6 +54,7 @@ class SwitchToLive extends Component {
       LocalStorageService.setItem(`show-mode-dd-popover`, 'true');
     }
 
+    trackSwitchToLive(this.props.stepNum);
     LocalStorageService.setItem(this.modeToken, LIVE_MODE);
     window.location.reload();
   }
@@ -73,6 +80,7 @@ const WrapperElement = ({
   isRejected,
   needsClarification,
   hasPersonalised,
+  stepNum,
   ...otherProps
 }) => {
   /*
@@ -101,12 +109,24 @@ const WrapperElement = ({
    * 2) Config page if not personalised, where he needs to update logo
    *    and theme color
    */
+
+  let linkTo = null,
+    trackFunction = null;
+
+  if (!isSubmitted) {
+    linkTo = ACTIVATION_URL;
+    trackFunction = trackGoToActivation;
+  } else if (!hasPersonalised) {
+    linkTo = PERSONALISE_URL;
+    trackFunction = trackGoToPersonalise;
+  }
+
   return (
     <Link
-      to={
-        (!isSubmitted && ACTIVATION_URL) ||
-        (!hasPersonalised && PERSONALISE_URL)
-      }
+      to={linkTo}
+      onClick={() => {
+        return trackFunction && trackFunction(stepNum);
+      }}
       {...otherProps}
     >
       <div className="media">
@@ -191,6 +211,7 @@ const Text = ({
   hasPersonalised,
   needsClarification,
   clarificationMode,
+  stepNum,
 }) => {
   if (isRejected) {
     return <span>Please check your email for details.</span>;
@@ -227,11 +248,16 @@ const Text = ({
           <span>
             {mode === TEST_MODE ? (
               <span>
-                <Link to={PERSONALISE_URL}>Personalise</Link>
+                <Link
+                  to={PERSONALISE_URL}
+                  onClick={() => trackGoToPersonalise(stepNum)}
+                >
+                  Personalise
+                </Link>
                 <span>
                   {' '}
                   or{' '}
-                  <SwitchToLive merchantId={merchantId}>
+                  <SwitchToLive merchantId={merchantId} stepNum={stepNum}>
                     Switch to live
                   </SwitchToLive>
                 </span>
@@ -246,7 +272,9 @@ const Text = ({
           // user has personalized, activated and is in test mode
 
           <span>
-            <SwitchToLive merchantId={merchantId}>Switch to live</SwitchToLive>
+            <SwitchToLive merchantId={merchantId} stepNum={stepNum}>
+              Switch to live
+            </SwitchToLive>
           </span>
         ) : (
           'You are all set up.'
@@ -268,74 +296,100 @@ const Progress = ({ progress }) => {
   );
 };
 
-export default ({ mode, user, config }) => {
-  const {
-    activation_progress: progress,
-    isActivated,
-    isSubmitted,
-    isRejected,
-    needsClarification,
-    clarification_mode: clarificationMode,
-  } = user;
+export default class ActivationStep extends Component {
+  constructor(props) {
+    super(props);
+  }
 
-  const { hasPersonalised } = config;
+  getStep() {
+    const { isActivated, isSubmitted } = this.props.user;
 
-  return (
-    <WrapperElement
-      class="Onboarding__Step"
-      mode={mode}
-      isActivated={isActivated}
-      isSubmitted={isSubmitted}
-      isRejected={isRejected}
-      needsClarification={needsClarification}
-      hasPersonalised={hasPersonalised}
-    >
-      <div className="media-icon">
-        <Icon
-          isActivated={isActivated}
-          isSubmitted={isSubmitted}
-          isRejected={isRejected}
-          needsClarification={needsClarification}
-          clarificationMode={clarificationMode}
-        />
-      </div>
-      <div class="media-body">
-        <div className="activation-progress-cont">
-          <div>
-            <b>
-              <Title
-                isActivated={isActivated}
-                isSubmitted={isSubmitted}
-                hasPersonalised={hasPersonalised}
-                isRejected={isRejected}
-                needsClarification={needsClarification}
-              />
-            </b>
-            {!isActivated &&
-              !isSubmitted && (
-                <span className="activation-progress-num">{progress}%</span>
-              )}
-          </div>
-          {!isActivated &&
-            !isSubmitted && (
-              <div>
-                <Progress progress={progress} />
-              </div>
-            )}
-        </div>
-        <div className="step-desc">
-          <Text
-            merchantId={user.current}
-            mode={mode}
+    if (!isSubmitted) {
+      return 1;
+    }
+
+    if (!isActivated) {
+      return 2;
+    }
+
+    return 3;
+  }
+
+  render() {
+    const { mode, user, config } = this.props;
+
+    const {
+      activation_progress: progress,
+      isActivated,
+      isSubmitted,
+      isRejected,
+      needsClarification,
+      clarification_mode: clarificationMode,
+    } = user;
+
+    const { hasPersonalised } = config;
+
+    const stepNum = this.getStep();
+
+    return (
+      <WrapperElement
+        class="Onboarding__Step"
+        mode={mode}
+        isActivated={isActivated}
+        isSubmitted={isSubmitted}
+        isRejected={isRejected}
+        needsClarification={needsClarification}
+        hasPersonalised={hasPersonalised}
+        stepNum={stepNum}
+      >
+        <div className="media-icon">
+          <Icon
             isActivated={isActivated}
             isSubmitted={isSubmitted}
             isRejected={isRejected}
-            hasPersonalised={hasPersonalised}
             needsClarification={needsClarification}
             clarificationMode={clarificationMode}
           />
         </div>
-      </div>
-    </WrapperElement>
-  );
-};
+        <div class="media-body">
+          <div className="activation-progress-cont">
+            <div>
+              <b>
+                <Title
+                  isActivated={isActivated}
+                  isSubmitted={isSubmitted}
+                  hasPersonalised={hasPersonalised}
+                  isRejected={isRejected}
+                  needsClarification={needsClarification}
+                />
+              </b>
+              {!isActivated &&
+                !isSubmitted && (
+                  <span className="activation-progress-num">{progress}%</span>
+                )}
+            </div>
+            {!isActivated &&
+              !isSubmitted && (
+                <div>
+                  <Progress progress={progress} />
+                </div>
+              )}
+          </div>
+          <div className="step-desc">
+            <Text
+              merchantId={user.current}
+              mode={mode}
+              isActivated={isActivated}
+              isSubmitted={isSubmitted}
+              isRejected={isRejected}
+              hasPersonalised={hasPersonalised}
+              needsClarification={needsClarification}
+              clarificationMode={clarificationMode}
+              stepNum={stepNum}
+            />
+          </div>
+        </div>
+      </WrapperElement>
+    );
+  }
+}

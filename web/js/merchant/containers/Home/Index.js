@@ -110,9 +110,12 @@ class HomeContainer extends Component {
       LocalStorageService.removeItem(firstStepToken);
     }
 
-    const showOnboardingBanner = LocalStorageService.getItem(
-        this.onboardingBannerToken
-      ),
+    const hasAccessToOnboardingBanner = (this.hasAccessToOnboardingBanner =
+      ['manager', 'owner', 'admin'].indexOf(user.role) >= 0);
+
+    const showOnboardingBanner =
+        hasAccessToOnboardingBanner &&
+        LocalStorageService.getItem(this.onboardingBannerToken),
       showOnboardingBannerFirstStep = LocalStorageService.getItem(
         this.firstStepToken
       );
@@ -150,6 +153,8 @@ class HomeContainer extends Component {
         LocalStorageService.setItem(this.firstStepToken, 'true');
       } else if (mode !== 'live') {
         this.props.fetchPayments({ mode: 'live' }).then(data => {
+          data = data.data;
+
           if (data && data.items && data.items.length === 0) {
             this.setShowOnboardingBanner();
           }
@@ -221,6 +226,7 @@ class HomeContainer extends Component {
      * we use it to show the banner , if there are no trasaction
      */
     if (
+      this.hasAccessToOnboardingBanner &&
       !this.state.showOnboardingBanner &&
       user.isActivated &&
       mode === 'live' &&

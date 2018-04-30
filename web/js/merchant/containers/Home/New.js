@@ -136,9 +136,12 @@ class HomeContainer extends Component {
       LocalStorageService.removeItem(firstStepToken);
     }
 
-    const showOnboardingBanner = LocalStorageService.getItem(
-        this.onboardingBannerToken
-      ),
+    const hasAccessToOnboardingBanner = (this.hasAccessToOnboardingBanner =
+      ['manager', 'owner', 'admin'].indexOf(user.role) >= 0);
+
+    const showOnboardingBanner =
+        hasAccessToOnboardingBanner &&
+        LocalStorageService.getItem(this.onboardingBannerToken),
       showOnboardingBannerFirstStep = LocalStorageService.getItem(
         this.firstStepToken
       );
@@ -156,7 +159,9 @@ class HomeContainer extends Component {
       showGroupingByPtfm: false,
       scrollAmountToStickHeader: 0,
       hasNewAnalyticsTour:
-        !isAdmin && !LocalStorageService.getItem('hide_new_analytics_banner'),
+        !isAdmin &&
+        user.isActivated &&
+        !LocalStorageService.getItem('hide_new_analytics_banner'),
       dismissNewAnalyticsBanner: false, // used for transition
       expandOnboardingBanner: showOnboardingBanner, // used for transition
       showOnboardingBanner,
@@ -177,7 +182,7 @@ class HomeContainer extends Component {
      * RecentActivity component, which will be done using `onFetchPayments`
      * below
      */
-    if (!showOnboardingBanner) {
+    if (hasAccessToOnboardingBanner && !showOnboardingBanner) {
       if (!user.isActivated) {
         this.state = {
           ...this.state,
@@ -190,6 +195,8 @@ class HomeContainer extends Component {
         LocalStorageService.setItem(this.firstStepToken, 'true');
       } else if (mode !== 'live') {
         this.props.fetchPayments({ mode: 'live' }).then(data => {
+          data = data.data;
+
           if (data && data.items && data.items.length === 0) {
             this.setShowOnboardingBanner();
           }
@@ -205,6 +212,7 @@ class HomeContainer extends Component {
       this
     );
     this.onHideOnboardingBanner = this.onHideOnboardingBanner.bind(this);
+    this.onHideNewAnalyticsBanner = this.onHideNewAnalyticsBanner.bind(this);
     this.onFirstStepClose = this.onFirstStepClose.bind(this);
   }
 
@@ -509,6 +517,7 @@ class HomeContainer extends Component {
      */
 
     if (
+      this.hasAccessToOnboardingBanner &&
       !this.state.showOnboardingBanner &&
       user.isActivated &&
       mode === 'live' &&
@@ -519,23 +528,35 @@ class HomeContainer extends Component {
   }
 
   onShowTour() {
+    this.onHideNewAnalyticsBanner(() => {
+      this.props.showOrHideTour(true);
+    });
+
+    trackViewTour();
+  }
+
+  onHideNewAnalyticsBanner(cb) {
     LocalStorageService.setItem('hide_new_analytics_banner', true);
+
     this.setState(
       {
         dismissNewAnalyticsBanner: true,
       },
       () => {
         window.setTimeout(() => {
-          this.setState({
-            dismissNewAnalyticsBanner: false,
-            hasNewAnalyticsTour: false,
-          });
-          this.props.showOrHideTour(true);
+          this.setState(
+            {
+              dismissNewAnalyticsBanner: false,
+              hasNewAnalyticsTour: false,
+            },
+            () => {
+              this.setScrollAmountToStickHeader();
+              typeof cb === 'function' && cb();
+            }
+          );
         }, 500); // let the trasition to hide banner complete
       }
     );
-
-    trackViewTour();
   }
 
   render() {
@@ -583,6 +604,14 @@ class HomeContainer extends Component {
                         for an improved experience.
                       </span>
                     </Banner>
+                  </div>
+                  <div className="banner-close">
+                    <a
+                      className="banner-close-icon"
+                      onClick={this.onHideNewAnalyticsBanner}
+                    >
+                      <i className="i i-close" />
+                    </a>
                   </div>
                 </div>
               )}

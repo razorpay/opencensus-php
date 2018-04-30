@@ -77,12 +77,40 @@ traffic-responsive() {
           }
         }
       }
+      
+      &.banner-close {
+
+        width: 1px;
+        padding-right: 16px;
+        font-size: 12px;
+
+        > a {
+
+          color: #fff;
+          opacity: 0.5;
+          font-size: 14px;
+
+          &:hover {
+
+            opacity: 1;
+          }
+        }
+      }
     }
   }
 
-  > .rzp-sticky > .sticky-content {
+  > .rzp-sticky {
 
-    z-index: 2;
+    &.sticky > .sticky-content {
+
+      position: fixed;
+    }
+
+    > .sticky-content {
+
+      z-index: 2;
+      position: relative;
+    }
   }
 
   .header {
