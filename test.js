@@ -2,7 +2,15 @@
 const puppeteer = require('puppeteer');
 const http = require('http');
 const env = require('process').env;
-const port = 8080;
+const port = 8080,
+  baseURL = `http://localhost:${port}/test`,
+  merchantURL = `${baseURL}/merchant.html#/app`,
+  merchantLog = console.log.bind(console.log, '[Merchant Log]:\n'),
+  adminURL = `${baseURL}/admin.html#/admin`,
+  adminLog = console.log.bind(console.log, '[Admin Log]:\n');
+
+console.log('merchantURL: ' + merchantURL);
+console.log('adminURL: ' + adminURL);
 
 const ecstatic = require('ecstatic')({
   root: `${__dirname}/public`,
@@ -19,9 +27,8 @@ async function merchant(browser) {
     throw 'Merchant Test Timed out';
   }, 5000);
   const page = await browser.newPage();
-  await page.goto(`http://localhost:${port}/test/merchant.html#/app`);
-
-  page.on('error', console.log).on('error', console.log);
+  page.on('pageerror', merchantLog).on('error', merchantLog);
+  await page.goto(merchantURL);
 
   return page.waitForSelector('.layout.rzp').then(_ => {
     clearTimeout(timeout);
@@ -34,7 +41,8 @@ async function admin(browser) {
     throw 'Admin Test Timed out';
   }, 5000);
   const page = await browser.newPage();
-  await page.goto('http://localhost:${port}/test/admin.html#/admin');
+  page.on('pageerror', adminLog).on('error', adminLog);
+  await page.goto(adminURL);
 
   return page.waitForSelector('#app-container').then(_ => {
     clearTimeout(timeout);
