@@ -19,7 +19,7 @@
                         <td colspan="9" align="center">PGI NAME - OBC NetBanking eCommerce Payment Settlement Summary</td>
                     </tr>
                     <tr>
-                        <td colspan="9" align="center">Settlement Date: {{$date}}</td>
+                        <td colspan="9" align="center">Settlement Date: {{{$date}}}</td>
                     </tr>
                     <tr>
                         <td colspan="2" align="center"></td>
@@ -41,14 +41,14 @@
                     </tr>
                     <tr>
                         <td>1</td>
-                        <td>{{ date }}</td>
+                        <td>{{ $date }}</td>
                         <td align="right">0</td>
                         <td align="right">0.00</td>
-                        <td align="right"> {{$count['claims']}}</td>
-                        <td align="right">{{$amount['claims']}}</td>
-                        <td align="right">{{$count['refunds']}}</td>
-                        <td align="right">{{$amount['refunds']}}}</td>
-                        <td align="right">{{$amount['total']}}/td>
+                        <td align="right"> {{{$count['claims']}}}</td>
+                        <td align="right">{{{$amount['claims']}}}</td>
+                        <td align="right">{{{$count['refunds']}}}</td>
+                        <td align="right">{{{$amount['refunds']}}}</td>
+                        <td align="right">{{{$amount['total']}}}/td>
                     </tr>
 
                 </table>
