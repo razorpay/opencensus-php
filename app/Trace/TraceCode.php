@@ -1059,6 +1059,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const INSTANCE_PROFILE_PROVIDER_CACHE_MISS          = 'INSTANCE_PROFILE_PROVIDER_CACHE_MISS';
 
+    const SERVER_ERROR_LOG_RISK                         = 'SERVER_ERROR_LOG_RISK';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
