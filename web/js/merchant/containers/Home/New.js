@@ -23,6 +23,7 @@ import {
 } from 'rzp/utils/pokedex';
 
 import { fetch } from 'merchant/modules/pokedex';
+import { fetchPayments } from 'rzp/modules/collection';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
@@ -87,6 +88,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
     ...HomeActions,
     showNotification,
     showOrHideTour,
+    fetchPayments,
   }
 )
 class HomeContainer extends Component {
@@ -104,7 +106,45 @@ class HomeContainer extends Component {
 
     startDate.add(...dateRangePresets[defaultPreset].slice(1));
 
-    const { user, isAdmin } = props;
+    const { user, mode, isAdmin } = props,
+      // onboarding card is shown if this is present in localstorage
+      onboardingCardToken = 'show_onboarding_card',
+      // onboarding card first step is shown if this is present in localstorage
+      firstStepToken = 'onboarding_first_step';
+
+    // tokens particular for the current merchant
+    this.onboardingBannerToken = `${onboardingCardToken}--${user.current}`;
+    this.firstStepToken = `${firstStepToken}--${user.current}`;
+
+    /*
+     * Earlier , the tokens apply at browser level, if old tokens are present
+     * converting them specific to the merchants the current user can switch to
+     */
+    if (LocalStorageService.getItem(onboardingCardToken)) {
+      Object.keys(user.merchants).forEach(key => {
+        LocalStorageService.setItem(`${onboardingCardToken}--${key}`, 'true');
+      });
+
+      LocalStorageService.removeItem(onboardingCardToken);
+    }
+
+    if (LocalStorageService.getItem(firstStepToken)) {
+      Object.keys(user.merchants).forEach(key => {
+        LocalStorageService.setItem(`${firstStepToken}--${key}`, 'true');
+      });
+
+      LocalStorageService.removeItem(firstStepToken);
+    }
+
+    const hasAccessToOnboardingBanner = (this.hasAccessToOnboardingBanner =
+      ['manager', 'owner', 'admin'].indexOf(user.role) >= 0);
+
+    const showOnboardingBanner =
+        hasAccessToOnboardingBanner &&
+        LocalStorageService.getItem(this.onboardingBannerToken),
+      showOnboardingBannerFirstStep = LocalStorageService.getItem(
+        this.firstStepToken
+      );
 
     this.state = {
       startDate,
@@ -120,17 +160,60 @@ class HomeContainer extends Component {
       scrollAmountToStickHeader: 0,
       hasNewAnalyticsTour:
         !isAdmin &&
-        user.isActivated &&
+        mode === 'live' &&
         !LocalStorageService.getItem('hide_new_analytics_banner'),
-      dismissNewAnalyticsBanner: false,
+      dismissNewAnalyticsBanner: false, // used for transition
+      expandOnboardingBanner: showOnboardingBanner, // used for transition
+      showOnboardingBanner,
+      showOnboardingBannerFirstStep,
+      // payments is used to change content in the integration step
+      payments: {
+        loading: true,
+        items: [],
+      },
     };
+
+    /*
+     * If token not present to show the banner,
+     * Need to show the banner until the user integrates in live mode
+     * which we can check by checking his live transactions
+     *
+     * If the user is in live mode, we make fetchAll payments in 
+     * RecentActivity component, which will be done using `onFetchPayments`
+     * below
+     */
+    if (hasAccessToOnboardingBanner && !showOnboardingBanner) {
+      if (!user.isActivated) {
+        this.state = {
+          ...this.state,
+          showOnboardingBanner: true,
+          showOnboardingBannerFirstStep: true,
+          expandOnboardingBanner: true,
+        };
+
+        LocalStorageService.setItem(this.onboardingBannerToken, 'true');
+        LocalStorageService.setItem(this.firstStepToken, 'true');
+      } else if (mode !== 'live') {
+        this.props.fetchPayments({ mode: 'live' }).then(data => {
+          data = data.data;
+
+          if (data && data.items && data.items.length === 0) {
+            this.setShowOnboardingBanner();
+          }
+        });
+      }
+    }
 
     this.oldestTxnReqId = 0;
     this.onDatesChange = this.onDatesChange.bind(this);
     this.onShowTour = this.onShowTour.bind(this);
+    this.onFetchPayments = this.onFetchPayments.bind(this);
     this.setScrollAmountToStickHeader = this.setScrollAmountToStickHeader.bind(
       this
     );
+    this.onHideOnboardingBanner = this.onHideOnboardingBanner.bind(this);
+    this.onHideNewAnalyticsBanner = this.onHideNewAnalyticsBanner.bind(this);
+    this.onFirstStepClose = this.onFirstStepClose.bind(this);
   }
 
   fetchTxnsGroupedByPlatform() {
@@ -359,24 +442,126 @@ class HomeContainer extends Component {
     this.setScrollAmountToStickHeader();
   }
 
+  onFirstStepClose() {
+    this.setState(
+      {
+        showOnboardingBannerFirstStep: false,
+      },
+      () => {
+        // when first step is closed, the banner height gets changes,
+        // adjusting the scroll amount when the datepicker bar should stick
+        // on top of the page
+        this.setScrollAmountToStickHeader();
+      }
+    );
+
+    LocalStorageService.removeItem(this.firstStepToken);
+  }
+
+  onHideOnboardingBanner() {
+    this.setState(
+      {
+        expandOnboardingBanner: false,
+      },
+      () => {
+        this.setState({
+          showOnboardingBanner: false,
+        });
+
+        this.setScrollAmountToStickHeader();
+      }
+    );
+
+    LocalStorageService.removeItem(this.onboardingBannerToken);
+  }
+
+  setShowOnboardingBanner() {
+    this.setState(
+      {
+        showOnboardingBanner: true,
+        showOnboardingBannerFirstStep: true,
+      },
+      () => {
+        this.setState(
+          {
+            expandOnboardingBanner: true,
+          },
+          () => {
+            this.setScrollAmountToStickHeader();
+          }
+        );
+      }
+    );
+
+    LocalStorageService.setItem(this.onboardingBannerToken, 'true');
+    LocalStorageService.setItem(this.firstStepToken, 'true');
+  }
+
+  onFetchPayments(data) {
+    const { user, mode } = this.props;
+
+    const items = (data && data.items) || [];
+
+    const { showOnboardingBanner } = this.state;
+
+    this.setState({
+      payments: {
+        loading: false,
+        items,
+      },
+    });
+
+    /*
+     * When fetched payments in live mode, using recent activity component
+     * we use it to show the banner , if there are no trasaction
+     */
+
+    if (user.isActivated && mode === 'live') {
+      // show hotjar if number of payments is greater than 50
+      if (items.length > 50) {
+        document.body.className += ' show-hotjar-poll';
+      }
+
+      if (
+        this.hasAccessToOnboardingBanner &&
+        !this.state.showOnboardingBanner &&
+        items.length === 0
+      ) {
+        this.setShowOnboardingBanner();
+      }
+    }
+  }
+
   onShowTour() {
+    this.onHideNewAnalyticsBanner(() => {
+      this.props.showOrHideTour(true);
+    });
+
+    trackViewTour();
+  }
+
+  onHideNewAnalyticsBanner(cb) {
     LocalStorageService.setItem('hide_new_analytics_banner', true);
+
     this.setState(
       {
         dismissNewAnalyticsBanner: true,
       },
       () => {
         window.setTimeout(() => {
-          this.setState({
-            dismissNewAnalyticsBanner: false,
-            hasNewAnalyticsTour: false,
-          });
-          this.props.showOrHideTour(true);
+          this.setState(
+            {
+              dismissNewAnalyticsBanner: false,
+              hasNewAnalyticsTour: false,
+            },
+            () => {
+              this.setScrollAmountToStickHeader();
+              typeof cb === 'function' && cb();
+            }
+          );
         }, 500); // let the trasition to hide banner complete
       }
     );
-
-    trackViewTour();
   }
 
   render() {
@@ -399,30 +584,58 @@ class HomeContainer extends Component {
       hasNewAnalyticsTour,
       scrollAmountToStickHeader,
       dismissNewAnalyticsBanner,
+      showOnboardingBanner,
+      expandOnboardingBanner,
     } = this.state;
 
     return (
       <div class="react-root dashboard-home">
         <div ref={node => (this.extraContent = node)} className="extra-content">
-          {hasNewAnalyticsTour && (
-            <div
-              className={`v2-tour-banner${
-                dismissNewAnalyticsBanner ? ' dismiss' : ''
-              }`}
-            >
-              <div className="banner-icon">
-                <i className="i i-loudspeaker" />
-              </div>
-              <div className="banner-content">
-                <Banner cta="View Tour" ctaOnClick={this.onShowTour}>
-                  <span>
-                    We heard you! We have updated the dashboard home design for
-                    an improved experience.
-                  </span>
-                </Banner>
-              </div>
+          {!isAdmin && (
+            <div>
+              {hasNewAnalyticsTour && (
+                <div
+                  className={`v2-tour-banner${
+                    dismissNewAnalyticsBanner ? ' dismiss' : ''
+                  }`}
+                >
+                  <div className="banner-icon">
+                    <i className="i i-loudspeaker" />
+                  </div>
+                  <div className="banner-content">
+                    <Banner cta="View Tour" ctaOnClick={this.onShowTour}>
+                      <span>
+                        We heard you! We have updated the dashboard home design
+                        for an improved experience.
+                      </span>
+                    </Banner>
+                  </div>
+                  <div className="banner-close">
+                    <a
+                      className="banner-close-icon"
+                      onClick={this.onHideNewAnalyticsBanner}
+                    >
+                      <i className="i i-close" />
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
           )}
+          <div
+            className={`v2-onboarding-card${
+              expandOnboardingBanner ? ' expand' : ''
+            }`}
+          >
+            {showOnboardingBanner && (
+              <NewUserOnboardingCard
+                payments={this.state.payments}
+                onClose={this.onHideOnboardingBanner}
+                onFirstStepClose={this.onFirstStepClose}
+                isFirstStep={this.state.showOnboardingBannerFirstStep}
+              />
+            )}
+          </div>
         </div>
         <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}>
           <Header className="clearfix" title="" showMode={false}>
@@ -545,7 +758,10 @@ class HomeContainer extends Component {
                     {recentActivityTitle}
                   </p>
                   <div className="content">
-                    <RecentActivity sectionTitle={recentActivityTitle} />
+                    <RecentActivity
+                      sectionTitle={recentActivityTitle}
+                      onFetchPayments={this.onFetchPayments}
+                    />
                   </div>
                 </div>
               )}

@@ -8,7 +8,9 @@ import Banner from 'rzp/ui/Banner';
 @connect(state => state.session)
 export default class TestModeBanner extends Component {
   switchToLiveMode = () => {
-    LocalStorageService.setItem('rzp_mode', 'live');
+    const { user } = this.props;
+
+    LocalStorageService.setItem(`rzp_mode--${user.current}`, 'live');
     window.location.reload();
   };
 
