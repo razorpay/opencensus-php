@@ -1048,6 +1048,7 @@
 
           <script>
               cleanHTML();
+              window.t0 = (new Date()).getTime(); // initial time stamp
 
               function initAnalytics() {
                 analytics.init(['ga'], window.location.hostname.indexOf('razorpay.com') < 0);
@@ -1126,14 +1127,14 @@
                     document.getElementById('hist-modal').className = 'show';
                     showOverlay('overlay-hist');
 
-                    ga('send', 'event', 'PL Hosted Page', 'Show Pay History', data.invoice.payments.length);
+                    ga('send', 'event', 'PL Hosted Page', 'Click - Show Payment History', undefined, data.invoice.payments.length);
                 }
 
                 function closePayHist() {
                     document.getElementById('hist-modal').className = '';
                     hideOverlay('overlay-hist');
 
-                    ga('send', 'event', 'PL Hosted Page', 'Close Pay History', data.invoice.payments.length);
+                    ga('send', 'event', 'PL Hosted Page', 'Click - Close Payment History', undefined, data.invoice.payments.length);
                 }
             }
           </script>
@@ -1179,7 +1180,17 @@
                                                            );
                     }
 
-                    return location.reload(); // To display the latest payment id
+                    if (ga && ga.length) {
+                      var sessionTDiff = (new Date()).getTime() - window.t0;
+
+                      ga('send', 'event', 'PL Hosted Page', 'Payment Successful', 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
+                        hitCallback: function() {
+                          return location.reload(); // To display the latest payment id
+                        }
+                      });
+                    } else {
+                      return location.reload(); // To display the latest payment id
+                    }
                   },
                   prefill: {
                     contact: invoiceObj.customer_details.customer_contact,
