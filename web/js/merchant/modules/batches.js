@@ -1,6 +1,10 @@
 import { set } from 'rzp/utils/immutable';
 import ajax from 'merchant/utils/ajax';
-import { getActionName, makeCollectionReducer } from 'rzp/modules/collection';
+import {
+  getActionName,
+  makeCollectionReducer,
+  makeActionCollectionReducer,
+} from 'rzp/modules/collection';
 import { merchantFetch } from 'rzp/utils/ajax';
 
 const REFUND = 'REFUND_BATCHES';
@@ -9,7 +13,7 @@ const PAYMENT = 'PAYMENT_BATCHES';
 const BATCH_DOWNLOAD = 'BATCH_DOWNLOAD';
 const ISSUABLE_BATCHES = 'ISSUABLE_BATCHES';
 const EDIT_ISSUABLE_BATCHES = 'EDIT_ISSUABLE_BATCHES';
-const CREATE_BATCH = 'CREATE_BATCH';
+const PAYMENT_BATCH_CREATE = 'PAYMENT_BATCHE_CREATE';
 
 const fetchBatchAjax = id => {
   return merchantFetch(`batches/${id}`).then(response => {
@@ -141,14 +145,17 @@ export const batchDownload = batchId => {
   };
 };
 
-export const createPaymentsBatch = createBatch(CREATE_BATCH, 'direct_debit');
+export const createPaymentsBatch = createBatch(
+  PAYMENT_BATCH_CREATE,
+  'direct_debit'
+);
 
 export const uploadRefundBatch = uploadBatch(REFUND, 'refund');
 export const uploadPaymentLinkBatch = uploadBatch(PAYMENT_LINK, 'payment_link');
 
 export const refundBatchesReducer = makeCollectionReducer(REFUND);
 export const paymentLinkBatchesReducer = makeCollectionReducer(PAYMENT_LINK);
-export const paymentBatchesReducer = makeCollectionReducer(PAYMENT);
+export const paymentBatchesReducer = makeActionCollectionReducer(PAYMENT);
 
 let paymentBatchIdsInitialState = {
   issuableIdList: [],
