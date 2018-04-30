@@ -95,7 +95,6 @@ class ViewDataSerializer extends Base\Core
     protected function serializeMerchantForHosted(): array
     {
         return [
-            'new_view_enabled' => (in_array('Hostedplv2', $this->merchant->liveTagNames(), true) === true),
             'brand_color'      => get_rgb_value($this->merchant->getBrandColorOrDefault()),
             'brand_text_color' => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
             'image'            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
@@ -134,6 +133,18 @@ class ViewDataSerializer extends Base\Core
         $serialized[Entity::PAYMENTS]        = $serializedPayments;
         $serialized[Entity::CALLBACK_URL]    = $this->invoice->getCallbackUrl();
         $serialized[Entity::CALLBACK_METHOD] = $this->invoice->getCallbackMethod();
+
+        //
+        // Additionally, if it's type=link and description is blank we fill it with first line item's description else
+        // name. This is because for type=link, description should have been mandatory but for legacy reasons, line items
+        // or description is expected. Only a few merchants have continued using it so and we are communicating them
+        // to stop using it that way(deprecation). For now doing so doesn't require change in view, mails etc and is
+        // UX wise is as expected.
+        //
+        if (($this->invoice->isTypeLink() === true) and (blank($serialized[Entity::DESCRIPTION]) === true))
+        {
+            $serialized[Entity::DESCRIPTION] = optional($this->invoice->lineItems->first())->getDescriptionElseName();
+        }
     }
 
     protected function addFormattedAmountAttributesForInvoice(array & $serialized)

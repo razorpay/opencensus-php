@@ -44,8 +44,6 @@ class NodalAccount extends NodalBase\FileProcessor
 
         $this->hour = Carbon::now(Timezone::IST)->hour;
 
-        $this->queue = \Queue::getFacadeRoot();
-
         $this->app = App::getFacadeRoot();
 
         $this->initSummary();

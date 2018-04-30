@@ -712,7 +712,8 @@ class Validator extends Base\Validator
         $lineItemsCount = $invoice->lineItems()->count();
         $description    = $invoice->getDescription();
 
-        if (($lineItemsCount === 0) and ($description === null))
+        // For description need to do blank() check as it is 'sometimes' in Validator.
+        if (($lineItemsCount === 0) and (blank($description) === true))
         {
             throw new BadRequestValidationFailureException('description is required.');
         }

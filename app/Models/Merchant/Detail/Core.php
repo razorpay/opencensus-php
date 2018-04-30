@@ -299,9 +299,7 @@ class Core extends Base\Core
         ];
 
         // Dispatching the job into the queue
-        $job = new RequestJob($request);
-
-        $this->dispatch($job);
+        RequestJob::dispatch($request);
     }
 
     protected function merchantNotifyActivationSubmission(Entity $merchantDetails, Merchant\Entity $merchant)
@@ -356,8 +354,14 @@ class Core extends Base\Core
     {
         $merchant = $merchantDetails->merchant;
 
-        if ((empty($merchantDetails->getWebsite()) === true) or
-            ($merchant->getHasKeyAccess() === true))
+        $this->trace->info(
+            TraceCode::MERCHANT_MARK_HAS_KEY_ACCESS,
+            [
+                'business_website' => $merchantDetails->getWebsite(),
+                'has_key_access'   => $merchant->getHasKeyAccess()
+            ]);
+
+        if (empty($merchantDetails->getWebsite()) === true)
         {
             return;
         }

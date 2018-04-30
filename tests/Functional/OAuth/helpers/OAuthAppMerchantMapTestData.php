@@ -106,4 +106,20 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testOAuthSyncMerchantMap' => [
+        'request'  => [
+            'url'     => '/oauth/update_merchant_map',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'success' => 2,
+                'failure' => 0,
+                'total'   => 2,
+                'failed'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

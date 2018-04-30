@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Risk;
 
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -20,7 +22,8 @@ class Core extends Base\Core
         $risk->build($input);
 
         $risk->payment()->associate($payment);
-        $risk->merchant()->associate($payment->getMerchantId());
+
+        $risk->merchant()->associate($payment->merchant);
 
         $this->repo->saveOrFail($risk);
 
@@ -72,7 +75,7 @@ class Core extends Base\Core
             $this->trace->traceException(
                 $ex,
                 Trace::ERROR,
-                ErrorCode::SERVER_ERROR_LOG_RISK,
+                TraceCode::SERVER_ERROR_LOG_RISK,
                 [
                     'data'          => $data,
                     'payment_id'    => $payment->getId(),
@@ -119,6 +122,13 @@ class Core extends Base\Core
         Payment\Entity $payment, array $data)
     {
         $data[Entity::SOURCE] = Source::INTERNAL;
+
+        return $this->create($payment, $data);
+    }
+
+    protected function logPaymentForShield(Payment\Entity $payment, array $data): Entity
+    {
+        $data[Entity::SOURCE] = Source::SHIELD;
 
         return $this->create($payment, $data);
     }

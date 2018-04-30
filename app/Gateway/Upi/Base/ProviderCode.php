@@ -34,8 +34,11 @@ class ProviderCode
     const DBS               = 'dbs';
     const DCB               = 'dcb';
     const DENABANK          = 'denabank';
+    const EQUITAS           = 'equitas';
     const FBL               = 'fbl';
     const FEDERAL           = 'federal';
+    const FINOBANK          = 'finobank';
+    const FREECHARGE        = 'freecharge';
     const HDFCBANK          = 'hdfcbank';
     const HSBC              = 'hsbc';
     const ICICI             = 'icici';
@@ -58,6 +61,7 @@ class ProviderCode
     const OKICICI           = 'okicici';
     const OKHDFCBANK        = 'okhdfcbank';
     const OKAXIS            = 'okaxis';
+    const OKSBI             = 'oksbi';
     const PAYTM             = 'paytm';
     const PINGPAY           = 'pingpay';
     const PNB               = 'pnb';
@@ -99,8 +103,11 @@ class ProviderCode
         self::DBS               => IFSC::DBSS,
         self::DCB               => IFSC::DCBL,
         self::DENABANK          => IFSC::BKDN,
+        self::EQUITAS           => IFSC::ESFB,
         self::FBL               => IFSC::FDRL,
         self::FEDERAL           => IFSC::FDRL,
+        self::FINOBANK          => IFSC::FINO,
+        self::FREECHARGE        => IFSC::UTIB,
         self::HDFCBANK          => IFSC::HDFC,
         self::HSBC              => IFSC::HSBC,
         self::ICICI             => IFSC::ICIC,
@@ -120,9 +127,10 @@ class ProviderCode
         self::MAHAB             => IFSC::MAHB,
         self::MAHB              => IFSC::MAHB,
         self::OBC               => IFSC::ORBC,
+        self::OKAXIS            => IFSC::UTIB,
         self::OKICICI           => IFSC::ICIC,
         self::OKHDFCBANK        => IFSC::HDFC,
-        self::OKAXIS            => IFSC::UTIB,
+        self::OKSBI             => IFSC::SBIN,
         self::PAYTM             => IFSC::PYTM,
         self::PINGPAY           => IFSC::UTIB,
         self::PNB               => IFSC::PUNB,

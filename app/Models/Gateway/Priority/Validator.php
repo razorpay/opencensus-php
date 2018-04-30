@@ -15,6 +15,7 @@ class Validator extends Base\Validator
 
     protected static $addPriorityRules = [
         Gateway::HDFC        => 'sometimes|numeric|min:0|max:100',
+        Gateway::ATOM        => 'sometimes|numeric|min:0|max:100',
         Gateway::AXIS_MIGS   => 'sometimes|numeric|min:0|max:100',
         Gateway::AMEX        => 'sometimes|numeric|min:0|max:100',
         Gateway::CYBERSOURCE => 'sometimes|numeric|min:0|max:100',

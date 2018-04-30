@@ -40,11 +40,11 @@ class Server extends Base\Mock\Server
         $data = [
             'F002'       => '423156XXXXXX1234',
             'F003'       => '26000',
-            'F004'       => '2.00',
+            'F004'       => '000000000200',
             'F011'       => 'abc123',
             'F012'       => '120000',
             'F013'       => '1212',
-            'F037'       => 'something',
+            'F037'       => 'somethingabc',
             'F038'       => 'randoma',
             'F039'       => '0',
             'F041'       => 'abc',

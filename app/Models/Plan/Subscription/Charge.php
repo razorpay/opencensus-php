@@ -741,9 +741,9 @@ class Charge extends Base\Core
     {
         $processor = new Payment\Processor\Processor($subscription->merchant);
 
-        $recurringPayment = $processor->process($recurringPayload);
+        $processor->process($recurringPayload);
 
-        $authorizedPayment = $this->repo->payment->findByPublicId($recurringPayment['razorpay_payment_id']);
+        $authorizedPayment = $processor->getPayment();
 
         return $authorizedPayment;
     }

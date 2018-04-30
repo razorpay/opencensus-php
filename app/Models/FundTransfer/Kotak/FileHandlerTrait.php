@@ -7,12 +7,14 @@ use App;
 use Excel;
 use Config;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 trait FileHandlerTrait
 {
@@ -182,6 +184,13 @@ trait FileHandlerTrait
         else
         {
             $fullPath = $this->getFullFilePath($key);
+
+            $dir = dirname($fullPath);
+
+            if (file_exists($dir) === false)
+            {
+                (new FileStore\Utility)->callFileOperation('mkdir', [$dir, 0777, true]);
+            }
         }
 
         return $this->getFileFromAws($key, $fullPath, $bucket);

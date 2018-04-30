@@ -74,50 +74,15 @@ class MockGatewayController extends Controller
         return $this->mockHdfcGatewayServer->authEnrolled();
     }
 
-    public function getAtomChooseOrg()
+    public function postAtomPayment()
     {
-        $server = $this->gateway->server('atom');
-
         $input = Request::all();
 
-        $data = $server->atomPaymentChooseOrg($input);
-
-        return View::make('gateway.atomBankSubmit')
-                   ->with('data', $data);
-    }
-
-    public function postAtomInitPayment()
-    {
         $server = $this->gateway->server('atom');
 
-        $input = Request::all();
+        $data = $server->bank($input);
 
-        return $server->authorize($input);
-    }
-
-    public function postAtomRzpPayment()
-    {
-        $server = $this->gateway->server('atom');
-
-        $input = Request::all();
-
-        $data = $server->atomRzpPayment($input);
-
-        return View::make('gateway.atomRzpBankPage')
-                   ->with('data', $data);
-    }
-
-    public function postAtomRzpPaymentSubmit()
-    {
-        $server = $this->gateway->server('atom');
-
-        $input = Request::all();
-
-        list($url, $data) = $server->atomRzpPaymentPageSubmit($input);
-
-        return View::make('gateway.atomMerchantCallback')
-                   ->with('url', $url)
-                   ->with('data', $data);
+        return Redirect::to($data);
     }
 
     public function postAxisPayment()
