@@ -132,6 +132,10 @@ class Entity extends Base\PublicEntity
         self::MOBILE_BANKING_ENABLED => 'bool',
     ];
 
+    protected $ignoreRelations = [
+        'source',
+    ];
+
     protected $generateIdOnCreate = true;
 
     public function build(array $input = [], string $operation = 'addBankAccount')

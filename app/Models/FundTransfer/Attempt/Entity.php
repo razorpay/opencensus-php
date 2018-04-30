@@ -85,6 +85,10 @@ class Entity extends Base\PublicEntity
         self::SOURCE,
     ];
 
+    protected $ignoreRelations = [
+        'source',
+    ];
+
     /**
      * Generate ID with all characters in upper-case
      * for ICICI, because their Recon file has the ID

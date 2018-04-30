@@ -57,6 +57,12 @@ class Entity extends Base\PublicEntity
         self::REFERENCE,
     ];
 
+    protected $ignoreRelations = [
+        'source'
+    ];
+
+    protected $generateIdOnCreate = true;
+
     // --------------------- RELATIONS ---------------------
 
     public function source()

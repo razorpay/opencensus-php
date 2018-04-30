@@ -92,6 +92,10 @@ class Entity extends Base\PublicEntity
         self::NEXT_RUN_AT => 'int',
     ];
 
+    protected $ignoreRelations = [
+        'entity',
+    ];
+
     // ----------------------- Associations ------------------------------------
 
     public function merchant()

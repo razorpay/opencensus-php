@@ -79,7 +79,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $ignoreRelations = [
-        'line_item',
+        'lineItem',
     ];
 
     // Getters

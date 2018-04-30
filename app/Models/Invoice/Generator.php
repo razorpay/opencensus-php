@@ -111,8 +111,6 @@ class Generator extends Base\Core
             $this->repo->transaction(
                 function() use ($input)
                 {
-                    $this->repo->saveOrFail($this->invoice);
-
                     $this->preProcessGeneration($input);
 
                     (new Core)->calculateAndSetAmountsOfInvoice($this->invoice);
