@@ -72,6 +72,10 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE => null,
     ];
 
+    protected $ignoreRelations = [
+        'entity',
+    ];
+
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);

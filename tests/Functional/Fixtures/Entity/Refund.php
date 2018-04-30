@@ -54,11 +54,11 @@ class Refund extends Base
 
         $refund = $this->build('refund', $attributes);
 
-        $refund->saveOrFail();
-
         $txn = $this->createTransactionOnRefund($refund);
 
         $txn->saveOrFail();
+
+        $refund->saveOrFail();
 
         $payment->refundAmount($attributes['amount'], $attributes['base_amount']);
 

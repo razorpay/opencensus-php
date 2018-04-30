@@ -486,7 +486,7 @@ class InvoiceTest extends TestCase
 
         $expectedNotes = [];
 
-        $esMock->expects($this->atLeastOnce())
+        $esMock->expects($this->once())
                ->method('bulkUpdate')
                ->with(
                     $this->callback(

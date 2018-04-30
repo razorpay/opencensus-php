@@ -20,8 +20,6 @@ class Reversal extends Base
 
         $reversal = $this->build('reversal', $attributes);
 
-        $reversal->saveOrFail();
-
         $entity = E::getEntityClass('payment');
         $payment = $entity::where('transfer_id', $reversal->getEntityId())->first();
 
@@ -36,6 +34,8 @@ class Reversal extends Base
         $txn = $this->createTransactionOnReversal($reversal);
 
         $txn->saveOrFail();
+
+        $reversal->saveOrFail();
 
         return $reversal;
     }

@@ -106,6 +106,10 @@ class Entity extends Base\PublicEntity
         self::RECEIVERS,
     ];
 
+    protected $ignoreRelations = [
+        'entity',
+    ];
+
     protected static $sign = 'va';
 
     protected $generateIdOnCreate = true;

@@ -13,22 +13,6 @@ trait HasRelationships
     use BaseHasRelationships;
 
     /**
-     * Instantiate a new MorphTo relationship.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  \Illuminate\Database\Eloquent\Model  $parent
-     * @param  string  $foreignKey
-     * @param  string  $ownerKey
-     * @param  string  $type
-     * @param  string  $relation
-     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
-     */
-    protected function newMorphTo(Builder $query, Model $parent, $foreignKey, $ownerKey, $type, $relation)
-    {
-        return new MorphTo($query, $parent, $foreignKey, $ownerKey, $type, $relation);
-    }
-
-    /**
      * Instantiate a new BelongsTo relationship.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query

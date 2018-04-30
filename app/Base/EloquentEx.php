@@ -17,14 +17,17 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
     public $incrementing = false;
 
-    protected $polymorphicRelations = [];
+    protected $ignoreRelations = [];
 
     public function save(array $options = [])
     {
-        $nonExistentRelations = array_filter($this->relations, function ($model)
+        $nonExistentRelations = array_filter($this->relations, function ($model, $relation)
         {
-            return ($model instanceof Model) ? ($model->exists === false) : false;
-        });
+            return ((in_array($relation, $this->ignoreRelations, true) === false) and
+                    ($model instanceof Model)) ?
+                    ($model->exists === false) :
+                    false;
+        }, ARRAY_FILTER_USE_BOTH);
 
         if (count($nonExistentRelations) > 0)
         {

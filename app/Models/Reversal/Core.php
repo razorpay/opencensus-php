@@ -54,8 +54,6 @@ class Core extends Base\Core
 
         $reversal->entity()->associate($transfer);
 
-        $this->repo->saveOrFail($reversal);
-
         $txn = (new Transaction\Core)->createFromTransferReversal($reversal);
 
         $this->repo->saveOrFail($txn);

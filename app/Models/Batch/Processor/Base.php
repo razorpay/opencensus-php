@@ -155,9 +155,9 @@ class Base extends BaseModel\Core
 
         $this->repo->transaction(function () use ($ufhFile, $input)
         {
-            $this->repo->saveOrFail($this->batch);
-
             $this->repo->saveOrFail($ufhFile);
+
+            $this->repo->saveOrFail($this->batch);
 
             $this->saveSettings($input);
         });

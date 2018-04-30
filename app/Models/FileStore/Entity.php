@@ -107,6 +107,11 @@ class Entity extends Base\PublicEntity
         self::METADATA          => [],
     ];
 
+
+    protected $ignoreRelations = [
+        'entity',
+    ];
+
     // ----------------------- Mutators -------------------------------------------
 
     protected function setPasswordAttribute($password)

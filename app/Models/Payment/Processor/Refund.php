@@ -625,17 +625,17 @@ trait Refund
     {
         $this->repo->transaction(function()
         {
-            //
-            // This needs to be saved here because of the association with
-            // transaction which is set in the createTransactionForRefund function.
-            //
-            $this->repo->saveOrFail($this->refund);
-
             $payment = $this->payment;
 
             $this->repo->payment->lockForUpdate($payment->getKey());
 
             $this->createTransactionForRefund($this->refund, $payment);
+
+            //
+            // This needs to be saved here because of the association with
+            // transaction which is set in the createTransactionForRefund function.
+            //
+            $this->repo->saveOrFail($this->refund);
         });
     }
 

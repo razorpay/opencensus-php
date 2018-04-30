@@ -167,8 +167,6 @@ class Core extends Base\Core
 
         $transfer->to()->associate($to);
 
-        $this->repo->saveOrFail($transfer);
-
         // Create a transaction for the transfer; debits the source merchant
         $txn = (new Transaction\Core)->createFromTransfer($transfer);
 

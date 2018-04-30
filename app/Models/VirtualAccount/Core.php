@@ -53,8 +53,6 @@ class Core extends Base\Core
         {
             $virtualAccount->build($input);
 
-            $this->repo->saveOrFail($virtualAccount);
-
             $this->validateDescriptor($virtualAccount);
 
             $virtualAccount->customer()->associate($customer);

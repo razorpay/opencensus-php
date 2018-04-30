@@ -32,8 +32,6 @@ class Transfer extends Base
 
         $transfer = $this->build('transfer', $attributes);
 
-        $transfer->saveOrFail();
-
         $txn = $this->createTransactionOnTransfer($transfer);
 
         $txn->saveOrFail();
