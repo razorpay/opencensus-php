@@ -599,6 +599,7 @@
         }
 
     </style>
+
     <script>
       function checkIsDesktop() {
           var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
@@ -1045,8 +1046,14 @@
           @endif
 
         @if ($data['invoice']['type'] !== 'invoice')
+          <script src="https://cdn.razorpay.com/static/analytics/bundle.js" onload="initAnalytics()" async></script>
           <script>
               cleanHTML();
+
+              function initAnalytics() {
+                analytics.init(['ga'], window.location.hostname.indexOf('razorpay.com') < 0);
+                analytics.track('ga', 'pageview');
+              }
 
               var data = window.RZP_DATA.data;
               var color = data.merchant.brand_color || '#168AFA';
@@ -1119,11 +1126,15 @@
                 function showPayHist() {
                     document.getElementById('hist-modal').className = 'show';
                     showOverlay('overlay-hist');
+
+                    ga('send', 'event', 'PL Hosted Page', 'Show Pay History');
                 }
 
                 function closePayHist() {
                     document.getElementById('hist-modal').className = '';
                     hideOverlay('overlay-hist');
+
+                    ga('send', 'event', 'PL Hosted Page', 'Close Pay History');
                 }
             }
           </script>
