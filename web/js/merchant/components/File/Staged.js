@@ -14,7 +14,7 @@ const getFileAttr = attr => ({
 }) => file[attr] || attrVal;
 
 export default props => {
-  const { file, progress = 0, currentStatus, onCloseClick = () => {} } = props;
+  const { file, progress = 0, currentStatus, onCloseClick } = props;
   const getFileName = getFileAttr('name');
   const getFileSize = getFileAttr('size');
   return (
@@ -37,11 +37,13 @@ export default props => {
         </div>
         {props.children}
       </div>
-      <div class="close-icon">
-        <div>
-          <span class="icon i-close" onClick={onCloseClick} />
+      {onCloseClick && (
+        <div class="close-icon">
+          <div>
+            <span class="icon i-close" onClick={onCloseClick} />
+          </div>
         </div>
-      </div>
+      )}
       {!!progress && (
         <div class="upload-status-bar">
           <div style={{ width: `${progress}%` }} class="status" />
