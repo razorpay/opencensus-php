@@ -38,9 +38,14 @@ class AuthService
         $this->secret  = $this->config['secret'];
     }
 
-    public function createApplication(array $input, string $merchantId) : array
+    public function createApplication(array $input, string $merchantId, string $type = null) : array
     {
         $input[Application\Entity::MERCHANT_ID] = $merchantId;
+
+        if ($type !== null)
+        {
+            $input['type'] = $type;
+        }
 
         return $this->sendRequest('applications', Requests::POST, $input);
     }
