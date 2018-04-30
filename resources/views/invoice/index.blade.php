@@ -599,63 +599,6 @@
         }
 
     </style>
-
-    <script>
-      function checkIsDesktop() {
-          var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
-          return width > 853;
-      }
-
-      function cleanHTML() {
-          // Show content according to width
-          if (checkIsDesktop()) {
-              document.getElementById('desktop-container').style.display = 'block';
-              document.getElementById('invoice-status-container').removeChild(document.getElementById('mobile-container'));
-          } else {
-              document.getElementById('mobile-container').style.display = 'block';
-              document.getElementById('invoice-status-container').removeChild(document.getElementById('desktop-container'));
-          }
-      }
-
-      function toggleTrimDescription(toTrim) {
-        var data = window.RZP_DATA.data;
-        desc = data['invoice']['description'];
-        var charLimit, pseudoChar, button = '';
-
-        if (checkIsDesktop()) {
-            charLimit = 200;
-            pseudoChar = 45;
-
-        } else {
-            charLimit = 125;
-            pseudoChar = 35;
-        }
-
-        if (desc && (desc.length > charLimit)) {
-            if (toTrim) {
-              var newLines = 0;
-              newLines = (desc.match(new RegExp("\n", "g")) || []).length;
-
-              if (newLines) {
-                for(let i = 0; i < newLines; i++) {
-                    if ((charLimit - i * pseudoChar) < 0.6 * charLimit) {
-                        desc = desc.substr(0, charLimit - i*pseudoChar);
-                        break;
-                    }
-                }
-              } else {
-                desc = desc.substr(0,charLimit);
-              }
-              desc =  desc.trim();
-              desc += '...';
-              button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button'
-            }
-        }
-
-        document.getElementById('payment-for').innerHTML = desc + button;
-      }
-
-    </script>
   </head>
   <body>
 
@@ -1048,6 +991,62 @@
         @if ($data['invoice']['type'] !== 'invoice')
           <script src="https://cdn.razorpay.com/static/analytics/bundle.js" onload="initAnalytics()" async></script>
           <script>
+            function checkIsDesktop() {
+                var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+                return width > 853;
+            }
+
+            function cleanHTML() {
+                // Show content according to width
+                if (checkIsDesktop()) {
+                    document.getElementById('desktop-container').style.display = 'block';
+                    document.getElementById('invoice-status-container').removeChild(document.getElementById('mobile-container'));
+                } else {
+                    document.getElementById('mobile-container').style.display = 'block';
+                    document.getElementById('invoice-status-container').removeChild(document.getElementById('desktop-container'));
+                }
+            }
+
+            function toggleTrimDescription(toTrim) {
+              var data = window.RZP_DATA.data;
+              desc = data['invoice']['description'];
+              var charLimit, pseudoChar, button = '';
+
+              if (checkIsDesktop()) {
+                  charLimit = 200;
+                  pseudoChar = 45;
+              } else {
+                  charLimit = 125;
+                  pseudoChar = 35;
+              }
+
+              if (desc && (desc.length > charLimit)) {
+                  if (toTrim) {
+                    var newLines = 0;
+                    newLines = (desc.match(new RegExp("\n", "g")) || []).length;
+
+                    if (newLines) {
+                      for(let i = 0; i < newLines; i++) {
+                        if ((charLimit - i * pseudoChar) < 0.6 * charLimit) {
+                          desc = desc.substr(0, charLimit - i*pseudoChar);
+                          break;
+                        }
+                      }
+                    } else {
+                      desc = desc.substr(0,charLimit);
+                    }
+
+                    desc =  desc.trim();
+                    desc += '...';
+                    button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button'
+                  }
+                }
+
+              document.getElementById('payment-for').innerHTML = desc + button;
+            }
+          </script>
+
+          <script>
               cleanHTML();
 
               function initAnalytics() {
@@ -1127,14 +1126,14 @@
                     document.getElementById('hist-modal').className = 'show';
                     showOverlay('overlay-hist');
 
-                    ga('send', 'event', 'PL Hosted Page', 'Show Pay History');
+                    ga('send', 'event', 'PL Hosted Page', 'Show Pay History', data.invoice.payments.length);
                 }
 
                 function closePayHist() {
                     document.getElementById('hist-modal').className = '';
                     hideOverlay('overlay-hist');
 
-                    ga('send', 'event', 'PL Hosted Page', 'Close Pay History');
+                    ga('send', 'event', 'PL Hosted Page', 'Close Pay History', data.invoice.payments.length);
                 }
             }
           </script>
