@@ -25,10 +25,13 @@ console.log(`Listening on :${port}`);
 async function merchant(browser) {
   let timeout = setTimeout(_ => {
     throw 'Merchant Test Timed out';
-  }, 5000);
+  }, 10000);
   const page = await browser.newPage();
   page.on('pageerror', merchantLog).on('error', merchantLog);
-  await page.goto(merchantURL);
+  await page
+    .goto(merchantURL)
+    .then(merchantURL)
+    .catch(merchantLog);
 
   return page.waitForSelector('.layout.rzp').then(_ => {
     clearTimeout(timeout);
