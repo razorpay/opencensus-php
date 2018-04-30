@@ -123,7 +123,7 @@ class SubMerchant extends Base
             return;
         }
 
-        $token = (new Partner\Core)->connectMerchant($this->partnerApp, $subMerchant);
+        $token = (new Partner\Core)->connectMerchant($this->partnerApp, $this->merchant, $subMerchant);
 
         $entry[Header::PARTNER_TOKEN] = $token;
     }

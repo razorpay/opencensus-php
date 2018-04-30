@@ -27,18 +27,22 @@ class Core extends Base\Core
      * Connects a sub-merchant to an application, and return a
      *
      * @param OAuth\Application\Entity $app
+     * @param Merchant\Entity          $merchant
      * @param Merchant\Entity          $subMerchant
      *
      * @return string
      * @throws BadRequestValidationFailureException
      */
-    public function connectMerchant(OAuth\Application\Entity $app, Merchant\Entity $subMerchant) : string
+    public function connectMerchant(
+        OAuth\Application\Entity $app,
+        Merchant\Entity $merchant,
+        Merchant\Entity $subMerchant) : string
     {
         $appId = $app->getId();
 
         try
         {
-            $token = $this->app['authservice']->createPartnerToken($appId, $this->merchant->getId(), $subMerchant->getId());
+            $token = $this->app['authservice']->createPartnerToken($appId, $merchant->getId(), $subMerchant->getId());
 
             $mapInput[Merchant\AccessMap\Entity::APPLICATION_ID] = $appId;
         }
