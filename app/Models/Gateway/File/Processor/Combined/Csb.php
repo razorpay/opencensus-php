@@ -62,13 +62,21 @@ class Csb extends Base
 
         $date = Carbon::now(Timezone::IST)->format('jS F Y');
 
+        $accountDetails = [
+            'bankName'      => 'Axis Bank Ltd',
+            'accountNumber' => env('AXIS_NODAL_ACCOUNT_NUMBER'),
+            'accountName'   => 'Razorpay Software Private Limited',
+            'ifsc'          => env('AXIS_NODAL_IFSC'),
+        ];
+
         return [
-            'bankName'    => self::BANK_NAME,
-            'amount'      => $amount,
-            'count'       => $count,
-            'refundsFile' => $refundsFile,
-            'date'        => $date,
-            'emails'      => $this->gatewayFile->getRecipients(),
+            'bankName'       => self::BANK_NAME,
+            'amount'         => $amount,
+            'count'          => $count,
+            'refundsFile'    => $refundsFile,
+            'date'           => $date,
+            'emails'         => $this->gatewayFile->getRecipients(),
+            'accountDetails' => $accountDetails
         ];
     }
 }
