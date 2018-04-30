@@ -67,6 +67,8 @@ export default class App extends Component {
     let currentMode = LocalStorageService.getItem(this.modeToken);
 
     this.props.fetchGST();
+    this.props.fetchConfig();
+
     Promise.all([
       this.fetchUser().then(({ data }) => {
         let user = data;
@@ -92,7 +94,6 @@ export default class App extends Component {
           applyTheme(orgCode);
         }
       }),
-      this.props.fetchConfig(),
     ]).then(response => {
       // Fetch features before displaying other views
       fetchFeaturesAjax(response[0].current)
