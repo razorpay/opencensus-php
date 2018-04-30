@@ -1182,6 +1182,22 @@ class DatabaseSeeder extends Seeder
                 'updated_at'            => time(),
                 )
             );
+
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => Terminal\Shared::NETBANKING_HDFC_REC_TERMINAL,
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::NETBANKING_HDFC,
+                'card'                      => '0',
+                'netbanking'                => '1',
+                'gateway_merchant_id'       => 'test_merchant_netbanking_hdfc_recurring',
+                'recurring'                 => 1,
+                'emandate'                  => 1,
+                'created_at'                => time(),
+                'updated_at'                => time(),
+                'type'                      => 6,
+            ]
+        );
     }
 
     protected function createNetbankingBobTerminals()
@@ -1415,21 +1431,6 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'       => 'test_merchant_netbanking_icici_recurring',
                 // 'gateway_merchant_id2'      => 'test_submerchant_netbanking_icici',
                 // 'gateway_secure_secret'     => Crypt::encrypt('test_netbanking_master_terminal_pass'),
-                'recurring'                 => 1,
-                'created_at'                => time(),
-                'updated_at'                => time(),
-                'type'                      => 6,
-            ]
-        );
-
-        DB::table(Table::TERMINAL)->insert(
-            [
-                'id'                        => Terminal\Shared::NETBANKING_HDFC_REC_TERMINAL,
-                'merchant_id'               => Account::TEST_ACCOUNT,
-                'gateway'                   => Gateway::NETBANKING_HDFC,
-                'card'                      => '0',
-                'netbanking'                => '1',
-                'gateway_merchant_id'       => 'test_merchant_netbanking_hdfc_recurring',
                 'recurring'                 => 1,
                 'created_at'                => time(),
                 'updated_at'                => time(),
