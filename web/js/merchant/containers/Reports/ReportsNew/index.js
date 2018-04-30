@@ -21,7 +21,11 @@ import {
 } from 'merchant/modules/reports';
 import SelectConfig from 'merchant/components/Reports/ReportsNew/SelectConfig';
 
-import { getCustomConfig, marketplaceConfigTypes } from './data';
+import {
+  getCustomConfig,
+  marketplaceConfigTypes,
+  rzpConfigOrder,
+} from './data';
 import { trackDownload } from './ga';
 
 const validYear = current => {
@@ -208,6 +212,9 @@ export default class ReportsContainer extends Component {
               .concat(configs);
           }
 
+          //sort configs
+          configs = this.sortConfigs(configs);
+
           this.setState({
             configs,
             selectedConfig: configs[0],
@@ -347,6 +354,34 @@ export default class ReportsContainer extends Component {
         });
     }
   }
+
+  sortConfigs = configs => {
+    const rzpId = '100000Razorpay';
+    const { id } = this.props.user.user;
+
+    let merchantConfigs = [],
+      rzpConfigs = [];
+
+    configs.forEach(config => {
+      if (config._item) {
+        if (config._item.merchant_id === id) {
+          merchantConfigs.push(config);
+        } else {
+          rzpConfigs.push(config);
+        }
+      }
+    });
+
+    //TODO: sort for NA config
+    rzpConfigs.sort((config1, config2) => {
+      let index1 = rzpConfigOrder.indexOf(titleCase(config1.label)),
+        index2 = rzpConfigOrder.indexOf(titleCase(config2.label));
+
+      return index1 - index2;
+    });
+
+    return [...merchantConfigs, ...rzpConfigs];
+  };
 
   render() {
     const {
