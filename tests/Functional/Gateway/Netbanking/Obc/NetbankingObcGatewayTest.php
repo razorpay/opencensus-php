@@ -87,6 +87,25 @@ class NetbankingObcGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($testData, $netbanking);
     }
 
+    public function testAmountTampering()
+    {
+        $this->mockAmountMismatch();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->testPayment();
+            });
+
+        $payment = $this->getDbLastEntityToArray(ConstantsEntity::PAYMENT);
+
+        // The payment status is updated to failed due to the verify callback error
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);

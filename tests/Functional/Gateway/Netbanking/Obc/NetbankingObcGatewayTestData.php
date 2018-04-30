@@ -6,6 +6,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\GatewayErrorException;
+use RZP\Exception\LogicException;
 use RZP\Exception\PaymentVerificationException;
 
 return [
@@ -33,8 +34,25 @@ return [
         ],
     ],
 
+    'testAmountTampering' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::SERVER_ERROR,
+                    'description'   => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => LogicException::class,
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
+        ],
+    ],
+
     'netbankingPaymentFailed' => [
         'amount'          => 50000,
+        'status'          => null,
         'bank_payment_id' => null,
         'account_number'  => null
     ],

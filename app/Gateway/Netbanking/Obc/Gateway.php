@@ -58,8 +58,6 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $content[RequestFields::PAY_REF_NUM]);
 
-        $this->assertAmount($input['payment']['amount'] / 100, $content[ResponseFields::AMOUNT]);
-
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
         $this->checkGatewayStatus($content);
@@ -160,6 +158,23 @@ class Gateway extends Base\Gateway
         $this->sendPaymentVerifyRequest($verify);
 
         $this->checkGatewaySuccess($verify);
+
+        $verify->amountMismatch = $this->setVerifyAmountMismatch($verify);
+
+        if ($verify->amountMismatch === true)
+        {
+            throw new Exception\LogicException(
+                'Amount tampering found.',
+                ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
+                null,
+                null,
+                [
+                    'callback_response' => $input['gateway'],
+                    'verify_response'   => $verify->verifyResponseContent,
+                    'payment_id'        => $input['payment']['id'],
+                    'gateway'           => $this->gateway
+                ]);
+        }
 
         if ($verify->gatewaySuccess === false)
         {
