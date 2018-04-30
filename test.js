@@ -5,9 +5,9 @@ const env = require('process').env;
 const port = 8080,
   baseURL = `http://localhost:${port}/test`,
   merchantURL = `${baseURL}/merchant.html#/app`,
-  merchantLog = console.log.bind(console.log, '[Merchant Log]:\n'),
+  merchantLog = console.log.bind(console, '[Merchant Log]:\n'),
   adminURL = `${baseURL}/admin.html#/admin`,
-  adminLog = console.log.bind(console.log, '[Admin Log]:\n');
+  adminLog = console.log.bind(console, '[Admin Log]:\n');
 
 console.log('merchantURL: ' + merchantURL);
 console.log('adminURL: ' + adminURL);

@@ -160,7 +160,7 @@ class HomeContainer extends Component {
       scrollAmountToStickHeader: 0,
       hasNewAnalyticsTour:
         !isAdmin &&
-        user.isActivated &&
+        mode === 'live' &&
         !LocalStorageService.getItem('hide_new_analytics_banner'),
       dismissNewAnalyticsBanner: false, // used for transition
       expandOnboardingBanner: showOnboardingBanner, // used for transition
@@ -516,14 +516,19 @@ class HomeContainer extends Component {
      * we use it to show the banner , if there are no trasaction
      */
 
-    if (
-      this.hasAccessToOnboardingBanner &&
-      !this.state.showOnboardingBanner &&
-      user.isActivated &&
-      mode === 'live' &&
-      items.length === 0
-    ) {
-      this.setShowOnboardingBanner();
+    if (user.isActivated && mode === 'live') {
+      // show hotjar if number of payments is greater than 50
+      if (items.length > 50) {
+        document.body.className += ' show-hotjar-poll';
+      }
+
+      if (
+        this.hasAccessToOnboardingBanner &&
+        !this.state.showOnboardingBanner &&
+        items.length === 0
+      ) {
+        this.setShowOnboardingBanner();
+      }
     }
   }
 
