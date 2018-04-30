@@ -22,10 +22,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $authorizeIntentRules = [
-        'type'           => 'required|string|in:expected_push',
-        'amount'         => 'required|integer|min:100',
-        'currency'       => 'required|string|in:INR',
-        'description'    => 'required|string|max:255',
-        'notes'          => 'sometimes|array',
+        'type'                  => 'required|string|in:expected_push',
+        'amount'                => 'required|integer|min:100',
+        'currency'              => 'required|string|in:INR',
+        'description'           => 'required|string|max:255',
+        'notes'                 => 'sometimes|array',
+        'caller_account_number' => 'sometimes|max:50',
     ];
 }

@@ -17,6 +17,8 @@ class Server extends Base\Mock\Server
     {
         parent::authorize($input);
 
+        $this->request($input, 'authorize');
+
         if ($input[Fields::TYPE] === Hulk\Type::EXPECTED_PUSH)
         {
             $this->validateActionInput($input, 'authorize_intent');

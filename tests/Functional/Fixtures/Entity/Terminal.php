@@ -1519,7 +1519,7 @@ class Terminal extends Base
         return $this->createSharedUpiIciciTerminal($attributes);
     }
 
-    public function createSharedUpiHulkTerminal(array $attributes)
+    public function createSharedUpiHulkTerminal(array $override)
     {
         $termId = Shared::UPI_HULK_RAZORPAY_TERMINAL;
 
@@ -1533,7 +1533,7 @@ class Terminal extends Base
             'upi'                       => true,
         ];
 
-        $attributes = array_merge($defaultValues, $attributes);
+        $attributes = array_merge($defaultValues, $override);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -1543,8 +1543,8 @@ class Terminal extends Base
         $attributes = [
             'id'                        => Shared::UPI_HULK_RAZORPAY_INTENT_TERMINAL,
             'type'                      => [
-                'non_recurring' => '1',
-                'pay'           => '1',
+                'non_recurring'         => '1',
+                'pay'                   => '1',
             ],
             'gateway_merchant_id2'      => 'testmerchant@razor',
         ];

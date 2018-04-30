@@ -302,6 +302,11 @@ class Gateway extends Base\Gateway
             ],
         ];
 
+        if ($input['merchant']->isTPVRequired() === true)
+        {
+            $content[Fields::CALLER_ACCOUNT_NUMBER] = $input['order']['account_number'];
+        }
+
         $request = $this->getStandardRequestArray($content, 'post');
 
         $this->trace->info(
