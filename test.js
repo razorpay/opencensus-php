@@ -28,10 +28,7 @@ async function merchant(browser) {
   }, 10000);
   const page = await browser.newPage();
   page.on('pageerror', merchantLog).on('error', merchantLog);
-  await page
-    .goto(merchantURL)
-    .then(merchantURL)
-    .catch(merchantLog);
+  await page.goto(merchantURL);
 
   return page.waitForSelector('.layout.rzp').then(_ => {
     clearTimeout(timeout);
