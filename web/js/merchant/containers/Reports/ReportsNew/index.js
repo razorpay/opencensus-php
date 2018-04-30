@@ -11,6 +11,7 @@ import { prefixEntityValue } from 'common/data';
 import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import AccountsList from 'rzp/ui/AccountsList/index.js';
+import { openModal, closeModal } from 'rzp/modules/modals';
 
 import { fetchAccountsApi } from 'merchant/modules/marketplace/accounts';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
@@ -20,6 +21,7 @@ import {
   generateReportV2,
 } from 'merchant/modules/reports';
 import SelectConfig from 'merchant/components/Reports/ReportsNew/SelectConfig';
+import EmailReport from 'merchant/components/Reports/ReportsNew/EmailReport';
 
 import {
   getCustomConfig,
@@ -59,7 +61,7 @@ const requestFailedFunc = () => {
       invoiceDate: selector(state, 'invoiceDate'),
     };
   },
-  { ...NotificationsActions }
+  { ...NotificationsActions, openModal, closeModal }
 )
 @reduxForm({
   form: 'generateReports',
@@ -172,7 +174,6 @@ export default class ReportsContainer extends Component {
   componentWillMount() {
     // 992 is col-md bootstrap (for adaptive design)
     this.isMobileDevice = window.outerWidth < 992;
-
     this.requests
       .then(resps => {
         const { 0: configResp, 1: accountsResp } = resps,
@@ -355,6 +356,24 @@ export default class ReportsContainer extends Component {
     }
   }
 
+  openEmailReportModal = () => {
+    const { user } = this.props;
+    const { accounts } = this.state;
+
+    const emails = [
+      user.contact_email,
+      ...user.transaction_report_email.split(','),
+      ...accounts.map(acc => acc.email),
+    ];
+
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <EmailReport closeModal={this.props.closeModal} emails={emails} />
+      ),
+    });
+  };
+
   sortConfigs = configs => {
     const rzpId = '100000Razorpay';
     const { id } = this.props.user.user;
@@ -502,18 +521,22 @@ export default class ReportsContainer extends Component {
             </div>
 
             <div class="form-element">
-              <AsyncButton
-                class="btn btn-primary"
-                onClick={this.generateReport}
-                text="Generate and Download Report"
-                pendingText="Generating..."
-              />
-
               {selectedConfig.description && (
-                <footer style={{ marginTop: '16px' }}>
+                <footer style={{ marginBottom: '16px' }}>
                   {selectedConfig.description}
                 </footer>
               )}
+              <hr />
+              <AsyncButton
+                class="btn btn-primary"
+                onClick={this.generateReport}
+                text="Download Report"
+              />
+              <AsyncButton
+                class="btn btn-default m-l"
+                onClick={this.openEmailReportModal}
+                text="Email Report"
+              />
             </div>
           </div>
         </div>
