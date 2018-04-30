@@ -540,18 +540,19 @@
         }
 
         #hist-modal {
-            position: absolute;
+            position: fixed;
             width: 92%;
             max-width: 460px;
             left: 50%;
-            top: 45%;
+            top: 48%;
             line-height: 24px;
 
             background: #fff;
             border-radius: 4px;
             box-shadow: 0 0 10px rgba(0,0,0,0.4);
             color: #909090;
-
+            max-height: 70vh;
+            overflow: scroll;
             transition: .1s all ease-in;
             transform: translate(-50%,-50%) scale(0.7);
             opacity: 0;
@@ -963,7 +964,7 @@
                                   </div>
                                   <div class="line-strike"></div>
                               </div>
-                              @if($data['invoice']['status'] === 'paid')
+                              @if($data['invoice']['status'] === 'paid' && !$data['invoice']['partial_payment'])
                                   <div class="info">
                                       PAYMENT ID
                                       <div class="val" style="text-transform:unset">{{$data['invoice']['payment_id']}}</div>
@@ -1060,7 +1061,14 @@
 
                   if (checkIsDesktop()) {
                       document.getElementById('scs-box').style.display = 'block';
-                      document.getElementById('scs-msg').innerHTML = "You have successfully paid ₹ " +  (amount/100).toFixed(2) + '<div> Payment ID: ' + data['invoice']['payment_id'] + ' </div>';
+                      var successNote = "You have successfully paid ₹ " + (amount/100).toFixed(2);
+
+                      if (!data['invoice']['partial_payment']) {
+                        successNote += '<div> Payment ID: ' + data['invoice']['payment_id'] + ' </div>'
+                      }
+
+                      document.getElementById('scs-msg').innerHTML = successNote;
+
                       document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2);
                   } else {
                     document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2) + '<span id="paid-tag">PAID</span></span>';
