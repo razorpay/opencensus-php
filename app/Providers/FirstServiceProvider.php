@@ -2,6 +2,7 @@
 
 namespace RZP\Providers;
 
+use Config;
 use Barryvdh\Debugbar;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
@@ -74,14 +75,14 @@ class FirstServiceProvider extends ServiceProvider
 
     /**
      * Register Debugbar ServiceProvider and Facade for API Inspector
-     * on debug mode, non-production requests.
+     * for debug mode, non-production requests.
      */
     protected function registerDebugbarIfApplicable()
     {
-        if ((\Config::get('app.debug') === true) and
+        if ((Config::get('app.debug') === true) and
             ($this->app->environment() !== 'production'))
         {
-            $this->app->register(Debugbar\ServiceProvider::class, [], true);
+            $this->app->register(Debugbar\ServiceProvider::class);
             AliasLoader::getInstance()->alias('Debugbar', Debugbar\Facade::class);
         }
     }

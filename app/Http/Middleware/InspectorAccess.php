@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Middleware;
 
+use App;
 use Closure;
 use Debugbar;
 use Illuminate\Foundation\Application;
@@ -34,8 +35,9 @@ class InspectorAccess
      */
     public function handle(HttpRequest $request, Closure $next)
     {
-        // If the app is not in debug mode, skip
-        if ($this->config->get('app.debug') !== true)
+        // Skip if the app is not in debug mode, or dev environment
+        if (($this->config['app.debug'] !== true) or
+            (App::environment() !== 'dev'))
         {
             return $next($request);
         }

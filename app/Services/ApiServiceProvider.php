@@ -2,7 +2,6 @@
 
 namespace RZP\Services;
 
-
 use RZP;
 use Swift_Mailer;
 use Illuminate\Database\Connection;

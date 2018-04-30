@@ -6,8 +6,6 @@ use View;
 use ApiResponse;
 use Barryvdh\Debugbar\LaravelDebugbar;
 
-use RZP\Error\ErrorCode;
-
 /**
  * Class GenericController
  *
@@ -45,10 +43,9 @@ class GenericController extends Controller
         $renderer = $debugBar->getJavascriptRenderer();
 
         //
-        // By defining an openHandlerUrl, debugbar enables us to list and view other debug
-        // sessions
-        // Here, we use debugbar's own route (defined with the alias `debugbar.openhandler`)
-        // as the openHandlerUrl
+        // By defining an openHandlerUrl, debugbar enables us to list and view other
+        // debug sessions. Here, we use debugbar's own route (defined with the alias
+        // `debugbar.openhandler`) as the openHandlerUrl
         //
         $openHandlerUrl = route('debugbar.openhandler');
         $renderer->setOpenHandlerUrl($openHandlerUrl);
