@@ -25,7 +25,7 @@ console.log(`Listening on :${port}`);
 async function merchant(browser) {
   let timeout = setTimeout(_ => {
     throw 'Merchant Test Timed out';
-  }, 10000);
+  }, 5000);
   const page = await browser.newPage();
   page.on('pageerror', merchantLog).on('error', merchantLog);
   await page.goto(merchantURL);
