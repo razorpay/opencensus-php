@@ -21,6 +21,7 @@ class Bob extends Base
 
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     const GATEWAY                = 'netbanking_bob';
+    const GATEWAY_CODE           = [Payment\Processor\Netbanking::BARB_R, Payment\Processor\Netbanking::BARB_C];
 
     protected function formatDataForFile(array $inputData)
     {
@@ -89,22 +90,5 @@ class Bob extends Base
 
         // Amount is of type NUMBER(14,2). i.e 14 digits before decimal point and 2 digits after decimal point.
         return str_pad($amt, 17, '0', STR_PAD_LEFT);
-    }
-
-    public function fetchEntities(): PublicCollection
-    {
-        $begin = $this->gatewayFile->getBegin();
-
-        $end = $this->gatewayFile->getEnd();
-
-        $refunds = $this->repo->refund->fetchRefundsForGatewaysBetweenTimestamps(
-            static::PAYMENT_TYPE_ATTRIBUTE,
-            [Payment\Processor\Netbanking::BARB_R, Payment\Processor\Netbanking::BARB_C],
-            $begin,
-            $end,
-            static::GATEWAY
-        );
-
-        return $refunds;
     }
 }
