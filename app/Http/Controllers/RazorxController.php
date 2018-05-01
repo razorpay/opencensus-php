@@ -2,11 +2,13 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use Request;
 use Requests;
-use Route;
+use ApiResponse;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class RazorxController extends Controller
 {
@@ -14,29 +16,39 @@ class RazorxController extends Controller
 
     const CONTENT_TYPE_JSON = 'application/json';
 
-    protected $razorxConfig;
-
+    /**
+     * @var string
+     */
     protected $baseUrl;
 
+    /**
+     * @var string
+     */
     protected $key;
 
+    /*
+     * @var string
+     */
     protected $secret;
+
+    const READ_METHODS = [
+        Requests::GET,
+        Requests::HEAD,
+    ];
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->razorxConfig = $this->config->get('applications.razorx');
-        $this->baseUrl      = $this->razorxConfig['url'];
-        $this->key          = $this->razorxConfig['username'];
-        $this->secret       = $this->razorxConfig['secret'];
+        $razorxConfig  = $this->config->get('applications.razorx');
+        $this->baseUrl = $razorxConfig['url'];
+        $this->key     = $razorxConfig['username'];
+        $this->secret  = $razorxConfig['secret'];
     }
 
     public function sendRequest()
     {
-        $path = Request::input('service_path');
-
-        $requestParams = $this->getRequestParams($path);
+        $requestParams = $this->getRequestParams();
 
         try
         {
@@ -47,42 +59,62 @@ class RazorxController extends Controller
                 $requestParams['method'],
                 $requestParams['options']);
 
-            $result = json_decode($response->body, true);
+            $res = $this->parseAndReturnResponse($response);
 
-            if (empty($result) === true)
-            {
-                $result = $response->body;
-            }
-
-            $razorxResponse = [
-                "status_code" => $response->status_code,
-                "response"    => $result,
-            ];
-
-            return ApiResponse::json($razorxResponse);
+            return ApiResponse::json($res);
         }
         catch(\Throwable $e)
         {
-            $this->trace->error(TraceCode::RAZORX_REQUEST_FAILED, ['error' => 'Server error occurred']);
+            $this->trace->traceException($e);
 
-            return ApiResponse::json(["error_message" => $e->getMessage()]);
+            throw new Exception\ServerErrorException(
+                'Error completing the request',
+                ErrorCode::SERVER_ERROR_RAZORX_FAILURE
+            );
         }
     }
 
-    protected function getRequestParams($path)
+    protected function parseAndReturnResponse($res)
     {
+        $code = $res->status_code;
+
+        $res = json_decode($res->body, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE)
+        {
+            throw new Exception\RuntimeException(
+                'Malformed json response');
+        }
+
+        $razorxResponse = [
+            'status_code' => $code,
+            'response'    => $res,
+        ];
+
+        return $razorxResponse;
+    }
+
+    protected function getRequestParams()
+    {
+        $path = $this->validateAndGetServicePathParam();
+
         $url = $this->baseUrl . $path;
-
-        $parameters = Request::all();
-
-        unset($parameters['service_path']);
 
         $method = Request::method();
 
-        if ((Request::header('content_type') === self::CONTENT_TYPE_JSON) and
-            ($method != Requests::GET and $method != Requests::HEAD))
+        $headers = [];
+
+        $parameters = [];
+
+        if (in_array($method, self::READ_METHODS, true) === false)
         {
+            $parameters = Request::all();
+
+            unset($parameters['service_path']);
+
             $parameters = json_encode($parameters);
+
+            $headers['content_type'] = self::CONTENT_TYPE_JSON;
         }
 
         $options = [
@@ -90,16 +122,28 @@ class RazorxController extends Controller
             'auth'    => [$this->key, $this->secret],
         ];
 
-        $this->trace->info(TraceCode::RAZORX_REQUEST, ['url' => $url, 'paramters' => $parameters]);
+        $this->trace->info(TraceCode::RAZORX_REQUEST, ['url' => $url, 'parameters' => $parameters]);
 
         $response = [
             'url'     => $url,
-            'headers' => [],
+            'headers' => $headers,
             'data'    => $parameters,
             'options' => $options,
             'method'  => $method,
         ];
 
         return $response;
+    }
+
+    protected function validateAndGetServicePathParam(): string
+    {
+        $path = Request::get('service_path');
+
+        if (empty($path) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException('Valid path parameter required');
+        }
+
+        return $path;
     }
 }

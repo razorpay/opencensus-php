@@ -609,6 +609,8 @@ class ErrorCode
     const SERVER_ERROR_AUTH_SERVICE_FAILURE                                         = 'SERVER_ERROR_AUTH_SERVICE_FAILURE';
     const SERVER_ERROR_WEBHOOK_IN_TRANSACTION                                       = 'SERVER_ERROR_WEBHOOK_IN_TRANSACTION';
 
+    const SERVER_ERROR_RAZORX_FAILURE                                               = 'SERVER_ERROR_RAZORX_FAILURE';
+
     const SERVER_ERROR_UFH_SERVICE_FAILURE                                          = 'SERVER_ERROR_UFH_SERVICE_FAILURE';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
@@ -758,6 +760,8 @@ class ErrorCode
 
     const BAD_REQUEST_INVALID_OAUTH_MAIL_TYPE                                       = 'BAD_REQUEST_INVALID_OAUTH_MAIL_TYPE';
     const BAD_REQUEST_AUTH_SERVICE_ERROR                                            = 'BAD_REQUEST_AUTH_SERVICE_ERROR';
+
+    const BAD_REQUEST_RAZORX_ERROR                                                  = 'BAD_REQUEST_RAZORX_ERROR';
 
     const BAD_REQUEST_COUPON_LIMIT_REACHED                                          = 'BAD_REQUEST_COUPON_LIMIT_REACHED';
     const BAD_REQUEST_COUPON_ALREADY_USED                                           = 'BAD_REQUEST_COUPON_ALREADY_USED';
