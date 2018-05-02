@@ -63,16 +63,16 @@ class DirectDebitTest extends TestCase
         $order = $this->getLastEntity('order', true);
         $this->assertEquals('random receipt', $order['receipt']);
         $this->assertEquals('INR', $order['currency']);
-        // $this->assertEquals($order['notes']['notes_1'], 'random notes');
-        // $this->assertEquals($order['notes']['notes_2'], 123);
-        // $this->assertEquals($order['notes']['notes_3'], true);
-        // $this->assertArrayNotHasKey('notes_4', $order['notes']);
-        // $this->assertArrayNotHasKey('notes_5', $order['notes']);
+        $this->assertEquals($order['notes']['notes_1'], 'random notes');
+        $this->assertEquals($order['notes']['notes_2'], 123);
+        $this->assertEquals($order['notes']['notes_3'], true);
+        $this->assertArrayNotHasKey('notes_4', $order['notes']);
+        $this->assertArrayNotHasKey('notes_5', $order['notes']);
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('INR', $payment['currency']);
         $this->assertEquals(9900, $payment['amount']);
-        // $this->assertEquals('random description', $payment['description']);
+        $this->assertEquals('random description', $payment['description']);
         $this->assertEquals($batch['id'], 'batch_'.$payment['batch_id']);
         $this->assertEquals('captured', $payment['status']);
     }
@@ -82,17 +82,20 @@ class DirectDebitTest extends TestCase
         return [
             [
                 Header::DIRECT_DEBIT_EMAIL           => 'test@razorpay.com',
-                Header::DIRECT_DEBIT_PHONE           => 9876543210,
-                Header::DIRECT_DEBIT_CARD            => '4111111111111111',
+                Header::DIRECT_DEBIT_CONTACT         => 9876543210,
+                Header::DIRECT_DEBIT_CARD_NUMBER     => '4111111111111111',
                 Header::DIRECT_DEBIT_EXPIRY_MONTH    => '12',
                 Header::DIRECT_DEBIT_EXPIRY_YEAR     => '25',
                 Header::DIRECT_DEBIT_CARDHOLDER_NAME => 'John Doe',
-                Header::DIRECT_DEBIT_CURRENCY        => 'INR',
                 Header::DIRECT_DEBIT_AMOUNT          => 9900,
+                Header::DIRECT_DEBIT_CURRENCY        => 'INR',
                 Header::DIRECT_DEBIT_RECEIPT         => 'random receipt',
-                Header::DIRECT_DEBIT_NOTES1          => 'random notes',
-                Header::DIRECT_DEBIT_NOTES2          => 123,
-                Header::DIRECT_DEBIT_NOTES3          => true,
+                Header::DIRECT_DEBIT_DESCRIPTION     => 'random description',
+                Header::DIRECT_DEBIT_NOTES_1         => 'random notes',
+                Header::DIRECT_DEBIT_NOTES_2         => 123,
+                Header::DIRECT_DEBIT_NOTES_3         => true,
+                Header::DIRECT_DEBIT_NOTES_4         => '',
+                Header::DIRECT_DEBIT_NOTES_5         => null,
             ],
         ];
     }
