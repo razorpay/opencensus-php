@@ -34,7 +34,6 @@ class Constants
         Type::REFUND => [
             self::HDFC,
             self::ICICI,
-            self::OBC,
             self::CSB,
         ],
         Type::CLAIM => [
@@ -91,7 +90,6 @@ class Constants
         Type::REFUND => [
             self::HDFC  => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
-            self::OBC   => ['obc.netbanking.refunds@razorpay.com'],
         ],
 
         Type::COMBINED => [

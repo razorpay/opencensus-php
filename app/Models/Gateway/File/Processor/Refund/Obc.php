@@ -75,11 +75,6 @@ class Obc extends Base
         return $textData;
     }
 
-    public function sendFile($data)
-    {
-        return;
-    }
-
     protected function getFileToWriteNameWithoutExt()
     {
        return self::FILE_NAME . '_' . $this->claimDate;
