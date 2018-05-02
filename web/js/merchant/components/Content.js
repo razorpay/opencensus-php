@@ -239,7 +239,7 @@ export default class Content extends Component {
         <ModalMask
           maskClosable={true}
           onClose={this.closeModalView}
-          class={classList('animate-down', ModalFormView.MODAL_MASK_CLASS)}
+          class={ModalFormView.MODAL_MASK_CLASS}
         >
           <ModalFormView
             {...this.detailProps}

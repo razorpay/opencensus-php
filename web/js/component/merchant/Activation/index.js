@@ -538,7 +538,9 @@ export default class ActivationWizard extends React.Component {
         {!this.state.showSubmitLayer && (
           <footer>
             <Loader isSaving={this.state.isSaving} />
-            {(activeTab && <Button onClick={_ => this.goto()}>Save</Button>) ||
+            {(activeTab != 4 && (
+              <Button onClick={_ => this.goto()}>Save</Button>
+            )) ||
               null}
             {isLastTab && (
               <Button.Primary iconAfter="chevron-right" onClick={this.next}>

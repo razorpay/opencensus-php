@@ -151,7 +151,7 @@ export default class ActivationContainer extends React.Component {
     }
 
     return this.props.closeUrl ? (
-      <Modal class={modalClass} onClose={this.props.onClose}>
+      <Modal class={'animate-down ' + modalClass} onClose={this.props.onClose}>
         <ModalContent>{content}</ModalContent>
       </Modal>
     ) : (
