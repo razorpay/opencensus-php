@@ -180,6 +180,13 @@ class Entity
     const TAX                   = 'tax';
     const TAX_GROUP             = 'tax_group';
 
+    // External Service Entity (ServiceName.EntityName)
+    const REPORTING_LOGS               = 'reporting.logs';
+    const REPORTING_CONFIGS            = 'reporting.configs';
+    const REPORTING_SCHEDULES          = 'reporting.schedules';
+    const SHIELD_RULES                 = 'shield.rules';
+    const SHIELD_RULE_ANALYTICS        = 'shield.rule_analytics';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -382,6 +389,14 @@ class Entity
         self::NODAL_STATEMENT       => \RZP\Models\Nodal\Statement::class,
     ];
 
+    protected static $externalServiceClass = [
+        self::REPORTING_LOGS               => \RZP\Services\Reporting::class,
+        self::REPORTING_CONFIGS            => \RZP\Services\Reporting::class,
+        self::REPORTING_SCHEDULES          => \RZP\Services\Reporting::class,
+        self::SHIELD_RULES                 => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RULE_ANALYTICS        => \RZP\Services\ShieldClient::class,
+    ];
+
     protected static $syncedInLiveAndTest = [
         self::ORG,
         self::IIN,
@@ -541,6 +556,31 @@ class Entity
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid entity.');
         }
+    }
+
+    /**
+     * For API entities there would only be entity, which would be verified by normal flow
+     * For other, we need to validate the service should exists, and entity is exposed
+     *
+     * @param string $entity
+     * @return bool
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public static function validateExternalServiceEntity(string $entity)
+    {
+        return (isset(self::$externalServiceClass[$entity]) === true);
+    }
+
+    public static function getExternalServiceClass(string $entity)
+    {
+        $class = self::$externalServiceClass[$entity];
+
+        return new $class;
+    }
+
+    public static function getExternalEntityName(string $entity)
+    {
+        return explode('.', $entity)[1];
     }
 
     public static function isEntitySyncedInLiveAndTest($entity)
