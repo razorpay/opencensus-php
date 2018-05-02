@@ -9,6 +9,7 @@ class AuthType
 {
     const NETBANKING    = 'netbanking';
     const AADHAAR       = 'aadhaar';
+    const SKIP          = 'skip';
     const PIN           = 'pin';
     const _3DS          = '3ds';
 
@@ -19,7 +20,8 @@ class AuthType
         ],
         Method::CARD    => [
             self::PIN,
-            self::_3DS
+            self::_3DS,
+            self::SKIP,
         ],
         Method::EMI     => [
             self::PIN,

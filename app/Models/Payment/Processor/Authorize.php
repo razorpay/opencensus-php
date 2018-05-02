@@ -848,6 +848,10 @@ trait Authorize
         {
             $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SAEPS);
         }
+        else if ($payment->getAuthType() === Payment\AuthType::SKIP)
+        {
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::SKIP_PAYMENT_AUTH);
+        }
         else
         {
             // If feature is not present, simply throw invalid url error.
