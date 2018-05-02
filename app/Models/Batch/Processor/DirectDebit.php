@@ -90,8 +90,10 @@ class DirectDebit extends Base
 
             $result = $this->processor->process($request);
 
-            $payment = $this->repo->payment->findOrFail(substr($result['payment_id'], 4));
-            $payment->setAttribute(Payment::BATCH_ID, $this->batch->getId());
+            $payment = $this->processor->getPayment();
+
+            $payment->batch()->associate($this->batch);
+
             $this->repo->saveOrFail($payment);
 
             $row[Header::STATUS]                    =   Batch\Status::SUCCESS;
@@ -184,7 +186,7 @@ class DirectDebit extends Base
        try
        {
            $entity->build([
-               Card::NUMBER =>  $card,
+               Card::NUMBER         =>  $card,
                Card::EXPIRY_MONTH   =>  Card::DUMMY_EXPIRY_MONTH,
                Card::EXPIRY_YEAR    =>  Card::DUMMY_EXPIRY_YEAR,
                Card::NAME           =>  'John Doe',
