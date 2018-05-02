@@ -220,7 +220,7 @@ class Gateway extends Base\Gateway
            ];
         }
 
-        $response = str_replace('|', '& ', $response->body);
+        $response = str_replace('|', '&', $response->body);
 
         parse_str($response, $verifyResponseArray);
 
