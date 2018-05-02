@@ -2,23 +2,23 @@
 
 namespace RZP\Models\Card;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function fetchById($id)
+    public function fetchById(string $id)
     {
+        /** @var Entity $card */
         $card = $this->repo->card->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $card->toArrayPublic();
     }
 
-    public function fetchMultiple($input)
+    public function fetchMultiple(array $input)
     {
+        /** @var Base\PublicCollection $cards */
         $cards = $this->repo->card->fetch($input, $this->merchant->getId());
 
         return $cards->toArrayPublic();
@@ -33,20 +33,28 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function getCardRecurring($input)
+    public function getCardRecurring(array $input)
     {
         (new Card\Validator)->validateInput('recurring', $input);
 
-        $iin = $input['iin'];
+        $iin = $input[Entity::IIN];
 
+        /** @var IIN\Entity|null $iinEntity */
         $iinEntity = $this->repo->iin->find($iin);
 
-        $data['recurring'] = (new Card\Entity)->isRecurringSupportedOnNetworkAndIssuerAndType(
-                                                                                    $this->merchant,
-                                                                                    $iinEntity->getNetworkCode(),
-                                                                                    $iinEntity->getIssuer(),
-                                                                                    $iinEntity->getType());
+        $responseKey = 'recurring';
 
-        return $data;
+        if ($iinEntity === null)
+        {
+            return [$responseKey => false];
+        }
+
+        $recurring = (new Card\Entity)->isRecurringSupportedOnNetworkAndIssuerAndType(
+                                            $this->merchant,
+                                            $iinEntity->getNetworkCode(),
+                                            $iinEntity->getIssuer(),
+                                            $iinEntity->getType());
+
+        return [$responseKey => $recurring];
     }
 }

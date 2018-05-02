@@ -181,16 +181,13 @@ class Core extends Base\Core
         array & $recurringData)
     {
         //
-        // We don't allow netbanking for subscriptions currently.
+        // We don't allow emandate for subscriptions currently.
         //
         if ($merchant->isFeatureEnabled(Constants::CHARGE_AT_WILL) === false)
         {
             return;
         }
 
-        //
-        // We allow netbanking recurring only for certain merchants
-        //
         if ($methods->isEmandateEnabled() === false)
         {
             return;

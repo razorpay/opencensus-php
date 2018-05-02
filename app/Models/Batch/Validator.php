@@ -35,7 +35,8 @@ class Validator extends Base\Validator
                                     . 'application/octet-stream,'
                                     . 'application/xml,'
                                     . 'text/csv,'
-                                    . 'text/plain'
+                                    . 'text/plain,'
+                                    . 'application/cdfv2-unknown'
                                 . '|mimes:'
                                     . 'zip,'
                                     . 'xlsx,'
@@ -84,6 +85,13 @@ class Validator extends Base\Validator
     protected static $virtualBankAccountCreateRules = [
         Entity::TYPE                 => 'required|in:virtual_bank_account',
         Entity::FILE                 => 'required|file' . self::DEFAULT_MIME_RULE,
+    ];
+
+    protected static $elfinCreateRules = [
+        Entity::TYPE   => 'required|custom',
+        Entity::NAME   => 'filled|string|max:255',
+        Entity::FILE   => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG => 'filled|array',
     ];
 
     /**

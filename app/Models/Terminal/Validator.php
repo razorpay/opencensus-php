@@ -73,6 +73,13 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID                => 'required|alpha_num|size:14',
     ];
 
+    protected static $atomTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:atom',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+    ];
+
     protected static $hdfcTerminalRules = [
         Entity::GATEWAY                    => 'required|in:hdfc',
         Entity::GATEWAY_MERCHANT_ID        => 'required|integer|digits_between:5,8',
@@ -317,6 +324,15 @@ class Validator extends Base\Validator
         Entity::TPV                        => 'sometimes|in:0,2',
     ];
 
+    protected static $upiHulkTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_hulk',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::UPI                        => 'required|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::TPV                        => 'sometimes|in:0,2',
+    ];
+
     protected static $upiSbiTerminalRules = [
         Entity::GATEWAY                    => 'required|in:upi_sbi',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
@@ -373,6 +389,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+    ];
+
+    protected static $netbankingCsbEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_CSB,
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
     ];
 
     protected static $cardFssTerminalRules = [

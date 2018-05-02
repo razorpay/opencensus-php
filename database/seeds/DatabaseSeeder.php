@@ -194,17 +194,6 @@ class DatabaseSeeder extends Seeder
                 )
             );
 
-            DB::table(Table::FEATURE)->insert(
-                array(
-                    'id'            => 'feature_303030',
-                    'name'          => 'e_mandate',
-                    'entity_id'     => '10000000000000',
-                    'entity_type'   => 'merchant',
-                    'created_at'    => $currentTime,
-                    'updated_at'    => $currentTime
-                )
-            );
-
             DB::table(Table::MERCHANT_DETAIL)->insert(
                 array(
                     'merchant_id'   => Account::NODAL_ACCOUNT,
@@ -1109,6 +1098,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingKotakTerminals();
         $this->createNetbankingIciciTerminals();
         $this->createNetbankingAirtelTerminals();
+        $this->createNetbankingObcTerminal();
         $this->createNetbankingAxisTerminal();
         $this->createNetbankingFederalTerminal();
         $this->createNetbankingIndusindTerminal();
@@ -1458,6 +1448,24 @@ class DatabaseSeeder extends Seeder
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_airtel',
                 'gateway_secure_secret' => Crypt::encrypt('test_airtel_terminal_salt'),
+                'recurring'             => 1,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
+    protected function createNetbankingObcTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_OBC_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_OBC,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_oriental',
+                'gateway_secure_secret' => Crypt::encrypt('test_oriental_terminal_salt'),
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),

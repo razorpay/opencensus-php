@@ -25,8 +25,6 @@ class MpesaGatewayTest extends TestCase
 
     public function setUp()
     {
-        $this->markTestSkipped('Skipping for now');
-
         $this->testDataFilePath = __DIR__ . '/MpesaGatewayTestData.php';
 
         parent::setUp();
@@ -40,29 +38,6 @@ class MpesaGatewayTest extends TestCase
         $this->payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
         $this->setOtp(self::OTP);
-    }
-
-    public function testOtpPayment()
-    {
-        $this->markTestSkipped();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->doAuthAndCapturePayment($this->payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertArraySelectiveEquals($testData, $payment);
-
-        $wallet = $this->getLastEntity('wallet', true);
-
-        $this->assertTestResponse($wallet, 'testOtpPaymentWalletEntity');
-
-        $this->assertNotEmpty($wallet['gateway_payment_id']);
-
-        $this->assertNotEmpty($wallet['gateway_payment_id_2']);
-
-        $this->assertNotEmpty($wallet['contact']);
     }
 
     public function testAuthPayment()
@@ -158,57 +133,6 @@ class MpesaGatewayTest extends TestCase
             {
                 $this->doAuthPayment($payment);
             });
-    }
-
-    public function testOtpCustomerValidationFailure()
-    {
-        $this->markTestSkipped();
-
-        $data = $this->testData['testOtpAuthFailure'];
-
-        $this->mockActionFailure();
-
-        $this->runRequestResponseFlow(
-            $data,
-            function()
-            {
-                $this->doAuthPayment($this->payment);
-            }
-        );
-    }
-
-    public function testOtpGenerationFailure()
-    {
-        $this->markTestSkipped();
-
-        $data = $this->testData['testOtpAuthFailure'];
-
-        $this->mockActionFailure();
-
-        $this->runRequestResponseFlow(
-            $data,
-            function()
-            {
-                $this->doAuthPayment($this->payment);
-            }
-        );
-    }
-
-    public function testCallbackOtpSubmitFailure()
-    {
-        $this->markTestSkipped();
-
-        $data = $this->testData['testOtpAuthFailure'];
-
-        $this->mockActionFailure(SoapAction::OTP_SUBMIT_API);
-
-        $this->runRequestResponseFlow(
-            $data,
-            function()
-            {
-                $this->doAuthPayment($this->payment);
-            }
-        );
     }
 
     public function testAuthPaymentVerify()

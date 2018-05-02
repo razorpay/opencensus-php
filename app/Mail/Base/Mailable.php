@@ -3,8 +3,6 @@
 namespace RZP\Mail\Base;
 
 use App;
-use Config;
-use EmailValidator;
 use Illuminate\Bus\Queueable;
 use Illuminate\Container\Container;
 use Illuminate\Mail\Mailable as BaseMailable;
@@ -30,19 +28,11 @@ class Mailable extends BaseMailable
 
     public function __construct()
     {
-        $queueMock = Config::get('queue.mock');
-
-        // If queue mock is set then we use the default sync connection
-        // else we use the dedicated sqs mail connection
-        $queueConnection = ($queueMock === true) ? 'queue.default' : 'queue.mail.connection';
-
-        $this->connection = Config::get($queueConnection);
-
         $app = App::getFacadeRoot();
 
         $this->taskId = $app['request']->getTaskId();
-
-        $this->mode = $app['basicauth']->getMode();
+        $this->mode   = $app['basicauth']->getMode();
+        $this->queue  = $this->getQueueName();
     }
 
     public function build()
@@ -79,15 +69,6 @@ class Mailable extends BaseMailable
                          ->runCallbacks($message);
                 });
             }
-            else
-            {
-                $trace->info(TraceCode::MAILER_INVALID_RECIPIENT_EMAIL, [
-                    'from'    => $this->from,
-                    'to'      => $this->to,
-                    'subject' => $this->subject,
-                    'mailable' => get_class($this)
-                ]);
-            }
         }
         catch (\Throwable $e)
         {
@@ -113,6 +94,9 @@ class Mailable extends BaseMailable
     }
 
     /**
+     * Overridden: We use sub classed SendQueuedMailable which sets request id
+     * and task id for tracing.
+     *
      * Queue the message for sending.
      *
      * @param  \Illuminate\Contracts\Queue\Factory  $queue
@@ -121,12 +105,11 @@ class Mailable extends BaseMailable
     public function queue(Queue $queue)
     {
         $connection = property_exists($this, 'connection') ? $this->connection : null;
+        $queueName  = property_exists($this, 'queue') ? $this->queue : null;
 
-        $queueName = property_exists($this, 'queue') ? $this->queue : null;
-
-        return $queue->connection($connection)->pushOn(
-            $queueName ?: null, new SendQueuedMailable($this)
-        );
+        return $queue
+                ->connection($connection)
+                ->pushOn($queueName ?: null, new SendQueuedMailable($this));
     }
 
     /**
@@ -239,7 +222,7 @@ class Mailable extends BaseMailable
     {
         if (filled($this->to) === true)
         {
-            $emailValidator = new EmailValidator\Validator;
+            $emailValidator = new Validator;
             $recipientEmail = $this->to[0]['address'];
 
             return (($recipientEmail !== 'void@razorpay.com') and
@@ -247,5 +230,19 @@ class Mailable extends BaseMailable
         }
 
         return false;
+    }
+
+    /**
+     * Returns on which queue this mailable should be pushed to.
+     * Refer to config/queue.php's mail block for the data structure.
+     *
+     * @return string
+     */
+    protected function getQueueName(): string
+    {
+        $key     = snake_case(class_basename($this));
+        $default = config('queue.mail.default');
+
+        return config("queue.mail.{$key}", $default);
     }
 }

@@ -2,66 +2,102 @@
 
 namespace RZP\Gateway\Atom;
 
+use RZP\Constants;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    protected $fields = array(
-        'id',
-        'gateway_payment_id',
-        'token',
-        'success',
-        'callback_data',
-        'bank_code',
-        'bank_name',
-        'bank_payment_id',
-        'gateway_result_description',
-        'method',
-        'created_at',
-        'updated_at');
+    const ID                 = 'id';
+    const PAYMENT_ID         = 'payment_id';
+    const REFUND_ID          = 'refund_id';
+    const ACTION             = 'action';
+    const RECEIVED           = 'received';
+    const ACCOUNT_NUMBER     = 'account_number';
+    const AMOUNT             = 'amount';
+    const GATEWAY_PAYMENT_ID = 'gateway_payment_id';
+    const STATUS             = 'status';
+    const ERROR_CODE         = 'error_code';
+    const SUCCESS            = 'success';
+    const BANK_CODE          = 'bank_code';
+    const BANK_NAME          = 'bank_name';
+    const BANK_PAYMENT_ID    = 'bank_payment_id';
+    const ERROR_DESCRIPTION  = 'gateway_result_description';
+    //These attributes were used in old code, Now we dont need them
+    const TOKEN              = 'token';
+    const METHOD             = 'method';
+    const CALLBACK_DATA      = 'callback_data';
 
-    protected $fillable = array(
-        'id',
-        'bank_code',
-        'gateway_payment_id',
-        'token',
-        'bank_code',
-        'bank_name',
-        'bank_payment_id',
-        'gateway_result_description',
-        'method');
+    protected $entity = Constants\Entity::ATOM;
 
-    protected static $sign = 'pay';
+    protected $fields = [
+        self::PAYMENT_ID,
+        self::GATEWAY_PAYMENT_ID,
+        self::BANK_CODE,
+        self::BANK_NAME,
+        self::BANK_PAYMENT_ID,
+        self::ERROR_DESCRIPTION,
+        self::REFUND_ID,
+        self::AMOUNT,
+        self::STATUS,
+        self::SUCCESS,
+        self::ACCOUNT_NUMBER,
+        self::RECEIVED,
+    ];
 
-    protected $entity = 'atom';
+    protected $fillable = [
+        self::PAYMENT_ID,
+        self::GATEWAY_PAYMENT_ID,
+        self::TOKEN,
+        self::BANK_CODE,
+        self::BANK_NAME,
+        self::BANK_PAYMENT_ID,
+        self::ERROR_DESCRIPTION,
+        self::REFUND_ID,
+        self::AMOUNT,
+        self::STATUS,
+        self::ACCOUNT_NUMBER,
+        self::RECEIVED,
+        self::ERROR_CODE,
+        self::SUCCESS,
+    ];
 
-    public function setSuccess($success)
+    protected $casts = [
+        self::AMOUNT   => 'int',
+        self::RECEIVED => 'bool',
+        self::SUCCESS  => 'bool',
+    ];
+
+    protected $primaryKey = self::ID;
+
+    public $incrementing = true;
+
+    public function setAction(string $action)
     {
-        $this->setAttribute('success', $success);
+        $this->setAttribute(self::ACTION, $action);
     }
 
-    public function setBankName($name)
+    public function setPaymentId($paymentId)
     {
-        $this->setAttribute('bank_name', $name);
+        $this->setAttribute(self::PAYMENT_ID, $paymentId);
     }
 
-    public function setBankPaymentId($bankPaymentId)
+    public function setAmount($amount)
     {
-        $this->setAttribute('bank_payment_id', $bankPaymentId);
+        $this->setAttribute(self::AMOUNT, $amount);
     }
 
-    public function setCallbackData($data)
+    public function setRefundId($refundId)
     {
-        $this->setAttribute('callback_data', $data);
+        $this->setAttribute(self::REFUND_ID, $refundId);
     }
 
-    public function setCallbackDataAttribute($data)
+    public function setAccountNumber($accountNumber)
     {
-        $this->attributes['callback_data'] = json_encode($data);
+        $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
     }
 
-    public function getCallbackDataAttribute()
+    public function getBankPaymentId()
     {
-        return json_decode($this->attributes['callback_data'], true);
+        return $this->getAttribute(Entity::BANK_PAYMENT_ID);
     }
 }

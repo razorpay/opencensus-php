@@ -62,6 +62,7 @@ class Netbanking
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
+        IFSC::ORBC,
         IFSC::CSBK,
         self::PUNB_R,
         self::BARB_R,
@@ -191,21 +192,18 @@ class Netbanking
     ];
 
     protected static $atom = [
-        IFSC::UTIB,
+        IFSC::ANDB,
         IFSC::BKID,
         IFSC::MAHB,
         IFSC::CNRB,
         IFSC::CSBK,
         IFSC::CBIN,
-        IFSC::CITI,
-        IFSC::CIUB,
         IFSC::CORP,
         IFSC::DCBL,
         IFSC::DEUT,
         IFSC::DLXB,
-        // IFSC::FDRL,
-        IFSC::HDFC,
-        IFSC::ICIC,
+        IFSC::ESFB,
+        IFSC::FDRL,
         IFSC::IBKL,
         IFSC::IDIB,
         IFSC::IOBA,
@@ -213,22 +211,48 @@ class Netbanking
         IFSC::JAKA,
         IFSC::KARB,
         IFSC::KVBL,
-        IFSC::KKBK,
         self::LAVB_R,
+        IFSC::ORBC,
+        IFSC::PMCB,
+        IFSC::PSIB,
+        self::PUNB_R,
+        IFSC::RATN,
+        IFSC::SRCB,
         IFSC::SIBL,
-        // IFSC::SBBJ,
-        IFSC::SBHY,
         IFSC::SBIN,
-        // IFSC::SBMY,
-        IFSC::STBP,
-        // IFSC::SBTR,
+        IFSC::TMBL,
         IFSC::UCBA,
         IFSC::UBIN,
+        IFSC::UTBI,
         IFSC::VIJB,
-        IFSC::YESB,
     ];
 
-    protected static $atomTPV = [];
+    protected static $atomTPV = [
+        IFSC::UTIB,
+        IFSC::BKID,
+        IFSC::MAHB,
+        IFSC::CSBK,
+        IFSC::CIUB,
+        IFSC::DCBL,
+        IFSC::DEUT,
+        IFSC::DLXB,
+        IFSC::FDRL,
+        IFSC::HDFC,
+        IFSC::ICIC,
+        IFSC::IBKL,
+        IFSC::IDIB,
+        IFSC::INDB,
+        IFSC::JAKA,
+        IFSC::KARB,
+        IFSC::KVBL,
+        IFSC::KKBK,
+        IFSC::LAVB,
+        IFSC::SRCB,
+        IFSC::SIBL,
+        IFSC::SBIN,
+        IFSC::TMBL,
+        IFSC::YESB,
+    ];
 
     protected static $ebs = [
         IFSC::ANDB,
@@ -271,9 +295,7 @@ class Netbanking
         */
     ];
 
-    protected static $defaultDisabled = [
-        IFSC::AIRP,
-    ];
+    protected static $defaultDisabled = [];
 
     protected static $ebsTPV = [];
 

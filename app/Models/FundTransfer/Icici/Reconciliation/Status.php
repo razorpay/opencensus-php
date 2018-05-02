@@ -11,22 +11,31 @@ class Status extends BaseStatus
     const PENDING               = 'Pending Processing';
     const AWAITING_MESSAGING    = 'Awaiting Messaging';
     const AWAITING_LIQUIDATION  = 'Awaiting Liquidation';
+    const HOLD                  = 'Hold';
 
-    const SUCCESS_STATUS = [
-        self::PAID,
-        self::PENDING,
-        self::AWAITING_MESSAGING,
-        self::AWAITING_LIQUIDATION,
-    ];
+    /**
+     * These are the statuses which, if received after an attempt is marked as processed,
+     * need us to mark it as initiated so that it can be reassessed by the bulk recon cron.
+     *
+     * @return array
+     */
+    public static function getFlipStatus(): array
+    {
+        return [
+            self::CANCELLED,
+            self::HOLD
+        ];
+    }
 
     public static function getFailureStatus(): array
     {
         return [
-            self::CANCELLED
+            self::CANCELLED,
         ];
     }
 
-    public static function getSuccessfulStatus(): array {
+    public static function getSuccessfulStatus(): array
+    {
         return [
             self::PAID,
             self::PENDING,

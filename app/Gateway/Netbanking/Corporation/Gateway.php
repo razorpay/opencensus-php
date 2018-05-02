@@ -39,7 +39,11 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($content);
 
-        $request = $this->getStandardRequestArray($content);
+        $content = http_build_query($content);
+
+        $request = $this->getStandardRequestArray([], 'get');
+
+        $request['url'] .= '?' . $content;
 
         $this->traceGatewayPaymentRequest($request, $input);
 

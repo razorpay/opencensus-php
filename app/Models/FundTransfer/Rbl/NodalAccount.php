@@ -55,6 +55,8 @@ class NodalAccount extends NodalBase\NodalAccount
                                      ->makeRequest();
 
                 $this->repo->saveOrFail($entity);
+
+                $this->repo->saveOrFail($entity->source);
             }
             catch (\Exception $e)
             {
