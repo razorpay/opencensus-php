@@ -48,7 +48,7 @@
                         <td align="right">{{{$amount['claims']}}}</td>
                         <td align="right">{{{$count['refunds']}}}</td>
                         <td align="right">{{{$amount['refunds']}}}</td>
-                        <td align="right">{{{$amount['total']}}}/td>
+                        <td align="right">{{{$amount['total']}}}</td>
                     </tr>
 
                 </table>

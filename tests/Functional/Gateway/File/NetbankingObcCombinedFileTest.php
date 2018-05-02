@@ -84,9 +84,9 @@ class NetbankingObcCombinedFileTest extends TestCase
             $testData = [
                 'subject' => 'obc Netbanking claims and refund files for '.$date,
                 'amount' => [
-                    'claims' => 1000.00,
-                    'refunds' => 501.00,
-                    'total' => 499.00,
+                    'claims'  => '1000.00',
+                    'refunds' => '501.00',
+                    'total'   => '499.00',
                 ],
                 'count' => [
                     'claims'  => 2,
