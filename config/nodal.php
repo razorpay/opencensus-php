@@ -29,5 +29,10 @@ return [
         'src_app_cd'        => env('KOTAK_NODAL_BALANCE_APPLICATION_ID'),
         'crn'               => env('KOTAK_NODAL_CRN'),
         'account_number'    => env('KOTAK_NODAL_ACCOUNT_NUMBER')
+    ],
+
+    'axis' => [
+        'account_number' => env('AXIS_NODAL_ACCOUNT_NUMBER'),
+        'ifsc_code'      => env('AXIS_NODAL_IFSC')
     ]
 ];
