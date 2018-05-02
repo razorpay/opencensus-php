@@ -114,7 +114,7 @@ class Entity extends Base\Entity
 
     public function workflows()
     {
-        return $this->belongsToMany('RZP\Models\Workflow\Entity', Table::WORKFLOW_PERMISSIONS);
+        return $this->belongsToMany('RZP\Models\Workflow\Entity', Table::WORKFLOW_PERMISSION);
     }
 
     public function getRelationsForDiffer() : array
