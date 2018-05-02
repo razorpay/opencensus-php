@@ -11,7 +11,7 @@ class OrientalCryptoTest extends TestCase
     // These values are arrived at using the java source code
     // @see https://drive.google.com/drive/u/0/folders/1A5ULegmYTyv3yVgAD33wwi6wQZk50Nmt
 
-    const PLAINTEXT  = "ABC";
+    const PLAINTEXT  = 'ABC';
     const KEY = 'ABC';
 
     public function setUp()
