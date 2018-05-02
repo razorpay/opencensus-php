@@ -31,7 +31,6 @@ class Obc extends Base
         $count = [
             'claims'  => 0,
             'refunds' => 0,
-            'total'   => 0
         ];
 
         $refundsFile = [];
@@ -63,8 +62,6 @@ class Obc extends Base
         }
 
         $amount['total'] = $amount['claims'] - $amount['refunds'];
-
-        $count['total'] = $count['refunds'] + $count['claims'];
 
         $date = Carbon::now(Timezone::IST)->format('d/m/y');
 
