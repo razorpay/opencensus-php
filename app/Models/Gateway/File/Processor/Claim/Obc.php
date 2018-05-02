@@ -7,4 +7,9 @@ use RZP\Models\Payment;
 class Obc extends Base
 {
     const GATEWAY = Payment\Gateway::NETBANKING_OBC;
+
+    public function createFile($data)
+    {
+        return;
+    }
 }
