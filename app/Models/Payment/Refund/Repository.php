@@ -271,17 +271,17 @@ class Repository extends Base\Repository
                 $rCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
                 $rBaseAmount = $this->dbColumn(Refund\Entity::BASE_AMOUNT);
 
-                $pRepo = $this->repo->payment;
-                $pId = $pRepo->dbColumn(Payment\Entity::ID);
-                $pType = $pRepo->dbColumn($type);
+                $pRepo    = $this->repo->payment;
+                $pId      = $pRepo->dbColumn(Payment\Entity::ID);
+                $pType    = $pRepo->dbColumn($type);
                 $pGateway = $pRepo->dbColumn(Payment\Entity::GATEWAY);
 
                 $join->on($rPaymentId, '=', $pId)
-                    ->where($rCreatedAt, '>=', $from)
-                    ->where($rCreatedAt, '<=', $to)
-                    ->whereIn($pType, (array) $gatewayCodes)
-                    ->where($pGateway, '=', $gateway)
-                    ->where($rBaseAmount, '!=', 0);
+                     ->where($rCreatedAt, '>=', $from)
+                     ->where($rCreatedAt, '<=', $to)
+                     ->whereIn($pType, (array) $gatewayCodes)
+                     ->where($pGateway, '=', $gateway)
+                     ->where($rBaseAmount, '!=', 0);
             })
             ->with('payment')
             ->get();

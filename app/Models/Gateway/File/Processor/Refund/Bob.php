@@ -5,7 +5,6 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
-use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Netbanking\Bob\Constants;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
