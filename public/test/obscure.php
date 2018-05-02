@@ -203,6 +203,15 @@ function disableEmptyInputs(form) {
 <!--        <td><input type="text" name="account_number" size="25" value=""></td>-->
     </tr>
     <tr>
+        <td colspan="40">Select Auth Type </td>
+        <td>
+            <select name="auth_type">
+                <option value="pin">Card - PIN</option>
+                <option value="aadhaar">eMandate - Aadhaar</option>
+                <option value="netbanking">eMandate - Netbanking</option>
+            </select>
+        </td>
+    </tr>
     <tr>
         <td colspan='40'>Token:</td>
         <td><input type="text" name="token" size="25" value=""></td>
