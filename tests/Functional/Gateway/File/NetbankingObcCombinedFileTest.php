@@ -11,7 +11,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class NetbankingObcRefundFileTest extends TestCase
+class NetbankingObcCombinedFileTest extends TestCase
 {
     use PaymentTrait;
 
@@ -28,7 +28,7 @@ class NetbankingObcRefundFileTest extends TestCase
         $this->obcPaymentArray = $this->getDefaultNetbankingPaymentArray('ORBC');
     }
 
-    public function testGenerateRefundFile()
+    public function testGenerateCombinedFileTest()
     {
         Mail::fake();
 
