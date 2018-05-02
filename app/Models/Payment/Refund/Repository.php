@@ -279,7 +279,7 @@ class Repository extends Base\Repository
                 $join->on($rPaymentId, '=', $pId)
                     ->where($rCreatedAt, '>=', $from)
                     ->where($rCreatedAt, '<=', $to)
-                    ->whereIn($pType, $gatewayCodes)
+                    ->whereIn($pType, (array) $gatewayCodes)
                     ->where($pGateway, '=', $gateway)
                     ->where($rBaseAmount, '!=', 0);
             })

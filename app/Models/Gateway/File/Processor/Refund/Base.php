@@ -27,7 +27,7 @@ class Base extends BaseProcessor
 
         $refunds = $this->repo->refund->fetchRefundsForGatewaysBetweenTimestamps(
                         static::PAYMENT_TYPE_ATTRIBUTE,
-                        (array) static::GATEWAY_CODE,
+                        static::GATEWAY_CODE,
                         $begin,
                         $end,
                         static::GATEWAY
