@@ -799,7 +799,8 @@ body.analytics-v2-active .onboarding-card-wrapper {
 .onboarding-card-wrapper-content.first-step {
 
   position: relative;
-  box-shadow: 0 0 0 9999px rgba(0,0,0,.25), 0 0 15px rgba(0,0,0,.25);
+  /* 9999px box-shadow spread radius does not work in safari, max is 1016 */
+  box-shadow: 0 0 0 1000px rgba(0,0,0,.25), 0 0 15px rgba(0,0,0,.25);
   z-index: 9999;
   border-radius: 2px;
 
