@@ -540,18 +540,19 @@
         }
 
         #hist-modal {
-            position: absolute;
+            position: fixed;
             width: 92%;
             max-width: 460px;
             left: 50%;
-            top: 45%;
+            top: 48%;
             line-height: 24px;
 
             background: #fff;
             border-radius: 4px;
             box-shadow: 0 0 10px rgba(0,0,0,0.4);
             color: #909090;
-
+            max-height: 70vh;
+            overflow: scroll;
             transition: .1s all ease-in;
             transform: translate(-50%,-50%) scale(0.7);
             opacity: 0;
@@ -598,62 +599,6 @@
         }
 
     </style>
-    <script>
-      function checkIsDesktop() {
-          var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
-          return width > 853;
-      }
-
-      function cleanHTML() {
-          // Show content according to width
-          if (checkIsDesktop()) {
-              document.getElementById('desktop-container').style.display = 'block';
-              document.getElementById('invoice-status-container').removeChild(document.getElementById('mobile-container'));
-          } else {
-              document.getElementById('mobile-container').style.display = 'block';
-              document.getElementById('invoice-status-container').removeChild(document.getElementById('desktop-container'));
-          }
-      }
-
-      function toggleTrimDescription(toTrim) {
-        var data = window.RZP_DATA.data;
-        desc = data['invoice']['description'];
-        var charLimit, pseudoChar, button = '';
-
-        if (checkIsDesktop()) {
-            charLimit = 200;
-            pseudoChar = 45;
-
-        } else {
-            charLimit = 125;
-            pseudoChar = 35;
-        }
-
-        if (desc && (desc.length > charLimit)) {
-            if (toTrim) {
-              var newLines = 0;
-              newLines = (desc.match(new RegExp("\n", "g")) || []).length;
-
-              if (newLines) {
-                for(let i = 0; i < newLines; i++) {
-                    if ((charLimit - i * pseudoChar) < 0.6 * charLimit) {
-                        desc = desc.substr(0, charLimit - i*pseudoChar);
-                        break;
-                    }
-                }
-              } else {
-                desc = desc.substr(0,charLimit);
-              }
-              desc =  desc.trim();
-              desc += '...';
-              button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button'
-            }
-        }
-
-        document.getElementById('payment-for').innerHTML = desc + button;
-      }
-
-    </script>
   </head>
   <body>
 
@@ -963,7 +908,7 @@
                                   </div>
                                   <div class="line-strike"></div>
                               </div>
-                              @if($data['invoice']['status'] === 'paid')
+                              @if($data['invoice']['status'] === 'paid' && !$data['invoice']['partial_payment'])
                                   <div class="info">
                                       PAYMENT ID
                                       <div class="val" style="text-transform:unset">{{$data['invoice']['payment_id']}}</div>
@@ -1044,8 +989,71 @@
           @endif
 
         @if ($data['invoice']['type'] !== 'invoice')
+          <script src="https://cdn.razorpay.com/static/analytics/bundle.js" onload="initAnalytics()" async></script>
+          <script>
+            function checkIsDesktop() {
+                var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+                return width > 853;
+            }
+
+            function cleanHTML() {
+                // Show content according to width
+                if (checkIsDesktop()) {
+                    document.getElementById('desktop-container').style.display = 'block';
+                    document.getElementById('invoice-status-container').removeChild(document.getElementById('mobile-container'));
+                } else {
+                    document.getElementById('mobile-container').style.display = 'block';
+                    document.getElementById('invoice-status-container').removeChild(document.getElementById('desktop-container'));
+                }
+            }
+
+            function toggleTrimDescription(toTrim) {
+              var data = window.RZP_DATA.data;
+              desc = data['invoice']['description'];
+              var charLimit, pseudoChar, button = '';
+
+              if (checkIsDesktop()) {
+                  charLimit = 200;
+                  pseudoChar = 45;
+              } else {
+                  charLimit = 125;
+                  pseudoChar = 35;
+              }
+
+              if (desc && (desc.length > charLimit)) {
+                  if (toTrim) {
+                    var newLines = 0;
+                    newLines = (desc.match(new RegExp("\n", "g")) || []).length;
+
+                    if (newLines) {
+                      for(let i = 0; i < newLines; i++) {
+                        if ((charLimit - i * pseudoChar) < 0.6 * charLimit) {
+                          desc = desc.substr(0, charLimit - i*pseudoChar);
+                          break;
+                        }
+                      }
+                    } else {
+                      desc = desc.substr(0,charLimit);
+                    }
+
+                    desc =  desc.trim();
+                    desc += '...';
+                    button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button'
+                  }
+                }
+
+              document.getElementById('payment-for').innerHTML = desc + button;
+            }
+          </script>
+
           <script>
               cleanHTML();
+              window.t0 = (new Date()).getTime(); // initial time stamp
+
+              function initAnalytics() {
+                analytics.init(['ga'], window.location.hostname.indexOf('razorpay.com') < 0);
+                analytics.track('ga', 'pageview');
+              }
 
               var data = window.RZP_DATA.data;
               var color = data.merchant.brand_color || '#168AFA';
@@ -1060,7 +1068,14 @@
 
                   if (checkIsDesktop()) {
                       document.getElementById('scs-box').style.display = 'block';
-                      document.getElementById('scs-msg').innerHTML = "You have successfully paid ₹ " +  (amount/100).toFixed(2) + '<div> Payment ID: ' + data['invoice']['payment_id'] + ' </div>';
+                      var successNote = "You have successfully paid ₹ " + (amount/100).toFixed(2);
+
+                      if (!data['invoice']['partial_payment']) {
+                        successNote += '<div> Payment ID: ' + data['invoice']['payment_id'] + ' </div>'
+                      }
+
+                      document.getElementById('scs-msg').innerHTML = successNote;
+
                       document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2);
                   } else {
                     document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2) + '<span id="paid-tag">PAID</span></span>';
@@ -1111,11 +1126,15 @@
                 function showPayHist() {
                     document.getElementById('hist-modal').className = 'show';
                     showOverlay('overlay-hist');
+
+                    ga('send', 'event', 'PL Hosted Page', 'Click - Show Payment History', undefined, data.invoice.payments.length);
                 }
 
                 function closePayHist() {
                     document.getElementById('hist-modal').className = '';
                     hideOverlay('overlay-hist');
+
+                    ga('send', 'event', 'PL Hosted Page', 'Click - Close Payment History', undefined, data.invoice.payments.length);
                 }
             }
           </script>
@@ -1161,7 +1180,17 @@
                                                            );
                     }
 
-                    return location.reload(); // To display the latest payment id
+                    if (ga && ga.length) {
+                      var sessionTDiff = (new Date()).getTime() - window.t0;
+
+                      ga('send', 'event', 'PL Hosted Page', 'Payment Successful', 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
+                        hitCallback: function() {
+                          return location.reload(); // To display the latest payment id
+                        }
+                      });
+                    } else {
+                      return location.reload(); // To display the latest payment id
+                    }
                   },
                   prefill: {
                     contact: invoiceObj.customer_details.customer_contact,

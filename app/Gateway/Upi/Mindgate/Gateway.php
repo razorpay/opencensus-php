@@ -211,7 +211,9 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseGatewayResponse($encryptedResponse, Action::CALLBACK);
 
-        return $response;
+        $bankDetails = $this->parseBankAccountDetails($response[ResponseFields::BANK_REFERENCE]);
+
+        return array_merge($response, $bankDetails);
     }
 
     /**

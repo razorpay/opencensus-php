@@ -14,6 +14,11 @@ class MerchantInvoiceCorrection extends Job
 
     protected $year;
 
+    /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'merchant_invoice';
+
     public function __construct(
         string $merchantId,
         int $month,

@@ -95,7 +95,6 @@ class ViewDataSerializer extends Base\Core
     protected function serializeMerchantForHosted(): array
     {
         return [
-            'new_view_enabled' => (in_array('Hostedplv2', $this->merchant->liveTagNames(), true) === true),
             'brand_color'      => get_rgb_value($this->merchant->getBrandColorOrDefault()),
             'brand_text_color' => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
             'image'            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
