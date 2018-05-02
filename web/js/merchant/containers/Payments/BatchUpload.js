@@ -31,42 +31,40 @@ export default class BatchUploadContainer extends Component {
   };
 
   onWindowEvent = ({ data: message }) => {
-    if (event.origin === iframeHost) {
-      switch (message.event) {
-        case 'load':
-          this.setState({ iFrameLoaded: true });
-          break;
-        case 'upload_init':
-          this.setState({
-            status: 'process',
-            uploadedFile: { ...message.data },
-          });
-          break;
-        case 'progress':
-          const { loaded, total } = message.data;
-          const fileUploadProgress = loaded / total * 100;
-          this.setState({ fileUploadProgress });
-          break;
-        case 'file_uploaded':
-          const { parsed_entries: parsedEntries, file_id: id } = message.data;
-          this.setState({
-            mode: 'create',
-            uploadedFile: { ...this.state.uploadedFile, id },
-            parsedEntries,
-          });
-          break;
-        case 'error':
-          this.setState({
-            fileUploadProgress: 0,
-            error: `${
-              message.data.error.description
-            }. Please upload file again`,
-            status: 'error',
-          });
-          break;
-        default:
-          break;
-      }
+    if (event.origin !== iframeHost) return;
+
+    switch (message.event) {
+      case 'load':
+        this.setState({ iFrameLoaded: true });
+        break;
+      case 'upload_init':
+        this.setState({
+          status: 'process',
+          uploadedFile: { ...message.data },
+        });
+        break;
+      case 'progress':
+        const { loaded, total } = message.data;
+        const fileUploadProgress = loaded / total * 100;
+        this.setState({ fileUploadProgress });
+        break;
+      case 'file_uploaded':
+        const { parsed_entries: parsedEntries, file_id: id } = message.data;
+        this.setState({
+          mode: 'create',
+          uploadedFile: { ...this.state.uploadedFile, id },
+          parsedEntries,
+        });
+        break;
+      case 'error':
+        this.setState({
+          fileUploadProgress: 0,
+          error: `${message.data.error.description}. Please upload file again.`,
+          status: 'error',
+        });
+        break;
+      default:
+        break;
     }
   };
 
