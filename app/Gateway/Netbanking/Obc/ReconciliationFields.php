@@ -10,9 +10,9 @@ class ReconciliationFields
 
     const PAYEE_ID                   = 'payee_id';
 
-    const TRANSACTION_AMOUNT         = 'TRANSACTION_AMOUNT';
+    const TRANSACTION_AMOUNT         = 'transaction_amount';
 
-    const BANK_REFERENCE_NUMBER      = 'BANK_REFERENCE_NUMBER';
+    const BANK_REFERENCE_NUMBER      = 'bank_reference_number';
 
-    const MERCHANT_REFERENCE_NUMBER  = 'MERCHANT_REFERENENCE_NUMBER';
+    const MERCHANT_REFERENCE_NUMBER  = 'merchant_reference_number';
 }
