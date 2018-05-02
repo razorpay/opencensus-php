@@ -13,7 +13,14 @@ import { closeModal } from 'rzp/modules/modals';
 import { createPaymentsBatch as createBatch } from 'merchant/modules/batches';
 import { showNotification } from 'rzp/modules/notifications';
 
-const iframeHost = 'http://api.razorpay.in';
+const hostToIframeHost = {
+  'dashboard.razorpay.in': 'http://api.razorpay.in',
+  'dashboard.razorpay.com': 'https://api.razorpay.com',
+  'beta-dashboard.razorpay.com': 'https://beta-api.razorpay.com',
+  'beta-dashboard.razorpay.in': 'https://beta-api.razorpay.com',
+};
+
+const iframeHost = hostToIframeHost[location.hostname];
 
 @withRouter
 @connect(null, { closeModal, createBatch, showNotification })
