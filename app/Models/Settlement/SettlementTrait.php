@@ -135,19 +135,11 @@ trait SettlementTrait
             Preferences::MID_PAISABAZAAR,
         ];
 
-        //
-        // Maps the mids that want to receive only 1 settlement per day,
-        // no matter what. They need all transactions till 1 pm to be
-        // settled by 3 pm.
-        //
-        $oneSetlPerDayMids = [
-            Preferences::MID_WEALTHY,
-            Preferences::MID_PAISABAZAAR,
-        ];
+        $parentId = $txn->merchant->getParentId();
 
         if (($txn->isTypePayment() === true) and
             ($txn->merchant->isLinkedAccount() === true) and
-            (in_array($txn->merchant->getParentId(), $mfMids, true) === true))
+            (in_array($parentId, $mfMids, true) === true))
         {
             $isSubMerchantOfMf = true;
         }
@@ -158,17 +150,9 @@ trait SettlementTrait
 
             $onePm = Carbon::today(Timezone::IST)->hour(13)->getTimestamp();
 
-            $oneThirtyPm = Carbon::today(Timezone::IST)->hour(13)->minute(30)->getTimestamp();
-
             $twoPm = Carbon::today(Timezone::IST)->hour(14)->getTimestamp();
 
-            $twoTenPm = Carbon::today(Timezone::IST)->hour(14)->minute(10)->getTimestamp();
-
-            if ((in_array($txn->merchant->getParentId(), $oneSetlPerDayMids, true) === true) and
-                ($now > $oneThirtyPm))
-            {
-                return true;
-            }
+            $twoThirtyPm = Carbon::today(Timezone::IST)->hour(14)->minute(30)->getTimestamp();
 
             //
             // Settle transaction which needed to be settled before 2 pm today
@@ -182,8 +166,24 @@ trait SettlementTrait
                 return false;
             }
 
+            //
+            // Maps the mids that want to receive only 1 settlement per day.
+            // They need all transactions till 1 pm to be settled in the 1 pm cycle.
+            //
+            $oneSetlAt1PmMids = [
+                Preferences::MID_WEALTHY,
+                Preferences::MID_PAISABAZAAR,
+            ];
+
+            if ((in_array($parentId, $oneSetlAt1PmMids, true) === true)
+                ($now < $onePm) or
+                ($now >= $twoPm))
+            {
+                return true;
+            }
+
             if (($now < $onePm) or
-                ($now > $twoTenPm))
+                ($now > $twoThirtyPm))
             {
                 return true;
             }
