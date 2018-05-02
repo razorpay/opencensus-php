@@ -12,17 +12,26 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 {
     protected function getPaymentId(array $row)
     {
-        return $row[ReconciliationFields::MERCHANT_REFERENCE_NUMBER];
+        if (empty($row[ReconciliationFields::MERCHANT_REFERENCE_NUMBER]) === false)
+        {
+            return $row[ReconciliationFields::MERCHANT_REFERENCE_NUMBER];
+        }
     }
 
     protected function getReferenceNumber($row)
     {
-        return $row[ReconciliationFields::BANK_REFERENCE_NUMBER];
+        if (empty($row[ReconciliationFields::BANK_REFERENCE_NUMBER]) === false)
+        {
+            return $row[ReconciliationFields::BANK_REFERENCE_NUMBER];
+        }
     }
 
     protected function getGatewayPaymentDate($row)
     {
-        return $row[ReconciliationFields::GATEWAY_TRANSACTION_DATE];
+        if (empty($row[ReconciliationFields::GATEWAY_TRANSACTION_DATE]) === false)
+        {
+            return $row[ReconciliationFields::GATEWAY_TRANSACTION_DATE];
+        }
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
@@ -47,7 +56,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getReconPaymentAmount(array $row)
     {
-        return Base\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT]);
+        if (empty($row[ReconciliationFields::TRANSACTION_AMOUNT]) === false)
+        {
+            return Base\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT]);
+        }
     }
 
     protected function getGatewayPayment($paymentId)
