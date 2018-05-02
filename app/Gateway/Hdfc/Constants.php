@@ -23,4 +23,9 @@ final class Constants
     const ERROR_CODE_LENGTH = 8;
 
     const ERROR_TEXT_LENGTH = 100;
+
+    // Time :- 02/05/2018 20:30:00
+    const IPAY_MIGRATION_CHECK_SOFT = 1525273200;
+    // Time :- 03/05/2018 02:00:00
+    const IPAY_MIGRATION_CHECK_HARD = 1525293000;
 }
