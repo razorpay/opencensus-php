@@ -97,6 +97,7 @@ function disableEmptyInputs(form) {
                 <option value="SBIN">SBI Bank</option>
                 <option value="ICIC">ICICI Bank</option>
                 <option value="AIRP">Airtel Payments Bank</option>
+                <option value="ORBC">Obc Bank</option>
                 <option value="FDRL">Federal Bank</option>
                 <option value="RATN">RBL Bank</option>
                 <option value="CITI">CITI Bank</option>
