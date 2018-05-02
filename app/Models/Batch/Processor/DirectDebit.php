@@ -97,12 +97,13 @@ class DirectDebit extends Base
             $this->repo->saveOrFail($payment);
 
             $row[Header::STATUS]                    =   Batch\Status::SUCCESS;
-            $row[Header::DIRECT_DEBIT_PAYMENT_ID]   =   $result['payment_id'];
+            $row[Header::DIRECT_DEBIT_PAYMENT_ID]   =   $result['razorpay_payment_id'];
         }
         finally
         {
             $row[Header::DIRECT_DEBIT_CARD] = $this->mask($row[Header::DIRECT_DEBIT_CARD]);
         }
+
         return $row;
     }
 

@@ -23,6 +23,7 @@ class DirectDebitTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['skip_payment_auth']);
 
+        $this->fixtures->create('terminal:shared_sharp_terminal');
     }
 
     public function testCreateDirectDebitBatchQueued()
@@ -41,12 +42,39 @@ class DirectDebitTest extends TestCase
         Queue::assertPushed(BatchJob::class);
     }
 
-    public function testCreateDirectDebitBatch()
+    public function testCreateDirectDebitBatchStatus()
     {
         $entries = $this->getDefaultFileEntries();
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
         $response = $this->startTest();
+
+        // Gets last entity (Post queue processing) and asserts attributes
+        $batch = $this->getLastEntity('batch', true);
+        $this->assertEquals(1, $batch['success_count']);
+        $this->assertEquals(0, $batch['failure_count']);
+
+        // Processing should have happened immediately in tests as
+        // queue are sync basically.
+
+        $this->assertInputFileExistsForBatch($response[Batch\Entity::ID]);
+        $this->assertOutputFileExistsForBatch($response[Batch\Entity::ID]);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('random receipt', $order['receipt']);
+        $this->assertEquals('INR', $order['currency']);
+        // $this->assertEquals($order['notes']['notes_1'], 'random notes');
+        // $this->assertEquals($order['notes']['notes_2'], 123);
+        // $this->assertEquals($order['notes']['notes_3'], true);
+        // $this->assertArrayNotHasKey('notes_4', $order['notes']);
+        // $this->assertArrayNotHasKey('notes_5', $order['notes']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('INR', $payment['currency']);
+        $this->assertEquals(9900, $payment['amount']);
+        // $this->assertEquals('random description', $payment['description']);
+        $this->assertEquals($batch['id'], 'batch_'.$payment['batch_id']);
+        $this->assertEquals('captured', $payment['status']);
     }
 
     public function getDefaultFileEntries()
@@ -61,10 +89,10 @@ class DirectDebitTest extends TestCase
                 Header::DIRECT_DEBIT_CARDHOLDER_NAME => 'John Doe',
                 Header::DIRECT_DEBIT_CURRENCY        => 'INR',
                 Header::DIRECT_DEBIT_AMOUNT          => 9900,
-                Header::DIRECT_DEBIT_RECEIPT         => '123456',
-                Header::DIRECT_DEBIT_NOTES1          => null,
-                Header::DIRECT_DEBIT_NOTES2          => null,
-                Header::DIRECT_DEBIT_NOTES3          => null,
+                Header::DIRECT_DEBIT_RECEIPT         => 'random receipt',
+                Header::DIRECT_DEBIT_NOTES1          => 'random notes',
+                Header::DIRECT_DEBIT_NOTES2          => 123,
+                Header::DIRECT_DEBIT_NOTES3          => true,
             ],
         ];
     }

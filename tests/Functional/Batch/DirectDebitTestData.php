@@ -30,7 +30,7 @@ return [
         ],
     ],
 
-    'testCreateDirectDebitBatch' => [
+    'testCreateDirectDebitBatchStatus' => [
         'request' => [
             'url'     => '/batches',
             'method'  => 'post',
