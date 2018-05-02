@@ -11,7 +11,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
-use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
 use RZP\Jobs\MerchantInvoiceCorrection as MerchantInvoiceCorrectionJob;
 
@@ -69,23 +68,24 @@ class Core extends Base\Core
                                   $invoiceDate->endOfMonth()->timestamp,
                                   $merchantIds);
 
+            $count = $merchants->count();
+
+            $offset += $count;
+
             foreach ($merchants as $merchant)
             {
-                $createJob = new MerchantInvoiceCorrectionJob(
-                    $merchant->getId(),
-                    $invoiceDate->month,
-                    $invoiceDate->year,
-                    $this->mode);
 
-                // Assign a delay between 0 and 900 so that tasks are distributed over 15 minute period
-                $createJob->delay($i % 901);
-
-                $i++;
-
-                (new DispatchRouter)->dispatchOn($createJob, DispatchRouter::MERCHANT_INVOICE);
+                MerchantInvoiceCorrectionJob::dispatch(
+                                                $merchant->getId(),
+                                                $invoiceDate->month,
+                                                $invoiceDate->year,
+                                                $this->mode)
+                                            // Assign a delay between 0 and 900 so that tasks are distributed
+                                            // over 15 minute period
+                                            ->delay($i++ % 901);
             }
 
-        } while ($merchants->count() === $batch);
+        } while ($count === $batch);
     }
 
     public function createAdjustmentInvoiceEntity(Adjustment\Entity $adjustment, array $input): Entity
@@ -160,14 +160,14 @@ class Core extends Base\Core
 
             foreach ($merchants as $merchant)
             {
-                $createJob = new MerchantInvoiceJob(
-                    $merchant->getId(), $invoiceDate->month, $invoiceDate->year, $this->mode, $isCorrection);
-
-                // Assign a delay between 0 and 900 so that tasks are distributed over 15 minute period
-                $createJob->delay($i % 901);
-
-                $i++;
-                (new DispatchRouter)->dispatchOn($createJob, DispatchRouter::MERCHANT_INVOICE);
+                MerchantInvoiceJob::dispatch(
+                                        $merchant->getId(),
+                                        $invoiceDate->month,
+                                        $invoiceDate->year,
+                                        $this->mode,
+                                        $isCorrection)
+                                  // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
+                                  ->delay($i++ % 901);
             }
         }
     }

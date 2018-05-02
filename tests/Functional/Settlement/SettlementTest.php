@@ -911,7 +911,7 @@ class SettlementTest extends TestCase
             'transfer:to_account',
             [
                 'account'     => $account,
-                'source_id'   => $account->getId(),
+                'source_id'   => '10000000000000',
                 'source_type' => 'merchant',
                 'amount'      => 1000,
                 'currency'    => 'INR',
@@ -942,17 +942,18 @@ class SettlementTest extends TestCase
         //
         $this->assertEquals(7, $content[$channel]['txnCount']);
 
-        $lastSetl = $this->getLastEntity('settlement', true);
+        $lastSetlAcct = $this->getLastEntity('settlement', true);
+
 
         // Assert linked account settlement
-        $this->assertEquals($transfer[1]['to_id'], $lastSetl['merchant_id']);
+        $this->assertEquals($transfer[1]['to_id'], $lastSetlAcct['merchant_id']);
 
         //
         // transfer payment 1 -> credit 1000 + transfer payment 2 -> credit 1000
         // reversal refund -> debit 500
         // total => 1500
         //
-        $this->assertEquals(1500, $lastSetl['amount']);
+        $this->assertEquals(1500, $lastSetlAcct['amount']);
 
         // Set time to 3 working days from now and initiate settlements
         $settlementAfterT3 = Carbon::createFromTimestamp($createdAt, Timezone::IST)->addDays(3);
@@ -968,6 +969,34 @@ class SettlementTest extends TestCase
 
         // Reversal to be settled => 500
         $this->assertEquals(500, $lastSetl['amount']);
+
+        // Test if the transfers can be fetched with recipient_settlement_id
+        $request = [
+            'url'     => '/transfers?recipient_settlement_id=' . $lastSetlAcct['id'],
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $response = [
+            [
+                'entity'                  => 'transfer',
+                'amount'                  => 1000,
+                'recipient_settlement_id' => $lastSetlAcct['id'],
+            ],
+            [
+                'entity'                  => 'transfer',
+                'amount'                  => 1000,
+                'recipient_settlement_id' => $lastSetlAcct['id'],
+            ],
+        ];
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+        $this->ba->privateAuth();
+        $content = $this->makeRequestAndGetContent($request);
+
+        $transferResponse = $content['items'];
+
+        $this->assertArraySelectiveEquals($response, $transferResponse);
     }
 
     public function testSettlementForReversalOfPaymentTransfer()

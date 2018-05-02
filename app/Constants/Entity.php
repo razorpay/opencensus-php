@@ -151,6 +151,7 @@ class Entity
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_SBI                = 'upi_sbi';
     const UPI_ICICI              = 'upi_icici';
+    const UPI_HULK               = 'upi_hulk';
     const ENACH_RBL              = 'enach_rbl';
     const ESIGNER_DIGIO          = 'esigner_digio';
     const NETBANKING_AXIS        = 'netbanking_axis';
@@ -179,6 +180,13 @@ class Entity
     // Tax and Tax Groups
     const TAX                   = 'tax';
     const TAX_GROUP             = 'tax_group';
+
+    // External Service Entity (ServiceName.EntityName)
+    const REPORTING_LOGS               = 'reporting.logs';
+    const REPORTING_CONFIGS            = 'reporting.configs';
+    const REPORTING_SCHEDULES          = 'reporting.schedules';
+    const SHIELD_RULES                 = 'shield.rules';
+    const SHIELD_RULE_ANALYTICS        = 'shield.rule_analytics';
 
     /**
      * Defines a map of entites which are currently
@@ -290,6 +298,7 @@ class Entity
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Mindgate::class,
         self::UPI_SBI                => \RZP\Gateway\Upi\Sbi::class,
         self::UPI_ICICI              => \RZP\Gateway\Upi\Icici::class,
+        self::UPI_HULK               => \RZP\Gateway\Upi\Hulk::class,
         self::AEPS                   => \RZP\Gateway\Aeps\Base::class,
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Icici::class,
         self::AXIS_MIGS              => \RZP\Gateway\AxisMigs::class,
@@ -366,6 +375,7 @@ class Entity
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Base::class,
         self::UPI_SBI                => \RZP\Gateway\Upi\Base::class,
         self::UPI_ICICI              => \RZP\Gateway\Upi\Base::class,
+        self::UPI_HULK               => \RZP\Gateway\Upi\Base::class,
         self::UPI_NPCI               => \RZP\Gateway\Upi\Base::class,
 
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Base::class,
@@ -380,6 +390,14 @@ class Entity
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Base::class,
 
         self::NODAL_STATEMENT       => \RZP\Models\Nodal\Statement::class,
+    ];
+
+    protected static $externalServiceClass = [
+        self::REPORTING_LOGS               => \RZP\Services\Reporting::class,
+        self::REPORTING_CONFIGS            => \RZP\Services\Reporting::class,
+        self::REPORTING_SCHEDULES          => \RZP\Services\Reporting::class,
+        self::SHIELD_RULES                 => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RULE_ANALYTICS        => \RZP\Services\ShieldClient::class,
     ];
 
     protected static $syncedInLiveAndTest = [
@@ -541,6 +559,31 @@ class Entity
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid entity.');
         }
+    }
+
+    /**
+     * For API entities there would only be entity, which would be verified by normal flow
+     * For other, we need to validate the service should exists, and entity is exposed
+     *
+     * @param string $entity
+     * @return bool
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public static function validateExternalServiceEntity(string $entity)
+    {
+        return (isset(self::$externalServiceClass[$entity]) === true);
+    }
+
+    public static function getExternalServiceClass(string $entity)
+    {
+        $class = self::$externalServiceClass[$entity];
+
+        return new $class;
+    }
+
+    public static function getExternalEntityName(string $entity)
+    {
+        return explode('.', $entity)[1];
     }
 
     public static function isEntitySyncedInLiveAndTest($entity)

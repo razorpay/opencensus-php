@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Offer;
 
-use RZP\Models\Base;
 use RZP\Exception;
+use RZP\Models\Base;
 
 class Calculator extends Base\Core
 {
@@ -79,6 +79,6 @@ class Calculator extends Base\Core
             $discount = $discountFactor / 10000;
         }
 
-        return round($discount);
+        return intval(round($discount));
     }
 }

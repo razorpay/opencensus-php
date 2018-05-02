@@ -93,13 +93,13 @@ class Entity extends Base\PublicEntity
     const GATEWAY               = 'gateway';
     const TERMINAL_ID           = 'terminal_id';
     const APPROVAL_CODE         = 'approval_code';
+    const BATCH_ID              = 'batch_id';
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
     const REFERENCE3            = 'reference3';
     const REFERENCE4            = 'reference4';
     const REFERENCE5            = 'reference5';
     const REFERENCE6            = 'reference6';
-    const REFERENCE7            = 'reference7';
     const REFERENCE9            = 'reference9';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
@@ -246,6 +246,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::TERMINAL_ID,
         self::APPROVAL_CODE,
+        self::BATCH_ID,
         self::REFERENCE1,
         self::REFERENCE2,
         self::ACQUIRER_DATA,
@@ -682,6 +683,11 @@ class Entity extends Base\PublicEntity
         $isInternational = $this->isMethodCardOrEmi() ? $this->card->isInternational() : false;
 
         $this->setAttribute(self::INTERNATIONAL, $isInternational);
+    }
+
+    public function setAmount(int $amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
     }
 
     public function setBaseAmount(int $amount)
@@ -2326,6 +2332,11 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Models\BankTransfer\Entity');
     }
 
+    public function batch()
+    {
+        return $this->belongsTo('RZP\Models\Batch\Entity');
+    }
+
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
@@ -2385,6 +2396,11 @@ class Entity extends Base\PublicEntity
     public function disputes()
     {
         return $this->hasMany(\RZP\Models\Dispute\Entity::class);
+    }
+
+    public function discount()
+    {
+        return $this->hasOne('RZP\Models\Discount\Entity');
     }
 
 // --------------- Relation to other entity section ends -----------------------

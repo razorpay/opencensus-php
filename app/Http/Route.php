@@ -320,6 +320,7 @@ final class Route
         'mock_card_fss_payment'                    => ['get',      'gateway/mockfss/payment',                        'MockGatewayController@getFssPayment'                               ],
         'mock_sharp_payment_submit'                => ['post',     'gateway/mocksharp/payment/submit',               'MockGatewayController@postSharpPayment'                            ],
         'mock_netbanking_payment'                  => ['post',     'gateway/mock/netbanking/{bank}',                 'MockGatewayController@postNetbankingPayment'                       ],
+        'mock_netbanking_payment_get'              => ['get',      'gateway/mock/netbanking/{bank}',                 'MockGatewayController@postNetbankingPayment'                       ],
         'mock_wallet_payment'                      => ['post',     'gateway/mock/wallet/{wallet}',                   'MockGatewayController@walletPayment'                               ],
         'mock_wallet_payment_get'                  => ['get',      'gateway/mock/wallet/{wallet}',                   'MockGatewayController@walletPayment'                               ],
         'mock_wallet_payment_with_paymentid'       => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}',       'MockGatewayController@walletPayment'                               ],
@@ -477,6 +478,7 @@ final class Route
         'billdesk_create_cancelled_refunds'        => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
         'upi_fill_bank'                            => ['patch',    'gateway/upi_fill_bank',                          'GatewayController@fillUpiBank'                                     ],
         'mailgun_webhook'                          => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
+        'setcronjob_webhook'                       => ['post',     'setcronjob/callback',                            'AdminController@postSetCronJobCallback'                            ],
         'offer_create'                             => ['post',     'offers',                                         'OfferController@createOffer'                                       ],
         'offer_update'                             => ['patch',    'offers/{id}',                                    'OfferController@updateOffer'                                       ],
         'offer_fetch_multiple'                     => ['get',      'offers',                                         'OfferController@fetchOffers'                                       ],
@@ -707,6 +709,7 @@ final class Route
         'oauth_application_delete'                 => ['delete',   'oauth/applications/{id}',                        'OAuthApplicationController@delete'                                 ],
         'oauth_merchant_notify'                    => ['post',     'oauth/notify/{type}',                            'MerchantController@sendOAuthNotification'                          ],
         'oauth_application_update'                 => ['post',     'oauth/applications/{id}',                        'OAuthApplicationController@update'                                 ],
+        'oauth_sync_merchant_map'                  => ['post',     'oauth/update_merchant_map',                      'MerchantController@updateMerchantAccessMapFromTokens'              ],
 
         'merchant_analytics'                       => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
 
@@ -822,6 +825,7 @@ final class Route
         'mock_paytm_payment',
         'mock_mobikwik_payment',
         'mock_netbanking_payment',
+        'mock_netbanking_payment_get',
         'mock_card_fss_payment',
         'mock_ebs_payment',
         'mock_sharp_payment_post',
@@ -1078,6 +1082,7 @@ final class Route
         'fund_transfer_attempt_process',
         'daily_reconciliation_summary_fetch',
         'lambda_post_h2h',
+        'setcronjob_webhook',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1477,6 +1482,7 @@ final class Route
         'admin_get_app_auth',
         'nodal_get_account_balance',
         'enable_emi_merchant_sub',
+        'oauth_sync_merchant_map',
 
         // Shield Routes
         'shield_rules_get_multiple',
@@ -1801,6 +1807,7 @@ final class Route
         'merchant_activation_reviewers'            => '*',
         'merchant_activation_bulk_assign_reviewer' => Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER,
         'db_meta_query'                            => Permission::DB_META_QUERY,
+        'oauth_sync_merchant_map'                  => Permission::OAUTH_SYNC_MERCHANT_MAP,
     ];
 
     public static $direct = [
@@ -1960,7 +1967,10 @@ final class Route
             'fund_transfer_attempt_null_utr_report',
             'admin_lock_old_accounts',
             'fund_transfer_attempt_process',
-            'daily_reconciliation_summary_fetch'
+            'daily_reconciliation_summary_fetch',
+            // Not actually a cron, but added in this list
+            // so the cron app has access to the route.
+            'setcronjob_webhook',
         ],
 
         'kotak' => [

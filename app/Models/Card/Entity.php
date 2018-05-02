@@ -280,6 +280,11 @@ class Entity extends Base\PublicEntity
         return Card\Network::getCode($this->getNetwork());
     }
 
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
     public function getFirstName()
     {
         $name = $this->getAttribute(self::NAME);

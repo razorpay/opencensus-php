@@ -209,6 +209,11 @@ class Gateway extends Base\Gateway
         return $qrData;
     }
 
+    protected function getIntegerFormattedAmount(string $amount)
+    {
+        return (int) number_format($amount, 0, '.', '');
+    }
+
     protected function createGatewayPaymentEntityForQr($input)
     {
         $attributes = $this->getAttributesForQrResponse($input);

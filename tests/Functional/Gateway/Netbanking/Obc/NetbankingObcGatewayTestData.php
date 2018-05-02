@@ -6,6 +6,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\GatewayErrorException;
+use RZP\Exception\LogicException;
 use RZP\Exception\PaymentVerificationException;
 
 return [
@@ -33,11 +34,27 @@ return [
         ],
     ],
 
+    'testAmountTampering' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::SERVER_ERROR,
+                    'description'   => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => LogicException::class,
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
+        ],
+    ],
+
     'netbankingPaymentFailed' => [
         'amount'          => 50000,
-        'status'          => 'N',
-        'bank_payment_id' => '9999999999',
-        'account_number'  => '1234567890'
+        'status'          => null,
+        'bank_payment_id' => null,
+        'account_number'  => null
     ],
 
     'netbankingPaymentFailedVerifySuccess' => [
@@ -99,6 +116,33 @@ return [
         'exception' => [
             'class'                 => 'RZP\Exception\PaymentVerificationException',
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ],
+    ],
+
+    // When verify callback failure happens, the gateway entity is not updated
+    'testVerifyCallbackFailureEntity' => [
+        'amount'          => 50000,
+        'action'          => 'authorize',
+        'bank'            => 'ORBC',
+        'bank_payment_id' => null,
+        'status'          => null,
+        'reference1'      => null,
+        'received'        => false,
+    ],
+
+    'testVerifyCallbackFailure' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
         ],
     ],
 ];

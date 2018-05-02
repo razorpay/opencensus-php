@@ -84,16 +84,37 @@ class IcicFirstData extends Base
 
         $paymentIds = $refunds->pluck('payment_id')->toArray();
 
-        $gatewayEntities = $this->repo->$gateway->fetchByPaymentIdsAndAction(
-                               $paymentIds, Action::CAPTURE);
+        $gatewayEntitiesAll = $this->repo
+                                   ->$gateway
+                                   ->fetchByPaymentIdsAndActions($paymentIds, [Action::AUTHORIZE, Action::CAPTURE]);
 
-        $gatewayEntities = $gatewayEntities->keyBy('payment_id');
+        $gatewayEntities = [];
+
+        foreach ($gatewayEntitiesAll as $gatewayEntity)
+        {
+            $paymentId = $gatewayEntity['payment_id'];
+
+            // FirstData requires FT Number to process the refunds, Now for different transactions
+            // We get different FT Numbers as IpgTransactionId, thus if the payment has capture
+            // entity, We will only use that and override the authorize entity
+            if (isset($gatewayEntities[$paymentId]) === true)
+            {
+                if ($gatewayEntity['action'] === Action::CAPTURE)
+                {
+                    $gatewayEntities[$paymentId] = $gatewayEntity;
+                }
+            }
+            else
+            {
+                $gatewayEntities[$paymentId] = $gatewayEntity;
+            }
+        }
 
         $data = array_map(function($row) use ($gatewayEntities)
         {
             $paymentId = $row['payment']['id'];
 
-            if (isset($gatewayEntities[$paymentId]))
+            if (isset($gatewayEntities[$paymentId]) === true)
             {
                 $row['gateway'] = $gatewayEntities[$paymentId]->toArray();
             }
