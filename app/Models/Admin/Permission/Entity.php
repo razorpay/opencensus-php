@@ -86,6 +86,7 @@ class Entity extends Base\Entity
         {
             $permission->roles()->detach();
             $permission->orgs()->detach();
+            $permission->workflows()->detach();
         });
     }
 
