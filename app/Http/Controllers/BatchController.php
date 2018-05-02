@@ -4,7 +4,6 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Illuminate\Http\Request;
-use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
 use View;
 
@@ -82,9 +81,7 @@ class BatchController extends Controller
 
     public function renderBatchUploadForm(Request $request)
     {
-        $token = $request->input('token');
-
-        $isValid = $this->service(E::MERCHANT_REQUEST)->isValidOneTimeToken($token);
+        $isValid = $this->service()->validateToken($request->all());
 
         if ($isValid === false)
         {
@@ -103,9 +100,7 @@ class BatchController extends Controller
     public function validateBatchFile(Request $request)
     {
         $input = $request->all();
-        $token = $input['token'];
-
-        $this->service(E::MERCHANT_REQUEST)->consumeOneTimeToken($token);
+        $this->service()->consumeToken($input);
         $response = $this->service()->validateFile($input);
 
         return ApiResponse::json($response);

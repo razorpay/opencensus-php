@@ -75,6 +75,10 @@ class Validator extends Base\Validator
         Entity::FILE_ID         => 'required_without:file|public_id',
     ];
 
+    protected static $tokenRules = [
+        Entity::TOKEN           => 'required|max:255|alpha_num',
+    ];
+
     protected static $reconciliationCreateRules = [
         Entity::TYPE            => 'required|in:reconciliation',
         Entity::GATEWAY         => 'required|string|max:25',
