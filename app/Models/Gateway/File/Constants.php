@@ -101,7 +101,7 @@ class Constants
             self::FEDERAL  => ['federal.netbanking.refunds@razorpay.com'],
             self::BOB      => ['bob.netbanking.refunds@razorpay.com'],
             self::INDUSIND => ['indusind.netbanking.refunds@razorpay.com'],
-            self::OBC   => ['ibank.payments@obc.co.in', 'settlements@razorpay.com'],
+            self::OBC      => ['ibank.payments@obc.co.in', 'settlements@razorpay.com'],
             self::CSB      => ['csb.netbanking.refunds@razorpay.com'],
         ],
 
