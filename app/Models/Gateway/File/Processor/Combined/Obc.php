@@ -56,7 +56,7 @@ class Obc extends Base
         $date = Carbon::now(Timezone::IST)->format('d/m/y');
 
         return [
-            'bankName'    => 'OBC',
+            'bankName'    => 'obc',
             'amount'      => $amount,
             'count'       => $count,
             'date'        => $date,
