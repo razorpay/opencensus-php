@@ -65,4 +65,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         return true;
     }
+
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'gateway_payment_id' => $row[ReconciliationFields::BANK_REFERENCE_NUMBER],
+        ];
+    }
 }

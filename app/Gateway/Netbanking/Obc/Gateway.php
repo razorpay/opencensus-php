@@ -93,8 +93,21 @@ class Gateway extends Base\Gateway
             return true;
         }
 
-        $gatewayPayment->setStatus(Status::SUCCESS);
+        if (empty($input['gateway']['gateway_payment_id']) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING,
+                null,
+                $input);
+        }
 
+        $attributes = [
+            Base\Entity::STATUS          => Status::SUCCESS,
+            Base\Entity::BANK_PAYMENT_ID => $input['gateway']['gateway_payment_id'],
+        ];
+
+        $gatewayPayment->fill($attributes);
+        
         $this->repo->saveOrFail($gatewayPayment);
 
         return true;
