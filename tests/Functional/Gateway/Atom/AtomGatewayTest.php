@@ -54,6 +54,8 @@ class AtomGatewayTest extends TestCase
 
         $id = $payment['id'];
 
+        $this->mockSetVerifyTransactionId();
+
         $data = $this->verifyPayment($id);
 
         $this->assertEquals($data['payment']['verified'], 1);
@@ -147,6 +149,8 @@ class AtomGatewayTest extends TestCase
 
         $this->fixtures->edit('atom', $gatewayPayment['id'], ['status' => 'F']);
 
+        $this->mockSetVerifyTransactionId();
+
         $this->verifyPayment($payment['razorpay_payment_id']);
 
         $gatewayPayment = $this->getLastEntity('atom', true);
@@ -164,7 +168,8 @@ class AtomGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->verifyPayment($payment['id']);
         });
     }
@@ -271,5 +276,15 @@ class AtomGatewayTest extends TestCase
         $this->assertEquals('atom', $payment['gateway']);
         $this->assertEquals($method, $payment['method']);
         $this->assertEquals('1000AtomShared', $payment['terminal_id']);
+    }
+
+    protected function mockSetVerifyTransactionId()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $gatewayPayment = $this->getLastEntity('atom', true);
+
+            $content['atomtxnId'] = $gatewayPayment['gateway_payment_id'];
+        });
     }
 }

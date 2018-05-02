@@ -1519,6 +1519,25 @@ class Terminal extends Base
         return $this->createSharedUpiIciciTerminal($attributes);
     }
 
+    public function createSharedUpiHulkTerminal(array $attributes)
+    {
+        $termId = Shared::UPI_HULK_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_hulk',
+            'gateway_acquirer'          => 'hdfc',
+            'gateway_merchant_id'       => '100000Razorpay',
+            'gateway_secure_secret'     => 'razorpay_password',
+            'upi'                       => true,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedAepsIciciTerminal(array $attributes)
     {
         $termId = Shared::AEPS_ICICI_RAZORPAY_TERMINAL;

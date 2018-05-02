@@ -472,7 +472,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
             $implementation = $mock ? Mock\ShieldClient::class : ShieldClient::class;
 
-            return new $implementation($app);
+            return new $implementation;
         });
     }
 

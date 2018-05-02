@@ -44,7 +44,7 @@ class Transfer extends Base
 
         $amount             = ($source->getAmount() / 100);
 
-        $beneCode           = $this->entity->bankAccount->getBeneficiaryCode();
+        $beneId             = $this->entity->bankAccount->getId();
 
         $this->transferMode = $this->getTransferMode($amount);
 
@@ -66,7 +66,7 @@ class Transfer extends Base
                     'Debit_PartTrnRmks'    => '',
                     'Mode_of_Pay'          => $this->transferMode,
                     'Remarks'              => 'Transfer',
-                    'Ben_ID'               => self::BENE_CODE_PRIFIX . $beneCode,
+                    'Ben_ID'               => self::BENE_CODE_PRIFIX . $beneId,
                 ],
                 'Signature' => [
                     'Signature' => 'Signature'

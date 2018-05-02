@@ -494,7 +494,8 @@ class Inferno
             $this->trace->info(
                 TraceCode::WEBHOOK_FIRING,
                 [
-                    'data' => $data
+                    'data'       => $data,
+                    'webhook_id' => $data['webhook_id'],
                 ]);
         }
         else if ($webhook->isActive() === false)

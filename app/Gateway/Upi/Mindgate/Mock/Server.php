@@ -209,7 +209,13 @@ class Server extends Base\Mock\Server
             $payment['vpa'],
             // NPCI Reference Id
             random_integer(16),
-            'NA'
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'PNB!10000000000!PNBI1111111!8966829290'
         ];
     }
 
@@ -252,7 +258,13 @@ class Server extends Base\Mock\Server
             $response['payer_va'],
             $response['cust_ref_id'],
             // The Reference Id field always holds NA for now
-            'NA'
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            $response['bank_reference'],
         ];
 
         return $this->makeResponse($res, Action::VERIFY);
@@ -275,6 +287,7 @@ class Server extends Base\Mock\Server
             // timestamp when the collect request was raised
             'auth_time'     => date('Y:m:d h:i:s', $payment['created_at']),
             'amount'        => ($payment['amount'] / 100),
+            'bank_reference' => 'ICICI Bank!004001551691!ICIC0000000!918712929835',
         ];
     }
 

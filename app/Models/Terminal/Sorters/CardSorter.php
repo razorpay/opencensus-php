@@ -3,6 +3,7 @@
 namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Terminal;
+use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 
@@ -13,7 +14,7 @@ class CardSorter extends Terminal\Sorter
     ];
 
     // Arrange card terminals in order of gateway
-    public function gatewaySorter($terminals)
+    public function gatewaySorter($terminals, bool $verbose = false)
     {
         // No need to sort unless the method is either card or EMI.
         if ($this->input['payment']->isMethodCardOrEmi() === false)
@@ -26,6 +27,11 @@ class CardSorter extends Terminal\Sorter
 
         $gatewaysPriority = (new GatewayPriority\Core)
                             ->getGatewaysForMethod($method);
+
+        if ($verbose === true)
+        {
+            $this->trace->info(TraceCode::CARD_GATEWAY_PRIORITY, $gatewaysPriority);
+        }
 
         $sortedTerminals = [];
 
