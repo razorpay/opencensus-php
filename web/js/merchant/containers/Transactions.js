@@ -15,16 +15,6 @@ import BatchUploads from 'merchant/containers/Refunds/BatchList';
 import OrdersList from 'merchant/containers/Orders/List';
 import DisputesList from 'merchant/containers/Disputes/List';
 
-@connect(state => {
-  return {
-    mode: state.session.mode,
-  };
-}, null)
-export default class TransactionsContainer extends Component {
-  constructor(props) {
-    super(props);
-  }
-
 export default function TransactionsContainer(props) {
   return (
     <tabbed-container>
