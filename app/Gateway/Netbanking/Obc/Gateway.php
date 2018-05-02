@@ -17,7 +17,6 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Entity as GatewayEntity;
 
-
 class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
@@ -59,13 +58,13 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $content[RequestFields::PAY_REF_NUM]);
 
-        $this->assertAmount($input['payment']['amount'] / 100, $content[ResponseFields::AMOUNT]);
-
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
-        $this->updateGatewayPaymentEntity($gatewayPayment, $content);
-
         $this->checkGatewayStatus($content);
+
+        $this->verifyCallback($gatewayPayment, $input);
+
+        $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
@@ -168,6 +167,50 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    protected function verifyCallback(Base\Entity $gatewayPayment, $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        $verify->amountMismatch = $this->setVerifyAmountMismatch($verify);
+
+        if ($verify->amountMismatch === true)
+        {
+            throw new Exception\LogicException(
+                'Amount tampering found.',
+                ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
+                null,
+                null,
+                [
+                    'callback_response' => $input['gateway'],
+                    'verify_response'   => $verify->verifyResponseContent,
+                    'payment_id'        => $input['payment']['id'],
+                    'gateway'           => $this->gateway
+                ]);
+        }
+
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+                null,
+                null,
+                [
+                    'callback_response' => $input['gateway'],
+                    'verify_response'   => $verify->verifyResponseContent,
+                    'payment_id'        => $input['payment']['id'],
+                    'gateway'           => $this->gateway
+                ]);
+        }
+    }
+
     protected function setVerifyAmountMismatch(Verify $verify)
     {
         $input = $verify->input;
@@ -197,25 +240,9 @@ class Gateway extends Base\Gateway
            ];
         }
 
-        $keyValuePair = explode('|', $response->body);
+        $response = str_replace('|', '&', $response->body);
 
-        $verifyResponseArray = [];
-
-        foreach ($keyValuePair as $fields)
-        {
-            if (empty(trim($fields)) === true)
-            {
-                continue;
-            }
-
-            $content = explode('=', $fields);
-
-            $key = $content[0];
-
-            $value = $content[1];
-
-            $verifyResponseArray[$key] = $value;
-        }
+        parse_str($response, $verifyResponseArray);
 
         return $verifyResponseArray;
     }
@@ -309,10 +336,10 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::PAYEE_ID    => $this->getMerchantId(),
             RequestFields::PAY_REF_NUM => $payment['id'],
-            RequestFields::ITEM_CODE   => Constant::MERCHANT_ID . '-'  . strtoupper($payment['id']),
+            RequestFields::ITEM_CODE   => strtoupper($payment['id']),
             RequestFields::AMOUNT      => $this->formatAmount($payment['amount'] / 100),
             RequestFields::RETURN_URL  => Constant::RAZORPAY_END_POINT,
-            RequestFields::BID         => $verify->payment['bank_payment_id'] ?? "",
+            RequestFields::BID         => $verify->payment['bank_payment_id'] ?? '',
         ];
 
         return $this->getStandardRequestArray($content);
@@ -334,11 +361,13 @@ class Gateway extends Base\Gateway
     {
         $content = [
             RequestFields::TRAN_CRN    => Currency::INR,
-            RequestFields::TXN_AMOUNT  => $input['payment']['amount'] / 100,
+            RequestFields::TXN_AMOUNT  => $this->formatAmount($input['payment']['amount'] / 100),
             RequestFields::PAYEE_ID    => $this->getMerchantId(),
             RequestFields::PAY_REF_NUM => $input['payment']['id'],
-            RequestFields::ITEM_CODE   => Constant::MERCHANT_ID . '-' . strtoupper($input['payment']['id'])
+            RequestFields::ITEM_CODE   => strtoupper($input['payment']['id']),
         ];
+
+        $this->traceGatewayPaymentRequest($content, $input, TraceCode::GATEWAY_AUTH_REQUEST);
 
         $query = implode(
             '|',

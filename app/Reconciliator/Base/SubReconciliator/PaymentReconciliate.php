@@ -34,7 +34,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_BOB,
         RequestProcessor\Base::UPI_SBI,
         RequestProcessor\Base::NETBANKING_OBC,
-        RequestProcessor\Base::HITACHI
+        RequestProcessor\Base::NETBANKING_CSB,
+        RequestProcessor\Base::HITACHI,
     ];
 
     /**
@@ -588,7 +589,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function getPaymentId(array $row)
     {
-        throw new \BadMethodCallException('getPaymentId method needs to be implemented by child PaymentReconciliate class');
+        throw new \BadMethodCallException(
+            'getPaymentId method needs to be implemented by child PaymentReconciliate class'
+        );
     }
 
     protected function setPaymentAndTransaction($row, $paymentId)

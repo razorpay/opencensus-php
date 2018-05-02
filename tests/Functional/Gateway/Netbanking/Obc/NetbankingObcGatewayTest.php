@@ -61,6 +61,51 @@ class NetbankingObcGatewayTest extends TestCase
         $this->assertTestResponse($netbanking, 'netbankingPaymentFailed');
     }
 
+    public function testVerifyCallbackFailure()
+    {
+        $this->mockVerifyFailure();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->testPayment();
+            });
+
+        $payment = $this->getDbLastEntityToArray(ConstantsEntity::PAYMENT);
+
+        // The payment status is updated to failed due to the verify callback error
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+
+        $netbanking = $this->getDbLastEntityToArray(ConstantsEntity::NETBANKING);
+
+        // The status doesn't get updated from Y to N
+        $testData = $this->testData[__FUNCTION__ . 'Entity'];
+
+        $this->assertArraySelectiveEquals($testData, $netbanking);
+    }
+
+    public function testAmountTampering()
+    {
+        $this->mockAmountMismatch();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->testPayment();
+            });
+
+        $payment = $this->getDbLastEntityToArray(ConstantsEntity::PAYMENT);
+
+        // The payment status is updated to failed due to the verify callback error
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);

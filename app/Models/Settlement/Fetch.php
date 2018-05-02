@@ -15,6 +15,7 @@ class Fetch extends BaseFetch
             Entity::TRANSACTION_ID         => 'sometimes|alpha_dash|min:14|max:18',
             Entity::STATUS                 => 'sometimes|in:created,processed,failed',
             Entity::UTR                    => 'sometimes|alpha_num',
+            Entity::CHANNEL                => 'sometimes|string',
         ],
     ];
 
@@ -26,6 +27,7 @@ class Fetch extends BaseFetch
             Entity::TRANSACTION_ID,
             Entity::STATUS,
             Entity::UTR,
+            Entity::CHANNEL,
         ],
     ];
 

@@ -47,6 +47,7 @@ class Base extends Core
     const NETBANKING_FEDERAL     = 'NetbankingFederal';
     const NETBANKING_CORPORATION = 'NetbankingCorporation';
     const NETBANKING_RBL         = 'NetbankingRbl';
+    const NETBANKING_CSB         = 'NetbankingCsb';
     const NETBANKING_INDUSIND    = 'NetbankingIndusind';
     const NETBANKING_PNB         = 'NetbankingPnb';
     const NETBANKING_BOB         = 'NetbankingBob';
@@ -84,6 +85,7 @@ class Base extends Core
         self::NETBANKING_INDUSIND => [],
         self::NETBANKING_OBC      => ['payments@obc.co.in'],
         self::NETBANKING_PNB      => [],
+        self::NETBANKING_CSB      => ['noreply@csb.co.in'],
         self::NETBANKING_BOB      => ['billpay@bankofbaroda.com'],
         self::JIOMONEY            => [],
         self::EBS                 => [],

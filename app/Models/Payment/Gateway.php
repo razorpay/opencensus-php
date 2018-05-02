@@ -50,6 +50,7 @@ class Gateway
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_SBI                = 'upi_sbi';
     const UPI_ICICI              = 'upi_icici';
+    const UPI_HULK               = 'upi_hulk';
     const AEPS_ICICI             = 'aeps_icici';
 
     const CARD_FSS               = 'card_fss';
@@ -76,15 +77,16 @@ class Gateway
     const SUPPORTED          = 'supported';
 
     const GATEWAY_ACQUIRERS = [
-        self::AXIS_MIGS   => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
-        self::HDFC        => [self::ACQUIRER_HDFC],
-        self::CYBERSOURCE => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
-        self::FIRST_DATA  => [self::ACQUIRER_ICIC],
-        self::AMEX        => [self::ACQUIRER_AMEX],
-        self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
-        self::CARD_FSS    => [self::ACQUIRER_FSS, self::ACQUIRER_BARB],
-        self::HITACHI     => [self::ACQUIRER_RATN],
-        self::ENACH_RBL   => [self::ACQUIRER_RATN],
+        self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
+        self::HDFC         => [self::ACQUIRER_HDFC],
+        self::CYBERSOURCE  => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
+        self::FIRST_DATA   => [self::ACQUIRER_ICIC],
+        self::AMEX         => [self::ACQUIRER_AMEX],
+        self::AEPS_ICICI   => [self::ACQUIRER_ICIC],
+        self::CARD_FSS     => [self::ACQUIRER_FSS, self::ACQUIRER_BARB],
+        self::HITACHI      => [self::ACQUIRER_RATN],
+        self::ENACH_RBL    => [self::ACQUIRER_RATN],
+        self::UPI_HULK     => [self::ACQUIRER_HDFC],
     ];
 
     const POWER_WALLETS = [
@@ -208,6 +210,7 @@ class Gateway
         self::FIRST_DATA          => Settlement\Channel::KOTAK,
         self::UPI_MINDGATE        => Settlement\Channel::KOTAK,
         self::UPI_ICICI           => Settlement\Channel::KOTAK,
+        self::UPI_HULK            => Settlement\Channel::KOTAK,
         self::AEPS_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE         => Settlement\Channel::KOTAK,
         self::HITACHI             => Settlement\Channel::KOTAK,
@@ -292,6 +295,8 @@ class Gateway
         Method::UPI => [
             self::UPI_MINDGATE,
             self::UPI_ICICI,
+            self::UPI_SBI,
+            self::UPI_HULK,
         ],
 
         Method::AEPS => [
@@ -358,6 +363,7 @@ class Gateway
     public static $asynchronous = [
         self::UPI_MINDGATE,
         self::UPI_ICICI,
+        self::UPI_HULK,
         self::UPI_SBI,
         self::SHARP,
     ];
@@ -424,6 +430,7 @@ class Gateway
         self::CARD_FSS => [
             Network::MC,
             Network::VISA,
+            Network::RUPAY,
         ],
     ];
 
@@ -502,6 +509,7 @@ class Gateway
         self::WALLET_OPENWALLET,
         self::NETBANKING_RBL,
         self::ENACH_RBL,
+        self::UPI_HULK,
     ];
 
     /**
@@ -756,6 +764,7 @@ class Gateway
         Gateway::UPI_MINDGATE,
         Gateway::UPI_SBI,
         Gateway::UPI_ICICI,
+        Gateway::UPI_HULK,
         Gateway::WALLET_OLAMONEY,
         Gateway::NETBANKING_CORPORATION,
         Gateway::SHARP
@@ -813,6 +822,7 @@ class Gateway
         Netbanking::ICIC_C => Gateway::NETBANKING_ICICI,
         Netbanking::UTIB_C => Gateway::NETBANKING_AXIS,
 
+        // retail banks
         IFSC::ICIC         => Gateway::NETBANKING_ICICI,
         IFSC::HDFC         => Gateway::NETBANKING_HDFC,
         IFSC::CORP         => Gateway::NETBANKING_CORPORATION,
@@ -910,6 +920,7 @@ class Gateway
 
     public static $upiIntentGateways = [
         Gateway::UPI_ICICI,
+        Gateway::UPI_HULK,
         Gateway::UPI_MINDGATE,
     ];
 

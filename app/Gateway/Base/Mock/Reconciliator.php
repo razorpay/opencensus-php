@@ -5,6 +5,7 @@ namespace RZP\Gateway\Base\Mock;
 use App;
 use RZP\Models\FileStore;
 use RZP\Base\RepositoryManager;
+use RZP\Models\Base\PublicEntity;
 
 class Reconciliator
 {
@@ -59,7 +60,7 @@ class Reconciliator
 
         foreach ($entities as $entity)
         {
-            $data[$entity->getEntity()] = $entity->toArray();
+            $data = $this->getEntityAsArray($entity);
 
             $this->addGatewayEntityIfNeeded($data);
 
@@ -129,6 +130,17 @@ class Reconciliator
         }
 
         return $txt;
+    }
+
+    /**
+     * This method can overridden in the child class.
+     *
+     * @param PublicEntity $entity
+     * @return array
+     */
+    protected function getEntityAsArray(PublicEntity $entity): array
+    {
+        return [$entity->getEntity() => $entity->toArray()];
     }
 
     /**

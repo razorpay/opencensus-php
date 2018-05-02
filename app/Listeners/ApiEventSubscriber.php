@@ -11,7 +11,6 @@ use RZP\Models\Event;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use RZP\Jobs\DispatchRouter;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Customer\Token;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
@@ -84,7 +83,6 @@ class ApiEventSubscriber extends Base\Core
         parent::__construct();
 
         $this->event = $this->app['events'];
-        $this->queue = $this->app['queue'];
     }
 
     public function getMode()
@@ -146,7 +144,8 @@ class ApiEventSubscriber extends Base\Core
     /**
      * Register the listeners for the subscriber.
      *
-     * @param  Dispatcher  $events
+     * @param  \Illuminate\Events\Dispatcher $events
+     *
      * @return array
      */
     public function subscribe($events)
@@ -229,9 +228,7 @@ class ApiEventSubscriber extends Base\Core
         (new Invoice\Core)->setCustomerDetailsFromPaymentIfAbsent($payment);
 
         // Fires a job so in async pdf can be refreshed
-        $job = new InvoiceJob($this->getMode(), InvoiceJob::CAPTURED, $payment->getInvoiceId());
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+        InvoiceJob::dispatch($this->getMode(), InvoiceJob::CAPTURED, $payment->getInvoiceId());
 
         // Follows web hook related code conditionally, Refer $notWebhookOnlyEvents
         if ($this->webhookEnabledForEvent === false)
@@ -542,9 +539,7 @@ class ApiEventSubscriber extends Base\Core
 
     protected function dispatchWebhook(array $data)
     {
-        $job = new Webhook($data);
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::WEBHOOK, [$this->event]);
+        Webhook::dispatch($data)->using([$this->event]);
     }
 
     protected function getWebhookData(array $payload, WebhookEntity $webhook): array

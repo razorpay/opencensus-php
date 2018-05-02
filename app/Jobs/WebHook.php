@@ -3,15 +3,15 @@
 namespace RZP\Jobs;
 
 use App;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
-class WebHook extends Job implements ShouldQueue
+class WebHook extends Job
 {
-    use InteractsWithQueue, SerializesModels;
-
     protected $data;
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'webhook';
 
     /**
      * Create a new job instance.

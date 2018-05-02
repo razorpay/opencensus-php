@@ -314,6 +314,13 @@ class Entity extends Base\PublicEntity
         return $calculator->calculateDiscountedAmount($amount);
     }
 
+    public function getDiscount(int $amount)
+    {
+        $calculator = new Calculator($this);
+
+        return $calculator->calculateDiscount($amount);
+    }
+
 // ----------------------- Setters ---------------------------------------------
 
     public function deactivate()
