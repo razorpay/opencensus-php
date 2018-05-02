@@ -258,11 +258,11 @@ class Header
     const DIRECT_DEBIT_EXPIRY_MONTH     =   'expiry_month';
     const DIRECT_DEBIT_EXPIRY_YEAR      =   'expiry_year';
     const DIRECT_DEBIT_CARDHOLDER_NAME  =   'cardholder_name';
-    const DIRECT_DEBIT_AMOUNT           =   'amount';
+    const DIRECT_DEBIT_AMOUNT           =   'Amount';
     const DIRECT_DEBIT_CURRENCY         =   'currency';
     const DIRECT_DEBIT_RECEIPT          =   'receipt';
     const DIRECT_DEBIT_NOTES1           =   'notes_1';
-    const DIRECT_DEBIT_NOTES2           =   'notes_1';
+    const DIRECT_DEBIT_NOTES2           =   'notes_2';
     const DIRECT_DEBIT_NOTES3           =   'notes_3';
 
 
