@@ -25,7 +25,7 @@ class DirectDebitTest extends TestCase
 
     }
 
-    public function testCreateDirectDebitBatch()
+    public function testCreateDirectDebitBatchQueued()
     {
         Queue::fake();
 
@@ -41,6 +41,14 @@ class DirectDebitTest extends TestCase
         Queue::assertPushed(BatchJob::class);
     }
 
+    public function testCreateDirectDebitBatch()
+    {
+        $entries = $this->getDefaultFileEntries();
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $response = $this->startTest();
+    }
+
     public function getDefaultFileEntries()
     {
         return [
@@ -54,9 +62,9 @@ class DirectDebitTest extends TestCase
                 Header::DIRECT_DEBIT_CURRENCY        => 'INR',
                 Header::DIRECT_DEBIT_AMOUNT          => 9900,
                 Header::DIRECT_DEBIT_RECEIPT         => '123456',
-                Header::DIRECT_DEBIT_NOTES1          => '123456',
-                Header::DIRECT_DEBIT_NOTES2          => '123456',
-                Header::DIRECT_DEBIT_NOTES3          => '123456',
+                Header::DIRECT_DEBIT_NOTES1          => null,
+                Header::DIRECT_DEBIT_NOTES2          => null,
+                Header::DIRECT_DEBIT_NOTES3          => null,
             ],
         ];
     }
