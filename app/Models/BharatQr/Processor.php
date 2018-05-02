@@ -240,7 +240,7 @@ class Processor extends VirtualAccount\Processor
         $card = [
             Card\Entity::NUMBER       => $this->getLuhnValidCardNumber(),
             Card\Entity::CVV          => Constants::CARD_CVV,
-            Card\Entity::NAME         => Constants::CARD_NAME,
+            Card\Entity::NAME         => $this->gatewayInput[GatewayResponseParams::SENDER_NAME],
             Card\Entity::EXPIRY_MONTH => Constants::CARD_EXPIRY_MONTH,
             Card\Entity::EXPIRY_YEAR  => Constants::CARD_EXPIRY_YEAR,
         ];

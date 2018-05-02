@@ -65,6 +65,10 @@ class Receiver extends Base\Core
         $this->virtualAccount = $virtualAccount;
     }
 
+    public static $recevierWithoutAmountValidation = [
+        self::QR_CODE,
+    ];
+
     public static function areTypesValid(array $receiverTypes): bool
     {
         $invalidTypes = array_diff($receiverTypes, self::TYPES);
