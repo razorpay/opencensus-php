@@ -105,7 +105,7 @@ class ValidationTest extends TestCase
         ]);
         $result = $this->card->getMaskedCardNumber();
 
-        $this->assertEquals('411111xxxxxx1111', $result);
+        $this->assertEquals('411111XXXXXX1111', $result);
 
     }
 }
