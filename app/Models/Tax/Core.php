@@ -51,6 +51,9 @@ class Core extends Base\Core
                 'id' => $tax->getId(),
             ]);
 
-        return $this->repo->deleteOrFail($tax);
+        return $this->repo->transaction(function () use ($tax)
+        {
+            return $this->repo->deleteOrFail($tax);
+        });
     }
 }

@@ -54,7 +54,10 @@ class Core extends Base\Core
                 'id' => $group->getId(),
             ]);
 
-        return $this->repo->tax_group->deleteOrFail($group);
+        return $this->repo->transaction(function () use ($group)
+        {
+            return $this->repo->tax_group->deleteOrFail($group);
+        });
     }
 
     /**
