@@ -605,8 +605,8 @@ class HomeContainer extends Component {
                   <div className="banner-content">
                     <Banner cta="View Tour" ctaOnClick={this.onShowTour}>
                       <span>
-                        We heard you! We have updated the dashboard home design
-                        for an improved experience.
+                        Take a quick tour to learn how to use dashboard
+                        analytics effectively.
                       </span>
                     </Banner>
                   </div>
