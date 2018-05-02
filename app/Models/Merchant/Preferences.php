@@ -24,6 +24,8 @@ class Preferences
     const MID_PAISABAZAAR      = '9dhe2WRR0XCQz6';
     const MID_BPCL             = '9C04GG1wPzKCUP';
     const MID_SRI_CHAITANYA    = '8f9o3YjPGZEcdU';
+    const MID_UBER             = '82LK42BGTN2bOe';
+    const MID_AMIT_MAHBUBANI   = '7SVOQZGZuwHr4I';
     const DEMO_ACCOUNT         = '100DemoAccount';
 
     /**

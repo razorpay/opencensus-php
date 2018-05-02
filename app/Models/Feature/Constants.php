@@ -64,6 +64,7 @@ class Constants
     const SKIP_PAYMENT_AUTH             = 'skip_payment_auth';
     const ALLOW_S2S_APPS                = 'allow_s2s_apps';
     const UPI_PLUS                      = 'upi_plus';
+    const FSS_IPAY                      = 'fss_ipay';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -155,6 +156,7 @@ class Constants
         self::ATM_PIN_AUTH                  => true,
         self::ALLOW_S2S_APPS                => true,
         self::UPI_PLUS                      => true,
+        self::FSS_IPAY                      => true,
     ];
 
     // Entity type constants
