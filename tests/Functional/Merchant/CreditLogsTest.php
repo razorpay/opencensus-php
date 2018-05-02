@@ -162,19 +162,6 @@ class CreditLogsTest extends TestCase
         $this->startTest();
     }
 
-    public function testDeleteCreditsLog()
-    {
-        $this->markTestSkipped('Deleted the route');
-
-        $creditsLog = $this->addFeeCredits(['value' => 150, 'campaign' => 'silent-ads']);
-
-        $creditsLog = $this->fixtures->create('credits', ['type' => 'fee']);
-
-        $this->testData[__FUNCTION__]['request']['url'] .= $creditsLog->getId();
-
-        $this->startTest();
-    }
-
     public function testPositiveUpdateRefundCredits()
     {
         $creditsLog = $this->addCredits(
