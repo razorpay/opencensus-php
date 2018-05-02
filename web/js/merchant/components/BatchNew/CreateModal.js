@@ -12,15 +12,12 @@ import { required } from 'rzp/utils/validators';
   form: 'createBatch',
 })
 export default class BatchCreateModal extends Component {
+  static defaultProps = {
+    ctaText: 'Create',
+  };
+
   render() {
-    const {
-      closeModal,
-      parsedEntries,
-      batchType,
-      onCreateBatch,
-      ctaText = 'Create',
-      handleSubmit,
-    } = this.props;
+    const { parsedEntries, onCreateBatch, handleSubmit, ctaText } = this.props;
 
     return (
       <div class="modal-body">
@@ -37,7 +34,7 @@ export default class BatchCreateModal extends Component {
           <form onSubmit={handleSubmit(onCreateBatch)}>
             <h5 class="file-name-head">
               <strong>
-                CREATE BATCH FILE NAME <i class="i i-info-circle m-l" />
+                BATCH FILE NAME <i class="i i-info-circle m-l" />
               </strong>
             </h5>
             <div class="form-group">

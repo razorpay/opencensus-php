@@ -26,11 +26,8 @@ export default function BatchValidateModal({
   fileUploadProgress,
   showUpload = true,
   showStaged = false,
-  ott,
-  iframeHost,
-  iFrameLoaded,
-  onSampleFileDownload = null,
-  onErrorReportDownload = null,
+  onSampleFileDownload = () => {},
+  onErrorReportDownload = () => {},
 }) {
   return (
     <div class="modal-body">
