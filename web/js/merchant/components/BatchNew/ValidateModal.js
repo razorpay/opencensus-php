@@ -6,11 +6,6 @@ import FileStaged from 'merchant/components/File/Staged';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
-import {
-  trackSampleFileDownload,
-  trackDownloadErrorReport,
-} from 'merchant/containers/BatchNew/ga';
-
 const MAX_FILE_SIZE = 1048576; // 1MB in bytes.
 
 export default function BatchValidateModal({
@@ -34,6 +29,8 @@ export default function BatchValidateModal({
   ott,
   iframeHost,
   iFrameLoaded,
+  onSampleFileDownload = null,
+  onErrorReportDownload = null,
 }) {
   return (
     <div class="modal-body">
@@ -58,6 +55,15 @@ export default function BatchValidateModal({
             currentStatus={status}
           />
         )}
+        {/*        <FileUpload
+          accept={['csv', 'xlsx']}
+          uploadedFileName="Upload File here"
+          maxSize={MAX_FILE_SIZE}
+          onBiggerFileSize={onBiggerFileSize}
+          onFileChange={onFileChange}
+          onCloseClick={onCloseClick}
+          stagedFileStatus={stagedFileStatus}
+        />*/}
         {notifyMsg && (
           <h5 class={`notification ${status}`}>
             <i class="i i-info-circle m-r" />
@@ -99,7 +105,7 @@ export default function BatchValidateModal({
                 <a
                   class="btn-link"
                   href={sampleUrl}
-                  onClick={trackSampleFileDownload}
+                  onClick={onSampleFileDownload}
                 >
                   download sample file
                 </a>
@@ -125,7 +131,7 @@ export default function BatchValidateModal({
               <a
                 class="btn btn-primary btn-block"
                 href={fileUrl}
-                onClick={trackDownloadErrorReport}
+                onClick={onErrorReportDownload}
               >
                 {' '}
                 <i class="i i-download m-r" /> Download File
