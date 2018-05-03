@@ -45,6 +45,8 @@ class DirectDebit extends Base
         $customer = $this->createCustomer($entry);
 
         $this->processPayment($entry, $order, $customer);
+
+        $this->processor->flushPaymentObjects();
     }
 
     /**
@@ -118,6 +120,23 @@ class DirectDebit extends Base
     {
         parent::postProcessEntries($entries);
 
+        $processedAmount = 0;
+
+        foreach ($entries as $entry)
+        {
+            if ($entry[Batch\Header::STATUS] === Batch\Status::SUCCESS)
+            {
+                $processedAmount += $entry[Batch\Header::DIRECT_DEBIT_AMOUNT];
+            }
+        }
+
+        $this->batch->setProcessedAmount($processedAmount);
+
+        $this->deleteBatchFile();
+    }
+
+    protected function deleteBatchFile()
+    {
         $ufhFile = $this->repo->file_store->findByBatchId($this->batch->getId());
 
         $deleter = new FileStore\Deleter();
