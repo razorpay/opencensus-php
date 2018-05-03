@@ -63,6 +63,8 @@ final class Route
         'payment_bank_transfer_fetch'              => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'batch_create'                             => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
         'batch_validate_file'                      => ['post',     'batches/validate',                               'BatchController@validateFile'                                      ],
+        'batch_upload_form_get'                    => ['get',      'batches/upload',                                 'BatchController@renderBatchUploadForm'                             ],
+        'batch_upload_form_validate_file'          => ['post',     'batches/upload/validate',                        'BatchController@validateBatchFile'                                 ],
         'batch_fetch_multiple'                     => ['get',      'batches',                                        'BatchController@getBatches'                                        ],
         'batch_fetch_by_id'                        => ['get',      'batches/{id}',                                   'BatchController@getBatchById'                                      ],
         'batch_process_file'                       => ['post',     'batches/process',                                'BatchController@processBatches'                                    ],
@@ -722,6 +724,7 @@ final class Route
         'merchant_requests_update'                 => ['patch',    'merchant/requests/{id}',                         'MerchantRequestController@update'                                  ],
         'merchant_requests_bulk_update'            => ['put',      'merchant/requests/bulk',                         'MerchantRequestController@bulkUpdate'                              ],
         'merchant_requests_rejection_reasons'      => ['get',      'merchant/requests/rejection_reasons',            'MerchantRequestController@getRejectionReasons'                     ],
+        'merchant_one_time_token'                  => ['post',     'merchant/token',                                 'MerchantRequestController@issueOneTimeToken'                       ],
 
         'onboarding_features_fetch_details'        => ['get',      'onboarding/features',                            'FeatureController@getOnboardingDetails'                            ],
         'onboarding_features_fetch_submission'     => ['get',      'onboarding/features/{feature}',                  'FeatureController@getOnboardingSubmissions'                        ],
@@ -1164,6 +1167,7 @@ final class Route
         'merchant_activation_upload_file',
         'merchant_activation_save',
         'merchant_activation_update_website',
+        'merchant_one_time_token',
         'merchant_activation_business_categories',
         'offer_create',
         'offer_update',
@@ -1811,6 +1815,8 @@ final class Route
     ];
 
     public static $direct = [
+        'batch_upload_form_get',
+        'batch_upload_form_validate_file',
         'device_verify',
         'upi_get_bank_list',
         'upi_read_async',

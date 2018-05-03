@@ -175,9 +175,9 @@ trait SettlementTrait
                 Preferences::MID_PAISABAZAAR,
             ];
 
-            if ((in_array($parentId, $oneSetlAt1PmMids, true) === true)
-                ($now < $onePm) or
-                ($now >= $twoPm))
+            if ((in_array($parentId, $oneSetlAt1PmMids, true) === true) and
+                (($now < $onePm) or
+                 ($now >= $twoPm)))
             {
                 return true;
             }
