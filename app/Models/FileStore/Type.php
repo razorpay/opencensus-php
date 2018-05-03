@@ -25,6 +25,8 @@ class Type
 
     const ICICI_NETBANKING_REFUND           = 'icici_netbanking_refund';
 
+    const OBC_NETBANKING_REFUND             = 'obc_netbanking_refund';
+
     const AXIS_NETBANKING_REFUND            = 'axis_netbanking_refund';
 
     const AXIS_NETBANKING_CLAIMS            = 'axis_netbanking_claims';
@@ -179,6 +181,7 @@ class Type
             self::HDFC_FSS_FAILED_REFUND,
             self::MOCK_RECONCILIATION_FILE,
             self::GATEWAY_FAILED_REFUNDS,
+            self::OBC_NETBANKING_REFUND,
         ],
 
         Constants\Entity::BATCH => [
@@ -271,6 +274,7 @@ class Type
         self::AXIS_CYBERSOURCE_FAILED_REFUND,
         self::MOCK_RECONCILIATION_FILE,
         self::GATEWAY_FAILED_REFUNDS,
+        self::OBC_NETBANKING_REFUND,
     ];
 
     /**
@@ -315,6 +319,7 @@ class Type
             self::HDFC_CYBERSOURCE_FAILED_REFUND,
             self::AXIS_CYBERSOURCE_FAILED_REFUND,
             self::HDFC_FSS_FAILED_REFUND,
+            self::OBC_NETBANKING_REFUND,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [
