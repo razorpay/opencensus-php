@@ -129,7 +129,7 @@ class Entity extends Base\PublicEntity
 
     public function invitations()
     {
-        return $this->hasMany(Invitation\Entity::class)
+        return $this->hasMany(Invitation\Entity::class, Invitation\Entity::EMAIL, Entity::EMAIL)
                     ->orderBy(Invitation\Entity::CREATED_AT, 'desc');
     }
 
