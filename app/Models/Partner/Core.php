@@ -50,7 +50,7 @@ class Core extends Base\Core
         {
             $this->trace->traceException($t);
 
-            throw new BadRequestValidationFailureException('4xx');
+            throw new BadRequestValidationFailureException('Token creation failed');
         }
 
         (new Merchant\AccessMap\Core)->addMappingForOAuthApp($subMerchant, $mapInput);

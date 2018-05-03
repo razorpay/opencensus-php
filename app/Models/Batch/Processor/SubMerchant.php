@@ -4,6 +4,7 @@ namespace RZP\Models\Batch\Processor;
 
 use Razorpay\OAuth;
 
+use RZP\Models\Batch\Type;
 use RZP\Models\Partner;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
@@ -51,6 +52,8 @@ class SubMerchant extends Base
             $subMerchant = $this->createSubMerchantForEntry($entry);
 
             $this->processPartnerAppIfApplicable($subMerchant, $entry);
+
+            $this->unsetExtraOutputKeys($entry);
         });
     }
 
@@ -125,7 +128,15 @@ class SubMerchant extends Base
 
         $token = (new Partner\Core)->connectMerchant($this->partnerApp, $this->merchant, $subMerchant);
 
+        $status = ((empty($token)) === true) ? Status::FAILURE : Status::SUCCESS;
+
+        $entry[Header::STATUS]      = $status;
         $entry[Header::PARTNER_TOKEN] = $token;
+    }
+
+    protected function unsetExtraOutputKeys(array & $entry)
+    {
+        $entry = array_only($entry, Header::HEADER_MAP[Type::SUB_MERCHANT][Header::OUTPUT]);
     }
 
     protected function sendProcessedMail()
