@@ -9,7 +9,7 @@ export default class FileUpload extends Component {
   static defaultProps = {
     multi: false,
     acceptedTypes: [],
-    uploadProgress: 0,
+    uploadedBytes: 0,
     name: 'file-upload',
     onBiggerFileSize: () => {},
     onFileChange: () => {},
@@ -18,25 +18,28 @@ export default class FileUpload extends Component {
 
   uniqFileId = null; // TODO: Considers only single file upload. Convert to array for multi file support.
 
-  state = {
-    files: [],
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      files: [],
+      isDocPreUploaded: props.defaultValue,
+    };
+  }
 
   updateFile = file => {
     // check if file type is allowed
     if (this.isFileAllowed(file)) {
-      if (this.props.onDrop) {
-        this.props.onDrop(file);
-      } else {
-        this.setState({ files: [...this.state.files, file] }, _ =>
-          this.onFileChange(file)
-        );
-      }
+      this.props.onDrop && this.props.onDrop(file);
+
+      this.setState({ files: [...this.state.files, file] }, _ =>
+        this.onFileChange(file)
+      );
     }
   };
 
   progressTracker = progressEvent => {
-    this.setState({ uploadProgress: progressEvent.loaded });
+    this.setState({ uploadedBytes: progressEvent.loaded });
   };
 
   // TODO: Considers single file upload. Covert to array for multi file support
@@ -46,7 +49,11 @@ export default class FileUpload extends Component {
     this.props.onFileChange
       .call(this, file, this.progressTracker)
       .then(data => {
-        this.setState({ stagedFileStatus: 'uploaded' });
+        if (data.errors) {
+          this.setState({ stagedFileStatus: 'error' });
+        } else {
+          this.setState({ stagedFileStatus: 'success' });
+        }
       })
       .catch(err => {
         this.setState({ stagedFileStatus: 'error' });
@@ -73,10 +80,18 @@ export default class FileUpload extends Component {
       return true; // Allow all file types if not specified
     }
 
+    // Get patterns of each accepted file types
     const acceptedTypes = this.props.accept.map(
       fileType => fileTypesMap[fileType]
     );
-    return acceptedTypes.length === 0 || acceptedTypes.indexOf(type) > -1;
+
+    // Uploaded file type matches given pattern
+    const isValidFilePattern = acceptedTypes.find(aT => {
+      let pattern = new RegExp(aT);
+      return pattern.test(type);
+    });
+
+    return acceptedTypes.length === 0 || isValidFilePattern;
   };
 
   handleBiggerFile = fileSize => {
@@ -99,20 +114,29 @@ export default class FileUpload extends Component {
       return '';
     }
 
-    let infotext = 'Only ';
+    let infotext = 'Upload ';
 
     if (accept.length > 1) {
-      infotext += `${accept.slice(0, -1).join(', ')} and ${accept.slice(-1)}`;
+      infotext += `${accept.slice(0, -1).join(', ')} or ${accept.slice(-1)}`;
     } else {
       infotext += `${accept[0]}`;
     }
 
-    infotext += ' files are allowed';
+    infotext += ' file';
 
     return infotext;
   };
 
   handleCloseClick = fileIndex => () => {
+    if (this.props.disabled) {
+      return;
+    }
+
+    if (this.state.isDocPreUploaded) {
+      this.setState({ isDocPreUploaded: false });
+
+      return;
+    }
     this.setState(
       {
         files: this.state.files.filter((_, index) => index !== fileIndex),
@@ -158,15 +182,28 @@ export default class FileUpload extends Component {
   };
 
   render() {
-    const { children, multi, maxSize, name, accept } = this.props;
+    const {
+      children,
+      multi,
+      maxSize,
+      name,
+      accept,
+      disabled,
+      showAcceptInfo = true,
+    } = this.props;
+    let { isDocPreUploaded } = this.state;
 
     if (this.state.files) {
       this.uniqFileId = this.uniqFileId || `${name + new Date().getTime()}`;
     }
 
     return (
-      <div class="Dropzone" onDragLeave={this.toggleDragWithFile}>
+      <div
+        class="Dropzone"
+        onDragLeave={isDocPreUploaded ? undefined : this.toggleDragWithFile}
+      >
         {!multi &&
+          !isDocPreUploaded &&
           !this.state.files.length && (
             <label
               class={classList(
@@ -174,9 +211,11 @@ export default class FileUpload extends Component {
                 this.state.isFileDraggedInside && 'Dropzone-cavity--highlight'
               )}
               for={`fileInput-${name}`}
-              onDrop={this.handleDrop}
-              onDragOver={this.handleDragOver}
-              onDragEnter={this.toggleDragWithFile}
+              onDrop={isDocPreUploaded ? undefined : this.handleDrop}
+              onDragOver={isDocPreUploaded ? undefined : this.handleDragOver}
+              onDragEnter={
+                isDocPreUploaded ? undefined : this.toggleDragWithFile
+              }
               onClick={this.handleClick}
             >
               <div class="Dropzone-content">
@@ -188,7 +227,7 @@ export default class FileUpload extends Component {
                       alt=""
                     />
                     <p class="Dropzone-content-desc--primary">
-                      Drop files here or{' '}
+                      Drop file here or{' '}
                       <b class="text-primary">Click to Upload</b>
                       {maxSize && (
                         <span>
@@ -203,12 +242,13 @@ export default class FileUpload extends Component {
                       accept={
                         accept && accept.map(fileType => fileTypesMap[fileType])
                       }
+                      disabled={disabled}
                       hidden
                     />
                     {do {
                       const acceptedFileTypes = this.getAcceptedFileTypesInfo();
 
-                      if (acceptedFileTypes) {
+                      if (acceptedFileTypes && showAcceptInfo) {
                         <p class="Dropzone-content-desc--secondary">
                           {acceptedFileTypes}
                         </p>;
@@ -219,19 +259,28 @@ export default class FileUpload extends Component {
               </div>
             </label>
           )}
-        {this.state.files &&
-          this.state.files[0] && (
-            <div class="Dropzone-cavity Dropzone-cavity--staged">
-              <Staged
-                file={this.state.files[0]}
-                uniqFileId={this.uniqFileId}
-                onCloseClick={this.handleCloseClick(0)}
-                uploadedBytes={this.state.uploadProgress}
-                stagedFileStatus={this.state.stagedFileStatus}
-                showFileSize={maxSize}
-              />
-            </div>
-          )}
+        {!!(isDocPreUploaded || this.state.files.length) && (
+          <div
+            class={classList(
+              'Dropzone-cavity',
+              'Dropzone-cavity--staged',
+              this.state.stagedFileStatus &&
+                'Dropzone-cavity--' + this.state.stagedFileStatus,
+              disabled && 'Dropzone-cavity--disabled'
+            )}
+          >
+            <Staged
+              file={this.state.files.length && this.state.files[0]}
+              isDocPreUploaded={isDocPreUploaded}
+              uniqFileId={this.uniqFileId}
+              onCloseClick={this.handleCloseClick(0)}
+              isDisabled={disabled}
+              uploadedBytes={this.state.uploadedBytes}
+              stagedFileStatus={this.state.stagedFileStatus}
+              showFileSize={maxSize}
+            />
+          </div>
+        )}
       </div>
     );
   }
@@ -266,6 +315,7 @@ const fileTypesMap = {
   xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', //new excel format
   pdf: 'application/pdf',
   xls: 'application/vnd.ms-excel', //Old microsoft excel sheets.
+  image: 'image/*',
 };
 
 // File type = docs are not safe to upload in general
