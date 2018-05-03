@@ -76,6 +76,11 @@ class EsClient
         return [$res];
     }
 
+    public function clusterHealth()
+    {
+        return $this->client->cluster()->health();
+    }
+
     public function explain(array $params)
     {
         return $this->client->explain($params);

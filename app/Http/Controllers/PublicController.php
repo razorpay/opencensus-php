@@ -2,7 +2,10 @@
 
 namespace RZP\Http\Controllers;
 
+use RZP\Services\EsClient;
 use View, Request, ApiResponse;
+use Illuminate\Support\Facades\DB;
+
 use RZP\Exception;
 use RZP\Base\JitValidator;
 
@@ -13,6 +16,18 @@ class PublicController extends Controller
         $response['message'] = "Welcome to Razorpay API.";
 
         return ApiResponse::json($response);
+    }
+
+    public function getStatus()
+    {
+        return [
+            'commit'    => env('GIT_COMMIT_HASH') ?? 'Commit hash is not available',
+            'db'        => $this->getDbStatus(),
+            'db-read'   => $this->getDbStatus('read'),
+            'cache'     => $this->getCacheStatus(),
+            'sec-cache' => $this->getCacheStatus('secure'),
+            'es'        => $this->getEsStatus(),
+        ];
     }
 
     public function getCatchAllRoute(string $uri = null)
@@ -133,5 +148,64 @@ class PublicController extends Controller
         ];
 
         (new JitValidator)->rules($rules)->input($params)->validate();
+    }
+
+    protected function getDbStatus($replica = null)
+    {
+        $method = 'get' . ucfirst($replica) . 'Pdo';
+        try
+        {
+            if (DB::connection()->{$method}()) {
+                return 'ok';
+            }
+        }
+        catch (\Throwable $e)
+        {
+            return 'ko';
+        }
+    }
+
+    protected function getCacheStatus($connection = null)
+    {
+        try
+        {
+            if ($this->app['redis']->connection($connection)->info('Keyspace'))
+            {
+                return 'ok';
+            }
+        }
+        catch (\Throwable $e)
+        {
+            return 'ko';
+        }
+    }
+
+    /**
+     * Gives the cluster status in color
+     *
+     *  - Green means everything is good (cluster is fully functional),
+     *  - Yellow means all data is available but some replicas are not yet allocated (cluster is fully functional),
+     *  - Red means some data is not available for whatever reason. Note that even if a cluster is red,
+     *    it still is partially functional (i.e. it will continue to serve search requests from the available shards)
+     *    but you will likely need to fix it ASAP since you have missing data.
+     *
+     * @return mixed
+     */
+    protected function getEsStatus()
+    {
+        try
+        {
+            $es = (new EsClient($this->app));
+
+            $es->setEsClient([]);
+
+            $clusterStatus = $es->clusterHealth();
+
+            return $clusterStatus['status'];
+        }
+        catch (\Throwable $e)
+        {
+            return 'ko';
+        }
     }
 }
