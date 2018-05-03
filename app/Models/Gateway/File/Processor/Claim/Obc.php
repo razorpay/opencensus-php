@@ -12,9 +12,4 @@ class Obc extends Base
     {
         return;
     }
-
-    protected function formatDataForFile(array $data)
-    {
-        return;
-    }
 }

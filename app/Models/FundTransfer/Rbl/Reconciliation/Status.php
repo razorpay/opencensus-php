@@ -24,4 +24,14 @@ class Status extends BaseStatus
             self::FAILURE
         ];
     }
+
+    public static function getCriticalErrorStatus(): array
+    {
+        return [];
+    }
+
+    public static function getCriticalErrorRemarks(): array
+    {
+        return [];
+    }
 }

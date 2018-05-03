@@ -10,22 +10,12 @@ use RZP\Models\Gateway\File\Type;
 
 class Obc extends Base
 {
-    public function createFile($data)
-    {
-        if (isset($data['refunds']) === true)
-        {
-            $refundFileProcessor = $this->getFileProcessor(Type::REFUND);
-
-            $refundFileProcessor->createFile($data['refunds']);
-        }
-    }
-
     protected function formatDataForMail(array $data)
     {
         $amount = [
-            'claims'  => 0.00,
-            'refunds' => 0.00,
-            'total'   => 0.00,
+            'claims'  => 0,
+            'refunds' => 0,
+            'total'   => 0,
         ];
 
         $count = [
@@ -39,7 +29,7 @@ class Obc extends Base
         {
             $amount['refunds'] = array_reduce($data['refunds'], function ($sum, $item)
             {
-                $sum += $this->getFormattedAmount($item['refund']['amount']);
+                $sum += $item['refund']['amount'];
 
                 return $sum;
             });
@@ -53,7 +43,7 @@ class Obc extends Base
         {
             $amount['claims'] = array_reduce($data['claims'], function ($sum, $item)
             {
-                $sum += $this->getFormattedAmount($item['payment']->getAmount());
+                $sum += $item['payment']->getAmount();
 
                 return $sum;
             });
@@ -61,12 +51,16 @@ class Obc extends Base
             $count['claims'] = count($data['claims']);
         }
 
-        $amount['total'] = $amount['claims'] - $amount['refunds'];
+        $amount['total'] = $this->getFormattedAmount($amount['claims'] - $amount['refunds']);
+
+        $amount['refunds'] = $this->getFormattedAmount($amount['refunds']);
+
+        $amount['claims'] = $this->getFormattedAmount($amount['claims']);
 
         $date = Carbon::now(Timezone::IST)->format('d/m/y');
 
         return [
-            'bankName'    => 'OBC',
+            'bankName'    => 'obc',
             'amount'      => $amount,
             'count'       => $count,
             'date'        => $date,
