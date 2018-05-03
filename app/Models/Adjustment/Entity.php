@@ -72,7 +72,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE => null,
     ];
 
-    protected $ignoreRelations = [
+    protected $ignoredRelations = [
         'entity',
     ];
 

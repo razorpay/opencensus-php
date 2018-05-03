@@ -132,7 +132,7 @@ class Entity extends Base\PublicEntity
         self::MOBILE_BANKING_ENABLED => 'bool',
     ];
 
-    protected $ignoreRelations = [
+    protected $ignoredRelations = [
         'source',
     ];
 

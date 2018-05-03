@@ -179,7 +179,7 @@ class Entity extends Base\PublicEntity
         self::TAX_GROUP_ID,
     ];
 
-    protected $ignoreRelations = [
+    protected $ignoredRelations = [
         'entity',
         'ref',
     ];

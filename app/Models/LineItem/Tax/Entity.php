@@ -78,7 +78,7 @@ class Entity extends Base\PublicEntity
         self::GROUP_ID,
     ];
 
-    protected $ignoreRelations = [
+    protected $ignoredRelations = [
         'lineItem',
     ];
 

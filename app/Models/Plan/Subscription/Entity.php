@@ -219,10 +219,6 @@ class Entity extends Base\PublicEntity
         self::END_AT,
     ];
 
-    protected $ignoreRelations = [
-        'task',
-    ];
-
     const DEFAULT_AUTH_AMOUNT = 500;
 
     const MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION = 10;

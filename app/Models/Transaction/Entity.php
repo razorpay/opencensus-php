@@ -162,7 +162,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_SETTLED_AT  => 'int',
     ];
 
-    protected $ignoreRelations = [
+    protected $ignoredRelations = [
         'source',
     ];
 

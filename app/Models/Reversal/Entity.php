@@ -76,10 +76,6 @@ class Entity extends Base\PublicEntity
         self::NOTES => [],
     ];
 
-    protected $ignoreRelations = [
-        'entity',
-    ];
-
     // -------------------- Relations ---------------------------
 
     public function transaction()

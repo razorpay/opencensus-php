@@ -85,7 +85,7 @@ class Entity extends Base\PublicEntity
         self::SOURCE,
     ];
 
-    protected $ignoreRelations = [
+    protected $ignoredRelations = [
         'source',
     ];
 

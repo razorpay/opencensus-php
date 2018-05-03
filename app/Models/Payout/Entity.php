@@ -150,7 +150,7 @@ class Entity extends Base\PublicEntity
         self::SETTLED_ON,
     ];
 
-    protected $ignoreRelations = [
+    protected $ignoredRelations = [
         'destination',
     ];
 
