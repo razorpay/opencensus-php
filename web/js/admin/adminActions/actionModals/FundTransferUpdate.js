@@ -7,7 +7,6 @@ import { adminPatch } from 'common/fetch';
 import { notifySuccess, notifyError, closeModal } from 'common/modal';
 
 FundTransferUpdate.title = 'Fund Transfer Update';
-FundTransferUpdate.permission = 'settlement_bulk_update';
 
 export default function FundTransferUpdate() {
   return (
@@ -20,9 +19,17 @@ export default function FundTransferUpdate() {
         type="submit"
         onSubmit={body => {
           if (body.json_dump) {
+            let data = null;
+
+            try {
+              data = JSON.parse(body.json_dump);
+            } catch (err) {
+              return notifyError('Please enter a valid JSON.');
+            }
+
             return adminPatch({
               url: 'live/fund_transfer_attempts',
-              data: body.json_dump,
+              data: data,
             }).then(response => {
               if (response) {
                 notifySuccess('Funds updated successfully.');
