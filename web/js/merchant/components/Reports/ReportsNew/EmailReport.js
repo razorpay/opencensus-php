@@ -4,11 +4,24 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import AsyncButton from 'react-async-button';
 
 export default class EmailReport extends Component {
+  // emails map for tracking duplicate entries
+  // format {email_id : email@example.com}
+  emailsMap = {};
+
   state = {
+    //list of selected email ids
     selectedEmails: [],
   };
 
-  //TODO: check for duplicate emails
+  componentWillMount() {
+    const { emails } = this.props;
+
+    //create <email_id -> email> map
+    emails.forEach(
+      (email, index) => (this.emailsMap[`email_${index}`] = email)
+    );
+  }
+
   handleChange = e => {
     const email = e.target.dataset.emailid;
     let selectedEmails = [...this.state.selectedEmails];
@@ -24,15 +37,16 @@ export default class EmailReport extends Component {
     this.setState({ selectedEmails });
   };
 
-  //TODO: integrate submit api
-
   render() {
-    const { emails, closeModal } = this.props;
     const { selectedEmails } = this.state;
+    const { emailsMap } = this;
 
     return (
       <div>
-        <ModalHeader title="Email Report" onCloseClick={closeModal} />
+        <ModalHeader
+          title="Email Report"
+          onCloseClick={this.props.closeModal}
+        />
         <div class="modal-body">
           <p>
             Select email addresses from below to which you want to send the
@@ -40,20 +54,20 @@ export default class EmailReport extends Component {
           </p>
           <form>
             <strong>Choose Email:</strong>
-            {emails.map((email, index) => (
-              <div class="form-group" key={index}>
+            {Object.keys(emailsMap).map(emailId => (
+              <div class="form-group" key={emailId}>
                 <div class="checkbox rzpCheckbox next">
                   <input
-                    name={`email_${index}`}
-                    id={`email_${index}`}
+                    name={emailId}
+                    id={emailId}
                     type="checkbox"
                     class="form-control"
-                    data-emailid={email}
-                    checked={selectedEmails.indexOf(email) > -1}
+                    data-emailid={emailId}
+                    checked={selectedEmails.indexOf(emailId) > -1}
                     onChange={this.handleChange}
                   />
-                  <label class="icon i-check" for={`email_${index}`}>
-                    {email}
+                  <label class="icon i-check" for={emailId}>
+                    {emailsMap[emailId]}
                   </label>
                 </div>
               </div>
