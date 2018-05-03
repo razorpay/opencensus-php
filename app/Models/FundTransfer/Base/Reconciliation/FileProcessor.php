@@ -14,7 +14,6 @@ use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Settlement\SlackNotification;
-use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationEmail;
 
 abstract class FileProcessor extends Base\Core

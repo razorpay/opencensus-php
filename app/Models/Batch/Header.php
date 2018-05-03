@@ -251,6 +251,25 @@ class Header
     const PAYOUT_FEE                 = 'payout_fee';
     const PAYOUT_TAX                 = 'payout_tax';
 
+    const DIRECT_DEBIT_EMAIL           = 'email';
+    const DIRECT_DEBIT_CONTACT         = 'contact';
+    const DIRECT_DEBIT_CARD_NUMBER     = 'card_number';
+    const DIRECT_DEBIT_EXPIRY_MONTH    = 'expiry_month';
+    const DIRECT_DEBIT_EXPIRY_YEAR     = 'expiry_year';
+    const DIRECT_DEBIT_CARDHOLDER_NAME = 'cardholder_name';
+    const DIRECT_DEBIT_AMOUNT          = 'amount';
+    const DIRECT_DEBIT_CURRENCY        = 'currency';
+    const DIRECT_DEBIT_RECEIPT         = 'receipt';
+    const DIRECT_DEBIT_DESCRIPTION     = 'description';
+    const DIRECT_DEBIT_NOTES_1         = 'notes_1';
+    const DIRECT_DEBIT_NOTES_2         = 'notes_2';
+    const DIRECT_DEBIT_NOTES_3         = 'notes_3';
+    const DIRECT_DEBIT_NOTES_4         = 'notes_4';
+    const DIRECT_DEBIT_NOTES_5         = 'notes_5';
+    const DIRECT_DEBIT_ORDER_ID        = 'order_id';
+    const DIRECT_DEBIT_PAYMENT_ID      = 'payment_id';
+    const DIRECT_DEBIT_REMARKS         = 'remarks';
+
     const ELFIN_LONG_URL             = 'Long Url';
     const ELFIN_SHORT_URL            = 'Short Url';
 
@@ -651,6 +670,46 @@ class Header
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::DIRECT_DEBIT  =>  [
+            self::INPUT =>  [
+                self::DIRECT_DEBIT_EMAIL,
+                self::DIRECT_DEBIT_CONTACT,
+                self::DIRECT_DEBIT_CARD_NUMBER,
+                self::DIRECT_DEBIT_EXPIRY_MONTH,
+                self::DIRECT_DEBIT_EXPIRY_YEAR,
+                self::DIRECT_DEBIT_CARDHOLDER_NAME,
+                self::DIRECT_DEBIT_AMOUNT,
+                self::DIRECT_DEBIT_CURRENCY,
+                self::DIRECT_DEBIT_RECEIPT,
+                self::DIRECT_DEBIT_DESCRIPTION,
+                self::DIRECT_DEBIT_NOTES_1,
+                self::DIRECT_DEBIT_NOTES_2,
+                self::DIRECT_DEBIT_NOTES_3,
+                self::DIRECT_DEBIT_NOTES_4,
+                self::DIRECT_DEBIT_NOTES_5,
+            ],
+
+            self::OUTPUT    =>  [
+                self::DIRECT_DEBIT_EMAIL,
+                self::DIRECT_DEBIT_CONTACT,
+                self::DIRECT_DEBIT_CARD_NUMBER,
+                self::DIRECT_DEBIT_EXPIRY_MONTH,
+                self::DIRECT_DEBIT_EXPIRY_YEAR,
+                self::DIRECT_DEBIT_CARDHOLDER_NAME,
+                self::DIRECT_DEBIT_AMOUNT,
+                self::DIRECT_DEBIT_CURRENCY,
+                self::DIRECT_DEBIT_RECEIPT,
+                self::DIRECT_DEBIT_DESCRIPTION,
+                self::DIRECT_DEBIT_NOTES_1,
+                self::DIRECT_DEBIT_NOTES_2,
+                self::DIRECT_DEBIT_NOTES_3,
+                self::DIRECT_DEBIT_NOTES_4,
+                self::DIRECT_DEBIT_NOTES_5,
+                self::DIRECT_DEBIT_ORDER_ID,
+                self::DIRECT_DEBIT_PAYMENT_ID,
             ],
         ],
 
