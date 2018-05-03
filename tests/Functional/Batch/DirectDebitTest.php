@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Batch;
 use Illuminate\Support\Facades\Queue;
 
 use RZP\Models\Batch;
+use RZP\Models\FileStore;
 use RZP\Jobs\Batch as BatchJob;
 use RZP\Tests\Functional\Fixtures\Entity\Feature;
 use RZP\Tests\Functional\TestCase;
@@ -60,6 +61,10 @@ class DirectDebitTest extends TestCase
 
         $this->assertInputFileExistsForBatch($response[Batch\Entity::ID]);
         $this->assertOutputFileExistsForBatch($response[Batch\Entity::ID]);
+
+        // Input file is to be deleted
+        $inputFile = $this->getFileForBatchOfType($response[Batch\Entity::ID], FileStore\Type::BATCH_INPUT);
+        $this->assertNotNull($inputFile['deleted_at']);
 
         $order = $this->getLastEntity('order', true);
         $this->assertEquals('random receipt', $order['receipt']);
