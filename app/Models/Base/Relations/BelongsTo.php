@@ -11,14 +11,19 @@ class BelongsTo extends BaseBelongsTo
     /**
      * Associate the model instance to the given parent.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  \Illuminate\Database\Eloquent\Model|null  $model
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function associate($model)
     {
         if (($model !== null) and (($model instanceof Model) === false))
         {
-            throw new Exception\LogicException('should be a model');
+            throw new Exception\RuntimeException(
+                'Only a valid parent entity can be associated',
+                [
+                    'entity'    => $this->child->entity,
+                    'parent_id' => $this->foreignKey,
+                ]);
         }
 
         $ownerKey = $model instanceof Model ? $model->getAttribute($this->ownerKey) : $model;

@@ -18,10 +18,21 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
     public $incrementing = false;
 
+    /**
+     * Parent relations which are specified here will be ignored while
+     * checking existence of associated entities while saving current entity.
+     *
+     * @var array
+     */
     protected $ignoredRelations = [];
 
     public function save(array $options = [])
     {
+        //
+        // Check that all associated parent entities of current entity, exist in
+        // the database before saving. This excludes relations which are present in
+        // the ignoredRelations array.
+        //
         $nonExistentRelations = array_filter($this->relations, function ($model, $relation)
         {
             return ((in_array($relation, $this->ignoredRelations, true) === false) and
@@ -32,7 +43,9 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
         if (count($nonExistentRelations) > 0)
         {
-            throw new Exception\LogicException('All relations must exist');
+            throw new Exception\RuntimeException(
+                'All parent relations must exist',
+                array_merge([$this->entity], array_keys($this->relations)));
         }
 
         return parent::save($options);
