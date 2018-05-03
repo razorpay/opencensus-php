@@ -40,6 +40,7 @@ export default class ActivationContainer extends React.Component {
       this.setState({
         data: data.data,
         categories: categories.data,
+        isFormTouched: isFormTouched(data.data),
       });
     });
   }
@@ -76,10 +77,8 @@ export default class ActivationContainer extends React.Component {
     }).catch(err => {});
   };
 
-  saveFile = (event, fieldName, accountId) => {
-    let files = event.target.files;
-    let file = files[0];
-
+  // TODO: Figure out accountId from props
+  saveFile = (fieldName, file, progressTracker, accountId) => {
     let formData = new FormData();
 
     let fieldNameMapping = {
@@ -102,14 +101,28 @@ export default class ActivationContainer extends React.Component {
       mode: 'live',
       data: formData,
       accountId,
+      onUploadProgress: progressTracker,
     })
       .then(response => {
-        this.props.showNotification({
-          type: 'success',
-          message: 'File uploaded successfully',
-        });
+        if (response.data) {
+          this.props.showNotification({
+            type: 'success',
+            message: 'File uploaded successfully',
+          });
+
+          return response;
+        }
       })
-      .catch(err => {});
+      .catch(err => {
+        console.log('error.', err);
+        if (err.errors.length && err.errors[0]) {
+          this.props.showNotification({
+            type: 'error',
+            message: err.errors,
+          });
+        }
+        return err;
+      });
   };
 
   render() {
@@ -120,7 +133,7 @@ export default class ActivationContainer extends React.Component {
     let content, modalClass;
 
     if (!data) {
-      modalClass = 'Activation--wizard';
+      modalClass = 'Activation--welcome';
       content = (
         <div class="page-spinner-container">
           <Spinner />
@@ -129,7 +142,7 @@ export default class ActivationContainer extends React.Component {
     } else if (data.submitted) {
       modalClass = 'Activation--success';
       content = <SuccessScreen />;
-    } else if (filledEvenSingleDetail && !this.state.openWizard) {
+    } else if (!this.state.isFormTouched && !this.state.openWizard) {
       modalClass = 'Activation--welcome';
       content = (
         <WelcomeScreen
@@ -215,3 +228,43 @@ const WelcomeScreen = ({ onClose, openWizard }) => {
 };
 
 ActivationContainer.MODAL_MASK_CLASS = 'Activation';
+
+function isFormTouched(data) {
+  if (!data) {
+    return false;
+  }
+
+  let isDirty = false;
+
+  Object.keys(data).find(key => {
+    if (
+      defaultKeysInForm.indexOf(key) > -1 ||
+      excludedFieldsInForm.indexOf(key) > -1
+    ) {
+      return false;
+    }
+    if (data[key] != null) {
+      console.log(key, data[key]);
+      isDirty = true;
+      return true;
+    }
+  });
+
+  return isDirty;
+}
+
+const defaultKeysInForm = ['contact_name', 'contact_email', 'contact_mobile'];
+const excludedFieldsInForm = [
+  'created_at',
+  'locked',
+  'updated_at',
+  'submitted',
+  'can_submit',
+  'steps_finished',
+  'verification',
+  'business_international',
+  'archived',
+  'activated',
+  'activation_progress',
+  'allowed_next_activation_statuses',
+];

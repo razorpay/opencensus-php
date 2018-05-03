@@ -1,3 +1,5 @@
+import FileUpload from 'merchant/components/File/Upload';
+
 function inputClass({ props, state, className }) {
   let wrapperClass = 'Input';
 
@@ -323,8 +325,39 @@ Field.Radio = Radio;
 Field.Check = Check;
 
 Field.Textarea = _ => <Field {..._} tag="textarea" />;
-Field.File = _ => {
+Field.File2 = _ => {
   return <Field {..._} type="file" />;
+};
+
+Field.File = _ => {
+  let {
+    label,
+    description,
+    selectedDescription,
+    defaultValue,
+    ...props
+  } = separateDomProps(_);
+
+  return (
+    <div class={inputClass({ props })}>
+      <Label text={label} />
+      <div class="Input-content">
+        <FileUpload
+          name={props.name}
+          onBiggerFileSize={_ => {
+            console.log('File size is bigger');
+          }}
+          onFileChange={_.onChange}
+          defaultValue={_.defaultValue}
+          disabled={_.disabled}
+          accept={_._accept}
+          showAcceptInfo={_._showAcceptInfo}
+        />
+        <Description text={selectedDescription} />
+        <Description text={description} />
+      </div>
+    </div>
+  );
 };
 
 Field.Time = _ => <Field {..._} type="time" />;

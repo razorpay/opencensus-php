@@ -2,6 +2,12 @@ import Input from 'component/Input';
 import Form from 'component/Form';
 import Button, { AsyncBtn } from 'component/Button';
 import { classList } from 'common/util';
+import { prevent } from 'common/util';
+
+import {
+  addDropShield,
+  removeDropShield,
+} from 'merchant/components/File/Upload';
 
 const tabs = [
   'Contact Details',
@@ -128,12 +134,11 @@ const differentAddress = activation => activation.state.same_address === '0';
 const businessFields2 = [
   [
     {
-      label: 'Website/App Details',
+      label: 'Do you have Website/App?',
       _cmp: Input.Radio,
       _name: 'app_type',
       options: [
-        'Website',
-        'App',
+        'Yes',
         {
           label: "We don't have either",
           description: (
@@ -164,7 +169,7 @@ const businessFields2 = [
           for more details.
         </React.Fragment>
       ),
-      _when: activation => activation.state.app_type !== '2',
+      _when: activation => activation.state.app_type !== '1',
       info: 'Example: https://www.company.com',
     },
   ],
@@ -258,6 +263,7 @@ const bankAccountFields = [
   },
   {
     _name: 'account_no',
+    type: 'password',
     label: 'Re-Enter Account Number',
   },
   {
@@ -303,7 +309,11 @@ const uploadFields = [
     label: "Authorized Signatory's Address Proof",
   },
 ];
-uploadFields.forEach(a => (a._cmp = Input.File));
+uploadFields.forEach(a => {
+  a._cmp = Input.File;
+  a._accept = ['pdf', 'image'];
+  a._showAcceptInfo = false;
+});
 
 const tabContent = [
   contactFields,
@@ -334,8 +344,8 @@ export default class ActivationWizard extends React.Component {
     dirty: {},
     tabs: [],
     same_address: '1',
-    app_type: '0',
-    has_gstin: '0',
+    app_type: this.props.data && this.props.data.business_website ? '0' : '1',
+    has_gstin: this.props.data && this.props.data.gstin ? '0' : '1',
     account_no: '',
     activeTab: 0, // Fallback
   };
@@ -350,7 +360,19 @@ export default class ActivationWizard extends React.Component {
     super(props);
     this.setInitialTab();
 
-    uploadFields.forEach(a => (a.onChange = e => props.saveFile(e, a.name)));
+    uploadFields.forEach(
+      a =>
+        (a.onChange = (file, progressTracker) =>
+          props.saveFile(a.name, file, progressTracker))
+    );
+  }
+
+  componentDidMount() {
+    addDropShield('.Activation--wizard #form-container');
+  }
+
+  componentWillUnmount() {
+    removeDropShield('.Activation--wizard #form-container');
   }
 
   setInitialTab() {
@@ -521,7 +543,10 @@ export default class ActivationWizard extends React.Component {
             </li>
           </ul>
         </aside>
-        <main class={this.state.showSubmitLayer ? 'block-scroll' : ''}>
+        <main
+          id="form-container"
+          class={this.state.showSubmitLayer ? 'block-scroll' : ''}
+        >
           <main-title>{tabs[activeTab]}</main-title>
           <Form onChange={this.onChange} layout="tabular">
             {content}
