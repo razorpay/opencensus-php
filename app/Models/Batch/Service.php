@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Request\Service as MerchantRequestService;
 
 class Service extends Base\Service
 {
@@ -86,5 +87,27 @@ class Service extends Base\Service
         $response = $this->core()->fetchStatsOfBatch($batch);
 
         return $response;
+    }
+
+    public function validateToken($input): bool
+    {
+        $validator = new Validator();
+        $validator->validateInput('token', $input);
+        $token = $input['token'];
+
+        $merchantRequestService = new MerchantRequestService();
+        return $merchantRequestService->isValidOneTimeToken($token);
+    }
+
+    public function consumeToken($input)
+    {
+        $validator = new Validator();
+        $validator->validateInput('token', [
+            Entity::TOKEN   =>  $input['token']
+        ]);
+        $token = $input['token'];
+
+        $merchantRequestService = new MerchantRequestService();
+        $merchantRequestService->consumeOneTimeToken($token);
     }
 }

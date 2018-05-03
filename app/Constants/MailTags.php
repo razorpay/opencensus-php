@@ -26,7 +26,8 @@ class MailTags
 
     const SETTLEMENT_FAILURE_EMAIL         = 'settlement_failure_email';
 
-    const NULL_UTR_REPORT                  = 'null_utr_report';
+    const FTA_RECON_REPORT                 = 'fta_recon_report';
+    const FTA_CRITICAL_ERROR               = 'fta_critical_error';
 
     const CORPORATION_NETBANKING_REFUNDS_MAIL   = 'corporation_netbanking_refunds_mail';
     const HDFC_NETBANKING_REFUNDS_MAIL          = 'hdfc_netbanking_refunds_mail';

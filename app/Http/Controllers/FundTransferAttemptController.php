@@ -40,9 +40,9 @@ class FundTransferAttemptController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function sendNullUtrReport()
+    public function sendFTAReconReport()
     {
-        $data = $this->service()->sendNullUtrReport();
+        $data = $this->service()->sendFTAReconReport();
 
         return ApiResponse::json($data);
     }
