@@ -15,7 +15,7 @@ const scrollTo = ({
   cb,
   animation = 'ease',
   duration = 1000,
-  container = document.documentElement,
+  container = window,
 }) => {
   const step = 1000 / fps;
 
@@ -34,7 +34,8 @@ const scrollTo = ({
   let stepsCompleted = 0,
     easing = BezierEasing(...bezierVals);
 
-  const startPos = container.scrollTop,
+  const startPos =
+      container === window ? container.pageYOffset : container.screenTop,
     scrollDiff = endPos - startPos;
 
   while (timeTaken <= duration) {

@@ -84,7 +84,7 @@ const normalizeConfig = config => {
   config.transaction_report_email = config.transaction_report_email.join(',');
 
   config.brand_color = config.brand_color || '#528FF0';
-  config.hasPersonalised = !logoUrl;
+  config.hasPersonalised = !!logoUrl;
 
   /**
    * API is currently returning invalid logo urls

@@ -1,4 +1,17 @@
 pipeline:
+  restore-cache:
+    image: razorpay/containers:drone-s3-cache
+    pull: true
+    endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
+    path: '/rzp/dashboard/'
+    secrets:
+      - aws_region
+      - aws_access_key_id
+      - aws_secret_access_key
+    restore: true
+    when:
+      # Disable this step
+      environment: never
   build:
     image: plugins/docker
     repo: razorpay/dashboard
@@ -12,6 +25,21 @@ pipeline:
       event:
         exclude: [deployment]
         include: [push]
+  rebuild-cache:
+    image: razorpay/containers:drone-s3-cache
+    pull: true
+    endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
+    path: '/rzp/dashboard/'
+    secrets:
+      - aws_region
+      - aws_access_key_id
+      - aws_secret_access_key
+    rebuild: true
+    mount:
+      - /root/.composer/cache
+    when:
+      # Disable this step
+      environment: never
   # This is a trick step to use the artifacts from the above step
   # Since we have pushed this image above, we can use the same
   # without pulling it
