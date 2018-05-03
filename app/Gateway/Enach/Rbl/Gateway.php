@@ -39,14 +39,12 @@ class Gateway extends Base\Gateway
 
         $authResponse = $this->callAuthenticationGateway($input);
 
-        $authResponse[Base\Entity::RECEIVED] = 1;
-
         $enach = $this->repo->findByPaymentIdAndAction(
             $input['payment']['id'],
             Action::AUTHORIZE
         );
 
-        $this->updateGatewayPaymentEntity($enach, $authResponse);
+        $this->updateGatewayPaymentEntity($enach, $authResponse, false);
 
         $data = [];
 
