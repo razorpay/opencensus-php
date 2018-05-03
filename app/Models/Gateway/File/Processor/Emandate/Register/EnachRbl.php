@@ -73,7 +73,9 @@ class EnachRbl extends Base
 
             $fileName = $this->getZipFileToWriteName(false);
 
-            $zipFilePath = sys_get_temp_dir() . '/' . $fileName . '.zip';
+            $zipFilePath = sys_get_temp_dir() . $fileName . '.zip';
+
+            $fileName = $this->getZipFileToWriteName();
 
             $this->createZipFileWithData($fileData, $zipFilePath);
 
@@ -155,22 +157,20 @@ class EnachRbl extends Base
         $zip->close();
     }
 
-    protected function getZipFileToWriteName($withExt = true)
+    protected function getZipFileToWriteName($withFullFilePath = true)
     {
         $date = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)->format('dmY');
 
         $fileName = strtr(static::FILE_NAME, ['{$date}' => $date]);
 
-        $fileName = $this->getStorageDir() . $fileName;
+        if ($withFullFilePath === false)
+        {
+            $fileName = basename($fileName);
+        }
 
         if ($this->isTestMode() === true)
         {
             $fileName .= '_' . $this->mode;
-        }
-
-        if ($withExt === true)
-        {
-            $fileName .= '.' . static::EXTENSION;
         }
 
         return $fileName;

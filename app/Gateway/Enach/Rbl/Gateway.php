@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use phpseclib\Crypt\AES;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Enach\Base;
+use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
 use RZP\Models\Settlement\Holidays;
 
@@ -37,6 +38,8 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         $authResponse = $this->callAuthenticationGateway($input);
+
+        $authResponse[Base\Entity::RECEIVED] = 1;
 
         $enach = $this->repo->findByPaymentIdAndAction(
             $input['payment']['id'],
