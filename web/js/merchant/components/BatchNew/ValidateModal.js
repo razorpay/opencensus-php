@@ -17,6 +17,7 @@ export default function BatchValidateModal({
   sampleUrl,
   docUrl,
   batchType,
+  maxRows,
   onLoadMore,
   onFileChange,
   onBiggerFileSize,
@@ -89,14 +90,18 @@ export default function BatchValidateModal({
           </p>
           {shouldLoadMore && (
             <Fragment>
-              <ul>
-                <li>1. The Amount mentioned should be in Paise.</li>
-                <li>
-                  2. The receipt id for all {titleCase(batchType)}s should be
-                  unique.
-                </li>
-                <li>3. The number of rows should not exceed 5000.</li>
-              </ul>
+              <ol>
+                <li>The Amount mentioned should be in Paise.</li>
+                {batchType && (
+                  <li>
+                    The receipt id for all {titleCase(batchType)}s should be
+                    unique.
+                  </li>
+                )}
+                {maxRows && (
+                  <li>The number of rows should not exceed {maxRows}.</li>
+                )}
+              </ol>
               <p>
                 In case of any issues, please{' '}
                 <a

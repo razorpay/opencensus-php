@@ -135,7 +135,7 @@ export default class BatchUploadContainer extends Component {
             />
             {this.state.iFrameLoaded ? (
               <ValidateModal
-                batchType="direct_debit"
+                maxRows={500}
                 iframeHost={iframeHost}
                 showUpload={!this.state.uploadedFile}
                 showStaged={!!this.state.uploadedFile}
@@ -171,7 +171,19 @@ export default class BatchUploadContainer extends Component {
         return (
           <div class="batch-upload-modal success">
             <Header title="" />
-            <SuccessModal onModalClose={this.closeModal} />
+            <SuccessModal onModalClose={this.closeModal}>
+              <div class="text-center">
+                <p>
+                  All payments have queued for processing and output file will
+                  be available shortly.
+                </p>
+                <p>
+                  You can download the output file to check for processed
+                  payments. For the payments that could not be processed due to
+                  some issues, please upload a new batch file.
+                </p>
+              </div>
+            </SuccessModal>
           </div>
         );
       default:
