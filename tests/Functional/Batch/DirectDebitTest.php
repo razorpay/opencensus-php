@@ -21,7 +21,7 @@ class DirectDebitTest extends TestCase
 
         $this->ba->proxyAuth();
 
-        $this->fixtures->merchant->addFeatures(['skip_payment_auth']);
+        $this->fixtures->merchant->addFeatures(['direct_debit']);
 
         $this->fixtures->create('terminal:shared_sharp_terminal');
     }
