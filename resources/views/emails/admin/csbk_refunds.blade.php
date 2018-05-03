@@ -40,7 +40,29 @@
                                 </tbody>
                             </table>
                         </td>
-                    </tr></table>
+                    </tr>
+                </table>
+
+                <br><br>
+                <div>Account details</div>
+                <table style="border: 1px solid grey;">
+                    <thead>
+                    <tr style="border: 1px solid grey">
+                        <th style="border: 1px solid grey">Bank</th>
+                        <th style="border: 1px solid grey">Account Number</th>
+                        <th style="border: 1px solid grey">Account name</th>
+                        <th style="border: 1px solid grey">IFSC</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr style="border: 1px solid grey">
+                        <td style="border: 1px solid grey">{{{$accountDetails['bankName']}}}</td>
+                        <td style="border: 1px solid grey">{{{$accountDetails['accountNumber']}}}</td>
+                        <td style="border: 1px solid grey">{{{$accountDetails['accountName']}}}</td>
+                        <td style="border: 1px solid grey">{{{$accountDetails['ifsc']}}}</td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
             <!-- /content -->
 
