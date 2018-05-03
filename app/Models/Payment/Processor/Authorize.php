@@ -1247,26 +1247,8 @@ trait Authorize
         // Call gateway input
         //
         $gatewayInput['payment'] = $payment->toArrayGateway();
-
-
-        $callbackUrl = null;
-        $otpSubmitUrl = null;
-
-        // This is required because callback url
-        // is not need for Bharat Qr payments as they
-        // are already authorized at gateway side.
-        // Also we use public auth to detemine the
-        // callback url but in case of bharat qr it is
-        // direct auth
-        if ($payment->isBharatQr() === false)
-        {
-            $callbackUrl = $this->getCallbackUrl();
-
-            $otpSubmitUrl = $this->getOtpSubmitUrl();
-        }
-
-        $gatewayInput['callbackUrl'] = $callbackUrl;
-        $gatewayInput['otpSubmitUrl'] = $otpSubmitUrl;
+        $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
+        $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
 
         if ($payment->hasOrder())
         {
