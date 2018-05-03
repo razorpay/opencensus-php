@@ -543,8 +543,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INITIATE_FUND_TRANSFER                    = 'INITIATE_FUND_TRANSFER';
     const FTA_FILE_RECON_INVALID_STATUS_CHANGE      = 'FTA_FILE_RECON_INVALID_STATUS_CHANGE';
 
-    const NULL_UTR_REPORT_FILE_CREATED              = 'NULL_UTR_REPORT_FILE_CREATED';
-    const NULL_UTR_REPORT_INITIATED                 = 'NULL_UTR_REPORT_INITIATED';
+    const FTA_RECON_REPORT_FILE_CREATED             = 'FTA_RECON_REPORT_FILE_CREATED';
+    const FTA_RECON_REPORT_INITIATED                = 'FTA_RECON_REPORT_INITIATED';
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
     const SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT  = 'SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT';
@@ -1058,6 +1058,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
 
     const INSTANCE_PROFILE_PROVIDER_CACHE_MISS          = 'INSTANCE_PROFILE_PROVIDER_CACHE_MISS';
+
+    const SERVER_ERROR_LOG_RISK                         = 'SERVER_ERROR_LOG_RISK';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

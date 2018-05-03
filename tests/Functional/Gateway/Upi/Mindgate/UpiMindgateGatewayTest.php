@@ -467,6 +467,68 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals($refund['attempts'], 2);
     }
 
+    public function testBankDetailsAreSaved()
+    {
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $paymentId = $response['payment_id'];
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->mockServerContentFunction(
+            function (& $content, $action = null)
+            {
+                if ($action === 'callback')
+                {
+                    $content[16] = 'PNB!1000000000!PNB10010010!9800000000';
+                }
+            });
+
+        $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertEquals($upi['account_number'], '1000000000');
+
+        $this->assertEquals($upi['ifsc'], 'PNB10010010');
+
+    }
+
+    public function testBankDetailsAreNotSavedInCaseFailed()
+    {
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $paymentId = $response['payment_id'];
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->mockServerContentFunction(
+            function (& $content, $action = null)
+            {
+                if ($action === 'callback')
+                {
+                    $content[16] = 'NA!109090902020!NA!NA';
+                }
+            });
+
+        $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $this->makeS2SCallbackAndGetContent($content);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($upi['account_number']);
+
+        $this->assertNull($upi['ifsc']);
+
+    }
+
     protected function checkPaymentStatus($id, $expectedStatus)
     {
         $response = $this->getPaymentStatus($id);

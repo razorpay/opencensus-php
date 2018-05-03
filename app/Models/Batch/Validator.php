@@ -35,7 +35,8 @@ class Validator extends Base\Validator
                                     . 'application/octet-stream,'
                                     . 'application/xml,'
                                     . 'text/csv,'
-                                    . 'text/plain'
+                                    . 'text/plain,'
+                                    . 'application/cdfv2-unknown'
                                 . '|mimes:'
                                     . 'zip,'
                                     . 'xlsx,'
@@ -65,6 +66,18 @@ class Validator extends Base\Validator
         Invoice\Entity::SMS_NOTIFY      => 'filled|in:0,1',
         Invoice\Entity::EMAIL_NOTIFY    => 'filled|in:0,1',
         Entity::CONFIG                  => 'filled|array',
+    ];
+
+    protected static $directDebitCreateRules = [
+        Entity::TYPE            => 'required|in:direct_debit',
+        Entity::FILE            => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::NAME            => 'filled|string|max:255',
+        Entity::TOKEN           => 'required_without:file_id|max:255|alpha_num',
+        Entity::FILE_ID         => 'required_without:file|public_id',
+    ];
+
+    protected static $tokenRules = [
+        Entity::TOKEN           => 'required|max:255|alpha_num',
     ];
 
     protected static $reconciliationCreateRules = [

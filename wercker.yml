@@ -22,11 +22,6 @@ build:
           code: cp ./environment/.env.wercker ./environment/.env.testing
       - add-ssh-key:
           keyname: RZP_API
-      - create-file:
-          name: Create api_sqlite.db
-          filename: api_sqlite.db
-          overwrite: true
-          content:
       - script:
           name: Export ES env var to API environment variables
           code: >
