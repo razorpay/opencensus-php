@@ -22,7 +22,7 @@ export default class OnboardingCard extends Component {
   constructor(props) {
     super(props);
 
-    const { mode, user, config } = props,
+    const { mode, user, config, isFirstStep } = props,
       { isActivated, isSubmitted } = user,
       { hasPersonalised } = config;
 
@@ -30,6 +30,13 @@ export default class OnboardingCard extends Component {
       integrated: false,
       activated: mode === 'live' && isActivated && isSubmitted,
     };
+
+    if (typeof window.hj === 'function') {
+      window.hj('trigger', 'onboarding_card');
+      window.hj('tagRecording', [
+        isFirstStep ? 'welcome_step_opened' : 'main_step_opened',
+      ]);
+    }
 
     this.onIntegrationComplete = this.onIntegrationComplete.bind(this);
     this.closeOnboarding = this.closeOnboarding.bind(this);
