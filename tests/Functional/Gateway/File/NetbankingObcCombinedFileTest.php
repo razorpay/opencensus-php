@@ -82,7 +82,7 @@ class NetbankingObcCombinedFileTest extends TestCase
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
             $testData = [
-                'subject' => 'obc Netbanking claims and refund files for '.$date,
+                'subject' => 'obc Netbanking claims and refund files for '. $date,
                 'amount' => [
                     'claims'  => '1000.00',
                     'refunds' => '501.00',
