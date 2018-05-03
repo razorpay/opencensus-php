@@ -37,6 +37,15 @@ export default class EmailReport extends Component {
     this.setState({ selectedEmails });
   };
 
+  handleSend = () => {
+    let emails = this.state.selectedEmails
+      .map(emailId => this.emailsMap[emailId])
+      .join(',');
+
+    //send empty event
+    return this.props.onSend(null, emails);
+  };
+
   render() {
     const { selectedEmails } = this.state;
     const { emailsMap } = this;
@@ -75,6 +84,7 @@ export default class EmailReport extends Component {
             <AsyncButton
               class="btn btn-primary btn-block"
               text="Email Report"
+              onClick={this.handleSend}
             />
           </form>
         </div>

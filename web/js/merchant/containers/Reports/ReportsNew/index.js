@@ -236,7 +236,7 @@ export default class ReportsContainer extends Component {
       });
   }
 
-  generateReport() {
+  generateReport(_, emails) {
     const { selectedConfig, selectedAccount } = this.state,
       { date, type, invoiceDate } = this.props,
       day = date.date(),
@@ -284,6 +284,8 @@ export default class ReportsContainer extends Component {
             generated_by: selectedAccountId,
             start_time: startTime,
             end_time: endTime,
+            //add emails if selected
+            ...(emails && { emails }),
           };
 
         return generateReportV2(reqData, isMerchantAccount).then(data => {
@@ -308,6 +310,8 @@ export default class ReportsContainer extends Component {
       let data = {
         month,
         year,
+        //add emails if selected
+        ...(emails && { emails }),
       };
 
       if (type === 'daily') {
@@ -369,7 +373,11 @@ export default class ReportsContainer extends Component {
     this.props.openModal({
       size: 'small',
       component: (
-        <EmailReport closeModal={this.props.closeModal} emails={emails} />
+        <EmailReport
+          closeModal={this.props.closeModal}
+          emails={emails}
+          onSend={this.generateReport}
+        />
       ),
     });
   };
