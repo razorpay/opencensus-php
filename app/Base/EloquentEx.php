@@ -3,13 +3,14 @@
 namespace RZP\Base;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
+
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Base\Database\QueryBuilder;
 use Illuminate\Support\Collection;
 use RZP\Models\Base\HasRelationships;
-use Illuminate\Database\Eloquent\Model;
 
 class EloquentEx extends \Razorpay\Spine\Entity
 {
@@ -17,13 +18,13 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
     public $incrementing = false;
 
-    protected $ignoreRelations = [];
+    protected $ignoredRelations = [];
 
     public function save(array $options = [])
     {
         $nonExistentRelations = array_filter($this->relations, function ($model, $relation)
         {
-            return ((in_array($relation, $this->ignoreRelations, true) === false) and
+            return ((in_array($relation, $this->ignoredRelations, true) === false) and
                     ($model instanceof Model)) ?
                     ($model->exists === false) :
                     false;
