@@ -632,6 +632,18 @@ export function getDetailsViewMap(model) {
       value: titleCase(details.fee_model),
     },
     {
+      label: 'Auto Refund Delay',
+      permission: 'edit_merchant',
+      value: details.auto_refund_delay_val
+        ? details.auto_refund_delay_val + ' ' + details.auto_refund_delay_type
+        : '5 Days',
+    },
+    {
+      label: 'Auto Capture Late Auth',
+      permission: 'edit_merchant',
+      value: _getBoolIcon(details.auto_capture_late_auth),
+    },
+    {
       label: 'Settlement Schedule',
       children: () => (
         <div>
