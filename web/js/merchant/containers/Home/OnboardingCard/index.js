@@ -91,10 +91,10 @@ export default class OnboardingCard extends Component {
           </div>
 
           <button
-            class="btn btn-lg btn-default onboarding-cta"
+            class="btn btn-default onboarding-cta"
             onClick={this.gotoNextStep}
           >
-            <span>Okay. Let's setup your account</span>
+            <span>Okay, got it</span>
             <i class="i i-chevron-right" />
           </button>
         </div>
@@ -159,15 +159,18 @@ export default class OnboardingCard extends Component {
           <div class="media onboarding-card">
             {FirstStep}
             <div class="onboarding-illustration" />
-            {integrated &&
-              activated && (
-                <a
-                  onClick={e => this.closeOnboarding(e, true)}
-                  className="close"
-                >
-                  <i className="i i-close" />
-                </a>
-              )}
+            {(isFirstStep || (integrated && activated)) && (
+              <a
+                onClick={
+                  isFirstStep
+                    ? this.gotoNextStep
+                    : e => this.closeOnboarding(e, true)
+                }
+                className="close"
+              >
+                <i className="i i-close" />
+              </a>
+            )}
           </div>
         </div>
       </div>
