@@ -37,6 +37,9 @@ class BharatQrPaymentTest extends TestCase
 
         $qrCodeId = substr($this->qrCode['id'], 3);
 
+        //TODO : Add it in terminals PR
+       // $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 100]);
+
         $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
 
         $request['content'] = $content;

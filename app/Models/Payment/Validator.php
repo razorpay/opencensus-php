@@ -427,7 +427,7 @@ class Validator extends Base\Validator
 
         // The payments received on these receivers are push based. We can't really control after
         // we already received a payments. So removing amount validation check on it
-        if (in_array($receiver, Receiver::$recevierWithoutAmountValidation, true) === true)
+        if (empty($receiver) === false)
         {
             return;
         }
