@@ -30,7 +30,7 @@ spec:
               key: APP_MODE
         image: razorpay/api:65776c4923b1d010ba80b9ae7d2f3e0d1014299b
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
+        command: ["/app/dockerconf/entrypoint.sh"]
         args: ["sqs_multi_default", "es-sync", "10"]
         ports:
         - containerPort: 80
