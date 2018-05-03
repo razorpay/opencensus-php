@@ -61,6 +61,10 @@ class BharatQrPaymentTest extends TestCase
 
         $this->assertEquals($bharatQr['payment_id'], $payment['id']);
         $this->assertEquals($bharatQr['expected'], true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('Random Name', $card['name']);
     }
 
     public function testHitachiVerifyAndRefund()
