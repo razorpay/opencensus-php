@@ -28,3 +28,5 @@ export SettlementBulkChannel from './SettlementBulkChannel';
 export BulkTransaction from './BulkTransaction';
 
 export MetaQuery from './MetaQuery';
+
+export NodalMoneyTransfer from './NodalMoneyTransfer';
