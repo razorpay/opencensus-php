@@ -222,6 +222,10 @@ class NetbankingReconciliationTest extends TestCase
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertEquals($paymentEntity['status'], 'authorized');
+
+        $transactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
     }
 
     public function testObcAmountMismatchReconciliation()

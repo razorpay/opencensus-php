@@ -12,26 +12,17 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 {
     protected function getPaymentId(array $row)
     {
-        if (empty($row[ReconciliationFields::MERCHANT_REFERENCE_NUMBER]) === false)
-        {
-            return $row[ReconciliationFields::MERCHANT_REFERENCE_NUMBER];
-        }
+        return $row[ReconciliationFields::MERCHANT_REFERENCE_NUMBER] ?? null;
     }
 
     protected function getReferenceNumber($row)
     {
-        if (empty($row[ReconciliationFields::BANK_REFERENCE_NUMBER]) === false)
-        {
-            return $row[ReconciliationFields::BANK_REFERENCE_NUMBER];
-        }
+        return $row[ReconciliationFields::BANK_REFERENCE_NUMBER] ?? null;
     }
 
     protected function getGatewayPaymentDate($row)
     {
-        if (empty($row[ReconciliationFields::GATEWAY_TRANSACTION_DATE]) === false)
-        {
-            return $row[ReconciliationFields::GATEWAY_TRANSACTION_DATE];
-        }
+       return $row[ReconciliationFields::GATEWAY_TRANSACTION_DATE] ?? null;
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
