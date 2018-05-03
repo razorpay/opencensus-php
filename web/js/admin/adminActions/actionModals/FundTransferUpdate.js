@@ -18,15 +18,16 @@ export default function FundTransferUpdate() {
         pendingClass="small spinner"
         type="submit"
         onSubmit={body => {
-          if (body.json_dump) {
-            let data = null;
+          let data = null;
 
-            try {
-              data = JSON.parse(body.json_dump);
-            } catch (err) {
-              return notifyError('Please enter a valid JSON.');
-            }
+          try {
+            data = JSON.parse(body.json_dump);
+          } catch (err) {
+            return notifyError('Please enter a valid JSON.');
+          }
 
+          //verify for empty obj
+          if (Object.getOwnPropertyNames(data).length > 0) {
             return adminPatch({
               url: 'live/fund_transfer_attempts',
               data: data,
