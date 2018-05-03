@@ -46,20 +46,30 @@ class Popover extends Component {
 
     this.state = {
       leftAdjustment: 0, // arrow adjustment
+      topAdjustment: 0,
+      resultantAlignment: props.align,
     };
 
     this.onAdjustment = this.onAdjustment.bind(this);
+    this.onAlignmentChange = this.onAlignmentChange.bind(this);
   }
 
-  onAdjustment(leftAdjustment) {
+  onAlignmentChange(resultantAlignment) {
+    this.setState({
+      resultantAlignment,
+    });
+  }
+
+  onAdjustment(leftAdjustment, topAdjustment) {
     this.setState({
       leftAdjustment,
+      topAdjustment,
     });
   }
 
   render() {
     const { children, ...otherProps } = this.props,
-      { leftAdjustment } = this.state;
+      { leftAdjustment, topAdjustment, resultantAlignment } = this.state;
 
     let popoverTitle = null,
       popoverBody = null;
@@ -78,13 +88,20 @@ class Popover extends Component {
       (otherProps.className ? otherProps.className + ' ' : '') +
       'rzp-popover ' +
       ' align-' +
-      otherProps.align;
+      (resultantAlignment || otherProps.align);
 
     return (
-      <Tooltip {...otherProps} onAdjustment={this.onAdjustment}>
+      <Tooltip
+        onAdjustment={this.onAdjustment}
+        onAlignmentChange={this.onAlignmentChange}
+        {...otherProps}
+      >
         <div
           className="rzp-popover-arrow"
-          style={{ marginLeft: `${-leftAdjustment}px` }}
+          style={{
+            marginLeft: `${-leftAdjustment}px`,
+            marginTop: `${-topAdjustment}px`,
+          }}
         />
         <div className="rzp-popover-content">
           {popoverTitle && (

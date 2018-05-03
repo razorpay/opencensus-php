@@ -478,6 +478,18 @@ export const isWebkit =
 export { acronyms, shortenText };
 
 /**
+ *Get human readable file size
+ * @param {*} fileSize in bytes in Binary prefixes
+ */
+export const readableFileSize = bytes => {
+  const sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+
+  if (!bytes) return `0 bytes`;
+  var e = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, e)).toFixed(2)} ${sizes[e]}`;
+};
+
+/**
  * Method to create a query string separated by | instead of &
  * @param {Object} params
  * @return {String}

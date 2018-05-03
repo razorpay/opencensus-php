@@ -151,9 +151,27 @@ body {
       background-color: #315BC2;
       margin-bottom: 15px;
      
-      i.i.i-chevron-right {
+      i.i-chevron-right {
 
+        position: relative;
+        display: inline-block;
         margin-right: 0;
+      }
+
+      &.not-personalised {
+
+        i.i-chevron-right {
+
+          top: 10px;
+          left: 5px;
+        }
+      }
+
+      div.activation-status-secondary {
+
+        font-size: 80%;
+        line-height: 20px;
+        color: rgba(255, 255, 255, 0.7);
       }
  
       div.activation-bar-content {
@@ -162,7 +180,6 @@ body {
         font-size: 80%;
         line-height: 20px;
         margin-top: 4px;
-        color: rgba(255, 255, 255, 0.7);
 
         > div {
 

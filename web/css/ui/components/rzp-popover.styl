@@ -1,5 +1,6 @@
 $gutter = 10px;
 $bg-color = #ffffff;
+$dark-bg-color = #2C3243;
 
 .rzp-popover.rzp-tooltip {
 
@@ -34,47 +35,103 @@ $bg-color = #ffffff;
     }
   }
 
-  &.align-bottom .rzp-tooltip-inner > .rzp-popover-arrow {
+  &.align-bottom {
 
-    top: - $gutter;
+    .rzp-tooltip-inner > .rzp-popover-arrow {
 
-    &:after {
+      top: - $gutter;
 
-      border-top-width: 0;
-      border-bottom-color: $bg-color;
+      &:after {
+
+        border-top-width: 0;
+        border-bottom-color: $bg-color;
+      }
+    }
+
+    &.theme-dark {
+
+      .rzp-tooltip-inner > .rzp-popover-arrow {
+
+        &:after {
+
+          border-bottom-color: $dark-bg-color;
+        }
+      }
     }
   }
 
-  &.align-top .rzp-tooltip-inner > .rzp-popover-arrow {
+  &.align-top {
 
-    top: 100%;
+    .rzp-tooltip-inner > .rzp-popover-arrow {
 
-    &:after {
+      top: 100%;
 
-      border-border-width: 0;
-      border-top-color: $bg-color;
+      &:after {
+
+        border-bottom-width: 0;
+        border-top-color: $bg-color;
+      }
+    }
+
+    &.theme-dark {
+
+      .rzp-tooltip-inner > .rzp-popover-arrow {
+
+        &:after {
+
+          border-top-color: $dark-bg-color;
+        }
+      }
     }
   }
 
-  &.align-left .rzp-tooltip-inner > .rzp-popover-arrow {
+  &.align-left {
 
-    left: 100%;
+    .rzp-tooltip-inner > .rzp-popover-arrow {
 
-    &:after {
+      left: 100%;
 
-      border-right-width: 0;
-      border-left-color: $bg-color;
+      &:after {
+
+        border-right-width: 0;
+        border-left-color: $bg-color;
+      }
+    }
+
+    &.theme-dark {
+
+      .rzp-tooltip-inner > .rzp-popover-arrow {
+
+        &:after {
+
+          border-left-color: $dark-bg-color;
+        }
+      }
     }
   }
 
-  &.align-right .rzp-tooltip-inner > .rzp-popover-arrow {
+  &.align-right {
 
-    left: - $gutter;
+    .rzp-tooltip-inner > .rzp-popover-arrow {
 
-    &:after {
+      left: - $gutter;
 
-      border-left-width: 0;
-      border-right-color: $bg-color;
+      &:after {
+
+        border-left-width: 0;
+        border-right-color: $bg-color;
+      }
+    }
+
+    &.theme-dark {
+
+      .rzp-tooltip-inner > .rzp-popover-arrow {
+
+        &:after {
+
+          border-right-color: $dark-bg-color;
+        }
+      }
     }
   }
 
