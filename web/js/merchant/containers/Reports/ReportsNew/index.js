@@ -382,16 +382,19 @@ export default class ReportsContainer extends Component {
     });
   };
 
+  //sort configs in the following order
+  // 1. merchant custom report configs
+  // 2. rzp owned report configs
   sortConfigs = configs => {
     const rzpId = '100000Razorpay';
-    const { id } = this.props.user.user;
+    const merchantId = this.props.user.user.id;
 
     let merchantConfigs = [],
       rzpConfigs = [];
 
     configs.forEach(config => {
       if (config._item) {
-        if (config._item.merchant_id === id) {
+        if (config._item.merchant_id === merchantId) {
           merchantConfigs.push(config);
         } else {
           rzpConfigs.push(config);
@@ -399,10 +402,9 @@ export default class ReportsContainer extends Component {
       }
     });
 
-    //TODO: sort for NA config
     rzpConfigs.sort((config1, config2) => {
-      let index1 = rzpConfigOrder.indexOf(titleCase(config1.label)),
-        index2 = rzpConfigOrder.indexOf(titleCase(config2.label));
+      let index1 = rzpConfigOrder.indexOf(config1.label),
+        index2 = rzpConfigOrder.indexOf(config2.label);
 
       return index1 - index2;
     });

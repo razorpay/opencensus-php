@@ -85,6 +85,7 @@ export default class EmailReport extends Component {
               class="btn btn-primary btn-block"
               text="Email Report"
               onClick={this.handleSend}
+              disabled={selectedEmails.length < 1}
             />
           </form>
         </div>

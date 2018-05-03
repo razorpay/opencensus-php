@@ -27,15 +27,17 @@ export const marketplaceConfigTypes = {
 /*
   * reports v2 tab order of rzp owned configs
 */
+//TODO: get suitable data for sort
 export const rzpConfigOrder = [
-  'combined_report',
-  'payments',
-  'settlements_recon',
-  'settlements',
-  'orders',
-  'refunds',
-  'transfers',
-  'reversals',
-  'monthly_invoice',
-  'scheduled',
+  'Combined Report',
+  'Payments',
+  'Settlements Recon',
+  'Settlements',
+  'Orders',
+  'Transactions',
+  'Refunds',
+  'Transfers',
+  'Reversals',
+  'Monthly Invoice',
+  'Scheduled',
 ];
