@@ -4,7 +4,7 @@ import AsyncButton from 'ui/AsyncButton';
 import { TextAreaField } from 'ui/Field';
 
 import { adminPatch } from 'common/fetch';
-import { notifySuccess, closeModal } from 'common/modal';
+import { notifySuccess, notifyError, closeModal } from 'common/modal';
 
 FundTransferUpdate.title = 'Fund Transfer Update';
 FundTransferUpdate.permission = 'settlement_bulk_update';
@@ -19,15 +19,19 @@ export default function FundTransferUpdate() {
         pendingClass="small spinner"
         type="submit"
         onSubmit={body => {
-          return adminPatch({
-            url: 'live/fund_transfer_attempts',
-            data: body.json_dump,
-          }).then(response => {
-            if (response) {
-              notifySuccess('Funds updated successfully.');
-              closeModal();
-            }
-          });
+          if (body.json_dump) {
+            return adminPatch({
+              url: 'live/fund_transfer_attempts',
+              data: body.json_dump,
+            }).then(response => {
+              if (response) {
+                notifySuccess('Funds updated successfully.');
+                closeModal();
+              }
+            });
+          } else {
+            notifyError('Please enter the json data to proceed.');
+          }
         }}
       />
     </Form>
