@@ -10,13 +10,16 @@ import {
 } from 'common/modal';
 import Form from 'ui/Form';
 import BaseModal from 'ui/BaseModal';
+import AsyncButton from 'ui/AsyncButton';
 import Field, { SelectField, TextAreaField, FileField } from 'ui/Field';
 import Table from 'ui/Table';
 import { statusPill, publicFeature } from 'common/data';
-import { isWorkflow } from 'common/util';
+import { isWorkflow, prevent } from 'common/util';
 import { snakeToTitleCase, formatDate } from 'common/util';
 
 import { adminFetch, adminPatch } from 'common/fetch';
+
+import PreviewEmail from './PreviewEmail';
 
 @observer
 export default class EditPublicFeatures extends Component {
@@ -25,6 +28,7 @@ export default class EditPublicFeatures extends Component {
     agreement: null,
     selectedStatus: this.props.model.status,
     selectedReasonCategory: null,
+    needs_clarification_text: '',
   };
 
   akaFeature = this.props.model.name;
@@ -45,32 +49,89 @@ export default class EditPublicFeatures extends Component {
     );
 
     Promise.all(requests).then(([feature, allRejectionReasons]) => {
+      let newState = { pending: false };
+
       if (feature) {
         this.submissions = feature.submissions;
         if (feature.name === 'marketplace') {
-          this.setState({
-            agreement: feature.submissions.vendor_agreement,
-          });
+          newState.agreement = feature.submissions.vendor_agreement;
         }
       }
 
+      newState.selectedReasonCategory = Object.keys(allRejectionReasons)[0];
+
       this.statusLogs = feature.states.items;
+      this.allowed_next_activation_statuses =
+        feature.allowed_next_activation_statuses;
       this.allRejectionReasons = allRejectionReasons;
 
-      this.setState({
-        pending: false,
-        selectedReasonCategory: Object.keys(allRejectionReasons)[0],
-      });
+      this.setState(newState);
     });
   }
+
+  //bool to check whether the status has changed & its `needs_clarification`
+  hasStatusChangedToNeedClarification = () => {
+    //current status
+    const { selectedStatus } = this.state;
+    //old status
+    const { status } = this.props.model;
+
+    return (
+      selectedStatus === 'needs_clarification' && status !== selectedStatus
+    );
+  };
 
   changeAgreement = () => {
     this.setState({ agreement: null });
   };
 
+  generateClarificationEmail = () => {
+    const { akaFeature } = this;
+    let { needs_clarification_text } = this.state;
+
+    // add extra texts based on product type
+    const addons = {
+      marketplace: {
+        prefix:
+          'The sample vendor agreement uploaded does not meet our requirements. Please ensure that the agreement contains the below points.',
+        suffix:
+          'Please reply to this email with the updated sample vendor agreement so that we can take further course of action.',
+      },
+      others: {
+        suffix:
+          'Please reply to this email, with the necessary details,  so that we can take further course of action.',
+      },
+    };
+
+    if (
+      publicFeature.featuresAkaMap[akaFeature] ===
+      publicFeature.featuresAkaMap.marketplace
+    ) {
+      return `${
+        addons[akaFeature].prefix
+      }<br/><br/>Clarifications: <br/>${needs_clarification_text}<br/><br/>${
+        addons[akaFeature].suffix
+      }`;
+    } else {
+      return `Clarifications: <br/>${needs_clarification_text}<br/><br/>${
+        addons.others.suffix
+      }`;
+    }
+  };
+
   save = body => {
-    let { akaFeature } = this;
-    let { selectedStatus } = this.state;
+    const { akaFeature, hasStatusChangedToNeedClarification } = this;
+    const { selectedStatus, needs_clarification_text } = this.state;
+
+    if (hasStatusChangedToNeedClarification()) {
+      if (needs_clarification_text.length === 0) {
+        notifyError('Add Clarification Email text to proceed.');
+        return;
+      } else {
+        //TODO: sanitize code with encodeURIComponent
+        body.needs_clarification_text = this.generateClarificationEmail();
+      }
+    }
 
     return adminPatch({
       url: `live/merchant/requests/${this.props.model.id}`,
@@ -83,8 +144,8 @@ export default class EditPublicFeatures extends Component {
           return;
         }
         notifySuccess('Submission edited successfully.');
-        //reload for list updation
-        setTimeout(() => location.reload(), 0);
+        //re-render list
+        this.props.fetchFn();
       }
     });
   };
@@ -101,21 +162,43 @@ export default class EditPublicFeatures extends Component {
     });
   };
 
+  handleClarificationTextChange = needs_clarification_text => {
+    this.setState({ needs_clarification_text });
+  };
+
+  openEmailPreview = event => {
+    prevent(event);
+    const { name } = this.props.model;
+    const { needs_clarification_text } = this.state;
+
+    openModal(
+      <PreviewEmail
+        productName={name}
+        needs_clarification_text={needs_clarification_text}
+        onClarificationTextChange={this.handleClarificationTextChange}
+      />
+    );
+  };
+
   render() {
-    let { selectedStatus, selectedReasonCategory } = this.state;
     let {
-      merchant_id,
-      name,
-      internal_comment,
-      public_message,
-    } = this.props.model;
+      selectedStatus,
+      selectedReasonCategory,
+      needs_clarification_text,
+    } = this.state;
+
+    let { merchant_id, name, internal_comment } = this.props.model;
+
     let {
       akaFeature,
       submissions,
       changeAgreement,
       allRejectionReasons,
+      hasStatusChangedToNeedClarification,
       save,
     } = this;
+
+    let oldStatus = this.props.model.status;
 
     return (
       <BaseModal header="Edit Submission">
@@ -137,8 +220,23 @@ export default class EditPublicFeatures extends Component {
                 name="status"
                 value={selectedStatus}
                 onChange={this.handleStatusChange}
+                helpMsg={
+                  hasStatusChangedToNeedClarification() && (
+                    <span>
+                      Add Clarification Email text by clicking{' '}
+                      <span
+                        class="link no-underline"
+                        onClick={this.openEmailPreview}
+                      >
+                        here
+                      </span>{' '}
+                      to proceed.
+                    </span>
+                  )
+                }
               >
-                {publicFeature.statuses.map(status => (
+                <option value={oldStatus}>{snakeToTitleCase(oldStatus)}</option>
+                {this.allowed_next_activation_statuses.map(status => (
                   <option value={status} key={status}>
                     {snakeToTitleCase(status)}
                   </option>
@@ -268,15 +366,20 @@ export default class EditPublicFeatures extends Component {
                 defaultValue={internal_comment}
               />
 
-              <TextAreaField
-                label="Public Message"
-                name="public_message"
-                defaultValue={public_message}
-              />
-
               <Table items={this.statusLogs} fields={statusLogsFields} />
 
-              <button class="btn">Save</button>
+              <AsyncButton
+                text="Submit"
+                class="btn"
+                pendingClass="small spinner"
+                onSubmit={save}
+              />
+
+              {hasStatusChangedToNeedClarification() && (
+                <button class="btn btn-default" onClick={this.openEmailPreview}>
+                  Add Clarification Text
+                </button>
+              )}
             </div>
           )}
         </Form>
@@ -285,8 +388,8 @@ export default class EditPublicFeatures extends Component {
   }
 }
 
-export function showEntity(collection) {
-  openModal(<EditPublicFeatures collection={collection} model={this} />);
+export function showEntity(fetchFn) {
+  openModal(<EditPublicFeatures fetchFn={fetchFn} model={this} />);
 }
 
 const statusLogsFields = [

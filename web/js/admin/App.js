@@ -47,6 +47,8 @@ import AuditLog from 'admin/auditlog/List';
 import OrgEntity from 'admin/organizations/Entity';
 import InvitesList from 'admin/invites/List';
 
+import ActivationList from 'admin/activations/List';
+
 import AsyncButton from 'ui/AsyncButton';
 
 import fetch, { adminFetch } from 'common/fetch';
@@ -129,6 +131,8 @@ export default class App extends Component {
 
               <Route path="/invites" component={InvitesList} />
 
+              <Route path="/activation" component={ActivationList} />
+
               <Redirect to="/merchants" />
             </Switch>
           </ErrorBoundary>
@@ -183,6 +187,7 @@ const links = [
   [
     // title, url, permission, icon
     ['Merchants', '/merchants', 'view_all_merchants', 'user-manager'],
+    ['Activations', '/activation', 'view_activation_form'],
     ['Pricing Plans', '/pricing-plans', 'view_pricing_list', 'rupee'],
     ['Gateway Rules', '/gateway-rules', 'view_gateway_rule'],
     ['Entities', '/entities', 'view_all_entity'],

@@ -7,7 +7,7 @@ import ModalDialog from 'rzp/ui/ModalDialog';
 import Notifications from 'rzp/ui/Notifications';
 import ReactIdle from 'rzp/ui/ReactIdle';
 import LocalStorageService from 'rzp/utils/localStorage';
-import Sidebar from 'merchant/components/Sidebar';
+import Sidebar from 'merchant/containers/Sidebar';
 import HeaderNav from 'merchant/components/HeaderNav';
 import Content from 'merchant/components/Content';
 import Footer from 'merchant/components/Footer';
@@ -26,7 +26,7 @@ import { fetchGST } from 'merchant/modules/profile';
 import { fetchConfig } from 'merchant/modules/config';
 
 @withRouter
-@connect(state => state.session, {
+@connect(state => ({ ...state.session, config: state.config }), {
   ...ModalActions,
   ...SessionActions,
   ...ConfigActions,
@@ -34,16 +34,41 @@ import { fetchConfig } from 'merchant/modules/config';
   fetchGST,
 })
 export default class App extends Component {
-  state = {
-    isLoading: true,
-    showMobileNav: false,
-  };
+  constructor(props) {
+    super(props);
+
+    const { user } = props;
+
+    const oldModeToken = 'rzp_mode',
+      oldModeValue = LocalStorageService.getItem(oldModeToken);
+
+    // localizing mode for each merchant so that different modes can be maintained
+    // across logins/merchants
+    if (oldModeValue) {
+      Object.keys(window.rzp_user.merchants).forEach(merchantId => {
+        LocalStorageService.setItem(
+          `${oldModeToken}--${merchantId}`,
+          oldModeValue
+        );
+      });
+
+      LocalStorageService.removeItem(oldModeToken);
+    }
+
+    this.modeToken = `${oldModeToken}--${window.rzp_user.current}`;
+
+    this.state = {
+      isLoading: true,
+      showMobileNav: false,
+    };
+  }
 
   componentWillMount() {
-    let currentMode = LocalStorageService.getItem('rzp_mode');
+    let currentMode = LocalStorageService.getItem(this.modeToken);
 
     this.props.fetchGST();
     this.props.fetchConfig();
+
     Promise.all([
       this.fetchUser().then(({ data }) => {
         let user = data;
@@ -98,14 +123,25 @@ export default class App extends Component {
 
   fetchUser() {
     let user = new User(window.rzp_user);
+
     if (user) {
       this.props.updateSession({ user });
-      let currentMode = LocalStorageService.getItem('rzp_mode');
+
+      // if the user is live but chose to browse in test mode,
+      // it will be stored in rzp_mode
+      let currentMode = LocalStorageService.getItem(this.modeToken);
+
       if (!currentMode) {
         currentMode = user.isActivated ? 'live' : 'test';
       } else if (!user.isActivated) {
         currentMode = 'test';
       }
+
+      // making sure his current mode is remembered so that when he gets
+      // activated, he wont be switched to live mode automatically
+      // which may lead to mass confusion for merchants
+      LocalStorageService.setItem(this.modeToken, currentMode);
+
       if (user && user.user) {
         if (window.setRavenContext) {
           window.setRavenContext({
@@ -145,7 +181,11 @@ export default class App extends Component {
   redirectToRoute(role) {
     let pathname = this.props.history.location.pathname;
 
-    if (pathname === '/' || pathname === '/dashboard') {
+    if (
+      pathname === '/' ||
+      pathname === '/dashboard' ||
+      pathname === '/dashboard_v2'
+    ) {
       switch (role) {
         case 'sellerapp':
           let url = '/paymentlinks';
@@ -191,10 +231,15 @@ export default class App extends Component {
     if (mode === 'live' && !user.isActivated) {
       this.props.openModal({
         size: 'small',
-        component: <ActivationRequired onCloseClick={this.props.closeModal} />,
+        component: (
+          <ActivationRequired
+            user={this.props.user}
+            onCloseClick={this.props.closeModal}
+          />
+        ),
       });
     } else {
-      LocalStorageService.setItem('rzp_mode', mode);
+      LocalStorageService.setItem(this.modeToken, mode);
       location.reload();
     }
   };
@@ -242,7 +287,7 @@ export default class App extends Component {
   };
 
   render() {
-    let { user, org, mode, modeFormatted } = this.props;
+    let { user, config, org, mode, modeFormatted } = this.props;
 
     if (this.state.isLoading || !user.isAuthenticated) {
       return null;
@@ -260,7 +305,11 @@ export default class App extends Component {
           toggleMobileNav={this.toggleMobileNav}
           showMobileNav={this.state.showMobileNav}
         />
-        <Sidebar user={user} logoURL={org.main_logo_url} />
+        <Sidebar
+          user={user}
+          logoURL={org.main_logo_url}
+          config={config.config}
+        />
         <Content user={user} modeFormatted={modeFormatted} />
         <Footer />
 

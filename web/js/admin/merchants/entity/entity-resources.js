@@ -149,7 +149,7 @@ function openSettlementSchedule() {
   window.open(`/admin/entity/schedule/live/${this.schedule_id}`);
 }
 
-function _getCreditsFields(deleteCreditLogs) {
+function _getCreditsFields() {
   // Delete btn is based on mode(state of component where this table is used )
   return mode => {
     return [
@@ -158,17 +158,6 @@ function _getCreditsFields(deleteCreditLogs) {
       ['Type', item => item.type],
       ['Value', item => item.value],
       ['Created At', item => formatDate(item.created_at)],
-      [
-        'Delete',
-        item => (
-          <div
-            class="link danger"
-            onClick={() => deleteCreditLogs(item.id, mode)}
-          >
-            Delete
-          </div>
-        ),
-      ],
     ];
   };
 }
@@ -745,7 +734,7 @@ export function getDetailsViewMap(model) {
         <CreditsDetails
           creditsLogs={creditsLogs}
           fetchCreditsLogs={model.fetchCreditsLogs}
-          getCreditsFields={_getCreditsFields(model.deleteCreditLogs)}
+          getCreditsFields={_getCreditsFields()}
         />
       ),
     },

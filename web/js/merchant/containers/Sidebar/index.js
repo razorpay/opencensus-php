@@ -6,6 +6,8 @@ import ProgressBar from 'rzp/ui/ProgressBar';
 import MainNavLink from 'merchant/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 
+import { trackGoToActivation, trackGoToConfig } from './ga';
+
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals)/;
 const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|applications|applications\/new)/;
@@ -19,6 +21,12 @@ const RZPLogoPNG = '/img/logo.png';
 
 @withRouter
 export default class Sidebar extends Component {
+  constructor(props) {
+    super(props);
+
+    this.onSidebarBannerClick = this.onSidebarBannerClick.bind(this);
+  }
+
   // currently active routes in tabbed containers
   // populated with initial values
   routes = {
@@ -57,12 +65,16 @@ export default class Sidebar extends Component {
     }
   }
 
+  onSidebarBannerClick() {
+    return (this.props.user.isSubmitted
+      ? trackGoToConfig
+      : trackGoToActivation)();
+  }
+
   render() {
-    let { user, logoURL } = this.props;
+    let { user, config, logoURL } = this.props;
     let routes = this.routes;
     let isMerchant = !!user.current;
-
-    const remainingActivation = 100 - user.activation_progress;
 
     return (
       <div class="sidebar">
@@ -78,32 +90,54 @@ export default class Sidebar extends Component {
               null;
             } else {
               <div class="nav">
-                {false && (
-                  <Link className="activation-status-link" to="/activation">
-                    <div className="activation-status">
-                      <div className="clearfix">
-                        <div className="pull-left">Activate your account</div>
-                        <div className="pull-right">
-                          <i className="i i-chevron-right" />
+                <ShowWhen myRole="owner manager admin">
+                  {(!user.isSubmitted || !config.hasPersonalised) && (
+                    <Link
+                      className="activation-status-link"
+                      to={!user.isSubmitted ? '/activation' : '/config'}
+                      onClick={this.onSidebarBannerClick}
+                    >
+                      <div
+                        className={`activation-status${
+                          user.isSubmitted && !config.hasPersonalised
+                            ? ' not-personalised'
+                            : ''
+                        }`}
+                      >
+                        <div className="clearfix">
+                          <div className="pull-left">
+                            {!user.isSubmitted
+                              ? 'Activate your account'
+                              : !user.isActivated
+                                ? 'Form submitted'
+                                : 'Account Activated'}
+                          </div>
+                          <div className="pull-right">
+                            <i className="i i-chevron-right" />
+                          </div>
                         </div>
+                        {!user.isSubmitted ? (
+                          <div className="activation-bar-content activation-status-secondary">
+                            <div className="activation-bar-text">
+                              {user.activation_progress}% Complete
+                            </div>
+                            <div className="activation-bar">
+                              <ProgressBar
+                                type="success"
+                                max={100}
+                                value={user.activation_progress}
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="activation-status-secondary">
+                            Personalise your Account
+                          </div>
+                        )}
                       </div>
-                      <div class="activation-bar-content">
-                        <div className="activation-bar-text">
-                          {user.activation_progress >= 70
-                            ? `${remainingActivation}% Remaining`
-                            : `${user.activation_progress}% Complete`}
-                        </div>
-                        <div className="activation-bar">
-                          <ProgressBar
-                            type="success"
-                            max={100}
-                            value={user.activation_progress}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                )}
+                    </Link>
+                  )}
+                </ShowWhen>
                 <MainNavLink
                   label="Home"
                   icon="i i-chart text-info"
@@ -144,21 +178,18 @@ export default class Sidebar extends Component {
                   icon="i i-store text-success"
                   to={routes.marketplace}
                   notMyRole="sellerapp support"
-                  isNew={true}
                 />
                 <MainNavLink
                   label="Subscriptions"
                   icon="i i-refresh text-info"
                   notMyRole="sellerapp support"
                   to={routes.subscriptions}
-                  isNew={true}
                 />
                 <MainNavLink
                   label="Smart Collect"
                   icon="i i-account-balance text-danger"
                   to="/virtualaccounts"
                   notMyRole="sellerapp support"
-                  isNew={true}
                 />
 
                 <MainNavLink

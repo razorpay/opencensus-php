@@ -1,205 +1,168 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+
+import Group, { GroupItem } from 'rzp/ui/Group';
 import LocalStorageService from 'rzp/utils/localStorage';
-import ActivationStep from './ActivationStep';
-import KeyGenerationStep from './KeyGenerationStep';
-import PaymentsReceivedStep from './PaymentsReceivedStep';
 
 import newProducts from 'merchant/containers/Banners/newProducts';
 import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
 
-const analyticsGoTo = name => {
-  window.rzpAnalytics({
-    eventCategory: 'Dashboard - Home',
-    eventAction: `Go To - ${name.replace('Razorpay ', '')}`,
-  });
-};
+import ActivationStep from './ActivationStep';
+import Integration from './Integration';
+import { onBoardingItems } from './data';
+import {
+  trackWelcomeCTAClick,
+  trackCloseOnboarding,
+  trackGoToDocumentation,
+} from './ga';
 
-const analyticsLearnMore = name => {
-  window.rzpAnalytics({
-    eventCategory: 'Dashboard - Home',
-    eventAction: `Learn More - ${name.replace('Razorpay ', '')}`,
-  });
-};
-
-const NewProducts = ({ close }) => {
-  const productItemStyle = { width: `${100 / newProducts.length}%` };
-
-  return (
-    <div className="media-body">
-      <button class="close" onClick={close}>
-        <i class="i i-close" />
-      </button>
-
-      <div className="media-heading">Explore Our Product Stack</div>
-      <p>
-        Presenting India’s first holistic converged payment solution for you.
-        Check our brand new products.
-      </p>
-      <div className="new-products-row">
-        {newProducts.map((product, key) => (
-          <div key={key} className={`product-item`} style={productItemStyle}>
-            <MediaCard title={product.name} symbol={product.symbol}>
-              <div className="text-small m-b">{product.description}</div>
-              <div className="links">
-                <Link
-                  to={product.link}
-                  onClick={() => analyticsGoTo(product.name)}
-                >
-                  Try Now
-                </Link>
-                <span className="text-fade" style={{ padding: '0 4px' }}>
-                  &nbsp;•&nbsp;
-                </span>
-                <a
-                  href={product.help}
-                  target="_blank"
-                  onClick={() => analyticsLearnMore(product.name)}
-                >
-                  Learn More
-                </a>
-              </div>
-            </MediaCard>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-@connect(state => state.session)
+@connect(state => ({ ...state.session, config: state.config.config }))
 export default class OnboardingCard extends Component {
-  state = {};
+  constructor(props) {
+    super(props);
 
-  componentWillMount() {
-    if (JSON.parse(LocalStorageService.getItem('ngStorage-new_user_signup'))) {
-      LocalStorageService.setItem('onboarding_first_step', true);
-      LocalStorageService.setItem('show_onboarding_card', true);
-      LocalStorageService.setItem('ngStorage-new_user_signup', false);
-    }
+    const { mode, user, config } = props,
+      { isActivated, isSubmitted } = user,
+      { hasPersonalised } = config;
 
+    this.state = {
+      integrated: false,
+      activated: mode === 'live' && isActivated && isSubmitted,
+    };
+
+    this.onIntegrationComplete = this.onIntegrationComplete.bind(this);
+    this.closeOnboarding = this.closeOnboarding.bind(this);
+  }
+
+  onIntegrationComplete() {
     this.setState({
-      showOnboarding: LocalStorageService.getItem('show_onboarding_card'),
-      isFirstStep: LocalStorageService.getItem('onboarding_first_step'),
-      showNewProductsBanner: !LocalStorageService.getItem(
-        'hide_newproducts_banner'
-      ),
+      integrated: true,
     });
   }
 
   gotoNextStep = () => {
-    this.setState({ isFirstStep: false });
-    LocalStorageService.removeItem('onboarding_first_step');
+    trackWelcomeCTAClick();
+    return this.props.onFirstStepClose && this.props.onFirstStepClose();
   };
 
-  closeOnboarding = () => {
-    this.setState({ showOnboarding: false });
-    LocalStorageService.removeItem('show_onboarding_card');
-  };
-
-  closeNewProductsBanner = () => {
-    LocalStorageService.setItem('hide_newproducts_banner', true);
-    this.setState({ showNewProductsBanner: false });
-  };
+  closeOnboarding(e, fromCloseBtn) {
+    trackCloseOnboarding(`from ${fromCloseBtn ? 'close icon' : 'description'}`);
+    return this.props.onClose && this.props.onClose();
+  }
 
   render() {
-    let { user, mode, modeFormatted, payments = [] } = this.props;
-    let { isFirstStep, showOnboarding } = this.state;
+    let { user, config, payments, mode, isFirstStep } = this.props;
+    let { integrated, activated } = this.state;
 
     let FirstStep = null;
-    const isOldUser = !JSON.parse(
-      LocalStorageService.getItem('ngStorage-new_user_signup')
-    );
 
-    if (showOnboarding) {
-      if (isFirstStep) {
-        FirstStep = (
-          <div class="media-body">
-            <div class="media-heading">
-              Welcome to Razorpay. Let's get started.
-            </div>
-            <p>
-              Dashboard is your one stop for all your payments. Using dashboard,
-              here are some of the things you can do:
-            </p>
-            <ul class="row">
-              <li class="col-sm-4">Complete Activation Process</li>
-              <li class="col-sm-4">Generate Financial Reports</li>
-              <li class="col-sm-4">Issue Refunds</li>
-              <li class="col-sm-4">Check Transaction History</li>
-              <li class="col-sm-4">Access Razorpay Products</li>
-              <li class="col-sm-4">Check Settlements</li>
-            </ul>
-
-            <button class="btn btn-lg btn-primary" onClick={this.gotoNextStep}>
-              <span>Got it! So, what's next?</span>
-              <i class="i i-chevron-right" />
-            </button>
+    if (isFirstStep) {
+      FirstStep = (
+        <div class="media-body">
+          <div class="media-heading">
+            <span className="highlight">W</span>elcome to Razorpay! Let's get
+            you going.
           </div>
-        );
-      } else {
-        FirstStep = (
-          <div class="media-body">
-            {user.isActivated ? (
-              <button class="close" onClick={this.closeOnboarding}>
-                <i class="i i-close" />
-              </button>
-            ) : null}
-            <div class="media-heading">Your Next Steps...</div>
-            <p>
-              Your Razorpay account is created. Now, you can browse through the
-              dashboard or do the following:
-            </p>
-            <div class="row">
-              <div class="col-sm-6" style={{ paddingRight: 0 }}>
-                <ActivationStep user={user} />
-              </div>
+          <div className="onboarding-desc">
+            Your Razorpay account is ready to use! There is a lot that you can
+            do on the Dashboard. Here are some of the actions that you can take:
+          </div>
+          <div class="row">
+            {onBoardingItems.map((item, index) => {
+              return (
+                <div className="col-md-4" key={index}>
+                  <div className="onboarding-checklist-item">
+                    <div className="icon-cont">
+                      <i className="i i-check" />
+                    </div>
+                    <div>{item}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
-              <div class="col-sm-6">
-                {payments.length ? (
-                  <PaymentsReceivedStep />
+          <button
+            class="btn btn-lg btn-default onboarding-cta"
+            onClick={this.gotoNextStep}
+          >
+            <span>Okay. Let's setup your account</span>
+            <i class="i i-chevron-right" />
+          </button>
+        </div>
+      );
+    } else {
+      FirstStep = (
+        <div class="media-body">
+          <div class="media-heading">
+            <span className="highlight">G</span>etting Started with Razorpay
+          </div>
+          <div className="onboarding-desc">
+            {mode === 'test' ? (
+              <span>
+                You are currently in test mode. Feel free to explore the
+                dashboard or do the following:
+              </span>
+            ) : (
+              <span>
+                {integrated && activated ? (
+                  <span>
+                    You are all set up. You may now{' '}
+                    <a onClick={this.closeOnboarding}>close this</a> or view our{' '}
+                    <a href="https://docs.razorpay.com/" target="_blank">
+                      documentation
+                    </a>{' '}
+                    from top right.
+                  </span>
                 ) : (
-                  <KeyGenerationStep
-                    user={user}
-                    mode={mode}
-                    modeFormatted={modeFormatted}
-                  />
+                  <span>
+                    You are now in Live Mode. Generate live API keys and
+                    Integrate to start accepting payments.
+                  </span>
                 )}
-              </div>
-            </div>
-
-            {user.isActivated ? (
-              <div style={{ marginTop: '12px' }}>
-                You may now{' '}
-                <a onClick={this.closeOnboarding}>close this card</a>
-                . You can access the <a>documentation</a> from topbar, if
-                needed.
-              </div>
-            ) : null}
+              </span>
+            )}
           </div>
-        );
-      }
+          <div className="onboarding-steps">
+            <Group>
+              <GroupItem>
+                <ActivationStep mode={mode} user={user} config={config} />
+              </GroupItem>
+              <GroupItem>
+                <Integration
+                  mode={mode}
+                  payments={payments}
+                  onFinish={this.onIntegrationComplete}
+                />
+              </GroupItem>
+            </Group>
+          </div>
+        </div>
+      );
     }
 
     return (
-      <div>
-        {FirstStep && (
-          <div
-            class={`media onboarding-card ${isFirstStep ? 'first-step' : ''}`}
-          >
-            <div class="media-left">
-              <div class="media-object onboarding" />
-            </div>
+      <div className="onboarding-card-wrapper">
+        <div
+          className={`onboarding-card-wrapper-content${
+            isFirstStep ? ' first-step' : ''
+          }`}
+        >
+          <div class="media onboarding-card">
             {FirstStep}
+            <div class="onboarding-illustration" />
+            {integrated &&
+              activated && (
+                <a
+                  onClick={e => this.closeOnboarding(e, true)}
+                  className="close"
+                >
+                  <i className="i i-close" />
+                </a>
+              )}
           </div>
-        )}
-        {isOldUser &&
-          this.state.showNewProductsBanner && (
-            <div class={`media onboarding-card new-features`}>
-              <NewProducts close={this.closeNewProductsBanner} />
-            </div>
-          )}
+        </div>
       </div>
     );
   }

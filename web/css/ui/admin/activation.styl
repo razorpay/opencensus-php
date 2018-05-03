@@ -36,3 +36,21 @@
   .grievance-link
     border-bottom: none
 
+// activation merchant list styles
+.list-container.activations
+  .merchants-list
+    .tr 
+      //checkbox in table 1st row
+      div:first-of-type
+        min-width: 30px
+        .field
+          vertical-align: middle
+      //align searchField in table 2nd row
+      .td:nth-child(2)
+        vertical-align: top
+    .link
+      word-break: normal
+  .PowerSelect__Trigger, .PowerSelect__TriggerInput
+    width: 150px
+    max-height: 32px
+    

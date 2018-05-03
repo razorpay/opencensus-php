@@ -78,9 +78,11 @@ function getValue(result, mode, attributes) {
     value = <Amount value={value} />;
   } else if (
     key === 'merchant_id' ||
-    (key === 'entity_id' && attributes.entity_type === 'merchant')
+    (key === 'entity_id' && attributes.entity_type === 'merchant') ||
+    (key === 'to_id' && attributes.to_type === 'merchant') ||
+    (key === 'source_id' && attributes.source_type === 'merchant')
   ) {
-    // entity_id & entity_type are returned in "feature" entity
+    // *_id & *_type are returned in "feature", "to" and "source" key
     value = (
       <a class="link" target="_blank" href={`/admin/merchants/${value}`}>
         {value}
@@ -94,8 +96,18 @@ function getValue(result, mode, attributes) {
   ) {
     // remove _id from tail
     let entityName = key.slice(0, -3);
+    if (key === 'recipient_settlement_id') {
+      entityName = 'settlement';
+    } else if (key === 'source_id') {
+      entityName = attributes.source_type;
+    } else if (key === 'to_id') {
+      entityName = attributes.to_type;
+    }
+
     let id = prefixEntityValue(entityName, value);
-    if (entityName === 'file') {entityName = 'file_store'}
+    if (entityName === 'file') {
+      entityName = 'file_store';
+    }
     value = (
       <a class="link" href={`/admin/entity/${entityName}/${mode}/${id}`}>
         {id}

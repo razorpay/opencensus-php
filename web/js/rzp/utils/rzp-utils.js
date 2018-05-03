@@ -361,7 +361,7 @@ export const getEventCategoryFromPath = pathname => {
     case 'virtualaccounts':
       return 'Dashboard - Smart Collect';
     default:
-      return null;
+      return 'Dashboard - Home';
   }
 };
 
@@ -438,9 +438,19 @@ export const arrayToCsvDataUrl = array => {
 };
 
 /**
+ * @param {*} url
+ * Check if valid secure production URL (i.e, HTTPS)
+ */
+export const checkIfHTTPS = url => {
+  const regex = /^https:\/\//i;
+
+  return regex.test(url);
+};
+
+/**
  *
  * @param {*} url
- * Add 'http' to the URL is not available
+ * Add 'http' to the URL if http/https not there
  */
 export const autoPrefixUrls = url => {
   const regex = /^https?:\/\//i;
@@ -471,7 +481,6 @@ export { acronyms, shortenText };
  *Get human readable file size
  * @param {*} fileSize in bytes in Binary prefixes
  */
-
 export const readableFileSize = bytes => {
   const sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
 
@@ -480,7 +489,7 @@ export const readableFileSize = bytes => {
   return `${(bytes / Math.pow(1024, e)).toFixed(2)} ${sizes[e]}`;
 };
 
-/*
+/**
  * Method to create a query string separated by | instead of &
  * @param {Object} params
  * @return {String}

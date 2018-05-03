@@ -54,7 +54,7 @@ export default class ProfileDropdown extends Component {
   };
 
   render() {
-    let { user, analytics = () => {} } = this.props;
+    let { user, mode, analytics = () => {} } = this.props;
     let merchant = user.merchants[user.current];
     return (
       <Dropdown closeOnClick={false}>
@@ -111,7 +111,7 @@ export default class ProfileDropdown extends Component {
               </div>
             </div>
 
-            {user.isActivated &&
+            {mode === 'live' &&
               user.isNewAnalyticsEnabled && (
                 <div
                   class="media media-action"

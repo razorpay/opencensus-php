@@ -5,7 +5,9 @@ import Alert from 'rzp/ui/Forms/Alert';
 import { without } from 'rzp/utils/rzp-utils';
 import { showNotification } from 'rzp/modules/notifications';
 import * as ActivationActions from 'merchant/modules/activation';
+import * as SessionActions from 'merchant/modules/session';
 import { fetchUser } from 'merchant/modules/session';
+import User from 'merchant/models/User';
 
 import ContactDetailsForm from './ContactDetailsForm';
 import BusinessDetailsForm from './BusinessDetailsForm';
@@ -38,7 +40,12 @@ const FORM_COMPONENTS = {
       ...state.activation,
     };
   },
-  { ...ActivationActions, showNotification, fetchUser }
+  {
+    ...ActivationActions,
+    ...SessionActions,
+    showNotification,
+    fetchUser,
+  }
 )
 @reduxForm({
   form: 'activationForm',
@@ -48,9 +55,16 @@ const FORM_COMPONENTS = {
 })
 export default class WizardItem extends Component {
   finalStep = 5;
-  state = {
-    errors: null,
-  };
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      errors: null,
+    };
+
+    this.updateSession = this.updateSession.bind(this);
+  }
 
   componentWillMount() {
     if (this.props.accountId) {
@@ -62,6 +76,24 @@ export default class WizardItem extends Component {
     }
   }
 
+  updateSession(data) {
+    const { session } = this.props;
+
+    const { activation_progress, activated, submitted } = data.data;
+
+    const user = new User({
+      ...session.user,
+      activation_progress,
+      activated,
+      submitted: +submitted,
+    });
+
+    this.props.updateSession({
+      user,
+      mode: session.mode,
+    });
+  }
+
   _save = props => {
     let { step, accountId } = this.props;
     let data = without(props, [
@@ -71,11 +103,17 @@ export default class WizardItem extends Component {
     ]);
 
     if (step === this.finalStep) {
-      return this.props.submitForm({ step, data, accountId }).then(() => {
-        return this.props.fetchActivationDetails(accountId);
+      return this.props.submitForm({ step, data, accountId }).then(data => {
+        this.updateSession(data);
+
+        return this.props
+          .fetchActivationDetails(accountId)
+          .then(this.updateSession);
       });
     } else {
-      return this.props.saveStep({ step, data, accountId });
+      return this.props
+        .saveStep({ step, data, accountId })
+        .then(this.updateSession);
     }
   };
 

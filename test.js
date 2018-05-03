@@ -2,6 +2,15 @@
 const puppeteer = require('puppeteer');
 const http = require('http');
 const env = require('process').env;
+const port = 8080,
+  baseURL = `http://localhost:${port}/test`,
+  merchantURL = `${baseURL}/merchant.html#/app`,
+  merchantLog = console.log.bind(console, '[Merchant Log]:\n'),
+  adminURL = `${baseURL}/admin.html#/admin`,
+  adminLog = console.log.bind(console, '[Admin Log]:\n');
+
+console.log('merchantURL: ' + merchantURL);
+console.log('adminURL: ' + adminURL);
 
 const ecstatic = require('ecstatic')({
   root: `${__dirname}/public`,
@@ -9,16 +18,17 @@ const ecstatic = require('ecstatic')({
   autoIndex: true,
 });
 
-http.createServer(ecstatic).listen(8080);
+http.createServer(ecstatic).listen(port);
 
-console.log('Listening on :8080');
+console.log(`Listening on :${port}`);
 
 async function merchant(browser) {
   let timeout = setTimeout(_ => {
     throw 'Merchant Test Timed out';
   }, 5000);
   const page = await browser.newPage();
-  await page.goto('http://localhost:8080/test/merchant.html#/app');
+  page.on('pageerror', merchantLog).on('error', merchantLog);
+  await page.goto(merchantURL);
 
   return page.waitForSelector('.layout.rzp').then(_ => {
     clearTimeout(timeout);
@@ -31,7 +41,8 @@ async function admin(browser) {
     throw 'Admin Test Timed out';
   }, 5000);
   const page = await browser.newPage();
-  await page.goto('http://localhost:8080/test/admin.html#/admin');
+  page.on('pageerror', adminLog).on('error', adminLog);
+  await page.goto(adminURL);
 
   return page.waitForSelector('#app-container').then(_ => {
     clearTimeout(timeout);

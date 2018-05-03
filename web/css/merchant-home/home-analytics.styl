@@ -22,6 +22,16 @@ traffic-responsive() {
   }
 }
 
+#_hj_poll_container {
+
+  display: none;
+}
+
+body.show-hotjar-poll #_hj_poll_container {
+
+  display: block;
+}
+
 .dashboard-home {
 
   .card {
@@ -77,12 +87,40 @@ traffic-responsive() {
           }
         }
       }
+      
+      &.banner-close {
+
+        width: 1px;
+        padding-right: 16px;
+        font-size: 12px;
+
+        > a {
+
+          color: #fff;
+          opacity: 0.5;
+          font-size: 14px;
+
+          &:hover {
+
+            opacity: 1;
+          }
+        }
+      }
     }
   }
 
-  > .rzp-sticky > .sticky-content {
+  > .rzp-sticky {
 
-    z-index: 2;
+    &.sticky > .sticky-content {
+
+      position: fixed;
+    }
+
+    > .sticky-content {
+
+      z-index: 2;
+      position: relative;
+    }
   }
 
   .header {
@@ -336,4 +374,9 @@ body.analytics-v2-active {
       }
     }
   }
+}
+
+.tour-active #_hj_poll_container {
+
+  display: none;
 }
