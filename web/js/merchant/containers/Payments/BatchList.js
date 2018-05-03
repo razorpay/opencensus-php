@@ -7,7 +7,7 @@ import BatchList from 'merchant/containers/Batch/List';
 import BatchUpload from './BatchUpload';
 
 import { fetchPaymentBatches as fetchAll } from 'merchant/modules/batches';
-import { openModal } from 'rzp/modules/modals';
+import { openModal, closeModal } from 'rzp/modules/modals';
 
 @withRouter
 @connect(
@@ -24,7 +24,10 @@ export default class BatchListContainer extends ListContainer {
     if (nextProps.match.params.mode === 'new') {
       this.props.openModal({
         size: 'large',
-        closeModal: () => {},
+        closeModal: () => {
+          this.props.closeModal();
+          this.props.history.push('/payments/batchuploads');
+        },
         component: <BatchUpload />,
       });
     }
