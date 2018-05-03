@@ -49,6 +49,13 @@ class GatewayDowntimeTest extends TestCase
         $this->startTest();
     }
 
+    public function testGatewayFetchDowntimes()
+    {
+        $this->testGatewayCreateDowntimeNetbanking();
+
+        $this->startTest();
+    }
+
     public function testGatewayCreateDowntimeDuplicate()
     {
         $request = [
