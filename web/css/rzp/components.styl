@@ -569,7 +569,8 @@ dl.rzp-definition {
 
   p {
     margin: 0 auto
-    width: 87%;
+    width: 93%;
+    padding-left: 6%
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -586,23 +587,32 @@ dl.rzp-definition {
     border-radius: 4px
     cursor: pointer
     border: 1px dashed $primary-color
-    text-align: center
 
     &--highlight {
-      border-color: #27c24c
       background: #fff
       box-shadow: 2px 2px 6px rgba(0,0,0,0.12)
     }
 
     &--staged {
-      border: 1px solid #e1e1e1
+      border: 1px solid #DBDBDB
+      background: #fff
+      border-radius: 2px
+    }
+
+    &--error {
+      background-color: #FFF2F2
+      border-color: #FF6363
+    }
+
+    &--disabled {
+      cursor: not-allowed
+      background-color: #eee
     }
   }
 
   .Dropzone-content {
-    padding: 12px 12px 12px 40px
+    padding: 14px 14px 14px 40px
     vertical-align: middle
-    text-align: center
     font-size: 16px
     pointer-events: none
 
@@ -611,7 +621,6 @@ dl.rzp-definition {
     }
     &-desc--secondary {
       font-size: 14px
-      opacity: 0.8
       margin-top: 4px
     }
 
@@ -633,23 +642,20 @@ dl.rzp-definition {
 
 /* Component: merchant/components/File/Staged */
 .Dropzone-cavity--staged {
-  border: 1px solid #DBDBDB
-
-  &.error {
-    background-color: #FFF2F2
-    border-color: #FF6363
-  }
-  &.success {
-    border-color: #00C452
-    background-color: #FBFFFD
-  }
 
   .Dropzone-content {
     padding-right: 28px
     pointer-events: auto
+  }
 
-    &-desc--primary {
-      font-weight: 600
+  .text-success {
+    color: #00C452
+    position: relative
+
+    i {
+      position: absolute
+      left: -3px
+      top: 5px
     }
   }
 
@@ -665,25 +671,27 @@ dl.rzp-definition {
   .Loader {
     height: 3px
     width: 100%
-    position: relative
+    position: absolute
     background-color: #ddd
     overflow: hidden
     visibility: hidden
     margin-top: -3px
+    bottom: -1px
+    left: -1px
 
     .Loader-progress {
       position: absolute
       display: block
       width: 100%
       height: 4px
-      background-color: #1DC155
+      background-color: #00C452
       transform: translateX(-100%)
       transition: all 0.2s cubic-bezier(0.07, 1.09, 1, 1)
       will-change: transform
     }
   }
 
-  .Dropzone-content--process .Loader {
+  &.Dropzone-cavity--process .Loader {
     visibility: visible
     margin-top: 0
   }
