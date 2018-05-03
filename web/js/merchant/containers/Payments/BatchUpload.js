@@ -108,8 +108,8 @@ export default class BatchUploadContainer extends Component {
   };
 
   render() {
-    const Header = () => (
-      <ModalHeader title="Batch Upload" onCloseClick={this.closeModal} />
+    const Header = ({ title }) => (
+      <ModalHeader title={title} onCloseClick={this.closeModal} />
     );
     const Loader = () => (
       <div class="page-spinner-container">
@@ -124,7 +124,7 @@ export default class BatchUploadContainer extends Component {
       case 'upload':
         return (
           <div class="batch-upload-modal">
-            {this.state.iFrameLoaded && <Header />}
+            {this.state.iFrameLoaded && <Header title="Batch Upload" />}
             <iframe
               src={`${iframeHost}/v1/batches/upload?token=${this.state.ott}`}
               class={`
@@ -156,7 +156,7 @@ export default class BatchUploadContainer extends Component {
         };
         return (
           <div class="batch-upload-modal create">
-            <Header />
+            <Header title="Batch Upload" />
             <CreateModal
               parsedEntries={this.state.parsedEntries}
               onCreateBatch={this.handleCreateBatch}
@@ -168,6 +168,7 @@ export default class BatchUploadContainer extends Component {
       case 'success':
         return (
           <div class="batch-upload-modal success">
+            <Header title="" />
             <SuccessModal onModalClose={this.closeModal} />
           </div>
         );
