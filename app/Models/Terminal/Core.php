@@ -305,6 +305,26 @@ class Core extends Base\Core
         // Check no record with same 'gateway_merchant_id' exists
         $params = [Entity::GATEWAY_MERCHANT_ID => $terminal->getGatewayMerchantId()];
 
+        $existingTerminals = $this->repo->terminal->fetch($params);
+
+        // This check if this terminal is same as what
+        // we are trying to edit
+        if ($existingTerminals->count() === 1)
+        {
+            $existingTerminal = $existingTerminals[0];
+
+            if ($existingTerminal->getGatewayMerchantId() === $terminal->getGatewayMerchantId())
+            {
+                return;
+            }
+        }
+
+        if ($existingTerminals->count() !== 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                Entity::GATEWAY_MERCHANT_ID);
+        }
     }
 
     protected function validateExistingMpan(Entity $terminal)
@@ -348,7 +368,7 @@ class Core extends Base\Core
         {
             $existingTerminal = $existingTerminals[0];
 
-            if ($existingTerminal->getGatewayMerchantId() === $terminal->getGatewayMerchantId())
+            if ($existingTerminal->getId() === $terminal->getId())
             {
                 return;
             }
@@ -358,7 +378,7 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
-                Entity::GATEWAY_MERCHANT_ID);
+                $field);
         }
     }
 
