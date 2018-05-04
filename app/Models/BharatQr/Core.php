@@ -58,7 +58,7 @@ class Core extends Base\Core
             $valid = false;
         }
 
-        return [$valid, $bharatQr];
+        return $valid;
     }
 
     protected function getBharatQrInputParams(array $gatewayInput)

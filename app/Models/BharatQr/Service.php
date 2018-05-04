@@ -56,8 +56,6 @@ class Service extends Base\Service
 
         $qrData = $gatewayResponse['qr_data'];
 
-        $callbackData = $gatewayResponse['callback_data'];
-
         (new Validator)->validateInput('gateway_response', $qrData);
 
         $qrCodeId = $qrData[GatewayResponseParams::MERCHANT_REFERENCE];
@@ -66,8 +64,7 @@ class Service extends Base\Service
 
         $gatewayResponse['qr_data'][GatewayResponseParams::GATEWAY] = $gateway;
 
-        list($valid, $bharatQr) = $this->core->processPayment($gatewayResponse);
-
+        $valid = $this->core->processPayment($gatewayResponse);
 
         $response = $this->getResponse($valid);
 
