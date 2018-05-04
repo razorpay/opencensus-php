@@ -57,8 +57,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
         catch (DbQueryException $ex)
         {
-            $this->trace->error(
-                    TraceCode::RECON_ALERT,
+            $this->trace->info(
+                    TraceCode::RECON_MISMATCH,
                     [
                         'info_code' => 'PAYMENT_ABSENT',
                         'message'   => 'Payment Id not found. Skipping',
