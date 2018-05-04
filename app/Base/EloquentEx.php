@@ -14,8 +14,14 @@ use RZP\Base\Database\QueryBuilder;
 
 class EloquentEx extends \Razorpay\Spine\Entity
 {
+    /**
+     * @var bool
+     */
     public $incrementing = false;
 
+    /**
+     * @var bool
+     */
     protected $allowHardDelete = false;
 
     /**
@@ -84,7 +90,7 @@ class EloquentEx extends \Razorpay\Spine\Entity
      */
     public function deleteOrFail(array $options = [])
     {
-       if (($this->doesEntityUseSoftdeletes() === false) and ($this->allowHardDelete === false))
+       if (($this->doesEntityUseSoftDeletes() === false) and ($this->allowHardDelete === false))
        {
             throw new Exception\RuntimeException('Hard deleting entity is not allowed', [
                 'entity' => $this->entity
