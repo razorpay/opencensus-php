@@ -348,18 +348,38 @@ export default class TerminalForm extends Component {
             label="Recurring Non 3DS"
             name="type[recurring_non_3ds]"
             defaultChecked={
-              entity && entity.type && entity.type.indexOf('recurring_non_3ds') >= 0
+              entity &&
+              entity.type &&
+              entity.type.indexOf('recurring_non_3ds') >= 0
             }
           />
           <CheckField
             label="IVR"
             name="type[ivr]"
-            defaultChecked={entity && entity.type && entity.type.indexOf('ivr') >= 0}
+            defaultChecked={
+              entity && entity.type && entity.type.indexOf('ivr') >= 0
+            }
           />
           <CheckField
             label="No 2FA"
             name="type[no_2fa]"
-            defaultChecked={entity && entity.type && entity.type.indexOf('no_2fa') >= 0}
+            defaultChecked={
+              entity && entity.type && entity.type.indexOf('no_2fa') >= 0
+            }
+          />
+          <CheckField
+            label="UPI Pay"
+            name="type[pay]"
+            defaultChecked={
+              entity && entity.type && entity.type.indexOf('pay') >= 0
+            }
+          />
+          <CheckField
+            label="Pin Auth"
+            name="type[pin]"
+            defaultChecked={
+              entity && entity.type && entity.type.indexOf('pin') >= 0
+            }
           />
 
           <div class="m-t m-b" />
