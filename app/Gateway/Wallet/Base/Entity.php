@@ -30,6 +30,8 @@ class Entity extends Base\Entity
 
     protected $entity = 'wallet';
 
+    protected $allowHardDelete = true;
+
     protected $fields = [
         self::ID,
         self::PAYMENT_ID,

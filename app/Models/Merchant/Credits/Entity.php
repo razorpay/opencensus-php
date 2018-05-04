@@ -23,6 +23,8 @@ class Entity extends Base\PublicEntity
 
     protected $revisionCreationsEnabled = true;
 
+    protected $allowHardDelete = true;
+
     protected $fillable = array(
         self::ID,
         self::EXPIRED_AT,

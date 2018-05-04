@@ -18,6 +18,8 @@ class Entity extends Base\PublicEntity
 
     protected static $sign = 'ofm';
 
+    protected $allowHardDelete = true;
+
     protected $fillable = [
         self::ORG_ID,
         self::ENTITY_NAME,

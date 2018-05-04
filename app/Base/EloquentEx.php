@@ -16,6 +16,8 @@ class EloquentEx extends \Razorpay\Spine\Entity
 {
     public $incrementing = false;
 
+    protected $allowHardDelete = false;
+
     /**
      * Parent relations which are specified here will be ignored while
      * checking existence of associated entities while saving current entity.
@@ -75,6 +77,21 @@ class EloquentEx extends \Razorpay\Spine\Entity
     protected function throwException(array $e)
     {
         throw new Exception\DbQueryException($e);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function deleteOrFail(array $options = [])
+    {
+       if (($this->doesEntityUseSoftdeletes() === false) and ($this->allowHardDelete === false))
+       {
+            throw new Exception\RuntimeException('Hard deleting entity is not allowed', [
+                'entity' => $this->entity
+            ]);
+       }
+
+       parent::deleteOrFail($options);
     }
 
     public static function findOrFailPublic($id, $columns = array('*'))

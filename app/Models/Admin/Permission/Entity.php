@@ -32,6 +32,8 @@ class Entity extends Base\Entity
 
     protected $revisionCreationsEnabled = true;
 
+    protected $allowHardDelete = true;
+
     protected $fillable = [
         self::ID,
         self::NAME,

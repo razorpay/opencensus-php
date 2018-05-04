@@ -20,6 +20,8 @@ class Entity extends Base\Entity
 
     protected $generateIdOnCreate = false;
 
+    protected $allowHardDelete = true;
+
     protected $fillable = [
         self::ADMIN_ID,
         self::TOKEN,

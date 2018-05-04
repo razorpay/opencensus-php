@@ -49,6 +49,8 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    protected $allowHardDelete = true;
+
     protected $fillable = [
         self::ID,
         self::NAME,

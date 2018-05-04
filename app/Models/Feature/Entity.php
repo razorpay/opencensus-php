@@ -28,6 +28,8 @@ class Entity extends Base\PublicEntity
     // We are explicitly generating Id so that same Id gets stored in live and test db
     protected $generateIdOnCreate = false;
 
+    protected $allowHardDelete = true;
+
     protected $fillable = [
         self::NAME,
         self::ENTITY_ID,
@@ -92,7 +94,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::ENTITY_TYPE);
     }
-    
+
     public function entity()
     {
         return $this->morphTo();
