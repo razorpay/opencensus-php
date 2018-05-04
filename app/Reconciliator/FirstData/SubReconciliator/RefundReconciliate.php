@@ -41,8 +41,8 @@ class RefundReconciliate extends Base\RefundReconciliate
         }
         catch (DbQueryException $ex)
         {
-            $this->trace->error(
-                TraceCode::RECON_ALERT,
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
                 [
                     'info_code' => 'REFUND_ABSENT',
                     'message'   => 'Refund not found. Skipping',

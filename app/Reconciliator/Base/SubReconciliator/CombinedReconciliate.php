@@ -210,8 +210,6 @@ class CombinedReconciliate extends Foundation\SubReconciliate
 
         $this->subReconciliatorObjects[$entityType] = $subReconciliatorObject;
 
-        $subReconciliatorObject->resetProcessingAttributes();
-
         return $subReconciliatorObject;
     }
 
