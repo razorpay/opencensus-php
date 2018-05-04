@@ -2,23 +2,18 @@
 
 namespace RZP\Models\VirtualAccount;
 
-use Config;
 use Lib\CRC16;
-use RZP\Base\Luhn;
 use RZP\Exception;
-use RZP\Models\Card;
-use RZP\Models\Currency\Currency;
-use RZP\Models\Payment;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Models\BharatQr\Tags;
-use RZP\Models\BharatQr\Lengths;
 use RZP\Models\Merchant\Account;
-use RZP\Models\Card\NetworkName;
 use RZP\Models\BharatQr\Constants;
 use RZP\Models\Merchant\Preferences;
-use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 use RZP\Models\BankAccount\Entity as BankAccount;
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Provider
 {
@@ -241,11 +236,11 @@ class Provider
 
         $merchantIdentifiers = $this->generateBharatQrMerchantIdentifier($qrCode);
 
-        $visaIdentifier = $merchantIdentifiers['visa_mpan'];
+        $visaIdentifier = $merchantIdentifiers[Terminal\Entity::VISA_MPAN];
 
-        $masterCardIdentifier =  $merchantIdentifiers['mastercard_mpan'];
+        $masterCardIdentifier =  $merchantIdentifiers[Terminal\Entity::MASTERCARD_MPAN];
 
-        $rupayIdentifier = $merchantIdentifiers['rupay_mpan'];
+        $rupayIdentifier = $merchantIdentifiers[Terminal\Entity::RUPAY_MPAN];
 
         $visaTlv = Tags::VISA . $this->getLengthAndValue($visaIdentifier);
 
@@ -259,7 +254,7 @@ class Provider
             $visaTlv,
             $masterCardTlv,
             $rupayCardTlv,
-            $this->getBharatQrUpiTlv($merchantIdentifiers['vpa']),
+            $this->getBharatQrUpiTlv($merchantIdentifiers[Terminal\Entity::VPA]),
             $this->getBharatQrDynamicUpiTlv($qrCode),
             Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Constants::MERCHANT_CATEGORY),
             Tags::CURRENCY_CODE . $this->getLengthAndValue(Constants::CURRENCY_CODE),
@@ -354,21 +349,20 @@ class Provider
      */
     protected function generateBharatQrMerchantIdentifier(QrCode\Entity $qrCode)
     {
-        $terminal = $this->getTerminalForMethod(Payment\Method::CARD, $qrCode, Card\Network::MC);
+        $identifiers = [];
 
-        $identifiers['mastercard_mpan'] = $terminal->getMasterCardMpan();
+        foreach (Terminal\Entity::$bharatQrNetworkMpanMap as  $network => $mpan)
+        {
+            $terminal = $this->getTerminalForMethod(Payment\Method::CARD, $qrCode, $network);
 
-        $terminal = $this->getTerminalForMethod(Payment\Method::CARD, $qrCode, Card\Network::VISA);
+            $terminal->toArray();
 
-        $identifiers['visa_mpan'] = $terminal->getVisaMpan();
-
-        $terminal = $this->getTerminalForMethod(Payment\Method::CARD, $qrCode, Card\Network::RUPAY);
-
-        $identifiers['rupay_mpan'] = $terminal->getRupayMpan();
+            $identifiers[$mpan] = $terminal[$mpan];
+        }
 
         $terminal = $this->getTerminalForMethod(Payment\Method::UPI, $qrCode);
 
-        $identifiers['vpa'] = $terminal->getGatewayVpa();
+        $identifiers[Terminal\Entity::VPA] = $terminal->getGatewayVpa();
 
         return $identifiers;
     }

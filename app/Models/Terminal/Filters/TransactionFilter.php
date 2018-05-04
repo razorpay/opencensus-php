@@ -91,7 +91,8 @@ class TransactionFilter extends Terminal\Filter
 
             if ($payment->isBharatQr() === true)
             {
-                $supported = Gateway::isBharatQrCardNetworkSupported($network, $terminal->getGateway());
+                $supported = ((Gateway::isBharatQrCardNetworkSupported($network, $terminal->getGateway())) and
+                              (empty($terminal[Terminal\Entity::$bharatQrNetworkMpanMap[$network]]) === false));
             }
             else
             {

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
+use RZP\Models\Card\Network;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Currency\Currency;
@@ -166,6 +167,12 @@ class Entity extends Base\PublicEntity
         'inputRemoveBlanks',
         self::INTERNATIONAL,
         self::EMI_SUBVENTION,
+    ];
+
+    public static $bharatQrNetworkMpanMap = [
+        Network::MC    => self::MASTERCARD_MPAN,
+        Network::VISA  => self::VISA_MPAN,
+        Network::RUPAY => self::RUPAY_MPAN,
     ];
 
     protected $defaults = [

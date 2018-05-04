@@ -25,6 +25,8 @@ class Core extends Base\Core
 
         $terminal = (new Entity)->build($input);
 
+        $terminal->generateId();
+
         $this->validateExistingTerminal($terminal);
 
         $this->repo->saveOrFail($terminal);
@@ -213,6 +215,8 @@ class Core extends Base\Core
         $input['merchant_id'] = $merchant->getKey();
 
         $terminal = (new Entity)->build($input);
+
+        $terminal->generateId();
 
         $this->validateExistingTerminal($terminal);
 

@@ -5,7 +5,6 @@ namespace RZP\Models\Payment;
 use App;
 use RZP\Exception;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
@@ -437,7 +436,6 @@ class Gateway
             Network::RUPAY,
         ],
     ];
-
 
     public static $cardNetworkRecurringMap = [
         self::HITACHI => [
