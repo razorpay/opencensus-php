@@ -1,5 +1,5 @@
 <div class="auth-overflow-container">
-  <div class="signup-translate-container" style="transform: translateX({{-(240)*signup.currentStep}}px)">
+  <div class="signup-translate-container" ng-style="'transform': 'translateX(' + ((-240)*signup.currentStep) + 'px)'">
     <div class="auth-step" >
       <div class="signup-form-step" ng-if="(isOrgCheckDone && organization && organization.allow_sign_up) || merchant_invitation">
         <div class="auth-heading">
