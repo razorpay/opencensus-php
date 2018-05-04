@@ -1,17 +1,43 @@
-# Oriental Bank Netbanking Integration
+## Oriental Bank Netbanking Integration
 
 **[Documentation][docs]**
 
-**People**: Vivek /Tessy
 
 [docs]: https://docs.google.com/document/d/1FpNqBr8-1RZSv2S2Y58c9x2OQYFv3zSNWZFhUSu5uOw
 
-## Refund and Recon Process
+## Refund File Format
 
-1. OBC would be sending a daily [Recon file][recon] at 11 Am daily
+*  FileName => REFUND_NB_OBC_MERCHANTNAME_20151123.txt
 
-2. Razorpay has to sent refund file [Refund file][refund] at 12 PM .
+*  Format => Delimited Text File, Field Delimiter (|)
 
-[recon]: https://drive.google.com/file/d/16l_D3NipizU2pL6hLmomYa3AXxxC4PkO/view?usp=sharing
+*  Header: HOBCUTLPRFD|20151123 { Claim/Settlement Date }|PayeeID ( Allotted by Bank to Merchant)
 
-[refund]: https://drive.google.com/file/d/1VYhyhI7kzyNIynRt2qIy60Pgew7ss7Of/view?usp=sharing
+* Field1 : PGI/MERCHANT Transaction Ref#
+  
+* Field2 : Refund Type ( R/C )
+
+* Field3 : Refund Amount {Decimal Format}
+
+* Field4 : Bank Transaction Ref#
+
+* Field5 : Claim/Settlement Date { Refund Amount to be Adjusted against
+which Date Settlement Amount / Must be same date for all records in the
+File}
+
+* Field6 : Original Transaction Amount
+
+* Field7 : PGI/MERCHANT Unique Refund Ref#
+
+* Footer : TOBCUTLPRFD|20151123 |{No. of Refunds } | { Total Refund Amount }
+
+Sample
+
+       "HOBCUTLPRFD|20180410|random_merchant_id
+       9xXgM0N95MTKnE|R|500|9999999999|20180410|500|9xXgRbAekoVjc2
+       9xXgOoDzqaVcyR|R|500|9999999999|20180410|500|9xXgS855lIEO6U
+       9xXgQkyIjQAW6I|R|100|9999999999|20180410|500|9xXgSd8eW8y4bZ
+       TOBCUTLPRFD|20180410|3|1100"
+
+            
+
