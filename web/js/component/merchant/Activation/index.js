@@ -103,6 +103,7 @@ const businessFields1 = [
     label: 'We want to accept International Payments as well',
     name: 'business_international',
     _cmp: Input.Check,
+    required: false,
   },
   {
     label: 'CIN',
@@ -337,6 +338,7 @@ const defaultFieldProps = f => {
 
 defaultFieldProps(tabContent);
 
+const LAST_STEP = tabs.length; // It's document upload step.
 export default class ActivationWizard extends React.Component {
   state = {
     isSaving: null,
@@ -385,6 +387,11 @@ export default class ActivationWizard extends React.Component {
         firstInValid = i;
       }
       this.state.tabs[i] = tabStatus; // Mark tabs as valid-invalid
+    }
+
+    if (!firstInValid) {
+      firstInValid = tabs.length - 1; // In case all are filled then set last tab(which is actually filled)
+      this.state.showSubmitLayer = true;
     }
 
     this.state.activeTab = firstInValid;
@@ -563,7 +570,7 @@ export default class ActivationWizard extends React.Component {
         {!this.state.showSubmitLayer && (
           <footer>
             <Loader isSaving={this.state.isSaving} />
-            {(activeTab != 4 && (
+            {(activeTab != LAST_STEP && (
               <Button onClick={_ => this.goto()}>Save</Button>
             )) ||
               null}

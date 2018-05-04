@@ -262,7 +262,6 @@ const excludedFieldsInForm = [
   'can_submit',
   'steps_finished',
   'verification',
-  'business_international',
   'archived',
   'activated',
   'activation_progress',
