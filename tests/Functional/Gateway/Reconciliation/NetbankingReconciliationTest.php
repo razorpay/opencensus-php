@@ -223,7 +223,7 @@ class NetbankingReconciliationTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $response = $this->reconcile('NetbankingObc', $uploadedFile);
+        $this->reconcile('NetbankingObc', $uploadedFile);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
