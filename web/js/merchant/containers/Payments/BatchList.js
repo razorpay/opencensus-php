@@ -37,7 +37,7 @@ export default class BatchListContainer extends ListContainer {
     return (
       <BatchList
         form="batchListFilter"
-        batchIdIsLink
+        showBatchName
         count={this.state.count}
         skip={this.paginate}
         onSubmit={this.search}
