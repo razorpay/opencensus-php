@@ -534,8 +534,8 @@ export default class ActivationWizard extends React.Component {
                   data-index={i}
                   onClick={this.changeTab}
                 >
+                  {isTabValid && <i class={'i-check text-success'} />}
                   {t}
-                  {isTabValid && <i class={'i-done text-success'} />}
                 </li>
               );
             })}
@@ -708,39 +708,42 @@ class SubmitForm extends React.Component {
     return (
       <div class="SubmitForm-backdrop">
         <div class="SubmitForm-modal">
-          <Input.Check
-            onChange={e => {
-              this.setState({
-                allowSubmit: e.target.checked,
-              });
-            }}
-          />
-          <p>
-            I have read and understood the{' '}
-            <a
-              href="https://razorpay.com/terms/"
-              target="_blank"
-              class="highlight"
-            >
-              Terms & Conditions
-            </a>,{' '}
-            <a
-              href="https://razorpay.com/agreement/"
-              target="_blank"
-              class="highlight"
-            >
-              Merchant Agreement
-            </a>{' '}
-            and the{' '}
-            <a
-              href="https://razorpay.com/privacy/"
-              target="_blank"
-              class="highlight"
-            >
-              Privacy Policy
-            </a>. By submitting the form, I agree to abide by the rules at all
-            times.
-          </p>
+          <main-title>SUBMIT FORM</main-title>
+          <div class="tnc-text">
+            <Input.Check
+              onChange={e => {
+                this.setState({
+                  allowSubmit: e.target.checked,
+                });
+              }}
+            />
+            <p>
+              I have read and understood the{' '}
+              <a
+                href="https://razorpay.com/terms/"
+                target="_blank"
+                class="highlight"
+              >
+                Terms & Conditions
+              </a>,{' '}
+              <a
+                href="https://razorpay.com/agreement/"
+                target="_blank"
+                class="highlight"
+              >
+                Merchant Agreement
+              </a>{' '}
+              and the{' '}
+              <a
+                href="https://razorpay.com/privacy/"
+                target="_blank"
+                class="highlight"
+              >
+                Privacy Policy
+              </a>. By submitting the form, I agree to abide by the rules at all
+              times.
+            </p>
+          </div>
           <p class="text-fade">
             Please review the form before submitting as you cannot make any
             changes after submitting. For changes hereafter, contact us at
