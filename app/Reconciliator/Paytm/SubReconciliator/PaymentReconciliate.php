@@ -38,7 +38,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         if ($payment === null)
         {
             $this->app['trace']->info(
-                TraceCode::RECON_INFO_ALERT,
+                TraceCode::RECON_MISMATCH,
                 [
                     'message'    => 'Payment not found in DB.',
                     'info_code'  => 'PAYMENT_ABSENT',

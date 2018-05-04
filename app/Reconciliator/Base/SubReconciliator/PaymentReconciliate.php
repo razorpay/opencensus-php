@@ -59,7 +59,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * @var Payment\Entity;
      */
     protected $payment;
+    protected $reconciled;
     protected $paymentIin;
+    protected $gatewayPayment;
     protected $paymentTransaction;
 
     protected $messenger;
@@ -78,6 +80,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     public function runReconciliate($row)
     {
+        //
+        // Resetting row various attributes here which could have been set during
+        // reconciliation of a particular row.
+        //
+        $this->resetRowProcessingAttributes();
+
         $rowDetails = $this->getRowDetailsStructured($row);
 
         if (empty($rowDetails) === true)
@@ -89,14 +97,15 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         try
         {
-            $this->runPreReconciledAtCheckRecon($rowDetails);
-
-            $reconciled = $this->checkIfAlreadyReconciled($this->payment);
+            // Setting reconciled attribute before pre Reconciled check to check for duplicate row
+            $this->reconciled = $this->checkIfAlreadyReconciled($this->payment);
 
             // Increment the total count for the summary
             $this->setSummaryCount(self::TOTAL_SUMMARY, $paymentId);
 
-            if ($reconciled === true)
+            $this->runPreReconciledAtCheckRecon($rowDetails);
+
+            if ($this->reconciled === true)
             {
                 $this->handleAlreadyReconciled($paymentId);
             }
@@ -151,19 +160,27 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
     }
 
-    public function resetProcessingAttributes()
+    public function resetRowProcessingAttributes()
     {
         $this->payment            = null;
+        $this->reconciled         = false;
         $this->paymentIin         = null;
+        $this->gatewayPayment     = null;
         $this->paymentTransaction = null;
 
-        parent::resetProcessingAttributes();
+        parent::resetRowProcessingAttributes();
     }
 
     protected function runPreReconciledAtCheckRecon($rowDetails)
     {
         // Setting acquirer data, will be persist from persistPaymentData method
         $this->setPaymentAcquirerData($rowDetails);
+
+        //
+        // Persisting reference number in Pre Reconciled-At check to identify duplicate row.
+        // If reference number is already set, identify for duplicate row or data mismatch.
+        //
+        $this->persistReferenceNumber($rowDetails);
 
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
     }
@@ -624,6 +641,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code' => TraceCode::RECON_MISMATCH,
+                    'info_code'  => 'PAYMENT_ABSENT',
                     'message'    => 'Payment not found in DB. -> ' . $ex->getMessage(),
                     'row'        => $row,
                     'payment_id' => $paymentId,
@@ -738,16 +756,22 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function persistGatewayData(array $rowDetails)
     {
-        $gatewayPayment = $this->getGatewayPayment($this->payment->getId());
+        $gatewayPayment = $this->updateAndFetchGatewayPayment();
 
         if ($gatewayPayment === null)
         {
             return;
         }
 
-        $this->persistAccountDetails($rowDetails, $gatewayPayment);
+        //
+        // Calling this again because payment status can change after verify.
+        // Gateway payment can be in failed state earlier and hence reference number won't be set
+        // in preReconciledAtCheckRecon method. After verification, it may have changed to success
+        // and now we can set reference number.
+        //
+        $this->persistReferenceNumber($rowDetails);
 
-        $this->persistReferenceNumber($rowDetails, $gatewayPayment);
+        $this->persistAccountDetails($rowDetails, $gatewayPayment);
 
         $this->persistGatewayPaymentDate($rowDetails, $gatewayPayment);
 
@@ -756,15 +780,33 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $this->repo->saveOrFail($gatewayPayment);
     }
 
+    protected function updateAndFetchGatewayPayment()
+    {
+        if ($this->gatewayPayment === null)
+        {
+            $gatewayPayment = $this->getGatewayPayment($this->payment->getId());
+
+            $this->gatewayPayment = $gatewayPayment;
+        }
+
+        return $this->gatewayPayment;
+    }
+
     /**
      * Saving the Bank Payment Id from reconciliator file
-     * Replacing existing value or adding it to the DB
      *
      * @param array        $rowDetails
      * @param PublicEntity $gatewayPayment
      */
-    protected function persistReferenceNumber(array $rowDetails, PublicEntity $gatewayPayment)
+    protected function persistReferenceNumber(array $rowDetails)
     {
+        $gatewayPayment = $this->updateAndFetchGatewayPayment();
+
+        if ($gatewayPayment === null)
+        {
+            return;
+        }
+
         if (empty($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === true)
         {
             return;
@@ -1141,6 +1183,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_MISMATCH,
+                    'info_code'         => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
                     'message'           => 'Reference1 is not same as in recon',
                     'payment_id'        => $this->payment->getId(),
                     'api_reference1'    => $dbReference1,
@@ -1645,6 +1688,24 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
     {
+        $dbReferenceNumber = $gatewayPayment->getBankPaymentId();
+
+        if ((empty($dbReferenceNumber) === false) and
+            ($dbReferenceNumber !== $referenceNumber))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'                => TraceCode::RECON_MISMATCH,
+                    'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'message'                   => 'Reference number in db is not same as in recon',
+                    'payment_id'                => $this->payment->getId(),
+                    'db_reference_number'       => $dbReferenceNumber,
+                    'recon_reference_number'    => $referenceNumber
+                ]);
+
+            return;
+        }
+
         $gatewayPayment->setBankPaymentId($referenceNumber);
     }
 

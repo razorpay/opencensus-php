@@ -49,6 +49,14 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
     public function runReconciliate($row)
     {
+        //
+        // Resetting row attributes here which could have been set during
+        // reconciliation of a particular row. This is mainly done for
+        // resetting failUnprocessedRow attribute which should be reset
+        // for each row.
+        //
+        $this->resetRowProcessingAttributes();
+
         $rowDetails = $this->getRowDetailsStructured($row);
 
         if (empty($rowDetails) === true)
@@ -117,12 +125,12 @@ class RefundReconciliate extends Foundation\SubReconciliate
         }
     }
 
-    public function resetProcessingAttributes()
+    public function resetRowProcessingAttributes()
     {
         $this->payment = null;
         $this->refund  = null;
 
-        parent::resetProcessingAttributes();
+        parent::resetRowProcessingAttributes();
     }
 
     protected function getReconRefundAmount(array $row)
@@ -381,11 +389,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
             {
                 $this->messenger->raiseReconAlert(
                     [
-                        'trace_code' => TraceCode::RECON_MISMATCH,
-                        'message' => 'Unable to create a refund on API after finding it missing',
-                        'row' => $row,
-                        'refund_id' => $refundId,
-                        'gateway' => get_called_class(),
+                        'trace_code'    => TraceCode::RECON_MISMATCH,
+                        'message'       => 'Unable to create a refund on API after finding it missing',
+                        'row'           => $row,
+                        'refund_id'     => $refundId,
+                        'gateway'       => get_called_class(),
                     ]);
 
                 return null;
@@ -436,11 +444,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
-                    'row' => $row,
-                    'message' => 'Unable to get the payment ID or amount from the refund recon file',
-                    'refund_id' => $refundId,
+                    'row'           => $row,
+                    'message'       => 'Unable to get the payment ID or amount from the refund recon file',
+                    'refund_id'     => $refundId,
                     'refund_amount' => $refundAmount,
-                    'payment_id' => $paymentId,
+                    'payment_id'    => $paymentId,
                 ]);
 
             return false;
@@ -539,6 +547,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     $this->messenger->raiseReconAlert(
                         [
                             'trace_code'    => TraceCode::RECON_MISMATCH,
+                            'info_code'     => 'DUPLICATE_ROW',
                             'message'       => 'Arn number for the refund entity does not match',
                             'row'           => $rowDetails,
                             'refund_id'     => $refund->getId(),
