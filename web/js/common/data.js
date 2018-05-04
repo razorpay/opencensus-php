@@ -16,7 +16,7 @@ export const entity2Prefix = {
   reversal: 'rvrsl',
   settlement: 'setl',
   subscription: 'sub',
-  token: 'tkn',
+  token: 'token',
   transaction: 'txn',
   transfer: 'trf',
   virtual_account: 'va',
