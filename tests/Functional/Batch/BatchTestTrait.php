@@ -53,14 +53,21 @@ trait BatchTestTrait
 
     public function assertFileExistsForBatchOfType(string $id, string $type)
     {
+        $file = $this->getFileForBatchOfType($id, $type);
+
+        $this->assertNotNull($file);
+
+        return $file;
+    }
+
+    protected function getFileForBatchOfType(string $id, string $type)
+    {
         BatchModel\Entity::verifyIdAndSilentlyStripSign($id);
 
         $file = FileStore\Entity::where(FileStore\Entity::TYPE, $type)
                                 ->where(FileStore\Entity::ENTITY_TYPE, 'batch')
                                 ->where(FileStore\Entity::ENTITY_ID, $id)
                                 ->first();
-
-        $this->assertNotNull($file);
 
         return $file;
     }
