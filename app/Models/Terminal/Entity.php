@@ -246,6 +246,19 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($terminal)
+        {
+            if ($terminal->isForceDeleting() === true)
+            {
+                $terminal->merchants()->detach();
+            }
+        });
+    }
+
     // ---------------------- GETTERS ----------------------
 
     public function getGatewayMerchantId()
