@@ -1,5 +1,6 @@
 import { readableFileSize } from 'rzp/utils/rzp-utils';
 import { titleCase } from 'common/util';
+import React, { Fragment } from 'react';
 
 const avlblFileTypeIcons = ['pdf', 'jpg', 'png', 'csv', 'xlsx'];
 
@@ -60,8 +61,9 @@ export default class Staged extends React.Component {
       showFileSize,
       uniqFileId,
       isDisabled,
+      onCloseClick,
+      showStagedFileStatus,
       isDocPreUploaded: defaultFile,
-      onCloseClick = () => {},
     } = this.props;
 
     const loader = this.getProgress();
@@ -84,14 +86,22 @@ export default class Staged extends React.Component {
             File Already Uploaded
           </p>
         ) : (
-          <p class="Dropzone-content-desc--primary text-muted">
-            {file.name} {showFileSize && readableFileSize(file.size)}
-          </p>
+          <Fragment>
+            <p class="Dropzone-content-desc--primary text-muted">
+              {file.name} {showFileSize && readableFileSize(file.size)}
+            </p>
+            {showStagedFileStatus && (
+              <p class="text-muted text-small">
+                {stagedStatusMsgMap[currentStatus]}
+              </p>
+            )}
+          </Fragment>
         )}
         <div>{this.props.children}</div>
-        {!isDisabled && (
-          <span class="icon i-close Dropzone-close" onClick={onCloseClick} />
-        )}
+        {!isDisabled &&
+          onCloseClick && (
+            <span class="icon i-close Dropzone-close" onClick={onCloseClick} />
+          )}
 
         <div class="Loader">
           <div
@@ -107,3 +117,8 @@ export default class Staged extends React.Component {
     );
   }
 }
+
+const stagedStatusMsgMap = {
+  process: 'Uploading File...',
+  error: 'Processing Failed.',
+};
