@@ -14,7 +14,7 @@ class Reconciliator extends Base\RefundFile
     const PAYMENT_ENTITY = 'payment';
     const GATEWAY_ENTITY = 'gateway';
 
-    const BANK_REF_NUMBER = 'AB1234';
+    const BANK_REF_NUMBER = '99999';
     const BANK_ACC_NUMBER = '309002069863';
 
     protected static $fileToWriteName = 'Bob_Netbanking_Reconciliation';

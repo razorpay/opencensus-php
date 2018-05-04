@@ -17,6 +17,8 @@ trait Inquiry
 
     public function verifyRefund(array $input)
     {
+        parent::verify($input);
+
         $unprocessedRefunds = $this->getUnprocessedRefunds();
 
         $processedRefunds = $this->getProcessedRefunds();

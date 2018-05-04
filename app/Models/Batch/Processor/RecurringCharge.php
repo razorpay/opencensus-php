@@ -13,6 +13,10 @@ class RecurringCharge extends Base
 {
     const RESPONSE_PAYMENT_ID = 'razorpay_payment_id';
 
+    protected $paymentProcessor;
+
+    protected $orderCore;
+
     public function __construct(Entity $batch)
     {
         parent::__construct($batch);
@@ -57,6 +61,23 @@ class RecurringCharge extends Base
         $this->repo->saveOrFail($payment);
 
         $entry[Header::RECURRING_CHARGE_PAYMENT_ID] = $payment->getPublicId();
+    }
+
+    protected function postProcessEntries(array & $entries)
+    {
+        parent::postProcessEntries($entries);
+
+        $processedAmount = 0;
+
+        foreach ($entries as $entry)
+        {
+            if ($entry[Header::STATUS] === Status::SUCCESS)
+            {
+                $processedAmount += $entry[Header::RECURRING_CHARGE_AMOUNT];
+            }
+        }
+
+        $this->batch->setProcessedAmount($processedAmount);
     }
 
     protected function sendProcessedMail()

@@ -3515,3 +3515,6 @@ ALTER TABLE payments
 
 ALTER TABLE settlements
     ADD INDEX settlements_channel_index (channel);
+
+ALTER TABLE pricing
+    ADD COLUMN receiver_type varchar(255) DEFAULT NULL AFTER international;

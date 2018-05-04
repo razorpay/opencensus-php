@@ -310,4 +310,28 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
         ],
     ],
+
+    'testGetInvitationsReceivedBeforeSignup' => [
+        'request' => [
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content'     => [
+                'email' => "old@razorpay.com",
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetInvitationsReceivedPostSignup' => [
+        'request' => [
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content'     => [
+                'email' => "old@razorpay.com",
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

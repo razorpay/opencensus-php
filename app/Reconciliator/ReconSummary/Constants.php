@@ -9,7 +9,10 @@ class Constants
 {
     // List of gateways included in recon summary mail generation
     const GATEWAYS = [
+        'ebs',
+        'amex',
         'hdfc',
+        'atom',
         'axis_migs',
         'cybersource',
         'kotak',
@@ -19,7 +22,13 @@ class Constants
         'upi_icici',
         'netbanking_icici',
         'netbanking_rbl',
-        'netbanking_bob'
+        'netbanking_bob',
+        'netbanking_hdfc',
+        'wallet_freecharge',
+        'netbanking_kotak',
+        'netbanking_axis',
+        'wallet_olamoney',
+        'wallet_payzapp'
     ];
 
      // Payment Params sent in excel attachment

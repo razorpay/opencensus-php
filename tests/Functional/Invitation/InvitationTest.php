@@ -279,4 +279,54 @@ class InvitationTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testGetInvitationsReceivedBeforeSignup()
+    {
+        $this->fixtures->create('invitation', ['email' => 'old@razorpay.com']);
+
+        $this->fixtures->create('invitation',
+            [
+                'email'       => 'old@razorpay.com',
+                'role'        => 'finance',
+            ]);
+
+        $this->fixtures->create('invitation', ['email' => 'someelse@razorpay.com']);
+
+        $user = $this->fixtures->create('user', ['email' => 'old@razorpay.com']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $this->ba->appAuth();
+
+        $testData['request']['url'] = '/users/' . $user['id'];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals(count($response['invitations']), 2);
+    }
+
+    public function testGetInvitationsReceivedPostSignup()
+    {
+        $user = $this->fixtures->create('user', ['email' => 'old@razorpay.com']);
+
+        $this->fixtures->create('invitation', ['email' => 'someelse@razorpay.com']);
+
+        $this->fixtures->create('invitation', ['email' => 'old@razorpay.com']);
+
+        $this->fixtures->create('invitation',
+            [
+                'email'       => 'old@razorpay.com',
+                'role'        => 'finance',
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $this->ba->appAuth();
+
+        $testData['request']['url'] = '/users/' . $user['id'];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals(count($response['invitations']), 2);
+    }
 }

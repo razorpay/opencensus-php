@@ -24,7 +24,7 @@ spec:
       - args:
         - web
         command:
-        - /entrypoint.sh
+        - /app/dockerconf/entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:

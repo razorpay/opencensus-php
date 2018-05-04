@@ -206,6 +206,7 @@ function disableEmptyInputs(form) {
         <td colspan="40">Select Auth Type </td>
         <td>
             <select name="auth_type">
+                <option value="">Please Select</option>
                 <option value="pin">Card - PIN</option>
                 <option value="aadhaar">eMandate - Aadhaar</option>
                 <option value="netbanking">eMandate - Netbanking</option>
