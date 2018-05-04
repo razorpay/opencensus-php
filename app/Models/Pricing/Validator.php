@@ -27,6 +27,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card,emi,emandate|nullable|alpha|max:10',
         Entity::EMI_DURATION        => 'sometimes|nullable|integer|in:3,6,9,12,18,24',
         Entity::INTERNATIONAL       => 'sometimes|in:0,1',
+        Entity::RECEIVER_TYPE       => 'sometimes_if:payment_method,card,upi|nullable|in:qr_code',
         Entity::AMOUNT_RANGE_ACTIVE => 'sometimes|in:0,1',
         Entity::AMOUNT_RANGE_MIN    => 'required_only_if:amount_range_active,1|nullable|integer|min:0',
         Entity::AMOUNT_RANGE_MAX    => 'required_only_if:amount_range_active,1|nullable|integer|max:1000000000',
