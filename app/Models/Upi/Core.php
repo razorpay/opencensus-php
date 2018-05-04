@@ -19,6 +19,13 @@ class Core extends Base\Core
 
     protected $customerService;
 
+    /**
+     * TODO: Set up UPI under application Auth
+     * The apache vhost configuration should forward
+     * the mode in the authorization header
+     *
+     * (We'll have different IPs for prod and live)
+     */
     public function __construct()
     {
         parent::__construct();
@@ -134,23 +141,9 @@ class Core extends Base\Core
         }
     }
 
-    /**
-     * TODO: Set up UPI under application Auth
-     * The apache vhost configuration should forward
-     * the mode in the authorization header
-     *
-     * (We'll have different IPs for prod and live)
-     *
-     * @param string $mode
-     */
-    protected function setMode($mode = Mode::TEST)
-    {
-        Database\DefaultConnection::set($mode);
-    }
-
     protected function RespListAccount(array $params)
     {
-        $this->setMode();
+        $this->setModeAndDefaultConnection();
 
         $mobile = $params['mobile'];
 
@@ -219,7 +212,7 @@ class Core extends Base\Core
      */
     protected function RespRegMob(array $creds)
     {
-        $this->setMode();
+        $this->setModeAndDefaultConnection();
 
         list($success, $error) = $this->customerService->setMPINForBankAccounts($creds['account']['NUM'], $creds);
 
@@ -245,7 +238,7 @@ class Core extends Base\Core
 
     protected function RespSetCre(array $creds)
     {
-        $this->setMode();
+        $this->setModeAndDefaultConnection();
 
         list($success, $error) = $this->customerService->setMPINForBankAccounts($creds['account']['NUM'], $creds);
 
