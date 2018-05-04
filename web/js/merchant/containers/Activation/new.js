@@ -12,9 +12,9 @@ import { withRouter } from 'react-router-dom';
 
 @withRouter
 @connect(
-  state => {
-    return {};
-  },
+  state => ({
+    user: state.session.user,
+  }),
   {
     showNotification,
   }
@@ -132,16 +132,16 @@ export default class ActivationContainer extends React.Component {
 
     let content, modalClass;
 
-    if (!data) {
+    if (this.props.user.submitted == 1) {
+      modalClass = 'Activation--success';
+      content = <SuccessScreen />;
+    } else if (!data) {
       modalClass = 'Activation--welcome';
       content = (
         <div class="page-spinner-container">
           <Spinner />
         </div>
       );
-    } else if (data.submitted) {
-      modalClass = 'Activation--success';
-      content = <SuccessScreen />;
     } else if (!this.state.isFormTouched && !this.state.openWizard) {
       modalClass = 'Activation--welcome';
       content = (
@@ -244,7 +244,6 @@ function isFormTouched(data) {
       return false;
     }
     if (data[key] != null) {
-      console.log(key, data[key]);
       isDirty = true;
       return true;
     }

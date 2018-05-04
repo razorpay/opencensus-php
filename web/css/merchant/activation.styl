@@ -41,9 +41,10 @@ $height = 600px
       list-style: none
       padding: 0 24px
       margin: 4px 0
-      color: #528FF0
+      color: #57666d
+      position: relative
+
       .i-check
-        vertical-align: sub
         margin-right: 6px
       &:hover
         background: #fafbfc
@@ -55,6 +56,15 @@ $height = 600px
 
         .i-check::before
           color: #fff
+
+        &:after
+          content: "\f10c"
+          color: #fff
+          position: absolute
+          right: 8px
+          top: 1px
+          font-family: merchant-icons
+
       &.disabled
         cursor: not-allowed
         color: #b6c0c4

@@ -453,6 +453,36 @@ export default class ActivationWizard extends React.Component {
 
   onChange = ({ target }) => {
     let stateName = target.getAttribute('data-name');
+    if (stateName === 'same_address' && target.checked) {
+      const operationFields = {
+        business_operation_address:
+          this.state.dirty['business_registered_address'] ||
+          this.state.data['business_registered_address'],
+        business_operation_pin:
+          this.state.dirty['business_registered_pin'] ||
+          this.state.data['business_registered_pin'],
+        business_operation_city:
+          this.state.dirty['business_registered_city'] ||
+          this.state.data['business_registered_city'],
+        business_operation_state:
+          this.state.dirty['business_registered_state'] ||
+          this.state.data['business_registered_state'],
+      };
+
+      Object.keys(operationFields).forEach(key => {
+        if (typeof operationFields[key] == null) {
+          delete operationFields[key];
+        }
+      });
+
+      this.setState({
+        dirty: {
+          ...this.state.dirty,
+          ...operationFields,
+        },
+      });
+    }
+
     if (stateName) {
       this.setState({
         [stateName]: target.value,
