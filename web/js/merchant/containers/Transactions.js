@@ -22,7 +22,10 @@ export default function TransactionsContainer(props) {
         <NavLink to="/payments" exact>
           Payments
         </NavLink>
-        <ShowWhen myRole="owner manager operations admin finance">
+        <ShowWhen
+          featureEnabled="direct_debit"
+          myRole="owner manager operations admin finance"
+        >
           <NavLink to="/payments/batchuploads">Batch Payments</NavLink>
         </ShowWhen>
         <NavLink to="/refunds" exact>
