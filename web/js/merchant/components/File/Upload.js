@@ -54,9 +54,6 @@ export default class FileUpload extends Component {
         } else {
           this.setState({ stagedFileStatus: 'success' });
         }
-      })
-      .catch(err => {
-        this.setState({ stagedFileStatus: 'error' });
       });
   }
 
