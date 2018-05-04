@@ -40,19 +40,18 @@ export default class BatchUploadContainer extends Component {
       case 'upload_init':
         this.setState({
           status: 'process',
-          uploadedFile: { ...message.data },
+          files: [message.data],
         });
         break;
       case 'progress':
-        const { loaded, total } = message.data;
-        const fileUploadProgress = loaded / total * 100;
+        const fileUploadProgress = message.data.loaded;
         this.setState({ fileUploadProgress });
         break;
       case 'file_uploaded':
         const { parsed_entries: parsedEntries, file_id: id } = message.data;
         this.setState({
           mode: 'create',
-          uploadedFile: { ...this.state.uploadedFile, id },
+          files: [{ ...this.state.files[0], id }],
           parsedEntries,
         });
         break;
@@ -86,7 +85,7 @@ export default class BatchUploadContainer extends Component {
     this.setState({ mode: 'loading' }, () => {
       this.props
         .createBatch({
-          file_id: this.state.uploadedFile.id,
+          file_id: this.state.file.id,
           name,
         })
         .then(() => {
@@ -108,6 +107,7 @@ export default class BatchUploadContainer extends Component {
   };
 
   render() {
+    console.log(this.state.files, 'batch upload');
     const Header = ({ title }) => (
       <ModalHeader title={title} onCloseClick={this.closeModal} />
     );
@@ -137,8 +137,7 @@ export default class BatchUploadContainer extends Component {
               <ValidateModal
                 maxRows={500}
                 iframeHost={iframeHost}
-                showUpload={!this.state.uploadedFile}
-                showStaged={!!this.state.uploadedFile}
+                stagedFileStatus={this.state.status}
                 shouldLoadMore
                 status={this.state.status}
                 notifyMsg={this.state.error}
@@ -154,7 +153,7 @@ export default class BatchUploadContainer extends Component {
 
       case 'create':
         const initialValues = {
-          name: this.state.uploadedFile.name,
+          name: this.state.files[0].name,
         };
         return (
           <div class="batch-upload-modal create">

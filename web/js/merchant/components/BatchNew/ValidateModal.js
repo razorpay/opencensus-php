@@ -23,10 +23,8 @@ export default function BatchValidateModal({
   onBiggerFileSize,
   onCloseClick,
   closeModal,
-  uploadedFile,
+  files,
   fileUploadProgress,
-  showUpload = true,
-  showStaged = false,
   onSampleFileDownload = () => {},
   onErrorReportDownload = () => {},
 }) {
@@ -34,26 +32,7 @@ export default function BatchValidateModal({
     <div class="modal-body">
       <h4 class="modal-heading">UPLOAD FILE</h4>
       <div class="modal-file">
-        {showUpload && (
-          <FileUpload
-            accept={['csv', 'xlsx']}
-            uploadedFileName="Upload File here"
-            maxSize={MAX_FILE_SIZE}
-            onBiggerFileSize={onBiggerFileSize}
-            onFileChange={onFileChange}
-            onCloseClick={onCloseClick}
-            stagedFileStatus={stagedFileStatus}
-          />
-        )}
-        {showStaged && (
-          <FileStaged
-            fileName={uploadedFile.name}
-            fileSize={uploadedFile.size}
-            progress={fileUploadProgress}
-            currentStatus={status}
-          />
-        )}
-        {/*        <FileUpload
+        <FileUpload
           accept={['csv', 'xlsx']}
           uploadedFileName="Upload File here"
           maxSize={MAX_FILE_SIZE}
@@ -61,7 +40,11 @@ export default function BatchValidateModal({
           onFileChange={onFileChange}
           onCloseClick={onCloseClick}
           stagedFileStatus={stagedFileStatus}
-        />*/}
+          uploadedBytes={fileUploadProgress}
+          files={files}
+          showCloseBtn={false}
+          showStagedFileStatus
+        />
         {notifyMsg && (
           <h5 class={`notification ${status}`}>
             <i class="i i-info-circle m-r" />
