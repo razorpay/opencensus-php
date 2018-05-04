@@ -125,7 +125,7 @@ class Core
      *
      * @param string $mode
      */
-    public function setModeAndDefaultConnection(string $mode)
+    public function setModeAndDefaultConnection(string $mode = Mode::TEST)
     {
         //
         // This function updates the mode and app['rzp.mode'] properties
