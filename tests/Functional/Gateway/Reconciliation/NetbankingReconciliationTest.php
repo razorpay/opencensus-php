@@ -203,6 +203,12 @@ class NetbankingReconciliationTest extends TestCase
         $netbankingEntity = $this->getLastEntity('netbanking', true);
 
         $this->assertEquals($netbankingEntity['bank_payment_id'], 9999);
+
+        $batch = $this->getLastEntity('batch', true);
+
+        $testData = $this->testData['testObcReconBatch'];
+
+        $this->assertArraySelectiveEquals($testData, $batch);
     }
 
     public function testObcFailedPaymentReconciliation()
@@ -217,7 +223,7 @@ class NetbankingReconciliationTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $this->reconcile('NetbankingObc', $uploadedFile);
+        $response = $this->reconcile('NetbankingObc', $uploadedFile);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -226,6 +232,12 @@ class NetbankingReconciliationTest extends TestCase
         $transactionEntity = $this->getLastEntity('transaction', true);
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $batch = $this->getLastEntity('batch', true);
+
+        $testData = $this->testData['testObcReconBatch'];
+
+        $this->assertArraySelectiveEquals($testData, $batch);
     }
 
     public function testObcAmountMismatchReconciliation()
@@ -257,6 +269,12 @@ class NetbankingReconciliationTest extends TestCase
         $transactionEntity = $this->getLastEntity('transaction', true);
 
         $this->assertNull($transactionEntity['reconciled_at']);
+
+        $batch = $this->getLastEntity('batch', true);
+
+        $testData = $this->testData['testObcReconBatchPartiallyProcessed'];
+
+        $this->assertArraySelectiveEquals($testData, $batch);
     }
 
     public function testBobManualReconciliation()
