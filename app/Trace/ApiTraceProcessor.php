@@ -37,9 +37,19 @@ class ApiTraceProcessor
 
     protected function addOAuthAttributes(& $record)
     {
-        $record['request']['access_token_id'] = $this->app['basicauth']->getAccessTokenId();
+        $accessTokenId = $this->app['basicauth']->getAccessTokenId();
 
-        $record['request']['oauth_client_id'] = $this->app['basicauth']->getOAuthClientId();
+        if (empty($accessTokenId) === false)
+        {
+            $record['request']['access_token_id'] = $accessTokenId;
+        }
+
+        $oauthClientId = $this->app['basicauth']->getOAuthClientId();
+
+        if (empty($oauthClientId) === false)
+        {
+            $record['request']['oauth_client_id'] = $oauthClientId;
+        }
     }
 
     protected function updateClientIp(&$record)
