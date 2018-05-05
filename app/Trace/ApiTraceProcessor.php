@@ -21,6 +21,8 @@ class ApiTraceProcessor
 
         $this->addOAuthAttributes($record);
 
+        $this->addPartnerAttributes($record);
+
         $this->updateClientIp($record);
 
         $this->addMerchantId($record);
@@ -49,6 +51,16 @@ class ApiTraceProcessor
         if (empty($oauthClientId) === false)
         {
             $record['request']['oauth_client_id'] = $oauthClientId;
+        }
+    }
+
+    protected function addPartnerAttributes(& $record)
+    {
+        $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
+
+        if (empty($partnerMerchantId) === false)
+        {
+            $record['request']['partner_merchant_id'] = $partnerMerchantId;
         }
     }
 

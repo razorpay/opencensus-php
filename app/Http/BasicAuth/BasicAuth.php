@@ -69,23 +69,28 @@ class BasicAuth
     /**
      * OAuth's registered client id.
      *
-     * @var string
+     * @var string|null
      */
     protected $oauthClientId;
 
     /**
      * OAuth application id
      *
-     * @var string
+     * @var string|null
      */
     protected $applicationId;
 
     /**
      * OAuth's access token (public) id.
      *
-     * @var string
+     * @var string|null
      */
     protected $accessTokenId;
+
+    /**
+     * @var string|null
+     */
+    protected $partnerMerchantId;
 
     /**
      * Key and secret sent by client for
@@ -1168,6 +1173,11 @@ class BasicAuth
         return $this->oauthClientId;
     }
 
+    public function getPartnerMerchantId()
+    {
+        return $this->partnerMerchantId;
+    }
+
     public function getMerchantIdOfKey()
     {
         if ($this->key === null)
@@ -1251,6 +1261,11 @@ class BasicAuth
     public function setOAuthApplicationId(string $applicationId)
     {
         $this->applicationId = $applicationId;
+    }
+
+    public function setPartnerMerchantId(string $merchantId)
+    {
+        $this->partnerMerchantId = $merchantId;
     }
 
     public function setMerchant($merchant)
@@ -1429,6 +1444,8 @@ class BasicAuth
         {
             return null;
         }
+
+        $this->setPartnerMerchantId($this->merchant->getId());
 
         // Change repo function to fetchPartnerToken()
         $token = (new OAuth\Token\Repository)->findOrFailPublic($this->getPartnerToken());
