@@ -379,13 +379,12 @@ class BasicAuth
             return null;
         }
 
-        // TODO: Do this
-        //if ($this->validatePartnerToken($token) === false)
-        //{
-        //    return $this->invalidPartnerToken($token);
-        //}
+        if (OAuth\Token\Entity::isPartnerToken($token) === false)
+        {
+            return $this->invalidPartnerToken($token);
+        }
 
-        $this->creds['partner_token'] = $token;
+        $this->creds['partner_token'] = OAuth\Token\Entity::stripPartnerTokenPrefix($token);
 
         return null;
     }
@@ -1431,18 +1430,20 @@ class BasicAuth
             return null;
         }
 
-        $token = str_after($this->getPartnerToken(), 'rzp_partner_');
-
         // Change repo function to fetchPartnerToken()
-        $token = (new OAuth\Token\Repository)->findOrFailPublic($token);
+        $token = (new OAuth\Token\Repository)->findOrFailPublic($this->getPartnerToken());
 
         $merchant = $this->repo->merchant->findOrFail($token->getMerchantId());
 
         $this->setMerchant($merchant);
     }
 
-    protected function isPartnerTokenAuthAllowed()
+    protected function isPartnerTokenAuthAllowed(): bool
     {
+        //
+        // $this->>merchant needs to have been set, and have the 'partner' feature
+        // enabled for Partner token auth to apply
+        //
         if ((empty($this->merchant) === true) or
             ($this->merchant->isFeatureEnabled(Feature::PARTNER) === false))
         {
@@ -1454,6 +1455,7 @@ class BasicAuth
             return false;
         }
 
+        // Only allow partner token auth on public and private auth, no proxy
         if (($this->isStrictPrivateAuth() === false) and
             ($this->isPublicAuth() === false))
         {
@@ -1510,7 +1512,16 @@ class BasicAuth
 
     protected function invalidPartnerToken(string $token)
     {
-        // Throw 401 exception
+        $this->trace->info(
+            TraceCode::BAD_REQUEST_INVALID_PARTNER_TOKEN_HEADER,
+            [
+                'auth_type'     => $this->getAuthType(),
+                'key_id'        => $this->getKey(),
+                'partner_token' => $token,
+            ]);
+
+        return ApiResponse::unauthorized(
+            ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_PARTNER_TOKEN);
     }
 
     protected function isKeyBlank()
