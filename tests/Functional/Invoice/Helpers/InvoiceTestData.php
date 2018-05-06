@@ -249,12 +249,47 @@ return [
         ],
         'response' => [
             'content' => [
+                'status'       => 'issued',
+                'sms_status'   => 'pending',
+                'email_status' => 'pending',
+                'date'         => 1480666664,
+                'view_less'    => true,
+                'amount'       => 100000
+            ],
+        ],
+    ],
+
+
+    'testCreateInvoiceWithNestedCustomerIdAndDetails' => [
+        'request'  => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'customer'   => [
+                    'id'    => 'cust_100001customer',
+                    'name'  => 'Test Override',
+                    'email' => 'testoverride@razorpay.com',
+                ],
+                'line_items' => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                    ]
+                ],
+                'currency'   => 'INR',
+                'date'       => 1480666664,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id'      => 'cust_100001customer',
+                'customer_details' => [
+                    'name'    => 'Test Override',
+                    'email'   => 'testoverride@razorpay.com',
+                    'contact' => '1234567890',
+                ],
                 'status'           => 'issued',
-                'sms_status'       => 'pending',
-                'email_status'     => 'pending',
-                'date'             => 1480666664,
-                'view_less'        => true,
-                'amount'           => 100000
             ],
         ],
     ],
@@ -1534,6 +1569,40 @@ return [
         ],
     ],
 
+    'testUpdateDraftInvoiceWithNestedCustomerIdAndDetails' => [
+        'request'  => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'customer'   => [
+                    'id'    => 'cust_100000customer',
+                    'name'  => 'Test Override',
+                    'email' => 'testoverride@razorpay.com',
+                ],
+                'line_items' => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                    ]
+                ],
+                'currency'   => 'INR',
+                'date'       => 1480666664,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id'      => 'cust_100000customer',
+                'customer_details' => [
+                    'name'    => 'Test Override',
+                    'email'   => 'testoverride@razorpay.com',
+                    'contact' => '1234567890',
+                ],
+                'status'           => 'issued',
+            ],
+        ],
+    ],
+
     'testUpdateDraftInvoiceWithCustomerBillingAddressId' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
@@ -1671,6 +1740,31 @@ return [
                     'contact' => null,
                 ],
                 'status' => 'draft',
+            ],
+        ],
+    ],
+
+    'testUpdateDraftInvoiceUnsetCustomerWithNestedCustomerId' => [
+        'request'  => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'customer' => [
+                    'id' => null,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'inv_1000000invoice',
+                'entity'           => 'invoice',
+                'customer_id'      => null,
+                'customer_details' => [
+                    'name'    => null,
+                    'email'   => null,
+                    'contact' => null,
+                ],
+                'status'           => 'draft',
             ],
         ],
     ],
