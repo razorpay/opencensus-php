@@ -402,7 +402,35 @@ class Generator extends Base\Core
 
     protected function associateCustomerWithInvoiceByDetails(array $details)
     {
-        if ($this->invoice->hasCustomer() === true)
+        $invoiceHasCustomer = $this->invoice->hasCustomer();
+        $hasCustomerId      = array_key_exists(Customer\Entity::ID, $details);
+
+        //
+        // If the `customer_details` array has the `id` key defined,
+        // we first associate the customer and set invoice-level customer attributes.
+        // Any additional attributes (like `name`, `contact`, etc) sent in customer_details
+        // will override the invoice-level attributes.
+        //
+        if ($hasCustomerId === true)
+        {
+            $customerId = $details[Customer\Entity::ID];
+
+            $this->associateCustomerWithInvoiceById($details[Customer\Entity::ID]);
+
+            //
+            // If a null customer_id was sent, the customer (and all attributes) have been
+            // removed from the invoice, in the above function call `associateCustomerWithInvoiceById()`.
+            // Hence, just return.
+            //
+            if (empty($customerId) === true)
+            {
+                return;
+            }
+
+            unset($details[Customer\Entity::ID]);
+        }
+
+        if (($invoiceHasCustomer === true) or ($hasCustomerId === true))
         {
             $this->overrideCustomerOfInvoiceWithDetails($details);
         }
