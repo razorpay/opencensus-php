@@ -259,6 +259,16 @@ class GatewayController extends Controller
     }
 
     /**
+     * Fetches list of all active downtimes as of now
+     */
+    public function getGatewayDowntimes(Downtime\Service $service)
+    {
+        $data = $service->getGatewayDowntimeDataForDashboard();
+
+        return ApiResponse::json($data);
+    }
+
+    /**
      * Method to create a gateway downtime entity
      *
      * @param Downtime\Service $service

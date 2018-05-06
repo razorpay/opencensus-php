@@ -1,7 +1,7 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
     "content-hash": "a229b07af48421c85942bf40d07724b9",
@@ -1447,16 +1447,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "8.9.4",
+            "version": "8.9.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "dcdd1257eff60f3f3c72ba3e2d5a3b73efe317e9"
+                "reference": "cf4adb15bc43a2746a322431194ef0ff85766282"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/dcdd1257eff60f3f3c72ba3e2d5a3b73efe317e9",
-                "reference": "dcdd1257eff60f3f3c72ba3e2d5a3b73efe317e9",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/cf4adb15bc43a2746a322431194ef0ff85766282",
+                "reference": "cf4adb15bc43a2746a322431194ef0ff85766282",
                 "shasum": ""
             },
             "require": {
@@ -1511,7 +1511,7 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2018-04-17T10:23:54+00:00"
+            "time": "2018-05-03T11:02:57+00:00"
         },
         {
             "name": "giggsey/locale",
@@ -2608,7 +2608,7 @@
                 {
                     "name": "Luís Otávio Cobucci Oblonczyk",
                     "email": "lcobucci@gmail.com",
-                    "role": "developer"
+                    "role": "Developer"
                 }
             ],
             "description": "A simple library to work with JSON Web Token and JSON Web Signature",

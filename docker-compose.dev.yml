@@ -19,7 +19,7 @@ services:
       - cache
       - es
     command:
-      - "/entrypoint.sh"
+      - "/app/dockerconf/entrypoint.sh"
       - "web"
     environment:
       DB_LIVE_HOST: api_db

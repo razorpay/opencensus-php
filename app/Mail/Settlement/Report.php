@@ -15,12 +15,12 @@ class Report extends Base
 
     protected function getFromHeader()
     {
-        return 'Settlement UTR Alert';
+        return 'Settlement Potential Failures';
     }
 
     protected function addSubject()
     {
-        $subject = 'No UTR Report for ' . $this->data['date'];
+        $subject = 'Settlement Potential Failures for ' . $this->data['date'];
 
         $this->subject($subject);
 
@@ -29,7 +29,7 @@ class Report extends Base
 
     protected function getMailTag()
     {
-        return MailTags::NULL_UTR_REPORT;
+        return MailTags::FTA_RECON_REPORT;
     }
 
     protected function addAttachments()

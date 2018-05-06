@@ -56,7 +56,7 @@ class Repository extends Base\Repository
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->where('action', '=', $action)
                     ->whereIn('status', $statuses)
-                    ->firstOrFail();
+                    ->first();
     }
 
     public function findByTraceIdAndAction($paymentId, $action)

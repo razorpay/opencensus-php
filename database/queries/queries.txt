@@ -3516,6 +3516,9 @@ ALTER TABLE payments
 ALTER TABLE settlements
     ADD INDEX settlements_channel_index (channel);
 
+ALTER TABLE pricing
+    ADD COLUMN receiver_type varchar(255) DEFAULT NULL AFTER international;
+
 # Invoice GST changes
 ALTER TABLE merchants
     ADD COLUMN invoice_label_field varchar(50) DEFAULT NULL AFTER logo_url;

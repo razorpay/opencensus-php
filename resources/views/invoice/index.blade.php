@@ -1182,8 +1182,9 @@
 
                     if (ga && ga.length) {
                       var sessionTDiff = (new Date()).getTime() - window.t0;
+                      var paymentSuccessAction = data.invoice.partial_payment ? 'Payment Successful - Partial' : 'Payment Successful';
 
-                      ga('send', 'event', 'PL Hosted Page', 'Payment Successful', 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
+                      ga('send', 'event', 'PL Hosted Page', paymentSuccessAction, 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
                         hitCallback: function() {
                           return location.reload(); // To display the latest payment id
                         }
