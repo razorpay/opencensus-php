@@ -520,6 +520,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SMS_STATUS);
     }
 
+    public function getCustomerId()
+    {
+        return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
     public function getCustomerName()
     {
         return $this->getAttribute(self::CUSTOMER_NAME);
@@ -1011,12 +1016,14 @@ class Entity extends Base\PublicEntity
      */
     protected function getCustomerDetailsAttribute(): array
     {
+        $customerId      = Customer\Entity::getSignedIdOrNull($this->getCustomerId());
         $customerName    = $this->getCustomerName();
         $customerEmail   = $this->getCustomerEmail();
         $customerContact = $this->getCustomerContact();
         $customerGstin   = $this->getCustomerGstin();
 
         $details = [
+            Customer\Entity::ID               => $customerId,
             Customer\Entity::NAME             => $customerName,
             Customer\Entity::EMAIL            => $customerEmail,
             Customer\Entity::CONTACT          => $customerContact,

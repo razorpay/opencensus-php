@@ -285,6 +285,7 @@ return [
             'content' => [
                 'customer_id'      => 'cust_100001customer',
                 'customer_details' => [
+                    'id'      => 'cust_100001customer',
                     'name'    => 'Test Override',
                     'email'   => 'testoverride@razorpay.com',
                     'contact' => '1234567890',
@@ -1594,6 +1595,7 @@ return [
             'content' => [
                 'customer_id'      => 'cust_100000customer',
                 'customer_details' => [
+                    'id'      => 'cust_100000customer',
                     'name'    => 'Test Override',
                     'email'   => 'testoverride@razorpay.com',
                     'contact' => '1234567890',
@@ -1735,6 +1737,7 @@ return [
                 'entity'           => 'invoice',
                 'customer_id'      => null,
                 'customer_details' => [
+                    'id'      => null,
                     'name'    => null,
                     'email'   => null,
                     'contact' => null,
