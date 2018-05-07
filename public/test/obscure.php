@@ -165,7 +165,7 @@ function disableEmptyInputs(form) {
         <td><input type="text" name="card[expiry_year]" value="2020"></td>
         <tr>
             <td colspan='40'>Amount:</td>
-            <td><input type="text" name="amount" size="25" value="100"></td>
+            <td><input type="text" name="amount" size="25" value="0"></td>
             <td>
             <select name="currency">
                 <option value="INR">Indian Rupee</option>
@@ -200,7 +200,7 @@ function disableEmptyInputs(form) {
     </tr>
     <tr>
         <td colspan='40'>Account Number:</td>
-        <td><input type="text" name="bank_account[account_number]" size="25" value="036001532569"></td>
+        <td><input type="text" name="bank_account[account_number]" size="25" value="50100100708641"></td>
         <td><input type="text" name="bank_account[ifsc]" size="25" value="HDFC0001759"></td>
         <td><input type="text" name="bank_account[name]" size="25" value="Jesly Varghese"></td>
     </tr>
