@@ -72,6 +72,8 @@ class Processor extends VirtualAccount\Processor
             $this->createAndSetVirtualAccount($this->gatewayInput[GatewayResponseParams::AMOUNT]);
         }
 
+        $this->receiver = $this->virtualAccount->qrCode;
+
         $this->processBharatQr($bharatQr);
 
         $this->trace->info(
@@ -125,30 +127,7 @@ class Processor extends VirtualAccount\Processor
      */
     protected function createAndSetVirtualAccount(int $amount)
     {
-        $virtualAccountId = Constants::SHARED_VIRTUAL_ACCOUNT;
-
-        $this->virtualAccount = $this->repo->virtual_account->find($virtualAccountId);
-
-        if ($this->virtualAccount === null)
-        {
-            $this->virtualAccount = $this->createSharedVirtualAccount();
-        }
-
-        $this->receiver = $this->virtualAccount->qrCode;
-    }
-
-    protected function createSharedVirtualAccount()
-    {
-        $customers = $this->repo->customer->fetchByMerchantId($this->merchant->getId());
-
-        $input = [
-            VirtualAccount\Entity::RECEIVERS => [
-                VirtualAccount\Entity::TYPES => ['qr_code']
-            ],
-            'shared' => true,
-        ];
-
-        return (new VirtualAccount\Core)->create($input, $this->merchant, $customers[0]);
+        $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount($this->merchant);
     }
 
     protected function processBharatQr(Base\PublicEntity $bharatQr)
@@ -224,6 +203,9 @@ class Processor extends VirtualAccount\Processor
     {
         $qrCodeId = $bharatQr->getMerchantReference();
 
+        // Here we use stripSignWithoutValidation because
+        // we don't want to throw exception in case it is
+        // unknown id. It will be accepted as unexpected payment
         (new QrCode)->stripSignWithoutValidation($qrCodeId);
 
         $qrCode = $this->repo->qr_code->find($qrCodeId);
@@ -232,8 +214,6 @@ class Processor extends VirtualAccount\Processor
         {
             return null;
         }
-
-        $this->receiver = $qrCode;
 
         $virtualAccount = $this->repo
                                ->virtual_account
@@ -304,14 +284,9 @@ class Processor extends VirtualAccount\Processor
 
     protected function getDummyCardDetails()
     {
-        // TODO: Handle the null checks in card validation
-        $card = [
-            Card\Entity::NUMBER       => $this->getLuhnValidCardNumber(),
-            Card\Entity::CVV          => Constants::CARD_CVV,
-            Card\Entity::NAME         => Constants::CARD_NAME,
-            Card\Entity::EXPIRY_MONTH => Constants::CARD_EXPIRY_MONTH,
-            Card\Entity::EXPIRY_YEAR  => Constants::CARD_EXPIRY_YEAR,
-        ];
+        $card = (new Card\Entity)->getDummyCardArray();
+
+        $card[Card\Entity::NUMBER] = $this->getLuhnValidCardNumber();
 
         return $card;
     }

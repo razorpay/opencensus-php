@@ -38,7 +38,7 @@ class Core extends Base\Core
 
             if ($shared === true)
             {
-                $virtualAccount->setId(Constants::SHARED_VIRTUAL_ACCOUNT);
+                $virtualAccount->setId(Entity::SHARED_VIRTUAL_ACCOUNT);
             }
 
             $this->validateDescriptor($virtualAccount);
@@ -57,6 +57,39 @@ class Core extends Base\Core
         $this->eventVirtualAccountCreated($virtualAccount);
 
         return $virtualAccount;
+    }
+
+    /**
+     * A static qr code for all the unexpected payments is picked.
+     *
+     * @param Merchant $merchant
+     */
+    public function createOrFetchSharedVirtualAccount(Merchant $merchant)
+    {
+        $virtualAccountId = Entity::SHARED_VIRTUAL_ACCOUNT;
+
+        $virtualAccount = $this->repo->virtual_account->find($virtualAccountId);
+
+        if ($virtualAccount === null)
+        {
+            $virtualAccount = $this->createSharedVirtualAccount($merchant);
+        }
+
+        return $virtualAccount;
+    }
+
+    protected function createSharedVirtualAccount(Merchant $merchant)
+    {
+        $customers = $this->repo->customer->fetchByMerchantId($merchant->getId());
+
+        $input = [
+            Entity::RECEIVERS => [
+                Entity::TYPES => [Receiver::QR_CODE]
+            ],
+            'shared' => true,
+        ];
+
+        return $this->create($input, $merchant, $customers[0]);
     }
 
     public function createWithoutReceivers(array $input, Merchant $merchant)

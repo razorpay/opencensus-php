@@ -71,15 +71,6 @@ class Service extends Base\Service
         return $response;
     }
 
-    // This will be removed from here after terminal association with bharat qr
-    // payments
-    protected function callGatewayAuthorize(string $gateway, array $gatewayInput)
-    {
-        $gatewayInput['qr_notification'] = true;
-
-        return $this->app['gateway']->call($gateway, Action::AUTHORIZE, $gatewayInput, null);
-    }
-
     protected function getResponse(bool $valid)
     {
         if ($valid === true)

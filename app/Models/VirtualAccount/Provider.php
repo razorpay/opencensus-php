@@ -232,6 +232,8 @@ class Provider
 
     protected function getBharatQrCode($qrCode)
     {
+        $merchant = $qrCode->merchant;
+
         $pointOfInitiation = $this->getPointOfInitiation($qrCode);
 
         $merchantIdentifiers = $this->generateBharatQrMerchantIdentifier($qrCode);
@@ -379,14 +381,9 @@ class Provider
      */
     protected function getTerminalForMethod(string $method, QrCode\Entity $qrCode, string $network = null)
     {
-        if ($method === Payment\Method::CARD)
-        {
-            $paymentArray = Constants::getDummyCardPaymentArray($qrCode, $network);
-        }
-        else
-        {
-            $paymentArray = Constants::getDummyVpaPaymentArray($qrCode);
-        }
+        $paymentArray = (new Payment\Entity)->getDummyPaymentArray($method, $network);
+
+        $paymentArray[Payment\Entity::RECEIVER] = $qrCode;
 
         $paymentProcessor = new PaymentProcessor($qrCode->merchant);
 
