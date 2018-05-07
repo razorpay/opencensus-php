@@ -51,6 +51,10 @@ class Core extends Base\Core
                 'id' => $tax->getId(),
             ]);
 
+        //
+        // This should be inside a transaction, as we are also modifying
+        // child entities here. Keeping it inside a transaction makes it atomic.
+        //
         return $this->repo->transaction(function () use ($tax)
         {
             return $this->repo->deleteOrFail($tax);

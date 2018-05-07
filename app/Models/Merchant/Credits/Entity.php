@@ -23,8 +23,6 @@ class Entity extends Base\PublicEntity
 
     protected $revisionCreationsEnabled = true;
 
-    protected $allowHardDelete = true;
-
     protected $fillable = array(
         self::ID,
         self::EXPIRED_AT,
@@ -195,7 +193,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-     public function promotion()
+    public function promotion()
     {
         return $this->belongsTo('RZP\Models\Promotion\Entity');
     }
