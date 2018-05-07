@@ -47,7 +47,7 @@ export default function NodalMoneyTransfer() {
             data,
           }).then(response => {
             if (response) {
-              notifySuccess('Money transferred is successfull.');
+              notifySuccess('Money transferred successfully.');
               closeModal();
             }
           });
