@@ -396,6 +396,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string',
     ];
 
     protected static $cardFssTerminalRules = [
