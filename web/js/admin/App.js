@@ -19,6 +19,7 @@ import Profile from 'admin/profile';
 import MerchantList from 'admin/merchants/MerchantList';
 import PlanList from 'admin/plans/List';
 import GatewayRulesList from 'admin/gatewayrules/List';
+import GatewayDowntimes from 'admin/gatewaydowntimes/List';
 import Entities from 'admin/entities/List';
 import ActionsList from 'admin/adminActions/ActionsList';
 import EmailLogsList from 'admin/emailLogs/EmailLogsList';
@@ -99,6 +100,7 @@ export default class App extends Component {
               <Route path="/merchants" component={MerchantList} />
               <Route path="/pricing-plans" component={PlanList} />
               <Route path="/gateway-rules" component={GatewayRulesList} />
+              <Route path="/downtimes" component={GatewayDowntimes} />
               <Route
                 path="/entities/:mode?/:selectedEntity?"
                 component={Entities}
@@ -190,6 +192,7 @@ const links = [
     ['Activations', '/activation', 'view_activation_form'],
     ['Pricing Plans', '/pricing-plans', 'view_pricing_list', 'rupee'],
     ['Gateway Rules', '/gateway-rules', 'view_gateway_rule'],
+    ['Downtimes', '/downtimes', '', 'pulse'],
     ['Entities', '/entities', 'view_all_entity'],
     ['Actions', '/actions', 'view_actions'],
     ['Email Logs', '/email-logs', 'view_email_logs', 'email'],
