@@ -57,5 +57,4 @@ class Status extends BaseStatus
     {
         return [];
     }
-
 }

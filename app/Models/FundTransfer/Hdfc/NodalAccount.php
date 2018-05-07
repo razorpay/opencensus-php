@@ -49,18 +49,22 @@ class NodalAccount extends NodalBase\FileProcessor
                 'amount'    => 0,
                 'count'     => 0
             ],
-            'NEFT'  => [
+            TransferMode::NEFT => [
                 'amount'    => 0,
                 'count'     => 0
             ],
-            'RTGS'  => [
+            TransferMode::RTGS => [
                 'amount'    => 0,
                 'count'     => 0
             ],
-            'IFT'   => [
+            TransferMode::IFT  => [
                 'amount'    => 0,
                 'count'     => 0
             ],
+            TransferMode::IMPS => [
+                'amount'    => 0,
+                'count'     => 0
+            ]
         ];
     }
 
@@ -138,17 +142,22 @@ class NodalAccount extends NodalBase\FileProcessor
         // `Payment detail 1` is sent with settlement id
         // `Payment detail 2` os sent with batch id
         // Payment detail 1 & 2 will be sent in the reverse file
-        $record[Headings::IFC_CODE]                      = $ba->getIfscCode();
         $record[Headings::TRANSACTION_TYPE]              = $type;
+        $record[Headings::BENEFICIARY_CODE]              = $ba->getId();
+        $record[Headings::BENEFICIARY_ACCOUNT_NUMBER]    = $ba->getAccountNumber();
         $record[Headings::INSTRUMENT_AMOUNT]             = number_format($amount, 2, '.', '');
         $record[Headings::BENEFICIARY_NAME]              = substr($ba->getBeneficiaryName(), 0, 200);
-        $record[Headings::BENEFICIARY_ACCOUNT_NUMBER]    = $ba->getAccountNumber();
+
+        $record[Headings::BENE_ADDRESS_1]                = $ba->getBeneficiaryAddress1() ?: 'NA';
+        $record[Headings::BENE_ADDRESS_2]                = 'NA';
+        $record[Headings::BENE_ADDRESS_3]                = 'NA';
+
         $record[Headings::CUSTOMER_REFERENCE_NUMBER]     = $entity->getId();
-        $record[Headings::TRANSACTION_DATE]              = $this->date;
         $record[Headings::PAYMENT_DETAILS_1]             = $entity->getId();
         $record[Headings::PAYMENT_DETAILS_2]             = $source->getBatchFundTransferId();
-        $record[Headings::BENEFICIARY_NAME]              = $ba->getBeneficiaryName();
-        $record[Headings::BENEFICIARY_CODE]              = $ba->getBeneficiaryCode();
+        $record[Headings::TRANSACTION_DATE]              = $this->date;
+        $record[Headings::IFC_CODE]                      = $ba->getIfscCode();
+        $record[Headings::BENE_BANK_NAME]                = $ba->getBankName();
 
         return $record;
     }

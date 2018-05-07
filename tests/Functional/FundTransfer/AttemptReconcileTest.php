@@ -339,7 +339,6 @@ class AttemptReconcileTest extends TestCase
         $this->assertTestResponse($settlement, 'testRetrySettlement');
     }
 
-
     public function verifyReconciliationInTestMode(
         string $channel,
         bool $failure = false,
@@ -354,7 +353,7 @@ class AttemptReconcileTest extends TestCase
             'url' => '/settlements/reconcile/test/all',
             'method' => 'POST',
             'content' => [
-                'failed_recons' => (int) $failure,
+                'failed_recons'    => (int) $failure,
                 'internal_failure' => (int) $internalFailure
             ]
         ];
@@ -385,7 +384,7 @@ class AttemptReconcileTest extends TestCase
             }
         }
 
-        if ($failure === true)
+        if (($failure === true) or ($internalFailure === true))
         {
             $this->assertEquals(1, $failed);
         }
@@ -415,6 +414,11 @@ class AttemptReconcileTest extends TestCase
     public function testReconciliationInTestModeForInternalFailure()
     {
         $this->verifyReconciliationInTestMode(Channel::AXIS, true, true);
+    }
+
+    public function testReconciliationInTestModeForFailureForHdfc()
+    {
+        $this->verifyReconciliationInTestMode(Channel::HDFC, false, true);
     }
 
     protected function getReconStatusClass(string $channel)
