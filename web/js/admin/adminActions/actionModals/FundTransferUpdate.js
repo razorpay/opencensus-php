@@ -7,6 +7,7 @@ import { adminPatch } from 'common/fetch';
 import { notifySuccess, notifyError, closeModal } from 'common/modal';
 
 FundTransferUpdate.title = 'Fund Transfer Update';
+FundTransferUpdate.permission = 'settlement_bulk_update';
 
 export default function FundTransferUpdate() {
   return (
