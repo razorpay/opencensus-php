@@ -66,6 +66,9 @@ class Beneficiary extends BaseBeneficiary
         {
             $address = $ba->source->merchantDetail->getBusinessRegisteredAddress();
 
+            // Removes line break from the string
+            $address = preg_replace("/\r\n|\r|\n/", ' ', $address);
+            
             $address = substr($address, 0, 30);
 
             $row = [
