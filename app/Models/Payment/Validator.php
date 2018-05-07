@@ -386,11 +386,11 @@ class Validator extends Base\Validator
 
         $method = $input['method'];
 
-        $receiver = null;
+        $receiverType = null;
 
         if (isset($input[Entity::RECEIVER]) === true)
         {
-            $receiver = $input[Entity::RECEIVER]['type'];
+            $receiverType = $input[Entity::RECEIVER]['type'];
         }
 
         if ($method !== Payment\Method::EMANDATE)
@@ -419,7 +419,7 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        // No limit on amount for payments of method deinfed in Method::$methodsWithoutAmountValidation
+        // No limit on amount for payments of method defined in Method::$methodsWithoutAmountValidation
         if (in_array($method, Method::$methodsWithoutAmountValidation, true) === true)
         {
             return;
@@ -427,7 +427,7 @@ class Validator extends Base\Validator
 
         // The payments received on these receivers are push based. We can't really control after
         // we already received a payments. So removing amount validation check on it
-        if (empty($receiver) === false)
+        if (empty($receiverType) === false)
         {
             return;
         }
