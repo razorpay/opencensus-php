@@ -52,7 +52,7 @@ class InvitationTest extends TestCase
         $this->fixtures->create('user',
                                 [
                                     'id'    => '1000InviteUser',
-                                    'email' => 'existingInvite@razorpay.com'
+                                    'email' => 'existinginvite@razorpay.com'
                                 ]);
 
         $this->startTest();
@@ -99,7 +99,7 @@ class InvitationTest extends TestCase
         $this->fixtures->create('user',
                                 [
                                     'id'    => '1000InviteUser',
-                                    'email' => 'testTeamInvite@razorpay.com'
+                                    'email' => 'testteaminvite@razorpay.com'
                                 ]);
 
         $invitation = $this->fixtures->create('invitation');
@@ -328,5 +328,47 @@ class InvitationTest extends TestCase
         $response = $this->runRequestResponseFlow($testData);
 
         $this->assertEquals(count($response['invitations']), 2);
+    }
+
+    public function testGetInvitationsSentToUpperCaseEmail()
+    {
+        $user = $this->fixtures->create('user', ['email' => 'upper_case@razorpay.com']);
+
+        $invite = [
+            'role' => 'finance',
+            'email' => 'UPPER_Case@razorpay.com',
+            'sender_name' => 'sender'
+        ];
+
+        $this->sendInvitation($invite);
+
+        $this->fixtures->create('invitation',
+            [
+                'email'       => 'UPPER_Case@razorpay.com',
+                'role'        => 'finance',
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $this->ba->appAuth();
+
+        $testData['request']['url'] = '/users/' . $user['id'];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals(count($response['invitations']), 1);
+    }
+
+    protected function sendInvitation($attributes)
+    {
+        $this->ba->proxyAuth();
+
+        $request['content'] = $attributes;
+
+        $request['url'] = '/invitations';
+
+        $request['method'] = 'POST';
+
+        $this->makeRequestAndGetContent($request);
     }
 }

@@ -17,7 +17,8 @@ class Status extends BaseStatus
     const CANCELLED     = 'R';
 
     /**
-     * Internal status code given to the invalid file error
+     * Internal status used when file level failure occurred.
+     * It is considered as failed status
      */
     const FILE_ERROR    = 'file_error';
 

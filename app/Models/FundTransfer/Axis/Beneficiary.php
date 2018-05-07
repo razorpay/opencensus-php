@@ -38,35 +38,6 @@ class Beneficiary extends BaseBeneficiary
         $this->iv = base64_decode(Config::get('nodal.axis.iv'));
     }
 
-    /**
-     * @param $bankAccounts
-     * @param array $input
-     *
-     * @return array
-     * @return array with keys 'signed_url'
-     *                         'local_file_path'
-     *                         'file_name'
-     *                         'merchants_count'
-     */
-    public function register(PublicCollection $bankAccounts, array $input = []): array
-    {
-        $rows = $this->getData($bankAccounts);
-
-        $file = $this->generateFile($rows);
-
-        $merchantCount = count($rows);
-
-        $response = $this->makeResponse($file, $merchantCount);
-
-        $recipientEmails = $input[BankAccount::RECIPIENT_EMAILS] ?? null;
-
-        $mailData = array_merge($response, [BankAccount::RECIPIENT_EMAILS => $recipientEmails]);
-
-        $this->sendEmail($mailData);
-
-        return $response;
-    }
-
     protected function getData(PublicCollection $bankAccounts): array
     {
         $rows = [];
@@ -101,7 +72,7 @@ class Beneficiary extends BaseBeneficiary
         return $rows;
     }
 
-    protected function generateFile(array $rows): FileStore\Creator
+    protected function generateFile($data): FileStore\Creator
     {
         $fileName = 'axis/beneficiary/' . $this->id;
 
@@ -110,7 +81,7 @@ class Beneficiary extends BaseBeneficiary
         $creator = new FileStore\Creator;
 
         $file = $creator->extension(FileStore\Format::XLSX)
-                        ->content($rows)
+                        ->content($data)
                         ->name($fileName)
                         ->store(FileStore\Store::S3)
                         ->type(FileStore\Type::FUND_TRANSFER_H2H)
@@ -124,30 +95,6 @@ class Beneficiary extends BaseBeneficiary
                         ->save();
 
         return $file;
-    }
-
-    protected function makeResponse(FileStore\Creator $file, int $merchantCount)
-    {
-        $fileDetails = $file->get();
-
-        $signedFileUrl = $file->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
-
-        $data = [
-            'signed_url'      => $signedFileUrl,
-            'local_file_path' => $fileDetails['local_file_path'],
-            'file_name'       => basename($fileDetails['local_file_path']),
-            'merchants_count' => $merchantCount,
-            'channel'         => $this->channel,
-        ];
-
-        return $data;
-    }
-
-    protected function sendEmail(array $data)
-    {
-        $beneficiaryFileMail = new BeneficiaryFileMail($data, $this->channel, $data['merchants_count']);
-
-        Mail::queue($beneficiaryFileMail);
     }
 
     protected function getH2HMetadata()

@@ -41,9 +41,9 @@ class NodalAccount extends NodalBase\FileProcessor
 
     protected $id = null;
 
-    public function __construct()
+    public function __construct(string $purpose)
     {
-        parent::__construct();
+        parent::__construct($purpose);
 
         $this->date = Carbon::today(Timezone::IST)->format('n/j/y');
 

@@ -15,7 +15,7 @@ class Report extends Base
 
     protected function getFromHeader()
     {
-        return 'Settlement Potential Failures';
+        return 'Settlement Alert';
     }
 
     protected function addSubject()

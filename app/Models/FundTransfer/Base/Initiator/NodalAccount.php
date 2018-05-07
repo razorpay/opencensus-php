@@ -36,6 +36,25 @@ abstract class NodalAccount extends Base\Core
 
     protected $type              = null;
 
+    protected $purpose           = null;
+
+    public function __construct(string $purpose)
+    {
+        parent::__construct();
+
+        $this->purpose = $purpose;
+    }
+
+    protected function isRefund(): bool
+    {
+        return ($this->purpose === Attempt\Purpose::REFUND);
+    }
+
+    protected function isSettlement(): bool
+    {
+        return ($this->purpose === Attempt\Purpose::SETTLEMENT);
+    }
+
     protected function getTransferMode($amount): string
     {
         $rtgsCutoffTime = Carbon::createFromTime(

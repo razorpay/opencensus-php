@@ -22,6 +22,7 @@ class Format
     const RPT   = 'rpt';
     const DAT   = 'dat';
     const XML   = 'xml';
+    const CLT   = 'clt';
     const NONE  = null;
 
     const EXCEL_COLUMN_TEXT = '@';

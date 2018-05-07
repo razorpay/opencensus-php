@@ -40,6 +40,18 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getReferenceNumber($row)
     {
-        return $row[self::COLUMN_GATEWAY_PAYMENT_ID];
+        $referenceNumber = null;
+
+        //
+        // The MIS files have reference number as `0087520168`
+        // but in DB, we store them without leading zeroes.
+        // hence removing them before matching with db value.
+        //
+        if (empty($row[self::COLUMN_GATEWAY_PAYMENT_ID]) === false)
+        {
+            $referenceNumber = ltrim($row[self::COLUMN_GATEWAY_PAYMENT_ID], '0');
+        }
+
+        return $referenceNumber;
     }
 }
