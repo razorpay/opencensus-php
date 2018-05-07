@@ -297,7 +297,9 @@
 
             location.hash = '#checkout';
             r = Razorpay.open({
+              @if (isset($data['key_id']) === true)
               key: "{{$data['key_id']}}",
+              @endif
               theme: {
                 close_method_back: true,
                 close_button: false
