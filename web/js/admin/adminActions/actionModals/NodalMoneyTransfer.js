@@ -7,6 +7,7 @@ import AsyncButton from 'ui/AsyncButton';
 import { notifySuccess, closeModal } from 'common/modal';
 
 NodalMoneyTransfer.title = 'Money Transfer (Nodal to Nodal)';
+NodalMoneyTransfer.permission = 'create_nodal_account_transfer';
 
 export default function NodalMoneyTransfer() {
   return (
