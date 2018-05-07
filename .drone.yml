@@ -23,6 +23,12 @@ pipeline:
       - composer config -g "github-oauth.github.com" "$GIT_TOKEN"
       - cp /root/.composer/auth.json /drone/src/github.com/razorpay/dashboard/composer-auth.json
       - sha1sum /drone/src/github.com/razorpay/dashboard/composer-auth.json
+  verify-composer-auth-file:
+    image: alpine:3.7
+    commands:
+      - sha1sum composer-auth.json
+      - stat composer-auth.json
+      - ls -la composer-auth.json
   build-js:
     group: build
     image: pronav/dash
