@@ -85,6 +85,9 @@
   &[type=checkbox], &[type=radio]
     display: none
 
+  &:focus
+    border-color: #528ff0;
+
 .Input--file-upload
   margin-left: 4px
   vertical-align: middle
@@ -160,7 +163,10 @@ textarea.Input-el
 
 .Input-desc
   margin: 6px 0
-  color: #555
+  color: #838383
+  font-size: 13px
+  white-space: normal
+
   b
     color: #111
     font-weight: normal

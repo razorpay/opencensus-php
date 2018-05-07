@@ -104,6 +104,8 @@ const businessFields1 = [
     name: 'business_international',
     _cmp: Input.Check,
     required: false,
+    description:
+      'We’ll reach out to you as we might require some additional information to avail this feature. Please note that the application for international payments takes longer than usual to process.',
   },
   {
     label: 'CIN',
@@ -577,6 +579,11 @@ export default class ActivationWizard extends React.Component {
               )}
             >
               Submit Form
+              {!this.isAllTabsValid() && (
+                <div style={{ marginTop: -20, fontSize: 12 }}>
+                  Fill required fields to submit
+                </div>
+              )}
             </li>
           </ul>
         </aside>
@@ -733,7 +740,7 @@ class SubmitForm extends React.Component {
   };
 
   render() {
-    const { closeSubmitFormg } = this.props;
+    const { closeSubmitForm } = this.props;
 
     return (
       <div class="SubmitForm-backdrop">
