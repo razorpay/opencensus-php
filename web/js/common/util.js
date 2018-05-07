@@ -80,3 +80,18 @@ export function classList(...args) {
 
   return classes.join(' ');
 }
+
+/**
+ * Check for empty string/object
+ * @param {*} value
+ */
+export function isBlank(value) {
+  if (value !== null && typeof value === 'object') {
+    return !Object.keys(value).length;
+  }
+  if (typeof value === 'string') {
+    value = value.trim();
+    return !value;
+  }
+  return isNone(value);
+}
