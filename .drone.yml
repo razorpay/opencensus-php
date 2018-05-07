@@ -24,6 +24,7 @@ pipeline:
       - cp /root/.composer/auth.json /drone/src/github.com/razorpay/dashboard/composer-auth.json
       - touch --date="1 Jan 1970" /drone/src/github.com/razorpay/dashboard/composer-auth.json
       - stat /drone/src/github.com/razorpay/dashboard/composer-auth.json
+      - sha1sum /drone/src/github.com/razorpay/dashboard/composer-auth.json
   build-js:
     group: build
     image: pronav/dash
@@ -69,6 +70,7 @@ pipeline:
     rebuild: true
     mount:
       - docker_cache
+      - npm_cache
     when:
       event: push
   # This is a trick step to use the artifacts from the above step
