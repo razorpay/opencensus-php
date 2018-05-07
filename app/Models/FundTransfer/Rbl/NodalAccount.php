@@ -21,9 +21,9 @@ class NodalAccount extends NodalBase\NodalAccount
 
     protected $transferStatus = [];
 
-    public function __construct()
+    public function __construct(string $purpose)
     {
-        parent::__construct();
+        parent::__construct($purpose);
 
         $this->trace = App::getFacadeRoot()['trace'];
 

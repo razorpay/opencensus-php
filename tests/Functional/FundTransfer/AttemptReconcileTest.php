@@ -43,6 +43,10 @@ class AttemptReconcileTest extends TestCase
         $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
             $channel, 1, Attempt\Type::SETTLEMENT);
 
+        $fileName = basename($setlFile);
+
+        $this->assertStringStartsWith('NRPSS_NRPSSUPLDNEW_', $fileName);
+
         $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
     }
 

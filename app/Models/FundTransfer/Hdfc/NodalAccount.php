@@ -28,9 +28,9 @@ class NodalAccount extends NodalBase\FileProcessor
 
     protected $emptyRow;
 
-    public function __construct()
+    public function __construct(string $purpose)
     {
-        parent::__construct();
+        parent::__construct($purpose);
 
         $this->initSummary();
 
