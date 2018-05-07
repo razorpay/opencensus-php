@@ -72,7 +72,7 @@ pipeline:
     environment:
     # Makes sure that the docker volume cache survives this run
       PLUGIN_STORAGE_PATH: /drone/src/github.com/razorpay/dashboard/docker_cache
-    command:
+    commands:
       - docker images
       - docker history "razorpay/dashboard:${DRONE_COMMIT_SHA}"
   rebuild-cache:
