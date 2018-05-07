@@ -564,174 +564,137 @@ dl.rzp-definition {
 /* End Component: rzp/ui/Definition.js */
 
 /* Component: merchant/components/File/Upload.js */
-.file {
-  &.upload {
-    height: 76px;
-    width: 100%;
+.Dropzone {
+  width: 100%
 
-    .drop-zone {
-      height: 100%;
-      width: 100%;
-      display: table;
-      border: 1.2px dashed $primary-color;
-      border-radius: 5px;
+  p {
+    margin: 0 auto
+    width: 93%;
+    padding-left: 6%
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-      .content {
-        position: relative;
-        display: table-cell;
-        vertical-align: middle;
-        margin: auto;
-        text-align: center;
-        font-size: 16px;
-        .content-primary {
-          margin-bottom: 0px;  
-        }
-        .content-secondary {
-          font-size: 14px;
-          opacity: 0.8;
-        }
+  .m-t {
+    margin-top: 8px
+  }
 
-        input[type=file] {
-          display: none;
-        }
+  .Dropzone-cavity {
+    position: relative
+    display:block;
+    width: 100%
+    border-radius: 4px
+    cursor: pointer
+    border: 1px dashed $primary-color
 
-        .upload-label {
-          cursor: pointer;
-          font-weight: 600;
-        }
+    &--highlight {
+      background: #fff
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.12)
+    }
 
-        .file-placeholder {
-          position: absolute;
-          left: 0px;
-          background: url(assets/files/file-placeholder.svg) no-repeat;
-          width: 30px;
-          margin: 18px;
-          height: 35px;
-        }
-      }
+    &--staged {
+      border: 1px solid #DBDBDB
+      background: #fff
+      border-radius: 2px
+    }
+
+    &--error {
+      background-color: #FFF2F2
+      border-color: #FF6363
+    }
+
+    &--disabled {
+      cursor: not-allowed
+      background-color: #eee
+    }
+  }
+
+  .Dropzone-content {
+    padding: 14px 14px 14px 40px
+    vertical-align: middle
+    font-size: 16px
+    pointer-events: none
+
+    &-desc--primary {
+      margin-bottom: 0
+    }
+    &-desc--secondary {
+      font-size: 14px
+      margin-top: 4px
+    }
+
+    input[type=file] {
+      display: none
+    }
+
+    .Dropzone-file-icon {
+      position: absolute
+      transform: translateY(-50%)
+      top: 50%
+      left: 0
+      height: 48px
+      padding: 4px
     }
   }
 }
 /* End Component: merchant/components/File/Upload.js */
 
 /* Component: merchant/components/File/Staged */
-.staged-file {
-  width: 100%;
-  height: 70px;
-  border: 1px solid #DBDBDB;
-  border-radius: 2px;
-  position: relative;
-  background-color: #FAFAFA;
-  &.error {
-    background-color: #FFF2F2;
-    border-color: #FF6363;
-  }
-  &.success {
-    border-color: #00C452;
-    background-color: #FBFFFD;
+.Dropzone-cavity--staged {
 
+  .Dropzone-content {
+    padding-right: 28px
+    pointer-events: auto
   }
-  .file-icon,
-  .file-details,
-  .close-icon {
-    height: 100%;
-    box-sizing: border-box;
-    display: table;
-    float: left;
 
-    & > div {
-      display: table-cell;
-      vertical-align: middle;
+  .text-success {
+    color: #00C452
+    position: relative
+
+    i {
+      position: absolute
+      left: -3px
+      top: 5px
     }
   }
 
-  $fileIconWidth = 10%;
-  .file-icon {
-    width: $fileIconWidth;
-    text-align: center;
+  .Dropzone-close {
+    position: absolute
+    transform: translateY(-50%)
+    top: 50%
+    right: 8px
+    margin-top: 2px
+    cursor: pointer
+  }
 
-    span {
-      position: absolute;
-      left: 0px;
-      top: 0px;
-      background: url(assets/files/file-type-misc.svg) no-repeat;
-      width: 30px;
-      margin: 15px 10px;
-      height: 35px;
-      &.file-type-csv {
-        background: url(assets/files/file-type-csv.svg) no-repeat;
-      }
-      &.file-type-xlsx {
-        background: url(assets/files/file-type-xlsx.svg) no-repeat;
-      }
-      &.file-type-jpg {
-        background: url(assets/files/file-type-jpg.svg) no-repeat;
-      }
-      &.file-type-png {
-        background: url(assets/files/file-type-png.svg) no-repeat;
-      }
-      &.file-type-pdf {
-        background: url(assets/files/file-type-pdf.svg) no-repeat;
-      }            
+  .Loader {
+    height: 3px
+    width: 100%
+    position: absolute
+    background-color: #ddd
+    overflow: hidden
+    visibility: hidden
+    margin-top: -3px
+    bottom: -1px
+    left: -1px
+
+    .Loader-progress {
+      position: absolute
+      display: block
+      width: 100%
+      height: 4px
+      background-color: #00C452
+      transform: translateX(-100%)
+      transition: all 0.2s cubic-bezier(0.07, 1.09, 1, 1)
+      will-change: transform
     }
   }
 
-  .close-icon {
-    width: $fileIconWidth;
-    text-align: center;
-    cursor: pointer;
+  &.Dropzone-cavity--process .Loader {
+    visibility: visible
+    margin-top: 0
   }
-
-  .file-details {
-    width: 100% - $fileIconWidth - $fileIconWidth;
-    display: table;
-    padding-left: 10px;
-
-    & > div {
-      display: table-cell;
-      vertical-align: middle;
-    }
-  }
-
-  /* progress-bar styling */
-  .upload-status-bar {
-    position: absolute;
-    background-color: #DBDBDB;
-    width: 100%;
-    height: 2px;
-    bottom: 0;
-
-    .status {
-      background-color: #1DC155;
-      height: 100%;
-    }
-  }
-  .loader {
-    height: 3px;
-    width: 100%;
-    position: relative;
-    overflow: hidden;
-    background-color: #ddd;
-  }
-  .loader:before{
-    display: block;
-    position: absolute;
-    content: "";
-    width: 98%;
-    height: 4px;
-    background-color: #1DC155;
-    animation: loading 5s linear;
-  }
-
-  @keyframes loading {
-      from {width: 1%;}
-      5% {width: 5%;}
-      10% {width: 70%;}
-      20% {width: 80%;}
-      30% {width: 90%;}
-      to {width: 98%;}
-  }
-
 }
 /* End Component: merchant/components/File/Staged */
 
@@ -756,8 +719,8 @@ dl.rzp-definition {
       position: absolute;
       height: 100%;
       &.right-btn {
-        right: 0px;
-        top: 0px;
+        right: 0;
+        top: 0;
       }
       &[disabled] {
         color: #d6d6d6

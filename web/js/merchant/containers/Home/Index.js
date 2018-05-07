@@ -208,6 +208,8 @@ class HomeContainer extends Component {
   }
 
   onFetchPayments(data) {
+    data = data.data;
+
     const { user, mode } = this.props;
 
     const items = (data && data.items) || [];

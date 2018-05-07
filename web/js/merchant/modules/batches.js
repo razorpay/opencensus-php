@@ -1,13 +1,19 @@
 import { set } from 'rzp/utils/immutable';
 import ajax from 'merchant/utils/ajax';
-import { getActionName, makeCollectionReducer } from 'rzp/modules/collection';
+import {
+  getActionName,
+  makeCollectionReducer,
+  makeActionCollectionReducer,
+} from 'rzp/modules/collection';
 import { merchantFetch } from 'rzp/utils/ajax';
 
 const REFUND = 'REFUND_BATCHES';
 const PAYMENT_LINK = 'PAYMENT_LINK_BATCHES';
+const PAYMENT = 'PAYMENT_BATCHES';
 const BATCH_DOWNLOAD = 'BATCH_DOWNLOAD';
 const ISSUABLE_BATCHES = 'ISSUABLE_BATCHES';
 const EDIT_ISSUABLE_BATCHES = 'EDIT_ISSUABLE_BATCHES';
+const PAYMENT_BATCH_CREATE = 'PAYMENT_BATCHE_CREATE';
 
 const fetchBatchAjax = id => {
   return merchantFetch(`batches/${id}`).then(response => {
@@ -23,7 +29,7 @@ const fetchBatchesAjax = (params, type) => {
   params.type = type;
   return merchantFetch({
     url: 'batches',
-    params: params
+    params: params,
   });
 };
 
@@ -43,8 +49,8 @@ export const fetchIssuableBatchList = batchIdList => {
       url: 'invoices/batches/issuable',
       params: {
         batch_ids: batchIdList,
-      }
-    })
+      },
+    }),
   };
 };
 
@@ -74,6 +80,29 @@ export const fetchPaymentLinkBatches = params => {
             return res;
           }),
     });
+  };
+};
+
+export const fetchPaymentBatches = params => {
+  return {
+    type: getActionName(PAYMENT),
+    payload: params.id
+      ? fetchBatchAjax(params.id)
+      : fetchBatchesAjax(params, 'direct_debit'),
+  };
+};
+
+const createBatch = (actionType, batchType) => data => {
+  return {
+    type: actionType,
+    payload: merchantFetch({
+      url: 'batches',
+      method: 'post',
+      data: {
+        type: batchType,
+        ...data,
+      },
+    }).then(response => response.data),
   };
 };
 
@@ -116,11 +145,17 @@ export const batchDownload = batchId => {
   };
 };
 
+export const createPaymentsBatch = createBatch(
+  PAYMENT_BATCH_CREATE,
+  'direct_debit'
+);
+
 export const uploadRefundBatch = uploadBatch(REFUND, 'refund');
 export const uploadPaymentLinkBatch = uploadBatch(PAYMENT_LINK, 'payment_link');
 
 export const refundBatchesReducer = makeCollectionReducer(REFUND);
 export const paymentLinkBatchesReducer = makeCollectionReducer(PAYMENT_LINK);
+export const paymentBatchesReducer = makeActionCollectionReducer(PAYMENT);
 
 let paymentBatchIdsInitialState = {
   issuableIdList: [],

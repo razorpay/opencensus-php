@@ -1,0 +1,174 @@
+$stats-border = #eaeff0
+
+.batch-upload-wrapper
+  .empty-table-message
+    .helper
+      width: 60%
+      margin: 20px auto
+  .refetch-batch-btn
+    display: inline-block
+    margin-left: 5px
+    &.spin
+      animation: infinite-spin-anti 2s linear infinite
+
+.batch-upload-modal
+  background: #fff
+  &.success
+    text-align: center
+    .success-tick
+      background: url(assets/success-tick.png) no-repeat;
+      height: 38px
+      width: 38px
+      margin: 0 auto
+      margin-bottom: 20px
+    .success-text
+      text-align: initial
+      padding: 24px 0 0 0
+      width: 85%
+      margin: 0 auto
+    .btn-link
+      display: inline-block
+      margin-top: 16px
+    .modal-body
+      padding-top: 0px
+
+  .modal-file
+    width: 70%
+    margin: 0 auto
+  .modal-heading
+    text-align: center
+    font-weight: bold
+    margin: 20px 0
+    font-size: 14px
+  .modal-info
+    background-color: #FAFAFA
+    border-radius: 2px
+    border: 1px solid #DBDBDB
+    margin: 30px 0 0
+    padding: 0 15px
+    .doc-url
+      vertical-align: unset
+      padding: 0
+    ul
+      list-style-type: none
+      padding: 0
+    .btn-link
+      cursor: pointer
+    &.stretch
+      margin: 0 -24px -24px
+      padding: 15px 24px
+    &.error
+      background-color: #fff8e5
+      padding: 20px
+      p
+        margin: 0
+      .btn
+        margin-top: 12px
+        padding: 10px
+      h4
+        margin-bottom: 10px
+    &.create
+      border: none
+      background-color: #f5f5f5
+      .send-link-head
+        margin-top: 25px
+        text-transform: uppercase
+      .send-links-form
+        margin-bottom: 4px
+      .rzpCheckbox
+        display: inline-block
+      h5
+        color: #58666E
+      button
+        display: block
+        margin: 30px auto 10px
+        padding: 10px 45px
+
+  .notification
+    margin: 25px 0
+    text-align: center
+    &.error, &.exceed
+      color: #FF6363
+  h4, h5
+    color: #2D2D2D
+.batch-table
+  font-size: 12px
+  thead > tr > th
+    background-color: #eeeeee
+    border: 1px solid #ddd
+    white-space: nowrap
+  tbody > tr > td
+    white-space: nowrap
+
+.batch-details
+  .panel-body
+    padding: 12px 24px
+  .panel-heading
+    span
+      color: #5E70D2
+      font-size: 13px
+  .equal-margin
+    margin: 12px 0
+  .invoice-list
+    .rzp-amount, .status-label
+      float: right
+    tr:first-of-type
+      td
+        border-top: none
+    .empty-table
+      padding: 30px
+  .stats-info
+    width: 100%
+    .table
+      border: 1px solid $stats-border
+      margin-bottom: 0px
+      .td-info::after
+        content: '';
+        height: 20px;
+        background: $stats-border;
+        width: 1px;
+        position: absolute;
+        margin-top: -30px;
+        margin-left: -9px;
+      .td-heading
+        display: block
+        color: rgba(0,0,0,0.54)
+        text-align: center
+        font-size: 13px
+      .td-value
+        display: block
+        text-align: center
+        font-size: 16px
+  .pair-group-item
+    padding: 8px 0
+
+/* payment batch styles */
+.batch-upload-modal
+  .batch-payments-iframe
+    pointer-events: none;
+    width: calc(0.7 * ( 100% - 24px ));
+    height: 76px;
+    margin-top: 79px;
+    position: absolute;
+    margin-left: calc(24px + 13%);
+    z-index: 1000;
+    border: none;
+
+    &.disabled
+      display: none
+
+    &.enabled
+      pointer-events: all
+
+@keyframes infinite-spin-anti {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@media (max-width: $screen-sm-max)
+  .modal-file
+    width: 100% !important

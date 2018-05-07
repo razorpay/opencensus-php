@@ -566,19 +566,6 @@ export default class BusinessDetailsForm extends Component {
               </div>
 
               <div class="form-group">
-                <label class="col-md-3 control-label">
-                  Provisional GST Identification Number
-                </label>
-                <div class="col-md-9">
-                  <Field
-                    name="p_gstin"
-                    component="input"
-                    class="form-control"
-                  />
-                </div>
-              </div>
-
-              <div class="form-group">
                 <label class="col-md-3 control-label">Company CIN</label>
                 <div class="col-md-9">
                   <Field

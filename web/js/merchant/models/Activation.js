@@ -35,7 +35,6 @@ const activationStepMap = {
     'business_operation_city',
     'business_operation_pin',
     'gstin',
-    'p_gstin',
     'promoter_pan',
     'promoter_pan_name',
     'company_cin',
