@@ -85,7 +85,8 @@ export default class BatchUploadContainer extends Component {
     this.setState({ mode: 'loading' }, () => {
       this.props
         .createBatch({
-          file_id: this.state.file.id,
+          //no need to check array's length as this will be clicked only when file is uploaded
+          file_id: this.state.files[0].id,
           name,
         })
         .then(() => {
