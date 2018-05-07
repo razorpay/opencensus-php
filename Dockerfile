@@ -10,19 +10,20 @@ ARG GIT_TOKEN
 
 COPY composer.json composer.lock /app/
 
+# Copy the composer auth file (with GIT_TOKEN)
+COPY composer-auth.json /root/.composer/auth.json
+
 WORKDIR /app
 
 # A single character change in this command will trigger a new
 # composer install
-RUN composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
-    composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
-    rm -rf /root/.composer && \
-    composer clear-cache
+RUN composer install --no-dev --no-interaction --no-autoloader --no-scripts && rm -rf /root/.composer
 
 RUN mkdir -p public && \
     echo ${GIT_COMMIT_HASH} > public/commit.txt
 
 COPY --chown=nginx:nginx . /app/
+
 # This step can't run without some classes from above step
 RUN composer dump-autoload && php artisan optimize
 

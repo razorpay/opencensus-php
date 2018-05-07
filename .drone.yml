@@ -12,6 +12,15 @@ pipeline:
       - aws_region
     when:
       event: push
+  # TODO: This file can be generated without
+  # running this, since it is a simple templated
+  # JSON file
+  generate-composer-auth-file:
+    image: razorpay/pithos:rzp-php7.1
+    secrets: [docker_username, docker_password, git_token]
+    commands:
+      - composer config -g "github-oauth.github.com" "$GIT_TOKEN"
+      - cp /root/.composer/auth.json /drone/src/github.com/razorpay/dashboard/composer-auth.json
   build:
     image: plugins/docker
     repo: razorpay/dashboard
@@ -29,9 +38,11 @@ pipeline:
       purge: false
     when:
       status: [success]
-      event:
-        exclude: [deployment]
-        include: [push]
+      event: push
+  delete-generated-composer-auth-file:
+    image: alpine:3.7
+    commands:
+      - rm /drone/src/github.com/razorpay/dashboard/composer-auth.json
   rebuild-cache:
     image: razorpay/containers:drone-s3-cache
     endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
