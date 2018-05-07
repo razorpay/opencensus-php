@@ -4,7 +4,7 @@ $height = 600px
 .ActivationContainer
   position: relative
   width: 92%
-  margin: 80px 0 40px 2%
+  margin: 80px auto
 
 .Activation--wizard, .Activation--success
   side-title
@@ -190,39 +190,45 @@ $height = 600px
 
 .Activation--success, .Activation--welcome
   background: #fafafa
+  margin: 0 auto
   position: relative
+
+.Modal-container--Activation--success
+  overflow: visible !important
 
 /* Activation success screen */
 .Activation--success
+  padding: 30px 24px
+
   .LinkCard
     color: #58666e
-    width: 80%
     margin: 0 auto
 
   .Activation-info
-    padding: 16px 30px
+    text-align: center
+    font-size: 16px
+    background: #fff
+    padding: 24px 6%
+    margin: -20px -12% 30px -12%
+    border: 1px solid $prime
+    box-shadow: 8px 8px 8px 0 rgba(132,155,191,0.1)
 
-    .title, .desc
-      text-align: center
-    .title
-      font-size: 16px
+    .desc
+      font-size: 14px
 
-      .i
-        margin-right: 8px
-        border-radius: 50%
-        background: #3a9b67
-        font-size: 14px
-        color: #fff
-        padding: 2px 2px 0;
-        vertical-align: middle
+    .i
+      margin-right: 8px
+      border-radius: 50%
+      background: #3a9b67
+      font-size: 14px
+      color: #fff
+      padding: 2px 2px 0;
+      vertical-align: middle
 
     .desc
       margin: 10px 0 0
 
   .Activation-actions
-    padding: 24px
-    background: #fff
-
     side-title
       text-align: center
 
@@ -257,7 +263,7 @@ $height = 600px
 /* Standalone page size */
 .ActivationContainer
   .Activation--success
-    max-width: 640px
+    max-width: 400px
 
   .Activation--welcome
     max-width: 720px
@@ -273,7 +279,7 @@ $height = 600px
 
   &--Activation--success
     width: 90%
-    max-width: 480px
+    max-width: 400px
 
   &--Activation--welcome
     width: 90%

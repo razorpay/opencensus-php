@@ -12,7 +12,7 @@ import { areReportsStillDownloading } from 'merchant/modules/reports';
 import { trackGoToActivation, trackGoToConfig } from './ga';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
-const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals)/;
+const ACCOUNTS_ROUTES_REGEX = /^\/(profile|credits|addfunds|referrals)/;
 const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|applications|applications\/new)/;
 const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;

@@ -176,16 +176,16 @@ export default class ActivationContainer extends React.Component {
 const SuccessScreen = _ => {
   return (
     <div class="Activation--success">
-      <div class="Activation-info">
+      <div class="Activation-title">
         <side-title>Activation Form submitted Successfully!</side-title>
         <img src="" />
-        <div class="title">
-          <i class="i i-check" /> Your form is submitted successfully
-        </div>
+      </div>
+      <div class="Activation-info">
+        <i class="i i-check" /> Your form is submitted successfully
         <p class="desc">
-          The process usually takes 2 to 3 working days* (may vary depending on
-          our partner bank). We will reach out on your contact email for further
-          clarifications.
+          The process usually takes 2 to 3 working days* (which may vary
+          depending on our partner bank). We will reach out on your contact
+          email for further clarifications.
         </p>
       </div>
 
