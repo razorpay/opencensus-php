@@ -45,7 +45,10 @@ class EloquentEx extends \Razorpay\Spine\Entity
         {
             throw new Exception\RuntimeException(
                 'All parent relations must exist',
-                array_merge([$this->entity], array_keys($this->relations)));
+                [
+                    'entity'                 => $this->entity,
+                    'non_existent_relations' => array_keys($nonExistentRelations),
+                ]);
         }
 
         return parent::save($options);

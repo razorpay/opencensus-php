@@ -26,15 +26,6 @@ class BelongsTo extends BaseBelongsTo
                 ]);
         }
 
-        $ownerKey = $model instanceof Model ? $model->getAttribute($this->ownerKey) : $model;
-
-        $this->child->setAttribute($this->foreignKey, $ownerKey);
-
-        if ($model instanceof Model)
-        {
-            $this->child->setRelation($this->relation, $model);
-        }
-
-        return $this->child;
+        return parent::associate($model);
     }
 }

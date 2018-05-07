@@ -21,14 +21,6 @@ class MorphTo extends BaseMorphTo
                 ]);
         }
 
-        $this->parent->setAttribute(
-            $this->foreignKey, $model instanceof Model ? $model->getKey() : null
-        );
-
-        $this->parent->setAttribute(
-            $this->morphType, $model instanceof Model ? $model->getMorphClass() : null
-        );
-
-        return $this->parent->setRelation($this->relation, $model);
+        return parent::associate($model);
     }
 }
