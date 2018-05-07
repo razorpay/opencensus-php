@@ -70,9 +70,6 @@ pipeline:
         - CDN_DASHBOARD_URL=https://betacdn.razorpay.com/dashboard
     secrets: [AWS_KEY, AWS_SECRET]
     commands:
-        - cd /app/
-        # Have to re-install npm
-        - apk add nodejs-current nodejs-npm
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
         # Show what all will get synced
