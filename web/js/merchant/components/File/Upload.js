@@ -10,13 +10,12 @@ export default class FileUpload extends Component {
     multi: false,
     acceptedTypes: [],
     uploadedBytes: 0,
-    name: 'file-upload',
     showCloseBtn: true,
+    showStagedFileStatus: false,
+    showAcceptInfo: true,
     onBiggerFileSize: () => {},
     onCloseClick: () => {},
   };
-
-  uniqFileId = null; // TODO: Considers only single file upload. Convert to array for multi file support.
 
   constructor(props) {
     super(props);
@@ -183,18 +182,14 @@ export default class FileUpload extends Component {
       children,
       multi,
       maxSize,
-      name,
+      name, // name will refer to input fied hence it should be unique,
       accept,
       disabled,
       onFileChange,
       showStagedFileStatus,
-      showAcceptInfo = true,
+      showAcceptInfo,
     } = this.props;
     let { isDocPreUploaded } = this.state;
-
-    if (this.state.files) {
-      this.uniqFileId = this.uniqFileId || `${name + new Date().getTime()}`;
-    }
 
     const { stagedFileStatus, uploadedBytes, files = [] } = onFileChange
       ? this.state
@@ -271,13 +266,13 @@ export default class FileUpload extends Component {
             <Staged
               file={files.length && files[0]}
               isDocPreUploaded={isDocPreUploaded}
-              uniqFileId={this.uniqFileId}
               onCloseClick={this.props.showCloseBtn && this.handleCloseClick(0)}
               isDisabled={disabled}
               uploadedBytes={uploadedBytes}
               stagedFileStatus={stagedFileStatus}
               showFileSize={maxSize}
               showStagedFileStatus
+              name={name}
             />
           </div>
         )}

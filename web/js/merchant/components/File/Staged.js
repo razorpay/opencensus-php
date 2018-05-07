@@ -11,16 +11,14 @@ const getFileTypeIcon = fileName => {
   return avlblFileTypeIcons.indexOf(fileType) > -1 ? fileType : 'misc';
 };
 
-// If same name file is uploaded to another FileUpload component, uniqFileId will help React to distinguish
+// If same name file is uploaded to another FileUpload component, name will help React to distinguish
 export default class Staged extends React.Component {
   componentWillReceiveProps(nextProps) {
     if (
       nextProps.uploadedBytes !== this.props.uploadedBytes &&
-      document.getElementById(this.props.uniqFileId + '--progress')
+      document.getElementById(this.props.name + '--progress')
     ) {
-      document.getElementById(
-        this.props.uniqFileId + '--progress'
-      ).style.transform =
+      document.getElementById(this.props.name + '--progress').style.transform =
         'none'; // Halt previous transform
     }
   }
@@ -59,7 +57,7 @@ export default class Staged extends React.Component {
       file,
       stagedFileStatus: currentStatus,
       showFileSize,
-      uniqFileId,
+      name,
       isDisabled,
       onCloseClick,
       showStagedFileStatus,
@@ -70,7 +68,7 @@ export default class Staged extends React.Component {
     const isDocPreUploaded = !file && defaultFile; // if data already has file id
 
     return (
-      <div class="Dropzone-content" key={uniqFileId}>
+      <div class="Dropzone-content" key={name}>
         {!isDocPreUploaded && (
           <img
             class="Dropzone-file-icon"
@@ -86,7 +84,7 @@ export default class Staged extends React.Component {
             File Already Uploaded
           </p>
         ) : (
-          <Fragment>
+          <React.Fragment>
             <p class="Dropzone-content-desc--primary text-muted">
               {file.name} {showFileSize && readableFileSize(file.size)}
             </p>
@@ -95,7 +93,7 @@ export default class Staged extends React.Component {
                 {stagedStatusMsgMap[currentStatus]}
               </p>
             )}
-          </Fragment>
+          </React.Fragment>
         )}
         <div>{this.props.children}</div>
         {!isDisabled &&
@@ -106,7 +104,7 @@ export default class Staged extends React.Component {
         <div class="Loader">
           <div
             class="Loader-progress"
-            id={uniqFileId + '--progress'}
+            id={name + '--progress'}
             style={{
               transform: 'translateX(' + loader.progress + '%)',
               transitionDuration: loader.duration + 's',
