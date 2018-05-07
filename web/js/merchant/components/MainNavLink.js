@@ -2,6 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink, withRouter } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 @connect(state => {
   return {
@@ -54,7 +55,13 @@ export default class MainNavLink extends Component {
         <NavLink
           {...linkProps}
           isActive={(match, location) => {
-            return (baseLocation || location).pathname === linkProps.to;
+            let currentLink = linkProps.to;
+
+            if (!isMobileDevice && currentLink === '/dashboard') {
+              currentLink = '/dashboard_v2';
+            }
+
+            return (baseLocation || location).pathname === currentLink;
           }}
           onClick={this.sendAnalytics}
         >
