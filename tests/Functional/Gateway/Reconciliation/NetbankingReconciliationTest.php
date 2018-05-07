@@ -200,6 +200,8 @@ class NetbankingReconciliationTest extends TestCase
 
         $gatewayEntity = $this->getLastEntity('netbanking', true);
 
+        $this->assertEquals($gatewayEntity['bank_payment_id'], 99999);
+
         $this->assertEquals(self::ACCOUNT_NUMBER, $gatewayEntity['account_number']);
 
         $transactionEntity = $this->getLastEntity('transaction', true);
