@@ -1,6 +1,4 @@
 import { readableFileSize } from 'rzp/utils/rzp-utils';
-import { titleCase } from 'common/util';
-import React, { Fragment } from 'react';
 
 const avlblFileTypeIcons = ['pdf', 'jpg', 'png', 'csv', 'xlsx'];
 
@@ -84,7 +82,7 @@ export default class Staged extends React.Component {
             File Already Uploaded
           </p>
         ) : (
-          <Fragment>
+          <React.Fragment>
             <p class="Dropzone-content-desc--primary text-muted">
               {file.name} {showFileSize && readableFileSize(file.size)}
             </p>
@@ -93,7 +91,7 @@ export default class Staged extends React.Component {
                 {stagedStatusMsgMap[currentStatus]}
               </p>
             )}
-          </Fragment>
+          </React.Fragment>
         )}
         <div>{this.props.children}</div>
         {!isDisabled &&
