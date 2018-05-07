@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 
 import { readableFileSize } from 'rzp/utils/rzp-utils';
 import { classList } from 'common/util';
@@ -11,8 +11,8 @@ export default class FileUpload extends Component {
     acceptedTypes: [],
     uploadedBytes: 0,
     name: 'file-upload',
+    showCloseBtn: true,
     onBiggerFileSize: () => {},
-    onFileChange: () => {},
     onCloseClick: () => {},
   };
 
@@ -186,6 +186,8 @@ export default class FileUpload extends Component {
       name,
       accept,
       disabled,
+      onFileChange,
+      showStagedFileStatus,
       showAcceptInfo = true,
     } = this.props;
     let { isDocPreUploaded } = this.state;
@@ -194,6 +196,9 @@ export default class FileUpload extends Component {
       this.uniqFileId = this.uniqFileId || `${name + new Date().getTime()}`;
     }
 
+    const { stagedFileStatus, uploadedBytes, files = [] } = onFileChange
+      ? this.state
+      : this.props;
     return (
       <div
         class="Dropzone"
@@ -201,7 +206,7 @@ export default class FileUpload extends Component {
       >
         {!multi &&
           !isDocPreUploaded &&
-          !this.state.files.length && (
+          !files.length && (
             <label
               class={classList(
                 'Dropzone-cavity',
@@ -225,11 +230,9 @@ export default class FileUpload extends Component {
                     />
                     <p class="Dropzone-content-desc--primary">
                       Drop file here or{' '}
-                      <b class="text-primary">Click to Upload</b>
+                      <b class="text-primary">Click to Upload</b>{' '}
                       {maxSize && (
-                        <span>
-                          <br />({readableFileSize(maxSize)} Max)
-                        </span>
+                        <Fragment>{readableFileSize(maxSize)} Max</Fragment>
                       )}
                     </p>
                     <input
@@ -246,7 +249,7 @@ export default class FileUpload extends Component {
                       const acceptedFileTypes = this.getAcceptedFileTypesInfo();
 
                       if (acceptedFileTypes && showAcceptInfo) {
-                        <p class="Dropzone-content-desc--secondary">
+                        <p class="Dropzone-content-desc--secondary text-muted small-text">
                           {acceptedFileTypes}
                         </p>;
                       }
@@ -256,25 +259,25 @@ export default class FileUpload extends Component {
               </div>
             </label>
           )}
-        {!!(isDocPreUploaded || this.state.files.length) && (
+        {!!(isDocPreUploaded || files.length) && (
           <div
             class={classList(
               'Dropzone-cavity',
               'Dropzone-cavity--staged',
-              this.state.stagedFileStatus &&
-                'Dropzone-cavity--' + this.state.stagedFileStatus,
+              stagedFileStatus && 'Dropzone-cavity--' + stagedFileStatus,
               disabled && 'Dropzone-cavity--disabled'
             )}
           >
             <Staged
-              file={this.state.files.length && this.state.files[0]}
+              file={files.length && files[0]}
               isDocPreUploaded={isDocPreUploaded}
               uniqFileId={this.uniqFileId}
-              onCloseClick={this.handleCloseClick(0)}
+              onCloseClick={this.props.showCloseBtn && this.handleCloseClick(0)}
               isDisabled={disabled}
-              uploadedBytes={this.state.uploadedBytes}
-              stagedFileStatus={this.state.stagedFileStatus}
+              uploadedBytes={uploadedBytes}
+              stagedFileStatus={stagedFileStatus}
               showFileSize={maxSize}
+              showStagedFileStatus
             />
           </div>
         )}
