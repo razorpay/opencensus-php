@@ -55,6 +55,7 @@ export default class MerchantInvoiceNote extends Component {
       }).then(response => {
         if (response) {
           notifySuccess('Invoice notes saved successfully!');
+          closeModal();
         }
       });
     } else {
