@@ -4,6 +4,7 @@ pipeline:
     restore: true
     mount:
       - docker_cache
+      - npm_cache
     endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
     path: /rzp/dashboard/
     secrets:
@@ -23,7 +24,19 @@ pipeline:
       - cp /root/.composer/auth.json /drone/src/github.com/razorpay/dashboard/composer-auth.json
       - touch --date="1 Jan 1970" /drone/src/github.com/razorpay/dashboard/composer-auth.json
       - stat /drone/src/github.com/razorpay/dashboard/composer-auth.json
+  build-js:
+    group: build
+    image: pronav/dash
+    pull: false
+    environment:
+      CHROME_BIN: /usr/bin/chromium
+    commands:
+      - npm config set cache npm_cache
+      - npm install
+      - npm run build
+      - npm test
   build:
+    group: build
     image: plugins/docker
     repo: razorpay/dashboard
     secrets: [docker_username, docker_password, git_token]
