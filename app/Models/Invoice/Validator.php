@@ -362,13 +362,54 @@ class Validator extends Base\Validator
      */
     public function validateMerchantSpecificData()
     {
-        $invoice  = $this->entity;
+        $invoice = $this->entity;
         $merchant = $invoice->merchant;
 
+        $this->validateMerchantHasKeys($merchant);
         $this->validateMerchantIsNotFeeBearer($merchant, $invoice);
     }
 
-    protected function validateMerchantIsNotFeeBearer(Merchant\Entity $merchant, Entity $invoice)
+    /**
+     * Validates if merchant has API keys generated in advance before using
+     * invoices.
+     * This is done because hosted page (invoice payment) will not load
+     * and will throw an exception if Invoice gets created without
+     * merchant having API keys.
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @throws BadRequestException
+     */
+    protected function validateMerchantHasKeys(Merchant\Entity $merchant)
+    {
+        //
+        // Validates if merchant has API keys generated in advance before using
+        // invoices.
+        // This is done because hosted page (invoice payment) will not load
+        // and will throw an exception if Invoice gets created without
+        // merchant having API keys.
+        //
+
+        $keys = $merchant->keys->filter(
+                    function($key, $index)
+                    {
+                        return ($key->isExpiredOrExpiring() === false);
+                    });
+
+        if ($keys->count() === 0)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_API_KEY_NOT_PRESENT,
+                null,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]);
+        }
+    }
+
+    protected function validateMerchantIsNotFeeBearer(
+        Merchant\Entity $merchant,
+        Entity $invoice)
     {
         //
         // If merchant is a customer-fee-bearer client, for now don't allow
