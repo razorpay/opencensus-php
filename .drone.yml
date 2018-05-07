@@ -70,11 +70,14 @@ pipeline:
   # This step is used to do a limited prune
   # so that the cache is not filled with extra layers
   docker-cleanup:
-    image: plugins/docker
+    image: docker:17.12.0-ce-dind
     environment:
     # Makes sure that the docker volume cache survives this run
       PLUGIN_STORAGE_PATH: /drone/src/github.com/razorpay/dashboard/docker_cache
     commands:
+      - /usr/local/bin/dockerd -g $PLUGIN_STORAGE_PATH
+      - docker version
+      - docker info
       - docker images
       - docker history "razorpay/dashboard:${DRONE_COMMIT_SHA}"
   rebuild-cache:
