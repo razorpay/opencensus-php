@@ -35,7 +35,7 @@ pipeline:
       - npm config set cache npm_cache
       - npm install
       - npm install --global gulp
-      - which gulp
+      - npm link gulp && cd web && npm link gulp && cd ..
       - npm run build
       - npm test
   build:
