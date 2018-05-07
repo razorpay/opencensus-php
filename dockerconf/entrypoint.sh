@@ -28,6 +28,9 @@ echo "$(date) Starting Nginx"
 # Any volume mounts must be chown-ed again
 chown -R nginx:nginx /app/storage/logs
 
+# /tmp needs to writable by all processes.
+chmod 777 /tmp
+
 /usr/sbin/php-fpm7
 
 # Moving these logs to after the php-fpm7 creation.
