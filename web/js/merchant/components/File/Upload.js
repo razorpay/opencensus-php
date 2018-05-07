@@ -5,6 +5,24 @@ import { classList } from 'common/util';
 
 import Staged from './Staged';
 
+/**
+ * Common component to handle file upload
+ * @props
+ *  - {Boolean, default: false} `showStagedFileStatus` - shows the status of staged file in staged component
+ *  - {Boolean, default: true} `showAcceptInfo` - shows file types accepted by file upload
+ *  - {Boolean, default: true} `showCloseBtn` - shows cross button in staged component on right side
+ *  - {Boolean, default: true} `showFileSize` - shows the size of file in staged component
+ *
+ *  - {Function, optional} `onBiggerFileSize` - callback if file selected a file of more than allowed file size
+ *  - {Function, optional} `onCloseClick` - callback called when someone clicks on close button in staged component
+ *
+ *  - {Function, optional} `onFileChange` - callback called when file is selected for upload
+ *                      Note:- if not passed then uploadedBytes, files, stagedFileStatus are taken from props instead of state
+ *
+ *  - {Array, optional} `acceptedTypes` - array of extensions for files component is allowed to accept
+ *                       Note:- Please refer `fileTypesMap` for issues related to mime types
+ *
+ */
 export default class FileUpload extends Component {
   static defaultProps = {
     multi: false,
@@ -13,6 +31,7 @@ export default class FileUpload extends Component {
     showCloseBtn: true,
     showStagedFileStatus: false,
     showAcceptInfo: true,
+    showFileSize: true,
     onBiggerFileSize: () => {},
     onCloseClick: () => {},
   };
@@ -188,6 +207,7 @@ export default class FileUpload extends Component {
       onFileChange,
       showStagedFileStatus,
       showAcceptInfo,
+      showFileSize,
     } = this.props;
     let { isDocPreUploaded } = this.state;
 
@@ -270,8 +290,8 @@ export default class FileUpload extends Component {
               isDisabled={disabled}
               uploadedBytes={uploadedBytes}
               stagedFileStatus={stagedFileStatus}
-              showFileSize={maxSize}
-              showStagedFileStatus
+              showFileSize={showFileSize && maxSize}
+              showStagedFileStatus={showStagedFileStatus}
               name={name}
             />
           </div>
