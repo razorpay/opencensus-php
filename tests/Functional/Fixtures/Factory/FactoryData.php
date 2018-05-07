@@ -884,6 +884,13 @@ final class FactoryData
             ]);
 
         $factory(\RZP\Models\QrCode\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'entity_id'   => '12345678901234',
+            'entity_type' => 'virtual_account',
+            'provider'    => 'bharat_qr',
+            'short_url'   => 'abc.com',
+            'merchant_id' => '10000000000000',
+            'qr_string'   => '3reffndes',
         ]);
     }
 }

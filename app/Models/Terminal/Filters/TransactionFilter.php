@@ -304,7 +304,14 @@ class TransactionFilter extends Terminal\Filter
         {
             $flow = $payment->getMetadata('flow', 'collect');
 
-            if ($flow === 'intent')
+            if ($payment->isBharatQr() === true)
+            {
+                if (empty($terminal->getGatewayVpa()) === true)
+                {
+                    return false;
+                }
+            }
+            else if ($flow === 'intent')
             {
                 $gateway = $terminal->getGateway();
 

@@ -17,6 +17,7 @@ use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
  */
 class VirtualAccountTest extends TestCase
 {
+    protected $t1;
     use MocksDnsTrait;
     use EntityActionTrait;
     use VirtualAccountTrait;
@@ -34,7 +35,7 @@ class VirtualAccountTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
-        $this->fixtures->create('terminal:bharat_qr_terminal');
+        $this->t1 = $this->fixtures->create('terminal:bharat_qr_terminal');
 
         $this->fixtures->create('terminal:bharat_qr_terminal_upi');
 
@@ -166,6 +167,31 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals('528734', $visaAcquirerCode);
 
         $this->assertEquals('428734', $masterCardAcquirerCode);
+    }
+
+    public function testTransactionRollback()
+    {
+        $response = $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+        ]);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertNotEquals('222100', $card['iin']);
+        $this->assertNotEquals('423156', $card['iin']);
+        $this->assertNotEquals('508500', $card['iin']);
+
+    }
+
+    public function testCreateVirtualAccountWithBharatQrAndEmptyMpan()
+    {
+        $this->fixtures->terminal->edit($this->t1['id'], ['mastercard_mpan' => null]);
+
+        $this->expectException(\Throwable::class);
+
+        $response = $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+        ]);
     }
 
     public function testCreateVirtualAccountWithBharatQrWithAmount()

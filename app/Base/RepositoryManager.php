@@ -181,6 +181,22 @@ class RepositoryManager extends Illuminate\Support\Manager
         $this->db->rollback();
     }
 
+    public function beginTransactionAndRollback(closure $callback)
+    {
+        try
+        {
+            $this->db->beginTransaction();
+
+            $result = $callback($this);
+        }
+        finally
+        {
+            $this->db->rollback();
+        }
+
+        return $result;
+    }
+
     /**
      * Execute a callable within a transaction.
      * $callback is not type-hinted as callable to support arrays.

@@ -50,7 +50,7 @@ class Entity extends Base\PublicEntity
     const DUMMY_CVV              = '123';
     const DUMMY_CVV_AMEX         = '1234';
     const DUMMY_NAME             = 'dummy card';
-    const DUMMY_MASTERCARD_CARD  = '4231560000511234';
+    const DUMMY_MASTERCARD_CARD  = '2221000000511237';
     const DUMMY_VISA_CARD        = '4231560000511234';
     const DUMMY_RUPAY_CARD       = '5085000000521234';
 

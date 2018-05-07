@@ -422,33 +422,31 @@ class Processor
 
         $this->tracePaymentNewRequest($input);
 
-        //
-        // We only create a dummy payment entity for purpose
-        // of bharat qr terminal selection and returning it.
-        // It's not going to be saved in the database.
-        //
-        $payment = $this->buildPaymentEntity($input);
+        $terminal = $this->repo->beginTransactionAndRollback(function() use ($input, $receiver) {
+            //
+            // We only create a dummy payment entity for purpose
+            // of bharat qr terminal selection and returning it.
+            // It's not going to be saved in the database.
+            //
+            $payment = $this->buildPaymentEntity($input);
 
-        $payment->receiver()->associate($receiver);
+            $payment->receiver()->associate($receiver);
 
-        $this->repo->beginTransaction();
+            $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
-        $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
+            $selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
-        // This needs to be rollback because the card
-        // card data is being saved in the db
-        $this->repo->rollback();
+            if (count($selectedTerminals) === 0)
+            {
+                throw new Exception\RuntimeException(
+                    'No terminal found.',
+                    ['payment' => $payment->toArrayAdmin()]);
+            }
 
-        $selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+            return $selectedTerminals[0];
+        });
 
-        if (count($selectedTerminals) === 0)
-        {
-            throw new Exception\RuntimeException(
-                'No terminal found.',
-                ['payment' => $payment->toArrayAdmin()]);
-        }
-
-        return $selectedTerminals[0];
+        return $terminal;
     }
 
     public function processAndReturnFees(array & $input)
