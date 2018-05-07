@@ -97,6 +97,13 @@ class Gateway extends Base\Gateway
         $this->assertPaymentId($input['payment']['id'], $input['gateway']['MerchRefNo']);
 
         $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+
+        // For emandate registration request, we set the amount to Rs 1
+        if ($this->isFirstRecurringPayment($input) === true)
+        {
+            $expectedAmount = '1.00';
+        }
+
         $actualAmount = number_format($input['gateway']['TxnAmount'], 2, '.', '');
         $this->assertAmount($expectedAmount, $actualAmount);
 
@@ -219,7 +226,7 @@ class Gateway extends Base\Gateway
             $data[Fields::REF1]                  = $emData[RHeadings::MERCHANT_UNIQUE_REFERENCE_NO];
             $data[Fields::REF2]                  = $emData[RHeadings::CUSTOMER_NAME];
             $data[Fields::REF3]                  = $emData[RHeadings::CUSTOMER_ACCOUNT_NUMBER];
-            $data[Fields::REF4]                  = $input['payment']['amount'] / 100;
+            $data[Fields::REF4]                  = '1';
             $data[Fields::REF5]                  = $emData[RHeadings::FREQUENCY];
             $data[Fields::REF6]                  = $emData[RHeadings::MANDATE_SERIAL_NUMBER];
             $data[Fields::REF7]                  = $emData[RHeadings::MANDATE_ID];
@@ -228,6 +235,13 @@ class Gateway extends Base\Gateway
             $data[Fields::REF10]                 = $emData[RHeadings::CLIENT_NAME];
             $data[Fields::DATE1]                 = $startDate;
             $data[Fields::DATE2]                 = $endDate;
+
+            /**
+             * For emandate registration payments, we need to hard-code the amount to Rs 1
+             * This payment would be used by HDFC to verify the account details and once
+             * verified, the same amount would be refunded to the account holder the next day
+             */
+            $data['TxnAmount'] = 1;
         }
 
         // Moving this as the HDFC TPV requires the ClientAccCode to
@@ -352,7 +366,9 @@ class Gateway extends Base\Gateway
     {
         $payment_status = $verify->input['payment']['status'];
 
-        $verify->apiSuccess = (in_array($payment_status, [Payment\Status::CREATED, Payment\Status::FAILED], true) === false);
+        $verify->apiSuccess = (
+            in_array($payment_status, [Payment\Status::CREATED, Payment\Status::FAILED], true) === false
+        );
 
         return $verify->apiSuccess;
     }
