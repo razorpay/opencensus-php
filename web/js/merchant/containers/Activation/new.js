@@ -8,15 +8,20 @@ import { LinkCard } from 'component/Cards';
 import ActivationWizard from 'component/merchant/Activation';
 import Button from 'component/Button';
 
+import { updateSession } from 'merchant/modules/session';
+import User from 'merchant/models/User';
+
 import { withRouter } from 'react-router-dom';
 
 @withRouter
 @connect(
   state => ({
+    session: state.session,
     user: state.session.user,
   }),
   {
     showNotification,
+    updateSession,
   }
 )
 export default class ActivationContainer extends React.Component {
@@ -45,6 +50,24 @@ export default class ActivationContainer extends React.Component {
     });
   }
 
+  updateSession(data) {
+    const { session } = this.props;
+
+    const { activation_progress, activated, submitted } = data;
+
+    const user = new User({
+      ...session.user,
+      activation_progress,
+      activated,
+      submitted: +submitted,
+    });
+
+    this.props.updateSession({
+      user,
+      mode: session.mode,
+    });
+  }
+
   submitForm = (data, accountId) => {
     return merchantFetch({
       url: 'merchant/activation',
@@ -56,6 +79,8 @@ export default class ActivationContainer extends React.Component {
         if (!response.data.can_submit) {
           throw { errors: ['Some mandatory fields are required'] };
         }
+
+        this.updateSession(response.data);
         return response;
       })
       .catch(err => {
@@ -74,7 +99,14 @@ export default class ActivationContainer extends React.Component {
       mode: 'live',
       method: 'post',
       data,
-    }).catch(err => {});
+    })
+      .then(response => {
+        console.log('....', response.data);
+        this.updateSession(response.data);
+
+        return response;
+      })
+      .catch(err => {});
   };
 
   // TODO: Figure out accountId from props
@@ -109,6 +141,8 @@ export default class ActivationContainer extends React.Component {
             type: 'success',
             message: 'File uploaded successfully',
           });
+
+          this.updateSession(response.data);
 
           return response;
         }
