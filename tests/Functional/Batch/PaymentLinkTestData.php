@@ -1,6 +1,9 @@
 <?php
 
+use Carbon\Carbon;
+
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Batch\Header;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -208,6 +211,52 @@ return [
                 'processed_amount' => 0,
                 'processed_at'     => null,
             ],
+        ],
+    ],
+
+    'testCreateBatchOfPaymentLinkTypeWithHumanReadableExpireBy' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payment_link',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testCreateBatchOfPaymentLinkTypeWithHumanReadableExpireByFileRows' => [
+        [
+            Header::INVOICE_NUMBER   => '1',
+            Header::CUSTOMER_NAME    => null,
+            Header::CUSTOMER_EMAIL   => null,
+            Header::CUSTOMER_CONTACT => '9999998881',
+            Header::AMOUNT           => 500,
+            Header::DESCRIPTION      => 'Test payment link',
+            Header::EXPIRE_BY        => Carbon::now(Timezone::IST)->addDays(1)->format('d/m/Y H:i:s'),
+            Header::PARTIAL_PAYMENT  => 'YES',
+        ],
+        [
+            Header::INVOICE_NUMBER   => '2',
+            Header::CUSTOMER_NAME    => null,
+            Header::CUSTOMER_EMAIL   => null,
+            Header::CUSTOMER_CONTACT => '9999998882',
+            Header::AMOUNT           => 500,
+            Header::DESCRIPTION      => 'Test payment link',
+            Header::EXPIRE_BY        => Carbon::now(Timezone::IST)->addDays(2)->format('d/m/Y H:i:s'),
+            Header::PARTIAL_PAYMENT  => 'YES',
+        ],
+        [
+            Header::INVOICE_NUMBER   => '3',
+            Header::CUSTOMER_NAME    => null,
+            Header::CUSTOMER_EMAIL   => null,
+            Header::CUSTOMER_CONTACT => '9999998885',
+            Header::AMOUNT           => 500,
+            Header::DESCRIPTION      => 'Test payment link',
+            Header::EXPIRE_BY        => Carbon::now(Timezone::IST)->addDays(3)->getTimestamp(),
+            Header::PARTIAL_PAYMENT  => 'YES',
         ],
     ],
 

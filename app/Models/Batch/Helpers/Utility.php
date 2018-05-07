@@ -23,11 +23,11 @@ class Utility
         // - Check if should allow default excel format when selector is used & other common softwares default formats
         // - Check if both / and - separator is needed to be supported
         // 'Y-m-d',        // Excel date selector puts value in this format
-        'd/m/Y h:i:s',
-        'd/m/Y h:i',
+        'd/m/Y H:i:s',
+        'd/m/Y H:i',
         'd/m/Y',
-        'd-m-Y h:i:s',
-        'd-m-Y h:i',
+        'd-m-Y H:i:s',
+        'd-m-Y H:i',
         'd-m-Y',
     ];
 
