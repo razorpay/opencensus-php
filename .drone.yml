@@ -34,6 +34,7 @@ pipeline:
     commands:
       - npm config set cache npm_cache
       - npm install
+      - npm install --global gulp
       - npm run build
       - npm test
   build:
