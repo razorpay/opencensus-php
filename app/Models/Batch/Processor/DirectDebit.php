@@ -87,7 +87,7 @@ class DirectDebit extends Base
 
         $order = $this->orderCore->create($orderInput, $this->merchant);
 
-        $row[Header::DIRECT_DEBIT_PAYMENT_ID] = $order->getPublicId();
+        $row[Header::DIRECT_DEBIT_ORDER_ID] = $order->getPublicId();
 
         return $order;
     }
