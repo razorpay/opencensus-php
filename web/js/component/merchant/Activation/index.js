@@ -316,6 +316,7 @@ uploadFields.forEach(a => {
   a._cmp = Input.File;
   a._accept = ['pdf', 'image'];
   a._showAcceptInfo = false;
+  a._showStagedFileStatus = false;
 });
 
 const tabContent = [
@@ -422,8 +423,21 @@ export default class ActivationWizard extends React.Component {
       return;
     }
 
+    const data = { ...this.state.dirty };
+
+    for (let i = 0; i < Object.keys(data).length; i++) {
+      let key = Object.keys(this.state.dirty)[i];
+
+      if (data.hasOwnProperty(key)) {
+        if (data[key] === '') {
+          // If user empties the field, it must be set to NULL in DB
+          data[key] = null;
+        }
+      }
+    }
+
     this.props
-      .save(this.state.dirty, this.props.accountId) // Account id for linked_account
+      .save(data, this.props.accountId) // Account id for linked_account
       .then(response => {
         this.props.callback && this.props.callback(); // Support for callback for linked_account activation
         this.setState({

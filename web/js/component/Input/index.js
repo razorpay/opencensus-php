@@ -343,7 +343,7 @@ Field.File = _ => {
       <Label text={label} />
       <div class="Input-content">
         <FileUpload
-          name={props.name}
+          name={_.name}
           onBiggerFileSize={_ => {
             console.log('File size is bigger');
           }}
@@ -352,6 +352,7 @@ Field.File = _ => {
           disabled={_.disabled}
           accept={_._accept}
           showAcceptInfo={_._showAcceptInfo}
+          showStagedFileStatus={_._showStagedFileStatus}
         />
         <Description text={selectedDescription} />
         <Description text={description} />
