@@ -27,40 +27,38 @@ export default class MerchantInvoiceNote extends Component {
   ];
 
   handleAdd = body => {
-    if (!isBlank(body)) {
-      let invoice_entities = [...this.state.invoice_entities];
-      let month, year;
-
-      month = new Date(body.month_year).getMonth() + 1;
-
-      year = body.month_year.split('/')[1];
-
-      delete body.month_year;
-
-      invoice_entities.push({ ...body, month, year });
-
-      this.setState({ invoice_entities });
-    } else {
-      notifyError('Please fill the form to proceed');
+    if (isBlank(body)) {
+      return notifyError('Please fill the form to proceed');
     }
+    let invoice_entities = [...this.state.invoice_entities];
+    let month, year;
+
+    month = new Date(body.month_year).getMonth() + 1;
+
+    year = body.month_year.split('/')[1];
+
+    delete body.month_year;
+
+    invoice_entities.push({ ...body, month, year });
+
+    this.setState({ invoice_entities });
   };
 
   handleSave = _ => {
     const { invoice_entities } = this.state;
 
-    if (invoice_entities.length) {
-      return adminPost({
-        url: 'live/merchants/invoice/bulk',
-        data: { invoice_entities },
-      }).then(response => {
-        if (response) {
-          notifySuccess('Invoice notes saved successfully!');
-          closeModal();
-        }
-      });
-    } else {
+    if (!invoice_entities.length) {
       return notifyError('Please atleast add one note.');
     }
+    return adminPost({
+      url: 'live/merchants/invoice/bulk',
+      data: { invoice_entities },
+    }).then(response => {
+      if (response) {
+        notifySuccess('Invoice notes saved successfully!');
+        closeModal();
+      }
+    });
   };
 
   render() {
