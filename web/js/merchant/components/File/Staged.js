@@ -1,6 +1,4 @@
 import { readableFileSize } from 'rzp/utils/rzp-utils';
-import { titleCase } from 'common/util';
-import React, { Fragment } from 'react';
 
 const avlblFileTypeIcons = ['pdf', 'jpg', 'png', 'csv', 'xlsx'];
 
