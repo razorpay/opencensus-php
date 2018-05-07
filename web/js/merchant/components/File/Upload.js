@@ -10,7 +10,6 @@ export default class FileUpload extends Component {
     multi: false,
     acceptedTypes: [],
     uploadedBytes: 0,
-    name: 'file-upload',
     showCloseBtn: true,
     onBiggerFileSize: () => {},
     onCloseClick: () => {},
@@ -183,7 +182,7 @@ export default class FileUpload extends Component {
       children,
       multi,
       maxSize,
-      name,
+      name, // name will refer to input fied hence it should be unique,
       accept,
       disabled,
       onFileChange,
@@ -278,6 +277,7 @@ export default class FileUpload extends Component {
               stagedFileStatus={stagedFileStatus}
               showFileSize={maxSize}
               showStagedFileStatus
+              name={name}
             />
           </div>
         )}
