@@ -22,6 +22,9 @@ pipeline:
     commands:
       - composer config -g "github-oauth.github.com" "$GIT_TOKEN"
       - cp /root/.composer/auth.json /drone/src/github.com/razorpay/dashboard/composer-auth.json
+      - date +%Y%m%d --set "19700101"
+      - date
+      - chmod 440 /drone/src/github.com/razorpay/dashboard/composer-auth.json
       - touch --date="1 Jan 1970" /drone/src/github.com/razorpay/dashboard/composer-auth.json
       - stat /drone/src/github.com/razorpay/dashboard/composer-auth.json
       - sha1sum /drone/src/github.com/razorpay/dashboard/composer-auth.json
@@ -35,7 +38,11 @@ pipeline:
       - npm config set cache npm_cache
       - npm install
       - npm install --global gulp
-      - npm link gulp && cd web && npm link gulp && cd ..
+      - npm link gulp
+      - cd web
+      - npm link gulp
+      - npm install
+      - cd ..
       - npm run build
       - npm test
   build:
