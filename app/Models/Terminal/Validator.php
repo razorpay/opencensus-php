@@ -55,6 +55,7 @@ class Validator extends Base\Validator
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::UPI_MINDGATE,
+        Payment\Gateway::NETBANKING_CSB,
         Payment\Gateway::NETBANKING_ICICI,
         Payment\Gateway::NETBANKING_INDUSIND,
     ];
