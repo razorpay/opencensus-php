@@ -39,9 +39,7 @@
 var $ = document.querySelector.bind(document);
 
 var options = {
-    @if (isset($data['key_id']) === true)
     "key": {!! json_encode($data['key_id']) !!},
-    @endif
     "image": {!! json_encode($data['merchant']['image']) !!},
     "subscription_id": {!! json_encode($data['subscription']['id']) !!},
     "subscription_card_change": 1,

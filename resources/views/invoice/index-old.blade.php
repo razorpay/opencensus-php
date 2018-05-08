@@ -282,6 +282,7 @@
                 var merchant = data.merchant;
 
                 var options = {
+                  key: data.key_id,
                   invoice_id: invoiceObj.id,
                   amount: invoiceObj.amount,
                   description: 'Invoice #' + invoiceObj.id,
@@ -328,10 +329,6 @@
                     @endif
                   @endif
                 @endif
-
-                if (data.key_id) {
-                  options.key = data.key_id;
-                }
 
                 options.name = invoiceObj.merchant_label;
 
