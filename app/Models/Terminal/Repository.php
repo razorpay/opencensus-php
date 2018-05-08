@@ -28,7 +28,7 @@ class Repository extends Base\Repository
         Entity::EMI                 => 'sometimes|in:0,1',
         Entity::ENABLED             => 'sometimes|in:0,1',
         Entity::NETWORK_CATEGORY    => 'sometimes|string|max:50',
-        Entity::MASTERCARD_MPAN     => 'sometimes|string|size:16',
+        Entity::MC_MPAN             => 'sometimes|string|size:16',
         Entity::VISA_MPAN           => 'sometimes|string|size:16',
         Entity::RUPAY_MPAN          => 'sometimes|string|size:16',
         Entity::VPA                 => 'sometimes|string|max:20',
@@ -92,15 +92,6 @@ class Repository extends Base\Repository
         $this->addMerchantWhereCondition($query, [$mid]);
 
         return $query->get();
-    }
-
-    public function findByGatewayMerchantId(string $gatewayMerchantId, string $gateway)
-    {
-        return $this->newQuery()
-                    ->withTrashed()
-                    ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
-                    ->where(Entity::GATEWAY, '=', $gateway)
-                    ->first();
     }
 
     public function getTerminalsForMerchantAndSharedMerchant(Merchant\Entity $merchant)

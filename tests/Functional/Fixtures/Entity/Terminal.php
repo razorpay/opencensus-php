@@ -53,7 +53,7 @@ class Terminal extends Base
             'gateway_acquirer'          => 'ratn',
             'gateway_terminal_password' => 'abcdef',
             'card'                      => 1,
-            'mastercard_mpan'           => '4287346823986423',
+            'mc_mpan'                   => '4287346823986423',
             'visa_mpan'                 => '5287346823986423',
             'rupay_mpan'                => '6287346823986423',
             'type'                      => [

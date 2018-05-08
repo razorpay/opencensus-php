@@ -25,8 +25,6 @@ class Core extends Base\Core
 
         $terminal = (new Entity)->build($input);
 
-        $terminal->generateId();
-
         $this->validateExistingTerminal($terminal);
 
         $this->repo->saveOrFail($terminal);
@@ -218,8 +216,6 @@ class Core extends Base\Core
 
         $terminal = (new Entity)->build($input);
 
-        $terminal->generateId();
-
         $this->validateExistingTerminal($terminal);
 
         $terminal->setConnection(Mode::TEST);
@@ -335,30 +331,23 @@ class Core extends Base\Core
 
     protected function validateExistingMpan(Entity $terminal)
     {
-        if (empty($terminal->getMasterCardMpan()) === false)
-        {
-            $params =  [Entity::MASTERCARD_MPAN => $terminal->getMasterCardMpan()];
+        $bharatQrNetworks = Payment\Gateway::getBharatQrCardNetworks();
 
-            $this->checkIfExists($params, $terminal, Entity::MASTERCARD_MPAN);
+        foreach ($bharatQrNetworks as $bharatQrNetwork)
+        {
+            $mpan = strtolower($bharatQrNetwork) . '_mpan';
+
+            if (empty($terminal[$mpan]) === false)
+            {
+                $params =  [$mpan => $terminal[$mpan]];
+
+                $this->checkIfExists($params, $terminal, $mpan);
+            }
         }
 
-        if (empty($terminal->getVisaMpan()) === false)
+        if (empty($terminal->getVpa()) === false)
         {
-            $params =  [Entity::VISA_MPAN => $terminal->getVisaMpan()];
-
-            $this->checkIfExists($params, $terminal, Entity::VISA_MPAN);
-        }
-
-        if (empty($terminal->getRupayMpan()) === false)
-        {
-            $params =  [Entity::RUPAY_MPAN => $terminal->getRupayMpan()];
-
-            $this->checkIfExists($params, $terminal, Entity::RUPAY_MPAN);
-        }
-
-        if (empty($terminal->getGatewayVpa()) === false)
-        {
-            $params =  [Entity::VPA => $terminal->getGatewayVpa()];
+            $params =  [Entity::VPA => $terminal->getVpa()];
 
             $this->checkIfExists($params, $terminal, Entity::VPA);
         }
@@ -380,6 +369,32 @@ class Core extends Base\Core
             }
         }
 
+        //
+        // This condition in need in two cases.
+        // Add terminal and edit terminal.
+        //
+        // In case we are adding terminal assume we
+        // are trying to add master card mpan. If already
+        // terminal exists with the same mpan it will go to
+        // first condition where count is 1. Since id of new terminal
+        // is not generated yet it will be null. So the function
+        // won't return from equal id condition. And It will
+        // reach here. If the count is not equal to 0 it
+        // will throw exception.
+        //
+        // In case we are editing terminal, and we are trying to
+        // set the master card mpan to something for which terminal
+        // already exists the count will be again 1 when we fetch from
+        // repository. Now the id of terminal which we fetched and id
+        // of terminal which we are trying to edit will be different.
+        // so again it wouldn't return from the condition and will
+        // reach here and it will throw exception.
+        //
+        // In case we are trying to edit the lets say visa mpan.
+        // Now when we are checking for master card mpan repo will
+        // return same terminal which we are trying to edit. so it will
+        // return from id equality check.
+        //
         if ($existingTerminals->count() !== 0)
         {
             throw new Exception\BadRequestException(

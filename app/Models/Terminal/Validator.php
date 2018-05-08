@@ -25,7 +25,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes',
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
         Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes',
-        Entity::MASTERCARD_MPAN             => 'sometimes|string|size:16',
+        Entity::MC_MPAN                     => 'sometimes|string|size:16',
         Entity::VISA_MPAN                   => 'sometimes|string|size:16',
         Entity::RUPAY_MPAN                  => 'sometimes|string|size:16',
         Entity::VPA                         => 'sometimes|string|max:20',
@@ -113,7 +113,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::CURRENCY                   => 'sometimes|alpha|size:3',
-        Entity::MASTERCARD_MPAN            => 'required_if:type.bharat_qr,1|string|size:16',
+        Entity::MC_MPAN                    => 'required_if:type.bharat_qr,1|string|size:16',
         Entity::VISA_MPAN                  => 'required_if:type.bharat_qr,1|string|size:16',
         Entity::RUPAY_MPAN                 => 'required_if:type.bharat_qr,1|string|size:16',
     ];
