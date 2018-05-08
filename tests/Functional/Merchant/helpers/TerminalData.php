@@ -164,7 +164,7 @@ return [
                 'gateway_acquirer'    => 'ratn',
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
-                'mc_mpan'             => '1234567890123456',
+                'mc_mpan'             => '1234567880123456',
                 'visa_mpan'           => '1234567890123456',
                 'rupay_mpan'          => '1234567890123456',
                 'category'            => 4567,
