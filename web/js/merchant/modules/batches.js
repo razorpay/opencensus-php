@@ -2,7 +2,6 @@ import { set } from 'rzp/utils/immutable';
 import ajax from 'merchant/utils/ajax';
 import {
   getActionName,
-  updateEntityInList,
   makeCollectionReducer,
   makeActionCollectionReducer,
 } from 'rzp/modules/collection';
@@ -22,6 +21,8 @@ const FETCH_BATCH = 'FETCH_BATCH';
 const FETCH_BATCH_STATS = 'FETCH_BATCH_STATS';
 const FETCH_BATCH_INVOICES = 'FETCH_BATCH_INVOICES';
 const NOTIFY_BATCH = 'NOTIFY_BATCH';
+const PAYMENT = 'PAYMENT_BATCHES';
+const PAYMENT_BATCH_CREATE = 'PAYMENT_BATCHE_CREATE';
 
 const fetchBatchAjax = id => {
   return merchantFetch(`batches/${id}`).then(response => {
@@ -94,7 +95,7 @@ export const fetchPaymentLinkBatches = params => {
   };
 };
 
-const validateBatch = (actionType, batchType) => file => {
+const validateBatch = (actionType, batchType) => (file, progressTracker) => {
   let formData = new FormData();
   formData.append('file', file);
   formData.append('type', batchType);
@@ -105,7 +106,17 @@ const validateBatch = (actionType, batchType) => file => {
       url: 'batches/validate',
       method: 'post',
       data: formData,
+      onUploadProgress: progressTracker,
     }),
+  };
+};
+
+export const fetchPaymentBatches = params => {
+  return {
+    type: getActionName(PAYMENT),
+    payload: params.id
+      ? fetchBatchAjax(params.id)
+      : fetchBatchesAjax(params, 'direct_debit'),
   };
 };
 
@@ -204,6 +215,10 @@ export const validatePaymentLinkBatch = validateBatch(
   VALIDATE_BATCH,
   'payment_link'
 );
+export const createPaymentsBatch = createBatch(
+  PAYMENT_BATCH_CREATE,
+  'direct_debit'
+);
 
 export const uploadRefundBatch = uploadBatch(REFUND, 'refund');
 export const uploadPaymentLinkBatch = uploadBatch(PAYMENT_LINK, 'payment_link');
@@ -214,6 +229,7 @@ export const refundBatchesReducer = makeCollectionReducer(REFUND);
 export const paymentLinkBatchesReducer = makeActionCollectionReducer(
   PAYMENT_LINK
 );
+export const paymentBatchesReducer = makeActionCollectionReducer(PAYMENT);
 
 let paymentBatchIdsInitialState = {
   issuableIdList: [],

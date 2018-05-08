@@ -22,12 +22,13 @@ $stats-border = #eaeff0
       margin: 0 auto
       margin-bottom: 20px
     .success-text
+      text-align: initial
       padding: 24px 0 0 0
       width: 85%
       margin: 0 auto
-      .btn-link
-        display: inline-block
-        margin-top: 16px
+    .btn-link
+      display: inline-block
+      margin-top: 16px
     .modal-body
       padding-top: 0px
 
@@ -45,15 +46,15 @@ $stats-border = #eaeff0
     border: 1px solid #DBDBDB
     margin: 30px 0 0
     padding: 0 15px
-    .doc-url 
-      vertical-align: unset 
+    .doc-url
+      vertical-align: unset
       padding: 0
     ul
       list-style-type: none
       padding: 0
     .btn-link
       cursor: pointer
-    &.stretch  
+    &.stretch
       margin: 0 -24px -24px
       padding: 15px 24px
     &.error
@@ -78,7 +79,7 @@ $stats-border = #eaeff0
         display: inline-block
       h5
         color: #58666E
-      button 
+      button
         display: block
         margin: 30px auto 10px
         padding: 10px 45px
@@ -110,7 +111,7 @@ $stats-border = #eaeff0
     margin: 12px 0
   .invoice-list
     .rzp-amount, .status-label
-      float: right    
+      float: right
     tr:first-of-type
       td
         border-top: none
@@ -140,6 +141,24 @@ $stats-border = #eaeff0
         font-size: 16px
   .pair-group-item
     padding: 8px 0
+
+/* payment batch styles */
+.batch-upload-modal
+  .batch-payments-iframe
+    pointer-events: none;
+    width: calc(0.7 * ( 100% - 24px ));
+    height: 76px;
+    margin-top: 79px;
+    position: absolute;
+    margin-left: calc(24px + 13%);
+    z-index: 1000;
+    border: none;
+
+    &.disabled
+      display: none
+
+    &.enabled
+      pointer-events: all
 
 @keyframes infinite-spin-anti {
   from {

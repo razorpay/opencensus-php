@@ -1,6 +1,7 @@
 import { Component, Fragment } from 'react';
 
 import FileUpload from 'merchant/components/File/Upload';
+import FileStaged from 'merchant/components/File/Staged';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { titleCase } from 'rzp/utils/rzp-utils';
@@ -16,26 +17,33 @@ export default function BatchValidateModal({
   sampleUrl,
   docUrl,
   batchType,
+  maxRows,
   onLoadMore,
   onFileChange,
   onBiggerFileSize,
   onCloseClick,
   closeModal,
-  onSampleFileDownload = null,
-  onErrorReportDownload = null,
+  files,
+  fileUploadProgress,
+  onSampleFileDownload = () => {},
+  onErrorReportDownload = () => {},
 }) {
   return (
     <div class="modal-body">
       <h4 class="modal-heading">UPLOAD FILE</h4>
       <div class="modal-file">
         <FileUpload
-          accept={['csv', 'xlsx']}
+          accept={['csv', 'xlsx', 'xls']}
           uploadedFileName="Upload File here"
           maxSize={MAX_FILE_SIZE}
           onBiggerFileSize={onBiggerFileSize}
           onFileChange={onFileChange}
           onCloseClick={onCloseClick}
           stagedFileStatus={stagedFileStatus}
+          uploadedBytes={fileUploadProgress}
+          files={files}
+          showCloseBtn={true}
+          showStagedFileStatus
         />
         {notifyMsg && (
           <h5 class={`notification ${status}`}>
@@ -65,14 +73,18 @@ export default function BatchValidateModal({
           </p>
           {shouldLoadMore && (
             <Fragment>
-              <ul>
-                <li>1. The Amount mentioned should be in Paise.</li>
-                <li>
-                  2. The receipt id for all {titleCase(batchType)}s should be
-                  unique.
-                </li>
-                <li>3. The number of rows should not exceed 5000.</li>
-              </ul>
+              <ol>
+                <li>The amount mentioned should be in paise.</li>
+                {batchType && (
+                  <li>
+                    The receipt id for all {titleCase(batchType)}s should be
+                    unique.
+                  </li>
+                )}
+                {maxRows && (
+                  <li>The number of rows should not exceed {maxRows}.</li>
+                )}
+              </ol>
               <p>
                 In case of any issues, please{' '}
                 <a

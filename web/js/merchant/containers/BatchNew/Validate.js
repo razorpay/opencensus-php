@@ -39,33 +39,30 @@ export default class BatchValidate extends Component {
     this.setState(newState);
   };
 
-  handleBatchValidation = file => {
+  handleBatchValidation = (file, progressTracker) => {
     this.handleStateChange('process');
-    setTimeout(() => {
-      trackUploadBatchFile();
-      this.props
-        .validateBatch(file, this.props.mode)
-        .then(response => {
-          if (response.data.error_count) {
-            this.handleStateChange(
-              'error',
-              'Some fields have invalid entries',
-              response.data.signed_url
-            );
-          } else {
-            this.handleStateChange('success');
-            setTimeout(() => {
-              this.props.onValidation(
-                response.data,
-                file.name.replace(/\.[^/.]+$/, '')
-              );
-            }, 1000);
-          }
-        })
-        .catch(error => {
-          this.handleStateChange('error', error.errors[0]);
-        });
-    }, 1000);
+    trackUploadBatchFile();
+    return this.props
+      .validateBatch(file, progressTracker)
+      .then(response => {
+        if (response.data.error_count) {
+          this.handleStateChange(
+            'error',
+            'Some fields have invalid entries',
+            response.data.signed_url
+          );
+        } else {
+          this.handleStateChange('success');
+          this.props.onValidation(
+            response.data,
+            file.name.replace(/\.[^/.]+$/, '')
+          );
+        }
+        return response;
+      })
+      .catch(error => {
+        this.handleStateChange('error', error.errors[0]);
+      });
   };
 
   handleLoadMore = () => {
@@ -95,6 +92,7 @@ export default class BatchValidate extends Component {
         onCloseClick={this.handleStateChange}
         onSampleFileDownload={this.handleSampleFileDownload}
         onErrorReportDownload={this.handleErrorReportDownload}
+        maxRows={5000}
         {...this.state}
         {...this.props}
       />

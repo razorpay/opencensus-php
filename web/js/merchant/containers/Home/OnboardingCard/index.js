@@ -22,7 +22,7 @@ export default class OnboardingCard extends Component {
   constructor(props) {
     super(props);
 
-    const { mode, user, config } = props,
+    const { mode, user, config, isFirstStep } = props,
       { isActivated, isSubmitted } = user,
       { hasPersonalised } = config;
 
@@ -30,6 +30,13 @@ export default class OnboardingCard extends Component {
       integrated: false,
       activated: mode === 'live' && isActivated && isSubmitted,
     };
+
+    if (typeof window.hj === 'function') {
+      window.hj('trigger', 'onboarding_card');
+      window.hj('tagRecording', [
+        isFirstStep ? 'welcome_step_opened' : 'main_step_opened',
+      ]);
+    }
 
     this.onIntegrationComplete = this.onIntegrationComplete.bind(this);
     this.closeOnboarding = this.closeOnboarding.bind(this);
@@ -84,10 +91,10 @@ export default class OnboardingCard extends Component {
           </div>
 
           <button
-            class="btn btn-lg btn-default onboarding-cta"
+            class="btn btn-default onboarding-cta"
             onClick={this.gotoNextStep}
           >
-            <span>Okay. Let's setup your account</span>
+            <span>Okay, got it</span>
             <i class="i i-chevron-right" />
           </button>
         </div>
@@ -152,15 +159,18 @@ export default class OnboardingCard extends Component {
           <div class="media onboarding-card">
             {FirstStep}
             <div class="onboarding-illustration" />
-            {integrated &&
-              activated && (
-                <a
-                  onClick={e => this.closeOnboarding(e, true)}
-                  className="close"
-                >
-                  <i className="i i-close" />
-                </a>
-              )}
+            {(isFirstStep || (integrated && activated)) && (
+              <a
+                onClick={
+                  isFirstStep
+                    ? this.gotoNextStep
+                    : e => this.closeOnboarding(e, true)
+                }
+                className="close"
+              >
+                <i className="i i-close" />
+              </a>
+            )}
           </div>
         </div>
       </div>

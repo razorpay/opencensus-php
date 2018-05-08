@@ -1,5 +1,5 @@
 <div class="auth-overflow-container">
-  <div class="login-translate-container" style="transform: translateX({{-(240)*login.currentStep}}px)">
+  <div class="login-translate-container" ng-style="{'transform': 'translateX(' + ((-240)*login.currentStep) + 'px)'}">
     <div class="auth-step">
       <div class="auth-heading">
         Forgot Password
@@ -25,7 +25,7 @@
         {{lockme ? "Dashboard Locked" : "Login to Dashboard"}}
       </div>
       <div class="login-details-overflow-container">
-        <div class="login-details-translate-container" style="transform: translateX({{-(240)*login.currentSubStep}}px)">
+        <div class="login-details-translate-container" ng-style="{'transform': 'translateX(' + ((-240)*login.currentSubStep) + 'px)'}">
           <div class="auth-substep">
             <div class="auth-text">
               <span ng-if="lockme">You have been inactive for more than 5 minutes. Enter password to access the dashboard as </span>

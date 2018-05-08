@@ -367,6 +367,20 @@ export default class TerminalForm extends Component {
               entity && entity.type && entity.type.indexOf('no_2fa') >= 0
             }
           />
+          <CheckField
+            label="UPI Pay"
+            name="type[pay]"
+            defaultChecked={
+              entity && entity.type && entity.type.indexOf('pay') >= 0
+            }
+          />
+          <CheckField
+            label="Pin Auth"
+            name="type[pin]"
+            defaultChecked={
+              entity && entity.type && entity.type.indexOf('pin') >= 0
+            }
+          />
 
           <div class="m-t m-b" />
           <AsyncButton

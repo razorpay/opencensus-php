@@ -28,3 +28,7 @@ export SettlementBulkChannel from './SettlementBulkChannel';
 export BulkTransaction from './BulkTransaction';
 
 export MetaQuery from './MetaQuery';
+
+export FundTransferUpdate from './FundTransferUpdate';
+
+export MerchantInvoiceNote from './MerchantInvoiceNote';

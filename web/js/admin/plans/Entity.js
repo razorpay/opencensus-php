@@ -84,6 +84,7 @@ const fields = [
       <div>
         {item.selectField('payment_method')}
         {item.paymentMethodTypeField()}
+        {item.receiverTypeField()}
         {item.internationalField()}
         {item.emiDurationField()}
       </div>

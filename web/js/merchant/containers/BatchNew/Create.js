@@ -1,19 +1,52 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-
+import { Field } from 'redux-form';
 import { showNotification } from 'rzp/modules/notifications';
 
 import BatchCreateModal from 'merchant/components/BatchNew/CreateModal';
+import PaymentLinksForm from 'merchant/components/BatchNew/PaymentLinksForm';
+
 import { createPaymentLinkBatch as createBatch } from 'merchant/modules/batches';
 
 import { trackUploadBatch } from './ga';
 @connect(state => state.session, { createBatch, showNotification })
 export default class BatchCreate extends Component {
   formInitialValues = {
-    sms_notify: 0,
-    email_notify: 0,
     name: this.props.batchName,
   };
+
+  state = {
+    sms_notify: 0,
+    email_notify: 0,
+    ctaText: 'Create',
+    pendingText: 'Creating...',
+  };
+
+  generateCtaText = () => {
+    const { sms_notify, email_notify } = this.state;
+    let ctaText = '',
+      pendingText = '';
+
+    if (sms_notify || email_notify) {
+      ctaText = 'Create Batch & Send Payment Links';
+      pendingText = 'Creating & Sending...';
+    } else {
+      ctaText = 'Create Batch';
+      pendingText = 'Creating...';
+    }
+
+    this.setState({ ctaText, pendingText });
+  };
+
+  handleChange = (propName, value) => {
+    this.setState(
+      {
+        [propName]: value | 0,
+      },
+      this.generateCtaText
+    );
+  };
+
   handleBatchCreate = props => {
     let data = { ...props };
 
@@ -48,7 +81,16 @@ export default class BatchCreate extends Component {
         batchType={this.props.batchType}
         onCreateBatch={this.handleBatchCreate}
         initialValues={this.formInitialValues}
-      />
+        ctaText={this.state.ctaText}
+        pendingText={this.state.pendingText}
+      >
+        <PaymentLinksForm
+          batchType={this.props.batchType}
+          sms_notify={this.state.sms_notify}
+          email_notify={this.state.email_notify}
+          onChange={this.handleChange}
+        />
+      </BatchCreateModal>
     );
   }
 }
