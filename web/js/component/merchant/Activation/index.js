@@ -702,7 +702,10 @@ function Loader({ isSaving }) {
   return (
     <span class="Loader Loader--visible">
       {isSaving ? (
-        'Saving Changes...'
+        <React.Fragment>
+          <span class="spin-btn" />
+          Saving Changes...
+        </React.Fragment>
       ) : (
         <React.Fragment>
           <i class="i-check" />
