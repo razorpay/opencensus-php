@@ -308,8 +308,33 @@ const uploadFields = [
       'Your Bank account number, IFSC code, and Company Name should be clearly visible',
   },
   {
+    name: 'promoter_pan_url',
+    label: 'PAN Card',
+    _when: activation => !!activation.props.accountId,
+    description: 'Promoter/Individual PAN Card.',
+  },
+  {
     name: 'promoter_address_url',
     label: "Authorized Signatory's Address Proof",
+    _when: activation => !activation.props.accountId,
+    description:
+      'Upload both sides of the government issued photo ID (Passport/Aadhaar/Driving License/Election Card)',
+  },
+  {
+    name: 'form_12a_url',
+    label: 'Form 12A Allotment Letter',
+    _when: activation =>
+      !activation.props.accountId &&
+      activation.state.data.business_type == NGO_BUSINESS_TYPE,
+    description: 'Mandatory for NGOs',
+  },
+  {
+    name: 'form_80g_url',
+    label: 'Form 80G Allotment Letter',
+    _when: activation =>
+      !activation.props.accountId &&
+      activation.state.data.business_type == NGO_BUSINESS_TYPE,
+    description: 'Mandatory for NGOs',
   },
 ];
 uploadFields.forEach(a => {
@@ -343,6 +368,9 @@ defaultFieldProps(tabContent);
 
 const LAST_STEP = tabs.length - 1; // It's document upload step (0 = 1st tab).
 const DOCUMENT_UPLOAD_STEP = 4; // It's document upload step.
+const BUSINESS_TYPE_FORM_STEP = 1; // If NGO is selected, then Document Upload would have 2 more fields
+const NGO_BUSINESS_TYPE = 7;
+
 export default class ActivationWizard extends React.Component {
   state = {
     isSaving: null,
@@ -409,7 +437,7 @@ export default class ActivationWizard extends React.Component {
     let isValid = this.tabValidity(currentActive);
     let tabs = this.state.tabs.slice();
     tabs[currentActive] = isValid;
-    activeTab = typeof activeTab === 'undefined' ? currentActive : activeTab; // To handle Save btn click
+    activeTab = typeof activeTab === 'undefined' ? currentActive : activeTab; // Tab is not changed (To handle Save btn click).
 
     let shouldSave = Object.keys(this.state.dirty).length ? true : null;
 
@@ -422,6 +450,17 @@ export default class ActivationWizard extends React.Component {
 
     if (!shouldSave) {
       return;
+    }
+
+    if (activeTab === BUSINESS_TYPE_FORM_STEP) {
+      if (this.state.dirty.business_type) {
+        let isDocumentStepValid = this.tabValidity(DOCUMENT_UPLOAD_STEP);
+        tabs[DOCUMENT_UPLOAD_STEP] = isDocumentStepValid;
+
+        this.setState({
+          tabs,
+        });
+      }
     }
 
     const data = { ...this.state.dirty };

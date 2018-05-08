@@ -68,7 +68,7 @@ export default class ActivationContainer extends React.Component {
     });
   }
 
-  submitForm = (data, accountId) => {
+  submitForm = data => {
     return merchantFetch({
       url: 'merchant/activation',
       mode: 'live',
@@ -101,7 +101,6 @@ export default class ActivationContainer extends React.Component {
       data,
     })
       .then(response => {
-        console.log('....', response.data);
         this.updateSession(response.data);
 
         return response;
@@ -110,7 +109,7 @@ export default class ActivationContainer extends React.Component {
   };
 
   // TODO: Figure out accountId from props
-  saveFile = (fieldName, file, progressTracker, accountId) => {
+  saveFile = (fieldName, file, progressTracker) => {
     let formData = new FormData();
 
     let fieldNameMapping = {
@@ -119,10 +118,10 @@ export default class ActivationContainer extends React.Component {
       business_pan_url: 'business_pan_url',
       address_proof_url: 'address_proof_url',
       promoter_proof: 'promoter_proof_url',
-      promoter_pan_proof: 'promoter_pan_url',
+      promoter_pan_url: 'promoter_pan_url',
       promoter_address_url: 'promoter_address_url',
-      ngo_12a_proof: 'form_12a_url',
-      ngo_80g_proof: 'form_80g_url',
+      form_12a_url: 'form_12a_url',
+      form_80g_url: 'form_80g_url',
     };
     formData.append(fieldNameMapping[fieldName], file);
 
@@ -132,7 +131,7 @@ export default class ActivationContainer extends React.Component {
       method: 'post',
       mode: 'live',
       data: formData,
-      accountId,
+      accountId: this.props.accountId,
       onUploadProgress: progressTracker,
     })
       .then(response => {
@@ -193,6 +192,7 @@ export default class ActivationContainer extends React.Component {
           save={this.saveStep}
           saveFile={this.saveFile}
           submitForm={this.submitForm}
+          accountId={this.props.accountId}
         />
       );
     }
