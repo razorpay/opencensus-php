@@ -12,7 +12,7 @@ pipeline:
       - aws_secret_access_key
       - aws_region
     when:
-      event: push
+      event: push, deploy
   # TODO: This file can be generated without
   # running this, since it is a simple templated
   # JSON file
@@ -81,11 +81,14 @@ pipeline:
     # Makes sure that the docker volume cache survives this run
       PLUGIN_STORAGE_PATH: /drone/src/github.com/razorpay/dashboard/docker_cache
     commands:
-      - /usr/local/bin/dockerd -g $PLUGIN_STORAGE_PATH
+      - /usr/local/bin/dockerd --data-root $PLUGIN_STORAGE_PATH
       - docker version
       - docker info
       - docker images
       - docker history "razorpay/dashboard:${DRONE_COMMIT_SHA}"
+    # Disable this for now
+    when:
+        event: never
   rebuild-cache:
     image: razorpay/containers:drone-s3-cache
     endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
