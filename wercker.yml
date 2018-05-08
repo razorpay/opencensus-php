@@ -1,5 +1,5 @@
 box:
-  id: razorpay/api:ci
+  id: razorpay/pithos:rzp-php7.1
   username: $DOCKERHUB_USER
   password: $DOCKERHUB_PASSWORD
 dev:
@@ -52,15 +52,6 @@ build:
           content: |
               zend.assertions=1
               assert.exception=On
-      - script:
-          name: Copy nanotime extension
-          code: cp scripts/nanotime.* /usr/lib/php7/modules
-      - create-file:
-          name: Enable nanotime extension
-          filename: /etc/php7/conf.d/nanotime.ini
-          overwrite: true
-          content: |
-              extension=nanotime.so
       - script:
           name: List PHP extensions
           code: php -m
