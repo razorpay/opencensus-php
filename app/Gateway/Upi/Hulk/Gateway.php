@@ -123,7 +123,8 @@ class Gateway extends Base\Gateway
 
         if ($status !== Status::CREATED)
         {
-            // @todo: Fetch internal error code on proxy auth from hulk and
+            $errorCode = $response['internal_error_code'];
+
             // pass it as error code to API
             throw new Exception\GatewayErrorException(
                 $errorCode,
@@ -292,13 +293,19 @@ class Gateway extends Base\Gateway
         $payment = $input['payment'];
 
         $content = [
+            Fields::TYPE             => Type::EXPECTED_PUSH,
             Fields::AMOUNT           => $payment['amount'],
+            Fields::CURRENCY         => $payment['currency'],
+            Fields::DESCRIPTION      => $this->getPaymentRemark($input),
             Fields::NOTES            => [
                 'razorpay_payment_id' => $payment['id']
             ],
-            Fields::TYPE             => Type::EXPECTED_PUSH,
-            Fields::CURRENCY         => $payment['currency']
         ];
+
+        if ($input['merchant']->isTPVRequired() === true)
+        {
+            $content[Fields::CALLER_ACCOUNT_NUMBER] = $input['order']['account_number'];
+        }
 
         $request = $this->getStandardRequestArray($content, 'post');
 

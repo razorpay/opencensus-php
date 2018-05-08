@@ -1563,7 +1563,7 @@ class Terminal extends Base
         return $this->createSharedUpiIciciTerminal($attributes);
     }
 
-    public function createSharedUpiHulkTerminal(array $attributes)
+    public function createSharedUpiHulkTerminal(array $override)
     {
         $termId = Shared::UPI_HULK_RAZORPAY_TERMINAL;
 
@@ -1577,9 +1577,33 @@ class Terminal extends Base
             'upi'                       => true,
         ];
 
-        $attributes = array_merge($defaultValues, $attributes);
+        $attributes = array_merge($defaultValues, $override);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedUpiHulkIntentTerminal(array $override = [])
+    {
+        $attributes = [
+            'id'                        => Shared::UPI_HULK_RAZORPAY_INTENT_TERMINAL,
+            'type'                      => [
+                'non_recurring'         => '1',
+                'pay'                   => '1',
+            ],
+            'gateway_merchant_id2'      => 'testmerchant@razor',
+        ];
+
+        return $this->createSharedUpiHulkTerminal(array_merge($attributes, $override));
+    }
+
+    public function createSharedUpiHulkTpvTerminal(array $override = [])
+    {
+        $attributes = [
+            'id'               => Shared::UPI_HULK_RAZORPAY_TPV_TERMINAL,
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedUpiHulkIntentTerminal(array_merge($attributes, $override));
     }
 
     public function createSharedAepsIciciTerminal(array $attributes)
