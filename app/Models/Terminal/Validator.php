@@ -200,6 +200,7 @@ class Validator extends Base\Validator
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::MODE                       => 'sometimes|in:3',
     ];
 
     protected static $hitachiEditTerminalRules = [
