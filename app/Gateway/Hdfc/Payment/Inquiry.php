@@ -102,7 +102,19 @@ trait Inquiry
     {
         $input = $verify->input;
 
-        $payment = $this->repo->findByPaymentIdToVerify($input['payment']['id']);
+        //
+        // We do this because current payment verify logic relies on the
+        // error code of the gateway entity.
+        // In case of a timeout, two entities get created in the hdfc entity
+        // and this causes issue with the reconciliation
+        // That's why we are filtering out all the payments where
+        // enroll_result is null
+        $payments = $this->repo->findPaymentsByPaymentIdToVerify($input['payment']['id']);
+
+        $payment = $payments->filter(function ($payment)
+        {
+            return ($payment->getEnrollResult() !== null);
+        })->first();
 
         $verify->payment = $payment;
 
@@ -487,7 +499,7 @@ trait Inquiry
                     'Unexpected action',
                     null,
                     [
-                        'payment_id' => $payment->getPaymentId(),
+                        'payment_id' => $this->input['payment']['id'],
                         'action'     => $paymentAction,
                     ]);
             }
