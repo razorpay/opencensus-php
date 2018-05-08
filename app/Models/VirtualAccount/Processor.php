@@ -19,6 +19,7 @@ abstract class Processor extends Base\Core
     protected $provider;
     protected $merchant;
     protected $validator;
+    protected $receiver;
 
     public function __construct(string $provider = null)
     {

@@ -67,6 +67,8 @@ class Processor extends VirtualAccount\Processor
             $this->createAndSetVirtualAccount($this->gatewayInput[GatewayResponseParams::AMOUNT]);
         }
 
+        $this->setReceiver();
+
         $this->processBharatQr($bharatQr);
 
         $this->trace->info(
@@ -93,6 +95,11 @@ class Processor extends VirtualAccount\Processor
                 ],
             ]
         ];
+    }
+
+    protected function setReceiver()
+    {
+        $this->receiver = $this->virtualAccount->qrCode;
     }
 
     protected function checkIfDuplicateNotification(Base\PublicEntity $bharatQr)
@@ -240,6 +247,13 @@ class Processor extends VirtualAccount\Processor
             $paymentArray[Payment\Entity::CONTACT]     = $customer->getContact();
             $paymentArray[Payment\Entity::EMAIL]       = $customer->getEmail();
         }
+
+        $receiverData = [
+            'id'   => $this->receiver->getPublicId(),
+            'type' => VirtualAccount\Receiver::QR_CODE,
+        ];
+
+        $paymentArray[Payment\Entity::RECEIVER] = $receiverData;
 
         return $paymentArray;
     }
