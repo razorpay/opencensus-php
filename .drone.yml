@@ -12,7 +12,7 @@ pipeline:
       - aws_secret_access_key
       - aws_region
     when:
-      event: push, deploy
+      event: [push, deployment]
   # TODO: This file can be generated without
   # running this, since it is a simple templated
   # JSON file
@@ -23,12 +23,16 @@ pipeline:
       - composer config -g "github-oauth.github.com" "$GIT_TOKEN"
       - cp /root/.composer/auth.json /drone/src/github.com/razorpay/dashboard/composer-auth.json
       - sha1sum /drone/src/github.com/razorpay/dashboard/composer-auth.json
+    when:
+        event: push
   verify-composer-auth-file:
     image: alpine:3.7
     commands:
       - sha1sum composer-auth.json
       - stat composer-auth.json
       - ls -la composer-auth.json
+    when:
+        event: push
   build-js:
     group: build
     image: pronav/dash
@@ -46,6 +50,17 @@ pipeline:
       - cd ..
       - npm run build
       - npm test
+    when:
+        event: push
+  test-js:
+    image: pronav/dash
+    pull: false
+    environment:
+      CHROME_BIN: /usr/bin/chromium
+    commands:
+      - npm test
+    when:
+      event: push
   build:
     group: build
     image: plugins/docker
@@ -73,6 +88,8 @@ pipeline:
     commands:
       - rm /drone/src/github.com/razorpay/dashboard/composer-auth.json
       - du -d2 $PLUGIN_STORAGE_PATH
+    when:
+      event: push
   # This step is used to do a limited prune
   # so that the cache is not filled with extra layers
   docker-cleanup:
@@ -88,7 +105,7 @@ pipeline:
       - docker history "razorpay/dashboard:${DRONE_COMMIT_SHA}"
     # Disable this for now
     when:
-        event: never
+        event: never #push
   rebuild-cache:
     image: razorpay/containers:drone-s3-cache
     endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
@@ -102,7 +119,7 @@ pipeline:
       - docker_cache
       - npm_cache
     when:
-      event: push
+      event: [push, deployment]
   # This is a trick step to use the artifacts from the above step
   # Since we have pushed this image above, we can use the same
   # without pulling it
@@ -123,10 +140,7 @@ pipeline:
         - ls -laR public/css/generated/
         - ./s3sync.js
     when:
-      environment: never
-      event:
-        exclude: [push]
-        include: [deployment]
+      event: deployment
   deploy-s3-prod:
     image: "razorpay/dashboard:${DRONE_COMMIT_SHA}"
     pull: false
@@ -241,9 +255,7 @@ pipeline:
         Time taken: {{since build.started}}
         Link: {{build.link}}
     when:
-      event:
-        exclude: [deployment]
-        include: [push, tag]
+      event: [push, tag]
   build-falcon-notify:
     image: plugins/webhook
     urls:
