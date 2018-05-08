@@ -208,6 +208,11 @@ class Entity extends Base\PublicEntity
         return $this->fill($input);
     }
 
+    public function getReceiverType()
+    {
+        return $this->getAttribute(self::RECEIVER_TYPE);
+    }
+
     public function getRates()
     {
         return [$this->getPercentRate(), $this->getFixedRate()];
