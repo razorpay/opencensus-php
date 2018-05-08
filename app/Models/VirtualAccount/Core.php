@@ -4,6 +4,7 @@ namespace RZP\Models\VirtualAccount;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\BharatQr\Constants;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Listeners\ApiEventSubscriber;
@@ -24,7 +25,21 @@ class Core extends Base\Core
 
         $virtualAccount = $this->repo->transaction(function() use ($virtualAccount, $input, $customer, $order)
         {
+            $shared = false;
+
+            if (empty($input['shared']) === false)
+            {
+                $shared = $input['shared'];
+
+                unset($input['shared']);
+            }
+
             $virtualAccount->build($input);
+
+            if ($shared === true)
+            {
+                $virtualAccount->setId(Entity::SHARED_VIRTUAL_ACCOUNT);
+            }
 
             $this->validateDescriptor($virtualAccount);
 
@@ -42,6 +57,39 @@ class Core extends Base\Core
         $this->eventVirtualAccountCreated($virtualAccount);
 
         return $virtualAccount;
+    }
+
+    /**
+     * A static qr code for all the unexpected payments is picked.
+     *
+     * @param Merchant $merchant
+     */
+    public function createOrFetchSharedVirtualAccount(Merchant $merchant)
+    {
+        $virtualAccountId = Entity::SHARED_VIRTUAL_ACCOUNT;
+
+        $virtualAccount = $this->repo->virtual_account->find($virtualAccountId);
+
+        if ($virtualAccount === null)
+        {
+            $virtualAccount = $this->createSharedVirtualAccount($merchant);
+        }
+
+        return $virtualAccount;
+    }
+
+    protected function createSharedVirtualAccount(Merchant $merchant)
+    {
+        $customers = $this->repo->customer->fetchByMerchantId($merchant->getId());
+
+        $input = [
+            Entity::RECEIVERS => [
+                Entity::TYPES => [Receiver::QR_CODE]
+            ],
+            'shared' => true,
+        ];
+
+        return $this->create($input, $merchant, $customers[0]);
     }
 
     public function createWithoutReceivers(array $input, Merchant $merchant)
@@ -95,7 +143,7 @@ class Core extends Base\Core
                 break;
 
             case Receiver::QR_CODE:
-                $this->verifyBharatQrEnabled();
+                $this->verifyBharatQrEnabled($virtualAccount->merchant);
                 break;
 
             default:
@@ -166,11 +214,11 @@ class Core extends Base\Core
         }
     }
 
-    protected function verifyBharatQrEnabled()
+    protected function verifyBharatQrEnabled(Merchant $merchant)
     {
         $feature = Feature\Constants::BHARAT_QR;
 
-        if ($this->merchant->isFeatureEnabled($feature) === false)
+        if ($merchant->isFeatureEnabled($feature) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);

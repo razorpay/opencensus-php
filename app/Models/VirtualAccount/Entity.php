@@ -51,6 +51,8 @@ class Entity extends Base\PublicEntity
     // order_id is a valid request parameter, but is mapped to entity_id
     const ORDER_ID             = 'order_id';
 
+    // Used for creating shared virtual account
+    const SHARED_VIRTUAL_ACCOUNT = 'sharedvirtuala';
 
     protected $fillable = [
         self::NAME,

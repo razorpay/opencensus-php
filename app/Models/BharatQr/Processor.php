@@ -113,6 +113,16 @@ class Processor extends VirtualAccount\Processor
         return true;
     }
 
+    /**
+     * A static qr code for all the unexpected payments is picked.
+     *
+     * @param int $amount
+     */
+    protected function createAndSetVirtualAccount(int $amount)
+    {
+        $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount($this->merchant);
+    }
+
     protected function processBharatQr(Base\PublicEntity $bharatQr)
     {
         $paymentProcessor = new PaymentProcessor($this->merchant);

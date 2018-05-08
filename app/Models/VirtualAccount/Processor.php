@@ -46,8 +46,6 @@ abstract class Processor extends Base\Core
      * TODO: need to make this generic
      *
      * @param Base\PublicEntity $entity
-     *
-     * @return
      */
     abstract public function process(Base\PublicEntity $entity);
 
@@ -58,7 +56,8 @@ abstract class Processor extends Base\Core
      * to receive it. If such a VA does not exist, or exists but
      * has been closed/paid, the payment is to be refunded.
      *
-     * @param Base\PublicEntity $entity
+     * @param Base\PublicEntity $entity This is the receiver entity:
+     *                                  bank_transfer, qr_code
      *
      * @return bool
      */
@@ -71,10 +70,8 @@ abstract class Processor extends Base\Core
             $this->trace->info(
                 TraceCode::VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT,
                 [
-                    'message'      => 'Unexpected Payment',
-                    'entity'       => $entity->toArray(),
-                ]
-            );
+                    'entity' => $entity->toArray(),
+                ]);
 
             return false;
         }
