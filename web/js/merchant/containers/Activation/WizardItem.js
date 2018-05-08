@@ -77,6 +77,11 @@ export default class WizardItem extends Component {
   }
 
   updateSession(data) {
+    // %age is for current Account, not linked accounts
+    if (this.props.accountId) {
+      return;
+    }
+
     const { session } = this.props;
 
     const { activation_progress, activated, submitted } = data.data;
