@@ -3525,3 +3525,17 @@ ALTER TABLE merchants
 
 ALTER TABLE invoices
     ADD COLUMN merchant_label varchar(255) DEFAULT NULL AFTER customer_gstin;
+
+ALTER TABLE terminals
+    ADD COLUMN mastercard_mpan varchar(16) DEFAULT NULL after gateway_client_certificate,
+    ADD COLUMN visa_mpan varchar(16) DEFAULT NULL after mastercard_mpan,
+    ADD COLUMN rupay_mpan varchar(16) DEFAULT NULL after visa_mpan,
+    ADD COLUMN vpa varchar(255) DEFAULT NULL after rupay_mpan,
+    ADD INDEX terminals_mastercard_mpan_index (mastercard_mpan),
+    ADD INDEX terminals_visa_mpan_index (visa_mpan),
+    ADD INDEX terminals_rupay_mpan_index (rupay_mpan),
+    ADD INDEX terminals_vpa_index (vpa);
+
+ALTER TABLE terminals
+    CHANGE mastercard_mpan mc_mpan varchar(16),
+    rename index terminals_mastercard_mpan_index to terminals_mc_mpan_index;
