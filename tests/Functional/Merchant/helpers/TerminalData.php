@@ -140,6 +140,123 @@ return [
         ]
     ],
 
+    'testAddBharatQrTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hitachi',
+                'gateway_acquirer'          => 'ratn',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
+                'mastercard_mpan'           => '1234567890123456',
+                'visa_mpan'                 => '1234567890123456',
+                'rupay_mpan'                => '1234567890123456',
+                'category'                  => '4567',
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'bharat_qr'     => '1',
+                ],
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'ratn',
+                'gateway_merchant_id' => '12345',
+                'gateway_terminal_id' => '12345678',
+                'mastercard_mpan'     => '1234567890123456',
+                'visa_mpan'           => '1234567890123456',
+                'rupay_mpan'          => '1234567890123456',
+                'category'            => 4567,
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testReassignBharatQrTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hitachi',
+                'gateway_acquirer'          => 'ratn',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
+                'mastercard_mpan'           => '4287346823986423',
+                'visa_mpan'                 => '5287346823986423',
+                'rupay_mpan'                => '6287346823986423',
+                'category'                  => '4567',
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'bharat_qr'     => '1',
+                ],
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+        ],
+    ],
+
+    'testAddUpiBharatQrTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_icici',
+                'gateway_merchant_id'       => '12345',
+                 'vpa'                      => 'rzpbqr@icici',
+                'type'                      => [
+                    'bharat_qr'     => '1',
+                ],
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id' => '12345',
+                'vpa'                 => 'rzpbqr@icici',
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testReassignUpiBharatQrTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'             => 'upi_icici',
+                'gateway_merchant_id' => '12345',
+                'vpa'                 => 'random@icici',
+                'type'                => [
+                    'bharat_qr'       => '1',
+                ],
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+        ],
+    ],
+
     'testReassignTerminalForSameGateway' => [
         'request' => [
             'content' => [

@@ -25,6 +25,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes',
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
         Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes',
+        Entity::MASTERCARD_MPAN             => 'sometimes|string|size:16',
+        Entity::VISA_MPAN                   => 'sometimes|string|size:16',
+        Entity::RUPAY_MPAN                  => 'sometimes|string|size:16',
+        Entity::VPA                         => 'sometimes|string|max:20',
         Entity::CATEGORY                    => 'sometimes|integer|digits:4',
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
@@ -55,7 +59,6 @@ class Validator extends Base\Validator
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::UPI_MINDGATE,
-        Payment\Gateway::NETBANKING_CSB,
         Payment\Gateway::NETBANKING_ICICI,
         Payment\Gateway::NETBANKING_INDUSIND,
     ];
@@ -72,6 +75,13 @@ class Validator extends Base\Validator
 
     protected static $reassignRules = [
         Entity::MERCHANT_ID                => 'required|alpha_num|size:14',
+    ];
+
+    protected static $upiIciciTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_icici',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::VPA                        => 'required_if:type.bharat_qr,1|string|max:20',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $atomTerminalRules = [
@@ -101,7 +111,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID        => 'required|string|max:8',
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
-        Entity::CURRENCY                   => 'sometimes|alpha|size:3'
+        Entity::CURRENCY                   => 'sometimes|alpha|size:3',
+        Entity::MASTERCARD_MPAN            => 'required_if:type.bharat_qr,1|string|size:16',
+        Entity::VISA_MPAN                  => 'required_if:type.bharat_qr,1|string|size:16',
+        Entity::RUPAY_MPAN                 => 'required_if:type.bharat_qr,1|string|size:16',
     ];
 
     protected static $aepsIciciTerminalRules = [
@@ -390,14 +403,6 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
-    ];
-
-    protected static $netbankingCsbEditTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_CSB,
-        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
-        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
-        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
-        Entity::NETWORK_CATEGORY            => 'sometimes|string',
     ];
 
     protected static $cardFssTerminalRules = [

@@ -25,6 +25,8 @@ class Core extends Base\Core
 
         $terminal = (new Entity)->build($input);
 
+        $terminal->generateId();
+
         $this->validateExistingTerminal($terminal);
 
         $this->repo->saveOrFail($terminal);
@@ -188,6 +190,8 @@ class Core extends Base\Core
         $terminal->getValidator()->validateExistingTerminalsCount($existingTerminals);
 
         $this->validateExistingTerminalGatewayMerchantId($terminal);
+
+        $this->validateExistingMpan($terminal);
     }
 
     public function createTerminalsInTestMode($merchant)
@@ -211,6 +215,8 @@ class Core extends Base\Core
         $input['merchant_id'] = $merchant->getKey();
 
         $terminal = (new Entity)->build($input);
+
+        $terminal->generateId();
 
         $this->validateExistingTerminal($terminal);
 
@@ -305,6 +311,8 @@ class Core extends Base\Core
 
         $existingTerminals = $this->repo->terminal->fetch($params);
 
+        // This check if this terminal is same as what
+        // we are trying to edit
         if ($existingTerminals->count() === 1)
         {
             $existingTerminal = $existingTerminals[0];
@@ -318,8 +326,63 @@ class Core extends Base\Core
         if ($existingTerminals->count() !== 0)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS,
+                ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
                 Entity::GATEWAY_MERCHANT_ID);
+        }
+    }
+
+    protected function validateExistingMpan(Entity $terminal)
+    {
+        if (empty($terminal->getMasterCardMpan()) === false)
+        {
+            $params =  [Entity::MASTERCARD_MPAN => $terminal->getMasterCardMpan()];
+
+            $this->checkIfExists($params, $terminal, Entity::MASTERCARD_MPAN);
+        }
+
+        if (empty($terminal->getVisaMpan()) === false)
+        {
+            $params =  [Entity::VISA_MPAN => $terminal->getVisaMpan()];
+
+            $this->checkIfExists($params, $terminal, Entity::VISA_MPAN);
+        }
+
+        if (empty($terminal->getRupayMpan()) === false)
+        {
+            $params =  [Entity::RUPAY_MPAN => $terminal->getRupayMpan()];
+
+            $this->checkIfExists($params, $terminal, Entity::RUPAY_MPAN);
+        }
+
+        if (empty($terminal->getGatewayVpa()) === false)
+        {
+            $params =  [Entity::VPA => $terminal->getGatewayVpa()];
+
+            $this->checkIfExists($params, $terminal, Entity::VPA);
+        }
+    }
+
+    protected function checkIfExists($params, Entity $terminal, string $field)
+    {
+        $existingTerminals = $this->repo->terminal->fetch($params);
+
+        // This check if this terminal is same as what
+        // we are trying to edit
+        if ($existingTerminals->count() === 1)
+        {
+            $existingTerminal = $existingTerminals[0];
+
+            if ($existingTerminal->getId() === $terminal->getId())
+            {
+                return;
+            }
+        }
+
+        if ($existingTerminals->count() !== 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                $field);
         }
     }
 

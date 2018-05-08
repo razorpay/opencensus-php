@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
+use RZP\Models\Card\Network;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Currency\Currency;
@@ -33,6 +34,11 @@ class Entity extends Base\PublicEntity
     const GATEWAY_RECON_PASSWORD        = 'gateway_recon_password';
     const GATEWAY_ACQUIRER              = 'gateway_acquirer';
     const GATEWAY_CLIENT_CERTIFICATE    = 'gateway_client_certificate';
+
+    const MASTERCARD_MPAN               = 'mastercard_mpan';
+    const VISA_MPAN                     = 'visa_mpan';
+    const RUPAY_MPAN                    = 'rupay_mpan';
+    const VPA                           = 'vpa';
 
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';
@@ -98,6 +104,10 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_RECON_PASSWORD,
         self::GATEWAY_ACQUIRER,
         self::GATEWAY_CLIENT_CERTIFICATE,
+        self::MASTERCARD_MPAN,
+        self::VISA_MPAN,
+        self::RUPAY_MPAN,
+        self::VPA,
         self::ENABLED
     ];
 
@@ -123,6 +133,10 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
         self::GATEWAY_ACQUIRER,
+        self::MASTERCARD_MPAN,
+        self::VISA_MPAN,
+        self::RUPAY_MPAN,
+        self::VPA,
         self::USED_COUNT,
         self::TYPE,
         self::MODE,
@@ -153,6 +167,12 @@ class Entity extends Base\PublicEntity
         'inputRemoveBlanks',
         self::INTERNATIONAL,
         self::EMI_SUBVENTION,
+    ];
+
+    public static $bharatQrNetworkMpanMap = [
+        Network::MC    => self::MASTERCARD_MPAN,
+        Network::VISA  => self::VISA_MPAN,
+        Network::RUPAY => self::RUPAY_MPAN,
     ];
 
     protected $defaults = [
@@ -564,6 +584,26 @@ class Entity extends Base\PublicEntity
         return Type::getEnabledTypes($type);
     }
 
+    public function getMasterCardMpan()
+    {
+        return $this->getAttribute(self::MASTERCARD_MPAN);
+    }
+
+    public function getVisaMpan()
+    {
+        return $this->getAttribute(self::VISA_MPAN);
+    }
+
+    public function getRupayMpan()
+    {
+        return $this->getAttribute(self::RUPAY_MPAN);
+    }
+
+    public function getGatewayVpa()
+    {
+        return $this->getAttribute(self::VPA);
+    }
+
     protected function modifyInternational(& $input)
     {
         if (empty($input[self::INTERNATIONAL]) === true)
@@ -848,6 +888,11 @@ class Entity extends Base\PublicEntity
     public function isPin()
     {
         return ($this->isTypeApplicable(Type::PIN) === true);
+    }
+
+    public function isBharatQr()
+    {
+        return ($this->isTypeApplicable(Type::BHARAT_QR) === true);
     }
 
     public function isInternational()

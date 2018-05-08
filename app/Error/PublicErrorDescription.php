@@ -269,6 +269,7 @@ class PublicErrorDescription
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS                                = 'A record with same gateway merchant id (mid) exists';
     const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY                      = 'A terminal for this gateway for this merchant already exists';
     const BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT                    = 'This operation is not allowed for test accounts';
+    const BAD_REQUEST_FIELD_ALREADY_EXISTS                                      = 'A terminal with the same field exists';
 
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                       = 'Payment failed because UPI request expired';
@@ -321,7 +322,6 @@ class PublicErrorDescription
     const BAD_REQUEST_ORDER_INVALID_OFFER                                       = 'Offer applied not valid for order';
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                 = 'Error occurred because of invalid data';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                 = 'Hash Data is invalid.';
-    const BAD_REQUEST_BATCH_UPLOAD_INVALID_TOKEN                                = 'Token expired or invalid';
     const BAD_REQUEST_EMANDATE_TOKEN_PASSED_IN_FIRST_RECURRING                  = 'Token should not be passed in first E-mandate recurring payment';
     const BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING              = 'Token is not confirmed for recurring payments';
     const BAD_REQUEST_VALIDATION_FAILURE                                        = 'Validation Failure';
