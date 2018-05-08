@@ -86,11 +86,9 @@ class Job extends BaseJob
                 TraceCode::INVOICE_ACTION_JOB_HANDLED,
                 $this->getTracePayload(
                     [
-                        'time_taken'     => $timeTaken,
+                        'time_taken_ms'  => $timeTaken,
                         'handler_result' => $handlerResult,
                     ]));
-
-            $this->delete();
         }
         catch (\Throwable $e)
         {

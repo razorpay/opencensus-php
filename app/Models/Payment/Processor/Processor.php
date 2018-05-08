@@ -1306,10 +1306,15 @@ class Processor
         // and the fees re-calculated again. Ideally, this should be 0.
         $feeDifference = $input['fee'] - $payment->getFee();
 
-        if (abs($feeDifference) > 5)
+        if (abs($feeDifference) !== 0)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Payment failed because fees or tax was tampered');
+           throw new Exception\BadRequestValidationFailureException(
+               'Payment failed because fees or tax was tampered',
+               Payment\Entity::FEE,
+                [
+                    'checkout_fee'      => $input['fee'],
+                    'calculated_fee'    => $payment->getFee(),
+                ]);
         }
     }
 

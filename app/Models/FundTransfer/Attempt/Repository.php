@@ -23,6 +23,7 @@ class Repository extends Base\Repository
         Entity::UTR                    => 'sometimes|alpha_num',
         Entity::BATCH_FUND_TRANSFER_ID => 'sometimes|alpha_num|size:14',
         Entity::VERSION                => 'sometimes|string',
+        Entity::CHANNEL                => 'sometimes|string'
     ];
 
     protected function validateSourceType($attribute, $value)
@@ -98,7 +99,7 @@ class Repository extends Base\Repository
         }
 
         return $query->get();
-      }
+    }
 
     /**
      * Fetches all attempts pending reconciliation between given timestamps (both including)
@@ -146,6 +147,23 @@ class Repository extends Base\Repository
                     ->whereNull(Entity::UTR)
                     ->where(Entity::CHANNEL, $channel)
                     ->where(Entity::STATUS, Status::INITIATED)
+                    ->whereBetween(Entity::INITIATE_AT, [$startTime, $endTime])
+                    ->with(['merchant'])
+                    ->take($limit)
+                    ->skip($offset)
+                    ->get();
+    }
+
+    public function getFailedAttemptsInitiatedAtBetweenTime(
+        string $channel,
+        int $startTime,
+        int $endTime,
+        int $limit = 2000,
+        int $offset = 0)
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::FAILED)
+                    ->where(Entity::CHANNEL, $channel)
                     ->whereBetween(Entity::INITIATE_AT, [$startTime, $endTime])
                     ->with(['merchant'])
                     ->take($limit)

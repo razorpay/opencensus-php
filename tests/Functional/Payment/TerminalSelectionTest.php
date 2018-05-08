@@ -711,6 +711,9 @@ class TerminalSelectionTest extends TestCase
 
     public function testSecuritiesMerchantTerminalSelection()
     {
+        // Removed ICICI from billdesk tpv
+        $this->markTestSkipped();
+
         $this->fixtures->merchant->enableTPV();
 
         $this->fixtures->create('terminal:shared_billdesk_terminal',
@@ -844,6 +847,9 @@ class TerminalSelectionTest extends TestCase
 
     public function testCorporateMerchantsSharedBilldeskICICI()
     {
+        // Skipping this test as removing ICICI from billdesk.
+        $this->markTestSkipped();
+
         $this->fixtures->merchant->editCategory2('corporate');
 
         $this->fixtures->create('terminal:shared_billdesk_terminal',
@@ -888,6 +894,9 @@ class TerminalSelectionTest extends TestCase
 
     public function testCorporateMerchantsBilldeskCorporateICICISelection()
     {
+        // Skipping test as removing icici from billdesk
+        $this->markTestSkipped();
+
         // Corporate Enabled Icici terminal for Billdesk
         $this->fixtures->create('terminal:shared_billdesk_terminal',
              [

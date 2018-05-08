@@ -59,6 +59,7 @@ class Validator extends Base\Validator
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::UPI_MINDGATE,
+        Payment\Gateway::NETBANKING_CSB,
         Payment\Gateway::NETBANKING_ICICI,
         Payment\Gateway::NETBANKING_INDUSIND,
     ];
@@ -403,6 +404,14 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+    ];
+
+    protected static $netbankingCsbEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_CSB,
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string',
     ];
 
     protected static $cardFssTerminalRules = [

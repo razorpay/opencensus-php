@@ -846,6 +846,10 @@ trait Authorize
         {
             $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SAEPS);
         }
+        else if ($payment->getAuthType() === Payment\AuthType::SKIP)
+        {
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::DIRECT_DEBIT);
+        }
         else
         {
             // If feature is not present, simply throw invalid url error.
@@ -1361,6 +1365,12 @@ trait Authorize
      */
     protected function runShieldCheck(Payment\Entity $payment)
     {
+        // We do not want to call shield in case for Payments in Test mode
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
+
         try
         {
             RunShieldCheck::dispatch($this->mode, $payment);

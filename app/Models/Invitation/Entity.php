@@ -47,6 +47,26 @@ class Entity extends Base\PublicEntity
         self::TOKEN
     ];
 
+    protected static $modifiers = [
+        self::EMAIL,
+    ];
+
+    // --------------------- Modifiers ---------------------------------------------
+
+    /**
+     * Modifies the email to have lower.
+     * @param $input
+     */
+    protected function modifyEmail(& $input)
+    {
+        if (empty($input[self::EMAIL]) === false)
+        {
+            $input[self::EMAIL] = mb_strtolower($input[self::EMAIL]);
+        }
+    }
+
+    // --------------------- Modifiers Ends ----------------------------------------
+
     /**
      * Get the merchant that owns the invitation.
      */

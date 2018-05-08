@@ -2,24 +2,24 @@
 
 namespace RZP\Models\Batch\Processor;
 
-use Mail;
 use Carbon\Carbon;
+use Mail;
 use Razorpay\Trace\Logger as Trace;
-use Symfony\Component\HttpFoundation\File\File;
-
-use RZP\Models\Batch;
-use RZP\Models\Invoice;
-use RZP\Models\Settings;
+use RZP\Encryption\Type;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
-use RZP\Models\FileStore;
-use RZP\Models\Batch\Constants;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
+use RZP\Models\Batch;
+use RZP\Models\Batch\Constants;
+use RZP\Models\FileStore;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Invoice;
+use RZP\Models\Merchant;
+use RZP\Models\Settings;
+use RZP\Trace\TraceCode;
+use Symfony\Component\HttpFoundation\File\File;
 
 class Base extends BaseModel\Core
 {
@@ -367,7 +367,6 @@ class Base extends BaseModel\Core
             $tracePayload = [
                 Batch\Entity::ID          => $this->batch->getId(),
                 Batch\Entity::MERCHANT_ID => $this->batch->getMerchantId(),
-                'entry'                   => $entry,
             ];
 
             try
@@ -848,6 +847,8 @@ class Base extends BaseModel\Core
             $ext = $file->getClientOriginalExtension();
         }
 
+        $ext = strtolower($ext);
+
         $localDir  = $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE_PREFIX);
         $filename  = $this->batch->getFileKeyWithExt($ext);
         $movedFile = $file->move($localDir, $filename);
@@ -896,6 +897,14 @@ class Base extends BaseModel\Core
         if ($associateBatch === true)
         {
             $ufh->entity($this->batch);
+        }
+
+        if ($this->shouldEncrypt() and ($type == FileStore\Type::BATCH_INPUT))
+        {
+            $ufh->encrypt(Type::AES_ENCRYPTION, [
+                    'mode'   =>   \phpseclib\Crypt\Base::MODE_CBC,
+                    'secret' =>  openssl_random_pseudo_bytes(256)
+                ]);
         }
 
         return $ufh->localFilePath($filePath)
@@ -1117,5 +1126,10 @@ class Base extends BaseModel\Core
     protected function increaseAllowedSystemLimits()
     {
         return;
+    }
+
+    protected function shouldEncrypt()
+    {
+        return false;
     }
 }

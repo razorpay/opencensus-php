@@ -272,7 +272,9 @@
       <header>
         <img src="https://cdn.razorpay.com/bank/{{ $data['request']['content']['input']['bank'] }}.gif" height= "30px">
         <div><b>{{ $data['request']['content']['bank_details']['name'] }}</b></div>
-        <span>₹ {{ $data['request']['content']['input']['amount']/100 }}</span>
+        @if (empty($data['request']['content']['input']['amount']) === false)
+          <span>₹ {{ $data['request']['content']['input']['amount']/100 }}</span>
+        @endif
       </header>
       <main>
         <div class="heading">Please fill Bank accounts details:</div>

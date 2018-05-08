@@ -648,14 +648,6 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
-
-    public function deleteCreditsLog(Credits\Service $service, $mid, $id)
-    {
-        $data = $service->deleteCreditsLog($mid, $id);
-
-        return ApiResponse::json($data);
-    }
-
 // --------------------- End Credits API Handlers -----------------------------------------
 
 

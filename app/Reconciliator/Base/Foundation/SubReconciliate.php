@@ -81,17 +81,16 @@ class SubReconciliate extends Base\Core
      * @var array
      */
     protected $extraDetails = [];
+
     /**
      * This method resets any instance attributes which could have been set during
      * processing reconciliation of a particular row. In certain cases like combined
-     * reconciliate the  subreconciliator instances are reused so we don't want
+     * reconciliate, the subreconciliator instances are reused so we don't want
      * instance attributes to persist between specific runs. Implementation to be
      * provided by child classes
      */
-    public function resetProcessingAttributes()
+    public function resetRowProcessingAttributes()
     {
-        $this->extraDetails = [];
-
         $this->setFailUnprocessedRow(true);
     }
 

@@ -518,14 +518,11 @@ class Repository extends Base\Repository
         int $from,
         int $to,
         string $gateway,
-        array $statuses,
         bool $corporate = false)
     {
         $paymentAttrs = $this->dbColumn('*');
 
         $terminalRepo = $this->repo->terminal;
-
-        $pTableName = $this->getTableName();
 
         $tTablename = $terminalRepo->getTableName();
 
@@ -539,17 +536,15 @@ class Repository extends Base\Repository
 
         $tCorp = $terminalRepo->dbColumn(Terminal\Entity::CORPORATE);
 
-        $authorizedAt = $this->dbColumn(Entity::AUTHORIZED_AT);
-
         return $this->newQuery()
-            ->select($paymentAttrs)
-            ->join($tTablename, $pTerminalId, '=', $tId)
-            ->where($pAuthorizedAt, '>=', $from)
-            ->where($pAuthorizedAt, '<=', $to)
-            ->where($pGateway, $gateway)
-            ->whereNotNull($authorizedAt)
-            ->where($tCorp, $corporate)
-            ->get();
+                    ->select($paymentAttrs)
+                    ->join($tTablename, $pTerminalId, '=', $tId)
+                    ->where($pAuthorizedAt, '>=', $from)
+                    ->where($pAuthorizedAt, '<=', $to)
+                    ->where($pGateway, $gateway)
+                    ->whereNotNull($pAuthorizedAt)
+                    ->where($tCorp, $corporate)
+                    ->get();
     }
 
     public function fetchReconciledPaymentsForTpv($from, $to, $gateway, $status, $tpvEnabled = false)

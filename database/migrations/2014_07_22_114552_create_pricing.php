@@ -49,6 +49,9 @@ class CreatePricing extends Migration
             $table->tinyInteger(Pricing::INTERNATIONAL)
                   ->default(0);
 
+            $table->string(Pricing::RECEIVER_TYPE)
+                  ->nullable();
+
             $table->tinyInteger(Pricing::AMOUNT_RANGE_ACTIVE)
                   ->default(0);
 

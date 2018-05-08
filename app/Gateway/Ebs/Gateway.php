@@ -98,7 +98,8 @@ class Gateway extends Base\Gateway
 
         if ($this->checkForSharedTerminal($terminal) === false)
         {
-            $referer = $terminal->merchant->getWebsite();
+            // using the same config app url if website is null
+            $referer = $terminal->merchant->getWebsite() ?? $referer;
         }
 
         $this->referer = $referer;

@@ -31,7 +31,7 @@ class FeeCalculator
     // '29' - Karnataka's state code
     const RZP_GST_STATE_CODE = '29';
 
-    const RZP_STATE = 'karnataka';
+    const RZP_STATE = 'KA';
 
     const CARD_TAX_CUT_OFF = 200000;
 
@@ -834,7 +834,9 @@ class FeeCalculator
         }
         else if (empty($registeredBusinessStateCode) === false)
         {
-            $intraStateGstApplicable = (strtolower($registeredBusinessStateCode) === self::RZP_STATE);
+            $merchantStateCode = substr($registeredBusinessStateCode, 0, 2);
+
+            $intraStateGstApplicable = (strtoupper($merchantStateCode) === self::RZP_STATE);
         }
 
         if ($intraStateGstApplicable === true)

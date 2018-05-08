@@ -101,6 +101,13 @@ class FileGenerator extends Generator
             $data[Headings::STATUS]  = Status::REJECTED;
         }
 
+        if ($this->generateInternalFailure === true)
+        {
+            $errorMessages = Status::getCriticalErrorRemarks();
+
+            $data[Headings::RETURN_REASON]  = array_random($errorMessages);
+        }
+
         return $data;
     }
 }

@@ -303,9 +303,9 @@
                       document.querySelector('#partial h3').innerHTML = 'Please wait...';
                       return location.reload();
                     }
-                    if (data.merchant && data.merchant.name) {
-                      document.querySelector('#success h3').innerHTML = 'Thank you for your payment on ' + data.merchant.name;
-                    }
+
+                    document.querySelector('#success h3').innerHTML = 'Thank you for your payment on ' + invoiceObj.merchant_label;
+
                     document.querySelector('#pay_id').innerHTML = response.razorpay_payment_id;
                     document.body.className = 'paid';
                   },
@@ -329,10 +329,10 @@
                     @endif
                   @endif
                 @endif
+
+                options.name = invoiceObj.merchant_label;
+
                 if (merchant) {
-                  if (merchant.name) {
-                    options.name = merchant.name;
-                  }
                   if (merchant.brand_color) {
                     options.theme.color = merchant.brand_color;
                   }

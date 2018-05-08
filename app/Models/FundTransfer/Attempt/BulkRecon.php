@@ -15,6 +15,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationEmail;
+use RZP\Mail\Settlement\CriticalFailure as CriticalFailureEmail;
 
 class BulkRecon extends Base\Core
 {
@@ -29,6 +30,8 @@ class BulkRecon extends Base\Core
     protected $allReconciledRows = [];
 
     protected $batchFundTransferStats = [];
+
+    protected $notificationSummary = [];
 
     public function __construct(array $input, string $channel)
     {
@@ -58,6 +61,8 @@ class BulkRecon extends Base\Core
                     ErrorCode::BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS);
 
         $this->sendReconciliationSummaryMail($data);
+
+        $this->notifyCriticalErrors();
 
         return $data;
     }
@@ -95,6 +100,8 @@ class BulkRecon extends Base\Core
                         $entity = $reconDetails['entity'];
 
                         $this->updateBatchFundTransferStats($entity);
+
+                        $this->updateCriticalErrorsSummary($fta);
                     }
                 }
 
@@ -142,6 +149,31 @@ class BulkRecon extends Base\Core
         return $summary;
     }
 
+    protected function notifyCriticalErrors()
+    {
+        if (empty($this->notificationSummary) === true)
+        {
+            return;
+        }
+
+        $sampleIds = array_slice($this->notificationSummary['ids'], 0, 5);
+
+        $this->notificationSummary['settlement_Ids'] = 'Some of them are: ' . implode(',', $sampleIds);
+
+        unset($this->notificationSummary['ids']);
+
+        $data = [
+            'message' => 'Critical failure summary',
+            'status'  => SlackNotification::BAD,
+        ] + $this->notificationSummary;
+
+        (new SlackNotification)->send($data);
+
+        $mail = new CriticalFailureEmail($this->notificationSummary);
+
+        Mail::queue($mail);
+    }
+
     protected function getTimestamps(): array
     {
         list($from, $to) = [null, null];
@@ -184,6 +216,45 @@ class BulkRecon extends Base\Core
 
             $this->batchFundTransferStats[$batchId]['processed_amount'] += $amount;
         }
+    }
+
+    protected function updateCriticalErrorsSummary(FundTransferAttempt\Entity $entity)
+    {
+        $default = [
+            'channel' => $this->channel,
+            'count'   => 0,
+            'ids'     => []
+        ];
+
+        $statusClass = $this->getStatusClass($this->channel);
+
+        $isCriticalError = $statusClass::isCriticalError($entity);
+
+        if ($isCriticalError === false)
+        {
+            return;
+        }
+
+        $remark = $entity->getRemarks();
+
+        $this->notificationSummary = (empty($this->notificationSummary) === true) ?
+                                        $default : $this->notificationSummary;
+
+        if (isset($this->notificationSummary[$remark]) === false)
+        {
+            $this->notificationSummary[$remark] = 0;
+        }
+
+        $this->notificationSummary['count']++;
+
+        $this->notificationSummary['ids'][] = $entity->source->getId();
+
+        $this->notificationSummary[$remark]++;
+    }
+
+    protected function getStatusClass(string $channel)
+    {
+        return "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\Reconciliation\\Status";
     }
 
     protected function getSummary(): array

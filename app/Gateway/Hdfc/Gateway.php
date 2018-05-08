@@ -24,8 +24,10 @@
 
 namespace RZP\Gateway\Hdfc;
 
+use Carbon\Carbon;
 use RZP\Base\JitValidator;
 use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Gateway\Base;
@@ -606,6 +608,17 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function shouldMigrateToIpay(): bool
+    {
+        if (($this->input['payment']['created_at'] > Constants::IPAY_MIGRATION_CHECK_SOFT) or
+            (Carbon::now(Timezone::IST)->getTimestamp() > Constants::IPAY_MIGRATION_CHECK_HARD))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function runRequestResponseFlow(array &$request, array &$response)
     {
         $this->setTerminalInRequest($request);
@@ -613,7 +626,15 @@ class Gateway extends Base\Gateway
         // Create xml from the fields
         $request['content'] = Utility::createXml($request['data']);
 
-        $domain = ($this->mode === Mode::LIVE) ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
+        if ($this->shouldMigrateToIpay() === true)
+        {
+            $domain = ($this->mode === Mode::LIVE) ? Urls::LIVE_DOMAIN_V2 : Urls::TEST_DOMAIN;
+        }
+        else
+        {
+            $domain = ($this->mode === Mode::LIVE) ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
+        }
+
         $request['url'] = $domain . $request['url'];
 
         $this->requestVar = $request;
@@ -653,10 +674,14 @@ class Gateway extends Base\Gateway
 
         $this->checkResponseStatusCode($response);
 
-        if ($this->error === false)
-        {
-            $this->checkResponseContentType($response);
-        }
+        //
+        // Content type is not returned correctly in the
+        // iPay integration
+        //
+        // if ($this->error === false)
+        // {
+        //     $this->checkResponseContentType($response);
+        // }
 
         if ($this->error === false)
         {
@@ -702,7 +727,7 @@ class Gateway extends Base\Gateway
 
             $this->trace->info(
                 TraceCode::GATEWAY_VERIFY_INVALID_HEADER,
-                $contentType);
+                ['response' => $response['response']['headers']]);
 
             $this->error = true;
         }
