@@ -22,7 +22,6 @@ final class Constants
     const STEP_MAP = [
         Detail\Entity::CONTACT_NAME                => 1,
         Detail\Entity::CONTACT_EMAIL               => 1,
-        Detail\Entity::TRANSACTION_REPORT_EMAIL    => 1,
         Detail\Entity::CONTACT_MOBILE              => 1,
 
         Detail\Entity::BUSINESS_TYPE               => 2,

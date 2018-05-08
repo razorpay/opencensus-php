@@ -91,13 +91,14 @@ class Initiator extends Base\Core
                                  $limit,
                                  ['source']);
 
-            $data[$channel] = $this->processFundTransferAttempts($channel, $attempts);
+            $data[$channel] = $this->processFundTransferAttempts($purpose, $channel, $attempts);
 
             return $data;
         });
     }
 
-    protected function processFundTransferAttempts(string $channel, Base\PublicCollection $attempts): array
+    protected function processFundTransferAttempts(
+        string $purpose, string $channel, Base\PublicCollection $attempts): array
     {
         $count = $attempts->count();
 
@@ -114,7 +115,7 @@ class Initiator extends Base\Core
 
         $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
 
-        $response = (new $class)->initiateTransfer($attempts);
+        $response = (new $class($purpose))->initiateTransfer($attempts);
 
         $data += $response;
 

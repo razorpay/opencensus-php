@@ -62,56 +62,59 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferRefund()
     {
-        $accountNumber = $this->bankAccount['account_number'];
-        $ifsc = $this->bankAccount['ifsc'];
+        $channel = Channel::AXIS;
 
-        $response = $this->processBankTransfer($accountNumber, $ifsc);
-
-        $utr = $response['transaction_id'];
-
-        // Customer bank account created
-        $bankAccount = $this->getLastEntity('bank_account', true);
-        $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
-        $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
-        $this->assertEquals('Name of account holder', $bankAccount['name']);
-
-        $payment =  $this->getLastEntity('payment', true);
-
-        $this->refundPayment($payment['id'], 4000000);
-
-        // Payment is refunded
-        $payment =  $this->getLastEntity('payment', true);
-        $this->assertEquals('bank_transfer', $payment['method']);
-        $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals(4000000, $payment['amount_refunded']);
-
-        // Refund is created
-        $refund = $this->getLastEntity('refund', true);
-        $this->assertEquals($payment['id'], $refund['payment_id']);
-        $this->assertEquals('created', $refund['status']);
-        $this->assertEquals(4000000, $refund['amount']);
-
-        // Transaction is created for refund
-        $transaction = $this->getLastEntity('transaction', true);
-        $this->assertEquals('refund', $transaction['type']);
-        $this->assertEquals($refund['id'], $transaction['entity_id']);
-
-        // Fund transfer attempt created for refund
-        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals('created', $attempt['status']);
-        $this->assertEquals($refund['id'], $attempt['source']);
-        $this->assertEquals('10000000000000', $attempt['merchant_id']);
-        $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
-        $this->assertStringEndsWith($utr, $attempt['narration']);
+        $this->createRefund($channel);
 
         $content = $this->initiateTransferViaFileAndAssertSuccess(
-            Channel::AXIS,
+            $channel,
             Attempt\Purpose::REFUND,
             1,
             Attempt\Type::REFUND);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals('NEFT', $attempt['mode']);
+    }
+
+    public function testBankTransferRefundIcici()
+    {
+        $channel = Channel::ICICI;
+
+        $this->createRefund($channel);
+
+        $content = $this->initiateTransferViaFileAndAssertSuccess(
+            $channel,
+            Attempt\Purpose::REFUND,
+            1,
+            Attempt\Type::REFUND);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('NEFT', $attempt['mode']);
+
+        $setlFile = $content[$channel]['file']['local_file_path'];
+
+        $fileName = basename($setlFile);
+
+        $this->assertStringStartsWith('NRPSR_NRPSRUPLDNEW_', $fileName);
+
+        // Process file
+        $this->reconcileSettlementsForChannel($setlFile, $channel, false);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertNotNull($attempt['utr']);
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
+
+        // Process entities
+        $this->reconcileEntitiesForChannel($channel);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+        $this->assertEquals($attempt['utr'], $refund['arn']);
     }
 
     public function testBankTransferFundTransferAttemptBulkUpdate()
@@ -1395,5 +1398,52 @@ class BankTransferTest extends TestCase
         $this->assertEquals($utr, $response['transaction_id']);
 
         return $response;
+    }
+
+    protected function createRefund($channel = null)
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => $channel]);
+
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+
+        $utr = $response['transaction_id'];
+
+        // Customer bank account created
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
+        $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
+        $this->assertEquals('Name of account holder', $bankAccount['name']);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $this->refundPayment($payment['id'], 4000000);
+
+        // Payment is refunded
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000000, $payment['amount_refunded']);
+
+        // Refund is created
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals(4000000, $refund['amount']);
+
+        // Transaction is created for refund
+        $transaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals('refund', $transaction['type']);
+        $this->assertEquals($refund['id'], $transaction['entity_id']);
+
+        // Fund transfer attempt created for refund
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('created', $attempt['status']);
+        $this->assertEquals($refund['id'], $attempt['source']);
+        $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
+        $this->assertStringEndsWith($utr, $attempt['narration']);
     }
 }

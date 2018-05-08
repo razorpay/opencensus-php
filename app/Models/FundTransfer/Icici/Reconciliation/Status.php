@@ -48,7 +48,6 @@ class Status extends BaseStatus
     {
         return [
             'Rejected by RTGS Gateway',
-            'Pending For Consolidated Debit',
             'Debit failed due to Insufficient Funds',
             'File rejected due to content validation fail',
         ];
@@ -58,5 +57,4 @@ class Status extends BaseStatus
     {
         return [];
     }
-
 }

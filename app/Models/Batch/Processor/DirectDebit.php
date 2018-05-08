@@ -40,11 +40,23 @@ class DirectDebit extends Base
 
     protected function processEntry(array & $entry)
     {
-        $order = $this->createOrder($entry);
+        try
+        {
+            $order = $this->createOrder($entry);
 
-        $customer = $this->createCustomer($entry);
+            $customer = $this->createCustomer($entry);
 
-        $this->processPayment($entry, $order, $customer);
+            $this->processPayment($entry, $order, $customer);
+        }
+        // If an exception is thrown as a result of any of this processing,
+        // we still need to mask the card number in the output file
+        // and flush processor object for the next row.
+        finally
+        {
+            $entry[Header::DIRECT_DEBIT_CARD_NUMBER] = $this->mask($entry[Header::DIRECT_DEBIT_CARD_NUMBER]);
+
+            $this->processor->flushPaymentObjects();
+        }
     }
 
     /**
@@ -55,27 +67,18 @@ class DirectDebit extends Base
      */
     protected function processPayment(array & $row, Order\Entity $order, Customer\Entity $customer)
     {
-        try
-        {
-            $request = Helper::getPaymentInput($row, $order, $customer);
+        $request = Helper::getPaymentInput($row, $order, $customer);
 
-            $result = $this->processor->process($request);
+        $result = $this->processor->process($request);
 
-            $payment = $this->processor->getPayment();
+        $payment = $this->processor->getPayment();
 
-            $payment->batch()->associate($this->batch);
+        $payment->batch()->associate($this->batch);
 
-            $this->repo->saveOrFail($payment);
+        $this->repo->saveOrFail($payment);
 
-            $row[Header::DIRECT_DEBIT_PAYMENT_ID] = $result[self::RESPONSE_PAYMENT_ID];
-            $row[Header::STATUS]                  = Batch\Status::SUCCESS;
-        }
-        finally
-        {
-            $row[Header::DIRECT_DEBIT_CARD_NUMBER] = $this->mask($row[Header::DIRECT_DEBIT_CARD_NUMBER]);
-        }
-
-        return $row;
+        $row[Header::DIRECT_DEBIT_PAYMENT_ID] = $result[self::RESPONSE_PAYMENT_ID];
+        $row[Header::STATUS]                  = Batch\Status::SUCCESS;
     }
 
     private function createOrder(array & $row): Order\Entity
@@ -84,7 +87,7 @@ class DirectDebit extends Base
 
         $order = $this->orderCore->create($orderInput, $this->merchant);
 
-        $row[Header::DIRECT_DEBIT_PAYMENT_ID] = $order->getPublicId();
+        $row[Header::DIRECT_DEBIT_ORDER_ID] = $order->getPublicId();
 
         return $order;
     }
@@ -118,6 +121,23 @@ class DirectDebit extends Base
     {
         parent::postProcessEntries($entries);
 
+        $processedAmount = 0;
+
+        foreach ($entries as $entry)
+        {
+            if ($entry[Batch\Header::STATUS] === Batch\Status::SUCCESS)
+            {
+                $processedAmount += $entry[Batch\Header::DIRECT_DEBIT_AMOUNT];
+            }
+        }
+
+        $this->batch->setProcessedAmount($processedAmount);
+
+        $this->deleteBatchFile();
+    }
+
+    protected function deleteBatchFile()
+    {
         $ufhFile = $this->repo->file_store->findByBatchId($this->batch->getId());
 
         $deleter = new FileStore\Deleter();

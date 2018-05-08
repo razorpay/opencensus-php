@@ -89,6 +89,17 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             {
                 $paymentId = $gatewayPayment->getPaymentId();
             }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::RECON_MISMATCH,
+                    [
+                        'info_code' => 'PAYMENT_ABSENT',
+                        'message'   => 'Payment not found. Skipping',
+                        'row'       => $row,
+                        'gateway'   => get_called_class()
+                    ]);
+            }
         }
 
         return $paymentId;

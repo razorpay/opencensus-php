@@ -126,7 +126,6 @@ class Netbanking
         IFSC::IDFB,
         // IFSC::FDRL,
         IFSC::IBKL,
-        IFSC::ICIC,
         IFSC::IDIB,
         IFSC::INDB,
         IFSC::IOBA,
@@ -169,7 +168,6 @@ class Netbanking
     ];
 
     protected static $billdeskCorp = [
-        self::ICIC_C,
     ];
 
     protected static $billdeskTPV = [
@@ -181,7 +179,6 @@ class Netbanking
         IFSC::INDB,
         IFSC::KVBL,
         self::LAVB_R,
-        IFSC::ICIC,
         IFSC::UTIB,
         IFSC::BKID,
         IFSC::SBBJ,

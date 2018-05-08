@@ -51,6 +51,8 @@ class Entity extends Base\PublicEntity
     const CHANNEL                  = 'channel';
     const WEBSITE                  = 'website';
     const CATEGORY                 = 'category';
+    const WHITELISTED_IPS_LIVE     = 'whitelisted_ips_live';
+    const WHITELISTED_IPS_TEST     = 'whitelisted_ips_test';
     const CATEGORY2                = 'category2';
     const INVOICE_CODE             = 'invoice_code';
     const SCOPE                    = 'scope';
@@ -64,6 +66,7 @@ class Entity extends Base\PublicEntity
     const RISK_RATING              = 'risk_rating';
     const RISK_THRESHOLD           = 'risk_threshold';
     const LOGO_URL                 = 'logo_url';
+    const INVOICE_LABEL_FIELD      = 'invoice_label_field';
     const AWS_LOGO_URL             = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT       = 'max_payment_amount';
     const AUTO_REFUND_DELAY        = 'auto_refund_delay';
@@ -72,8 +75,6 @@ class Entity extends Base\PublicEntity
     const ARCHIVED_AT              = 'archived_at';
     const SUSPENDED_AT             = 'suspended_at';
     const NOTES                    = 'notes';
-    const WHITELISTED_IPS_LIVE     = 'whitelisted_ips_live';
-    const WHITELISTED_IPS_TEST     = 'whitelisted_ips_test';
 
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
@@ -187,6 +188,7 @@ class Entity extends Base\PublicEntity
         self::CONVERT_CURRENCY,
         self::AUTO_REFUND_DELAY,
         self::MAX_PAYMENT_AMOUNT,
+        self::INVOICE_LABEL_FIELD,
         self::LINKED_ACCOUNT_KYC,
         self::RECEIPT_EMAIL_ENABLED,
         self::AUTO_CAPTURE_LATE_AUTH,
@@ -196,13 +198,13 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_TEST,
     ];
 
-    // Requires PHP 5.6
     const CONFIG_LIST = [
         self::ID,
         self::BRAND_COLOR,
         self::HANDLE,
         self::TRANSACTION_REPORT_EMAIL,
         self::LOGO_URL,
+        self::INVOICE_LABEL_FIELD,
         self::AUTO_CAPTURE_LATE_AUTH,
     ];
 
@@ -229,6 +231,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
+        self::INVOICE_LABEL_FIELD,
         self::CHANNEL,
         self::METHODS,
         self::CONVERT_CURRENCY,
@@ -813,6 +816,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MAX_PAYMENT_AMOUNT);
     }
 
+    public function getInvoiceLabelField()
+    {
+        return $this->getAttribute(self::INVOICE_LABEL_FIELD);
+    }
+
     public function getAutoRefundDelay()
     {
         $autoRefundDelay = $this->getAttribute(self::AUTO_REFUND_DELAY);
@@ -823,6 +831,22 @@ class Entity extends Base\PublicEntity
         }
 
         return $autoRefundDelay;
+    }
+
+    /**
+     * Helper method to fetch the actual display_name for an
+     * invoice, based on merchant-defined field preference:
+     * `billing_label` or `name`
+     *
+     * Fallback to `billing_name` if the setting is not defined
+     *
+     * @return mixed
+     */
+    public function getLabelForInvoice()
+    {
+        $field = $this->getInvoiceLabelField() ?: self::BILLING_LABEL;
+
+        return $this->getAttribute($field);
     }
 
     public function getAutoCaptureLateAuth()

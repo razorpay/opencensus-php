@@ -15,12 +15,12 @@ class Report extends Base
 
     protected function getFromHeader()
     {
-        return 'Recon Report';
+        return 'Settlement Alert';
     }
 
     protected function addSubject()
     {
-        $subject = 'Recon Report for ' . $this->data['date'];
+        $subject = 'Settlement Potential Failures for ' . $this->data['date'];
 
         $this->subject($subject);
 
