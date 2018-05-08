@@ -136,11 +136,11 @@ class Core extends Base\Core
 
     public function edit($terminal, $input)
     {
-        $this->validateExistingTerminal($terminal);
-
         if ((isset($input['restore'])) and
             ($input['restore'] === '1'))
         {
+            $this->validateExistingTerminal($terminal);
+
             $terminal->restoreOrFail();
         }
         else
@@ -153,6 +153,8 @@ class Core extends Base\Core
                 ]);
 
             $terminal->edit($input);
+
+            $this->validateExistingTerminal($terminal);
 
             $this->repo->saveOrFail($terminal);
         }
