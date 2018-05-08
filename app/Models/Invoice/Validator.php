@@ -3,6 +3,7 @@
 namespace RZP\Models\Invoice;
 
 use Carbon\Carbon;
+use Lib\Gstin;
 use RZP\Constants\Timezone;
 
 use RZP\Base;
@@ -78,6 +79,7 @@ class Validator extends Base\Validator
         Entity::BILLING_END         => 'filled|epoch',
         Entity::DRAFT               => 'filled|boolean',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
+        Entity::SUPPLY_STATE_CODE   => 'filled|string|custom',
         Entity::CALLBACK_URL        => 'filled|url',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|filled|string|in:get',
     ];
@@ -110,6 +112,7 @@ class Validator extends Base\Validator
         Entity::BILLING_END         => 'filled|epoch',
         Entity::DRAFT               => 'filled|boolean',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
+        Entity::SUPPLY_STATE_CODE   => 'filled|string|custom',
         Entity::CALLBACK_URL        => 'filled|url',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|filled|string|in:get',
     ];
@@ -137,6 +140,7 @@ class Validator extends Base\Validator
         Entity::BILLING_END         => 'filled|epoch',
         Entity::DRAFT               => 'filled|in:0',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
+        Entity::SUPPLY_STATE_CODE   => 'filled|custom',
         Entity::CALLBACK_URL        => 'filled|url',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|filled|string|in:get',
     ];
@@ -160,6 +164,7 @@ class Validator extends Base\Validator
         Entity::BILLING_END         => 'filled|epoch',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
         Entity::DRAFT               => 'filled|boolean',
+        Entity::SUPPLY_STATE_CODE   => 'filled|nullable|string|custom',
         Entity::CALLBACK_URL        => 'sometimes|url|nullable',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|sometimes|string|in:get|nullable',
     ];
@@ -349,6 +354,17 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException(
                 'Partial payment feature is not enabled',
                 Entity::PARTIAL_PAYMENT);
+        }
+    }
+
+    public function validateSupplyStateCode($attribute, $value)
+    {
+        if (Gstin::isStateCodeValid($value) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Supply state code is not valid',
+                Entity::SUPPLY_STATE_CODE,
+                ['code' => $value]);
         }
     }
 
