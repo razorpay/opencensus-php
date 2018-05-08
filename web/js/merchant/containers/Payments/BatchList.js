@@ -41,7 +41,7 @@ export default class BatchListContainer extends ListContainer {
         count={this.state.count}
         skip={this.paginate}
         onSubmit={this.search}
-        docUrl="https://docs.razorpay.com/v1/page/batch-refunds"
+        docUrl="https://docs.razorpay.com/v1/page/batch-card-payments"
         uploadUrl="/payments/batchuploads/new"
         {...this.props}
       />

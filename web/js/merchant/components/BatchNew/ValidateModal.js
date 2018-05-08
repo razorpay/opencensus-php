@@ -74,7 +74,7 @@ export default function BatchValidateModal({
           {shouldLoadMore && (
             <Fragment>
               <ol>
-                <li>The Amount mentioned should be in Paise.</li>
+                <li>The amount mentioned should be in paise.</li>
                 {batchType && (
                   <li>
                     The receipt id for all {titleCase(batchType)}s should be
