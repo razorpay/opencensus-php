@@ -29,6 +29,8 @@ export BulkTransaction from './BulkTransaction';
 
 export MetaQuery from './MetaQuery';
 
+export NodalMoneyTransfer from './NodalMoneyTransfer';
+
 export FundTransferUpdate from './FundTransferUpdate';
 
 export MerchantInvoiceNote from './MerchantInvoiceNote';
