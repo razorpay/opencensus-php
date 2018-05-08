@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
+use RZP\Models\Card\Network;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Currency\Currency;
@@ -33,6 +34,11 @@ class Entity extends Base\PublicEntity
     const GATEWAY_RECON_PASSWORD        = 'gateway_recon_password';
     const GATEWAY_ACQUIRER              = 'gateway_acquirer';
     const GATEWAY_CLIENT_CERTIFICATE    = 'gateway_client_certificate';
+
+    const MC_MPAN                       = 'mc_mpan';
+    const VISA_MPAN                     = 'visa_mpan';
+    const RUPAY_MPAN                    = 'rupay_mpan';
+    const VPA                           = 'vpa';
 
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';
@@ -98,6 +104,10 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_RECON_PASSWORD,
         self::GATEWAY_ACQUIRER,
         self::GATEWAY_CLIENT_CERTIFICATE,
+        self::MC_MPAN,
+        self::VISA_MPAN,
+        self::RUPAY_MPAN,
+        self::VPA,
         self::ENABLED
     ];
 
@@ -123,6 +133,10 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
         self::GATEWAY_ACQUIRER,
+        self::MC_MPAN,
+        self::VISA_MPAN,
+        self::RUPAY_MPAN,
+        self::VPA,
         self::USED_COUNT,
         self::TYPE,
         self::MODE,
@@ -273,21 +287,6 @@ class Entity extends Base\PublicEntity
     public function getEmiSubvention()
     {
         return $this->getAttribute(self::EMI_SUBVENTION);
-    }
-
-    /**
-     * In case the terminal is a UPI terminal, this returns
-     * the VPA that the collect request would have been raised from
-     * @return String Virtual Payment Address of the nodal account
-     */
-    public function getVpa(): string
-    {
-        if ($this->getUpi() === true)
-        {
-            return $this->attributes[self::GATEWAY_MERCHANT_ID2];
-        }
-
-        return 'razorpay@icici';
     }
 
     public function getCurrency()
@@ -562,6 +561,26 @@ class Entity extends Base\PublicEntity
         $type = $this->attributes[self::TYPE];
 
         return Type::getEnabledTypes($type);
+    }
+
+    public function getMCMpan()
+    {
+        return $this->getAttribute(self::MC_MPAN);
+    }
+
+    public function getVisaMpan()
+    {
+        return $this->getAttribute(self::VISA_MPAN);
+    }
+
+    public function getRupayMpan()
+    {
+        return $this->getAttribute(self::RUPAY_MPAN);
+    }
+
+    public function getVpa()
+    {
+        return $this->getAttribute(self::VPA);
     }
 
     protected function modifyInternational(& $input)
@@ -848,6 +867,11 @@ class Entity extends Base\PublicEntity
     public function isPin()
     {
         return ($this->isTypeApplicable(Type::PIN) === true);
+    }
+
+    public function isBharatQr()
+    {
+        return ($this->isTypeApplicable(Type::BHARAT_QR) === true);
     }
 
     public function isInternational()
