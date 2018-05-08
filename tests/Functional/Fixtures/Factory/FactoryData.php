@@ -881,16 +881,18 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\VirtualAccount\Entity::class, [
-            ]);
+        ]);
 
         $factory(\RZP\Models\QrCode\Entity::class, [
             'id'          => $faker->uniqueid,
-            'entity_id'   => '12345678901234',
-            'entity_type' => 'virtual_account',
-            'provider'    => 'bharat_qr',
-            'short_url'   => 'abc.com',
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
             'merchant_id' => '10000000000000',
-            'qr_string'   => '3reffndes',
+            'provider'    => 'bharat_qr',
+            'entity_id'   => $faker->uniqueid,
+            'entity_type' => 'virtual_account',
+            'short_url'   => 'abc.com',
+            'qr_string'   => 'kdsfjsfndsmndjksnfsdnsmdns',
         ]);
     }
 }

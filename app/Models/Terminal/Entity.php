@@ -35,7 +35,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_ACQUIRER              = 'gateway_acquirer';
     const GATEWAY_CLIENT_CERTIFICATE    = 'gateway_client_certificate';
 
-    const MASTERCARD_MPAN               = 'mastercard_mpan';
+    const MC_MPAN                       = 'mc_mpan';
     const VISA_MPAN                     = 'visa_mpan';
     const RUPAY_MPAN                    = 'rupay_mpan';
     const VPA                           = 'vpa';
@@ -104,7 +104,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_RECON_PASSWORD,
         self::GATEWAY_ACQUIRER,
         self::GATEWAY_CLIENT_CERTIFICATE,
-        self::MASTERCARD_MPAN,
+        self::MC_MPAN,
         self::VISA_MPAN,
         self::RUPAY_MPAN,
         self::VPA,
@@ -133,7 +133,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
         self::GATEWAY_ACQUIRER,
-        self::MASTERCARD_MPAN,
+        self::MC_MPAN,
         self::VISA_MPAN,
         self::RUPAY_MPAN,
         self::VPA,
@@ -167,12 +167,6 @@ class Entity extends Base\PublicEntity
         'inputRemoveBlanks',
         self::INTERNATIONAL,
         self::EMI_SUBVENTION,
-    ];
-
-    public static $bharatQrNetworkMpanMap = [
-        Network::MC    => self::MASTERCARD_MPAN,
-        Network::VISA  => self::VISA_MPAN,
-        Network::RUPAY => self::RUPAY_MPAN,
     ];
 
     protected $defaults = [
@@ -293,21 +287,6 @@ class Entity extends Base\PublicEntity
     public function getEmiSubvention()
     {
         return $this->getAttribute(self::EMI_SUBVENTION);
-    }
-
-    /**
-     * In case the terminal is a UPI terminal, this returns
-     * the VPA that the collect request would have been raised from
-     * @return String Virtual Payment Address of the nodal account
-     */
-    public function getVpa(): string
-    {
-        if ($this->getUpi() === true)
-        {
-            return $this->attributes[self::GATEWAY_MERCHANT_ID2];
-        }
-
-        return 'razorpay@icici';
     }
 
     public function getCurrency()
@@ -584,9 +563,9 @@ class Entity extends Base\PublicEntity
         return Type::getEnabledTypes($type);
     }
 
-    public function getMasterCardMpan()
+    public function getMCMpan()
     {
-        return $this->getAttribute(self::MASTERCARD_MPAN);
+        return $this->getAttribute(self::MC_MPAN);
     }
 
     public function getVisaMpan()
@@ -599,7 +578,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RUPAY_MPAN);
     }
 
-    public function getGatewayVpa()
+    public function getVpa()
     {
         return $this->getAttribute(self::VPA);
     }

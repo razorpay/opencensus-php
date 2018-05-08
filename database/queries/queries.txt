@@ -3535,3 +3535,7 @@ ALTER TABLE terminals
     ADD INDEX terminals_visa_mpan_index (visa_mpan),
     ADD INDEX terminals_rupay_mpan_index (rupay_mpan),
     ADD INDEX terminals_vpa_index (vpa);
+
+ALTER TABLE terminals
+    CHANGE mastercard_mpan mc_mpan varchar(16),
+    rename index terminals_mastercard_mpan_index to terminals_mc_mpan_index;

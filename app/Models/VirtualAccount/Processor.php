@@ -19,6 +19,7 @@ abstract class Processor extends Base\Core
     protected $provider;
     protected $merchant;
     protected $validator;
+    protected $receiver;
 
     public function __construct(string $provider = null)
     {
@@ -103,11 +104,7 @@ abstract class Processor extends Base\Core
      */
     protected function createAndSetVirtualAccount(int $amount)
     {
-        $data = $this->virtualAccountCreationArray($amount);
-
-        $virtualAccount = (new VirtualAccount\Core)->createWithoutReceivers($data, $this->merchant);
-
-        $this->virtualAccount = $virtualAccount;
+        $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount($this->merchant);
     }
 
     /**

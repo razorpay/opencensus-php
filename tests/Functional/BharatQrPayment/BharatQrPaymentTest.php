@@ -18,17 +18,15 @@ class BharatQrPaymentTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->merchant->addFeatures('bharat_qr');
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
 
-        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
         $this->fixtures->merchant->activate();
 
         $this->fixtures->create('terminal:bharat_qr_terminal');
 
         $this->fixtures->create('terminal:bharat_qr_terminal_upi');
-
-        $this->fixtures->on('live')->create('customer:customers');
 
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
 

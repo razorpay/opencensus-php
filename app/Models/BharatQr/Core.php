@@ -52,6 +52,7 @@ class Core extends Base\Core
         }
         catch (\Throwable $ex)
         {
+            s($ex->getMessage());
             $this->trace->traceException(
                 $ex, Trace::ERROR, TraceCode::BHARAT_QR_PAYMENT_PROCESSING_FAILED, $input);
 

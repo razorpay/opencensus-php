@@ -12,6 +12,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\Settlement\Entity as SettlementEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -439,6 +440,79 @@ class SettlementTest extends TestCase
         $this->assertNotNull($setlResponse[$channel]);
         $this->assertEquals(1, $setlResponse[$channel]['count']);
         $this->assertEquals(4, $setlResponse[$channel]['txnCount']);
+
+        Carbon::setTestNow();
+    }
+
+    public function testMutualFundMarketplaceSettlementSchedule()
+    {
+        $channel = Channel::AXIS;
+
+        $this->ba->adminAuth();
+
+        $parentId = Preferences::MID_WEALTHY;
+
+        $subMid = '8lv4idBRY4C9c1';
+
+        $this->fixtures->merchant->createAccount($parentId);
+
+        $this->fixtures->merchant->createAccount($subMid);
+
+        $this->fixtures->edit('merchant', $subMid, ['parent_id' => $parentId]);
+
+        // 7th December 2017 9 am
+        $paymentTime = Carbon::create(2017, 12, 7, 9, 00, 0, Timezone::IST);
+
+        $payments = $this->createPaymentEntities(1, $subMid, $paymentTime);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit(
+            'transaction',
+            $txn['id'],
+            [
+                'settled_at' => $paymentTime->getTimestamp()
+            ]);
+
+        // 7th December 2017 10 am
+        $now = $paymentTime->copy()->addHour();
+        Carbon::setTestNow($now);
+
+        // This is outside the mutual fund settlement window, so settlement is skipped
+        $setlResponse = $this->initiateSettlements($channel);
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(0, $setlResponse[$channel]['count']);
+
+        // 1.30pm 7th December 2017
+        $dt = Carbon::create(2017, 12, 7, 13, 30, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        // This is inside the mutual fund settlement window, so settlement is initiated
+        $setlResponse = $this->initiateSettlements($channel);
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+        $this->assertEquals(1, $setlResponse[$channel]['txnCount']);
+
+        // 2.30pm 12th December 2017
+        $dt = Carbon::create(2017, 12, 12, 14, 30, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $payment = $this->createPaymentEntities(1, $subMid, $paymentTime);
+
+        $txnId = $payment->getTransactionId();
+
+        $txn = $this->fixtures->edit('transaction', $txnId, [
+            'settled_at' => $paymentTime->getTimestamp()
+        ]);
+
+        // This is outside the mutual fund settlement window, but settlement is
+        // initiated anyway, as the payment was due to be settled a while ago
+        $setlResponse = $this->initiateSettlements($channel);
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+        $this->assertEquals(1, $setlResponse[$channel]['txnCount']);
 
         Carbon::setTestNow();
     }

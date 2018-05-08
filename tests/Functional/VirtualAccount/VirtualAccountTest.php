@@ -185,7 +185,7 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualAccountWithBharatQrAndEmptyMpan()
     {
-        $this->fixtures->terminal->edit($this->t1['id'], ['mastercard_mpan' => null]);
+        $this->fixtures->terminal->edit($this->t1['id'], ['mc_mpan' => null]);
 
         $this->expectException(\Throwable::class);
 

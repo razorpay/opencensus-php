@@ -54,7 +54,6 @@ class Entity extends Base\PublicEntity
     // Used for creating shared virtual account
     const SHARED_VIRTUAL_ACCOUNT = 'sharedvirtuala';
 
-
     protected $fillable = [
         self::NAME,
         self::STATUS,

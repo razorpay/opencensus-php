@@ -22,8 +22,6 @@ class Processor extends VirtualAccount\Processor
 
     protected $callbackData;
 
-    protected $receiver;
-
     public function __construct(array $gatewayResponse, string $provider = null)
     {
         parent::__construct($provider);
@@ -72,8 +70,6 @@ class Processor extends VirtualAccount\Processor
             $this->createAndSetVirtualAccount($this->gatewayInput[GatewayResponseParams::AMOUNT]);
         }
 
-        $this->receiver = $this->virtualAccount->qrCode;
-
         $this->processBharatQr($bharatQr);
 
         $this->trace->info(
@@ -118,16 +114,6 @@ class Processor extends VirtualAccount\Processor
                 $bharatQr->toArray());
 
         return true;
-    }
-
-    /**
-     * A static qr code for all the unexpected payments is picked.
-     *
-     * @param int $amount
-     */
-    protected function createAndSetVirtualAccount(int $amount)
-    {
-        $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount($this->merchant);
     }
 
     protected function processBharatQr(Base\PublicEntity $bharatQr)
@@ -273,8 +259,8 @@ class Processor extends VirtualAccount\Processor
         }
 
         $receiverData = [
-            'id'   => $this->receiver->getPublicId(),
-            'type' => 'qr_code',
+            'id'   => $this->virtualAccount->qrCode->getPublicId(),
+            'type' => VirtualAccount\Receiver::QR_CODE,
         ];
 
         $paymentArray[Payment\Entity::RECEIVER] = $receiverData;

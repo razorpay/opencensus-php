@@ -13,5 +13,5 @@ class GatewayResponseParams
     const AMOUNT                = 'amount';
     const VPA                   = 'vpa';
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
-    const MPAN                  = 'gateway_mpan';
+    const MPAN                  = 'mpan';
 }

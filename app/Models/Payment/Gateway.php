@@ -1019,6 +1019,18 @@ class Gateway
         return array_values(array_unique($banks));
     }
 
+    public static function getBharatQrCardNetworks(): array
+    {
+        $networks = [];
+
+        foreach (self::$bharatQrCardNetwork as $bharatQrGateways)
+        {
+            $networks = array_merge($networks, $bharatQrGateways);
+        }
+
+        return array_values(array_unique($networks));
+    }
+
     public static function getZeroRupeeEmandateBanks(): array
     {
         return self::$zeroRupeeEmandateBanks;

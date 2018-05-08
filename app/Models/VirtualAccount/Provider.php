@@ -240,7 +240,7 @@ class Provider
 
         $visaIdentifier = $merchantIdentifiers[Terminal\Entity::VISA_MPAN];
 
-        $masterCardIdentifier =  $merchantIdentifiers[Terminal\Entity::MASTERCARD_MPAN];
+        $masterCardIdentifier =  $merchantIdentifiers[Terminal\Entity::MC_MPAN];
 
         $rupayIdentifier = $merchantIdentifiers[Terminal\Entity::RUPAY_MPAN];
 
@@ -353,18 +353,22 @@ class Provider
     {
         $identifiers = [];
 
-        foreach (Terminal\Entity::$bharatQrNetworkMpanMap as  $network => $mpan)
+        $bharatQrNetworks = Payment\Gateway::getBharatQrCardNetworks();
+
+        foreach ($bharatQrNetworks as  $bharatQrNetwork)
         {
-            $terminal = $this->getTerminalForMethod(Payment\Method::CARD, $qrCode, $network);
+            $mpanAttr = strtolower($bharatQrNetwork) . '_mpan';
+
+            $terminal = $this->getTerminalForMethod(Payment\Method::CARD, $qrCode, $bharatQrNetwork);
 
             $terminal->toArray();
 
-            $identifiers[$mpan] = $terminal[$mpan];
+            $identifiers[$mpanAttr] = $terminal[$mpanAttr];
         }
 
         $terminal = $this->getTerminalForMethod(Payment\Method::UPI, $qrCode);
 
-        $identifiers[Terminal\Entity::VPA] = $terminal->getGatewayVpa();
+        $identifiers[Terminal\Entity::VPA] = $terminal->getVpa();
 
         return $identifiers;
     }

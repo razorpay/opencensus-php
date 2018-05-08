@@ -6,7 +6,6 @@ use App;
 use Crypt;
 use Cache;
 use Requests;
-use RZP\Models\VirtualAccount\Receiver;
 use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
@@ -18,6 +17,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
 use RZP\Models\Payment\Status;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Constants\Entity as ConstantsEntity;
 
 class Gateway
