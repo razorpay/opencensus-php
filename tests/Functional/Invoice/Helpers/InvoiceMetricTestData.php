@@ -7,7 +7,7 @@ use RZP\Error\PublicErrorCode;
 
 return [
 
-    'testGetMultipleInvoices' => [
+    'testGetMultipleInvoicesAndAssertMetricsSent' => [
         'request' => [
             'url'     => '/invoices',
             'method'  => 'get',
@@ -20,7 +20,7 @@ return [
         ],
     ],
 
-    'testCreateInvoice' => [
+    'testCreateInvoiceAndAssertMetricsSent' => [
         'request' => [
             'url'     => '/invoices',
             'method'  => 'post',
@@ -39,7 +39,7 @@ return [
 
     // For each of above tests lists various expectations for metric services
 
-    'testGetMultipleInvoicesExpectedMetricTags' => [
+    'testGetMultipleInvoicesAndAssertMetricsSentExpectedMetricTags' => [
         'method'                =>  'GET',
         'route'                 =>  'invoice_fetch_multiple',
         'status'                =>  200,
@@ -51,7 +51,7 @@ return [
         'rzp_internal_app_name' =>  'other',
     ],
 
-    'testCreateInvoiceExpectedMetricTags' => [
+    'testCreateInvoiceAndAssertMetricsSentExpectedMetricTags' => [
         'method'                =>  'POST',
         'route'                 =>  'invoice_create',
         'status'                =>  200,

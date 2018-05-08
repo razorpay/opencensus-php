@@ -19,7 +19,9 @@ final class Throttle
 
         $response = $next($request);
 
-        $this->pushHttpMetrics($request, $response, $start);
+        $end = microtime(true);
+
+        $this->pushHttpMetrics($request, $response, $start, $end);
 
         return $response;
     }
@@ -29,15 +31,17 @@ final class Throttle
      * @param  Request  $request
      * @param  Response $response
      * @param  int      $start
+     * @param  int      $end
      */
-    protected function pushHttpMetrics(Request $request, Response $response, int $start)
+    protected function pushHttpMetrics(Request $request, Response $response, int $start, int $end)
     {
         $dimensions = $this->getMetricDimensions($request, $response);
 
         Metrics::count(Metric::HTTP_REQUESTS_TOTAL, 1, $dimensions);
-        Metrics::histogram(Metric::HTTP_REQUEST_DURATION_MICROSECONDS, microtime(true) - $start, $dimensions);
-        Metrics::histogram(Metric::HTTP_REQUEST_SIZE_BYTES, mb_strlen($request->getContent()), $dimensions);
-        Metrics::histogram(Metric::HTTP_RESPONSE_SIZE_BYTES, mb_strlen($response->getContent()), $dimensions);
+
+        Metrics::histogram(Metric::HTTP_REQUEST_DURATION_MICROSECONDS, $end - $start, $dimensions);
+        Metrics::histogram(Metric::HTTP_REQUEST_SIZE_BYTES, mb_strlen($request->getContent(), '8bit'), $dimensions);
+        Metrics::histogram(Metric::HTTP_RESPONSE_SIZE_BYTES, mb_strlen($response->getContent(), '8bit'), $dimensions);
     }
 
     /**
@@ -51,7 +55,7 @@ final class Throttle
         //
         // Todo:
         // Awaiting an ongoing refactoring effort to move request's context variables (e.g. merchant identifier, internal
-        // application name etc.) out of any existing tied class (e.g. BasicAuth) so can be used at various places. Past
+        // application name etc.) out of any existing tied class (e.g. BasicAuth) so can be used at various places. Post
         // that should move this part of code elsewhere. Currently keeping here as this is the first one to get triggered.
         //
 

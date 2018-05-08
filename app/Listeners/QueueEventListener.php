@@ -3,11 +3,7 @@
 namespace RZP\Listeners;
 
 use Metrics;
-use Illuminate\Queue\Events\Looping;
-use Illuminate\Queue\Events\JobFailed;
-use Illuminate\Queue\Events\JobProcessed;
-use Illuminate\Queue\Events\JobProcessing;
-use Illuminate\Queue\Events\JobExceptionOccurred;
+use Illuminate\Queue\Events as QueueEvents;
 
 use RZP\Constants\Metric;
 
@@ -16,7 +12,11 @@ class QueueEventListener
     // Enhancement: Figure out a way to log time taken during processing for each job & push that metric as histogram
 
     /**
-     * @var Looping|JobFailed|JobProcessed|JobProcessing|JobExceptionOccurred
+     * @var QueueEvents\Looping|
+     *      QueueEvents\JobFailed|
+     *      QueueEvents\JobProcessed|
+     *      QueueEvents\JobProcessing|
+     *      QueueEvents\JobExceptionOccurred
      */
     protected $event;
 
@@ -31,19 +31,19 @@ class QueueEventListener
     {
         switch (true)
         {
-            case $this->event instanceof Looping:
-                return Metric::ASYNC_JOBS_RECIEVING_TOTAL;
+            case $this->event instanceof QueueEvents\Looping:
+                return Metric::ASYNC_JOBS_RECEIVING_TOTAL;
 
-            case $this->event instanceof JobFailed:
+            case $this->event instanceof QueueEvents\JobFailed:
                 return Metric::ASYNC_JOBS_ERRORS_TOTAL;
 
-            case $this->event instanceof JobProcessed:
+            case $this->event instanceof QueueEvents\JobProcessed:
                 return Metric::ASYNC_JOBS_PROCESSED_TOTAL;
 
-            case $this->event instanceof JobProcessing:
-                return Metric::ASYNC_JOBS_RECIEVED_TOTAL;
+            case $this->event instanceof QueueEvents\JobProcessing:
+                return Metric::ASYNC_JOBS_RECEIVED_TOTAL;
 
-            case $this->event instanceof JobExceptionOccurred:
+            case $this->event instanceof QueueEvents\JobExceptionOccurred:
                 return Metric::ASYNC_JOBS_ERRORS_TOTAL;
         }
     }

@@ -13,8 +13,8 @@ class Metric
     const ELOQUENT_CACHE_MISSES_TOTAL           = 'eloquent_cache_misses_total';
     const ELOQUENT_CACHE_WRITES_TOTAL           = 'eloquent_cache_writes_total';
     const ELOQUENT_CACHE_FLUSHES_TOTAL          = 'eloquent_cache_flushes_total';
-    const ASYNC_JOBS_RECIEVING_TOTAL            = 'async_jobs_recieving_total';
-    const ASYNC_JOBS_RECIEVED_TOTAL             = 'async_jobs_recieved_total';
+    const ASYNC_JOBS_RECEIVING_TOTAL            = 'async_jobs_receiving_total';
+    const ASYNC_JOBS_RECEIVED_TOTAL             = 'async_jobs_received_total';
     const ASYNC_JOBS_PROCESSED_TOTAL            = 'async_jobs_processed_total';
     const ASYNC_JOBS_ERRORS_TOTAL               = 'async_jobs_errors_total';
 

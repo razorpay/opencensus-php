@@ -104,7 +104,9 @@ class QueryCacheEventListener
     {
         if (preg_match('/^rememberable:(?<version>.*):(?<entity>.*):.*$/', $this->event->key, $matches) === 1)
         {
-            Metrics::count($this->getMetricName(), 1, array_only($matches, ['version', 'entity']));
+            $dimensions = array_only($matches, ['version', 'entity']);
+
+            Metrics::count($this->getMetricName(), 1, $dimensions);
         }
     }
 

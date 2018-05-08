@@ -4,8 +4,13 @@ namespace RZP\Providers;
 
 use Illuminate\Queue\Jobs\SyncJob;
 use Illuminate\Support\Facades\Queue;
-use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Cache\Events as CacheEvents;
+use Illuminate\Queue\Events as QueueEvents;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+
+use RZP\Events;
+use RZP\Jobs\Job;
+use RZP\Listeners;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -16,48 +21,48 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $subscribe = [
-        'RZP\Listeners\ApiEventSubscriber',
+        Listeners\ApiEventSubscriber::class,
     ];
 
     protected $listen = [
-        'RZP\Events\AuditLogEntry' => [
-            'RZP\Listeners\AuditLogListener',
+        Events\AuditLogEntry::class => [
+            Listeners\AuditLogListener::class,
         ],
 
-        'Illuminate\Cache\Events\CacheHit' => [
-            'RZP\Listeners\QueryCacheEventListener',
+        CacheEvents\CacheHit::class => [
+            Listeners\QueryCacheEventListener::class,
         ],
 
-        'Illuminate\Cache\Events\CacheMissed' => [
-            'RZP\Listeners\QueryCacheEventListener',
+        CacheEvents\CacheMissed::class => [
+            Listeners\QueryCacheEventListener::class,
         ],
 
-        'Illuminate\Cache\Events\KeyWritten' => [
-            'RZP\Listeners\QueryCacheEventListener',
+        CacheEvents\KeyWritten::class => [
+            Listeners\QueryCacheEventListener::class,
         ],
 
-        'Illuminate\Cache\Events\KeyForgotten' => [
-            'RZP\Listeners\QueryCacheEventListener',
+        CacheEvents\KeyForgotten::class => [
+            Listeners\QueryCacheEventListener::class,
         ],
 
-        'Illuminate\Queue\Events\JobProcessed' => [
-            'RZP\Listeners\QueueEventListener',
+        QueueEvents\JobProcessed::class => [
+            Listeners\QueueEventListener::class,
         ],
 
-        'Illuminate\Queue\Events\JobProcessing' => [
-            'RZP\Listeners\QueueEventListener',
+        QueueEvents\JobProcessing::class => [
+            Listeners\QueueEventListener::class,
         ],
 
-        'Illuminate\Queue\Events\JobFailed' => [
-            'RZP\Listeners\QueueEventListener',
+        QueueEvents\JobFailed::class => [
+            Listeners\QueueEventListener::class,
         ],
 
-        'Illuminate\Queue\Events\Looping' => [
-            'RZP\Listeners\QueueEventListener',
+        QueueEvents\Looping::class => [
+            Listeners\QueueEventListener::class,
         ],
 
-        'Illuminate\Queue\Events\JobExceptionOccurred' => [
-            'RZP\Listeners\QueueEventListener',
+        QueueEvents\JobExceptionOccurred::class => [
+            Listeners\QueueEventListener::class,
         ],
     ];
 
@@ -65,7 +70,7 @@ class EventServiceProvider extends ServiceProvider
     {
         parent::boot();
 
-        Queue::after(function (JobProcessed $event)
+        Queue::after(function (QueueEvents\JobProcessed $event)
         {
             $this->resetModePostSyncQueueProcessed($event);
         });
@@ -81,9 +86,9 @@ class EventServiceProvider extends ServiceProvider
      * context are actually the same. And so we would want to reset the basic
      * auth's mode and db connection to previous value.
      *
-     * @param JobProcessed $event
+     * @param QueueEvents\JobProcessed $event
      */
-    protected function resetModePostSyncQueueProcessed(JobProcessed $event)
+    protected function resetModePostSyncQueueProcessed(QueueEvents\JobProcessed $event)
     {
         $job = $event->job;
 
@@ -98,7 +103,7 @@ class EventServiceProvider extends ServiceProvider
         //
         $resolvedJob  = unserialize($job->payload()['data']['command']);
 
-        if ($resolvedJob instanceof \RZP\Jobs\Job === true)
+        if ($resolvedJob instanceof Job === true)
         {
             $previousMode = $resolvedJob->getPreviousMode();
 

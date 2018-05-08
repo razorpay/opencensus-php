@@ -20,7 +20,7 @@ class InvoiceMetricTest extends TestCase
         $this->ba->privateAuth();
     }
 
-    public function testGetMultipleInvoices()
+    public function testGetMultipleInvoicesAndAssertMetricsSent()
     {
         $expectedHttpMetricTags = $this->testData[__FUNCTION__ . 'ExpectedMetricTags'];
 
@@ -89,7 +89,7 @@ class InvoiceMetricTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateInvoice()
+    public function testCreateInvoiceAndAssertMetricsSent()
     {
         $expectedHttpMetricTags = $this->testData[__FUNCTION__ . 'ExpectedMetricTags'];
 
@@ -131,7 +131,7 @@ class InvoiceMetricTest extends TestCase
                     ],
                 ],
                 [
-                    'async_jobs_recieved_total',
+                    'async_jobs_received_total',
                     1,
                     [
                         'async_job_connection' => 'sync',
