@@ -167,7 +167,6 @@ class Netbanking
     ];
 
     protected static $billdeskCorp = [
-        self::ICIC_C,
     ];
 
     protected static $billdeskTPV = [
