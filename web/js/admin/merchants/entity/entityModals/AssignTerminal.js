@@ -105,8 +105,8 @@ export default class TerminalForm extends Component {
     let mode = body.mode;
     delete body.mode;
 
-    if (!body.terminal_mode) {
-      delete body.mode;
+    if (body.terminal_mode) {
+      body.mode = body.terminal_mode; // Terminal mode is sent as mode. And mode(test/live) is just for api url.
     }
 
     delete body.terminal_mode;
