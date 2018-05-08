@@ -894,7 +894,7 @@ class TerminalSelectionTest extends TestCase
 
     public function testCorporateMerchantsBilldeskCorporateICICISelection()
     {
-        // Skipping this test as removing ICICI from billdesk.
+        // Skipping test as removing icici from billdesk
         $this->markTestSkipped();
 
         // Corporate Enabled Icici terminal for Billdesk
