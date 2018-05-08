@@ -23,7 +23,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
     public function __construct(string $purpose)
     {
-        parent::__construct($purpose);
+        parent::__construct();
 
         $this->trace = App::getFacadeRoot()['trace'];
 
