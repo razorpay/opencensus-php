@@ -6,7 +6,7 @@ import { closeModal, openModal } from 'rzp/modules/modals';
 
 import BatchValidate from './Validate';
 import BatchCreate from './Create';
-
+import SuccessModal from 'merchant/components/BatchNew/SuccessModal';
 import { trackUploadBatch } from './ga';
 
 /**
@@ -74,20 +74,15 @@ export default class BatchUpload extends Component {
               );
             case 'success':
               return (
-                <div class="modal-body">
-                  <div class="success-tick" />
-                  <h4>Batch Created Succesfully</h4>
-                  <p class="success-text">
+                <SuccessModal onModalClose={this.onModalClose}>
+                  <p class="text-center">
                     You can download the output file from batch detail view to
                     check payment links generated. For the links that could not
                     be generated due to some issues, please upload a new batch
                     file.
                     <br />
-                    <span class="btn btn-link" onClick={this.onModalClose}>
-                      <strong>Close</strong>
-                    </span>
                   </p>
-                </div>
+                </SuccessModal>
               );
             case 'default':
               return null;
