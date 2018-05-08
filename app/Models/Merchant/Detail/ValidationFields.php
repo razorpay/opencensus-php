@@ -31,7 +31,6 @@ class ValidationFields
             Entity::CONTACT_NAME,
             Entity::PROMOTER_ADDRESS_URL,
             Entity::PROMOTER_PAN_NAME,
-            Entity::TRANSACTION_REPORT_EMAIL,
     ];
 
     /**
