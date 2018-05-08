@@ -12,4 +12,6 @@ class GatewayResponseParams
     const METHOD                = 'method';
     const AMOUNT                = 'amount';
     const VPA                   = 'vpa';
+    const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
+    const MPAN                  = 'mpan';
 }
