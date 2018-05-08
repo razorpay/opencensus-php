@@ -39,7 +39,7 @@ class Manager extends IlluminateManager
     {
         try
         {
-            parent::__call($method, $parameters);
+            return parent::__call($method, $parameters);
         }
         // In case it errors out, for now not doing anything, maybe log it but not want to couple with api's trace
         // Also we would come to know of issues via Prometheus alerts

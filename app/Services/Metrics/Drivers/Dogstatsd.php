@@ -30,35 +30,29 @@ class Dogstatsd extends Driver
     /**
      * {@inheritDoc}
      */
-    public function count(string $metric, int $times = 1, array $dimensions = []): Driver
+    public function count(string $metric, int $times = 1, array $dimensions = [])
     {
         while ($times--)
         {
             $this->statsd->increment($this->getNamespacedMetric($metric), self::SAMPLE_RATE, $dimensions);
         }
-
-        return $this;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function gauge(string $metric, float $value, array $dimensions = []): Driver
+    public function gauge(string $metric, float $value, array $dimensions = [])
     {
         $this->statsd->gauge($this->getNamespacedMetric($metric), $value, self::SAMPLE_RATE, $dimensions);
-
-        return $this;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function histogram(string $metric, float $value, array $dimensions = []): Driver
+    public function histogram(string $metric, float $value, array $dimensions = [])
     {
         // TODO: Histogram support is limited in some sense via statsd interface; To check and have fixed later;
         // For now it's reported as summary in Prometheus with default 50, 90 and 99 %ile.
         $this->statsd->histogram($this->getNamespacedMetric($metric), $value, self::SAMPLE_RATE, $dimensions);
-
-        return $this;
     }
 }

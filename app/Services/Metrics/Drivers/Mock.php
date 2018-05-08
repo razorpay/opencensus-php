@@ -11,24 +11,21 @@ class Mock extends Driver
     /**
      * {@inheritDoc}
      */
-    public function count(string $metric, int $times = 1, array $dimensions = []): Driver
+    public function count(string $metric, int $times = 1, array $dimensions = [])
     {
-        return $this;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function gauge(string $metric, float $value, array $dimensions = []): Driver
+    public function gauge(string $metric, float $value, array $dimensions = [])
     {
-        return $this;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function histogram(string $metric, float $value, array $dimensions = []): Driver
+    public function histogram(string $metric, float $value, array $dimensions = [])
     {
-        return $this;
     }
 }

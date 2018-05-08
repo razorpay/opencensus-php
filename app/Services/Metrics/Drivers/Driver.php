@@ -18,7 +18,6 @@ abstract class Driver
      */
     protected $namespace;
 
-
     public function __construct(array $config = [])
     {
         $this->config = $config;
@@ -48,23 +47,20 @@ abstract class Driver
      * @param  string $metric
      * @param  int    $times
      * @param  array  $dimensions
-     * @return Driver
      */
-    abstract public function count(string $metric, int $times, array $dimensions = []): Driver;
+    abstract public function count(string $metric, int $times, array $dimensions = []);
 
     /**
      * @param  string $metric
      * @param  float  $value
      * @param  array  $dimensions
-     * @return Driver
      */
-    abstract public function gauge(string $metric, float $value, array $dimensions = []): Driver;
+    abstract public function gauge(string $metric, float $value, array $dimensions = []);
 
     /**
      * @param  string $metric
      * @param  float  $value
      * @param  array  $dimensions
-     * @return Driver
      */
-    abstract public function histogram(string $metric, float $value, array $dimensions = []): Driver;
+    abstract public function histogram(string $metric, float $value, array $dimensions = []);
 }

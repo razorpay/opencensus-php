@@ -11,7 +11,7 @@ class ServiceProvider extends IlluminateServiceProvider
         $this->app
              ->singleton(
                 'metrics',
-                function()
+                function ()
                 {
                     return new Manager($this->app);
                 });
