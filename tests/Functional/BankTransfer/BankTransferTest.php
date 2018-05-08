@@ -23,7 +23,7 @@ class BankTransferTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
-        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
 
         $this->bankAccount = $this->createVirtualAccount();
 

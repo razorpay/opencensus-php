@@ -67,8 +67,6 @@ class Processor extends VirtualAccount\Processor
             $this->createAndSetVirtualAccount($this->gatewayInput[GatewayResponseParams::AMOUNT]);
         }
 
-        $this->setReceiver();
-
         $this->processBharatQr($bharatQr);
 
         $this->trace->info(
@@ -97,11 +95,6 @@ class Processor extends VirtualAccount\Processor
         ];
     }
 
-    protected function setReceiver()
-    {
-        $this->receiver = $this->virtualAccount->qrCode;
-    }
-
     protected function checkIfDuplicateNotification(Base\PublicEntity $bharatQr)
     {
         $providerReferenceId = $this->gatewayInput[GatewayResponseParams::PROVIDER_REFERENCE_ID];
@@ -118,16 +111,6 @@ class Processor extends VirtualAccount\Processor
                 $bharatQr->toArray());
 
         return true;
-    }
-
-    /**
-     * A static qr code for all the unexpected payments is picked.
-     *
-     * @param int $amount
-     */
-    protected function createAndSetVirtualAccount(int $amount)
-    {
-        $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount($this->merchant);
     }
 
     protected function processBharatQr(Base\PublicEntity $bharatQr)
@@ -249,7 +232,7 @@ class Processor extends VirtualAccount\Processor
         }
 
         $receiverData = [
-            'id'   => $this->receiver->getPublicId(),
+            'id'   => $this->virtualAccount->qrCode->getPublicId(),
             'type' => VirtualAccount\Receiver::QR_CODE,
         ];
 

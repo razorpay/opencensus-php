@@ -438,6 +438,13 @@ class Processor extends VirtualAccount\Processor
             }
         }
 
+        $receiverData = [
+            'id'   => $this->virtualAccount->bankAccount->getPublicId(),
+            'type' => VirtualAccount\Receiver::BANK_ACCOUNT,
+        ];
+
+        $paymentArray[Payment\Entity::RECEIVER] = $receiverData;
+
         return $paymentArray;
     }
 }

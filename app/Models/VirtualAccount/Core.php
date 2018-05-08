@@ -19,20 +19,14 @@ class Core extends Base\Core
         array $input,
         Merchant $merchant,
         Customer $customer = null,
-        Order $order = null): Entity
+        Order $order = null,
+        bool $shared = false): Entity
     {
         $virtualAccount = $this->createEntityAndAssociate($merchant);
 
-        $virtualAccount = $this->repo->transaction(function() use ($virtualAccount, $input, $customer, $order)
+        $virtualAccount = $this->repo->transaction(function() use ($virtualAccount, $input, $customer, $order, $shared)
         {
             $shared = false;
-
-            if (empty($input['shared']) === false)
-            {
-                $shared = $input['shared'];
-
-                unset($input['shared']);
-            }
 
             $virtualAccount->build($input);
 
@@ -84,12 +78,11 @@ class Core extends Base\Core
 
         $input = [
             Entity::RECEIVERS => [
-                Entity::TYPES => [Receiver::QR_CODE]
+                Entity::TYPES => [Receiver::QR_CODE, Receiver::BANK_ACCOUNT]
             ],
-            'shared' => true,
         ];
 
-        return $this->create($input, $merchant, $customers[0]);
+        return $this->create($input, $merchant, $customers[0], null, true);
     }
 
     public function createWithoutReceivers(array $input, Merchant $merchant)

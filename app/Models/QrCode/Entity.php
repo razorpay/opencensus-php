@@ -3,6 +3,7 @@
 namespace RZP\Models\QrCode;
 
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Models\VirtualAccount\Provider;
 
@@ -67,7 +68,7 @@ class Entity extends Base\PublicEntity
 
     public function payments()
     {
-        return $this->morphMany('RZP\Models\Payment\Entity', 'source');
+        return $this->morphMany(Payment\Entity::class, 'source');
     }
 
     // --------------------- END RELATIONS ---------------------
