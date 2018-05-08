@@ -235,16 +235,17 @@ return [
             'url'     => '/invoices',
             'method'  => 'post',
             'content' => [
-                'customer_id' => 'cust_100000customer',
-                'line_items'  => [
+                'customer_id'       => 'cust_100000customer',
+                'line_items'        => [
                     [
                         'name'        => 'Some item name',
                         'description' => 'Some item description',
                         'amount'      => 100000,
                     ]
                 ],
-                'currency'    => 'INR',
-                'date'        => 1480666664,
+                'supply_state_code' => '29',
+                'currency'          => 'INR',
+                'date'              => 1480666664,
             ],
         ],
         'response' => [
@@ -2985,14 +2986,17 @@ return [
                     [
                         'id'   => 'inv_1000003invoice',
                         'type' => 'ecod',
+                        'supply_state_code' => '29',
                     ],
                     [
                         'id'   => 'inv_1000002invoice',
                         'type' => 'ecod',
+                        'supply_state_code' => '29',
                     ],
                     [
                         'id'   => 'inv_1000001invoice',
                         'type' => 'link',
+                        'supply_state_code' => '29',
                     ],
                 ]
             ],

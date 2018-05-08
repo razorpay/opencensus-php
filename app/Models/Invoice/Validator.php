@@ -140,7 +140,7 @@ class Validator extends Base\Validator
         Entity::BILLING_END         => 'filled|epoch',
         Entity::DRAFT               => 'filled|in:0',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
-        Entity::SUPPLY_STATE_CODE   => 'filled|custom',
+        Entity::SUPPLY_STATE_CODE   => 'filled|string|custom',
         Entity::CALLBACK_URL        => 'filled|url',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|filled|string|in:get',
     ];
