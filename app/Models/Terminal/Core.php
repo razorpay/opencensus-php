@@ -335,13 +335,13 @@ class Core extends Base\Core
 
         foreach ($bharatQrNetworks as $bharatQrNetwork)
         {
-            $mpan = strtolower($bharatQrNetwork) . '_mpan';
+            $mpanAttr = strtolower($bharatQrNetwork) . '_mpan';
 
-            if (empty($terminal[$mpan]) === false)
+            if (empty($terminal[$mpanAttr]) === false)
             {
-                $params =  [$mpan => $terminal[$mpan]];
+                $params =  [$mpanAttr => $terminal[$mpanAttr]];
 
-                $this->checkIfExists($params, $terminal, $mpan);
+                $this->checkIfExists($params, $terminal, $mpanAttr);
             }
         }
 
