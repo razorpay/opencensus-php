@@ -341,7 +341,8 @@ const defaultFieldProps = f => {
 
 defaultFieldProps(tabContent);
 
-const LAST_STEP = tabs.length; // It's document upload step.
+const LAST_STEP = tabs.length - 1; // It's document upload step (0 = 1st tab).
+const DOCUMENT_UPLOAD_STEP = 4; // It's document upload step.
 export default class ActivationWizard extends React.Component {
   state = {
     isSaving: null,
@@ -373,11 +374,11 @@ export default class ActivationWizard extends React.Component {
   }
 
   componentDidMount() {
-    addDropShield('.Activation--wizard #form-container');
+    addDropShield('.Activation--wizard');
   }
 
   componentWillUnmount() {
-    removeDropShield('.Activation--wizard #form-container');
+    removeDropShield('.Activation--wizard');
   }
 
   setInitialTab() {
@@ -549,7 +550,23 @@ export default class ActivationWizard extends React.Component {
   render() {
     let activeTab = this.state.activeTab;
     let isLastTab = activeTab !== tabs.length - 1;
-    let content = tabContent[activeTab].map((field, i) => {
+    let content; // Document content will always be shown so that upload progress is maintained
+
+    if (activeTab !== DOCUMENT_UPLOAD_STEP) {
+      content = tabContent[activeTab].map((field, i) => {
+        if (Array.isArray(field)) {
+          return (
+            <Input.Group key={i}>
+              {field.map(ActivationField, this)}
+            </Input.Group>
+          );
+        }
+
+        return ActivationField.call(this, field);
+      });
+    }
+
+    let documentContent = tabContent[DOCUMENT_UPLOAD_STEP].map((field, i) => {
       if (Array.isArray(field)) {
         return (
           <Input.Group key={i}>{field.map(ActivationField, this)}</Input.Group>
@@ -601,13 +618,30 @@ export default class ActivationWizard extends React.Component {
             </li>
           </ul>
         </aside>
+        {/* Rest of the Content for business form */}
+        {content && (
+          <main
+            id="form-container"
+            class={this.state.showSubmitLayer ? 'block-scroll' : ''}
+          >
+            <main-title>{tabs[activeTab]}</main-title>
+
+            <Form onChange={this.onChange} layout="tabular">
+              {content}
+            </Form>
+          </main>
+        )}
+        {/* Document Content */}
         <main
           id="form-container"
-          class={this.state.showSubmitLayer ? 'block-scroll' : ''}
+          class={classList(
+            this.state.showSubmitLayer && 'block-scroll',
+            content && 'main--hide'
+          )}
         >
           <main-title>{tabs[activeTab]}</main-title>
           <Form onChange={this.onChange} layout="tabular">
-            {content}
+            {documentContent}
           </Form>
         </main>
         {this.state.showSubmitLayer && (
