@@ -95,7 +95,6 @@ class ViewDataSerializer extends Base\Core
     protected function serializeMerchantForHosted(): array
     {
         return [
-            'new_view_enabled' => (in_array('Hostedplv2', $this->merchant->liveTagNames(), true) === true),
             'brand_color'      => get_rgb_value($this->merchant->getBrandColorOrDefault()),
             'brand_text_color' => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
             'image'            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
@@ -106,8 +105,10 @@ class ViewDataSerializer extends Base\Core
 
     protected function serializeInvoiceForHosted(): array
     {
+        //
         // Reload is needed as from Payment\Processor\Notify, the invoice
         // object passed as part of construct does not have relations loaded.
+        //
         $this->repo->loadRelations($this->invoice);
 
         $serialized = $this->invoice->toArrayHosted();
@@ -134,6 +135,7 @@ class ViewDataSerializer extends Base\Core
         $serialized[Entity::PAYMENTS]        = $serializedPayments;
         $serialized[Entity::CALLBACK_URL]    = $this->invoice->getCallbackUrl();
         $serialized[Entity::CALLBACK_METHOD] = $this->invoice->getCallbackMethod();
+        $serialized[Entity::MERCHANT_LABEL]  = $this->invoice->getMerchantLabel();
 
         //
         // Additionally, if it's type=link and description is blank we fill it with first line item's description else

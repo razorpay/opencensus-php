@@ -68,6 +68,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $this->trace->info(TraceCode::BANK_TRANSFER_UNEXPECTED, [
             'message'       => 'Unexpected bank transfer',
+            'info_code'     => 'PAYMENT_ABSENT',
             'utr'           => $row[self::COLUMN_UTR],
             'row'           => $row,
         ]);

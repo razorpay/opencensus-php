@@ -36,15 +36,15 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return null;
     }
 
-    // protected function getReferenceNumber($row)
-    // {
-    //     if (empty($row[self::COLUMN_BANK_PAYMENT_ID]) === false)
-    //     {
-    //         return $row[self::COLUMN_BANK_PAYMENT_ID];
-    //     }
-
-    //     return null;
-    // }
+//     protected function getReferenceNumber($row)
+//     {
+//         if (empty($row[self::COLUMN_BANK_PAYMENT_ID]) === false)
+//         {
+//             return $row[self::COLUMN_BANK_PAYMENT_ID];
+//         }
+//
+//         return null;
+//     }
 
     protected function getGatewayPayment($paymentId)
     {

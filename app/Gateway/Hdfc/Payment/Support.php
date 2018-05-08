@@ -267,6 +267,11 @@ trait Support
                 $data['udf5'] = 'PaymentID';
             }
         }
+
+        if ($this->shouldMigrateToIpay() === true)
+        {
+            $data['udf5'] = '';
+        }
     }
 
     protected function verifyAndSaveSupportResponse($type, $input)

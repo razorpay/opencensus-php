@@ -58,13 +58,4 @@ class Service extends Base\Service
 
         return $creditsLogs->toArrayPublic();
     }
-
-    public function deleteCreditsLog($mid, $id)
-    {
-        $creditsLog = $this->repo->credits->findByIdAndMerchantId($id, $mid);
-
-        (new Credits\Core)->deleteCredits($creditsLog);
-
-        return ['success' => true];
-    }
 }

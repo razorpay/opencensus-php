@@ -62,6 +62,7 @@ class Netbanking
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
+        IFSC::ORBC,
         IFSC::CSBK,
         self::PUNB_R,
         self::BARB_R,
@@ -124,7 +125,6 @@ class Netbanking
         IFSC::IDFB,
         // IFSC::FDRL,
         IFSC::IBKL,
-        IFSC::ICIC,
         IFSC::IDIB,
         IFSC::INDB,
         IFSC::IOBA,
@@ -179,7 +179,6 @@ class Netbanking
         IFSC::INDB,
         IFSC::KVBL,
         self::LAVB_R,
-        IFSC::ICIC,
         IFSC::UTIB,
         IFSC::BKID,
         IFSC::SBBJ,
@@ -294,9 +293,7 @@ class Netbanking
         */
     ];
 
-    protected static $defaultDisabled = [
-        IFSC::AIRP,
-    ];
+    protected static $defaultDisabled = [];
 
     protected static $ebsTPV = [];
 
@@ -426,23 +423,9 @@ class Netbanking
         return array_values(array_unique($banks));
     }
 
-    public static function removeDefaultDisableBanks(array $banks, $merchantId)
+    public static function removeDefaultDisableBanks(array $banks)
     {
-        $airtelNBEnabledMerchants = [
-            '6e9vU1F6c16Wgy', '4IAipsLXQZ8HfL', '7JzGtcGfAj1DuY', '7HgtXHJ0Mi7eEB', '5DT4a51hWyB2S2',
-            '4uObL8AHBqFNnP', '7kBHljwok8Fsom', '6knz9sdyiFESCn', '6LCgLZgRjTI8ws', '4bnk7yysqr5Wx5',
-            '4jrfbTLsua1pWJ', '6vYkkfMt0AH7Ze', '5yZ76HWrvL9g2l', '7JzHlJ4JTX9WOJ', '6grntKs55sEy3m',
-            '5S3KMEi1AqOkO3', '6yhs5uEKQo8ocV', '6uli25q6xe9PPv', '3d2EGdZF6CAYVc', '5PK4jJHD4KFumX',
-            '4G3OVwffGeJJ2p', '6vwsEbqse39D4d', '5XeKEGAanmFH5g', '67a0aqRNfZCdrS', '41pNQxEoQ2GDlT',
-            '2qXGMn4WT4sJYp', '6ZLRbyflpSBEEv', '60XSLJJUlJDtbr', '6ToAGQhTHC7G3s', '3HSIA6jNkKAVav',
-        ];
-
-        if (in_array($merchantId, $airtelNBEnabledMerchants, true) === false)
-        {
-            return array_diff($banks, self::getDefaultDisabledBanks());
-        }
-
-        return $banks;
+        return array_diff($banks, self::getDefaultDisabledBanks());
     }
 
     public static function getSupportedBanksInLiveMode()

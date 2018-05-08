@@ -47,6 +47,15 @@ class Handler extends BaseHandler
         return $this->getStorageDir() . $fileName;
     }
 
+    public function delete(array $bucketConfig, $key)
+    {
+        $directory = $bucketConfig['name'];
+
+        $fileName = self::STORAGE_DIRECTORY . $directory . '/' . $key;
+
+        unlink($fileName);
+    }
+
     public function saveAs($bucket, $key, $filePath)
     {
         ;

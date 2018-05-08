@@ -686,6 +686,7 @@ class Creator extends Base\Core
             case Format::TXT:
             case Format::ENC:
             case Format::PDF:
+            case Format::DAT:
             // When the extension of the file which need to be created has no standerd extension (in case of ASCII file)
             // we dont set the extestion while creating it, then `NONE` will match with it and process it as text file
             case Format::NONE:
