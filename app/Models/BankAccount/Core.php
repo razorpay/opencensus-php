@@ -113,24 +113,28 @@ class Core extends Base\Core
             $this->app['request']->replace($input);
         }
 
-        $ba = $this->createBankAccount($input, $merchant, $this->mode);
-
-        //
-        // Send Email if it is not a workflow execution flow, since we want to send the request received email only
-        // once and not again after the workflow has been approved.
-        //
-        if ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === false)
-        {
-            $this->sendBankAccountChangeEmail($ba, $merchant, true);
-        }
-
-        $this->app['workflow']
-             ->setEntityAndId($oldBankAccount->getEntity(), $oldBankAccount->getId())
-             ->handle($oldBankAccountArray, $newBankAccountArray);
-
         return $this->repo->transaction(
-            function() use ($merchant, $ba, $oldBankAccount, $input, $detail)
+            function() use ($merchant, $oldBankAccountArray, $newBankAccountArray, $oldBankAccount, $input, $detail)
             {
+                //
+                // Creating a bank account entity to send email. This will be rolled back if workflow if enabled.
+                // Hence creating only single entity.
+                //
+                $ba = $this->createBankAccount($input, $merchant, $this->mode);
+
+                //
+                // Send Email if it is not a workflow execution flow, since we want to send the request received
+                // email only once and not again after the workflow has been approved.
+                //
+                if ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === false)
+                {
+                    $this->sendBankAccountChangeEmail($ba, $merchant, true);
+                }
+
+                $this->app['workflow']
+                     ->setEntityAndId($oldBankAccount->getEntity(), $oldBankAccount->getId())
+                     ->handle($oldBankAccountArray, $newBankAccountArray);
+
                 $this->repo->delete($oldBankAccount);
 
                 $this->sendBankAccountChangeEmail($ba, $merchant);

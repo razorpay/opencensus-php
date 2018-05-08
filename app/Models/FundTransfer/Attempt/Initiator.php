@@ -65,9 +65,7 @@ class Initiator extends Base\Core
      * @param string $channel
      * @return array
      */
-    protected function processBankTransfers(
-        array $input,
-        string $channel): array
+    protected function processBankTransfers(array $input, string $channel): array
     {
         return $this->repo->transaction(function() use ($input, $channel)
         {
@@ -84,12 +82,12 @@ class Initiator extends Base\Core
             $attempts = $this->repo
                              ->fund_transfer_attempt
                              ->getCreatedAttemptsBeforeTimestamp(
-                                 $timestamp,
-                                 $purpose,
-                                 $sourceType,
-                                 $channel,
-                                 $limit,
-                                 ['source']);
+                                $timestamp,
+                                $purpose,
+                                $sourceType,
+                                $channel,
+                                $limit,
+                                ['source']);
 
             $data[$channel] = $this->processFundTransferAttempts($purpose, $channel, $attempts);
 
