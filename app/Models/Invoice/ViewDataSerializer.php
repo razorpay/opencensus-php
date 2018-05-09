@@ -84,12 +84,13 @@ class ViewDataSerializer extends Base\Core
         return $serialized;
     }
 
-    protected function getMerchantKeyId(): string
+    /**
+     * @return string|null
+     */
+    protected function getMerchantKeyId()
     {
-        return $this->repo
-                    ->key
-                    ->getFirstActiveKeyForMerchantOrFail($this->merchant->getId())
-                    ->getPublicKey($this->mode);
+        return optional($this->repo->key->getFirstActiveKeyForMerchant($this->merchant->getId()))
+                ->getPublicKey($this->mode);
     }
 
     protected function serializeMerchantForHosted(): array
