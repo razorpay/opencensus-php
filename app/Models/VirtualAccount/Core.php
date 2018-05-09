@@ -57,20 +57,24 @@ class Core extends Base\Core
      */
     public function createOrFetchSharedVirtualAccount(Merchant $merchant)
     {
-        $virtualAccountId = Entity::SHARED_VIRTUAL_ACCOUNT;
+        $virtualAccountId = Entity::SHARED_ID;
 
         $virtualAccount = $this->repo->virtual_account->find($virtualAccountId);
 
         if ($virtualAccount === null)
         {
-            $virtualAccount = $this->createSharedVirtualAccount($merchant);
+            $virtualAccount = $this->createSharedVirtualAccount();
         }
 
         return $virtualAccount;
     }
 
-    protected function createSharedVirtualAccount(Merchant $merchant)
+    protected function createSharedVirtualAccount()
     {
+        $sharedMerchantId = Processor::getDefaultMerchantId();
+
+        $merchant = $this->repo->merchant->find($sharedMerchantId);
+
         $customer = (new Customer\Core)->createOrFetchSharedCustomer($merchant);
 
         $input = [
