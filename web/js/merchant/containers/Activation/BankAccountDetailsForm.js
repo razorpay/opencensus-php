@@ -7,8 +7,6 @@ import { required, validatePincodeLength } from 'rzp/utils/validators';
 import { states } from 'rzp/utils/constants';
 import { isWebkit } from 'rzp/utils/rzp-utils';
 
-import { getPincodeDetails } from 'merchant/modules/activation';
-
 function verifyAccountNumber(value, allValues, props) {
   return value !== allValues.bank_account_number
     ? "Bank Number doesn't match"
@@ -22,16 +20,6 @@ function validationAddressLength(value) {
 }
 
 export default class BankDetailsForm extends Component {
-  //Fetch state/city details based on pincode.
-  fetchPincodeDetails = e => {
-    const pincode = e.target.value;
-
-    getPincodeDetails(e.target.value, (city = null, state = null) => {
-      this.props.change('bank_beneficiary_city', city);
-      this.props.change('bank_beneficiary_state', state);
-    });
-  };
-
   render() {
     let {
       handleSubmit,

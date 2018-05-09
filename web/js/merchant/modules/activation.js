@@ -171,8 +171,6 @@ export default function(state = initialState, action) {
  * Fetch city and state based on pincode provided
  */
 export const getPincodeDetails = (pincode, changeFunc) => {
-  const mode = store.getState().session.mode;
-
   if (pincode.length === 6) {
     merchantFetch(`pincodes/${pincode}`)
       .then(response => {

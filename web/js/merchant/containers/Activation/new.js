@@ -179,6 +179,24 @@ export default class ActivationContainer extends React.Component {
       });
   };
 
+  // Fetch state_code and city to auto populate business_*_state and business_*_city fields in form
+  getPincodeDetails(pincode) {
+    return merchantFetch(`pincodes/${pincode}`)
+      .then(response => {
+        if (response.data) {
+          return {
+            city: response.data.city,
+            state_code: response.data.state_code,
+          };
+        }
+
+        return null;
+      })
+      .catch(err => {
+        return null;
+      });
+  }
+
   render() {
     const accountId = this.props.accountId; // If accountId present, then Welcome screen and Success screen are not required.
 
@@ -214,12 +232,13 @@ export default class ActivationContainer extends React.Component {
       modalClass = 'Activation--wizard';
       content = (
         <ActivationWizard
+          accountId={this.props.accountId}
           data={data}
           categories={categories}
           save={this.saveStep}
           saveFile={this.saveFile}
           submitForm={this.submitForm}
-          accountId={this.props.accountId}
+          getPincodeDetails={this.getPincodeDetails}
         />
       );
     }

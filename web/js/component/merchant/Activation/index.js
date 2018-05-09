@@ -210,59 +210,96 @@ export default class ActivationWizard extends React.Component {
   onChange = ({ target }) => {
     let stateName = target.getAttribute('data-name');
     let fieldValue = target.value;
+    let fieldName = target.name;
 
-    // Step 1: These 4 fields are directly filled on user's behalf,
-    // And marked dirty to be sent on click of Save
+    let sideEffectFieldsToUpdate = {}; // Some fields might lead to other fields get dirty. So, they also needs to be updated alongside
+
+    /*
+    * Step 1: These 4 fields are directly filled on user's behalf,
+    * And marked dirty to be sent on click of Save
+    * */
     if (stateName === 'same_address' && target.checked) {
-      const operationFields = {
-        business_operation_address:
-          this.state.dirty['business_registered_address'] ||
-          this.state.data['business_registered_address'],
-        business_operation_pin:
-          this.state.dirty['business_registered_pin'] ||
-          this.state.data['business_registered_pin'],
-        business_operation_city:
-          this.state.dirty['business_registered_city'] ||
-          this.state.data['business_registered_city'],
-        business_operation_state:
-          this.state.dirty['business_registered_state'] ||
-          this.state.data['business_registered_state'],
-      };
-
-      Object.keys(operationFields).forEach(key => {
-        if (typeof operationFields[key] == null) {
-          delete operationFields[key];
-        }
-      });
-
-      // Same step as else part of Step 2 below. Checking the box, sets the ALL operation fields dirty.
-      // And state.date must be updated so that view is updated
-      this.setState({
-        data: {
-          ...this.state.data,
-          ...operationFields,
-        },
-        dirty: {
-          ...this.state.dirty,
-          ...operationFields,
-        },
-      });
+      const { dirty, data } = this.state;
+      // Checking the box, sets the ALL operation fields also dirty.
+      sideEffectFieldsToUpdate['business_operation_address'] =
+        dirty['business_registered_address'] ||
+        data['business_registered_address'];
+      sideEffectFieldsToUpdate['business_operation_pin'] =
+        dirty['business_registered_pin'] || data['business_registered_pin'];
+      sideEffectFieldsToUpdate['business_operation_city'] =
+        dirty['business_registered_city'] || data['business_registered_city'];
+      sideEffectFieldsToUpdate['business_operation_state'] =
+        dirty['business_registered_state'] || data['business_registered_state'];
     }
 
-    // Step 2:
+    /* Step 2: If same_address is already ticked and any of business_registered fields are changed, then mark operational fields dirty;'.*/
+    if (this.state.same_address == '1') {
+      if (fieldName === 'business_registered_pin') {
+        sideEffectFieldsToUpdate['business_operation_pin'] = fieldValue;
+      } else if (fieldName === 'business_registered_city') {
+        sideEffectFieldsToUpdate['business_operation_city'] = fieldValue;
+      } else if (fieldName === 'business_registered_state') {
+        sideEffectFieldsToUpdate['business_operation_state'] = fieldValue;
+      }
+    }
+
+    /* Step 3: Auto fill city and state based on pin */
+    if (
+      fieldName === 'business_operation_pin' ||
+      fieldName === 'business_registered_pin'
+    ) {
+      if (fieldValue.length === 6) {
+        this.props.getPincodeDetails(fieldValue).then(data => {
+          if (data) {
+            const cityField = fieldName.slice(0, -3) + 'city';
+            const stateField = fieldName.slice(0, -3) + 'state';
+
+            sideEffectFieldsToUpdate[cityField] = data.city;
+            sideEffectFieldsToUpdate[stateField] = data.state_code;
+
+            // Input fields are uncontrolled, so needs to be updated directly
+            document.querySelector(
+              `.form-container [name=${cityField}]`
+            ).value =
+              data.city;
+            document.querySelector(
+              `.form-container [name=${stateField}]`
+            ).value =
+              data.state_code;
+          }
+        });
+      }
+    }
+
+    /* Step Last: */
     if (stateName) {
       this.setState({
         [stateName]: fieldValue,
       });
+
+      if (Object.keys(sideEffectFieldsToUpdate).length) {
+        this.setState({
+          data: {
+            ...this.state.data,
+            ...sideEffectFieldsToUpdate,
+          },
+          dirty: {
+            ...this.state.dirty,
+            ...sideEffectFieldsToUpdate,
+          },
+        });
+      }
     } else {
       this.setState({
         data: {
           ...this.state.data,
           [target.name]: fieldValue,
+          ...sideEffectFieldsToUpdate,
         },
         dirty: {
           ...this.state.dirty,
           [target.name]: fieldValue,
+          ...sideEffectFieldsToUpdate,
         },
       });
     }
@@ -382,8 +419,10 @@ export default class ActivationWizard extends React.Component {
         {/* Rest of the Content for business form */}
         {content && (
           <main
-            id="form-container"
-            class={this.state.showSubmitLayer ? 'block-scroll' : ''}
+            class={classList(
+              'form-container',
+              this.state.showSubmitLayer && 'block-scroll'
+            )}
           >
             <main-title>{FORM_TABS[activeTab]}</main-title>
 
@@ -395,8 +434,8 @@ export default class ActivationWizard extends React.Component {
         {/* Document Content */}
         {DOCUMENT_UPLOAD_STEP && (
           <main
-            id="form-container"
             class={classList(
+              'form-container',
               this.state.showSubmitLayer && 'block-scroll',
               content && 'main--hide'
             )}
