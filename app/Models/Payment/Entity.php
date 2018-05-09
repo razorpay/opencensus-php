@@ -26,6 +26,7 @@ use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Netbanking;
 
 /**
@@ -1355,6 +1356,11 @@ class Entity extends Base\PublicEntity
     public function isBankTransfer()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::BANK_TRANSFER);
+    }
+
+    public function isBharatQr()
+    {
+        return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE);
     }
 
     public function isGateway($gateway)

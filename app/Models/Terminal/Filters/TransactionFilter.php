@@ -6,17 +6,14 @@ use App;
 
 use RZP\Exception;
 use RZP\Models\Feature;
-use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\IIN\Flow;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
-use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant\Preferences;
-use RZP\Models\Customer\GatewayToken;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
@@ -37,6 +34,7 @@ class TransactionFilter extends Terminal\Filter
         'corporate',
         'mcc',
         'auth_type',
+        'bharat_qr',
     ];
 
     public function methodFilter($terminal)
@@ -91,7 +89,17 @@ class TransactionFilter extends Terminal\Filter
         {
             $network = $payment->card->getNetworkCode();
 
-            return Gateway::isCardNetworkSupported($network, $terminal->getGateway(), $payment->isRecurring());
+            if ($payment->isBharatQr() === true)
+            {
+                $supported = ((Gateway::isBharatQrCardNetworkSupported($network, $terminal->getGateway())) and
+                              (empty($terminal[strtolower($network) . '_mpan']) === false));
+            }
+            else
+            {
+                $supported =  Gateway::isCardNetworkSupported($network, $terminal->getGateway(), $payment->isRecurring());
+            }
+
+            return $supported;
         }
 
         return true;
@@ -296,7 +304,14 @@ class TransactionFilter extends Terminal\Filter
         {
             $flow = $payment->getMetadata('flow', 'collect');
 
-            if ($flow === 'intent')
+            if ($payment->isBharatQr() === true)
+            {
+                if (empty($terminal->getVpa()) === true)
+                {
+                    return false;
+                }
+            }
+            else if ($flow === 'intent')
             {
                 $gateway = $terminal->getGateway();
 
@@ -601,5 +616,17 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
+    }
+
+    public function bharatQrFilter($terminal)
+    {
+        if ($this->input['payment']->isBharatQr() === true)
+        {
+            return $terminal->isBharatQr();
+        }
+        else
+        {
+            return ($terminal->isBharatQr() === false);
+        }
     }
 }
