@@ -1,12 +1,8 @@
 <?php
 
-$hostname = 'localhost';
-if (getenv('HOSTNAME') !== false)
-{
-    $hostname = getenv('HOSTNAME');
-}
+use RZP\Services\Metrics;
 
-return array(
+return [
 
     /*
     |--------------------------------------------------------------------------
@@ -46,7 +42,17 @@ return array(
 
     'log_max_files' => 5,
 
-    'logpath' => storage_path() . '/logs/' . $hostname . '-trace.log',
+    'logpath' => storage_path() . '/logs/' . env('HOSTNAME', 'localhost') . '-trace.log',
 
     'trace_code_class' => RZP\Trace\TraceCode::class,
-);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Handlers in addition to what trace package already pushes to monolog.
+    | Each member of list must be an object of class implementing Monolog\Handler\HandlerInterface.
+    |--------------------------------------------------------------------------
+    */
+    'additional_handlers' => [
+        Metrics\TraceHandler::class,
+    ],
+];
