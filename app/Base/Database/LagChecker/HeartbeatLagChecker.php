@@ -2,8 +2,6 @@
 
 namespace RZP\Base\Database\LagChecker;
 
-use Closure;
-
 /**
  * Checks replication lag by querying heartbeat table on the
  * replica connection.
@@ -19,7 +17,10 @@ class HeartbeatLagChecker implements LagChecker
         $this->config = $config;
     }
 
-    public function useReadPdoIfApplicable(Closure $readPdo)
+    /**
+     * {@inheritDoc}
+     */
+    public function useReadPdoIfApplicable($readPdo)
     {
         return null;
     }

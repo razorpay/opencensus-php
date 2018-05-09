@@ -2198,11 +2198,6 @@ final class Route
         return in_array($route, self::CRITICAL_ROUTES, true);
     }
 
-    public static function getSlaveRoutes()
-    {
-        return self::$slaveRoutes;
-    }
-
     public function getUrl($routeName, array $parameters = [], $key = '', $secret = '')
     {
         if (($secret === '') and
