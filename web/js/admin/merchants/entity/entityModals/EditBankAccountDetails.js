@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { ModalContent } from 'component/Modal';
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
-import { beneficiaryStateMap } from '../entity-resources';
 import { isWorkflow } from 'common/util';
 import Form from 'ui/Form';
 import Field, { SelectField } from 'ui/Field';

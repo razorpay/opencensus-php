@@ -7,6 +7,7 @@ import fetch, { adminFetch } from 'common/fetch';
 import { notifyError, notifySuccess } from 'common/modal';
 import { titleCase } from 'common/util';
 
+import { states } from 'rzp/utils/constants';
 import Form from 'ui/Form';
 import Field, { SelectField, TextAreaField, CheckField } from 'ui/Field';
 import Table from 'ui/Table';
@@ -213,7 +214,10 @@ export default class BusinessDetails extends Component {
               <Field
                 label="Registration Address State"
                 name="business_registered_state"
-                defaultValue={merchantDetails.business_registered_state}
+                defaultValue={
+                  merchantDetails.business_registered_state &&
+                  states[merchantDetails.business_registered_state]
+                }
                 disabled
               />
               <CheckField
@@ -273,7 +277,10 @@ export default class BusinessDetails extends Component {
               <Field
                 label="Operation Address State"
                 name="business_operation_state"
-                defaultValue={merchantDetails.business_operation_state}
+                defaultValue={
+                  merchantDetails.business_operation_state &&
+                  states[merchantDetails.business_operation_state]
+                }
                 disabled
               />
               <CheckField

@@ -1,7 +1,15 @@
 import Input from 'component/Input';
+import { states } from 'rzp/utils/constants';
 
 const NGO_BUSINESS_TYPE = 7;
 const differentAddress = activation => activation.state.same_address === '0';
+
+const stateOptions = Object.keys(states).map(c => {
+  return {
+    name: c,
+    label: states[c],
+  };
+});
 
 const contactFields = [
   {
@@ -65,6 +73,7 @@ const businessFields1 = [
     _cmp: Input.Select,
     options: [],
     _optionsFn: function(activation, categories) {
+      // For setting options dynamically on basis some condition or other field selection
       const userSelection = activation.state.data.business_category;
 
       if (userSelection && categories[userSelection]) {
@@ -188,6 +197,8 @@ const businessFields2 = [
     {
       name: 'business_registered_state',
       label: 'State',
+      _cmp: Input.Select,
+      options: stateOptions,
     },
   ],
   {
@@ -219,6 +230,8 @@ const businessFields2 = [
       name: 'business_operation_state',
       label: 'State',
       _when: differentAddress,
+      _cmp: Input.Select,
+      options: stateOptions,
     },
   ],
   [

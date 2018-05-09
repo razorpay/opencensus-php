@@ -209,6 +209,10 @@ export default class ActivationWizard extends React.Component {
 
   onChange = ({ target }) => {
     let stateName = target.getAttribute('data-name');
+    let fieldValue = target.value;
+
+    // Step 1: These 4 fields are directly filled on user's behalf,
+    // And marked dirty to be sent on click of Save
     if (stateName === 'same_address' && target.checked) {
       const operationFields = {
         business_operation_address:
@@ -231,7 +235,13 @@ export default class ActivationWizard extends React.Component {
         }
       });
 
+      // Same step as else part of Step 2 below. Checking the box, sets the ALL operation fields dirty.
+      // And state.date must be updated so that view is updated
       this.setState({
+        data: {
+          ...this.state.data,
+          ...operationFields,
+        },
         dirty: {
           ...this.state.dirty,
           ...operationFields,
@@ -239,19 +249,20 @@ export default class ActivationWizard extends React.Component {
       });
     }
 
+    // Step 2:
     if (stateName) {
       this.setState({
-        [stateName]: target.value,
+        [stateName]: fieldValue,
       });
     } else {
       this.setState({
         data: {
           ...this.state.data,
-          [target.name]: target.value,
+          [target.name]: fieldValue,
         },
         dirty: {
           ...this.state.dirty,
-          [target.name]: target.value,
+          [target.name]: fieldValue,
         },
       });
     }
