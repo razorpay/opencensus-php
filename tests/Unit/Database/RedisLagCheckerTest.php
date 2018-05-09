@@ -32,6 +32,22 @@ class RedisLagCheckerTest extends TestCase
         $this->assertInstanceOf(PDO::class, $result);
     }
 
+    public function testReturnsPdoConnectionWhenInitializedConnectionPassed()
+    {
+        $lagChecker = new RedisLagChecker([
+            'flag' => ConfigKey::SKIP_SLAVE,
+        ]);
+
+        Cache::shouldReceive('get')
+                ->once()
+                ->with(ConfigKey::SKIP_SLAVE)
+                ->andReturn(false);
+
+        $result = $lagChecker->useReadPdoIfApplicable(new MockPDO());
+
+        $this->assertInstanceOf(PDO::class, $result);
+    }
+
     public function testReturnsNullWhenFlagSet()
     {
         $lagChecker = new RedisLagChecker([

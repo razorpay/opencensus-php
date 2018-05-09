@@ -1623,14 +1623,14 @@ final class Route
         'invitation_fetch'                         => '*',
         'pricing_create_plan'                      => Permission::CREATE_PRICING_PLAN,
         'merchant_get_pricing'                     => Permission::VIEW_MERCHANT_PRICING,
-        'merchant_invoice_update_gstin'            => Permission::EDIT_MERCHANT_INVOICE_GSTIN,
+        'merchant_invoice_update_gstin'            => Permission::MERCHANT_INVOICE_EDIT,
         'merchant_details_fetch'                   => '*',
         'setl_retry'                               => Permission::RETRY_SETTLEMENT,
         'setl_update_channel_bulk'                 => Permission::SETTLEMENT_BULK_UPDATE,
         'transaction_bulk_update'                  => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_reconcile'                           => Permission::SETTLEMENT_BULK_UPDATE,
         'merchant_batches'                         => Permission::MERCHANT_BATCH_UPLOAD,
-        'merchant_invoice_add_bulk'                => '*',
+        'merchant_invoice_add_bulk'                => Permission::MERCHANT_INVOICE_EDIT,
         'payment_dispute_create'                   => Permission::CREATE_DISPUTE,
         'dispute_edit'                             => Permission::EDIT_DISPUTE,
         'settings_fetch'                           => Permission::VIEW_WALLET_CONFIG,
@@ -2196,11 +2196,6 @@ final class Route
         }
 
         return in_array($route, self::CRITICAL_ROUTES, true);
-    }
-
-    public static function getSlaveRoutes()
-    {
-        return self::$slaveRoutes;
     }
 
     public function getUrl($routeName, array $parameters = [], $key = '', $secret = '')

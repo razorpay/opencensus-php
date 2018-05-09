@@ -114,6 +114,13 @@ class NodalAccount extends NodalBase\FileProcessor
 
             $beneId = ($this->isRefund() === true) ? '' : $ba->getId();
 
+            $narration = '';
+
+            if ($this->isRefund() === true)
+            {
+                $narration = $entity->getNarration() ?? 'Razorpay Refund';
+            }
+
             $rows[] = [
                 Headings::PAYMENT_MODE              => $mode,
                 Headings::BENEFICIARY_NAME          => $ba->getBeneficiaryName(),
@@ -122,7 +129,7 @@ class NodalAccount extends NodalBase\FileProcessor
                 Headings::AMOUNT                    => $this->formatAmount($amount),
                 Headings::PAYMENT_DATE              => $this->date,
                 Headings::DEBIT_ACCOUNT_NO          => self::DEBIT_ACCOUNT_NO,
-                Headings::CREDIT_NARRATION          => $entity->getNarration() ?? 'Razorpay Refund',
+                Headings::CREDIT_NARRATION          => $narration,
                 Headings::INSTRUMENT_REFERENCE      => $entity->getId(),
                 Headings::DUMMY                     => '',
                 Headings::DUMMY2                    => '',

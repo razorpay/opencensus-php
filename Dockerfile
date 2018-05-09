@@ -16,10 +16,10 @@ RUN composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
 
 RUN mkdir public && \
     echo ${GIT_COMMIT_HASH} > public/commit.txt && \
-    apk add --no-cache apache2 musl && sed -i 's#PidFile "/run/.*#Pidfile /tmp/run/httpd.pid"#g' /etc/apache2/conf.d/mpm.conf && \
+    apk add --no-cache apache2 php7-apache2 musl && sed -i 's#PidFile "/run/.*#Pidfile /tmp/run/httpd.pid"#g' /etc/apache2/conf.d/mpm.conf && \
     sed -i 's/#LoadModule rewrite_module*/LoadModule rewrite_module/' /etc/apache2/httpd.conf
 
-COPY --chown=nginx . /app/
+COPY --chown=apache:www-data . /app/
 # This step can't run without some classes from above step
 RUN composer dump-autoload && php artisan optimize
 
