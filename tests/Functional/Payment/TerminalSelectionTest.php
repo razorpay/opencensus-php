@@ -1393,6 +1393,8 @@ class TerminalSelectionTest extends TestCase
 
     public function testHitachiFilterWithBharatQrFilter()
     {
+        $this->mockTokenex();
+
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $hitachiTerminal = $this->fixtures->create('terminal:shared_hitachi_terminal');
@@ -1400,6 +1402,8 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->create('terminal:bharat_qr_terminal');
 
         $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '5257834104683413';
 
         $this->doAuthPayment($payment);
 

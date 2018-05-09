@@ -181,7 +181,7 @@ class RepositoryManager extends Illuminate\Support\Manager
         $this->db->rollback();
     }
 
-    public function beginTransactionAndRollback(closure $callback)
+    public function beginTransactionAndRollback(Closure $callback)
     {
         try
         {

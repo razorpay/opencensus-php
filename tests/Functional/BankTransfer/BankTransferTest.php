@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\BankTransfer;
 
+use RZP\Constants\Entity;
 use RZP\Models\Payment\Refund;
 use RZP\Models\BankTransfer\Entity as E;
 use RZP\Tests\Functional\TestCase;
@@ -947,8 +948,8 @@ class BankTransferTest extends TestCase
         $this->assertEquals('10000000000000', $virtualAccount['merchant_id']);
         $this->assertEquals(5000000, $virtualAccount['amount_paid']);
         $this->assertEquals(5000000, $virtualAccount['amount_received']);
-        $this->assertEquals(5000000, $virtualAccount['amount_expected']);
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals('va_sharedvirtuala', $virtualAccount['id']);
+        $this->assertEquals('active', $virtualAccount['status']);
 
         // Payment is not captured, but left in authorized state for auto-refund
         $payment =  $this->getLastEntity('payment', true);
@@ -1012,8 +1013,8 @@ class BankTransferTest extends TestCase
         $this->assertEquals('10000000000000', $virtualAccount['merchant_id']);
         $this->assertEquals(5000000, $virtualAccount['amount_paid']);
         $this->assertEquals(5000000, $virtualAccount['amount_received']);
-        $this->assertEquals(5000000, $virtualAccount['amount_expected']);
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals(null, $virtualAccount['amount_expected']);
+        $this->assertEquals('active', $virtualAccount['status']);
 
         // Payment is not captured, but left in authorized state for auto-refund
         $payment =  $this->getLastEntity('payment', true);

@@ -622,7 +622,7 @@ class TransactionFilter extends Terminal\Filter
     {
         if ($this->input['payment']->isBharatQr() === true)
         {
-            return $terminal->isBharatQr();
+            return ($terminal->isBharatQr() === true);
         }
         else
         {
