@@ -3,13 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Upi\Hulk;
 
 use Cache;
-use Closure;
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use Mail;
-
-use RZP\Exception\RuntimeException;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -47,6 +41,24 @@ class HulkGatewayTest extends TestCase
         $this->checkPaymentStatus($paymentId, $status);
 
         return $paymentId;
+    }
+
+    public function testPaymentCallback()
+    {
+        $this->doAuthPaymentViaAjaxRoute(array_except($this->payment, 'description'));
+
+        $payment = $this->getDbLastPayment();
+        $upi     = $this->getDbLastEntity('upi');
+
+        $this->assertSame('created', $payment->getStatus());
+        $this->assertSame('initiated', $upi->status_code);
+
+        $callback = $this->mockServer()->getAsyncCallbackRequest($upi, $payment);
+
+        $response = $this->makeRequestAndGetContent($callback);
+
+        // We should have gotten a successful response
+        //$this->assertEquals(['success' => true], $response);
     }
 
     public function testPaymentWithExpiryPublicAuth()

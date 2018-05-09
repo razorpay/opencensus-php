@@ -5,11 +5,12 @@ namespace RZP\Gateway\Upi\Hulk\Mock;
 use App;
 use Carbon\Carbon;
 use RZP\Gateway\Upi\Hulk;
-use RZP\Models\Payment;
 use phpseclib\Crypt\RSA;
 use RZP\Gateway\Base;
 use RZP\Gateway\Utility;
 use RZP\Gateway\Upi\Hulk\Fields;
+use RZP\Gateway\Upi\Base\Entity as Upi;
+use RZP\Models\Payment\Entity as Payment;
 
 class Server extends Base\Mock\Server
 {
@@ -68,7 +69,43 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input);
 
+        $content = $this->getP2pEntity();
+
+        $this->content($content, 'verify');
+
+        return $this->makeJsonResponse($content);
+    }
+
+    public function getAsyncCallbackRequest(Upi $upi, Payment $payment)
+    {
+        $override = [
+            Fields::MERCHANT_REFERENCE_ID   => $payment->getId(),
+            Fields::ID                      => $upi->getGatewayPaymentId(),
+        ];
+
+        $data = $this->getP2pEntity($override);
+
         $content = [
+            'type'      => 'p2p_completed',
+            'data'      => $data,
+            'timestamp' => Carbon::now()->getTimestamp(),
+        ];
+
+        $request = [
+            'url'       => '/callback/upi_hulk',
+            'method'    => 'post',
+            'content'   => $content,
+            'server'   => [
+                'HTTP_X-Hulk-Signature' => $this->getHmac(json_encode($content)),
+            ]
+        ];
+
+        return $request;
+    }
+
+    protected function getP2pEntity(array $override = [])
+    {
+        $p2p = [
             Fields::ID               => 'p2p_A11zpSL1413XHi',
             Fields::TXN_ID           => 'HDF2C8B11D1FBDB4FC78F4E37A19AB6413D',
             Fields::SENDER_ID        => '9X0HrhNT68ZWeX',
@@ -94,12 +131,9 @@ class Server extends Base\Mock\Server
                 'entity'             => 'vpa',
                 'address'            => 'testmerchant@razor',
             ],
-
         ];
 
-        $this->content($content, 'verify');
-
-        return $this->makeJsonResponse($content);
+        return array_replace_recursive($p2p, $override);
     }
 
     protected function makeJsonResponse(array $content)
@@ -111,5 +145,10 @@ class Server extends Base\Mock\Server
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
 
         return $response;
+    }
+
+    protected function getHmac(string $content)
+    {
+        return hash_hmac('sha256', $content, 'hulk_api_password');
     }
 }

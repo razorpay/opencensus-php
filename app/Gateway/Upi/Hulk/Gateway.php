@@ -237,7 +237,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === Mode::TEST)
         {
-            return $this->config['test_merchant_id'];
+            return 'rzp_test_' . $this->input['merchant']['id'];
         }
 
         return 'rzp_live_' . $this->input['merchant']['id'];
@@ -262,17 +262,18 @@ class Gateway extends Base\Gateway
         $collectByTimestamp = Carbon::now(Timezone::IST)->addMinutes($expiryTime)->getTimestamp();
 
         $content = [
-            Fields::TYPE             => Type::PULL,
-            Fields::AMOUNT           => $payment['amount'],
-            Fields::CURRENCY         => $input['payment']['currency'],
-            Fields::EXPIRE_AT        => $collectByTimestamp,
-            Fields::SENDER           => [
+            Fields::TYPE                    => Type::PULL,
+            Fields::AMOUNT                  => $payment['amount'],
+            Fields::CURRENCY                => $input['payment']['currency'],
+            Fields::EXPIRE_AT               => $collectByTimestamp,
+            Fields::SENDER                  => [
                 Fields::ADDRESS => $input['payment']['vpa'],
             ],
-            Fields::DESCRIPTION      => $this->getPaymentRemark($input),
-            Fields::NOTES            => [
-                'razorpay_payment_id' => $payment['id'],
+            Fields::DESCRIPTION             => $this->getPaymentRemark($input),
+            Fields::NOTES                   => [
+                'razorpay_payment_id'       => $payment['id'],
             ],
+            Fields::MERCHANT_REFERENCE_ID   => $payment['id'],
         ];
 
         $request = $this->getStandardRequestArray($content);
@@ -293,13 +294,14 @@ class Gateway extends Base\Gateway
         $payment = $input['payment'];
 
         $content = [
-            Fields::TYPE             => Type::EXPECTED_PUSH,
-            Fields::AMOUNT           => $payment['amount'],
-            Fields::CURRENCY         => $payment['currency'],
-            Fields::DESCRIPTION      => $this->getPaymentRemark($input),
-            Fields::NOTES            => [
+            Fields::TYPE                    => Type::EXPECTED_PUSH,
+            Fields::AMOUNT                  => $payment['amount'],
+            Fields::CURRENCY                => $payment['currency'],
+            Fields::DESCRIPTION             => $this->getPaymentRemark($input),
+            Fields::NOTES                   => [
                 'razorpay_payment_id' => $payment['id']
             ],
+            Fields::MERCHANT_REFERENCE_ID   => $payment['id'],
         ];
 
         if ($input['merchant']->isTPVRequired() === true)
