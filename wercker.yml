@@ -53,9 +53,6 @@ build:
               zend.assertions=1
               assert.exception=On
       - script:
-          name: List PHP extensions
-          code: php -m
-      - script:
           name: Composer set-up
           code: |
               composer config -g github-oauth.github.com $github_token
