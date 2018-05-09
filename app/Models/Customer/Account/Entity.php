@@ -43,6 +43,9 @@ class Entity extends Base\PublicEntity
     const BILLING_ADDRESS_ID    = 'billing_address_id';
     const SHIPPING_ADDRESS_ID   = 'shipping_address_id';
 
+    // shared customer id
+    const SHARED_CUSTOMER_ID = 'sharedcustomer';
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = [

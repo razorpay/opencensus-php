@@ -72,7 +72,7 @@ class Core extends Base\Core
 
     protected function createSharedVirtualAccount(Merchant $merchant)
     {
-        $customers = $this->repo->customer->fetchByMerchantId($merchant->getId());
+        $customer = (new \RZP\Models\Customer\Core())->createOrFetchSharedCustomer($merchant);
 
         $input = [
             Entity::RECEIVERS => [
@@ -80,7 +80,7 @@ class Core extends Base\Core
             ],
         ];
 
-        return $this->create($input, $merchant, $customers[0], null, true);
+        return $this->create($input, $merchant, $customer, null, true);
     }
 
     public function createWithoutReceivers(array $input, Merchant $merchant)
