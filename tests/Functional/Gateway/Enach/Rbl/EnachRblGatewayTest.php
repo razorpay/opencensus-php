@@ -182,7 +182,27 @@ class EnachRblGatewayTest extends TestCase
 
     public function testRegisterFileGeneration()
     {
-        // TODO: FILL THIS UP!
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment['bank_account'] = [
+            'account_number'    => '914010009305862',
+            'ifsc'              => 'utib0000123',
+            'name'              => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertEquals('authorize', $enach['action']);
+        $this->assertEquals(0, $enach['amount']);
+        $this->assertNotNull($enach['signed_xml']);
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['sent_at']);
     }
 
     public function testRegisterSuccessReconciliation()

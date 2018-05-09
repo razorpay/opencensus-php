@@ -40,6 +40,39 @@ return [
         ]
     ],
 
+    'testRegisterFileGeneration' => [
+        'request' => [
+            'content' => [
+                'type'    => 'emandate_register',
+                'targets' => ['enach_rbl'],
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'file_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emandate@razorpay.com',
+                        'type'                => 'emandate_register',
+                        'target'              => 'enach_rbl',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'tokenWebhookData' => [
         'mode'  => 'test',
         'event' => [
