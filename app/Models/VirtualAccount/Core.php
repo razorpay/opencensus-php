@@ -29,7 +29,7 @@ class Core extends Base\Core
 
             if ($shared === true)
             {
-                $virtualAccount->setId(Entity::SHARED_VIRTUAL_ACCOUNT);
+                $virtualAccount->setId(Entity::SHARED_ID);
             }
 
             $this->validateDescriptor($virtualAccount);
@@ -55,7 +55,7 @@ class Core extends Base\Core
      *
      * @param Merchant $merchant
      */
-    public function createOrFetchSharedVirtualAccount(Merchant $merchant)
+    public function createOrFetchSharedVirtualAccount()
     {
         $virtualAccountId = Entity::SHARED_ID;
 
@@ -79,7 +79,10 @@ class Core extends Base\Core
 
         $input = [
             Entity::RECEIVERS => [
-                Entity::TYPES => [Receiver::QR_CODE, Receiver::BANK_ACCOUNT]
+                Entity::TYPES => [
+                    Receiver::QR_CODE,
+                    Receiver::BANK_ACCOUNT
+                ]
             ],
         ];
 

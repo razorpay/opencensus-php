@@ -948,7 +948,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('10000000000000', $virtualAccount['merchant_id']);
         $this->assertEquals(5000000, $virtualAccount['amount_paid']);
         $this->assertEquals(5000000, $virtualAccount['amount_received']);
-        $this->assertEquals('va_sharedvirtuala', $virtualAccount['id']);
+        $this->assertEquals('va_ShrdVirtualAcc', $virtualAccount['id']);
         $this->assertEquals('active', $virtualAccount['status']);
 
         // Payment is not captured, but left in authorized state for auto-refund
@@ -1015,6 +1015,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(5000000, $virtualAccount['amount_received']);
         $this->assertEquals(null, $virtualAccount['amount_expected']);
         $this->assertEquals('active', $virtualAccount['status']);
+        $this->assertEquals('va_ShrdVirtualAcc', $virtualAccount['id']);
 
         // Payment is not captured, but left in authorized state for auto-refund
         $payment =  $this->getLastEntity('payment', true);
