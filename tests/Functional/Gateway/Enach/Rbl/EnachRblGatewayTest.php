@@ -202,7 +202,14 @@ class EnachRblGatewayTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertNotNull($response['sent_at']);
+        $this->assertNotNull($response['items'][0]['sent_at']);
+
+        $file = $this->getDbLastEntityToArray('file_store');
+
+        $this->assertEquals('gateway_file', $file['entity_type']);
+        $this->assertEquals('rbl_enach_register', $file['type']);
+        $this->assertEquals('zip', $file['extension']);
+        $this->assertEquals('application/x-compressed', $file['mime']);
     }
 
     public function testRegisterSuccessReconciliation()
