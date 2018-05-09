@@ -11,9 +11,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 {
     protected $netbankingRepo;
 
-    public function __construct()
+    public function __construct(string $gateway = null)
     {
-        parent::__construct();
+        parent::__construct($gateway);
 
         $this->netbankingRepo = $this->repo->netbanking;
     }

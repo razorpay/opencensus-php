@@ -15,9 +15,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_BANK_CUSTOMER_ID   = 'User Id';
     const COLUMN_BANK_CUSTOMER_NAME = 'User Name';
 
-    public function __construct()
+    public function __construct(string $gateway = null)
     {
-        parent::__construct();
+        parent::__construct($gateway);
 
         $this->netbankingRepo = $this->repo->netbanking;
     }

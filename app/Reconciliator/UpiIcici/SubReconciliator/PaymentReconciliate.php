@@ -58,7 +58,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                 'trace_code' => TraceCode::RECON_CRITICAL_ALERT,
                 'message'    => 'Recon status is neither success, rejected or failed',
                 'payment_id' => $this->payment->getId(),
-                'gateway'    => get_called_class()
+                'gateway'    => $this->gateway
             ]);
 
         return Status::FAILED;
@@ -75,7 +75,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
-                    'gateway'         => get_called_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             return false;
