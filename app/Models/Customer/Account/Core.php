@@ -80,11 +80,19 @@ class Core extends Base\Core
 
     public function createOrFetchSharedCustomer(Merchant\Entity $merchant)
     {
-        $customer = $this->repo->customer->find(Entity::SHARED_CUSTOMER_ID);
+        $customer = $this->repo->customer->findByContactEmailAndMerchant(
+            Entity::SHARED_CUSTOMER_CONTACT,
+            Entity::SHARED_CUSTOMER_EMAIL,
+            $merchant);
 
         if ($customer === null)
         {
-            $customer = $this->create([], $merchant, false, true);
+            $input = [
+                Entity::EMAIL   => Entity::SHARED_CUSTOMER_EMAIL,
+                Entity::CONTACT => Entity::SHARED_CUSTOMER_CONTACT,
+            ];
+
+            $customer = $this->create($input, $merchant, false);
         }
 
         return $customer;
@@ -99,16 +107,11 @@ class Core extends Base\Core
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
      */
-    protected function create(array $input, Merchant\Entity $merchant, $failOnDuplicate = true, $shared = false)
+    protected function create(array $input, Merchant\Entity $merchant, $failOnDuplicate = true)
     {
         $this->trace->info(TraceCode::CUSTOMER_CREATE, $input);
 
         $customer = (new Customer\Entity)->build($input);
-
-        if ($shared === true)
-        {
-            $customer->setId(Entity::SHARED_CUSTOMER_ID);
-        }
 
         $customer->merchant()->associate($merchant);
 
