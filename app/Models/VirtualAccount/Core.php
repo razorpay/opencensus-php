@@ -4,21 +4,20 @@ namespace RZP\Models\VirtualAccount;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\BharatQr\Constants;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Models\Customer;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
-use RZP\Models\Customer\Entity as Customer;
 
 class Core extends Base\Core
 {
     public function create(
         array $input,
         Merchant $merchant,
-        Customer $customer = null,
+        Customer\Entity $customer = null,
         Order $order = null,
         bool $shared = false): Entity
     {
@@ -26,8 +25,6 @@ class Core extends Base\Core
 
         $virtualAccount = $this->repo->transaction(function() use ($virtualAccount, $input, $customer, $order, $shared)
         {
-            $shared = false;
-
             $virtualAccount->build($input);
 
             if ($shared === true)
@@ -74,7 +71,7 @@ class Core extends Base\Core
 
     protected function createSharedVirtualAccount(Merchant $merchant)
     {
-        $customers = $this->repo->customer->fetchByMerchantId($merchant->getId());
+        $customer = (new Customer\Core)->createOrFetchSharedCustomer($merchant);
 
         $input = [
             Entity::RECEIVERS => [
@@ -82,7 +79,7 @@ class Core extends Base\Core
             ],
         ];
 
-        return $this->create($input, $merchant, $customers[0], null, true);
+        return $this->create($input, $merchant, $customer, null, true);
     }
 
     public function createWithoutReceivers(array $input, Merchant $merchant)
