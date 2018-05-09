@@ -3,8 +3,12 @@
 namespace RZP\Models\Batch\Processor\Emandate\Register;
 
  use RZP\Exception;
+ use RZP\Gateway\Base\Action;
+ use RZP\Models\Payment;
  use RZP\Models\Customer\Token;
  use RZP\Models\Payment\Gateway;
+ use RZP\Gateway\Base\Entity as GatewayEntity;
+ use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
  use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as Headings;
 
  class Hdfc extends Base
@@ -13,6 +17,13 @@ namespace RZP\Models\Batch\Processor\Emandate\Register;
 
      const SUCCESS   = 'success';
      const REJECT    = 'reject';
+
+     protected  $gatewayPaymentMapping = [
+         Base::TOKEN_ID       => NetbankingEntity::SI_TOKEN,
+         Base::STATUS         => NetbankingEntity::SI_STATUS,
+         Base::REMARK         => NetbankingEntity::SI_MSG,
+         Base::ACCOUNT_NUMBER => NetbankingEntity::ACCOUNT_NUMBER,
+     ];
 
      protected static $statusMap = [
         self::SUCCESS => Token\RecurringStatus::CONFIRMED,
@@ -31,10 +42,11 @@ namespace RZP\Models\Batch\Processor\Emandate\Register;
         $accountNumber = $entry[Headings::CUSTOMER_ACCOUNT_NUMBER];
 
         return [
-            'token_id'       => $tokenId,
-            'status'         => $status,
-            'remark'         => $remark,
-            'account_number' => $accountNumber,
+            Base::TOKEN_ID         => $tokenId,
+            Base::GATEWAY_TOKEN_ID => $tokenId,
+            Base::STATUS           => $status,
+            Base::REMARK           => $remark,
+            Base::ACCOUNT_NUMBER   => $accountNumber,
         ];
      }
 
@@ -48,5 +60,10 @@ namespace RZP\Models\Batch\Processor\Emandate\Register;
          }
 
          return self::$statusMap[$gatewayTokenStatus];
+     }
+
+     protected function getGatewayPayment(Payment\Entity $payment)
+     {
+         return $this->repo->netbanking->findByPaymentIdAndAction($payment['id'], Action::AUTHORIZE);
      }
  }

@@ -2,13 +2,30 @@
 
 namespace RZP\Models\Batch\Processor\Emandate\Register;
 
-use RZP\Exception;
+use RZP\Models\Batch;
+use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\Customer\Token;
+use RZP\Gateway\Base\Entity as GatewayEntity;
 use RZP\Models\Batch\Processor\Base as BaseProcessor;
 
 class Base extends BaseProcessor
 {
+    const TOKEN_ID         = 'token_id';
+    const GATEWAY_TOKEN_ID = 'gateway_token_id';
+    const STATUS           = 'status';
+    const REMARK           = 'remark';
+    const ACCOUNT_NUMBER   = 'account_number';
+
+    /**
+     * @var Payment\Processor\Processor
+     */
+    protected $paymentProcessor;
+
+    // Used for mapping the file content to the corresponding gateway entity
+    protected $gatewayPaymentMapping;
+
     protected function processEntry(array & $entry)
     {
         //
@@ -20,38 +37,32 @@ class Base extends BaseProcessor
         //
         $parsedData = $this->getDataFromRow($entry);
 
-        $tokenId = $parsedData['token_id'];
+        $tokenId = $parsedData[self::TOKEN_ID];
 
-        $accountNumber = $parsedData['account_number'];
+        $gatewayToken = $parsedData[self::GATEWAY_TOKEN_ID];
 
-        $remark = $parsedData['remark'];
+        $accountNumber = $parsedData[self::ACCOUNT_NUMBER];
+
+        $payment = $this->repo->payment->fetchByTokenId($tokenId);
+
+        $gatewayPayment = $this->getGatewayPayment($payment);
 
         $token = $this->repo->token->getTokenByIdAndAccountNumber($tokenId, $accountNumber);
 
-        $currentRecurringStatus = $token->getRecurringStatus();
+        $oldRecurringStatus = $token->getRecurringStatus();
 
-        $parsedStatus = $parsedData['status'];
+        $this->paymentProcessor = (new Payment\Processor\Processor($payment->merchant));
 
-        if (Token\RecurringStatus::isFinalStatus($currentRecurringStatus) === true)
+        $this->repo->transaction(function() use ($payment, $token, $gatewayPayment, $gatewayToken, $parsedData)
         {
-            if ($currentRecurringStatus !== $parsedStatus)
-            {
-                throw new Exception\LogicException(
-                    'Token status mismatch: current_status: ' . $currentRecurringStatus . ', parsed_status: ' . $parsedStatus);
-            }
+            $this->updateGatewayPaymentEntityAndCapturePayment($payment, $gatewayPayment, $parsedData);
 
-            // If the token has already been updated with the correct value
-            return;
-        }
+            $this->updateTokenEntity($token, $parsedData);
+        });
 
-        $tokenParams = [
-            Token\Entity::RECURRING_STATUS          => $parsedStatus,
-            Token\Entity::RECURRING_FAILURE_REASON  => $remark,
-        ];
+        $this->paymentProcessor->eventTokenStatus($token, $oldRecurringStatus);
 
-        (new Token\Core)->updateTokenFromEmandateGatewayData($token, $tokenParams);
-
-        $this->repo->saveOrFail($token);
+        $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
     }
 
     protected function shouldMarkProcessedOnFailures(): bool
@@ -77,5 +88,123 @@ class Base extends BaseProcessor
     protected function sendProcessedMail()
     {
         return;
+    }
+
+    /**
+     * To be overridden by the child classes.
+     *
+     * @param Payment\Entity $payment
+     */
+    protected function getGatewayPayment(Payment\Entity $payment)
+    {
+        throw new \BadMethodCallException();
+    }
+
+    protected function updateGatewayPaymentEntityAndCapturePayment(
+        Payment\Entity $payment,
+        GatewayEntity $gatewayPayment,
+        array $content
+    )
+    {
+        $data = $this->getMappedAttributes($content);
+
+        $gatewayPayment->fill($data);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        //
+        // We do capture ONLY if registration is successful AND it's not already captured.
+        //
+        if (($content[self::STATUS] === Token\RecurringStatus::CONFIRMED) and
+            ($payment->hasBeenCaptured() === false))
+        {
+            $this->captureAuthorizedPayment($payment);
+        }
+    }
+
+    protected function getMappedAttributes($attributes)
+    {
+        $attr = [];
+
+        $map = $this->gatewayPaymentMapping;
+
+        foreach ($attributes as $key => $value)
+        {
+            if (isset($map[$key]))
+            {
+                $newKey = $map[$key];
+                $attr[$newKey] = $value;
+            }
+        }
+
+        return $attr;
+    }
+
+    protected function captureAuthorizedPayment(Payment\Entity $payment)
+    {
+        if ($payment->isAuthorized() === false)
+        {
+            $this->trace->critical(TraceCode::PAYMENT_RECURRING_INVALID_STATUS,
+                [
+                    'status' => $payment->getStatus(),
+                    'payment_id' => $payment->getId(),
+                ]);
+
+            return;
+        }
+
+        $amount = $payment->getAmount();
+
+        // The payment amount is inclusive of fees, so we need to capture with the original amount.
+        if ($payment->merchant->isFeeBearerCustomer() === true)
+        {
+            $amount = $amount - $payment->getFee();
+        }
+
+        $parameters = [
+            Payment\Entity::AMOUNT   => $amount,
+            Payment\Entity::CURRENCY => $payment->getCurrency()
+        ];
+
+        //
+        // We do not capture the payment if its already refunded
+        // We are not putting it inside a try-catch block as
+        // it's already under transaction and we don't want
+        // token to be confirmed if there is any bug on our end
+        //
+        $this->paymentProcessor->capture($payment, $parameters);
+    }
+
+    protected function updateTokenEntity(Token\Entity $token, array $content)
+    {
+        $gatewayToken = $content[self::GATEWAY_TOKEN_ID];
+
+        $currentRecurringStatus = $token->getRecurringStatus();
+
+        $newRecurringStatus = $content[self::STATUS];
+
+        if (Token\RecurringStatus::isFinalStatus($currentRecurringStatus) === true)
+        {
+            if ($currentRecurringStatus !== $newRecurringStatus)
+            {
+                $this->trace->critical(TraceCode::CUSTOMER_TOKEN_STATUS_MISMATCH,
+                    [
+                        'new_status'     => $newRecurringStatus,
+                        'current_status' => $currentRecurringStatus,
+                    ]);
+            }
+
+            return;
+        }
+
+        $tokenParams = [
+            Token\Entity::RECURRING_STATUS          => $newRecurringStatus,
+            Token\Entity::GATEWAY_TOKEN             => $gatewayToken,
+            Token\Entity::RECURRING_FAILURE_REASON  => $content[self::REMARK],
+        ];
+
+        (new Token\Core)->updateTokenFromEmandateGatewayData($token, $tokenParams);
+
+        $this->repo->saveOrFail($token);
     }
 }

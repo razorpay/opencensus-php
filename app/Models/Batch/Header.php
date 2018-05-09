@@ -165,7 +165,6 @@ class Header
     // HDFC Emandate Register Response File Headers
     //
     const HDFC_EM_REGISTER_CLIENT_NAME                      = HdfcEMRegisterHeadings::CLIENT_NAME;
-    const HDFC_EM_REGISTER_MERCHANT_UNIQUE_REFERENCE_NO     = HdfcEMRegisterHeadings::MERCHANT_UNIQUE_REFERENCE_NO;
     const HDFC_EM_REGISTER_CUSTOMER_NAME                    = HdfcEMRegisterHeadings::CUSTOMER_NAME;
     const HDFC_EM_REGISTER_ACCOUNT_NUMBER                   = HdfcEMRegisterHeadings::CUSTOMER_ACCOUNT_NUMBER;
     const HDFC_EM_REGISTER_AMOUNT                           = HdfcEMRegisterHeadings::AMOUNT;
@@ -173,8 +172,6 @@ class Header
     const HDFC_EM_REGISTER_START_DATE                       = HdfcEMRegisterHeadings::START_DATE;
     const HDFC_EM_REGISTER_END_DATE                         = HdfcEMRegisterHeadings::END_DATE;
     const HDFC_EM_REGISTER_FREQUENCY                        = HdfcEMRegisterHeadings::FREQUENCY;
-    const HDFC_EM_REGISTER_MANDATE_SERIAL_NUMBER            = HdfcEMRegisterHeadings::MANDATE_SERIAL_NUMBER;
-    const HDFC_EM_REGISTER_MERCHANT_REQUEST_NO              = HdfcEMRegisterHeadings::MERCHANT_REQUEST_NO;
     const HDFC_EM_REGISTER_MANDATE_ID                       = HdfcEMRegisterHeadings::MANDATE_ID;
     const HDFC_EM_REGISTER_STATUS                           = HdfcEMRegisterHeadings::STATUS;
     const HDFC_EM_REGISTER_REMARK                           = HdfcEMRegisterHeadings::REMARK;
@@ -508,20 +505,17 @@ class Header
 
         'emandate_register_hdfc' => [
             self::INPUT => [
-                self::HDFC_EM_REGISTER_ACCOUNT_NUMBER,
-                self::HDFC_EM_REGISTER_MANDATE_ID,
-                self::HDFC_EM_REGISTER_STATUS,
-                self::HDFC_EM_REGISTER_REMARK,
                 self::HDFC_EM_REGISTER_CLIENT_NAME,
-                self::HDFC_EM_REGISTER_MERCHANT_UNIQUE_REFERENCE_NO,
                 self::HDFC_EM_REGISTER_CUSTOMER_NAME,
+                self::HDFC_EM_REGISTER_ACCOUNT_NUMBER,
                 self::HDFC_EM_REGISTER_AMOUNT,
                 self::HDFC_EM_REGISTER_AMOUNT_TYPE,
                 self::HDFC_EM_REGISTER_START_DATE,
                 self::HDFC_EM_REGISTER_END_DATE,
                 self::HDFC_EM_REGISTER_FREQUENCY,
-                self::HDFC_EM_REGISTER_MANDATE_SERIAL_NUMBER,
-                self::HDFC_EM_REGISTER_MERCHANT_REQUEST_NO,
+                self::HDFC_EM_REGISTER_MANDATE_ID,
+                self::HDFC_EM_REGISTER_STATUS,
+                self::HDFC_EM_REGISTER_REMARK,
             ],
         ],
 

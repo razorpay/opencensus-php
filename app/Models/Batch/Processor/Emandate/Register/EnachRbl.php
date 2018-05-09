@@ -11,7 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Gateway\Enach\Rbl;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
-use RZP\Gateway\Enach\Base\Entity as EnachEntity;
+use RZP\Gateway\Base\Entity as GatewayEntity;
 
 class EnachRbl extends Base
 {
@@ -24,11 +24,6 @@ class EnachRbl extends Base
     const ERROR_MESSAGE       = 'error_message';
     const ERROR_CODE          = 'error_code';
     const PAYMENT_ID          = 'payment_id';
-
-    /**
-     * @var Payment\Processor\Processor
-     */
-    protected $paymentProcessor;
 
     protected function processEntry(array & $entry)
     {
@@ -74,7 +69,7 @@ class EnachRbl extends Base
         {
             $this->updateGatewayPaymentEntityAndCapturePayment($payment, $gatewayPayment, $content);
 
-            $this->updateTokenEntity($token, $gatewayToken, $content);
+            $this->updateTokenEntity($token, $content);
         });
 
         //
@@ -85,8 +80,10 @@ class EnachRbl extends Base
         $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
     }
 
-    protected function updateTokenEntity(Token\Entity $token, $gatewayToken, array $content)
+    protected function updateTokenEntity(Token\Entity $token, array $content)
     {
+        $gatewayToken = $content[self::GATEWAY_TOKEN];
+
         $currentRecurringStatus = $token->getRecurringStatus();
 
         $newRecurringStatus = $content[self::TOKEN_STATUS];
@@ -118,7 +115,7 @@ class EnachRbl extends Base
 
     protected function updateGatewayPaymentEntityAndCapturePayment(
         Payment\Entity $payment,
-        EnachEntity $gatewayPayment,
+        GatewayEntity $gatewayPayment,
         array $data)
     {
         $gatewayPayment->fill($data);
@@ -135,40 +132,7 @@ class EnachRbl extends Base
         }
     }
 
-    protected function captureAuthorizedPayment(Payment\Entity $payment)
-    {
-        if ($payment->isAuthorized() === false)
-        {
-            $this->trace->critical(TraceCode::PAYMENT_RECURRING_INVALID_STATUS,
-                    [
-                        'status' => $payment->getStatus(),
-                        'payment_id' => $payment->getId(),
-                    ]);
 
-            return;
-        }
-
-        $amount = $payment->getAmount();
-
-        // The payment amount is inclusive of fees, so we need to capture with the original amount.
-        if ($payment->merchant->isFeeBearerCustomer() === true)
-        {
-            $amount = $amount - $payment->getFee();
-        }
-
-        $parameters = [
-            Payment\Entity::AMOUNT   => $amount,
-            Payment\Entity::CURRENCY => $payment->getCurrency()
-        ];
-
-        //
-        // We do not capture the payment if its already refunded
-        // We are not putting it inside a try-catch block as
-        // it's already under transaction and we don't want
-        // token to be confirmed if there is any bug on our end
-        //
-        $this->paymentProcessor->capture($payment, $parameters);
-    }
 
     protected function getDataFromRow(array & $entry): array
     {

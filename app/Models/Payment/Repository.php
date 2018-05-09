@@ -602,6 +602,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchByTokenId($tokenId)
+    {
+        return $this->newQuery()
+                    ->where(Payment\Entity::TOKEN_ID, '=', $tokenId)
+                    ->first();
+    }
+
     /**
      * Fetches all payments for on hold flag update with on_hold_until
      * timestamp earlier than timestamp parameter.
