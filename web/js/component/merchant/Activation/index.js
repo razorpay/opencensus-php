@@ -91,6 +91,7 @@ export default class ActivationWizard extends React.Component {
         a._accept = ['pdf', 'image'];
         a._showAcceptInfo = false;
         a._showStagedFileStatus = false;
+        a.required = true;
       });
 
     // Adding onChange listener to all document upload fields
@@ -424,7 +425,18 @@ export default class ActivationWizard extends React.Component {
               this.state.showSubmitLayer && 'block-scroll'
             )}
           >
-            <main-title>{FORM_TABS[activeTab]}</main-title>
+            <main-title>
+              {activeTab != 0 && (
+                <Button
+                  class="btn--mobile btn--back"
+                  iconBefore="chevron-left"
+                  onClick={this.prev}
+                >
+                  Back
+                </Button>
+              )}
+              {FORM_TABS[activeTab]}
+            </main-title>
 
             <Form onChange={this.onChange} layout="tabular">
               {content}
@@ -440,6 +452,15 @@ export default class ActivationWizard extends React.Component {
               content && 'main--hide'
             )}
           >
+            {
+              <Button
+                class="btn--mobile btn--back"
+                iconBefore="chevron-left"
+                onClick={this.prev}
+              >
+                Back
+              </Button>
+            }
             <main-title>{FORM_TABS[DOCUMENT_UPLOAD_STEP]}</main-title>
             <Form onChange={this.onChange} layout="tabular">
               {documentContent}

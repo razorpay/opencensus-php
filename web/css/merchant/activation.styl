@@ -94,6 +94,12 @@ $height = 600px
     &.overlay-container
       bottom: 0
 
+  .btn--mobile
+    display: none
+
+  .btn--desktop
+    display: inline
+
   footer
     left: $side-width
     padding: 20px
@@ -107,13 +113,6 @@ $height = 600px
 
     button
       vertical-align: top
-
-    .btn--mobile
-      display: none
-
-    .btn--desktop
-      display: inline
-
 
     .Loader
       float: left
@@ -332,12 +331,17 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
   .ActivationContainer
     margin: 80px auto 40px
 
-  footer
-    .btn--desktop
-      display: none !important
+  .btn--desktop
+    display: none !important
 
-    .btn--mobile
-      display: inline !important
+  .btn--mobile
+    display: inline !important
+
+  .btn--back
+    margin: 0
+    position: absolute
+    right: 10px
+    top: 20px
 
   .Activation--wizard
     overflow: hidden

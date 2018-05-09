@@ -339,25 +339,27 @@ Field.File = _ => {
   } = separateDomProps(_);
 
   return (
-    <div class={inputClass({ props })}>
+    <label class={inputClass({ props: _ })}>
       <Label text={label} />
       <div class="Input-content">
-        <FileUpload
-          name={_.name}
-          onBiggerFileSize={_ => {
-            console.log('File size is bigger');
-          }}
-          onFileChange={_.onChange}
-          defaultValue={_.defaultValue}
-          disabled={_.disabled}
-          accept={_._accept}
-          showAcceptInfo={_._showAcceptInfo}
-          showStagedFileStatus={_._showStagedFileStatus}
-        />
+        <div class="Input-elWrapper">
+          <FileUpload
+            name={_.name}
+            onBiggerFileSize={_ => {
+              console.log('File size is bigger');
+            }}
+            onFileChange={_.onChange}
+            defaultValue={_.defaultValue}
+            disabled={_.disabled}
+            accept={_._accept}
+            showAcceptInfo={_._showAcceptInfo}
+            showStagedFileStatus={_._showStagedFileStatus}
+          />
+        </div>
         <Description text={selectedDescription} />
         <Description text={description} />
       </div>
-    </div>
+    </label>
   );
 };
 
