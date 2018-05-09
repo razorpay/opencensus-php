@@ -153,17 +153,42 @@ class Correction extends Base\Core
 
         $existingInvoiceAmounts = $this->getExistingInvoiceAmounts();
 
+        $this->trace->info(
+            TraceCode::MERCHANT_INVOICE_CORRECTION_OLD_AMOUNT,
+            [
+                'merchant_id' => $this->merchantId,
+                'month'       => $this->month,
+                'year'        => $this->year
+            ] + $existingInvoiceAmounts);
+
         foreach ($this->invoiceBreakup as $type => $values)
         {
+            $start = microtime(true);
+
             $newAmounts = $this->calculateFeesForInvoiceByType($type, $isCorrection);
 
             $this->trace->info(
                 TraceCode::MERCHANT_INVOICE_CORRECTION_NEW_AMOUNT,
                 [
-                    'type' => $type,
+                    'merchant_id' => $this->merchantId,
+                    'type'        => $type,
+                    'month'       => $this->month,
+                    'year'        => $this->year
                 ] + $newAmounts);
 
             $correctionAmounts[$type] = $this->calculateCorrectionAmounts($newAmounts, $existingInvoiceAmounts[$type]);
+
+            $end = microtime(true);
+
+            $this->trace->info(
+                TraceCode::MERCHANT_INVOICE_CORRECTION_TRACE,
+                [
+                    'merchant_id' => $this->merchantId,
+                    'type'        => $type,
+                    'month'       => $this->month,
+                    'year'        => $this->year,
+                    'time_taken'  => $end - $start,
+                ]);
         }
 
         return $correctionAmounts;
@@ -196,6 +221,16 @@ class Correction extends Base\Core
      */
     protected function calculateFeesForInvoiceByType(string $type, bool $isCorrection)
     {
+        $this->trace->info(
+            TraceCode::MERCHANT_INVOICE_CORRECTION_PARAMS,
+            [
+                'merchant_id'   => $this->merchantId,
+                'type'          => $type,
+                'start'         => $this->beginTimestamp,
+                'year'          => $this->endTimestamp,
+                'is_correction' => $isCorrection,
+            ]);
+
         $txns = $this->repo
                      ->transaction
                      ->fetchFeesAndTaxForTransactionsByType(
@@ -207,6 +242,7 @@ class Correction extends Base\Core
 
         if (empty($txns) === true)
         {
+            $this->trace->info(TraceCode::MERCHANT_INVOICE_CORRECTION_NO_TXN);
             return [
                 Entity::TAX    => 0,
                 Entity::AMOUNT => 0

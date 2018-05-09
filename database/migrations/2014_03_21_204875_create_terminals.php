@@ -66,6 +66,18 @@ class CreateTerminals extends Migration
             $table->text(Terminal::GATEWAY_CLIENT_CERTIFICATE)
                   ->nullable();
 
+            $table->string(Terminal::MC_MPAN, 16)
+                  ->nullable();
+
+            $table->string(Terminal::VISA_MPAN, 16)
+                  ->nullable();
+
+            $table->string(Terminal::RUPAY_MPAN, 16)
+                  ->nullable();
+
+            $table->string(Terminal::VPA)
+                  ->nullable();
+
             $table->tinyInteger(Terminal::CARD)
                   ->default(0);
 
@@ -146,6 +158,10 @@ class CreateTerminals extends Migration
             $table->index(Terminal::NETWORK_CATEGORY);
             $table->index(Terminal::GATEWAY_MERCHANT_ID);
             $table->index(Terminal::CREATED_AT);
+            $table->index(Terminal::MC_MPAN);
+            $table->index(Terminal::VISA_MPAN);
+            $table->index(Terminal::RUPAY_MPAN);
+            $table->index(Terminal::VPA);
         });
     }
 

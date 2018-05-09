@@ -37,9 +37,15 @@ class EMandateDebitReconFile extends BaseEMandateDebitReconFile
 
     protected function updatePaymentEntities(array $row)
     {
-        // Trimming the values, since w're getting these values from excel sheet
-        // and might contain spaces at either ends of the values
-        $row = array_map('trim', $row);
+        //
+        // Trimming the values, since w're getting these values from excel
+        // sheet and might contain spaces at either ends of the values
+        //
+        $row = array_map(
+            function($value) use ($row)
+            {
+                return trim(trim(str_replace("'", '', $value)));
+            }, $row);
 
         $gatewayPayment = $this->updateGatewayPayment($row);
 

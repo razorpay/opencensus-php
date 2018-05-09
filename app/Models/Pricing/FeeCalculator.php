@@ -346,6 +346,16 @@ class FeeCalculator
 
     protected function getRelevantPricingRuleForUPI($rules)
     {
+        $payment = $this->entity;
+
+        $receiverType = $payment->getReceiverType();
+
+        $filters1 = [
+            [Pricing\Entity::RECEIVER_TYPE, $receiverType, true, null],
+        ];
+
+        $rules = $this->applyFiltersOnRules($rules, $filters1);
+
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 
@@ -474,9 +484,13 @@ class FeeCalculator
 
         $international = $payment->isInternational();
 
+        $receiverType = $payment->getReceiverType();
+
         $network = Card\Network::getCode($payment->card->getNetwork());
 
+
         // Current Implementation
+        // * Filter based on receiver type
         // * Filter based on international
         // * Filter based on Network
         // * If its amex, then stop
@@ -486,10 +500,16 @@ class FeeCalculator
 
         // Structure is as follows:
         // Field name, Field value, Choose default (true/false), default value
-        $filters1 = array(
+
+
+        // The sequence should not be changed as it changes the behaviour.
+        // Right now if the receiver_type is present it needs to be selected no
+        // matter what otherwise default type is used
+        $filters1 = [
+            [Pricing\Entity::RECEIVER_TYPE,         $receiverType,  false,   null    ],
             [Pricing\Entity::INTERNATIONAL,         $international, false,  false   ],
             [Pricing\Entity::PAYMENT_NETWORK,       $network,       true,   null    ],
-        );
+        ];
 
         $rules = $this->applyFiltersOnRules($rules, $filters1);
 
