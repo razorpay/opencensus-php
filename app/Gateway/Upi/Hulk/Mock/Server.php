@@ -91,12 +91,17 @@ class Server extends Base\Mock\Server
             'timestamp' => Carbon::now()->getTimestamp(),
         ];
 
+        $this->content($content, 'callback');
+
+        $raw = json_encode($content);
+
         $request = [
             'url'       => '/callback/upi_hulk',
             'method'    => 'post',
-            'content'   => $content,
+            'raw'       => $raw,
             'server'   => [
-                'HTTP_X-Hulk-Signature' => $this->getHmac(json_encode($content)),
+                'CONTENT_TYPE'          => 'application/json',
+                'HTTP_X-Hulk-Signature' => $this->getHmac($raw),
             ]
         ];
 
@@ -106,30 +111,38 @@ class Server extends Base\Mock\Server
     protected function getP2pEntity(array $override = [])
     {
         $p2p = [
-            Fields::ID               => 'p2p_A11zpSL1413XHi',
-            Fields::TXN_ID           => 'HDF2C8B11D1FBDB4FC78F4E37A19AB6413D',
-            Fields::SENDER_ID        => '9X0HrhNT68ZWeX',
-            Fields::SENDER_TYPE      => 'vpa',
-            Fields::RECEIVER_ID      => 'A11xBDINnz4so1',
-            Fields::RECEIVER_TYPE    => 'vpa',
-            Fields::STATUS           => 'completed',
-            Fields::AMOUNT           => 50000,
-            Fields::DESCRIPTION      => '',
-            Fields::TYPE             => 'pull',
-            Fields::NOTES            => [],
-            Fields::CURRENCY         => 'INR',
-            Fields::TRANSACTION_TYPE => 'credit',
+            Fields::ID                      => 'p2p_A11zpSL1413XHi',
+            Fields::TXN_ID                  => 'HDF2C8B11D1FBDB4FC78F4E37A19AB6413D',
+            Fields::SENDER_ID               => '9X0HrhNT68ZWeX',
+            Fields::SENDER_TYPE             => 'vpa',
+            Fields::RECEIVER_ID             => 'A11xBDINnz4so1',
+            Fields::RECEIVER_TYPE           => 'vpa',
+            Fields::STATUS                  => 'completed',
+            Fields::AMOUNT                  => 50000,
+            Fields::DESCRIPTION             => '',
+            Fields::TYPE                    => 'pull',
+            Fields::NOTES                   => [],
+            Fields::CURRENCY                => 'INR',
+            Fields::TRANSACTION_TYPE        => 'credit',
 
-            Fields::SENDER           => [
-                'id'                 => 'vpa_9X0HrhNT68ZWeX',
-                'entity'             => 'vpa',
-                'address'            => 'vishnu@icici',
+            // Error Fields
+            Fields::ERROR_CODE              => null,
+            Fields::ERROR_DESCRIPTION       => null,
+            Fields::INTERNAL_ERROR_CODE     => null,
+
+            // Bank Fields
+            Fields::CALLER_ACCOUNT_NUMBER   => '00100100100',
+
+            Fields::SENDER                  => [
+                'id'                        => 'vpa_9X0HrhNT68ZWeX',
+                'entity'                    => 'vpa',
+                Fields::ADDRESS             => 'vishnu@icici',
             ],
 
-            Fields::RECEIVER         => [
-                'id'                 => 'vpa_A11xBDINnz4so1',
-                'entity'             => 'vpa',
-                'address'            => 'testmerchant@razor',
+            Fields::RECEIVER                => [
+                'id'                        => 'vpa_A11xBDINnz4so1',
+                'entity'                    => 'vpa',
+                Fields::ADDRESS             => 'testmerchant@razor',
             ],
         ];
 
