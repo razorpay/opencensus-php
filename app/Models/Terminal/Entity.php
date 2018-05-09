@@ -397,9 +397,24 @@ class Entity extends Base\PublicEntity
         return $this->isDirectForMerchant($merchant);
     }
 
+    /**
+     * Values for CORPORATE can be 0, 1, 2
+     * 0: Retail only
+     * 1: Corporate only
+     * 2: Both
+     *
+     * @return bool
+     */
     public function isCorporate()
     {
-        return $this->getAttribute(self::CORPORATE);
+        $type = $this->getAttribute(self::CORPORATE);
+
+        if (($type === 1) or ($type === 2))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     // ---------------------- SETTERS ----------------------
