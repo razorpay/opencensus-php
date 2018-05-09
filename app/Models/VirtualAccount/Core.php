@@ -26,8 +26,6 @@ class Core extends Base\Core
 
         $virtualAccount = $this->repo->transaction(function() use ($virtualAccount, $input, $customer, $order, $shared)
         {
-            $shared = false;
-
             $virtualAccount->build($input);
 
             if ($shared === true)
