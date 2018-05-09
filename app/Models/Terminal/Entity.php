@@ -207,7 +207,7 @@ class Entity extends Base\PublicEntity
         self::TYPE                      => 'int',
         self::MODE                      => 'int',
         self::CATEGORY                  => 'int',
-        self::CORPORATE                 => 'boolean',
+        self::CORPORATE                 => 'int',
         self::USED                      => 'boolean',
     ];
 
