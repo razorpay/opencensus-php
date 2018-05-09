@@ -2,10 +2,11 @@
 
 namespace RZP\Base;
 
-use RZP\Exception;
 use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
+use RZP\Base\Database\QueryBuilder;
 
 class EloquentEx extends \Razorpay\Spine\Entity
 {
@@ -20,6 +21,20 @@ class EloquentEx extends \Razorpay\Spine\Entity
     public function newEloquentBuilder($query)
     {
         return new BuilderEx($query);
+    }
+
+    /**
+     * Overriden to return the custom database query builder instance
+     *
+     * @return QueryBuilder;
+     */
+    protected function newBaseQueryBuilder()
+    {
+        $connection = $this->getConnection();
+
+        return new QueryBuilder(
+            $connection, $connection->getQueryGrammar(), $connection->getPostProcessor()
+        );
     }
 
     protected function throwException(array $e)

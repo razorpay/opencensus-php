@@ -1,7 +1,7 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
     "content-hash": "a229b07af48421c85942bf40d07724b9",
@@ -5288,16 +5288,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.1.0",
+            "version": "1.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "733dbf70dc2add1e3b3016562dbda02c08f96de0"
+                "reference": "67a822b5ce0aa6bc24b6b7b7f308b62f33249ed9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/733dbf70dc2add1e3b3016562dbda02c08f96de0",
-                "reference": "733dbf70dc2add1e3b3016562dbda02c08f96de0",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/67a822b5ce0aa6bc24b6b7b7f308b62f33249ed9",
+                "reference": "67a822b5ce0aa6bc24b6b7b7f308b62f33249ed9",
                 "shasum": ""
             },
             "require": {
@@ -5331,7 +5331,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2018-03-19T14:00:07+00:00"
+            "time": "2018-05-09T06:59:35+00:00"
         },
         {
             "name": "razorpay/oauth",
