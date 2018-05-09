@@ -4,21 +4,20 @@ namespace RZP\Models\VirtualAccount;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\BharatQr\Constants;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Models\Customer;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
-use RZP\Models\Customer\Entity as Customer;
 
 class Core extends Base\Core
 {
     public function create(
         array $input,
         Merchant $merchant,
-        Customer $customer = null,
+        Customer\Entity $customer = null,
         Order $order = null,
         bool $shared = false): Entity
     {
@@ -72,7 +71,7 @@ class Core extends Base\Core
 
     protected function createSharedVirtualAccount(Merchant $merchant)
     {
-        $customer = (new \RZP\Models\Customer\Core())->createOrFetchSharedCustomer($merchant);
+        $customer = (new Customer\Core)->createOrFetchSharedCustomer($merchant);
 
         $input = [
             Entity::RECEIVERS => [
