@@ -12,6 +12,9 @@ use RZP\Models\Batch\Processor\Base as BaseProcessor;
 
 class Base extends BaseProcessor
 {
+    /**
+     * Params expected in the getDataFromRow method's response
+     */
     const TOKEN_ID         = 'token_id';
     const GATEWAY_TOKEN_ID = 'gateway_token_id';
     const STATUS           = 'status';

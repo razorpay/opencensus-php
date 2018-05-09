@@ -49,6 +49,11 @@ class Hdfc extends Base
         ];
     }
 
+    /**
+     * @param string $gatewayTokenStatus
+     * @return string
+     * @throws Exception\LogicException
+     */
     protected function getTokenStatus(string $gatewayTokenStatus): string
     {
         $gatewayTokenStatus = strtolower($gatewayTokenStatus);

@@ -26,6 +26,7 @@ class Hdfc extends Base
             'account_number'    => $row[Headings::ACCOUNT_NO],
             'error_message'     => $row[Headings::REJECTION_REMARKS],
             'status'            => $row[Headings::STATUS],
+            'amount'            => $row[Headings::AMOUNT],
         ];
     }
 
