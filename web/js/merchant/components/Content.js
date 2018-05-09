@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { classList } from 'common/util';
 import { matchDetail, matchModal } from 'merchant/routes';
 import Slider from 'rzp/ui/Slider';
-import { ModalMask, ModalContent } from 'component/Modal';
+import { ModalMask } from 'component/Modal';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';

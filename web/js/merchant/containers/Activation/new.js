@@ -13,6 +13,14 @@ import User from 'merchant/models/User';
 
 import { withRouter } from 'react-router-dom';
 
+/*
+* ActivationContainer is used in:
+* 1. '/activation' route for Activation form for merchant, and
+* 2. Marketplace > Accounts for linked account (AccoundDetails)
+*
+* @props {onClose, Function, optional}. Without this modal would not be opened. Also, this would be used to close the modal
+* @props {accountId, String, optional}. Needed if the ActivationWizard is opened for Linked Account
+* */
 @withRouter
 @connect(
   state => ({
@@ -31,16 +39,17 @@ export default class ActivationContainer extends React.Component {
   };
 
   componentWillMount() {
-    this.fetchActivationDetails();
+    this.fetchActivationDetails(this.props.accountId); // accountId = undefined if not present
   }
 
-  fetchActivationDetails() {
+  fetchActivationDetails(accountId) {
     Promise.all([
       merchantFetch({
         url: 'merchant/activation',
         mode: 'live',
+        accountId,
       }),
-      merchantFetch('merchant/activation/business_categories'),
+      !accountId && merchantFetch('merchant/activation/business_categories'),
     ]).then(([data, categories]) => {
       this.setState({
         data: data.data,
@@ -51,9 +60,13 @@ export default class ActivationContainer extends React.Component {
   }
 
   updateSession(data) {
-    const { session } = this.props;
-
+    const { session, accountId } = this.props;
     const { activation_progress, activated, submitted } = data;
+
+    // Ideally, updateSession must not be called if accountId present. Here is just Safe check.
+    if (accountId) {
+      return;
+    }
 
     const user = new User({
       ...session.user,
@@ -74,13 +87,14 @@ export default class ActivationContainer extends React.Component {
       mode: 'live',
       method: 'post',
       data: { submit: 1 },
+      accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
     })
       .then(response => {
         if (!response.data.can_submit) {
           throw { errors: ['Some mandatory fields are required'] };
         }
 
-        this.updateSession(response.data);
+        this.postSubmitStep(response);
         return response;
       })
       .catch(err => {
@@ -93,22 +107,30 @@ export default class ActivationContainer extends React.Component {
       });
   };
 
-  saveStep = (data, accountId) => {
+  saveStep = data => {
     return merchantFetch({
       url: 'merchant/activation',
       mode: 'live',
       method: 'post',
+      accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
       data,
     })
       .then(response => {
-        this.updateSession(response.data);
+        !this.props.accountId && this.updateSession(response.data); // Updating % activation_progress (side bar)
 
         return response;
       })
       .catch(err => {});
   };
 
-  // TODO: Figure out accountId from props
+  postSubmitStep(response) {
+    if (this.props.accountId) {
+      this.props.callback && this.props.callback(); // Support for callback for linked_account activation
+    } else {
+      this.updateSession(response.data); // Updating % activation_progress (side bar)
+    }
+  }
+
   saveFile = (fieldName, file, progressTracker) => {
     let formData = new FormData();
 
@@ -125,7 +147,6 @@ export default class ActivationContainer extends React.Component {
     };
     formData.append(fieldNameMapping[fieldName], file);
 
-    // TODO: Temporary notification in then-catch, success-error msg would be adjusted in custom UI for file upload.
     return merchantFetch({
       url: 'merchant/activation/upload',
       method: 'post',
@@ -159,13 +180,15 @@ export default class ActivationContainer extends React.Component {
   };
 
   render() {
+    const accountId = this.props.accountId; // If accountId present, then Welcome screen and Success screen are not required.
+
     let { data, categories } = this.state;
 
     const filledEvenSingleDetail = false;
 
     let content, modalClass;
 
-    if (this.props.user.submitted == 1) {
+    if (!accountId && this.props.user.submitted == 1) {
       modalClass = 'Activation--success';
       content = <SuccessScreen />;
     } else if (!data) {
@@ -175,7 +198,11 @@ export default class ActivationContainer extends React.Component {
           <Spinner />
         </div>
       );
-    } else if (!this.state.isFormTouched && !this.state.openWizard) {
+    } else if (
+      !accountId &&
+      !this.state.isFormTouched &&
+      !this.state.openWizard
+    ) {
       modalClass = 'Activation--welcome';
       content = (
         <WelcomeScreen
@@ -197,7 +224,8 @@ export default class ActivationContainer extends React.Component {
       );
     }
 
-    return this.props.closeUrl ? (
+    // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
+    return this.props.onClose ? (
       <Modal class={'animate-down ' + modalClass} onClose={this.props.onClose}>
         <ModalContent>{content}</ModalContent>
       </Modal>
@@ -231,7 +259,7 @@ const SuccessScreen = _ => {
             'Complete your account settings such as theme color, logo, etc.'
           }
           icon={'icon-done'}
-          to="/profile"
+          to="/config"
         />
       </div>
     </div>

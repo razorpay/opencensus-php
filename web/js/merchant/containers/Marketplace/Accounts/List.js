@@ -55,22 +55,13 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   showAccountDetailsModal = account => {
-    this.props.openModal({
-      size: 'large',
-      component: (
-        <AccountDetails
-          accountId={account.id}
-          fetchAccounts={this.fetchAccounts}
-          count={this.state.count}
-          skip={this.state.skip}
-          onCloseClick={() => this.highlightRowAndClose(account)}
-        />
-      ),
-    });
+    this.props.closeModal();
+    this.setState({ showAccountDetailsFor: account.id });
   };
 
-  highlightRowAndClose = account => {
-    this.props.luminateRow(account.id);
+  highlightRowAndClose = accountId => {
+    this.props.luminateRow(accountId);
+    this.setState({ showAccountDetailsFor: null });
     this.props.closeModal();
   };
 
@@ -143,6 +134,20 @@ export default class AccountsListContainer extends ListContainer {
           length={accounts.length}
           onClick={this.paginate}
         />
+        {this.state.showAccountDetailsFor && (
+          <AccountDetails
+            accountId={this.state.showAccountDetailsFor}
+            onClose={this.highlightRowAndClose}
+            onSubmitSuccessCB={() => {
+              this.props.showNotification({
+                type: 'success',
+                message: 'The account has been activated',
+              });
+
+              this.fetchAccounts(this.state.skip, this.state.count);
+            }}
+          />
+        )}
       </div>
     );
   }

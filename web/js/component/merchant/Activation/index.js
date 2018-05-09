@@ -1,5 +1,5 @@
-import Input from 'component/Input';
 import Form from 'component/Form';
+import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 import { classList } from 'common/util';
 import { prevent } from 'common/util';
@@ -9,348 +9,10 @@ import {
   removeDropShield,
 } from 'merchant/components/File/Upload';
 
-const tabs = [
-  'Contact Details',
-  'Business Details - 1',
-  'Business Details - 2',
-  'Bank Account Details',
-  'Documents Upload',
-];
-
-const contactFields = [
-  {
-    label: 'Contact Name',
-    name: 'contact_name',
-  },
-  {
-    label: 'Contact Number',
-    name: 'contact_mobile',
-    type: 'tel',
-    addonBefore: '+91',
-    info: "We'll reach out on this number for any account related issues.",
-  },
-  {
-    label: 'Contact Email',
-    name: 'contact_email',
-    type: 'email',
-    info: "We'll reach out to this email for any account related issues.",
-  },
-];
-
-const businessFields1 = [
-  {
-    label: 'Business Name',
-    name: 'business_name',
-    info: 'Example: Acme Private Limited',
-  },
-  {
-    label: 'Doing Business As',
-    name: 'business_dba',
-  },
-  {
-    label: 'Business Type',
-    name: 'business_type',
-    _cmp: Input.Select,
-    options: [
-      '',
-      'Proprietorship',
-      'Individual',
-      'Partnership',
-      'Private Limited',
-      'Public Limited',
-      'LLP',
-      'NGO',
-      'Educational Institutes',
-      'Trust',
-      'Society',
-      'Not yet registered',
-      'Other',
-    ],
-  },
-  {
-    label: 'Business Category',
-    name: 'business_category',
-    _cmp: Input.Select,
-    options: [],
-  },
-  {
-    label: 'Sub Category',
-    name: 'business_subcategory',
-    _cmp: Input.Select,
-    options: [],
-    _optionsFn: function(activation, categories) {
-      const userSelection = activation.state.data.business_category;
-
-      if (userSelection && categories[userSelection]) {
-        const subCategories = categories[userSelection].subcategories;
-
-        this.options = Object.keys(subCategories).map(c => ({
-          name: c,
-          label: subCategories[c],
-        }));
-      }
-
-      return this.options;
-    },
-    _when: activation => {
-      return (
-        activation.state.data.business_category &&
-        activation.state.data.business_category != 0
-      ); // It's a string
-    },
-  },
-  {
-    label: 'We want to accept International Payments as well',
-    name: 'business_international',
-    _cmp: Input.Check,
-    required: false,
-    description:
-      'We’ll reach out to you as we might require some additional information to avail this feature. Please note that the application for international payments takes longer than usual to process.',
-  },
-  {
-    label: 'CIN',
-    name: 'company_cin',
-  },
-  {
-    label: 'Business PAN Details',
-    name: 'company_pan',
-    placeholder: 'PAN Number',
-    info: 'PAN details should belong to the business mentioned above',
-  },
-  {
-    label: 'PAN Owner Name',
-    name: 'company_pan_name',
-  },
-  {
-    label: 'PAN info of Authorized Signatory/Promoter/Director',
-    name: 'promoter_pan',
-    placeholder: 'PAN Number',
-  },
-  {
-    label: 'PAN Owner Name',
-    name: 'promoter_pan_name',
-  },
-];
-
-const differentAddress = activation => activation.state.same_address === '0';
-
-const businessFields2 = [
-  [
-    {
-      label: 'Do you have Website/App?',
-      _cmp: Input.Radio,
-      _name: 'app_type',
-      options: [
-        'Yes',
-        {
-          label: "We don't have either",
-          description: (
-            <React.Fragment>
-              You can still accept payments through <b>Razorpay Invoices</b> and
-              <b> Razorpay Payment Links</b>. You can request access to other
-              products (<b>Route</b>, <b>Subscription</b>, <b>Smart Collect</b>)
-              once you have a website or app.
-            </React.Fragment>
-          ),
-        },
-      ],
-    },
-    {
-      name: 'business_website',
-      placeholder: 'Enter URL',
-      type: 'url',
-      required: false,
-      description: (
-        <React.Fragment>
-          Your website should have following information easily accessible:
-          <b> About Us</b>,<b> Contact</b>,<b> Privacy Policy</b>,
-          <b> Terms & Conditions</b>, <b>Refund Policy</b> & <b>Pricing</b>.
-          Please refer our{' '}
-          <a href="" target="_blank">
-            Compliance Policies{' '}
-          </a>
-          for more details.
-        </React.Fragment>
-      ),
-      _when: activation => activation.state.app_type !== '1',
-      info: 'Example: https://www.company.com',
-    },
-  ],
-  [
-    {
-      name: 'business_registered_address',
-      placeholder: 'Enter Street Address',
-      label: 'Registered Address',
-      _cmp: Input.Textarea,
-    },
-    {
-      name: 'business_registered_pin',
-      type: 'number',
-      label: 'Pincode',
-      size: 'small',
-      min: '100000',
-      max: '999999',
-      validator: value => {
-        let pin = Number(value);
-        if (!pin || pin < 100000 || pin > 999999) {
-          return 'Please enter 6 digit pincode';
-        }
-      },
-    },
-    {
-      name: 'business_registered_city',
-      label: 'City',
-    },
-    {
-      name: 'business_registered_state',
-      label: 'State',
-    },
-  ],
-  {
-    _name: 'same_address',
-    label: 'Operational Address same as Registered Address',
-    description: 'Physical verification may be performed at this address',
-    _cmp: Input.Check,
-  },
-  [
-    {
-      name: 'business_operation_address',
-      placeholder: 'Enter Street Address',
-      label: 'Operational Address',
-      _cmp: Input.Textarea,
-      _when: differentAddress,
-    },
-    {
-      name: 'business_operation_pin',
-      type: 'number',
-      label: 'Pincode',
-      _when: differentAddress,
-    },
-    {
-      name: 'business_operation_city',
-      label: 'City',
-      _when: differentAddress,
-    },
-    {
-      name: 'business_operation_state',
-      label: 'State',
-      _when: differentAddress,
-    },
-  ],
-  [
-    {
-      _name: 'has_gstin',
-      label: 'GSTIN',
-      options: ['We have a registered GSTIN', "We don't have a GSTIN"],
-      _cmp: Input.Radio,
-    },
-    {
-      name: 'gstin',
-      _when: activation => activation.state.has_gstin === '0',
-      placeholder: 'Enter GSTIN',
-      size: 'small',
-    },
-  ],
-];
-
-const bankAccountFields = [
-  {
-    name: 'bank_branch_ifsc',
-    label: 'Branch IFSC Code',
-  },
-  {
-    name: 'bank_account_number',
-    label: 'Account Number',
-    type: 'password',
-    info: 'Your company account to which your payments will be settled',
-  },
-  {
-    _name: 'account_no',
-    type: 'password',
-    label: 'Re-Enter Account Number',
-  },
-  {
-    name: 'bank_account_name',
-    label: 'Beneficiary Name',
-    description:
-      'The beneficiary name should be same as the company name or individual name, in case of an LLP/Individual.',
-  },
-];
-
-const uploadFields = [
-  {
-    name: 'business_proof_url',
-    label: 'Business Registration Proof',
-    description: (
-      <ul>
-        Upload scan of the following:
-        <li>
-          Sales Tax/Service Tax or Shop Act Registration or GST Certificate
-          (mandatory, if Proprietorship firm)
-        </li>
-        <li>Partnership Deed (mandatory, if Partnership firm)</li>
-        <li>
-          Certificate of Incorporation (mandatory, if Private Limited or LLP)
-        </li>
-        <li>Registration Proof or Certificate (Trust/Society/NGO etc.)</li>
-      </ul>
-    ),
-  },
-  {
-    name: 'business_pan_url',
-    label: 'Business PAN',
-    description: 'The PAN details should match the ones provided earlier',
-  },
-  {
-    name: 'address_proof_url',
-    label: "Company's Bank Account Statement with Address",
-    description:
-      'Your Bank account number, IFSC code, and Company Name should be clearly visible',
-  },
-  {
-    name: 'promoter_pan_url',
-    label: 'PAN Card',
-    _when: activation => !!activation.props.accountId,
-    description: 'Promoter/Individual PAN Card.',
-  },
-  {
-    name: 'promoter_address_url',
-    label: "Authorized Signatory's Address Proof",
-    _when: activation => !activation.props.accountId,
-    description:
-      'Upload both sides of the government issued photo ID (Passport/Aadhaar/Driving License/Election Card)',
-  },
-  {
-    name: 'form_12a_url',
-    label: 'Form 12A Allotment Letter',
-    _when: activation =>
-      !activation.props.accountId &&
-      activation.state.data.business_type == NGO_BUSINESS_TYPE,
-    description: 'Mandatory for NGOs',
-  },
-  {
-    name: 'form_80g_url',
-    label: 'Form 80G Allotment Letter',
-    _when: activation =>
-      !activation.props.accountId &&
-      activation.state.data.business_type == NGO_BUSINESS_TYPE,
-    description: 'Mandatory for NGOs',
-  },
-];
-uploadFields.forEach(a => {
-  a._cmp = Input.File;
-  a._accept = ['pdf', 'image'];
-  a._showAcceptInfo = false;
-  a._showStagedFileStatus = false;
-});
-
-const tabContent = [
-  contactFields,
-  businessFields1,
-  businessFields2,
-  bankAccountFields,
-  uploadFields,
-];
+import mainFormTabsContent, { mainFormTabs } from './ActivationFormMap';
+import accountFormTabsContent, {
+  accountFormTabs,
+} from './AccountActivationFormMap';
 
 const defaultFieldProps = f => {
   if (Array.isArray(f)) {
@@ -364,12 +26,11 @@ const defaultFieldProps = f => {
   }
 };
 
-defaultFieldProps(tabContent);
-
-const LAST_STEP = tabs.length - 1; // It's document upload step (0 = 1st tab).
-const DOCUMENT_UPLOAD_STEP = 4; // It's document upload step.
+let DOCUMENT_UPLOAD_STEP; // To handle specific case for document step
 const BUSINESS_TYPE_FORM_STEP = 1; // If NGO is selected, then Document Upload would have 2 more fields
-const NGO_BUSINESS_TYPE = 7;
+
+let FORM_TABS;
+let FORM_TABS_CONTENT;
 
 export default class ActivationWizard extends React.Component {
   state = {
@@ -381,24 +42,64 @@ export default class ActivationWizard extends React.Component {
     app_type: this.props.data && this.props.data.business_website ? '0' : '1',
     has_gstin: this.props.data && this.props.data.gstin ? '0' : '1',
     account_no: '',
-    activeTab: 0, // Fallback
+    activeTab: 0, // Fallback for all cases.
   };
 
   constructor(props) {
-    businessFields1[3].options = [''].concat(
-      Object.keys(props.categories).map(c => ({
-        name: c,
-        label: props.categories[c].description,
-      }))
-    );
     super(props);
+    this.prepareTabs(props);
     this.setInitialTab();
+  }
 
-    uploadFields.forEach(
-      a =>
-        (a.onChange = (file, progressTracker) =>
-          props.saveFile(a.name, file, progressTracker))
-    );
+  prepareTabs(props) {
+    if (props.accountId) {
+      // Activation form for linked account
+
+      FORM_TABS = [...accountFormTabs];
+      FORM_TABS_CONTENT = [...accountFormTabsContent];
+      DOCUMENT_UPLOAD_STEP = 2;
+
+      // Removing document upload
+      if (!props.data.need_kyc) {
+        FORM_TABS.splice(DOCUMENT_UPLOAD_STEP, 1);
+        FORM_TABS_CONTENT.splice(DOCUMENT_UPLOAD_STEP, 1);
+
+        DOCUMENT_UPLOAD_STEP = null; // To set 'Document Upload Step' is not available.
+      }
+    } else {
+      // Main Activation form for merchant
+
+      FORM_TABS = mainFormTabs;
+      FORM_TABS_CONTENT = mainFormTabsContent;
+      DOCUMENT_UPLOAD_STEP = 4;
+
+      // Business Category in "Business Fields-1" exists in main activation form
+      FORM_TABS_CONTENT[1][3].options = [''].concat(
+        Object.keys(props.categories).map(c => ({
+          name: c,
+          label: props.categories[c].description,
+        }))
+      );
+    }
+
+    defaultFieldProps(FORM_TABS_CONTENT); // Set the default props for all tab content views
+
+    // All document fields in activation form to have same footprint
+    DOCUMENT_UPLOAD_STEP &&
+      FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(a => {
+        a._cmp = Input.File;
+        a._accept = ['pdf', 'image'];
+        a._showAcceptInfo = false;
+        a._showStagedFileStatus = false;
+      });
+
+    // Adding onChange listener to all document upload fields
+    DOCUMENT_UPLOAD_STEP &&
+      FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(
+        a =>
+          (a.onChange = (file, progressTracker) =>
+            props.saveFile(a.name, file, progressTracker))
+      );
   }
 
   componentDidMount() {
@@ -410,19 +111,19 @@ export default class ActivationWizard extends React.Component {
   }
 
   setInitialTab() {
-    let firstInValid;
+    let firstInValid = null;
 
-    for (let i = 0; i < tabs.length; i++) {
-      let tabStatus = this.tabValidity(i);
+    for (let i = 0; i < FORM_TABS.length; i++) {
+      let tabStatusValid = this.tabValidity(i);
 
-      if (!tabStatus && !firstInValid) {
+      if (!tabStatusValid && firstInValid === null) {
         firstInValid = i;
       }
-      this.state.tabs[i] = tabStatus; // Mark tabs as valid-invalid
+      this.state.tabs[i] = tabStatusValid; // Mark tabs as valid-invalid
     }
 
-    if (!firstInValid) {
-      firstInValid = tabs.length - 1; // In case all are filled then set last tab(which is actually filled)
+    if (firstInValid === null) {
+      firstInValid = FORM_TABS.length - 1; // In case all are filled then set last tab(which is actually filled)
       this.state.showSubmitLayer = true;
     }
 
@@ -452,7 +153,7 @@ export default class ActivationWizard extends React.Component {
       return;
     }
 
-    if (activeTab === BUSINESS_TYPE_FORM_STEP) {
+    if (DOCUMENT_UPLOAD_STEP && activeTab === BUSINESS_TYPE_FORM_STEP) {
       if (this.state.dirty.business_type) {
         let isDocumentStepValid = this.tabValidity(DOCUMENT_UPLOAD_STEP);
         tabs[DOCUMENT_UPLOAD_STEP] = isDocumentStepValid;
@@ -477,9 +178,8 @@ export default class ActivationWizard extends React.Component {
     }
 
     this.props
-      .save(data, this.props.accountId) // Account id for linked_account
+      .save(data)
       .then(response => {
-        this.props.callback && this.props.callback(); // Support for callback for linked_account activation
         this.setState({
           dirty: {},
           isSaving: false,
@@ -587,12 +287,15 @@ export default class ActivationWizard extends React.Component {
   };
 
   render() {
+    let isLinkedAccountForm = !!this.props.accountId;
+    let isAlreadyActivated = !!this.state.data.activated; // Linked accounts form can still be seen after activation.
+
     let activeTab = this.state.activeTab;
-    let isLastTab = activeTab !== tabs.length - 1;
+    let isLastTab = activeTab == FORM_TABS.length - 1;
     let content; // Document content will always be shown so that upload progress is maintained
 
     if (activeTab !== DOCUMENT_UPLOAD_STEP) {
-      content = tabContent[activeTab].map((field, i) => {
+      content = FORM_TABS_CONTENT[activeTab].map((field, i) => {
         if (Array.isArray(field)) {
           return (
             <Input.Group key={i}>
@@ -605,26 +308,32 @@ export default class ActivationWizard extends React.Component {
       });
     }
 
-    let documentContent = tabContent[DOCUMENT_UPLOAD_STEP].map((field, i) => {
-      if (Array.isArray(field)) {
-        return (
-          <Input.Group key={i}>{field.map(ActivationField, this)}</Input.Group>
-        );
-      }
+    let documentContent =
+      DOCUMENT_UPLOAD_STEP &&
+      FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].map((field, i) => {
+        if (Array.isArray(field)) {
+          return (
+            <Input.Group key={i}>
+              {field.map(ActivationField, this)}
+            </Input.Group>
+          );
+        }
 
-      return ActivationField.call(this, field);
-    });
+        return ActivationField.call(this, field);
+      });
 
     return (
       <div class="Activation--wizard">
         <aside>
           <side-title>Account Activation</side-title>
-          <p>
-            Fill and submit the activation form to start transacting live from
-            your Razorpay account.
-          </p>
+          {!isLinkedAccountForm && (
+            <p>
+              Fill and submit the activation form to start transacting live from
+              your Razorpay account.
+            </p>
+          )}
           <ul>
-            {tabs.map((t, i) => {
+            {FORM_TABS.map((t, i) => {
               let isTabValid = this.state.tabs[i];
               return (
                 <li
@@ -641,20 +350,22 @@ export default class ActivationWizard extends React.Component {
                 </li>
               );
             })}
-            <li
-              onClick={this.toggleSubmitLayer}
-              class={classList(
-                !this.isAllTabsValid() && 'disabled',
-                this.state.showSubmitLayer && 'active'
-              )}
-            >
-              Submit Form
-              {!this.isAllTabsValid() && (
-                <div style={{ marginTop: -20, fontSize: 12 }}>
-                  Fill required fields to submit
-                </div>
-              )}
-            </li>
+            {!isAlreadyActivated && (
+              <li
+                onClick={this.toggleSubmitLayer}
+                class={classList(
+                  !this.isAllTabsValid() && 'disabled',
+                  this.state.showSubmitLayer && 'active'
+                )}
+              >
+                Submit Form
+                {!this.isAllTabsValid() && (
+                  <div style={{ marginTop: -20, fontSize: 12 }}>
+                    Fill required fields to submit
+                  </div>
+                )}
+              </li>
+            )}
           </ul>
         </aside>
         {/* Rest of the Content for business form */}
@@ -663,7 +374,7 @@ export default class ActivationWizard extends React.Component {
             id="form-container"
             class={this.state.showSubmitLayer ? 'block-scroll' : ''}
           >
-            <main-title>{tabs[activeTab]}</main-title>
+            <main-title>{FORM_TABS[activeTab]}</main-title>
 
             <Form onChange={this.onChange} layout="tabular">
               {content}
@@ -671,47 +382,50 @@ export default class ActivationWizard extends React.Component {
           </main>
         )}
         {/* Document Content */}
-        <main
-          id="form-container"
-          class={classList(
-            this.state.showSubmitLayer && 'block-scroll',
-            content && 'main--hide'
-          )}
-        >
-          <main-title>{tabs[activeTab]}</main-title>
-          <Form onChange={this.onChange} layout="tabular">
-            {documentContent}
-          </Form>
-        </main>
-        {this.state.showSubmitLayer && (
-          <main class="overlay-container">
-            <SubmitForm
-              closeSubmitForm={this.toggleSubmitLayer}
-              submitActvationForm={this.submitForm}
-            />
+        {DOCUMENT_UPLOAD_STEP && (
+          <main
+            id="form-container"
+            class={classList(
+              this.state.showSubmitLayer && 'block-scroll',
+              content && 'main--hide'
+            )}
+          >
+            <main-title>{FORM_TABS[DOCUMENT_UPLOAD_STEP]}</main-title>
+            <Form onChange={this.onChange} layout="tabular">
+              {documentContent}
+            </Form>
           </main>
         )}
+        {!isAlreadyActivated &&
+          this.state.showSubmitLayer && (
+            <main class="overlay-container">
+              <SubmitForm
+                closeSubmitForm={this.toggleSubmitLayer}
+                submitActvationForm={this.submitForm}
+              />
+            </main>
+          )}
         {!this.state.showSubmitLayer && (
           <footer>
             <Loader isSaving={this.state.isSaving} />
-            {(activeTab != LAST_STEP && (
+            {activeTab != DOCUMENT_UPLOAD_STEP && (
               <Button onClick={_ => this.goto()}>Save</Button>
-            )) ||
-              null}
-            {isLastTab && (
+            )}
+            {isLastTab || (
               <Button.Primary iconAfter="chevron-right" onClick={this.next}>
                 <span class="btn--desktop">Save & Next</span>
                 <span class="btn--mobile">Next</span>
               </Button.Primary>
             )}
-            {isLastTab || (
-              <Button.Primary
-                class={classList(!this.isAllTabsValid() && 'disabled')}
-                onClick={this.toggleSubmitLayer}
-              >
-                Submit Form
-              </Button.Primary>
-            )}
+            {isLastTab &&
+              !isAlreadyActivated && (
+                <Button.Primary
+                  class={classList(!this.isAllTabsValid() && 'disabled')}
+                  onClick={this.toggleSubmitLayer}
+                >
+                  Submit Form
+                </Button.Primary>
+              )}
           </footer>
         )}
       </div>
@@ -720,7 +434,7 @@ export default class ActivationWizard extends React.Component {
 
   // returns validity
   tabValidity(i) {
-    return tabContent[i].every(
+    return FORM_TABS_CONTENT[i].every(
       c =>
         Array.isArray(c)
           ? c.every(d => isFieldValid(d, this))
@@ -782,7 +496,7 @@ function ActivationField(field, activation) {
       key={key}
       data-name={_name}
       defaultValue={defaultValue}
-      disabled={this.state.data.locked}
+      disabled={!!this.state.data.locked || !!this.state.data.activated} // Linked accounts form can still be seen after activation
       {...rest}
     />
   );
