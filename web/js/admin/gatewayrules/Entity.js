@@ -83,6 +83,15 @@ class GatewayRuleForm extends Component {
     const mode = body.mode;
     delete body.mode;
 
+    //send amount in paise
+    if (body.min_amount) {
+      body.min_amount = body.min_amount * 100;
+    }
+
+    if (body.max_amount) {
+      body.max_amount = body.max_amount * 100;
+    }
+
     if (model.id) {
       const data = {}; // Only below 5 fields are allowed while Edit
 
@@ -109,8 +118,8 @@ class GatewayRuleForm extends Component {
         data.filter_type = body.filter_type;
       }
 
-      if (body.comment && body.comment !== model['comment']) {
-        data.comment = body.comment;
+      if (body.comments && body.comments !== model['comment']) {
+        data.comments = body.comments;
       }
 
       if (!Object.keys(data).length) {
@@ -205,23 +214,26 @@ class GatewayRuleForm extends Component {
             <option value="debit">Debit</option>
           </SelectField>
         )}
-        <SelectField
-          name="gateway"
-          label="Gateway"
-          defaultValue={model.gateway}
-          disabled={!!model.id}
-          required={this.state.type === 'sorter'}
-        >
-          <option value="">All</option>
-          {model.method &&
-            Object.keys(gateways[model.method]).map((m, index) => {
-              return (
-                <option key={index} value={m}>
-                  {gateways[model.method][m]}
-                </option>
-              );
-            })}
-        </SelectField>
+
+        {model.type === 'sorter' && (
+          <SelectField
+            name="gateway"
+            label="Gateway"
+            defaultValue={model.gateway}
+            disabled={!!model.id}
+            required={this.state.type === 'sorter'}
+          >
+            <option value="">All</option>
+            {model.method &&
+              Object.keys(gateways[model.method]).map((m, index) => {
+                return (
+                  <option key={index} value={m}>
+                    {gateways[model.method][m]}
+                  </option>
+                );
+              })}
+          </SelectField>
+        )}
 
         <Field
           type="number"
@@ -229,6 +241,7 @@ class GatewayRuleForm extends Component {
           label="Min Amount"
           name="min_amount"
           placeholder="In Rupees"
+          defaultValue={model.min_amount}
           disabled={!!model.id}
         />
         <Field
@@ -237,6 +250,7 @@ class GatewayRuleForm extends Component {
           label="Max Amount"
           name="max_amount"
           placeholder="In Rupees"
+          defaultValue={model.max_amount}
           disabled={!!model.id}
         />
         <Field
@@ -260,33 +274,38 @@ class GatewayRuleForm extends Component {
             ))}
           </SelectField>
         )}
-        <SelectField
-          defaultValue={model.category2}
-          name="category2"
-          label="Category2"
-          disabled={!!model.id}
-        >
-          <option value="" />
-          {Object.keys(categories).map((m, index) => (
-            <option key={index} value={m}>
-              {categories[m]}
-            </option>
-          ))}
-        </SelectField>
 
-        <SelectField
-          defaultValue={model.gateway_acquirer}
-          name="gateway_acquirer"
-          label="Gateway Acquirer"
-          disabled={!!model.id}
-        >
-          <option value="" />
-          {Object.keys(gatewayAcquirers).map((m, index) => (
-            <option key={index} value={m}>
-              {gatewayAcquirers[m]}
-            </option>
-          ))}
-        </SelectField>
+        {model.type === 'filter' && (
+          <Fragment>
+            <SelectField
+              defaultValue={model.category2}
+              name="category2"
+              label="Category2"
+              disabled={!!model.id}
+            >
+              <option value="" />
+              {Object.keys(categories).map((m, index) => (
+                <option key={index} value={m}>
+                  {categories[m]}
+                </option>
+              ))}
+            </SelectField>
+
+            <SelectField
+              defaultValue={model.gateway_acquirer}
+              name="gateway_acquirer"
+              label="Gateway Acquirer"
+              disabled={!!model.id}
+            >
+              <option value="" />
+              {Object.keys(gatewayAcquirers).map((m, index) => (
+                <option key={index} value={m}>
+                  {gatewayAcquirers[m]}
+                </option>
+              ))}
+            </SelectField>
+          </Fragment>
+        )}
 
         {['card', 'emi'].indexOf(model.method) > -1 && (
           <Field
@@ -309,7 +328,7 @@ class GatewayRuleForm extends Component {
         <SelectField
           name="shared_terminal"
           label="Shared Terminal"
-          defaultValue={model.shared_terminal}
+          defaultValue={model.shared_terminal | 0}
           disabled={!!model.id}
         >
           <option value="" />
@@ -319,7 +338,8 @@ class GatewayRuleForm extends Component {
         <br />
         <TextAreaField
           label="Add Comment:"
-          name="comment"
+          name="comments"
+          defaultValue={model.comments}
           style={{ width: '275px' }}
         />
         <AsyncButton
