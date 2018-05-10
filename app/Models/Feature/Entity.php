@@ -62,6 +62,22 @@ class Entity extends Base\PublicEntity
         Constants::S2S,
     ];
 
+    /**
+     * The features added here are selectively added to the merchants and the applications upon proper verification
+     * through the activations team. And hence,
+     * - If a merchant directly tries to access a route which requires one of these features, it is allowed to access
+     *   the route only if feature is enabled for the merchant [regular flow]
+     * - If an app tries to access a route which requires one of these features, it is allowed to access
+     *   the route only if the merchant as well as the application has the feature enabled.
+     *
+     * @var array
+     */
+    public static $restrictedAccessFeatures = [
+        Constants::MARKETPLACE,
+        Constants::SUBSCRIPTIONS,
+        Constants::VIRTUAL_ACCOUNTS,
+    ];
+
     public function getName()
     {
         return $this->getAttribute(self::NAME);

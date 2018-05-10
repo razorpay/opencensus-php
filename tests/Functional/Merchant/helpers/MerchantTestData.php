@@ -698,23 +698,25 @@ return [
     ],
 
     'testEditMerchantConfig' => [
-        'request' => [
+        'request'  => [
             'content' => [
-                'brand_color' => '00bcd4',
-                'handle'      => 'LOLO',
+                'brand_color'         => '00bcd4',
+                'handle'              => 'LOLO',
+                'invoice_label_field' => 'name',
             ],
-            'url' => '/account/config',
-            'method' => 'put',
-            'server' => [
+            'url'     => '/account/config',
+            'method'  => 'put',
+            'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
         ],
         'response' => [
             'content' => [
-                'id'          => '10000000000000',
-                'brand_color' => '#00BCD4',
-                'handle'      => 'LOLO',
+                'id'                  => '10000000000000',
+                'brand_color'         => '#00BCD4',
+                'handle'              => 'LOLO',
+                'invoice_label_field' => 'name',
             ]
         ]
     ],
@@ -737,6 +739,29 @@ return [
         ],
         'exception' => [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditMerchantInvalidInvoiceNameField' => [
+        'request'   => [
+            'content' => [
+                'invoice_label_field' => 'random',
+            ],
+            'url'     => '/account/config',
+            'method'  => 'put',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected invoice label field is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -1421,7 +1446,7 @@ return [
         ],
     ],
 
-    'testGetCheckoutPreferencesWithOrderRelatedOffer' => [
+    'testGetCheckoutPreferencesWithOrderRelatedUndiscountedOffer' => [
         'request' => [
             'url'    => null,
             'method' => 'get',
@@ -1531,6 +1556,117 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithOrderRelatedOffer' => [
+        'request' => [
+            'url'    => null,
+            'method' => 'get',
+        ],
+        'tests' => [
+            [
+                'offer' => [
+                    'payment_method'      => 'card',
+                    'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'display_text'        => 'Some display text',
+                    'percent_rate'        => 1000,
+                    'terms'               => 'Some terms',
+                ],
+                'response' => [
+                    'content' => [
+                        'methods' => [
+                            'entity' => 'methods',
+                            'card'   => true
+                        ],
+                        'offers' => [
+                            [
+                                'name'            => 'Test Offer',
+                                'payment_method'  => 'card',
+                                'original_amount' => 100000,
+                                'amount'          => 90000,
+                            ]
+                        ],
+                    ]
+                ]
+            ],
+            [
+                'offer' => [
+                    'payment_method'      => 'card',
+                    'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'display_text'        => 'Some display text',
+                    'flat_cashback'       => 100,
+                    'terms'               => 'Some terms',
+                ],
+                'response' => [
+                    'content' => [
+                        'methods' => [
+                            'entity' => 'methods',
+                            'card'   => true
+                        ],
+                        'offers' => [
+                            [
+                                'name'            => 'Test Offer',
+                                'payment_method'  => 'card',
+                                'original_amount' => 100000,
+                                'amount'          => 99900,
+                            ]
+                        ],
+                    ]
+                ]
+            ],
+            [
+                'offer' => [
+                    'payment_method'      => 'card',
+                    'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'display_text'        => 'Some display text',
+                    'percent_rate'        => 5000,
+                    'max_cashback'        => 2000,
+                    'terms'               => 'Some terms',
+                ],
+                'response' => [
+                    'content' => [
+                        'methods' => [
+                            'entity' => 'methods',
+                            'card'   => true
+                        ],
+                        'offers' => [
+                            [
+                                'name'            => 'Test Offer',
+                                'payment_method'  => 'card',
+                                'original_amount' => 100000,
+                                'amount'          => 98000,
+                            ]
+                        ],
+                    ]
+                ]
+            ],
+            [
+                'offer' => [
+                    'payment_method'      => 'card',
+                    'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'display_text'        => 'Some display text',
+                    'percent_rate'        => 5000,
+                    'min_amount'          => 200000,
+                    'terms'               => 'Some terms',
+                ],
+                'response' => [
+                    'content' => [
+                        'methods' => [
+                            'entity' => 'methods',
+                            'card'   => true
+                        ],
+                        'offers' => [
+                            [
+                                'name'            => 'Test Offer',
+                                'payment_method'  => 'card',
+                                'original_amount' => 100000,
+                                'amount'          => 100000,
+                            ]
+                        ],
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithAllCardGeatewayDowntime' => [
         'request' => [
             'url' => '/preferences',
@@ -1548,6 +1684,40 @@ return [
                             'network'   => ['VISA'],
                         ],
                     ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithDebitCardDisabled' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'entity' => 'methods',
+                    'card' => true,
+                    'debit_card' => false,
+                    'credit_card' => true,
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithCreditCardDisabled' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'entity' => 'methods',
+                    'card' => true,
+                    'debit_card' => true,
+                    'credit_card' => false,
                 ],
             ],
         ],
@@ -1583,7 +1753,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 29,
+                'count' => 20,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1617,27 +1787,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'DCBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'DCBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'DEUT',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'DBSS',
                         ],
                     ],
@@ -1652,13 +1801,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'IBKL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'JSBP',
                         ],
                     ],
@@ -1666,21 +1808,7 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'KVBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'NKGS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'PMCB',
                         ],
                     ],
                     [
@@ -1695,13 +1823,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'SBHY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBIN',
                         ],
                     ],
                     [
@@ -1736,13 +1857,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'SIBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'SVCB',
                         ],
                     ],
@@ -1751,13 +1865,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'SYNB',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'TMBL',
                         ],
                     ],
                     [
@@ -1801,7 +1908,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 30,
+                'count' => 21,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1842,27 +1949,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'DCBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'DCBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'DEUT',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'DBSS',
                         ],
                     ],
@@ -1877,13 +1963,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'IBKL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'JSBP',
                         ],
                     ],
@@ -1891,21 +1970,7 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'KVBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'NKGS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'PMCB',
                         ],
                     ],
                     [
@@ -1920,13 +1985,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'SBHY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBIN',
                         ],
                     ],
                     [
@@ -1961,13 +2019,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'SIBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'SVCB',
                         ],
                     ],
@@ -1976,13 +2027,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'SYNB',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'TMBL',
                         ],
                     ],
                     [
@@ -2210,27 +2254,18 @@ return [
                                 'BBKM',
                                 'BKDN',
                                 'COSB',
-                                'DCBL',
-                                'DCBL',
-                                'DEUT',
                                 'DBSS',
                                 'IDFB',
-                                'IBKL',
                                 'JSBP',
-                                'KVBL',
                                 'NKGS',
-                                'PMCB',
                                 'SBBJ',
                                 'SBHY',
-                                'SBIN',
                                 'SBMY',
                                 'STBP',
                                 'SBTR',
                                 'SCBL',
-                                'SIBL',
                                 'SVCB',
                                 'SYNB',
-                                'TMBL',
                                 'TNSC',
                                 'BARB_C',
                                 'PUNB_C',

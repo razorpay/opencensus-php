@@ -7,9 +7,9 @@ use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settings;
 use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
-use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\Batch as BatchJob;
 use RZP\Exception\BadRequestException;
 
@@ -153,11 +153,34 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function fetchWithSettings(array $input, Merchant\Entity $merchant): array
+    {
+        $withConfig = array_pull($input, Entity::WITH_CONFIG, '0');
+
+        $batches    = $this->repo->batch->fetch($input, $merchant->getId());
+
+        $response   = $batches->toArrayPublic();
+
+        // Conditionally, query and populate settings/config for each batch entity in response.
+        if ($withConfig === '1')
+        {
+            // TODO: This is just temporary and not optimal query.
+            $batches->each(function ($batch, $index) use (& $response)
+            {
+                $settingAccessor = Settings\Accessor::for($batch, Settings\Module::BATCH);
+
+                $response[Base\PublicCollection::ITEMS][$index][Entity::CONFIG] = $settingAccessor->all()->toArray();
+            });
+        }
+
+        return $response;
+    }
+
     public function processBatchAsync(Entity $batch, array $input = []): Entity
     {
         $this->trace->info(TraceCode::BATCH_PROCESS_ASYNC, [$batch->toArrayPublic(), $input]);
 
-        $this->queueBatchForProcessing($batch, $input);
+        BatchJob::dispatch($this->mode, $batch->getId(), $input);
 
         return $batch;
     }
@@ -183,14 +206,7 @@ class Core extends Base\Core
         {
             unset($input[Entity::FILE]);
 
-            $this->queueBatchForProcessing($batch, $input);
+            BatchJob::dispatch($this->mode, $batch->getId(), $input);
         }
-    }
-
-    protected function queueBatchForProcessing(Entity $batch, array $input = [])
-    {
-        $job = new BatchJob($this->mode, $batch->getId(), $input);
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
     }
 }

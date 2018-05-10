@@ -94,9 +94,9 @@ class Gateway extends Base\Gateway
 
         $this->checkCapturedStatus($gatewayPayment, ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
 
-        $response = $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
-        return $response;
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     /**
@@ -278,10 +278,20 @@ class Gateway extends Base\Gateway
                 $requestContent[Fields::UDF5]      = strtolower(Constants::TRACK_ID);
                 $requestContent[Fields::BANK_CODE] = BankCodes::getBankCodeByIfsc($input[E::CARD][Card\Entity::ISSUER]);
 
+                if ($this->action === Action::REFUND)
+                {
+                    $requestContent[Fields::PASSWORD] = $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
+                }
+
                 if ($this->mode === Mode::TEST)
                 {
                     $requestContent[Fields::ID]         = $this->config['fss']['merchant_id'];
                     $requestContent[Fields::UDF3]       = $this->config['fss']['merchant_id'];
+
+                    if ($this->action === Action::REFUND)
+                    {
+                        $requestContent[Fields::PASSWORD] = $this->config['fss']['terminal_password'];
+                    }
                 }
 
                 break;

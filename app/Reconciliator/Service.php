@@ -24,6 +24,7 @@ class Service extends Base\Service
         RequestProcessor\Base::HITACHI,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
+        RequestProcessor\Base::NETBANKING_OBC,
     ];
 
     /**

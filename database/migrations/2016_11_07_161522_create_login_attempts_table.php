@@ -34,6 +34,8 @@ class CreateLoginAttemptsTable extends Migration
             $table->foreign(LoginAttempt::ADMIN_ID)
                   ->references(Admin::ID)
                   ->on(Table::ADMIN);
+
+            $table->index(LoginAttempt::CREATED_AT);
         });
     }
 

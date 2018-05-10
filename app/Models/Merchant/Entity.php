@@ -26,6 +26,7 @@ use RZP\Models\Base\QueryCache\Cacheable;
 
 /**
  * @property Detail\Entity $merchantDetail
+ * @property Methods\Entity $methods
  */
 class Entity extends Base\PublicEntity
 {
@@ -50,6 +51,8 @@ class Entity extends Base\PublicEntity
     const CHANNEL                  = 'channel';
     const WEBSITE                  = 'website';
     const CATEGORY                 = 'category';
+    const WHITELISTED_IPS_LIVE     = 'whitelisted_ips_live';
+    const WHITELISTED_IPS_TEST     = 'whitelisted_ips_test';
     const CATEGORY2                = 'category2';
     const INVOICE_CODE             = 'invoice_code';
     const SCOPE                    = 'scope';
@@ -63,6 +66,7 @@ class Entity extends Base\PublicEntity
     const RISK_RATING              = 'risk_rating';
     const RISK_THRESHOLD           = 'risk_threshold';
     const LOGO_URL                 = 'logo_url';
+    const INVOICE_LABEL_FIELD      = 'invoice_label_field';
     const AWS_LOGO_URL             = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT       = 'max_payment_amount';
     const AUTO_REFUND_DELAY        = 'auto_refund_delay';
@@ -71,8 +75,6 @@ class Entity extends Base\PublicEntity
     const ARCHIVED_AT              = 'archived_at';
     const SUSPENDED_AT             = 'suspended_at';
     const NOTES                    = 'notes';
-    const WHITELISTED_IPS_LIVE     = 'whitelisted_ips_live';
-    const WHITELISTED_IPS_TEST     = 'whitelisted_ips_test';
 
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
@@ -101,11 +103,14 @@ class Entity extends Base\PublicEntity
     //
 
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
+    const AUTO_REFUND_DELAY_FOR_EMANDATE = 1728000; // 20 days
     const SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
     // 30 minutes in seconds
     const MIN_AUTO_REFUND_DELAY = 1800;
     // 10 days in seconds
     const MAX_AUTO_REFUND_DELAY = 864000;
+    // Default merchant brand color used if not set already
+    const DEFAULT_MERCHANT_BRAND_COLOR = '#2371EC';
 
     /**
      * A query parameter to filter results based on
@@ -183,6 +188,7 @@ class Entity extends Base\PublicEntity
         self::CONVERT_CURRENCY,
         self::AUTO_REFUND_DELAY,
         self::MAX_PAYMENT_AMOUNT,
+        self::INVOICE_LABEL_FIELD,
         self::LINKED_ACCOUNT_KYC,
         self::RECEIPT_EMAIL_ENABLED,
         self::AUTO_CAPTURE_LATE_AUTH,
@@ -192,13 +198,13 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_TEST,
     ];
 
-    // Requires PHP 5.6
     const CONFIG_LIST = [
         self::ID,
         self::BRAND_COLOR,
         self::HANDLE,
         self::TRANSACTION_REPORT_EMAIL,
         self::LOGO_URL,
+        self::INVOICE_LABEL_FIELD,
         self::AUTO_CAPTURE_LATE_AUTH,
     ];
 
@@ -225,6 +231,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
+        self::INVOICE_LABEL_FIELD,
         self::CHANNEL,
         self::METHODS,
         self::CONVERT_CURRENCY,
@@ -246,6 +253,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::WHITELISTED_IPS_LIVE,
         self::WHITELISTED_IPS_TEST,
+        self::MERCHANT_DETAIL,
      ];
 
     protected $defaults = [
@@ -270,7 +278,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH => false,
         self::FEE_MODEL              => FeeModel::PREPAID,
         self::REFUND_SOURCE          => RefundSource::BALANCE,
-        self::CHANNEL                => Settlement\Channel::ICICI,
+        self::CHANNEL                => Settlement\Channel::AXIS,
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
@@ -451,6 +459,11 @@ class Entity extends Base\PublicEntity
     public function isRecurringEnabled(): bool
     {
         return ($this->isAtLeastOneFeatureEnabled(Feature\Constants::$recurringFeatures) === true);
+    }
+
+    public function isDebitRecurringEnabled(): bool
+    {
+        return ($this->isAtLeastOneFeatureEnabled(Feature\Constants::$debitRecurringFeatures) === true);
     }
 
     /**
@@ -803,6 +816,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MAX_PAYMENT_AMOUNT);
     }
 
+    public function getInvoiceLabelField()
+    {
+        return $this->getAttribute(self::INVOICE_LABEL_FIELD);
+    }
+
     public function getAutoRefundDelay()
     {
         $autoRefundDelay = $this->getAttribute(self::AUTO_REFUND_DELAY);
@@ -813,6 +831,22 @@ class Entity extends Base\PublicEntity
         }
 
         return $autoRefundDelay;
+    }
+
+    /**
+     * Helper method to fetch the actual display_name for an
+     * invoice, based on merchant-defined field preference:
+     * `billing_label` or `name`
+     *
+     * Fallback to `billing_name` if the setting is not defined
+     *
+     * @return mixed
+     */
+    public function getLabelForInvoice()
+    {
+        $field = $this->getInvoiceLabelField() ?: self::BILLING_LABEL;
+
+        return $this->getAttribute($field);
     }
 
     public function getAutoCaptureLateAuth()
@@ -862,6 +896,11 @@ class Entity extends Base\PublicEntity
     public function getBrandColor()
     {
         return $this->getAttribute(self::BRAND_COLOR);
+    }
+
+    public function getBrandColorOrDefault(string $default = self::DEFAULT_MERCHANT_BRAND_COLOR): string
+    {
+        return $this->getBrandColor() ?: $default;
     }
 
     public function getHandle()
@@ -984,7 +1023,9 @@ class Entity extends Base\PublicEntity
 
     protected function setEmailAttribute($email)
     {
-        $this->attributes[self::EMAIL] = mb_strtolower($email);
+        $formattedEmail = ($email === null) ? null : mb_strtolower(trim($email));
+
+        $this->attributes[self::EMAIL] =  $formattedEmail;
     }
 
     public function setWebsiteAttribute($website)

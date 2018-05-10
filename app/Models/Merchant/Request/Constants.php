@@ -6,11 +6,12 @@ use RZP\Models\Merchant\Detail as MerchantDetail;
 
 class Constants
 {
-    const EXPAND            = 'expand';
-    const MERCHANT          = 'merchant';
-    const QUESTIONS         = 'questions';
-    const SUBMISSIONS       = 'submissions';
-    const REJECTION_REASONS = 'rejection_reasons';
+    const EXPAND                   = 'expand';
+    const MERCHANT                 = 'merchant';
+    const QUESTIONS                = 'questions';
+    const SUBMISSIONS              = 'submissions';
+    const REJECTION_REASON         = 'rejection_reason';
+    const NEEDS_CLARIFICATION_TEXT = 'needs_clarification_text';
 
     /*
      * Need this map to map onboarding statuses to merchant request statuses to

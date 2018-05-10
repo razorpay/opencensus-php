@@ -8,6 +8,7 @@ use Response;
 use ApiResponse;
 
 use RZP\Exception\BaseException;
+use RZP\Models\Merchant\Preferences;
 use Illuminate\Http\Response as ResponseCodes;
 
 class InvoiceController extends Controller
@@ -152,18 +153,11 @@ class InvoiceController extends Controller
 
     public function getInvoiceView(string $invoiceId)
     {
-        $useNewView = false;
-        $error      = Request::get('error');
+        $error = Request::get('error');
 
         try
         {
             $data = $this->service()->getInvoiceViewData($invoiceId);
-
-            //
-            // Following is only for 10% rollout of new PL hosted page based on tag 'hostedplv2'
-            // If merchant has tag 'hostedplv2', then new PL hosted page would be shown
-            //
-            $useNewView = (in_array('Hostedplv2', $data['merchant']['tags'], true) === true);
         }
         catch (BaseException $e)
         {
@@ -175,21 +169,25 @@ class InvoiceController extends Controller
             $data['error'] = $error;
         }
 
-        $view = ($useNewView === true) ? 'invoice.index' : 'invoice.index-old';
-
         //
         // Following is only temporary and is to be removed soon.
         // In case of Uber, a different hosted page is being served.
         // For testing purposes have made one more test account behave same way.
         //
-
         $idsForUberFlow = [
-            '82LK42BGTN2bOe', // Uber's
-            '7SVOQZGZuwHr4I', // Amit. M's
+            Preferences::MID_UBER,
+            Preferences::MID_AMIT_MAHBUBANI,
         ];
 
-        if ((empty($data['merchant']) === false) and
-            (in_array($data['merchant']['id'], $idsForUberFlow, true) === true))
+        //
+        // We pull the merchant.id because we don't want the same to be sent to view.
+        // If ever this condition is being removed from here, need to remove merchant.id from ViewDataSerializer
+        //
+        $merchantId = array_pull($data, 'merchant.id');
+
+        $view = 'invoice.index';
+
+        if (in_array($merchantId, $idsForUberFlow, true) === true)
         {
             $view = 'invoice.uber';
         }
@@ -199,7 +197,6 @@ class InvoiceController extends Controller
         // creation when pop-up doesn't work. We send the request parameters
         // to blade and there JS code handles invoice.callback_url.
         //
-
         $data['request_params'] = Request::all();
 
         return View::make($view)

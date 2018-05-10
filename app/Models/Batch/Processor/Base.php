@@ -2,24 +2,24 @@
 
 namespace RZP\Models\Batch\Processor;
 
-use Mail;
 use Carbon\Carbon;
+use Mail;
 use Razorpay\Trace\Logger as Trace;
-use Symfony\Component\HttpFoundation\File\File;
-
-use RZP\Models\Batch;
-use RZP\Models\Invoice;
-use RZP\Models\Settings;
+use RZP\Encryption\Type;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
-use RZP\Models\FileStore;
-use RZP\Models\Batch\Constants;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
+use RZP\Models\Batch;
+use RZP\Models\Batch\Constants;
+use RZP\Models\FileStore;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Invoice;
+use RZP\Models\Merchant;
+use RZP\Models\Settings;
+use RZP\Trace\TraceCode;
+use Symfony\Component\HttpFoundation\File\File;
 
 class Base extends BaseModel\Core
 {
@@ -81,7 +81,7 @@ class Base extends BaseModel\Core
     protected $settingsAccessor;
 
     /**
-     * Holds local file path of input, output and validated file respectively.
+     * Holds local file path of input & output file respectively.
      * They are re-used in the flow.
      * E.g.
      * - sending mails with attachment,
@@ -89,12 +89,12 @@ class Base extends BaseModel\Core
      */
     protected $inputFileLocalPath;
     protected $outputFileLocalPath;
-    protected $validatedFileLocalPath;
 
     /**
-     * Holds path where generated file must be saved
+     * Holds filetype of input & output file respectively.
      */
-    protected $generatedFileDirectory;
+    protected $inputFileType;
+    protected $outputFileType;
 
     public function __construct(Batch\Entity $batch)
     {
@@ -136,10 +136,10 @@ class Base extends BaseModel\Core
         // created file store entity with this batch and save both of them.
         //
 
-        /**
-         * For file upload, we throw an error in Batch/Validator::validateEntries.
-         * This attribute is used in this validator. Its not stored though.
-         */
+        //
+        // For file upload, we throw an error in Batch/Validator::validateEntries.
+        // This attribute is used in this validator. It's not stored though.
+        //
         if (isset($input[Batch\Entity::FILE]) === true)
         {
             $this->batch->setCreatedByFileUpload(true);
@@ -174,10 +174,9 @@ class Base extends BaseModel\Core
     {
         list($inputUfhFile, $entries) = $this->saveInputFileAndValidateEntries($input);
 
-        $validatedUfhFile = $this->createValidatedFileAndSave($entries);
+        $validatedUfhFile = $this->createSetOutputFileAndSave($entries, FileStore\Type::BATCH_VALIDATED);
 
         $response = $this->getValidatedEntriesStatsAndPreview($entries);
-
         $response += $this->getFileIdAndSignedUrl($validatedUfhFile);
 
         $this->deleteLocalFiles();
@@ -198,11 +197,11 @@ class Base extends BaseModel\Core
         // $ufhFile has no entity associated with it and has type = `batch_input`
         $ufhFile = $this->getInputFile($input);
 
-        // Update input file path
         $this->inputFileLocalPath = $ufhFile->getFullFilePath();
+        $this->inputFileType      = $ufhFile->getType();
 
         // $entries here might have extra error_code and error_description headers
-        $entries = $this->validateInputFileEntries($this->inputFileLocalPath, $input);
+        $entries = $this->validateInputFileEntries($input);
 
         return [$ufhFile, $entries];
     }
@@ -221,14 +220,14 @@ class Base extends BaseModel\Core
             return (isset($entry[Batch\Header::ERROR_CODE]) === false);
         });
 
-        $parsedData = array_slice($correctEntries, 0, self::MAX_PARSED_ROWS);
+        $previewData = array_slice($correctEntries, 0, self::MAX_PARSED_ROWS);
 
-        $this->removeErrorColumnsFromEntries($parsedData);
+        $this->removeErrorColumnsFromEntries($previewData);
 
         $response = [
             Constants::PROCESSABLE_COUNT     => count($correctEntries),
             Constants::ERROR_COUNT           => count($entries) - count($correctEntries),
-            Constants::PARSED_ENTRIES        => $parsedData,
+            Constants::PARSED_ENTRIES        => $previewData,
         ];
 
         return $response;
@@ -244,7 +243,8 @@ class Base extends BaseModel\Core
      *   folder in s3 too. The original file is saved in
      *   filestore/batch/upload folder in local.
      *
-     * @param  array            $input
+     * @param  array $input
+     *
      * @return FileStore\Entity
      */
     protected function getInputFile(array $input): FileStore\Entity
@@ -346,7 +346,7 @@ class Base extends BaseModel\Core
 
     protected function parseAndProcessEntries()
     {
-        $entries = $this->parseFile($this->inputFileLocalPath);
+        $entries = $this->parseFileAndCleanEntries($this->inputFileLocalPath);
 
         $this->processEntries($entries);
 
@@ -367,7 +367,6 @@ class Base extends BaseModel\Core
             $tracePayload = [
                 Batch\Entity::ID          => $this->batch->getId(),
                 Batch\Entity::MERCHANT_ID => $this->batch->getMerchantId(),
-                'entry'                   => $entry,
             ];
 
             try
@@ -455,7 +454,6 @@ class Base extends BaseModel\Core
         $this->batch->setSuccessCount($successCount);
         $this->batch->setFailureCount($failureCount);
     }
-
 
     /**
      * Indicates if a batch should be marked as processed even if it has partial
@@ -556,52 +554,17 @@ class Base extends BaseModel\Core
         $this->batch->setProcessing(false);
     }
 
-    protected function createSetOutputFileAndSave(array & $entries)
+    protected function createSetOutputFileAndSave(array & $entries, string $fileType = FileStore\Type::BATCH_OUTPUT)
     {
-        $type = $this->batch->getType();
+        $this->outputFileType = $fileType;
 
-        $headers = Batch\Header::getOutputHeadersForType($type);
+        $entries = $this->prepareEntriesForOutputFileCreation($entries);
 
-        $this->generatedFileDirectory = $this->batch->getLocalSaveDir(Batch\Entity::OUTPUT_FILE_PREFIX);
-
-        // Creates an output file in `batch/download` folder with
-        // same name as `$this->batch->getId . <desired_extension>`.
-        // <desired_extension> is XLSX by default.
-        // The output file path is saved in $this->outputFileLocalPath.
-        $this->outputFileLocalPath = $this->createAndSetGeneratedFile($entries, $headers);
+        $this->outputFileLocalPath = $this->createAndSetFileByExt($entries);
 
         try
         {
             return $this->saveOutputFile();
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                            $e,
-                            null,
-                            TraceCode::BATCH_PROCESSING_ERROR,
-                            $this->batch->toArrayPublic());
-        }
-    }
-
-    protected function createValidatedFileAndSave(array & $entries)
-    {
-        $type = $this->batch->getType();
-
-        // Validated file as additional error columns
-        $headers = Batch\Header::getValidatedHeadersForType($type);
-
-        $this->generatedFileDirectory = $this->batch->getLocalSaveDir(Batch\Entity::VALIDATED_FILE_PREFIX);
-
-        // Creates an error file in `batch/error` folder with
-        // same name as `$this->batch->getId . <desired_extension>`.
-        // <desired_extension> is XLSX by default.
-        // The error file path is saved in $this->errorFileLocalPath.
-        $this->validatedFileLocalPath = $this->createAndSetGeneratedFile($entries, $headers);
-
-        try
-        {
-            return $this->saveValidatedFile();
         }
         catch (\Throwable $e)
         {
@@ -614,41 +577,32 @@ class Base extends BaseModel\Core
     }
 
     /**
-     * - Method to generate the output file (excel/text) from the processed
-     *   entries. And returns the generated local file path.
+     * Constructs final input using updated $entries set. This things is used to create output file. Below we fill in
+     * the empty headers with null so we don't get errors during creation of files.
      *
      * @param  array  $entries
-     * @param  array  $headers
-     * @return string
+     * @return array
      */
-    protected function createAndSetGeneratedFile(array & $entries, array $headers): string
+    protected function prepareEntriesForOutputFileCreation(array $entries): array
     {
-        //
-        // Constructs final input using updated $entries set. This things
-        // is used to create output file. Below we fill in the empty headers
-        // with null so we don't get errors during creation of files.
-        //
-        $cleanedEntries = [];
-
-        $fieldsCount = count($headers);
+        $formatted = [];
+        $headers   = $this->getOutputFileHeadings();
 
         foreach ($entries as $entry)
         {
-            $dict = array_combine($headers, array_fill(0, $fieldsCount, null));
+            $dict = array_combine($headers, array_fill(0, count($headers), null));
 
             foreach ($entry as $key => $value)
             {
                 $dict[$key] = $value;
             }
 
-            $cleanedEntries[] = $dict;
+            $formatted[] = $dict;
         }
 
-        $path = $this->createAndSetFileByExt($cleanedEntries);
+        unset($entries);
 
-        unset($entries, $cleanedEntries);
-
-        return $path;
+        return $formatted;
     }
 
     /**
@@ -667,25 +621,25 @@ class Base extends BaseModel\Core
         //
         $ext = pathinfo($this->inputFileLocalPath, PATHINFO_EXTENSION);
 
+        $dir = $this->batch->getLocalSaveDir(self::FILE_TYPE_PREFIX_MAP[$this->outputFileType]);
+
         switch ($ext)
         {
             case FileStore\Format::TXT:
-                $txt = $this->generateText($entries, '|');
-                return $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $this->generatedFileDirectory);
+                $txt = $this->generateTextWithHeadings($entries, '|', false, $this->getOutputFileHeadings());
+
+                return $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);
 
             case FileStore\Format::CSV:
-                $txt = $this->generateText($entries, ',');
-                return $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $this->generatedFileDirectory);
+                $txt = $this->generateTextWithHeadings($entries, ',', false, $this->getOutputFileHeadings());
+
+                return $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);
 
             case FileStore\Format::XLSX:
             case FileStore\Format::XLS:
-                $fileMeta = $this->createExcelObject(
-                                    $entries,
-                                    $this->batch->getId(),
-                                    [],
-                                    $this->batch->getType()
-                                    )
-                                 ->store($ext, $this->generatedFileDirectory, true);
+                $fileMeta = $this->createExcelObject($entries, $this->batch->getId(), [], $this->batch->getType())
+                                 ->store($ext, $dir, true);
+
                 return $fileMeta['full'];
 
             default:
@@ -711,7 +665,6 @@ class Base extends BaseModel\Core
     {
         $this->deleteFile($this->inputFileLocalPath);
         $this->deleteFile($this->outputFileLocalPath);
-        $this->deleteFile($this->validatedFileLocalPath);
     }
 
     protected function deleteFile(string $filePath = null)
@@ -734,24 +687,17 @@ class Base extends BaseModel\Core
     /**
      * While creating the batch we parse the file and validate each entry in the file.
      * Post validation, we fill the batch entity with total_count and other metadata
-     *
-     * @param  string $filePath
      * @param  array $input
      * @return array
      */
-    protected function validateInputFileEntries(string $filePath, array $input): array
+    protected function validateInputFileEntries(array $input): array
     {
-        $entries = $this->parseFile($filePath);
-
-        // This cleanup is required because when we validate
-        // the entries, we check the headers in the entries
-        $this->removeErrorColumnsFromEntries($entries);
+        $entries = $this->parseFileAndCleanEntries($this->inputFileLocalPath);
 
         $this->validateEntries($entries, $input);
 
         return $entries;
     }
-
 
     /**
      * Updates batch with details extracted from the input file
@@ -766,29 +712,6 @@ class Base extends BaseModel\Core
 
         $this->batch->setAmount($totalAmount);
         $this->batch->setTotalCount($totalCount);
-    }
-
-    /**
-     * The output file that is given to merchants in the `batches/validate` api
-     * has two extra columns named `Error Code` and `Error Description`.
-     * For batch create, if the merchant passes a `file_id`, the downloaded file
-     * has these two columns, whose entries are removed in this method.
-     *
-     * @param array $entries
-     */
-    protected function removeErrorColumnsFromEntries(array & $entries)
-    {
-        $entries = array_map(
-
-            function ($entry)
-            {
-                unset($entry[Batch\Header::ERROR_CODE]);
-                unset($entry[Batch\Header::ERROR_DESCRIPTION]);
-
-                return $entry;
-            },
-
-            $entries);
     }
 
     /**
@@ -836,6 +759,59 @@ class Base extends BaseModel\Core
         }
     }
 
+    protected function parseFileAndCleanEntries(string $filePath): array
+    {
+        return $this->cleanParsedEntries($this->parseFile($filePath));
+    }
+
+    /**
+     * - Trims empty rows and/or columns from xlsx/csv parsed rows.
+     * - Trims additional headers of validated file, if applies.
+     * @param  array $entries
+     * @return array
+     */
+    protected function cleanParsedEntries(array $entries): array
+    {
+        // CSV: Removes first dictionary if it's the header itself
+        if ((empty($entries) === false) && (array_keys($entries[0]) === array_values($entries[0])))
+        {
+            array_shift($entries);
+        }
+
+        // The output file that is given to merchants in the `batches/validate` api has two extra columns named `Error
+        // Code` and `Error Description`. For batch create, if the merchant passes a `file_id`, the downloaded file has
+        // these two columns, whose entries are removed below.
+        if ($this->inputFileType === FileStore\Type::BATCH_VALIDATED)
+        {
+            $entries = array_map(
+                        function ($entry)
+                        {
+                            array_forget($entry, [Batch\Header::ERROR_CODE, Batch\Header::ERROR_DESCRIPTION]);
+
+                            return $entry;
+                        },
+                        $entries);
+        }
+
+        // Excel: Removes empty trailing rows
+        $entries = array_filter($entries, function ($v) { return (empty(array_filter($v)) === false); });
+
+        // Excel: Removes empty trailing columns(ONLY), not all additional columns.
+        foreach ($entries as & $entry)
+        {
+            $index = 0;
+            $entry = array_filter(
+                        $entry,
+                        function ($value, $key) use (& $index)
+                        {
+                            return ((($key === $index++) and ($value === null)) === false);
+                        },
+                        ARRAY_FILTER_USE_BOTH);
+        }
+
+        return $entries;
+    }
+
     /**
      * Saves the input file by creating a file store entity. At this point
      * doesn't associate the file store entity with batch entity.
@@ -856,38 +832,39 @@ class Base extends BaseModel\Core
         // from S3. This helps in smooth S3 mock working.
         //
 
-        $ext = $file->getClientOriginalExtension();
+        //
+        // In case of "storage" location type, getExtension would be
+        // available and in case of "upload" location type,
+        // getClientOriginalExtension would be available.
+        //
+        if ((method_exists($file, 'getExtension') === true) and
+            (empty($file->getExtension()) === false))
+        {
+            $ext = $file->getExtension();
+        }
+        else
+        {
+            $ext = $file->getClientOriginalExtension();
+        }
 
-        $movedFile = $file->move(
-                        $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE_PREFIX),
-                        $this->batch->getFileKeyWithExt($ext));
+        $ext = strtolower($ext);
 
-        $ufh = $this->saveFile(
-                        $movedFile->getPathname(),
-                        FileStore\Type::BATCH_INPUT,
-                        false);
+        $localDir  = $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE_PREFIX);
+        $filename  = $this->batch->getFileKeyWithExt($ext);
+        $movedFile = $file->move($localDir, $filename);
 
-        $this->trace->info(
-            TraceCode::BATCH_UPLOAD_FILE,
-            $ufh->getFileInstance()->toArrayPublic());
+        $ufh = $this->saveFile($movedFile->getPathname(), FileStore\Type::BATCH_INPUT, false);
+
+        $this->trace->info(TraceCode::BATCH_UPLOAD_FILE, $ufh->getFileInstance()->toArrayPublic());
 
         return $ufh;
     }
 
     protected function saveOutputFile(): FileStore\Creator
     {
-        return $this->saveFile(
-                        $this->outputFileLocalPath,
-                        FileStore\Type::BATCH_OUTPUT,
-                        true);
-    }
+        $associateBatch = $this->outputFileType === FileStore\Type::BATCH_OUTPUT;
 
-    protected function saveValidatedFile(): FileStore\Creator
-    {
-        return $this->saveFile(
-                        $this->validatedFileLocalPath,
-                        FileStore\Type::BATCH_VALIDATED,
-                        false);
+        return $this->saveFile($this->outputFileLocalPath, $this->outputFileType, $associateBatch);
     }
 
     public function getFileIdAndSignedUrl(FileStore\Creator $ufh): array
@@ -895,8 +872,8 @@ class Base extends BaseModel\Core
         $ufhSignedUrl = $ufh->getSignedUrl();
 
         return [
-            self::FILE_ID       => FileStore\Entity::getSignedId($ufhSignedUrl['id']),
-            self::SIGNED_URL    => $ufhSignedUrl['url'],
+            self::FILE_ID    => FileStore\Entity::getSignedId($ufhSignedUrl['id']),
+            self::SIGNED_URL => $ufhSignedUrl['url'],
         ];
     }
 
@@ -906,25 +883,28 @@ class Base extends BaseModel\Core
      * @param bool   $associateBatch - Ref: saveInputFile() for usage
      *
      * @return FileStore\Creator
-     *
-     * @throws LogicException
      */
-    protected function saveFile(
-        string $filePath,
-        string $type,
-        bool $associateBatch = true): FileStore\Creator
+    protected function saveFile(string $filePath, string $type, bool $associateBatch = true): FileStore\Creator
     {
         $filePrefix = self::FILE_TYPE_PREFIX_MAP[$type];
 
         $name = $filePrefix . $this->batch->getFileKey();
 
-        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
 
         $ufh = new FileStore\Creator;
 
         if ($associateBatch === true)
         {
             $ufh->entity($this->batch);
+        }
+
+        if ($this->shouldEncrypt() and ($type == FileStore\Type::BATCH_INPUT))
+        {
+            $ufh->encrypt(Type::AES_ENCRYPTION, [
+                    'mode'   =>   \phpseclib\Crypt\Base::MODE_CBC,
+                    'secret' =>  openssl_random_pseudo_bytes(256)
+                ]);
         }
 
         return $ufh->localFilePath($filePath)
@@ -975,6 +955,7 @@ class Base extends BaseModel\Core
                         ->getFile();
 
         $this->inputFileLocalPath = $filePath;
+        $this->inputFileType      = $inputFile->getType();
     }
 
     /**
@@ -984,7 +965,31 @@ class Base extends BaseModel\Core
      */
     public function getHeadings(): array
     {
-        return $this->batch->getHeaders();
+        return Batch\Header::getHeadersForFileTypeAndBatchType($this->inputFileType, $this->batch->getType());
+    }
+
+    protected function parseTextRowWithHeadingMismatch($headings, $values, $ix)
+    {
+        $msg = 'One/multiple rows have values mismatching allowed headers, please refer to guide';
+
+        throw new BadRequestValidationFailureException($msg, Batch\Entity::FILE, compact('headings', 'values', 'ix'));
+    }
+
+    public function getOutputFileHeadings(): array
+    {
+        return Batch\Header::getHeadersForFileTypeAndBatchType($this->outputFileType, $this->batch->getType());
+    }
+
+    protected function removeErrorColumnsFromEntries(array & $entries)
+    {
+        $entries = array_map(
+            function ($entry)
+            {
+                unset($entry[Batch\Header::ERROR_CODE]);
+                unset($entry[Batch\Header::ERROR_DESCRIPTION]);
+                return $entry;
+            },
+            $entries);
     }
 
     /**
@@ -1001,7 +1006,7 @@ class Base extends BaseModel\Core
 
         $this->downloadAndSetInputFile();
 
-        $entries = $this->parseFile($this->inputFileLocalPath);
+        $entries = $this->parseFileAndCleanEntries($this->inputFileLocalPath);
 
         //
         // Gets 'receipts' from the input entries. Fetch invoices by batch id
@@ -1070,7 +1075,7 @@ class Base extends BaseModel\Core
 
     /**
      * Handles any exception while processing the batch, and updates the batch
-     * status accordingly. Should be overrideen by respective processors for any
+     * status accordingly. Should be overridden by respective processors for any
      * special handling
      *
      * @param \Throwable $ex
@@ -1121,5 +1126,10 @@ class Base extends BaseModel\Core
     protected function increaseAllowedSystemLimits()
     {
         return;
+    }
+
+    protected function shouldEncrypt()
+    {
+        return false;
     }
 }

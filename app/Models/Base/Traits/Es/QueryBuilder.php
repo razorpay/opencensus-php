@@ -100,6 +100,7 @@ trait QueryBuilder
                 Es::FIELDS               => $this->queryFields,
                 Es::BOOST                => 1,
                 Es::MINIMUM_SHOULD_MATCH => '75%',
+                Es::LENIENT              => true,
             ],
         ];
 

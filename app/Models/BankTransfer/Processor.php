@@ -105,11 +105,9 @@ class Processor extends VirtualAccount\Processor
         {
             $paymentInput = $this->bankTransferPaymentArray($bankTransfer);
 
-            $res = $paymentProcessor->process($paymentInput);
+            $paymentProcessor->process($paymentInput);
 
-            $payment = $this->repo
-                            ->payment
-                            ->findByPublicId($res['razorpay_payment_id']);
+            $payment = $paymentProcessor->getPayment();
 
             $bankTransfer->payment()->associate($payment);
 
@@ -130,8 +128,32 @@ class Processor extends VirtualAccount\Processor
 
         if ($bankTransfer->isExpected() === true)
         {
-            $paymentProcessor->autoCapturePayment($payment);
+            // Amount mismatched payments made to order VAs are immediately refunded
+            if ($this->shouldRefundOrderPayment($bankTransfer) === true)
+            {
+                $paymentProcessor->refundAuthorizedPayment($payment);
+            }
+            else
+            {
+                $paymentProcessor->autoCapturePayment($payment);
+            }
         }
+    }
+
+    protected function shouldRefundOrderPayment(Entity $bankTransfer)
+    {
+        if ($bankTransfer->virtualAccount->hasOrder() === false)
+        {
+            return false;
+        }
+
+        if (($bankTransfer->virtualAccount->getAmountExpected() != $bankTransfer->getAmount()) or
+            ($bankTransfer->virtualAccount->entity->isPaid() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function isPaymentExpected(Base\PublicEntity $bankTransfer): bool
@@ -402,6 +424,18 @@ class Processor extends VirtualAccount\Processor
             $paymentArray[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
             $paymentArray[Payment\Entity::CONTACT]     = $customer->getContact();
             $paymentArray[Payment\Entity::EMAIL]       = $customer->getEmail();
+        }
+
+        if ($this->virtualAccount->hasOrder() === true)
+        {
+            $order = $this->virtualAccount->entity;
+
+            $paymentArray[Payment\Entity::ORDER_ID] = $order->getPublicId();
+
+            if ($this->virtualAccount->merchant->isFeeBearerCustomer() === true)
+            {
+                $paymentArray[Payment\Entity::FEE] = (new Core)->getFeesForOrder($order);
+            }
         }
 
         return $paymentArray;

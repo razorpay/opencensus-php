@@ -4,14 +4,35 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Trace\TraceCode;
 
 class BharatQrController extends Controller
 {
-    public function processBharatQrPayment()
+    public function processBharatQrPayment(string $gateway)
     {
-        $input = Request::all();
+        $this->trace->info(
+            TraceCode::BHARAT_QR_PAYMENT_PROCESS_REQUEST,
+            [
+                'input'   => Request::getContent(),
+                'gateway' => $gateway,
+            ]);
 
-        $response = $this->service()->processPayment($input);
+        switch ($gateway)
+        {
+            //
+            // in case of upi icici
+            // input is in form of text
+            //
+            case 'upi_icici' :
+                $input = Request::getContent();
+
+                break;
+
+            default:
+                $input = Request::all();
+        }
+
+        $response = $this->service()->processPayment($input, $gateway);
 
         return ApiResponse::json($response);
     }

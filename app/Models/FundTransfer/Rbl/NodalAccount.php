@@ -21,7 +21,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
     protected $transferStatus = [];
 
-    public function __construct()
+    public function __construct(string $purpose)
     {
         parent::__construct();
 
@@ -55,8 +55,10 @@ class NodalAccount extends NodalBase\NodalAccount
                                      ->makeRequest();
 
                 $this->repo->saveOrFail($entity);
+
+                $this->repo->saveOrFail($entity->source);
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
                 $this->trace->info(
                     TraceCode::RBL_NODAL_TRANSFER_REQUEST_FAILED,
@@ -67,11 +69,25 @@ class NodalAccount extends NodalBase\NodalAccount
                 continue;
             }
 
-            $reconciler->reconcile($response, $transfer->getMode());
+            try
+            {
+                $reconciler->reconcile($response, $transfer->getMode());
 
-            $status = $this->isValidSuccessResponse($response);
+                $status = $this->isValidSuccessResponse($response);
 
-            $this->updateTransferStatus($status);
+                $this->updateTransferStatus($status);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->info(
+                    TraceCode::RBL_NODAL_FAILURE_RESPONSE,
+                    [
+                        'entity_id'  => $entity->getId(),
+                        'response'   => $response
+                    ]);
+
+                continue;
+            }
         }
 
         return $this->transferStatus;

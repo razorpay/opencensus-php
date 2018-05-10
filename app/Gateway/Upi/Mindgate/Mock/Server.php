@@ -21,10 +21,10 @@ class Server extends Base\Mock\Server
      * actual incoming request
      */
     const REQUEST_FIELD_COUNT = [
-        Action::COLLECT      => 7,
-        Action::VERIFY       => 4,
-        Action::REFUND       => 10,
-        Action::VALIDATE_VPA => 4,
+        Action::COLLECT      => 17,
+        Action::VERIFY       => 14,
+        Action::REFUND       => 20,
+        Action::VALIDATE_VPA => 14,
     ];
 
     /**
@@ -90,7 +90,7 @@ class Server extends Base\Mock\Server
             // Customer VPA
             $input[2],
             // Customer name
-            'Mayank Amencherla',
+            'User Name',
             // Status
             Status::VPA_AVAILABLE,
             // Description
@@ -148,7 +148,14 @@ class Server extends Base\Mock\Server
 
         $arr = explode('|', $res);
 
-        return array_slice($arr, 0, self::REQUEST_FIELD_COUNT[$action]);
+        $actualFieldLength = count($arr);
+        $expectedFieldLength = self::REQUEST_FIELD_COUNT[$action];
+
+        $message = $actualFieldLength . ' is not equal to expected ' . $expectedFieldLength;
+
+        assertTrue($actualFieldLength === $expectedFieldLength, $message);
+
+        return $arr;
     }
 
     public function decrypt($data)
@@ -202,7 +209,13 @@ class Server extends Base\Mock\Server
             $payment['vpa'],
             // NPCI Reference Id
             random_integer(16),
-            'NA'
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'PNB!10000000000!PNBI1111111!8966829290'
         ];
     }
 
@@ -231,6 +244,8 @@ class Server extends Base\Mock\Server
 
         $response = $this->getDefaultVerifyResponse($input, $payment);
 
+        $this->content($response,'verify');
+
         $res = [
             $response['txn_id'],
             $response['payment_id'],
@@ -243,7 +258,13 @@ class Server extends Base\Mock\Server
             $response['payer_va'],
             $response['cust_ref_id'],
             // The Reference Id field always holds NA for now
-            'NA'
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            $response['bank_reference'],
         ];
 
         return $this->makeResponse($res, Action::VERIFY);
@@ -266,6 +287,7 @@ class Server extends Base\Mock\Server
             // timestamp when the collect request was raised
             'auth_time'     => date('Y:m:d h:i:s', $payment['created_at']),
             'amount'        => ($payment['amount'] / 100),
+            'bank_reference' => 'ICICI Bank!004001551691!ICIC0000000!918712929835',
         ];
     }
 
@@ -287,6 +309,8 @@ class Server extends Base\Mock\Server
         {
             $response[4] = Status::FAILED;
         }
+
+        $this->content($response, 'refund');
 
         return $this->makeResponse($response, Action::REFUND);
     }

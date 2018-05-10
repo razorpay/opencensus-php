@@ -23,8 +23,7 @@ cd "$API_INSTALL_DIR" && sudo chmod 777 -R storage
 
 # Run alohomora. No DB command should be run before this step
 echo  "== Running alohomora =="
-$ALOHOMORA_BIN cast --region ap-south-1 --env $DEPLOYMENT_GROUP_NAME --app $APPLICATION_NAME "$API_INSTALL_DIR/environment/.env.vault.j2"
-$ALOHOMORA_BIN cast --region ap-south-1 --env $DEPLOYMENT_GROUP_NAME --app $APPLICATION_NAME "$API_INSTALL_DIR/environment/env.php.j2"
+$ALOHOMORA_BIN cast --region ap-south-1 --env $DEPLOYMENT_GROUP_NAME --app $APPLICATION_NAME "$API_INSTALL_DIR/environment/.env.vault.j2" "$API_INSTALL_DIR/environment/env.php.j2"
 
 # This clears the mod_php opcache
 echo "== apache restart =="
@@ -40,8 +39,8 @@ cd "$API_INSTALL_DIR" && php artisan migrate --force && php artisan migrate --da
 # Restart all queue worker processes
 if [[ ${DEPLOYMENT_GROUP_NAME} == "prod-api-dark" ]]; then
   echo "== Queue on Sync driver =="
-  echo QUEUE_DRIVER=sync > ./environment/.env.production
-  echo SECONDARY_QUEUE_DRIVER=sync > ./environment/.env.production
+  echo QUEUE_DRIVER=sync >> ./environment/.env.production
+  echo SLACK_QUEUE_DRIVER=sync >> ./environment/.env.production
 else
   # start supervisor as root
   echo  "== Supervisor Start =="

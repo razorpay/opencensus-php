@@ -67,7 +67,7 @@ class RefundReconciliate extends Base\RefundReconciliate
                     'trace_code'      => TraceCode::RECON_FAILURE,
                     'message'         => 'Unable to get the refund amount!',
                     'row'             => $row,
-                    'gateway'         => get_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             throw new ReconciliationException('Unable to get refund amount for EBS from the recon file.');

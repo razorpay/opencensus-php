@@ -16,6 +16,8 @@ use RZP\Trace\TraceCode;
 
 abstract class Base extends EMandate\Base
 {
+    protected $gatewayRepo;
+
     public function fetchEntities(): PublicCollection
     {
         $begin = $this->gatewayFile->getBegin();
@@ -65,7 +67,7 @@ abstract class Base extends EMandate\Base
         {
             $paymentId = $payment->getId();
 
-            $gatewayPayment = $this->repo->netbanking->findByPaymentIdAndAction(
+            $gatewayPayment = $this->gatewayRepo->findByPaymentIdAndAction(
                                     $paymentId, GatewayAction::AUTHORIZE);
 
             //
@@ -81,11 +83,11 @@ abstract class Base extends EMandate\Base
         }
     }
 
-    protected function createGatewayEntity(Payment\Entity $payment): Netbanking\Base\Entity
+    protected function createGatewayEntity(Payment\Entity $payment)
     {
         $paymentId = $payment->getId();
 
-        $gatewayPayment = new Netbanking\Base\Entity;
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
         $gatewayPayment->setPaymentId($paymentId);
 
@@ -93,30 +95,16 @@ abstract class Base extends EMandate\Base
 
         $gatewayPayment->setBank($payment->getBank());
 
-        $merchant = $payment->merchant;
+        $gatewayPayment->setAmount($payment->getAmount());
 
-        if ($merchant->isTPVRequired() === true)
-        {
-            $gatewayPayment->setAccountNumber($payment->order->getAccountNumber());
-        }
+        $attributes = $this->getGatewayAttributes($payment);
 
-        $date = $date = Carbon::now(Timezone::IST)->format('d/m/Y H:m:s');
+        $gatewayPayment->fill($attributes);
 
-        $attr = [
-            Netbanking\Base\Entity::MERCHANT_CODE => $payment->getMerchantId(),
-            Netbanking\Base\Entity::AMOUNT        => $payment->getAmount(),
-            Netbanking\Base\Entity::DATE          => $date,
-        ];
-
-        $attr = array_merge($attr, $this->getGatewayAttributes($payment));
-
-        $gatewayPayment->fill($attr);
-
-        $this->repo->netbanking->saveOrFail($gatewayPayment);
+        $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
     }
-
 
     /**
      * Override this method in the child classes incase you want
@@ -124,6 +112,20 @@ abstract class Base extends EMandate\Base
      */
     protected function getGatewayAttributes(Payment\Entity $payment): array
     {
-        return [];
+        $date = Carbon::now(Timezone::IST)->format('d/m/Y H:m:s');
+
+        $merchant = $payment->merchant;
+
+        $attributes = [
+            Netbanking\Base\Entity::MERCHANT_CODE => $payment->getMerchantId(),
+            Netbanking\Base\Entity::DATE          => $date,
+        ];
+
+        if ($merchant->isTPVRequired() === true)
+        {
+            $attributes[Netbanking\Base\Entity::ACCOUNT_NUMBER] = $payment->order->getAccountNumber();
+        }
+
+        return $attributes;
     }
 }

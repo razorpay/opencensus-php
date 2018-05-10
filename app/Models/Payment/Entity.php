@@ -25,6 +25,7 @@ use RZP\Models\Merchant;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Processor\Netbanking;
 
 /**
@@ -53,6 +54,8 @@ class Entity extends Base\PublicEntity
     const ORDER_ID              = 'order_id';
     const INVOICE_ID            = 'invoice_id';
     const TRANSFER_ID           = 'transfer_id';
+    const RECEIVER_ID           = 'receiver_id';
+    const RECEIVER_TYPE         = 'receiver_type';
     const INTERNATIONAL         = 'international';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
@@ -90,8 +93,14 @@ class Entity extends Base\PublicEntity
     const GATEWAY               = 'gateway';
     const TERMINAL_ID           = 'terminal_id';
     const APPROVAL_CODE         = 'approval_code';
+    const BATCH_ID              = 'batch_id';
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
+    const REFERENCE3            = 'reference3';
+    const REFERENCE4            = 'reference4';
+    const REFERENCE5            = 'reference5';
+    const REFERENCE6            = 'reference6';
+    const REFERENCE9            = 'reference9';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
     const GATEWAY_CAPTURED      = 'gateway_captured';
@@ -107,12 +116,15 @@ class Entity extends Base\PublicEntity
     const LATE_AUTHORIZED       = 'late_authorized';
     const CONVERT_CURRENCY      = 'convert_currency';
     const AUTH_TYPE             = 'auth_type';
+    const ACKNOWLEDGED_AT       = 'acknowledged_at';
 
     const MAX_AMOUNT            = 'max_amount';
     const EXPIRE_BY             = 'expire_by';
     const RECURRING_TOKEN       = 'recurring_token';
 
     const SUBSCRIPTION_ID       = 'subscription_id';
+
+    const PREFERRED_AUTH        = 'preferred_auth';
 
     // Used by merchant dashboard to fetch payments based on utr
     const BANK_REFERENCE        = 'bank_reference';
@@ -134,6 +146,7 @@ class Entity extends Base\PublicEntity
 
     const METADATA              = 'metadata';
 
+    const RECEIVER              = 'receiver';
     const AADHAAR               = 'aadhaar';
     const BANK_ACCOUNT          = 'bank_account';
     const NAME                  = 'name';
@@ -233,10 +246,13 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::TERMINAL_ID,
         self::APPROVAL_CODE,
+        self::BATCH_ID,
         self::REFERENCE1,
         self::REFERENCE2,
         self::ACQUIRER_DATA,
         self::TRANSFER_ID,
+        self::RECEIVER_ID,
+        self::RECEIVER_TYPE,
         self::TRANSACTION_ID,
         self::AUTO_CAPTURED,
         self::ORDER_ID,
@@ -261,6 +277,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::DISPUTED,
         self::RECURRING_TYPE,
+        self::ACKNOWLEDGED_AT,
     ];
 
     protected $public = [
@@ -334,8 +351,10 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::RECURRING,
         self::IFSC,
+        self::VPA,
         'method_based_input',
-        'convert_empty_strings_to_null'
+        'convert_empty_strings_to_null',
+        self::PREFERRED_AUTH,
     ];
 
     protected static $generators = [
@@ -384,6 +403,7 @@ class Entity extends Base\PublicEntity
         self::DISPUTED             => false,
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
+        self::ACKNOWLEDGED_AT      => null,
     ];
 
     protected $amounts = [
@@ -439,6 +459,23 @@ class Entity extends Base\PublicEntity
             if ($isEmailOptional === true)
             {
                 $input['email'] = self::DUMMY_EMAIL;
+            }
+        }
+    }
+
+    protected function modifyVpa(& $input)
+    {
+        if (empty($input[self::VPA]) === false)
+        {
+            $vpaParts = explode('@', $input[self::VPA]);
+
+            if (count($vpaParts) > 1)
+            {
+                $lastElement = count($vpaParts) - 1;
+
+                $vpaParts[$lastElement] = strtolower($vpaParts[$lastElement]);
+
+                $input[self::VPA] = implode('@', $vpaParts);
             }
         }
     }
@@ -558,6 +595,54 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function modifyPreferredAuth(&$input)
+    {
+        //
+        // We give preference to auth type
+        //
+        if (empty($input[Entity::AUTH_TYPE]) === false)
+        {
+            unset($input[Entity::PREFERRED_AUTH]);
+            return;
+        }
+
+        if (isset($input[Entity::PREFERRED_AUTH]) === false)
+        {
+            return;
+        }
+
+        $uniqueAuthentications = array_unique((array) $input[Entity::PREFERRED_AUTH]);
+
+        unset($input[Entity::PREFERRED_AUTH]);
+
+        $merchant = $this->merchant;
+
+        $preferredAuth = [];
+
+        foreach ($uniqueAuthentications as $authType)
+        {
+            if (AuthType::isFeatureBasedAuthEnabled($merchant, $authType) === true)
+            {
+                $preferredAuth[] = $authType;
+            }
+        }
+
+        if (empty($preferredAuth) === false)
+        {
+            //
+            // We add 3ds auth type by default for card/emi payments and
+            // only if preferredAuth is not empty.
+            //
+            if (($input[Entity::METHOD] === Method::CARD) or
+                ($input[Entity::METHOD] === Method::EMI))
+            {
+                $preferredAuth[] = AuthType::_3DS;
+            }
+
+            $input[Entity::PREFERRED_AUTH] = $preferredAuth;
+        }
+    }
+
     // --------------------- Modifiers Ends ----------------------------------------
 
     // --------------------- Generators Ends ---------------------------------------
@@ -569,6 +654,7 @@ class Entity extends Base\PublicEntity
         // Overriding extra attributes for S2S integration
         $this->metadata['ip'] = $input['ip'] ?? null;
         $this->metadata['user_agent'] = $input['user_agent'] ?? null;
+        $this->metadata['preferred_auth'] = $input['preferred_auth'] ?? null;
 
         // We should only set referer if input['referer'] is defined
         // and metadata['referer'] is false because checkout also
@@ -597,6 +683,11 @@ class Entity extends Base\PublicEntity
         $isInternational = $this->isMethodCardOrEmi() ? $this->card->isInternational() : false;
 
         $this->setAttribute(self::INTERNATIONAL, $isInternational);
+    }
+
+    public function setAmount(int $amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
     }
 
     public function setBaseAmount(int $amount)
@@ -641,9 +732,15 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
     }
 
-    public function setGatewayBharatQr()
+    //
+    // As setGateway is protected method
+    // we didn't want to make it public just
+    // to set gateway for bharat qr payment
+    // so a new method
+    //
+    public function setGatewayForBharatQr(string $gateway)
     {
-        $this->setGateway(Payment\Gateway::BHARAT_QR);
+        $this->setGateway($gateway);
     }
 
     /**
@@ -892,6 +989,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EMI_SUBVENTION, $subvention);
     }
 
+    public function setAcknowledgedAt(int $timestamp)
+    {
+        $this->setAttribute(self::ACKNOWLEDGED_AT, $timestamp);
+    }
+
     // ----------------------- Setters Ends-----------------------------------------
 
     // ----------------------- Mutator ---------------------------------------------
@@ -1066,6 +1168,11 @@ class Entity extends Base\PublicEntity
     public function getCapturedAt()
     {
         return $this->getAttribute(self::CAPTURED_AT);
+    }
+
+    public function getReceiverType()
+    {
+        return $this->getAttribute(self::RECEIVER_TYPE);
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
@@ -1266,6 +1373,12 @@ class Entity extends Base\PublicEntity
                 ($this->isMethod(Payment\Method::EMI)));
     }
 
+    public function isTpvMethod()
+    {
+        return (($this->isMethod(Payment\Method::UPI)) or
+                ($this->isMethod(Payment\Method::NETBANKING)));
+    }
+
     public function isSigned()
     {
         return ($this->getAttribute(self::SIGNED) === true);
@@ -1331,6 +1444,17 @@ class Entity extends Base\PublicEntity
     }
 
 // ----------------------- Getters ---------------------------------------------
+
+    public function getBankCodeFromVpa()
+    {
+        $vpa = $this->getAttribute(self::VPA);
+
+        $vpaParts = explode('@', $vpa);
+
+        $psp = end($vpaParts);
+
+        return ProviderCode::getBankCode($psp);
+    }
 
     public function getTransferId()
     {
@@ -2208,6 +2332,11 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Models\BankTransfer\Entity');
     }
 
+    public function batch()
+    {
+        return $this->belongsTo('RZP\Models\Batch\Entity');
+    }
+
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
@@ -2243,6 +2372,11 @@ class Entity extends Base\PublicEntity
         return $this->morphMany('RZP\Models\Transfer\Entity', 'source');
     }
 
+    public function receiver()
+    {
+        return $this->morphTo('receiver', self::RECEIVER_TYPE, self::RECEIVER_ID);
+    }
+
     public function netbanking()
     {
         return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
@@ -2262,6 +2396,11 @@ class Entity extends Base\PublicEntity
     public function disputes()
     {
         return $this->hasMany(\RZP\Models\Dispute\Entity::class);
+    }
+
+    public function discount()
+    {
+        return $this->hasOne('RZP\Models\Discount\Entity');
     }
 
 // --------------- Relation to other entity section ends -----------------------
@@ -2370,9 +2509,12 @@ class Entity extends Base\PublicEntity
             self::CARD_ID,
             self::STATUS,
             self::AMOUNT,
+            self::LATE_AUTHORIZED,
             self::AUTO_CAPTURED,
             self::ERROR_CODE,
-            self::GATEWAY);
+            self::GATEWAY,
+            self::RECEIVER_ID,
+            self::RECEIVER_TYPE);
 
         $relevantData = array_intersect_key($this->attributes, array_flip($fields));
 
@@ -2482,7 +2624,7 @@ class Entity extends Base\PublicEntity
         // Since the first auth transaction would have already been
         // done, we don't need to do any MaxMind risk checks for this.
         //
-        if ($this->isSecondRecurring() === true)
+        if ($this->isSecondRecurring(true) === true)
         {
             return false;
         }
@@ -2496,5 +2638,34 @@ class Entity extends Base\PublicEntity
         $filteredDescription = preg_replace('/[^a-zA-Z0-9 ]+/', '', $description);
 
         return $filteredDescription;
+    }
+
+    public function getAcknowledgedAt()
+    {
+        return $this->getAttribute(self::ACKNOWLEDGED_AT);
+    }
+
+    /**
+     * Returns true if the payment success/failure has been acknowledged by the merchant.
+     *
+     * @return bool
+     */
+    public function isAcknowledged(): bool
+    {
+        return $this->isAttributeNotNull(self::ACKNOWLEDGED_AT);
+    }
+
+    // Query scopes
+
+    /**
+     * Scopes result based on morphed entity relationship.
+     *
+     * @param \RZP\Base\BuilderEx $query
+     * @param Base\PublicEntity   $entity
+     */
+    public function scopeReceiver(\RZP\Base\BuilderEx $query, Base\PublicEntity $entity)
+    {
+        $query->where(Entity::RECEIVER_ID, '=', $entity->getId())
+              ->where(Entity::RECEIVER_TYPE, '=', $entity->getEntity());
     }
 }

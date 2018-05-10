@@ -9,6 +9,7 @@ class Source
     const BANK     = 'bank';
     const GATEWAY  = 'gateway';
     const INTERNAL = 'internal';
+    const SHIELD   = 'shield';
 
     // internal rzp employees
     const MANUAL   = 'manual';

@@ -38,7 +38,7 @@ class Workflow
         Permission::CREATE_PRICING_PLAN,
         Permission::CREATE_DISPUTE,
         Permission::EDIT_MERCHANT_BANK_DETAIL,
-        Permission::EDIT_MERCHANT_INVOICE_GSTIN,
+        Permission::MERCHANT_INVOICE_EDIT,
         Permission::CREATE_ADMIN,
         Permission::DELETE_ADMIN,
         Permission::EDIT_MERCHANT_REQUESTS,

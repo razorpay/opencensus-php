@@ -61,6 +61,8 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->fixtures->merchant->setHasKeyAccess(true, '1X4hRFHFx4UiXt');
+
         $this->ba->proxyAuth('rzp_live_1X4hRFHFx4UiXt');
 
         $this->startTest();
@@ -520,6 +522,15 @@ class MerchantTest extends TestCase
     }
 
     public function testEditMerchantInvalidBrandColor()
+    {
+        $this->createMerchant();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantInvalidInvoiceNameField()
     {
         $this->createMerchant();
 
@@ -1199,6 +1210,34 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetCheckoutPreferencesWithDebitCardDisabled()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'ALL',
+            'issuer'  => 'ALL',
+            'network' => 'VISA']);
+
+        $this->fixtures->merchant->disableDebitCard();
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithCreditCardDisabled()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'ALL',
+            'issuer'  => 'ALL',
+            'network' => 'VISA']);
+
+        $this->fixtures->merchant->disableCreditCard();
+
+        $this->startTest();
+    }
+
     public function testGetNetbankingDowntimeInfoForDirectNetbankingGateway()
     {
         $this->ba->publicAuth();
@@ -1554,6 +1593,37 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetCheckoutPreferencesWithOrderRelatedUndiscountedOffer()
+    {
+        $this->ba->publicAuth();
+
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        foreach ($testData['tests'] as $test)
+        {
+            $data = [
+                'request' => $request,
+                'response' => $test['response'],
+            ];
+
+            $fixtureData = $test['offer'];
+            $fixtureData['starts_at'] = $startsAt;
+
+            $offer = $this->fixtures->create('offer', $fixtureData);
+            $order = $this->fixtures->create('order:with_undiscounted_offer_applied', [
+                'offer_id' => $offer->getId()
+            ]);
+
+            $data['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
+
+            $this->runRequestResponseFlow($data);
+        }
+    }
+
     public function testGetCheckoutPreferencesWithOrderRelatedOffer()
     {
         $this->ba->publicAuth();
@@ -1575,7 +1645,9 @@ class MerchantTest extends TestCase
             $fixtureData['starts_at'] = $startsAt;
 
             $offer = $this->fixtures->create('offer', $fixtureData);
-            $order = $this->fixtures->create('order:with_offer_applied', ['offer_id' => $offer->getId()]);
+            $order = $this->fixtures->create('order:with_offer_applied', [
+                'offer_id' => $offer->getId()
+            ]);
 
             $data['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
 
@@ -2315,7 +2387,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->create('customer');
 
-        $this->fixtures->merchant->addFeatures(['charge_at_will', 'e_mandate']);
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
         $response = $this->makePreferencesRouteRequest();
 

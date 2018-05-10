@@ -38,6 +38,51 @@ return [
         ],
     ],
 
+    'testFetchCardRecurringForDebit' => [
+        'request' => [
+            'url' => '/cards/recurring',
+            'method'    => 'get',
+                'content' => [
+                'iin' => '478893'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'recurring' => true
+            ],
+        ],
+    ],
+
+    'testFetchCardRecurringForNonSupportedDebitBank' => [
+        'request' => [
+            'url' => '/cards/recurring',
+            'method'    => 'get',
+            'content' => [
+                'iin' => '469386'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'recurring' => false
+            ],
+        ],
+    ],
+
+    'testFetchCardRecurringForDebitWithNullIssuer' => [
+        'request' => [
+            'url' => '/cards/recurring',
+            'method'    => 'get',
+            'content' => [
+                'iin' => '424512'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'recurring' => false
+            ],
+        ],
+    ],
+
     'testBlockedCard' => [
         'request' => [
             'content' => [

@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Detail;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Admin;
 
 /**
  * Class Entity
@@ -40,6 +41,8 @@ class Entity extends Base\PublicEntity
     const COMPANY_CIN                        = 'company_cin';
     const COMPANY_PAN                        = 'company_pan';
     const COMPANY_PAN_NAME                   = 'company_pan_name';
+    const BUSINESS_CATEGORY                  = 'business_category';
+    const BUSINESS_SUBCATEGORY               = 'business_subcategory';
     const TRANSACTION_VOLUME                 = 'transaction_volume';
     const TRANSACTION_VALUE                  = 'transaction_value';
     const PROMOTER_PAN                       = 'promoter_pan';
@@ -82,6 +85,7 @@ class Entity extends Base\PublicEntity
     const ACTIVATION_STATUS                  = 'activation_status';
     const CLARIFICATION_MODE                 = 'clarification_mode';
     const ARCHIVED_AT                        = 'archived_at';
+    const REVIEWER_ID                        = 'reviewer_id';
     const ISSUE_FIELDS                       = 'issue_fields';
     const ISSUE_FIELDS_REASON                = 'issue_fields_reason';
     const INTERNAL_NOTES                     = 'internal_notes';
@@ -100,6 +104,8 @@ class Entity extends Base\PublicEntity
     const ALLOWED_NEXT_ACTIVATION_STATUSES = 'allowed_next_activation_statuses';
     const VERIFICATION                     = 'verification';
     const CAN_SUBMIT                       = 'can_submit';
+    const REVIEWER                         = 'reviewer';
+    const MERCHANTS                        = 'merchants';
 
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING                   = 'fields_pending';
@@ -142,6 +148,8 @@ class Entity extends Base\PublicEntity
         self::COMPANY_CIN,
         self::COMPANY_PAN,
         self::COMPANY_PAN_NAME,
+        self::BUSINESS_CATEGORY,
+        self::BUSINESS_SUBCATEGORY,
         self::TRANSACTION_VOLUME,
         self::TRANSACTION_VALUE,
         self::PROMOTER_PAN,
@@ -220,6 +228,8 @@ class Entity extends Base\PublicEntity
         self::COMPANY_CIN,
         self::COMPANY_PAN,
         self::COMPANY_PAN_NAME,
+        self::BUSINESS_CATEGORY,
+        self::BUSINESS_SUBCATEGORY,
         self::BUSINESS_MODEL,
         self::TRANSACTION_VOLUME,
         self::TRANSACTION_VALUE,
@@ -238,6 +248,8 @@ class Entity extends Base\PublicEntity
         self::CLARIFICATION_MODE,
         self::ARCHIVED,
         self::ALLOWED_NEXT_ACTIVATION_STATUSES,
+        self::REVIEWER_ID,
+        self::REVIEWER,
         self::ISSUE_FIELDS,
         self::ISSUE_FIELDS_REASON,
         self::INTERNAL_NOTES,
@@ -314,13 +326,28 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $publicSetters = [
+        self::REVIEWER,
+        self::REVIEWER_ID,
         self::ARCHIVED_AT,
         self::ALLOWED_NEXT_ACTIVATION_STATUSES,
+    ];
+
+    protected $adminOnlyPublic = [
+        self::REVIEWER,
+        self::REVIEWER_ID,
+        self::ISSUE_FIELDS,
+        self::INTERNAL_NOTES,
+        self::ISSUE_FIELDS_REASON,
     ];
 
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity', self::MERCHANT_ID, 'id');
+    }
+
+    public function reviewer()
+    {
+        return $this->belongsTo(Admin\Entity::class);
     }
 
     public function isLocked()
@@ -556,6 +583,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BUSINESS_NAME);
     }
 
+    public function getBusinessCategory()
+    {
+        return $this->getAttribute(self::BUSINESS_CATEGORY);
+    }
+
+    public function getBusinessSubcategory()
+    {
+        return $this->getAttribute(self::BUSINESS_SUBCATEGORY);
+    }
+
     public function getTransactionReportEmail()
     {
         return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
@@ -626,5 +663,22 @@ class Entity extends Base\PublicEntity
         });
 
         return $response;
+    }
+
+    public function setPublicReviewerAttribute(array &$attributes)
+    {
+        $reviewer = $this->reviewer;
+
+        if ($reviewer !== null)
+        {
+            $attributes[Entity::REVIEWER] = $reviewer->toArrayPublic();
+        }
+    }
+
+    public function setPublicReviewerIdAttribute(array &$attributes)
+    {
+        $adminId = $this->getAttribute(Entity::REVIEWER_ID);
+
+        $attributes[Entity::REVIEWER_ID] = Admin\Entity::getSignedIdOrNull($adminId);
     }
 }

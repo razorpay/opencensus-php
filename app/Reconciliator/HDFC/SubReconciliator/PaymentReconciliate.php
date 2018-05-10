@@ -89,6 +89,17 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             {
                 $paymentId = $gatewayPayment->getPaymentId();
             }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::RECON_MISMATCH,
+                    [
+                        'info_code' => 'PAYMENT_ABSENT',
+                        'message'   => 'Payment not found. Skipping',
+                        'row'       => $row,
+                        'gateway'   => $this->gateway
+                    ]);
+            }
         }
 
         return $paymentId;
@@ -137,7 +148,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'trace_code'      => TraceCode::RECON_FAILURE,
                     'message'         => 'Unable to get the service tax!',
                     'row'             => $row,
-                    'gateway'         => get_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             throw new ReconciliationException('Unable to get the service tax for HDFC from the recon file.');
@@ -383,7 +394,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'message'           => 'Unable to get the card trivia. This is unexpected.',
                     'recon_card_trivia' => $cardTrivia,
                     'row'               => $row,
-                    'gateway'           => get_class()
+                    'gateway'           => $this->gateway
                 ]);
 
             $cardTrivia = null;
@@ -410,7 +421,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'message'         => 'Unable to figure out the card type.',
                     'recon_card_type' => $cardType,
                     'row'             => $row,
-                    'gateway'         => get_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             // It's as good as no card type present in the row.
@@ -438,7 +449,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'message'         => 'Unable to figure out the card locale (domestic/international).',
                     'recon_card_type' => $cardType,
                     'row'             => $row,
-                    'gateway'         => get_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             // It's as good as no card locale present in the row.

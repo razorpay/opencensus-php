@@ -10,22 +10,26 @@ use RZP\Constants\Mode;
 
 class SlackNotification extends Base\Core
 {
+    const BAD  = 'bad';
+
+    const GOOD = 'good';
+
     protected $operations = array(
         'setl_initiate',
         'setl_reconciled');
 
     protected $messages = array(
-        'setl_initiate'         => 'Settlements initiated.',
-        'setl_reconciliation'   => 'Settlements reconciled. ',
-        'reconcile_file'        => 'Reconciliation file processed.',
-        'setl_return'           => 'Settlements returns occurred. ',
-        'null_utr_report'       => 'Settlements without UTR from yesterday');
+        'setl_initiate'           => 'Settlements initiated.',
+        'setl_reconciliation'     => 'Settlements reconciled. ',
+        'reconcile_file'          => 'Reconciliation file processed.',
+        'setl_return'             => 'Settlements returns occurred. ',
+        'fta_recon_report'        => 'Settlement Potential Failures');
 
     public function success($operation, $data)
     {
         $data = [
             'message' => $this->messages[$operation],
-            'status'  => 'good'
+            'status'  => self::GOOD
         ] + $data;
 
         $this->send($data);
@@ -37,7 +41,7 @@ class SlackNotification extends Base\Core
             'message'           => 'Failed operation: ' . $operation,
             'exception_class'   => get_class($e),
             'exception_message' => $e->getMessage(),
-            'status'            => 'bad'
+            'status'            => self::BAD
         ];
 
         $this->send($data);

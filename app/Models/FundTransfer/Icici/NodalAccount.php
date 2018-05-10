@@ -32,6 +32,16 @@ class NodalAccount extends NodalBase\FileProcessor
         Mode::IFT     => 'I',
     ];
 
+    /**
+     * Prefix for filename when the purpose is `Refund`
+     */
+    const REFUND_FILE_PREFIX     = 'NRPSR_NRPSRUPLDNEW_';
+
+    /**
+     * Prefix for filename when the purpose is `Settlement`
+     */
+    const SETTLEMENT_FILE_PREFIX = 'NRPSS_NRPSSUPLDNEW_';
+
     protected $date = null;
 
     protected $data = null;
@@ -40,9 +50,9 @@ class NodalAccount extends NodalBase\FileProcessor
 
     protected $id = null;
 
-    public function __construct()
+    public function __construct(string $purpose)
     {
-        parent::__construct();
+        parent::__construct($purpose);
 
         $this->date = Carbon::today(Timezone::IST)->format('d/m/Y');
 
@@ -102,6 +112,15 @@ class NodalAccount extends NodalBase\FileProcessor
 
             $mode = self::MODE_MAPPING[$mode];
 
+            $beneId = ($this->isRefund() === true) ? '' : $ba->getId();
+
+            $narration = '';
+
+            if ($this->isRefund() === true)
+            {
+                $narration = $entity->getNarration() ?? 'Razorpay Refund';
+            }
+
             $rows[] = [
                 Headings::PAYMENT_MODE              => $mode,
                 Headings::BENEFICIARY_NAME          => $ba->getBeneficiaryName(),
@@ -110,11 +129,11 @@ class NodalAccount extends NodalBase\FileProcessor
                 Headings::AMOUNT                    => $this->formatAmount($amount),
                 Headings::PAYMENT_DATE              => $this->date,
                 Headings::DEBIT_ACCOUNT_NO          => self::DEBIT_ACCOUNT_NO,
-                Headings::CREDIT_NARRATION          => '',
+                Headings::CREDIT_NARRATION          => $narration,
                 Headings::INSTRUMENT_REFERENCE      => $entity->getId(),
                 Headings::DUMMY                     => '',
                 Headings::DUMMY2                    => '',
-                Headings::BENEFICIARY_CODE          => $ba->getId(),
+                Headings::BENEFICIARY_CODE          => $beneId
             ];
         }
 
@@ -137,9 +156,27 @@ class NodalAccount extends NodalBase\FileProcessor
         return $mode;
     }
 
+    /**
+     * Gives the file dentination to create file.
+     * File name will very based in the purpose
+     *
+     * @return string
+     */
+    protected function getFileDestination()
+    {
+        $identifier = self::SETTLEMENT_FILE_PREFIX;
+
+        if ($this->isRefund() === true)
+        {
+            $identifier = self::REFUND_FILE_PREFIX;
+        }
+
+        return 'icici/outgoing/' . $identifier . $this->id;
+    }
+
     protected function createFile($txt): FileStore\Creator
     {
-        $fileName = 'icici/outgoing/NRPSS_NRPSSUPLDNEW_' . $this->id;
+        $fileName = $this->getFileDestination();
 
         $metadata = $this->getH2HMetadata();
 

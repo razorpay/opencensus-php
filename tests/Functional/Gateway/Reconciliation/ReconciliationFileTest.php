@@ -128,6 +128,40 @@ class ReconciliationFileTest extends TestCase
         $this->assertTrue($updatedPayment1['gateway_captured']);
     }
 
+    public function testHdfcFssCaptureFailureReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'capture')
+            {
+                throw new Exception\GatewayRequestException('Timed out');
+            }
+
+            return $content;
+        }, 'hdfc');
+
+        $this->makeRequestAndCatchException(
+            function ()
+            {
+                $this->doAuthAndCapturePayment();
+            });
+
+        $gatewayPayment = $this->getDbLastEntityToArray('hdfc');
+
+        $entries[] = $this->overrideHdfcPayment($gatewayPayment);
+
+        $file = $this->writeToExcelFile($entries, 'fss');
+        $this->runForFiles([$file], 'HDFC');
+
+        $updatedPayment = $this->getDbLastPayment();
+
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedPayment['reference1']);
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE[0]], "'" . $updatedPayment['reference2']);
+        $this->assertTrue($updatedPayment['gateway_captured']);
+    }
+
     public function testHdfcCyberSourceReconPaymentFile()
     {
         $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
@@ -261,7 +295,7 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedRefund1['arn']);
 
     }
-    
+
     //For success case of Bill desk reconciliation
     public function testBillDeskReconRefundFileFailure()
     {
@@ -275,10 +309,10 @@ class ReconciliationFileTest extends TestCase
 
         $refund = $this->refundPayment($payment['id']);
         $gatewayRefund = $this->getLastEntity('billdesk', true);
-        
+
         $refundEntity = $this->getEntityById('refund', $gatewayRefund['refund_id'], true);
         $transaction = $this->getEntityById('transaction', $refundEntity['transaction_id'], true);
-        
+
         //Reconciled at should be null
         $this->assertNull($transaction['reconciled_at']);
 
@@ -287,10 +321,10 @@ class ReconciliationFileTest extends TestCase
         $file = $this->writeToCsvFile($entries, 'billdesk_refund');
 
         $this->runForFiles([$file], 'BillDesk');
-        
+
         $updatedRefund1 = $this->getEntityById('refund', $gatewayRefund['refund_id'], true);
         $updatedTransaction = $this->getEntityById('transaction', $updatedRefund1['transaction_id'], true);
-        
+
         //Reconciled at should not be null
         $this->assertNotNull($updatedTransaction['reconciled_at']);
     }
@@ -402,7 +436,7 @@ class ReconciliationFileTest extends TestCase
 
         return $facade;
     }
-    
+
     private function overrideBilldeskRefund(array $refund)
     {
         $facade = $this->testData['facades']['billdesk'];
@@ -475,7 +509,7 @@ class ReconciliationFileTest extends TestCase
             null,
             true);
     }
-    
+
     public function testHitachiReconPaymentFile()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');

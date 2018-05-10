@@ -33,6 +33,7 @@ return [
                 'name'    => 'testc',             // Replaced with different valid names in tests
                 'email'   => 'test@razorpay.com',
                 'contact' => '1234567899',
+                'gstin'   => '29ABCDE1234L1Z1',
             ],
         ],
         'response' => [
@@ -41,6 +42,7 @@ return [
                 'name'    => 'testc',
                 'email'   => 'test@razorpay.com',
                 'contact' => '1234567899',
+                'gstin'   => '29ABCDE1234L1Z1',
             ],
         ],
     ],
@@ -250,13 +252,58 @@ return [
             'content' => [
                 'name'    => 'test1',
                 'contact' => '1234567809',
+                'email'   => 'test@rzp.com',
+                'gstin'   => '29CFZPR4093Q1ZA',
             ],
         ],
         'response' => [
             'content' => [
                 'name'    => 'test1',
                 'contact' => '1234567809',
+                'email'   => 'test@rzp.com',
+                'gstin'   => '29CFZPR4093Q1ZA',
             ],
+        ],
+    ],
+
+    'testUpdateCustomerEmail' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer',
+            'method' => 'put',
+            'content' => [
+                'email'   => 'test@rzp.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email'   => 'test@rzp.com'
+            ],
+        ],
+    ],
+
+    'testCreateCustomerInvalidGstin' => [
+        'request' => [
+            'url'     => '/customers',
+            'method'  => 'post',
+            'content' => [
+                'name'    => 'testc',             // Replaced with different invalid names in tests
+                'email'   => 'test@razorpay.com',
+                'contact' => '1234567899',
+                'gstin'   => '00ABCDE1234L1Z1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The gstin field is invalid',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

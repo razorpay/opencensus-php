@@ -874,7 +874,7 @@ class AdminTest extends TestCase
 
         $this->assertCount(10, $result['fields']);
 
-        $this->assertCount(133, $result['entities']);
+        $this->assertCount(142, $result['entities']);
     }
 
     public function testFetchSoftDeletedEntityForAdmin()
@@ -998,6 +998,16 @@ class AdminTest extends TestCase
         ];
         $this->testData[__FUNCTION__]['response'] = $response;
 
+        $this->startTest();
+    }
+
+    public function testDbMetaDataQuery()
+    {
+        $this->startTest();
+    }
+
+    public function testDbMetaDataQueryWithInvalidQuery()
+    {
         $this->startTest();
     }
 }

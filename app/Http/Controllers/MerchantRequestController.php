@@ -55,4 +55,18 @@ class MerchantRequestController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getRejectionReasons()
+    {
+        $response = $this->service(E::MERCHANT_REQUEST)->getRejectionReasons();
+
+        return ApiResponse::json($response);
+    }
+
+    public function issueOneTimeToken()
+    {
+        $response = $this->service(E::MERCHANT_REQUEST)->issueOneTimeToken();
+
+        return ApiResponse::json($response);
+    }
 }

@@ -389,6 +389,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getWebhookEvents()
+    {
+        $data = $this->service()->fetchWebhookEvents();
+
+        return ApiResponse::json($data);
+    }
+
     public function getWebhook($id)
     {
         $data = $this->service()->getWebhook($id);
@@ -531,6 +538,13 @@ class MerchantController extends Controller
         return ApiResponse::json($input);
     }
 
+    public function getDummyRazorX()
+    {
+        $response = $this->service()->getDummyRazorX();
+
+        return ApiResponse::json($response);
+    }
+
     public function postMerchantsNotifyHoliday()
     {
         $input = Request::all();
@@ -634,14 +648,6 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
-
-    public function deleteCreditsLog(Credits\Service $service, $mid, $id)
-    {
-        $data = $service->deleteCreditsLog($mid, $id);
-
-        return ApiResponse::json($data);
-    }
-
 // --------------------- End Credits API Handlers -----------------------------------------
 
 
@@ -767,6 +773,13 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service(E::MERCHANT_DETAIL)->updateWebsiteDetails($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getBusinessCategories()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getBusinessCategories();
 
         return ApiResponse::json($response);
     }
@@ -941,6 +954,29 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $data = $this->service()->enableEmiMerchantSubvention($id, $emiPlanId, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function bulkAssignReviewer()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->bulkAssignReviewer($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMerchantActivationReviewers()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getMerchantActivationReviewers();
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateMerchantAccessMapFromTokens()
+    {
+        $data = (new AccessMap\Service)->updateMapFromTokens();
 
         return ApiResponse::json($data);
     }

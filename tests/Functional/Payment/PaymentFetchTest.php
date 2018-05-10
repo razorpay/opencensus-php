@@ -31,6 +31,17 @@ class PaymentFetchTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchCardQueryParams()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('payment', [
+            'card_id' => '100000001lcard'
+        ]);
+
+        $this->startTest();
+    }
+
     public function testFetchRulesForPrivateWithExtraFieldsError()
     {
         $this->ba->privateAuth();

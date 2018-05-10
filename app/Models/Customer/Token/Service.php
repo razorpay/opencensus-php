@@ -144,21 +144,7 @@ class Service extends Base\Service
         $failureCount = $total = $successCount = 0;
         $failures = [];
 
-        if (empty($input['token_ids']) === false)
-        {
-            $tokens = $this->repo->token->findMany($input['token_ids']);
-        }
-        else
-        {
-            //
-            // Hardcoding these for now here, just to ensure
-            // we don't migrate wrong stuff by mistake.
-            //
-            $input[Entity::METHOD] = 'card';
-            $input[Entity::RECURRING] = true;
-
-            $tokens = $this->repo->token->fetch($input);
-        }
+        $tokens = $this->repo->token->findMany($input['token_ids']);
 
         $total = $tokens->count();
 

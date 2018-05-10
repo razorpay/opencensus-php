@@ -42,11 +42,11 @@
         "razorpay/ufh-sdk-php": "dev-master",
         "bacon/bacon-qr-code": "1.0.3",
         "watson/rememberable": "^2.0",
-        "layershifter/tld-extract": "^1.2",
         "razorpay/hodor": "dev-master",
         "razorpay/trace": "~2.0",
         "razorpay/oauth": "dev-master",
-        "fideloper/proxy": "~3.0"
+        "fideloper/proxy": "~3.0",
+        "nojacko/email-validator": "^1.1"
     },
     "repositories": [
         {

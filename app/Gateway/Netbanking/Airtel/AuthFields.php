@@ -12,9 +12,10 @@ class AuthFields
     const AMOUNT                    = 'AMT';
     const CURRENCY                  = 'CUR';
     const MERCHANT_SERVICE_CODE     = 'MER_SERVICE';
-    const END_MERCHANT_NAME         = 'END_MID';
+    const END_MERCHANT_ID           = 'END_MID';
     const CUSTOMER_MOBILE           = 'CUST_MOBILE';
     const CUSTOMER_EMAIL            = 'CUST_EMAIL';
+    const MERCHANT_NAME             = 'MNAME';
 
     // Response
     const STATUS                    = 'STATUS';

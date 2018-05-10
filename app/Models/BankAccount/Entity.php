@@ -258,6 +258,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BENEFICIARY_CODE);
     }
 
+    public function getBeneficiaryCity()
+    {
+        return $this->getAttribute(self::BENEFICIARY_CITY);
+    }
+
     public function getMpin()
     {
         return $this->getAttribute(self::MPIN);
@@ -271,6 +276,11 @@ class Entity extends Base\PublicEntity
     public function getMobileBankingEnabled()
     {
         return $this->getAttribute(self::MOBILE_BANKING_ENABLED);
+    }
+
+    public function getBeneficiaryAddress1()
+    {
+        return $this->getAttribute(self::BENEFICIARY_ADDRESS1);
     }
 
     public function setMobileBankingEnabled($mobileBankingEnabled)

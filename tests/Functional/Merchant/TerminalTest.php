@@ -70,6 +70,30 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddBharatQrTerminal()
+    {
+        $this->startTest();
+    }
+
+    public function testReassignBharatQrTerminal()
+    {
+        $this->fixtures->create('terminal:bharat_qr_terminal');
+
+        $this->startTest();
+    }
+
+    public function testAddUpiBharatQrTerminal()
+    {
+        $this->startTest();
+    }
+
+    public function testReassignUpiBharatQrTerminal()
+    {
+        $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+
+        $this->startTest();
+    }
+
     public function testReassignTerminalForSameGateway()
     {
         $this->startTest();
@@ -90,6 +114,24 @@ class TerminalTest extends TestCase
     }
 
     public function testCreateTerminalWithInvalidNetworkCategory()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateTpvTerminalWithInvalidMethod()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateTpvTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';
 
@@ -246,6 +288,39 @@ class TerminalTest extends TestCase
 
         $this->startTest();
 
+    }
+
+    public function testEditWalletAirtelmoneyTerminalWithRequiredFields()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_airtelmoney_terminal');
+
+        $tid = $terminal['id'];
+
+        $data = [
+            'gateway_merchant_id'       => 'test_random_id',
+        ];
+
+        $response = $this->editTerminal($tid, $data);
+
+        $this->assertEquals('test_random_id', $response['gateway_merchant_id']);
+    }
+
+    public function testEditWalletAirtelmoneyTerminalWithNotRequiredFields()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_airtelmoney_terminal');
+
+        $tid = $terminal['id'];
+
+        $data = [
+            'gateway_secure_code'       => 'test_random_id',
+        ];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($tid, $data)
+        {
+            $this->editTerminal($tid, $data);
+        });
     }
 
     public function testTerminalModeDual()

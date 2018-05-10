@@ -153,61 +153,10 @@ class Service extends Base\Service
 
         $this->sendConfirmationMail($userData['id']);
 
-        $data = $this->postSortingHat($userData, $merchantData, $referrer);
-
-        return $data;
-    }
-
-    /**
-     * Posts data to sorting Hat.
-     * @param array  $user
-     * @param array  $merchantData
-     * @param string $referrer
-     *
-     * @return array
-     */
-    private function postSortingHat(array $user, array $merchantData, string $referrer)
-    {
-        $sortingData = $this->getSortingHatData($user, $merchantData, $referrer);
-
-        if (Config::get('slack.is_slack_enabled') === true)
-        {
-            (new Core)->postSortingHatData($sortingData);
-        }
-
         return [
             'id'    => $merchantData['id'],
             'name'  => $merchantData['name'],
-            'email' => $user['email'],
-        ];
-    }
-
-    private function getSortingHatData(array $user, array $merchantData, string $referrer)
-    {
-        $phoneNumber = $user[Entity::CONTACT_MOBILE] ?? '';
-
-        $orgHostName = $this->auth->getOrgHostName();
-
-        $merchantLink = "https://{$orgHostName}/admin#/app/merchants/{$merchantData['id']}/detail";
-
-        $message = "[New Signup]($merchantLink) as {$user[Entity::NAME]}";
-
-        if (empty($referrer) === false)
-        {
-            $message .= " | REF: $referrer";
-        }
-
-        if (empty($phoneNumber) === false)
-        {
-            $message .= " | [Call - {$phoneNumber}](tel:$phoneNumber)";
-        }
-
-        return [
-            'id'            => $merchantData['id'],
-            'email'         => $user[Entity::EMAIL],
-            'name'          => $merchantData['name'],
-            'message'       => $message,
-            'token'         => Config::get('app.sorting_hat.token')
+            'email' => $userData['email'],
         ];
     }
 

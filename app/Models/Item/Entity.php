@@ -46,6 +46,11 @@ class Entity extends Base\PublicEntity
     const DELETED_AT            = 'deleted_at';
 
     /**
+     * Expandable relation keys
+     */
+    const TAX                   = 'tax';
+
+    /**
      * These are used when other entities need
      * to create an item and item_id/item is passed
      * in the request input.
@@ -89,6 +94,7 @@ class Entity extends Base\PublicEntity
         self::SAC_CODE,
         self::TAX_RATE,
         self::TAX_ID,
+        self::TAX,
         self::TAX_GROUP_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -110,6 +116,7 @@ class Entity extends Base\PublicEntity
         self::SAC_CODE,
         self::TAX_RATE,
         self::TAX_ID,
+        self::TAX,
         self::TAX_GROUP_ID,
         self::CREATED_AT,
         self::UPDATED_AT,

@@ -42,6 +42,7 @@ class Entity extends Base\PublicEntity
     // as part of the line item itself.
     const REF              = 'ref';
     const TAX_ID           = 'tax_id';
+    const TAX_IDS          = 'tax_ids';
     const TAX_GROUP_ID     = 'tax_group_id';
 
     // Output keys
@@ -216,6 +217,21 @@ class Entity extends Base\PublicEntity
     public function getQuantity()
     {
         return $this->getAttribute(self::QUANTITY);
+    }
+
+    public function getName(): string
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function getDescriptionElseName(): string
+    {
+        return $this->getDescription() ?: $this->getName();
     }
 
     // -------------------------- Getters Ends -----------------------

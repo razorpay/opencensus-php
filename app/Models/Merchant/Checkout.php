@@ -47,6 +47,11 @@ class Checkout
      */
     protected $subscription;
 
+    /**
+     * @var Order\Entity
+     */
+    protected $order;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -80,8 +85,6 @@ class Checkout
 
         $this->checkAndFillGatewayDowntime($merchant, $data);
 
-        $this->tracePreferencesResponse($merchant, $data);
-
         return $data;
     }
 
@@ -97,11 +100,16 @@ class Checkout
 
         $orderId = $input[Payment\Entity::ORDER_ID];
 
-        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $merchant);
+        $order = $this->setOrGetOrder($orderId, $merchant);
 
         $data['order'] = (new Order\Core)->getFormattedDataForCheckout($order, $merchant);
 
         $this->resetMethodsIfValidBanksPresent($data, $order);
+    }
+
+    protected function setOrGetOrder(string $orderId, Merchant\Entity $merchant)
+    {
+        return $this->order ?? $this->repo->order->findByPublicIdAndMerchant($orderId, $merchant);
     }
 
     protected function resetMethodsIfValidBanksPresent(
@@ -210,7 +218,6 @@ class Checkout
     protected function tracePreferencesRequest(Entity $merchant, $mode, array $input)
     {
         $sessionData = $this->app['request']->session()->all();
-
         $this->trace->info(
             TraceCode::CHECKOUT_PREFERENCES_REQUEST,
             [
@@ -218,16 +225,6 @@ class Checkout
                 'mode'        => $mode,
                 'session'     => $sessionData,
                 'input'       => $input
-            ]);
-    }
-
-    protected function tracePreferencesResponse(Entity $merchant, array $response)
-    {
-        $this->trace->info(
-            TraceCode::CHECKOUT_PREFERENCES_RESPONSE,
-            [
-                'merchant_id' => $merchant->getId(),
-                'response' => $response,
             ]);
     }
 
@@ -546,29 +543,28 @@ class Checkout
 
     public function checkAndFillOfferDetails(Merchant\Entity $merchant, array $input, array & $data)
     {
-        $offerCore = new Offer\Core;
+        $order = null;
 
-        $orderId = $input[Payment\Entity::ORDER_ID] ?? null;
-
-        if ($orderId !== null)
+        if (isset($input[Payment\Entity::ORDER_ID]) === true)
         {
-            $orderOffer = $offerCore->fetchForOrder($orderId, $merchant);
-
-            if ($orderOffer !== null)
-            {
-                // For offer applied on a particular order only enable methods eligible for the
-                // offer. Customer won't be able to select other payment methods
-                $this->updateMethodsToEnableOnCheckout($orderOffer, $data);
-
-                $data['offers'] = [
-                    $orderOffer->toArrayCheckout()
-                ];
-
-                return;
-            }
+            $order = $this->setOrGetOrder($input[Payment\Entity::ORDER_ID], $merchant);
         }
 
-        $this->checkAndFillNonOrderOffers($merchant, $data);
+        if (($order !== null) and
+            ($order->offer !== null))
+        {
+            $orderAmount = $order->getAmount();
+
+            $this->updateMethodsToEnableOnCheckout($order->offer, $data);
+
+            $data['offers'] = [
+                $order->offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount),
+            ];
+        }
+        else
+        {
+            $this->checkAndFillNonOrderOffers($merchant, $data);
+        }
     }
 
     protected function checkAndFillNonOrderOffers(Merchant\Entity $merchant, array & $data)

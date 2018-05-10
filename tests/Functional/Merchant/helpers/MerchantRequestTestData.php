@@ -44,11 +44,9 @@ return [
             'content' => [
                 'status'            => 'rejected',
                 'internal_comment'  => 'test',
-                'rejection_reasons' => [
-                    [
-                        "reason_code"     => "duplicate_or_errenous_creation",
-                        "reason_category" => "others",
-                    ],
+                'rejection_reason' => [
+                    "reason_code"     => "invalid_use_case",
+                    "reason_category" => "invalid_use_case",
                 ],
             ],
         ],
@@ -333,14 +331,14 @@ return [
             'method'  => 'PATCH',
             'content' => [
                 'status'            => 'rejected',
-                'rejection_reasons' => [],
+                'rejection_reason'  => [],
             ],
         ],
         'response'  => [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The rejection reasons field is required.',
+                    'description' => 'The rejection reason field is required.',
                 ],
             ],
             'status_code' => 400,

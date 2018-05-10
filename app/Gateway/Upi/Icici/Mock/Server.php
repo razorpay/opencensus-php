@@ -114,6 +114,16 @@ class Server extends Base\Mock\Server
 
         $payment = $app['repo']->payment->find($input['merchantTranId']);
 
+        if ($payment === NULL)
+        {
+            $bharatQr = $app['repo']->bharat_qr->findByMerchantReference($input['merchantTranId']);
+
+            if ($bharatQr != NULL)
+            {
+                $payment = $bharatQr->payment;
+            }
+        }
+
         $status = 'SUCCESS';
         $message = 'Transaction Successful';
 
@@ -299,6 +309,15 @@ class Server extends Base\Mock\Server
     {
         $content = $this->S2SRequestContent($upiEntity, $payment);
 
+        $json = json_encode($content, JSON_PRETTY_PRINT);
+
+        $encrypted = $this->encrypt($json);
+
+        return base64_encode($encrypted);
+    }
+
+    public function getAsyncCallbackContentForBharatQr(array $content)
+    {
         $json = json_encode($content, JSON_PRETTY_PRINT);
 
         $encrypted = $this->encrypt($json);

@@ -3,6 +3,8 @@
 namespace RZP\Models\Key;
 
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base\QueryCache\CacheQueries;
 
 class Repository extends Base\Repository
@@ -25,6 +27,27 @@ class Repository extends Base\Repository
         }
 
         return $query->get();
+    }
+
+    public function getFirstActiveKeyForMerchant(string $merchantId)
+    {
+        return $this->newQuery()
+                    ->merchantId($merchantId)
+                    ->notExpired()
+                    ->first();
+    }
+
+    /**
+     * @param  string      $merchantId
+     * @return Entity|null
+     */
+    public function getLatestActiveKeyForMerchant(string $merchantId)
+    {
+        return $this->newQuery()
+                    ->merchantId($merchantId)
+                    ->notExpired()
+                    ->latest()
+                    ->first();
     }
 
     public function findNotExpired($keyId)

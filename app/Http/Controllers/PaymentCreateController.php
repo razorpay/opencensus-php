@@ -73,6 +73,11 @@ class PaymentCreateController extends Controller
         return $ret;
     }
 
+    public function getCreatePaymentCheckoutCallback() {
+        return View::make('gateway.gatewayAsyncForm')
+                ->with('data', $templateData);
+    }
+
     protected function createPayment()
     {
         $input = Request::all();
@@ -201,6 +206,12 @@ class PaymentCreateController extends Controller
         $this->setMerchantCallbackUrlIfApplicable($input);
 
         $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
+
+        // Converts all the amounts to rupees
+        foreach ($data as $key => $value)
+        {
+            $data[$key] = $value / 100;
+        }
 
         if ($retJson)
         {
@@ -353,15 +364,27 @@ class PaymentCreateController extends Controller
                 return View::make('gateway.gatewayAsyncForm')
                            ->with('data', $templateData);
             }
-            else if ($data['type'] === 'wallet')
+            else if ($data['type'] === 'respawn')
             {
-                return View::make('gateway.gatewayWalletForm')
-                           ->with('data', $data);
-            }
-            else if ($data['type'] === 'emandate')
-            {
-                return View::make('emandate.form')
-                           ->with('data', $data);
+                if ($data['method'] === 'wallet')
+                {
+                    return View::make('gateway.gatewayWalletForm')
+                               ->with('data', $data);
+                }
+                else if ($data['method'] === 'emandate')
+                {
+                    return View::make('emandate.form')
+                               ->with('data', $data);
+                }
+                else if ($data['method'] === 'upi')
+                {
+                    return View::make('gateway.gatewayUpiForm')
+                               ->with('data', [
+                                    'key'  => $this->ba->getPublicKey(),
+                                    'data' => $data,
+                                    'cdn'  => $this->config->get('url.cdn.production')
+                               ]);
+                }
             }
             else
             {

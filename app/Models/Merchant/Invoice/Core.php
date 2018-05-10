@@ -4,15 +4,15 @@ namespace RZP\Models\Merchant\Invoice;
 
 use Carbon\Carbon;
 
-use RZP\Constants\Timezone;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Jobs\DispatchRouter;
-use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
-use RZP\Models\Adjustment;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Adjustment;
+use RZP\Constants\Timezone;
+use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
+use RZP\Jobs\MerchantInvoiceCorrection as MerchantInvoiceCorrectionJob;
 
 class Core extends Base\Core
 {
@@ -29,6 +29,63 @@ class Core extends Base\Core
         $this->repo->saveOrFail($invoiceEntity);
 
         return $invoiceEntity;
+    }
+
+    public function queueCorrectionInvoiceInvoice(array $input)
+    {
+        $this->trace->info(
+                    TraceCode::MERCHANT_INVOICE_CORRECTION_REQUEST,
+                    $input);
+
+        (new Validator)->validateInput('correction_queue', $input);
+
+        $invoiceDate = Carbon::createFromDate(
+            $input['year'],
+            $input['month'],
+            1,
+            Timezone::IST);
+
+        $merchantIds = [];
+
+        if (isset($input['merchant_ids']) === true)
+        {
+            $merchantIds = $input['merchant_ids'];
+        }
+
+        $batch  = 100;
+
+        $offset = 0;
+
+        $i = 0;
+
+        do
+        {
+            $merchants = $this->repo
+                              ->merchant
+                              ->fetchActivatedMerchantsBeforeTimestamp(
+                                  $batch,
+                                  $offset,
+                                  $invoiceDate->endOfMonth()->timestamp,
+                                  $merchantIds);
+
+            $count = $merchants->count();
+
+            $offset += $count;
+
+            foreach ($merchants as $merchant)
+            {
+
+                MerchantInvoiceCorrectionJob::dispatch(
+                                                $merchant->getId(),
+                                                $invoiceDate->month,
+                                                $invoiceDate->year,
+                                                $this->mode)
+                                            // Assign a delay between 0 and 900 so that tasks are distributed
+                                            // over 15 minute period
+                                            ->delay($i++ % 901);
+            }
+
+        } while ($count === $batch);
     }
 
     public function createAdjustmentInvoiceEntity(Adjustment\Entity $adjustment, array $input): Entity
@@ -68,6 +125,12 @@ class Core extends Base\Core
             $invoiceDate = Carbon::now(Timezone::IST)->subMonth();
         }
 
+        // When true, payment transactions will be cosiderd from the month
+        // specified by `$invoiceDate` where created and captured in same month
+        // All other transction will we considered on created date
+        $isCorrection = (isset($input['correction']) === true) ?
+                                (bool) $input['correction'] : false;
+
         // Get merchants
         $merchantIds = [];
 
@@ -97,14 +160,14 @@ class Core extends Base\Core
 
             foreach ($merchants as $merchant)
             {
-                $createJob = new MerchantInvoiceJob(
-                    $merchant->getId(), $invoiceDate->month, $invoiceDate->year, $this->mode);
-
-                // Assign a delay between 0 and 900 so that tasks are distributed over 15 minute period
-                $createJob->delay($i % 901);
-
-                $i++;
-                (new DispatchRouter)->dispatchOn($createJob, DispatchRouter::MERCHANT_INVOICE);
+                MerchantInvoiceJob::dispatch(
+                                        $merchant->getId(),
+                                        $invoiceDate->month,
+                                        $invoiceDate->year,
+                                        $this->mode,
+                                        $isCorrection)
+                                  // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
+                                  ->delay($i++ % 901);
             }
         }
     }

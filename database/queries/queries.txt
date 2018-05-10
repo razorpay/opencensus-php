@@ -2987,6 +2987,14 @@ ALTER TABLE bank_transfers
 ALTER TABLE virtual_accounts
     ADD INDEX virtual_accounts_updated_at_index (updated_at);
 
+ALTER TABLE hitachi
+    ADD COLUMN masked_card_number varchar(255) DEFAULT NULL after pStatus,
+    ADD COLUMN card_network varchar(255) DEFAULT NULL after masked_card_number,
+    ADD COLUMN merchant_reference varchar(255) DEFAULT NULL after card_network;
+
+ALTER TABLE upi
+    ADD COLUMN merchant_reference varchar(255) DEFAULT NULL after received;
+
 ALTER TABLE fund_transfer_attempts
     ADD COLUMN initiate_at INT(11) AFTER batch_fund_transfer_id;
 
@@ -3262,3 +3270,272 @@ ALTER TABLE items
 ALTER TABLE line_items
     ADD COLUMN hsn_code VARCHAR(20) DEFAULT NULL AFTER tax_inclusive,
     ADD COLUMN sac_code VARCHAR(20) DEFAULT NULL AFTER hsn_code;
+
+ALTER TABLE `merchant_details`
+    ADD COLUMN `reviewer_id` char(14) NULL DEFAULT NULL AFTER `archived_at`;
+
+ALTER TABLE orders
+    ADD COLUMN discount TINYINT(4) NOT NULL DEFAULT 0 AFTER offer_id;
+
+ALTER TABLE upi
+    ADD COLUMN account_number VARCHAR(255) NULL DEFAULT NULL AFTER vpa,
+    ADD COLUMN ifsc VARCHAR(255) NULL DEFAULT NULL AFTER account_number;
+
+ALTER TABLE action_checker
+    ADD INDEX action_checker_created_at_index (created_at);
+
+ALTER TABLE action_comments
+    ADD INDEX action_comments_created_at_index (created_at);
+
+ALTER TABLE action_state
+    ADD INDEX action_state_created_at_index (created_at);
+
+ALTER TABLE action_state_reasons
+    ADD INDEX action_state_reasons_created_at_index (created_at);
+
+ALTER TABLE admin_leads
+    ADD INDEX admin_leads_created_at_index (created_at);
+
+ALTER TABLE adjustment
+    ADD INDEX adjustment_created_at_index (created_at);
+
+ALTER TABLE admin_tokens
+    ADD INDEX admin_tokens_created_at_index (created_at);
+
+ALTER TABLE atom
+    ADD INDEX atom_created_at_index (created_at);
+
+ALTER TABLE axis
+    ADD INDEX axis_created_at_index (created_at);
+
+ALTER TABLE balance
+    ADD INDEX balance_created_at_index (created_at);
+
+ALTER TABLE billdesk
+    ADD INDEX billdesk_created_at_index (created_at);
+
+ALTER TABLE cards
+    ADD INDEX cards_created_at_index (created_at);
+
+ALTER TABLE coupons
+    ADD INDEX coupons_created_at_index (created_at);
+
+ALTER TABLE credit_transaction
+    ADD INDEX credit_transaction_created_at_index (created_at);
+
+ALTER TABLE emi_plans
+    ADD INDEX emi_plans_created_at_index (created_at);
+
+ALTER TABLE features
+    ADD INDEX features_created_at_index (created_at);
+
+ALTER TABLE fees_breakup
+    ADD INDEX fees_breakup_created_at_index (created_at),
+    DROP INDEX fees_breakup_name_index;
+
+ALTER TABLE gateway_rules
+    ADD INDEX gateway_rules_created_at_index (created_at);
+
+ALTER TABLE geo_ips
+    ADD INDEX geo_ips_created_at_index (created_at);
+
+ALTER TABLE groups
+    ADD INDEX groups_created_at_index (created_at);
+
+ALTER TABLE hdfc
+    ADD INDEX hdfc_created_at_index (created_at);
+
+ALTER TABLE hdfc_mpr
+    ADD INDEX hdfc_mpr_created_at_index (created_at);
+
+ALTER TABLE hdfc_response_xml
+    ADD INDEX hdfc_response_xml_created_at_index (created_at);
+
+ALTER TABLE `keys`
+    ADD INDEX keys_created_at_index (created_at);
+
+ALTER TABLE kotak
+    ADD INDEX kotak_created_at_index (created_at);
+
+ALTER TABLE login_attempts
+    ADD INDEX login_attempts_created_at_index (created_at);
+
+ALTER TABLE merchant_banks
+    ADD INDEX merchant_banks_created_at_index (created_at);
+
+ALTER TABLE merchant_emi_plans
+    ADD INDEX merchant_emi_plans_created_at_index (created_at);
+
+ALTER TABLE merchant_promotion
+    ADD INDEX merchant_promotion_created_at_index (created_at);
+
+ALTER TABLE merchant_requests
+    ADD INDEX merchant_requests_created_at_index (created_at);
+
+ALTER TABLE mobikwik
+    ADD INDEX mobikwik_created_at_index (created_at);
+
+ALTER TABLE netbanking
+    ADD INDEX netbanking_created_at_index (created_at);
+
+ALTER TABLE offers
+    ADD INDEX offers_created_at_index (created_at);
+
+ALTER TABLE org_field_map
+    ADD INDEX org_field_map_created_at_index (created_at);
+
+ALTER TABLE org_hostname
+    ADD INDEX org_hostname__created_at_index (created_at);
+
+ALTER TABLE permissions
+    ADD INDEX permissions_created_at_index (created_at);
+
+ALTER TABLE paytm
+    ADD INDEX paytm_created_at_index (created_at);
+
+ALTER TABLE pricing
+    ADD INDEX pricing_created_at_index (created_at);
+
+ALTER TABLE roles
+    ADD INDEX roles_created_at_index (created_at);
+
+ALTER TABLE sbiepay
+    ADD INDEX sbiepay_created_at_index (created_at);
+
+ALTER TABLE settlement_details
+    ADD INDEX settlement_details_created_at_index (created_at);
+
+ALTER TABLE terminals
+    ADD INDEX terminals_created_at_index (created_at);
+
+ALTER TABLE upi
+    ADD INDEX upi_created_at_index (created_at);
+
+ALTER TABLE users
+    ADD INDEX users_created_at_index (created_at);
+
+ALTER TABLE vpa
+    ADD INDEX vpa_created_at_index (created_at);
+
+ALTER TABLE wallet
+    ADD INDEX wallet_created_at_index (created_at);
+
+ALTER TABLE workflows
+    ADD INDEX workflows_created_at_index (created_at);
+
+# this is already there on reporting replica
+# Please ensure that it is dropped before applying this on master
+ALTER TABLE transactions
+    ADD INDEX transactions_settled_at_merchant_id_index (settled_at, merchant_id);
+
+ALTER TABLE customers
+    DROP INDEX customers_contact_index,
+    DROP INDEX customers_email_index,
+    ADD INDEX customers_email_index (email(40)),
+    ADD INDEX customers_contact_email_merchant_id_index (contact, email(40), merchant_id),
+    ADD INDEX customers_contact_merchant_id_index (contact, merchant_id);
+
+ALTER TABLE invoices
+    ADD INDEX invoices_status_expire_by_deleted_at_index (status, expire_by, deleted_at);
+
+ALTER TABLE virtual_accounts
+    ADD COLUMN `entity_id` char(14) NULL DEFAULT NULL AFTER `customer_id`,
+    ADD COLUMN `entity_type` char(20) NULL DEFAULT NULL AFTER `entity_id`,
+    ADD INDEX `virtual_accounts_entity_id_entity_type_index` (`entity_id`,`entity_type`);
+
+# Customer GSTIN - Invoices
+ALTER TABLE customers
+    ADD COLUMN gstin VARCHAR(20) DEFAULT NULL AFTER email;
+
+ALTER TABLE invoices
+    ADD COLUMN customer_gstin VARCHAR(20) DEFAULT NULL AFTER customer_contact;
+
+ALTER TABLE tokens
+    ADD INDEX tokens_recurring_status_index (recurring_status);
+
+ALTER TABLE payments
+    ADD COLUMN acknowledged_at INTEGER UNSIGNED AFTER auth_type,
+    ADD COLUMN reference3 TINYINT(1) NULL AFTER reference2,
+    ADD COLUMN reference4 TINYINT(1) NULL AFTER reference3,
+    ADD COLUMN reference5 INT(11) DEFAULT NULL AFTER reference4,
+    ADD COLUMN reference6 INT(11) DEFAULT NULL AFTER reference5,
+    ADD COLUMN reference7 VARCHAR(255) DEFAULT NULL AFTER reference6,
+    ADD COLUMN reference8 VARCHAR(255) DEFAULT NULL AFTER reference7,
+    ADD COLUMN reference9 BIGINT UNSIGNED DEFAULT NULL AFTER reference8;
+
+ALTER TABLE enach
+    ADD COLUMN error_message VARCHAR(255) DEFAULT NULL AFTER registration_status,
+    ADD COLUMN error_code VARCHAR(255) DEFAULT NULL AFTER error_message;
+
+# Invoice GST Changes - address and tax codes
+ALTER TABLE invoices
+    ADD COLUMN customer_shipping_addr_id CHAR(14) DEFAULT NULL AFTER customer_billing_addr_id,
+    ADD CONSTRAINT invoices_customer_shipping_addr_id_foreign FOREIGN KEY (customer_shipping_addr_id) REFERENCES addresses (id);
+
+//Atom Entity refactor
+
+ALTER TABLE atom DROP FOREIGN KEY atom_id_foreign;
+
+ALTER TABLE atom DROP PRIMARY KEY;
+
+ALTER TABLE atom CHANGE id payment_id CHAR(14);
+
+ALTER TABLE atom ADD id int(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST;
+
+ALTER TABLE atom ADD CONSTRAINT atom_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments(id);
+
+ALTER TABLE atom
+    ADD COLUMN refund_id CHAR(14) DEFAULT NULL AFTER payment_id,
+    ADD COLUMN action VARCHAR(64) AFTER refund_id,
+    ADD COLUMN received TINYINT(1) NOT NULL DEFAULT 0 AFTER action,
+    ADD COLUMN amount VARCHAR(10) NOT NULL DEFAULT 0 AFTER received,
+    ADD COLUMN status VARCHAR(64) DEFAULT NULL AFTER amount,
+    ADD COLUMN account_number VARCHAR(50) DEFAULT NULL AFTER status,
+    ADD COLUMN error_code VARCHAR(255) DEFAULT NULL AFTER method,
+    ADD INDEX atom_bank_payment_id_index (bank_payment_id),
+    ADD CONSTRAINT atom_refund_id_foreign FOREIGN KEY (refund_id) REFERENCES refunds(id),
+    MODIFY COLUMN gateway_payment_id int(11) DEFAULT NULL,
+    MODIFY COLUMN token char(75) DEFAULT NULL,
+    MODIFY COLUMN `payment_id` char(14) NOT NULL;
+
+ALTER TABLE atom MODIFY COLUMN gateway_payment_id VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE `merchant_details`
+    ADD COLUMN `business_category` VARCHAR(255) DEFAULT NULL AFTER `company_pan_name`,
+    ADD COLUMN `business_subcategory` VARCHAR(255) DEFAULT NULL AFTER `business_category`;
+
+ALTER TABLE payments drop foreign key payments_app_id_foreign,
+                     rename index payments_app_id_foreign TO payments_receiver_id_index,
+                     change app_id receiver_id varchar(14),
+                     change reference8 receiver_type varchar(255);
+
+# Renaming to batch_id
+ALTER TABLE payments
+    CHANGE reference7 batch_id VARCHAR(255);
+
+ALTER TABLE settlements
+    ADD INDEX settlements_channel_index (channel);
+
+ALTER TABLE pricing
+    ADD COLUMN receiver_type varchar(255) DEFAULT NULL AFTER international;
+
+# Invoice GST changes
+ALTER TABLE merchants
+    ADD COLUMN invoice_label_field varchar(50) DEFAULT NULL AFTER logo_url;
+
+ALTER TABLE invoices
+    ADD COLUMN merchant_label varchar(255) DEFAULT NULL AFTER customer_gstin;
+
+ALTER TABLE terminals
+    ADD COLUMN mastercard_mpan varchar(16) DEFAULT NULL after gateway_client_certificate,
+    ADD COLUMN visa_mpan varchar(16) DEFAULT NULL after mastercard_mpan,
+    ADD COLUMN rupay_mpan varchar(16) DEFAULT NULL after visa_mpan,
+    ADD COLUMN vpa varchar(255) DEFAULT NULL after rupay_mpan,
+    ADD INDEX terminals_mastercard_mpan_index (mastercard_mpan),
+    ADD INDEX terminals_visa_mpan_index (visa_mpan),
+    ADD INDEX terminals_rupay_mpan_index (rupay_mpan),
+    ADD INDEX terminals_vpa_index (vpa);
+
+ALTER TABLE terminals
+    CHANGE mastercard_mpan mc_mpan varchar(16),
+    rename index terminals_mastercard_mpan_index to terminals_mc_mpan_index;

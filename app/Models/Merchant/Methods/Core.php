@@ -95,20 +95,24 @@ class Core extends Base\Core
     public function getFormattedMethods(Merchant\Entity $merchant)
     {
         $data = [
-            'entity'                      => E::METHODS,
-            Payment\Method::CARD          => true,
-            Payment\Gateway::AMEX         => false,
-            Payment\Method::NETBANKING    => [],
-            Payment\Method::WALLET        => [],
-            Payment\Method::EMI           => false,
-            Payment\Method::UPI           => false,
+            'entity'                   => E::METHODS,
+            Payment\Method::CARD       => true,
+            Entity::DEBIT_CARD         => true,
+            Entity::CREDIT_CARD        => true,
+            Payment\Gateway::AMEX      => false,
+            Payment\Method::NETBANKING => [],
+            Payment\Method::WALLET     => [],
+            Payment\Method::EMI        => false,
+            Payment\Method::UPI        => false,
         ];
 
         $methods = $this->getMethods($merchant);
 
-        $data[Payment\Method::CARD] = $methods->isCardEnabled();
+        $data[Payment\Method::CARD]  = $methods->isCardEnabled();
+        $data[Entity::DEBIT_CARD]    = $methods->isDebitCardEnabled();
+        $data[Entity::CREDIT_CARD]   = $methods->isCreditCardEnabled();
         $data[Payment\Gateway::AMEX] = $methods->isAmexEnabled();
-        $netbankingEnabled = $methods->isNetbankingEnabled();
+        $netbankingEnabled           = $methods->isNetbankingEnabled();
 
         if ($netbankingEnabled === true)
         {
@@ -138,7 +142,7 @@ class Core extends Base\Core
         {
             $data['recurring'] = [];
 
-            $this->addRecurringCardsToMethods($data['recurring'], $methods);
+            $this->addRecurringCardsToMethods($merchant, $methods, $data['recurring']);
 
             $this->addRecurringEmandateToMethodsIfApplicable($merchant, $methods, $data['recurring']);
         }
@@ -151,15 +155,23 @@ class Core extends Base\Core
         return $data;
     }
 
-    public function addRecurringCardsToMethods(array & $recurringData, Methods\Entity $methods)
+    public function addRecurringCardsToMethods(
+        Merchant\Entity $merchant,
+        Methods\Entity $methods,
+        array & $recurringData)
     {
-        //
-        // Add debit when we start supporting debit cards for recurring
-        //
-
         if ($methods->isCreditCardEnabled() === true)
         {
-            $recurringData['card']['credit'] = Network::getFullNames(Payment\Gateway::$recurringCardNetworks);
+            $supportedNetworksForCreditCardRecurring = Payment\Gateway::getNetworksSupportedForCardRecurring();
+
+            $recurringData['card']['credit'] = Network::getFullNames($supportedNetworksForCreditCardRecurring);
+        }
+
+        if ($merchant->isDebitRecurringEnabled() === true)
+        {
+            $supportedIssuersForDebitCardRecurring = Payment\Gateway::getIssuersSupportedForDebitCardRecurring();
+
+            $recurringData['card']['debit'] = $this->getBankNames($supportedIssuersForDebitCardRecurring);
         }
     }
 
@@ -169,22 +181,21 @@ class Core extends Base\Core
         array & $recurringData)
     {
         //
-        // We don't allow netbanking for subscriptions currently.
+        // We don't allow emandate for subscriptions currently.
         //
         if ($merchant->isFeatureEnabled(Constants::CHARGE_AT_WILL) === false)
         {
             return;
         }
 
-        //
-        // We allow netbanking recurring only for certain merchants
-        //
         if ($methods->isEmandateEnabled() === false)
         {
             return;
         }
 
-        foreach (Payment\AuthType::$types as $authType)
+        $authTypes = Payment\AuthType::getAuthTypeForMethod(Payment\Method::EMANDATE);
+
+        foreach ($authTypes as $authType)
         {
             if ($this->isTestMode() === true)
             {

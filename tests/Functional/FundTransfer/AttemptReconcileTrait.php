@@ -160,7 +160,7 @@ trait AttemptReconcileTrait
     {
         $ix = strrpos($url, '/');
 
-        $key = substr($url, $ix+1);
+        $key = substr($url, $ix + 1);
 
         return $key;
     }

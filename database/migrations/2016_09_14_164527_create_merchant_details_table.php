@@ -95,6 +95,12 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::COMPANY_PAN_NAME)
                   ->nullable();
 
+            $table->string(MerchantDetail::BUSINESS_CATEGORY, 255)
+                  ->nullable();
+
+            $table->string(MerchantDetail::BUSINESS_SUBCATEGORY, 255)
+                  ->nullable();
+
             $table->string(MerchantDetail::BUSINESS_MODEL)
                   ->nullable();
 
@@ -225,6 +231,9 @@ class CreateMerchantDetailsTable extends Migration
                   ->nullable();
 
             $table->integer(MerchantDetail::ARCHIVED_AT)
+                  ->nullable();
+
+            $table->char(MerchantDetail::REVIEWER_ID, MerchantDetail::ID_LENGTH)
                   ->nullable();
 
             $table->text(MerchantDetail::ISSUE_FIELDS)

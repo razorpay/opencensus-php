@@ -206,6 +206,11 @@ class Core extends Base\Core
                 $params[Entity::ISSUER] = $payment->getWallet();
 
                 break;
+
+            case Payment\Method::UPI:
+                $params[Entity::ISSUER] = $payment->getBankCodeFromVpa();
+
+                break;
         }
     }
 

@@ -49,6 +49,11 @@ class Gateway extends Base\Gateway
             return;
         }
 
+        if ($input['payment'][Payment\Entity::AUTH_TYPE] == Payment\AuthType::SKIP)
+        {
+            return;
+        }
+
         $content = [
             'action'            => 'authorize',
             'amount'            => $input['payment']['amount'],

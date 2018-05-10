@@ -7,7 +7,6 @@ use Hash;
 
 use Carbon\Carbon;
 use Illuminate\Hashing\BcryptHasher;
-use Illuminate\Foundation\Bus\DispatchesJobs;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -20,8 +19,6 @@ use RZP\Constants\Timezone;
 
 class Core extends Base\Core
 {
-    use DispatchesJobs;
-
     public function create(array $input)
     {
         $user = (new Entity)->build($input);
@@ -217,25 +214,6 @@ class Core extends Base\Core
         return $user->toArrayPublic();
     }
 
-    public function postSortingHatData($data)
-    {
-        $url = Config::get('app.sorting_hat.url');
-
-        $request  = [
-            'method'    => 'post',
-            'url'       => $url,
-            'headers'   => [],
-            'content'   => $data,
-            'options'   => [
-                'timeout'   => 30
-            ]
-        ];
-
-        $job = new RequestJob($request);
-
-        $this->dispatch($job);
-    }
-
     public function subscribeToMailingList($user)
     {
         $data = [
@@ -243,9 +221,7 @@ class Core extends Base\Core
             'email' => $user['email'],
         ];
 
-        $job = new MailChimpSubscribe($data);
-
-        $this->dispatch($job);
+        MailChimpSubscribe::dispatch($data);
     }
 
     /**

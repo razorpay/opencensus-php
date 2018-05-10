@@ -140,6 +140,123 @@ return [
         ]
     ],
 
+    'testAddBharatQrTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hitachi',
+                'gateway_acquirer'          => 'ratn',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
+                'mc_mpan'                   => '1234567880123456',
+                'visa_mpan'                 => '1234567890123456',
+                'rupay_mpan'                => '1234567890123456',
+                'category'                  => '4567',
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'bharat_qr'     => '1',
+                ],
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'ratn',
+                'gateway_merchant_id' => '12345',
+                'gateway_terminal_id' => '12345678',
+                'mc_mpan'             => '1234567880123456',
+                'visa_mpan'           => '1234567890123456',
+                'rupay_mpan'          => '1234567890123456',
+                'category'            => 4567,
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testReassignBharatQrTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hitachi',
+                'gateway_acquirer'          => 'ratn',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
+                'mc_mpan'                   => '4287346423986423',
+                'visa_mpan'                 => '5287346853986423',
+                'rupay_mpan'                => '6287346823986423',
+                'category'                  => '4567',
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'bharat_qr'     => '1',
+                ],
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+        ],
+    ],
+
+    'testAddUpiBharatQrTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_icici',
+                'gateway_merchant_id'       => '12345',
+                 'vpa'                      => 'rzpbqr@icici',
+                'type'                      => [
+                    'bharat_qr'     => '1',
+                ],
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id' => '12345',
+                'vpa'                 => 'rzpbqr@icici',
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testReassignUpiBharatQrTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'             => 'upi_icici',
+                'gateway_merchant_id' => '12345',
+                'vpa'                 => 'random@icici',
+                'type'                => [
+                    'bharat_qr'       => '1',
+                ],
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+        ],
+    ],
+
     'testReassignTerminalForSameGateway' => [
         'request' => [
             'content' => [
@@ -171,23 +288,22 @@ return [
     ],
 
     'testAssignTerminalForDifferentGateway' => [
-        'request' => [
+        'request'  => [
             'content' => [
-                'gateway' => 'atom',
-                'card' => 0,
-                'gateway_merchant_id' => '12345',
-                'gateway_terminal_id' => '12345678',
-                'gateway_terminal_password' => ''
+                'gateway'               => 'atom',
+                'netbanking'            => 1,
+                'gateway_merchant_id'   => '12345',
+                'gateway_secure_secret' => 'random_secret',
+                'gateway_access_code'   => 'random_access_code'
             ],
-            'url' => '/merchants/10000000000000/terminals',
-            'method' => 'POST'
+            'url'     => '/merchants/10000000000000/terminals',
+            'method'  => 'POST'
         ],
         'response' => [
-              'content' => [
-                'gateway' => 'atom',
-                'gateway_merchant_id' => '12345',
-                'gateway_terminal_id' => '12345678',
-                'enabled'             => true,
+            'content' => [
+                'gateway'               => 'atom',
+                'gateway_merchant_id'   => '12345',
+                'enabled'               => true,
             ]
         ],
     ],
@@ -271,6 +387,56 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testCreateTpvTerminalWithInvalidMethod' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hdfc',
+                'gateway_acquirer'          => 'hdfc',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
+                'gateway_terminal_password' => '12345678',
+                'card'                      => '1',
+                'tpv'                       => '2'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'tpv is not required and shouldn\'t be sent',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testCreateTpvTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_mindgate',
+                'gateway_merchant_id'       => '12345',
+                'gateway_merchant_id2'      => '12345678',
+                'gateway_terminal_password' => '12345678',
+                'upi'                       => '1',
+                'tpv'                       => '2'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => '12345678',
+                'enabled'              => true,
+                'tpv'                  => 2
+            ]
         ]
     ],
 
@@ -579,6 +745,20 @@ return [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
             'gateway_error_code'  => 'GW00154',
+        ],
+    ],
+    'testEditWalletAirtelmoneyTerminalWithNotRequiredFields' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED ,
         ],
     ],
 ];

@@ -47,6 +47,8 @@ class CreateMerchantEmiPlansTable extends Migration
                   ->references(EmiPlan::ID)
                   ->on(Table::EMI_PLAN)
                   ->on_delete('restrict');
+
+            $table->index(MerchantEmiPlans::CREATED_AT);
         });
     }
 

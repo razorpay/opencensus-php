@@ -34,9 +34,7 @@ class Gateway extends Base\Gateway
 
                 break;
 
-            case Base\Action::AUTHORIZE:
             default:
-
                 $entity->setAmount($this->input['payment']['amount']);
         }
 
@@ -56,5 +54,12 @@ class Gateway extends Base\Gateway
     protected function getNewGatewayPaymentEntity()
     {
         return new Entity;
+    }
+
+    protected function generateIntentString(array $content)
+    {
+        $query = str_replace(' ', '', urldecode(http_build_query($content)));
+
+        return 'upi://pay?' . $query;
     }
 }
