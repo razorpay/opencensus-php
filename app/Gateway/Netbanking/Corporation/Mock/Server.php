@@ -28,13 +28,7 @@ class Server extends Base\Mock\Server
 
         $callbackUrl = $this->route->getUrl('gateway_payment_callback_corporation');
 
-        $request = [
-            'url'       => $callbackUrl,
-            'content'   => $response,
-            'method'    => 'post',
-        ];
-
-        return $this->makePostResponse($request);
+        return $callbackUrl . '?' . (http_build_query($response));
     }
 
     // In the callback method, we do a verification call.
