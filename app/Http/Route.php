@@ -793,7 +793,6 @@ final class Route
         // Generic Lambda handler
         'lambda_post_h2h'                          => ['post',     'lambda/{type}',                                  'LambdaController@processLambda'                                    ],
 
-        'metrics'                                  => ['get',       'metrics',                                       'MetricsController@get'                                             ],
     ];
 
     public static $public = [
@@ -1087,7 +1086,6 @@ final class Route
         'daily_reconciliation_summary_fetch',
         'lambda_post_h2h',
         'setcronjob_webhook',
-        'metrics',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2022,10 +2020,6 @@ final class Route
             'oauth_merchant_notify',
             'merchant_create_app_access_mapping',
             'merchant_delete_app_access_mapping',
-        ],
-
-        'prometheus' => [
-            'metrics',
         ],
     ];
 
