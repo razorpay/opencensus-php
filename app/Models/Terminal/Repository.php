@@ -28,6 +28,10 @@ class Repository extends Base\Repository
         Entity::EMI                 => 'sometimes|in:0,1',
         Entity::ENABLED             => 'sometimes|in:0,1',
         Entity::NETWORK_CATEGORY    => 'sometimes|string|max:50',
+        Entity::MC_MPAN             => 'sometimes|string|size:16',
+        Entity::VISA_MPAN           => 'sometimes|string|size:16',
+        Entity::RUPAY_MPAN          => 'sometimes|string|size:16',
+        Entity::VPA                 => 'sometimes|string|max:20',
     );
 
     public function fetchForPayment(Payment\Entity $payment)

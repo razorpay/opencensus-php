@@ -96,6 +96,9 @@ class BilldeskGatewayTest extends TestCase
 
     public function testMakerCheckerPaymentNormalCallbackForFailed()
     {
+        // Skipping this test for now, removing ICICI from billdesk
+        $this->markTestSkipped();
+
         $this->fixtures->create('terminal:billdesk_terminal', [
             'corporate' => 1
         ]);
@@ -376,7 +379,7 @@ class BilldeskGatewayTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(61, $count);
+        $this->assertEquals(62, $count);
     }
 
     public function testServerToServerCallback()

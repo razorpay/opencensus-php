@@ -56,7 +56,7 @@ class RefundReconciliate extends Base\RefundReconciliate
         {
             return null;
         }
-        
+
         $refundId = null;
 
         try
@@ -75,12 +75,12 @@ class RefundReconciliate extends Base\RefundReconciliate
                     'info_code'       => 'REFUND_ABSENT',
                     'message'         => 'Refund not found. Skipping.',
                     'row'             => $row,
-                    'gateway'         => get_class()
+                    'gateway'         => $this->gateway
                 ]);
-            
+
             $this->setFailUnprocessedRow(true);
         }
-        
+
         return $refundId;
     }
 
@@ -96,6 +96,17 @@ class RefundReconciliate extends Base\RefundReconciliate
         if ($gatewayRefund !== null)
         {
             $refundId = $gatewayRefund->getRefundId();
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
+                [
+                    'info_code' => 'REFUND_ABSENT',
+                    'message'   => 'Refund not found. Skipping',
+                    'row'       => $row,
+                    'gateway'   => $this->gateway
+                ]);
         }
 
         return $refundId;

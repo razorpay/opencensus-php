@@ -61,6 +61,8 @@ final class Route
         'payment_bank_transfer_fetch'              => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'batch_create'                             => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
         'batch_validate_file'                      => ['post',     'batches/validate',                               'BatchController@validateFile'                                      ],
+        'batch_upload_form_get'                    => ['get',      'batches/upload',                                 'BatchController@renderBatchUploadForm'                             ],
+        'batch_upload_form_validate_file'          => ['post',     'batches/upload/validate',                        'BatchController@validateBatchFile'                                 ],
         'batch_fetch_multiple'                     => ['get',      'batches',                                        'BatchController@getBatches'                                        ],
         'batch_fetch_by_id'                        => ['get',      'batches/{id}',                                   'BatchController@getBatchById'                                      ],
         'batch_process_file'                       => ['post',     'batches/process',                                'BatchController@processBatches'                                    ],
@@ -179,7 +181,6 @@ final class Route
         'balance_fetch'                            => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                           => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
         'credits_edit'                             => ['put',      'merchants/{mid}/credits/{id}',                   'MerchantController@putCreditsLog'                                  ],
-        'credits_delete'                           => ['delete',   'merchants/{mid}/credits/{id}',                   'MerchantController@deleteCreditsLog'                               ],
         'credits_fetch_by_id'                      => ['get',      'credits/{id}',                                   'MerchantController@getCreditsLog'                                  ],
         'credits_fetch_multiple'                   => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
         'merchant_get_features'                    => ['get',      'merchants/{id}/features',                        'MerchantController@getMerchantFeatures'                            ],
@@ -205,7 +206,7 @@ final class Route
         'bank_transfer_strip_payer_accounts'       => ['put',      'bank_transfers/payer_bank_account/strip',        'BankTransferController@stripPayerBankAccounts'                     ],
         'bank_transfer_insert'                     => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'fund_transfer_attempt_bulk_update'        => ['patch',    'fund_transfer_attempts',                         'FundTransferAttemptController@bulkUpdate'                          ],
-        'fund_transfer_attempt_null_utr_report'    => ['get',      'fund_transfer_attempts/null_utr_report',         'FundTransferAttemptController@sendNullUtrReport'                   ],
+        'fund_transfer_attempt_recon_report'       => ['get',      'fund_transfer_attempts/recon_report',            'FundTransferAttemptController@sendFTAReconReport'                  ],
         'fund_transfer_attempt_reconcile'          => ['post',     'fund_transfer_attempts/reconcile/{channel}',     'FundTransferAttemptController@reconcileFundTransfers',             ],
         'fund_transfer_attempt_process'            => ['post',     'fund_transfer_attempts/initiate/{channel}',      'FundTransferAttemptController@initiateFundTransfers',              ],
         'gateway_payment_callback_bharatqr'        => ['post',     'payment/callback/bharatqr/{gateway}',            'BharatQrController@processBharatQrPayment'                         ],
@@ -440,6 +441,7 @@ final class Route
         'gateway_fetch_priorities'                 => ['get',      'gateway/priorities',                             'GatewayController@getGatewayPriority'                              ],
         'gateway_update_priorities'                => ['patch',    'gateway/priorities/{method}/add',                'GatewayController@addOrUpdateGatewayPriority'                      ],
         'gateway_remove_priorities'                => ['patch',    'gateway/priorities/{method}/remove',             'GatewayController@removeGatewayPriority'                           ],
+        'gateway_fetch_downtimes'                  => ['get',      'gateway/downtimes',                              'GatewayController@getGatewayDowntimes'                             ],
         'gateway_create_downtime'                  => ['post',     'gateway/downtimes',                              'GatewayController@postGatewayDowntime'                             ],
         'gateway_update_downtime'                  => ['put',      'gateway/downtimes/{id}',                         'GatewayController@putGatewayDowntime'                              ],
         'gateway_downtime_source_webhook'          => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
@@ -720,6 +722,7 @@ final class Route
         'merchant_requests_update'                 => ['patch',    'merchant/requests/{id}',                         'MerchantRequestController@update'                                  ],
         'merchant_requests_bulk_update'            => ['put',      'merchant/requests/bulk',                         'MerchantRequestController@bulkUpdate'                              ],
         'merchant_requests_rejection_reasons'      => ['get',      'merchant/requests/rejection_reasons',            'MerchantRequestController@getRejectionReasons'                     ],
+        'merchant_one_time_token'                  => ['post',     'merchant/token',                                 'MerchantRequestController@issueOneTimeToken'                       ],
 
         'onboarding_features_fetch_details'        => ['get',      'onboarding/features',                            'FeatureController@getOnboardingDetails'                            ],
         'onboarding_features_fetch_submission'     => ['get',      'onboarding/features/{feature}',                  'FeatureController@getOnboardingSubmissions'                        ],
@@ -1012,7 +1015,7 @@ final class Route
         'emi_generate_excel',
         'entity_tax_update',
         'fund_transfer_attempt_reconcile',
-        'fund_transfer_attempt_null_utr_report',
+        'fund_transfer_attempt_recon_report',
         'gateway_file_create',
         'gateway_validate_unknown_refund',
         'geoip_update',
@@ -1162,6 +1165,7 @@ final class Route
         'merchant_activation_upload_file',
         'merchant_activation_save',
         'merchant_activation_update_website',
+        'merchant_one_time_token',
         'merchant_activation_business_categories',
         'offer_create',
         'offer_update',
@@ -1371,7 +1375,6 @@ final class Route
         'coupon_create',
         'coupon_delete',
         'credits_create',
-        'credits_delete',
         'credits_edit',
         'currency_fetch_rates',
         'dispute_migrate_adjustments',
@@ -1386,6 +1389,7 @@ final class Route
         'feature_get_multiple',
         'fund_transfer_attempt_bulk_update',
         'gateway_add_priorities',
+        'gateway_fetch_downtimes',
         'gateway_create_downtime',
         'gateway_create_rule',
         'gateway_delete_rule',
@@ -1566,7 +1570,6 @@ final class Route
         'refund_generate_excel'                    => '*',
         'credits_fetch_multiple'                   => Permission::VIEW_MERCHANT_CREDITS_LOG,
         'credits_create'                           => Permission::ADD_MERCHANT_CREDITS,
-        'credits_delete'                           => Permission::DELETE_MERCHANT_CREDITS,
         'merchant_put_payment_methods'             => Permission::EDIT_MERCHANT_METHODS,
         'balance_fetch'                            => Permission::VIEW_MERCHANT_BALANCE,
         'feature_get_multiple'                     => Permission::VIEW_MERCHANT_FEATURES,
@@ -1618,14 +1621,14 @@ final class Route
         'invitation_fetch'                         => '*',
         'pricing_create_plan'                      => Permission::CREATE_PRICING_PLAN,
         'merchant_get_pricing'                     => Permission::VIEW_MERCHANT_PRICING,
-        'merchant_invoice_update_gstin'            => Permission::EDIT_MERCHANT_INVOICE_GSTIN,
+        'merchant_invoice_update_gstin'            => Permission::MERCHANT_INVOICE_EDIT,
         'merchant_details_fetch'                   => '*',
         'setl_retry'                               => Permission::RETRY_SETTLEMENT,
         'setl_update_channel_bulk'                 => Permission::SETTLEMENT_BULK_UPDATE,
         'transaction_bulk_update'                  => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_reconcile'                           => Permission::SETTLEMENT_BULK_UPDATE,
         'merchant_batches'                         => Permission::MERCHANT_BATCH_UPLOAD,
-        'merchant_invoice_add_bulk'                => '*',
+        'merchant_invoice_add_bulk'                => Permission::MERCHANT_INVOICE_EDIT,
         'payment_dispute_create'                   => Permission::CREATE_DISPUTE,
         'dispute_edit'                             => Permission::EDIT_DISPUTE,
         'settings_fetch'                           => Permission::VIEW_WALLET_CONFIG,
@@ -1699,6 +1702,7 @@ final class Route
         'feature_bulk_remove'                      => '*',
         'fund_transfer_attempt_bulk_update'        => '*',
         'gateway_add_priorities'                   => '*',
+        'gateway_fetch_downtimes'                  => '*',
         'gateway_create_downtime'                  => '*',
         'gateway_fetch_priorities'                 => '*',
         'gateway_file_acknowledge'                 => '*',
@@ -1810,6 +1814,8 @@ final class Route
 
     public static $direct = [
         'inspector_view_get',
+        'batch_upload_form_get',
+        'batch_upload_form_validate_file',
         'device_verify',
         'upi_get_bank_list',
         'upi_read_async',
@@ -1963,7 +1969,7 @@ final class Route
             'merchant_payout_mail',
             'geoip_update',
             'fund_transfer_attempt_reconcile',
-            'fund_transfer_attempt_null_utr_report',
+            'fund_transfer_attempt_recon_report',
             'admin_lock_old_accounts',
             'fund_transfer_attempt_process',
             'daily_reconciliation_summary_fetch',
@@ -2189,11 +2195,6 @@ final class Route
         }
 
         return in_array($route, self::CRITICAL_ROUTES, true);
-    }
-
-    public static function getSlaveRoutes()
-    {
-        return self::$slaveRoutes;
     }
 
     public function getUrl($routeName, array $parameters = [], $key = '', $secret = '')

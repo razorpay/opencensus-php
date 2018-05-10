@@ -12,9 +12,12 @@
         font-size: 14px;
         line-height: 1.6;
       }
-      form {
+      .container {
         width: 92%;
         max-width: 330px;
+        margin: 0 auto 20px;;
+      }
+      form.main {
         margin: 20px auto 0px;
         background: #fff;
         border-radius: 4px;
@@ -48,7 +51,7 @@
         font-family: inherit;
         color: #111;
       }
-      button {
+      button:not(#cancel-btn) {
         display: block;
         margin: 20px auto 0;
         height: 42px;
@@ -69,11 +72,29 @@
       input[name=contact] {
         padding-left: 58px;
       }
+
+      #cancel-btn {
+        color: #d66;
+        border: none;
+        border-bottom: 1px dashed #faa;
+        background-color: transparent;
+        font-size: 13px;
+        cursor: pointer;
+        margin: 16px 0;
+      }
+
+      #cancel-btn:before {
+        font-size: 13px;
+        float: left;
+        content: '<';
+        transform: scale(0.7, 1.3);
+        margin: 0 3px 0 -3px;
+      }
     </style>
   </head>
   <body>
     <img src="https://cdn.razorpay.com/logo.svg" id="logo" height="35px" style="margin:30px auto 10px; display:block">
-    <form action="<?= $data['request']['url'] ?>" method="<?= $data['request']['method'] ?>">
+    <form action="<?= $data['request']['url'] ?>" method="<?= $data['request']['method'] ?>" class="container main">
       @foreach ($data['request']['content'] as $key => $value)
         @if (is_array($value))
           @foreach ($value as $key2=>$value2)
@@ -112,5 +133,12 @@
         <button>Submit</button>
       </main>
     </form>
+    @if (isset($data['request']['content']['callback_url']))
+        <form action="{{ $data['request']['content']['callback_url'] }}" method="post" class="container">
+            <input name="error[description]" value="Payment processing cancelled by user" type="hidden">
+            <input name="error[code]" value="BAD_REQUEST_ERROR" type="hidden" >
+            <button id="cancel-btn" type="submit">Cancel Payment</button>
+        </form>
+    @endif
   </body>
 </html>

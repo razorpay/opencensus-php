@@ -9,12 +9,13 @@ class Fetch extends BaseFetch
 {
     const RULES = [
         self::DEFAULTS => [
-            Entity::RECIPIENT           => 'sometimes|string|max:20',
-            self::EXPAND_EACH           => 'filled|string|in:recipient_settlement,',
-            Entity::TRANSACTION_ID      => 'sometimes|alpha_num|size:14',
-            Entity::MERCHANT_ID         => 'sometimes|alpha_num|size:14',
-            Entity::SOURCE              => 'sometimes|string|min:14',
-            Entity::RECIPIENT           => 'sometimes|string|min:14'
+            Entity::RECIPIENT               => 'sometimes|string|max:20',
+            Entity::RECIPIENT_SETTLEMENT_ID => 'filled|string|public_id',
+            self::EXPAND_EACH               => 'filled|string|in:recipient_settlement,',
+            Entity::TRANSACTION_ID          => 'sometimes|alpha_num|size:14',
+            Entity::MERCHANT_ID             => 'sometimes|alpha_num|size:14',
+            Entity::SOURCE                  => 'sometimes|string|min:14',
+            Entity::RECIPIENT               => 'sometimes|string|min:14'
         ],
     ];
 
@@ -27,6 +28,7 @@ class Fetch extends BaseFetch
 
         AuthType::PRIVATE_AUTH => [
             Entity::RECIPIENT,
+            Entity::RECIPIENT_SETTLEMENT_ID,
             self::EXPAND_EACH,
         ],
     ];

@@ -2,8 +2,6 @@
 
 namespace RZP\Base\Database\LagChecker;
 
-use Closure;
-
 /**
  * Interface LagChecker
  *
@@ -12,9 +10,8 @@ use Closure;
 interface LagChecker
 {
     /**
-     * @param Closure $readPdo
-     *
-     * @return mixed
+     * @param  \PDO|Closure $readPdo
+     * @return \PDO|null
      */
-    public function useReadPdoIfApplicable(Closure $readPdo);
+    public function useReadPdoIfApplicable($readPdo);
 }

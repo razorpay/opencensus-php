@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/dumb-init /bin/sh
 set -euo pipefail
 
 db_wait(){

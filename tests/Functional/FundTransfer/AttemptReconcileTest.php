@@ -8,6 +8,7 @@ use RZP\Models\Settlement;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Mail\Settlement\CriticalFailure;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationMail;
 use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 
@@ -41,6 +42,10 @@ class AttemptReconcileTest extends TestCase
 
         $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
             $channel, 1, Attempt\Type::SETTLEMENT);
+
+        $fileName = basename($setlFile);
+
+        $this->assertStringStartsWith('NRPSS_NRPSSUPLDNEW_', $fileName);
 
         $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
     }
@@ -334,9 +339,13 @@ class AttemptReconcileTest extends TestCase
         $this->assertTestResponse($settlement, 'testRetrySettlement');
     }
 
-
-    public function verifyReconciliationInTestMode(string $channel, bool $failure = false)
+    public function verifyReconciliationInTestMode(
+        string $channel,
+        bool $failure = false,
+        bool $internalFailure = false)
     {
+        Mail::fake();
+
         $this->createDataAndAssertInitiateTransferSuccess(
             $channel, 1, Attempt\Type::SETTLEMENT);
 
@@ -344,13 +353,16 @@ class AttemptReconcileTest extends TestCase
             'url' => '/settlements/reconcile/test/all',
             'method' => 'POST',
             'content' => [
-                'failed_recons' => (int) $failure
+                'failed_recons'    => (int) $failure,
+                'internal_failure' => (int) $internalFailure
             ]
         ];
 
         $this->ba->appAuth();
 
         $this->makeRequestAndGetContent($request);
+
+        $this->reconcileEntitiesForChannel($channel);
 
         $ftas = $this->getEntities('fund_transfer_attempt', [], true);
 
@@ -372,13 +384,18 @@ class AttemptReconcileTest extends TestCase
             }
         }
 
-        if ($failure === true)
+        if (($failure === true) or ($internalFailure === true))
         {
             $this->assertEquals(1, $failed);
         }
         else
         {
             $this->assertEquals(1, $success);
+        }
+
+        if ($internalFailure === true)
+        {
+            Mail::assertQueued(CriticalFailure::class);
         }
     }
 
@@ -392,6 +409,16 @@ class AttemptReconcileTest extends TestCase
         // This test wont work for kotak.
         // because kotak failure transactions can not be determined by the status.
         $this->verifyReconciliationInTestMode(Channel::AXIS, true);
+    }
+
+    public function testReconciliationInTestModeForInternalFailure()
+    {
+        $this->verifyReconciliationInTestMode(Channel::AXIS, true, true);
+    }
+
+    public function testReconciliationInTestModeForFailureForHdfc()
+    {
+        $this->verifyReconciliationInTestMode(Channel::HDFC, false, true);
     }
 
     protected function getReconStatusClass(string $channel)

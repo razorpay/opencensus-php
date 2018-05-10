@@ -879,5 +879,17 @@ final class FactoryData
             'created_at' => $faker->timestamp,
             'updated_at' => $faker->timestamp,
         ]);
+
+        $factory(\RZP\Models\QrCode\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+            'merchant_id' => '10000000000000',
+            'provider'    => 'bharat_qr',
+            'entity_id'   => $faker->uniqueid,
+            'entity_type' => 'virtual_account',
+            'short_url'   => 'abc.com',
+            'qr_string'   => 'kdsfjsfndsmndjksnfsdnsmdns',
+        ]);
     }
 }

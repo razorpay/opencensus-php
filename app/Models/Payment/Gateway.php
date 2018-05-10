@@ -44,6 +44,7 @@ class Gateway
     const NETBANKING_RBL         = 'netbanking_rbl';
     const NETBANKING_CSB         = 'netbanking_csb';
     const NETBANKING_PNB         = 'netbanking_pnb';
+    const NETBANKING_OBC         = 'netbanking_obc';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
@@ -141,6 +142,7 @@ class Gateway
         self::NETBANKING_RBL,
         self::NETBANKING_INDUSIND,
         self::NETBANKING_PNB,
+        self::NETBANKING_OBC,
         self::WALLET_OPENWALLET,
     ];
 
@@ -250,6 +252,7 @@ class Gateway
             self::NETBANKING_RBL,
             self::NETBANKING_INDUSIND,
             self::NETBANKING_PNB,
+            self::NETBANKING_OBC,
             self::NETBANKING_CSB,
         ],
 
@@ -425,6 +428,14 @@ class Gateway
             Network::RUPAY,
         ],
         self::CARD_FSS => [
+            Network::MC,
+            Network::VISA,
+            Network::RUPAY,
+        ],
+    ];
+
+    public static $bharatQrCardNetwork = [
+        self::HITACHI => [
             Network::MC,
             Network::VISA,
             Network::RUPAY,
@@ -829,6 +840,7 @@ class Gateway
         IFSC::KKBK         => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB         => Gateway::NETBANKING_AXIS,
         IFSC::RATN         => Gateway::NETBANKING_RBL,
+        IFSC::ORBC         => Gateway::NETBANKING_OBC,
         IFSC::CSBK         => Gateway::NETBANKING_CSB,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
@@ -849,7 +861,6 @@ class Gateway
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
-
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
@@ -1007,6 +1018,18 @@ class Gateway
         }
 
         return array_values(array_unique($banks));
+    }
+
+    public static function getBharatQrCardNetworks(): array
+    {
+        $networks = [];
+
+        foreach (self::$bharatQrCardNetwork as $bharatQrGateways)
+        {
+            $networks = array_merge($networks, $bharatQrGateways);
+        }
+
+        return array_values(array_unique($networks));
     }
 
     public static function getZeroRupeeEmandateBanks(): array

@@ -28,6 +28,14 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findPaymentsByPaymentIdToVerify($id)
+    {
+        return $this->newQuery()
+                    ->where('payment_id', '=', $id)
+                    ->whereIn('action', [Action::AUTHORIZE, Action::PURCHASE])
+                    ->get();
+    }
+
     public function findCapturedPaymentByIdOrFail($paymentId)
     {
         return $this->newQuery()

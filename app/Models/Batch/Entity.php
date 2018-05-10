@@ -62,6 +62,8 @@ class Entity extends Base\PublicEntity
      */
     const WITH_CONFIG               = 'with_config';
 
+    const TOKEN = 'token';
+
     protected static $sign = 'batch';
 
     protected $entity = 'batch';

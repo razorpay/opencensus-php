@@ -8,6 +8,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Processor;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\VirtualAccount\Receiver;
 
 class Plan extends PublicCollection
 {
@@ -195,6 +196,19 @@ class Plan extends PublicCollection
             self::RULES     => $rules);
 
         return $plan;
+    }
+
+    public function hasQrCodeReceiver()
+    {
+        foreach ($this->items as $rule)
+        {
+            if ($rule->getReceiverType() === Receiver::QR_CODE)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function hasMethod($method)

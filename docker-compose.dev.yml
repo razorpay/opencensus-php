@@ -18,9 +18,6 @@ services:
       - api_db
       - cache
       - es
-    command:
-      - "/entrypoint.sh"
-      - "web"
     environment:
       DB_LIVE_HOST: api_db
       DB_LIVE_USERNAME: api_user
