@@ -35,14 +35,13 @@ pipeline:
       # Fix for https://github.com/npm/uid-number/issues/3
       - npm config set unsafe-perm true
       - npm config set cache npm_cache
-      - npm install
       - npm install --global gulp
-      - npm link gulp
-      - cd web
-      - npm link gulp
+      # Root directory
       - npm install
-      - cd ..
-      - npm run build
+      - npm link gulp
+      - node signup.js
+      # Web directory
+      - cd web && npm link gulp && npm install npm run build
     when:
         event: push
   test-js:
