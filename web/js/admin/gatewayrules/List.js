@@ -126,8 +126,8 @@ export default class GatewayRuleList extends Component {
 
             <SelectField name="shared_terminal" label="Shared Terminal">
               <option value="">All</option>
-              <option value="0">False</option>
-              <option value="1">True</option>
+              <option value="0">No</option>
+              <option value="1">Yes</option>
             </SelectField>
 
             <SelectMode defaultValue={'live'} />
