@@ -16,10 +16,6 @@ import { adminFetch } from 'common/fetch';
 import { methods, gateways, categories } from 'common/data';
 import { isBlank } from 'common/util';
 
-const defaultFilters = {
-  merchant_id: '100000Razorpay',
-};
-
 let gateway_url = 'admin/gateway_rule';
 
 @observer
@@ -37,7 +33,6 @@ export default class GatewayRuleList extends Component {
       mode: 'live',
     },
     model: Model,
-    filters: defaultFilters,
     fetchFn: adminFetch,
   });
 
@@ -74,11 +69,7 @@ export default class GatewayRuleList extends Component {
             </div>
           </header>
           <Form onSubmit={this.onSubmit} class="filters">
-            <Field
-              name="merchant_id"
-              label="Merchant ID"
-              defaultValue={defaultFilters.merchant_id}
-            />
+            <Field name="merchant_id" label="Merchant ID" />
             <SelectField
               name="type"
               label="Type"
