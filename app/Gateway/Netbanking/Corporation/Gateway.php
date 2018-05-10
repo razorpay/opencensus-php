@@ -277,7 +277,8 @@ class Gateway extends Base\Gateway
             RequestFields::VERIFY_MERCHANT_CODE         => $this->getMerchantId(),
             RequestFields::VERIFY_PAYMENT_ID            => $input['payment']['id'],
             RequestFields::VERIFY_AMOUNT                => $this->formatAmount($input['payment']['amount']),
-            RequestFields::VERIFY_MODE_OF_TRANSACTION   => RequestFields::VERIFY_MODE_OF_TRANSACTION_VALUE
+            RequestFields::VERIFY_BANK_REF_NUMBER       => $input['gateway'][ResponseFields::BANK_REF_NUMBER],
+            RequestFields::VERIFY_MODE_OF_TRANSACTION   => RequestFields::VERIFY_MODE_OF_TRANSACTION_VALUE,
         ];
 
         $encryptedString = $this->getEncryptor()->encryptData($data);
@@ -287,15 +288,18 @@ class Gateway extends Base\Gateway
             RequestFields::VERIFY_DATA          => $encryptedString
         ];
 
-        $request = $this->getStandardRequestArray($content, 'post', Action::VERIFY);
+        $request = $this->getStandardRequestArray($content, 'get', Action::VERIFY);
+
+        $request['url'] .= '?' . http_build_query($content);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
-                'gateway'    => $this->gateway,
-                'request'    => $request,
-                'content'    => $data,
-                'payment_id' => $input['payment']['id'],
+                'gateway'                   => $this->gateway,
+                'request'                   => $request,
+                'content'                   => $data,
+                'payment_id'                => $input['payment']['id'],
+                'content_before_encryption' => $data,
             ]
         );
 
