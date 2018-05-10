@@ -311,13 +311,18 @@ class SubReconciliate extends Base\Core
      * or refund entity to reconcile, we mark the row processing as success or failure
      * depending on the specific gateway's reconciliator.
      *
-     * @param  array  $row
+     * @param  array $row
+     *
+     * @throws LogicException
      */
     protected function handleUnprocessedRow(array $row)
     {
+        $rowStatus = ($this->failUnprocessedRow === true) ? 'Failed' : 'Success';
+
         $this->trace->info(TraceCode::RECON_UNPROCESSED_ROW,
             [
-                'gateway' => get_called_class(),
+                'gateway' => $this->gateway,
+                'status'  => $rowStatus,
                 'row'     => $row,
             ]);
 

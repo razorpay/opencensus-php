@@ -381,6 +381,8 @@ class Reconciliate extends Base\Core
     protected function getBatchProcessingSummary($batch)
     {
         $summary = [
+            'info'          => 'Processed Batch Summary',
+            'file'          => basename($batch->latestFile()->location),
             'total_count'   => $batch->getTotalCount(),
             'success_count' => $batch->getSuccessCount(),
             'failure_count' => $batch->getFailureCount(),

@@ -3,18 +3,14 @@
 namespace RZP\Reconciliator\Axis;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-
-use RZP\Exception\ReconciliationException;
-use RZP\Models\Bank\IFSC;
-use RZP\Models\Base\UniqueIdEntity;
-use RZP\Reconciliator\Base;
-use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment\Service as PaymentService;
-use RZP\Models\Payment\Status as PaymentStatus;
+use RZP\Models\Bank\IFSC;
+use RZP\Reconciliator\Base;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Cybersource;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -45,6 +41,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         'Y-m-d h:i:s'
     ];
 
+    /**
+     * If we are not able to find payment id to reconcile,
+     * this ratio defines the minimum proportion of columns to be filled in a valid row.
+     * In Axis MIS, last row has around 9 out of 34 columns as stats data and rest empty.
+     * Therefore, if less than 27% of data is present, we don't mark row as failure
+     */
+    const MIN_ROW_FILLED_DATA_RATIO = 0.27;
+
     protected $axisMigsRepo;
 
     public function __construct(string $gateway = null)
@@ -63,6 +67,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         else
         {
             $paymentId = $this->getPaymentIdForMigs($row);
+        }
+
+        if (empty($paymentId) === true)
+        {
+            $this->evaluateRowProcessedStatus($row);
         }
 
         return $paymentId;
@@ -440,5 +449,25 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function shouldAttemptForceAuthorizeFailed()
     {
         return true;
+    }
+
+    /**
+     * This function evaluate and marks the row processing as success or failure based on
+     * percentage of data available in a row.
+     *
+     * @param $row
+     */
+    protected function evaluateRowProcessedStatus(array $row)
+    {
+        $nonEmptyData = array_filter($row, function($value) {
+            return filled($value);
+        });
+
+        $rowFilledRatio = count($nonEmptyData) / count($row);
+
+        if ($rowFilledRatio < self::MIN_ROW_FILLED_DATA_RATIO)
+        {
+            $this->setFailUnprocessedRow(false);
+        }
     }
 }
