@@ -113,6 +113,9 @@ export default class ActivationWizard extends React.Component {
 
   setInitialTab() {
     let firstInValid = null;
+    let isSubmitDisabled = !(
+      this.props.data.activated && this.props.data.locked
+    );
 
     for (let i = 0; i < FORM_TABS.length; i++) {
       let tabStatusValid = this.tabValidity(i);
@@ -125,7 +128,7 @@ export default class ActivationWizard extends React.Component {
 
     if (firstInValid === null) {
       firstInValid = FORM_TABS.length - 1; // In case all are filled then set last tab(which is actually filled)
-      this.state.showSubmitLayer = true;
+      isSubmitDisabled && (this.state.showSubmitLayer = true); // Don't show submit form if it's already activated
     }
 
     this.state.activeTab = firstInValid;
@@ -337,7 +340,9 @@ export default class ActivationWizard extends React.Component {
 
   render() {
     let isLinkedAccountForm = !!this.props.accountId;
-    let isAlreadyActivated = !!this.state.data.activated; // Linked accounts form can still be seen after activation.
+    let isSubmitDisabled = !(
+      this.props.data.activated && this.props.data.locked
+    ); // Linked accounts form can still be seen after activation.
 
     let activeTab = this.state.activeTab;
     let isLastTab = activeTab == FORM_TABS.length - 1;
@@ -375,12 +380,13 @@ export default class ActivationWizard extends React.Component {
       <div class="Activation--wizard">
         <aside>
           <side-title>Account Activation</side-title>
-          {!isLinkedAccountForm && (
-            <p>
-              Fill and submit the activation form to start transacting live from
-              your Razorpay account.
-            </p>
-          )}
+          {!isLinkedAccountForm &&
+            !isSubmitDisabled && (
+              <p>
+                Fill and submit the activation form to start transacting live
+                from your Razorpay account.
+              </p>
+            )}
           <ul>
             {FORM_TABS.map((t, i) => {
               let isTabValid = this.state.tabs[i];
@@ -399,12 +405,13 @@ export default class ActivationWizard extends React.Component {
                 </li>
               );
             })}
-            {!isAlreadyActivated && (
+            {isSubmitDisabled && (
               <li
                 onClick={this.toggleSubmitLayer}
                 class={classList(
                   !this.isAllTabsValid() && 'disabled',
-                  this.state.showSubmitLayer && 'active'
+                  this.state.showSubmitLayer && 'active',
+                  'li--submit'
                 )}
               >
                 Submit Form
@@ -467,7 +474,7 @@ export default class ActivationWizard extends React.Component {
             </Form>
           </main>
         )}
-        {!isAlreadyActivated &&
+        {isSubmitDisabled &&
           this.state.showSubmitLayer && (
             <main class="overlay-container">
               <SubmitForm
@@ -489,7 +496,7 @@ export default class ActivationWizard extends React.Component {
               </Button.Primary>
             )}
             {isLastTab &&
-              !isAlreadyActivated && (
+              isSubmitDisabled && (
                 <Button.Primary
                   class={classList(!this.isAllTabsValid() && 'disabled')}
                   onClick={this.toggleSubmitLayer}
