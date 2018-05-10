@@ -44,7 +44,7 @@ class RefundReconciliate extends Base\RefundReconciliate
                     'info_code' => 'UNSETTLED_ROW_FOUND',
                     'message'   => 'Unsettled row found. Skipping',
                     'row'       => $row,
-                    'gateway'   => get_called_class()
+                    'gateway'   => $this->gateway
                 ]);
 
             $this->setFailUnprocessedRow(false);
@@ -84,7 +84,7 @@ class RefundReconciliate extends Base\RefundReconciliate
                     'trace_code'    => TraceCode::RECON_MISMATCH,
                     'message'       => 'Gateway refund not found.',
                     'refund_id'     => $refundId,
-                    'gateway'       => get_called_class(),
+                    'gateway'       => $this->gateway,
                ]);
 
             return null;
@@ -135,7 +135,7 @@ class RefundReconciliate extends Base\RefundReconciliate
                     'expected_amount'   => $this->refund->getBaseAmount(),
                     'currency'          => $this->refund->getCurrency(),
                     'row'               => $row,
-                    'gateway'           => get_called_class()
+                    'gateway'           => $this->gateway
                 ]);
 
             return false;

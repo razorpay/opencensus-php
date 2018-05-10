@@ -870,13 +870,14 @@ class Service extends Base\Service
     /**
      * Send beneficiary registration request for ALL activated merchants
      *
+     * @param array  $input
      * @param string $channel
      *
      * @return array
      */
-    public function getMerchantBeneficiaryFile(string $channel): array
+    public function getMerchantBeneficiaryFile(array $input, string $channel): array
     {
-        $response = (new BankAccount\BeneficiaryFile)->generate($channel);
+        $response = (new BankAccount\BeneficiaryFile)->generate($input, $channel);
 
         return $response;
     }

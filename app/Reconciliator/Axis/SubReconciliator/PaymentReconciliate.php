@@ -47,9 +47,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected $axisMigsRepo;
 
-    public function __construct()
+    public function __construct(string $gateway = null)
     {
-        parent::__construct();
+        parent::__construct($gateway);
 
         $this->axisMigsRepo = $this->repo->axis_migs;
     }
@@ -117,7 +117,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'info_code' => 'PAYMENT_ABSENT',
                     'message'   => 'Payment not found. Skipping',
                     'row'       => $row,
-                    'gateway'   => get_called_class()
+                    'gateway'   => $this->gateway
                 ]);
         }
 
@@ -274,7 +274,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'info_code'         => 'CARD_TRIVIA_ABSENT',
                     'recon_card_trivia' => $cardTrivia,
                     'row'               => $row,
-                    'gateway'           => get_class()
+                    'gateway'           => $this->gateway
                 ]
             );
 
@@ -302,7 +302,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'message'         => 'Unable to figure out the card type.',
                     'recon_card_type' => $cardType,
                     'row'             => $row,
-                    'gateway'         => get_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             // It's as good as no card type present in the row.
@@ -330,7 +330,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'info_code'         => 'CARD_LOCALE_ABSENT',
                     'recon_card_trivia' => $cardLocale,
                     'row'               => $row,
-                    'gateway'           => get_class()
+                    'gateway'           => $this->gateway
                 ]);
 
             return null;
@@ -353,7 +353,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'info_code'         => 'CARD_LOCALE_ABSENT',
                     'recon_card_trivia' => $cardLocale,
                     'row'               => $row,
-                    'gateway'           => get_class()
+                    'gateway'           => $this->gateway
                 ]);
 
             // It's as good as no card locale present in the row.

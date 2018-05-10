@@ -17,24 +17,45 @@ class Server extends Base\Mock\Server
     {
         parent::authorize($input);
 
-        $this->validateAuthorizeInput($input);
+        $this->request($input, 'authorize');
 
-        $content = [
-            Fields::ID               => 'p2p_A11zpSL1413XHi',
-            Fields::TXN_ID           => 'HDF2C8B11D1FBDB4FC78F4E37A19AB6413D',
-            Fields::SENDER_ID        => '9X0HrhNT68ZWeX',
-            Fields::SENDER_TYPE      => 'vpa',
-            Fields::RECEIVER_ID      => 'A11xBDINnz4so1',
-            Fields::RECEIVER_TYPE    => 'vpa',
-            Fields::STATUS           => 'initiated',
-            Fields::AMOUNT           => $input['amount'],
-            Fields::DESCRIPTION      => $input['description'],
-            Fields::TYPE             => $input['type'],
-            Fields::NOTES            => $input['notes'],
-            Fields::CURRENCY         => $input['currency'],
-            Fields::TRANSACTION_TYPE => 'credit',
-            Fields::RRN              => '0810010123456',
-        ];
+        if ($input[Fields::TYPE] === Hulk\Type::EXPECTED_PUSH)
+        {
+            $this->validateActionInput($input, 'authorize_intent');
+
+            $override = [
+                Fields::SENDER_ID        => null,
+                Fields::SENDER_TYPE      => null,
+                Fields::TYPE             => 'push',
+                Fields::STATUS           => 'created',
+            ];
+        }
+        else
+        {
+            $this->validateAuthorizeInput($input);
+
+            $override = [
+                Fields::SENDER_ID        => '9X0HrhNT68ZWeX',
+                Fields::SENDER_TYPE      => 'vpa',
+            ];
+        }
+
+        $content = array_merge(
+            [
+                Fields::ID               => 'p2p_A11zpSL1413XHi',
+                Fields::TXN_ID           => 'HDF2C8B11D1FBDB4FC78F4E37A19AB6413D',
+                Fields::RECEIVER_ID      => 'A11xBDINnz4so1',
+                Fields::RECEIVER_TYPE    => 'vpa',
+                Fields::STATUS           => 'initiated',
+                Fields::AMOUNT           => $input['amount'],
+                Fields::DESCRIPTION      => $input['description'],
+                Fields::TYPE             => $input['type'],
+                Fields::NOTES            => $input['notes'],
+                Fields::CURRENCY         => $input['currency'],
+                Fields::TRANSACTION_TYPE => 'credit',
+                Fields::RRN              => '0810010123456',
+            ],
+            $override);
 
         $this->content($content, 'authorize');
 

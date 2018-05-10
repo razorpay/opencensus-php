@@ -77,6 +77,86 @@ class MySqlConnectionTest extends TestCase
         $this->assertEquals(['boom'], $results);
     }
 
+    public function testRecheckReplicaLagWithNoReplicaLag()
+    {
+        $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
+        $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
+        $statement = $this->getMockBuilder(PDOStatement::class)
+                          ->setMethods(['execute', 'fetchAll', 'bindValue'])
+                          ->getMock();
+
+        //
+        // Sets expectations on the mock objects
+        //
+        $writePdo->expects($this->never())->method('prepare');
+        $readPdo->expects($this->once())->method('prepare')->with('foo')->will($this->returnValue($statement));
+        $statement->expects($this->once())->method('bindValue')->with('foo', 'bar', 2);
+        $statement->expects($this->once())->method('execute');
+        $statement->expects($this->once())->method('fetchAll')->will($this->returnValue(['boom']));
+
+        //
+        // Creates mock connection object and executes the select query
+        //
+        $mockConnection = $this->getMockConnection(['prepareBindings'], $writePdo);
+        $mockConnection->setReadPdo($readPdo);
+        $mockConnection->expects($this->once())
+                       ->method('prepareBindings')
+                       ->with($this->equalTo(['foo' => 'bar']))
+                       ->will($this->returnValue(['foo' => 'bar']));
+
+        //
+        // Sets these attributes on the connection object so that lag check
+        // is re-evaluated for the select.
+        //
+        $mockConnection->forceCheckReplicaLag = true;
+
+        $results = $mockConnection->select('foo', ['foo' => 'bar']);
+        $this->assertEquals(['boom'], $results);
+    }
+
+    public function testRecheckReplicaLagWithReplicationLag()
+    {
+        $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
+        $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
+        $statement = $this->getMockBuilder(PDOStatement::class)
+                          ->setMethods(['execute', 'fetchAll', 'bindValue'])
+                          ->getMock();
+
+        $lagChecker = $this->getMockBuilder(RedisLagChecker::class)->setMethods(['useReadPdoIfApplicable'])->getMock();
+        $lagChecker->expects($this->once())
+                   ->method('useReadPdoIfApplicable')
+                   ->with($readPdo)
+                   ->will($this->returnValue(null));
+
+        //
+        // The read pdo should never be used, as the replica lag
+        // check gives null, indicating that the write connection should get used.
+        //
+        $readPdo->expects($this->never())->method('prepare');
+        $writePdo->expects($this->once())->method('prepare')->with('foo')->will($this->returnValue($statement));
+        $statement->expects($this->once())->method('bindValue')->with('foo', 'bar', 2);
+        $statement->expects($this->once())->method('execute');
+        $statement->expects($this->once())->method('fetchAll')->will($this->returnValue(['boom']));
+
+        $mockConnection = $this->getMockConnection(['prepareBindings'], $writePdo);
+        $mockConnection->setReadPdo($readPdo);
+        $mockConnection->lagChecker = $lagChecker;
+
+        $mockConnection->expects($this->once())
+                       ->method('prepareBindings')
+                       ->with($this->equalTo(['foo' => 'bar']))
+                       ->will($this->returnValue(['foo' => 'bar']));
+
+        //
+        // Sets these attributes on the connection object so that lag check
+        // is re-evaluated for the select.
+        //
+        $mockConnection->forceCheckReplicaLag = true;
+
+        $results = $mockConnection->select('foo', ['foo' => 'bar']);
+        $this->assertEquals(['boom'], $results);
+    }
+
     public function testWritePdoSelectedWhenRecordsHaveBeenModified()
     {
         $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();

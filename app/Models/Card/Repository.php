@@ -3,17 +3,19 @@
 namespace RZP\Models\Card;
 
 use DB;
+
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Base\BuilderEx;
+use RZP\Models\Payment;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Account;
-use RZP\Models\Payment;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'card';
 
-    protected $appFetchParamRules = array(
+    protected $appFetchParamRules = [
         Entity::IIN             => 'sometimes|integer|digits:6',
         Entity::LAST4           => 'sometimes|string|digits:4',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
@@ -25,7 +27,26 @@ class Repository extends Base\Repository
         Entity::VAULT_TOKEN     => 'sometimes|alpha_num',
         Entity::VAULT           => 'required_with:token|in:tokenex',
         Entity::GLOBAL_CARD_ID  => 'sometimes|alpha_num',
-    );
+    ];
+
+    /**
+     * Returns a query on certain card entity attributes which
+     * is called during payment repo fetch.
+     *
+     * @param  array  $params
+     * @return BuilderEx
+     */
+    public function buildCardFetchSubQuery(array $params): BuilderEx
+    {
+        $query = $this->newQuery();
+
+        foreach ($params as $key => $value)
+        {
+            $query->where($key, $value);
+        }
+
+        return $query;
+    }
 
     public function retrieveIinDetails($iin)
     {

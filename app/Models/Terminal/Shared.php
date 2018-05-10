@@ -58,6 +58,8 @@ class Shared
     const UPI_MINDGATE_SBI_RAZORPAY_TERMINAL = '100UPIMgateSbi';
     const UPI_ICICI_RAZORPAY_TERMINAL        = '100UPIICICITml';
     const UPI_HULK_RAZORPAY_TERMINAL         = '100UPIHulkTrml';
+    const UPI_HULK_RAZORPAY_INTENT_TERMINAL  = '1UPIInHulkTrml';
+    const UPI_HULK_RAZORPAY_TPV_TERMINAL     = '1UPITpvHulkTml';
     const UPI_ICICI_INTENT_TERMINAL          = '1UpiIntICICTml';
     const AEPS_ICICI_RAZORPAY_TERMINAL       = '1000AepsShared';
     const AIRTELMONEY_RAZORPAY_TERMINAL      = '100ArtlMnyTmnl';
