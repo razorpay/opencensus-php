@@ -4,10 +4,6 @@
 FROM razorpay/pithos:rzp-php7.1-nginx
 # -> razorpay/dashboard:{GIT_COMMIT_HASH}
 
-# This is the final production image
-ARG GIT_COMMIT_HASH
-ARG GIT_TOKEN
-
 COPY composer.json composer.lock /app/
 
 # Copy the composer auth file (with GIT_TOKEN)
@@ -18,6 +14,11 @@ WORKDIR /app
 # A single character change in this command will trigger a new
 # composer install
 RUN composer install --no-dev --no-interaction --no-autoloader --no-scripts && rm -rf /root/.composer
+
+# This is the final production image
+# Define these late so as to improve docker caching
+ARG GIT_COMMIT_HASH
+ARG GIT_TOKEN
 
 RUN mkdir -p public && \
     echo ${GIT_COMMIT_HASH} > public/commit.txt
