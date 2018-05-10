@@ -2,6 +2,7 @@ import Input from 'component/Input';
 import { states } from 'rzp/utils/constants';
 
 import { getDetailsForIFSC } from 'common/util';
+import { isValidGSTIN } from 'rzp/utils/rzp-utils';
 
 const NGO_BUSINESS_TYPE = 7;
 const differentAddress = activation => activation.state.same_address === '0';
@@ -12,16 +13,6 @@ const stateOptions = Object.keys(states).map(c => {
     label: states[c],
   };
 });
-
-function updateIFSC(ifscCode) {
-  if (ifscCode.length === 11) {
-    return getDetailsForIFSC(ifscCode).then(data => {
-      return data;
-    });
-  } else {
-    return null;
-  }
-}
 
 const contactFields = [
   {
@@ -258,6 +249,11 @@ const businessFields2 = [
       _when: activation => activation.state.has_gstin === '0',
       placeholder: 'Enter GSTIN',
       size: 'small',
+      validator: value => {
+        if (!isValidGSTIN(value)) {
+          return 'Please provite valid GSTIN';
+        }
+      },
     },
   ],
 ];
@@ -270,8 +266,7 @@ const bankAccountFields = [
       if (!e) {
         return null;
       }
-
-      return updateIFSC(e.target.value, bankAccountFields[0]);
+      return getDetailsForIFSC(e.target.value);
     },
   },
   {

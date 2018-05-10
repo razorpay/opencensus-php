@@ -4,16 +4,6 @@ import { getDetailsForIFSC } from 'common/util';
 // For marketplace linked account which required kyc
 const needsKYC = activation => !!activation.props.data.need_kyc;
 
-function updateIFSC(ifscCode) {
-  if (ifscCode.length === 11) {
-    return getDetailsForIFSC(ifscCode).then(data => {
-      return data;
-    });
-  } else {
-    return null;
-  }
-}
-
 const businessFields = [
   {
     label: 'Business Name',
@@ -64,7 +54,7 @@ const bankAccountFields = [
         return null;
       }
 
-      return updateIFSC(e.target.value, bankAccountFields[0]);
+      return getDetailsForIFSC(e.target.value);
     },
   },
   {

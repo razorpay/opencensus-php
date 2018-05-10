@@ -340,9 +340,7 @@ export default class ActivationWizard extends React.Component {
 
   render() {
     let isLinkedAccountForm = !!this.props.accountId;
-    let isSubmitDisabled = !(
-      this.props.data.activated && this.props.data.locked
-    ); // Linked accounts form can still be seen after activation.
+    let isSubmitDisabled = this.props.data.activated || this.props.data.locked; // Linked accounts form can still be seen after activation.
 
     let activeTab = this.state.activeTab;
     let isLastTab = activeTab == FORM_TABS.length - 1;
