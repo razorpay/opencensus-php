@@ -570,8 +570,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             BaseReconciliate::GATEWAY_SETTLED_AT   => $gatewaySettledAt,
             BaseReconciliate::REFERENCE_NUMBER     => $referenceNumber,
             BaseReconciliate::GATEWAY_PAYMENT_DATE => $gatewayPaymentDate,
-            BaseReconciliate::AUTH_CODE            => $authCode,
-            BaseReconciliate::ARN                  => $arn,
+            BaseReconciliate::AUTH_CODE            => trim($authCode),
+            BaseReconciliate::ARN                  => trim($arn),
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.
