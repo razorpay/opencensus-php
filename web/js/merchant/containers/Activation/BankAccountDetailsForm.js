@@ -103,7 +103,7 @@ export default class BankDetailsForm extends Component {
 
           <div class="form-group">
             <div class="col-md-offset-3 col-md-9">
-              <div class="btn-toolbar">
+              <div class="btn-toolbar m-t m-b">
                 <AsyncButton
                   type="button"
                   class="btn btn-default pull-left"

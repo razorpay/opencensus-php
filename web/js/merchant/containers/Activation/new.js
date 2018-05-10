@@ -6,6 +6,7 @@ import Spinner from 'rzp/ui/Spinner';
 import { Modal, ModalContent } from 'component/Modal';
 import { LinkCard } from 'component/Cards';
 import ActivationWizard from 'component/merchant/Activation';
+import OldActivationWizard from './index';
 import Button from 'component/Button';
 
 import { updateSession } from 'merchant/modules/session';
@@ -21,7 +22,6 @@ import { withRouter } from 'react-router-dom';
 * @props {onClose, Function, optional}. Without this modal would not be opened. Also, this would be used to close the modal
 * @props {accountId, String, optional}. Needed if the ActivationWizard is opened for Linked Account
 * */
-@withRouter
 @connect(
   state => ({
     session: state.session,
@@ -32,7 +32,7 @@ import { withRouter } from 'react-router-dom';
     updateSession,
   }
 )
-export default class ActivationContainer extends React.Component {
+export class ActivationContainer extends React.Component {
   state = {
     data: null,
     categories: null,
@@ -308,7 +308,7 @@ const WelcomeScreen = ({ onClose, openWizard }) => {
   );
 };
 
-ActivationContainer.MODAL_MASK_CLASS = 'Activation';
+// ActivationContainer.MODAL_MASK_CLASS = 'Activation';
 
 function isFormTouched(data) {
   if (!data) {
@@ -347,3 +347,41 @@ const excludedFieldsInForm = [
   'activation_progress',
   'allowed_next_activation_statuses',
 ];
+
+@connect(
+  state => ({
+    user: state.session.user,
+  }),
+  {}
+)
+export default class ActivationDecider extends React.Component {
+  // Component to show old activation wizard if old user and progress is > 25% ~ effectively 1st step
+  render() {
+    let currentTime = 1526031000; // TODO: It IS TO BE THE DATE OF DEPLOYMENT.. Currently, 11 May, 3:00pm
+    let isOldUser_MidProgress =
+      this.props.user.created_at < currentTime &&
+      this.props.user.activation_progress > 25;
+
+    let Component = <ActivationContainer {...this.props} />;
+
+    if (isOldUser_MidProgress) {
+      let modalClass = 'Activation--wizard Activation--wizard--old';
+      let content = <OldActivationWizard {...this.props} />;
+
+      Component = this.props.onClose ? (
+        <Modal
+          class={'animate-down ' + modalClass}
+          onClose={this.props.onClose}
+        >
+          <ModalContent>{content}</ModalContent>
+        </Modal>
+      ) : (
+        <div class="ActivationContainer">{content}</div>
+      );
+    }
+
+    return Component;
+  }
+}
+
+ActivationDecider.MODAL_MASK_CLASS = 'Activation';
