@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Field, {
   SelectField,
@@ -215,25 +215,23 @@ class GatewayRuleForm extends Component {
           </SelectField>
         )}
 
-        {model.type === 'sorter' && (
-          <SelectField
-            name="gateway"
-            label="Gateway"
-            defaultValue={model.gateway}
-            disabled={!!model.id}
-            required={this.state.type === 'sorter'}
-          >
-            <option value="">All</option>
-            {model.method &&
-              Object.keys(gateways[model.method]).map((m, index) => {
-                return (
-                  <option key={index} value={m}>
-                    {gateways[model.method][m]}
-                  </option>
-                );
-              })}
-          </SelectField>
-        )}
+        <SelectField
+          name="gateway"
+          label="Gateway"
+          defaultValue={model.gateway}
+          disabled={!!model.id}
+          required={this.state.type === 'sorter'}
+        >
+          <option value="">All</option>
+          {model.method &&
+            Object.keys(gateways[model.method]).map((m, index) => {
+              return (
+                <option key={index} value={m}>
+                  {gateways[model.method][m]}
+                </option>
+              );
+            })}
+        </SelectField>
 
         <Field
           type="number"
@@ -275,37 +273,33 @@ class GatewayRuleForm extends Component {
           </SelectField>
         )}
 
-        {model.type === 'filter' && (
-          <Fragment>
-            <SelectField
-              defaultValue={model.category2}
-              name="category2"
-              label="Category2"
-              disabled={!!model.id}
-            >
-              <option value="" />
-              {Object.keys(categories).map((m, index) => (
-                <option key={index} value={m}>
-                  {categories[m]}
-                </option>
-              ))}
-            </SelectField>
+        <SelectField
+          defaultValue={model.category2}
+          name="category2"
+          label="Category2"
+          disabled={!!model.id}
+        >
+          <option value="" />
+          {Object.keys(categories).map((m, index) => (
+            <option key={index} value={m}>
+              {categories[m]}
+            </option>
+          ))}
+        </SelectField>
 
-            <SelectField
-              defaultValue={model.gateway_acquirer}
-              name="gateway_acquirer"
-              label="Gateway Acquirer"
-              disabled={!!model.id}
-            >
-              <option value="" />
-              {Object.keys(gatewayAcquirers).map((m, index) => (
-                <option key={index} value={m}>
-                  {gatewayAcquirers[m]}
-                </option>
-              ))}
-            </SelectField>
-          </Fragment>
-        )}
+        <SelectField
+          defaultValue={model.gateway_acquirer}
+          name="gateway_acquirer"
+          label="Gateway Acquirer"
+          disabled={!!model.id}
+        >
+          <option value="" />
+          {Object.keys(gatewayAcquirers).map((m, index) => (
+            <option key={index} value={m}>
+              {gatewayAcquirers[m]}
+            </option>
+          ))}
+        </SelectField>
 
         {['card', 'emi'].indexOf(model.method) > -1 && (
           <Field
