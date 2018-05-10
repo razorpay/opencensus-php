@@ -32,7 +32,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                 [
                     'message'   => 'Unsettled row found. Skipping',
                     'row'       => $row,
-                    'gateway'   => get_called_class()
+                    'gateway'   => $this->gateway
                 ]);
             
             $this->setFailUnprocessedRow(false);
@@ -108,7 +108,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'info_code'         => 'CARD_TRIVIA_ABSENT',
                     'recon_card_trivia' => $cardTrivia,
                     'row'               => $row,
-                    'gateway'           => get_class()
+                    'gateway'           => $this->gateway
                 ]);
 
             $cardTrivia = null;
@@ -135,7 +135,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'message'         => 'Unable to figure out the card type.',
                     'recon_card_type' => $cardType,
                     'row'             => $row,
-                    'gateway'         => get_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             // It's as good as no card type present in the row.
@@ -158,7 +158,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'info_code'         => 'CARD_LOCALE_ABSENT',
                     'recon_card_locale' => $cardCountry,
                     'row'               => $row,
-                    'gateway'           => get_class()
+                    'gateway'           => $this->gateway
                 ]);
         }
         else if (in_array($cardCountry, ['ind', 'in'], true) === true)

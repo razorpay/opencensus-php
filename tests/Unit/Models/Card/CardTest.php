@@ -93,4 +93,19 @@ class ValidationTest extends TestCase
         }
 
     }
+
+    public function testMaskCardNumber()
+    {
+        $this->card->build([
+            Card\Entity::NUMBER =>  '4111111111111111',
+            Card\Entity::EXPIRY_MONTH   =>  10,
+            Card\Entity::EXPIRY_YEAR    =>  29,
+            Card\Entity::NAME           =>  'John Doe',
+            Card\Entity::CVV            =>  Card\Entity::DUMMY_CVV,
+        ]);
+        $result = $this->card->getMaskedCardNumber();
+
+        $this->assertEquals('411111XXXXXX1111', $result);
+
+    }
 }

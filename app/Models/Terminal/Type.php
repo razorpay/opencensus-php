@@ -25,6 +25,9 @@ class Type
     // Terminal to be used for ATM PIN transactions
     const PIN               = 'pin';
 
+    // Terminals For Bharat Qr payments
+    const BHARAT_QR         = 'bharat_qr';
+
     protected static $types = [
         self::NON_RECURRING,
         self::RECURRING_3DS,
@@ -33,6 +36,7 @@ class Type
         self::NO_2FA,
         self::PAY,
         self::PIN,
+        self::BHARAT_QR,
     ];
 
     protected static $bitPosition = [
@@ -43,6 +47,7 @@ class Type
         self::NO_2FA            => 5,
         self::PAY               => 6,
         self::PIN               => 7,
+        self::BHARAT_QR         => 8,
     ];
 
     /**

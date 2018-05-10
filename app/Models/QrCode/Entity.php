@@ -69,6 +69,11 @@ class Entity extends Base\PublicEntity
 
     // --------------------- GETTERS ---------------------
 
+    public function getMorphClass()
+    {
+        return 'qr_code';
+    }
+
     /**
      * Gets the most recent qrcode file
      *

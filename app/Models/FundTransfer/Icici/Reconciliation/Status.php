@@ -43,4 +43,18 @@ class Status extends BaseStatus
             self::AWAITING_LIQUIDATION
         ];
     }
+
+    public static function getCriticalErrorRemarks(): array
+    {
+        return [
+            'Rejected by RTGS Gateway',
+            'Debit failed due to Insufficient Funds',
+            'File rejected due to content validation fail',
+        ];
+    }
+
+    public static function getCriticalErrorStatus(): array
+    {
+        return [];
+    }
 }

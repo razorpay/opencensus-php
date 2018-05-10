@@ -97,6 +97,11 @@ class Entity extends Base\Entity
         $this->setAttribute(self::BANK, $bank);
     }
 
+    public function setDate($date)
+    {
+        $this->setAttribute(self::DATE, $date);
+    }
+
     public function setAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
@@ -224,10 +229,5 @@ class Entity extends Base\Entity
     public function getSIMessage()
     {
         return $this->getAttribute(self::SI_MSG);
-    }
-
-    public function setDate(string $date)
-    {
-        $this->setAttribute(self::DATE, $date);
     }
 }

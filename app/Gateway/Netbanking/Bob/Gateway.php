@@ -67,11 +67,36 @@ class Gateway extends Base\Gateway
 
         $this->assertAmount($this->formatAmount($input['payment']['amount']), $content[ResponseFields::AMOUNT]);
 
-        $this->saveCallbackResponse($content, $input);
+        $gatewayPayment = $this->saveCallbackResponse($content, $input);
 
         $this->checkCallbackStatus($content);
 
+        $this->verifyCallback($input, $gatewayPayment);
+
         return $this->getCallbackResponseData($input);
+    }
+
+    protected function verifyCallback(array $input, $gatewayPayment)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->checkVerifyGatewaySuccess($verify);
+
+        //
+        // If verify returns false, we throw an error as
+        // authorize request / response has been tampered with
+        //
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
     }
 
     public function verify(array $input)
@@ -186,6 +211,8 @@ class Gateway extends Base\Gateway
             Action::AUTHORIZE);
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $content);
+
+        return $gatewayPayment;
     }
 
     // -------------------- Callback helper methods end -----------------

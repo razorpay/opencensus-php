@@ -6,9 +6,9 @@ use App;
 use Requests;
 
 use RZP\Models\Payment;
-use RZP\Models\Merchant\Account;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Analytics\Entity as Analytics;
 
 class ShieldClient implements ExternalService
@@ -241,6 +241,23 @@ class ShieldClient implements ExternalService
             'auth'    => $this->getAuthHeaders(),
         ];
 
+        $content = '';
+
+        switch ($method)
+        {
+            case Requests::GET:
+                $content = $data;
+                break;
+
+            case Requests::POST:
+            case Requests::PUT:
+                if (empty($data) === false)
+                {
+                    $content = json_encode($data, JSON_UNESCAPED_SLASHES);
+                }
+                break;
+        }
+
         $url = $this->baseUrl . $path;
 
         try
@@ -248,7 +265,7 @@ class ShieldClient implements ExternalService
             $response = Requests::request(
                 $url,
                 $headers,
-                $data,
+                $content,
                 $method,
                 $options
             );
@@ -276,7 +293,7 @@ class ShieldClient implements ExternalService
 
         if ($code !== 200)
         {
-            $this->trace->error(TraceCode::SHIELD_INTEGRATION_ERROR, $responseArray);
+            $this->trace->error(TraceCode::SHIELD_INTEGRATION_ERROR, ['response' => $responseArray]);
         }
 
         return $responseArray;

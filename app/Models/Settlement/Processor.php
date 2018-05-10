@@ -141,11 +141,11 @@ class Processor extends Base\Core
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::SETTLEMENT_INITIATE_FAILED,
+                TraceCode::SETTLEMENT_CREATE_FAILED,
                 ['channel' => $channel]
             );
 
-            $this->settlementFailure($channel, $e, TraceCode::SETTLEMENT_INITIATE_FAILED);
+            $this->settlementFailure($channel, $e, TraceCode::SETTLEMENT_CREATE_FAILED);
         }
 
         return $response;
@@ -284,10 +284,10 @@ class Processor extends Base\Core
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::DAILY_SETTLEMENT_INITIATE_FAILED
+                TraceCode::DAILY_SETTLEMENT_CREATE_FAILED
             );
 
-            $this->settlementFailure($channel, $e, TraceCode::DAILY_SETTLEMENT_INITIATE_FAILED);
+            $this->settlementFailure($channel, $e, TraceCode::DAILY_SETTLEMENT_CREATE_FAILED);
         }
 
         return $response;
@@ -405,7 +405,9 @@ class Processor extends Base\Core
     {
         $this->setlTime = Carbon::now()->getTimestamp();
 
-        if (($this->mode === Mode::TEST) and
+        $isTestMode = $this->isTestMode();
+
+        if (($isTestMode === true) and
             (empty($input['testSettleTimeStamp']) === false))
         {
             $this->setlTime = $input['testSettleTimeStamp'];
@@ -416,8 +418,9 @@ class Processor extends Base\Core
 
     protected function shouldProcessSettlements($input)
     {
-        if (($this->mode === Mode::TEST) and
-            ($this->env === 'testing'))
+        $isTestMode = $this->isTestMode();
+
+        if ($isTestMode === true)
         {
             return [true, null];
         }
@@ -461,7 +464,26 @@ class Processor extends Base\Core
         // No settlements after five PM but allow settlements file upload anytime
         // before that, we want to do it before 8 am as well as that allows us
         // some time for fixing things before settlement window opens.
-        if (($this->setlTime >= $sixPm) and ($this->env !== 'testing'))
+        if ($this->setlTime >= $sixPm)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Will decide where to impose time constain on settlement process.
+     * This is done based on mode and environment.
+     *  - no constrains on `test` mode
+     *  - no constraint on `qa` and `testing` environments
+     *
+     * @return bool
+     */
+    protected function isTestMode(): bool
+    {
+        if (($this->mode === Mode::TEST) or
+            (in_array($this->env, ['testing','qa'], true) === true))
         {
             return true;
         }

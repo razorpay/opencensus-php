@@ -98,6 +98,7 @@ function disableEmptyInputs(form) {
                 <option value="SBIN">SBI Bank</option>
                 <option value="ICIC">ICICI Bank</option>
                 <option value="AIRP">Airtel Payments Bank</option>
+                <option value="ORBC">Obc Bank</option>
                 <option value="FDRL">Federal Bank</option>
                 <option value="RATN">RBL Bank</option>
                 <option value="CITI">CITI Bank</option>
@@ -205,6 +206,16 @@ function disableEmptyInputs(form) {
         <td><input type="text" name="bank_account[name]" size="25" value="Jesly Varghese"></td>
     </tr>
     <tr>
+        <td colspan="40">Select Auth Type </td>
+        <td>
+            <select name="auth_type">
+                <option value="">Please Select</option>
+                <option value="pin">Card - PIN</option>
+                <option value="aadhaar">eMandate - Aadhaar</option>
+                <option value="netbanking">eMandate - Netbanking</option>
+            </select>
+        </td>
+    </tr>
     <tr>
         <td colspan='40'>Token:</td>
         <td><input type="text" name="token" size="25" value=""></td>

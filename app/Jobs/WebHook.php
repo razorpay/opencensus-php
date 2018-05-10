@@ -9,6 +9,11 @@ class WebHook extends Job
     protected $data;
 
     /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'webhook';
+
+    /**
      * Create a new job instance.
      */
     public function __construct($data)

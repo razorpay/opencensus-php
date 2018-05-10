@@ -148,15 +148,4 @@ class AmountCreditsTest extends TestCase
         $this->ba->proxyAuth();
         $this->startTest();
     }
-
-    public function testDeleteCreditsLog()
-    {
-        $creditsLog = $this->addAmountCredits(['value' => 150, 'campaign' => 'silent-ads']);
-
-        $creditsLog = $this->fixtures->create('credits');
-
-        $this->testData[__FUNCTION__]['request']['url'] .= $creditsLog->getId();
-
-        $this->startTest();
-    }
 }

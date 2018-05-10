@@ -3,7 +3,6 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Models\Base;
-use RZP\Models\Pricing;
 use RZP\Models\Admin\Action;
 
 class Core extends Base\Core

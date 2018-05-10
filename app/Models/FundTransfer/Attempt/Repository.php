@@ -153,4 +153,21 @@ class Repository extends Base\Repository
                     ->skip($offset)
                     ->get();
     }
+
+    public function getFailedAttemptsInitiatedAtBetweenTime(
+        string $channel,
+        int $startTime,
+        int $endTime,
+        int $limit = 2000,
+        int $offset = 0)
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::FAILED)
+                    ->where(Entity::CHANNEL, $channel)
+                    ->whereBetween(Entity::INITIATE_AT, [$startTime, $endTime])
+                    ->with(['merchant'])
+                    ->take($limit)
+                    ->skip($offset)
+                    ->get();
+    }
 }

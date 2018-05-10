@@ -83,7 +83,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
-                    'gateway'         => get_called_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             return false;
