@@ -6,7 +6,7 @@ import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import AccountsList from 'merchant/components/Marketplace/Accounts/AccountsList';
 import AccountCreation from 'merchant/containers/Marketplace/Accounts/New';
-import AccountDetails from 'merchant/containers/Marketplace/Accounts/Details';
+import AccountDetails from 'merchant/containers/Marketplace/Accounts/Details_old';
 import AccountsListFilter from 'merchant/components/Marketplace/Accounts/AccountsListFilter';
 import ListContainer from 'merchant/containers/ListContainer';
 import * as AccountActions from 'merchant/modules/marketplace/accounts';
@@ -14,30 +14,13 @@ import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import { luminateRow } from 'merchant/modules/app';
 
-import AccountsListContainerOld from './List_old';
-import { isOldUser_MidProgress } from 'merchant/containers/Activation/new';
-
-@connect(state => ({ session: state.session }), {})
-export default class AccountsListContainerDecider extends Component {
-  render() {
-    const { session, ...rest } = this.props;
-    let Component = <AccountsListContainer {...rest} />;
-
-    if (isOldUser_MidProgress(session.user)) {
-      Component = <AccountsListContainerOld {...rest} />;
-    }
-
-    return Component;
-  }
-}
-
 @connect(state => state.accounts, {
   ...AccountActions,
   ...ModalActions,
   showNotification,
   luminateRow,
 })
-export class AccountsListContainer extends ListContainer {
+export default class AccountsListContainer extends ListContainer {
   fetchEntityList({ id, ...params }) {
     if (id) {
       return Promise.resolve(
@@ -72,13 +55,22 @@ export class AccountsListContainer extends ListContainer {
   };
 
   showAccountDetailsModal = account => {
-    this.props.closeModal();
-    this.setState({ showAccountDetailsFor: account.id });
+    this.props.openModal({
+      size: 'large',
+      component: (
+        <AccountDetails
+          accountId={account.id}
+          fetchAccounts={this.fetchAccounts}
+          count={this.state.count}
+          skip={this.state.skip}
+          onCloseClick={() => this.highlightRowAndClose(account)}
+        />
+      ),
+    });
   };
 
-  highlightRowAndClose = accountId => {
-    this.props.luminateRow(accountId);
-    this.setState({ showAccountDetailsFor: null });
+  highlightRowAndClose = account => {
+    this.props.luminateRow(account.id);
     this.props.closeModal();
   };
 
@@ -151,20 +143,6 @@ export class AccountsListContainer extends ListContainer {
           length={accounts.length}
           onClick={this.paginate}
         />
-        {this.state.showAccountDetailsFor && (
-          <AccountDetails
-            accountId={this.state.showAccountDetailsFor}
-            onClose={this.highlightRowAndClose}
-            onSubmitSuccessCB={() => {
-              this.props.showNotification({
-                type: 'success',
-                message: 'The account has been activated',
-              });
-
-              this.fetchAccounts(this.state.skip, this.state.count);
-            }}
-          />
-        )}
       </div>
     );
   }

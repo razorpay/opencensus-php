@@ -355,29 +355,33 @@ const excludedFieldsInForm = [
   {}
 )
 export default class ActivationDecider extends React.Component {
-  // Component to show old activation wizard if old user and progress is > 25% ~ effectively 1st step
+  // Component to show old activation wizard if old user and progress is > 25% ~ effectively only 1st step done
   render() {
-    let currentTime = 1526031000; // TODO: It IS TO BE THE DATE OF DEPLOYMENT.. Currently, 11 May, 3:00pm
-    let isOldUser_MidProgress =
-      this.props.user.created_at < currentTime &&
-      this.props.user.activation_progress > 25;
-
     let Component = <ActivationContainer {...this.props} />;
 
-    if (isOldUser_MidProgress) {
+    if (isOldUser_MidProgress(this.props.user)) {
       let modalClass = 'Activation--wizard Activation--wizard--old';
-      let content = <OldActivationWizard {...this.props} />;
-
-      Component = this.props.onClose ? (
-        <Modal
-          class={'animate-down ' + modalClass}
-          onClose={this.props.onClose}
-        >
-          <ModalContent>{content}</ModalContent>
-        </Modal>
-      ) : (
-        <div class="ActivationContainer">{content}</div>
+      let content = (
+        <React.Fragment>
+          <div class="modal-header">
+            <h3 class="modal-title">Activation Form</h3>
+          </div>
+          <OldActivationWizard {...this.props} />
+        </React.Fragment>
       );
+
+      // Accounts List also provides onClose fn. prop
+      Component =
+        this.props.onClose && this.props.closeUrl ? (
+          <Modal
+            class={'animate-down ' + modalClass}
+            onClose={this.props.onClose}
+          >
+            <ModalContent>{content}</ModalContent>
+          </Modal>
+        ) : (
+          <div class="ActivationContainer">{content}</div>
+        );
     }
 
     return Component;
@@ -385,3 +389,15 @@ export default class ActivationDecider extends React.Component {
 }
 
 ActivationDecider.MODAL_MASK_CLASS = 'Activation';
+
+export function isOldUser_MidProgress(user) {
+  if (!user) {
+    return false; // Fallback to new
+  }
+
+  let currentTime = 1526031000; // TODO: It IS TO BE THE DATE OF DEPLOYMENT.. Currently, 11 May, 3:00pm
+  let isOldUser_MidProgress =
+    user.created_at < currentTime && user.activation_progress > 25;
+
+  return isOldUser_MidProgress;
+}

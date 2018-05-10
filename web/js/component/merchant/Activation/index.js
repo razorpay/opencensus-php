@@ -444,6 +444,17 @@ export default class ActivationWizard extends React.Component {
             </main-title>
 
             <Form onChange={this.onChange} layout="tabular">
+              {!isLinkedAccountForm &&
+                this.state.data.business_type == 2 && (
+                  <div class="alert alert-warning">
+                    We may not be able to support Individual Business-Type as of
+                    now. Get in touch with{' '}
+                    <a href="mailto:support@razorpay.com">
+                      support@razorpay.com
+                    </a>{' '}
+                    for more details.
+                  </div>
+                )}
               {content}
             </Form>
           </main>

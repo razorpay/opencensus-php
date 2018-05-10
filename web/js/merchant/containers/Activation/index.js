@@ -20,7 +20,7 @@ export default class ActivationContainer extends Component {
             <Spinner />
           </div>
         ) : (
-          <ActivationWizard data={data} />
+          <ActivationWizard data={data} accountId={this.props.accountId} />
         )}
       </div>
     );
