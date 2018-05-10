@@ -238,7 +238,7 @@ class PaymentLinkTest extends TestCase
         $this->assertTrue(str_contains($inputFile['location'], 'batch/upload'));
     }
 
-    public function testCreateBatchOfPaymentLinkTypeWithHumanReadableExpireBy()
+    public function testCreateBatchWithHumanReadableExpireBy()
     {
         $rows = $this->testData[__FUNCTION__ . 'FileRows'];
 
@@ -263,12 +263,11 @@ class PaymentLinkTest extends TestCase
         // Against each invoice's receipt from test rows assert expected epoch values
         foreach ($invoices as $invoice)
         {
-            $receipt  = $invoice['receipt'];
-            $expireBy = $invoice['expire_by'];
-
+            $receipt          = $invoice['receipt'];
+            $expireBy         = $invoice['expire_by'];
             $expectedExpireBy = Carbon::now(Timezone::IST)->addDays((int) $receipt)->getTimestamp();
 
-            $this->assertEquals($expectedExpireBy, $expireBy, '', 2);
+            $this->assertEquals($expectedExpireBy, $expireBy, '', 5);
         }
     }
 

@@ -298,16 +298,13 @@ class Validator extends Base\Validator
 
         foreach ($entries as $idx => $entry)
         {
+            //
+            // This whole block needs to be in try..catch as following line may
+            // also throw bad request exception per row while parsing human readable
+            // date time values as epoch.
+            //
             try
             {
-                //
-                // 1. Need to create dummy entity and associate merchant for the
-                //    validation around max allowed payment to happen.
-                // 2. Also this whole block needs to be in try..catch as following
-                //    line may also throw bad request exception per row while
-                //    parsing human readable date time values as epoch.
-                //
-
                 $input = Helpers\PaymentLink::getEntityInput($entry, $params);
 
                 $rule = Invoice\Validator::CREATE_DRAFT;
@@ -317,6 +314,10 @@ class Validator extends Base\Validator
                     $rule = Invoice\Validator::CREATE_ISSUED;
                 }
 
+                //
+                // Need to create dummy entity and associate merchant for
+                // the validation around max allowed payment to happen.
+                //
                 $invoice = new Invoice\Entity;
 
                 $invoice->merchant()->associate($merchant);

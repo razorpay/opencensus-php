@@ -5,6 +5,7 @@ namespace RZP\Models\Batch\Helpers;
 use RZP\Models\Batch;
 use RZP\Models\Invoice;
 use RZP\Models\Customer;
+use RZP\Models\Base\Utility;
 
 class PaymentLink
 {

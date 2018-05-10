@@ -214,7 +214,7 @@ return [
         ],
     ],
 
-    'testCreateBatchOfPaymentLinkTypeWithHumanReadableExpireBy' => [
+    'testCreateBatchWithHumanReadableExpireBy' => [
         'request' => [
             'url'     => '/batches',
             'method'  => 'post',
@@ -227,7 +227,7 @@ return [
         ],
     ],
 
-    'testCreateBatchOfPaymentLinkTypeWithHumanReadableExpireByFileRows' => [
+    'testCreateBatchWithHumanReadableExpireByFileRows' => [
         [
             Header::INVOICE_NUMBER   => '1',
             Header::CUSTOMER_NAME    => null,
@@ -235,7 +235,7 @@ return [
             Header::CUSTOMER_CONTACT => '9999998881',
             Header::AMOUNT           => 500,
             Header::DESCRIPTION      => 'Test payment link',
-            Header::EXPIRE_BY        => Carbon::now(Timezone::IST)->addDays(1)->format('d/m/Y H:i:s'),
+            Header::EXPIRE_BY        => Carbon::now(Timezone::IST)->addDays(1)->format('d-m-Y H:i:s'),
             Header::PARTIAL_PAYMENT  => 'YES',
         ],
         [
@@ -245,7 +245,7 @@ return [
             Header::CUSTOMER_CONTACT => '9999998882',
             Header::AMOUNT           => 500,
             Header::DESCRIPTION      => 'Test payment link',
-            Header::EXPIRE_BY        => Carbon::now(Timezone::IST)->addDays(2)->format('d/m/Y H:i:s'),
+            Header::EXPIRE_BY        => Carbon::now(Timezone::IST)->addDays(2)->format('d-m-Y'),
             Header::PARTIAL_PAYMENT  => 'YES',
         ],
         [
