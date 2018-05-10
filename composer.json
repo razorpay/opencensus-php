@@ -109,13 +109,6 @@
             "php artisan package:discover"
         ]
     },
-    "extra": {
-        "laravel": {
-            "dont-discover": [
-                "barryvdh/laravel-debugbar"
-            ]
-        }
-    },
     "config": {
         "preferred-install": "dist"
     },

@@ -4,11 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-<<<<<<< HEAD
-    "content-hash": "a6e053c05cfe932b8ee890f9653944ed",
-=======
-    "content-hash": "a229b07af48421c85942bf40d07724b9",
->>>>>>> c0a4649e65b2b0e0c5f8c168eaeb6505c795dc21
+    "content-hash": "23957afb46b842a7397208da80de15b9",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -136,7 +132,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2017-07-26T22:05:53+00:00"
+            "time": "2017-08-11T21:16:28+00:00"
         },
         {
             "name": "aws/aws-sdk-php-laravel",
@@ -1032,7 +1028,7 @@
                 "singularize",
                 "string"
             ],
-            "time": "2017-07-22T12:18:28+00:00"
+            "time": "2015-11-06T14:35:42+00:00"
         },
         {
             "name": "doctrine/instantiator",
@@ -2038,7 +2034,7 @@
                 "crawlerdetect",
                 "php crawler detect"
             ],
-            "time": "2017-07-03T20:56:40+00:00"
+            "time": "2017-08-07T18:48:00+00:00"
         },
         {
             "name": "jenssegers/agent",
@@ -2753,7 +2749,7 @@
                 "sftp",
                 "storage"
             ],
-            "time": "2017-04-28T10:15:08+00:00"
+            "time": "2017-08-06T17:41:04+00:00"
         },
         {
             "name": "league/oauth2-server",
@@ -3676,7 +3672,7 @@
                 "parser",
                 "php"
             ],
-            "time": "2017-06-28T20:53:48+00:00"
+            "time": "2017-07-28T14:45:09+00:00"
         },
         {
             "name": "nojacko/email-data-disposable",
@@ -3992,7 +3988,7 @@
                 "message",
                 "psr7"
             ],
-            "time": "2017-03-02T06:56:00+00:00"
+            "time": "2017-08-03T10:12:53+00:00"
         },
         {
             "name": "php-http/guzzle6-adapter",
@@ -5130,7 +5126,7 @@
                 "interactive",
                 "shell"
             ],
-            "time": "2017-07-22T15:14:19+00:00"
+            "time": "2017-07-29T19:30:02+00:00"
         },
         {
             "name": "ramsey/uuid",
@@ -5212,7 +5208,7 @@
                 "identifier",
                 "uuid"
             ],
-            "time": "2017-03-26T20:37:53+00:00"
+            "time": "2017-08-04T13:39:04+00:00"
         },
         {
             "name": "razorpay/ec2-metadata",
@@ -5296,21 +5292,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-<<<<<<< HEAD
-                "reference": "a457b6f889633dc2ed54abd706b0a8dfb62f46ae"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/a457b6f889633dc2ed54abd706b0a8dfb62f46ae",
-                "reference": "a457b6f889633dc2ed54abd706b0a8dfb62f46ae",
-=======
                 "reference": "67a822b5ce0aa6bc24b6b7b7f308b62f33249ed9"
             },
             "dist": {
                 "type": "zip",
                 "url": "https://api.github.com/repos/razorpay/ifsc/zipball/67a822b5ce0aa6bc24b6b7b7f308b62f33249ed9",
                 "reference": "67a822b5ce0aa6bc24b6b7b7f308b62f33249ed9",
->>>>>>> c0a4649e65b2b0e0c5f8c168eaeb6505c795dc21
                 "shasum": ""
             },
             "require": {
@@ -5344,11 +5331,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-<<<<<<< HEAD
-            "time": "2018-03-20T07:14:22+00:00"
-=======
             "time": "2018-05-09T06:59:35+00:00"
->>>>>>> c0a4649e65b2b0e0c5f8c168eaeb6505c795dc21
         },
         {
             "name": "razorpay/oauth",
@@ -5457,7 +5440,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2017-07-17T20:11:53+00:00"
+            "time": "2017-08-03T11:25:15+00:00"
         },
         {
             "name": "razorpay/slack",
@@ -5774,7 +5757,7 @@
                 "source": "https://github.com/razorpay/upi-clients/tree/master",
                 "issues": "https://github.com/razorpay/upi-clients/issues"
             },
-            "time": "2017-06-09T09:05:10+00:00"
+            "time": "2017-08-10T18:30:30+00:00"
         },
         {
             "name": "react/promise",
@@ -7025,7 +7008,7 @@
                 "uri",
                 "url"
             ],
-            "time": "2017-06-24T09:29:48+00:00"
+            "time": "2017-07-21T17:43:13+00:00"
         },
         {
             "name": "symfony/translation",
@@ -7575,7 +7558,7 @@
             ],
             "description": "Sends PHP test coverage information to Codacy.",
             "homepage": "https://github.com/codacy/php-codacy-coverage",
-            "time": "2017-04-05T13:51:33+00:00"
+            "time": "2017-08-09T14:23:33+00:00"
         },
         {
             "name": "codedungeon/phpunit-result-printer",
