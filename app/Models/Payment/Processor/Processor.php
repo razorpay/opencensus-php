@@ -281,7 +281,7 @@ class Processor
         $emandateMethods = [];
 
         (new Methods\Core)->addRecurringEmandateToMethodsIfApplicable(
-                                $this->merchant, $this->methods, $emandateMethods, $input);
+                                $this->merchant, $this->methods, $emandateMethods);
 
         //
         // This can happen when the required features are not enabled

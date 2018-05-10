@@ -118,7 +118,7 @@ class Core extends Base\Core
         {
             $banks = $methods->getSupportedBanks();
 
-            $allSupportedBanks = Netbanking::removeDefaultDisableBanks($banks, $merchant->getId());
+            $allSupportedBanks = Netbanking::removeDefaultDisableBanks($banks);
 
             $data[Payment\Method::NETBANKING] = $this->getBankNames($allSupportedBanks);
         }
@@ -178,8 +178,7 @@ class Core extends Base\Core
     public function addRecurringEmandateToMethodsIfApplicable(
         Merchant\Entity $merchant,
         Methods\Entity $methods,
-        array & $recurringData,
-        array $paymentInput = null)
+        array & $recurringData)
     {
         //
         // We don't allow emandate for subscriptions currently.
@@ -191,12 +190,6 @@ class Core extends Base\Core
 
         if ($methods->isEmandateEnabled() === false)
         {
-            if ($paymentInput !== null and $paymentInput[Payment\Entity::METHOD] === Payment\Method::EMANDATE)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Emandate is disabled for this merchant.');
-            }
-
             return;
         }
 
