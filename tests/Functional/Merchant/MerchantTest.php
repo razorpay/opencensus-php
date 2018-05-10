@@ -1988,7 +1988,7 @@ class MerchantTest extends TestCase
 
         $request = [
             'url'       => '/merchants/beneficiary/file/kotak',
-            'method'    => 'get',
+            'method'    => 'post',
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -2067,7 +2067,7 @@ class MerchantTest extends TestCase
 
         $request = [
             'url'       => '/merchants/beneficiary/file/axis',
-            'method'    => 'get',
+            'method'    => 'post',
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -2096,7 +2096,43 @@ class MerchantTest extends TestCase
 
         $request = [
             'url'       => '/merchants/beneficiary/file/icici',
-            'method'    => 'get',
+            'method'    => 'post',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('signed_url', $content);
+        $this->assertEquals(Channel::ICICI, $content['channel']);
+
+        Mail::assertQueued(BeneficiaryFileMail::class);
+    }
+
+    public function testBeneficiaryRegisterForMerchant()
+    {
+        Mail::fake();
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->create();
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
+
+        $request = [
+            'url'       => '/merchants/beneficiary/file/icici',
+            'method'    => 'post',
+            'content'   => [
+                'merchant_ids' => [
+                    '10000000000000'
+                ]
+            ]
         ];
 
         $content = $this->makeRequestAndGetContent($request);

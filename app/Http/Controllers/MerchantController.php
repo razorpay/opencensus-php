@@ -359,7 +359,7 @@ class MerchantController extends Controller
 
     public function getMerchantBeneficiaryFile($channel)
     {
-        $data = $this->service()->getMerchantBeneficiaryFile($channel);
+        $data = $this->service()->getMerchantBeneficiaryFile($this->input, $channel);
 
         return ApiResponse::json($data);
     }
