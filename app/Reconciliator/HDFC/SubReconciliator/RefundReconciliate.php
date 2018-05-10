@@ -3,8 +3,6 @@
 namespace RZP\Reconciliator\HDFC;
 
 use RZP\Reconciliator\Base;
-use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicEntity;
 
 class RefundReconciliate extends Base\RefundReconciliate
@@ -18,6 +16,22 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     const COLUMN_TERMINAL_NUMBER    = ['terminal_number', 'TERMINAL NUMBER'];
 
+    /**
+     * If we are not able to find refund id to reconcile,
+     * this ratio defines the minimum proportion of columns to be filled in a valid row.
+     * In HDFC MIS, many gst params and other params are always set to 0,
+     * therefore if less than 10% of data is present, we don't mark row as failure.
+     */
+    const MIN_ROW_FILLED_DATA_RATIO = 0.10;
+
+    /**
+     * In case refund id is not set, function will return null,
+     * row will be marked as failure in such case.
+     *
+     * @param array $row
+     *
+     * @return null|string
+     */
     protected function getRefundId($row)
     {
         if ($this->isCybersource($row) === true)
@@ -27,6 +41,11 @@ class RefundReconciliate extends Base\RefundReconciliate
         else
         {
             $refundId = $this->getRefundIdForFss($row);
+        }
+
+        if (empty($refundId) === true)
+        {
+            $this->evaluateRowProcessedStatus($row);
         }
 
         return $refundId;
@@ -156,5 +175,25 @@ class RefundReconciliate extends Base\RefundReconciliate
         $isCybersource = (in_array($terminalId, Reconciliate::CYBERSOURCE_HDFC_TERMINAL_IDS, true) === true);
 
         return $isCybersource;
+    }
+
+    /**
+     * This function evaluate and marks the row processing as success or failure based on
+     * percentage of data available in a row.
+     *
+     * @param $row
+     */
+    protected function evaluateRowProcessedStatus(array $row)
+    {
+        $nonEmptyData = array_filter($row, function($value) {
+            return ((filled($value)) and ($value !== "' "));
+        });
+
+        $rowFilledRatio = count($nonEmptyData) / count($row);
+
+        if ($rowFilledRatio < self::MIN_ROW_FILLED_DATA_RATIO)
+        {
+            $this->setFailUnprocessedRow(false);
+        }
     }
 }
