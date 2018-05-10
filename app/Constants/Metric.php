@@ -19,9 +19,7 @@ class Metric
     const ASYNC_JOBS_ERRORS_TOTAL               = 'async_jobs_errors_total';
 
     // Summary type metric names
-    const HTTP_REQUEST_SIZE_BYTES               = 'http_request_size_bytes';
     const HTTP_REQUEST_DURATION_MICROSECONDS    = 'http_request_duration_microseconds';
-    const HTTP_RESPONSE_SIZE_BYTES              = 'http_response_size_bytes';
 
     // Labels
     const LABEL_RZP_MODE                        = 'rzp_mode';

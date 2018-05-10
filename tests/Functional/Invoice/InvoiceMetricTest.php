@@ -67,21 +67,11 @@ class InvoiceMetricTest extends TestCase
                     $expectedHttpMetricTags,
                 ]);
 
-        $mock->expects($this->exactly(3))
+        $mock->expects($this->once())
              ->method('histogram')
              ->withConsecutive(
                 [
                     'http_request_duration_microseconds',
-                    $this->greaterThanOrEqual(0),
-                    $expectedHttpMetricTags,
-                ],
-                [
-                    'http_request_size_bytes',
-                    $this->greaterThanOrEqual(0),
-                    $expectedHttpMetricTags,
-                ],
-                [
-                    'http_response_size_bytes',
                     $this->greaterThanOrEqual(0),
                     $expectedHttpMetricTags,
                 ]);
@@ -154,21 +144,11 @@ class InvoiceMetricTest extends TestCase
                     $expectedHttpMetricTags,
                 ]);
 
-        $mock->expects($this->exactly(3))
+        $mock->expects($this->once())
              ->method('histogram')
              ->withConsecutive(
                 [
                     'http_request_duration_microseconds',
-                    $this->greaterThanOrEqual(0),
-                    $expectedHttpMetricTags,
-                ],
-                [
-                    'http_request_size_bytes',
-                    $this->greaterThanOrEqual(0),
-                    $expectedHttpMetricTags,
-                ],
-                [
-                    'http_response_size_bytes',
                     $this->greaterThanOrEqual(0),
                     $expectedHttpMetricTags,
                 ]);

@@ -40,8 +40,6 @@ final class Throttle
         Metrics::count(Metric::HTTP_REQUESTS_TOTAL, 1, $dimensions);
 
         Metrics::histogram(Metric::HTTP_REQUEST_DURATION_MICROSECONDS, $end - $start, $dimensions);
-        Metrics::histogram(Metric::HTTP_REQUEST_SIZE_BYTES, mb_strlen($request->getContent(), '8bit'), $dimensions);
-        Metrics::histogram(Metric::HTTP_RESPONSE_SIZE_BYTES, mb_strlen($response->getContent(), '8bit'), $dimensions);
     }
 
     /**
