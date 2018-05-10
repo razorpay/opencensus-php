@@ -25,17 +25,9 @@ pipeline:
       - sha1sum /drone/src/github.com/razorpay/dashboard/composer-auth.json
     when:
         event: push
-  verify-composer-auth-file:
-    image: alpine:3.7
-    commands:
-      - sha1sum composer-auth.json
-      - stat composer-auth.json
-      - ls -la composer-auth.json
-    when:
-        event: push
   build-js:
     group: build
-    image: pronav/dash
+    image: node:9-alpine
     pull: false
     environment:
       CHROME_BIN: /usr/bin/chromium
@@ -49,7 +41,6 @@ pipeline:
       - npm install
       - cd ..
       - npm run build
-      - npm test
     when:
         event: push
   test-js:
@@ -92,6 +83,7 @@ pipeline:
       event: push
   # This step is used to do a limited prune
   # so that the cache is not filled with extra layers
+  # This is not yet functional
   docker-cleanup:
     image: docker:17.12.0-ce-dind
     environment:
