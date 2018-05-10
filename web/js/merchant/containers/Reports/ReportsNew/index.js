@@ -49,6 +49,10 @@ const requestFailedFunc = () => {
   downloadStartedMessage = {
     type: 'success',
     message: 'Your report will download shortly',
+  },
+  emailingStartedMessage = {
+    type: 'success',
+    message: 'Your report will be emailed to you shortly',
   };
 
 @connect(
@@ -236,14 +240,22 @@ export default class ReportsContainer extends Component {
       });
   }
 
-  generateReport(_, emails) {
+  generateReport(_, emails = null) {
     const { selectedConfig, selectedAccount } = this.state,
       { date, type, invoiceDate } = this.props,
       day = date.date(),
       month = date.month() + 1, // Jan is 0 in moment library
       year = date.year(),
       titleForTracking = `${titleCase(type)} ${selectedConfig.label} Report`,
-      descForTracking = type === 'daily' ? `date` : `month`;
+      descForTracking = type === 'daily' ? `date` : `month`,
+      notificationMsg = emails
+        ? emailingStartedMessage
+        : downloadStartedMessage;
+
+    //close email reports modal
+    if (emails) {
+      this.props.closeModal();
+    }
 
     if (selectedConfig.value === 'monthlyInvoice') {
       const month = invoiceDate.month() + 1,
@@ -271,7 +283,7 @@ export default class ReportsContainer extends Component {
             .endOf(timeFactor)
             .unix();
 
-        this.props.showNotification(downloadStartedMessage);
+        this.props.showNotification(notificationMsg);
 
         const { user } = this.props,
           selectedAccountId = (selectedConfig.type in marketplaceConfigTypes
@@ -295,7 +307,6 @@ export default class ReportsContainer extends Component {
               message: data.error,
             });
           }
-
           window.location = data.url;
         });
       }
@@ -339,7 +350,7 @@ export default class ReportsContainer extends Component {
 
       return generateReport(ajaxParams)
         .payload.then(data => {
-          this.props.showNotification(downloadStartedMessage);
+          this.props.showNotification(notificationMsg);
 
           if (entity === 'broking') {
             var blob = new Blob([data], {
