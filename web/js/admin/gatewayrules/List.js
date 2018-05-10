@@ -122,7 +122,7 @@ export default class GatewayRuleList extends Component {
               ))}
             </SelectField>
 
-            <Field name="network_categoy" label="Network Categoy" />
+            <Field name="network_Category" label="Network Category" />
 
             <SelectField name="shared_terminal" label="Shared Terminal">
               <option value="">All</option>
