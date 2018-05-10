@@ -57,9 +57,10 @@ class EventServiceProvider extends ServiceProvider
             Listeners\QueueEventListener::class,
         ],
 
-        QueueEvents\Looping::class => [
-            Listeners\QueueEventListener::class,
-        ],
+        // TODO: Fix it! Looping event won't have $job instance
+        // QueueEvents\Looping::class => [
+        //     Listeners\QueueEventListener::class,
+        // ],
 
         QueueEvents\JobExceptionOccurred::class => [
             Listeners\QueueEventListener::class,
