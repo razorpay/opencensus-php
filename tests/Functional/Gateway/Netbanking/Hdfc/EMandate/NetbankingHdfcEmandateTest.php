@@ -11,6 +11,7 @@ use RZP\Models\Gateway\File;
 use RZP\Models\Customer\Token;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Gateway\EMandate\Base as Email;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\EMandate\Constants as EmailConstants;
@@ -18,6 +19,7 @@ use RZP\Mail\Gateway\EMandate\Constants as EmailConstants;
 class NetbankingHdfcEmandateTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected $payment;
 
@@ -36,6 +38,8 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->fixtures->merchant->enableEmandate();
 
         $this->payment = $this->getNetbankingHdfcEmandateArray();
+
+        $this->gateway = 'netbanking_hdfc';
 
         $this->mockTokenex();
     }
@@ -84,6 +88,35 @@ class NetbankingHdfcEmandateTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals(1, $payment['verified']);
+    }
+
+    public function testEmandateInitialPaymentFailure()
+    {
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['BankRefNo'] = '';
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+
+        $payment = $this->getDbLastEntity('payment')->toArrayPublic();
+
+        $this->assertEquals(Payment\Status::FAILED, $payment['status']);
     }
 
     public function testSecondRecurringPaymentVerify()
