@@ -107,3 +107,25 @@ export function subString(str, length) {
     return str;
   }
 }
+
+/*
+* Helper fn. to fetch IFSC bank details for IFSC code entered in field
+* */
+export function getDetailsForIFSC(ifscCode) {
+  return axios('https://ifsc.razorpay.com/' + ifscCode).then(info => {
+    info = info.data;
+
+    if (info) {
+      info = {
+        Bank: info.BANK,
+        Branch: info.BRANCH,
+        City: info.CITY,
+        State: info.STATE,
+      };
+
+      return info;
+    }
+
+    return null; // Invalid IFSC code
+  });
+}

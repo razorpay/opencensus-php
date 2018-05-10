@@ -67,6 +67,15 @@
   opacity: 0
   pointer-events: none
   transition: 0.2s
+  overflow-wrap: break-word
+
+  ul
+    padding: 0
+    list-style: none
+
+    li:not(:last-child)
+      margin-bottom: 4px
+
   &:before
     border: 8px solid transparent
     border-right-color: #DFEBFF
@@ -75,6 +84,19 @@
     right: 100%
     top: 50%
     margin-top: -8px
+
+  @media (max-width: 1024px)
+    left: 0
+    top: 72px
+    z-index: 10
+    margin-left: 0
+
+    &:before
+      border-right-color: transparent
+      border-bottom-color: #dfebff
+      right: auto
+      left: 0
+      top: -7px
 
 .Input-el
   line-height: 16px

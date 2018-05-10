@@ -67,8 +67,24 @@ function separateDomProps(props) {
 
 class Info extends React.PureComponent {
   render() {
-    if (this.props.text) {
-      return <div class="Input-info">{this.props.text}</div>;
+    const { text } = this.props;
+
+    if (text) {
+      return (
+        <div class="Input-info">
+          {typeof text === 'object' ? (
+            <ul>
+              {Object.keys(text).map(key => (
+                <li key={key}>
+                  <b>{key}:</b> {text[key]}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            text
+          )}
+        </div>
+      );
     }
     return null;
   }
@@ -122,6 +138,33 @@ export default class Field extends React.PureComponent {
     if (this.props.onChange) {
       this.props.onChange(e);
     }
+
+    if (typeof this.props.info === 'function') {
+      let info = this.props.info(e);
+
+      if (info) {
+        // Handle api based information
+        if (info.then) {
+          this.setState({ infoString: '...' }); // Dummy loader while resolving promise
+          info
+            .then(data => {
+              if (data) {
+                this.setState({ infoString: data });
+              } else {
+                this.setState({ infoString: null });
+              }
+            })
+            .catch(err => {
+              this.setState({ infoString: null });
+            });
+        } else {
+          // If props.info is simple function
+          this.setState({
+            infoString: info,
+          });
+        }
+      }
+    }
   };
 
   valid() {
@@ -166,6 +209,13 @@ export default class Field extends React.PureComponent {
       defaultValue = undefined; // File input doesn't take defaultValue
     }
 
+    let infoString = allProps.info;
+
+    // It is expected that info is function only when onChange is trigger is needed
+    if (typeof infoString === 'function') {
+      infoString = this.state.infoString;
+    }
+
     let InputComponent = (
       <InputTag
         {...allProps.props}
@@ -200,7 +250,7 @@ export default class Field extends React.PureComponent {
         <div class="Input-content">
           <div class="Input-elWrapper">
             {InputComponent}
-            <Info text={allProps.info} />
+            <Info text={infoString} />
           </div>
           <Error text={this.state.error} />
           <Description text={allProps.description} />

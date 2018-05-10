@@ -1,6 +1,8 @@
 import Input from 'component/Input';
 import { states } from 'rzp/utils/constants';
 
+import { getDetailsForIFSC } from 'common/util';
+
 const NGO_BUSINESS_TYPE = 7;
 const differentAddress = activation => activation.state.same_address === '0';
 
@@ -10,6 +12,16 @@ const stateOptions = Object.keys(states).map(c => {
     label: states[c],
   };
 });
+
+function updateIFSC(ifscCode) {
+  if (ifscCode.length === 11) {
+    return getDetailsForIFSC(ifscCode).then(data => {
+      return data;
+    });
+  } else {
+    return null;
+  }
+}
 
 const contactFields = [
   {
@@ -254,6 +266,13 @@ const bankAccountFields = [
   {
     name: 'bank_branch_ifsc',
     label: 'Branch IFSC Code',
+    info: function(e) {
+      if (!e) {
+        return null;
+      }
+
+      return updateIFSC(e.target.value, bankAccountFields[0]);
+    },
   },
   {
     name: 'bank_account_number',

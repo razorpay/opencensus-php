@@ -1,7 +1,18 @@
 import Input from 'component/Input';
+import { getDetailsForIFSC } from 'common/util';
 
 // For marketplace linked account which required kyc
 const needsKYC = activation => !!activation.props.data.need_kyc;
+
+function updateIFSC(ifscCode) {
+  if (ifscCode.length === 11) {
+    return getDetailsForIFSC(ifscCode).then(data => {
+      return data;
+    });
+  } else {
+    return null;
+  }
+}
 
 const businessFields = [
   {
@@ -48,6 +59,13 @@ const bankAccountFields = [
   {
     name: 'bank_branch_ifsc',
     label: 'Branch IFSC Code',
+    info: function(e) {
+      if (!e) {
+        return null;
+      }
+
+      return updateIFSC(e.target.value, bankAccountFields[0]);
+    },
   },
   {
     name: 'bank_account_number',

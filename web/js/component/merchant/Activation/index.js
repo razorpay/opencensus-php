@@ -554,6 +554,7 @@ function ActivationField(field, activation) {
     return null;
   }
 
+  // Need to update options using rest.options to update in view, otherwise calling JUST _optionsFn changes options but doesnt change view.
   if (_optionsFn) {
     if (field.name === 'business_subcategory') {
       rest.options = field._optionsFn(this, this.props.categories);
