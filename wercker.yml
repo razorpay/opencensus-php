@@ -1,5 +1,8 @@
 box:
-  id: razorpay/pithos:rzp-php7.1
+  # Switch back to rzp-php7.1
+  # once https://github.com/razorpay/pithos/pull/10/files
+  # is merged
+  id: razorpay/pithos:php71-gpg
   username: $DOCKERHUB_USER
   password: $DOCKERHUB_PASSWORD
 dev:
