@@ -9,11 +9,11 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-    'testEMandateInitialPayment' => [
+    'testEmandateInitialPayment' => [
         'gateway'           => 'netbanking_hdfc',
         'status'            => 'authorized',
-        'amount_authorized' => 4000,
-        'amount'            => 4000,
+        'amount_authorized' => 0,
+        'amount'            => 0,
         'verified'          => null,
         'late_authorized'   => false,
         'two_factor_auth'   => 'unavailable',
@@ -52,7 +52,7 @@ return [
         ],
     ],
 
-    'testEMandateRegistration' => [
+    'testEmandateRegistration' => [
         'request' => [
             'content' => [
                 'type'    => 'emandate_register',
@@ -85,7 +85,7 @@ return [
         ]
     ],
 
-    'testEMandateDebit' => [
+    'testEmandateDebit' => [
         'request' => [
             'content' => [
                 'type'    => 'emandate_debit',
@@ -131,7 +131,7 @@ return [
         'si_message'        => null,
     ],
 
-    'testEMandateDebitCreateFileFailure' => [
+    'testEmandateDebitCreateFileFailure' => [
         'request' => [
             'content' => [
                 'type'    => 'emandate_debit',
@@ -164,7 +164,7 @@ return [
         ]
     ],
 
-    'testEMandateDebitOnRetry' => [
+    'testEmandateDebitOnRetry' => [
         'request' => [
             'content' => [
                 'type'    => 'emandate_debit',

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Gateway\Netbanking\Hdfc\EMandate;
+namespace RZP\Tests\Functional\Gateway\Netbanking\Hdfc\Emandate;
 
 use Mail;
 use Carbon\Carbon;
@@ -15,7 +15,7 @@ use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\EMandate\Constants as EmailConstants;
 
-class NetbankingHdfcEMandateTest extends TestCase
+class NetbankingHdfcEmandateTest extends TestCase
 {
     use PaymentTrait;
 
@@ -23,9 +23,7 @@ class NetbankingHdfcEMandateTest extends TestCase
 
     public function setUp()
     {
-        $this->markTestSkipped('Fix 0rs flow.');
-
-        $this->testDataFilePath = __DIR__ . '/NetbankingHdfcEMandateTestData.php';
+        $this->testDataFilePath = __DIR__ . '/NetbankingHdfcEmandateTestData.php';
 
         parent::setUp();
 
@@ -46,7 +44,7 @@ class NetbankingHdfcEMandateTest extends TestCase
       * The following is a test case for the E Mandate Registration payment for HDFC.
       * The HDFC E Mandate Registration payment is just a normal authorization payment.
       */
-    public function testEMandateInitialPayment()
+    public function testEmandateInitialPayment()
     {
         $payment = $this->payment;
 
@@ -64,6 +62,8 @@ class NetbankingHdfcEMandateTest extends TestCase
         $token = $this->getLastEntity('token', true);
 
         $this->assertEquals($payment[Payment\Entity::TOKEN_ID], $token[Token\Entity::ID]);
+
+        $this->assertEquals(Token\RecurringStatus::INITIATED, $token[Token\Entity::RECURRING_STATUS]);
 
         $this->assertEquals($this->payment['bank_account']['account_number'], $token[Token\Entity::ACCOUNT_NUMBER]);
 
@@ -141,11 +141,11 @@ class NetbankingHdfcEMandateTest extends TestCase
         $this->assertEquals(Payment\Verify\Status::UNKNOWN, $secondPayment['verified']);
     }
 
-    public function testEMandateRegistration()
+    public function testEmandateRegistration()
     {
         Mail::fake();
 
-        $this->testEMandateInitialPayment();
+        $this->testEmandateInitialPayment();
 
         $this->ba->adminAuth();
 
@@ -181,7 +181,7 @@ class NetbankingHdfcEMandateTest extends TestCase
 
             $testData = [
                 'body'      => EmailConstants::BODY_MAP[$key],
-                'file_name' => "HDFC_EMandate_Register_test_$today.xlsx",
+                'file_name' => "HDFC_Emandate_Register_test_$today.xlsx",
             ];
 
             $this->assertNotNull($mail->viewData['file_name']);
@@ -195,7 +195,7 @@ class NetbankingHdfcEMandateTest extends TestCase
         });
     }
 
-    public function testEMandateDebit()
+    public function testEmandateDebit()
     {
         $this->doDebitPayment();
 
@@ -265,7 +265,7 @@ class NetbankingHdfcEMandateTest extends TestCase
      * The expectation is that it will skip the creation of netbanking entity
      * and continue with writing to file, and then sending it.
      */
-    public function testEMandateDebitOnRetry()
+    public function testEmandateDebitOnRetry()
     {
         $this->doDebitPayment();
 
@@ -278,7 +278,7 @@ class NetbankingHdfcEMandateTest extends TestCase
         // Email send will throw exception, but file, and gateway-entity will still be created
         Mail::shouldReceive('send')->andThrow(new \Exception('mail_send_exceptiopn'));
 
-        $testData = $this->testData['testEMandateDebitCreateFileFailure'];
+        $testData = $this->testData['testEmandateDebitCreateFileFailure'];
 
         $content = $this->startTest($testData);
 
