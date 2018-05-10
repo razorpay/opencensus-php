@@ -13,11 +13,8 @@ import Collection from 'model/collection';
 import Model from './model';
 
 import { adminFetch } from 'common/fetch';
-import { methods, gateways } from 'common/data';
-
-const defaultFilters = {
-  merchant_id: '100000Razorpay',
-};
+import { methods, gateways, categories } from 'common/data';
+import { isBlank } from 'common/util';
 
 let gateway_url = 'admin/gateway_rule';
 
@@ -25,6 +22,7 @@ let gateway_url = 'admin/gateway_rule';
 export default class GatewayRuleList extends Component {
   state = {
     selectedType: '',
+    selectedMethod: '',
   };
   // TODO: TEST check what mode to pass
   collection = new Collection({
@@ -35,13 +33,14 @@ export default class GatewayRuleList extends Component {
       mode: 'live',
     },
     model: Model,
-    filters: defaultFilters,
     fetchFn: adminFetch,
   });
 
-  handleTypeChange = e => {
+  handleFilterChange = e => {
+    const propname = e.target.dataset.propname;
+
     this.setState({
-      selectedType: e.target.value,
+      [propname]: e.target.value,
     });
   };
 
@@ -55,6 +54,8 @@ export default class GatewayRuleList extends Component {
 
   render() {
     var filters = this.collection.filters;
+    const { selectedMethod, selectedType } = this.state;
+
     return (
       <div class="list-container">
         <div class="box">
@@ -68,16 +69,13 @@ export default class GatewayRuleList extends Component {
             </div>
           </header>
           <Form onSubmit={this.onSubmit} class="filters">
-            <Field
-              name="merchant_id"
-              label="Merchant ID"
-              defaultValue={defaultFilters.merchant_id}
-            />
+            <Field name="merchant_id" label="Merchant ID" />
             <SelectField
               name="type"
               label="Type"
-              value={this.state.selectedType}
-              onChange={this.handleTypeChange}
+              value={selectedType}
+              data-propname="selectedType"
+              onChange={this.handleFilterChange}
             >
               <option value="">All</option>
               <option value="sorter">Sorter</option>
@@ -91,7 +89,13 @@ export default class GatewayRuleList extends Component {
               </SelectField>
             )}
             <Field name="group" label="Group" />
-            <SelectField name="method" label="Method">
+            <SelectField
+              name="method"
+              label="Method"
+              value={selectedMethod}
+              data-propname="selectedMethod"
+              onChange={this.handleFilterChange}
+            >
               <option value="">All</option>
               {Object.keys(methods).map((method, index) => (
                 <option key={index} value={method}>
@@ -99,6 +103,33 @@ export default class GatewayRuleList extends Component {
                 </option>
               ))}
             </SelectField>
+            {!isBlank(selectedMethod) && (
+              <SelectField name="gateway" label="Gateway">
+                {Object.keys(gateways[selectedMethod]).map(gateway => (
+                  <option value={gateway} key={gateway}>
+                    {gateways[selectedMethod][gateway]}
+                  </option>
+                ))}
+              </SelectField>
+            )}
+
+            <SelectField name="category2" label="Category2">
+              <option value="">All</option>
+              {Object.keys(categories).map(category => (
+                <option value={category} key={category}>
+                  {categories[category]}
+                </option>
+              ))}
+            </SelectField>
+
+            <Field name="network_categoy" label="Network Categoy" />
+
+            <SelectField name="shared_terminal" label="Shared Terminal">
+              <option value="">All</option>
+              <option value="0">No</option>
+              <option value="1">Yes</option>
+            </SelectField>
+
             <SelectMode defaultValue={'live'} />
             <button>Search</button>
           </Form>
