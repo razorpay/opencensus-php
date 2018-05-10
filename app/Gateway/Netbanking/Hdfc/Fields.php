@@ -9,18 +9,18 @@ use RZP\Gateway\Netbanking\Base as Netbanking;
 
 class Fields
 {
-    const MERCHANT_CODE         = 'MerchantCode' ;
-    const DATE                  = 'Date' ;
-    const MERCHANT_REF_NO       = 'MerchantRefNo' ;
-    const CLIENT_CODE           = 'ClientCode' ;
-    const SUCCESS_STATIC_FLAG   = 'SuccessStaticFlag' ;
-    const FAILURE_STATIC_FLAG   = 'FailureStaticFlag' ;
-    const TXN_AMOUNT            = 'TxnAmount' ;
-    const TRANSACTION_ID        = 'TransactionId' ;
-    const FLG_VERIFY            = 'flgVerify' ;
-    const BANK_REF_NO           = 'BankRefNo' ;
-    const FLG_SUCCESS           = 'flgSuccess' ;
-    const MESSAGE               = 'Message' ;
+    const MERCHANT_CODE         = 'MerchantCode';
+    const DATE                  = 'Date';
+    const MERCHANT_REF_NO       = 'MerchantRefNo';
+    const CLIENT_CODE           = 'ClientCode';
+    const SUCCESS_STATIC_FLAG   = 'SuccessStaticFlag';
+    const FAILURE_STATIC_FLAG   = 'FailureStaticFlag';
+    const TXN_AMOUNT            = 'TxnAmount';
+    const TRANSACTION_ID        = 'TransactionId';
+    const FLG_VERIFY            = 'flgVerify';
+    const BANK_REF_NO           = 'BankRefNo';
+    const FLG_SUCCESS           = 'flgSuccess';
+    const MESSAGE               = 'Message';
 
     // Request field name used in E-Mandate registration
     const CLIENT_ACCOUNT_NUMBER     = 'ClientAccNum';   // Customer's account number
@@ -43,6 +43,7 @@ class Fields
     const END_TIMESTAMP     = 'end_timestamp';
     const START_TIMESTAMP   = 'start_timestamp';
     const FREQUENCY         = 'As & when Presented';
+    const INIT_AMOUNT       = '1';
 
     /**
      * Returns values required for e-mandate registration
