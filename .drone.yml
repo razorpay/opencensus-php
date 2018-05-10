@@ -32,6 +32,8 @@ pipeline:
     environment:
       CHROME_BIN: /usr/bin/chromium
     commands:
+      # Fix for https://github.com/npm/uid-number/issues/3
+      - npm config set unsafe-perm true
       - npm config set cache npm_cache
       - npm install
       - npm install --global gulp
