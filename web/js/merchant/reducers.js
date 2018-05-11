@@ -54,6 +54,7 @@ import {
 } from 'merchant/modules/subscriptions';
 import { plansReducer, planReducer } from 'merchant/modules/plans';
 import { addOnsReducer } from 'merchant/modules/addons';
+import { reportsReducer } from 'merchant/modules/reports';
 
 export default combineReducers({
   modal: modalReducer,
@@ -101,4 +102,5 @@ export default combineReducers({
   reversals: reversalsReducer,
   virtualaccounts: virtualAccountsReducer,
   virtualaccount: virtualAccountReducer,
+  reports: reportsReducer,
 });

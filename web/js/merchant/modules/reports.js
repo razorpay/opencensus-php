@@ -5,6 +5,9 @@ import { merchantFetch } from 'rzp/utils/ajax';
 
 const GENERATE_REPORT = 'GENERATE_REPORT';
 
+const ADD_REPORT = 'ADD_REPORT';
+const REMOVE_REPORT = 'REMOVE_REPORT';
+
 const reportErrorMsg = {
   error: 'Oops!, Unable to generate report',
 };
@@ -19,30 +22,27 @@ const createLog = (data, accountId) => {
     url: 'reporting/logs',
     method: 'post',
     data,
-    ...(!!accountId && {accountId})
+    ...(!!accountId && { accountId }),
   });
 };
 
 const getLog = (logId, accountId) => {
-    
   return merchantFetch({
     url: `reporting/logs/${logId}`,
-    ...(!!accountId && {accountId})
+    ...(!!accountId && { accountId }),
   });
 };
 
 const getFile = (fileId, accountId) => {
-    
   return merchantFetch({
     url: `ufh/file/${fileId}/get-signed-url`,
-    ...(!!accountId && {accountId})
+    ...(!!accountId && { accountId }),
   });
 };
 
 export const getConfigs = () => {
-    
   return merchantFetch({
-    url: 'reporting/configs'
+    url: 'reporting/configs',
   });
 };
 
@@ -58,9 +58,8 @@ const pollInterval = 2, // poll interval in SECONDS
 
 export const generateReportV2 = (params, isMerchantAccount) => {
   const startTime = new Date(),
-        accountHeaderVal = !isMerchantAccount && 
-                           params.generated_by;
-  
+    accountHeaderVal = !isMerchantAccount && params.generated_by;
+
   let numCallsMade = 0,
     timeElapsed = 0;
 
@@ -72,11 +71,13 @@ export const generateReportV2 = (params, isMerchantAccount) => {
 
       const logId = resp.data.id;
 
+      // if sending emails don't poll
+      if (params.emails) {
+        return;
+      }
+
       const logPoll = poll({
-        fetchFunc: () => getLog(
-                           resp.data.id,
-                           accountHeaderVal
-                         ),
+        fetchFunc: () => getLog(resp.data.id, accountHeaderVal),
         validator: resp => {
           numCallsMade++;
           timeElapsed = new Date() - startTime;
@@ -147,3 +148,42 @@ export const generateReportV2 = (params, isMerchantAccount) => {
     })
     .catch(handleError);
 };
+
+export const addReportToList = report => {
+  return {
+    type: ADD_REPORT,
+    report,
+  };
+};
+
+export const removeReportFromList = reportId => {
+  return {
+    type: REMOVE_REPORT,
+    reportId,
+  };
+};
+
+let initialState = {
+  currentReportList: {},
+};
+
+export function reportsReducer(state = initialState, action) {
+  let currentReportList = {};
+
+  switch (action.type) {
+    case `${ADD_REPORT}`:
+      currentReportList = { ...state.currentReportList };
+
+      currentReportList[action.report.config_id] = action.report;
+      return set(state, 'currentReportList', currentReportList);
+    case `${REMOVE_REPORT}`:
+      currentReportList = { ...state.currentReportList };
+
+      if (currentReportList[action.reportId]) {
+        delete currentReportList[action.reportId];
+      }
+      return set(state, 'currentReportList', currentReportList);
+    default:
+      return state;
+  }
+}
