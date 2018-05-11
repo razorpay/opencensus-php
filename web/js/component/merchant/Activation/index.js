@@ -1,6 +1,7 @@
 import Form from 'component/Form';
 import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
+import Alert from 'component/Alert';
 import { classList } from 'common/util';
 import { prevent } from 'common/util';
 
@@ -444,16 +445,40 @@ export default class ActivationWizard extends React.Component {
             </main-title>
 
             <Form onChange={this.onChange} layout="tabular">
+              {/* Show alert if linked account has been activated */}
+              {isLinkedAccountForm &&
+                this.state.data.activated && (
+                  <Alert.Info>The account has been activated</Alert.Info>
+                )}
+
+              {/* Show alert if main activatin form is in locked state */}
+              {!isLinkedAccountForm &&
+                this.state.data.locked && (
+                  <Alert.Info>
+                    Your activation form is locked as it's under process. We
+                    will let you know once your account gets activated.
+                    <div class="side-description">
+                      In case of any queries, you can reach out to us at
+                      support@razorpay.com now. Get in touch with{' '}
+                      <a href="mailto:support@razorpay.com">
+                        support@razorpay.com
+                      </a>{' '}
+                      for more details.
+                    </div>
+                  </Alert.Info>
+                )}
+
+              {/* Show alert if user has selected individual business type */}
               {!isLinkedAccountForm &&
                 this.state.data.business_type == 2 && (
-                  <div class="alert alert-warning">
+                  <Alert.Warning>
                     We may not be able to support Individual Business-Type as of
                     now. Get in touch with{' '}
                     <a href="mailto:support@razorpay.com">
                       support@razorpay.com
                     </a>{' '}
                     for more details.
-                  </div>
+                  </Alert.Warning>
                 )}
               {content}
             </Form>
