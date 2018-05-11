@@ -119,61 +119,6 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->assertEquals(Payment\Status::FAILED, $payment['status']);
     }
 
-    public function testSecondRecurringPaymentVerify()
-    {
-        $payment = $this->payment;
-
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
-        $payment['order_id'] = $order->getPublicId();
-
-        $this->doAuthPayment($payment);
-
-        $paymentEntity = $this->getLastEntity('payment', true);
-
-        $tokenId = $paymentEntity[Payment\Entity::TOKEN_ID];
-
-        $this->fixtures->edit(
-            'token',
-            $tokenId,
-            [
-                Token\Entity::RECURRING => 1,
-                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED
-            ]);
-
-        $payment[Payment\Entity::TOKEN] = $tokenId;
-
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
-        $payment['order_id'] = $order->getPublicId();
-
-        // Second recurring payment request
-        $this->doS2SRecurringPayment($payment);
-
-        $secondPayment = $this->getLastEntity('payment', true);
-
-        $secondPaymentId = substr($secondPayment['id'], 4);
-
-        $this->fixtures->create('netbanking',
-            [
-                Netbanking::PAYMENT_ID          => $secondPaymentId,
-                Netbanking::BANK                => $secondPayment['bank'],
-                Netbanking::AMOUNT              => $secondPayment['amount'],
-                Netbanking::CAPS_PAYMENT_ID     => strtoupper($secondPaymentId),
-            ]);
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($secondPayment)
-            {
-                $this->verifyPayment($secondPayment['id']);
-            });
-
-        $secondPayment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals(Payment\Verify\Status::UNKNOWN, $secondPayment['verified']);
-    }
-
     public function testEmandateRegistration()
     {
         Mail::fake();
@@ -212,11 +157,6 @@ class NetbankingHdfcEmandateTest extends TestCase
 
             $this->assertEquals($expectedSubj, $mail->subject);
 
-            $testData = [
-                'body'      => EmailConstants::BODY_MAP[$key],
-                'file_name' => "HDFC_Emandate_Register_test_$today.xlsx",
-            ];
-
             $this->assertNotNull($mail->viewData['file_name']);
             $this->assertNotNull($mail->viewData['signed_url']);
             $this->assertEquals(EmailConstants::BODY_MAP[$key], $mail->viewData['body']);
@@ -224,7 +164,7 @@ class NetbankingHdfcEmandateTest extends TestCase
             $this->assertNotEmpty($mail->attachments);
 
             return ($mail->hasFrom('emandate@razorpay.com') and
-                    ($mail->hasTo(EmailConstants::RECIPIENT_EMAILS_MAP[$key])));
+                ($mail->hasTo(EmailConstants::RECIPIENT_EMAILS_MAP[$key])));
         });
     }
 
@@ -291,6 +231,65 @@ class NetbankingHdfcEmandateTest extends TestCase
                     ($mail->hasTo(EmailConstants::RECIPIENT_EMAILS_MAP[$key])));
         });
     }
+
+    public function testSecondRecurringPaymentVerify()
+    {
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenId = $paymentEntity[Payment\Entity::TOKEN_ID];
+
+        $this->fixtures->edit(
+            'token',
+            $tokenId,
+            [
+                Token\Entity::RECURRING => 1,
+                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED
+            ]);
+
+        $payment[Payment\Entity::TOKEN] = $tokenId;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        // Second recurring payment request
+        $this->doS2SRecurringPayment($payment);
+
+        $secondPayment = $this->getLastEntity('payment', true);
+
+        $secondPaymentId = substr($secondPayment['id'], 4);
+
+        $this->fixtures->create('netbanking',
+            [
+                Netbanking::PAYMENT_ID          => $secondPaymentId,
+                Netbanking::BANK                => $secondPayment['bank'],
+                Netbanking::AMOUNT              => $secondPayment['amount'],
+                Netbanking::CAPS_PAYMENT_ID     => strtoupper($secondPaymentId),
+            ]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($secondPayment)
+            {
+                $this->verifyPayment($secondPayment['id']);
+            });
+
+        $secondPayment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment\Verify\Status::UNKNOWN, $secondPayment['verified']);
+    }
+
+
+
+
 
     /**
      * It tests that scenario in which a debit file is requested to be sent for
@@ -414,6 +413,8 @@ class NetbankingHdfcEmandateTest extends TestCase
             ]);
 
         $payment[Payment\Entity::TOKEN] = $tokenId;
+
+        $payment['amount'] = 4000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
