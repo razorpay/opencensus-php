@@ -7,12 +7,14 @@ import { isValidGSTIN } from 'rzp/utils/rzp-utils';
 const NGO_BUSINESS_TYPE = 7;
 const differentAddress = activation => activation.state.same_address === '0';
 
-const stateOptions = Object.keys(states).map(c => {
-  return {
-    name: c,
-    label: states[c],
-  };
-});
+const stateOptions = [''].concat(
+  Object.keys(states).map(c => {
+    return {
+      name: c,
+      label: states[c],
+    };
+  })
+);
 
 const contactFields = [
   {
@@ -82,18 +84,22 @@ const businessFields1 = [
       if (userSelection && categories[userSelection]) {
         const subCategories = categories[userSelection].subcategories;
 
-        this.options = Object.keys(subCategories).map(c => ({
-          name: c,
-          label: subCategories[c],
-        }));
+        this.options = [''].concat(
+          Object.keys(subCategories).map(c => ({
+            name: c,
+            label: subCategories[c],
+          }))
+        );
       }
 
       return this.options;
     },
     _when: activation => {
+      // 'Others' business_category has no sub_category
       return (
         activation.state.data.business_category &&
-        activation.state.data.business_category != 0
+        activation.state.data.business_category != 0 &&
+        activation.state.data.business_category != 'others'
       ); // It's a string
     },
   },

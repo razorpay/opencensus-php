@@ -396,8 +396,7 @@ export function isOldUser_MidProgress(user) {
   }
 
   let currentTime = 1526031000; // TODO: It IS TO BE THE DATE OF DEPLOYMENT.. Currently, 11 May, 3:00pm
-  let isOldUser_MidProgress =
-    user.created_at < currentTime && user.activation_progress > 25;
+  let isOldUser = user.created_at < currentTime;
 
-  return isOldUser_MidProgress;
+  return isOldUser;
 }
