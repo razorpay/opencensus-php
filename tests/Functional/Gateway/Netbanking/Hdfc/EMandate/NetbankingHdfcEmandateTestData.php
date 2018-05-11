@@ -122,7 +122,6 @@ return [
         'action'            => 'authorize',
         'bank'              => 'HDFC',
         'received'          => false,
-        'merchant_code'     => '10000000000000',
         'bank_payment_id'   => null,
         'status'            => null,
         'error_message'     => null,
