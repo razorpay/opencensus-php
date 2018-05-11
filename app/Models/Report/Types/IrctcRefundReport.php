@@ -117,9 +117,7 @@ class IrctcRefundReport extends BasicEntityReport
 
         if ($order !== null)
         {
-            $notes = $order->notes;
-
-            $amount = $notes->amount ?? '';
+            $amount = $order->getAmount()/100;
         }
 
         return $amount;
