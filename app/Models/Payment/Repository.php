@@ -607,7 +607,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Payment\Entity::TOKEN_ID, '=', $tokenId)
-                    ->first();
+                    ->firstOrFail();
     }
 
     /**
