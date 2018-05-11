@@ -31,7 +31,11 @@ class TraceHandler extends AbstractProcessingHandler
     {
         $dimensions = array_only($record, self::RECORD_METRIC_DIMENSIONS);
 
+        //
         // Adds api's route name & mode as well in list of dimensions
+        // We use optional() method to get route name because in tests and async
+        // job there won't be a current route() associated with Request.
+        //
         $dimensions[Metric::LABEL_ROUTE]    = optional(Request::route())->getName();
         $dimensions[Metric::LABEL_RZP_MODE] = $record['mode'];
 
