@@ -206,7 +206,17 @@ $height = 600px
 
 /* Activation success screen */
 .Activation--success
-  padding: 30px 24px
+  padding: 24px
+
+  .side-title
+    margin-bottom: 4px
+
+  .submit-illustration
+    background: url(assets/activation-submit-success.svg) no-repeat
+    width: calc(100% + 48px)
+    height: 175px
+    margin-left: -24px
+    background-position: right
 
   .LinkCard
     color: #58666e
@@ -221,15 +231,18 @@ $height = 600px
     border: 1px solid $prime
     box-shadow: 8px 8px 8px 0 rgba(132,155,191,0.1)
     color: #4D4D4D
+    font-weight: 600
+    border-radius: 2px
 
     .desc
       font-size: 14px
       color: #808080
+      font-weight: 400
 
     .i
       margin-right: 8px
       border-radius: 50%
-      background: #3a9b67
+      background: #2dbe6f
       font-size: 14px
       color: #fff
       padding: 2px 2px 0;
@@ -239,6 +252,8 @@ $height = 600px
       margin: 10px 0 0
 
   .Activation-actions
+    color: #4d4d4d
+
     side-title
       text-align: center
 
