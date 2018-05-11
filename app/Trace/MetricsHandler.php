@@ -1,18 +1,17 @@
 <?php
 
-namespace RZP\Services\Metrics;
+namespace RZP\Trace;
 
+use Metrics;
 use Request;
-use Monolog\Logger;
 use Monolog\Handler\AbstractProcessingHandler;
 
 use RZP\Constants\Metric;
 
 /**
- * A handler to be pushed in our Trace package. This enables pushing metrics
- * about tracing & exceptions.
+ * A handler to be pushed in trace instance. This enables pushing metrics about tracing & exceptions.
  */
-class TraceHandler extends AbstractProcessingHandler
+class MetricsHandler extends AbstractProcessingHandler
 {
     /**
      * Following attributes of log record is pushed as dimension to metric
@@ -39,6 +38,6 @@ class TraceHandler extends AbstractProcessingHandler
         $dimensions[Metric::LABEL_ROUTE]    = optional(Request::route())->getName();
         $dimensions[Metric::LABEL_RZP_MODE] = $record['mode'];
 
-        \Metrics::count(Metric::TRACES_TOTAL, 1, $dimensions);
+        Metrics::count(Metric::TRACES_TOTAL, 1, $dimensions);
     }
 }

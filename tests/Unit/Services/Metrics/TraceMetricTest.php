@@ -13,6 +13,7 @@ class TraceMetricTest extends TestCase
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/TraceMetricTestData.php';
+
         parent::setUp();
     }
 

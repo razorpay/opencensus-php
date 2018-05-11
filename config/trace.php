@@ -1,6 +1,6 @@
 <?php
 
-use RZP\Services\Metrics;
+use RZP\Trace\MetricsHandler;
 
 return [
 
@@ -53,6 +53,6 @@ return [
     |--------------------------------------------------------------------------
     */
     'additional_handlers' => [
-        Metrics\TraceHandler::class,
+        MetricsHandler::class,
     ],
 ];
