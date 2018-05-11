@@ -11,14 +11,19 @@ use RZP\Models\Gateway\File;
 use RZP\Models\Customer\Token;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Gateway\EMandate\Base as Email;
+use RZP\Tests\Functional\Batch\BatchTestTrait;
+use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 use RZP\Mail\Gateway\EMandate\Constants as EmailConstants;
 
 class NetbankingHdfcEmandateTest extends TestCase
 {
+    use ReconTrait;
     use PaymentTrait;
+//    use BatchTestTrait;
     use DbEntityFetchTrait;
 
     protected $payment;
@@ -166,6 +171,32 @@ class NetbankingHdfcEmandateTest extends TestCase
             return ($mail->hasFrom('emandate@razorpay.com') and
                 ($mail->hasTo(EmailConstants::RECIPIENT_EMAILS_MAP[$key])));
         });
+    }
+
+    public function testEmandateRegistrationRecon()
+    {
+        Mail::fake();
+
+        $entities = $this->createRegistrationEntities();
+
+        $file = $this->generateEmandateRegisterReconFile($entities);
+
+        $this->makeBatchRequest(
+            [
+                'type'     => 'emandate',
+                'sub_type' => 'register',
+                'gateway'  => 'hdfc',
+            ],
+            $file
+        );
+
+        $token = $this->getDbLastEntity('token')->toArray();
+
+        $this->assertEquals(Token\RecurringStatus::CONFIRMED, $token['recurring_status']);
+
+        $payment = $this->getDbLastEntity('payment')->toArray();
+
+        $this->assertEquals(Payment\Status::CAPTURED, $payment['status']);
     }
 
     public function testEmandateDebit()
@@ -436,5 +467,100 @@ class NetbankingHdfcEmandateTest extends TestCase
         ];
 
         return $payment;
+    }
+
+    protected function createRegistrationEntities()
+    {
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+
+        $token = $this->fixtures->create(
+            'token:emandate_registration',
+            [
+                'terminal_id'    => 'NHdRecurringTl',
+                'bank'           => 'HDFC',
+                'ifsc'           => 'HDFC0000186',
+                'account_number' => '50100100708641',
+            ]
+        );
+
+        $payment = $this->fixtures->create(
+            'payment:emandate_registration_success',
+            [
+                'bank'        => 'HDFC',
+                'order_id'    => $order['id'],
+                'terminal_id' => 'NHdRecurringTl',
+                'token_id'    => $token['id'],
+                'order_id'    => $order['id'],
+                'gateway'     => 'netbanking_hdfc',
+            ]
+        );
+
+        $netbanking = $this->fixtures->create(
+            'netbanking',
+            [
+                'payment_id'      => $payment['id'],
+                'action'          => 'authorize',
+                'amount'          => '1',
+                'bank'            => 'HDFC',
+                'received'        => true,
+                'bank_payment_id' => '938361',
+                'caps_payment_id' => strtoupper($payment['id']),
+            ]
+        );
+
+        return [
+            'token'      => $token,
+            'payment'    => $payment,
+            'netbanking' => $netbanking,
+        ];
+    }
+
+    protected function generateEmandateRegisterReconFile(array $entities)
+    {
+        $content = [
+            'sheet1' => [
+                'config' => [
+                    'start_cell' => 'A1',
+                ],
+                'items' => [
+                    [
+                        'Client Name'             => 'RAZORPAY',
+                        'Customer Name'           => 'User Name',
+                        'Customer Account Number' => '50100100708641',
+                        'Amount'                  => '1.00',
+                        'Amount Type'             => 'Maximum',
+                        'Start_Date'              => '07/05/2018',
+                        'End_Date'                => '07/05/2028',
+                        'Frequency'               => 'As & when Presented',
+                        'Mandate ID'              => $entities['token']['id'],
+                        'Status'                  => 'Success',
+                        'Remark'                  => '',
+                    ],
+                ]
+            ]
+        ];
+
+        $data = $this->getExcelString('HDFC_Emandate_Registration', $content);
+
+        $handle = tmpfile();
+        fwrite($handle, $data);
+        fseek($handle, 0);
+        return (new TestingFile('HDFC_Emandate_Registration.xlsx', $handle));
+    }
+
+    protected function makeBatchRequest($content, $file)
+    {
+        $request = [
+            'url' => '/batches',
+            'method' => 'POST',
+            'content' => $content,
+            'files' => [
+                'file' => $file,
+            ]
+        ];
+
+        $this->ba->proxyAuth('rzp_test_100000Razorpay');
+
+        return $this->makeRequestAndGetContent($request);
     }
 }
