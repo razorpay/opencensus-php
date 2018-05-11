@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Helpers\Reconciliator;
 
+use Excel;
 use Mockery;
 use RZP\Models\Merchant;
 use Illuminate\Http\UploadedFile;
@@ -112,12 +113,40 @@ trait ReconTrait
 
         $payment = $this->fixtures->create('payment', $attributes);
 
-        $transaction = $this->fixtures->create('transaction', ['entity_id' => $payment->getId(), 'merchant_id' => '10000000000000']);
+        $transaction = $this->fixtures->create(
+            'transaction',
+            [
+                'entity_id'   => $payment->getId(),
+                'merchant_id' => '10000000000000',
+            ]
+        );
 
         $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
 
         $this->fixtures->create($this->method, ['payment_id' => $payment->getId()]);
 
         return $payment->getId();
+    }
+
+    protected function getExcelString($name, $sheets)
+    {
+        $excel = Excel::create(
+            $name,
+            function ($excel) use ($sheets)
+            {
+                foreach ($sheets as $sheetName => $data)
+                {
+                    $excel->sheet(
+                        $sheetName,
+                        function ($sheet) use ($data)
+                        {
+                            $sheet->fromArray($data['items'], null, $data['config']['start_cell'], true);
+                        }
+                    );
+                }
+            }
+        );
+
+        return $excel->string('xlsx');
     }
 }

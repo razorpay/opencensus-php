@@ -2,9 +2,6 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
-use RZP\Models\Base\PublicCollection;
-use RZP\Models\Transaction;
-
 class Payment extends Base
 {
     use TransactionTrait;
@@ -414,5 +411,23 @@ class Payment extends Base
     {
         $this->edit(
             $id, ['status' => 'failed', 'error_code' => 'BAD_REQUEST_PAYMENT_FAILED']);
+    }
+
+    public function createEmandateRegistrationSuccess(array $attributes = [])
+    {
+        $defaults = [
+            'amount'         => 0,
+            'method'         => 'emandate',
+            'status'         => 'authorized',
+            'customer_id'    => '100000customer',
+            'email'          => 'a@b.com',
+            'contact'        => '+919918899029',
+            'recurring_type' => 'initial',
+            'auth_type'      => 'netbanking',
+        ];
+
+        $attributes = array_merge($defaults, $attributes);
+
+        return $this->create($attributes);
     }
 }
