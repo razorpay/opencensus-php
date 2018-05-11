@@ -39,7 +39,7 @@ trait DbEntityFetchTrait
     {
         $entityClass = $this->getEntityObjectForMode($entity, $mode);
 
-        $id = $entityClass::verifyIdAndStripSign($id);
+        $id = $entityClass::verifyIdAndSilentlyStripSign($id);
 
         return $entityClass->findOrFailPublic($id);
     }

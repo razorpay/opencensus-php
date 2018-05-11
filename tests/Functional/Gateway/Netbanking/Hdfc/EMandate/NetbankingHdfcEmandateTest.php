@@ -177,7 +177,13 @@ class NetbankingHdfcEmandateTest extends TestCase
     {
         Mail::fake();
 
-        $entities = $this->createRegistrationEntities();
+        $entities = [];
+
+        $entities[] = $this->createRegistrationEntities();
+        $entities[0]['status_in_file'] = 'success';
+
+        $entities[] = $this->createRegistrationEntities();
+        $entities[1]['status_in_file'] = 'reject';
 
         $file = $this->generateEmandateRegisterReconFile($entities);
 
@@ -190,11 +196,11 @@ class NetbankingHdfcEmandateTest extends TestCase
             $file
         );
 
-        $token = $this->getDbLastEntity('token')->toArray();
+        $token = $this->getDbEntityById('token', $entities[0]['token']['id'])->toArray();
 
         $this->assertEquals(Token\RecurringStatus::CONFIRMED, $token['recurring_status']);
 
-        $payment = $this->getDbLastEntity('payment')->toArray();
+        $payment = $this->getDbEntityById('payment', $entities[0]['payment']['id'])->toArray();
 
         $this->assertEquals(Payment\Status::CAPTURED, $payment['status']);
     }
@@ -517,26 +523,31 @@ class NetbankingHdfcEmandateTest extends TestCase
 
     protected function generateEmandateRegisterReconFile(array $entities)
     {
+        $items = [];
+
+        foreach ($entities as $entityList)
+        {
+            $items[] = [
+                'Client Name'             => 'RAZORPAY',
+                'Customer Name'           => 'User Name',
+                'Customer Account Number' => '50100100708641',
+                'Amount'                  => '1.00',
+                'Amount Type'             => 'Maximum',
+                'Start_Date'              => '07/05/2018',
+                'End_Date'                => '07/05/2028',
+                'Frequency'               => 'As & when Presented',
+                'Mandate ID'              => $entityList['token']['id'],
+                'Status'                  => $entityList['status_in_file'],
+                'Remark'                  => '',
+            ];
+        }
+
         $content = [
             'sheet1' => [
                 'config' => [
                     'start_cell' => 'A1',
                 ],
-                'items' => [
-                    [
-                        'Client Name'             => 'RAZORPAY',
-                        'Customer Name'           => 'User Name',
-                        'Customer Account Number' => '50100100708641',
-                        'Amount'                  => '1.00',
-                        'Amount Type'             => 'Maximum',
-                        'Start_Date'              => '07/05/2018',
-                        'End_Date'                => '07/05/2028',
-                        'Frequency'               => 'As & when Presented',
-                        'Mandate ID'              => $entities['token']['id'],
-                        'Status'                  => 'Success',
-                        'Remark'                  => '',
-                    ],
-                ]
+                'items' => $items
             ]
         ];
 
