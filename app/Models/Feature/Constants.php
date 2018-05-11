@@ -65,6 +65,8 @@ class Constants
     const ALLOW_S2S_APPS                = 'allow_s2s_apps';
     const UPI_PLUS                      = 'upi_plus';
     const FSS_IPAY                      = 'fss_ipay';
+    const EXPOSE_CARD_EXPIRY            = 'expose_card_expiry';
+    const EXPOSE_CARD_IIN               = 'expose_card_iin';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -158,6 +160,8 @@ class Constants
         self::UPI_PLUS                      => true,
         self::FSS_IPAY                      => true,
         self::DIRECT_DEBIT                  => true,
+        self::EXPOSE_CARD_EXPIRY            => true,
+        self::EXPOSE_CARD_IIN               => true,
     ];
 
     // Entity type constants
