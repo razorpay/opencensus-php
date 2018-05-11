@@ -9,13 +9,9 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Base\Database\QueryBuilder;
-use Illuminate\Support\Collection;
-use RZP\Models\Base\HasRelationships;
 
 class EloquentEx extends \Razorpay\Spine\Entity
 {
-    use HasRelationships;
-
     public $incrementing = false;
 
     /**
