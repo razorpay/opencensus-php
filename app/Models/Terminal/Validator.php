@@ -21,8 +21,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
+        Entity::GATEWAY_TERMINAL_PASSWORD2  => 'sometimes',
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes',
+        Entity::GATEWAY_SECURE_SECRET2      => 'sometimes',
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
         Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes',
         Entity::MC_MPAN                     => 'sometimes|string|size:16',
@@ -49,6 +51,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editTerminalGateways = [
+        Payment\Gateway::ATOM,
         Payment\Gateway::HDFC,
         Payment\Gateway::HITACHI,
         Payment\Gateway::BILLDESK,
@@ -90,6 +93,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes',
+        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes',
     ];
 
     protected static $hdfcTerminalRules = [
@@ -200,6 +205,14 @@ class Validator extends Base\Validator
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
+    ];
+
+    protected static $atomEditTerminalRules = [
+        Entity::GATEWAY                     => 'sometimes|in:atom',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
+        Entity::GATEWAY_TERMINAL_PASSWORD2  => 'sometimes',
     ];
 
     protected static $billdeskEditTerminalRules = [
