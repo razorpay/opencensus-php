@@ -291,6 +291,7 @@ class NetbankingHdfcEmandateTest extends TestCase
             ]);
 
         $payment[Payment\Entity::TOKEN] = $tokenId;
+        $payment['amount'] = 3000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -323,10 +324,6 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $this->assertEquals(Payment\Verify\Status::UNKNOWN, $secondPayment['verified']);
     }
-
-
-
-
 
     /**
      * It tests that scenario in which a debit file is requested to be sent for
