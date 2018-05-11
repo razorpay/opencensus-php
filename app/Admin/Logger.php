@@ -3,7 +3,9 @@
 namespace App\Admin;
 
 use Auth;
+use Trace;
 use App\MerchantDetails;
+use App\Trace\TraceCode;
 
 trait Logger
 {
@@ -11,7 +13,11 @@ trait Logger
     {
         $adminId = Auth::guard('api')->user()->username;
 
-        $this->slackPost("Data export by $adminId ($entity)", $params, '#tech_logs');
+        //$this->slackPost("Data export by $adminId ($entity)", $params, '#tech_logs');
+
+        $traceData = ['admin' => $adminId, 'params' => $params, 'channel' => 'tech_logs'];
+
+        Trace::info(TraceCode::SLACK_DATA_EXPORT_LOG, $traceData);
     }
 
     /**
@@ -35,6 +41,14 @@ trait Logger
         return $merchantDetails['business_dba'];
     }
 
+    /**
+     * This does not log to slack due to slack version issue, refer https://github.com/razorpay/dashboard/pull/2426
+     * We just trace logs here for now. TODO: Add slack log after using correct razorpay/slack-laravel version
+     *
+     * @param $merchantId
+     * @param $action
+     * @param array $data
+     */
     protected function logActionToSlack($merchantId, $action, $data = [])
     {
         $adminId = Auth::guard('api')->user()->username;
@@ -55,7 +69,11 @@ trait Logger
             $color = 'danger';
         }
 
-        $this->slackPost($text, $data, $channel, '', $color);
+        //$this->slackPost($text, $data, $channel, '', $color);
+
+        $traceData = array_merge($data, ['admin' => $adminId, 'action' => $action, 'merchant_id' => $merchantId]);
+
+        Trace::info(TraceCode::ADMIN_ACTION_SLACK_LOG, $traceData);
     }
 
     protected function getChannel($action)
@@ -86,7 +104,11 @@ trait Logger
 
         $postChannel = \Config::get('razorpay.slack.operations');
 
-        $this->slackPost($text, [], $postChannel);
+        //$this->slackPost($text, [], $postChannel);
+
+        $traceData = ['user' => $user, 'query' => $linkText, 'channel' => $channel];
+
+        Trace::info(TraceCode::SLACK_QUERY_LOG, $traceData);
     }
 
     /**

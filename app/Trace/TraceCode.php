@@ -17,6 +17,10 @@ class TraceCode
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
     const SLACK_QUERY_RESPONSE                      = 'SLACK_QUERY_RESPONSE';
 
+    const ADMIN_ACTION_SLACK_LOG                    = 'ADMIN_ACTION_SLACK_LOG';
+    const SLACK_QUERY_LOG                           = 'SLACK_QUERY_LOG';
+    const SLACK_DATA_EXPORT_LOG                     = 'SLACK_DATA_EXPORT_LOG';
+
     // Request made to API has failed
     const API_REQUEST_FAILURE                       = 'API_REQUEST_FAILURE';
 

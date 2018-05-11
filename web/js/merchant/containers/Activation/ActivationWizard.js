@@ -5,6 +5,8 @@ import WizardItem from './WizardItem';
 
 import Tabs, { Tab, TabPane } from 'rzp/ui/ReactTabs';
 
+import { track } from './ga';
+
 @connect(state => state.activation, { destroy })
 export default class ActivationWizard extends Component {
   activationForms = [
@@ -60,10 +62,25 @@ export default class ActivationWizard extends Component {
     });
   }
 
-  gotoTab = index => {
+  /**
+   * Switch to a tab.
+   * @param {Number} index 1 + index of the tab.
+   * @param {String} action Action for analytics.
+   * @param {Number} indexToTrack 1 + index of the tab whose name is to be tracked.
+   */
+  gotoTab = (index, action, indexToTrack = index) => {
     this.setState({
       selectedTabIndex: index - 1,
     });
+
+    // If action is present, track analytics.
+    // Also make sure this is not for linked accounts.
+    if (action && !this.props.accountId) {
+      track({
+        eventAction: action,
+        eventLabel: this.activationForms[indexToTrack - 1].title,
+      });
+    }
   };
 
   renderNavAnchor(stepNumber, title) {
@@ -119,7 +136,7 @@ export default class ActivationWizard extends Component {
         <Tabs
           class="activation-wizard"
           selectedTabIndex={this.state.selectedTabIndex}
-          onSelect={index => this.gotoTab(index + 1)}
+          onSelect={index => this.gotoTab(index + 1, 'Go to - Activation Tab')}
         >
           {this.activationForms.map((form, index) => (
             <Tab key={form.name}>
@@ -131,6 +148,7 @@ export default class ActivationWizard extends Component {
             <TabPane key={form.name}>
               <WizardItem
                 form={form.name}
+                formTitle={form.title}
                 step={index + 1}
                 pageTitle={form.pageTitle || form.title}
                 gotoTab={this.gotoTab}
