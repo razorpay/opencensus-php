@@ -31,10 +31,7 @@ class EloquentEx extends \Razorpay\Spine\Entity
         //
         $nonExistentRelations = array_filter($this->relations, function ($model, $relation)
         {
-            return ((in_array($relation, $this->ignoredRelations, true) === false) and
-                    ($model instanceof Model)) ?
-                    ($model->exists === false) :
-                    false;
+            return ($this->assertRelationExistence($relation, $model) === false);
         }, ARRAY_FILTER_USE_BOTH);
 
         if (count($nonExistentRelations) > 0)
@@ -187,5 +184,12 @@ class EloquentEx extends \Razorpay\Spine\Entity
     public function hasRelation($relation)
     {
         return (empty($this->relations[$relation]) === false);
+    }
+
+    protected function assertRelationExistence(string $relation, Model $model): bool
+    {
+        return (in_array($relation, $this->ignoredRelations, true) === true) ?
+                true :
+                (($model instanceof Model) and ($model->exists === true));
     }
 }
