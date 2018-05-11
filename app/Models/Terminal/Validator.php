@@ -57,6 +57,7 @@ class Validator extends Base\Validator
         Payment\Gateway::BILLDESK,
         Payment\Gateway::CARD_FSS,
         Payment\Gateway::AXIS_MIGS,
+        Payment\Gateway::UPI_HULK,
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::ENACH_RBL,
         Payment\Gateway::FIRST_DATA,
@@ -445,6 +446,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|integer|in:2,3',
+    ];
+
+    protected static $upiHulkEditTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_hulk',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::TPV                        => 'sometimes|in:0,2',
     ];
 
     protected static $enachRblTerminalRules = [
