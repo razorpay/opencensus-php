@@ -14,30 +14,13 @@ import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import { luminateRow } from 'merchant/modules/app';
 
-import AccountsListContainerOld from './List_old';
-import { isOldUser_MidProgress } from 'merchant/containers/Activation/new';
-
-@connect(state => ({ session: state.session }), {})
-export default class AccountsListContainerDecider extends Component {
-  render() {
-    const { session, ...rest } = this.props;
-    let Component = <AccountsListContainer {...rest} />;
-
-    if (isOldUser_MidProgress(session.user)) {
-      Component = <AccountsListContainerOld {...rest} />;
-    }
-
-    return Component;
-  }
-}
-
 @connect(state => state.accounts, {
   ...AccountActions,
   ...ModalActions,
   showNotification,
   luminateRow,
 })
-export class AccountsListContainer extends ListContainer {
+export default class AccountsListContainer extends ListContainer {
   fetchEntityList({ id, ...params }) {
     if (id) {
       return Promise.resolve(

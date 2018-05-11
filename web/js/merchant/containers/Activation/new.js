@@ -359,7 +359,10 @@ export default class ActivationDecider extends React.Component {
   render() {
     let Component = <ActivationContainer {...this.props} />;
 
-    if (isOldUser_MidProgress(this.props.user)) {
+    let isLinkedAccountForm = !!this.props.accountId;
+
+    // Showing new activation form for linked-accounts
+    if (isOldUser(this.props.user) && !isLinkedAccountForm) {
       let modalClass = 'Activation--wizard Activation--wizard--old';
       let content = (
         <React.Fragment>
@@ -390,7 +393,7 @@ export default class ActivationDecider extends React.Component {
 
 ActivationDecider.MODAL_MASK_CLASS = 'Activation';
 
-export function isOldUser_MidProgress(user) {
+function isOldUser(user) {
   if (!user) {
     return false; // Fallback to new
   }
