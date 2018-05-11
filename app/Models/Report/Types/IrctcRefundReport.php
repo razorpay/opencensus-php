@@ -111,14 +111,18 @@ class IrctcRefundReport extends BasicEntityReport
 
     protected function getRefundAmount(Payment\Entity $payment)
     {
-        $amount = $payment->getAmount();
+        $amount = '';
 
-        if ($payment->merchant->isFeeBearerCustomer() === true)
+        $order = $payment->order;
+
+        if ($order !== null)
         {
-            $amount = $amount - $payment->getFee();
+            $notes = $order->notes;
+
+            $amount = $notes->amount ?? '';
         }
 
-        return $amount/100;
+        return $amount;
     }
 
 
