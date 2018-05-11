@@ -5,10 +5,8 @@ use Auth;
 use Input;
 use App\User;
 use App\Admin;
-use App\Merchant;
-use App\MerchantDetails;
+use App\Trace\TraceCode;
 use App\Http\AppResponse;
-use App\User\Helper as UserHelper;
 
 class UserController extends Controller
 {
@@ -18,6 +16,20 @@ class UserController extends Controller
     const PRE_SIGNUP_TIMESTAMP = 1488306600;
 
     protected $guard = 'users';
+
+    protected $app;
+
+    protected $trace;
+
+    public function __construct()
+    {
+        $app = \App::getFacadeRoot();
+
+        $this->app = $app;
+
+        $this->trace = $app['trace'];
+    }
+
     /**
      * Returns the base template for angular.
      *
@@ -116,13 +128,25 @@ class UserController extends Controller
     }
 
     /**
-     * Log out the currently suthenticated user.
+     * Log out the currently authenticated user.
      *
      * @return \Illuminate\Http\Response
      */
     public function getLogout()
     {
-        Auth::guard('user')->logout();
+        $user = Auth::guard('user');
+
+        $userDetails = $user->user();
+
+        $traceData = [
+            'id'          => $userDetails->id,
+            'email'       => $userDetails->email,
+            'merchant_id' => $userDetails->currentMerchant()->id,
+        ];
+
+        $this->trace->info(TraceCode::USER_LOGOUT, $traceData);
+
+        $user->logout();
 
         return AppResponse::jsonResponse([]);
     }

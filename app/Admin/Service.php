@@ -148,6 +148,13 @@ class Service extends Base\Service
             {
                 $error[] = $e->getMessage();
             }
+
+            $traceData = [
+                'email'     => $admin['email'],
+                'org_id'    => $admin['org_id'],
+            ];
+
+            $this->trace->info(TraceCode::ADMIN_LOGIN, $traceData);
         }
         else
         {
@@ -189,6 +196,8 @@ class Service extends Base\Service
      */
     public function loginUsingPrimaryOwner($merchantId)
     {
+        $admin = Auth::guard('api')->user();
+
         $error = [];
 
         $users = (new Merchant\Service)->getMerchantUsers($merchantId);
@@ -219,6 +228,14 @@ class Service extends Base\Service
             Auth::login($user, false);
 
             (new User\Service)->switchCurrentMerchantForUser($merchantId, $user);
+
+            $traceData = [
+                'org_id'        => $admin->org_id,
+                'email'         => $admin->email,
+                'merchant_id'   => $merchantId,
+            ];
+
+            $this->trace->info(TraceCode::ADMIN_AS_MERCHANT, $traceData);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -1241,8 +1258,18 @@ class Service extends Base\Service
 
             list($error, $data) = $request->send('admin/logout', 'POST');
 
+            $admin = Auth::guard('api');
+
+            $adminUser = $admin->user();
+            $traceData = [
+                'email'     => $adminUser->email,
+                'org_id'    => $adminUser->org_id,
+            ];
+
+            $this->trace->info(TraceCode::ADMIN_LOGOUT, $traceData);
+
             // Dashboard logout
-            Auth::guard('api')->logout();
+            $admin->logout();
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
