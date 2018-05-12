@@ -480,6 +480,8 @@ if (! function_exists('array_equal'))
      */
     function array_equal(array $list1, array $list2): bool
     {
-        return ((array_diff($list1, $list2) === []) and (array_diff($list2, $list1) === []));
+        return ((count($list1) === count($list2)) and
+                (array_diff($list1, $list2) === []) and
+                (array_diff($list2, $list1) === []));
     }
 }
