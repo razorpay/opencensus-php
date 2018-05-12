@@ -25,10 +25,10 @@ class Server extends Base\Mock\Server
             $this->validateActionInput($input, 'authorize_intent');
 
             $override = [
-                Fields::SENDER_ID        => null,
-                Fields::SENDER_TYPE      => null,
+                Fields::SENDER           => [],
                 Fields::TYPE             => 'push',
                 Fields::STATUS           => 'created',
+
             ];
         }
         else
@@ -36,8 +36,9 @@ class Server extends Base\Mock\Server
             $this->validateAuthorizeInput($input);
 
             $override = [
-                Fields::SENDER_ID        => '9X0HrhNT68ZWeX',
-                Fields::SENDER_TYPE      => 'vpa',
+                Fields::SENDER           => [
+                    Fields::ADDRESS      => 'vishnu@icici',
+                ],
             ];
         }
 
@@ -55,6 +56,9 @@ class Server extends Base\Mock\Server
                 Fields::CURRENCY         => $input['currency'],
                 Fields::TRANSACTION_TYPE => 'credit',
                 Fields::RRN              => '0810010123456',
+                Fields::RECEIVER         => [
+                    Fields::ADDRESS      => 'testmerchant@razor',
+                ],
             ],
             $override);
 
@@ -81,6 +85,9 @@ class Server extends Base\Mock\Server
         $override = [
             Fields::MERCHANT_REFERENCE_ID   => $payment->getId(),
             Fields::ID                      => $upi->getGatewayPaymentId(),
+            // Bank Fields
+            Fields::CALLER_ACCOUNT_NUMBER   => '00100100100',
+            Fields::CALLER_IFSC_CODE        => 'RZP10010011'
         ];
 
         $data = $this->getP2pEntity($override);
@@ -129,9 +136,6 @@ class Server extends Base\Mock\Server
             Fields::ERROR_CODE              => null,
             Fields::ERROR_DESCRIPTION       => null,
             Fields::INTERNAL_ERROR_CODE     => null,
-
-            // Bank Fields
-            Fields::CALLER_ACCOUNT_NUMBER   => '00100100100',
 
             Fields::SENDER                  => [
                 'id'                        => 'vpa_9X0HrhNT68ZWeX',

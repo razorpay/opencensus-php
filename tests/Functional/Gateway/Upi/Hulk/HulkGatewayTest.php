@@ -53,6 +53,7 @@ class HulkGatewayTest extends TestCase
 
         $this->assertSame('created', $payment->getStatus());
         $this->assertSame('initiated', $upi->status_code);
+        $this->assertSame('vishnu@icici', $upi->vpa);
 
         $callback = $this->mockServer()->getAsyncCallbackRequest($upi, $payment);
 
@@ -65,6 +66,7 @@ class HulkGatewayTest extends TestCase
         $this->assertTrue($payment->isAuthorized());
         $this->assertSame('completed', $upi['status_code']);
         $this->assertSame('00100100100', $upi['account_number']);
+        $this->assertSame('RZP10010011', $upi['ifsc']);
     }
 
     public function testPaymentFailedCallbackMappedError()

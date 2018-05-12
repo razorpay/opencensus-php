@@ -53,6 +53,7 @@ class Gateway extends Base\Gateway
         Entity::TYPE                      => Entity::TYPE,
         Entity::RECEIVED                  => Entity::RECEIVED,
         Fields::CALLER_ACCOUNT_NUMBER     => Entity::ACCOUNT_NUMBER,
+        Fields::CALLER_IFSC_CODE          => Entity::IFSC,
     ];
 
     /**
@@ -130,7 +131,7 @@ class Gateway extends Base\Gateway
     protected function getIntentRequest($input, $response)
     {
         $content = [
-            Base\IntentParams::PAYEE_ADDRESS => $input['terminal']->getGatewayMerchantId2(),
+            Base\IntentParams::PAYEE_ADDRESS => $response[Fields::RECEIVER][Fields::ADDRESS],
             Base\IntentParams::PAYEE_NAME    => $this->getFormattedDba($input),
             Base\IntentParams::TXN_REF_ID    => $this->getFormattedRefId($response),
             Base\IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
@@ -379,6 +380,7 @@ class Gateway extends Base\Gateway
     {
         $attr = $this->getMappedAttributes($response);
 
+        $attr[Entity::VPA] = array_get($response, Fields::SENDER.'.'.Fields::ADDRESS);
         // To mark that we have received a response for this request
         $attr[Entity::RECEIVED] = 1;
 

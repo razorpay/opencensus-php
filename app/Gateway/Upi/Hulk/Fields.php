@@ -24,6 +24,7 @@ class Fields
     const CURRENCY              = 'currency';
     const RECEIVER              = 'receiver';
     const CALLER_ACCOUNT_NUMBER = 'caller_account_number';
+    const CALLER_IFSC_CODE      = 'caller_ifsc_code';
     const MERCHANT_REFERENCE_ID = 'merchant_reference_id';
 
     // Used callback
