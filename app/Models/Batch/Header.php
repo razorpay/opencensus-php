@@ -754,7 +754,7 @@ class Header
         $valid = (array_equal($expectedHeaders, $actualHeaders) === true);
 
         // Todo: Fix this hack!
-        if ($valid === false && $type === Type::PAYMENT_LINK)
+        if (($valid === false) and ($type === Type::PAYMENT_LINK))
         {
             $expectedHeaders = array_replace($expectedHeaders, [4 => self::AMOUNT_IN_PAISE]);
             $valid = (array_equal($expectedHeaders, $actualHeaders) === true);

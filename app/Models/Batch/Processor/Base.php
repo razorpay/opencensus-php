@@ -23,7 +23,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Base extends BaseModel\Core
 {
-    use FileHandlerTrait { parseTextFile as parentParseTextFile; }
+    use FileHandlerTrait;
 
     /**
      * Lock wait timeout for batch entity
@@ -95,12 +95,6 @@ class Base extends BaseModel\Core
      */
     protected $inputFileType;
     protected $outputFileType;
-
-    /**
-     * Todo: Fix this hack!
-     * @var bool
-     */
-    protected $usesNewPlHeader = false;
 
     public function __construct(Batch\Entity $batch)
     {
@@ -767,12 +761,7 @@ class Base extends BaseModel\Core
 
     protected function parseFileAndCleanEntries(string $filePath): array
     {
-        $entries = $this->parseFile($filePath);
-        $entries = $this->cleanParsedEntries($entries);
-
-        $this->setUsesNewPlHeaderFlagIfApplicable(array_keys(current($entries) ?: []));
-
-        return $entries;
+        return $this->cleanParsedEntries($this->parseFile($filePath));
     }
 
     /**
@@ -976,9 +965,7 @@ class Base extends BaseModel\Core
      */
     public function getHeadings(): array
     {
-        $headings = Batch\Header::getHeadersForFileTypeAndBatchType($this->inputFileType, $this->batch->getType());
-
-        return $this->updateHeaderValuesIfApplies($headings);
+        return Batch\Header::getHeadersForFileTypeAndBatchType($this->inputFileType, $this->batch->getType());
     }
 
     protected function parseTextRowWithHeadingMismatch($headings, $values, $ix)
@@ -988,24 +975,9 @@ class Base extends BaseModel\Core
         throw new BadRequestValidationFailureException($msg, Batch\Entity::FILE, compact('headings', 'values', 'ix'));
     }
 
-    /**
-     * {@inheritDoc}
-     * CSV optionally can contain header. When it does we need to set proper
-     * header version so that the read associative array is proper.
-     */
-    protected function parseTextFile($file, string $delimiter = '~')
-    {
-        // Reads the first line to set the header version. This is needed the way test file parsing works currently
-        $this->setUsesNewPlHeaderFlagIfApplicable(explode($delimiter, trim(fgets(fopen($file, 'r')))));
-
-        return $this->parentParseTextFile($file, $delimiter);
-    }
-
     public function getOutputFileHeadings(): array
     {
-        $headings = Batch\Header::getHeadersForFileTypeAndBatchType($this->outputFileType, $this->batch->getType());
-
-        return $this->updateHeaderValuesIfApplies($headings);
+        return Batch\Header::getHeadersForFileTypeAndBatchType($this->outputFileType, $this->batch->getType());
     }
 
     protected function removeErrorColumnsFromEntries(array & $entries)
@@ -1159,38 +1131,5 @@ class Base extends BaseModel\Core
     protected function shouldEncrypt()
     {
         return false;
-    }
-
-    /**
-     * Todo: Fix this hack!
-     * @param bool|array $headings
-     */
-    protected function setUsesNewPlHeaderFlagIfApplicable($headings)
-    {
-        if (empty($headings) === true)
-        {
-            return;
-        }
-
-        if (($this->batch->getType() === Batch\Type::PAYMENT_LINK) and
-            (in_array(Batch\Header::AMOUNT_IN_PAISE, $headings, true) === true))
-        {
-            $this->usesNewPlHeader = true;
-        }
-    }
-
-    /**
-     * @param  array $headings
-     * @return array
-     */
-    protected function updateHeaderValuesIfApplies(array $headings)
-    {
-        if (($this->batch->getType() === Batch\Type::PAYMENT_LINK) and
-            ($this->usesNewPlHeader === true))
-        {
-            return array_replace($headings, [4 => Batch\Header::AMOUNT_IN_PAISE]);
-        }
-
-        return $headings;
     }
 }
