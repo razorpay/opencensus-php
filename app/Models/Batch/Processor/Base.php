@@ -2,28 +2,28 @@
 
 namespace RZP\Models\Batch\Processor;
 
-use Carbon\Carbon;
 use Mail;
+use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
+
+use RZP\Models\Batch;
+use RZP\Models\Invoice;
 use RZP\Encryption\Type;
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Exception\BaseException;
-use RZP\Exception\LogicException;
-use RZP\Models\Base as BaseModel;
-use RZP\Models\Batch;
-use RZP\Models\Batch\Constants;
-use RZP\Models\FileStore;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
+use RZP\Exception\BaseException;
+use RZP\Exception\LogicException;
+use RZP\Models\Base as BaseModel;
 use Symfony\Component\HttpFoundation\File\File;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Base extends BaseModel\Core
 {
-    use FileHandlerTrait;
+    use FileHandlerTrait { parseTextFile as parentParseTextFile; }
 
     /**
      * Lock wait timeout for batch entity
@@ -95,6 +95,12 @@ class Base extends BaseModel\Core
      */
     protected $inputFileType;
     protected $outputFileType;
+
+    /**
+     * Todo: Fix this hack!
+     * @var bool
+     */
+    protected $usesNewPlHeader = false;
 
     public function __construct(Batch\Entity $batch)
     {
@@ -225,9 +231,9 @@ class Base extends BaseModel\Core
         $this->removeErrorColumnsFromEntries($previewData);
 
         $response = [
-            Constants::PROCESSABLE_COUNT     => count($correctEntries),
-            Constants::ERROR_COUNT           => count($entries) - count($correctEntries),
-            Constants::PARSED_ENTRIES        => $previewData,
+            Batch\Constants::PROCESSABLE_COUNT => count($correctEntries),
+            Batch\Constants::ERROR_COUNT       => count($entries) - count($correctEntries),
+            Batch\Constants::PARSED_ENTRIES    => $previewData,
         ];
 
         return $response;
@@ -761,7 +767,12 @@ class Base extends BaseModel\Core
 
     protected function parseFileAndCleanEntries(string $filePath): array
     {
-        return $this->cleanParsedEntries($this->parseFile($filePath));
+        $entries = $this->parseFile($filePath);
+        $entries = $this->cleanParsedEntries($entries);
+
+        $this->setUsesNewPlHeaderFlagIfApplicable(array_keys(current($entries) ?: []));
+
+        return $entries;
     }
 
     /**
@@ -965,7 +976,9 @@ class Base extends BaseModel\Core
      */
     public function getHeadings(): array
     {
-        return Batch\Header::getHeadersForFileTypeAndBatchType($this->inputFileType, $this->batch->getType());
+        $headings = Batch\Header::getHeadersForFileTypeAndBatchType($this->inputFileType, $this->batch->getType());
+
+        return $this->updateHeaderValuesIfApplies($headings);
     }
 
     protected function parseTextRowWithHeadingMismatch($headings, $values, $ix)
@@ -975,9 +988,24 @@ class Base extends BaseModel\Core
         throw new BadRequestValidationFailureException($msg, Batch\Entity::FILE, compact('headings', 'values', 'ix'));
     }
 
+    /**
+     * {@inheritDoc}
+     * CSV optionally can contain header. When it does we need to set proper
+     * header version so that the read associative array is proper.
+     */
+    protected function parseTextFile($file, string $delimiter = '~')
+    {
+        // Reads the first line to set the header version. This is needed the way test file parsing works currently
+        $this->setUsesNewPlHeaderFlagIfApplicable(explode($delimiter, trim(fgets(fopen($file, 'r')))));
+
+        return $this->parentParseTextFile($file, $delimiter);
+    }
+
     public function getOutputFileHeadings(): array
     {
-        return Batch\Header::getHeadersForFileTypeAndBatchType($this->outputFileType, $this->batch->getType());
+        $headings = Batch\Header::getHeadersForFileTypeAndBatchType($this->outputFileType, $this->batch->getType());
+
+        return $this->updateHeaderValuesIfApplies($headings);
     }
 
     protected function removeErrorColumnsFromEntries(array & $entries)
@@ -1131,5 +1159,38 @@ class Base extends BaseModel\Core
     protected function shouldEncrypt()
     {
         return false;
+    }
+
+    /**
+     * Todo: Fix this hack!
+     * @param bool|array $headings
+     */
+    protected function setUsesNewPlHeaderFlagIfApplicable($headings)
+    {
+        if (empty($headings) === true)
+        {
+            return;
+        }
+
+        if (($this->batch->getType() === Batch\Type::PAYMENT_LINK) and
+            (in_array(Batch\Header::AMOUNT_IN_PAISE, $headings, true) === true))
+        {
+            $this->usesNewPlHeader = true;
+        }
+    }
+
+    /**
+     * @param  array $headings
+     * @return array
+     */
+    protected function updateHeaderValuesIfApplies(array $headings)
+    {
+        if (($this->batch->getType() === Batch\Type::PAYMENT_LINK) and
+            ($this->usesNewPlHeader === true))
+        {
+            return array_replace($headings, [4 => Batch\Header::AMOUNT_IN_PAISE]);
+        }
+
+        return $headings;
     }
 }

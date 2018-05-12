@@ -33,6 +33,7 @@ class Header
     const CUSTOMER_NAME       = 'Customer Name';
     const CUSTOMER_EMAIL      = 'Customer Email';
     const CUSTOMER_CONTACT    = 'Customer Contact';
+    const AMOUNT_IN_PAISE     = 'Amount (In Paise)';
     const DESCRIPTION         = 'Description';
     const EXPIRE_BY           = 'Expire By';
     const PARTIAL_PAYMENT     = 'Partial Payment';
@@ -741,30 +742,33 @@ class Header
     /**
      * Validates headers of batch input file.
      *
-     * @param string $headerKey
-     * @param array  $keys
+     * @param string $type
+     * @param array  $actualHeaders
      *
      * @throws BadRequestException
      */
-    public static function validate(string $headerKey, array $keys)
+    public static function validate(string $type, array $actualHeaders)
     {
-        $expectedHeaders = self::HEADER_MAP[$headerKey][self::INPUT];
+        $expectedHeaders = self::HEADER_MAP[$type][self::INPUT];
 
-        $headersMissing = (bool) array_diff($expectedHeaders, $keys);
+        $valid = (array_equal($expectedHeaders, $actualHeaders) === true);
 
-        $extraHeadersInInput = (count($expectedHeaders) !== count($keys));
+        // Todo: Fix this hack!
+        if ($valid === false && $type === Type::PAYMENT_LINK)
+        {
+            $expectedHeaders = array_replace($expectedHeaders, [4 => self::AMOUNT_IN_PAISE]);
+            $valid = (array_equal($expectedHeaders, $actualHeaders) === true);
+        }
 
-        if (($headersMissing === true) or ($extraHeadersInInput === true))
+        if ($valid === false)
         {
             throw new BadRequestException(
-                        ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
-                        null,
-                        [
-                            'expected_headers'  => $expectedHeaders,
-                            'input_headers'     => $keys,
-                            'headers_missing'   => $headersMissing,
-                            'extra_headers'     => $extraHeadersInInput,
-                        ]);
+                ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
+                null,
+                [
+                    'expected_headers'  => $expectedHeaders,
+                    'input_headers'     => $actualHeaders,
+                ]);
         }
     }
 

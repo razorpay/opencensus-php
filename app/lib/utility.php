@@ -469,3 +469,17 @@ if (! function_exists('format_amount'))
         return number_format($amount/ 100, 2, '.', ',');
     }
 }
+
+if (! function_exists('array_equal'))
+{
+    /**
+     * Checks if two given lists are equal (ignoring ordering of members)
+     * @param  array  $list1
+     * @param  array  $list2
+     * @return bool
+     */
+    function array_equal(array $list1, array $list2): bool
+    {
+        return ((array_diff($list1, $list2) === []) and (array_diff($list2, $list1) === []));
+    }
+}

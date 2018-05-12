@@ -43,7 +43,7 @@ class PaymentLink
 
         // Amount needs to be formatted this way as excel reader in cases
         // reads 4255 as 4244.99999. This is known php + excel issue.
-        $amount = $entry[Batch\Header::AMOUNT];
+        $amount = $entry[Batch\Header::AMOUNT] ?? $entry[Batch\Header::AMOUNT_IN_PAISE];
         $amount = (is_numeric($amount) === true) ? (int) number_format($amount, 0, '', '') : $amount;
 
         // Get draft, sms_notify, email_notify from $params or use default as
