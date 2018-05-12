@@ -457,6 +457,7 @@ class Payment extends Base
             'contact'        => '+919918899029',
             'recurring_type' => 'auto',
             'auth_type'      => 'netbanking',
+            'recurring'      => 1,
         ];
 
         $attributes = array_merge($defaults, $attributes);
