@@ -296,8 +296,45 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $entities = [];
         $entities[] = $this->createDebitInitiatedEntities($registrationEntities);
+        $entities[0]['status_in_file'] = 'Process';
+
+        $entities[] = $this->createDebitInitiatedEntities($registrationEntities);
+        $entities[1]['status_in_file'] = 'Reject';
 
         $file = $this->generateEmandateDebitReconFile($entities);
+
+        $this->makeBatchRequest(
+            [
+                'type'     => 'emandate',
+                'sub_type' => 'debit',
+                'gateway'  => 'hdfc',
+            ],
+            $file
+        );
+
+        $this->assertDebitReconEntities($entities);
+    }
+
+    protected function assertDebitReconEntities($entities)
+    {
+        // Validate debit success entities
+
+        $payment = $this->getDbEntityById('payment', $entities[0]['payment']['id'])->toArray();
+
+        $this->assertEquals(Payment\Status::CAPTURED, $payment['status']);
+
+        $netbanking = $this->getDbEntityById('netbanking', $entities[0]['netbanking']['id'])->toArray();
+
+        $this->assertEquals('process', $netbanking[Netbanking::STATUS]);
+
+        // Validate registration failure entities
+        $payment = $this->getDbEntityById('payment', $entities[1]['payment']['id'])->toArray();
+
+        $this->assertEquals(Payment\Status::FAILED, $payment['status']);
+
+        $netbanking = $this->getDbEntityById('netbanking', $entities[1]['netbanking']['id'])->toArray();
+
+        $this->assertEquals('reject', $netbanking[Netbanking::STATUS]);
     }
 
     public function testSecondRecurringPaymentVerify()
@@ -601,7 +638,7 @@ class NetbankingHdfcEmandateTest extends TestCase
                 'Frequency'          => 'As & when Presented',
                 'FROM_DATE'          => '09/05/2018',
                 'TO_DATE'            => '31/12/2099',
-                'Status'             => 'Process',
+                'Status'             => $entityList['status_in_file'],
                 'Rejection_Remarks'  => '',
             ];
         }
@@ -682,6 +719,8 @@ class NetbankingHdfcEmandateTest extends TestCase
      */
     protected function createDebitInitiatedEntities($entities)
     {
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 4000]);
+
         $payment = $this->fixtures->create(
             'payment:emandate_debit',
             [
@@ -691,6 +730,7 @@ class NetbankingHdfcEmandateTest extends TestCase
                 'terminal_id' => 'NHdRecurringTl',
                 'token_id'    => $entities['token']['id'],
                 'gateway'     => 'netbanking_hdfc',
+                'order_id'    => $order['id'],
             ]
         );
 
