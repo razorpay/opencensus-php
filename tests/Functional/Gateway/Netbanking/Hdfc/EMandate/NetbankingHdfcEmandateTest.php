@@ -11,7 +11,6 @@ use RZP\Models\Gateway\File;
 use RZP\Models\Customer\Token;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Gateway\EMandate\Base as Email;
-use RZP\Tests\Functional\Batch\BatchTestTrait;
 use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
@@ -179,10 +178,10 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $entities = [];
 
-        $entities[] = $this->createRegistrationEntities();
+        $entities[] = $this->createRegistrationInitiatedEntities();
         $entities[0]['status_in_file'] = 'success';
 
-        $entities[] = $this->createRegistrationEntities();
+        $entities[] = $this->createRegistrationInitiatedEntities();
         $entities[1]['status_in_file'] = 'reject';
 
         $file = $this->generateEmandateRegisterReconFile($entities);
@@ -196,6 +195,7 @@ class NetbankingHdfcEmandateTest extends TestCase
             $file
         );
 
+        // Validate registration success entities
         $token = $this->getDbEntityById('token', $entities[0]['token']['id'])->toArray();
 
         $this->assertEquals(Token\RecurringStatus::CONFIRMED, $token['recurring_status']);
@@ -203,6 +203,23 @@ class NetbankingHdfcEmandateTest extends TestCase
         $payment = $this->getDbEntityById('payment', $entities[0]['payment']['id'])->toArray();
 
         $this->assertEquals(Payment\Status::CAPTURED, $payment['status']);
+
+        $netbanking = $this->getDbEntityById('netbanking', $entities[0]['netbanking']['id'])->toArray();
+
+        $this->assertEquals('confirmed', $netbanking[Netbanking::SI_STATUS]);
+
+        // Validate registration failure entities
+        $token = $this->getDbEntityById('token', $entities[1]['token']['id'])->toArray();
+
+        $this->assertEquals(Token\RecurringStatus::REJECTED, $token['recurring_status']);
+
+        $payment = $this->getDbEntityById('payment', $entities[1]['payment']['id'])->toArray();
+
+        $this->assertEquals(Payment\Status::AUTHORIZED, $payment['status']);
+
+        $netbanking = $this->getDbEntityById('netbanking', $entities[1]['netbanking']['id'])->toArray();
+
+        $this->assertEquals('rejected', $netbanking[Netbanking::SI_STATUS]);
     }
 
     public function testEmandateDebit()
@@ -472,12 +489,12 @@ class NetbankingHdfcEmandateTest extends TestCase
         return $payment;
     }
 
-    protected function createRegistrationEntities()
+    protected function createRegistrationInitiatedEntities()
     {
         $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
 
         $token = $this->fixtures->create(
-            'token:emandate_registration',
+            'token:emandate_registration_initiated',
             [
                 'terminal_id'    => 'NHdRecurringTl',
                 'bank'           => 'HDFC',
@@ -487,13 +504,12 @@ class NetbankingHdfcEmandateTest extends TestCase
         );
 
         $payment = $this->fixtures->create(
-            'payment:emandate_registration_success',
+            'payment:emandate_registration_initial',
             [
                 'bank'        => 'HDFC',
                 'order_id'    => $order['id'],
                 'terminal_id' => 'NHdRecurringTl',
                 'token_id'    => $token['id'],
-                'order_id'    => $order['id'],
                 'gateway'     => 'netbanking_hdfc',
             ]
         );
