@@ -81,6 +81,34 @@ class PaymentLinkTest extends TestCase
     }
 
     /**
+     * Tests pl batch with new header values (includes Amount (In Paise))
+     */
+    public function testCreateBatchOfPaymentLinkTypeWithNewHeaderValues()
+    {
+        $rows = $this->testData[__FUNCTION__ . 'FileRows'];
+
+        $this->createAndPutExcelFileInRequest($rows, __FUNCTION__);
+
+        $response = $this->startTest();
+
+        // Asserts batch entity's attributes
+        $entity = $this->getLastEntity('batch', true);
+
+        $this->assertEquals(1, $entity['success_count']);
+        $this->assertEquals(0, $entity['failure_count']);
+
+        // Asserts files existence
+        $this->assertInputFileExistsForBatch($response[Entity::ID]);
+        $this->assertOutputFileExistsForBatch($response[Entity::ID]);
+
+        // Assert invoice entity's attributes
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals('#1', $invoice['receipt']);
+        $this->assertEquals(500, $invoice['amount']);
+    }
+
+    /**
      * File's header is invalid
      */
     public function testCreateBatchOfPaymentLinkTypeWithInvalidFile1()
