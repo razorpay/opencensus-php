@@ -22,7 +22,6 @@ class NetbankingHdfcEmandateTest extends TestCase
 {
     use ReconTrait;
     use PaymentTrait;
-//    use BatchTestTrait;
     use DbEntityFetchTrait;
 
     protected $payment;
@@ -284,6 +283,16 @@ class NetbankingHdfcEmandateTest extends TestCase
             return ($mail->hasFrom('emandate@razorpay.com') and
                     ($mail->hasTo(EmailConstants::RECIPIENT_EMAILS_MAP[$key])));
         });
+    }
+
+    public function testEmandateDebitRecon()
+    {
+        $registrationEntities = $this->createRegistrationConfirmedEntities();
+
+        $entities = [];
+        $entities[] = $this->createDebitInitiatedEntities($registrationEntities);
+
+        $file = $this->generateEmandateDebitReconFile($entities);
     }
 
     public function testSecondRecurringPaymentVerify()
@@ -572,6 +581,43 @@ class NetbankingHdfcEmandateTest extends TestCase
         return (new TestingFile('HDFC_Emandate_Registration.xlsx', $handle));
     }
 
+    protected function generateEmandateDebitReconFile(array $entities)
+    {
+        $items = [];
+
+        foreach ($entities as $entityList)
+        {
+            $items[] = [
+                'Transaction_Ref_No' => $entityList['payment']['id'],
+                'Mandate ID'         => $entityList['token']['id'],
+                'Account_NO'         => $entityList['token']['account_number'],
+                'Amount'             => ($entityList['payment']['amount'] / 100),
+                'SIP_Date'           => '09/05/2018',
+                'Frequency'          => 'As & when Presented',
+                'FROM_DATE'          => '09/05/2018',
+                'TO_DATE'            => '31/12/2099',
+                'Status'             => 'Process',
+                'Rejection_Remarks'  => '',
+            ];
+        }
+
+        $content = [
+            'sheet1' => [
+                'config' => [
+                    'start_cell' => 'A1',
+                ],
+                'items' => $items
+            ]
+        ];
+
+        $data = $this->getExcelString('HDFC_Emandate_Debit', $content);
+
+        $handle = tmpfile();
+        fwrite($handle, $data);
+        fseek($handle, 0);
+        return (new TestingFile('HDFC_Emandate_Debit.xlsx', $handle));
+    }
+
     protected function makeBatchRequest($content, $file)
     {
         $request = [
@@ -586,5 +632,79 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->ba->proxyAuth('rzp_test_100000Razorpay');
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    /**
+     * We do not need to create order or netbanking entities , since those
+     * does not matter once the token registration is confirmed
+     *
+     * @return array
+     */
+    protected function createRegistrationConfirmedEntities()
+    {
+        $token = $this->fixtures->create(
+            'token:emandate_registration_confirmed',
+            [
+                'terminal_id'    => 'NHdRecurringTl',
+                'bank'           => 'HDFC',
+                'ifsc'           => 'HDFC0000186',
+                'account_number' => '50100100708641',
+            ]
+        );
+
+        $payment = $this->fixtures->create(
+            'payment:emandate_registration_confirmed',
+            [
+                'bank'        => 'HDFC',
+                'terminal_id' => 'NHdRecurringTl',
+                'token_id'    => $token['id'],
+                'gateway'     => 'netbanking_hdfc',
+            ]
+        );
+
+        return [
+            'token'   => $token,
+            'payment' => $payment,
+        ];
+    }
+
+    /**
+     * We create the payment and netbanking entities
+     * based on the token value we've got in param
+     *
+     * @param $entities - Fill the current payment's token entity from here
+     * @return array
+     */
+    protected function createDebitInitiatedEntities($entities)
+    {
+        $payment = $this->fixtures->create(
+            'payment:emandate_debit',
+            [
+                'amount'      => 4000,
+                'status'      => 'created',
+                'bank'        => 'HDFC',
+                'terminal_id' => 'NHdRecurringTl',
+                'token_id'    => $entities['token']['id'],
+                'gateway'     => 'netbanking_hdfc',
+            ]
+        );
+
+        $netbanking = $this->fixtures->create(
+            'netbanking',
+            [
+                'payment_id'      => $payment['id'],
+                'action'          => 'authorize',
+                'amount'          => 4000,
+                'bank'            => 'HDFC',
+                'received'        => false,
+                'caps_payment_id' => strtoupper($payment['id']),
+            ]
+        );
+
+        return [
+            'payment'    => $payment,
+            'netbanking' => $netbanking,
+            'token'      => $entities['token'],
+        ];
     }
 }
