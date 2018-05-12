@@ -194,6 +194,11 @@ class NetbankingHdfcEmandateTest extends TestCase
             $file
         );
 
+        $this->assertRegistrationReconEntities($entities);
+    }
+
+    protected function assertRegistrationReconEntities($entities)
+    {
         // Validate registration success entities
         $token = $this->getDbEntityById('token', $entities[0]['token']['id'])->toArray();
 
