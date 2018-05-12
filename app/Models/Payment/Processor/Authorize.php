@@ -365,7 +365,7 @@ trait Authorize
                 ],
                 'version'    => 1,
                 'payment_id' => $payment->getPublicId(),
-                'gateway'    => $response['gateway']
+                'gateway'    => $response['gateway'],
             ];
         }
 
@@ -2437,7 +2437,6 @@ trait Authorize
                 return $this->getIntentPaymentCreatedResponse($request, $payment);
 
             case $this->canRunOtpPaymentFlow($payment):
-            case ($payment->getFlow() === 'headless_otp'):
 
                 return $this->getOtpPaymentCreatedResponse($request, $payment);
 
@@ -3609,6 +3608,14 @@ trait Authorize
     {
         // All the IVR terminal use Otp payment flow regardless of their method
         if ($payment->terminal->isIvr() === true)
+        {
+            return true;
+        }
+
+        // If the payment is card payment with headless browser flow then
+        // we render the otp submission page to the user
+        if (($payment->isCard() === true) and
+            ($payment->getFlow() === Payment\Flow::HEADLESS_OTP))
         {
             return true;
         }

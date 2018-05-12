@@ -221,10 +221,7 @@ trait Callback
             $input['s2s'] = true;
         }
 
-        if ($payment->getFlow() === 'headless_otp')
-        {
-            $this->preProcessGatewayCallback($input);
-        }
+        $this->preProcessGatewayCallback($input);
 
         try
         {
@@ -328,7 +325,7 @@ trait Callback
         $payment = $this->payment;
 
         if (($payment->isCard() === true) and
-            ($payment->getFlow() === 'headless_otp'))
+            ($payment->getFlow() === Payment\Flow::HEADLESS_OTP))
         {
             $input['gateway'] = $this->submitHeadlessOtp($payment, $input['gateway']);
         }

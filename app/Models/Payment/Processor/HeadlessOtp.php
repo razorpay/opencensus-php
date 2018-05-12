@@ -17,8 +17,8 @@ trait HeadlessOtp
 {
     protected function canRunHeadlessOtpFlow($payment)
     {
-        if (($payment->merchant->isFeatureEnabled(Feature\Constants::OTPELF) === true) and
-            ($payment->isCard() === true))
+        if (($payment->isCard() === true) and
+            (Payment\Flow::isFeatureBasedFlowEnabled(Payment\Flow::HEADLESS_OTP) === true))
         {
             if ((Payment\Gateway::supportsHeadlessOtp($payment->getGateway()) === true) and
                 ($payment->card->iin->supports(IIN\Flow::HEADLESS_OTP) === true))
@@ -34,11 +34,10 @@ trait HeadlessOtp
     {
         if ($request === null)
         {
-            return null;
+            return false;
         }
 
-        // todo: move it to a dummy one
-        $request['content']['TermUrl'] = 'https://api.razorpay.com';
+        $this->setHeadlessDummyCallbackUrl($request['content']);
 
         $data = [
             'payment_id' => $payment->getId(),
@@ -51,12 +50,11 @@ trait HeadlessOtp
             ($response['data']['action'] === 'page_resolved') and
             ($response['data']['data']['type'] === 'otp'))
         {
-            $payment->setFlow('headless_otp');
+            $payment->setFlow(Payment\Flow::HEADLESS_OTP);
 
             return ['url' => $this->getOtpSubmitUrl(), 'method' => 'POST'];
         }
 
-        // Returning the same request as a fallback
         return $request;
     }
 
@@ -75,7 +73,12 @@ trait HeadlessOtp
             return $response['data']['data'];
         }
 
-        // Returning the same request as a fallback
+        // Handle error codes
         return [];
+    }
+
+    protected function getHeadlessDummyCallbackUrl(&$content)
+    {
+        $content['TermUrl'] = 'https://api.razorpay.com';
     }
 }

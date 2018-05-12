@@ -105,24 +105,13 @@ class OtpElf
             return [];
         }
 
-        $this->checkErrors(json_decode($response->body, true));
-
-        return json_decode($response->body, true);
-    }
-
-    protected function checkErrors($response)
-    {
+        $response = json_decode($response->body, true);
         $this->trace->info(
             TraceCode::OTPELF_RESPONSE,
             [
                 'response' => $response
             ]);
 
-        $success = $response['success'];
-
-        if ($success === false)
-        {
-            throw new Exception\RuntimeException('OtpElf request failed', $data);
-        }
+        return $response;
     }
 }
