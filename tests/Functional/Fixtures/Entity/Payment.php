@@ -458,5 +458,9 @@ class Payment extends Base
             'recurring_type' => 'auto',
             'auth_type'      => 'netbanking',
         ];
+
+        $attributes = array_merge($defaults, $attributes);
+
+        return $this->create($attributes);
     }
 }
