@@ -1041,14 +1041,14 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::CANCELLATION_REASON] = mb_substr($reason, 0, 255);
     }
 
-    protected function setReference1Attribute(string $reference1)
+    protected function setReference1Attribute($reference1)
     {
         $trimmedReference1 = (blank($reference1) === true) ? null : trim($reference1);
 
         $this->attributes[self::REFERENCE1] =  $trimmedReference1;
     }
 
-    protected function setReference2Attribute(string $reference2)
+    protected function setReference2Attribute($reference2)
     {
         $trimmedReference2 = (blank($reference2) === true) ? null : trim($reference2);
 

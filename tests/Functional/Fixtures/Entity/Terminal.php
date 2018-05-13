@@ -1574,6 +1574,7 @@ class Terminal extends Base
             'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => '100000Razorpay',
             'gateway_secure_secret'     => 'razorpay_password',
+            'gateway_terminal_password' => 'hulk_api_password',
             'upi'                       => true,
         ];
 

@@ -3,14 +3,9 @@
 namespace RZP\Tests\Functional\Gateway\Upi\Hulk;
 
 use Cache;
-use Closure;
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use Mail;
-
-use RZP\Exception\RuntimeException;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\GatewayErrorException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -47,6 +42,205 @@ class HulkGatewayTest extends TestCase
         $this->checkPaymentStatus($paymentId, $status);
 
         return $paymentId;
+    }
+
+    public function testPaymentCallback()
+    {
+        $this->doAuthPaymentViaAjaxRoute(array_except($this->payment, 'description'));
+
+        $payment = $this->getDbLastPayment();
+        $upi     = $this->getDbLastEntity('upi');
+
+        $this->assertSame('created', $payment->getStatus());
+        $this->assertSame('initiated', $upi->status_code);
+        $this->assertSame('vishnu@icici', $upi->vpa);
+
+        $callback = $this->mockServer()->getAsyncCallbackRequest($upi, $payment);
+
+        $response = $this->makeRequestAndGetContent($callback);
+        $this->assertEquals(['success' => true], $response);
+
+        $payment->reload();
+        $upi->reload();
+
+        $this->assertTrue($payment->isAuthorized());
+        $this->assertSame('completed', $upi['status_code']);
+        $this->assertSame('00100100100', $upi['account_number']);
+        $this->assertSame('RZP10010011', $upi['ifsc']);
+    }
+
+    public function testPaymentFailedCallbackMappedError()
+    {
+        $this->doAuthPaymentViaAjaxRoute(array_except($this->payment, 'description'));
+
+        $payment = $this->getDbLastPayment();
+        $upi     = $this->getDbLastEntity('upi');
+
+        $this->assertSame('created', $payment->getStatus());
+        $this->assertSame('initiated', $upi->status_code);
+
+        $override = [
+            'status'                => 'failed',
+            'error_code'            => 'BAD_REQUEST_ERROR',
+            'error_description'     => 'Invalid vpa for request',
+            'internal_error_code'   => 'BAD_REQUEST_INVALID_VPA',
+        ];
+
+        $this->mockServerContentFunction(
+            function(& $content, $action = null) use ($override)
+            {
+                if ($action === 'callback')
+                {
+                    $content['type'] = 'p2p_failed';
+                    $content['data'] = array_merge($content['data'], $override);
+                }
+            });
+
+        $callback = $this->getMockServer()->getAsyncCallbackRequest($upi, $payment);
+
+        $this->makeRequestAndCatchException(
+            function() use ($callback)
+            {
+                 $this->sendRequest($callback);
+            },
+            GatewayErrorException::class);
+
+        $payment->reload();
+
+        $this->assertSame('BAD_REQUEST_ERROR', $payment->getErrorCode());
+        $this->assertSame('BAD_REQUEST_PAYMENT_UPI_INVALID_VPA', $payment->getInternalErrorCode());
+        $this->assertSame('Invalid VPA. Please enter a valid Virtual Payment Address',
+                          $payment->getErrorDescription());
+
+    }
+
+    public function testPaymentFailedCallbackDefinedError()
+    {
+        $this->doAuthPaymentViaAjaxRoute(array_except($this->payment, 'description'));
+
+        $payment = $this->getDbLastPayment();
+        $upi     = $this->getDbLastEntity('upi');
+
+        $this->assertSame('created', $payment->getStatus());
+        $this->assertSame('initiated', $upi->status_code);
+
+        $override = [
+            'status'                => 'failed',
+            'error_code'            => 'GATEWAY_ERROR',
+            'error_description'     => 'Payment failed because of risk score',
+            'internal_error_code'   => 'GATEWAY_ERROR_DENIED_BY_RISK',
+        ];
+
+        $this->mockServerContentFunction(
+            function(& $content, $action = null) use ($override)
+            {
+                if ($action === 'callback')
+                {
+                    $content['type'] = 'p2p_failed';
+                    $content['data'] = array_merge($content['data'], $override);
+                }
+            });
+
+        $callback = $this->getMockServer()->getAsyncCallbackRequest($upi, $payment);
+
+        $this->makeRequestAndCatchException(
+            function() use ($callback)
+            {
+                $this->sendRequest($callback);
+            },
+            GatewayErrorException::class,
+            "Payment processing failed due to error at bank or wallet gateway\n".
+            "Gateway Error Code: GATEWAY_ERROR_DENIED_BY_RISK\n".
+            "Gateway Error Desc: Payment failed because of risk score");
+
+        $payment->reload();
+        $upi->reload();
+
+        $this->assertSame('GATEWAY_ERROR', $payment->getErrorCode());
+        $this->assertSame('GATEWAY_ERROR_DENIED_BY_RISK', $payment->getInternalErrorCode());
+        $this->assertSame('Payment processing failed due to error at bank or wallet gateway',
+                          $payment->getErrorDescription());
+
+        $this->assertSame('initiated', $upi['status_code']);
+    }
+
+    public function testPaymentFailedCallbackInvalidError()
+    {
+        $this->doAuthPaymentViaAjaxRoute(array_except($this->payment, 'description'));
+
+        $payment = $this->getDbLastPayment();
+        $upi     = $this->getDbLastEntity('upi');
+
+        $this->assertSame('created', $payment->getStatus());
+        $this->assertSame('initiated', $upi->status_code);
+
+        $override = [
+            'status'                => 'failed',
+            'error_code'            => 'GATEWAY_ERROR',
+            'error_description'     => 'Payment failed because of invalid error',
+            'internal_error_code'   => 'TOTALLY_INVALID_ERROR_CODE',
+        ];
+
+        $this->mockServerContentFunction(
+            function(& $content, $action = null) use ($override)
+            {
+                if ($action === 'callback')
+                {
+                    $content['type'] = 'p2p_failed';
+                    $content['data'] = array_merge($content['data'], $override);
+                }
+            });
+
+        $callback = $this->getMockServer()->getAsyncCallbackRequest($upi, $payment);
+
+        $this->makeRequestAndCatchException(
+            function() use ($callback)
+            {
+                $this->sendRequest($callback);
+            },
+            GatewayErrorException::class,
+            "Payment processing failed due to error at bank or wallet gateway\n".
+            "Gateway Error Code: TOTALLY_INVALID_ERROR_CODE\n".
+            "Gateway Error Desc: Payment failed because of invalid error");
+
+        $payment->reload();
+        $upi->reload();
+
+        $this->assertSame('GATEWAY_ERROR', $payment->getErrorCode());
+        $this->assertSame('GATEWAY_ERROR_FATAL_ERROR', $payment->getInternalErrorCode());
+        $this->assertSame('Payment processing failed due to error at bank or wallet gateway',
+                          $payment->getErrorDescription());
+
+        $this->assertSame('initiated', $upi['status_code']);
+    }
+
+    public function testPaymentCallbackFailed()
+    {
+        $this->doAuthPaymentViaAjaxRoute(array_except($this->payment, 'description'));
+
+        $payment = $this->getDbLastPayment();
+        $upi     = $this->getDbLastEntity('upi');
+
+        $this->assertSame('created', $payment->getStatus());
+        $this->assertSame('initiated', $upi->status_code);
+
+        $callback = $this->mockServer()->getAsyncCallbackRequest($upi, $payment);
+
+        $callback['server']['HTTP_X-Hulk-Signature'] .= 'wow';
+
+        $this->makeRequestAndCatchException(
+            function() use ($callback)
+            {
+                $this->sendRequest($callback);
+            },
+            GatewayErrorException::class,
+            "Payment processing failed due to error at bank or wallet gateway\n".
+            "Gateway Error Code: \n".
+            "Gateway Error Desc: ");
+
+        $payment->reload();
+
+        $this->assertSame('GATEWAY_ERROR_CHECKSUM_MATCH_FAILED', $payment->getInternalErrorCode());
     }
 
     public function testPaymentWithExpiryPublicAuth()
@@ -183,7 +377,7 @@ class HulkGatewayTest extends TestCase
         $this->assertArrayHasKey('intent_url', $response['data']);
 
         $expectedUrl = 'upi://pay?pa=testmerchant@razor&pn=TestMerchant&'.
-                       'tr=p2p_A11zpSL1413XHi&tn=TestMerchant&am=500&cu=INR&mc=5411';
+                       'tr=A11zpSL1413XHi&tn=TestMerchant&am=500&cu=INR&mc=5411';
 
         $this->assertSame($expectedUrl, $response['data']['intent_url']);
 

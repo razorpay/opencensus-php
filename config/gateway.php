@@ -189,8 +189,6 @@ return [
         'test_merchant_id'            => env('ATOM_TEST_MERCHANT_ID'),
         'test_secure_password'        => env('ATOM_TEST_SECURE_PASSWORD'),
         'test_access_code'            => env('ATOM_TEST_ACCESS_CODE'),
-        'live_authorize_hash_secret'  => env('ATOM_GATEWAY_LIVE_AUTHORIZE_HASH_SECRET'),
-        'live_callback_hash_secret'   => env('ATOM_GATEWAY_LIVE_CALLBACK_HASH_SECRET'),
     ],
 
     'blade' => [

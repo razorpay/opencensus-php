@@ -18,7 +18,6 @@ class Preferences
     const MID_MONEYVIEW        = '8hXTLsmoM3F6PH';
     const MID_WEALTHY          = '8lv4idBRY4C9c0';
     const MID_PIGGY            = '9IjdEkLQb0j2ro';
-    const MID_ENDURANCE        = ['9YAQd3b47mdIQY', '9ZO8jNaR0OORNH'];
     const MID_SHELL            = '9LMdTQdjgMJ6uR';
     const MID_SHELL_2          = '9R0AsTqocyuP1W';
     const MID_PAISABAZAAR      = '9dhe2WRR0XCQz6';
@@ -27,6 +26,13 @@ class Preferences
     const MID_UBER             = '82LK42BGTN2bOe';
     const MID_AMIT_MAHBUBANI   = '7SVOQZGZuwHr4I';
     const DEMO_ACCOUNT         = '100DemoAccount';
+    const MID_ENDURANCE        = [
+        '9YAQd3b47mdIQY', '9ZO8jNaR0OORNH', '9Y9m9XscC6Kh4W',
+        '8WRMdGzG1z5Eqw', '9naAGQdroegWIX', '9Y9m9XscC6Kh4W',
+        '9okVtwZr5vLm4K', '9oklLp2FhXTolM', 'A0ERwPs8muf9YS',
+        'A0GNi6PHlqy5zX', 'A0HuEfx39zhjr9', 'A5ONBRrNJ7dS1K',
+        'A5MmRVEM3qf6QJ', 'A5OZ1qi9tgwnZB', 'A5OeZOCaeyQQ8Q',
+    ];
 
     /**
      * This needs to go in DB, for hotfix we are keeping it here

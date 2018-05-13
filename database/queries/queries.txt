@@ -3539,3 +3539,7 @@ ALTER TABLE terminals
 ALTER TABLE terminals
     CHANGE mastercard_mpan mc_mpan varchar(16),
     rename index terminals_mastercard_mpan_index to terminals_mc_mpan_index;
+
+ALTER TABLE terminals
+    ADD COLUMN gateway_terminal_password2 text DEFAULT NULL AFTER gateway_terminal_password,
+    ADD COLUMN gateway_secure_secret2 VARCHAR(255) DEFAULT NULL AFTER gateway_secure_secret;
