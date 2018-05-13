@@ -290,6 +290,17 @@ class Gateway extends Base\Gateway
 
         $flgVerify = ($input['payment']['recurring'] === true) ? 'V' : 'Y';
 
+        $txnAmount = $input['payment']['amount'] / 100;
+
+        /**
+         * For registration request, even though the payment amount is 0,
+         * we hard code the amount to 0 to send to the bank.
+         */
+        if ($this->isFirstRecurringPayment($input))
+        {
+            $txnAmount = '1';
+        }
+
         $content = array(
             'MerchantCode'          => $this->getMerchantId(),
             'Date'                  => $date,
@@ -299,7 +310,7 @@ class Gateway extends Base\Gateway
             'ClientCode'            => $clientCode,
             'SuccessStaticFlag'     => 'N',
             'FailureStaticFlag'     => 'N',
-            'TxnAmount'             => $input['payment']['amount'] / 100,
+            'TxnAmount'             => $txnAmount,
         );
 
         $url = $this->getUrl();
@@ -309,7 +320,7 @@ class Gateway extends Base\Gateway
         $request['content'] = [];
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             $request);
 
         $response = $this->sendGatewayRequest($request);
