@@ -98,7 +98,7 @@ class IrctcRefundReport extends BasicEntityReport
                 self::MERCHANT_REFERENCE => $this->getReservationId($payment),
                 self::PAYMENT_DATE       => $this->getPaymentDate($payment),
                 self::PAYMENT_ID         => $payment->getPublicId(),
-                self::REFUND_AMOUNT      => $refund->getAmount(),
+                self::REFUND_AMOUNT      => $this->getRefundAmount($payment),
                 self::REFUND_STATUS      => '5', // 5 for success, 6 for failure
                 self::REFUND_REMARKS     => 'Refunded',
                 self::REFUND_DATE        => $this->getRefundedDate($refund),
@@ -107,6 +107,20 @@ class IrctcRefundReport extends BasicEntityReport
         }
 
         return $data;
+    }
+
+    protected function getRefundAmount(Payment\Entity $payment)
+    {
+        $amount = '';
+
+        $order = $payment->order;
+
+        if ($order !== null)
+        {
+            $amount = $order->getAmount()/100;
+        }
+
+        return $amount;
     }
 
 

@@ -1041,6 +1041,20 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::CANCELLATION_REASON] = mb_substr($reason, 0, 255);
     }
 
+    protected function setReference1Attribute($reference1)
+    {
+        $trimmedReference1 = (blank($reference1) === true) ? null : trim($reference1);
+
+        $this->attributes[self::REFERENCE1] =  $trimmedReference1;
+    }
+
+    protected function setReference2Attribute($reference2)
+    {
+        $trimmedReference2 = (blank($reference2) === true) ? null : trim($reference2);
+
+        $this->attributes[self::REFERENCE2] =  $trimmedReference2;
+    }
+
 // ----------------------- Mutator Ends ----------------------------------------
 
 // ----------------------- Accessor --------------------------------------------
@@ -2380,6 +2394,11 @@ class Entity extends Base\PublicEntity
     public function netbanking()
     {
         return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
+    }
+
+    public function enach()
+    {
+        return $this->hasOne('RZP\Gateway\Enach\Base\Entity');
     }
 
     // using hasOne here as we need only the first billdesk entity, actual relation can be one-to-many

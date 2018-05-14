@@ -13,10 +13,13 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Constants\Mode as RZPMode;
 use RZP\Models\Payment\Gateway as PG;
+use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Exception\GatewayErrorException;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     const PAYEE_ID = 'Razorpay';
 
     const CALLBACK_URL = 'https://www.api.razorpay.com';

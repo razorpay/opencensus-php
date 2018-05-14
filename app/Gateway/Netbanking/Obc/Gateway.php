@@ -107,7 +107,6 @@ class Gateway extends Base\Gateway
         ];
 
         $gatewayPayment->fill($attributes);
-        
         $this->repo->saveOrFail($gatewayPayment);
 
         return true;
@@ -248,7 +247,7 @@ class Gateway extends Base\Gateway
         {
            return [
                ResponseFields::TXN_STATUS => 'FAILURE',
-               ResponseFields::AMOUNT     => $this->formatAmount($payment['amount']),
+               ResponseFields::AMOUNT     => $this->formatAmount($payment['amount'] / 100),
                ResponseFields::PAYEE_ID   => $payment['id'],
            ];
         }

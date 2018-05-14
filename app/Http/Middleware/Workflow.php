@@ -3,6 +3,7 @@
 namespace RZP\Http\Middleware;
 
 use Closure;
+use ApiResponse;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Error\ErrorCode;
@@ -135,7 +136,11 @@ class Workflow
              ->setEntity($entity)
              ->setPermission($permission);
 
-        return $this->app['workflow']->trigger();
+        // Workflow service returns array value
+        $response = $this->app['workflow']->trigger();
+
+        // Middleware must return instance of Response class
+        return ApiResponse::json($response);
     }
 
     private function getRoutePermission($routeName)
