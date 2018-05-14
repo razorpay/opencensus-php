@@ -18,36 +18,11 @@ class Core extends Base\Core
         array $input,
         Merchant $merchant,
         Customer\Entity $customer = null,
-        Order $order = null,
-        bool $shared = false): Entity
+        Order $order = null): Entity
     {
         $virtualAccount = $this->createEntityAndAssociate($merchant);
 
-        $virtualAccount = $this->repo->transaction(function() use ($virtualAccount, $input, $customer, $order, $shared)
-        {
-            $virtualAccount->build($input);
-
-            if ($shared === true)
-            {
-                $virtualAccount->setId(Entity::SHARED_ID);
-            }
-
-            $this->validateDescriptor($virtualAccount);
-
-            $virtualAccount->customer()->associate($customer);
-
-            $virtualAccount->associateOrder($order);
-
-            $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
-
-            $this->repo->saveOrFail($virtualAccount);
-
-            return $virtualAccount;
-        });
-
-        $this->eventVirtualAccountCreated($virtualAccount);
-
-        return $virtualAccount;
+        return $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer, $order);
     }
 
     /**
@@ -69,6 +44,34 @@ class Core extends Base\Core
         return $virtualAccount;
     }
 
+    protected function buildVirtualAccountAndReceivers(
+        Entity $virtualAccount,
+        array $input,
+        Customer\Entity $customer,
+        Order $order = null): Entity
+    {
+        $virtualAccount = $this->repo->transaction(function() use ($virtualAccount, $input, $customer, $order)
+        {
+            $virtualAccount->build($input);
+
+            $this->validateDescriptor($virtualAccount);
+
+            $virtualAccount->customer()->associate($customer);
+
+            $virtualAccount->associateOrder($order);
+
+            $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
+
+            $this->repo->saveOrFail($virtualAccount);
+
+            return $virtualAccount;
+        });
+
+        $this->eventVirtualAccountCreated($virtualAccount);
+
+        return $virtualAccount;
+    }
+
     protected function createSharedVirtualAccount()
     {
         $sharedMerchantId = Processor::getDefaultMerchantId();
@@ -76,6 +79,10 @@ class Core extends Base\Core
         $merchant = $this->repo->merchant->find($sharedMerchantId);
 
         $customer = (new Customer\Core)->createOrFetchSharedCustomer($merchant);
+
+        $virtualAccount = (new Entity)->setId(Entity::SHARED_ID);
+
+        $virtualAccount->merchant()->associate($merchant);
 
         $input = [
             Entity::RECEIVERS => [
@@ -86,7 +93,7 @@ class Core extends Base\Core
             ],
         ];
 
-        return $this->create($input, $merchant, $customer, null, true);
+        return $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer, null);
     }
 
     public function createWithoutReceivers(array $input, Merchant $merchant)
