@@ -36,7 +36,10 @@ class Validator extends Base\Validator
                                     . 'application/xml,'
                                     . 'text/csv,'
                                     . 'text/plain,'
-                                    . 'application/cdfv2-unknown'
+                                    . 'application/cdfv2-unknown,'
+                                    . 'application/vnd.ms-office,'
+                                    . 'application/excel,'
+                                    . 'application/msexcel'
                                 . '|mimes:'
                                     . 'zip,'
                                     . 'xlsx,'
@@ -300,24 +303,30 @@ class Validator extends Base\Validator
 
         foreach ($entries as $idx => $entry)
         {
-            $input = Helpers\PaymentLink::getEntityInput($entry, $params);
-
-            // Need to create dummy entity and associate merchant
-            // for the validation around max allowed payment to happen.
-
-            $rule = Invoice\Validator::CREATE_DRAFT;
-
-            if ($input[Invoice\Entity::DRAFT] === '0')
-            {
-                $rule = Invoice\Validator::CREATE_ISSUED;
-            }
-
-            $invoice = new Invoice\Entity;
-
-            $invoice->merchant()->associate($merchant);
-
+            //
+            // This whole block needs to be in try..catch as following line may
+            // also throw bad request exception per row while parsing human readable
+            // date time values as epoch.
+            //
             try
             {
+                $input = Helpers\PaymentLink::getEntityInput($entry, $params);
+
+                $rule = Invoice\Validator::CREATE_DRAFT;
+
+                if ($input[Invoice\Entity::DRAFT] === '0')
+                {
+                    $rule = Invoice\Validator::CREATE_ISSUED;
+                }
+
+                //
+                // Need to create dummy entity and associate merchant for
+                // the validation around max allowed payment to happen.
+                //
+                $invoice = new Invoice\Entity;
+
+                $invoice->merchant()->associate($merchant);
+
                 $invoice->getValidator()->validateInput($rule, $input);
 
                 $error = [

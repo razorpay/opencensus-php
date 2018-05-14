@@ -96,6 +96,9 @@ class BilldeskGatewayTest extends TestCase
 
     public function testMakerCheckerPaymentNormalCallbackForFailed()
     {
+        // Skipping this test for now, removing ICICI from billdesk
+        $this->markTestSkipped();
+
         $this->fixtures->create('terminal:billdesk_terminal', [
             'corporate' => 1
         ]);

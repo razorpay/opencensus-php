@@ -134,6 +134,14 @@ class GatewayController extends Controller
 
                 break;
 
+            case Gateway::UPI_HULK:
+                $input['headers'] = Request::header();
+                $input['raw'] = Request::getContent();
+
+                $data = $this->processServerCallback($input, Gateway::UPI_HULK);
+
+                break;
+
         }
 
         // $input['gateway'] = $gateway;
@@ -256,6 +264,16 @@ class GatewayController extends Controller
         }
 
         return ['nb' => $nb, 'mode' => $mode];
+    }
+
+    /**
+     * Fetches list of all active downtimes as of now
+     */
+    public function getGatewayDowntimes(Downtime\Service $service)
+    {
+        $data = $service->getGatewayDowntimeDataForDashboard();
+
+        return ApiResponse::json($data);
     }
 
     /**

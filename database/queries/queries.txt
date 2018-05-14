@@ -3515,3 +3515,31 @@ ALTER TABLE payments
 
 ALTER TABLE settlements
     ADD INDEX settlements_channel_index (channel);
+
+ALTER TABLE pricing
+    ADD COLUMN receiver_type varchar(255) DEFAULT NULL AFTER international;
+
+# Invoice GST changes
+ALTER TABLE merchants
+    ADD COLUMN invoice_label_field varchar(50) DEFAULT NULL AFTER logo_url;
+
+ALTER TABLE invoices
+    ADD COLUMN merchant_label varchar(255) DEFAULT NULL AFTER customer_gstin;
+
+ALTER TABLE terminals
+    ADD COLUMN mastercard_mpan varchar(16) DEFAULT NULL after gateway_client_certificate,
+    ADD COLUMN visa_mpan varchar(16) DEFAULT NULL after mastercard_mpan,
+    ADD COLUMN rupay_mpan varchar(16) DEFAULT NULL after visa_mpan,
+    ADD COLUMN vpa varchar(255) DEFAULT NULL after rupay_mpan,
+    ADD INDEX terminals_mastercard_mpan_index (mastercard_mpan),
+    ADD INDEX terminals_visa_mpan_index (visa_mpan),
+    ADD INDEX terminals_rupay_mpan_index (rupay_mpan),
+    ADD INDEX terminals_vpa_index (vpa);
+
+ALTER TABLE terminals
+    CHANGE mastercard_mpan mc_mpan varchar(16),
+    rename index terminals_mastercard_mpan_index to terminals_mc_mpan_index;
+
+ALTER TABLE terminals
+    ADD COLUMN gateway_terminal_password2 text DEFAULT NULL AFTER gateway_terminal_password,
+    ADD COLUMN gateway_secure_secret2 VARCHAR(255) DEFAULT NULL AFTER gateway_secure_secret;

@@ -698,23 +698,25 @@ return [
     ],
 
     'testEditMerchantConfig' => [
-        'request' => [
+        'request'  => [
             'content' => [
-                'brand_color' => '00bcd4',
-                'handle'      => 'LOLO',
+                'brand_color'         => '00bcd4',
+                'handle'              => 'LOLO',
+                'invoice_label_field' => 'name',
             ],
-            'url' => '/account/config',
-            'method' => 'put',
-            'server' => [
+            'url'     => '/account/config',
+            'method'  => 'put',
+            'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
         ],
         'response' => [
             'content' => [
-                'id'          => '10000000000000',
-                'brand_color' => '#00BCD4',
-                'handle'      => 'LOLO',
+                'id'                  => '10000000000000',
+                'brand_color'         => '#00BCD4',
+                'handle'              => 'LOLO',
+                'invoice_label_field' => 'name',
             ]
         ]
     ],
@@ -737,6 +739,29 @@ return [
         ],
         'exception' => [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditMerchantInvalidInvoiceNameField' => [
+        'request'   => [
+            'content' => [
+                'invoice_label_field' => 'random',
+            ],
+            'url'     => '/account/config',
+            'method'  => 'put',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected invoice label field is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],

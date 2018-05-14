@@ -21,10 +21,16 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
+        Entity::GATEWAY_TERMINAL_PASSWORD2  => 'sometimes',
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes',
+        Entity::GATEWAY_SECURE_SECRET2      => 'sometimes',
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
         Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes',
+        Entity::MC_MPAN                     => 'sometimes|string|size:16',
+        Entity::VISA_MPAN                   => 'sometimes|string|size:16',
+        Entity::RUPAY_MPAN                  => 'sometimes|string|size:16',
+        Entity::VPA                         => 'sometimes|string|max:20',
         Entity::CATEGORY                    => 'sometimes|integer|digits:4',
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
@@ -45,16 +51,19 @@ class Validator extends Base\Validator
     ];
 
     protected static $editTerminalGateways = [
+        Payment\Gateway::ATOM,
         Payment\Gateway::HDFC,
         Payment\Gateway::HITACHI,
         Payment\Gateway::BILLDESK,
         Payment\Gateway::CARD_FSS,
         Payment\Gateway::AXIS_MIGS,
+        Payment\Gateway::UPI_HULK,
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::ENACH_RBL,
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::UPI_MINDGATE,
+        Payment\Gateway::NETBANKING_CSB,
         Payment\Gateway::NETBANKING_ICICI,
         Payment\Gateway::NETBANKING_INDUSIND,
     ];
@@ -73,11 +82,20 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID                => 'required|alpha_num|size:14',
     ];
 
+    protected static $upiIciciTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_icici',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::VPA                        => 'required_if:type.bharat_qr,1|string|max:20',
+        Entity::TYPE                       => 'sometimes|array',
+    ];
+
     protected static $atomTerminalRules = [
         Entity::GATEWAY                    => 'required|in:atom',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes',
+        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes',
     ];
 
     protected static $hdfcTerminalRules = [
@@ -100,7 +118,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID        => 'required|string|max:8',
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
-        Entity::CURRENCY                   => 'sometimes|alpha|size:3'
+        Entity::CURRENCY                   => 'sometimes|alpha|size:3',
+        Entity::MC_MPAN                    => 'required_if:type.bharat_qr,1|string|size:16',
+        Entity::VISA_MPAN                  => 'required_if:type.bharat_qr,1|string|size:16',
+        Entity::RUPAY_MPAN                 => 'required_if:type.bharat_qr,1|string|size:16',
     ];
 
     protected static $aepsIciciTerminalRules = [
@@ -187,6 +208,14 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL              => 'sometimes|boolean',
     ];
 
+    protected static $atomEditTerminalRules = [
+        Entity::GATEWAY                     => 'sometimes|in:atom',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
+        Entity::GATEWAY_TERMINAL_PASSWORD2  => 'sometimes',
+    ];
+
     protected static $billdeskEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:billdesk',
         Entity::TPV                        => 'sometimes|in:0,1,2',
@@ -199,6 +228,7 @@ class Validator extends Base\Validator
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::MODE                       => 'sometimes|in:3',
     ];
 
     protected static $hitachiEditTerminalRules = [
@@ -396,6 +426,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string',
     ];
 
     protected static $cardFssTerminalRules = [
@@ -415,6 +446,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|integer|in:2,3',
+    ];
+
+    protected static $upiHulkEditTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_hulk',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::TPV                        => 'sometimes|in:0,2',
     ];
 
     protected static $enachRblTerminalRules = [

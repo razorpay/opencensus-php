@@ -99,25 +99,4 @@ class Core extends Base\Core
             return $creditsLog;
         });
     }
-
-    /*
-     * Deletes Credit log for a merchant in a campaign
-     */
-    public function deleteCredits($creditsLog)
-    {
-        $creditsLog->setAuditAction(Action::DELETE_MERCHANT_CREDITS);
-
-        return $this->repo->transaction(function() use ($creditsLog)
-        {
-            $type = $creditsLog->getType();
-
-            // Since we are deleting, value should be negative
-            $creditsValue = -1 * $creditsLog->getValue();
-            $this->repo->deleteOrFail($creditsLog);
-
-            $this->updateCreditsInMerchantAccount($creditsLog->merchant, $creditsValue, $type);
-
-            return $creditsLog;
-        });
-    }
 }

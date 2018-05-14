@@ -21,7 +21,7 @@ class CriticalFailure extends Base
 
     protected function getFromHeader()
     {
-        return 'Critical error Alert';
+        return 'Settlement Alert';
     }
 
     protected function addSubject()

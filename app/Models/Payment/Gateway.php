@@ -142,6 +142,7 @@ class Gateway
         self::NETBANKING_RBL,
         self::NETBANKING_INDUSIND,
         self::NETBANKING_PNB,
+        self::NETBANKING_OBC,
         self::WALLET_OPENWALLET,
     ];
 
@@ -427,6 +428,14 @@ class Gateway
             Network::RUPAY,
         ],
         self::CARD_FSS => [
+            Network::MC,
+            Network::VISA,
+            Network::RUPAY,
+        ],
+    ];
+
+    public static $bharatQrCardNetwork = [
+        self::HITACHI => [
             Network::MC,
             Network::VISA,
             Network::RUPAY,
@@ -1009,6 +1018,18 @@ class Gateway
         }
 
         return array_values(array_unique($banks));
+    }
+
+    public static function getBharatQrCardNetworks(): array
+    {
+        $networks = [];
+
+        foreach (self::$bharatQrCardNetwork as $bharatQrGateways)
+        {
+            $networks = array_merge($networks, $bharatQrGateways);
+        }
+
+        return array_values(array_unique($networks));
     }
 
     public static function getZeroRupeeEmandateBanks(): array

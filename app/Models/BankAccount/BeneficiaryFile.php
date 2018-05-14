@@ -15,9 +15,13 @@ use RZP\Models\Settlement\Holidays;
 
 class BeneficiaryFile extends Base\Core
 {
-    public function generate(string $channel): array
+    public function generate(array $input, string $channel): array
     {
-        $bankAccounts = (new BankAccount\Repository)->getAllActivatedMerchantAccountsOrderedByCreatedAt();
+        (new Validator)->validateInput('merchant_beneficiary_register', $input);
+
+        $merchantIds = $input['merchant_ids'] ?? [];
+
+        $bankAccounts = (new BankAccount\Repository)->getAllActivatedMerchantAccountsOrderedByCreatedAt($merchantIds);
 
         $result = $this->generateBeneficiaryFile($bankAccounts, $channel);
 

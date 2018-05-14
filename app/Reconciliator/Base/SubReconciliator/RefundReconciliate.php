@@ -49,6 +49,14 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
     public function runReconciliate($row)
     {
+        //
+        // Resetting row attributes here which could have been set during
+        // reconciliation of a particular row. This is mainly done for
+        // resetting failUnprocessedRow attribute which should be reset
+        // for each row.
+        //
+        $this->resetRowProcessingAttributes();
+
         $rowDetails = $this->getRowDetailsStructured($row);
 
         if (empty($rowDetails) === true)
@@ -106,7 +114,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'message'       => 'Unable to perform one of the reconciliation actions -> ' . $ex->getMessage(),
                     'row'           => $row,
                     'extra_details' => $this->extraDetails,
-                    'gateway'       => get_called_class()
+                    'gateway'       => $this->gateway
                 ]);
 
             $this->trace->traceException($ex);
@@ -117,12 +125,12 @@ class RefundReconciliate extends Foundation\SubReconciliate
         }
     }
 
-    public function resetProcessingAttributes()
+    public function resetRowProcessingAttributes()
     {
         $this->payment = null;
         $this->refund  = null;
 
-        parent::resetProcessingAttributes();
+        parent::resetRowProcessingAttributes();
     }
 
     protected function getReconRefundAmount(array $row)
@@ -168,7 +176,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'trace_code' => TraceCode::RECON_MISMATCH,
                     'message'    => 'Payment status is failed.',
                     'payment_id' => $this->payment->getId(),
-                    'gateway'    => get_called_class()
+                    'gateway'    => $this->gateway
                 ]);
 
             return false;
@@ -192,7 +200,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                         'trace_code'    => TraceCode::RECON_MISMATCH,
                         'message'       => 'Refund transaction not found in DB',
                         'refund_id'     => $this->refund->getId(),
-                        'gateway'       => get_called_class()
+                        'gateway'       => $this->gateway
                     ]);
 
                 return false;
@@ -258,7 +266,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'message'       => 'Refund transaction create failed with -> ' . $ex->getMessage(),
                     'payment_id'    => $this->payment->getId(),
                     'refund_id'     => $this->refund->getId(),
-                    'gateway'       => get_called_class(),
+                    'gateway'       => $this->gateway,
                 ]);
 
             $this->trace->traceException($ex);
@@ -278,7 +286,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                 'message'       => 'Attempting to create refund transaction in recon',
                 'payment_id'    => $this->payment->getId(),
                 'refund_id'     => $this->refund->getId(),
-                'gateway'       => get_called_class()
+                'gateway'       => $this->gateway
             ]);
 
         $processor = new Payment\Processor\Processor($this->refund->merchant);
@@ -320,7 +328,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'message'    => 'Corresponding payment for the refund not found in DB.',
                     'row'        => $row,
                     'refund_id'  => $refundId,
-                    'gateway'    => get_called_class()
+                    'gateway'    => $this->gateway
                 ]);
 
             throw new ReconciliationException(
@@ -339,7 +347,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
         $rowDetails = [
             BaseReconciliate::REFUND_ID             => $refundId,
             BaseReconciliate::GATEWAY_SETTLED_AT    => $gatewaySettledAt,
-            BaseReconciliate::ARN                   => $arn,
+            BaseReconciliate::ARN                   => trim($arn),
         ];
 
         return $rowDetails;
@@ -363,7 +371,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'message'    => 'Refund ID being sent in the file is not as expected.',
                     'row'        => $row,
                     'refund_id'  => $refundId,
-                    'gateway'    => get_called_class()
+                    'gateway'    => $this->gateway
                 ]);
 
             return null;
@@ -381,11 +389,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
             {
                 $this->messenger->raiseReconAlert(
                     [
-                        'trace_code' => TraceCode::RECON_MISMATCH,
-                        'message' => 'Unable to create a refund on API after finding it missing',
-                        'row' => $row,
-                        'refund_id' => $refundId,
-                        'gateway' => get_called_class(),
+                        'trace_code'    => TraceCode::RECON_MISMATCH,
+                        'message'       => 'Unable to create a refund on API after finding it missing',
+                        'row'           => $row,
+                        'refund_id'     => $refundId,
+                        'gateway'       => $this->gateway,
                     ]);
 
                 return null;
@@ -420,7 +428,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                 'message'    => 'Refund not found in DB. -> ' . $ex->getMessage(),
                 'row'        => $row,
                 'refund_id'  => $refundId,
-                'gateway'    => get_called_class()
+                'gateway'    => $this->gateway
             ]);
 
         $paymentId = $this->getPaymentId($row);
@@ -436,11 +444,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
-                    'row' => $row,
-                    'message' => 'Unable to get the payment ID or amount from the refund recon file',
-                    'refund_id' => $refundId,
+                    'row'           => $row,
+                    'message'       => 'Unable to get the payment ID or amount from the refund recon file',
+                    'refund_id'     => $refundId,
                     'refund_amount' => $refundAmount,
-                    'payment_id' => $paymentId,
+                    'payment_id'    => $paymentId,
                 ]);
 
             return false;
@@ -539,10 +547,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     $this->messenger->raiseReconAlert(
                         [
                             'trace_code'    => TraceCode::RECON_MISMATCH,
+                            'info_code'     => 'DUPLICATE_ROW',
                             'message'       => 'Arn number for the refund entity does not match',
                             'row'           => $rowDetails,
                             'refund_id'     => $refund->getId(),
-                            'gateway'       => get_called_class(),
+                            'gateway'       => $this->gateway,
                             'refund_arn'    => $currentArn,
                         ]);
 

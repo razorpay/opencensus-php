@@ -359,7 +359,7 @@ class MerchantController extends Controller
 
     public function getMerchantBeneficiaryFile($channel)
     {
-        $data = $this->service()->getMerchantBeneficiaryFile($channel);
+        $data = $this->service()->getMerchantBeneficiaryFile($this->input, $channel);
 
         return ApiResponse::json($data);
     }
@@ -648,14 +648,6 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
-
-    public function deleteCreditsLog(Credits\Service $service, $mid, $id)
-    {
-        $data = $service->deleteCreditsLog($mid, $id);
-
-        return ApiResponse::json($data);
-    }
-
 // --------------------- End Credits API Handlers -----------------------------------------
 
 

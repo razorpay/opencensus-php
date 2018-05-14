@@ -269,6 +269,7 @@ class PublicErrorDescription
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS                                = 'A record with same gateway merchant id (mid) exists';
     const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY                      = 'A terminal for this gateway for this merchant already exists';
     const BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT                    = 'This operation is not allowed for test accounts';
+    const BAD_REQUEST_FIELD_ALREADY_EXISTS                                      = 'A terminal with the same field exists';
 
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                       = 'Payment failed because UPI request expired';
@@ -470,7 +471,6 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY                         = 'Some/all payment links of given batch has been issued already';
     const BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY                          = 'Notification for this batch has already been sent';
 
-    const BAD_REQUEST_API_KEY_NOT_PRESENT                                       = 'The operation cannot be performed without an API key being generated';
     const BAD_REQUEST_ITEM_INACTIVE                                             = 'Item cannot be used as it is inactive';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                     = 'You can not edit/delete an item with which invoices have been created already';
     const BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE                                    = 'Can only reuse an item of the same item type';

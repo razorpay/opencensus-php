@@ -268,11 +268,11 @@ class Reconciliate extends Base\Core
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code' => TraceCode::RECON_PARSE_ERROR,
-                    'message' => 'Unable to figure out the reconciliation type. Skipping this file.',
-                    'reconciliation_type' => $reconciliationType,
-                    'extra_details' => $extraDetails,
-                    'gateway' => get_called_class()
+                    'trace_code'            => TraceCode::RECON_PARSE_ERROR,
+                    'message'               => 'Unable to figure out the reconciliation type. Skipping this file.',
+                    'reconciliation_type'   => $reconciliationType,
+                    'extra_details'         => $extraDetails,
+                    'gateway'               => $this->gateway
                 ]);
 
             return null;
@@ -381,6 +381,8 @@ class Reconciliate extends Base\Core
     protected function getBatchProcessingSummary($batch)
     {
         $summary = [
+            'info'          => 'Processed Batch Summary',
+            'file'          => basename($batch->latestFile()->location),
             'total_count'   => $batch->getTotalCount(),
             'success_count' => $batch->getSuccessCount(),
             'failure_count' => $batch->getFailureCount(),

@@ -10,7 +10,7 @@ class Invitation extends Base
     {
         $defaultValues = [
            'role'        => 'manager',
-           'email'       => 'testTeamInvite@razorpay.com',
+           'email'       => 'testteaminvite@razorpay.com',
            'merchant_id' => self::DEFAULT_MERCHANT_ID,
            'token'       => str_random(40)
         ];

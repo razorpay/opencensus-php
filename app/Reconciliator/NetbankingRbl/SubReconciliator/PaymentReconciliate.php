@@ -6,16 +6,14 @@ use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Rbl\Status;
 use RZP\Gateway\Netbanking\Rbl\ClaimFields;
-use RZP\Models\Payment\Status as PaymentStatus;
-use RZP\Models\Payment\Service as PaymentService;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
     protected $netbankingRepo;
 
-    public function __construct()
+    public function __construct(string $gateway = null)
     {
-        parent::__construct();
+        parent::__construct($gateway);
 
         $this->netbankingRepo = $this->repo->netbanking;
     }

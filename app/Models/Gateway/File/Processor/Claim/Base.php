@@ -22,7 +22,8 @@ class Base extends BaseProcessor
      */
     const RECONCILED_PAYMENTS_REQUIRED_TARGETS = [
         Constants::KOTAK,
-        Constants::RBL
+        Constants::RBL,
+        Constants::OBC,
     ];
 
     public function fetchEntities(): PublicCollection

@@ -81,17 +81,16 @@ class SubReconciliate extends Base\Core
      * @var array
      */
     protected $extraDetails = [];
+
     /**
      * This method resets any instance attributes which could have been set during
      * processing reconciliation of a particular row. In certain cases like combined
-     * reconciliate the  subreconciliator instances are reused so we don't want
+     * reconciliate, the subreconciliator instances are reused so we don't want
      * instance attributes to persist between specific runs. Implementation to be
      * provided by child classes
      */
-    public function resetProcessingAttributes()
+    public function resetRowProcessingAttributes()
     {
-        $this->extraDetails = [];
-
         $this->setFailUnprocessedRow(true);
     }
 
@@ -312,13 +311,18 @@ class SubReconciliate extends Base\Core
      * or refund entity to reconcile, we mark the row processing as success or failure
      * depending on the specific gateway's reconciliator.
      *
-     * @param  array  $row
+     * @param  array $row
+     *
+     * @throws LogicException
      */
     protected function handleUnprocessedRow(array $row)
     {
+        $rowStatus = ($this->failUnprocessedRow === true) ? 'Failed' : 'Success';
+
         $this->trace->info(TraceCode::RECON_UNPROCESSED_ROW,
             [
-                'gateway' => get_called_class(),
+                'gateway' => $this->gateway,
+                'status'  => $rowStatus,
                 'row'     => $row,
             ]);
 

@@ -70,6 +70,30 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddBharatQrTerminal()
+    {
+        $this->startTest();
+    }
+
+    public function testReassignBharatQrTerminal()
+    {
+        $this->fixtures->create('terminal:bharat_qr_terminal');
+
+        $this->startTest();
+    }
+
+    public function testAddUpiBharatQrTerminal()
+    {
+        $this->startTest();
+    }
+
+    public function testReassignUpiBharatQrTerminal()
+    {
+        $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+
+        $this->startTest();
+    }
+
     public function testReassignTerminalForSameGateway()
     {
         $this->startTest();

@@ -850,7 +850,7 @@ trait Authorize
         }
         else if ($payment->getAuthType() === Payment\AuthType::SKIP)
         {
-            $this->verifyFeatureForMerchant($merchant, Feature\Constants::SKIP_PAYMENT_AUTH);
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::DIRECT_DEBIT);
         }
         else
         {
