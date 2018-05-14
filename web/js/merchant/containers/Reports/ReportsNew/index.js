@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import AsyncButton from 'react-async-button';
+
 import { saveAs } from 'file-saver';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import moment from 'moment';
@@ -12,6 +12,7 @@ import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import AccountsList from 'rzp/ui/AccountsList/index.js';
 import { openModal, closeModal } from 'rzp/modules/modals';
+import store from 'merchant/store';
 
 import { fetchAccountsApi } from 'merchant/modules/marketplace/accounts';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
@@ -19,6 +20,8 @@ import {
   getConfigs,
   generateReport,
   generateReportV2,
+  addReportToList,
+  removeReportFromList,
 } from 'merchant/modules/reports';
 import SelectConfig from 'merchant/components/Reports/ReportsNew/SelectConfig';
 import EmailReport from 'merchant/components/Reports/ReportsNew/EmailReport';
@@ -65,7 +68,13 @@ const requestFailedFunc = () => {
       invoiceDate: selector(state, 'invoiceDate'),
     };
   },
-  { ...NotificationsActions, openModal, closeModal }
+  {
+    ...NotificationsActions,
+    openModal,
+    closeModal,
+    addReportToList,
+    removeReportFromList,
+  }
 )
 @reduxForm({
   form: 'generateReports',
@@ -134,12 +143,20 @@ export default class ReportsContainer extends Component {
       invoiceDate: moment()
         .subtract(1, 'months')
         .startOf('month'),
+      currentReportList: store.getState().reports.currentReportList,
     };
 
     this.onConfigChange = ::this.onConfigChange;
     this.onAccountChange = ::this.onAccountChange;
     this.generateReport = ::this.generateReport;
     this.validateInvoiceMonthYear = ::this.validateInvoiceMonthYear;
+
+    store.subscribe(() => {
+      //update state when store changes
+      this.setState({
+        currentReportList: store.getState().reports.currentReportList,
+      });
+    });
   }
 
   onConfigChange({ option }) {
@@ -300,13 +317,17 @@ export default class ReportsContainer extends Component {
             ...(emails && { emails }),
           };
 
+        this.props.addReportToList(reqData);
+
         return generateReportV2(reqData, isMerchantAccount).then(data => {
           if (data.error) {
+            // this.props.removeReportFromList(selectedConfig.value);
             return this.props.showNotification({
               type: 'error',
               message: data.error,
             });
           }
+
           window.location = data.url;
         });
       }
@@ -371,9 +392,13 @@ export default class ReportsContainer extends Component {
     }
   }
 
-  openEmailReportModal = () => {
+  handleCancel = () => {};
+
+  openEmailReportModal = e => {
     const { user } = this.props;
     const { accounts } = this.state;
+
+    const isPatch = !!e.target.dataset.ispatch;
 
     const emails = [
       user.contact_email,
@@ -431,6 +456,7 @@ export default class ReportsContainer extends Component {
       accounts,
       selectedConfig,
       selectedAccount,
+      currentReportList,
     } = this.state;
 
     const { type, date, invoiceDate } = this.props;
@@ -548,16 +574,40 @@ export default class ReportsContainer extends Component {
                 </footer>
               )}
               <hr />
-              <AsyncButton
-                class="btn btn-primary"
-                onClick={this.generateReport}
-                text="Download Report"
-              />
-              <AsyncButton
-                class="btn btn-default m-l"
-                onClick={this.openEmailReportModal}
-                text="Email Report"
-              />
+
+              {!currentReportList[selectedConfig.value] && (
+                <Fragment>
+                  <button class="btn btn-primary" onClick={this.generateReport}>
+                    Download Report
+                  </button>
+                  <button
+                    class="btn btn-default m-l"
+                    onClick={this.openEmailReportModal}
+                  >
+                    Email Report
+                  </button>
+                </Fragment>
+              )}
+
+              {Object.keys(currentReportList).map(config_id => (
+                <div
+                  class="report-progress"
+                  key={config_id}
+                  style={{ margin: '20px 0' }}
+                >
+                  {/* TODO: add report type */}
+                  Genrating Report
+                  <div class="bar-loader" />
+                  This may take some time to download. You can also choose to
+                  <span
+                    class="btn-link"
+                    onClick={this.openEmailReportModal}
+                    data-ispatch={1}
+                  >
+                    Email this report.
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
