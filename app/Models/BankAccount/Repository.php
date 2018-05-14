@@ -142,13 +142,19 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getAllActivatedMerchantAccountsOrderedByCreatedAt()
+    public function getAllActivatedMerchantAccountsOrderedByCreatedAt(array $merchantIds)
     {
-        return $this->newQuery()
-                    ->where(BankAccount\Entity::TYPE, '=', BankAccount\Type::MERCHANT)
-                    ->with(['source', 'source.merchantDetail'])
-                    ->oldest()
-                    ->get();
+        $query = $this->newQuery()
+                      ->where(BankAccount\Entity::TYPE, '=', BankAccount\Type::MERCHANT)
+                      ->with(['source', 'source.merchantDetail'])
+                      ->oldest();
+
+        if (empty($merchantIds) === false)
+        {
+            $query->whereIn(BankAccount\Entity::MERCHANT_ID, $merchantIds);
+        }
+
+        return $query->get();
     }
 
     public function getMerchantBankAccountsBetweenTimestamp($from, $to)

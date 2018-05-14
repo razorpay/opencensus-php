@@ -47,7 +47,7 @@ class CombinedReconciliate  extends Base\CombinedReconciliate
                     'info_code'     => 'UNKNOWN_HDFC_ENTITY_TYPE',
                     'message'       => 'This payment has to be authorized and reconciled manually.',
                     'row_details'   => $row,
-                    'gateway'       => get_called_class()
+                    'gateway'       => $this->gateway
                 ]);
 
             return self::NA;

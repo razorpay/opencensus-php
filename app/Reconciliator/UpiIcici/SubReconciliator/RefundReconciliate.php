@@ -78,7 +78,7 @@ class RefundReconciliate extends Base\RefundReconciliate
                     'expected_amount' => $this->refund->getBaseAmount(),
                     'currency'        => $this->refund->getCurrency(),
                     'row'             => $row,
-                    'gateway'         => get_called_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             return false;

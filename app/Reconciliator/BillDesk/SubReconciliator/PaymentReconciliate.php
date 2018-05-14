@@ -102,7 +102,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'trace_code'    => TraceCode::RECON_INFO_ALERT,
                     'message'       => 'Unable to parse settlement date -> ' . $ex->getMessage(),
                     'row'           => $row,
-                    'gateway'       => get_called_class()
+                    'gateway'       => $this->gateway
                 ]);
 
             $this->trace->traceException($ex);

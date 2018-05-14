@@ -55,6 +55,9 @@ class CreateEnachTable extends Migration
             $table->string(Enach::REGISTRATION_STATUS)
                   ->nullable();
 
+            $table->integer(Enach::REGISTRATION_DATE)
+                  ->nullable();
+
             $table->string(Enach::ERROR_MESSAGE)
                   ->nullable();
 
@@ -71,6 +74,7 @@ class CreateEnachTable extends Migration
 
             $table->index(Enach::UMRN);
             $table->index(Enach::GATEWAY_REFERENCE_ID);
+            $table->index(Enach::REGISTRATION_DATE);
             $table->index(Enach::CREATED_AT);
         });
     }

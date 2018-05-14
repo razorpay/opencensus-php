@@ -1288,6 +1288,7 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
                         'created',
+                        'initiated',
                         'failed',
                         'processed',
                     ],
