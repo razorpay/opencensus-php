@@ -227,6 +227,34 @@ class Pricing extends Base
                 'fixed_rate'          => 0,
                 'max_fee'             => 5000,
             ],
+            [
+                'id'                  => '1zE31zbybGCab2',
+                'plan_id'             => 'A8UwvIbaL8n4Q8',
+                'plan_name'           => 'testDefaultQrPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'card',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 100,
+                'fixed_rate'          => 0,
+                'max_fee'             => 5000,
+                'receiver_type'       => 'qr_code',
+            ],
+            [
+                'id'                  => '1zE31zbybacab2',
+                'plan_id'             => 'A8UwvIbaL8n4Q8',
+                'plan_name'           => 'testDefaultQrPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'upi',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 100,
+                'fixed_rate'          => 0,
+                'max_fee'             => 5000,
+                'receiver_type'       => 'qr_code',
+            ]
         ];
 
         $this->addPricingRulesToDb($rows);
