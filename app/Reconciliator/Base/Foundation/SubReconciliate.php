@@ -285,9 +285,16 @@ class SubReconciliate extends Base\Core
         // files usually have extra rows, and hence updating the total_count here
         // will not reflect the actual number of rows in the file.
         //
-        $batch->setSuccessCount(count($this->successes));
+        // Getting previous success and failure count if set, as in case of multiple sheets
+        // $this->successes contains only current sheet's success rows
 
-        $batch->setFailureCount(count($this->failures));
+        $successes = $batch->getSuccessCount();
+
+        $failures = $batch->getFailureCount();
+
+        $batch->setSuccessCount($successes + count($this->successes));
+
+        $batch->setFailureCount($failures + count($this->failures));
     }
 
     /**
