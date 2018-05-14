@@ -67,6 +67,7 @@ class Constants
     const FSS_IPAY                      = 'fss_ipay';
     const EXPOSE_CARD_EXPIRY            = 'expose_card_expiry';
     const EXPOSE_CARD_IIN               = 'expose_card_iin';
+    const S2S_OPTIONAL_DATA             = 's2s_optional_data';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -162,6 +163,7 @@ class Constants
         self::DIRECT_DEBIT                  => true,
         self::EXPOSE_CARD_EXPIRY            => true,
         self::EXPOSE_CARD_IIN               => true,
+        self::S2S_OPTIONAL_DATA             => true,
     ];
 
     // Entity type constants
