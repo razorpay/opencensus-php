@@ -31,6 +31,18 @@ class MySqlConnection extends BaseMySqlConnection
      */
     protected $trace;
 
+    /**
+     * Indicates if the read PDO connection needs to be reevaluated for replica lag.
+     * @var boolean
+     */
+    protected $forceCheckReplicaLag;
+
+    /**
+     * Holds the previously established read pdo connection if any, for usage later once replication lag is resolved.
+     * @var mixed
+     */
+    protected $previousReadPdo;
+
     public function __construct($pdo, $database = '', $tablePrefix = '', array $config = [])
     {
         parent::__construct($pdo, $database, $tablePrefix, $config);
@@ -42,6 +54,10 @@ class MySqlConnection extends BaseMySqlConnection
         $this->lagChecker = $this->getLagChecker($lagCheckConfig);
 
         $this->trace = TraceFacade::getFacadeRoot();
+
+        $this->forceCheckReplicaLag = false;
+
+        $this->previousReadPdo = null;
     }
 
     protected function getLagChecker(array $config)
@@ -89,12 +105,42 @@ class MySqlConnection extends BaseMySqlConnection
 
             //
             // When the pdo connection to replica is going to get established the
-            // first time, use the lagChecker to determine whether to establish
-            // the connection or not.
+            // first time, or an established pdo connection needs to be rechecked
+            // for replica lag (long running queue workers),use the lagChecker to
+            // determine whether to establish the connection or not.
             //
-            if ($this->readPdo instanceof Closure)
+            if (($this->readPdo instanceof Closure) or
+                ($this->forceCheckReplicaLag === true))
             {
-                $this->readPdo = $this->lagChecker->useReadPdoIfApplicable($this->readPdo);
+                //
+                // If we had used a readPdo connection previously, use that to
+                // check the replica lag, as the current readPdo connection will either
+                // be the write connection or null, depending on previous lag checks
+                //
+                if ($this->previousReadPdo !== null)
+                {
+                    $this->readPdo = $this->previousReadPdo;
+                }
+
+                $result = $this->lagChecker->useReadPdoIfApplicable($this->readPdo);
+
+                //
+                // If the lag checker returns null, i.e read connection is not to be used,
+                // store the current connection in $previousReadPdo so that it
+                // can be used to check lag in the future. (Useful for queue workers)
+                //
+                if ($result === null)
+                {
+                    $this->previousReadPdo = $this->readPdo;
+                }
+
+                //
+                // Reset this to false here, so that the lag check is not
+                // evaluated again on subsequent selects.
+                //
+                $this->forceCheckReplicaLag = false;
+
+                $this->readPdo = $result;
             }
 
             return $this->readPdo ?: $this->getPdo();
@@ -107,6 +153,17 @@ class MySqlConnection extends BaseMySqlConnection
             //
             $this->trace->traceException($ex, Trace::CRITICAL, TraceCode::DB_READ_CONN_SETUP_ERROR);
 
+            //
+            // The previousReadPdo is set to readPdo here, so that on subsequent,
+            // selects the lag check can be evaluated when forceCheckReplicaLag
+            // is set to true again.
+            //
+            $this->previousReadPdo = $this->readPdo;
+
+            //
+            // Setting the readPdo to the master connection here, so that on further
+            // selects in the same request, the lag check is not evaluated again.
+            //
             $this->readPdo = $this->getPdo();
 
             return $this->readPdo;
@@ -119,13 +176,24 @@ class MySqlConnection extends BaseMySqlConnection
     }
 
     /**
-     * Resets the recordsModified and forceReadPdo attributes
+     * Resets some attributes used to maintain the connection state,
+     * without explicitly recreating the connection object. This is
+     * mainly useful for queue processes, where we want to reuse the
+     * same connection object.
      */
     public function resetConnectionAttributes()
     {
+        // Reset record of previous DML operations made using this connection.
         $this->recordsHaveNotBeenModified();
 
+        // Reet the forceReadPdo flag to false if previously set to true.
         $this->forceReadPdo(false);
+
+        //
+        // Sets this flag to true, so that the read pdo connection is evaluated
+        // again for replica lag.
+        //
+        $this->forceCheckReplicaLag = true;
     }
 
     /**

@@ -1,11 +1,11 @@
 <?php
 namespace RZP\Tests\Functional\Gateway\Reconciliation;
 
+use RZP\Models\Batch\Status;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 use RZP\Gateway\Blade\Mock\CardNumber;
 
@@ -19,8 +19,7 @@ use RZP\Reconciliator\Hitachi\RefundReconciliate as HitachiRefundRecon;
 
 class ReconciliationFileTest extends TestCase
 {
-    use FileHandlerTrait;
-    use PaymentTrait;
+    use BatchTestTrait;
     use VirtualAccountTrait;
     use DbEntityFetchTrait;
 
@@ -92,16 +91,17 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][FDPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
 
         // Check the status of processed batch.
-        $this->checkBatchProcessStatus();
+        $this->assertBatchStatus();
     }
 
     /**
      * Assert the status of batch processed.
      */
-    protected function checkBatchProcessStatus()
+    protected function assertBatchStatus(string $status = Status::PROCESSED)
     {
         $batch = $this->getDbLastEntityToArray('batch');
-        $this->assertEquals($batch['status'], 'processed');
+
+        $this->assertEquals($batch['status'], $status);
     }
 
     public function testHdfcFssReconPaymentFile()
@@ -126,6 +126,8 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedPayment1['reference1']);
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE[0]], "'" . $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $this->assertBatchStatus();
     }
 
     public function testHdfcFssCaptureFailureReconPaymentFile()
@@ -160,6 +162,8 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedPayment['reference1']);
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE[0]], "'" . $updatedPayment['reference2']);
         $this->assertTrue($updatedPayment['gateway_captured']);
+
+        $this->assertBatchStatus();
     }
 
     public function testHdfcCyberSourceReconPaymentFile()
@@ -184,6 +188,8 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedPayment1['reference1']);
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE[0]], "'" . $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $this->assertBatchStatus();
     }
 
     public function testAxisMigsReconPaymentFile()
@@ -208,6 +214,8 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
         $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $this->assertBatchStatus();
     }
 
     public function testVirtualAccYesBankReconFile()
@@ -262,6 +270,8 @@ class ReconciliationFileTest extends TestCase
         // Recon should not overwrite reference2 if it was saved before
         $this->assertEquals($payment1['reference2'], $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $this->assertBatchStatus();
     }
 
     public function testHdfcFssReconRefundFile()
@@ -294,6 +304,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedRefund1['arn']);
 
+        $this->assertBatchStatus();
     }
 
     //For success case of Bill desk reconciliation
@@ -327,6 +338,44 @@ class ReconciliationFileTest extends TestCase
 
         //Reconciled at should not be null
         $this->assertNotNull($updatedTransaction['reconciled_at']);
+    }
+
+    /**
+     * Test for success and failure count of a processed batch
+     */
+    public function testAxisMigsBatchProcessTest()
+    {
+        $this->fixtures->create('terminal:shared_migs_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payments
+        $this->getNewPaymentEntity(true, false);
+        $gatewayPayment1 = $this->getDbLastEntityToArray('axis_migs');
+
+        $this->getNewPaymentEntity(true, false);
+        $gatewayPayment2 = $this->getDbLastEntityToArray('axis_migs');
+
+        $this->getNewPaymentEntity(true, false);
+        $gatewayPayment3 = $this->getDbLastEntityToArray('axis_migs');
+
+        $entries['Sale'][0] = $this->overrideAxisPayment($gatewayPayment1, [], 'migs');
+        $entries['Sale'][1] = $this->overrideAxisPayment($gatewayPayment2, [], 'migs');
+
+        // Passing payment id in refund also for a failure case
+        $entries['Refund'][2] = $this->overrideAxisPayment($gatewayPayment3, [], 'migs');
+
+        $file = $this->writeToExcelFile($entries, 'axis', 'files/settlement', ['Sale', 'Refund']);
+
+        $this->runForFiles([$file], 'Axis');
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertEquals($batch['total_count'], 3);
+        $this->assertEquals($batch['success_count'], 2);
+        $this->assertEquals($batch['failure_count'], 1);
+
+        // One failure, status will be partially_processed
+        $this->assertEquals($batch['status'], Status::PARTIALLY_PROCESSED);
     }
 
     /*
@@ -562,4 +611,33 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][HitachiRefundRecon::COLUMN_ARN], $updatedRefund1['arn']);
     }
 
+    /**
+     * Test for failed reconciliation batch. Retrying will mark it processed.
+     */
+    public function testFailedReconBatchRetry()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_first_data_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->getNewPaymentEntity(false, true);
+
+        $gatewayPayment1 = $this->getDbLastEntityToArray('first_data');
+
+        $entries[] = $this->overrideFirstDataPayment($gatewayPayment1);
+
+        // Creating batch with failed status.
+        $this->fixtures->create('batch:recon_with_failed_status', $entries);
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        // Asserting status of batch as failed.
+        $this->assertBatchStatus(Status::FAILED);
+
+        // Retrying failed batch.
+        $this->retryFailedBatch('batch_' . $batch['id']);
+
+        // Asserting status of batch as 'Processed'.
+        $this->assertBatchStatus();
+    }
 }

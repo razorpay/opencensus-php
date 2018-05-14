@@ -73,7 +73,7 @@ class CombinedReconciliate extends Foundation\SubReconciliate
                         'message'       => $message,
                         'row_details'   => $row,
                         'extra_details' => $extraDetails,
-                        'gateway'       => get_called_class()
+                        'gateway'       => $this->gateway
                     ]);
 
                 throw new ReconciliationException(
@@ -153,7 +153,7 @@ class CombinedReconciliate extends Foundation\SubReconciliate
                             'message'       => $message,
                             'row_details'   => $row,
                             'extra_details' => $extraDetails,
-                            'gateway'       => get_called_class()
+                            'gateway'       => $this->gateway
                         ]);
 
                     //
