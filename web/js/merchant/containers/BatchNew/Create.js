@@ -50,8 +50,8 @@ export default class BatchCreate extends Component {
   handleBatchCreate = props => {
     let data = { ...props };
 
-    data.sms_notify = data.sms_notify | 0;
-    data.email_notify = data.email_notify | 0;
+    data.sms_notify = this.state.sms_notify | 0;
+    data.email_notify = this.state.email_notify | 0;
 
     data.file_id = this.props.batch.file_id;
     data.draft = 0; //for backward compatibility

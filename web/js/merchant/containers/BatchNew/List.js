@@ -56,7 +56,7 @@ function batchActions({ mode, sendAll, onDownloadClick }) {
 function allowSendAllLinks(batch) {
   // config object will not be available for older batches
   // duplicate batches will have no success count
-  if (batch.config.length) {
+  if (Object.keys(batch.config).length) {
     if (
       parseInt(batch.config.sms_notify) > 0 ||
       parseInt(batch.config.email_notify) > 0

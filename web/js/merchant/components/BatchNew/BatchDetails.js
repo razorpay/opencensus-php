@@ -128,15 +128,15 @@ export default function BatchDetails(props) {
                   </TableBody>
                 </table>
                 {stats.batch_total > 0 &&
-                  stats.batch_total > stats.issued_count && (
+                  stats.batch_total > stats.issued_count &&
+                  batch.status !== 'created' && (
                     <small class="help-block m-l">
                       <i
                         class="i i-info-circle"
                         style={{ marginRight: '5px' }}
                       />
                       {/* show error info */}
-                      {stats.issued_count === 0 &&
-                      batch.status !== 'created' ? (
+                      {stats.issued_count === 0 ? (
                         <span>
                           The payment links related to this batch were not
                           created due to errors. Please{' '}
