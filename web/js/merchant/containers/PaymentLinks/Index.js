@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
