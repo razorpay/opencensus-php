@@ -1,8 +1,8 @@
 $alert-warning-bg = #FFF6DA;
 $alert-warning = #CDC4A8;
 
-$alert-info-bg = rgba(217,237,247,0.44);
-$alert-info = #bce8f1;
+$alert-info-bg = rgba(132, 202, 255, 0.1);
+$alert-info = #b2cef6;
 
 .Alert
   padding: 16px
@@ -13,6 +13,16 @@ $alert-info = #bce8f1;
 
   .side-description
     color: #838383
+
+  .Alert-icon--before
+    margin-right: 4px
+    display: inline-block
+    vertical-align: top;
+    line-height: 22px;
+
+  .Alert-content
+    display: inline-block
+    width: 94%
 
 .Alert--warning
   border-color: $alert-warning

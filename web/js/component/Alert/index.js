@@ -8,9 +8,9 @@ export default class Alert extends React.PureComponent {
     return (
       <div {...props} class={classList(props.className, 'Alert')}>
         {iconBefore && (
-          <i class={'Alert-icon Alert-icon--before i-' + iconBefore} />
+          <i class={'Alert-icon Alert-icon--before i ' + iconBefore} />
         )}
-        {children}
+        <div class="Alert-content">{children}</div>
       </div>
     );
   }

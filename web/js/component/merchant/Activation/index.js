@@ -455,19 +455,18 @@ export default class ActivationWizard extends React.Component {
                   <Alert.Info>The account has been activated</Alert.Info>
                 )}
 
-              {/* Show alert if main activatin form is in locked state */}
+              {/* Show alert if main activation form is in locked state */}
               {!isLinkedAccountForm &&
                 this.state.data.locked && (
-                  <Alert.Info>
-                    Your activation form is locked as it's under process. We
-                    will let you know once your account gets activated.
+                  <Alert.Info iconBefore="i-outline-lock">
+                    Your activation form is locked as it's under review. We'll
+                    inform you once your account gets activated.
                     <div class="side-description">
-                      In case of any queries, you can reach out to us at
-                      support@razorpay.com now. Get in touch with{' '}
+                      In case of any queries, you can reach out to us at{' '}
                       <a href="mailto:support@razorpay.com">
                         support@razorpay.com
                       </a>{' '}
-                      for more details.
+                      now.
                     </div>
                   </Alert.Info>
                 )}
@@ -476,8 +475,8 @@ export default class ActivationWizard extends React.Component {
               {!isLinkedAccountForm &&
                 this.state.data.business_type == 2 && (
                   <Alert.Warning>
-                    We may not be able to support Individual Business-Type as of
-                    now. Get in touch with{' '}
+                    We may not be able to support individual as of now. Get in
+                    touch with{' '}
                     <a href="mailto:support@razorpay.com">
                       support@razorpay.com
                     </a>{' '}
