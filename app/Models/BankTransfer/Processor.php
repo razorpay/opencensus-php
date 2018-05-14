@@ -68,6 +68,8 @@ class Processor extends VirtualAccount\Processor
      *  - Update VA amount fields and status, if necessary
      *
      * @param Base\PublicEntity $bankTransfer
+     *
+     * @return null|Base\PublicEntity
      */
     protected function processPayment(Base\PublicEntity $bankTransfer)
     {
@@ -252,7 +254,7 @@ class Processor extends VirtualAccount\Processor
      *
      * @return bool
      */
-    protected function checkReservedAccount(Base\PublicEntity $bankTransfer)
+    protected function checkReservedAccount(Entity $bankTransfer)
     {
         $payeeAccount = $bankTransfer->getPayeeAccount();
 

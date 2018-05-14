@@ -85,7 +85,6 @@ class Repository extends Base\Repository
         $virtualAccountStatus = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::STATUS);
 
         $bankAccountEntityId = $this->dbColumn(Entity::ENTITY_ID);
-        $bankAccountType     = $this->dbColumn(Entity::TYPE);
         $bankAccountData     = $this->dbColumn('*');
 
         $query = $this->newQuery()
