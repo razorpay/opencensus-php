@@ -4,6 +4,7 @@ namespace RZP\Models\Report\Types;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Models\Adjustment;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Constants\Entity as E;

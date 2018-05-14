@@ -331,6 +331,7 @@ class BasicEntityReport extends BaseReport
     protected function getFetchLimits($input): array
     {
         $count = self::BATCH_LIMIT;
+
         $skip = 0;
 
         if (isset($input['count']) === true)

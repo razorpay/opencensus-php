@@ -923,6 +923,7 @@ final class Route
         'setl_fetch_by_id',
         'setl_fetch_multiple',
         'setl_combined_report',
+        'setl_combined_recon',
         'customer_create',
         'customer_update',
         'customer_create_token',
