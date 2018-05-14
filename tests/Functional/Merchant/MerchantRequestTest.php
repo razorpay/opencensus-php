@@ -100,8 +100,8 @@ class MerchantRequestTest extends TestCase
 
         $this->assertArraySelectiveEquals($this->testData[__FUNCTION__]['response']['content'], $response);
 
-        $this->assertEquals($fileStoreData['id'],
-                            'file_'. $response[Request\Constants::SUBMISSIONS][Feature\Constants::VENDOR_AGREEMENT]);
+        $this->assertEquals($fileStoreData['location'],
+                            $response[Request\Constants::SUBMISSIONS][Feature\Constants::VENDOR_AGREEMENT]);
     }
 
     public function testCreateMerchantRequestWithErrors()

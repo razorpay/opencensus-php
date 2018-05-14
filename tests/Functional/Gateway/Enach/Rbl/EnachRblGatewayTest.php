@@ -180,6 +180,38 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals('rejected', $token['recurring_status']);
     }
 
+    public function testRegisterFileGeneration()
+    {
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment['bank_account'] = [
+            'account_number'    => '914010009305862',
+            'ifsc'              => 'utib0000123',
+            'name'              => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertEquals('authorize', $enach['action']);
+        $this->assertEquals(0, $enach['amount']);
+        $this->assertNotNull($enach['signed_xml']);
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['items'][0]['sent_at']);
+
+        $file = $this->getDbLastEntityToArray('file_store');
+
+        $this->assertEquals('gateway_file', $file['entity_type']);
+        $this->assertEquals('rbl_enach_register', $file['type']);
+        $this->assertEquals('zip', $file['extension']);
+        $this->assertEquals('application/x-compressed', $file['mime']);
+    }
+
     public function testRegisterSuccessReconciliation()
     {
         list($payment, $token, $order) = $this->createEmandatePayment();

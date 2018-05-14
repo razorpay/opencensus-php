@@ -695,6 +695,15 @@ class Repository extends Base\Repository
                 throw new Exception\LogicException('Invalid merchant invoice type: ', $filterType);
         }
 
+        $this->trace->info(
+            TraceCode::MERCHANT_INVOICE_GENERATE_QUERY,
+            [
+                'start'       => $start,
+                'end'         => $end,
+                'merchant_id' => $merchantId,
+                'query'       => $query->toSql(),
+            ]);
+
         return $query->first();
     }
 

@@ -52,7 +52,7 @@ class Entity extends Base\PublicEntity
     const ORDER_ID             = 'order_id';
 
     // Used for creating shared virtual account
-    const SHARED_VIRTUAL_ACCOUNT = 'sharedvirtuala';
+    const SHARED_ID            = 'ShrdVirtualAcc';
 
     protected $fillable = [
         self::NAME,

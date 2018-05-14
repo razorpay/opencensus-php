@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
+use RZP\Models\Merchant\Account;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\Payment\Entity as Payment;
@@ -18,19 +19,39 @@ class Core extends Base\Core
         array $input,
         Merchant $merchant,
         Customer\Entity $customer = null,
-        Order $order = null,
-        bool $shared = false): Entity
+        Order $order = null): Entity
     {
         $virtualAccount = $this->createEntityAndAssociate($merchant);
 
-        $virtualAccount = $this->repo->transaction(function() use ($virtualAccount, $input, $customer, $order, $shared)
+        return $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer, $order);
+    }
+
+    /**
+     * A static qr code for all the unexpected payments is picked.
+     */
+    public function createOrFetchSharedVirtualAccount()
+    {
+        $virtualAccountId = Entity::SHARED_ID;
+
+        $virtualAccount = $this->repo->virtual_account->find($virtualAccountId);
+
+        if ($virtualAccount === null)
+        {
+            $virtualAccount = $this->createSharedVirtualAccount();
+        }
+
+        return $virtualAccount;
+    }
+
+    protected function buildVirtualAccountAndReceivers(
+        Entity $virtualAccount,
+        array $input,
+        Customer\Entity $customer = null,
+        Order $order = null): Entity
+    {
+        $virtualAccount = $this->repo->transaction(function() use ($virtualAccount, $input, $customer, $order)
         {
             $virtualAccount->build($input);
-
-            if ($shared === true)
-            {
-                $virtualAccount->setId(Entity::SHARED_VIRTUAL_ACCOUNT);
-            }
 
             $this->validateDescriptor($virtualAccount);
 
@@ -50,36 +71,28 @@ class Core extends Base\Core
         return $virtualAccount;
     }
 
-    /**
-     * A static qr code for all the unexpected payments is picked.
-     *
-     * @param Merchant $merchant
-     */
-    public function createOrFetchSharedVirtualAccount(Merchant $merchant)
+    protected function createSharedVirtualAccount()
     {
-        $virtualAccountId = Entity::SHARED_VIRTUAL_ACCOUNT;
+        $sharedMerchantId = $this->getDefaultMerchantId();
 
-        $virtualAccount = $this->repo->virtual_account->find($virtualAccountId);
+        $merchant = $this->repo->merchant->find($sharedMerchantId);
 
-        if ($virtualAccount === null)
-        {
-            $virtualAccount = $this->createSharedVirtualAccount($merchant);
-        }
-
-        return $virtualAccount;
-    }
-
-    protected function createSharedVirtualAccount(Merchant $merchant)
-    {
         $customer = (new Customer\Core)->createOrFetchSharedCustomer($merchant);
+
+        $virtualAccount = (new Entity)->setId(Entity::SHARED_ID);
+
+        $virtualAccount->merchant()->associate($merchant);
 
         $input = [
             Entity::RECEIVERS => [
-                Entity::TYPES => [Receiver::QR_CODE, Receiver::BANK_ACCOUNT]
+                Entity::TYPES => [
+                    Receiver::QR_CODE,
+                    Receiver::BANK_ACCOUNT
+                ]
             ],
         ];
 
-        return $this->create($input, $merchant, $customer, null, true);
+        return $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer, null);
     }
 
     public function createWithoutReceivers(array $input, Merchant $merchant)
@@ -242,5 +255,21 @@ class Core extends Base\Core
         ];
 
         $this->app['events']->fire('api.virtual_account.created', $eventPayload);
+    }
+
+    /**
+     * For unexpected payments, we use the demo page merchant. This merchant only
+     * exists on prod. For other envs, we use the test merchant, i.e. '10000000000000'.
+     */
+    protected function getDefaultMerchantId()
+    {
+        $defaultMerchantId = Account::DEMO_PAGE_ACCOUNT;
+
+        if ($this->env !== 'production')
+        {
+            $defaultMerchantId = Account::TEST_ACCOUNT;
+        }
+
+        return $defaultMerchantId;
     }
 }

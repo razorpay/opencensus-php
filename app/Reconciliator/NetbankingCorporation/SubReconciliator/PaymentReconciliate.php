@@ -9,9 +9,9 @@ use RZP\Gateway\Netbanking\Corporation\Status;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
-    public function __construct()
+    public function __construct(string $gateway = null)
     {
-        parent::__construct();
+        parent::__construct($gateway);
 
         $this->netbankingRepo = $this->repo->netbanking;
     }

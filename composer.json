@@ -46,7 +46,8 @@
         "razorpay/trace": "~2.0",
         "razorpay/oauth": "dev-master",
         "fideloper/proxy": "~3.0",
-        "nojacko/email-validator": "^1.1"
+        "nojacko/email-validator": "^1.1",
+        "datadog/php-datadogstatsd": "^1.0"
     },
     "repositories": [
         {

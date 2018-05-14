@@ -68,6 +68,7 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals(200, $payment['amount']);
         $this->assertEquals('hitachi', $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
 
         $this->assertEquals($bharatQr['payment_id'], $payment['id']);
         $this->assertEquals($bharatQr['expected'], true);
@@ -133,6 +134,50 @@ class BharatQrPaymentTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertNull($payment);
+    }
+
+    public function testUnexpectedPayment()
+    {
+        $request = $this->testData['testQrPaymentProcess'];
+
+        $this->fixtures->edit(
+            'merchant',
+            '10000000000000',
+            [
+                'pricing_plan_id' => '1hDYlICobzOCYt',
+            ]);
+
+        $this->ba->directAuth();
+
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback('tobefilled');
+
+        $request['content'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        // Live because by default mode is live
+        // if entity id is not given
+        $bharatQr = $this->getDbLastEntity('bharat_qr', 'live');
+
+        $payment =  $this->getDbLastEntity('payment', 'live');
+
+        $this->assertEquals('card', $payment['method']);
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+
+        $this->assertEquals($bharatQr['expected'], false);
+
+        $virtualAccount =  $this->getDbLastEntity('virtual_account', 'live');
+
+        $this->assertEquals('10000000000000', $virtualAccount['merchant_id']);
+        $this->assertEquals('ShrdVirtualAcc', $virtualAccount['id']);
+        $this->assertEquals('active', $virtualAccount['status']);
     }
 
     public function testUpiQrPaymentProcess()
@@ -246,36 +291,6 @@ class BharatQrPaymentTest extends TestCase
         $bharatQr = $this->getDbEntities('bharat_qr', []);
 
         $this->assertEquals(count($bharatQr) , 1);
-    }
-
-    public function testUnexpectedPayment()
-    {
-        $request = $this->testData['testQrPaymentProcess'];
-
-        $this->ba->directAuth();
-
-        $content = $this->getMockServer('hitachi')->getBharatQrCallback('tobefilled');
-
-        $request['content'] = $content;
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $xmlResponse = $response['original'];
-
-        $response = $this->parseResponseXml($xmlResponse);
-
-        $this->assertEquals('OK', $response[0]);
-
-        // Live because by default mode is live
-        // if entity id is not given
-        $bharatQr = $this->getDbLastEntity('bharat_qr', 'live');
-
-        $payment =  $this->getDbLastEntity('payment', 'live');
-
-        $this->assertEquals('card', $payment['method']);
-        $this->assertEquals('authorized', $payment['status']);
-
-        $this->assertEquals($bharatQr['expected'], false);
     }
 
     protected function createVirtualAccount()
