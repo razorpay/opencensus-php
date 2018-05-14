@@ -5,6 +5,7 @@ namespace RZP\Models\Batch\Helpers;
 use RZP\Models\Batch;
 use RZP\Models\Invoice;
 use RZP\Models\Customer;
+use RZP\Models\Base\Utility;
 
 class PaymentLink
 {
@@ -38,10 +39,7 @@ class PaymentLink
         $receipt = $entry[Batch\Header::INVOICE_NUMBER];
         $receipt = empty($receipt) === true ? null : (string) $receipt;
 
-        $expireBy = $entry[Batch\Header::EXPIRE_BY];
-        // Adding check for is_numeric because typecasting any alphabet
-        // to int gives '0' which will be interpreted wrongly by validator
-        $expireBy = (is_numeric($expireBy) === true) ? (int) $expireBy : $expireBy;
+        $expireBy = Utility::parseAsEpoch($entry[Batch\Header::EXPIRE_BY]);
 
         // Amount needs to be formatted this way as excel reader in cases
         // reads 4255 as 4244.99999. This is known php + excel issue.

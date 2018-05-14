@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use Lib\PhoneBook;
 use RZP\Gateway\Base;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Holidays;
@@ -191,6 +192,14 @@ class Gateway extends Base\Gateway
             'first_collection_date'         => $nextWorkingDt->format('Y-m-d'),
             'final_collection_date'         => $finalCollection->format('Y-m-d'),
         ];
+
+        $paymentEmail = $input['payment'][Payment\Entity::EMAIL];
+
+        if ((empty($paymentEmail) === false) and
+            ($paymentEmail !== Payment\Entity::DUMMY_EMAIL))
+        {
+            $traceContent['customer_email'] = $content['customer_email'] = $paymentEmail;
+        }
 
         unset($traceContent['aadhaar'], $traceContent['customer_account_number']);
 

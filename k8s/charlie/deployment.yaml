@@ -31,8 +31,6 @@ spec:
       containers:
       - args:
         - web
-        command:
-        - /app/dockerconf/entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
@@ -96,8 +94,6 @@ spec:
       - args:
         - sqs
         - "10"
-        command:
-        - /app/dockerconf/entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
@@ -124,8 +120,6 @@ spec:
         - sqs_multi_default
         - api-gen-live
         - "10"
-        command:
-        - /app/dockerconf/entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
@@ -152,8 +146,6 @@ spec:
         - sqs_multi_default
         - api-gen-test
         - "20"
-        command:
-        - /app/dockerconf/entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
@@ -180,8 +172,6 @@ spec:
         - sqs_multi_default
         - webhooks-live
         - "10"
-        command:
-        - /app/dockerconf/entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
@@ -208,8 +198,6 @@ spec:
         - sqs_multi_default
         - webhooks-test
         - "20"
-        command:
-        - /app/dockerconf/entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
@@ -236,8 +224,6 @@ spec:
         - sqs_multi_default
         - webhooks-failure
         - "10"
-        command:
-        - /app/dockerconf/entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
@@ -264,8 +250,6 @@ spec:
         - sqs_multi_default
         - invoice-emails
         - "10"
-        command:
-        - /app/dockerconf/entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
@@ -292,8 +276,6 @@ spec:
         - sqs_multi_default
         - invoice-reports
         - "10"
-        command:
-        - /app/dockerconf/entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
@@ -320,8 +302,6 @@ spec:
         - sqs_multi_default
         - es-sync
         - "10"
-        command:
-        - /app/dockerconf/entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
@@ -348,8 +328,6 @@ spec:
         - sqs_multi_default
         - emails
         - "10"
-        command:
-        - /app/dockerconf/entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
@@ -376,8 +354,6 @@ spec:
         - sqs_multi_default
         - subscription-charge
         - "10"
-        command:
-        - /app/dockerconf/entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
@@ -404,8 +380,6 @@ spec:
         - sqs_multi_default
         - batch
         - "10"
-        command:
-        - /app/dockerconf/entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
