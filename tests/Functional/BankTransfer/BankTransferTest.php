@@ -53,6 +53,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
 
         // Customer bank account created
         $bankAccount = $this->getLastEntity('bank_account', true);
@@ -956,6 +957,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('authorized', $payment['status']);
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertNotNull($payment['receiver_type']);
 
         $this->refundAuthorizedPayment($payment['id']);
 

@@ -58,6 +58,7 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals(200, $payment['amount']);
         $this->assertEquals('hitachi', $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
 
         $this->assertEquals($bharatQr['payment_id'], $payment['id']);
         $this->assertEquals($bharatQr['expected'], true);
@@ -160,6 +161,7 @@ class BharatQrPaymentTest extends TestCase
 
         $this->assertEquals('card', $payment['method']);
         $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
 
         $this->assertEquals($bharatQr['expected'], false);
 
