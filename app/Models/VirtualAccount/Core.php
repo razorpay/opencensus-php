@@ -47,7 +47,7 @@ class Core extends Base\Core
     protected function buildVirtualAccountAndReceivers(
         Entity $virtualAccount,
         array $input,
-        Customer\Entity $customer,
+        Customer\Entity $customer = null,
         Order $order = null): Entity
     {
         $virtualAccount = $this->repo->transaction(function() use ($virtualAccount, $input, $customer, $order)
