@@ -291,6 +291,7 @@ final class Route
         'setl_get_details'                         => ['get',      'settlements/{id}/details',                       'SettlementController@getSettlementDetails',                        ],
         'setl_post_details_old'                    => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
         'setl_combined_report'                     => ['get',      'settlements/report/combined',                    'SettlementController@getSettlementCombinedReport'                  ],
+        'setl_combined_recon'                      => ['get',      'settlements/recon/combined',                     'SettlementController@getSettlementCombinedReconReport'             ],
         'setl_update_channel_bulk'                 => ['put',      'settlements/channel/bulk',                       'SettlementController@updateChannelForMultipleSettlements'          ],
         'nodal_get_account_balance'                => ['get',      'nodal/balance/{channel}',                        'SettlementController@getAccountBalance'                            ],
         'nodal_initiate_transfer'                  => ['post',     'nodal/transfer',                                 'SettlementController@postInitiateTransfer'                         ],

@@ -159,6 +159,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getSettlementCombinedReconReport()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getSettlementCombinedReconReport($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function updateChannelForMultipleSettlements()
     {
         $input = Request::all();

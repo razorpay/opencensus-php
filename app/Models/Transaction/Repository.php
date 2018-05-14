@@ -180,6 +180,33 @@ class Repository extends Base\Repository
         return $txns;
     }
 
+    public function fetchEntitiesForReconReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap = [])
+    {
+        $setls = (new Settlement\Repository)->fetchBetweenTimestamp($merchantId, $from, $to);
+
+        $setlIds = $setls->modelKeys();
+
+        $query = $this->newQuery();
+
+        $txns = $query->merchantId($merchantId)
+                      ->whereIn(Entity::SETTLEMENT_ID, $setlIds)
+                      ->take($count)
+                      ->skip($skip)
+                      ->latest()
+                      ->get();
+
+        $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source', $entityToRelationFetchMap);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            [
+                'method'    => __METHOD__,
+                'time'      => time(),
+            ]);
+
+        return $txns;
+    }
+
     public function fetchEntitiesForBrokerReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap)
     {
         $txns = $this->newQuery()
