@@ -186,10 +186,10 @@ class EloquentEx extends \Razorpay\Spine\Entity
         return (empty($this->relations[$relation]) === false);
     }
 
-    protected function assertRelationExistence(string $relation, Model $model): bool
+    protected function assertRelationExistence(string $relation, Model $model = null): bool
     {
         return (in_array($relation, $this->ignoredRelations, true) === true) ?
                 true :
-                (($model instanceof Model) and ($model->exists === true));
+                (optional($model)->exists ?? true);
     }
 }
