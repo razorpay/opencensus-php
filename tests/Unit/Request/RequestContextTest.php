@@ -4,7 +4,6 @@ namespace RZP\Tests\Unit\Request;
 
 use RZP\Tests\TestCase;
 use RZP\Http\RequestContext;
-use RZP\Exception\BadRequestException;
 
 class RequestContextTest extends TestCase
 {
@@ -15,16 +14,6 @@ class RequestContextTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/Helpers/RequestContextTestData.php';
 
         parent::setUp();
-    }
-
-    public function testPublicRouteWhenKeyIsOfInvalidLen()
-    {
-        $this->expectException(BadRequestException::class);
-
-        $this->invokeRequestCase('publicRouteWithInvalidKeyLength');
-
-        $context = new RequestContext($this->app);
-        $context->init();
     }
 
     /**

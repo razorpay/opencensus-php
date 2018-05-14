@@ -6,7 +6,6 @@ use RZP\Tests\TestCase;
 use RZP\Tests\Traits\TestsThrottle;
 use RZP\Http\Throttle\Constant as K;
 use RZP\Exception\ThrottleException;
-use RZP\Exception\BadRequestException;
 use RZP\Tests\Unit\Request\Helpers\Throttler;
 
 class ThrottlerTest extends TestCase
@@ -32,20 +31,6 @@ class ThrottlerTest extends TestCase
         $this->setRedisGlobalSettings(['test:private:0:mbs' => 0]);
 
         $this->invokeRequestCaseAndBindNewContext('privateRoute');
-
-        (new Throttler)->throttle();
-    }
-
-    /**
-     * When requested with incorrect key id, throttler:
-     * - Must fail with BadRequestException
-     *   (This is because with correct mode available it attempts to get corresponding mid)
-     */
-    public function testAttemptThrottleWhenInvalidKeyId()
-    {
-        $this->expectException(BadRequestException::class);
-
-        $this->invokeRequestCaseAndBindNewContext('privateRouteWithInvalidKey');
 
         (new Throttler)->throttle();
     }

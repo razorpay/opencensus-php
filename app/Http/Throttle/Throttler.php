@@ -18,6 +18,15 @@ use RZP\Http\Throttle\Constant as K;
 
 /**
  * Throttle requests to API
+ *
+ * Approach:
+ *
+ * 1. Get settings from redis. These includes global settings, per route
+ *    settings and per identifier (e.g. specific merchant, specific oauth
+ *    application, specific admin email and other various combinations).
+ * 2. From settings above and available requests context vars, prepare throttle
+ *    key and limits (leak rate, duration and burst) and call throttle package.
+ *
  */
 class Throttler
 {
@@ -215,6 +224,55 @@ class Throttler
 
     protected function getThrottleValue(string $key, int $default): int
     {
+        //
+        // Redis data structures which is used in cascading fashion to get
+        // values for given request context.
+        //
+        // Key: t
+        // Value: {
+        //      // Globals
+        //      skip:                                1
+        //      mock:                                1
+        //      lrv:                                 2
+        //      lrd:                                 1
+        //      mbs:                                 30
+        //
+        //      // Per mode
+        //      <mode>:skip:                         1
+        //      <mode>:mock:                         1
+        //      <mode>:lrv:                          2
+        //      <mode>:lrd:                          1
+        //      <mode>:mbs:                          30
+        //
+        //      // Per auth
+        //      <mode>:<auth>:<proxy>:skip:          0
+        //      <mode>:<auth>:<proxy>:mock:          0
+        //      <mode>:<auth>:<proxy>:block:         1 (Block)
+        //      <mode>:<auth>:<proxy>:lrv:           2
+        //      <mode>:<auth>:<proxy>:lrd:           1
+        //      <mode>:<auth>:<proxy>:mbs:           30
+        //
+        //      // Per auth, per route
+        //      <mode>:<auth>:<proxy>:<route>:skip:  0
+        //      <mode>:<auth>:<proxy>:<route>:mock:  0
+        //      <mode>:<auth>:<proxy>:<route>:block: 0 (Block)
+        //      <mode>:<auth>:<proxy>:<route>:lrv:   2
+        //      <mode>:<auth>:<proxy>:<route>:lrd:   1
+        //      <mode>:<auth>:<proxy>:<route>:mbs:   30
+        // }
+        //
+        // Key: t:i:<mid>
+        // Value: {
+        //      -- Same setting as above - across or per route
+        // }
+        //
+        // Key: t:i:<oauthClientId>
+        // Value: {
+        //      -- Same setting as above - across or per route
+        //      (Applies to the application + mid combination)
+        // }
+        //
+
         // If mode is not available at this layer just pick live mode settings
         $mode  = $this->reqctx->getMode() ?: Mode::LIVE;
         // Boolean value doesn't get type-casted to string properly

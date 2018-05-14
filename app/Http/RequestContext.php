@@ -25,6 +25,11 @@ use RZP\Exception\BadRequestException;
 final class RequestContext
 {
     /**
+     * @var Application
+     */
+    protected $app;
+
+    /**
      * @var string
      */
     protected $route;
@@ -127,14 +132,12 @@ final class RequestContext
 
     public function __construct(Application $app)
     {
-        $this->request            = $app['request'];
-        $this->repo               = $app['repo'];
-        $this->isRunningUnitTests = $app->runningUnitTests();
-        $this->applications       = $app['config']->get('applications');
+        $this->app = $app;
     }
 
     public function init()
     {
+        $this->initInstanceVars();
         $this->setAuthVars();
         $this->setAdditionalVars();
         $this->resolveKeyIdIfApplicable();
@@ -253,27 +256,40 @@ final class RequestContext
      */
 
     /**
+     * Initializes varisou instance variables - e.g. request, repo etc. This needs to be done outside construction of
+     * this service because otherwise in testing environement it will continue pointing to same first request instance.
+     * In some tests we are making multiple api calls (which internally is direct kernel's call() method).
+     */
+    protected function initInstanceVars()
+    {
+        $this->request            = $this->app['request'];
+        $this->repo               = $this->app['repo'];
+        $this->isRunningUnitTests = $this->app->runningUnitTests();
+        $this->applications       = $this->app['config']->get('applications');
+    }
+
+    /**
      * Extracts user authentication information from request and sets corresponding instance variables.
      */
     protected function setAuthVars()
     {
         $this->route = $this->request->route()->getName();
 
+        //
         // Key can come
         // - as part of authentication header(http basic username)
         // - as part of route parameters for callback URLS
         // - in request input as key_id for public routes
+        //
         $key = $this->request->getUser() ?:
                 $this->request->route()->parameter('key') ?:
                 $this->request->input('key_id');
 
-        // Direct authentication and bearer token case
-        if (empty($key) === true)
+        // If key is empty (direct auth & bearer token case) or is of invalid lenght just return from this method.
+        if ($this->isKeyOfValidLength($key) === false)
         {
             return;
         }
-
-        $this->validateKeyLen($key);
 
         $this->key              = $key;
         $this->keyWithoutPrefix = substr($key, 9) ?: null;
@@ -326,8 +342,13 @@ final class RequestContext
             return;
         }
 
-        $this->keyEntity = $this->repo->key->connection($this->mode)->findOrFailPublic($this->keyId);
-        $this->mid       = $this->keyEntity->getMerchantId();
+        //
+        // Note: We don't do a find or fail here. That is responsibility of basic auth. This class only deals with
+        // having all request context variables initialized. For e.g. in case of invalid keyId, keyEntity woudl just be
+        // null. It's upto next layers - Authenticate to throw errors etc.
+        //
+        $this->keyEntity = $this->repo->key->connection($this->mode)->find($this->keyId);
+        $this->mid = optional($this->keyEntity)->getMerchantId();
     }
 
     protected function setAdditionalVarsForPublicAuth()
@@ -433,13 +454,14 @@ final class RequestContext
         }
     }
 
-    protected function validateKeyLen(string $key)
+    /**
+     * @param  string|null $key
+     * @return bool
+     */
+    protected function isKeyOfValidLength($key): bool
     {
         $validKeyLengths = array_merge(AuthCreds::$validKeyLengths, [OAuth::PUBLIC_TOKEN_LENGTH]);
 
-        if (in_array(strlen($key), $validKeyLengths, true) === false)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
-        }
+        return (in_array(strlen($key), $validKeyLengths, true) === true);
     }
 }
