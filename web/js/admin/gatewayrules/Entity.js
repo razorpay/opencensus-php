@@ -329,6 +329,17 @@ class GatewayRuleForm extends Component {
           <option value="0">No</option>
           <option value="1">Yes</option>
         </SelectField>
+
+        <SelectField
+          name="international"
+          label="International"
+          defaultValue={model.international | 0}
+          disabled={!!model.id}
+        >
+          <option value="" />
+          <option value="0">No</option>
+          <option value="1">Yes</option>
+        </SelectField>
         <br />
         <TextAreaField
           label="Add Comment:"
