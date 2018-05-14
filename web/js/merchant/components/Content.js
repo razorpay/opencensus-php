@@ -102,12 +102,12 @@ export default class Content extends Component {
     if (matchDetailsRoute || matchModalsRoute) {
       let resultRoute;
 
-      if (matchModalsRoute.match) {
+      if (matchModalsRoute && matchModalsRoute.match) {
         resultRoute = matchModalsRoute;
 
         this.modalView = matchModalsRoute.component;
         this.detailView = null;
-      } else if (matchDetailsRoute.match) {
+      } else if (matchDetailsRoute && matchDetailsRoute.match) {
         resultRoute = matchDetailsRoute;
 
         this.modalView = null;

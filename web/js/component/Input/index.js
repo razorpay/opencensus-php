@@ -391,7 +391,7 @@ Field.File = _ => {
   return (
     <label class={inputClass({ props: _ })}>
       <Label text={label} />
-      <div class="Input-content">
+      <div class="Input-content Input-File">
         <div class="Input-elWrapper">
           <FileUpload
             name={_.name}
