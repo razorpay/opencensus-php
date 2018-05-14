@@ -74,8 +74,8 @@ export default class ActivationWizard extends React.Component {
       FORM_TABS_CONTENT = mainFormTabsContent;
       DOCUMENT_UPLOAD_STEP = 4;
 
-      // Business Category in "Business Fields-1" exists in main activation form
-      FORM_TABS_CONTENT[1][3].options = [''].concat(
+      // Business Category in "Business Modal" exists in main activation form
+      FORM_TABS_CONTENT[1][3][0].options = [''].concat(
         Object.keys(props.categories).map(c => ({
           name: c,
           label: props.categories[c].description,
@@ -274,6 +274,10 @@ export default class ActivationWizard extends React.Component {
           }
         });
       }
+    }
+
+    if (fieldName === 'business_category' && fieldValue === 'others') {
+      sideEffectFieldsToUpdate['business_subcategory'] = null; // To override if user previously have some saved subcategory
     }
 
     /* Step Last: */

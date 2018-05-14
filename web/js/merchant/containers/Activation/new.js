@@ -112,6 +112,9 @@ export class ActivationContainer extends React.Component {
       url: 'merchant/activation',
       mode: 'live',
       method: 'post',
+      headers: {
+        'content-type': 'application/json',
+      },
       accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
       data,
     })
@@ -259,7 +262,7 @@ const SuccessScreen = _ => {
     <div class="Activation--success">
       <div class="Activation-title">
         <side-title>Activation Form submitted Successfully!</side-title>
-        <img src="" />
+        <div class="submit-illustration" />
       </div>
       <div class="Activation-info">
         <i class="i i-check" /> Your form is submitted successfully
@@ -399,7 +402,7 @@ function isOldUser(user) {
   }
 
   let currentTime = 1526031000; // TODO: It IS TO BE THE DATE OF DEPLOYMENT.. Currently, 11 May, 3:00pm
-  let isOldUser = user.created_at < currentTime;
+  let isCreatedEarlier = user.created_at < currentTime;
 
-  return isOldUser;
+  return isCreatedEarlier;
 }

@@ -36,14 +36,14 @@ const contactFields = [
   },
 ];
 
-const businessFields1 = [
+const businessModel = [
   {
     label: 'Business Name',
     name: 'business_name',
     info: 'Example: Acme Private Limited',
   },
   {
-    label: 'Doing Business As',
+    label: 'Billing Label',
     name: 'business_dba',
   },
   {
@@ -66,43 +66,45 @@ const businessFields1 = [
       'Other',
     ],
   },
-  {
-    label: 'Business Category',
-    name: 'business_category',
-    _cmp: Input.Select,
-    options: [],
-  },
-  {
-    label: 'Sub Category',
-    name: 'business_subcategory',
-    _cmp: Input.Select,
-    options: [],
-    _optionsFn: function(activation, categories) {
-      // For setting options dynamically on basis some condition or other field selection
-      const userSelection = activation.state.data.business_category;
-
-      if (userSelection && categories[userSelection]) {
-        const subCategories = categories[userSelection].subcategories;
-
-        this.options = [''].concat(
-          Object.keys(subCategories).map(c => ({
-            name: c,
-            label: subCategories[c],
-          }))
-        );
-      }
-
-      return this.options;
+  [
+    {
+      label: 'Business Category',
+      name: 'business_category',
+      _cmp: Input.Select,
+      options: [],
     },
-    _when: activation => {
-      // 'Others' business_category has no sub_category
-      return (
-        activation.state.data.business_category &&
-        activation.state.data.business_category != 0 &&
-        activation.state.data.business_category != 'others'
-      ); // It's a string
+    {
+      label: 'Sub Category',
+      name: 'business_subcategory',
+      _cmp: Input.Select,
+      options: [],
+      _optionsFn: function(activation, categories) {
+        // For setting options dynamically on basis some condition or other field selection
+        const userSelection = activation.state.data.business_category;
+
+        if (userSelection && categories[userSelection]) {
+          const subCategories = categories[userSelection].subcategories;
+
+          this.options = [''].concat(
+            Object.keys(subCategories).map(c => ({
+              name: c,
+              label: subCategories[c],
+            }))
+          );
+        }
+
+        return this.options;
+      },
+      _when: activation => {
+        // 'Others' business_category has no sub_category
+        return (
+          activation.state.data.business_category &&
+          activation.state.data.business_category != 0 &&
+          activation.state.data.business_category != 'others'
+        ); // It's a string
+      },
     },
-  },
+  ],
   {
     label: 'We want to accept International Payments as well',
     name: 'business_international',
@@ -111,32 +113,6 @@ const businessFields1 = [
     description:
       'We’ll reach out to you as we might require some additional information to avail this feature. Please note that the application for international payments takes longer than usual to process.',
   },
-  {
-    label: 'CIN',
-    name: 'company_cin',
-  },
-  {
-    label: 'Business PAN Details',
-    name: 'company_pan',
-    placeholder: 'PAN Number',
-    info: 'PAN details should belong to the business mentioned above',
-  },
-  {
-    label: 'PAN Owner Name',
-    name: 'company_pan_name',
-  },
-  {
-    label: 'PAN info of Authorized Signatory/Promoter/Director',
-    name: 'promoter_pan',
-    placeholder: 'PAN Number',
-  },
-  {
-    label: 'PAN Owner Name',
-    name: 'promoter_pan_name',
-  },
-];
-
-const businessFields2 = [
   [
     {
       label: 'Do you have Website/App?',
@@ -176,6 +152,36 @@ const businessFields2 = [
       ),
       _when: activation => activation.state.app_type !== '1',
       info: 'Example: https://www.company.com',
+    },
+  ],
+];
+
+const registrationDetails = [
+  {
+    label: 'CIN',
+    name: 'company_cin',
+  },
+  [
+    {
+      label: 'Company PAN Details',
+      name: 'company_pan',
+      placeholder: 'PAN Number',
+      info: 'PAN details should belong to the business mentioned above',
+    },
+    {
+      label: 'PAN Owner Name',
+      name: 'company_pan_name',
+    },
+  ],
+  [
+    {
+      label: 'PAN info of Authorized Signatory/Promoter/Director',
+      name: 'promoter_pan',
+      placeholder: 'PAN Number',
+    },
+    {
+      label: 'PAN Owner Name',
+      name: 'promoter_pan_name',
     },
   ],
   [
@@ -346,8 +352,8 @@ const uploadFields = [
 // Tabs name
 export const mainFormTabs = [
   'Contact Details',
-  'Business Details - 1',
-  'Business Details - 2',
+  'Business Model',
+  'Registration Details',
   'Bank Account Details',
   'Documents Upload',
 ];
@@ -355,8 +361,8 @@ export const mainFormTabs = [
 // Tabs content
 export default [
   contactFields,
-  businessFields1,
-  businessFields2,
+  businessModel,
+  registrationDetails,
   bankAccountFields,
   uploadFields,
 ];
