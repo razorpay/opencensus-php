@@ -11,21 +11,7 @@ import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { saveGST } from 'merchant/modules/profile';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
-
-// Conditional field-level validation has some bug https://github.com/erikras/redux-form/issues/3012.
-// So using the form-level validation
-function validate(values) {
-  const errors = {};
-  const errorMsg = 'Must be 15 characters';
-
-  let { gstin } = values;
-
-  if (!gstin || gstin.length !== 15) {
-    errors.gstin = errorMsg;
-  }
-
-  return errors;
-}
+import { required, validateGSTIN } from 'rzp/utils/validators';
 
 const selector = formValueSelector('newGST');
 @connect(
@@ -43,7 +29,6 @@ const selector = formValueSelector('newGST');
 )
 @reduxForm({
   form: 'newGST',
-  validate,
 })
 export default class AddGST extends Component {
   state = {};
@@ -183,6 +168,7 @@ export default class AddGST extends Component {
                     class="form-control"
                     autoFocus={true}
                     placeholder="19AAAAAA1234YYY"
+                    validate={[required(), validateGSTIN]}
                   />
                 </div>
                 <div className="gst-update-note">

@@ -15,6 +15,8 @@ import BankAccountDetailsForm from './BankAccountDetailsForm';
 import DocumentsUploadForm from './DocumentsUploadForm';
 import SubmitForm from './SubmitForm';
 
+import { track } from './ga';
+
 const FORM_COMPONENTS = {
   activationContactDetails: ContactDetailsForm,
   activationBusinessDetails: BusinessDetailsForm,
@@ -77,6 +79,11 @@ export default class WizardItem extends Component {
   }
 
   updateSession(data) {
+    // %age is for current Account, not linked accounts
+    if (this.props.accountId) {
+      return;
+    }
+
     const { session } = this.props;
 
     const { activation_progress, activated, submitted } = data.data;
@@ -117,7 +124,40 @@ export default class WizardItem extends Component {
     }
   };
 
-  save = props => {
+  /**
+   * Tracks analytics.
+   * @param {String} _analyticsAction Action for event.
+   * @param {String} eventLabel Label for event.
+   * @param {String} suffix Suffix for event action.
+   */
+  _trackAnalytics = (_analyticsAction, eventLabel, suffix = '') => {
+    // Don't track events for Linked Account activation form.
+    if (!this.props.accountId) {
+      /**
+       * Need to check for string because when this is wrapper around
+       * `handleSubmit`, the second argument is a function.
+       */
+      let analyticsAction = _analyticsAction;
+      if (typeof analyticsAction !== 'string') {
+        analyticsAction = 'Click - Save';
+      }
+
+      if (this.props.step === this.finalStep) {
+        track({
+          eventAction: `Click - Submit${suffix}`,
+          eventLabel,
+        });
+      } else {
+        track({
+          eventAction: `${analyticsAction}${suffix}`,
+          eventLabel,
+        });
+      }
+    }
+  };
+
+  save = (props, analyticsAction) => {
+    const formName = this.props.formTitle;
     return this._save(props)
       .then(response => {
         let step = this.props.step;
@@ -131,6 +171,8 @@ export default class WizardItem extends Component {
           step === this.finalStep
             ? 'Form submitted Successfully!'
             : 'Step saved successfully';
+
+        this._trackAnalytics(analyticsAction, formName, ' (Success)');
 
         this.setState({
           errors: null,
@@ -148,12 +190,18 @@ export default class WizardItem extends Component {
           errors: err.errors,
         });
 
+        let errors;
+        try {
+          errors = JSON.stringify(err.errors);
+        } catch (e) {}
+        this._trackAnalytics(analyticsAction, errors, ' (Error)');
+
         throw { errors: err.errors };
       });
   };
 
   saveAndNext = props => {
-    return this.save(props).then(() => {
+    return this.save(props, 'Click - Save and Next').then(() => {
       this.goNext();
     });
   };
@@ -183,7 +231,11 @@ export default class WizardItem extends Component {
   };
 
   goBack = () => {
-    this.props.gotoTab(this.props.step - 1);
+    this.props.gotoTab(
+      this.props.step - 1,
+      'Click - Back (Success)',
+      this.props.step
+    );
   };
 
   goNext = () => {

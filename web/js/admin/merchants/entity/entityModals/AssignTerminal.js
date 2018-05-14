@@ -43,6 +43,9 @@ const gatewayMapping = {
   netbanking_indusind: 'Netbanking Indusind',
   netbanking_rbl: 'Netbanking RBL',
   netbanking_pnb: 'Netbanking PNB',
+  netbanking_obc: 'Netbanking OBC',
+  netbanking_csb: 'Netbanking CSB',
+  netbanking_bob: 'Netbanking BOB',
   cybersource: 'Cybersource',
   hitachi: 'Hitachi',
   wallet_openwallet: 'RZP Open Wallet',
@@ -105,8 +108,8 @@ export default class TerminalForm extends Component {
     let mode = body.mode;
     delete body.mode;
 
-    if (!body.terminal_mode) {
-      delete body.mode;
+    if (body.terminal_mode) {
+      body.mode = body.terminal_mode; // Terminal mode is sent as mode. And mode(test/live) is just for api url.
     }
 
     delete body.terminal_mode;
@@ -208,8 +211,18 @@ export default class TerminalForm extends Component {
             />
           )}
 
+          <Field
+            label="Gateway Terminal Password 2"
+            name="gateway_terminal_password2"
+            type="password"
+          />
+
           <Field label="Gateway Access Code" name="gateway_access_code" />
           <Field label="Gateway Secure Secret" name="gateway_secure_secret" />
+          <Field
+            label="Gateway Secure Secret 2"
+            name="gateway_secure_secret2"
+          />
 
           {!isEditMode && (
             <FileField

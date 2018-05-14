@@ -524,3 +524,27 @@ export const trim = str => {
 export const pluralize = (str, length) => {
   return length > 1 ? `${str}s` : str;
 };
+/**
+ * Returns whether or not a GSTIN is valid.
+ * @param {String} gstin
+ * @return {Boolean}
+ */
+export const isValidGSTIN = gstin => {
+  // If GSTIN is not provided or it isn't 15-char long, it is invalid.
+  if (!gstin || gstin.length !== 15) {
+    return false;
+  }
+
+  /**
+   * 1st character ∈ {0,1,2,3} (3 for future)
+   * 2nd character ∈ {0...9}
+   * 3rd - 7th characters are alphabets
+   * 8th - 11th characters are numbers
+   * 12th character is an alphabet
+   * 13th character is a number
+   * 14th character is “Z”
+   * 15th character could be anything (alphabet or number)
+   */
+  let regex = /^[0123][0-9][a-z]{5}[0-9]{4}[a-z][0-9][z][a-z0-9]$/gi;
+  return regex.test(gstin);
+};
