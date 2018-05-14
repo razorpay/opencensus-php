@@ -327,7 +327,7 @@ class Gateway extends Base\Gateway
     {
         $secret = $this->getSecret();
 
-        return new Encryptor(AES::MODE_ECB, $secret);
+        return new Encryptor(AES::MODE_CBC, $secret, $secret);
     }
 
     public function getMerchantId()
