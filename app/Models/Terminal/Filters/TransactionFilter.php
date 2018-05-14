@@ -538,8 +538,8 @@ class TransactionFilter extends Terminal\Filter
                         $issuer = $payment->card->getIssuer();
 
                         //
-                        // Pin auth terminal is only selected when the terminal issuer supports pin auth
-                        // and card iin also supports the flow
+                        // Pin auth terminal is only selected when the terminal issuer
+                        // supports pin auth and card iin also supports the flow
                         //
                         if (($terminal->isPin() === true) and
                             (Gateway::isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer) === true))

@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
+use RZP\Models\Merchant\Account;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\Payment\Entity as Payment;
@@ -27,8 +28,6 @@ class Core extends Base\Core
 
     /**
      * A static qr code for all the unexpected payments is picked.
-     *
-     * @param Merchant $merchant
      */
     public function createOrFetchSharedVirtualAccount()
     {
@@ -74,7 +73,7 @@ class Core extends Base\Core
 
     protected function createSharedVirtualAccount()
     {
-        $sharedMerchantId = Processor::getDefaultMerchantId();
+        $sharedMerchantId = $this->getDefaultMerchantId();
 
         $merchant = $this->repo->merchant->find($sharedMerchantId);
 
@@ -256,5 +255,21 @@ class Core extends Base\Core
         ];
 
         $this->app['events']->fire('api.virtual_account.created', $eventPayload);
+    }
+
+    /**
+     * For unexpected payments, we use the demo page merchant. This merchant only
+     * exists on prod. For other envs, we use the test merchant, i.e. '10000000000000'.
+     */
+    protected function getDefaultMerchantId()
+    {
+        $defaultMerchantId = Account::DEMO_PAGE_ACCOUNT;
+
+        if ($this->env !== 'production')
+        {
+            $defaultMerchantId = Account::TEST_ACCOUNT;
+        }
+
+        return $defaultMerchantId;
     }
 }
