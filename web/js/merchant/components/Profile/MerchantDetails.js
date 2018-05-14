@@ -24,17 +24,19 @@ export default ({ user }) => {
         )}
       />
 
-      {!user.locked &&
-        !user.activated && (
-          <DetailRow
-            label="Account Activation"
-            value={() => (
-              <span>
-                <Link to={'/activation'}>Fill Activation Form</Link>
-              </span>
-            )}
-          />
-        )}
+      {!user.activated && (
+        <DetailRow
+          label="Account Activation"
+          value={() => (
+            <span>
+              <Link to={'/activation'}>
+                {user.locked || user.submitted ? 'View' : 'Fill'} Activation
+                Form
+              </Link>
+            </span>
+          )}
+        />
+      )}
 
       {!!user.activated && (
         <DetailRow

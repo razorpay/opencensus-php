@@ -99,8 +99,22 @@ export default class ActivationWizard extends React.Component {
     DOCUMENT_UPLOAD_STEP &&
       FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(
         a =>
-          (a.onChange = (file, progressTracker) =>
-            props.saveFile(a.name, file, progressTracker))
+          (a.onChange = (file, progressTracker) => {
+            this.setState({
+              data: {
+                ...this.state.data,
+                [a.name]: file.name,
+              },
+              dirty: {
+                ...this.state.dirty,
+                [a.name]: file.name,
+              },
+            });
+
+            this.markTabIfActive(true);
+
+            return props.saveFile(a.name, file, progressTracker);
+          })
       );
   }
 
@@ -114,9 +128,10 @@ export default class ActivationWizard extends React.Component {
 
   setInitialTab() {
     let firstInValid = null;
-    let isSubmitDisabled = !(
-      this.props.data.activated && this.props.data.locked
-    );
+    let isSubmitFormRemoved =
+      this.props.data.activated ||
+      this.props.data.submitted ||
+      this.props.data.locked; // Linked accounts form can still be seen after activation.
 
     for (let i = 0; i < FORM_TABS.length; i++) {
       let tabStatusValid = this.tabValidity(i);
@@ -129,10 +144,22 @@ export default class ActivationWizard extends React.Component {
 
     if (firstInValid === null) {
       firstInValid = FORM_TABS.length - 1; // In case all are filled then set last tab(which is actually filled)
-      isSubmitDisabled && (this.state.showSubmitLayer = true); // Don't show submit form if it's already activated
+      !isSubmitFormRemoved && (this.state.showSubmitLayer = true); // Don't show submit form if it's already activated/locked/submitted
     }
 
     this.state.activeTab = firstInValid;
+  }
+
+  markTabIfActive(forceValue) {
+    let currentActive = this.state.activeTab;
+    let isValid = this.tabValidity(currentActive);
+    let tabs = this.state.tabs.slice();
+    // If marked valid in the same step as setting value then need to set through forceValue, like in case of Document upload
+    tabs[currentActive] = forceValue || isValid;
+
+    this.setState({
+      tabs,
+    });
   }
 
   changeTab = ({ target }) =>
@@ -140,16 +167,14 @@ export default class ActivationWizard extends React.Component {
 
   goto = activeTab => {
     let currentActive = this.state.activeTab;
-    let isValid = this.tabValidity(currentActive);
-    let tabs = this.state.tabs.slice();
-    tabs[currentActive] = isValid;
     activeTab = typeof activeTab === 'undefined' ? currentActive : activeTab; // Tab is not changed (To handle Save btn click).
 
     let shouldSave = Object.keys(this.state.dirty).length ? true : null;
 
+    this.markTabIfActive();
+
     this.setState({
       activeTab,
-      tabs,
       isSaving: shouldSave,
       showSubmitLayer: false,
     });
@@ -345,7 +370,10 @@ export default class ActivationWizard extends React.Component {
 
   render() {
     let isLinkedAccountForm = !!this.props.accountId;
-    let isSubmitDisabled = this.props.data.activated || this.props.data.locked; // Linked accounts form can still be seen after activation.
+    let isSubmitFormRemoved =
+      this.props.data.activated ||
+      this.props.data.submitted ||
+      this.props.data.locked; // Linked accounts form can still be seen after activation.
 
     let activeTab = this.state.activeTab;
     let isLastTab = activeTab == FORM_TABS.length - 1;
@@ -384,7 +412,7 @@ export default class ActivationWizard extends React.Component {
         <aside>
           <side-title>Account Activation</side-title>
           {!isLinkedAccountForm &&
-            !isSubmitDisabled && (
+            !isSubmitFormRemoved && (
               <p>
                 Fill and submit the activation form to start transacting live
                 from your Razorpay account.
@@ -408,7 +436,7 @@ export default class ActivationWizard extends React.Component {
                 </li>
               );
             })}
-            {isSubmitDisabled && (
+            {!isSubmitFormRemoved && (
               <li
                 onClick={this.toggleSubmitLayer}
                 class={classList(
@@ -456,11 +484,25 @@ export default class ActivationWizard extends React.Component {
                 )}
 
               {/* Show alert if main activation form is in locked state */}
-              {!isLinkedAccountForm &&
-                this.state.data.locked && (
-                  <Alert.Info iconBefore="i-outline-lock">
-                    Your activation form is locked as it's under review. We'll
-                    inform you once your account gets activated.
+              {do {
+                const showFormDisabledAlert =
+                  !isLinkedAccountForm &&
+                  (!!this.state.data.locked || !!this.state.data.submitted);
+                let icon, msg;
+
+                if (showFormDisabledAlert) {
+                  if (this.state.data.locked) {
+                    icon = 'i-outline-lock';
+                    msg =
+                      "Your activation form is locked as it's under review. We'll inform you once your account gets activated.";
+                  } else if (this.state.data.submitted) {
+                    icon = 'i-check';
+                    msg =
+                      "Your activation form is already submitted. We'll inform you once your account gets activated.";
+                  }
+
+                  <Alert.Info iconBefore={icon}>
+                    {msg}
                     <div class="side-description">
                       In case of any queries, you can reach out to us at{' '}
                       <a href="mailto:support@razorpay.com">
@@ -468,8 +510,9 @@ export default class ActivationWizard extends React.Component {
                       </a>{' '}
                       now.
                     </div>
-                  </Alert.Info>
-                )}
+                  </Alert.Info>;
+                }
+              }}
 
               {/* Show alert if user has selected individual business type */}
               {!isLinkedAccountForm &&
@@ -511,7 +554,7 @@ export default class ActivationWizard extends React.Component {
             </Form>
           </main>
         )}
-        {isSubmitDisabled &&
+        {!isSubmitFormRemoved &&
           this.state.showSubmitLayer && (
             <main class="overlay-container">
               <SubmitForm
@@ -533,7 +576,7 @@ export default class ActivationWizard extends React.Component {
               </Button.Primary>
             )}
             {isLastTab &&
-              isSubmitDisabled && (
+              !isSubmitFormRemoved && (
                 <Button.Primary
                   class={classList(!this.isAllTabsValid() && 'disabled')}
                   onClick={this.toggleSubmitLayer}
@@ -612,7 +655,11 @@ function ActivationField(field, activation) {
       key={key}
       data-name={_name}
       defaultValue={defaultValue}
-      disabled={!!this.state.data.locked || !!this.state.data.activated} // Linked accounts form can still be seen after activation
+      disabled={
+        !!this.state.data.locked ||
+        !!this.state.data.submitted ||
+        !!this.state.data.activated
+      } // Linked accounts form can still be seen after activation
       {...rest}
     />
   );
