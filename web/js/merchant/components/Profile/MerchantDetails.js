@@ -1,7 +1,9 @@
+import { Link } from 'react-router-dom';
 import Time from 'rzp/ui/Time';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import DetailRow from '../DetailRow';
 import CheckIcon from 'rzp/ui/CheckIcon';
+import ProgressBar from 'rzp/ui/ProgressBar';
 
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 
@@ -16,9 +18,32 @@ export default ({ user }) => {
       />
 
       <DetailRow
-        label="Activation Form Progress"
-        value={`${user.activation_progress}%`}
+        label="Registration Date"
+        value={() => (
+          <Time value={user.created_at} format="MMM DD YYYY, hh:mm:ss a" />
+        )}
       />
+
+      {!user.locked &&
+        !user.activated && (
+          <DetailRow
+            label="Account Activation"
+            value={() => (
+              <span>
+                <Link to={'/activation'}>Fill Activation Form</Link>
+              </span>
+            )}
+          />
+        )}
+
+      {!!user.activated && (
+        <DetailRow
+          label="Account Activated On"
+          value={() => (
+            <Time value={user.activated_at} format="MMM DD YYYY, hh:mm a" />
+          )}
+        />
+      )}
 
       <DetailRow
         label="Activation Status"
@@ -26,15 +51,20 @@ export default ({ user }) => {
           user.activation_status ? (
             <ActivationStatusLabel status={user.activation_status} />
           ) : (
-            '--'
-          )}
-      />
-
-      <DetailRow
-        label="Registration Date"
-        value={() => (
-          <Time value={user.created_at} format="MMM DD YYYY, hh:mm:ss a" />
-        )}
+            <div className="activation-bar-content activation-status-secondary">
+              <div className="activation-bar-text">
+                {user.activation_progress}% Completed
+              </div>
+              <div className="activation-bar">
+                <ProgressBar
+                  type="success"
+                  max={100}
+                  value={user.activation_progress}
+                />
+              </div>
+            </div>
+          )
+        }
       />
     </div>
   );
