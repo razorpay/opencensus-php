@@ -181,13 +181,7 @@ class PublicController extends Controller
     }
 
     /**
-     * Gives the cluster status in color
-     *
-     *  - Green means everything is good (cluster is fully functional),
-     *  - Yellow means all data is available but some replicas are not yet allocated (cluster is fully functional),
-     *  - Red means some data is not available for whatever reason. Note that even if a cluster is red,
-     *    it still is partially functional (i.e. it will continue to serve search requests from the available shards)
-     *    but you will likely need to fix it ASAP since you have missing data.
+     * Makes call to get category count. ES state is connected if the result is not empty
      *
      * @return mixed
      */
@@ -199,9 +193,9 @@ class PublicController extends Controller
 
             $es->setEsClient([]);
 
-            $clusterStatus = $es->clusterHealth();
+            $count = $es->catCount();
 
-            return $clusterStatus['status'];
+            return $count ? 'ok' : 'ko';
         }
         catch (\Throwable $e)
         {

@@ -76,9 +76,9 @@ class EsClient
         return [$res];
     }
 
-    public function clusterHealth()
+    public function catCount()
     {
-        return $this->client->cluster()->health();
+        return $this->client->cat()->count();
     }
 
     public function explain(array $params)
