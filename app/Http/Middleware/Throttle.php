@@ -16,9 +16,11 @@ final class Throttle
         $start = microtime(true);
 
         // Throttle is the first middleware and request context is initialized here
-        \App::getFacadeRoot()['request.ctx']->init();
+        app('request.ctx')->init();
 
-        (new Throttler)->throttle($request);
+        (new Throttler)->throttle();
+
+        // TODO: Refactor here. Probably create another class in http/ to take care of all http metric crap
 
         $response = $next($request);
 

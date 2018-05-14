@@ -14,6 +14,10 @@ class Throttler extends BaseThrottler
     {
         parent::__construct();
 
+        //
+        // Generally Throttler class gets used in middleware and there reqctx is initialized.
+        // For the purpose of Unit testing we initialize reqctx manually.
+        //
         $this->reqctx->init();
     }
 

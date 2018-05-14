@@ -20,7 +20,7 @@ use RZP\Exception\BadRequestException;
 
 /**
  * Extracts and holds various variables from request to be used in throttling and subsequent middle-wares.
- * This only does minimal database/redis calls, which is required even by throttle module.
+ * This only does minimal database/redis calls, which is required even by throttle(first middleware) module.
  */
 final class RequestContext
 {
@@ -319,7 +319,9 @@ final class RequestContext
      */
     protected function resolveKeyIdIfApplicable()
     {
-        if ((empty($this->keyId) === true) or (empty($this->mode) === true) or (Mode::exists($this->mode) === false))
+        if ((empty($this->keyId) === true) or
+            (empty($this->mode) === true) or
+            (Mode::exists($this->mode) === false))
         {
             return;
         }
@@ -359,8 +361,8 @@ final class RequestContext
         $isPrivateRoute = in_array($this->route, Route::$private, true);
         $isProxyRoute   = in_array($this->route, Route::$proxy, true);
 
-        // In case of proxy auth, internal app is dashboard.
-        $this->setInternalAppName();
+        // In case of proxy auth(even for private routes), internal app is dashboard and the same needs to be set
+        $this->setInternalAppNameByAuth();
 
         if (($isPrivateRoute === true) and (empty($token = $this->getBearerTokenFromRequest()) === false))
         {
@@ -393,7 +395,7 @@ final class RequestContext
     {
         if (in_array($this->route, Route::$internal, true) === true)
         {
-            $this->setInternalAppName();
+            $this->setInternalAppNameByAuth();
             return true;
         }
         else if (in_array($this->route, Route::$admin, true) === true)
@@ -416,7 +418,10 @@ final class RequestContext
         return false;
     }
 
-    protected function setInternalAppName()
+    /**
+     * Sets internalAppName value by checking auth's secret value.
+     */
+    protected function setInternalAppNameByAuth()
     {
         foreach ($this->applications as $name => $config)
         {
