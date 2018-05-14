@@ -3472,6 +3472,10 @@ ALTER TABLE invoices
     ADD COLUMN customer_shipping_addr_id CHAR(14) DEFAULT NULL AFTER customer_billing_addr_id,
     ADD CONSTRAINT invoices_customer_shipping_addr_id_foreign FOREIGN KEY (customer_shipping_addr_id) REFERENCES addresses (id);
 
+ALTER TABLE enach
+    ADD COLUMN registration_date INTEGER UNSIGNED AFTER registration_status,
+    ADD INDEX enach_registration_date_index (registration_date);
+
 //Atom Entity refactor
 
 ALTER TABLE atom DROP FOREIGN KEY atom_id_foreign;

@@ -2396,6 +2396,11 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
     }
 
+    public function enach()
+    {
+        return $this->hasOne('RZP\Gateway\Enach\Base\Entity');
+    }
+
     // using hasOne here as we need only the first billdesk entity, actual relation can be one-to-many
     public function billdesk()
     {
