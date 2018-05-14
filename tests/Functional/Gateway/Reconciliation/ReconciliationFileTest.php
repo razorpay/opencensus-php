@@ -1,11 +1,11 @@
 <?php
 namespace RZP\Tests\Functional\Gateway\Reconciliation;
 
+use RZP\Models\Batch\Status;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 use RZP\Gateway\Blade\Mock\CardNumber;
 
@@ -19,8 +19,7 @@ use RZP\Reconciliator\Hitachi\RefundReconciliate as HitachiRefundRecon;
 
 class ReconciliationFileTest extends TestCase
 {
-    use FileHandlerTrait;
-    use PaymentTrait;
+    use BatchTestTrait;
     use VirtualAccountTrait;
     use DbEntityFetchTrait;
 
@@ -92,16 +91,17 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][FDPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
 
         // Check the status of processed batch.
-        $this->checkBatchProcessStatus();
+        $this->checkBatchStatus();
     }
 
     /**
      * Assert the status of batch processed.
      */
-    protected function checkBatchProcessStatus()
+    protected function checkBatchStatus(string $status = Status::PROCESSED)
     {
         $batch = $this->getDbLastEntityToArray('batch');
-        $this->assertEquals($batch['status'], 'processed');
+
+        $this->assertEquals($batch['status'], $status);
     }
 
     public function testHdfcFssReconPaymentFile()
@@ -562,4 +562,33 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][HitachiRefundRecon::COLUMN_ARN], $updatedRefund1['arn']);
     }
 
+    /**
+     * Test for failed reconciliation batch. Retrying will mark it processed.
+     */
+    public function testFailedReconBatchRetry()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_first_data_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->getNewPaymentEntity(false, true);
+
+        $gatewayPayment1 = $this->getDbLastEntityToArray('first_data');
+
+        $entries[] = $this->overrideFirstDataPayment($gatewayPayment1);
+
+        // Creating batch with failed status.
+        $this->fixtures->create('batch:recon_with_failed_status', $entries);
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        // Asserting status of batch as failed.
+        $this->checkBatchStatus(Status::FAILED);
+
+        // Retrying failed batch.
+        $this->retryFailedBatch('batch_' . $batch['id']);
+
+        // Asserting status of batch as 'Processed'.
+        $this->checkBatchStatus();
+    }
 }

@@ -341,7 +341,25 @@ class Base extends BaseModel\Core
 
         $this->batch->incrementAttempts();
 
+        $this->resetBatchAttributes();
+
         $this->downloadAndSetInputFile();
+    }
+
+    /**
+     * Resets batch attributes conditionally for processing to happen
+     */
+    protected function resetBatchAttributes()
+    {
+        //
+        // If in the previous run the batch has been failed, we reset the status and failure reason here.
+        // Status and reason will be set again in current run based on processing result.
+        //
+        if ($this->batch->isFailed() === true)
+        {
+            $this->batch->setStatusNull();
+            $this->batch->unsetFailureReason();
+        }
     }
 
     protected function parseAndProcessEntries()
