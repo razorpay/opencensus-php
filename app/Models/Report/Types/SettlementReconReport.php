@@ -10,6 +10,8 @@ use RZP\Constants\Entity as E;
 
 class SettlementReconReport extends BasicEntityReport
 {
+    const BATCH_LIMIT = 1000;
+
     // Maps the transaction source to the entities to be fetched for it
     protected $entityToRelationFetchMap = [
         E::TRANSACTION => [
@@ -26,6 +28,7 @@ class SettlementReconReport extends BasicEntityReport
                 Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::CARD,
                 Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::ORDER,
             ],
+            E::SETTLEMENT,
         ]
     ];
 
@@ -33,29 +36,25 @@ class SettlementReconReport extends BasicEntityReport
         E::TRANSACTION
     ];
 
-    protected function fetchFormattedDataForReport($entities): array
+    /**
+     * Gets report data as array
+     *
+     * Not being used anywhere on dashboard
+     * Keeping it to maintain backward compatibility
+     *
+     * @param $input array
+     *        expected : 'day', 'month', 'year'
+     * @return $data array
+     */
+    public function getReport(array $input)
     {
-        $data = [];
+        $this->validateInput($input);
 
-        foreach ($entities as $order)
-        {
-            switch ($order->getStatus())
-            {
-                case Order\Status::CREATED:
-                    $row = $this->createFailureEntry($order, 'pending', 'Razorpay Payment does not exists');
-                    break;
+        $this->setDefaults();
 
-                case Order\Status::ATTEMPTED:
-                    $row = $this->createEntryForAttemptedOrder($order);
-                    break;
+        list($from, $to, $count, $skip) = $this->getParamsForReport($input);
 
-                case Order\Status::PAID:
-                    $row = $this->createEntryForPaidOrder($order);
-                    break;
-            }
-
-            $data[] = $row;
-        }
+        list($data, $count) = $this->getReportData($from, $to, $count, $skip);
 
         return $data;
     }
@@ -75,5 +74,4 @@ class SettlementReconReport extends BasicEntityReport
                         $this->relationsToFetch
         );
     }
-
 }

@@ -600,6 +600,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::FEE_MODEL) === Merchant\FeeModel::POSTPAID);
     }
 
+    public function hasSettlement()
+    {
+        return ($this->isAttributeNotNull(self::SETTLEMENT_ID));
+    }
+
     public function toArrayReport()
     {
         $reportTxn = parent::toArrayReport();
@@ -673,6 +678,7 @@ class Entity extends Base\PublicEntity
             $settlement = $this->source;
 
             $reportTxn['settlement_utr'] = $settlement->getUtr();
+
             $reportTxn[self::SETTLED] = null;
         }
         else if ($this->isTypeAdjustment() === true)
@@ -712,6 +718,11 @@ class Entity extends Base\PublicEntity
             {
                 $reportTxn[Refund\Entity::PAYMENT_ID] = Payment\Entity::getSignedId($transfer->getSourceId());
             }
+        }
+
+        if ($txn->hasSettlement() === true)
+        {
+            $reportTxn['settlement_utr'] = $txn->settlement->getUtr();
         }
 
         return $reportTxn;

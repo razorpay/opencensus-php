@@ -44,6 +44,7 @@ class BasicEntityReport extends BaseReport
                 Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::CARD,
                 Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::ORDER,
             ],
+            E::SETTLEMENT,
         ],
         E::DISPUTE => [
             E::PAYMENT,
