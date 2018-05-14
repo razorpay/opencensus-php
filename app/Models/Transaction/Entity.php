@@ -720,9 +720,9 @@ class Entity extends Base\PublicEntity
             }
         }
 
-        if ($txn->hasSettlement() === true)
+        if ($this->hasSettlement() === true)
         {
-            $reportTxn['settlement_utr'] = $txn->settlement->getUtr();
+            $reportTxn['settlement_utr'] = $this->settlement->getUtr();
         }
 
         return $reportTxn;
