@@ -161,12 +161,7 @@ class Reconciliate extends Base\Core
             $this->subReconciliator->startReconciliationV2($fileContents, $batch);
         }
 
-        $summary = $this->getBatchProcessingSummary($batch);
-
-        $skipSlack = in_array($batch->getGateway(), Service::BATCH_SUMMARY_SKIP_GATEWAYS, true);
-
-        // Raise recon info with the batch processing summary
-        $this->messenger->setSkipSlack($skipSlack)->raiseReconInfo($summary);
+        $this->traceBatchProcessingSummary($batch);
     }
 
     /**
@@ -377,8 +372,8 @@ class Reconciliate extends Base\Core
         ];
     }
 
-    // Get recon batch processing summary
-    protected function getBatchProcessingSummary($batch)
+    // Sends recon batch processing summary
+    protected function traceBatchProcessingSummary($batch)
     {
         $summary = [
             'info'          => 'Processed Batch Summary',
@@ -398,6 +393,16 @@ class Reconciliate extends Base\Core
             $summary['dashboard_user'] = $this->getInternalUsernameOrEmail();
         }
 
-        return $summary;
+        $skipSlack = in_array($batch->getGateway(), Service::BATCH_SUMMARY_SKIP_GATEWAYS, true);
+
+        // Raise recon info/alert with the batch processing summary
+        if ($batch->getFailureCount() > 0)
+        {
+            $this->messenger->setSkipSlack($skipSlack)->raiseReconAlert($summary);
+        }
+        else
+        {
+            $this->messenger->setSkipSlack($skipSlack)->raiseReconInfo($summary);
+        }
     }
 }

@@ -70,6 +70,8 @@ class Batch extends Base
             Entity::GATEWAY         => 'FirstData',
             Entity::TYPE            => Type::RECONCILIATION,
             Entity::STATUS          => Status::FAILED,
+            Entity::SUCCESS_COUNT   => 0,
+            Entity::FAILURE_COUNT   => 0,
             Entity::FAILURE_REASON  => 'Did not get the reconciliation type for the row in combined reconciliation.',
         ];
 
