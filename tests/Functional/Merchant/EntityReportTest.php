@@ -86,7 +86,7 @@ class EntityReportTest extends TestCase
 
         $data = $this->fetchSettlementReconReport($input);
 
-        s($data);
+        $this->assertEquals(5, count($data));
     }
 
     public function testOrderReport()

@@ -11,7 +11,7 @@ use RZP\Constants\Entity as E;
 
 class SettlementReconReport extends BasicEntityReport
 {
-    const BATCH_LIMIT = 1000;
+    protected $batchLimit = 1000;
 
     // Maps the transaction source to the entities to be fetched for it
     protected $entityToRelationFetchMap = [
