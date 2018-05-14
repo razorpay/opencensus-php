@@ -1,5 +1,3 @@
-import React, { Component, Fragment } from 'react';
-
 import { readableFileSize } from 'rzp/utils/rzp-utils';
 import { classList } from 'common/util';
 
@@ -23,7 +21,7 @@ import Staged from './Staged';
  *                       Note:- Please refer `fileTypesMap` for issues related to mime types
  *
  */
-export default class FileUpload extends Component {
+export default class FileUpload extends React.Component {
   static defaultProps = {
     multi: false,
     acceptedTypes: [],
@@ -142,7 +140,10 @@ export default class FileUpload extends Component {
     return infotext;
   };
 
-  handleCloseClick = fileIndex => () => {
+  handleCloseClick = fileIndex => e => {
+    e.preventDefault();
+    e.stopPropagation();
+
     if (this.props.disabled) {
       return;
     }
@@ -182,8 +183,8 @@ export default class FileUpload extends Component {
     }
   };
 
-  handleDragOver = event => {
-    event.preventDefault();
+  handleDragOver = e => {
+    e.preventDefault();
   };
 
   toggleDragWithFile = e => {
@@ -217,6 +218,7 @@ export default class FileUpload extends Component {
     return (
       <div
         class="Dropzone"
+        id={`Dropzone-${name}`}
         onDragLeave={isDocPreUploaded ? undefined : this.toggleDragWithFile}
       >
         {!multi &&
@@ -233,7 +235,6 @@ export default class FileUpload extends Component {
               onDragEnter={
                 isDocPreUploaded ? undefined : this.toggleDragWithFile
               }
-              onClick={this.handleClick}
             >
               <div class="Dropzone-content">
                 {children || (
@@ -243,13 +244,26 @@ export default class FileUpload extends Component {
                       src={'img/files/file-placeholder.svg'}
                       alt=""
                     />
-                    <p class="Dropzone-content-desc--primary">
-                      Drop file here or{' '}
-                      <b class="text-primary">Click to Upload</b>{' '}
-                      {maxSize && (
-                        <Fragment>{readableFileSize(maxSize)} Max</Fragment>
-                      )}
-                    </p>
+                    <div class="Dropzone-content-desc">
+                      <p class="Dropzone-content-desc--primary">
+                        Drop file here or{' '}
+                        <b class="text-primary">Click to Upload</b>{' '}
+                        {maxSize && (
+                          <React.Fragment>
+                            {readableFileSize(maxSize)} Max
+                          </React.Fragment>
+                        )}
+                      </p>
+                      {do {
+                        const acceptedFileTypes = this.getAcceptedFileTypesInfo();
+
+                        if (acceptedFileTypes && showAcceptInfo) {
+                          <p class="Dropzone-content-desc--secondary text-muted small-text">
+                            {acceptedFileTypes}
+                          </p>;
+                        }
+                      }}
+                    </div>
                     <input
                       type="file"
                       id={`fileInput-${name}`}
@@ -260,15 +274,6 @@ export default class FileUpload extends Component {
                       disabled={disabled}
                       hidden
                     />
-                    {do {
-                      const acceptedFileTypes = this.getAcceptedFileTypesInfo();
-
-                      if (acceptedFileTypes && showAcceptInfo) {
-                        <p class="Dropzone-content-desc--secondary text-muted small-text">
-                          {acceptedFileTypes}
-                        </p>;
-                      }
-                    }}
                   </React.Fragment>
                 )}
               </div>
