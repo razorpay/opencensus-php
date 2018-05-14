@@ -169,7 +169,6 @@ class Netbanking
     ];
 
     protected static $billdeskTPV = [
-        IFSC::ALLA,
         IFSC::ANDB,
         IFSC::CIUB,
         IFSC::CORP,
