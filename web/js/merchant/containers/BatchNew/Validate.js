@@ -20,7 +20,7 @@ export default class BatchValidate extends Component {
     stagedFileStatus: null,
   };
 
-  handleStateChange = (status = null, errorMsg = null, fileUrl = null) => {
+  changeBatchState = (status = null, errorMsg = null, fileUrl = null) => {
     const newState = {};
     newState.status = status;
     newState.stagedFileStatus = status;
@@ -40,19 +40,19 @@ export default class BatchValidate extends Component {
   };
 
   handleBatchValidation = (file, progressTracker) => {
-    this.handleStateChange('process');
+    this.changeBatchState('process');
     trackUploadBatchFile();
     return this.props
       .validateBatch(file, progressTracker)
       .then(response => {
         if (response.data.error_count) {
-          this.handleStateChange(
+          this.changeBatchState(
             'error',
             'Some fields have invalid entries',
             response.data.signed_url
           );
         } else {
-          this.handleStateChange('success');
+          this.changeBatchState('success');
           this.props.onValidation(
             response.data,
             file.name.replace(/\.[^/.]+$/, '')
@@ -61,7 +61,7 @@ export default class BatchValidate extends Component {
         return response;
       })
       .catch(error => {
-        this.handleStateChange('error', error.errors[0]);
+        this.changeBatchState('error', error.errors[0]);
       });
   };
 
@@ -72,7 +72,7 @@ export default class BatchValidate extends Component {
   };
 
   handleBiggerFileSize = () => {
-    this.handleStateChange('exceed');
+    this.changeBatchState('exceed');
   };
 
   handleSampleFileDownload = () => {
@@ -89,7 +89,7 @@ export default class BatchValidate extends Component {
         onLoadMore={this.handleLoadMore}
         onFileChange={this.handleBatchValidation}
         onBiggerFileSize={this.handleBiggerFileSize}
-        onCloseClick={this.handleStateChange}
+        onCloseClick={this.changeBatchState}
         onSampleFileDownload={this.handleSampleFileDownload}
         onErrorReportDownload={this.handleErrorReportDownload}
         maxRows={5000}

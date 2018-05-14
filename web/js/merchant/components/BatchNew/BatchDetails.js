@@ -19,6 +19,20 @@ import {
 
 const MAX_INVOICE_COUNT = 4;
 
+const InvoicesListItem = ({ invoice }) => {
+  return (
+    <EntityItemRow id={invoice.id}>
+      <td>{invoice.customer_details.email}</td>
+      <td>
+        <Amount value={invoice.amount} currency={invoice.currency} />
+      </td>
+      <td>
+        <InvoiceStatusLabel status={invoice.status} />
+      </td>
+    </EntityItemRow>
+  );
+};
+
 export default function BatchDetails(props) {
   let { batch, stats, invoices, isLoading, onDownload } = props;
   let batchName =
@@ -131,10 +145,7 @@ export default function BatchDetails(props) {
                   stats.batch_total > stats.issued_count &&
                   batch.status !== 'created' && (
                     <small class="help-block m-l">
-                      <i
-                        class="i i-info-circle"
-                        style={{ marginRight: '5px' }}
-                      />
+                      <i class="i i-info-circle" />
                       {/* show error info */}
                       {stats.issued_count === 0 ? (
                         <span>
@@ -176,17 +187,3 @@ export default function BatchDetails(props) {
     </div>
   );
 }
-
-const InvoicesListItem = ({ invoice }) => {
-  return (
-    <EntityItemRow id={invoice.id}>
-      <td>{invoice.customer_details.email}</td>
-      <td>
-        <Amount value={invoice.amount} currency={invoice.currency} />
-      </td>
-      <td>
-        <InvoiceStatusLabel status={invoice.status} />
-      </td>
-    </EntityItemRow>
-  );
-};
