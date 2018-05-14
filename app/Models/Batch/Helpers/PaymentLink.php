@@ -34,7 +34,7 @@ class PaymentLink
     {
         // Set partial_payment attribute to false if field comes as null from excel file.
         $partialPayment = array_get($entry, Batch\Header::PARTIAL_PAYMENT);
-        $partialPayment = self::PARTIAL_PAYMENT_INPUT_MAP[strtolower(trim($partialPayment))];
+        $partialPayment = self::PARTIAL_PAYMENT_INPUT_MAP[strtolower(trim($partialPayment))] ?? '0';
 
         $receipt = $entry[Batch\Header::INVOICE_NUMBER];
         $receipt = empty($receipt) === true ? null : (string) $receipt;
