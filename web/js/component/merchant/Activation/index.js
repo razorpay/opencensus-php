@@ -456,90 +456,14 @@ export default class ActivationWizard extends React.Component {
           </ul>
         </aside>
         {/* Rest of the Content for business form */}
-        {content && (
-          <main
-            class={classList(
-              'form-container',
-              this.state.showSubmitLayer && 'block-scroll'
-            )}
-          >
-            <main-title>
-              {activeTab != 0 && (
-                <Button
-                  class="btn--mobile btn--back"
-                  iconBefore="chevron-left"
-                  onClick={this.prev}
-                >
-                  Back
-                </Button>
-              )}
-              {FORM_TABS[activeTab]}
-            </main-title>
-
-            <Form onChange={this.onChange} layout="tabular">
-              {/* Show alert if linked account has been activated */}
-              {isLinkedAccountForm &&
-                this.state.data.activated && (
-                  <Alert.Info>The account has been activated</Alert.Info>
-                )}
-
-              {/* Show alert if main activation form is in locked state */}
-              {do {
-                const showFormDisabledAlert =
-                  !isLinkedAccountForm &&
-                  (!!this.state.data.locked || !!this.state.data.submitted);
-                let icon, msg;
-
-                if (showFormDisabledAlert) {
-                  if (this.state.data.locked) {
-                    icon = 'i-outline-lock';
-                    msg =
-                      "Your activation form is locked as it's under review. We'll inform you once your account gets activated.";
-                  } else if (this.state.data.submitted) {
-                    icon = 'i-check';
-                    msg =
-                      "Your activation form is already submitted. We'll inform you once your account gets activated.";
-                  }
-
-                  <Alert.Info iconBefore={icon}>
-                    {msg}
-                    <div class="side-description">
-                      In case of any queries, you can reach out to us at{' '}
-                      <a href="mailto:support@razorpay.com">
-                        support@razorpay.com
-                      </a>{' '}
-                      now.
-                    </div>
-                  </Alert.Info>;
-                }
-              }}
-
-              {/* Show alert if user has selected individual business type */}
-              {!isLinkedAccountForm &&
-                this.state.data.business_type == 2 && (
-                  <Alert.Warning>
-                    We may not be able to support individual as of now. Get in
-                    touch with{' '}
-                    <a href="mailto:support@razorpay.com">
-                      support@razorpay.com
-                    </a>{' '}
-                    for more details.
-                  </Alert.Warning>
-                )}
-              {content}
-            </Form>
-          </main>
-        )}
-        {/* Document Content */}
-        {DOCUMENT_UPLOAD_STEP && (
-          <main
-            class={classList(
-              'form-container',
-              this.state.showSubmitLayer && 'block-scroll',
-              content && 'main--hide'
-            )}
-          >
-            {
+        <main
+          class={classList(
+            'form-container',
+            this.state.showSubmitLayer && 'block-scroll'
+          )}
+        >
+          <main-title>
+            {activeTab != 0 && (
               <Button
                 class="btn--mobile btn--back"
                 iconBefore="chevron-left"
@@ -547,13 +471,66 @@ export default class ActivationWizard extends React.Component {
               >
                 Back
               </Button>
+            )}
+            {FORM_TABS[activeTab]}
+          </main-title>
+
+          {/* Show alert if linked account has been activated */}
+          {isLinkedAccountForm &&
+            this.state.data.activated && (
+              <Alert.Info>The account has been activated</Alert.Info>
+            )}
+
+          {/* Show alert if main activation form is in locked state */}
+          {do {
+            const showFormDisabledAlert =
+              !isLinkedAccountForm &&
+              (!!this.state.data.locked || !!this.state.data.submitted);
+            let icon, msg;
+
+            if (showFormDisabledAlert) {
+              if (this.state.data.locked) {
+                icon = 'i-outline-lock';
+                msg =
+                  "Your activation form is locked as it's under review. We'll inform you once your account gets activated.";
+              } else if (this.state.data.submitted) {
+                icon = 'i-check';
+                msg =
+                  "Your activation form is already submitted. We'll inform you once your account gets activated.";
+              }
+
+              <Alert.Info iconBefore={icon}>
+                {msg}
+                <div class="side-description">
+                  In case of any queries, you can reach out to us at{' '}
+                  <a href="mailto:support@razorpay.com">support@razorpay.com</a>{' '}
+                  now.
+                </div>
+              </Alert.Info>;
             }
-            <main-title>{FORM_TABS[DOCUMENT_UPLOAD_STEP]}</main-title>
-            <Form onChange={this.onChange} layout="tabular">
+          }}
+
+          {/* Show alert if user has selected individual business type */}
+          {!isLinkedAccountForm &&
+            this.state.data.business_type == 2 && (
+              <Alert.Warning>
+                We may not be able to support individual as of now. Get in touch
+                with{' '}
+                <a href="mailto:support@razorpay.com">support@razorpay.com</a>{' '}
+                for more details.
+              </Alert.Warning>
+            )}
+          <Form onChange={this.onChange} layout="tabular">
+            {/* Other Form Content if not Document */}
+            {content}
+
+            {/* Document Content is always in DOM */}
+            <div style={{ display: content ? 'none' : 'inherit' }}>
               {documentContent}
-            </Form>
-          </main>
-        )}
+            </div>
+          </Form>
+        </main>
+
         {!isSubmitFormRemoved &&
           this.state.showSubmitLayer && (
             <main class="overlay-container">
