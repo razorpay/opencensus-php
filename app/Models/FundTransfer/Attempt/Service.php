@@ -167,9 +167,9 @@ class Service extends Base\Service
         return false;
     }
 
-    public function sendNullUtrReport()
+    public function sendFTAReconReport()
     {
-        $data = (new Report)->sendNullUtrReport();
+        $data = (new Report)->sendFTAReconReport();
 
         return $data;
     }

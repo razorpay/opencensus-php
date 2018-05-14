@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\QrPayment;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Gateway\Upi\Icici\Fields;
 
 return [
     'createVirtualAccount' => [
@@ -15,12 +16,12 @@ return [
     ],
 
     'testQrPaymentProcess' => [
-        'url'     => '/payment/callback/bharatqr',
+        'url'     => '/payment/callback/bharatqr/hitachi',
         'method'  => 'post',
         'content' => [
             'F002'       => '423156XXXXXX1234',
             'F003'       => '26000',
-            'F004'       => '2.00',
+            'F004'       => '000000000200',
             'F011'       => 'abc123',
             'F012'       => '120000',
             'F013'       => '1212',
@@ -33,6 +34,24 @@ return [
             'F102'       => 'paymentId',
             'PurchaseID' => 'tobefilled',
             'SenderName' => 'Razorpay',
+        ],
+    ],
+
+    'testUpiQrPaymentProcess' => [
+        'url'     => '/payment/callback/bharatqr/upi_icici',
+        'method'  => 'post',
+        'content' => [
+            Fields::RESPONSE         => '92',
+            Fields::MERCHANT_ID      => '2q484',
+            Fields::SUBMERCHANT_ID   => '42324',
+            Fields::TERMINAL_ID      => '2425',
+            Fields::SUCCESS          => 'true',
+            Fields::MESSAGE          => 'Transaction initiated',
+            Fields::MERCHANT_TRAN_ID => 'tobefilled',
+            Fields::BANK_RRN         => random_int(111111111, 999999999),
+            Fields::PAYER_NAME       => 'Ria Garg',
+            Fields::PAYER_VA         => 'random@icici',
+            Fields::PAYER_AMOUNT     => '100.00',
         ],
     ],
 ];

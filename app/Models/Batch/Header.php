@@ -3,7 +3,10 @@
 namespace RZP\Models\Batch;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\FileStore;
+use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
+use RZP\Gateway\Enach\Rbl\DebitFileHeadings as EnachRblDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
 
@@ -142,6 +145,23 @@ class Header
     const TIME           = 'time';
 
     //
+    // Batch recurring payments
+    //
+    const RECURRING_CHARGE_TOKEN       = 'token';
+    const RECURRING_CHARGE_CUSTOMER_ID = 'customer_id';
+    const RECURRING_CHARGE_AMOUNT      = 'amount';
+    const RECURRING_CHARGE_CURRENCY    = 'currency';
+    const RECURRING_CHARGE_RECEIPT     = 'receipt';
+    const RECURRING_CHARGE_DESCRIPTION = 'description';
+    const RECURRING_CHARGE_NOTES_1     = 'notes_1';
+    const RECURRING_CHARGE_NOTES_2     = 'notes_2';
+    const RECURRING_CHARGE_NOTES_3     = 'notes_3';
+    const RECURRING_CHARGE_NOTES_4     = 'notes_4';
+    const RECURRING_CHARGE_NOTES_5     = 'notes_5';
+    const RECURRING_CHARGE_PAYMENT_ID  = 'payment_id';
+    const RECURRING_CHARGE_ORDER_ID    = 'order_id';
+
+    //
     // HDFC Emandate Register Response File Headers
     //
     const HDFC_EM_REGISTER_CLIENT_NAME                      = HdfcEMRegisterHeadings::CLIENT_NAME;
@@ -160,6 +180,60 @@ class Header
     const HDFC_EM_REGISTER_REMARK                           = HdfcEMRegisterHeadings::REMARK;
 
     //
+    // eNach eMandate Register Response File Headers
+    //
+    const ENACH_REGISTER_SRNO               = 'SRNO';
+    const ENACH_REGISTER_MANDATE_DATE       = 'MANDATE_DATE';
+    const ENACH_REGISTER_MANDATE_ID         = 'MANDATE_ID';
+    const ENACH_REGISTER_UMRN               = 'UMRN';
+    const ENACH_REGISTER_CUST_REFNO         = 'CUST_REFNO';
+    const ENACH_REGISTER_SCH_REFNO          = 'SCH_REFNO';
+    const ENACH_REGISTER_REF_1              = 'REF_1';
+    const ENACH_REGISTER_CUST_NAME          = 'CUST_NAME';
+    const ENACH_REGISTER_BANK               = 'BANK';
+    const ENACH_REGISTER_BRANCH             = 'BRANCH';
+    const ENACH_REGISTER_BANK_CODE          = 'BANK_CODE';
+    const ENACH_REGISTER_AC_TYPE            = 'AC_TYPE';
+    const ENACH_REGISTER_ACNO               = 'ACNO';
+    const ENACH_REGISTER_UPDATE_DATE        = 'UPDATE_DATE';
+    const ENACH_REGISTER_AMOUNT             = 'AMOUNT';
+    const ENACH_REGISTER_FREQUENCY          = 'FREQUENCY';
+    const ENACH_REGISTER_COLLECTION_TYPE    = 'COLLECTION_TYPE';
+    const ENACH_REGISTER_START_DATE         = 'START_DATE';
+    const ENACH_REGISTER_END_DATE           = 'END_DATE';
+    const ENACH_REGISTER_TEL_NO             = 'TEL_NO';
+    const ENACH_REGISTER_MOBILE_NO          = 'MOBILE_NO';
+    const ENACH_REGISTER_MAIL_ID            = 'MAIL_ID';
+    const ENACH_REGISTER_UPLOAD_BATCH       = 'UPLOAD_BATCH';
+    const ENACH_REGISTER_UPLOAD_DATE        = 'UPLOAD_DATE';
+    const ENACH_REGISTER_RESPONSE_DATE      = 'RESPONSE_DATE';
+    const ENACH_REGISTER_UTILITY_CODE       = 'UTILITY_CODE';
+    const ENACH_REGISTER_UTILITY_NAME       = 'UTILITY_NAME';
+    const ENACH_REGISTER_NODAL_ACNO         = 'NODAL_ACNO';
+    const ENACH_REGISTER_STATUS             = 'STATUS';
+    const ENACH_REGISTER_RETURN_CODE        = 'RETURN_CODE';
+    const ENACH_REGISTER_CODE_DESC          = 'CODE_DESC';
+
+    //
+    // eNach Debit Response File Headers
+    //
+    const ENACH_DEBIT_SERIAL_NO             = EnachRblDebitHeadings::SERIAL_NO;
+    const ENACH_DEBIT_ECS_DATE              = EnachRblDebitHeadings::ECS_DATE;
+    const ENACH_DEBIT_SETTLEMENT_DATE       = EnachRblDebitHeadings::SETTLEMENT_DATE;
+    const ENACH_DEBIT_CUST_REFNO            = EnachRblDebitHeadings::CUST_REFNO;
+    const ENACH_DEBIT_SCH_REFNO             = EnachRblDebitHeadings::SCH_REFNO;
+    const ENACH_DEBIT_CUSTOMER_NAME         = EnachRblDebitHeadings::CUSTOMER_NAME;
+    const ENACH_DEBIT_REFNO                 = EnachRblDebitHeadings::REFNO;
+    const ENACH_DEBIT_STATUS                = EnachRblDebitHeadings::STATUS;
+    const ENACH_DEBIT_AMOUNT                = EnachRblDebitHeadings::AMOUNT;
+    const ENACH_DEBIT_UMRN                  = EnachRblDebitHeadings::UMRN;
+    const ENACH_DEBIT_UPLOAD_DATE           = EnachRblDebitHeadings::UPLOAD_DATE;
+    const ENACH_DEBIT_ACKUPD_DATE           = EnachRblDebitHeadings::ACKUPD_DATE;
+    const ENACH_DEBIT_RESPONSE_RECEIVED     = EnachRblDebitHeadings::RESPONSE_RECEIVED;
+    const ENACH_DEBIT_REASON_CODE           = EnachRblDebitHeadings::REASON_CODE;
+    const ENACH_DEBIT_REASON_DESCRIPTION    = EnachRblDebitHeadings::REASON_DESCRIPTION;
+
+    //
     // Payout headers
     //
     const PAYOUT_CUSTOMER_ID         = 'customer_id';
@@ -176,6 +250,28 @@ class Header
     const PAYOUT_NOTES               = 'payout_notes';
     const PAYOUT_FEE                 = 'payout_fee';
     const PAYOUT_TAX                 = 'payout_tax';
+
+    const DIRECT_DEBIT_EMAIL           = 'email';
+    const DIRECT_DEBIT_CONTACT         = 'contact';
+    const DIRECT_DEBIT_CARD_NUMBER     = 'card_number';
+    const DIRECT_DEBIT_EXPIRY_MONTH    = 'expiry_month';
+    const DIRECT_DEBIT_EXPIRY_YEAR     = 'expiry_year';
+    const DIRECT_DEBIT_CARDHOLDER_NAME = 'cardholder_name';
+    const DIRECT_DEBIT_AMOUNT          = 'amount';
+    const DIRECT_DEBIT_CURRENCY        = 'currency';
+    const DIRECT_DEBIT_RECEIPT         = 'receipt';
+    const DIRECT_DEBIT_DESCRIPTION     = 'description';
+    const DIRECT_DEBIT_NOTES_1         = 'notes_1';
+    const DIRECT_DEBIT_NOTES_2         = 'notes_2';
+    const DIRECT_DEBIT_NOTES_3         = 'notes_3';
+    const DIRECT_DEBIT_NOTES_4         = 'notes_4';
+    const DIRECT_DEBIT_NOTES_5         = 'notes_5';
+    const DIRECT_DEBIT_ORDER_ID        = 'order_id';
+    const DIRECT_DEBIT_PAYMENT_ID      = 'payment_id';
+    const DIRECT_DEBIT_REMARKS         = 'remarks';
+
+    const ELFIN_LONG_URL             = 'Long Url';
+    const ELFIN_SHORT_URL            = 'Short Url';
 
     /**
      * Input and output file headers
@@ -348,6 +444,26 @@ class Header
             ]
         ],
 
+        'emandate_debit_enach_rbl' => [
+            self::INPUT => [
+                self::ENACH_DEBIT_SERIAL_NO,
+                self::ENACH_DEBIT_ECS_DATE,
+                self::ENACH_DEBIT_SETTLEMENT_DATE,
+                self::ENACH_DEBIT_CUST_REFNO,
+                self::ENACH_DEBIT_SCH_REFNO,
+                self::ENACH_DEBIT_CUSTOMER_NAME,
+                self::ENACH_DEBIT_AMOUNT,
+                self::ENACH_DEBIT_REFNO,
+                self::ENACH_DEBIT_UMRN,
+                self::ENACH_DEBIT_UPLOAD_DATE,
+                self::ENACH_DEBIT_ACKUPD_DATE,
+                self::ENACH_DEBIT_RESPONSE_RECEIVED,
+                self::ENACH_DEBIT_STATUS,
+                self::ENACH_DEBIT_REASON_CODE,
+                self::ENACH_DEBIT_REASON_DESCRIPTION,
+            ]
+        ],
+
         Type::BANK_TRANSFER => [
             self::INPUT => [
                 self::PROVIDER,
@@ -378,6 +494,37 @@ class Header
             ],
         ],
 
+        Type::RECURRING_CHARGE => [
+            self::INPUT => [
+                self::RECURRING_CHARGE_TOKEN,
+                self::RECURRING_CHARGE_CUSTOMER_ID,
+                self::RECURRING_CHARGE_AMOUNT,
+                self::RECURRING_CHARGE_CURRENCY,
+                self::RECURRING_CHARGE_RECEIPT,
+                self::RECURRING_CHARGE_DESCRIPTION,
+                self::RECURRING_CHARGE_NOTES_1,
+                self::RECURRING_CHARGE_NOTES_2,
+                self::RECURRING_CHARGE_NOTES_3,
+                self::RECURRING_CHARGE_NOTES_4,
+                self::RECURRING_CHARGE_NOTES_5,
+            ],
+            self::OUTPUT => [
+                self::RECURRING_CHARGE_TOKEN,
+                self::RECURRING_CHARGE_CUSTOMER_ID,
+                self::RECURRING_CHARGE_AMOUNT,
+                self::RECURRING_CHARGE_CURRENCY,
+                self::RECURRING_CHARGE_RECEIPT,
+                self::RECURRING_CHARGE_DESCRIPTION,
+                self::RECURRING_CHARGE_NOTES_1,
+                self::RECURRING_CHARGE_NOTES_2,
+                self::RECURRING_CHARGE_NOTES_3,
+                self::RECURRING_CHARGE_NOTES_4,
+                self::RECURRING_CHARGE_NOTES_5,
+                self::RECURRING_CHARGE_ORDER_ID,
+                self::RECURRING_CHARGE_PAYMENT_ID,
+            ],
+        ],
+
         'emandate_register_hdfc' => [
             self::INPUT => [
                 self::HDFC_EM_REGISTER_ACCOUNT_NUMBER,
@@ -394,6 +541,48 @@ class Header
                 self::HDFC_EM_REGISTER_FREQUENCY,
                 self::HDFC_EM_REGISTER_MANDATE_SERIAL_NUMBER,
                 self::HDFC_EM_REGISTER_MERCHANT_REQUEST_NO,
+            ],
+        ],
+
+        'emandate_acknowledge_enach_rbl' => [
+            self::INPUT => [
+                'data'
+            ],
+        ],
+
+        'emandate_register_enach_rbl' => [
+            self::INPUT => [
+                self::ENACH_REGISTER_SRNO,
+                self::ENACH_REGISTER_MANDATE_DATE,
+                self::ENACH_REGISTER_MANDATE_ID,
+                self::ENACH_REGISTER_UMRN,
+                self::ENACH_REGISTER_CUST_REFNO,
+                self::ENACH_REGISTER_SCH_REFNO,
+                self::ENACH_REGISTER_REF_1,
+                self::ENACH_REGISTER_CUST_NAME,
+                self::ENACH_REGISTER_BANK,
+                self::ENACH_REGISTER_BRANCH,
+                self::ENACH_REGISTER_BANK_CODE,
+                self::ENACH_REGISTER_AC_TYPE,
+                self::ENACH_REGISTER_ACNO,
+                self::ENACH_REGISTER_UPDATE_DATE,
+                self::ENACH_REGISTER_AMOUNT,
+                self::ENACH_REGISTER_FREQUENCY,
+                self::ENACH_REGISTER_COLLECTION_TYPE,
+                self::ENACH_REGISTER_START_DATE,
+                self::ENACH_REGISTER_END_DATE,
+                self::ENACH_REGISTER_TEL_NO,
+                self::ENACH_REGISTER_MOBILE_NO,
+                self::ENACH_REGISTER_MAIL_ID,
+                self::ENACH_REGISTER_UPLOAD_BATCH,
+                self::ENACH_REGISTER_UPLOAD_DATE,
+                self::ENACH_REGISTER_RESPONSE_DATE,
+                self::ENACH_REGISTER_UTILITY_CODE,
+                self::ENACH_REGISTER_UTILITY_NAME,
+                self::ENACH_REGISTER_NODAL_ACNO,
+                self::ENACH_REGISTER_STATUS,
+                self::ENACH_REGISTER_RETURN_CODE,
+                self::ENACH_REGISTER_CODE_DESC,
             ],
         ],
 
@@ -483,6 +672,61 @@ class Header
                 self::ERROR_DESCRIPTION,
             ],
         ],
+
+        Type::DIRECT_DEBIT  =>  [
+            self::INPUT =>  [
+                self::DIRECT_DEBIT_EMAIL,
+                self::DIRECT_DEBIT_CONTACT,
+                self::DIRECT_DEBIT_CARD_NUMBER,
+                self::DIRECT_DEBIT_EXPIRY_MONTH,
+                self::DIRECT_DEBIT_EXPIRY_YEAR,
+                self::DIRECT_DEBIT_CARDHOLDER_NAME,
+                self::DIRECT_DEBIT_AMOUNT,
+                self::DIRECT_DEBIT_CURRENCY,
+                self::DIRECT_DEBIT_RECEIPT,
+                self::DIRECT_DEBIT_DESCRIPTION,
+                self::DIRECT_DEBIT_NOTES_1,
+                self::DIRECT_DEBIT_NOTES_2,
+                self::DIRECT_DEBIT_NOTES_3,
+                self::DIRECT_DEBIT_NOTES_4,
+                self::DIRECT_DEBIT_NOTES_5,
+            ],
+
+            self::OUTPUT    =>  [
+                self::DIRECT_DEBIT_EMAIL,
+                self::DIRECT_DEBIT_CONTACT,
+                self::DIRECT_DEBIT_CARD_NUMBER,
+                self::DIRECT_DEBIT_EXPIRY_MONTH,
+                self::DIRECT_DEBIT_EXPIRY_YEAR,
+                self::DIRECT_DEBIT_CARDHOLDER_NAME,
+                self::DIRECT_DEBIT_AMOUNT,
+                self::DIRECT_DEBIT_CURRENCY,
+                self::DIRECT_DEBIT_RECEIPT,
+                self::DIRECT_DEBIT_DESCRIPTION,
+                self::DIRECT_DEBIT_NOTES_1,
+                self::DIRECT_DEBIT_NOTES_2,
+                self::DIRECT_DEBIT_NOTES_3,
+                self::DIRECT_DEBIT_NOTES_4,
+                self::DIRECT_DEBIT_NOTES_5,
+                self::DIRECT_DEBIT_ORDER_ID,
+                self::DIRECT_DEBIT_PAYMENT_ID,
+            ],
+        ],
+
+        Type::ELFIN => [
+
+            self::INPUT => [
+                self::ELFIN_LONG_URL,
+            ],
+
+            self::OUTPUT => [
+                self::ELFIN_LONG_URL,
+                self::ELFIN_SHORT_URL,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
     ];
 
     /**
@@ -526,16 +770,37 @@ class Header
 
     public static function getInputHeadersForType(string $type): array
     {
-        return self::HEADER_MAP[$type][self::INPUT];
+        return self::HEADER_MAP[$type][self::INPUT] ?? [];
     }
 
     public static function getOutputHeadersForType(string $type): array
     {
-        return self::HEADER_MAP[$type][self::OUTPUT];
+        return self::HEADER_MAP[$type][self::OUTPUT] ?? [];
     }
 
     public static function getValidatedHeadersForType(string $type): array
     {
-        return array_merge(self::HEADER_MAP[$type][self::INPUT], self::VALIDATED_HEADERS);
+        return array_merge(self::HEADER_MAP[$type][self::INPUT] ?? [], self::VALIDATED_HEADERS);
+    }
+
+    public static function getHeadersForFileTypeAndBatchType(string $fileType, string $type): array
+    {
+        switch ($fileType)
+        {
+            case FileStore\Type::BATCH_INPUT:
+
+                return self::getInputHeadersForType($type);
+
+            case FileStore\Type::BATCH_OUTPUT:
+
+                return self::getOutputHeadersForType($type);
+
+            case FileStore\Type::BATCH_VALIDATED:
+
+                return self::getValidatedHeadersForType($type);
+
+            default:
+                throw new LogicException("Invalid file type: $fileType");
+        }
     }
 }

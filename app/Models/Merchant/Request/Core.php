@@ -11,7 +11,8 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\State\Reason;
 use RZP\Models\Base\PublicEntity;
-use RZP\Models\Merchant\Detail\RejectionReasons;
+use RZP\Mail\Merchant\RequestRejection;
+use RZP\Mail\Merchant\RequestNeedsClarification;
 
 class Core extends Base\Core
 {
@@ -92,7 +93,7 @@ class Core extends Base\Core
      * This function does the following :
      * 1. Updates Request Entity with the new status
      * 2. Add new State for Request
-     * 3. Save Rejection Reasons if any
+     * 3. Save Rejection Reason if any
      *
      * @param Entity $request
      * @param array  $input
@@ -100,6 +101,7 @@ class Core extends Base\Core
      * @param bool   $validateStatusChange
      *
      * @return Entity
+     * @throws \Exception
      */
     public function changeStatus(Entity $request, array $input, $useWorkflow = true, $validateStatusChange = true)
     {
@@ -116,9 +118,13 @@ class Core extends Base\Core
             $request->getValidator()->validateActivationStatusChange($request->getStatus(), $input[Entity::STATUS]);
         }
 
-        $rejectionReasons = $input[Constants::REJECTION_REASONS] ?? [];
+        $rejectionReason = $input[Constants::REJECTION_REASON] ?? [];
 
-        unset($input[Constants::REJECTION_REASONS]);
+        $needsClarificationText = $input[Constants::NEEDS_CLARIFICATION_TEXT] ?? [];
+
+        unset($input[Constants::REJECTION_REASON]);
+
+        unset($input[Constants::NEEDS_CLARIFICATION_TEXT]);
 
         $oldRequestDetails = clone $request;
 
@@ -136,8 +142,9 @@ class Core extends Base\Core
             $newRequestDetails,
             $admin,
             $status,
-            $rejectionReasons,
-            $useWorkflow)
+            $rejectionReason,
+            $useWorkflow,
+            $needsClarificationText)
         {
             if ($useWorkflow === true)
             {
@@ -146,15 +153,13 @@ class Core extends Base\Core
                     $status,
                     $oldRequestDetails,
                     $newRequestDetails,
-                    $rejectionReasons
+                    $rejectionReason
                 );
             }
 
             $this->repo->saveOrFail($request);
 
             $stateEntity = $this->createState($status, $request, $admin);
-
-            (new Reason\Core)->addRejectionReasons($rejectionReasons, $stateEntity);
 
             //
             // `addFeatureIfNotEnabled` involves saving on both live and test, and the functions called above act
@@ -180,9 +185,35 @@ class Core extends Base\Core
             // connections using `transactionOnLiveAndTest`, so that any rollback if it happens, happens on both the
             // connections.
             //
-            if ($status === Status::ACTIVATED)
+
+            // Perform actions based on respective status
+            switch ($status)
             {
-                $this->addFeatureIfNotEnabled($request);
+                case Status::REJECTED:
+
+                    if (empty($rejectionReason) === false)
+                    {
+                        (new Reason\Core)->addRejectionReasons([$rejectionReason], $stateEntity);
+
+                        $this->sendRejectionEmail($request, $rejectionReason);
+                    }
+
+                    break;
+
+                case Status::ACTIVATED:
+
+                    $this->addFeatureIfNotEnabled($request);
+
+                    break;
+
+                case Status::NEEDS_CLARIFICATION:
+
+                    if (empty($needsClarificationText) === false)
+                    {
+                        $this->sendNeedsClarificationEmail($request, $needsClarificationText);
+                    }
+
+                    break;
             }
         });
 
@@ -196,7 +227,7 @@ class Core extends Base\Core
      * @param string $status
      * @param Entity $oldRequestDetails
      * @param Entity $newRequestDetails
-     * @param array  $rejectionReasons
+     * @param array  $rejectionReason
      *
      * @throws \RZP\Exception\BadRequestValidationFailureException
      */
@@ -205,7 +236,7 @@ class Core extends Base\Core
         string $status,
         Entity $oldRequestDetails,
         Entity $newRequestDetails,
-        array $rejectionReasons)
+        array $rejectionReason)
     {
         if ($status === Status::ACTIVATED)
         {
@@ -221,7 +252,7 @@ class Core extends Base\Core
             $this->triggerWorkflowForRejectionStatusChange(
                 $oldRequestDetails,
                 $newRequestDetails,
-                $rejectionReasons
+                $rejectionReason
             );
         }
     }
@@ -338,29 +369,24 @@ class Core extends Base\Core
      *
      * @param Entity $oldDetails
      * @param Entity $newDetails
-     * @param array  $rejectionReasons
+     * @param array  $rejectionReason
      *
      * @throws \RZP\Exception\BadRequestValidationFailureException
      */
     protected function triggerWorkflowForRejectionStatusChange(
         Entity $oldDetails,
         Entity $newDetails,
-        array $rejectionReasons)
+        array $rejectionReason)
     {
         $oldMerchantDetailsArray = $oldDetails->toArray();
 
         $newMerchantDetailsArray = $newDetails->toArray();
 
-        $rejectionReasonDescriptions = [];
+        $rejectionReasonCode = $rejectionReason[Reason\Entity::REASON_CODE] ?? "";
 
-        foreach ($rejectionReasons as $rejectionReason)
-        {
-            $rejectionReasonCode = $rejectionReason[Reason\Entity::REASON_CODE] ?? "";
+        $rejectionReasonDescription = RejectionReasons::getReasonDescriptionByReasonCode($rejectionReasonCode);
 
-            $rejectionReasonDescriptions[] = RejectionReasons::getReasonDescriptionByReasonCode($rejectionReasonCode);
-        }
-
-        $newMerchantDetailsArray[Constants::REJECTION_REASONS] = $rejectionReasons;
+        $newMerchantDetailsArray[Constants::REJECTION_REASON] = $rejectionReasonDescription;
 
         $this->app['workflow']
              ->setEntity($newDetails->getEntity())
@@ -465,11 +491,14 @@ class Core extends Base\Core
                 ($input[Entity::STATUS] !== $request->getStatus()))
             {
                 $statusChangeInput = [
-                    Entity::STATUS               => $input[Entity::STATUS],
-                    Constants::REJECTION_REASONS => $input[Constants::REJECTION_REASONS] ?? [],
+                    Entity::STATUS                      => $input[Entity::STATUS],
+                    Constants::REJECTION_REASON         => $input[Constants::REJECTION_REASON] ?? [],
+                    Constants::NEEDS_CLARIFICATION_TEXT => $input[Constants::NEEDS_CLARIFICATION_TEXT] ?? "",
                 ];
 
-                unset($input[Constants::REJECTION_REASONS]);
+                unset($input[Constants::REJECTION_REASON]);
+
+                unset($input[Constants::NEEDS_CLARIFICATION_TEXT]);
 
                 $this->changeStatus($request, $statusChangeInput, true);
             }
@@ -572,5 +601,84 @@ class Core extends Base\Core
         ];
 
         return $response;
+    }
+
+    /**
+     * Sends out an email to the merchant with the particular message for rejection category specified in the
+     * rejection reason
+     *
+     * @param Entity          $request
+     * @param array           $rejectionReason
+     */
+    public function sendRejectionEmail(Entity $request, array $rejectionReason)
+    {
+        $merchant = $request->merchant;
+
+        $merchantEmail  = $merchant->getEmail();
+
+        $merchantId     = $merchant->getId();
+
+        $featureName    = $request->getName();
+
+        if ($request->isProductRequest() === false)
+        {
+            return;
+        }
+
+        $visibleFeatures = Feature\Constants::$visibleFeaturesMap;
+
+        $data = [
+            'feature'         => $visibleFeatures[$featureName]['display_name'],
+            'documentation'   => $visibleFeatures[$featureName]['documentation'],
+            'contact_name'    => $merchant->getName(),
+            'contact_email'   => $merchantEmail,
+            'merchant_id'     => $merchantId,
+            'reason_category' => $rejectionReason[Reason\Entity::REASON_CATEGORY],
+        ];
+
+        $requestRejectionEmail = new RequestRejection($data);
+
+        Mail::queue($requestRejectionEmail);
+    }
+
+    /**
+     * Sends out an email to the merchant with the particular message for asking clarifications for the request
+     *
+     * @param Entity $request
+     * @param string $needClarificationText
+     */
+    public function sendNeedsClarificationEmail(Entity $request, string $needClarificationText)
+    {
+        $merchant = $request->merchant;
+
+        $merchantEmail  = $merchant->getEmail();
+
+        $merchantId     = $merchant->getId();
+
+        $featureName    = $request->getName();
+
+        if ($request->isProductRequest() === false)
+        {
+            return;
+        }
+
+        $visibleFeatures = Feature\Constants::$visibleFeaturesMap;
+
+        // Replacing empty new lines with breaks and enclosing them in paragraphs. Since this text would be coming
+        // from frontend, we need to do this to format it in html.
+        $needClarificationText = str_replace("\n", "\n<br/>\n", $needClarificationText);
+
+        $data = [
+            'feature'                  => $visibleFeatures[$featureName]['display_name'],
+            'documentation'            => $visibleFeatures[$featureName]['documentation'],
+            'contact_name'             => $merchant->getName(),
+            'contact_email'            => $merchantEmail,
+            'merchant_id'              => $merchantId,
+            'needs_clarification_text' => $needClarificationText,
+        ];
+
+        $requestNeedsClarificationEmail = new RequestNeedsClarification($data);
+
+        Mail::queue($requestNeedsClarificationEmail);
     }
 }

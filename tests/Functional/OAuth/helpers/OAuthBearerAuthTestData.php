@@ -294,4 +294,99 @@ return [
             'status_code' => 400
         ],
     ],
+
+    'testRestrictedAccessFeatureEnabledOnMerchantOnly' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testRestrictedAccessFeatureEnabledOnAppOnly' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testRestrictedAccessFeatureEnabledOnMerchantAndApp' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts',
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'entity' => 'virtual_account',
+                'status' => 'active',
+            ],
+        ],
+    ],
+
+    'testCompetitorAppAccessS2SRouteWithoutAllowS2SFeature' => [
+        'request'  => [
+            'url'     => '/payments/create/redirect',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND
+                ]
+            ],
+            'status_code' => 400
+        ],
+    ],
+
+    'testCompetitorAppAccessS2SRouteWithAllowS2SFeature' => [
+        'request'  => [
+            'url'     => '/payments/create/redirect',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
+    'testCompetitorAppAccessNonS2SRoute' => [
+        'request'  => [
+            'url'     => '/payments/pay_10000000000000',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity'   => 'payment',
+                'id'       => 'pay_10000000000000',
+                'amount'   => 1000000,
+                'currency' => 'INR',
+                'status'   => 'created',
+                'method'   => 'card',
+                'captured' => false,
+            ],
+        ],
+    ],
 ];

@@ -213,7 +213,7 @@ return [
             Permission::ADD_RECONCILIATION_FILE => '',
             Permission::ADD_SETTLEMENT_RECONCILIATION => '',
             Permission::RETRY_SETTLEMENT => '',
-            Permission::EDIT_MERCHANT_INVOICE_GSTIN => '',
+            Permission::MERCHANT_INVOICE_EDIT => '',
             Permission::SEND_NEWSLETTER => '',
             Permission::TRIGGER_DUMMY_ERROR => '',
             Permission::MAKE_API_CALL => '',
@@ -250,6 +250,9 @@ return [
                 'description' => 'View Merchant Analytics',
                 'assignable'  => true,
                 'workflow'    => false
+            ],
+            Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER => [
+                'description' => 'Assign Reviews for Merchant Activation Forms',
             ],
         ],
 
@@ -431,6 +434,11 @@ return [
                 'assignable'  => true,
                 'workflow'    => true
             ],
+        ],
+
+        PermissionCategory::ACTION => [
+            Permission::DB_META_QUERY => '',
+            Permission::OAUTH_SYNC_MERCHANT_MAP => '',
         ],
 
         // Permissions

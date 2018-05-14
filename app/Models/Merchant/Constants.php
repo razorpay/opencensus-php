@@ -22,15 +22,12 @@ final class Constants
     const STEP_MAP = [
         Detail\Entity::CONTACT_NAME                => 1,
         Detail\Entity::CONTACT_EMAIL               => 1,
-        Detail\Entity::TRANSACTION_REPORT_EMAIL    => 1,
         Detail\Entity::CONTACT_MOBILE              => 1,
 
         Detail\Entity::BUSINESS_TYPE               => 2,
         Detail\Entity::BUSINESS_NAME               => 2,
         Detail\Entity::BUSINESS_DBA                => 2,
         Detail\Entity::BUSINESS_INTERNATIONAL      => 2,
-        Detail\Entity::BUSINESS_PAYMENTDETAILS     => 2,
-        Detail\Entity::BUSINESS_MODEL              => 2,
         Detail\Entity::BUSINESS_REGISTERED_ADDRESS => 2,
         Detail\Entity::BUSINESS_REGISTERED_STATE   => 2,
         Detail\Entity::BUSINESS_REGISTERED_CITY    => 2,
@@ -43,7 +40,6 @@ final class Constants
         Detail\Entity::P_GSTIN                     => 2,
         Detail\Entity::PROMOTER_PAN                => 2,
         Detail\Entity::PROMOTER_PAN_NAME           => 2,
-        Detail\Entity::BUSINESS_WEBSITE            => 2,
 
         Detail\Entity::BANK_BRANCH_IFSC            => 3,
         Detail\Entity::BANK_ACCOUNT_NUMBER         => 3,

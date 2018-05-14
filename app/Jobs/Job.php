@@ -3,11 +3,22 @@
 namespace RZP\Jobs;
 
 use App;
-
 use Illuminate\Bus\Queueable;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class Job
+class Job implements ShouldQueue
 {
+    use Extended\Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    /**
+     * If specified, it's value would be used from config/queue.php to choose proper queue connection and name.
+     * By default the same would be looked up by snake cased class name, finally fall backs to default connection.
+     * @var string|null
+     */
+    protected $queueConfigKey;
+
     /**
      * Mode as received from pushed job payload. We set the basic auth's mode
      * and db connection to this value for convenience.
@@ -42,19 +53,6 @@ class Job
 
     protected $taskId;
 
-    /*
-    |--------------------------------------------------------------------------
-    | Queueable Jobs
-    |--------------------------------------------------------------------------
-    |
-    | This job base class provides a central location to place any logic that
-    | is shared across all of your jobs. The trait included with the class
-    | provides access to the "onQueue" and "delay" queue helper methods.
-    |
-    */
-
-    use Queueable;
-
     public function __construct(string $mode = null)
     {
         $this->mode = $mode;
@@ -86,6 +84,11 @@ class Job
         return $this->previousMode;
     }
 
+    public function getQueueConfigKey(): string
+    {
+        return $this->queueConfigKey ?: snake_case(class_basename($this));
+    }
+
     /**
      * Initializes most needed services in queued jobs.
      *
@@ -114,5 +117,7 @@ class Job
         {
             $app['basicauth']->setModeAndDbConnection($this->mode);
         }
+
+        $this->repoManager->resetConnectionAttributes();
     }
 }

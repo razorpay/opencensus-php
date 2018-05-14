@@ -81,13 +81,14 @@ class Validator extends Base\Validator
     ];
 
     protected static $editConfigRules = [
-        Entity::BRAND_COLOR                 => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
-        Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
-        Entity::LOGO_URL                    => 'sometimes|max:2000',
-        Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean',
-        Entity::HANDLE                      => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
-        MerchantDetail::GSTIN               => 'sometimes|nullable|string|size:15',
-        MerchantDetail::P_GSTIN             => 'sometimes|nullable|string',
+        Entity::BRAND_COLOR              => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
+        Entity::TRANSACTION_REPORT_EMAIL => 'sometimes|array',
+        Entity::LOGO_URL                 => 'sometimes|max:2000',
+        Entity::INVOICE_LABEL_FIELD      => 'sometimes|filled|string|max:50|in:name,billing_label',
+        Entity::AUTO_CAPTURE_LATE_AUTH   => 'sometimes|boolean',
+        Entity::HANDLE                   => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
+        MerchantDetail::GSTIN            => 'sometimes|nullable|string|size:15',
+        MerchantDetail::P_GSTIN          => 'sometimes|nullable|string',
     ];
 
     protected static $actionRules = [
@@ -114,7 +115,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $addTagsRules = [
-        'tags' => 'required|array'
+        'tags'   => 'required|array',
+        'tags.*' => 'required|string',
     ];
 
     protected static $updateMerchantsBulkRules = [
@@ -413,11 +415,21 @@ class Validator extends Base\Validator
         }
 
         $attributes = [
-            Entity::WEBSITE,
             Entity::CATEGORY,
             Entity::BILLING_LABEL,
             Entity::TRANSACTION_REPORT_EMAIL
         ];
+
+        $website = $merchant->merchantDetail->getWebsite();
+
+        // If the merchant has submitted activation form with website/app data
+        // i.e merchant will have access to keys.
+        // or if website is not null [this check to be removed later]
+        if (($merchant->getHasKeyAccess() === true) or
+            (isset($website) === true))
+        {
+            $attributes[] = Entity::WEBSITE;
+        }
 
         foreach ($attributes as $attribute)
         {

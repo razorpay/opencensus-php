@@ -7,12 +7,12 @@ use Mail;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
-use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 
 
 class Core extends Base\Core
@@ -113,16 +113,29 @@ class Core extends Base\Core
             $this->app['request']->replace($input);
         }
 
-        $this->app['workflow']
-             ->setEntityAndId($oldBankAccount->getEntity(), $oldBankAccount->getId())
-             ->handle($oldBankAccountArray, $newBankAccountArray);
-
         return $this->repo->transaction(
-            function() use ($merchant, $oldBankAccount, $input, $detail)
+            function() use ($merchant, $oldBankAccountArray, $newBankAccountArray, $oldBankAccount, $input, $detail)
             {
-                $this->repo->delete($oldBankAccount);
-
+                //
+                // Creating a bank account entity to send email. This will be rolled back if workflow if enabled.
+                // Hence creating only single entity.
+                //
                 $ba = $this->createBankAccount($input, $merchant, $this->mode);
+
+                //
+                // Send Email if it is not a workflow execution flow, since we want to send the request received
+                // email only once and not again after the workflow has been approved.
+                //
+                if ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === false)
+                {
+                    $this->sendBankAccountChangeEmail($ba, $merchant, true);
+                }
+
+                $this->app['workflow']
+                     ->setEntityAndId($oldBankAccount->getEntity(), $oldBankAccount->getId())
+                     ->handle($oldBankAccountArray, $newBankAccountArray);
+
+                $this->repo->delete($oldBankAccount);
 
                 $this->sendBankAccountChangeEmail($ba, $merchant);
 
@@ -145,6 +158,8 @@ class Core extends Base\Core
 
     protected function uploadAddressProof($merchant, $input)
     {
+        (new Validator)->validateAddressProofUploadOverProxyAuth($input);
+
         $merchantDetailService = new Detail\Service();
 
         $merchantDetails = $merchantDetailService->core()->getMerchantDetails($merchant);
@@ -242,7 +257,7 @@ class Core extends Base\Core
         return $ba;
     }
 
-    protected function sendBankAccountChangeEmail($newBankAccount, $merchant)
+    protected function sendBankAccountChangeEmail($newBankAccount, $merchant, $request = false)
     {
         if ($this->shouldNotifyViaEmail($merchant) === false)
         {
@@ -251,9 +266,18 @@ class Core extends Base\Core
 
         $newBankAccount = $newBankAccount->toArray();
 
+        $recipients = (new Merchant\Core)->getEmailsOfOwnersAndAdmins($merchant);
+
         $merchant = $merchant->toArray();
 
-        $bankAccountChangeMail = new BankAccountChangeMail($newBankAccount, $merchant);
+        $class = "RZP\Mail\Merchant\AccountChange";
+
+        if ($request === true)
+        {
+            $class = "RZP\Mail\Merchant\AccountChangeRequest";
+        }
+
+        $bankAccountChangeMail = new $class($newBankAccount, $merchant, $recipients);
 
         Mail::queue($bankAccountChangeMail);
     }

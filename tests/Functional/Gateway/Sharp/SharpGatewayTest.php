@@ -110,6 +110,53 @@ class SharpGatewayTest extends TestCase
         $this->assertEquals($payment['status'], 'failed');
     }
 
+    public function testEmandatePaymentWithoutOrderId()
+    {
+        $this->fixtures->merchant->enableEmandate('10000000000000');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $payment = $this->getEmandatePaymentArray('HDFC', 'aadhaar');
+        $payment['amount'] = 0;
+        $payment['aadhaar']['number'] = '123456789012';
+        $payment['bank_account'] = [
+            'account_number'   => '914010009305862',
+            'ifsc'             => 'HDFC0002766',
+            'name'             => 'Test account',
+        ];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testEmandatePaymentWithDifferentOrderAmount()
+    {
+        $this->fixtures->merchant->enableEmandate('10000000000000');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $payment = $this->getEmandatePaymentArray('HDFC', 'aadhaar');
+        $payment['amount'] = 0;
+        $payment['aadhaar']['number'] = '123456789012';
+        $payment['bank_account'] = [
+            'account_number'   => '914010009305862',
+            'ifsc'             => 'HDFC0002766',
+            'name'             => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 100]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testAadhaarEmandatePayment()
     {
         $this->fixtures->merchant->enableEmandate('10000000000000');
@@ -190,7 +237,6 @@ class SharpGatewayTest extends TestCase
         $paymentId = $response['razorpay_payment_id'];
 
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
-
 
         $this->assertNotNull($paymentEntity['token_id']);
         $this->assertEquals('1000SharpTrmnl', $paymentEntity['terminal_id']);

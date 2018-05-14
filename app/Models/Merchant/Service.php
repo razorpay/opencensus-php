@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use Config;
 use DB;
 use Mail;
+use Request;
+use Razorpay\OAuth\Application as OAuthApplication;
 use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Token as OAuthToken;
 use RZP\Base\RuntimeManager;
@@ -655,7 +657,8 @@ class Service extends Base\Service
 
         $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
 
-        $this->logActionToSlack($merchant, SlackActions::EDIT_BANK_DETAILS, $input);
+        // Using Request::input() since we do not want the file as input to log
+        $this->logActionToSlack($merchant, SlackActions::EDIT_BANK_DETAILS, Request::input());
 
         return $ba->toArray();
     }
@@ -825,6 +828,13 @@ class Service extends Base\Service
         return $webhook->toArrayPublic();
     }
 
+    public function fetchWebhookEvents()
+    {
+        $events = (new Webhook\Core)->fetchApplicableWebhookEvents($this->merchant);
+
+        return $events;
+    }
+
     public function getWebhook($id)
     {
         $webhook = $this->repo->webhook->findByIdAndMerchant($id, $this->merchant);
@@ -860,13 +870,14 @@ class Service extends Base\Service
     /**
      * Send beneficiary registration request for ALL activated merchants
      *
+     * @param array  $input
      * @param string $channel
      *
      * @return array
      */
-    public function getMerchantBeneficiaryFile(string $channel): array
+    public function getMerchantBeneficiaryFile(array $input, string $channel): array
     {
-        $response = (new BankAccount\BeneficiaryFile)->generate($channel);
+        $response = (new BankAccount\BeneficiaryFile)->generate($input, $channel);
 
         return $response;
     }
@@ -1672,9 +1683,10 @@ class Service extends Base\Service
         (new Validator)->validateInput(self::OAUTH_MAIL, $input);
 
         $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
+
         $user     = $this->repo->user->findOrFail($input[User\Entity::USER_ID]);
-        $client   = (new OAuthClient\Repository)->findOrFail(
-                                                    $input[OAuthToken\Entity::CLIENT_ID]);
+
+        $client   = (new OAuthClient\Repository)->findOrFail($input[OAuthToken\Entity::CLIENT_ID]);
 
         $mailer = $this->getOAuthMailerClassByType($type);
 
@@ -1686,7 +1698,45 @@ class Service extends Base\Service
 
         Mail::queue((new $mailer($data)));
 
+        $this->sendCompetitorAppAuthorizedEmail($merchant, $client);
+
         return ['success' => true];
+    }
+
+    /**
+     * Sends an email to support team informing them that a merchant has authorized
+     * an application owned by a competitor like Juspay.
+     *
+     * @param Entity             $merchant
+     * @param OAuthClient\Entity $client
+     */
+    protected function sendCompetitorAppAuthorizedEmail(
+        Merchant\Entity $merchant,
+        OAuthClient\Entity $client)
+    {
+        // Do not send the email if the application is not a competitor to us
+        if (in_array($client->application->getId(), Feature\Type::S2S_APPLICATION_IDS) === false)
+        {
+            return;
+        }
+
+        $type = 'competitor_app_authorized';
+
+        $mailer = $this->getOAuthMailerClassByType($type);
+
+        $data = [
+            'merchant'    => [
+                Entity::ID            => $merchant->getId(),
+                Entity::NAME          => $merchant->getName(),
+                Entity::WEBSITE       => $merchant->getWebsite(),
+                Entity::BILLING_LABEL => $merchant->getBillingLabel(),
+            ],
+            'application' => [
+                OAuthApplication\Entity::NAME => $client->application->getName(),
+            ]
+        ];
+
+        Mail::queue((new $mailer($data)));
     }
 
     /**
@@ -1771,5 +1821,12 @@ class Service extends Base\Service
         $emiPlan = $this->repo->emi_plan->findOrFailPublic($emiPlanId);
 
         return $this->core()->enableEmiMerchantSubvention($merchant, $emiPlan, $input);
+    }
+
+    public function getDummyRazorX()
+    {
+        $variant = $this->app->razorx->getTreatment($this->merchant->getId(), 'dummy', $this->mode);
+
+        return ['variant' => $variant];
     }
 }

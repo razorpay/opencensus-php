@@ -25,7 +25,7 @@ class UidCheckDigitVerify extends Command
      *
      * @return mixed
      */
-    public function fire()
+    public function handle()
     {
         $uid = $this->input->getOption('uid');
 

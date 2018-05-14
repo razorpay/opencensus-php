@@ -56,6 +56,11 @@ trait OAuthTrait
     {
         $client = $this->createOAuthApplicationAndGetClientByEnv($env);
 
+        return $this->generateOAuthAccessTokenForClient($attributes, $client);
+    }
+
+    public function generateOAuthAccessTokenForClient(array $attributes = [], $client)
+    {
         $defaultValues = $this->getDefaultAccessTokenValues($client);
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -87,7 +92,8 @@ trait OAuthTrait
         return [
             'client_id'  => $client->getId(),
             'expires_at' => Carbon::today(Timezone::IST)->addDays(30)->timestamp,
-            'scopes'     => ['read_only']
+            'scopes'     => ['read_only'],
+            'type'       => 'access_token'
         ];
     }
 

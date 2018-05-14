@@ -3,16 +3,20 @@
 namespace RZP\Tests\Functional\Batch;
 
 use Mail;
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
 
 use RZP\Constants\Mode;
 use RZP\Models\Invoice;
+use RZP\Models\Settings;
 use RZP\Models\Batch\Type;
+use RZP\Constants\Timezone;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Entity;
 use RZP\Jobs\Batch as BatchJob;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Mail\Batch\PaymentLink as BatchPaymentLinkFileMail;
 
@@ -28,13 +32,15 @@ class PaymentLinkTest extends TestCase
         parent::setUp();
 
         $this->ba->proxyAuth();
+
+        $this->enablePartialPaymentForMerchant();
     }
 
     public function testCreateBatchOfPaymentLinkType1()
     {
         Queue::fake();
 
-        $entries = $this->getDefaultPaymentLinkFileEntries();
+        $entries = $this->getDefaultFileEntries();
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
@@ -50,7 +56,7 @@ class PaymentLinkTest extends TestCase
     {
         Mail::fake();
 
-        $entries = $this->getDefaultPaymentLinkFileEntries();
+        $entries = $this->getDefaultFileEntries();
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
@@ -79,7 +85,7 @@ class PaymentLinkTest extends TestCase
      */
     public function testCreateBatchOfPaymentLinkTypeWithInvalidFile1()
     {
-        $entries = $this->getDefaultPaymentLinkFileEntries();
+        $entries = $this->getDefaultFileEntries();
 
         // Remove a required header
 
@@ -94,7 +100,7 @@ class PaymentLinkTest extends TestCase
 
         //  Test again by adding one extra header in input
 
-        $entries = $this->getDefaultPaymentLinkFileEntries();
+        $entries = $this->getDefaultFileEntries();
 
         foreach ($entries as & $entry)
         {
@@ -123,7 +129,7 @@ class PaymentLinkTest extends TestCase
      */
     public function testCreateBatchOfPaymentLinkTypeWithInvalidFile3()
     {
-        $entries = $this->getDefaultPaymentLinkFileEntries();
+        $entries = $this->getDefaultFileEntries();
 
         $entries[1][Header::AMOUNT] = 0;
 
@@ -168,7 +174,9 @@ class PaymentLinkTest extends TestCase
 
     public function testBatchFileValidation()
     {
-        $entries = $this->getDefaultPaymentLinkFileEntries();
+        $entries = $this->getDefaultFileEntries();
+
+        $entries = array_merge($entries, $this->getFileEntriesWithBooleanPartialPaymentValues());
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
@@ -228,6 +236,39 @@ class PaymentLinkTest extends TestCase
         $this->assertNull($inputFile['entity_type']);
         $this->assertNull($inputFile['entity_id']);
         $this->assertTrue(str_contains($inputFile['location'], 'batch/upload'));
+    }
+
+    public function testCreateBatchWithHumanReadableExpireBy()
+    {
+        $rows = $this->testData[__FUNCTION__ . 'FileRows'];
+
+        $this->createAndPutExcelFileInRequest($rows, __FUNCTION__);
+
+        $response = $this->startTest();
+
+        // Asserts batch entity's attributes
+        $entity = $this->getLastEntity('batch', true);
+
+        $this->assertEquals(3, $entity['success_count']);
+        $this->assertEquals(0, $entity['failure_count']);
+
+        // Asserts files existence
+        $this->assertInputFileExistsForBatch($response[Entity::ID]);
+        $this->assertOutputFileExistsForBatch($response[Entity::ID]);
+
+        // Assert invoice entity's attributes
+        $invoices = $this->getEntities('invoice', [], true)['items'];
+        $this->assertCount(3, $invoices);
+
+        // Against each invoice's receipt from test rows assert expected epoch values
+        foreach ($invoices as $invoice)
+        {
+            $receipt          = $invoice['receipt'];
+            $expireBy         = $invoice['expire_by'];
+            $expectedExpireBy = Carbon::now(Timezone::IST)->addDays((int) $receipt)->getTimestamp();
+
+            $this->assertEquals($expectedExpireBy, $expireBy, '', 5);
+        }
     }
 
     /**
@@ -302,7 +343,42 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
-    protected function getDefaultPaymentLinkFileEntries()
+    public function testFetchBatchesOfPaymentLinkTypeWithConfig()
+    {
+        $batch1 = $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'payment_link',
+                'total_count' => 4,
+            ]);
+
+        Settings\Accessor::for($batch1, Settings\Module::BATCH)
+                         ->upsert([
+                            'sms_notify'    => 1,
+                            'email_notify'  => 0,
+                         ])->save();
+
+        $batch2 = $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000002',
+                'type'        => 'payment_link',
+                'total_count' => 4,
+            ]);
+
+        Settings\Accessor::for($batch2, Settings\Module::BATCH)
+                        ->upsert([
+                            'sms_notify'    => 0,
+                            'email_notify'  => 0,
+                        ])->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    protected function getDefaultFileEntries()
     {
         return [
             [
@@ -313,7 +389,7 @@ class PaymentLinkTest extends TestCase
                 Header::AMOUNT           => 100,
                 Header::DESCRIPTION      => 'test payment link',
                 Header::EXPIRE_BY        => null,
-                Header::PARTIAL_PAYMENT  => null,
+                Header::PARTIAL_PAYMENT  => 'YES',
             ],
             // Following one should fail
             [
@@ -324,7 +400,7 @@ class PaymentLinkTest extends TestCase
                 Header::AMOUNT           => 100,
                 Header::DESCRIPTION      => 'test payment link - 2',
                 Header::EXPIRE_BY        => null,
-                Header::PARTIAL_PAYMENT  => 0,
+                Header::PARTIAL_PAYMENT  => 'NO',
             ],
             [
                 Header::INVOICE_NUMBER   => '#3',
@@ -337,5 +413,41 @@ class PaymentLinkTest extends TestCase
                 Header::PARTIAL_PAYMENT  => null,
             ],
         ];
+    }
+
+    protected function getFileEntriesWithBooleanPartialPaymentValues()
+    {
+        return [
+            [
+                Header::INVOICE_NUMBER   => '#10',
+                Header::CUSTOMER_NAME    => 'test 3',
+                Header::CUSTOMER_EMAIL   => 'test-3@test.test',
+                Header::CUSTOMER_CONTACT => '9999996666',
+                Header::AMOUNT           => 100,
+                Header::DESCRIPTION      => 'test payment link - 3',
+                Header::EXPIRE_BY        => null,
+                Header::PARTIAL_PAYMENT  => '1',
+            ],
+            [
+                Header::INVOICE_NUMBER   => '#20',
+                Header::CUSTOMER_NAME    => 'test 3',
+                Header::CUSTOMER_EMAIL   => 'test-3@test.test',
+                Header::CUSTOMER_CONTACT => '9999996666',
+                Header::AMOUNT           => 100,
+                Header::DESCRIPTION      => 'test payment link - 3',
+                Header::EXPIRE_BY        => null,
+                Header::PARTIAL_PAYMENT  => '0',
+            ],
+        ];
+    }
+
+    protected function enablePartialPaymentForMerchant()
+    {
+        $attribute = [
+            'name'      => FeatureConstants::INVOICE_PARTIAL_PAYMENTS,
+            'entity_id' => '10000000000000',
+        ];
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants:: INVOICE_PARTIAL_PAYMENTS]);
     }
 }

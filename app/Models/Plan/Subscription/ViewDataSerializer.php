@@ -2,28 +2,24 @@
 
 namespace RZP\Models\Plan\Subscription;
 
-use Config;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 use RZP\Models\Base;
 use RZP\Models\Plan;
 use RZP\Models\Card;
-use RZP\Models\Merchant;
 use RZP\Models\Customer;
-use RZP\Models\Merchant\Checkout;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Checkout;
 
 /**
  * This class is common source of subscription and related data to be sent
  * - to mail templates as payload
  * - to hosted page view
- *
  */
 class ViewDataSerializer extends Base\Core
 {
-    const DEFAULT_MERCHANT_BRAND_COLOR = '#6A5DD1';
-
     /**
      * @var Entity
      */
@@ -66,117 +62,95 @@ class ViewDataSerializer extends Base\Core
      *
      * @return array
      */
-    public function get(): array
+    public function serializeForHosted(): array
     {
-        $subscriptionData = $this->getSubscriptionData();
-        $merchantData = $this->getMerchantData();
-        $customerData = $this->getCustomerData();
-        $planData = $this->getPlanData();
-        $cardData = $this->getCardData();
+        $serializedSubscription = $this->serializeSubscriptionForHosted();
+        $serializedMerchant     = $this->serializeMerchantForHosted();
+        $serializedCustomer     = $this->serializeCustomerForHosted();
+        $serializedPlan         = $this->serializePlanForHosted();
+        $serializedCard         = $this->serializeCardForHosted();
+        $keyId                  = $this->getMerchantKeyId();
 
-        $keyId = $this->repo
-                      ->key
-                      ->getKeysForMerchant($this->merchant->getId())
-                      ->first()
-                      ->getPublicKey($this->mode);
-
-        $data = [
-            'environment'   => $this->app->environment(),
-            'mode'          => $this->mode,
-            'key_id'        => $keyId,
-            'merchant'      => $merchantData,
-            'customer'      => $customerData,
-            'subscription'  => $subscriptionData,
-            'plan'          => $planData,
-            'card'          => $cardData,
+        $serializedForHosted = [
+            'environment'  => $this->app->environment(),
+            'mode'         => $this->mode,
+            'key_id'       => $keyId,
+            'merchant'     => $serializedMerchant,
+            'customer'     => $serializedCustomer,
+            'subscription' => $serializedSubscription,
+            'plan'         => $serializedPlan,
+            'card'         => $serializedCard,
         ];
 
-        $this->trace->info(TraceCode::SUBSCRIPTION_VIEW_DATA_SERIALIZER_RESPONSE, $data);
+        $this->trace->info(TraceCode::SUBSCRIPTION_VIEW_DATA_SERIALIZER_RESPONSE, $serializedForHosted);
 
-        return $data;
+        return $serializedForHosted;
     }
 
-    protected function getSubscriptionData(): array
+    /**
+     * @return string|null
+     */
+    protected function getMerchantKeyId()
     {
-        //
-        // We do this because charge_at is set as public setter attribute.
-        // TODO: We should fix that!
-        //
-        $subscriptionArray = $this->subscription->toArrayPublic();
+        return optional($this->repo->key->getFirstActiveKeyForMerchant($this->merchant->getId()))
+                ->getPublicKey($this->mode);
+    }
 
-        $chargeAt = Carbon::createFromTimestamp($subscriptionArray[Entity::CHARGE_AT], Timezone::IST)
-                          ->format('d F Y');
+    protected function serializeSubscriptionForHosted(): array
+    {
+        $chargeAt          = $this->subscription->getChargeAtAttribute();
+        $chargeAtFormatted = Carbon::createFromTimestamp($chargeAt, Timezone::IST)->format('d F Y');
 
-        $subscriptionData = [
-            'id'                    => $subscriptionArray[Entity::ID],
-            'status'                => $subscriptionArray[Entity::STATUS],
-            'quantity'              => $subscriptionArray[Entity::QUANTITY],
-            'charge_at'             => $chargeAt,
-            'card_change_status'    => $this->subscription->isCardChangeStatus(),
-            'card_change_amount'    => (new Core)->getAuthTransactionAmountForCardChange($this->subscription),
-            'addons'                => $this->repo->addon->getUnusedAddonsForSubscription($this->subscription),
+        return [
+            'id'                 => $this->subscription->getPublicId(),
+            'status'             => $this->subscription->getStatus(),
+            'quantity'           => $this->subscription->getQuantity(),
+            'charge_at'          => $chargeAtFormatted,
+            'card_change_status' => $this->subscription->isCardChangeStatus(),
+            'card_change_amount' => (new Core)->getAuthTransactionAmountForCardChange($this->subscription),
+            'addons'             => $this->repo->addon->getUnusedAddonsForSubscription($this->subscription),
         ];
-
-        return $subscriptionData;
     }
 
-    protected function getMerchantData(): array
+    protected function serializeMerchantForHosted(): array
     {
-        $merchantBrandColor = $this->merchant->getBrandColor();
-
-        //
-        // If brand_color is not set, use a default value.
-        //
-        if ($merchantBrandColor === null)
-        {
-            $merchantBrandColor = self::DEFAULT_MERCHANT_BRAND_COLOR;
-        }
-
-        $merchantData = [
-            'brand_color'      => get_rgb_value($merchantBrandColor),
-            'brand_text_color' => get_brand_text_color($merchantBrandColor),
+        return [
+            'brand_color'      => get_rgb_value($this->merchant->getBrandColorOrDefault()),
+            'brand_text_color' => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
             'image'            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
             'name'             => $this->merchant->getBillingLabel(),
             'id'               => $this->merchant->getId(),
         ];
-
-        return $merchantData;
     }
 
-    protected function getCustomerData(): array
+    protected function serializeCustomerForHosted(): array
     {
-        $customerData = [
-            'name'      => $this->customer->getName(),
-            'email'     => $this->customer->getEmail(),
-            'contact'   => $this->customer->getContact()
+        return [
+            'name'    => $this->customer->getName(),
+            'email'   => $this->customer->getEmail(),
+            'contact' => $this->customer->getContact()
         ];
-
-        return $customerData;
     }
 
-    protected function getPlanData(): array
+    protected function serializePlanForHosted(): array
     {
-        $planData = [
-            'period'    => $this->plan->getPeriod(),
-            'interval'  => $this->plan->getInterval(),
-            'anchor'    => $this->subscription->schedule->getAnchor(),
-            'item'      => $this->plan->item->toArrayPublic()
+        return [
+            'period'   => $this->plan->getPeriod(),
+            'interval' => $this->plan->getInterval(),
+            'anchor'   => $this->subscription->schedule->getAnchor(),
+            'item'     => $this->plan->item->toArrayPublic()
         ];
-
-        return $planData;
     }
 
-    protected function getCardData(): array
+    protected function serializeCardForHosted(): array
     {
-        $expiresAt = Carbon::createFromTimestamp($this->card->getExpiryTimestamp(), Timezone::IST)
-                                        ->format('F Y');
+        $expiresAt          = $this->card->getExpiryTimestamp();
+        $expiresAtFormatted = Carbon::createFromTimestamp($expiresAt, Timezone::IST)->format('F Y');
 
-        $cardData = [
-            'bank'          => $this->card->getIssuer(),
-            'last4'         => $this->card->getLast4(),
-            'expires_at'    => $expiresAt,
+        return [
+            'bank'       => $this->card->getIssuer(),
+            'last4'      => $this->card->getLast4(),
+            'expires_at' => $expiresAtFormatted,
         ];
-
-        return $cardData;
     }
 }

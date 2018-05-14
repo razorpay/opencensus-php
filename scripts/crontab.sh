@@ -66,7 +66,7 @@ add_cron "0 6 * * 1-6"     "settlement_prod_test"      POST "$BASE_URL/settlemen
 add_cron "30 22 * * 1-6"   "settlement_recon_test"     POST "$BASE_URL/settlements/reconcile/test"       ""                              $TEST_AUTH
 add_cron "30 0 * * 1-6"    "beneficiary_gen_live"      POST "$BASE_URL/merchants/beneficiary/file/bank"  ""                              $LIVE_AUTH
 add_cron "1 5-18 * * 1-6"  "payouts_prod_live"         POST "$BASE_URL/payouts/initiate/kotak"           ""                              $LIVE_AUTH
-add_cron "0 15,20 * * *"   "fta_null_utr_report"       GET  "$BASE_URL/fund_transfer_attempts/null_utr_report"   ""                      $LIVE_AUTH
+add_cron "0 15,20 * * *"   "fta_recon_report"          GET  "$BASE_URL/fund_transfer_attempts/recon_report" ""                           $LIVE_AUTH
 
 # Verify
 add_cron "* * * * *"       "payment_verify_prod_live"  POST "$BASE_URL/payments/verify/payments_failed"  ""                              $LIVE_AUTH
@@ -107,7 +107,7 @@ add_cron "25 3 * * *"       "gateway_file_emi_prod"          POST "$BASE_URL/gat
 add_cron "30 3 * * *"       "gateway_file_axis_corp_prod"    POST "$BASE_URL/gateway/files"              "type=combined&targets[]=axis&sub_type=corporate"                                                       $LIVE_AUTH
 add_cron "31 3 * * *"       "gateway_file_axis_ncorp_prod"   POST "$BASE_URL/gateway/files"              "type=combined&targets[]=axis&sub_type=non_corporate"                                                   $LIVE_AUTH
 add_cron "32 3 * * *"       "gateway_file_combined_prod"     POST "$BASE_URL/gateway/files"              "type=combined&targets[]=indusind&targets[]=federal"                                                    $LIVE_AUTH
-add_cron "0 12 * * 1-5"     "gateway_file_combined_bob_prod" POST "$BASE_URL/gateway/files"              "type=combined&targets[]=bob&recipients[]=settlements@razorpay.com"                                     $LIVE_AUTH
+add_cron "00 9 * * *"       "gateway_file_combined_csb_prod" POST "$BASE_URL/gateway/files"              "type=combined&targets[]=csb"                                                                           $LIVE_AUTH
 
 # Invoice
 add_cron "*/10 * * * *"     "invoice_expire_bulk_test"       POST "$BASE_URL/invoices/expire"                            ""                              $TEST_AUTH
@@ -130,6 +130,9 @@ add_cron "*/10 * * * *"     "subscriptions_cancel"           POST "$BASE_URL/sub
 # DSP Blackrock
 add_cron "0 15 * * *"       "dsp_report_today"               GET  "$BASE_URL/reports/transaction/dsp"    "mail=1&email=dummy@dspblackrock.com&day=today"      $LIVE_AUTH
 add_cron "0 1 * * *"        "dsp_report_yesterday"           GET  "$BASE_URL/reports/transaction/dsp"    "mail=1&email=dummy@dspblackrock.com&day=yesterday"  $LIVE_AUTH
+
+# Daily Recon Summary
+add_cron "30 22 * * *"        "daily_recon_summary"            GET "$BASE_URL/daily_recon_summary"                         ""                              $LIVE_AUTH
 
 
 # Install the generated crontab

@@ -13,7 +13,7 @@ use RZP\Models\FundTransfer\Base\Reconciliation\FileProcessor as BaseProcessor;
 
 class FileProcessor extends BaseProcessor
 {
-    protected static $fileToReadName = 'Icici_Settlement_Reconciliation';
+    protected static $fileToReadName  = 'Icici_Settlement_Reconciliation';
 
     protected static $fileToWriteName = 'Icici_Settlement_Reconciliation';
 

@@ -4,6 +4,7 @@ namespace RZP\Constants;
 
 use RZP\Base\Fetch;
 use RZP\Models\Dispute;
+use RZP\Models\Settlement\Channel;
 
 /**
  * Class AdminFetch
@@ -17,6 +18,27 @@ class AdminFetch
     public static function fields()
     {
         return Fetch::getCommonFields();
+    }
+
+    public static function externalEntities()
+    {
+        return [
+            Entity::REPORTING_LOGS => [
+                'merchant_id'       => Fetch::FIELD_MERCHANT_ID
+            ],
+            Entity::REPORTING_CONFIGS => [
+                'merchant_id'       => Fetch::FIELD_MERCHANT_ID
+            ],
+            Entity::REPORTING_SCHEDULES => [
+                'merchant_id'       => Fetch::FIELD_MERCHANT_ID
+            ],
+            Entity::SHIELD_RULES => [
+
+            ],
+            Entity::SHIELD_RULE_ANALYTICS => [
+
+            ]
+        ];
     }
 
     public static function entities()
@@ -536,6 +558,11 @@ class AdminFetch
                     Fetch::LABEL  => 'UTR',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
+                'channel' => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => Channel::getChannels()
+                ],
             ],
 
             Entity::GATEWAY_DOWNTIME => [
@@ -941,6 +968,14 @@ class AdminFetch
                 ],
             ],
 
+            Entity::ENACH => [
+                'umrn' => [
+                    Fetch::LABEL  => 'UMRN',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
+            ],
+
             Entity::NETBANKING => [
                 'bank_payment_id' => [
                     Fetch::LABEL  => 'Bank Payment Id',
@@ -958,6 +993,13 @@ class AdminFetch
                 'received' => [
                     Fetch::LABEL  => 'Received',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
+                ],
+            ],
+
+            Entity::NODAL_STATEMENT => [
+                'q'  => [
+                    Fetch::LABEL  => 'Search Query',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
 
@@ -1079,6 +1121,16 @@ class AdminFetch
                 'token_id' => [
                     Fetch::LABEL  => 'Token Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'recurring_status' => [
+                    Fetch::LABEL  => 'Token Recurring Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'null',
+                        'initiated',
+                        'confirmed',
+                        'rejected',
+                    ],
                 ],
                 'transfer_id' => [
                     Fetch::LABEL  => 'Transfer Id',
@@ -1236,6 +1288,7 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
                         'created',
+                        'initiated',
                         'failed',
                         'processed',
                     ],
@@ -1247,6 +1300,11 @@ class AdminFetch
                 'utr' => [
                     Fetch::LABEL  => 'UTR',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'channel' => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => Channel::getChannels()
                 ],
             ],
 
@@ -1418,6 +1476,10 @@ class AdminFetch
                 'token' => [
                     Fetch::LABEL  => 'Token',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'recurring_status' => [
+                    Fetch::LABEL    => 'Recurring Status',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
                 ],
                 'wallet' => Fetch::FIELD_WALLET
             ],

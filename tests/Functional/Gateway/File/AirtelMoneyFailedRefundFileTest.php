@@ -68,7 +68,7 @@ class AirtelMoneyFailedRefundFileTest extends TestCase
         ];
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(FailedRefund::class, function ($mail)
+        Mail::assertQueued(FailedRefund::class, function ($mail)
         {
             $this->assertNotEmpty($mail->attachments);
 

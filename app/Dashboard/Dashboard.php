@@ -2,18 +2,18 @@
 
 namespace RZP\Dashboard;
 
-use RZP\Exception;
+use App;
+use Queue;
+use Trace;
 use Config;
+use Requests;
+
+use RZP\Constants;
+use RZP\Exception;
+use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\Payment;
-use Queue;
-use Requests;
-use Trace;
-use RZP\Trace\TraceCode;
-use App;
-use RZP\Constants;
-use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\Dashboard as DashboardJob;
 
 class Dashboard
@@ -169,13 +169,7 @@ class Dashboard
 
             $mode = $app['basicauth']->getMode();
 
-            $job = new DashboardJob([
-                'mode'     => $mode,
-                'message'  => $data,
-                'type'     => $type
-            ]);
-
-            (new DispatchRouter)->dispatchOn($job, DispatchRouter::DASHBOARD);
+            DashboardJob::dispatch(['mode' => $mode, 'message' => $data, 'type' => $type]);
         }
     }
 }

@@ -4,15 +4,18 @@ namespace RZP\Base;
 
 use Closure;
 use Illuminate;
+
+use RZP\Models;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Constants\Entity;
-use RZP\Models;
+use RZP\Base\Database\MySqlConnection;
 
 /**
  * @property Models\Plan\Subscription\Repository    $subscription
  * @property Models\Terminal\Repository             $terminal
  * @property Models\Invoice\Repository              $invoice
+ * @property Models\Tax\Repository                  $tax
  * @property Models\Payment\Repository              $payment
  * @property Models\Merchant\Repository             $merchant
  * @property Models\Batch\Repository                $batch
@@ -242,6 +245,17 @@ class RepositoryManager extends Illuminate\Support\Manager
         return $result;
     }
 
+    public function useSlave(callable $callback)
+    {
+        $this->db->connection()->forceReadPdo(true);
+
+        $result = $callback($this);
+
+        $this->db->connection()->forceReadPdo(false);
+
+        return $result;
+    }
+
     protected function getDefaultDbConn()
     {
         return $this->app['config']->get('database.default');
@@ -267,5 +281,19 @@ class RepositoryManager extends Illuminate\Support\Manager
     public function assertTransactionActive()
     {
         assert ($this->isTransactionActive());
+    }
+
+    public function resetConnectionAttributes()
+    {
+        $dbConnection = $this->db->connection();
+
+        //
+        // Only if the connection being used is the overridden one
+        // we need to reset some connection attributes.
+        //
+        if ($dbConnection instanceof MySqlConnection)
+        {
+            $dbConnection->resetConnectionAttributes();
+        }
     }
 }

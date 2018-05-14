@@ -31,6 +31,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
 class Processor
@@ -170,6 +171,14 @@ class Processor
         $this->verifyRefundStatus = null;
     }
 
+    public function flushPaymentObjects()
+    {
+        $this->order   = null;
+        $this->payment = null;
+        $this->refund  = null;
+        $this->type    = null;
+    }
+
     public function process(array $input): array
     {
         $this->setMethodForInput($input);
@@ -196,13 +205,31 @@ class Processor
         return $this->authorize($payment, $input);
     }
 
+    public function getPayment(): Payment\Entity
+    {
+        $this->payment->reload();
+
+        return $this->payment;
+    }
+
     protected function preProcessPaymentInputs(array $input, Payment\Entity $payment)
     {
-        $coproto = $this->preProcessPaymentInputsForEmandate($input, $payment);
+        $coproto = null;
 
-        if ($coproto === null)
+        switch ($payment->getMethod())
         {
-            $coproto = $this->preProcessPaymentInputsForWallet($input, $payment);
+            case Payment\Method::EMANDATE:
+                $coproto = $this->preProcessPaymentInputsForEmandate($input, $payment);
+                break;
+
+            case Payment\Method::WALLET:
+                $coproto = $this->preProcessPaymentInputsForWallet($input, $payment);
+                break;
+
+            case Payment\Method::UPI:
+                $coproto = $this->preProcessPaymentInputsForUpi($input, $payment);
+                break;
+
         }
 
         return $coproto;
@@ -238,11 +265,15 @@ class Processor
         }
 
         //
-        // We need this flow only if either bank_account or auth_type is missing.
-        // TODO: Handle for aadhaar also
+        // We need this flow only if either:
+        //   - bank_account is missing
+        //   - auth_type is missing
+        //   - auth_type is aadhaar and aadhaar_number is missing
         //
         if ((empty($input[Payment\Entity::BANK_ACCOUNT]) === false) and
-            (empty($payment->getAuthType()) === false))
+            (empty($payment->getAuthType()) === false) and
+            (($payment->getAuthType() !== Payment\AuthType::AADHAAR) or
+             (empty($input[Payment\Entity::AADHAAR]['number']) === false)))
         {
             return null;
         }
@@ -281,7 +312,7 @@ class Processor
         }
 
         $coproto = [
-            'type'    => 'emandate',
+            'type'    => 'respawn',
             'request' => [
                 'url'     => $this->route->getUrlWithPublicAuthInQueryParam($currentRouteName),
                 'method'  => 'POST',
@@ -290,6 +321,7 @@ class Processor
                     'bank_details' => $emandateMethods['emandate'][$input[Payment\Entity::BANK]],
                 ]
             ],
+            'method' => 'emandate',
             'version' => '1',
         ];
 
@@ -316,12 +348,13 @@ class Processor
               ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL))))
         {
             $coproto = [
-                'type'    => 'wallet',
+                'type'    => 'respawn',
                 'request' => [
                     'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
                     'method'  => 'POST',
                     'content' => $input,
                 ],
+                'method' => 'wallet',
                 'version' => '1',
             ];
 
@@ -341,8 +374,48 @@ class Processor
         return $coproto;
     }
 
+    protected function preProcessPaymentInputsForUpi(array $input, Payment\Entity $payment)
+    {
+        $coproto = null;
+
+        if ($payment->isUpi() === false)
+        {
+            return;
+        }
+
+        if ((empty($input[Payment\Entity::VPA]) === false) or
+            (empty($input['_']['flow']) === false))
+        {
+            return;
+        }
+
+        $coproto = [
+            'type'    => 'respawn',
+            'request' => [
+                'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                'method'  => 'POST',
+                'content' => $input,
+            ],
+            'image'     => $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE),
+            'theme'     => $payment->merchant->getBrandColorElseDefault(),
+            'method'    => 'upi',
+            'version'   => '1',
+        ];
+
+        return $coproto;
+    }
+
     public function processAndReturnFees(array & $input)
     {
+        $this->tracePaymentNewRequest($input);
+
+        // Validate if customer is fee bearer then only move forward
+        if ($this->merchant->isFeeBearerCustomer() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
         if (isset($input['method']) === false)
         {
             $input['method'] = Payment\Method::CARD;
@@ -366,19 +439,13 @@ class Processor
 
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
 
-        $data = array(
+        $data = [
             'originalAmount'    => $input['amount'],
             'fees'              => $fee,
             'razorpay_fee'      => $fee - $tax,
             'tax'               => $tax,
             'amount'            => $input['amount'] + $fee,
-        );
-
-        // Converts all the amounts to rupees
-        foreach ($data as $key => $value)
-        {
-            $data[$key] = $value / 100;
-        }
+        ];
 
         // Set new input amount and fees
         $input['amount'] = $input['amount'] + $fee;
@@ -448,6 +515,26 @@ class Processor
         else
         {
             $input[Payment\Entity::METHOD] = Payment\Method::CARD;
+        }
+    }
+
+    protected function modifyAmountForDiscountedOfferIfApplicable(Payment\Entity $payment, array & $input)
+    {
+        if (empty($input[Payment\Entity::ORDER_ID]) === true)
+        {
+            return;
+        }
+
+        $order = $this->fetchOrderFromInput($input);
+
+        if (($order !== null) and
+            ($order->isDiscountApplicable() === true))
+        {
+            $orderAmount = $order->getAmount();
+
+            $discountedAmount = $order->offer->getDiscountedAmount($orderAmount);
+
+            $payment->setAmount($discountedAmount);
         }
     }
 
@@ -538,6 +625,8 @@ class Processor
      *
      * @param  string $id    Payment ID
      * @param  array  $input Input Array
+     *
+     * @return PublicCollection
      * @throws Exception\BadRequestException
      */
     public function transfer(string $id, array $input)
@@ -548,6 +637,7 @@ class Processor
 
         $payment = $this->retrieve($id);
 
+        /** @var Payment\Validator $validator */
         $validator = $payment->getValidator();
 
         $validator->validateIsCaptured();
@@ -558,6 +648,8 @@ class Processor
             $payment->getId(),
             function() use ($payment, $input)
             {
+                $this->repo->reload($payment);
+
                 return $this->repo->transaction(function() use ($payment, $input)
                 {
                     $transfers = (new TransferCore)->createForPayment(
@@ -940,28 +1032,34 @@ class Processor
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
-        $terminal = $this->repo->terminal->fetchForPayment($this->payment);
-
-        if ($terminal === null)
-        {
-            throw new Exception\LogicException(
-                'Terminal should not be null here',
-                null,
-                ['payment_id' => $this->payment->getId()]);
-        }
+        $terminalId = $this->payment->getTerminalId();
 
         $gateway = $this->payment->getGateway();
+
+        $terminal = null;
+
+        // This will be removed after terminal association with bharat qr payments
+        if (($terminalId !== null) or
+            (Payment\Gateway::isValidBharatQrGateway($gateway) === false))
+        {
+            $terminal = $this->repo->terminal->fetchForPayment($this->payment);
+
+            if ($terminal === null)
+            {
+                throw new Exception\LogicException(
+                    'Terminal should not be null here',
+                    null,
+                    ['payment_id' => $this->payment->getId()]);
+            }
+        }
 
         $gatewayData['terminal'] = $terminal;
 
         $gatewayData['merchant'] = $this->payment->merchant;
 
-        $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . '::' . strtoupper($action);
-
-        // Do not track payment when Gateway verify is called
-        if ($action !== Payment\Action::VERIFY)
+        if (Payment\Gateway::isValidBharatQrGateway($this->payment->getGateway()) === true)
         {
-            $this->segment->trackPayment($this->payment, $eventCode, ['action' => $action]);
+            $gatewayData['bharat_qr'] = $this->repo->bharat_qr->findByPaymentId($this->payment->getId());
         }
 
         // Wrapping all gateway call, We can take actions on Exception here.
@@ -1006,6 +1104,10 @@ class Processor
         $this->addOrderIdToInputForSubscriptionIfApplicable($input, $payment);
 
         $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
+
+        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
+
+        $this->validateAndSetReceiverIfApplicable($payment, $input);
 
         $this->validateBankTransferDetailsIfApplicable($payment);
 
@@ -1174,34 +1276,31 @@ class Processor
         // and the fees re-calculated again. Ideally, this should be 0.
         $feeDifference = $input['fee'] - $payment->getFee();
 
-        if (abs($feeDifference) > 5)
+        if (abs($feeDifference) !== 0)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Payment failed because fees or tax was tampered');
+           throw new Exception\BadRequestValidationFailureException(
+               'Payment failed because fees or tax was tampered',
+               Payment\Entity::FEE,
+                [
+                    'checkout_fee'      => $input['fee'],
+                    'calculated_fee'    => $payment->getFee(),
+                ]);
         }
     }
 
     protected function fetchOrderFromInput(array $input): Order\Entity
     {
-        $order = $this->orderRepo->findbyPublicId($input['order_id']);
-
-        if ($order === null)
+        if ($this->order === null)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Order id provided not found.',
-                'order_id');
+            $order = $this->orderRepo
+                          ->findByPublicIdAndMerchant(
+                            $input[Payment\Entity::ORDER_ID],
+                            $this->merchant);
+
+            $this->order = $order;
         }
 
-        if ($order->getMerchantId() !== $this->merchant->id)
-        {
-            // Merchant mismatch
-            throw new Exception\BadRequestValidationFailureException(
-                'Order id not found');
-        }
-
-        $order->merchant()->associate($this->merchant);
-
-        return $order;
+        return $this->order;
     }
 
     protected function validateAndSetOrderDetailsIfApplicable(
@@ -1210,15 +1309,18 @@ class Processor
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
-            if ($payment->isNetbanking() === true)
+            $tpvRequired = (($payment->isTpvMethod() === true) and
+                            ($this->merchant->isTPVRequired() === true));
+
+            if (($tpvRequired === true) or
+                ($payment->isEmandate() === true))
             {
-                if (($this->merchant->isTPVRequired() === true) or
-                    ($payment->isRecurring() === true))
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
-                        Payment\Entity::ORDER_ID);
-                }
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
+                    Payment\Entity::ORDER_ID,
+                    [
+                        'method' => $payment->getMethod()
+                    ]);
             }
 
             return;
@@ -1242,6 +1344,22 @@ class Processor
         $this->repo->saveOrFail($this->order);
 
         $payment->order()->associate($this->order);
+    }
+
+    protected function validateAndSetReceiverIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if (empty($input[Payment\Entity::RECEIVER]) === true)
+        {
+            return;
+        }
+
+        $receiverInput = $input[Payment\Entity::RECEIVER];
+
+        $entity = $receiverInput['type'];
+
+        $receiver = $this->repo->$entity->findbyPublicIdAndMerchant($receiverInput['id'], $this->merchant);
+
+        $payment->receiver()->associate($receiver);
     }
 
     protected function validateAndSetInvoiceDetailsIfApplicable(Payment\Entity $payment)
@@ -1880,5 +1998,42 @@ class Processor
         $terminal->setEnabled(false);
 
         $this->repo->saveOrFail($terminal);
+    }
+
+    /**
+     * Marks the payment as acknowledged.
+     *
+     * @param Payment\Entity $payment
+     */
+    public function acknowledge(Payment\Entity $payment)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_ACKNOWLEDGE_REQUEST,
+            [
+                Payment\Entity::ID => $payment->getId(),
+            ]);
+
+        $this->mutex->acquireAndRelease($payment->getId(),
+            function() use ($payment)
+            {
+                $this->repo->reload($payment);
+
+                $payment->getValidator()->acknowledgeValidate();
+
+                $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+                $payment->setAcknowledgedAt($currentTime);
+
+                $this->repo->saveOrFail($payment);
+            },
+            20,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_ACKNOWLEDGED,
+            [
+                Payment\Entity::ID              => $payment->getId(),
+                Payment\Entity::ACKNOWLEDGED_AT => $payment->getAcknowledgedAt()
+            ]);
     }
 }

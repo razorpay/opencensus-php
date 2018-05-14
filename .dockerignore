@@ -3,6 +3,7 @@
 /public/storage
 Homestead.yaml
 Homestead.json
+.git
 .env
 .env.*
 !environment/.env.wercker

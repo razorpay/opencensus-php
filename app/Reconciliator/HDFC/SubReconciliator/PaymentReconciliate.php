@@ -2,13 +2,13 @@
 
 namespace RZP\Reconciliator\HDFC;
 
-use RZP\Exception\ReconciliationException;
-use RZP\Models\Base\UniqueIdEntity;
 use RZP\Trace\TraceCode;
-use RZP\Reconciliator\Base;
-use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 use RZP\Models\Bank\IFSC;
+use RZP\Reconciliator\Base;
 use RZP\Gateway\Cybersource;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Exception\ReconciliationException;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -32,6 +32,22 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     const COLUMN_TERMINAL_NUMBER    = ['terminal_number', 'TERMINAL NUMBER'];
 
+    /**
+     * If we are not able to find payment id to reconcile,
+     * this ratio defines the minimum proportion of columns to be filled in a valid row.
+     * In HDFC MIS, many gst params and other params are always set to 0,
+     * therefore if less than 10% of data is present, we don't mark row as failure.
+     */
+    const MIN_ROW_FILLED_DATA_RATIO = 0.10;
+
+    /**
+     * In case payment id is not found, function will return null,
+     * row will be marked as failure in such case.
+     *
+     * @param array $row
+     *
+     * @return null|string
+     */
     protected function getPaymentId(array $row)
     {
         if ($this->isCybersource($row) === true)
@@ -41,6 +57,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         else
         {
             $paymentId = $this->getPaymentIdForFss($row);
+        }
+
+        if (empty($paymentId) === true)
+        {
+            $this->evaluateRowProcessedStatus($row);
         }
 
         return $paymentId;
@@ -88,6 +109,17 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             if ($gatewayPayment !== null)
             {
                 $paymentId = $gatewayPayment->getPaymentId();
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::RECON_MISMATCH,
+                    [
+                        'info_code' => 'PAYMENT_ABSENT',
+                        'message'   => 'Payment not found. Skipping',
+                        'row'       => $row,
+                        'gateway'   => $this->gateway
+                    ]);
             }
         }
 
@@ -137,7 +169,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'trace_code'      => TraceCode::RECON_FAILURE,
                     'message'         => 'Unable to get the service tax!',
                     'row'             => $row,
-                    'gateway'         => get_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             throw new ReconciliationException('Unable to get the service tax for HDFC from the recon file.');
@@ -383,7 +415,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'message'           => 'Unable to get the card trivia. This is unexpected.',
                     'recon_card_trivia' => $cardTrivia,
                     'row'               => $row,
-                    'gateway'           => get_class()
+                    'gateway'           => $this->gateway
                 ]);
 
             $cardTrivia = null;
@@ -410,7 +442,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'message'         => 'Unable to figure out the card type.',
                     'recon_card_type' => $cardType,
                     'row'             => $row,
-                    'gateway'         => get_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             // It's as good as no card type present in the row.
@@ -438,7 +470,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'message'         => 'Unable to figure out the card locale (domestic/international).',
                     'recon_card_type' => $cardType,
                     'row'             => $row,
-                    'gateway'         => get_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             // It's as good as no card locale present in the row.
@@ -542,5 +574,25 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $isCybersource = (in_array($terminalId, Reconciliate::CYBERSOURCE_HDFC_TERMINAL_IDS, true) === true);
 
         return $isCybersource;
+    }
+
+    /**
+     * This function evaluate and marks the row processing as success or failure based on
+     * percentage of data available in a row.
+     *
+     * @param $row
+     */
+    protected function evaluateRowProcessedStatus(array $row)
+    {
+        $nonEmptyData = array_filter($row, function($value) {
+            return ((filled($value)) and ($value !== "' "));
+        });
+
+        $rowFilledRatio = count($nonEmptyData) / count($row);
+
+        if ($rowFilledRatio < self::MIN_ROW_FILLED_DATA_RATIO)
+        {
+            $this->setFailUnprocessedRow(false);
+        }
     }
 }

@@ -107,7 +107,7 @@ trait AttemptReconcileTrait
         $source = $this->getLastEntity($sourceType, true);
         $this->assertNotNull($source['utr']);
 
-        Mail::assertSent(ReconciliationMail::class);
+        Mail::assertQueued(ReconciliationMail::class);
     }
 
 
@@ -160,7 +160,7 @@ trait AttemptReconcileTrait
     {
         $ix = strrpos($url, '/');
 
-        $key = substr($url, $ix+1);
+        $key = substr($url, $ix + 1);
 
         return $key;
     }

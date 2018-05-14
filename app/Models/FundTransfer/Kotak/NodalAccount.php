@@ -35,16 +35,14 @@ class NodalAccount extends NodalBase\FileProcessor
 
     protected $app;
 
-    public function __construct()
+    public function __construct(string $purpose)
     {
-        parent::__construct();
+        parent::__construct($purpose);
 
         // Date format is DD/MM/YYYY in human representation
         $this->date = Carbon::today(Timezone::IST)->format('d/m/Y');
 
         $this->hour = Carbon::now(Timezone::IST)->hour;
-
-        $this->queue = \Queue::getFacadeRoot();
 
         $this->app = App::getFacadeRoot();
 
@@ -344,7 +342,7 @@ class NodalAccount extends NodalBase\FileProcessor
 
         $kotakSettlementMail = new SettlementMail\KotakSettlement($data);
 
-        Mail::send($kotakSettlementMail);
+        Mail::queue($kotakSettlementMail);
     }
 
     protected function getFileToWriteNameWithoutExt()

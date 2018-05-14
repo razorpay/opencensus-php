@@ -61,6 +61,8 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->fixtures->merchant->setHasKeyAccess(true, '1X4hRFHFx4UiXt');
+
         $this->ba->proxyAuth('rzp_live_1X4hRFHFx4UiXt');
 
         $this->startTest();
@@ -528,6 +530,15 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantInvalidInvoiceNameField()
+    {
+        $this->createMerchant();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testEditMerchantInvalidAutoRefundDelay()
     {
         $this->createMerchant();
@@ -672,7 +683,7 @@ class MerchantTest extends TestCase
 
         $this->runRequestResponseFlow($testData);
 
-        Mail::assertSent(ActivationMail::class, function ($mailable)
+        Mail::assertQueued(ActivationMail::class, function ($mailable)
         {
             $mailData = $mailable->viewData;
 
@@ -923,7 +934,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertSent(BankAccountChangeMail::class, function ($mail)
+        Mail::assertQueued(BankAccountChangeMail::class, function ($mail)
         {
             $testData = $this->testData['testAddBankAccount']['response']['content'];
 
@@ -946,7 +957,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertSent(BankAccountChangeMail::class, function ($mail)
+        Mail::assertQueued(BankAccountChangeMail::class, function ($mail)
         {
             $testData = $this->testData['testAddBankAccount']['response']['content'];
 
@@ -1162,7 +1173,7 @@ class MerchantTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(21, $banks);
+        $this->assertCount(20, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }
@@ -1195,6 +1206,34 @@ class MerchantTest extends TestCase
             'gateway' => 'ALL',
             'issuer'  => 'ALL',
             'network' => 'VISA']);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithDebitCardDisabled()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'ALL',
+            'issuer'  => 'ALL',
+            'network' => 'VISA']);
+
+        $this->fixtures->merchant->disableDebitCard();
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithCreditCardDisabled()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'ALL',
+            'issuer'  => 'ALL',
+            'network' => 'VISA']);
+
+        $this->fixtures->merchant->disableCreditCard();
 
         $this->startTest();
     }
@@ -1554,6 +1593,37 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetCheckoutPreferencesWithOrderRelatedUndiscountedOffer()
+    {
+        $this->ba->publicAuth();
+
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        foreach ($testData['tests'] as $test)
+        {
+            $data = [
+                'request' => $request,
+                'response' => $test['response'],
+            ];
+
+            $fixtureData = $test['offer'];
+            $fixtureData['starts_at'] = $startsAt;
+
+            $offer = $this->fixtures->create('offer', $fixtureData);
+            $order = $this->fixtures->create('order:with_undiscounted_offer_applied', [
+                'offer_id' => $offer->getId()
+            ]);
+
+            $data['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
+
+            $this->runRequestResponseFlow($data);
+        }
+    }
+
     public function testGetCheckoutPreferencesWithOrderRelatedOffer()
     {
         $this->ba->publicAuth();
@@ -1575,7 +1645,9 @@ class MerchantTest extends TestCase
             $fixtureData['starts_at'] = $startsAt;
 
             $offer = $this->fixtures->create('offer', $fixtureData);
-            $order = $this->fixtures->create('order:with_offer_applied', ['offer_id' => $offer->getId()]);
+            $order = $this->fixtures->create('order:with_offer_applied', [
+                'offer_id' => $offer->getId()
+            ]);
 
             $data['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
 
@@ -1916,7 +1988,7 @@ class MerchantTest extends TestCase
 
         $request = [
             'url'       => '/merchants/beneficiary/file/kotak',
-            'method'    => 'get',
+            'method'    => 'post',
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -1924,7 +1996,7 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('signed_url', $content);
         $this->assertEquals(Channel::KOTAK, $content['channel']);
 
-        Mail::assertSent(BeneficiaryFileMail::class);
+        Mail::assertQueued(BeneficiaryFileMail::class);
     }
 
     public function testBeneficiaryRegisterBetweenTimestampKotak()
@@ -1971,7 +2043,7 @@ class MerchantTest extends TestCase
         $this->assertEquals(2, $content['merchants_count']);
         $this->assertEquals(Channel::KOTAK, $content['channel']);
 
-        Mail::assertSent(BeneficiaryFileMail::class, function ($mail)
+        Mail::assertQueued(BeneficiaryFileMail::class, function ($mail)
         {
             return $mail->hasTo(['abc@d.com', 'efg@h.com']);
         });
@@ -1995,7 +2067,7 @@ class MerchantTest extends TestCase
 
         $request = [
             'url'       => '/merchants/beneficiary/file/axis',
-            'method'    => 'get',
+            'method'    => 'post',
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -2003,7 +2075,7 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('signed_url', $content);
         $this->assertEquals(Channel::AXIS, $content['channel']);
 
-        Mail::assertSent(BeneficiaryFileMail::class);
+        Mail::assertQueued(BeneficiaryFileMail::class);
     }
 
     public function testBeneficiaryRegisterIcici()
@@ -2024,7 +2096,7 @@ class MerchantTest extends TestCase
 
         $request = [
             'url'       => '/merchants/beneficiary/file/icici',
-            'method'    => 'get',
+            'method'    => 'post',
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -2032,7 +2104,43 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('signed_url', $content);
         $this->assertEquals(Channel::ICICI, $content['channel']);
 
-        Mail::assertSent(BeneficiaryFileMail::class);
+        Mail::assertQueued(BeneficiaryFileMail::class);
+    }
+
+    public function testBeneficiaryRegisterForMerchant()
+    {
+        Mail::fake();
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->create();
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
+
+        $request = [
+            'url'       => '/merchants/beneficiary/file/icici',
+            'method'    => 'post',
+            'content'   => [
+                'merchant_ids' => [
+                    '10000000000000'
+                ]
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('signed_url', $content);
+        $this->assertEquals(Channel::ICICI, $content['channel']);
+
+        Mail::assertQueued(BeneficiaryFileMail::class);
     }
 
     public function testEditCredits()
@@ -2315,7 +2423,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->create('customer');
 
-        $this->fixtures->merchant->addFeatures(['charge_at_will', 'e_mandate']);
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
         $response = $this->makePreferencesRouteRequest();
 

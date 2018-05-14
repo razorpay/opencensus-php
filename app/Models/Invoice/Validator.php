@@ -16,6 +16,13 @@ use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
+/**
+ * Class Validator
+ *
+ * @package RZP\Models\Invoice
+ *
+ * @property $entity    Entity
+ */
 class Validator extends Base\Validator
 {
     // We have rules on create and update for the two status: DRAFT, ISSUED.
@@ -180,10 +187,12 @@ class Validator extends Base\Validator
      * @var array
      */
     protected static $editCustomerDetailsRules = [
-        Customer\Entity::NAME               => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:50|nullable',
-        Customer\Entity::EMAIL              => 'sometimes|email',
-        Customer\Entity::CONTACT            => 'sometimes|contact_syntax',
-        Customer\Entity::BILLING_ADDRESS_ID => 'sometimes|public_id|size:19|nullable',
+        Customer\Entity::NAME                => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:50|nullable',
+        Customer\Entity::EMAIL               => 'sometimes|email',
+        Customer\Entity::CONTACT             => 'sometimes|contact_syntax',
+        Customer\Entity::GSTIN               => 'sometimes|nullable|gstin',
+        Customer\Entity::BILLING_ADDRESS_ID  => 'sometimes|public_id|size:19|nullable',
+        Customer\Entity::SHIPPING_ADDRESS_ID => 'sometimes|public_id|size:19|nullable',
     ];
 
     protected static $issueBatchRules = [
@@ -353,54 +362,13 @@ class Validator extends Base\Validator
      */
     public function validateMerchantSpecificData()
     {
-        $invoice = $this->entity;
+        $invoice  = $this->entity;
         $merchant = $invoice->merchant;
 
-        $this->validateMerchantHasKeys($merchant);
         $this->validateMerchantIsNotFeeBearer($merchant, $invoice);
     }
 
-    /**
-     * Validates if merchant has API keys generated in advance before using
-     * invoices.
-     * This is done because hosted page (invoice payment) will not load
-     * and will throw an exception if Invoice gets created without
-     * merchant having API keys.
-     *
-     * @param Merchant\Entity $merchant
-     *
-     * @throws BadRequestException
-     */
-    protected function validateMerchantHasKeys(Merchant\Entity $merchant)
-    {
-        //
-        // Validates if merchant has API keys generated in advance before using
-        // invoices.
-        // This is done because hosted page (invoice payment) will not load
-        // and will throw an exception if Invoice gets created without
-        // merchant having API keys.
-        //
-
-        $keys = $merchant->keys->filter(
-                    function($key, $index)
-                    {
-                        return ($key->isExpiredOrExpiring() === false);
-                    });
-
-        if ($keys->count() === 0)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_API_KEY_NOT_PRESENT,
-                null,
-                [
-                    'merchant_id' => $merchant->getId(),
-                ]);
-        }
-    }
-
-    protected function validateMerchantIsNotFeeBearer(
-        Merchant\Entity $merchant,
-        Entity $invoice)
+    protected function validateMerchantIsNotFeeBearer(Merchant\Entity $merchant, Entity $invoice)
     {
         //
         // If merchant is a customer-fee-bearer client, for now don't allow
@@ -610,40 +578,22 @@ class Validator extends Base\Validator
         $id    = $invoice->getPublicId();
         $label = $invoice->getTypeLabel();
 
-        switch ($invoice->getStatus())
+        $newViewEnabled          = (in_array('Hostedplv2', $invoice->merchant->liveTagNames(), true) === true);
+        $isLinkAndNewViewEnabled = (($invoice->isTypeLink() === true) and ($newViewEnabled === true));
+
+        if ($invoice->isDraft() === true)
         {
-            //
-            // If invoice is in draft, cancelled state we don't send any data
-            // but just following error message to view.
-            //
-
-            case Status::DRAFT:
-
-                throw new BadRequestValidationFailureException("$label with id $id is not issued yet");
-
-            case Status::CANCELLED:
-
-                throw new BadRequestValidationFailureException("$label with id $id is cancelled");
-
-            //
-            // If invoice type is expired we still send the data and JS code
-            // shows a torn page with other basic attributes. But in case of
-            // other types we would throw error so the error page with proper
-            // message is rendered.
-            //
-
-            case Status::EXPIRED:
-
-                if ($invoice->isTypeInvoice() === false)
-                {
-                    throw new BadRequestValidationFailureException("$label with id $id is expired");
-                }
-
-                break;
-
-            default:
-
-                break;
+            throw new BadRequestValidationFailureException("$label with id $id is not issued yet");
+        }
+        else if (($invoice->isCancelled() === true) and ($isLinkAndNewViewEnabled === false))
+        {
+            throw new BadRequestValidationFailureException("$label with id $id is cancelled");
+        }
+        else if (($invoice->isExpired() === true) and
+                 ($invoice->isTypeInvoice() === false) and
+                 ($isLinkAndNewViewEnabled === false))
+        {
+            throw new BadRequestValidationFailureException("$label with id $id is expired");
         }
     }
 
@@ -721,7 +671,8 @@ class Validator extends Base\Validator
         $lineItemsCount = $invoice->lineItems()->count();
         $description    = $invoice->getDescription();
 
-        if (($lineItemsCount === 0) and ($description === null))
+        // For description need to do blank() check as it is 'sometimes' in Validator.
+        if (($lineItemsCount === 0) and (blank($description) === true))
         {
             throw new BadRequestValidationFailureException('description is required.');
         }

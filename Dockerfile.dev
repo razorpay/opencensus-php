@@ -1,23 +1,14 @@
-FROM razorpay/containers:base-php7
+FROM razorpay/pithos:rzp-php7.0
 
 VOLUME ['/app']
 
-RUN chown -R apache.www-data /app && \
+RUN apk add --no-cache apache2 php7-apache2 musl && \
+	chown -R apache:www-data /app && \
     sed -i 's#PidFile "/run/.*#Pidfile /tmp/run/httpd.pid"#g' /etc/apache2/conf.d/mpm.conf && \
     sed -i 's/#LoadModule rewrite_module*/LoadModule rewrite_module/' /etc/apache2/httpd.conf
-
-COPY ./dockerconf/entrypoint.sh /entrypoint.sh
-
-RUN apk --update add python py-pip openssl ca-certificates && \
-    apk --update add --virtual build-dependencies python-dev libffi-dev openssl-dev build-base  && \
-    wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 && \
-    chmod +x /usr/local/bin/dumb-init && \
-    pip install razorpay.alohomora==0.4 && \
-    apk del build-dependencies          && \
-    rm -rf /var/cache/apk/*
 
 WORKDIR /app
 
 EXPOSE 80
 
-ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
+ENTRYPOINT ["/app/dockerconf/entrypoint.sh"]

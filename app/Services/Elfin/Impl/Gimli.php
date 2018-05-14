@@ -19,15 +19,38 @@ class Gimli extends Base
         $this->secret = $config['secret'];
     }
 
-    public function shorten(string $url, bool $fail = false)
+    /**
+     * {@inheritDoc}
+     */
+    public function shorten(string $url, array $input = [], bool $fail = false)
     {
-        $params = $this->getParams($url);
-
+        $apiUrl  = $this->getApiUrl($input);
+        $params  = $this->getParams($url);
         $headers = $this->getHeaders($params);
 
-        $res = $this->makeRequestAndValidateHeader($this->apiUrl, $headers, $params);
+        $res = $this->makeRequestAndValidateHeader($apiUrl, $headers, $params);
 
         return $res['hash'];
+    }
+
+    /**
+     * Returns gimli api url with query parameters applied
+     * @param  array  $input
+     * @return string
+     */
+    protected function getApiUrl(array $input): string
+    {
+        $query       = array_only($input, 'ptype');
+        $queryString = http_build_query($query);
+
+        $apiUrl = $this->apiUrl;
+
+        if (empty($queryString) === false)
+        {
+            $apiUrl .= "?{$queryString}";
+        }
+
+        return $apiUrl;
     }
 
     protected function getParams(string $url)

@@ -7,13 +7,11 @@ class Headings
     const RECORD_IDENTIFIER     = 'Record Identifier';
     const REFERENCE_NUMBER      = 'Reference Number';
     const DEBIT_ACCOUNT_NUMBER  = 'Debit Account Number';
-    const AMOUNT                = 'Amount';
+    const AMOUNT                = 'Transaction Amount';
     const NO_OF_CREDIT_RECORDS  = 'No of Credit Records';
-    const CREDIT_DATE           = 'Credit Date';
-    const REFERENCE1            = 'Reference1';
-    const REFERENCE2            = 'Reference2';
+    const EXECUTION_DATE        = 'Execution Date';
 
-    const FILE_LEVEL_REFERENCE  = 'User Credit/Debit Reference';
+    const FILE_LEVEL_REFERENCE  = 'User Credit/Debit Reference (File Level)';
     const BENEFICIARY_CODE      = 'Beneficiary Code';
     const TRANSACTION_AMOUNT    = 'Transaction Amount';
     const SETTLEMENT_DATE       = 'Settlement Date';
@@ -29,13 +27,14 @@ class Headings
     {
         return [
             self::RECORD_IDENTIFIER,
-            self::REFERENCE_NUMBER,
             self::DEBIT_ACCOUNT_NUMBER,
+            self::BENEFICIARY_CODE,
+            self::EXECUTION_DATE,
             self::AMOUNT,
-            self::NO_OF_CREDIT_RECORDS,
-            self::CREDIT_DATE,
-            self::REFERENCE1,
-            self::REFERENCE2
+            self::ADDITIONAL_INFO1,
+            self::ADDITIONAL_INFO2,
+            self::REFERENCE_NUMBER,
+            self::ADDITIONAL_INFO3,
         ];
     }
 
@@ -48,11 +47,7 @@ class Headings
             self::SETTLEMENT_DATE,
             self::RBI_SEQUENCE_NUMBER,
             self::STATUS,
-            self::RETURN_REASON,
-            self::ADDITIONAL_INFO1,
-            self::ADDITIONAL_INFO2,
-            self::ADDITIONAL_INFO3,
-            self::ADDITIONAL_INFO4,
+            self::RETURN_REASON
         ];
     }
 }

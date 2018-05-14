@@ -37,6 +37,13 @@ class IrctcRefund extends Base
 
         $input = $this->getRefundParams($entry);
 
+        $refund = $this->repo->refund->findByReceiptAndMerchant($input[Refund\Entity::RECEIPT], $payment->merchant->getId());
+
+        if ($refund !== null)
+        {
+            return $refund;
+        }
+
         return $paymentProcessor->createRefundFromMerchantFile($payment, $input, $this->batch);
     }
 
@@ -66,6 +73,13 @@ class IrctcRefund extends Base
         $input = $this->getRefundParams($entry);
 
         $input[Refund\Entity::AMOUNT]  = intval($entry[Batch\Header::REFUND_AMOUNT] * 100);
+
+        $refund = $this->repo->refund->findByReceiptAndMerchant($input[Refund\Entity::RECEIPT], $payment->merchant->getId());
+
+        if ($refund !== null)
+        {
+            return $refund;
+        }
 
         return $paymentProcessor->createRefundFromMerchantFile($payment, $input, $this->batch);
     }

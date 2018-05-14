@@ -18,7 +18,7 @@ class ThrottleTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/ThrottleTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/ThrottleTestData.php';
 
         $this->baseSetUp();
 
@@ -39,16 +39,14 @@ class ThrottleTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetOrderWhenThrottledSecondTime()
+    public function testGetOrderWhenThrottled()
     {
         $this->mockTraceAndExpectNoError();
 
-        // Sets max bucket size for specific test mid and for private auth
-        // to 1 and expects the first request to pass and second requests to be throttled.
-        $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:order_fetch:mbs' => 1]);
+        // Sets max bucket size for specific test mid and for private auth to 0 and expects request to be throttled.
+        $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:order_fetch:mbs' => 0]);
 
-        $this->startTest($this->testData[__FUNCTION__.'1']);
-        $this->startTest($this->testData[__FUNCTION__.'2']);
+        $this->startTest();
     }
 
     public function testGetOrderWhenThrottledWithoutMockForSpecificMerchant()

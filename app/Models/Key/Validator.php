@@ -5,6 +5,8 @@ namespace RZP\Models\Key;
 use RZP\Base;
 use RZP\Models\Key;
 use RZP\Exception;
+use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
@@ -25,6 +27,21 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_KEY_OF_DEMO_ACCOUNT);
+        }
+    }
+
+    /**
+     * This function is used to check if a merchant has key access in LIVE mode.
+     * @param Merchant\Entity $merchant
+     * @param string $mode
+     */
+    public function checkHasKeyAccess(Merchant\Entity $merchant, string $mode)
+    {
+        if (($mode === Mode::LIVE) and
+            ($merchant->getHasKeyAccess() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NO_KEY_ACCESS);
         }
     }
 }

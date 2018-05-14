@@ -305,6 +305,22 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TERMS);
     }
 
+// --------------------- Calculator --------------------------------------------
+
+    public function getDiscountedAmount(int $amount)
+    {
+        $calculator = new Calculator($this);
+
+        return $calculator->calculateDiscountedAmount($amount);
+    }
+
+    public function getDiscount(int $amount)
+    {
+        $calculator = new Calculator($this);
+
+        return $calculator->calculateDiscount($amount);
+    }
+
 // ----------------------- Setters ---------------------------------------------
 
     public function deactivate()
@@ -359,7 +375,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STARTS_AT, $startsAt);
     }
 
-    public function toArrayCheckout()
+    public function toArrayCheckout(bool $discount = false, int $amount = null)
     {
         $data = [
             self::NAME            => $this->getAttribute(self::NAME),
@@ -368,6 +384,16 @@ class Entity extends Base\PublicEntity
             self::ISSUER          => $this->getAttribute(self::ISSUER),
             self::DISPLAY_TEXT    => $this->getAttribute(self::DISPLAY_TEXT),
         ];
+
+        //
+        // If this flag is set then amount is to be discounted by us
+        //
+        if ($discount === true)
+        {
+            $data['original_amount'] = $amount;
+
+            $data['amount'] = $this->getDiscountedAmount($amount);
+        }
 
         return array_filter($data);
     }

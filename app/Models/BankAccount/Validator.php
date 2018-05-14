@@ -16,7 +16,7 @@ class Validator extends Base\Validator
     const INVALID_ADDRESS_PROOF_URL_MESSAGE = 'Invalid Address Proof File in Details or Invalid Auth';
 
     protected static $addBankAccountRules = [
-        Detail\Entity::ADDRESS_PROOF_URL        => 'sometimes|custom',
+        Detail\Entity::ADDRESS_PROOF_URL        => 'sometimes',
         Entity::IFSC_CODE                       => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER                  => 'required|alpha_num|between:5,22',
         Entity::BENEFICIARY_NAME                => 'required|between:4,120|alpha_space_num',
@@ -64,6 +64,11 @@ class Validator extends Base\Validator
         'TR', 'UP', 'UT', 'WB'
     ];
 
+    protected static $merchantBeneficiaryRegisterRules = [
+        'merchant_ids'      => 'sometimes|array',
+        'merchant_ids.*'    => 'sometimes|string|size:14',
+    ];
+
     protected static $beneficiaryRegisterRules = [
         Entity::ON                      => 'sometimes|epoch',
         Entity::RECIPIENT_EMAILS        => 'sometimes|array',
@@ -99,15 +104,14 @@ class Validator extends Base\Validator
         }
     }
 
-    function validateAddressProofUrl($input)
+    public function validateAddressProofUploadOverProxyAuth()
     {
         // Address proof URL will be passed only when merchant
         // is requesting for bank account change which will only
         // happen over proxy auth
         $app = App::getFacadeRoot();
 
-        if (($app['basicauth']->isProxyAuth() === false) or
-            (empty($input) === true))
+        if ($app['basicauth']->isProxyAuth() === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 self::INVALID_ADDRESS_PROOF_URL_MESSAGE);

@@ -29,7 +29,11 @@
                         <table class="six columns bluebg" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; background: #39ACE5; margin: 0 auto; width: 280px;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="center" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: right; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
                               <center style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; min-width: 280px; width: 100%;">
                                 <h3 class="center" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; color: #f2f2f2; font-weight: bold; line-height: 1.3; margin: 0; padding: 0; text-align: center; word-break: normal; font-size: 22px; margin-top: 10px;">
+                                @if (isset($merchant['website']) === true)
                                 <a href="{{$merchant['website']}}" title="{{$merchant['billing_label']}} Website" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; color: #f2f2f2; text-decoration: none; font-size: 22px; text-align: center;">{{$merchant['billing_label']}}</a>
+                                @else
+                                <span style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; color: #f2f2f2; font-size: 22px; text-align: center;">{{$merchant['billing_label']}}</span>
+                                @endif
                                 </h3>
                               </center>
                             </td>

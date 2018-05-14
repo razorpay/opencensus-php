@@ -3,9 +3,8 @@
 namespace RZP\Models\Base;
 
 use App;
-use RZP\Exception;
+
 use RZP\Models\Base;
-use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\ServerErrorException;
@@ -104,12 +103,21 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $this->trace = $app['trace'];
 
-        $this->esDao = new Base\EsDao;
-
         $indexPrefix = $app['config']->get('database.es_entity_index_prefix');
         $typePrefix  = $app['config']->get('database.es_entity_type_prefix');
 
         $this->setIndexAndTypeName($indexPrefix, $typePrefix);
+
+        $this->initEsDao();
+    }
+
+    /**
+     * Initializes Elasticserach Dao which usually is just below implementation but in specific case e.g.
+     * in NodalStatment's EsRepository class it is different.
+     */
+    protected function initEsDao()
+    {
+        $this->esDao = new Base\EsDao;
     }
 
     /**

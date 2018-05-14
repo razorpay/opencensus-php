@@ -35,35 +35,38 @@ class Entity extends Base\PublicEntity
 
     // ------------------ Entity Keys --------------------------------
 
-    const ORDER_ID                 = 'order_id';
-    const RECEIPT                  = 'receipt';
-    const INVOICE_NUMBER           = 'invoice_number';
-    const MERCHANT_ID              = 'merchant_id';
-    const SUBSCRIPTION_ID          = 'subscription_id';
-    const BATCH_ID                 = 'batch_id';
-    const CUSTOMER_ID              = 'customer_id';
-    const CUSTOMER_NAME            = 'customer_name';
-    const CUSTOMER_EMAIL           = 'customer_email';
-    const CUSTOMER_CONTACT         = 'customer_contact';
-    const CUSTOMER_BILLING_ADDR_ID = 'customer_billing_addr_id';
-    const STATUS                   = 'status';
-    const SUBSCRIPTION_STATUS      = 'subscription_status';
-    const DATE                     = 'date';
-    const DUE_BY                   = 'due_by';
-    const SCHEDULED_AT             = 'scheduled_at';
-    const ISSUED_AT                = 'issued_at';
-    const PAID_AT                  = 'paid_at';
-    const CANCELLED_AT             = 'cancelled_at';
-    const EXPIRED_AT               = 'expired_at';
-    const EXPIRE_BY                = 'expire_by';
-    const EMAIL_STATUS             = 'email_status';
-    const SMS_STATUS               = 'sms_status';
-    const DESCRIPTION              = 'description';
-    const TERMS                    = 'terms';
-    const NOTES                    = 'notes';
-    const COMMENT                  = 'comment';
-    const SHORT_URL                = 'short_url';
-    const VIEW_LESS                = 'view_less';
+    const ORDER_ID                  = 'order_id';
+    const RECEIPT                   = 'receipt';
+    const INVOICE_NUMBER            = 'invoice_number';
+    const MERCHANT_ID               = 'merchant_id';
+    const SUBSCRIPTION_ID           = 'subscription_id';
+    const BATCH_ID                  = 'batch_id';
+    const CUSTOMER_ID               = 'customer_id';
+    const CUSTOMER_NAME             = 'customer_name';
+    const CUSTOMER_EMAIL            = 'customer_email';
+    const CUSTOMER_CONTACT          = 'customer_contact';
+    const CUSTOMER_GSTIN            = 'customer_gstin';
+    const CUSTOMER_BILLING_ADDR_ID  = 'customer_billing_addr_id';
+    const CUSTOMER_SHIPPING_ADDR_ID = 'customer_shipping_addr_id';
+    const STATUS                    = 'status';
+    const SUBSCRIPTION_STATUS       = 'subscription_status';
+    const DATE                      = 'date';
+    const DUE_BY                    = 'due_by';
+    const SCHEDULED_AT              = 'scheduled_at';
+    const ISSUED_AT                 = 'issued_at';
+    const PAID_AT                   = 'paid_at';
+    const CANCELLED_AT              = 'cancelled_at';
+    const EXPIRED_AT                = 'expired_at';
+    const EXPIRE_BY                 = 'expire_by';
+    const EMAIL_STATUS              = 'email_status';
+    const SMS_STATUS                = 'sms_status';
+    const DESCRIPTION               = 'description';
+    const MERCHANT_LABEL            = 'merchant_label';
+    const TERMS                     = 'terms';
+    const NOTES                     = 'notes';
+    const COMMENT                   = 'comment';
+    const SHORT_URL                 = 'short_url';
+    const VIEW_LESS                 = 'view_less';
 
     /**
      * If set to true, partial payments would be accepted
@@ -200,39 +203,42 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::ORDER_ID                 => null,
-        self::STATUS                   => Status::ISSUED,
-        self::SUBSCRIPTION_STATUS      => null,
-        self::SUBSCRIPTION_ID          => null,
-        self::DATE                     => null,
-        self::ISSUED_AT                => null,
-        self::PAID_AT                  => null,
-        self::CANCELLED_AT             => null,
-        self::EXPIRED_AT               => null,
-        self::EXPIRE_BY                => null,
-        self::RECEIPT                  => null,
-        self::DESCRIPTION              => null,
-        self::NOTES                    => [],
-        self::COMMENT                  => null,
-        self::TERMS                    => null,
-        self::SHORT_URL                => null,
-        self::VIEW_LESS                => 1,
-        self::TYPE                     => Type::INVOICE,
-        self::USER_ID                  => null,
-        self::PARTIAL_PAYMENT          => false,
-        self::GROSS_AMOUNT             => null,
-        self::TAX_AMOUNT               => null,
-        self::AMOUNT                   => null,
-        self::CURRENCY                 => 'INR',
-        self::BILLING_START            => null,
-        self::BILLING_END              => null,
-        self::CUSTOMER_NAME            => null,
-        self::CUSTOMER_EMAIL           => null,
-        self::CUSTOMER_CONTACT         => null,
-        self::CUSTOMER_BILLING_ADDR_ID => null,
-        self::GROUP_TAXES_DISCOUNTS    => false,
-        self::CALLBACK_URL             => null,
-        self::CALLBACK_METHOD          => null,
+        self::ORDER_ID                  => null,
+        self::STATUS                    => Status::ISSUED,
+        self::SUBSCRIPTION_STATUS       => null,
+        self::SUBSCRIPTION_ID           => null,
+        self::DATE                      => null,
+        self::ISSUED_AT                 => null,
+        self::PAID_AT                   => null,
+        self::CANCELLED_AT              => null,
+        self::EXPIRED_AT                => null,
+        self::EXPIRE_BY                 => null,
+        self::RECEIPT                   => null,
+        self::MERCHANT_LABEL            => null,
+        self::DESCRIPTION               => null,
+        self::NOTES                     => [],
+        self::COMMENT                   => null,
+        self::TERMS                     => null,
+        self::SHORT_URL                 => null,
+        self::VIEW_LESS                 => 1,
+        self::TYPE                      => Type::INVOICE,
+        self::USER_ID                   => null,
+        self::PARTIAL_PAYMENT           => false,
+        self::GROSS_AMOUNT              => null,
+        self::TAX_AMOUNT                => null,
+        self::AMOUNT                    => null,
+        self::CURRENCY                  => 'INR',
+        self::BILLING_START             => null,
+        self::BILLING_END               => null,
+        self::CUSTOMER_NAME             => null,
+        self::CUSTOMER_EMAIL            => null,
+        self::CUSTOMER_CONTACT          => null,
+        self::CUSTOMER_GSTIN            => null,
+        self::CUSTOMER_BILLING_ADDR_ID  => null,
+        self::CUSTOMER_SHIPPING_ADDR_ID => null,
+        self::GROUP_TAXES_DISCOUNTS     => false,
+        self::CALLBACK_URL              => null,
+        self::CALLBACK_METHOD           => null,
     ];
 
     protected static $generators = [
@@ -290,6 +296,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::MERCHANT_ID,
         self::DATE,
+        self::MERCHANT_LABEL,
         self::DESCRIPTION,
         self::TERMS,
         self::NOTES,
@@ -357,6 +364,44 @@ class Entity extends Base\PublicEntity
         self::SUBSCRIPTION_STATUS,
         self::USER_ID,
         self::USER,
+        self::CREATED_AT,
+    ];
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $hosted = [
+        self::ID,
+        self::ENTITY,
+        self::RECEIPT,
+        self::INVOICE_NUMBER,
+        self::CUSTOMER_ID,
+        self::CUSTOMER_DETAILS,
+        self::ORDER_ID,
+        self::SUBSCRIPTION_ID,
+        self::LINE_ITEMS,
+        self::PAYMENT_ID,
+        self::STATUS,
+        self::EXPIRE_BY,
+        self::ISSUED_AT,
+        self::PAID_AT,
+        self::CANCELLED_AT,
+        self::EXPIRED_AT,
+        self::DATE,
+        self::TERMS,
+        self::PARTIAL_PAYMENT,
+        self::GROSS_AMOUNT,
+        self::TAX_AMOUNT,
+        self::AMOUNT,
+        self::AMOUNT_PAID,
+        self::AMOUNT_DUE,
+        self::CURRENCY,
+        self::DESCRIPTION,
+        self::COMMENT,
+        self::SHORT_URL,
+        self::TYPE,
+        self::GROUP_TAXES_DISCOUNTS,
+        self::SUBSCRIPTION_STATUS,
         self::CREATED_AT,
     ];
 
@@ -490,6 +535,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_CONTACT);
     }
 
+    public function getCustomerGstin()
+    {
+        return $this->getAttribute(self::CUSTOMER_GSTIN);
+    }
+
     public function getScheduledAt()
     {
         return $this->getAttribute(self::SCHEDULED_AT);
@@ -558,6 +608,11 @@ class Entity extends Base\PublicEntity
     public function getUserId()
     {
         return $this->getAttribute(self::USER_ID);
+    }
+
+    public function getMerchantLabel()
+    {
+        return $this->getAttribute(self::MERCHANT_LABEL);
     }
 
     public function getDescription()
@@ -684,7 +739,12 @@ class Entity extends Base\PublicEntity
 
     public function hasCustomerBillingAddress(): bool
     {
-        return ($this->getAttribute(self::CUSTOMER_BILLING_ADDR_ID) !== null);
+        return $this->isAttributeNotNull(self::CUSTOMER_BILLING_ADDR_ID);
+    }
+
+    public function hasCustomerShippingAddress(): bool
+    {
+        return $this->isAttributeNotNull(self::CUSTOMER_SHIPPING_ADDR_ID);
     }
 
     public function isTypeLink(): bool
@@ -769,13 +829,16 @@ class Entity extends Base\PublicEntity
         $this->setCustomerName($customer->getName());
         $this->setCustomerContact($customer->getContact());
         $this->setCustomerEmail($customer->getEmail());
+        $this->setCustomerGstin($customer->getGstin());
 
-        // Retrieves primary billing address and associates the same with invoice
+        // Retrieves primary billing and shipping addresses and associates the same with invoice
         $repo = App::getFacadeRoot()['repo'];
 
         $billingAddress = $repo->address->fetchPrimaryAddressOfEntityOfType($customer, Address\Type::BILLING_ADDRESS);
-
         $this->customerBillingAddress()->associate($billingAddress);
+
+        $shippingAddr = $repo->address->fetchPrimaryAddressOfEntityOfType($customer, Address\Type::SHIPPING_ADDRESS);
+        $this->customerShippingAddress()->associate($shippingAddr);
     }
 
     public function associateAndSetCustomerDetails(Customer\Entity $customer)
@@ -789,10 +852,12 @@ class Entity extends Base\PublicEntity
     {
         $this->customer()->dissociate();
         $this->customerBillingAddress()->dissociate();
+        $this->customerShippingAddress()->dissociate();
 
         $this->setCustomerName(null);
         $this->setCustomerContact(null);
         $this->setCustomerEmail(null);
+        $this->setCustomerGstin(null);
     }
 
     public function setCustomerName($customerName)
@@ -808,6 +873,11 @@ class Entity extends Base\PublicEntity
     public function setCustomerContact($customerContact)
     {
         $this->setAttribute(self::CUSTOMER_CONTACT, $customerContact);
+    }
+
+    public function setCustomerGstin($customerGstin)
+    {
+        $this->setAttribute(self::CUSTOMER_GSTIN, $customerGstin);
     }
 
     public function setSmsStatus($status)
@@ -894,6 +964,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::USER_ID, $userId);
     }
 
+    public function setMerchantLabel(string $merchantLabel)
+    {
+        $this->setAttribute(self::MERCHANT_LABEL, $merchantLabel);
+    }
+
     /**
      * Sets all amounts field to null.
      * Used when all line items of draft invoice are removed.
@@ -927,25 +1002,32 @@ class Entity extends Base\PublicEntity
     /**
      * Gets customer_details attribute of invoice entity.
      *
-     * Invoice has association with customer and customer_billing_addr_id. A
-     * customer's detail and it's primary billing address can be edited anytime.
-     * We keep customer's basic attribute in invoice entity as a snapshot. This
-     * attribute returns those.
+     * Invoice has association with customer, customer_billing_addr_id, and
+     * customer_shipping_addr_id. A customer's detail and it's addresses can
+     * be edited anytime. We keep customer's basic attribute in invoice entity
+     * as a snapshot. This attribute returns those.
      *
      * @return array
      */
     protected function getCustomerDetailsAttribute(): array
     {
+        $customerName    = $this->getCustomerName();
+        $customerEmail   = $this->getCustomerEmail();
+        $customerContact = $this->getCustomerContact();
+        $customerGstin   = $this->getCustomerGstin();
+
         $details = [
-            Customer\Entity::NAME            => $this->getAttribute(self::CUSTOMER_NAME),
-            Customer\Entity::EMAIL           => $this->getAttribute(self::CUSTOMER_EMAIL),
-            Customer\Entity::CONTACT         => $this->getAttribute(self::CUSTOMER_CONTACT),
-            Customer\Entity::BILLING_ADDRESS => null,
+            Customer\Entity::NAME             => $customerName,
+            Customer\Entity::EMAIL            => $customerEmail,
+            Customer\Entity::CONTACT          => $customerContact,
+            Customer\Entity::GSTIN            => $customerGstin,
+            Customer\Entity::BILLING_ADDRESS  => null,
+            Customer\Entity::SHIPPING_ADDRESS => null,
 
             // For backward compatibility.
-            self::CUSTOMER_NAME              => $this->getAttribute(self::CUSTOMER_NAME),
-            self::CUSTOMER_EMAIL             => $this->getAttribute(self::CUSTOMER_EMAIL),
-            self::CUSTOMER_CONTACT           => $this->getAttribute(self::CUSTOMER_CONTACT),
+            self::CUSTOMER_NAME               => $customerName,
+            self::CUSTOMER_EMAIL              => $customerEmail,
+            self::CUSTOMER_CONTACT            => $customerContact,
         ];
 
         if ($this->hasCustomerBillingAddress() === true)
@@ -953,6 +1035,13 @@ class Entity extends Base\PublicEntity
             $billingAddress = $this->customerBillingAddress->toArrayPublic();
 
             $details[Customer\Entity::BILLING_ADDRESS] = $billingAddress;
+        }
+
+        if ($this->hasCustomerShippingAddress() === true)
+        {
+            $shippingAddress = $this->customerShippingAddress->toArrayPublic();
+
+            $details[Customer\Entity::SHIPPING_ADDRESS] = $shippingAddress;
         }
 
         return $details;
@@ -1018,6 +1107,11 @@ class Entity extends Base\PublicEntity
     public function getInvoiceNumberAttribute()
     {
         return $this->getAttribute(self::RECEIPT);
+    }
+
+    public function getMerchantLabelAttribute($label)
+    {
+        return $label ?: $this->merchant->getLabelForInvoice();
     }
 
     // -------------------------------------- End Accessors ----------
@@ -1196,7 +1290,12 @@ class Entity extends Base\PublicEntity
 
     public function customerBillingAddress()
     {
-        return $this->belongsTo('RZP\Models\Address\Entity', 'customer_billing_addr_id');
+        return $this->belongsTo(Address\Entity::class, self::CUSTOMER_BILLING_ADDR_ID);
+    }
+
+    public function customerShippingAddress()
+    {
+        return $this->belongsTo(Address\Entity::class, self::CUSTOMER_SHIPPING_ADDR_ID);
     }
 
     public function payments()

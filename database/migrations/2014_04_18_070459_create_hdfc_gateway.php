@@ -90,6 +90,7 @@ class CreateHdfcGateway extends Migration
             $table->index('gateway_payment_id');
             $table->index('received');
             $table->index('ref');
+            $table->index('created_at');
         });
     }
 

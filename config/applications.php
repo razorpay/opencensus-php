@@ -188,10 +188,16 @@ return [
     'shield' => [
         'mock'    => env('SHIELD_MOCK', false),
         'url'     => env('SHIELD_BASE_URL'),
-        'ruleset' => env('SHIELD_RULESET'),
         'auth' => [
             'username' => 'api',
             'password' => env('SHIELD_SECRET'),
         ],
+    ],
+
+    'razorx' => [
+        'mock'     => env('RAZORX_MOCK', false),
+        'url'      => env('RAZORX_URL'),
+        'username' => 'rzp_api',
+        'secret'   => env('RAZORX_SECRET'),
     ],
 ];

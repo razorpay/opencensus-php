@@ -85,8 +85,8 @@
         vertical-align: middle;
         display: inline-block;
         white-space: normal;
-        width: 80%;
-        max-width: 290px;
+        width: 92%;
+        max-width: 320px;
         margin: 30px 0;
       }
     </style>
@@ -108,7 +108,7 @@
         <div class='td r'><span>₹{{$data['originalAmount']}}</span></div>
         <div class='td'><span>Gateway Fees</span></div>
         <div class='td r'><span>₹{{$data['razorpay_fee']}}</span></div>
-        <div class='td'><span>GST</span></div>
+        <div class='td'><span>GST on Gateway Fees</span></div>
         <div class='td r'><span>₹{{$data['tax']}}</span></div>
         <div class='td b'><span>Total</span></div>
         <div class='td r b'><span>₹{{$data['amount']}}</span></div>

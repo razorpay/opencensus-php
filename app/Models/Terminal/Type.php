@@ -19,12 +19,24 @@ class Type
     // Terminal to be used to create second recurring payments without 2fa
     const NO_2FA            = 'no_2fa';
 
+    // Terminal to be used for UPI pay
+    const PAY               = 'pay';
+
+    // Terminal to be used for ATM PIN transactions
+    const PIN               = 'pin';
+
+    // Terminals For Bharat Qr payments
+    const BHARAT_QR         = 'bharat_qr';
+
     protected static $types = [
         self::NON_RECURRING,
         self::RECURRING_3DS,
         self::RECURRING_NON_3DS,
         self::IVR,
-        self::NO_2FA
+        self::NO_2FA,
+        self::PAY,
+        self::PIN,
+        self::BHARAT_QR,
     ];
 
     protected static $bitPosition = [
@@ -33,6 +45,9 @@ class Type
         self::RECURRING_NON_3DS => 3,
         self::IVR               => 4,
         self::NO_2FA            => 5,
+        self::PAY               => 6,
+        self::PIN               => 7,
+        self::BHARAT_QR         => 8,
     ];
 
     /**

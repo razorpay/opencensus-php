@@ -23,9 +23,9 @@ class GatewayController extends Controller
         $this->callbackGateway('axis');
     }
 
-    protected function processServerCallback($input, $gateway)
+    protected function processServerCallback($input, $gatewayDriver)
     {
-        $gateway = $this->app['gateway']->gateway($gateway);
+        $gateway = $this->app['gateway']->gateway($gatewayDriver);
 
         // Some gateways may need some pre-processing on the input
         // to be able to call the next few methods.
@@ -39,8 +39,13 @@ class GatewayController extends Controller
 
         if ($mode === null)
         {
-            throw new Exception\LogicException(
-                'Payment id not found in either database: ' . $paymentId);
+        throw new Exception\LogicException(
+            'Payment id not found in either database',
+                null,
+                [
+                    'gateway'    => $gatewayDriver,
+                    'payment_id' => $paymentId
+                ]);
         }
 
         \Database\DefaultConnection::set($mode);
@@ -126,6 +131,14 @@ class GatewayController extends Controller
                 $input = Request::getContent();
 
                 $data = $this->processServerCallback($input, $gateway);
+
+                break;
+
+            case Gateway::UPI_HULK:
+                $input['headers'] = Request::header();
+                $input['raw'] = Request::getContent();
+
+                $data = $this->processServerCallback($input, Gateway::UPI_HULK);
 
                 break;
 
@@ -251,6 +264,16 @@ class GatewayController extends Controller
         }
 
         return ['nb' => $nb, 'mode' => $mode];
+    }
+
+    /**
+     * Fetches list of all active downtimes as of now
+     */
+    public function getGatewayDowntimes(Downtime\Service $service)
+    {
+        $data = $service->getGatewayDowntimeDataForDashboard();
+
+        return ApiResponse::json($data);
     }
 
     /**

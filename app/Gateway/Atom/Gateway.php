@@ -3,68 +3,50 @@
 namespace RZP\Gateway\Atom;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use RZP\Constants\Mode;
-use RZP\Trace\TraceCode;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\Base;
-use RZP\Gateway\Atom;
+use RZP\Constants\Mode;
+use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Terminal;
+use RZP\Constants\Timezone;
+use RZP\Constants\HashAlgo;
+use RZP\Gateway\Base\Action;
+use RZP\Constants\Entity as E;
+use RZP\Models\Currency\Currency;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\AuthorizeFailed;
+use Symfony\Component\DomCrawler\Crawler;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     protected $gateway = 'atom';
 
-    protected $paymentRequest = array(
-        'type' => 'payment',
-        'fields' => array('ttype', 'prodid', 'amt', 'txncurr', 'txnscamt',
-                          'clientcode', 'txnid', 'ru', 'date', 'custacc'),
-        'xml' => '',
-        'data' => array()
-        );
+    const CHECKSUM_ATTRIBUTE = AuthResponseFields::SIGNATURE;
 
-    protected $paymentResponse = array(
-        'type' => 'payment',
-        'fields' => array());
-
-    protected $error = false;
-
-    protected $exception;
-
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
-    /**
-     * @param  array $input
-     *
-     * @return mixed|void
-     */
     public function authorize(array $input)
     {
         parent::authorize($input);
 
-        $request = $this->createPaymentRequestArray($input);
+        $attributes = $this->getAuthorizeAttributes($input);
 
-        // Send first request.
-        $response = [];
-        $response = $this->runRequestResponseFlow($request, $response);
+        $this->createGatewayPaymentEntity($attributes);
 
-        $data = $this->processPaymentInitiationResponse($response, $input);
+        $content = $this->getAuthRequestContentArray($input);
 
-        $url = $this->createAtomRedirectUrl($data);
-        // \Log::info($url);
+        $request = $this->getStandardRequestArray($content, 'get');
 
-        $retRequest['method'] = 'get';
-        $retRequest['url'] = $url;
+        $this->traceGatewayPaymentRequest($request, $input);
 
-        return $retRequest;
-    }
+        $request['url'] = $this->createRedirectUrl($request['content']);
+        $request['content'] = [];
 
-    public function capture(array $input = array())
-    {
-        parent::capture($input);
+        $request = $this->makeRequestAndGetFormData($request);
+
+        return $request;
     }
 
     /**
@@ -76,491 +58,611 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        // \Log::info(json_encode($input, JSON_PRETTY_PRINT));
+        $content = $input['gateway'];
 
-        // Get payment-id of the transaction
-        $paymentId = $input['gateway']['mer_txn'];
+        $this->assertPaymentId($input['payment']['id'], $content[AuthResponseFields::TRANSACTION_ID]);
 
-        $payment = $input['payment'];
+        $this->verifySecureHash($content);
 
-        // Unset payment entity, because we have to save $input to db
-        unset($input['payment']);
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount   = number_format($content[AuthResponseFields::AMOUNT], 2, '.', '');
 
-        $atom = Atom\Entity::findOrFail($payment['id']);
+        $this->assertAmount($expectedAmount, $actualAmount);
 
-        // Set the data received from atom on atom payment entity
-        $atom->setCallbackData($input['gateway']);
+        if ($content[AuthResponseFields::STATUS_CODE] !== Status::SUCCESS)
+        {
+            $message = 'Payment Failed during callback';
 
-        $this->validatePaymentIdReceived($paymentId, $payment);
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $content[AuthResponseFields::STATUS_CODE],
+                $message);
+        }
 
-        $this->processPaymentResponse($input['gateway'], $atom);
+        $gatewayPayment = $this->saveCallbackContent($input, $content);
 
-        return $this->getCallbackResponse($atom);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function refund(array $input)
     {
         parent::refund($input);
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+            $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
+
+        $content = $this->getRefundRequestContent($gatewayPayment, $input);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_REFUND_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayPaymentResponse($response->body, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
+
+        $responseArray = $this->xmlToArray($response->body);
+
+        $attributes = $this->getRefundAttributes($responseArray, $input);
+
+        $this->createGatewayPaymentEntity($attributes);
+
+        $this->checkRefundSuccess($responseArray);
     }
 
     public function verify(array $input)
     {
         parent::verify($input);
 
-        $createdAt = $input['payment']['created_at'];
+        $verify = new Base\Verify($this->gateway, $input);
 
-        $tdate = Carbon::createFromTimestamp($createdAt, Timezone::IST)->format('Y-m-d');
-
-        $fields = array(
-            'merchantid'        => $input['terminal']['gateway_merchant_id'],
-            'merchanttxnid'     => $input['payment']['public_id'],
-            'amt'               => $input['payment']['amount'] / 100,
-            'tdate'             => $tdate);
-
-        $request['url'] = Urls::VERIFY_URL;
-        $request['content'] = $fields;
-        $request['action'] = 'verify';
-        $request['method'] = 'get';
-
-        $response = [];
-        $response = $this->runRequestResponseFlow($request, $response);
-
-        // Convert xml body to array of fields
-        $content = $this->verifiedXmlToArray($response['response']->body);
-
-        $atomStatus = ($content['VERIFIED'] === 'SUCCESS');
-
-        $id = $input['payment']['id'];
-        $payment = $this->repo->find($id);
-
-        $res = ['match' => true];
-
-        if ($payment === null)
-        {
-            if ($content['VERIFIED'] === 'NODATA')
-            {
-                return $res;
-            }
-            else
-            {
-                $res['match'] = false;
-            }
-        }
-        else
-        {
-            $status = ((int) $payment['success'] === 1) ? true : false;
-
-            if (($status === false) and
-                ($atomStatus === false))
-            {
-                ;
-            }
-            else
-            {
-                if (($status === true) and
-                    ($atomStatus === true) and
-                    ($content['BID'] === (string) $payment['bank_payment_id']))
-                {
-                    ;
-                }
-                else
-                {
-                    $res['match'] = false;
-                    $res['status'] = ['rzp' => $status, 'gateway' => $atomStatus];
-                    $res['gateway_data'] = $content;
-                    $res['payment'] = $payment->toArray();
-                    $res['payment_id'] = $input['payment']['id'];
-                    $res['gateway'] = $input['payment']['gateway'];
-                }
-            }
-        }
-
-        if ($res['match'] === false)
-        {
-            throw new Exception\PaymentVerificationException($res);
-        }
-
-        return $res;
+        return $this->runPaymentVerifyFlow($verify);
     }
 
-    protected function processPaymentInitiationResponse($response, $input)
+    public function makeRequestAndGetFormData(array $request): array
     {
-        // Convert xml body to array of fields
-        $data = $this->xmlToArray($response['response']->body);
+        $response = $this->sendGatewayRequest($request);
 
-        $method = $input['payment']['method'];
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [$response->body]);
 
-        $ttype = Transaction::getType($method);
+        if ($response->status_code === 421)
+        {
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL);
+        }
 
-        // Fields returned from first request
-        $fields = array(
-            'ttype'         => $ttype,
-            'tempTxnId'     => $data['tempTxnId'],
-            'token'         => $data['token'],
-            'txnStage'      => '1');
+        $crawler = new Crawler($response->body, $request['url']);
 
-        // Save those fields with payment id
-        $this->createAtomEntity($input, $data);
+        $formCrawler = $crawler->filter('form');
 
-        return $fields;
+        if ($formCrawler->count() === 0)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_HEADLESS_PARSING_FAILED,
+                null, 
+                null, 
+                [
+                    'gateway' => $this->gateway,
+                ]
+            );
+        }
+
+        $form = $formCrawler->form();
+
+        $request = [
+            'url'     => $form->getUri(),
+            'method'  => strtolower($form->getMethod()),
+            'content' => $form->getValues(),
+        ];
+
+        return $request;
     }
 
-    protected function processPaymentResponse($input, $atom)
+    protected function sendPaymentVerifyRequest($verify)
     {
-        // Check if the transaction succeded or failed.
-        $atomFCode = (isset($input['f_code'])) ? $input['f_code'] : '';
+        $content = $this->getVerifyRequestData($verify);
 
-        $exception = null;
+        $request = $this->getStandardRequestArray($content, 'get');
 
-        if ($atomFCode === 'Ok')
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, $request);
+
+        $request['url'] = $this->createRedirectUrl($request['content']);
+
+        $request['content'] = [];
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'response'   => $response->body,
+                'payment_id' => $verify->input['payment']['id'],
+            ]);
+
+        $responseArray = $this->verifyResponseXmlToArray($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'response'   => $responseArray,
+                'payment_id' => $verify->input['payment']['id'],
+            ]);
+
+        $verify->verifyResponseContent = $responseArray;
+    }
+
+    protected function verifyPayment(Base\Verify $verify)
+    {
+        $status = VerifyResult::STATUS_MATCH;
+
+        $input = $verify->input;
+
+        $verifyResponse = $verify->verifyResponseContent;
+
+        $this->checkApiSuccess($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
-            $atom->setSuccess(true);
+            $status = VerifyResult::STATUS_MISMATCH;
         }
-        else
+
+        $this->verifyAmountMismatch($verify, $input, $verifyResponse, E::PAYMENT);
+
+        $verify->status = $status;
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        $verify->payment = $this->saveVerifyContent($verify);
+    }
+
+    protected function verifyAmountMismatch(Base\Verify $verify, array $input, array $response, string $entity)
+    {
+        $expectedAmount = $this->getFormattedAmount($input[$entity]['amount']);
+        $actualAmount   = $this->getFormattedAmount($response[VerifyResponseFields::AMOUNT] * 100);
+
+        $verify->amountMismatch = ($expectedAmount !== $actualAmount);
+    }
+
+    protected function checkGatewaySuccess(Base\Verify $verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        $content = $verify->verifyResponseContent;
+
+        if ($content[VerifyResponseFields::STATUS] === Status::VERIFY_SUCCESS)
         {
-            $atom->setSuccess(false);
-            $atom->saveOrFail();
-
-            if ($atomFCode === 'F')
-            {
-                $exception = new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-            }
-            else
-            {
-                throw new Exception\LogicException(
-                    'Atom f_code returned in callback has unrecognized value. Atom f_code: ' . $atomFCode);
-            }
-        }
-
-        $data = array(
-            'bank_payment_id'       => $input['bank_txn'],
-            'bank_name'             => $input['bank_name']);
-
-        if (isset($input['desc']))
-        {
-            $data['gateway_result_description'] = $input['desc'];
-        }
-
-        if (isset($input['discriminator']))
-        {
-            $data['method'] = $input['discriminator'];
-        }
-
-        $atom->fill($data);
-
-        $atom->saveOrFail();
-
-        if ($exception !== null)
-        {
-            throw $exception;
+            $verify->gatewaySuccess = true;
         }
     }
 
-    protected function getCallbackResponse($atom)
+    protected function saveVerifyContent(Base\Verify $verify)
     {
-        $method = $atom->method;
+        $gatewayPayment = $verify->payment;
 
-        $data = array();
+        $content = $verify->verifyResponseContent;
 
-        if ($method === Method::NETBANKING)
+        $attributes = $this->getVerifyAttributes($content, $gatewayPayment);
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
+    }
+
+    protected function traceGatewayPaymentRequest(
+        array $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
+    {
+        unset($request['content'][AuthRequestFields::PASSWORD]);
+        unset($request['content'][RefundRequestFields::PASSWORD]);
+
+        parent::traceGatewayPaymentRequest($request, $input, $traceCode);
+    }
+
+    protected function getAcquirerData($input, $gatewayPayment)
+    {
+        return [
+            'acquirer' => [
+                Payment\Entity::REFERENCE1 => $gatewayPayment->getBankPaymentId()
+            ]
+        ];
+    }
+
+    protected function getRefundAttributes(array $content)
+    {
+        $attributes = [
+            Entity::ERROR_CODE         => $content[RefundResponseFields::STATUS_CODE],
+            Entity::ERROR_DESCRIPTION  => $content[RefundResponseFields::STATUS_MESSAGE],
+            Entity::GATEWAY_PAYMENT_ID => $content[RefundResponseFields::TRANSACTION_ID],
+            Entity::RECEIVED           => true,
+        ];
+
+        $attributes[Entity::SUCCESS] = false;
+
+        if ($attributes[Entity::ERROR_CODE] === Status::REFUND_SUCCESS)
         {
-            $data['method'] = 'netbanking';
+            $attributes[Entity::SUCCESS] = true;
         }
-        else if ($method === Method::DEBITCARD)
+
+        return $attributes;
+    }
+
+    protected function getRefundRequestContent(Entity $gatewayPayment, array $input)
+    {
+        $content = [
+            RefundRequestFields::MERCHANT_ID            => $this->getMerchantId(),
+            RefundRequestFields::PASSWORD               => base64_encode($this->getSecureSecret()),
+            RefundRequestFields::GATEWAY_TRANSACTION_ID => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID],
+            RefundRequestFields::REFUND_AMOUNT          => $this->getFormattedAmount($input['refund']['amount']),
+            RefundRequestFields::TRANSACTION_DATE       => $this->getFormattedDate($input['payment'][Payment\Entity::CREATED_AT]),
+            RefundRequestFields::REFUND_ID              => $input['refund']['id'],
+        ];
+
+        return $content;
+    }
+
+    protected function getVerifyAttributes(array $content, Entity $gatewayPayment)
+    {
+        $attributes = [
+            Entity::STATUS => Status::FAILURE,
+        ];
+
+        if ($content[VerifyResponseFields::STATUS] === Status::VERIFY_SUCCESS)
         {
-            $data['method'] = 'card';
-            $data['card']['type'] = 'debit';
+            $attributes[Entity::STATUS] = Status::SUCCESS;
+
+            if ((empty($gatewayPayment[Entity::GATEWAY_PAYMENT_ID]) === false) and
+                ($gatewayPayment[Entity::GATEWAY_PAYMENT_ID] !== $content[VerifyResponseFields::GATEWAY_TRANSACTION_ID]))
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+                    null,
+                    null,
+                    [
+                        'gateway_payment_id' => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID],
+                        'atomtxnId'          => $content[VerifyResponseFields::GATEWAY_TRANSACTION_ID],
+                        'gateway'            => $this->gateway,
+                    ]
+                );
+            }
+            else
+            {
+                $attributes[Entity::GATEWAY_PAYMENT_ID] = $content[VerifyResponseFields::GATEWAY_TRANSACTION_ID];
+            }
         }
-        else if ($method === Method::CREDITCARD)
-        {
-            $data['method'] = 'card';
-            $data['card']['type'] = 'credit';
-        }
-        else
-        {
-            // @todo: trace here
-        }
+
+        return $attributes;
+    }
+
+    protected function getVerifyRequestData(Base\Verify $verify)
+    {
+        $input = $verify->input;
+
+        $data = [
+            VerifyRequestFields::MERCHANT_ID      => $this->getMerchantId(),
+            VerifyRequestFields::TRANSACTION_ID   => $input['payment']['id'],
+            VerifyRequestFields::AMOUNT           => $this->getFormattedAmount($input['payment']['amount']),
+            VerifyRequestFields::TRANSACTION_DATE => $this->getFormattedDate($input['payment']['created_at']),
+        ];
 
         return $data;
     }
 
-    protected function createAtomRedirectUrl($data)
+    protected function getFormattedAmount(float $amount)
+    {
+        return number_format($amount / 100, 2, '.', '');
+    }
+
+    public function getMerchantId()
+    {
+        $merchantId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+
+        if ($this->mode === Mode::TEST)
+        {
+            $merchantId = $this->config['test_merchant_id'];
+        }
+
+        return $merchantId;
+    }
+
+    public function getSecureSecret()
+    {
+        $secureSecret = $this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET];
+
+        if ($this->mode === Mode::TEST)
+        {
+            $secureSecret = $this->config['test_secure_password'];
+        }
+
+        return $secureSecret;
+    }
+
+    public function getAccessCode()
+    {
+        $accessCode = $this->terminal[Terminal\Entity::GATEWAY_ACCESS_CODE];
+
+        if ($this->mode === Mode::TEST)
+        {
+            $accessCode = $this->config['test_access_code'];
+        }
+
+        return $accessCode;
+    }
+
+    protected function getAuthRequestContentArray(array $input)
+    {
+        $payment = $input['payment'];
+
+        $content = [
+            AuthRequestFields::LOGIN                      => $this->getMerchantId(),
+            AuthRequestFields::PASSWORD                   => $this->getSecureSecret(),
+            AuthRequestFields::TRANSACTION_TYPE           => Constants::NETBANKING_FUND_TRANSFER,
+            AuthRequestFields::PRODUCT_ID                 => $this->getAccessCode(),
+            AuthRequestFields::AMOUNT                     => $this->getFormattedAmount($payment['amount']),
+            AuthRequestFields::TRANSACTION_CURRENCY       => Currency::INR,
+            AuthRequestFields::TRANSACTION_SERVICE_CHARGE => Constants::SERVICE_CHARGE,
+            AuthRequestFields::CLIENT_CODE                => Constants::CONSTANT_CLIENT_CODE,
+            AuthRequestFields::TRANSACTION_ID             => $payment[Payment\Entity::ID],
+            AuthRequestFields::DATE                       => $this->getFormattedDate($payment[Payment\Entity::CREATED_AT]),
+            AuthRequestFields::CUSTOMER_ACCOUNT           => Constants::CUST_ACC_NO,
+            AuthRequestFields::RETURN_URL                 => $input['callbackUrl'],
+            AuthRequestFields::BANK_ID                    => $this->getBankId($payment['bank']),
+        ];
+
+        $this->checkTpv($input, $content);
+
+        $content[AuthRequestFields::SIGNATURE] = $this->getHashOfArray($content);
+
+        return $content;
+    }
+
+    protected function checkTpv($input, &$content)
+    {
+        if ($input['merchant']->isTPVRequired() === true)
+        {
+            if (isset($input['order']['account_number']) === false)
+            {
+                throw new Exception\LogicException(
+                    'Bank account number should have been present');
+            }
+
+            $content[AuthRequestFields::CUSTOMER_ACCOUNT] = $input['order']['account_number'];
+        }
+    }
+
+    protected function getBankId(string $bankIfsc)
+    {
+        $bankId = Bank::getCode($bankIfsc);
+
+        return ($this->mode === Mode::TEST) ? Bank::ATOM : $bankId;
+    }
+
+    protected function saveCallbackContent(array $input, array $content)
+    {
+        $attributes = $this->getCallbackAttributes($content);
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        $gatewayPayment->fill($attributes);
+
+        $gatewayPayment->saveOrFail();
+
+        return $gatewayPayment;
+    }
+
+    protected function createGatewayPaymentEntity(array $attributes)
+    {
+        $entity = $this->getNewGatewayPaymentEntity();
+        $input = $this->input;
+
+        $entity->setPaymentId($input['payment']['id']);
+
+        if ($this->action === Action::REFUND)
+        {
+            $entity->setRefundId($input['refund']['id']);
+
+            $entity->setAmount($input['refund']['amount']);
+        }
+        else
+        {
+            $entity->setAmount($input['payment']['amount']);
+        }
+
+        $entity->setAction($this->action);
+
+        if (($this->action === Action::AUTHORIZE) and
+            ($input['merchant']->isTPVRequired()))
+        {
+            $entity->setAccountNumber($input['order']['account_number']);
+        }
+
+        $entity->fill($attributes);
+
+        $this->repo->saveOrFail($entity);
+
+        return $entity;
+    }
+
+    protected function getAuthorizeAttributes(array $input)
+    {
+        $payment = $input['payment'];
+
+        $attributes = [
+            Entity::BANK_CODE  => Bank::getCode($payment['bank']),
+        ];
+
+        return $attributes;
+    }
+
+    protected function getCallbackAttributes(array $content)
+    {
+        $attributes = [
+            Entity::ERROR_DESCRIPTION  => 'NA',
+            Entity::GATEWAY_PAYMENT_ID => $content[AuthResponseFields::GATEWAY_PAYMENT_ID],
+            Entity::BANK_PAYMENT_ID    => $content[AuthResponseFields::BANK_TRANSACTION_ID],
+            Entity::STATUS             => $content[AuthResponseFields::STATUS_CODE],
+            Entity::RECEIVED           => true,
+            Entity::BANK_NAME          => $content[AuthResponseFields::BANK_NAME],
+        ];
+
+        if ($attributes[Entity::STATUS] === Status::SUCCESS)
+        {
+            $attributes[Entity::SUCCESS] = true;
+        }
+
+        return $attributes;
+    }
+
+    /*
+     * Overrides the default method contained in Base/Gateway
+     */
+    public function getHashOfString($string)
+    {
+        $secret = $this->getSecret();
+
+        return hash_hmac(HashAlgo::SHA512, $string, $secret);
+    }
+
+    public function getTestSecret()
+    {
+        assert ($this->mode === Mode::TEST);
+
+        if ($this->action === Action::AUTHORIZE)
+        {
+            $secret = $this->config['test_authorize_hash_secret'];
+        }
+        else if ($this->action === Action::CALLBACK)
+        {
+            $secret = $this->config['test_callback_hash_secret'];
+        }
+
+        return $secret;
+    }
+
+    public function getLiveSecret()
+    {
+        if ($this->action === Action::AUTHORIZE)
+        {
+            $secret = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
+        }
+        else if ($this->action === Action::CALLBACK)
+        {
+            $secret = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2];
+        }
+
+        return $secret;
+    }
+
+    /**
+     * Overrides the default method contained in Base/Gateway
+     */
+    protected function getStringToHash($content, $glue = '')
+    {
+        if ($this->action === Action::AUTHORIZE)
+        {
+            $content = $this->getAuthorizeRequestHashArray($content);
+        }
+        else
+        {
+            $content = $this->getCallbackResponseHashArray($content);
+        }
+
+        return implode($glue, $content);
+    }
+
+    protected function getAuthorizeRequestHashArray(array $content)
+    {
+        $hashArray = [
+            $content[AuthRequestFields::LOGIN],
+            $content[AuthRequestFields::PASSWORD],
+            $content[AuthRequestFields::TRANSACTION_TYPE],
+            $content[AuthRequestFields::PRODUCT_ID],
+            $content[AuthRequestFields::TRANSACTION_ID],
+            $content[AuthRequestFields::AMOUNT],
+            $content[AuthRequestFields::TRANSACTION_CURRENCY],
+        ];
+
+        return $hashArray;
+    }
+
+    protected function getCallbackResponseHashArray(array $content)
+    {
+        $hashArray = [
+            $content[AuthResponseFields::GATEWAY_PAYMENT_ID],
+            $content[AuthResponseFields::TRANSACTION_ID],
+            $content[AuthResponseFields::STATUS_CODE],
+            $content[AuthResponseFields::PRODUCT_ID],
+            $content[AuthResponseFields::DISCRIMINATOR],
+            $content[AuthResponseFields::AMOUNT],
+            $content[AuthResponseFields::BANK_TRANSACTION_ID],
+        ];
+
+        return $hashArray;
+    }
+
+    protected function getFormattedDate($timestamp)
+    {
+        $format = DateFormat::ACTION_MAP[$this->action];
+
+        $date = Carbon::createFromTimestamp($timestamp, Timezone::IST)->format($format);
+
+        return $date;
+    }
+
+    protected function verifyResponseXmlToArray(string $response): array
+    {
+        $array = (array) simplexml_load_string(trim($response));
+
+        return $array['@attributes'];
+    }
+
+    protected function createRedirectUrl(array $data)
     {
         // Cannot use http_build_query php function because
         // params contain '%' sign which gets messed up by that function
-        $queryStr = $this->buildGetQueryString($data);
+        $query = $this->httpBuildQuery($data);
 
-        $url = Urls::getDomain($this->mode).Urls::PAYMENT_URL.'?'.$queryStr;
+        $url = $this->getUrl() . '?' . $query;
 
         // This is the url to which the customer is redirected.
         // Here, on atom's provided url, the bank choice is auto-submitted
         // and bank login page comes. When customer logins and bank txn is complete,
         // it's redirected to atom's site and then redirected back to our callbackUrl
         // we provided earlier via 'ru' field.
-
+        // Courtesy :- SHK _/\_
         return $url;
     }
 
-    protected function createAtomEntity($input, $data)
+    protected function httpBuildQuery(array $data)
     {
-        $bankCode = null;
-
-        if (isset($this->request['content']['bankid']))
-        {
-            $bankCode = $this->request['content']['bankid'];
-        }
-
-        $method = $this->getAtomPaymentMethod($input);
-
-        $attributes = array(
-            'id'        => $input['payment']['id'],
-            'token'     => $data['token'],
-            'method'    => $method,
-            'bank_code' => $bankCode,
-            'gateway_payment_id' => $data['tempTxnId']);
-
-        $atom = new Atom\Entity($attributes);
-
-        $atom->saveOrFail();
-    }
-
-    public function postRequest($request)
-    {
-        $this->setTerminalInRequest($request);
-
-        $str = $this->buildGetQueryString($request['content']);
-        $request['url'] .= '?'.$str;
-        $request['content'] = [];
-        $request['method'] = 'get';
-        // echo $request['url'];die();
-
-        $this->response = $this->sendGatewayRequest($request);
-
-        return $this->response;
-    }
-
-    protected function createPaymentRequestArray($input)
-    {
-        $time = date('d/m/Y h:m:s');
-        // Replace space with '%20'
-        $time = str_replace(' ', '%20', $time);
-
-        $method = $input['payment']['method'];
-
-        $ttype = Transaction::getType($method);
-
-        $content = array(
-            'ttype'         =>  $ttype,
-            'amt'           =>  $input['payment']['amount'] / 100,
-            'txncurr'       =>  'INR',
-            'txnscamt'      =>  '0',
-            'clientcode'    =>  urlencode(base64_encode('123')),
-            'txnid'         =>  $input['payment']['public_id'],
-            'date'          =>  $time,
-            'custacc'       =>  '123456789012',
-        );
-
-        if ($method === 'netbanking')
-        {
-            $content['bankid'] = $this->getBankId($input);
-        }
-
-        if ($method === 'card')
-        {
-            $content['mdd'] = $this->getMddField($input);
-        }
-
-        $content['ru'] = $input['callbackUrl'];
-
-        $request['content'] = $content;
-        $request['url'] = Urls::PAYMENT_URL;
-        $request['action'] = 'authorize';
-
-        return $request;
-    }
-
-    protected function getMddField($input)
-    {
-        $mdd = 'channelid=int';
-        $mdd .= '|carddata=' . Card::encryptCardData($input['card']);
-        $mdd .= '|cardhname=' . $input['card']['name'];
-        $mdd .= '|cardtype=' . 'DC';
-
-        return $mdd;
-    }
-
-    protected function getBankId($input)
-    {
-        $ifsc = $input['payment']['bank'];
-
-        $atomBankCode = Bank::getAtomBankCode($ifsc);
-
-        if ($this->mode === Mode::TEST)
-        {
-            $atomBankCode = '2001';
-        }
-
-        return $atomBankCode;
-    }
-
-    protected function getAtomPaymentMethod($input)
-    {
-        $method = $input['payment']['method'];
-
-        if ($method === 'netbanking')
-            return Method::NETBANKING;
-        else if ($method === 'card')
-            return null;
-    }
-
-    /**
-     * Validate that public payment id matches the expected
-     * @param  string $paymentId
-     * @param  array  $payment
-     * @throws Exception\LogicException
-     */
-    protected function validatePaymentIdReceived($paymentId, $payment)
-    {
-        if ($paymentId !== $payment['public_id'])
-        {
-            throw new Exception\LogicException(
-                'Payment public id and atom merchant txn id do not match. Payment public_id: ' . $payment['public_id']);
-        }
-    }
-
-    protected function setTerminalInRequest(array & $request)
-    {
-        $terminal = $this->terminal;
-
-        if ($terminal['gateway'] !== 'atom')
-        {
-            throw new Exception\InvalidArgumentException(
-                'atom gateway: wrong terminal supplied. Gateway: ' . $terminal['gateway']);
-        }
-
-        $login = $terminal['gateway_merchant_id'];
-        $pwd = $terminal['gateway_terminal_password'];
-        $productId = $terminal['gateway_terminal_id'];
-
-        // For TEST mode, replace any random terminal given with
-        // atom test terminal
-        if ($this->mode === Mode::TEST)
-        {
-            list($login, $pwd, $productId) = $this->getCredentials();
-        }
-
-        if ($request['action'] === 'authorize')
-        {
-            $request['content']['login'] = $login;
-            $request['content']['pass'] = $pwd;
-            $request['content']['prodid'] = $productId;
-        }
-
-        if ($request['action'] === 'verify')
-        {
-            $request['content']['merchantid'] = $login;
-        }
-   }
-
-    protected function getCredentials()
-    {
-        return array(
-            Config::TEST_LOGIN,
-            Config::TEST_PASSWORD,
-            Config::TEST_PRODUCT_ID);
-    }
-
-    protected function runRequestResponseFlow(array &$request, array &$response)
-    {
-        $request['options']['timeout'] = 30;
-        $domain = ($this->mode === Mode::LIVE) ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
-        $request['url'] = $domain . $request['url'];
-
-        $this->request = $request;
-        $this->response = $response;
-
-        // send the request and get response
-        $response['response'] = $this->postRequest($request);
-
-        $response['xml'] = $response['response']->body;
-
-        $this->validateResponseReceived($response);
-
-        return $response;
-    }
-
-    /**
-     * Validates that a proper response is received from atom gateway first request.
-     * Throws an exception otherwise
-     * @param  array $response
-     */
-    protected function validateResponseReceived($response)
-    {
-        if ($this->checkResponseStatusCode($response) === true)
-        {
-            return;
-        }
-
-        $gatewayErrorDesc = $response['xml'] . ' \n StatusCode: ' . $response['response']->status_code;
-
-        $this->trace->error(
-            TraceCode::GATEWAY_UNKNOWN_ERROR,
-            ['description' => $gatewayErrorDesc]);
-
-        throw new Exception\GatewayErrorException(
-            ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
-            '',
-            $gatewayErrorDesc);
-    }
-
-    protected function checkResponseStatusCode(& $response)
-    {
-        $status_code = (int) $response['response']->status_code;
-
-        return ($status_code === 200);
-    }
-
-    protected function xmlToArray($data)
-    {
-        $parser = xml_parser_create('');
-        xml_parser_set_option($parser, XML_OPTION_TARGET_ENCODING, 'UTF-8');
-        xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, 0);
-        xml_parser_set_option($parser, XML_OPTION_SKIP_WHITE, 1);
-        xml_parse_into_struct($parser, trim($data), $xml_values);
-        xml_parser_free($parser);
-
-        $returnArray = array();
-        $returnArray['url'] = $xml_values[3]['value'];
-        $returnArray['tempTxnId'] = $xml_values[5]['value'];
-        $returnArray['token'] = $xml_values[6]['value'];
-
-        return $returnArray;
-    }
-
-    protected function verifiedXmlToArray($data)
-    {
-        $parser = xml_parser_create('');
-        xml_parser_set_option($parser, XML_OPTION_TARGET_ENCODING, 'UTF-8');
-        xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, 0);
-        xml_parser_set_option($parser, XML_OPTION_SKIP_WHITE, 1);
-        xml_parse_into_struct($parser, trim($data), $xmlValues);
-        xml_parser_free($parser);
-
-        return $xmlValues[0]['attributes'];
-    }
-
-    protected function buildGetQueryString($data)
-    {
-        $str = '';
-
         foreach ($data as $key => $value)
         {
-            $str .= '&'.$key.'='.$value;
+            $arr[] = $key . '=' . $value;
         }
 
-        $str = substr($str, 1);
+        return implode('&', $arr);
+    }
 
-        return $str;
+    protected function checkRefundSuccess(array $responseArray)
+    {
+        if ($responseArray[RefundResponseFields::STATUS_CODE] !== Status::REFUND_SUCCESS)
+        {
+            $responseCode = $responseArray[RefundResponseFields::STATUS_CODE];
+
+            $desc = $responseArray[RefundResponseFields::STATUS_MESSAGE];
+
+            throw new Exception\GatewayErrorException(
+                ResponseCode::getMappedCode($responseCode),
+                $responseCode,
+                $desc);
+        }
     }
 }

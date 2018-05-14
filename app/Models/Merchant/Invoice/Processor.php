@@ -38,14 +38,15 @@ class Processor extends Base\Core
 
         $this->year = $year;
 
-        $this->initiliazeVars();
+        $this->initializeVars();
     }
 
-    public function createInvoiceEntities()
+    public function createInvoiceEntities(bool $isCorrection)
     {
         $this->trace->info(
             TraceCode::MERCHANT_INVOICE_ENTITY_CREATION_REQUEST,
             [
+                'correction'    => $isCorrection,
                 'merchant_id'   => $this->merchantId,
                 'month'         => $this->month,
                 'year'          => $this->year,
@@ -70,7 +71,7 @@ class Processor extends Base\Core
             // sum over fees & tax for different commission types
             foreach ($this->invoiceBreakup as $type => $values)
             {
-                $this->calculateFeesForInvoiceByType($type);
+                $this->calculateFeesForInvoiceByType($type, $isCorrection);
             }
 
             // create entities
@@ -124,16 +125,20 @@ class Processor extends Base\Core
 
     /**
      * Populate the map of Type of Commission with its Amount and Tax values
+     *
+     * @param string @type
+     * @param bool $isCorrection
      */
-    protected function calculateFeesForInvoiceByType(string $type)
+    protected function calculateFeesForInvoiceByType(string $type, bool $isCorrection)
     {
         $txns = $this->repo
                      ->transaction
                      ->fetchFeesAndTaxForTransactionsByType(
-                            $this->merchantId,
-                            $this->beginTimestamp,
-                            $this->endTimestamp,
-                            $type);
+                         $this->merchantId,
+                         $this->beginTimestamp,
+                         $this->endTimestamp,
+                         $type,
+                         $isCorrection);
 
         if (empty($txns) === true)
         {
@@ -150,7 +155,7 @@ class Processor extends Base\Core
         $this->invoiceBreakup[$type][Entity::TAX] = $tax;
     }
 
-    protected function initiliazeVars()
+    protected function initializeVars()
     {
         $this->merchant = $this->repo->merchant->findOrFailPublicWithRelations($this->merchantId, ['merchantDetail']);
 
@@ -171,7 +176,7 @@ class Processor extends Base\Core
         // [
         //    'card_lte_2k'   => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
         //    'card_gt_2k'    => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
-        //    'non_card'      => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
+        //    'others'        => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
         // ]
         foreach ($commissionTypes as $key)
         {

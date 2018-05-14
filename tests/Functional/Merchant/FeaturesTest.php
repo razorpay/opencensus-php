@@ -16,11 +16,13 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
+use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class FeaturesTest extends TestCase
 {
     use FileUploadTrait;
     use DbEntityFetchTrait;
+    use VirtualAccountTrait;
     use RequestResponseFlowTrait;
 
     const DEFAULT_MERCHANT_ID    = '10000000000000';
@@ -469,7 +471,7 @@ class FeaturesTest extends TestCase
      * For Backward Compatibility : Assert that Merchant Request is also created and that the status, name, type is
      * as expected
      */
-    public function verifyMerchantRequest($featureName, $featureType, $requestStatus, $mode = Mode::LIVE)
+    public function verifyMerchantRequest($featureName, $featureType, $requestStatus, $mode = Mode::TEST)
     {
         $merchantRequest = $this->getDbLastEntityToArray('merchant_request', $mode);
 
@@ -633,17 +635,17 @@ class FeaturesTest extends TestCase
 
     public function testUpdateOnboardingResponses()
     {
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
         $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
 
-        $this->ba->proxyAuth('rzp_live_' . $merchantId);
+        $filestoreEntityId = $this->postOnboardingResponses($merchantId);
 
-        $filestoreEntityId = $this->postOnboardingResponses();
-
-        $this->ba->adminAuth('test', null, 'org_100000razorpay');
+        $this->ba->adminAuth($liveMode, null, 'org_100000razorpay');
 
         $this->updateMarketplaceOnboardingResponse();
 
-        $this->ba->proxyAuth('rzp_live_' . $merchantId);
+        $this->ba->proxyAuth('rzp_' . $liveMode . '_' . $merchantId);
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -671,8 +673,6 @@ class FeaturesTest extends TestCase
 
         $this->createMarketplaceOnboardingResponse($merchantId);
 
-        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
-
         // Test update status API
         $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'rejected');
 
@@ -692,7 +692,7 @@ class FeaturesTest extends TestCase
         // Test the fetch status route
         $this->getMarketplaceOnboardingResponseStatus();
 
-        Mail::assertSent(FeatureEnabledEmail::class, function ($mail)
+        Mail::assertQueued(FeatureEnabledEmail::class, function ($mail)
         {
             $this->assertEquals('Route', $mail->viewData['feature']);
 
@@ -706,8 +706,6 @@ class FeaturesTest extends TestCase
     public function testOnboardingRequestStatusUpdateLeadingToMerchantRequestCreation()
     {
         $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
-
-        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
         // Test update status API
         $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'rejected');
@@ -801,9 +799,7 @@ class FeaturesTest extends TestCase
     {
         $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
 
-        $this->ba->proxyAuth('rzp_live_' . $merchantId);
-
-        $this->postOnboardingResponses();
+        $this->postOnboardingResponses($merchantId);
     }
 
     public function updateMarketplaceOnboardingResponse()
@@ -824,11 +820,48 @@ class FeaturesTest extends TestCase
             MerchantRequest\Status::UNDER_REVIEW);
     }
 
+    public function testRestrictedAccessFeatureEnabledAndAccessedByMerchant()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000000',
+                'name' => 'virtual_accounts'
+            ]);
+
+        $this->ba->privateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
+
+        $this->startTest($testData);
+    }
+
+    public function testRestrictedAccessFeatureDisabledAndAccessedByMerchant()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->ba->privateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
+
+        $this->startTest($testData);
+    }
+
     /**
      * Post a request for product activation
      */
-    protected function postOnboardingResponses()
+    protected function postOnboardingResponses(string $merchantId)
     {
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->ba->proxyAuth('rzp_' . $liveMode . '_' . $merchantId);
+
         $url = storage_path("files/" . Constants::ONBOARDING .  "/" . Constants::VENDOR_AGREEMENT . ".pdf");
 
         $uploadedFile = $this->createUploadedFile($url);
@@ -853,7 +886,7 @@ class FeaturesTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
-        $fileStoreData = $this->getDbLastEntityPublic('file_store',MODE::LIVE);
+        $fileStoreData = $this->getDbLastEntityPublic('file_store', $liveMode);
 
         $testData = $this->testData['testFileStoreData'];
 
@@ -893,6 +926,10 @@ class FeaturesTest extends TestCase
 
     protected function updateMarketplaceOnboardingResponseStatus(string $merchantId, string $status)
     {
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->ba->adminAuth($liveMode, null, 'org_100000razorpay');
+
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['content']['merchant_id'] = $merchantId;
@@ -906,7 +943,8 @@ class FeaturesTest extends TestCase
         $this->verifyMerchantRequest(
             Constants::MARKETPLACE,
             MerchantRequest\Type::PRODUCT,
-            MerchantRequest\Constants::getRequestStatusForOnboardingStatus($status));
+            MerchantRequest\Constants::getRequestStatusForOnboardingStatus($status),
+            $liveMode);
     }
 
     /**

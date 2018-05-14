@@ -1,9 +1,8 @@
 <?php
 
-use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
 return [
@@ -330,6 +329,31 @@ return [
         ],
     ],
 
+    'testGetMerchantBusinessCategories' => [
+        'request' => [
+            'url'     => '/merchant/activation/business_categories',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'financial_services' => [
+                    'description'   => 'Financial Services',
+                    'subcategories' => [
+                        'mutual_fund' => 'Mutual Fund',
+                        'lending'     => 'Lending',
+                    ],
+                ],
+                'education' => [
+                    'description'   => 'Education',
+                    'subcategories' => [
+                        'college' => 'College',
+                        'schools' => 'Schools',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testCommentMerchant' => [
         'request' => [
             'content' => [
@@ -344,6 +368,22 @@ return [
                     'disabled_reason' => 'required_fields',
                 ],
                 'can_submit' => false,
+            ],
+        ],
+    ],
+
+    'testMerchantReviewer' => [
+        'request' => [
+            'content' => [
+                'reviewer_id' => Org::SUPER_ADMIN_SIGNED
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'reviewer' => [
+                    'id' => Org::SUPER_ADMIN_SIGNED
+                ],
             ],
         ],
     ],
@@ -500,7 +540,7 @@ return [
                     'verification'          => [
                         'status'                => 'disabled',
                         'disabled_reason'       => 'required_fields',
-                        'activation_progress'   => 4,
+                        'activation_progress'   => 5,
                     ],
                 ],
                 'auto_capture_late_auth'    => false,
@@ -547,4 +587,24 @@ return [
             ],
         ],
     ],
+
+    'testBulkAssignReviewer' => [
+        'request' => [
+            'content' => [
+                'reviewer_id' => Org::SUPER_ADMIN_SIGNED,
+                'merchants'   => [
+                    '10000000000000'
+                ],
+            ],
+            'url'     => '/merchant/activation/bulk_assign_reviewer',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success'     => 1,
+                'failed'      => 0,
+                'failedItems' => [],
+            ],
+        ],
+    ]
 ];

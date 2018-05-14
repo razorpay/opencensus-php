@@ -62,8 +62,6 @@ class Merchant
     {
         $this->setl = $setl;
 
-        $this->txns = $this->setl->setlTransactions;
-
         $this->updateSettlementEntity();
 
         $this->setl->incrementAttempts();

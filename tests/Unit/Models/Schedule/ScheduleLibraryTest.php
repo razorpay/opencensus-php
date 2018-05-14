@@ -97,6 +97,15 @@ class ScheduleLibraryTest extends TestCase
         $this->runCaseWiseScheduleTest($lastWeekSchedule, $data['cases']);
     }
 
+    public function testSameDayHouredSchedule()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $lastWeekSchedule = (new Schedule\Entity)->build($data['schedule']);
+
+        $this->runCaseWiseScheduleTest($lastWeekSchedule, $data['cases']);
+    }
+
     private function computeFutureRun($schedule, $cases)
     {
         foreach ($cases as $case)

@@ -35,6 +35,7 @@ class Event
     const TOKEN_REJECTED            = 'token.rejected';
     const SETTLEMENT_PROCESSED      = 'settlement.processed';
     const VIRTUAL_ACCOUNT_CREDITED  = 'virtual_account.credited';
+    const VIRTUAL_ACCOUNT_CREATED   = 'virtual_account.created';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -60,6 +61,7 @@ class Event
         self::TOKEN_REJECTED,
         self::SETTLEMENT_PROCESSED,
         self::VIRTUAL_ACCOUNT_CREDITED,
+        self::VIRTUAL_ACCOUNT_CREATED,
     ];
 
     /**
@@ -91,6 +93,7 @@ class Event
         self::TOKEN_REJECTED,
         self::SETTLEMENT_PROCESSED,
         self::VIRTUAL_ACCOUNT_CREDITED,
+        self::VIRTUAL_ACCOUNT_CREATED,
     ];
 
     protected static $bitPosition = [
@@ -117,6 +120,7 @@ class Event
         self::SETTLEMENT_PROCESSED      => 21,
         self::PAYMENT_DISPUTE_CREATED   => 22,
         self::VIRTUAL_ACCOUNT_CREDITED  => 23,
+        self::VIRTUAL_ACCOUNT_CREATED   => 24,
     ];
 
     /**
@@ -148,6 +152,7 @@ class Event
         self::TOKEN_REJECTED,
         self::SETTLEMENT_PROCESSED,
         self::VIRTUAL_ACCOUNT_CREDITED,
+        self::VIRTUAL_ACCOUNT_CREATED,
     ];
 
     /**
@@ -162,6 +167,7 @@ class Event
         self::PAYMENT_FAILED            => Entity::PAYMENT,
         self::PAYMENT_DISPUTE_CREATED   => Entity::PAYMENT,
         self::VIRTUAL_ACCOUNT_CREDITED  => Entity::PAYMENT,
+        self::VIRTUAL_ACCOUNT_CREATED   => Entity::VIRTUAL_ACCOUNT,
         self::INVOICE_PAID              => Entity::INVOICE,
         self::INVOICE_PARTIALLY_PAID    => Entity::INVOICE,
         self::INVOICE_EXPIRED           => Entity::INVOICE,
@@ -187,9 +193,10 @@ class Event
         self::SUBSCRIPTION_COMPLETED    => Feature\Constants::SUBSCRIPTIONS,
         // self::SUBSCRIPTION_EXPIRED      => Feature\Constants::SUBSCRIPTIONS,
         self::INVOICE_PARTIALLY_PAID    => Feature\Constants::INVOICE_PARTIAL_PAYMENTS,
-        self::TOKEN_CONFIRMED           => Feature\Constants::E_MANDATE,
-        self::TOKEN_REJECTED            => Feature\Constants::E_MANDATE,
+        self::TOKEN_CONFIRMED           => Feature\Constants::CHARGE_AT_WILL,
+        self::TOKEN_REJECTED            => Feature\Constants::CHARGE_AT_WILL,
         self::VIRTUAL_ACCOUNT_CREDITED  => Feature\Constants::VIRTUAL_ACCOUNTS,
+        self::VIRTUAL_ACCOUNT_CREATED   => Feature\Constants::VIRTUAL_ACCOUNTS,
     ];
 
     /**
@@ -258,5 +265,21 @@ class Event
     public static function getBitPosition(string $event): int
     {
         return self::$bitPosition[$event];
+    }
+
+    public static function filterByFeatures(array $eventNames, array $merchantAssignedFeatures)
+    {
+        $featureMap = Event::$eventsToFeatureMap;
+
+        foreach ($eventNames as $eventName => $value)
+        {
+            if ((isset($featureMap[$eventName]) === true) and
+                (in_array($featureMap[$eventName], $merchantAssignedFeatures, true) === false))
+            {
+                unset($eventNames[$eventName]);
+            }
+        }
+
+        return $eventNames;
     }
 }

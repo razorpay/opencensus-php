@@ -44,7 +44,7 @@ abstract class Base extends RequestProcessor
 
     protected $url          = '';
 
-    protected $method       = 'post';
+    protected $method       = 'POST';
 
     public function __construct()
     {

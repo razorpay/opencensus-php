@@ -245,6 +245,18 @@ final class FactoryData
             'postdate' => $faker->hdfcPostDate,
         ]);
 
+        $factory(\RZP\Gateway\Enach\Base\Entity::class, [
+            'id' => $faker->randomNumber(6),
+            'payment_id' => null,
+            'refund_id' => null,
+            'acquirer' => 'ratn',
+            'action' => 'authorize',
+            'bank' => 'UTIB',
+            'amount' => $faker->randomNumber(2),
+            'status' => 'success',
+            'signed_xml' => '<xml>'
+        ]);
+
         $factory(\RZP\Gateway\Atom\Entity::class, [
             'id' => $faker->randomNumber(6),
             'gateway_payment_id' => 'factory:\RZP\Models\Payment\Entity',
@@ -866,6 +878,18 @@ final class FactoryData
             'id'         => $faker->uniqueid,
             'created_at' => $faker->timestamp,
             'updated_at' => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\QrCode\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+            'merchant_id' => '10000000000000',
+            'provider'    => 'bharat_qr',
+            'entity_id'   => $faker->uniqueid,
+            'entity_type' => 'virtual_account',
+            'short_url'   => 'abc.com',
+            'qr_string'   => 'kdsfjsfndsmndjksnfsdnsmdns',
         ]);
     }
 }

@@ -18,6 +18,8 @@ class Status
 
     const REFUND_SUCCESS = 'SUCCESS';
 
+    const REFUND_FAILED = 'FAILED';
+
     const VPA_AVAILABLE = 'VE';
 
     const VPA_NOT_AVAILABLE = 'VN';

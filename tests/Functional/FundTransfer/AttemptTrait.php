@@ -81,7 +81,7 @@ trait AttemptTrait
 
         $mailClass = 'RZP\\Mail\\Settlement\\' . ucfirst($channel) . 'Settlement';
 
-        Mail::assertSent($mailClass);
+        Mail::assertQueued($mailClass);
 
         return $content;
     }
@@ -127,7 +127,7 @@ trait AttemptTrait
                 return $this->createPayoutData($channel, $purpose, $sourceCount);
 
             default:
-                throw Exception\LogicException('Invalid source type: ' . $sourceType);
+                throw new Exception\LogicException('Invalid source type: ' . $sourceType);
         }
     }
 

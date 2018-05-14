@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
@@ -64,9 +65,7 @@ class Initiator extends Base\Core
      * @param string $channel
      * @return array
      */
-    protected function processBankTransfers(
-        array $input,
-        string $channel): array
+    protected function processBankTransfers(array $input, string $channel): array
     {
         return $this->repo->transaction(function() use ($input, $channel)
         {
@@ -78,22 +77,26 @@ class Initiator extends Base\Core
 
             $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
+            $limit = $this->getLimitForChannel($channel);
+
             $attempts = $this->repo
                              ->fund_transfer_attempt
                              ->getCreatedAttemptsBeforeTimestamp(
-                                 $timestamp,
-                                 $purpose,
-                                 $sourceType,
-                                 $channel,
-                                 ['source']);
+                                $timestamp,
+                                $purpose,
+                                $sourceType,
+                                $channel,
+                                $limit,
+                                ['source']);
 
-            $data[$channel] = $this->processFundTransferAttempts($channel, $attempts);
+            $data[$channel] = $this->processFundTransferAttempts($purpose, $channel, $attempts);
 
             return $data;
         });
     }
 
-    protected function processFundTransferAttempts(string $channel, Base\PublicCollection $attempts): array
+    protected function processFundTransferAttempts(
+        string $purpose, string $channel, Base\PublicCollection $attempts): array
     {
         $count = $attempts->count();
 
@@ -110,7 +113,7 @@ class Initiator extends Base\Core
 
         $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
 
-        $response = (new $class)->initiateTransfer($attempts);
+        $response = (new $class($purpose))->initiateTransfer($attempts);
 
         $data += $response;
 
@@ -136,6 +139,25 @@ class Initiator extends Base\Core
             default:
                 return 1;
         }
+    }
+
+    /**
+     * Returns the maximum number of attempts that can
+     * be processed by a channel in one request.
+     * If null is returned, it means there is no
+     * such limit for that channel.
+     *
+     * @param string $channel
+     * @return int|null
+     */
+    protected function getLimitForChannel(string $channel)
+    {
+        if ($channel === Channel::AXIS)
+        {
+            return 1000;
+        }
+
+        return null;
     }
 
     /**

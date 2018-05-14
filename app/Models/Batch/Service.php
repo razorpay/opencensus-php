@@ -3,21 +3,20 @@
 namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Request\Service as MerchantRequestService;
 
 class Service extends Base\Service
 {
     public function createBatch(array $input): array
     {
-        $batch = (new Core)->create($input, $this->merchant);
+        $batch = $this->core()->create($input, $this->merchant);
 
         return $batch->toArrayPublic();
     }
 
     public function fetchMultiple(array $input): array
     {
-        $batches = $this->repo->batch->fetch($input, $this->merchant->getId());
-
-        return $batches->toArrayPublic();
+        return $this->core()->fetchWithSettings($input, $this->merchant);
     }
 
     public function getBatchById(string $id): array
@@ -38,7 +37,7 @@ class Service extends Base\Service
     {
         $batch = $this->repo->batch->findByPublicId($id);
 
-        $batch = (new Core)->retryBatchOutputFile($batch);
+        $batch = $this->core()->retryBatchOutputFile($batch);
 
         return $batch->toArrayPublic();
     }
@@ -47,7 +46,7 @@ class Service extends Base\Service
     {
         $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $signedUrl = (new Core)->downloadBatch($batch);
+        $signedUrl = $this->core()->downloadBatch($batch);
 
         return [Entity::URL => $signedUrl];
     }
@@ -60,7 +59,7 @@ class Service extends Base\Service
      */
     public function processBatches()
     {
-        $batches = (new Core)->processBatches();
+        $batches = $this->core()->processBatches();
 
         return $batches->toArrayPublic();
     }
@@ -69,14 +68,14 @@ class Service extends Base\Service
     {
         $batch = $this->repo->batch->findByPublicId($id);
 
-        $batch = (new Core)->processBatchAsync($batch, $input);
+        $batch = $this->core()->processBatchAsync($batch, $input);
 
         return $batch->toArrayPublic();
     }
 
     public function validateFile(array $input): array
     {
-        $response = (new Core)->storeAndValidateInputFile($input, $this->merchant);
+        $response = $this->core()->storeAndValidateInputFile($input, $this->merchant);
 
         return $response;
     }
@@ -85,8 +84,30 @@ class Service extends Base\Service
     {
         $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $response = (new Core)->fetchStatsOfBatch($batch);
+        $response = $this->core()->fetchStatsOfBatch($batch);
 
         return $response;
+    }
+
+    public function validateToken($input): bool
+    {
+        $validator = new Validator();
+        $validator->validateInput('token', $input);
+        $token = $input['token'];
+
+        $merchantRequestService = new MerchantRequestService();
+        return $merchantRequestService->isValidOneTimeToken($token);
+    }
+
+    public function consumeToken($input)
+    {
+        $validator = new Validator();
+        $validator->validateInput('token', [
+            Entity::TOKEN   =>  $input['token']
+        ]);
+        $token = $input['token'];
+
+        $merchantRequestService = new MerchantRequestService();
+        $merchantRequestService->consumeOneTimeToken($token);
     }
 }

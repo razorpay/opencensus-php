@@ -88,6 +88,16 @@ class ItemTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetMultipleItemsWithExpandTax()
+    {
+        $this->ba->proxyAuth();
+        
+        $this->fixtures->create('item', ['tax_id' => '00000000000001']);
+        $this->fixtures->create('item', ['id' => '1000000001item', 'name' => 'A different product']);
+
+        $this->startTest();
+    }
+
     public function testUpdateItem()
     {
         $this->fixtures->create(

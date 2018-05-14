@@ -691,6 +691,22 @@ return [
         ],
     ],
 
+    'testIntentPaymentWithVpa' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The vpa field is not required and not shouldn\'t be sent.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
     'testFixAuthorizedAt' => [
         'request' => [
             'content' => [],
@@ -746,6 +762,69 @@ return [
                 'error_description' => null,
             ],
         ]
+    ],
+
+    'testAtmPinAuthenticationPayment' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected auth_type is invalid',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAtmPinAuthenticationWithNoTerminal' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\RuntimeException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        ],
+    ],
+
+    'testAtmPinAuthenticationNotSupported' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The pin authentication type is not applicable on the given card',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'test3dsPaymentWithPinTerminal' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\RuntimeException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR
+        ],
     ],
 
     'testPaymentViaWalletS2SWoAuth' => [
@@ -877,7 +956,7 @@ return [
         ]
     ],
 
-    'testIciciPaymentViaUpiS2S' => [
+    'testIntentPaymentViaUpiS2S' => [
         'request' => [
             'url' => '/payments/create/upi',
             'method' => 'POST',

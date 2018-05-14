@@ -35,6 +35,33 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
+    public function getBharatQrCallback($qrCodeId)
+    {
+        $data = [
+            'F002'       => '423156XXXXXX1234',
+            'F003'       => '26000',
+            'F004'       => '000000000200',
+            'F011'       => 'abc123',
+            'F012'       => '120000',
+            'F013'       => '1212',
+            'F037'       => 'somethingabc',
+            'F038'       => 'randoma',
+            'F039'       => '0',
+            'F041'       => 'abc',
+            'F042'       => 'random',
+            'F043'       => 'RazorpayBangalore',
+            'F102'       => 'paymentId',
+            'PurchaseID' => $qrCodeId,
+            'SenderName' => 'Razorpay',
+        ];
+
+        $hash = $this->getGatewayInstance()->getStringToHashForBharatQr($data);
+
+        $data['CheckSum'] = $this->getGatewayInstance()->getHashOfString($hash);
+
+        return $data;
+    }
+
     public function verify($input)
     {
         $content = json_decode($input, true);

@@ -2,67 +2,30 @@
 
 namespace RZP\Http\Middleware;
 
-use Closure;
-use Config;
+use Illuminate\Http\Request;
+use Fideloper\Proxy\TrustProxies as Middleware;
 
-class TrustedProxy
+class TrustedProxy extends Middleware
 {
     /**
-     * Handle an incoming request.
+     * The trusted proxies for this application.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param \Closure                 $next
-     *
-     * @throws \Symfony\Component\HttpKernel\Exception\HttpException
-     *
-     * @return mixed
+     * @var array
      */
-    public function handle($request, Closure $next)
-    {
-        // Set trusted header names
-        foreach ($this->getTrustedHeaders() as $headerKey => $headerName)
-        {
-            $request->setTrustedHeaderName($headerKey, $headerName);
-        }
-
-        $proxies = $this->getTrustedProxies($request->getClientIps());
-        $request->setTrustedProxies($proxies);
-
-        return $next($request);
-    }
+    protected $proxies = [
+        '10.0.0.0/8',
+    ];
 
     /**
-     * Return an array of trusted proxy IP addresses.
+     * The current proxy header mappings.
      *
-     * @param array $clientIpAddresses Array of client IP addresses retrieved
-     *                                  *prior* to setting trusted proxy
-     *
-     * @return array
+     * @var array
      */
-    protected function getTrustedProxies(array $clientIpAddresses = [])
-    {
-        $trustedProxies = Config::get('trustedproxy.proxies');
-
-        return (array) $trustedProxies;
-    }
-
-    /**
-     * Get trusted header names.
-     *
-     * @return array
-     */
-    protected function getTrustedHeaders()
-    {
-        $trustedHeaderNames = Config::get('trustedproxy.headers');
-
-        /*
-         * In case the user does not pass an array of header names we
-         * will default to an empty array. This will force defaults from
-         * class \Symfony\Component\HttpFoundation\Request::$trustedHeaders
-         */
-
-        $trustedHeaderNames = is_array($trustedHeaderNames) ? $trustedHeaderNames : [];
-
-        return $trustedHeaderNames;
-    }
+    protected $headers = [
+        Request::HEADER_CLIENT_IP    => 'X_FORWARDED_FOR',
+        Request::HEADER_CLIENT_PROTO => 'X_FORWARDED_PROTO',
+        Request::HEADER_CLIENT_PORT  => 'X_FORWARDED_PORT',
+        Request::HEADER_FORWARDED    => null,
+        Request::HEADER_CLIENT_HOST  => null,
+    ];
 }

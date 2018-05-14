@@ -13,13 +13,13 @@ class Repository extends BaseRepository
         Entity::TYPE        => 'sometimes|string|max:25',
         Entity::STATUS      => 'sometimes|string|max:30',
         Entity::MERCHANT_ID => 'sometimes|string|max:14',
-        self::EXPAND . '.*' => 'filled|string|in:merchant,',
+        self::EXPAND . '.*' => 'filled|string|in:merchant,merchant.merchantDetail',
     );
 
     protected $proxyFetchParamRules = array(
         Entity::NAME        => 'sometimes|string|max:25',
         Entity::TYPE        => 'sometimes|string|max:25',
-        self::EXPAND . '.*' => 'filled|string|in:merchant,',
+        self::EXPAND . '.*' => 'filled|string|in:merchant,merchant.merchantDetail',
         Entity::MERCHANT_ID => 'sometimes|string|max:14',
     );
 

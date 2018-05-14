@@ -1,6 +1,9 @@
 <?php
 
+use Carbon\Carbon;
+
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Batch\Header;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -145,7 +148,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'processable_count'         => 3,
+                'processable_count'         => 5,
                 'error_count'               => 0,
                 'parsed_entries'            => [
                     [
@@ -156,7 +159,7 @@ return [
                         Header::AMOUNT           => 100,
                         Header::DESCRIPTION      => 'test payment link',
                         Header::EXPIRE_BY        => null,
-                        Header::PARTIAL_PAYMENT  => null,
+                        Header::PARTIAL_PAYMENT  => 'YES',
                     ],
                     // Duplicate receipt number will not get detected in the validation api
                     [
@@ -167,7 +170,7 @@ return [
                         Header::AMOUNT           => 100,
                         Header::DESCRIPTION      => 'test payment link - 2',
                         Header::EXPIRE_BY        => null,
-                        Header::PARTIAL_PAYMENT  => 0,
+                        Header::PARTIAL_PAYMENT  => 'NO',
                     ],
                     [
                         Header::INVOICE_NUMBER   => '#3',
@@ -208,6 +211,52 @@ return [
                 'processed_amount' => 0,
                 'processed_at'     => null,
             ],
+        ],
+    ],
+
+    'testCreateBatchWithHumanReadableExpireBy' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payment_link',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testCreateBatchWithHumanReadableExpireByFileRows' => [
+        [
+            Header::INVOICE_NUMBER   => '1',
+            Header::CUSTOMER_NAME    => null,
+            Header::CUSTOMER_EMAIL   => null,
+            Header::CUSTOMER_CONTACT => '9999998881',
+            Header::AMOUNT           => 500,
+            Header::DESCRIPTION      => 'Test payment link',
+            Header::EXPIRE_BY        => Carbon::now(Timezone::IST)->addDays(1)->format('d-m-Y H:i:s'),
+            Header::PARTIAL_PAYMENT  => 'YES',
+        ],
+        [
+            Header::INVOICE_NUMBER   => '2',
+            Header::CUSTOMER_NAME    => null,
+            Header::CUSTOMER_EMAIL   => null,
+            Header::CUSTOMER_CONTACT => '9999998882',
+            Header::AMOUNT           => 500,
+            Header::DESCRIPTION      => 'Test payment link',
+            Header::EXPIRE_BY        => Carbon::now(Timezone::IST)->addDays(2)->format('d-m-Y'),
+            Header::PARTIAL_PAYMENT  => 'YES',
+        ],
+        [
+            Header::INVOICE_NUMBER   => '3',
+            Header::CUSTOMER_NAME    => null,
+            Header::CUSTOMER_EMAIL   => null,
+            Header::CUSTOMER_CONTACT => '9999998885',
+            Header::AMOUNT           => 500,
+            Header::DESCRIPTION      => 'Test payment link',
+            Header::EXPIRE_BY        => Carbon::now(Timezone::IST)->addDays(3)->getTimestamp(),
+            Header::PARTIAL_PAYMENT  => 'YES',
         ],
     ],
 
@@ -295,6 +344,43 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE,
+        ],
+    ],
+
+    'testFetchBatchesOfPaymentLinkTypeWithConfig' => [
+        'request'   => [
+            'url'    => '/batches',
+            'method' => 'get',
+            'content'=> [
+                'type'        => 'payment_link',
+                'with_config' => '1',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'entity'        => 'collection',
+                'count'         => 2,
+                'items'         => [
+                    [
+                        'id'        => 'batch_00000000000002',
+                        'type'      => 'payment_link',
+                        'status'    => 'created',
+                        'config'    => [
+                            'sms_notify'    => '0',
+                            'email_notify'  => '0',
+                        ],
+                    ],
+                    [
+                        'id'        => 'batch_00000000000001',
+                        'type'      => 'payment_link',
+                        'status'    => 'created',
+                        'config'    => [
+                            'sms_notify'    => '1',
+                            'email_notify'  => '0',
+                        ],
+                    ],
+                ],
+            ],
         ],
     ],
 ];

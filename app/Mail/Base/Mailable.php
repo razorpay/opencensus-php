@@ -3,14 +3,14 @@
 namespace RZP\Mail\Base;
 
 use App;
-use Config;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Mail\Mailer as MailerContract;
-use Illuminate\Contracts\Queue\Factory as Queue;
+use Illuminate\Container\Container;
 use Illuminate\Mail\Mailable as BaseMailable;
+use Illuminate\Contracts\Queue\Factory as Queue;
+use Illuminate\Contracts\Mail\Mailer as MailerContract;
 use GuzzleHttp\Exception\ClientException as GuzzleClientException;
-
 use Razorpay\Trace\Logger as Trace;
+
 use RZP\Trace\TraceCode;
 
 class Mailable extends BaseMailable
@@ -22,19 +22,17 @@ class Mailable extends BaseMailable
 
     public $taskId;
 
+    public $mode;
+
+    protected $emailValidator;
+
     public function __construct()
     {
-        $queueMock = Config::get('queue.mock');
-
-        // If queue mock is set then we use the default sync connection
-        // else we use the dedicated sqs mail connection
-        $queueConnection = ($queueMock === true) ? 'queue.default' : 'queue.mail.connection';
-
-        $this->connection = Config::get($queueConnection);
-
         $app = App::getFacadeRoot();
 
         $this->taskId = $app['request']->getTaskId();
+        $this->mode   = $app['basicauth']->getMode();
+        $this->queue  = $this->getQueueName();
     }
 
     public function build()
@@ -59,7 +57,18 @@ class Mailable extends BaseMailable
 
         try
         {
-            parent::send($mailer);
+            Container::getInstance()->call([$this, 'build']);
+
+            if ($this->isValidRecipient() === true)
+            {
+                $mailer->send($this->buildView(), $this->buildViewData(), function ($message) {
+                    $this->buildFrom($message)
+                         ->buildRecipients($message)
+                         ->buildSubject($message)
+                         ->buildAttachments($message)
+                         ->runCallbacks($message);
+                });
+            }
         }
         catch (\Throwable $e)
         {
@@ -85,6 +94,9 @@ class Mailable extends BaseMailable
     }
 
     /**
+     * Overridden: We use sub classed SendQueuedMailable which sets request id
+     * and task id for tracing.
+     *
      * Queue the message for sending.
      *
      * @param  \Illuminate\Contracts\Queue\Factory  $queue
@@ -93,12 +105,11 @@ class Mailable extends BaseMailable
     public function queue(Queue $queue)
     {
         $connection = property_exists($this, 'connection') ? $this->connection : null;
+        $queueName  = property_exists($this, 'queue') ? $this->queue : null;
 
-        $queueName = property_exists($this, 'queue') ? $this->queue : null;
-
-        return $queue->connection($connection)->pushOn(
-            $queueName ?: null, new SendQueuedMailable($this)
-        );
+        return $queue
+                ->connection($connection)
+                ->pushOn($queueName ?: null, new SendQueuedMailable($this));
     }
 
     /**
@@ -199,5 +210,39 @@ class Mailable extends BaseMailable
     protected function addHeaders()
     {
         return $this;
+    }
+
+    /**
+     * Checks if the recipient email is not void@razorpay.com and is a valid email
+     * by checking MX records. Check details here https://github.com/nojacko/email-validator
+     *
+     * @return boolean
+     */
+    protected function isValidRecipient(): bool
+    {
+        if (filled($this->to) === true)
+        {
+            $emailValidator = new Validator;
+            $recipientEmail = $this->to[0]['address'];
+
+            return (($recipientEmail !== 'void@razorpay.com') and
+                ($emailValidator->isSendable($recipientEmail) === true));
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns on which queue this mailable should be pushed to.
+     * Refer to config/queue.php's mail block for the data structure.
+     *
+     * @return string
+     */
+    protected function getQueueName(): string
+    {
+        $key     = snake_case(class_basename($this));
+        $default = config('queue.mail.default');
+
+        return config("queue.mail.{$key}", $default);
     }
 }

@@ -374,7 +374,7 @@ class Entity extends Base\PublicEntity
         // 'Goomo', 'Goomo', 'IRCTC Services'
         // 'Irctc Web', 'IRCTC Mob', 'IRCTC ecatering'
         // 'epaylater', 'Udacity', 'Accelerator',
-        //
+        // 'IRCTC FTR', 'KartRocket', '1mg', 'Ixigo',
 
         $merchantIds = [
             '10000000000000', '6gn7Xc2gqK40c9', '4uObL8AHBqFNnP',
@@ -386,6 +386,8 @@ class Entity extends Base\PublicEntity
             '8STmhcK1Gd1JVo', '7kBHljwok8Fsom', '8byazTDARv4Io0',
             '8ST00QgEPT14cE', '8YPFnW5UOM91H7', '90xVmQJTCEJ6GH',
             '6uli25q6xe9PPv', '4sW8jQ22JR4Bfi', '5wv2qnnBum6eXo',
+            '9m4CChGex4ENkR', '9pWQLj3B705mYh', '6e9vU1F6c16Wgy',
+            '8RerE9oY0d7rbC',
         ];
 
         $currentMerchantId = $this->getMerchantId();
@@ -447,6 +449,24 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::BATCH_ID);
     }
+
+    // ----------------------- Mutator ---------------------------------------------
+
+    protected function setReference1Attribute($reference1)
+    {
+        $trimmedReference1 = (blank($reference1) === true) ? null : trim($reference1);
+
+        $this->attributes[self::REFERENCE1] =  $trimmedReference1;
+    }
+
+    protected function setReference2Attribute($reference2)
+    {
+        $trimmedReference2 = (blank($reference2) === true) ? null : trim($reference2);
+
+        $this->attributes[self::REFERENCE2] =  $trimmedReference2;
+    }
+
+    // ----------------------- Mutator Ends ----------------------------------------
 
     /**
      * Adds the contact, email fields to the reports

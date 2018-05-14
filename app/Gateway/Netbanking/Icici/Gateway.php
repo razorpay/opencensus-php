@@ -244,6 +244,8 @@ class Gateway extends Base\Gateway
             $this->assertAmount($expectedAmount, $actualAmount);
         }
 
+        $this->verifyCallback($input, $gatewayPayment);
+
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         if ($this->hasRecurringData($gatewayPayment) === true)
@@ -254,6 +256,29 @@ class Gateway extends Base\Gateway
         }
 
         return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    protected function verifyCallback(array $input, $gatewayPayment)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->setGatewaySuccess($verify);
+
+        //
+        // If verify returns false, we throw an error as
+        // authorize request / response has been tampered with
+        //
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
     }
 
     public function verify(array $input)
@@ -385,7 +410,7 @@ class Gateway extends Base\Gateway
             else if ($verify->input['payment']['recurring'] === true)
             {
                 // Need to ensure that the status is not a failure status
-                $verify->gatewaySuccess = (Status::isSiStatusFailure($status) === false);
+                $verify->gatewaySuccess = (Status::isSiStatusSuccess($status) === true);
             }
             // Whereas, the retail verify success is success
             else

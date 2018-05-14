@@ -36,6 +36,8 @@ class CreateOrgHostnamesTable extends Migration
                   ->references(Org::ID)
                   ->on(Table::ORG)
                   ->on_delete('restrict');
+
+            $table->index(OrgHost::CREATED_AT);
         });
     }
 

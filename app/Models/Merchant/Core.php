@@ -2,33 +2,32 @@
 
 namespace RZP\Models\Merchant;
 
-use ApiResponse;
-use Config;
 use Mail;
+use Config;
+use ApiResponse;
 use Carbon\Carbon;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
-use RZP\Constants\Timezone;
-use RZP\Exception\BadRequestException;
-use RZP\Jobs\DispatchRouter;
-use RZP\Jobs\MerchantSync;
-use RZP\Models\Admin\Action;
-use RZP\Models\Admin\AdminLead;
-use RZP\Models\Admin\Permission;
-use RZP\Models\BankAccount;
+
 use RZP\Models\Emi;
 use RZP\Models\Base;
-use RZP\Models\Batch;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\Pricing;
-use RZP\Models\Schedule\Task as ScheduleTask;
-use RZP\Models\Transaction;
 use RZP\Models\User;
+use RZP\Models\Batch;
+use RZP\Models\Pricing;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Jobs\MerchantSync;
+use RZP\Models\BankAccount;
+use RZP\Constants\Timezone;
+use RZP\Models\Transaction;
+use RZP\Models\Admin\Action;
+use RZP\Models\Admin\AdminLead;
+use RZP\Models\Merchant\Detail;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Base\PublicCollection;
+use RZP\Exception\BadRequestException;
 use RZP\Mail\Payout\Payout as PayoutMail;
-
+use RZP\Models\Schedule\Task as ScheduleTask;
 class Core extends Base\Core
 {
     use Notify;
@@ -220,7 +219,7 @@ class Core extends Base\Core
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
         {
             // This is used to sync fields transaction_report_email and website in merchant and merchantDetail
-            (new Detail\Core)->editMerchantDetailFields($merchant, $input);
+            (new Detail\Core)->syncToMerchantDetailFields($merchant, $input);
 
             $this->saveAndNotify($merchant);
         });
@@ -560,11 +559,7 @@ class Core extends Base\Core
      */
     public function syncEventToEs(string $event, array $payload)
     {
-        $job = new MerchantSync($this->mode, $event, $payload);
-
-        $job->delay(Repository::ES_JOB_DELAY);
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::ES_V2);
+        MerchantSync::dispatch($this->mode, $event, $payload)->delay(Repository::ES_JOB_DELAY);
     }
 
     public function createBatches(Entity $merchant, array $input): array
@@ -600,9 +595,7 @@ class Core extends Base\Core
 
         $class = 'RZP\\Jobs\\' . studly_case($type) . 'Batch';
 
-        $job = new $class($this->mode, $batches);
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
+        $class::dispatch($this->mode, $batches);
 
         return $batches;
     }
@@ -750,5 +743,15 @@ class Core extends Base\Core
         $this->repo->saveOrFail($emiMerchantSub);
 
         return $emiMerchantSub->toArray();
+    }
+
+    public function getEmailsOfOwnersAndAdmins(Entity $merchant)
+    {
+        $emails = $merchant->users()
+                           ->whereIn(User\Entity::ROLE, [User\Role::ADMIN, User\Role::OWNER])
+                           ->pluck(User\Entity::EMAIL)
+                           ->all();
+
+        return $emails;
     }
 }

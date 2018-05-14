@@ -53,7 +53,7 @@ class DailyReportTest extends TestCase
 
         $this->generateDailyReport();
 
-        Mail::assertSent(DailyReportMail::class, function ($mail) use ($testData)
+        Mail::assertQueued(DailyReportMail::class, function ($mail) use ($testData)
         {
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 

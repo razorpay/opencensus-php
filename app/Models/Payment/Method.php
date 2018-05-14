@@ -31,7 +31,18 @@ class Method
     public static $bankMethods = [
         self::NETBANKING,
         self::AEPS,
-        self::EMANDATE
+        self::EMANDATE,
+        self::UPI,
+    ];
+
+    /**
+     * Payment methods where amount validation is skipped
+     *
+     * @var array
+     */
+    public static $methodsWithoutAmountValidation = [
+        self::TRANSFER,
+        self::BANK_TRANSFER,
     ];
 
     protected static $asynchronous = [

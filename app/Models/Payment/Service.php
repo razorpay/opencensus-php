@@ -156,9 +156,13 @@ class Service extends Base\Service
      */
     public function refundAuthorized($id, array $input)
     {
-        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
+        //
+        // Since this is in admin auth, we won't
+        // have any merchant to check this with.
+        //
+        $payment = $this->repo->payment->findByPublicId($id);
 
-        $refund = $this->getNewProcessor()->refundAuthorizedPayment($payment, $input);
+        $refund = $this->getNewProcessor($payment->merchant)->refundAuthorizedPayment($payment, $input);
 
         return $refund->toArrayPublic();
     }
@@ -602,7 +606,8 @@ class Service extends Base\Service
         // All TPV Merchant transactions will be made through BILLDESK.
         // Issue is currently on BILLDESK end. Remove once the fix has been
         // made from the BILLDESK side.
-        if ($merchant->isTPVRequired())
+        if (($merchant->isTPVRequired() === true) and
+            ($payment->isGateway(Payment\Gateway::BILLDESK) === true))
         {
             return ['success' => true];
         }
@@ -787,6 +792,8 @@ class Service extends Base\Service
         $time = time();
 
         $payments = $payments->shuffle();
+
+        $this->removeEmandatePaymentsAsApplicable($payments);
 
         $this->trace->info(
             TraceCode::PAYMENT_AUTO_REFUND_CRON,
@@ -1156,6 +1163,20 @@ class Service extends Base\Service
         ];
     }
 
+    /**
+     * Marks the payment as acknowledged, if not already acknowledged.
+     *
+     * @param string $paymentId
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function acknowledge(string $paymentId)
+    {
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+
+        $this->getNewProcessor()->acknowledge($payment);
+    }
+
     protected function setHoldFalse(Payment\Entity $payment)
     {
         $this->repo->payment->lockForUpdateAndReload($payment);
@@ -1202,9 +1223,10 @@ class Service extends Base\Service
 
     /**
      * Sends the authorized payments reminder email
-     * @param  string   $merchantId
-     * @param  array    $payments
-     * @param  boolean  $final Whether this is the final payment reminder
+     *
+     * @param  string  $merchantId
+     * @param  array   $payments
+     * @param  boolean $final Whether this is the final payment reminder
      */
     protected function sendAuthorizedPaymentsReminderMail($merchantId, $payments, $final)
     {
@@ -1234,5 +1256,29 @@ class Service extends Base\Service
         $processor = new Processor\Processor($merchant);
 
         return $processor;
+    }
+
+    protected function removeEmandatePaymentsAsApplicable(Base\PublicCollection & $payments)
+    {
+        $seconds = Merchant\Entity::AUTO_REFUND_DELAY_FOR_EMANDATE;
+
+        $currentTime = Carbon::now(Timezone::IST);
+
+        $ts = $currentTime->subSeconds($seconds)->getTimestamp();
+
+        $payments = $payments->reject(function($payment) use ($ts)
+        {
+            if ($payment->isEmandate() === false)
+            {
+                return false;
+            }
+
+            if ($payment->getCreatedAt() <= $ts)
+            {
+                return false;
+            }
+
+            return true;
+        });
     }
 }

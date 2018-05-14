@@ -122,9 +122,44 @@ class Gateway extends Base\Gateway
 
         $this->checkResponseStatus($attrs, $content);
 
+        if ($this->isCorporateBanking() === false)
+        {
+            $this->verifyCallback($input, $gatewayEntity);
+        }
+
         $acquirerData = $this->getAcquirerData($input, $gatewayEntity);
 
         return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    protected function verifyCallback(array $input, $gatewayPayment)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
+        {
+            $this->checkVerifyGatewaySuccess($verify);
+        }
+        else
+        {
+            $this->checkGatewaySuccess($verify);
+        }
+
+        //
+        // If verify returns false, we throw an error as
+        // authorize request / response has been tampered with
+        //
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
     }
 
     public function verify(array $input)

@@ -12,21 +12,29 @@ class AccountChange extends Mailable
 
     protected $merchant;
 
-    public function __construct(array $bankAccount, array $merchant)
+    protected $recipientEmails;
+
+    public function __construct(array $bankAccount, array $merchant, array $emails)
     {
         parent::__construct();
 
         $this->bankAccount = $bankAccount;
 
         $this->merchant = $merchant;
+
+        $this->recipientEmails = [$this->merchant['email']];
+
+        if (empty($emails) === false)
+        {
+            $this->recipientEmails = array_merge($this->recipientEmails, $emails);
+        }
     }
 
     protected function addRecipients()
     {
-        $email = $this->merchant['email'];
         $name = $this->merchant['name'];
 
-        $this->to($email, $name);
+        $this->to($this->recipientEmails, $name);
 
         return $this;
     }
@@ -44,7 +52,7 @@ class AccountChange extends Mailable
 
     protected function addMailData()
     {
-        $data = array_merge($this->merchant, $this->bankAccount);
+        $data = array_merge($this->bankAccount, $this->merchant);
 
         $this->with($data);
 

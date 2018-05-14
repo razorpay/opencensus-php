@@ -137,7 +137,7 @@ class ServiceTest extends TestCase
                         ]
                     );
 
-        $shortUrl = $this->service->shorten($this->testUrl, true);
+        $shortUrl = $this->service->shorten($this->testUrl, [], true);
 
         $this->assertEquals('https://bitly.dev/xyz', $shortUrl);
     }
@@ -177,7 +177,7 @@ class ServiceTest extends TestCase
                             ->method('makeRequestAndValidateHeader')
                             ->will($this->throwException($exception));
 
-        $shortUrl = $this->service->shorten($this->testUrl, true);
+        $shortUrl = $this->service->shorten($this->testUrl, [], true);
     }
 
     public function testShortenFailAllSilent()

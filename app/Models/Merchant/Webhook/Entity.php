@@ -213,22 +213,9 @@ class Entity extends Base\PublicEntity
 
     public function setPublicEventsAttribute(array & $array)
     {
-        $featureMap = Event::$eventsToFeatureMap;
-
-        $assignedFeatures = $this->merchant->getEnabledFeatures();
-
-        foreach ($array[self::EVENTS] as $event => $value)
-        {
-            if (isset($featureMap[$event]) === false)
-            {
-                continue;
-            }
-
-            if (in_array($featureMap[$event], $assignedFeatures, true) === false)
-            {
-                unset($array[self::EVENTS][$event]);
-            }
-        }
+        $array[self::EVENTS] = Event::filterByFeatures(
+                                        $array[self::EVENTS],
+                                        $this->merchant->getEnabledFeatures());
     }
 
     public function setPublicApplicationIdAttribute(array & $array)

@@ -29,9 +29,9 @@ class Beneficiary extends Base
         return $this;
     }
 
-    public function requestBody(): array
+    public function requestBody(): string
     {
-        return [
+        return json_encode([
             'Beneficiary_Nodal_Account_Registration_Req' => [
                 'Header' => [
                     'TranID'      => (string) rand(10000, 99999),
@@ -121,6 +121,6 @@ class Beneficiary extends Base
                     'Signature' => 'Signature001'
                 ]
             ]
-        ];
+        ]);
     }
 }

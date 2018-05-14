@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_ISSUER       = 'payment_issuer';
 
     const EMI_DURATION         = 'emi_duration';
+    const RECEIVER_TYPE        = 'receiver_type';
 
     // Amount Range Rule
     const AMOUNT_RANGE_ACTIVE  = 'amount_range_active';
@@ -58,6 +59,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_NETWORK,
         self::PAYMENT_ISSUER,
         self::INTERNATIONAL,
+        self::RECEIVER_TYPE,
         self::AMOUNT_RANGE_ACTIVE,
         self::AMOUNT_RANGE_MIN,
         self::AMOUNT_RANGE_MAX,
@@ -94,6 +96,7 @@ class Entity extends Base\PublicEntity
         self::MAX_FEE             => null,
         self::AMOUNT_RANGE_ACTIVE => '0',
         self::EMI_DURATION        => null,
+        self::RECEIVER_TYPE       => null,
     ];
 
     /**
@@ -203,6 +206,11 @@ class Entity extends Base\PublicEntity
         $input[self::GATEWAY] = $rule->getAttribute(self::GATEWAY);
 
         return $this->fill($input);
+    }
+
+    public function getReceiverType()
+    {
+        return $this->getAttribute(self::RECEIVER_TYPE);
     }
 
     public function getRates()

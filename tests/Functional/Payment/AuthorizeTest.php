@@ -4,7 +4,7 @@ namespace RZP\Tests\Functional\Payment;
 
 use Mail;
 use Cache;
-
+use Redis;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Admin\ConfigKey;
@@ -53,7 +53,7 @@ class AuthorizeTest extends TestCase
 
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 
-        Mail::assertSent(AuthorizedMail::class);
+        Mail::assertQueued(AuthorizedMail::class);
     }
 
     public function testMagicKeyFalseMerchantDisabled()
@@ -497,7 +497,7 @@ class AuthorizeTest extends TestCase
             $this->doAuthPayment($payment);
         });
 
-        Mail::assertSent(PaymentFailedMail::class, function ($mail)
+        Mail::assertQueued(PaymentFailedMail::class, function ($mail)
         {
             $this->assertArrayHasKey('error_description', $mail->viewData['payment']);
 
@@ -558,6 +558,24 @@ class AuthorizeTest extends TestCase
         $this->authorizeFailedPayment($payment['public_id']);
     }
 
+    public function testIntentPaymentWithVpa()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'dontencrypt@icici';
+
+        unset($payment['description']);
+
+        $payment['_']['flow'] = 'intent';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        });
+    }
+
     public function testContentTypeHtmlOnPaymentCreateRoute()
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
@@ -570,6 +588,377 @@ class AuthorizeTest extends TestCase
 
         $contentType = 'text/html; charset=UTF-8';
         $this->assertContentTypeForResponse($contentType, $this->response);
+    }
+
+    public function testAtmPinAuthenticationPayment()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_fss_terminal', [
+            'id' => 'SharedFssTrmnl',
+            'gateway_acquirer' => 'fss',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'pin'  => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+        $payment['auth_type'] = 'pin';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        $this->assertEquals('pin', $payment['auth_type']);
+        $this->assertEquals('card_fss', $payment['gateway']);
+        $this->assertEquals('SharedFssTrmnl', $payment['terminal_id']);
+    }
+
+    public function testPinPreferredAuthPaymentWoFeatureFallback()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+        $payment['preferred_auth'] = ['pin'];
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        $this->assertNull($payment['auth_type']);
+        $this->assertEquals('hdfc', $payment['gateway']);
+        $this->assertEquals('1n25f6uN5S1Z5a', $payment['terminal_id']);
+    }
+
+    public function testPinPreferredAuthPaymentWithoutTerminal()
+    {
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+        $payment['preferred_auth'] = ['pin'];
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        $this->assertNull($payment['auth_type']);
+        $this->assertEquals('hdfc', $payment['gateway']);
+        $this->assertEquals('1n25f6uN5S1Z5a', $payment['terminal_id']);
+    }
+
+    public function testPinPreferredAuthPaymentWithCardNotSupported()
+    {
+        config(['app.data_store.mock' => false]);
+
+        Redis::shouldReceive('zrevrange')
+            ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
+            ->andReturnUsing(function ()
+            {
+                return [
+                    'card_fss'    => '60',
+                    'hdfc'        => '50',
+                ];
+            });
+
+        $this->fixtures->create('terminal:shared_fss_terminal', [
+            'id' => 'SharedFssTrmnl',
+            'gateway_acquirer' => 'fss',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+        $payment['preferred_auth'] = ['pin'];
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        $this->assertNull($payment['auth_type']);
+        $this->assertEquals('hdfc', $payment['gateway']);
+        $this->assertEquals('1n25f6uN5S1Z5a', $payment['terminal_id']);
+    }
+
+    public function testPinPreferredAuthPaymentWith3dsAtPriority()
+    {
+        $this->fixtures->create('terminal:shared_fss_terminal', [
+            'id' => 'SharedFssTrmnl',
+            'gateway_acquirer' => 'fss',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'pin'  => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+        $payment['preferred_auth'] = ['pin'];
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        // @todo: Save auth type in the payment entity
+        // $this->assertEquals('pin', $payment['auth_type']);
+        $this->assertEquals('card_fss', $payment['gateway']);
+        $this->assertEquals('SharedFssTrmnl', $payment['terminal_id']);
+    }
+
+    public function testPinPreferredAuthPayment()
+    {
+        config(['app.data_store.mock' => false]);
+        // Mocking mutex since we are mocking redis and partial mock
+        // is difficult to mock (read as doesn't work) in laravel
+        config(['services.mutex.mock' => true]);
+
+        Redis::shouldReceive('zrevrange')
+            ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
+            ->andReturnUsing(function ()
+            {
+                return [
+                    'card_fss'    => '60',
+                    'hdfc'        => '50',
+                ];
+            });
+
+        $this->fixtures->create('terminal:shared_fss_terminal', [
+            'id' => 'SharedFssTrmnl',
+            'merchant_id' => '10000000000000',
+            'gateway_acquirer' => 'fss',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'pin'  => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+        $payment['preferred_auth'] = ['pin'];
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        // @todo: Save auth type in the payment entity
+        // $this->assertEquals('pin', $payment['auth_type']);
+        $this->assertEquals('card_fss', $payment['gateway']);
+        $this->assertEquals('SharedFssTrmnl', $payment['terminal_id']);
+    }
+
+    public function testPinPreferredAuthPaymentWithString()
+    {
+        config(['app.data_store.mock' => false]);
+        // Mocking mutex since we are mocking redis and partial mock
+        // is difficult to mock (read as doesn't work) in laravel
+        config(['services.mutex.mock' => true]);
+
+        Redis::shouldReceive('zrevrange')
+            ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
+            ->andReturnUsing(function ()
+            {
+                return [
+                    'card_fss'    => '60',
+                    'hdfc'        => '50',
+                ];
+            });
+
+        $this->fixtures->create('terminal:shared_fss_terminal', [
+            'id' => 'SharedFssTrmnl',
+            'merchant_id' => '10000000000000',
+            'gateway_acquirer' => 'fss',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'pin'  => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+        $payment['preferred_auth'] = 'pin';
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        // @todo: Save auth type in the payment entity
+        // $this->assertEquals('pin', $payment['auth_type']);
+        $this->assertEquals('card_fss', $payment['gateway']);
+        $this->assertEquals('SharedFssTrmnl', $payment['terminal_id']);
+    }
+
+    public function testAtmPinAuthenticationWithNoTerminal()
+    {
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
+
+         $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'pin'  => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+        $payment['auth_type'] = 'pin';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testAtmPinAuthenticationNotSupported()
+    {
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+        $payment['auth_type'] = 'pin';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function test3dsPaymentWithPinTerminal()
+    {
+        $this->fixtures->create('terminal:shared_fss_terminal', [
+            'id' => 'SharedFssTrmnl',
+            'gateway_acquirer' => 'fss',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $payment = $this->doAuthPayment($payment);
+        });
     }
 
     public function testPaymentViaWalletS2SWoAuth()
@@ -634,9 +1023,9 @@ class AuthorizeTest extends TestCase
         $this->assertArrayHasKey('url', $content['request']);
     }
 
-    public function testIciciPaymentViaUpiS2S()
+    public function testIntentPaymentViaUpiS2S()
     {
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_icici_terminal');
+        $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
 
         $this->fixtures->merchant->addFeatures(['s2supi']);
 

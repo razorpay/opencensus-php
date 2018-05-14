@@ -102,7 +102,7 @@ class Server extends Base\Mock\Server
             AuthFields::TRANSACTION_CURRENCY      => Currency::INR,
         ];
 
-        $this->content($response);
+        $this->content($response, 'callback');
 
         $response[AuthFields::HASH] = $this->generateHash($response, 'response');
 
@@ -113,7 +113,7 @@ class Server extends Base\Mock\Server
 
     protected function getVerifyResponse($input)
     {
-        $merchantId = $this->getGatewayInstance()->getMerchantId();
+        $merchantId = $this->getGatewayInstance()->getMerchantId2();
 
         $date = Carbon::createFromFormat(self::TIME_FORMAT,
             $input[VerifyFields::TRANSACTION_DATE])->toDateTimeString();
@@ -300,7 +300,7 @@ class Server extends Base\Mock\Server
 
     protected function getVerifyResponseHashArray($content)
     {
-        $merchantId = $this->getGatewayInstance()->getMerchantId();
+        $merchantId = $this->getGatewayInstance()->getMerchantId2();
 
         if ($content[VerifyFields::TRANSACTION] === [])
         {
