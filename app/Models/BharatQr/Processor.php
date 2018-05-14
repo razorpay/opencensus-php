@@ -46,7 +46,7 @@ class Processor extends VirtualAccount\Processor
         return true;
     }
 
-    protected function processReceiver(Base\PublicEntity $bharatQr)
+    protected function processPayment(Base\PublicEntity $bharatQr)
     {
         $paymentProcessor = new PaymentProcessor($this->merchant);
 
@@ -104,12 +104,16 @@ class Processor extends VirtualAccount\Processor
 
     protected function getPaymentArray(Base\PublicEntity $bharatQr): array
     {
+        $parentPaymentArray = $this->getDefaultPaymentArray();
+
         $paymentArray = [
             Payment\Entity::CURRENCY    => Currency::INR,
             Payment\Entity::METHOD      => $bharatQr->getMethod(),
             Payment\Entity::AMOUNT      => $bharatQr->getAmount(),
             Payment\Entity::DESCRIPTION => 'Bharat Qr Payment',
         ];
+
+        $paymentArray = array_merge($paymentArray, $parentPaymentArray);
 
         // TODO: find a better method to do this. This is done in order to bypass validation
         if ($this->gatewayInput[Entity::METHOD] === Method::CARD)
@@ -121,7 +125,7 @@ class Processor extends VirtualAccount\Processor
             $paymentArray['vpa'] = $this->gatewayInput[GatewayResponseParams::VPA];
         }
 
-        return $this->getFinalPaymentArray($paymentArray);
+        return $paymentArray;
     }
 
     /**

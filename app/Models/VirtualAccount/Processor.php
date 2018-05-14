@@ -41,16 +41,16 @@ abstract class Processor extends Base\Core
 
     /**
      * Entry point for  virtual account  process flow.
-     * Check if the payment was an expected one.
-     * - payment was expected?
+     * Check if the payment was a duplicate.
+     * - payment was duplicate?
      *   - Yes
-     *     - unique merchant reference?
-     *       - Yes
-     *         - Process the payment towards the owner of the VA
-     *       - No
-     *         - Duplicate payment, save entity and ignore
+     *    - Do nothing.
      *   - No
-     *     - Process payment toward demo merchant, auto-refund it later.
+     *    - payment is expected?
+     *     - Yes
+     *      - Set VA to the recognized VA
+     *     - No
+     *      - Set VA to demo merchant's static VA
      *
      * @param Base\PublicEntity $entity
      *
@@ -75,7 +75,7 @@ abstract class Processor extends Base\Core
 
         $this->setMerchant();
 
-        $entity = $this->processReceiver($entity);
+        $entity = $this->processPayment($entity);
 
         // This will be null in case of
         // bank transfer payments if the payment
@@ -94,11 +94,9 @@ abstract class Processor extends Base\Core
 
     abstract protected function isDuplicate(Base\PublicEntity $entity);
 
-    abstract protected function processReceiver(Base\PublicEntity $entity);
+    abstract protected function processPayment(Base\PublicEntity $entity);
 
     abstract protected function getVirtualAccountFromEntity(Base\PublicEntity $entity);
-
-    abstract protected function getPaymentArray(Base\PublicEntity $entity);
 
     abstract protected function getReceiver();
 
@@ -132,8 +130,10 @@ abstract class Processor extends Base\Core
         return true;
     }
 
-    protected function getFinalPaymentArray(array $paymentArray)
+    protected function getDefaultPaymentArray(): array
     {
+        $paymentArray = $this->getReceiverPaymentArray();
+
         if ($this->virtualAccount->hasCustomer() === true)
         {
             $customer = $this->virtualAccount->customer;
@@ -143,7 +143,19 @@ abstract class Processor extends Base\Core
             $paymentArray[Payment\Entity::EMAIL]       = $customer->getEmail();
         }
 
-        $paymentArray = $this->addReceiverDataInPaymentArray($paymentArray);
+        return $paymentArray;
+    }
+
+    protected function getReceiverPaymentArray(): array
+    {
+        $receiver = $this->getReceiver();
+
+        $paymentArray = [
+            Payment\Entity::RECEIVER => [
+                'id'   => $receiver->getPublicId(),
+                'type' => $receiver->getEntity(),
+            ],
+        ];
 
         return $paymentArray;
     }
@@ -171,20 +183,6 @@ abstract class Processor extends Base\Core
         $this->virtualAccount->incrementAmountReceived($entity->getAmount());
 
         $this->repo->saveOrFail($this->virtualAccount);
-    }
-
-    protected function addReceiverDataInPaymentArray(array $paymentArray)
-    {
-        $receiver = $this->getReceiver();
-
-        $receiverData = [
-            'id'   => $receiver->getPublicId(),
-            'type' => $receiver->getEntity(),
-        ];
-
-        $paymentArray[Payment\Entity::RECEIVER] = $receiverData;
-
-        return $paymentArray;
     }
 
     protected function setMerchant()

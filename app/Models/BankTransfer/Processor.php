@@ -27,8 +27,7 @@ class Processor extends VirtualAccount\Processor
      * The ref number for IMPS (RRN) actually can be the same for
      * two distinct transactions (around the same time), as long
      * as the remitter bank is different. Here, we query by ref
-     * number + virtual account number to identify a duplicate
-     * (we can't use source bank info, as it is not always available).
+     * number + source bank info to identify a duplicate.
      *
      * @param Base\PublicEntity $bankTransfer
      *
@@ -70,7 +69,7 @@ class Processor extends VirtualAccount\Processor
      *
      * @param Base\PublicEntity $bankTransfer
      */
-    protected function processReceiver(Base\PublicEntity $bankTransfer)
+    protected function processPayment(Base\PublicEntity $bankTransfer)
     {
         if ($bankTransfer->isExpected() === false)
         {
@@ -162,12 +161,16 @@ class Processor extends VirtualAccount\Processor
      */
     protected function getPaymentArray(Base\PublicEntity $bankTransfer): array
     {
+        $parentPaymentArray = $this->getDefaultPaymentArray();
+
         $paymentArray = [
             Payment\Entity::CURRENCY    => Currency::INR,
             Payment\Entity::METHOD      => Payment\Method::BANK_TRANSFER,
             Payment\Entity::AMOUNT      => $bankTransfer->getAmount(),
             Payment\Entity::DESCRIPTION => $bankTransfer->getDescription() ?? '',
         ];
+
+        $paymentArray = array_merge($paymentArray, $parentPaymentArray);
 
         if ($this->virtualAccount->hasOrder() === true)
         {
@@ -181,7 +184,7 @@ class Processor extends VirtualAccount\Processor
             }
         }
 
-        return $this->getFinalPaymentArray($paymentArray);
+        return $paymentArray;
     }
 
     protected function checkPaymentExpectedAndSetVirtualAccount(Base\PublicEntity $bankTransfer): bool
