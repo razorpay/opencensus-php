@@ -28,36 +28,6 @@ class Processor extends VirtualAccount\Processor
         $this->gatewayInput = $gatewayInput;
     }
 
-    /**
-     * Entry point for  BharatQr  process flow.
-     * Check if the bharatQr was an expected one.
-     * - BharatQr was expected?
-     *   - Yes
-     *     - unique merchant reference?
-     *       - Yes
-     *         - Process the payment towards the owner of the VA
-     *       - No
-     *         - Duplicate payment, save entity and ignore
-     *   - No
-     *     - Process payment toward demo merchant, auto-refund it later.
-     *
-     * @param Base\PublicEntity|Entity $bharatQr
-     *
-     * @return Entity
-     */
-    public function process(Base\PublicEntity $bharatQr)
-    {
-        parent::process($bharatQr);
-
-        $this->processReceiver($bharatQr);
-
-        $this->trace->info(
-                TraceCode::BHARAT_QR_PAYMENT_PROCESSING_SUCCESSFUL,
-                $bharatQr->toArray());
-
-        return $bharatQr;
-    }
-
     protected function isDuplicate(Base\PublicEntity $bharatQr)
     {
         $providerReferenceId = $this->gatewayInput[GatewayResponseParams::PROVIDER_REFERENCE_ID];
@@ -108,6 +78,8 @@ class Processor extends VirtualAccount\Processor
         {
             $paymentProcessor->autoCapturePayment($payment);
         }
+
+        return $bharatQr;
     }
 
     protected function getVirtualAccountFromEntity(Base\PublicEntity $bharatQr)
@@ -190,5 +162,10 @@ class Processor extends VirtualAccount\Processor
         ];
 
         return $card;
+    }
+
+    protected function getReceiver()
+    {
+        return $this->virtualAccount->qrCode;
     }
 }

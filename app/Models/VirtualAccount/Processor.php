@@ -3,9 +3,9 @@
 namespace RZP\Models\VirtualAccount;
 
 use App;
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\VirtualAccount;
 
@@ -39,12 +39,29 @@ abstract class Processor extends Base\Core
         $this->provider = $provider;
     }
 
+    /**
+     * Entry point for  virtual account  process flow.
+     * Check if the payment was an expected one.
+     * - payment was expected?
+     *   - Yes
+     *     - unique merchant reference?
+     *       - Yes
+     *         - Process the payment towards the owner of the VA
+     *       - No
+     *         - Duplicate payment, save entity and ignore
+     *   - No
+     *     - Process payment toward demo merchant, auto-refund it later.
+     *
+     * @param Base\PublicEntity $entity
+     *
+     * @return Base\PublicEntity
+     */
     public function process(Base\PublicEntity $entity)
     {
         if ($this->isDuplicate($entity) === true)
         {
             //
-            // The transfer is an expected one, i.e. it is made to a valid account
+            // The payment is an expected one, i.e. it is made to a valid account
             // but the UTR is a duplicate, indicating that a payment is being processed
             // for a second time. In this case, we do nothing.
             //
@@ -57,6 +74,22 @@ abstract class Processor extends Base\Core
         $entity->setExpected($paymentExpected);
 
         $this->setMerchant();
+
+        $entity = $this->processReceiver($entity);
+
+        // This will be null in case of
+        // bank transfer payments if the payment
+        // is made to reserved account
+        if ($entity === null)
+        {
+            return null;
+        }
+
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_PAYMENT_SUCCESSFUL,
+            $entity->toArray());
+
+        return $entity;
     }
 
     abstract protected function isDuplicate(Base\PublicEntity $entity);
@@ -66,6 +99,8 @@ abstract class Processor extends Base\Core
     abstract protected function getVirtualAccountFromEntity(Base\PublicEntity $entity);
 
     abstract protected function getPaymentArray(Base\PublicEntity $entity);
+
+    abstract protected function getReceiver();
 
     /**
      * A receiver is expected if there exists an active VA
@@ -108,7 +143,7 @@ abstract class Processor extends Base\Core
             $paymentArray[Payment\Entity::EMAIL]       = $customer->getEmail();
         }
 
-        $paymentArray = $this->addReceiverDataInPaymentArray($paymentArray, $this->virtualAccount->qrCode);
+        $paymentArray = $this->addReceiverDataInPaymentArray($paymentArray);
 
         return $paymentArray;
     }
@@ -138,8 +173,10 @@ abstract class Processor extends Base\Core
         $this->repo->saveOrFail($this->virtualAccount);
     }
 
-    protected function addReceiverDataInPaymentArray(array $paymentArray, Base\PublicEntity $receiver)
+    protected function addReceiverDataInPaymentArray(array $paymentArray)
     {
+        $receiver = $this->getReceiver();
+
         $receiverData = [
             'id'   => $receiver->getPublicId(),
             'type' => $receiver->getEntity(),

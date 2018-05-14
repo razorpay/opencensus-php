@@ -7,9 +7,7 @@ use Cache;
 
 use Exception;
 use RZP\Models\Base;
-use RZP\Constants\Mode as RzpMode;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
@@ -21,48 +19,6 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 class Processor extends VirtualAccount\Processor
 {
     const PAYER_BANK_ACCOUNT_MAX_LENGTH = 20;
-
-    /**
-     * Entry point for bank transfer process flow.
-     * Check if the bankTransfer was an expected one.
-     * - BankTransfer was expected?
-     *   - Yes
-     *     - UTR unique?
-     *       - Yes
-     *         - Process the payment towards the owner of the VA
-     *       - No
-     *         - Duplicate payment, save entity and ignore
-     *   - No
-     *     - Reserved account?
-     *       - Yes
-     *         - Do nothing
-     *       - No
-     *         - Process payment toward demo merchant, auto-refund it later.
-     *
-     * @param Entity|Base\PublicEntity $bankTransfer
-     *
-     * @return null|Entity
-     */
-    public function process(Base\PublicEntity $bankTransfer)
-    {
-        parent::process($bankTransfer);
-
-        if ($bankTransfer->isExpected() === false)
-        {
-            if ($this->checkReservedAccount($bankTransfer) === true)
-            {
-                return null;
-            }
-        }
-
-        $this->processReceiver($bankTransfer);
-
-        $this->trace->info(
-                TraceCode::BANK_TRANSFER_PROCESSING_SUCCESSFUL,
-                $bankTransfer->toArray());
-
-        return $bankTransfer;
-    }
 
     /**
      * Check if the UTR received has ever been encountered before for the same
@@ -85,8 +41,8 @@ class Processor extends VirtualAccount\Processor
         $payerIfsc = $bankTransfer->getPayerIfsc();
 
         $duplicateBankTransfer = $this->repo
-            ->bank_transfer
-            ->findByUtrAndPayerIfsc($utr, $payerIfsc);
+                                      ->bank_transfer
+                                      ->findByUtrAndPayerIfsc($utr, $payerIfsc);
 
         if ($duplicateBankTransfer === null)
         {
@@ -116,6 +72,14 @@ class Processor extends VirtualAccount\Processor
      */
     protected function processReceiver(Base\PublicEntity $bankTransfer)
     {
+        if ($bankTransfer->isExpected() === false)
+        {
+            if ($this->checkReservedAccount($bankTransfer) === true)
+            {
+                return null;
+            }
+        }
+
         $paymentProcessor = new PaymentProcessor($this->merchant);
 
         $payment = $this->repo->transaction(
@@ -156,6 +120,8 @@ class Processor extends VirtualAccount\Processor
                 $paymentProcessor->autoCapturePayment($payment);
             }
         }
+
+        return $bankTransfer;
     }
 
     /**
@@ -231,6 +197,8 @@ class Processor extends VirtualAccount\Processor
             ($this->virtualAccount->merchant->isCategory2Cryptocurrency() === true) and
             ($this->areBankTransfersBlockedForCrypto() === true))
         {
+            $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
+
             return false;
         }
 
@@ -281,7 +249,7 @@ class Processor extends VirtualAccount\Processor
      *
      * @return bool
      */
-    protected function checkReservedAccount(Entity $bankTransfer)
+    protected function checkReservedAccount(Base\PublicEntity $bankTransfer)
     {
         $payeeAccount = $bankTransfer->getPayeeAccount();
 
@@ -382,5 +350,10 @@ class Processor extends VirtualAccount\Processor
         $this->repo->saveOrFail($bankAccount);
 
         return $bankAccount;
+    }
+
+    protected function getReceiver()
+    {
+        return $this->virtualAccount->bankAccount;
     }
 }
