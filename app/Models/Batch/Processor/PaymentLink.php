@@ -84,18 +84,20 @@ class PaymentLink extends Base
 
     /**
      * {@inheritDoc}
-     * CSV optionally can contain header. When it does we need to set proper
-     * header version so that the read associative array is proper.
      */
     protected function parseTextFile(string $file, string $delimiter = '~')
     {
-        // Reads the first line to set the header version. This is needed the way test file parsing works currently
+        //
+        // CSV optionally can contain header. When it does we need to set proper header version so that the read
+        // associative array is proper. Here, reads the first line to set the header version.
+        //
         $this->setUsesNewPlHeaderFlagIfApplicable(explode($delimiter, trim(fgets(fopen($file, 'r')))));
 
         return parent::parseTextFile($file, $delimiter);
     }
 
     /**
+     * If headings has a new specific value, sets a flag to be used later in below method.
      * @param bool|array $headings
      */
     protected function setUsesNewPlHeaderFlagIfApplicable($headings)
@@ -112,6 +114,7 @@ class PaymentLink extends Base
     }
 
     /**
+     * Update the existing header values for specific type in specific case (when a flag is set).
      * @param  array $headings
      * @return array
      */

@@ -751,13 +751,13 @@ class Header
     {
         $expectedHeaders = self::HEADER_MAP[$type][self::INPUT];
 
-        $valid = (array_equal($expectedHeaders, $actualHeaders) === true);
+        $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
 
         // Todo: Fix this hack!
         if (($valid === false) and ($type === Type::PAYMENT_LINK))
         {
             $expectedHeaders = array_replace($expectedHeaders, [4 => self::AMOUNT_IN_PAISE]);
-            $valid = (array_equal($expectedHeaders, $actualHeaders) === true);
+            $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
         }
 
         if ($valid === false)
@@ -806,5 +806,11 @@ class Header
             default:
                 throw new LogicException("Invalid file type: $fileType");
         }
+    }
+
+    public static function areTwoHeadersSame(array $headings1, array $headings2): bool
+    {
+        return ((count($headings1) === count($headings2)) and
+                (array_diff($headings1, $headings2) === array_diff($headings2, $headings1)));
     }
 }
