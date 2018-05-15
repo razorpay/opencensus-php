@@ -292,6 +292,12 @@ class Gateway extends Base\Gateway
 
         $request['url'] .= '?' . http_build_query($content);
 
+        // Since they don't have a valid SSL certificate on UAT site.
+        if ($this->mode === Mode::TEST)
+        {
+            $request['options']['verify'] = false;
+        }
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
