@@ -48,7 +48,7 @@ class Reconciliator extends BaseMockRecon
                 '3028367',
                 $this->formatAmount($row['payment']['amount']),
                 $row['payment']['id'],
-                9999,
+                99999,
             ];
 
             $this->content($col, 'col_payment_oriental_recon');

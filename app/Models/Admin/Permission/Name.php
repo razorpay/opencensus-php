@@ -73,7 +73,7 @@ class Name
     const CREATE_SETTLEMENTS_RECONCILE        = 'create_settlements_reconcile';
     const RETRY_SETTLEMENT                    = 'retry_settlement';
     const SETTLEMENT_BULK_UPDATE              = 'settlement_bulk_update';
-    const EDIT_MERCHANT_INVOICE_GSTIN         = 'edit_merchant_invoice_gstin';
+    const MERCHANT_INVOICE_EDIT               = 'merchant_invoice_edit';
     const CREATE_RECONCILIATE                 = 'create_reconciliate';
     const VIEW_ACTIVATION_FORM                = 'view_activation_form';
     const EDIT_MERCHANT_LOCK_ACTIVATION       = 'edit_merchant_lock_activation';

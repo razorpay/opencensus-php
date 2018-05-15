@@ -5,6 +5,7 @@ namespace RZP\Models\Batch\Helpers;
 use RZP\Models\Batch;
 use RZP\Models\Invoice;
 use RZP\Models\Customer;
+use RZP\Models\Base\Utility;
 
 class PaymentLink
 {
@@ -33,19 +34,16 @@ class PaymentLink
     {
         // Set partial_payment attribute to false if field comes as null from excel file.
         $partialPayment = array_get($entry, Batch\Header::PARTIAL_PAYMENT);
-        $partialPayment = self::PARTIAL_PAYMENT_INPUT_MAP[strtolower(trim($partialPayment))];
+        $partialPayment = self::PARTIAL_PAYMENT_INPUT_MAP[strtolower(trim($partialPayment))] ?? '0';
 
         $receipt = $entry[Batch\Header::INVOICE_NUMBER];
         $receipt = empty($receipt) === true ? null : (string) $receipt;
 
-        $expireBy = $entry[Batch\Header::EXPIRE_BY];
-        // Adding check for is_numeric because typecasting any alphabet
-        // to int gives '0' which will be interpreted wrongly by validator
-        $expireBy = (is_numeric($expireBy) === true) ? (int) $expireBy : $expireBy;
+        $expireBy = Utility::parseAsEpoch($entry[Batch\Header::EXPIRE_BY]);
 
         // Amount needs to be formatted this way as excel reader in cases
         // reads 4255 as 4244.99999. This is known php + excel issue.
-        $amount = $entry[Batch\Header::AMOUNT];
+        $amount = $entry[Batch\Header::AMOUNT] ?? $entry[Batch\Header::AMOUNT_IN_PAISE];
         $amount = (is_numeric($amount) === true) ? (int) number_format($amount, 0, '', '') : $amount;
 
         // Get draft, sms_notify, email_notify from $params or use default as

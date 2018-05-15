@@ -10,7 +10,6 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
-use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\RequestProcessor;
 
 class Service extends Base\Service
@@ -19,9 +18,11 @@ class Service extends Base\Service
      * List of gateways where we are doing recon processing via batch.
      */
     const BATCH_RECON_GATEWAYS = [
+        RequestProcessor\Base::AXIS,
+        RequestProcessor\Base::HDFC,
+        RequestProcessor\Base::HITACHI,
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::FIRST_DATA,
-        RequestProcessor\Base::HITACHI,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
         RequestProcessor\Base::NETBANKING_OBC,

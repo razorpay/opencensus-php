@@ -34,6 +34,8 @@ class Gateway extends Base\Gateway
 
     const ACQUIRER = 'hdfc';
 
+    const HASH_ALGO = 'sha256';
+
     protected $gateway = 'upi_hulk';
 
     //
@@ -50,6 +52,8 @@ class Gateway extends Base\Gateway
         Entity::BANK                      => Entity::BANK,
         Entity::TYPE                      => Entity::TYPE,
         Entity::RECEIVED                  => Entity::RECEIVED,
+        Fields::CALLER_ACCOUNT_NUMBER     => Entity::ACCOUNT_NUMBER,
+        Fields::CALLER_IFSC_CODE          => Entity::IFSC,
     ];
 
     /**
@@ -119,17 +123,7 @@ class Gateway extends Base\Gateway
 
         $this->updateGatewayPaymentResponse($payment, $response);
 
-        $status = $response['status'];
-
-        if ($status !== Status::CREATED)
-        {
-            $errorCode = $response['internal_error_code'];
-
-            // pass it as error code to API
-            throw new Exception\GatewayErrorException(
-                $errorCode,
-                $status);
-        }
+        $this->checkResponseStatus($response, Status::CREATED);
 
         return $this->getIntentRequest($input, $response);
     }
@@ -137,9 +131,9 @@ class Gateway extends Base\Gateway
     protected function getIntentRequest($input, $response)
     {
         $content = [
-            Base\IntentParams::PAYEE_ADDRESS => $input['terminal']->getGatewayMerchantId2(),
+            Base\IntentParams::PAYEE_ADDRESS => $response[Fields::RECEIVER][Fields::ADDRESS],
             Base\IntentParams::PAYEE_NAME    => $this->getFormattedDba($input),
-            Base\IntentParams::TXN_REF_ID    => $response['id'],
+            Base\IntentParams::TXN_REF_ID    => $this->getFormattedRefId($response),
             Base\IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
             Base\IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
             Base\IntentParams::TXN_CURRENCY  => $input['payment']['currency'],
@@ -152,6 +146,17 @@ class Gateway extends Base\Gateway
     protected function getFormattedDba($input)
     {
         return preg_replace('/\s+/', '', $input['merchant']->getFilteredDba());
+    }
+
+    protected function getFormattedRefId(array $p2p)
+    {
+        // Ref Id is not sent right now, will be sent later
+        if (isset($p2p[Fields::REF_ID]) === true)
+        {
+            return $p2p[Fields::REF_ID];
+        }
+
+        return str_replace('p2p_', '', $p2p[Fields::ID]);
     }
 
     /**
@@ -169,27 +174,20 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        $p2p = $content['payload']['p2p'];
+        $this->validateCallbackSignature($content);
+
+        $p2p = $content[Fields::DATA];
 
         $repo = $this->getRepository();
 
         $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
         $expectedAmount = $input['payment']['amount'];
-        $actualAmount   = $content[Fields::AMOUNT];
+        $actualAmount   = $p2p[Fields::AMOUNT];
 
         $this->assertAmount($expectedAmount, $actualAmount);
 
-        if ((isset($content['error']) === true) or
-            ($content['status'] !== Status::COMPLETED))
-        {
-            $message = 'Payment Failed during callback';
-
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $content['error']['internal_error_code'],
-                $message);
-        }
+        $this->checkResponseStatus($p2p, Status::COMPLETED);
 
         // Authorization was successful
         $this->updateGatewayPaymentResponse($gatewayPayment, $p2p);
@@ -201,12 +199,48 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    protected function validateCallbackSignature(array $input)
+    {
+        $signature = $input[Fields::SIGNATURE];
+
+        $content = $input[Fields::RAW];
+
+        $password = $this->getTerminalPassword();
+
+        $hashed = hash_hmac(self::HASH_ALGO, $content, $password);
+
+        if(hash_equals($hashed, $signature) !== true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED,
+                null,
+                null,
+                [
+                    'expected'  => $hashed,
+                    'actual'    => $signature,
+                ]);
+        }
+    }
+
     /**
-     * @todo Override this function to validate the signature of webhook
+     * Will inject Signature in input from request
+     *
+     * @param $input
+     * @return array
      */
     public function preProcessServerCallback($input): array
     {
+        $input[Fields::SIGNATURE] = array_get($input, 'headers.x-hulk-signature.0');
+
+        // To make sure, we do not use it later in code.
+        unset($input['headers']);
+
         return $input;
+    }
+
+    public function getPaymentIdFromServerCallback($input): string
+    {
+        return $input['data'][Fields::MERCHANT_REFERENCE_ID];
     }
 
     /**
@@ -237,7 +271,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === Mode::TEST)
         {
-            return $this->config['test_merchant_id'];
+            return 'rzp_test_' . $this->input['merchant']['id'];
         }
 
         return 'rzp_live_' . $this->input['merchant']['id'];
@@ -245,11 +279,6 @@ class Gateway extends Base\Gateway
 
     public function getTerminalPassword()
     {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->config['test_terminal_password'];
-        }
-
         return $this->input['terminal']['gateway_terminal_password'];
     }
 
@@ -262,17 +291,18 @@ class Gateway extends Base\Gateway
         $collectByTimestamp = Carbon::now(Timezone::IST)->addMinutes($expiryTime)->getTimestamp();
 
         $content = [
-            Fields::TYPE             => Type::PULL,
-            Fields::AMOUNT           => $payment['amount'],
-            Fields::CURRENCY         => $input['payment']['currency'],
-            Fields::EXPIRE_AT        => $collectByTimestamp,
-            Fields::SENDER           => [
+            Fields::TYPE                    => Type::PULL,
+            Fields::AMOUNT                  => $payment['amount'],
+            Fields::CURRENCY                => $input['payment']['currency'],
+            Fields::EXPIRE_AT               => $collectByTimestamp,
+            Fields::SENDER                  => [
                 Fields::ADDRESS => $input['payment']['vpa'],
             ],
-            Fields::DESCRIPTION      => $this->getPaymentRemark($input),
-            Fields::NOTES            => [
-                'razorpay_payment_id' => $payment['id'],
+            Fields::DESCRIPTION             => $this->getPaymentRemark($input),
+            Fields::NOTES                   => [
+                'razorpay_payment_id'       => $payment['id'],
             ],
+            Fields::MERCHANT_REFERENCE_ID   => $payment['id'],
         ];
 
         $request = $this->getStandardRequestArray($content);
@@ -293,13 +323,14 @@ class Gateway extends Base\Gateway
         $payment = $input['payment'];
 
         $content = [
-            Fields::TYPE             => Type::EXPECTED_PUSH,
-            Fields::AMOUNT           => $payment['amount'],
-            Fields::CURRENCY         => $payment['currency'],
-            Fields::DESCRIPTION      => $this->getPaymentRemark($input),
-            Fields::NOTES            => [
+            Fields::TYPE                    => Type::EXPECTED_PUSH,
+            Fields::AMOUNT                  => $payment['amount'],
+            Fields::CURRENCY                => $payment['currency'],
+            Fields::DESCRIPTION             => $this->getPaymentRemark($input),
+            Fields::NOTES                   => [
                 'razorpay_payment_id' => $payment['id']
             ],
+            Fields::MERCHANT_REFERENCE_ID   => $payment['id'],
         ];
 
         if ($input['merchant']->isTPVRequired() === true)
@@ -349,6 +380,7 @@ class Gateway extends Base\Gateway
     {
         $attr = $this->getMappedAttributes($response);
 
+        $attr[Entity::VPA] = array_get($response, Fields::SENDER.'.'.Fields::ADDRESS);
         // To mark that we have received a response for this request
         $attr[Entity::RECEIVED] = 1;
 
@@ -477,5 +509,18 @@ class Gateway extends Base\Gateway
 
         throw new Exception\LogicException(
             'Refund not implemented');
+    }
+
+    protected function checkResponseStatus(array $p2p, string $successStatus)
+    {
+        if ($p2p[Fields::STATUS] !== $successStatus)
+        {
+            $errorCode = ResponseErrorCode::getMappedErrorCode($p2p[Fields::INTERNAL_ERROR_CODE]);
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $p2p[Fields::INTERNAL_ERROR_CODE],
+                $p2p[Fields::ERROR_DESCRIPTION]);
+        }
     }
 }
