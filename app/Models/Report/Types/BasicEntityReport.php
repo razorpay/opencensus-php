@@ -18,9 +18,9 @@ class BasicEntityReport extends BaseReport
 {
     use FileHandlerTrait;
 
-    const BATCH_LIMIT = 20000;
-
     const MAX_FILE_LIMIT = 200000;
+
+    protected $batchLimit = 20000;
 
     protected $entity;
 
@@ -44,6 +44,7 @@ class BasicEntityReport extends BaseReport
                 Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::CARD,
                 Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::ORDER,
             ],
+            E::SETTLEMENT,
         ],
         E::DISPUTE => [
             E::PAYMENT,
@@ -273,9 +274,9 @@ class BasicEntityReport extends BaseReport
     {
         $totalCount = 0;
 
-        while ($count === self::BATCH_LIMIT)
+        while ($count === $this->batchLimit)
         {
-            list($data, $count) = $this->getReportDataForMerchant($from, $to, self::BATCH_LIMIT, $skip, $merchantId);
+            list($data, $count) = $this->getReportDataForMerchant($from, $to, $this->batchLimit, $skip, $merchantId);
 
             $fullpath = $this->createCsvFile($data, $filename, null, 'files/report', $append);
 
@@ -329,7 +330,8 @@ class BasicEntityReport extends BaseReport
      */
     protected function getFetchLimits($input): array
     {
-        $count = self::BATCH_LIMIT;
+        $count = $this->batchLimit;
+
         $skip = 0;
 
         if (isset($input['count']) === true)
