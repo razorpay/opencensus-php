@@ -548,3 +548,15 @@ export const isValidGSTIN = gstin => {
   let regex = /^[0123][0-9][a-z]{5}[0-9]{4}[a-z][0-9][z][a-z0-9]$/gi;
   return regex.test(gstin);
 };
+
+export const subString = (str, length) => {
+  if (!str) {
+    return str;
+  }
+
+  if (str.length > length) {
+    return `${str.substr(0, length)} ...`;
+  } else {
+    return str;
+  }
+};

@@ -50,7 +50,7 @@ export default class BatchCreateModal extends Component {
                 BATCH FILE NAME{' '}
                 <i
                   class="i i-info-circle m-l"
-                  placeholder="Maximum filename length is 255 characters."
+                  title="Maximum filename length is 255 characters."
                 />
               </strong>
             </h5>

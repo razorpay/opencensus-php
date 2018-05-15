@@ -2,7 +2,7 @@ import * as items from './index';
 import * as id from './id';
 import { getAmount, getTime } from 'rzp/ui/item';
 import { makeIdLink } from 'rzp/ui/item/id';
-import { getIntervalCycle } from 'rzp/utils/rzp-utils';
+import { getIntervalCycle, subString } from 'rzp/utils/rzp-utils';
 
 export const withClick = onClick => ({ value, ...rest }) => {
   return {
@@ -121,5 +121,5 @@ export const planBillingCycle = {
 
 export const batchName = {
   title: 'Batch Name',
-  value: item => item.name,
+  value: item => subString(item.name, 50),
 };
