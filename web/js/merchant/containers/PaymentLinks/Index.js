@@ -20,12 +20,6 @@ export default class PaymentLinksContainer extends Component {
   render() {
     const { user } = this.props;
 
-    let tags = (user.isAuthenticated && user.tags) || [];
-    tags = tags.map(t => t.toLowerCase());
-
-    const isNewBatchEnabled = tags.includes(NEW_BATCH_TAG);
-    const isOldBatchEnabled = tags.includes(OLD_BATCH_TAG);
-
     return (
       <tabbed-container>
         <header id="link-header">
@@ -44,14 +38,14 @@ export default class PaymentLinksContainer extends Component {
 
         <content>
           <Switch>
-            {isOldBatchEnabled && (
+            {user.isOldBatchEnabled && !user.isNewBatchEnabled ? (
               <Route
                 path="/paymentlinks/batchuploads/new"
                 component={BatchUpload}
               />
-            )}
+            ) : null}
 
-            {isNewBatchEnabled ? (
+            {user.isNewBatchEnabled ? (
               <Route
                 path="/paymentlinks/batchuploads"
                 component={BatchListNew}
