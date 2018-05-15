@@ -3547,3 +3547,6 @@ ALTER TABLE terminals
 ALTER TABLE terminals
     ADD COLUMN gateway_terminal_password2 text DEFAULT NULL AFTER gateway_terminal_password,
     ADD COLUMN gateway_secure_secret2 VARCHAR(255) DEFAULT NULL AFTER gateway_secure_secret;
+
+ALTER TABLE payments
+    ADD INDEX `payments_merchant_id_captured_at_index` (merchant_id, captured_at);

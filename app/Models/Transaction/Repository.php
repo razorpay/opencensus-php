@@ -627,84 +627,34 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchFeesAndTaxForTransactionsByType(
+    /**
+     * calcualtes the sum of `fee` and `tax` of all the transaction created for a merchant in given time frame.
+     * Conciders only transactions whose type is not in `IGNORE_ENTITIES_FROM_MERCHANT_INVOICE`
+     *
+     * @param string $merchantId
+     * @param int    $start
+     * @param int    $end
+     *
+     * @return mixed
+     */
+    public function fetchFeesAndTaxForTransactions(
         string $merchantId,
         int $start,
-        int $end,
-        string $filterType,
-        bool $isCorrection = false)
+        int $end)
     {
-        $merchantIdCol = $this->dbColumn(Entity::MERCHANT_ID);
-
-        $amountCol = $this->dbColumn(Entity::AMOUNT);
-
-        $feeCol = $this->dbColumn(Entity::FEE);
-
-        $taxCol = $this->dbColumn(Entity::TAX);
-
-        $paymentIdCol = $this->repo->payment->dbColumn(Payment\Entity::ID);
-
-        $paymentCardIdCol = $this->repo->payment->dbColumn(Payment\Entity::CARD_ID);
-
-        $query = $this->newQuery()
-                      ->selectRaw(
-                          'SUM(' . $taxCol .') AS tax, SUM(' . $feeCol . ') AS fee')
-                      ->leftjoin(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdCol)
-                      ->where(function ($query) use ($start, $end, $isCorrection)
-                      {
-                          $capturedAt = $this->repo->payment->dbColumn(Payment\Entity::CAPTURED_AT);
-
-                          $query->where(Entity::TYPE, '=', Type::PAYMENT)
-                                ->whereBetween($capturedAt, [$start, $end]);
-
-                          if ($isCorrection === true)
-                          {
-                              $createdAt = $this->dbColumn(Entity::CREATED_AT);
-
-                              $query->whereBetween($createdAt, [$start, $end]);
-                          }
-                      })
-                      ->orWhere(function($query) use ($start, $end)
-                      {
-                          $createdAt = $this->dbColumn(Entity::CREATED_AT);
-
-                          $query->where(Entity::TYPE, '<>', Type::PAYMENT)
-                                ->whereBetween($createdAt, [$start, $end]);
-                      })
-                      ->merchantId($merchantId)
-                      ->whereNotIn(Entity::TYPE, Type::IGNORE_ENTITIES_FROM_MERCHANT_INVOICE)
-                      ->groupBy($merchantIdCol);
-
-        switch ($filterType)
-        {
-            case InvoiceType::OTHERS:
-                $query = $query->whereNull($paymentCardIdCol);
-                break;
-
-            case InvoiceType::CARD_LTE_2K:
-                $query = $query->whereNotNull($paymentCardIdCol)
-                               ->where($amountCol, '<=', FeeCalculator::CARD_TAX_CUT_OFF);
-                break;
-
-            case InvoiceType::CARD_GT_2K:
-                $query = $query->whereNotNull($paymentCardIdCol)
-                               ->where($amountCol, '>', FeeCalculator::CARD_TAX_CUT_OFF);
-                break;
-
-            default:
-                throw new Exception\LogicException('Invalid merchant invoice type: ', $filterType);
-        }
-
-        $this->trace->info(
-            TraceCode::MERCHANT_INVOICE_GENERATE_QUERY,
-            [
-                'start'       => $start,
-                'end'         => $end,
-                'merchant_id' => $merchantId,
-                'query'       => $query->toSql(),
-            ]);
-
-        return $query->first();
+        //
+        // There is no variation based on transaction type here.
+        // All the transaction here will be part of `OTHERS` section
+        // Because this will look at only transaction which not in ignore list
+        // And Payment is part of ignore list and only payment has the type difference
+        //
+        return $this->newQuery()
+                    ->selectRaw(
+                        'SUM(' . Entity::TAX .') AS tax, SUM(' . Entity::FEE . ') AS fee')
+                    ->whereBetween(Entity::CREATED_AT, [$start, $end])
+                    ->merchantId($merchantId)
+                    ->whereNotIn(Entity::TYPE, Type::IGNORE_ENTITIES_FROM_MERCHANT_INVOICE)
+                    ->first();
     }
 
     /**
