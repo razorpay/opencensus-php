@@ -85,6 +85,7 @@ class MailTags
     const AXIS_EMANDATE_DEBIT_MAIL         = 'axis_emandate_debit_mail';
 
     const RBL_ENACH_DEBIT_MAIL             = 'rbl_enach_debit_mail';
+    const RBL_ENACH_REGISTER_MAIL          = 'rbl_enach_register_mail';
 
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';

@@ -99,13 +99,20 @@ class Messenger
 
     protected function getSlackSettings($level)
     {
-        $settings['channel']    = $this->app['config']->get('slack.channels.reconciliation2');
+        $slackChannel = $this->getSlackChannel($level);
+
+        $settings['channel']    = $this->app['config']->get($slackChannel);
         $settings['color']      = $this->getSlackColor($level);
 
         return $settings;
     }
 
-    // Get slack notification color based on level
+    /**
+     * Get slack notification color based on level
+     *
+     * @param $level
+     * @return string
+     */
     protected function getSlackColor($level)
     {
         switch ($level)
@@ -114,10 +121,18 @@ class Messenger
                 return 'danger';
             case self::INFO:
                 return 'good';
+
+            default:
+                return 'danger';
         }
     }
 
-    // Get slack headline text based on level
+    /**
+     * Get slack headline text based on level
+     *
+     * @param $level
+     * @return string
+     */
     protected function getSlackHeadline($level)
     {
         switch ($level)
@@ -126,6 +141,29 @@ class Messenger
                 return 'Reconciliation alert';
             case self::INFO:
                 return 'Reconciliation info';
+
+            default:
+                return 'Reconciliation alert';
+        }
+    }
+
+    /**
+     * Get slack channel based on level
+     *
+     * @param $level
+     * @return string
+     */
+    protected function getSlackChannel($level)
+    {
+        switch ($level)
+        {
+            case self::ALERT:
+                return 'slack.channels.reconciliation2';
+            case self::INFO:
+                return 'slack.channels.reconciliation_info';
+
+            default:
+                return 'slack.channels.reconciliation2';
         }
     }
 }

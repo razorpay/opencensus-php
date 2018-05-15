@@ -186,7 +186,29 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::FEATURE)->insert(
                 array(
                     'id'            => 'feature_202020',
-                    'name'          => 'recurring',
+                    'name'          => 'subscriptions',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime
+                )
+            );
+
+            DB::table(Table::FEATURE)->insert(
+                array(
+                    'id'            => 'feature_303030',
+                    'name'          => 'bharat_qr',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime
+                )
+            );
+
+            DB::table(Table::FEATURE)->insert(
+                array(
+                    'id'            => 'feature_404040',
+                    'name'          => 'virtual_accounts',
                     'entity_id'     => '10000000000000',
                     'entity_type'   => 'merchant',
                     'created_at'    => $currentTime,
@@ -516,6 +538,7 @@ class DatabaseSeeder extends Seeder
                     'emi'           => '1',
                     'upi'           => '1',
                     'bank_transfer' => '1',
+                    'emandate'      => '1',
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                 )
@@ -1205,10 +1228,25 @@ class DatabaseSeeder extends Seeder
     {
         DB::table(Table::TERMINAL)->insert(
             array(
-                'id'                    => '22BOfBaroda2m8',
+                'id'                    => '22BOfBarodaRm8',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::NETBANKING_BOB,
                 'netbanking'            => '1',
+                'corporate'             => '0',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_bob',
+                'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_bob_hash_secret'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            )
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => '22BOfBarodaCm8',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_BOB,
+                'netbanking'            => '1',
+                'corporate'             => '1',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_bob',
                 'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_bob_hash_secret'),
                 'created_at'            => time(),

@@ -13,8 +13,7 @@ class Validator extends Base\Validator
         RequestFields::BILLER_NAME      => 'required|string',
         RequestFields::AMOUNT           => 'required|numeric',
         RequestFields::CALLBACK_URL     => 'required|url',
-        RequestFields::PAYMENT_ID       => 'required|alpha_num|size:14',
-        RequestFields::CUSTOMER_TYPE    => 'required|string|in:retail,corporate',
+        RequestFields::PAYMENT_ID       => 'required|alpha_num|size:14'
     );
 
     protected static $verifyRules = [

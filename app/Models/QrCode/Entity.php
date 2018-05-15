@@ -3,6 +3,7 @@
 namespace RZP\Models\QrCode;
 
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Models\VirtualAccount\Provider;
 
@@ -65,13 +66,25 @@ class Entity extends Base\PublicEntity
         return $this->morphMany(FileStore\Entity::class, 'entity');
     }
 
+    public function payments()
+    {
+        return $this->morphMany(Payment\Entity::class, 'source');
+    }
+
     // --------------------- END RELATIONS ---------------------
 
     // --------------------- GETTERS ---------------------
 
+    /**
+     * This function is used in case of polymorphic relations where we associate one entity
+     * with multiple other entities using (entity_type and entity_id). It determines the string that
+     * will be stored for entity_type when the association is with the QrCode entity.
+     *
+     * @return string
+     */
     public function getMorphClass()
     {
-        return 'qr_code';
+        return $this->entity;
     }
 
     /**

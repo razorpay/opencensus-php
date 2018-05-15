@@ -164,7 +164,7 @@ abstract class Base extends Core
                                ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
                                ->first();
 
-            return $file !== null;
+            return ($file !== null);
         }
 
         return false;

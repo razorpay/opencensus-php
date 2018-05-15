@@ -10,7 +10,10 @@ class Customer extends Base
         $this->fixtures->create('customer:app_tokens');
         $this->fixtures->create('customer:tokens');
         $this->fixtures->create('customer:bank_accounts');
+        $this->fixtures->on('live')->create('customer:customers');
+        $this->fixtures->on('test');
     }
+
 
     protected $customers = array(
         array(

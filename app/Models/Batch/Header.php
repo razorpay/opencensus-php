@@ -33,6 +33,7 @@ class Header
     const CUSTOMER_NAME       = 'Customer Name';
     const CUSTOMER_EMAIL      = 'Customer Email';
     const CUSTOMER_CONTACT    = 'Customer Contact';
+    const AMOUNT_IN_PAISE     = 'Amount (In Paise)';
     const DESCRIPTION         = 'Description';
     const EXPIRE_BY           = 'Expire By';
     const PARTIAL_PAYMENT     = 'Partial Payment';
@@ -735,30 +736,33 @@ class Header
     /**
      * Validates headers of batch input file.
      *
-     * @param string $headerKey
-     * @param array  $keys
+     * @param string $type
+     * @param array  $actualHeaders
      *
      * @throws BadRequestException
      */
-    public static function validate(string $headerKey, array $keys)
+    public static function validate(string $type, array $actualHeaders)
     {
-        $expectedHeaders = self::HEADER_MAP[$headerKey][self::INPUT];
+        $expectedHeaders = self::HEADER_MAP[$type][self::INPUT];
 
-        $headersMissing = (bool) array_diff($expectedHeaders, $keys);
+        $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
 
-        $extraHeadersInInput = (count($expectedHeaders) !== count($keys));
+        // Todo: Fix this hack!
+        if (($valid === false) and ($type === Type::PAYMENT_LINK))
+        {
+            $expectedHeaders = array_replace($expectedHeaders, [4 => self::AMOUNT_IN_PAISE]);
+            $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
+        }
 
-        if (($headersMissing === true) or ($extraHeadersInInput === true))
+        if ($valid === false)
         {
             throw new BadRequestException(
-                        ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
-                        null,
-                        [
-                            'expected_headers'  => $expectedHeaders,
-                            'input_headers'     => $keys,
-                            'headers_missing'   => $headersMissing,
-                            'extra_headers'     => $extraHeadersInInput,
-                        ]);
+                ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
+                null,
+                [
+                    'expected_headers'  => $expectedHeaders,
+                    'input_headers'     => $actualHeaders,
+                ]);
         }
     }
 
@@ -796,5 +800,11 @@ class Header
             default:
                 throw new LogicException("Invalid file type: $fileType");
         }
+    }
+
+    public static function areTwoHeadersSame(array $headings1, array $headings2): bool
+    {
+        return ((count($headings1) === count($headings2)) and
+                (array_diff($headings1, $headings2) === array_diff($headings2, $headings1)));
     }
 }

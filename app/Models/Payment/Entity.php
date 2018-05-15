@@ -26,6 +26,7 @@ use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Netbanking;
 
 /**
@@ -1371,6 +1372,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::BANK_TRANSFER);
     }
 
+    public function isBharatQr()
+    {
+        return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE);
+    }
+
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
@@ -2394,6 +2400,11 @@ class Entity extends Base\PublicEntity
     public function netbanking()
     {
         return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
+    }
+
+    public function enach()
+    {
+        return $this->hasOne('RZP\Gateway\Enach\Base\Entity');
     }
 
     // using hasOne here as we need only the first billdesk entity, actual relation can be one-to-many
