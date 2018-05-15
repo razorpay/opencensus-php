@@ -106,15 +106,17 @@ export default class ActivationWizard extends React.Component {
                 ...this.state.data,
                 [a.name]: file.name,
               },
-              dirty: {
-                ...this.state.dirty,
-                [a.name]: file.name,
-              },
             });
 
-            this.markTabIfActive(true);
+            return props
+              .saveFile(a.name, file, progressTracker)
+              .then(response => {
+                if (response) {
+                  this.markTabIfActive();
+                }
 
-            return props.saveFile(a.name, file, progressTracker);
+                return response;
+              });
           })
       );
   }
@@ -129,10 +131,7 @@ export default class ActivationWizard extends React.Component {
 
   setInitialTab() {
     let firstInValid = null;
-    let isSubmitFormRemoved =
-      this.props.data.activated ||
-      this.props.data.submitted ||
-      this.props.data.locked; // Linked accounts form can still be seen after activation.
+    let isSubmitFormRemoved = isSubmitFormDisabled(this.props.data); // Linked accounts form can still be seen after activation.
 
     for (let i = 0; i < FORM_TABS.length; i++) {
       let tabStatusValid = this.tabValidity(i);
@@ -151,12 +150,12 @@ export default class ActivationWizard extends React.Component {
     this.state.activeTab = firstInValid;
   }
 
-  markTabIfActive(forceValue) {
+  markTabIfActive() {
     let currentActive = this.state.activeTab;
     let isValid = this.tabValidity(currentActive);
     let tabs = this.state.tabs.slice();
-    // If marked valid in the same step as setting value then need to set through forceValue, like in case of Document upload
-    tabs[currentActive] = forceValue || isValid;
+
+    tabs[currentActive] = isValid;
 
     this.setState({
       tabs,
@@ -168,6 +167,8 @@ export default class ActivationWizard extends React.Component {
 
   goto = activeTab => {
     let currentActive = this.state.activeTab;
+    let tabs = this.state.tabs.slice();
+
     activeTab = typeof activeTab === 'undefined' ? currentActive : activeTab; // Tab is not changed (To handle Save btn click).
 
     let shouldSave = Object.keys(this.state.dirty).length ? true : null;
@@ -382,10 +383,7 @@ export default class ActivationWizard extends React.Component {
 
   render() {
     let isLinkedAccountForm = !!this.props.accountId;
-    let isSubmitFormRemoved =
-      this.props.data.activated ||
-      this.props.data.submitted ||
-      this.props.data.locked; // Linked accounts form can still be seen after activation.
+    let isSubmitFormRemoved = isSubmitFormDisabled(this.props.data);
 
     let activeTab = this.state.activeTab;
     let isLastTab = activeTab == FORM_TABS.length - 1;
@@ -489,7 +487,7 @@ export default class ActivationWizard extends React.Component {
 
           {/* Show alert if linked account has been activated */}
           {isLinkedAccountForm &&
-            this.state.data.activated && (
+            !!this.props.data.activated && (
               <Alert.Info>The account has been activated</Alert.Info>
             )}
 
@@ -616,7 +614,7 @@ function Loader({ isSaving }) {
   );
 }
 
-function ActivationField(field, activation) {
+function ActivationField(field) {
   let { _cmp: Component, _name, _when, _optionsFn, ...rest } = field;
 
   if (_when && !_when(this)) {
@@ -644,14 +642,16 @@ function ActivationField(field, activation) {
       key={key}
       data-name={_name}
       defaultValue={defaultValue}
-      disabled={
-        !!this.state.data.locked ||
-        !!this.state.data.submitted ||
-        !!this.state.data.activated
-      } // Linked accounts form can still be seen after activation
+      disabled={isSubmitFormDisabled(this.props.data)} // If form cannot be submitted, then all fields are disabled.
       {...rest}
     />
   );
+}
+
+function isSubmitFormDisabled(data) {
+  let isSubmitFormRemoved = data.activated || data.submitted || data.locked; // Linked accounts form can still be seen after activation.
+
+  return !!isSubmitFormRemoved;
 }
 
 function isFieldValid(field, activation) {

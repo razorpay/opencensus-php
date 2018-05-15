@@ -94,7 +94,12 @@ export class ActivationContainer extends React.Component {
           throw { errors: ['Some mandatory fields are required'] };
         }
 
+        this.setState({
+          data: response.data,
+        });
+
         this.postSubmitStep(response);
+
         return response;
       })
       .catch(err => {
@@ -125,6 +130,10 @@ export class ActivationContainer extends React.Component {
             message: response.errors,
           });
         } else {
+          this.setState({
+            data: response.data,
+          });
+
           !this.props.accountId && this.updateSession(response.data); // Updating % activation_progress (side bar)
         }
 
@@ -212,6 +221,10 @@ export class ActivationContainer extends React.Component {
       });
   }
 
+  /*
+  * 1. For linked account form, only spinner or Activation wizard.
+  * 2. For main account form, spinner, Welcome Screen, Activation wizard and Success screens are shown.
+  * */
   render() {
     const accountId = this.props.accountId; // If accountId present, then Welcome screen and Success screen are not required.
 
@@ -269,6 +282,9 @@ export class ActivationContainer extends React.Component {
   }
 }
 
+/*
+ * Success screen is shown only when the user has submitted the form. It's not shown in linked account activation but only main form.
+ * */
 const SuccessScreen = _ => {
   return (
     <div class="Activation--success">
@@ -300,6 +316,9 @@ const SuccessScreen = _ => {
   );
 };
 
+/*
+* Welcome screen is shown only when the user has not started filling the form. It's not shown in linked account activation but only main form.
+* */
 const WelcomeScreen = ({ onClose, openWizard }) => {
   return (
     <div class="Activation--welcome">
@@ -325,6 +344,9 @@ const WelcomeScreen = ({ onClose, openWizard }) => {
 
 // ActivationContainer.MODAL_MASK_CLASS = 'Activation';
 
+/*
+* Check if user filled any of the fields to be filled on fresh form
+* * */
 function isFormTouched(data) {
   if (!data) {
     return false;
@@ -363,6 +385,9 @@ const excludedFieldsInForm = [
   'allowed_next_activation_statuses',
 ];
 
+/*
+* This component is temporary and will be removed once the old activation form is removed
+* */
 @connect(
   state => ({
     user: state.session.user,
