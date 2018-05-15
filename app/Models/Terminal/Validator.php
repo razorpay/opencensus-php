@@ -46,7 +46,7 @@ class Validator extends Base\Validator
         Entity::CORPORATE                   => 'sometimes_if:netbanking,1|boolean',
         Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
-        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
+        Entity::NETWORK_CATEGORY            => 'required_if:netbanking,1|string|max:30',
         Entity::CURRENCY                    => 'sometimes|alpha|size:3',
     ];
 
@@ -215,6 +215,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD2  => 'sometimes',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     ];
 
     protected static $billdeskEditTerminalRules = [
@@ -230,6 +231,7 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
         Entity::MODE                       => 'sometimes|in:3',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
     ];
 
     protected static $hitachiEditTerminalRules = [
@@ -238,6 +240,7 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_ACQUIRER           => 'sometimes|in:ratn',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
     ];
 
     protected static $firstDataEditTerminalRules = [
@@ -245,6 +248,7 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
         Entity::MODE                       => 'sometimes|in:2,3',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
     ];
 
     protected static $cybersourceEditTerminalRules = [
@@ -254,6 +258,7 @@ class Validator extends Base\Validator
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
     ];
 
     protected static $upiIciciEditTerminalRules = [
@@ -261,6 +266,7 @@ class Validator extends Base\Validator
         Entity::UPI                        => 'sometimes|boolean|in:1',
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
     ];
 
      protected static $upiMindgateEditTerminalRules = [
@@ -268,15 +274,18 @@ class Validator extends Base\Validator
         Entity::UPI                        => 'sometimes|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
     ];
 
     protected static $netbankingIciciEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID2    => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
+        Entity::NETWORK_CATEGORY        => 'sometimes|string|max:30',
     ];
 
     protected static $netbankingIndusindEditTerminalRules = [
-        Entity::TPV                     => 'sometimes|in:0,1,2'
+        Entity::TPV                     => 'sometimes|in:0,1,2',
+        Entity::NETWORK_CATEGORY        => 'sometimes|string|max:30',
     ];
 
     protected static $walletPayzappTerminalRules = [
@@ -322,7 +331,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2    => 'required|string',
         Entity::TYPE                    => 'sometimes|array',
-        Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16'
+        Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
     ];
 
     protected static $walletJiomoneyTerminalRules = [
@@ -427,7 +436,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
-        Entity::NETWORK_CATEGORY            => 'sometimes|string',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     ];
 
     protected static $cardFssTerminalRules = [
@@ -453,6 +462,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:upi_hulk',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
     ];
 
     protected static $enachRblTerminalRules = [
@@ -467,6 +477,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:enach_rbl',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|in:ratn',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     ];
 
     protected static $editWalletAirtelmoneyTerminalRules = [
@@ -474,6 +485,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     ];
 
     protected function validateGateway($input)
