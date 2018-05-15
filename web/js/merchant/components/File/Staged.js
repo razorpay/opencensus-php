@@ -76,23 +76,25 @@ export default class Staged extends React.Component {
             alt=""
           />
         )}
-        {isDocPreUploaded ? (
-          <p class="Dropzone-content-desc--primary text-success">
-            <i class="i i-check" />
-            File Already Uploaded
-          </p>
-        ) : (
-          <React.Fragment>
-            <p class="Dropzone-content-desc--primary text-muted">
-              {file.name} {showFileSize && readableFileSize(file.size)}
+        <div class="Dropzone-content-desc">
+          {isDocPreUploaded ? (
+            <p class="Dropzone-content-desc--primary text-success">
+              <i class="i i-check" />
+              File Already Uploaded
             </p>
-            {showStagedFileStatus && (
-              <p class="text-muted text-small">
-                {stagedStatusMsgMap[currentStatus]}
+          ) : (
+            <React.Fragment>
+              <p class="Dropzone-content-desc--primary text-muted">
+                {file.name} {showFileSize && readableFileSize(file.size)}
               </p>
-            )}
-          </React.Fragment>
-        )}
+              {showStagedFileStatus && (
+                <p class="text-muted text-small">
+                  {stagedStatusMsgMap[currentStatus]}
+                </p>
+              )}
+            </React.Fragment>
+          )}
+        </div>
         <div>{this.props.children}</div>
         {!isDisabled &&
           onCloseClick && (
