@@ -91,6 +91,7 @@ function disableEmptyInputs(form) {
         <td>
             <select name="bank">
                 <option value="CSBK">Catholic Syrian Bank</option>
+                <option value="BARB_C">Bank of Baroda - Corporate</option>
                 <option value="BARB_R">Bank of Baroda - Retail</option>
                 <option value="HDFC">HDFC Bank</option>
                 <option value="CORP">Corporation Bank</option>
