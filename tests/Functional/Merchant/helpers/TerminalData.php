@@ -294,7 +294,8 @@ return [
                 'netbanking'            => 1,
                 'gateway_merchant_id'   => '12345',
                 'gateway_secure_secret' => 'random_secret',
-                'gateway_access_code'   => 'random_access_code'
+                'gateway_access_code'   => 'random_access_code',
+                'network_category'      => 'ecommerce',
             ],
             'url'     => '/merchants/10000000000000/terminals',
             'method'  => 'POST'
