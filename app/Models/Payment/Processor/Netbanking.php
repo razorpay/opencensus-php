@@ -518,4 +518,9 @@ class Netbanking
 
         return in_array($bank, $corpExclusiveBank, true) === true;
     }
+
+    public static function isCorporate(string $bankCode)
+    {
+        return (in_array($bankCode, self::$selfCorp) === true);
+    }
 }

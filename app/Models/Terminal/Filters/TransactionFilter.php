@@ -338,7 +338,7 @@ class TransactionFilter extends Terminal\Filter
 
             // If a bank does not require a corporate terminal
             // a corporate terminal should not allow the payment.
-            return (Netbanking::isCorporateTerminalRequired($bank) === $terminal->isCorporate());
+            return (Netbanking::isCorporateTerminalRequired($bank) === $terminal->isCorporateTerminalRequired());
         }
 
         return true;

@@ -413,7 +413,7 @@ class Entity extends Base\PublicEntity
      *
      * @return bool
      */
-    public function isCorporate()
+    public function isCorporateTerminalRequired()
     {
         $type = $this->getAttribute(self::CORPORATE);
 
