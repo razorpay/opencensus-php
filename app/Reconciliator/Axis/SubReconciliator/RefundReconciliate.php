@@ -2,13 +2,11 @@
 
 namespace RZP\Reconciliator\Axis;
 
-use RZP\Models\Base\UniqueIdEntity;
-use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Cybersource;
 use RZP\Models\Base\PublicEntity;
-
-use RZP\Trace\TraceCode;
+use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Spine\Exception\DbQueryException;
 
 class RefundReconciliate extends Base\RefundReconciliate
@@ -27,6 +25,14 @@ class RefundReconciliate extends Base\RefundReconciliate
     const PREAUTH               = 'PREAUTH';
     const CYBS                  = 'CYBS';
 
+    /**
+     * If we are not able to find refund id to reconcile,
+     * this ratio defines the minimum proportion of columns to be filled in a valid row.
+     * In Axis MIS, last row has around 9 out of 34 columns as stats data and rest empty.
+     * Therefore, if less than 27% of data is present, we don't mark row as failure
+     */
+    const MIN_ROW_FILLED_DATA_RATIO = 0.27;
+
     protected function getRefundId(array $row)
     {
         if ($this->isCybersource($row) === true)
@@ -36,6 +42,11 @@ class RefundReconciliate extends Base\RefundReconciliate
         else
         {
             $refundId = $this->getRefundIdForMigs($row);
+        }
+
+        if (empty($refundId) === true)
+        {
+            $this->evaluateRowProcessedStatus($row);
         }
 
         return $refundId;
@@ -65,20 +76,18 @@ class RefundReconciliate extends Base\RefundReconciliate
         }
         catch (DbQueryException $ex)
         {
-            /**
-             * Finding refund id based on RRN, if RRN is missing
-             * in DB, catches the exception and raises alert.
-             */
+            //
+            // Finding refund id based on RRN, if RRN is missing
+            // in DB, catches the exception and raises alert.
+            //
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'      => TraceCode::RECON_MISMATCH,
                     'info_code'       => 'REFUND_ABSENT',
                     'message'         => 'Refund not found. Skipping.',
                     'row'             => $row,
-                    'gateway'         => get_class()
+                    'gateway'         => $this->gateway
                 ]);
-
-            $this->setFailUnprocessedRow(true);
         }
 
         return $refundId;
@@ -105,7 +114,7 @@ class RefundReconciliate extends Base\RefundReconciliate
                     'info_code' => 'REFUND_ABSENT',
                     'message'   => 'Refund not found. Skipping',
                     'row'       => $row,
-                    'gateway'   => get_called_class()
+                    'gateway'   => $this->gateway
                 ]);
         }
 
@@ -217,5 +226,25 @@ class RefundReconciliate extends Base\RefundReconciliate
         }
 
         return false;
+    }
+
+    /**
+     * This function evaluate and marks the row processing as success or failure based on
+     * percentage of data available in a row.
+     *
+     * @param $row
+     */
+    protected function evaluateRowProcessedStatus(array $row)
+    {
+        $nonEmptyData = array_filter($row, function($value) {
+            return filled($value);
+        });
+
+        $rowFilledRatio = count($nonEmptyData) / count($row);
+
+        if ($rowFilledRatio < self::MIN_ROW_FILLED_DATA_RATIO)
+        {
+            $this->setFailUnprocessedRow(false);
+        }
     }
 }

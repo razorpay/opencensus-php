@@ -651,7 +651,7 @@ class FeaturesTest extends TestCase
 
         // tests that if while updating the submission response, the file is not updated,
         // the previously stored file details are preserved.
-        $testData['response']['content'][Constants::VENDOR_AGREEMENT] = $filestoreEntityId;
+        $testData['response']['content'][Constants::VENDOR_AGREEMENT] = "api/$merchantId/marketplace.vendor_agreement.pdf";
 
         $this->startTest($testData);
     }

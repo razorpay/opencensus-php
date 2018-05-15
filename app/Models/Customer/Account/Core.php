@@ -78,6 +78,26 @@ class Core extends Base\Core
         return $this->create($createInput, $merchant, false);
     }
 
+    public function createOrFetchSharedCustomer(Merchant\Entity $merchant)
+    {
+        $customer = $this->repo->customer->findByContactEmailAndMerchant(
+                                                        Entity::SHARED_CUSTOMER_CONTACT,
+                                                        Entity::SHARED_CUSTOMER_EMAIL,
+                                                        $merchant);
+
+        if ($customer === null)
+        {
+            $input = [
+                Entity::EMAIL   => Entity::SHARED_CUSTOMER_EMAIL,
+                Entity::CONTACT => Entity::SHARED_CUSTOMER_CONTACT,
+            ];
+
+            $customer = $this->create($input, $merchant, false);
+        }
+
+        return $customer;
+    }
+
     /**
      * @param array           $input
      * @param Merchant\Entity $merchant

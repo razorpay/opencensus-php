@@ -322,7 +322,7 @@ class Entity extends Base\PublicEntity
 
     public function getMaskedCardNumber()
     {
-        return  $this->getIin() . 'XXXXXX' . $this->getLast4();
+        return $this->getIin() . 'XXXXXX' . $this->getLast4();
     }
 
     public function getVaultToken()
@@ -451,12 +451,15 @@ class Entity extends Base\PublicEntity
             '8YPFnW5UOM91H7', // IRCTC Mobile
             '8byazTDARv4Io0', // IRCTC Air Ticketing
             '9m4CChGex4ENkR', // IRCTC FTR
-            // Email Subject: Re: Managing NEFT transfers with Razorpay Virtual Accounts
-            '9YAQd3b47mdIQY', // Endurance
-            '9ZO8jNaR0OORNH', // Endurance
             Merchant\Account::TEST_ACCOUNT,
             Merchant\Account::SHARED_ACCOUNT,
         ];
+
+        //
+        // Email Subject: Re: Managing NEFT transfers with Razorpay Virtual Accounts
+        // https://razorpay.slack.com/archives/C3GF5LWJK/p1525965476000128
+        // /
+        $allowedMerchantIds = array_merge($allowedMerchantIds, Merchant\Preferences::MID_ENDURANCE);
 
         $cardMerchant = $this->getMerchantId();
 
@@ -473,7 +476,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicExpiryMonthAttribute(array & $array)
     {
-        if ($this->issetPublicExpiryAllowed() === false)
+        if ($this->isPublicExpiryAllowed() === false)
         {
             unset($array[self::EXPIRY_MONTH]);
         }
@@ -481,7 +484,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicExpiryYearAttribute(array & $array)
     {
-        if ($this->issetPublicExpiryAllowed() === false)
+        if ($this->isPublicExpiryAllowed() === false)
         {
             unset($array[self::EXPIRY_YEAR]);
         }
@@ -502,7 +505,7 @@ class Entity extends Base\PublicEntity
         return (int) $this->getAttributeFromArray(self::EXPIRY_YEAR);
     }
 
-    protected function issetPublicExpiryAllowed()
+    protected function isPublicExpiryAllowed()
     {
         $cardMerchant = $this->getMerchantId();
 
@@ -510,6 +513,8 @@ class Entity extends Base\PublicEntity
 
         $auth = $app['basicauth'];
 
+        // Email Subject: Re: Managing NEFT transfers with Razorpay Virtual Accounts
+        // https://razorpay.slack.com/archives/C3GF5LWJK/p1525965476000128
         $allowed = (($auth->isPrivilegeAuth() === false) and
                     (in_array($cardMerchant, Merchant\Preferences::MID_ENDURANCE, true) === true));
 

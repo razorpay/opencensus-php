@@ -615,9 +615,17 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 4,
+                'count' => 5,
                 'entity' => 'collection',
                 'items' => [
+                    [
+                        'name' => 'testDefaultQrPlan',
+                        'entity' => 'pricing',
+                        'count' => 2,
+                        'rules' => [
+                            [],
+                        ],
+                    ],
                     [
                         'name' => 'TestPlan2',
                         'entity' => 'pricing',
@@ -705,6 +713,10 @@ return [
         ],
         'response' => [
             'content' => [
+                [
+                    'plan_name'   => 'testDefaultQrPlan',
+                    'rules_count' => 2,
+                ],
                 [
                     'plan_name'   => 'TestPlan2',
                     'rules_count' => 4,

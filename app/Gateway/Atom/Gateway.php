@@ -551,11 +551,11 @@ class Gateway extends Base\Gateway
     {
         if ($this->action === Action::AUTHORIZE)
         {
-            $secret = $this->config['live_authorize_hash_secret'];
+            $secret = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
         }
         else if ($this->action === Action::CALLBACK)
         {
-            $secret = $this->config['live_callback_hash_secret'];
+            $secret = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2];
         }
 
         return $secret;

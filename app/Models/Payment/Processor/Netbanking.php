@@ -117,7 +117,6 @@ class Netbanking
         IFSC::CNRB,
         IFSC::CORP,
         IFSC::COSB,
-        IFSC::CSBK,
         IFSC::DCBL,
         IFSC::DCBL,
         IFSC::DEUT,
@@ -171,7 +170,6 @@ class Netbanking
     ];
 
     protected static $billdeskTPV = [
-        IFSC::ALLA,
         IFSC::ANDB,
         IFSC::CIUB,
         IFSC::CORP,
@@ -194,7 +192,6 @@ class Netbanking
         IFSC::BKID,
         IFSC::MAHB,
         IFSC::CNRB,
-        IFSC::CSBK,
         IFSC::CBIN,
         IFSC::CORP,
         IFSC::DCBL,
@@ -257,7 +254,6 @@ class Netbanking
         IFSC::CBIN,
         IFSC::CNRB,
         IFSC::CORP,
-        IFSC::CSBK,
         IFSC::DLXB,
         // IFSC::FDRL,
         IFSC::IDIB,
