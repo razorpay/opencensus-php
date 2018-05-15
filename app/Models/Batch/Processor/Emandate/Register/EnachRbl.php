@@ -17,11 +17,7 @@ class EnachRbl extends Base
 {
     const GATEWAY = Gateway::ENACH_RBL;
 
-    const GATEWAY_TOKEN       = 'gateway_token';
-    const TOKEN_STATUS        = 'token_status';
     const REGISTRATION_STATUS = 'registration_status';
-    const ACCOUNT_NUMBER      = 'account_number';
-    const ERROR_MESSAGE       = 'error_message';
     const ERROR_CODE          = 'error_code';
     const PAYMENT_ID          = 'payment_id';
 
@@ -33,12 +29,10 @@ class EnachRbl extends Base
         // Expects $parsedData to have keys
         // 'gateway_token'       : Corresponds to Token\Entity::GATEWAY_TOKEN
         // 'status'              : Corresponds to Token\Entity::RECURRING_STATUS
-        // 'registration_status' : Corresponds to EnachEntity::REGISTRATION_STATUS
         // 'account_number'      : Corresponds to Token\Entity::ACCOUNT_NUMBER
+        // 'registration_status' : Corresponds to something
         //
         $content = $this->getDataFromRow($entry);
-
-        $gatewayToken = $content[self::GATEWAY_TOKEN];
 
         $payment = $this->repo->payment->findOrFailPublic($content[self::PAYMENT_ID]);
 
@@ -65,7 +59,7 @@ class EnachRbl extends Base
 
         $this->paymentProcessor = (new Payment\Processor\Processor($payment->merchant));
 
-        $this->repo->transaction(function() use ($payment, $token, $gatewayPayment, $gatewayToken, $content)
+        $this->repo->transaction(function() use ($payment, $token, $gatewayPayment, $content)
         {
             $this->updateGatewayPaymentEntityAndCapturePayment($payment, $gatewayPayment, $content);
 
@@ -80,76 +74,26 @@ class EnachRbl extends Base
         $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
     }
 
-    protected function updateTokenEntity(Token\Entity $token, array $content)
-    {
-        $gatewayToken = $content[self::GATEWAY_TOKEN];
-
-        $currentRecurringStatus = $token->getRecurringStatus();
-
-        $newRecurringStatus = $content[self::TOKEN_STATUS];
-
-        if (Token\RecurringStatus::isFinalStatus($currentRecurringStatus) === true)
-        {
-            if ($currentRecurringStatus !== $newRecurringStatus)
-            {
-                $this->trace->critical(TraceCode::CUSTOMER_TOKEN_STATUS_MISMATCH,
-                    [
-                        'new_status'     => $newRecurringStatus,
-                        'current_status' => $currentRecurringStatus,
-                    ]);
-            }
-
-            return;
-        }
-
-        $tokenParams = [
-            Token\Entity::RECURRING_STATUS          => $newRecurringStatus,
-            Token\Entity::GATEWAY_TOKEN             => $gatewayToken,
-            Token\Entity::RECURRING_FAILURE_REASON  => $content[self::ERROR_MESSAGE],
-        ];
-
-        (new Token\Core)->updateTokenFromEmandateGatewayData($token, $tokenParams);
-
-        $this->repo->saveOrFail($token);
-    }
-
-    protected function updateGatewayPaymentEntityAndCapturePayment(
-        Payment\Entity $payment,
-        GatewayEntity $gatewayPayment,
-        array $data)
-    {
-        $gatewayPayment->fill($data);
-
-        $this->repo->saveOrFail($gatewayPayment);
-
-        //
-        // We do capture ONLY if registration is successful AND it's not already captured.
-        //
-        if ((Rbl\Status::isRegistrationSuccess($data[self::REGISTRATION_STATUS]) === true) and
-            ($payment->hasBeenCaptured() === false))
-        {
-            $this->captureAuthorizedPayment($payment);
-        }
-    }
-
-
-
     protected function getDataFromRow(array & $entry): array
     {
         $gatewayToken = $entry[Batch\Header::ENACH_REGISTER_UMRN];
 
-        $status = $this->getTokenStatus($entry[Batch\Header::ENACH_REGISTER_STATUS]);
+        $gatewayTokenStatus = $entry[Batch\Header::ENACH_REGISTER_STATUS];
+
+        $status = $this->getTokenStatus($gatewayTokenStatus);
 
         $accountNumber = $entry[Batch\Header::ENACH_REGISTER_ACNO];
 
         return [
             self::GATEWAY_TOKEN       => $gatewayToken,
             self::TOKEN_STATUS        => $status,
-            self::REGISTRATION_STATUS => $entry[Batch\Header::ENACH_REGISTER_STATUS],
             self::ACCOUNT_NUMBER      => $accountNumber,
+            self::ERROR_MESSAGE       => $this->getTokenErrorMessage($gatewayTokenStatus, $entry),
             self::PAYMENT_ID          => $entry[Batch\Header::ENACH_REGISTER_REF_1],
+            // We are getting registration_status and error_code because we want to store
+            // the actual registration status received in the file, in the gateway entity
+            self::REGISTRATION_STATUS => $gatewayTokenStatus,
             self::ERROR_CODE          => $entry[Batch\Header::ENACH_REGISTER_RETURN_CODE],
-            self::ERROR_MESSAGE       => $this->getTokenErrorMessage($entry),
         ];
     }
 
@@ -163,9 +107,9 @@ class EnachRbl extends Base
         return Token\RecurringStatus::REJECTED;
     }
 
-    protected function getTokenErrorMessage(array $entry)
+    protected function getTokenErrorMessage(string $gatewayTokenStatus, array $entry)
     {
-        if (Rbl\Status::isRegistrationSuccess($entry[Batch\Header::ENACH_REGISTER_STATUS]) === true)
+        if ($this->getTokenStatus($gatewayTokenStatus) === Token\RecurringStatus::CONFIRMED)
         {
             return null;
         }

@@ -52,7 +52,7 @@ class Hdfc extends Base
 
     protected function isAuthorized(array $content): bool
     {
-        return (strtolower($content['status']) === self::PROCESS);
+        return Netbanking\Hdfc\Status::isDebitSuccess($content['status']);
     }
 
     protected function getErrorDescription(array $content)

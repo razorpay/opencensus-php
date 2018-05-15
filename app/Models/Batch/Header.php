@@ -119,20 +119,6 @@ class Header
     const VA_BANK_ACCOUNT_IFSC   = 'bank_account_ifsc';
 
     //
-    // HDFC Emandate Debit Response File Headers
-    //
-    const HDFC_EM_DEBIT_TRANSACTION_REF_NO  = HdfcEMDebitHeadings::TRANSACTION_REF_NO;
-    const HDFC_EM_DEBIT_MANDATE_ID          = HdfcEMDebitHeadings::MANDATE_ID;
-    const HDFC_EM_DEBIT_ACCOUNT_NO          = HdfcEMDebitHeadings::ACCOUNT_NO;
-    const HDFC_EM_DEBIT_AMOUNT              = HdfcEMDebitHeadings::AMOUNT;
-    const HDFC_EM_DEBIT_SIP_DATE            = HdfcEMDebitHeadings::SIP_DATE;
-    const HDFC_EM_DEBIT_FREQUENCY           = HdfcEMDebitHeadings::FREQUENCY;
-    const HDFC_EM_DEBIT_FROM_DATE           = HdfcEMDebitHeadings::FROM_DATE;
-    const HDFC_EM_DEBIT_TO_DATE             = HdfcEMDebitHeadings::TO_DATE;
-    const HDFC_EM_DEBIT_STATUS              = HdfcEMDebitHeadings::STATUS;
-    const HDFC_EM_DEBIT_REJECTION_REMARKS   = HdfcEMDebitHeadings::REJECTION_REMARKS;
-
-    //
     // Bank Transfer Bulk Insertion
     //
     const PROVIDER       = 'provider';
@@ -178,7 +164,21 @@ class Header
     const HDFC_EM_REGISTER_REMARK                           = HdfcEMRegisterHeadings::REMARK;
 
     //
-    // eNach eMandate Register Response File Headers
+    // HDFC Emandate Debit Response File Headers
+    //
+    const HDFC_EM_DEBIT_TRANSACTION_REF_NO  = HdfcEMDebitHeadings::TRANSACTION_REF_NO;
+    const HDFC_EM_DEBIT_MANDATE_ID          = HdfcEMDebitHeadings::MANDATE_ID;
+    const HDFC_EM_DEBIT_ACCOUNT_NO          = HdfcEMDebitHeadings::ACCOUNT_NO;
+    const HDFC_EM_DEBIT_AMOUNT              = HdfcEMDebitHeadings::AMOUNT;
+    const HDFC_EM_DEBIT_SIP_DATE            = HdfcEMDebitHeadings::SIP_DATE;
+    const HDFC_EM_DEBIT_FREQUENCY           = HdfcEMDebitHeadings::FREQUENCY;
+    const HDFC_EM_DEBIT_FROM_DATE           = HdfcEMDebitHeadings::FROM_DATE;
+    const HDFC_EM_DEBIT_TO_DATE             = HdfcEMDebitHeadings::TO_DATE;
+    const HDFC_EM_DEBIT_STATUS              = HdfcEMDebitHeadings::STATUS;
+    const HDFC_EM_DEBIT_REJECTION_REMARKS   = HdfcEMDebitHeadings::REJECTION_REMARKS;
+
+    //
+    // eNach Register Response File Headers
     //
     const ENACH_REGISTER_SRNO               = 'SRNO';
     const ENACH_REGISTER_MANDATE_DATE       = 'MANDATE_DATE';

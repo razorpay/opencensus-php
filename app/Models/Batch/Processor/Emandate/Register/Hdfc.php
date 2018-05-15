@@ -2,13 +2,13 @@
 
 namespace RZP\Models\Batch\Processor\Emandate\Register;
 
- use RZP\Exception;
- use RZP\Gateway\Base\Action;
+ use RZP\Models\Batch;
  use RZP\Models\Payment;
+ use RZP\Gateway\Netbanking;
+ use RZP\Gateway\Base\Action;
  use RZP\Models\Customer\Token;
  use RZP\Models\Payment\Gateway;
  use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
- use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as Headings;
 
 class Hdfc extends Base
 {
@@ -17,53 +17,56 @@ class Hdfc extends Base
     const SUCCESS   = 'success';
     const REJECT    = 'reject';
 
-    protected  $gatewayPaymentMapping = [
-        Base::TOKEN_ID       => NetbankingEntity::SI_TOKEN,
-        Base::STATUS         => NetbankingEntity::SI_STATUS,
-        Base::REMARK         => NetbankingEntity::SI_MSG,
-        Base::ACCOUNT_NUMBER => NetbankingEntity::ACCOUNT_NUMBER,
-    ];
-
-    protected static $statusMap = [
-        self::SUCCESS => Token\RecurringStatus::CONFIRMED,
-        self::REJECT  => Token\RecurringStatus::REJECTED,
+    protected $gatewayPaymentMapping = [
+        self::TOKEN_ID       => NetbankingEntity::SI_TOKEN,
+        self::TOKEN_STATUS   => NetbankingEntity::SI_STATUS,
+        self::ERROR_MESSAGE  => NetbankingEntity::SI_MSG,
+        self::ACCOUNT_NUMBER => NetbankingEntity::ACCOUNT_NUMBER,
     ];
 
     protected function getDataFromRow(array & $entry): array
     {
-        $tokenId = $entry[Headings::MANDATE_ID];
+        $tokenId = $entry[Batch\Header::HDFC_EM_REGISTER_MANDATE_ID];
 
-        $status = $entry[Headings::STATUS];
-        $status = $this->getTokenStatus($status);
+        $gatewayTokenStatus = $entry[Batch\Header::HDFC_EM_REGISTER_STATUS];
 
-        $remark = $entry[Headings::REMARK];
+        $status = $this->getTokenStatus($gatewayTokenStatus);
 
-        $accountNumber = $entry[Headings::CUSTOMER_ACCOUNT_NUMBER];
+        $accountNumber = $entry[Batch\Header::HDFC_EM_REGISTER_ACCOUNT_NUMBER];
 
         return [
-            Base::TOKEN_ID         => $tokenId,
-            Base::GATEWAY_TOKEN_ID => $tokenId,
-            Base::STATUS           => $status,
-            Base::REMARK           => $remark,
-            Base::ACCOUNT_NUMBER   => $accountNumber,
+            self::GATEWAY_TOKEN  => $tokenId,
+            self::TOKEN_STATUS   => $status,
+            self::ACCOUNT_NUMBER => $accountNumber,
+            self::ERROR_MESSAGE  => $this->getTokenErrorMessage($gatewayTokenStatus, $entry),
+            self::TOKEN_ID       => $tokenId,
         ];
     }
 
     /**
      * @param string $gatewayTokenStatus
      * @return string
-     * @throws Exception\LogicException
      */
     protected function getTokenStatus(string $gatewayTokenStatus): string
     {
-        $gatewayTokenStatus = strtolower($gatewayTokenStatus);
-
-        if (isset(self::$statusMap[$gatewayTokenStatus]) === false)
+        if (Netbanking\Hdfc\Status::isRegistrationSuccess($gatewayTokenStatus) === true)
         {
-            throw new Exception\LogicException('Unrecognized gateway status: ', $gatewayTokenStatus);
+            return Token\RecurringStatus::CONFIRMED;
         }
 
-        return self::$statusMap[$gatewayTokenStatus];
+        return Token\RecurringStatus::REJECTED;
+    }
+
+    protected function getTokenErrorMessage(string $gatewayTokenStatus, array $entry)
+    {
+        if ($this->getTokenStatus($gatewayTokenStatus) === Token\RecurringStatus::CONFIRMED)
+        {
+            return null;
+        }
+        else
+        {
+            return $entry[Batch\Header::HDFC_EM_REGISTER_REMARK] ?? 'FAILED';
+        }
     }
 
     protected function getGatewayPayment(Payment\Entity $payment)
