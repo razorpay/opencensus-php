@@ -42,7 +42,7 @@ class Gateway extends Base\Gateway
     {
         parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->setBankingTypeAndDomainType($input, $terminal);
+        $this->setBankingTypeAndDomainType($input);
     }
 
     public function authorize(array $input)
@@ -574,17 +574,15 @@ class Gateway extends Base\Gateway
         return Status::getAuthSuccessStatus();
     }
 
-    protected function setBankingTypeAndDomainType($input, $terminal)
+    protected function setBankingTypeAndDomainType($input)
     {
         if (isset($input['payment']) === true)
         {
-            $payment = $this->app['repo']->payment->find($input['payment']['id']);
-
             if (($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL))
             {
                 $this->setBankingType(BankingType::EMANDATE);
             }
-            else if ($payment->isNetbankingCorporate())
+            else if ($input['payment']['bank'] === 'UTIB_C')
             {
                 $this->setBankingType(BankingType::CORPORATE);
             }
