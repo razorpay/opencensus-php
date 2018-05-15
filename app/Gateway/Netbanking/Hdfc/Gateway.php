@@ -101,7 +101,7 @@ class Gateway extends Base\Gateway
         // For emandate registration request, we set the amount to Rs 1
         if ($this->isFirstRecurringPayment($input) === true)
         {
-            $expectedAmount = '1.00';
+            $expectedAmount = number_format(Fields::INIT_AMOUNT, 2, '.', '');
         }
 
         $actualAmount = number_format($input['gateway']['TxnAmount'], 2, '.', '');
@@ -236,12 +236,12 @@ class Gateway extends Base\Gateway
             $data[Fields::DATE1]                 = $startDate;
             $data[Fields::DATE2]                 = $endDate;
 
-            /**
-             * For emandate registration payments, we need to hard-code the amount to Rs 1
-             * This payment would be used by HDFC to verify the account details and once
-             * verified, the same amount would be refunded to the account holder the next day
-             */
-            $data['TxnAmount'] = 1;
+            //
+            // For emandate registration payments, we need to hard-code the amount to Rs 1
+            // This payment would be used by HDFC to verify the account details and once
+            // verified, the same amount would be refunded to the account holder the next day
+            //
+            $data['TxnAmount']                   = Fields::INIT_AMOUNT;
         }
 
         // Moving this as the HDFC TPV requires the ClientAccCode to
@@ -292,10 +292,10 @@ class Gateway extends Base\Gateway
 
         $txnAmount = $input['payment']['amount'] / 100;
 
-        /**
-         * For registration request, even though the payment amount is 0,
-         * we hard code the amount to 0 to send to the bank.
-         */
+        //
+        // For registration request, even though the payment amount is 0,
+        // we hard code the amount to 0 to send to the bank.
+        //
         if ($this->isFirstRecurringPayment($input))
         {
             $txnAmount = '1';

@@ -33,10 +33,11 @@ class Base extends BaseProcessor
     {
         //
         // Expects $parsedData to have keys
-        // 'token_id'       : Corresponds to Token\Entity::ID
-        // 'status'         : Corresponds to Token\Entity::RECURRING_STATUS
-        // 'remark'         : Corresponds to Token\Entity::RECURRING_FAILURE_REASON
-        // 'account_number' : Corresponds to Token\Entity::ACCOUNT_NUMBER
+        // 'token_id'         : Corresponds to Token\Entity::ID
+        // 'status'           : Corresponds to Token\Entity::RECURRING_STATUS
+        // 'remark'           : Corresponds to Token\Entity::RECURRING_FAILURE_REASON
+        // 'gateway_token_id' : Corresponds to Token\Entity::GATEWAY_TOKEN
+        // 'account_number'   : Corresponds to Token\Entity::ACCOUNT_NUMBER
         //
         $parsedData = $this->getDataFromRow($entry);
 

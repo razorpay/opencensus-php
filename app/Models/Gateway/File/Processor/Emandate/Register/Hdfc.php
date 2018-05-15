@@ -24,7 +24,7 @@ class Hdfc extends Base
     public function fetchEntities(): PublicCollection
     {
         $begin = $this->gatewayFile->getBegin();
-        $end = $this->gatewayFile->getEnd();
+        $end   = $this->gatewayFile->getEnd();
 
         $payments = $this->repo->payment->fetchPendingEMandateRegistration(static::GATEWAY, $begin, $end);
 
@@ -67,7 +67,7 @@ class Hdfc extends Base
                 Headings::CLIENT_NAME                   => $data[Headings::CLIENT_NAME],
                 Headings::CUSTOMER_NAME                 => $data[Headings::CUSTOMER_NAME],
                 Headings::CUSTOMER_ACCOUNT_NUMBER       => $data[Headings::CUSTOMER_ACCOUNT_NUMBER],
-                Headings::AMOUNT                        => '1.00',
+                Headings::AMOUNT                        => number_format(Fields::INIT_AMOUNT, 2, '.', ''),
                 Headings::AMOUNT_TYPE                   => $data[Headings::AMOUNT_TYPE],
                 Headings::START_DATE                    => $startDate,
                 Headings::END_DATE                      => $endDate,
