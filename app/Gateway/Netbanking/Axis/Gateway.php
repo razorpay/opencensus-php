@@ -576,19 +576,18 @@ class Gateway extends Base\Gateway
 
     protected function setBankingTypeAndDomainType($input, $terminal)
     {
-        if (
-            (isset($input['payment']) === true) and
-            ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
-        )
+        if (isset($input['payment']) === true)
         {
-            $this->setBankingType(BankingType::EMANDATE);
-        }
+            $payment = $this->app['repo']->payment->find($input['payment']['id']);
 
-        // Default banking type is retail
-        if ((isset($terminal) === true) and
-            ($terminal->isCorporate() === true))
-        {
-            $this->setBankingType(BankingType::CORPORATE);
+            if (($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL))
+            {
+                $this->setBankingType(BankingType::EMANDATE);
+            }
+            else if ($payment->isNetbankingCorporate())
+            {
+                $this->setBankingType(BankingType::CORPORATE);
+            }
         }
 
          $this->setDomainType();

@@ -42,7 +42,7 @@ class Gateway extends Base\Gateway
     {
         parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->setBankingTypeAndDomainType($terminal);
+        $this->setBankingTypeAndDomainType($input, $terminal);
     }
 
     public function authorize(array $input)
@@ -290,15 +290,21 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    protected function setBankingTypeAndDomainType($terminal)
+    protected function setBankingTypeAndDomainType($input, $terminal)
     {
         // Default banking type is retail
-        if ((isset($terminal) === true) and
-            ($terminal->isCorporate() === true))
+        if (isset($input['payment']) === true)
         {
-            $this->setBankingType(BankingType::CORPORATE);
+            $payment = $this->app['repo']->payment->find($input['payment']['id']);
+
+            if ($payment->isNetbankingCorporate() === true)
+            {
+                $this->setBankingType(BankingType::CORPORATE);
+            }
+
         }
-        else if ((isset($terminal) === true) and
+
+        if ((isset($terminal) === true) and
                  ($terminal->isRecurring() === true))
         {
             $this->setBankingType(BankingType::RECURRING);
