@@ -237,7 +237,7 @@ return [
                 'gateway'             => 'upi_icici',
                 'gateway_merchant_id' => '12345',
                 'vpa'                 => 'random@icici',
-                'upi'                       => true,
+                'upi'                 => true,
                 'type'                => [
                     'bharat_qr'       => '1',
                     'non_recurring' => '1',
