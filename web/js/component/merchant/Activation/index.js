@@ -495,15 +495,21 @@ export default class ActivationWizard extends React.Component {
           {do {
             const showFormDisabledAlert =
               !isLinkedAccountForm &&
-              (!!this.state.data.locked || !!this.state.data.submitted);
+              (!!this.props.data.locked ||
+                !!this.props.data.submitted ||
+                !!this.props.data.activated); // Later activated condition to be removed as form will never be shown in this scenario.
             let icon, msg;
 
             if (showFormDisabledAlert) {
-              if (this.state.data.locked) {
+              if (!!this.props.data.activated) {
+                icon = 'i-done-all';
+                msg = 'Congratulations! Your account is Activated.';
+              } else if (!!this.props.data.locked) {
+                // 'locked' has priority than 'submitted'
                 icon = 'i-outline-lock';
                 msg =
                   "Your activation form is locked as it's under review. We'll inform you once your account gets activated.";
-              } else if (this.state.data.submitted) {
+              } else if (!!this.props.data.submitted) {
                 icon = 'i-check';
                 msg =
                   "Your activation form is already submitted. We'll inform you once your account gets activated.";

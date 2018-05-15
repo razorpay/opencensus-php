@@ -106,7 +106,11 @@ const businessModel = [
     },
   ],
   {
-    label: 'We want to accept International Payments as well',
+    label: () => (
+      <span>
+        We want to accept <b>International Payments</b> as well
+      </span>
+    ),
     name: 'business_international',
     _cmp: Input.Check,
     required: false,

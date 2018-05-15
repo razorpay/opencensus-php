@@ -101,10 +101,11 @@ class Description extends React.PureComponent {
 
 class Label extends React.PureComponent {
   render() {
-    if (this.props.text) {
+    const text = this.props.text;
+    if (text) {
       return (
         <div class={this.props.className || 'Input-label'}>
-          {this.props.text}
+          {typeof text === 'function' ? text() : text}
         </div>
       );
     }

@@ -25,7 +25,7 @@ export default ({ user }) => {
       />
 
       <DetailRow
-        label="Account Activation"
+        label={() => <b>Account Activation</b>}
         value={() => (
           <span>
             <Link to={'/activation'}>
