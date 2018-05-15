@@ -3,6 +3,7 @@
 namespace RZP\Models\LineItem;
 
 use RZP\Models\Base;
+use RZP\Models\Item;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 
@@ -299,12 +300,29 @@ class Core extends Base\Core
 
         $lineItem->item()->associate($item);
 
+        //
         // Use item's values where line item detail is not present,
         // and modify input for line item's build
-
+        //
         $itemFields = array_intersect_key(
                         $item->toArrayPublic(),
                         array_flip(Entity::$itemFields));
+
+        //
+        // Line_item input allows one of: tax_id, tax_ids, tax_group_id
+        // Item supports only tax_id and tax_group_id
+        //
+        // Hence, while copying over item's values, we ensure not to add both
+        // (tax_id and tax_ids) to line_item input, instead if item.tax_id exists,
+        // we push the value into line_item.tax_ids[]
+        //
+        if ((isset($input[Entity::TAX_IDS]) === true) and
+            (isset($itemFields[Item\Entity::TAX_ID]) === true))
+        {
+            array_push($input[Entity::TAX_IDS], $itemFields[Item\Entity::TAX_ID]);
+
+            unset($itemFields[Item\Entity::TAX_ID]);
+        }
 
         $input = array_merge($itemFields, $input);
     }
