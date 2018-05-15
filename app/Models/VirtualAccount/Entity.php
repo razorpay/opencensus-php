@@ -270,11 +270,6 @@ class Entity extends Base\PublicEntity
         return new Receiver($this);
     }
 
-    public function getQrCodeId()
-    {
-        return $this->getAttribute(self::QR_CODE_ID);
-    }
-
     // ----------------------- Setters -----------------------------------------
 
     /**

@@ -97,7 +97,6 @@ class Repository extends Base\Repository
     public function findByGatewayMerchantId(string $gatewayMerchantId, string $gateway)
     {
         return $this->newQuery()
-                    ->withTrashed()
                     ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->first();

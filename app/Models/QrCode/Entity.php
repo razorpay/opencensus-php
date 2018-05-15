@@ -137,10 +137,6 @@ class Entity extends Base\PublicEntity
         return 'qrcodes/'. $this->getId();
     }
 
-    public function getEntityType()
-    {
-        return $this->getAttribute(self::ENTITY_TYPE);
-    }
     // --------------------- END GETTERS ---------------------
 
     // --------------------- SETTERS ---------------------
