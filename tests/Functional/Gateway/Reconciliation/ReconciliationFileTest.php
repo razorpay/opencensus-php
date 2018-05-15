@@ -216,8 +216,6 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
         $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
-
-        $this->assertBatchStatus();
     }
 
     public function testVirtualAccYesBankReconFile()
@@ -272,8 +270,6 @@ class ReconciliationFileTest extends TestCase
         // Recon should not overwrite reference2 if it was saved before
         $this->assertEquals($payment1['reference2'], $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
-
-        $this->assertBatchStatus();
     }
 
     public function testHdfcFssReconRefundFile()
@@ -347,6 +343,8 @@ class ReconciliationFileTest extends TestCase
      */
     public function testAxisMigsBatchProcessTest()
     {
+        $this->markTestSkipped('Axis removed from batch because of excel issue');
+
         $this->fixtures->create('terminal:shared_migs_recurring_terminals');
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
