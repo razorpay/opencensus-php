@@ -605,11 +605,12 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::SETTLEMENT_ID));
     }
 
-    public function toArrayReport()
+    public function toArrayPublic()
     {
-        $reportTxn = parent::toArrayReport();
+        $reportTxn = parent::toArrayPublic();
 
         unset($reportTxn[self::ID]);
+        unset($reportTxn[self::ENTITY]);
 
         //
         // For linked accounts alone, add the transfer_id
@@ -632,10 +633,6 @@ class Entity extends Base\PublicEntity
         $reportTxn['card_issuer'] = null;
         $reportTxn['card_type'] = null;
         $reportTxn[Adjustment\Entity::DISPUTE_ID] = null;
-
-        // settled_at will by default have date and time (d/m/y h:m:s) in it
-        // while we only want to provide date.
-        $reportTxn[self::SETTLED_AT] = $this->getDateInFormatDMY(self::SETTLED_AT);
 
         if ($this->isTypePayment() === true)
         {
@@ -723,6 +720,20 @@ class Entity extends Base\PublicEntity
         if ($this->hasSettlement() === true)
         {
             $reportTxn['settlement_utr'] = $this->settlement->getUtr();
+        }
+
+        return $reportTxn;
+    }
+
+    public function toArrayReport()
+    {
+        $reportTxn = parent::toArrayReport();
+
+        if ($reportTxn !== null)
+        {
+            // settled_at will by default have date and time (d/m/y h:m:s) in it
+            // while we only want to provide date.
+            $reportTxn[self::SETTLED_AT] = $this->getDateInFormatDMY(self::SETTLED_AT);
         }
 
         return $reportTxn;

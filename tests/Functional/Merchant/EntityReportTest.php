@@ -86,7 +86,9 @@ class EntityReportTest extends TestCase
 
         $data = $this->fetchSettlementReconReport($input);
 
-        $this->assertEquals(5, count($data));
+        $this->assertEquals('collection', $data['entity']);
+        $this->assertEquals(5, $data['count']);
+        $this->assertEquals(5, count($data['items']));
     }
 
     public function testOrderReport()

@@ -75,4 +75,16 @@ class SettlementReconReport extends BasicEntityReport
                         $this->relationsToFetch
         );
     }
+
+    /**
+     * Returns formatted data to be shown in report
+     *
+     * @param $entities array
+     * @return array
+     */
+    protected function fetchFormattedDataForReport($entities): array
+    {
+        return $entities->toArrayPublic();
+    }
+
 }
