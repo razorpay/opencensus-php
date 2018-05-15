@@ -16,6 +16,13 @@ import accountFormTabsContent, {
   accountFormTabs,
 } from './AccountActivationFormMap';
 
+const LOADING_STATES = {
+  ERROR: -1, // Error = show error msg
+  SUCCESS: 1, // Success = show success msg
+  PENDING: 0, // Pending = show spinner
+  INITIAL: null, // Initial = hide spinner
+};
+
 const defaultFieldProps = f => {
   if (Array.isArray(f)) {
     return f.forEach(defaultFieldProps);
@@ -31,12 +38,12 @@ const defaultFieldProps = f => {
 let DOCUMENT_UPLOAD_STEP; // To handle specific case for document step
 const BUSINESS_TYPE_FORM_STEP = 1; // If NGO is selected, then Document Upload would have 2 more fields
 
-let FORM_TABS;
-let FORM_TABS_CONTENT;
+let FORM_TABS; // Maintains naming of the tabs
+let FORM_TABS_CONTENT; // Actual tab content corresponding to FORM_TABS
 
 export default class ActivationWizard extends React.Component {
   state = {
-    isSaving: null,
+    isSaving: LOADING_STATES.INITIAL,
     data: this.props.data || {},
     dirty: {},
     tabs: [],
@@ -75,7 +82,7 @@ export default class ActivationWizard extends React.Component {
       FORM_TABS_CONTENT = mainFormTabsContent;
       DOCUMENT_UPLOAD_STEP = 4;
 
-      // Business Category in "Business Modal" exists in main activation form
+      // Business Category in "Business Modal" exists in main activation form. Setting value dynamically from props.
       FORM_TABS_CONTENT[1][3][0].options = [''].concat(
         Object.keys(props.categories).map(c => ({
           name: c,
@@ -108,15 +115,7 @@ export default class ActivationWizard extends React.Component {
               },
             });
 
-            return props
-              .saveFile(a.name, file, progressTracker)
-              .then(response => {
-                if (response) {
-                  this.markTabIfActive();
-                }
-
-                return response;
-              });
+            return props.saveFile(a.name, file, progressTracker);
           })
       );
   }
@@ -127,6 +126,19 @@ export default class ActivationWizard extends React.Component {
 
   componentWillUnmount() {
     removeDropShield('.Activation--wizard');
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (
+      this.props.data &&
+      this.props.data.updated_at !== nextProps.data.updated_at
+    ) {
+      this.setState({
+        data: nextProps.data,
+      });
+
+      this.markTabIfActive();
+    }
   }
 
   setInitialTab() {
@@ -151,11 +163,11 @@ export default class ActivationWizard extends React.Component {
   }
 
   markTabIfActive() {
-    let currentActive = this.state.activeTab;
-    let isValid = this.tabValidity(currentActive);
+    let lastActive = this.state.lastActiveTab; // Last active tab while saving should update its tick
+    let isValid = this.tabValidity(lastActive);
     let tabs = this.state.tabs.slice();
 
-    tabs[currentActive] = isValid;
+    tabs[lastActive] = isValid;
 
     this.setState({
       tabs,
@@ -165,19 +177,19 @@ export default class ActivationWizard extends React.Component {
   changeTab = ({ target }) =>
     this.goto(parseInt(target.getAttribute('data-index')));
 
-  goto = activeTab => {
+  goto = newActiveTab => {
     let currentActive = this.state.activeTab;
     let tabs = this.state.tabs.slice();
 
-    activeTab = typeof activeTab === 'undefined' ? currentActive : activeTab; // Tab is not changed (To handle Save btn click).
+    newActiveTab =
+      typeof newActiveTab === 'undefined' ? currentActive : newActiveTab; // currentActive tab remains (To handle Save btn click).
 
     let shouldSave = Object.keys(this.state.dirty).length ? true : null;
 
-    this.markTabIfActive();
-
     this.setState({
-      activeTab,
-      isSaving: shouldSave,
+      lastActiveTab: currentActive,
+      activeTab: newActiveTab,
+      isSaving: shouldSave ? LOADING_STATES.PENDING : LOADING_STATES.INITIAL,
       showSubmitLayer: false,
     });
 
@@ -185,7 +197,7 @@ export default class ActivationWizard extends React.Component {
       return;
     }
 
-    if (DOCUMENT_UPLOAD_STEP && activeTab === BUSINESS_TYPE_FORM_STEP) {
+    if (DOCUMENT_UPLOAD_STEP && currentActive === BUSINESS_TYPE_FORM_STEP) {
       if (this.state.dirty.business_type) {
         let isDocumentStepValid = this.tabValidity(DOCUMENT_UPLOAD_STEP);
         tabs[DOCUMENT_UPLOAD_STEP] = isDocumentStepValid;
@@ -216,20 +228,22 @@ export default class ActivationWizard extends React.Component {
       }
     }
 
-    this.props
-      .save(data)
-      .then(response => {
-        this.setState({
-          dirty: {},
-          isSaving: false,
-        });
-        this.removeLoader();
-      })
-      .catch(_ => {
-        this.setState({
-          isSaving: null,
-        });
+    this.props.save(data).then(data => {
+      let isSaving;
+
+      if (data.errors) {
+        isSaving = LOADING_STATES.ERROR;
+      } else {
+        isSaving = LOADING_STATES.SUCCESS;
+      }
+
+      this.setState({
+        dirty: {},
+        isSaving,
       });
+
+      this.removeLoader();
+    });
   };
 
   submitForm = () => {
@@ -239,8 +253,8 @@ export default class ActivationWizard extends React.Component {
   /* Fadeout based loader text */
   removeLoader = _ => {
     setTimeout(_ => {
-      this.setState({ isSaving: null });
-    }, 3000);
+      this.setState({ isSaving: LOADING_STATES.INITIAL });
+    }, 7000);
   };
 
   next = e => this.goto(this.state.activeTab + 1);
@@ -315,7 +329,7 @@ export default class ActivationWizard extends React.Component {
     }
 
     if (fieldName === 'business_website') {
-      fieldValue = autoPrefixUrls(fieldValue); // Updating in view will happen if he comes to this tab again. Otherwise single backspace on 'http' must be handled as full word not single character.
+      // fieldValue = autoPrefixUrls(fieldValue); // Updating in view will happen if he comes to this tab again. Otherwise single backspace on 'http' must be handled as full word not single character.
     }
 
     /* Step Last: */
@@ -382,12 +396,18 @@ export default class ActivationWizard extends React.Component {
   };
 
   render() {
-    let isLinkedAccountForm = !!this.props.accountId;
-    let isSubmitFormRemoved = isSubmitFormDisabled(this.props.data);
+    let isLinkedAccountForm = !!this.props.accountId; // Check if this activation wizard is invoked from Linked accounts.
+    let isSubmitFormRemoved = isSubmitFormDisabled(this.props.data); // Submit form is removed if locked, activated or in submitted state
 
     let activeTab = this.state.activeTab;
     let isLastTab = activeTab == FORM_TABS.length - 1;
-    let content; // Document content will always be shown so that upload progress is maintained
+
+    // Data would be present, otherwise spinner is shown before this activation wizard
+    let currentBusinessType =
+      this.state.dirty.business_type || this.props.data.business_type;
+
+    let content;
+    let documentContent; // Document content will always be shown so that upload progress is maintained in DOM
 
     if (activeTab !== DOCUMENT_UPLOAD_STEP) {
       content = FORM_TABS_CONTENT[activeTab].map((field, i) => {
@@ -403,7 +423,7 @@ export default class ActivationWizard extends React.Component {
       });
     }
 
-    let documentContent =
+    documentContent =
       DOCUMENT_UPLOAD_STEP &&
       FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].map((field, i) => {
         if (Array.isArray(field)) {
@@ -419,6 +439,7 @@ export default class ActivationWizard extends React.Component {
 
     return (
       <div class="Activation--wizard">
+        {/* Activation form tabs */}
         <aside>
           <side-title>Account Activation</side-title>
           {!isLinkedAccountForm &&
@@ -429,6 +450,7 @@ export default class ActivationWizard extends React.Component {
               </p>
             )}
           <ul>
+            {/* Activation form tabs */}
             {FORM_TABS.map((t, i) => {
               let isTabValid = this.state.tabs[i];
               return (
@@ -446,6 +468,8 @@ export default class ActivationWizard extends React.Component {
                 </li>
               );
             })}
+
+            {/* Submit form tab*/}
             {!isSubmitFormRemoved && (
               <li
                 onClick={this.toggleSubmitLayer}
@@ -465,13 +489,15 @@ export default class ActivationWizard extends React.Component {
             )}
           </ul>
         </aside>
-        {/* Rest of the Content for business form */}
+
+        {/* Activation form Content */}
         <main
           class={classList(
             'form-container',
             this.state.showSubmitLayer && 'block-scroll'
           )}
         >
+          {/* Active tab title */}
           <main-title>
             {activeTab != 0 && (
               <Button
@@ -485,13 +511,13 @@ export default class ActivationWizard extends React.Component {
             {FORM_TABS[activeTab]}
           </main-title>
 
-          {/* Show alert if linked account has been activated */}
+          {/* Show Alert: if linked account has been activated */}
           {isLinkedAccountForm &&
             !!this.props.data.activated && (
               <Alert.Info>The account has been activated</Alert.Info>
             )}
 
-          {/* Show alert if main activation form is in locked state */}
+          {/* Show alert: if main activation form is in locked state */}
           {do {
             const showFormDisabledAlert =
               !isLinkedAccountForm &&
@@ -519,16 +545,15 @@ export default class ActivationWizard extends React.Component {
                 {msg}
                 <div class="side-description">
                   In case of any queries, you can reach out to us at{' '}
-                  <a href="mailto:support@razorpay.com">support@razorpay.com</a>{' '}
-                  now.
+                  <a href="mailto:support@razorpay.com">support@razorpay.com</a>.
                 </div>
               </Alert.Info>;
             }
           }}
 
-          {/* Show alert if user has selected individual business type */}
+          {/* Show Alert: if user has selected individual business type */}
           {!isLinkedAccountForm &&
-            this.state.data.business_type == 2 && (
+            currentBusinessType == 2 && (
               <Alert.Warning>
                 We may not be able to support individual as of now. Get in touch
                 with{' '}
@@ -536,17 +561,20 @@ export default class ActivationWizard extends React.Component {
                 for more details.
               </Alert.Warning>
             )}
+
+          {/* Activation form starts here */}
           <Form onChange={this.onChange} layout="tabular">
-            {/* Other Form Content if not Document */}
+            {/* Other form content shown if not Document */}
             {content}
 
-            {/* Document Content is always in DOM */}
+            {/* Document content is always in DOM */}
             <div style={{ display: content ? 'none' : 'inherit' }}>
               {documentContent}
             </div>
           </Form>
         </main>
 
+        {/* Submit form overlay view */}
         {!isSubmitFormRemoved &&
           this.state.showSubmitLayer && (
             <main class="overlay-container">
@@ -556,18 +584,27 @@ export default class ActivationWizard extends React.Component {
               />
             </main>
           )}
+
+        {/* Activation form footer, to show actions / saving state */}
         {!this.state.showSubmitLayer && (
           <footer>
+            {/* Spinner state */}
             <Loader isSaving={this.state.isSaving} />
+
+            {/* Action Button 1 */}
             {activeTab != DOCUMENT_UPLOAD_STEP && (
               <Button onClick={_ => this.goto()}>Save</Button>
             )}
+
+            {/* Action Button 2 */}
             {isLastTab || (
               <Button.Primary iconAfter="chevron-right" onClick={this.next}>
                 <span class="btn--desktop">Save & Next</span>
                 <span class="btn--mobile">Next</span>
               </Button.Primary>
             )}
+
+            {/* Action Button 3 */}
             {isLastTab &&
               !isSubmitFormRemoved && (
                 <Button.Primary
@@ -599,23 +636,30 @@ export default class ActivationWizard extends React.Component {
 * @prop {Boolean or null} isSaving - Current status of Loader
 * */
 function Loader({ isSaving }) {
-  if (isSaving === null) {
+  if (isSaving === LOADING_STATES.INITIAL) {
     return <span class="Loader" />;
   }
 
   return (
     <span class="Loader Loader--visible">
-      {isSaving ? (
-        <React.Fragment>
-          <span class="spin-btn" />
-          Saving Changes...
-        </React.Fragment>
-      ) : (
-        <React.Fragment>
-          <i class="i-check" />
-          All changes saved
-        </React.Fragment>
-      )}
+      {do {
+        if (isSaving === LOADING_STATES.PENDING) {
+          <React.Fragment>
+            <span class="spin-btn" />
+            Saving Changes...
+          </React.Fragment>;
+        } else if (isSaving === LOADING_STATES.SUCCESS) {
+          <React.Fragment>
+            <i class="i-check" />
+            All changes saved
+          </React.Fragment>;
+        } else if (isSaving === LOADING_STATES.ERROR) {
+          <React.Fragment>
+            <i class="i-close text-danger" />
+            <span class="text-danger">Last changes are not saved!</span>
+          </React.Fragment>;
+        }
+      }}
     </span>
   );
 }
@@ -637,7 +681,7 @@ function ActivationField(field) {
   let defaultValue, key;
   if (rest.name) {
     key = rest.name;
-    defaultValue = this.state.data[key];
+    defaultValue = this.props.data[key];
   } else if (_name) {
     defaultValue = this.state[_name];
     key = _name;
@@ -661,7 +705,7 @@ function isSubmitFormDisabled(data) {
 }
 
 function isFieldValid(field, activation) {
-  let data = activation.state.data;
+  let data = activation.props.data;
   if (!field.name) {
     // what isn't submissible is valid
     return true;
@@ -690,7 +734,7 @@ function isFieldValid(field, activation) {
 * */
 class SubmitForm extends React.Component {
   state = {
-    allowSubmit: false,
+    allowSubmit: false, // Check if checkbox is ticked
   };
 
   submit = e => {
@@ -708,7 +752,9 @@ class SubmitForm extends React.Component {
       <div class="SubmitForm-backdrop">
         <div class="SubmitForm-modal">
           <main-title>SUBMIT FORM</main-title>
+
           <div class="tnc-text">
+            {/* Confirmation checkbox*/}
             <Input.Check
               onChange={e => {
                 this.setState({
@@ -716,6 +762,8 @@ class SubmitForm extends React.Component {
                 });
               }}
             />
+
+            {/* Primary copy */}
             <p>
               I have read and understood the{' '}
               <a
@@ -743,17 +791,23 @@ class SubmitForm extends React.Component {
               times.
             </p>
           </div>
+
+          {/* Secondary copy */}
           <p class="text-fade">
             Please review the form before submitting as you cannot make any
             changes after submitting. For changes hereafter, contact us at
             support@razorpay.com.
           </p>
+
+          {/* Action button 1 */}
           <Button
             iconBefore="chevron-left"
             onClick={e => closeSubmitForm(e, false)}
           >
             Back to form
           </Button>
+
+          {/* Action button 2 */}
           <AsyncBtn.Primary
             class={this.state.allowSubmit ? '' : 'disabled'}
             onClick={this.submit}

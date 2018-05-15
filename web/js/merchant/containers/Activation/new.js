@@ -63,6 +63,9 @@ export class ActivationContainer extends React.Component {
     const { session, accountId } = this.props;
     const { activation_progress, activated, submitted } = data;
 
+    // Update data
+    this.setState({ data });
+
     // Ideally, updateSession must not be called if accountId present. Here is just Safe check.
     if (accountId) {
       return;
@@ -93,10 +96,6 @@ export class ActivationContainer extends React.Component {
         if (!response.data.can_submit) {
           throw { errors: ['Some mandatory fields are required'] };
         }
-
-        this.setState({
-          data: response.data,
-        });
 
         this.postSubmitStep(response);
 
@@ -130,10 +129,6 @@ export class ActivationContainer extends React.Component {
             message: response.errors,
           });
         } else {
-          this.setState({
-            data: response.data,
-          });
-
           !this.props.accountId && this.updateSession(response.data); // Updating % activation_progress (side bar)
         }
 
@@ -144,6 +139,8 @@ export class ActivationContainer extends React.Component {
           type: 'error',
           message: err.errors ? err.errors : err,
         });
+
+        return err;
       });
   };
 
@@ -159,6 +156,7 @@ export class ActivationContainer extends React.Component {
   saveFile = (fieldName, file, progressTracker) => {
     let formData = new FormData();
 
+    //TODO: This mapping is just for past form cross-check. It can be removed now after verifying fields.
     let fieldNameMapping = {
       business_proof_url: 'business_proof_url',
       business_operation_proof: 'business_operation_proof_url',
