@@ -406,6 +406,11 @@ const ActionsList = ({ model, merchantId, actions }) => {
             <AsyncButton
               onClick={toggleLockOnActivationForm}
               pendingClass="btn-pending"
+              confirm={
+                !merchant.details.merchant_details.locked &&
+                !merchant.details.merchant_details.submitted &&
+                'Merchant has not submitted the form yet. Do you still want to lock the form?'
+              }
             >
               {merchant.details.merchant_details.locked ? 'Unlock' : 'Lock'}{' '}
               Activation Form
