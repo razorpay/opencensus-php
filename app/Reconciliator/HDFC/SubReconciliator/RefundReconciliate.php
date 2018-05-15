@@ -10,9 +10,10 @@ class RefundReconciliate extends Base\RefundReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_REFUND_ID      = ['merchant_trackid', 'MERCHANT_TRACKID'];
-    const COLUMN_REFUND_AMOUNT  = ['domestic_amt', 'DOMESTIC AMT'];
-    const COLUMN_ARN            = ['arn_no', 'ARN NO'];
+    const COLUMN_REFUND_ID          = ['merchant_trackid', 'MERCHANT_TRACKID'];
+    const COLUMN_REFUND_AMOUNT      = ['domestic_amt', 'DOMESTIC AMT'];
+    const COLUMN_ARN                = ['arn_no', 'ARN NO'];
+    const COLUMN_SEQUENCE_NUMBER    = ['sequence_number', 'SEQUENCE NUMBER'];
 
     const COLUMN_TERMINAL_NUMBER    = ['terminal_number', 'TERMINAL NUMBER'];
 
@@ -110,7 +111,7 @@ class RefundReconciliate extends Base\RefundReconciliate
 
                 if (stripos($arn, 'onus') !== false)
                 {
-                    $arn = 'NA';
+                    $arn = $this->getRRNForOnusTransaction($row);
                 }
 
                 break;
@@ -195,5 +196,34 @@ class RefundReconciliate extends Base\RefundReconciliate
         {
             $this->setFailUnprocessedRow(false);
         }
+    }
+
+    /**
+     * In case of onus transaction, we don't receive ARN.
+     * Storing 12 digit RRN in place of ARN, to share as a transaction reference with customers
+     * If that is also not set, ARN will be set as 'NA'
+     * @param array $row
+     * @return string
+     */
+    protected function getRRNForOnusTransaction(array $row): string
+    {
+        $sequenceNumber = 'NA';
+
+        $columnSeqNumber = array_first(self::COLUMN_SEQUENCE_NUMBER, function ($csn) use ($row)
+        {
+            return (empty($row[$csn]) === false);
+        });
+
+        if ($columnSeqNumber !== null)
+        {
+            $sequenceNumberValue = str_replace("'", '', $row[$columnSeqNumber]);
+
+            if (filled($sequenceNumberValue) === true)
+            {
+                $sequenceNumber = trim($sequenceNumberValue);
+            }
+        }
+
+        return $sequenceNumber;
     }
 }

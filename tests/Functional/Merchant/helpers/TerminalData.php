@@ -212,8 +212,10 @@ return [
             'content' => [
                 'gateway'                   => 'upi_icici',
                 'gateway_merchant_id'       => '12345',
-                 'vpa'                      => 'rzpbqr@icici',
+                'vpa'                       => 'rzpbqr@icici',
+                'upi'                       => true,
                 'type'                      => [
+                    'non_recurring' => '1',
                     'bharat_qr'     => '1',
                 ],
             ],
@@ -235,8 +237,10 @@ return [
                 'gateway'             => 'upi_icici',
                 'gateway_merchant_id' => '12345',
                 'vpa'                 => 'random@icici',
+                'upi'                 => true,
                 'type'                => [
                     'bharat_qr'       => '1',
+                    'non_recurring' => '1',
                 ],
             ],
             'method' => 'POST',
@@ -294,7 +298,8 @@ return [
                 'netbanking'            => 1,
                 'gateway_merchant_id'   => '12345',
                 'gateway_secure_secret' => 'random_secret',
-                'gateway_access_code'   => 'random_access_code'
+                'gateway_access_code'   => 'random_access_code',
+                'network_category'      => 'ecommerce',
             ],
             'url'     => '/merchants/10000000000000/terminals',
             'method'  => 'POST'

@@ -18,9 +18,9 @@ class Bob extends Base
     const EXTENSION              = FileStore\Format::TXT;
     const FILE_TYPE              = FileStore\Type::BOB_NETBANKING_REFUND;
 
-    const GATEWAY_CODE           = Payment\Processor\Netbanking::BARB_R;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     const GATEWAY                = 'netbanking_bob';
+    const GATEWAY_CODE           = [Payment\Processor\Netbanking::BARB_R, Payment\Processor\Netbanking::BARB_C];
 
     protected function formatDataForFile(array $inputData)
     {
