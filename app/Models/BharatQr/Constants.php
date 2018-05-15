@@ -4,7 +4,7 @@ namespace RZP\Models\BharatQr;
 
 class Constants
 {
-    const VERSION = '01';
+    const VERSION           = '01';
     const STATIC_POI        = '11';
     const DYNAMIC_POI       = '12';
     const MERCHANT_CATEGORY = '5399';

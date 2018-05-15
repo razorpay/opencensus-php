@@ -61,13 +61,13 @@ class Core extends Base\Core
         return $valid;
     }
 
-    protected function getBharatQrInputParams(array $gatewayInput)
+    protected function getBharatQrInputParams(array $gatewayInputQrData)
     {
         return [
-            Entity::PROVIDER_REFERENCE_ID => $gatewayInput[Entity::PROVIDER_REFERENCE_ID],
-            Entity::MERCHANT_REFERENCE    => $gatewayInput[Entity::MERCHANT_REFERENCE],
-            Entity::METHOD                => $gatewayInput[Entity::METHOD],
-            Entity::AMOUNT                => $gatewayInput[Entity::AMOUNT],
+            Entity::PROVIDER_REFERENCE_ID => $gatewayInputQrData[Entity::PROVIDER_REFERENCE_ID],
+            Entity::MERCHANT_REFERENCE    => $gatewayInputQrData[Entity::MERCHANT_REFERENCE],
+            Entity::METHOD                => $gatewayInputQrData[Entity::METHOD],
+            Entity::AMOUNT                => $gatewayInputQrData[Entity::AMOUNT],
         ];
     }
 }
