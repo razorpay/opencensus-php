@@ -212,8 +212,10 @@ return [
             'content' => [
                 'gateway'                   => 'upi_icici',
                 'gateway_merchant_id'       => '12345',
-                 'vpa'                      => 'rzpbqr@icici',
+                'vpa'                       => 'rzpbqr@icici',
+                'upi'                       => true,
                 'type'                      => [
+                    'non_recurring' => '1',
                     'bharat_qr'     => '1',
                 ],
             ],
@@ -235,8 +237,10 @@ return [
                 'gateway'             => 'upi_icici',
                 'gateway_merchant_id' => '12345',
                 'vpa'                 => 'random@icici',
+                'upi'                       => true,
                 'type'                => [
                     'bharat_qr'       => '1',
+                    'non_recurring' => '1',
                 ],
             ],
             'method' => 'POST',
