@@ -544,7 +544,17 @@ trait Refund
                 return true;
             }
 
-            $this->callGatewayFunction(Payment\Action::REFUND, $data);
+            //
+            // In case of emandate payments, the amount is 0.
+            // For non-emandate payments also, if the refund amount
+            // is 0, we don't have to send it to the gateway at
+            // all since there's no money to be refunded here as
+            // such. We can just mark it as processed.
+            //
+            if ($this->refund->getAmount() !== 0)
+            {
+                $this->callGatewayFunction(Payment\Action::REFUND, $data);
+            }
 
             $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
 
@@ -580,7 +590,10 @@ trait Refund
 
         try
         {
-            $this->callGatewayFunction(Payment\Action::REVERSE, $data);
+            if ($this->refund->getAmount() !== 0)
+            {
+                $this->callGatewayFunction(Payment\Action::REVERSE, $data);
+            }
 
             $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
 
@@ -716,7 +729,6 @@ trait Refund
 
     protected function callRefundFunction($payment, $data)
     {
-        // @todo: Handle zero payment refund case
         if ($this->shouldHitGatewayForRefund($payment) === true)
         {
             return $this->callGatewayRefundFunction($payment, $data);
