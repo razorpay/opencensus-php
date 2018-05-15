@@ -4,6 +4,7 @@ import Button, { AsyncBtn } from 'component/Button';
 import Alert from 'component/Alert';
 import { classList } from 'common/util';
 import { prevent } from 'common/util';
+import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
 
 import {
   addDropShield,
@@ -196,6 +197,13 @@ export default class ActivationWizard extends React.Component {
 
     const data = { ...this.state.dirty };
 
+    // Setting the empty strings as null. Changed to null, since this is the default value in database.
+    Object.keys(data).forEach(k => {
+      if (data[k] === '') {
+        data[k] = null;
+      }
+    });
+
     for (let i = 0; i < Object.keys(data).length; i++) {
       let key = Object.keys(this.state.dirty)[i];
 
@@ -303,6 +311,10 @@ export default class ActivationWizard extends React.Component {
 
     if (fieldName === 'business_category' && fieldValue === 'others') {
       sideEffectFieldsToUpdate['business_subcategory'] = null; // To override if user previously have some saved subcategory
+    }
+
+    if (fieldName === 'business_website') {
+      fieldValue = autoPrefixUrls(fieldValue); // Updating in view will happen if he comes to this tab again. Otherwise single backspace on 'http' must be handled as full word not single character.
     }
 
     /* Step Last: */

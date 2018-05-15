@@ -119,11 +119,23 @@ export class ActivationContainer extends React.Component {
       data,
     })
       .then(response => {
-        !this.props.accountId && this.updateSession(response.data); // Updating % activation_progress (side bar)
+        if (!response.data) {
+          this.props.showNotification({
+            type: 'error',
+            message: response.errors,
+          });
+        } else {
+          !this.props.accountId && this.updateSession(response.data); // Updating % activation_progress (side bar)
+        }
 
         return response;
       })
-      .catch(err => {});
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors ? err.errors : err,
+        });
+      });
   };
 
   postSubmitStep(response) {
@@ -172,7 +184,6 @@ export class ActivationContainer extends React.Component {
         }
       })
       .catch(err => {
-        console.log('error.', err);
         if (err.errors.length && err.errors[0]) {
           this.props.showNotification({
             type: 'error',
