@@ -15,6 +15,13 @@ export default class BatchCreateModal extends Component {
     pendingText: 'Creating...',
   };
 
+  //shift input caret to the end
+  moveCaretAtEnd(e) {
+    var temp_value = e.target.value;
+    e.target.value = '';
+    e.target.value = temp_value;
+  }
+
   render() {
     const {
       parsedEntries,
@@ -40,7 +47,11 @@ export default class BatchCreateModal extends Component {
           <form onSubmit={handleSubmit(onCreateBatch)}>
             <h5 class="file-name-head">
               <strong>
-                BATCH FILE NAME <i class="i i-info-circle m-l" />
+                BATCH FILE NAME{' '}
+                <i
+                  class="i i-info-circle m-l"
+                  placeholder="Maximum filename length is 255 characters."
+                />
               </strong>
             </h5>
             <div class="form-group">
@@ -51,6 +62,8 @@ export default class BatchCreateModal extends Component {
                 class="form-control"
                 autoFocus={true}
                 validate={[required()]}
+                maxlength="255"
+                onFocus={this.moveCaretAtEnd}
               />
             </div>
 

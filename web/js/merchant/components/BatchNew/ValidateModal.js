@@ -34,6 +34,7 @@ export default function BatchValidateModal({
       <div class="modal-file">
         <FileUpload
           accept={['csv', 'xlsx', 'xls']}
+          size="large"
           uploadedFileName="Upload File here"
           maxSize={MAX_FILE_SIZE}
           onBiggerFileSize={onBiggerFileSize}

@@ -586,6 +586,7 @@ dl.rzp-definition {
     border-radius: 4px
     cursor: pointer
     border: 1px dashed $primary-color
+    font-weight: unset
 
     &--highlight {
       background: #fff
@@ -610,7 +611,6 @@ dl.rzp-definition {
   }
 
   .Dropzone-content {
-    margin: 4%
     vertical-align: middle
     font-size: 16px
     pointer-events: none
@@ -638,6 +638,12 @@ dl.rzp-definition {
       display: inline-block
       width: 12%
       max-width: 28px
+    }
+    &.small {
+      margin: 4%
+    }
+    &.large {
+      margin: 3%
     }
   }
 }
