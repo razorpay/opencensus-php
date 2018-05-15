@@ -55,6 +55,21 @@ class Service extends Base\Service
         return (new Core)->saveMerchantDetails($input, $this->merchant);
     }
 
+    /**
+     * This function is used to patch merchant details fields
+     * @param array $input
+     *
+     * @return array
+     */
+    public function patchMerchantDetails(array $input): array
+    {
+        $merchantDetails = $this->merchant->merchantDetail;
+
+        $merchantDetails = (new Core)->patchMerchantDetails($merchantDetails, $input);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
     public function uploadActivationFileAdmin(string $merchantId, array $input)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);

@@ -200,6 +200,13 @@ class Validator extends Base\Validator
         Entity::BUSINESS_WEBSITE                => 'required|max:255|url',
     ];
 
+    protected static $patchMerchantDetailsRules = [
+        Entity::BUSINESS_OPERATION_ADDRESS => 'filled|max:255',
+        Entity::BUSINESS_OPERATION_STATE   => 'filled|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_CITY    => 'filled|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_PIN     => 'filled|max:15'
+    ];
+
     protected static $bulkAssignReviewerRules = [
         Entity::REVIEWER_ID     => 'required|public_id|size:20',
         Entity::MERCHANTS       => 'filled|array',
