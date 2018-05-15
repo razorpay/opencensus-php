@@ -186,7 +186,29 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::FEATURE)->insert(
                 array(
                     'id'            => 'feature_202020',
-                    'name'          => 'recurring',
+                    'name'          => 'subscriptions',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime
+                )
+            );
+
+            DB::table(Table::FEATURE)->insert(
+                array(
+                    'id'            => 'feature_303030',
+                    'name'          => 'bharat_qr',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime
+                )
+            );
+
+            DB::table(Table::FEATURE)->insert(
+                array(
+                    'id'            => 'feature_404040',
+                    'name'          => 'virtual_accounts',
                     'entity_id'     => '10000000000000',
                     'entity_type'   => 'merchant',
                     'created_at'    => $currentTime,
@@ -514,6 +536,7 @@ class DatabaseSeeder extends Seeder
                     'emi'           => '1',
                     'upi'           => '1',
                     'bank_transfer' => '1',
+                    'emandate'      => '1',
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                 )

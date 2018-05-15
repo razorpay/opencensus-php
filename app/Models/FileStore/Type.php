@@ -17,6 +17,7 @@ class Type
     const HDFC_EMANDATE_DEBIT               = 'hdfc_emandate_debit';
 
     const RBL_ENACH_DEBIT                   = 'rbl_enach_debit';
+    const RBL_ENACH_REGISTER                = 'rbl_enach_register';
 
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
 
@@ -132,7 +133,6 @@ class Type
      * Map of types allowed for each entity.
      */
     const TYPE_MAP = [
-
         self::BLANK => [
             self::KOTAK_NETBANKING_CLAIM,
             self::KOTAK_NETBANKING_REFUND,
@@ -140,6 +140,7 @@ class Type
             self::HDFC_EMANDATE_REGISTER,
             self::HDFC_EMANDATE_DEBIT,
             self::RBL_ENACH_DEBIT,
+            self::RBL_ENACH_REGISTER,
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_EMANDATE_DEBIT,
@@ -244,6 +245,7 @@ class Type
         self::HDFC_EMANDATE_REGISTER,
         self::HDFC_EMANDATE_DEBIT,
         self::RBL_ENACH_DEBIT,
+        self::RBL_ENACH_REGISTER,
         self::BOB_NETBANKING_REFUND,
         self::BOB_NETBANKING_CLAIMS,
         self::CORPORATION_NETBANKING_REFUND,
@@ -286,6 +288,7 @@ class Type
             self::HDFC_NETBANKING_REFUND,
             self::HDFC_EMANDATE_REGISTER,
             self::HDFC_EMANDATE_DEBIT,
+            self::RBL_ENACH_REGISTER,
             self::BOB_NETBANKING_REFUND,
             self::BOB_NETBANKING_CLAIMS,
             self::AXIS_NETBANKING_REFUND,
