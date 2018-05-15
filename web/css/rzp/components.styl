@@ -568,12 +568,11 @@ dl.rzp-definition {
   width: 100%
 
   p {
-    margin: 0 auto
     width: 93%;
-    padding-left: 6%
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin: 0;
   }
 
   .m-t {
@@ -611,14 +610,21 @@ dl.rzp-definition {
   }
 
   .Dropzone-content {
-    padding: 14px 14px 14px 40px
+    margin: 4%
     vertical-align: middle
     font-size: 16px
     pointer-events: none
 
-    &-desc--primary {
-      margin-bottom: 0
+    .Dropzone-file-icon + .Dropzone-content-desc {
+      padding-left: 4% // To adjust with icon on left
     }
+
+    &-desc {
+      display: inline-block
+      width: 88%
+      vertical-align: middle
+    }
+
     &-desc--secondary {
       font-size: 14px
       margin-top: 4px
@@ -629,12 +635,9 @@ dl.rzp-definition {
     }
 
     .Dropzone-file-icon {
-      position: absolute
-      transform: translateY(-50%)
-      top: 50%
-      left: 0
-      height: 48px
-      padding: 4px
+      display: inline-block
+      width: 12%
+      max-width: 28px
     }
   }
 }
@@ -653,9 +656,7 @@ dl.rzp-definition {
     position: relative
 
     i {
-      position: absolute
-      left: -3px
-      top: 5px
+      margin-right: 4px
     }
   }
 
