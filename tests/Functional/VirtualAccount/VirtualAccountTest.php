@@ -18,6 +18,7 @@ use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 class VirtualAccountTest extends TestCase
 {
     protected $t1;
+    protected $t2;
     use MocksDnsTrait;
     use EntityActionTrait;
     use VirtualAccountTrait;
@@ -37,7 +38,7 @@ class VirtualAccountTest extends TestCase
 
         $this->t1 = $this->fixtures->create('terminal:bharat_qr_terminal');
 
-        $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+        $this->t2 = $this->fixtures->create('terminal:bharat_qr_terminal_upi');
 
         $this->ba->privateAuth();
 
@@ -167,6 +168,38 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals('528734', $visaAcquirerCode);
 
         $this->assertEquals('428734', $masterCardAcquirerCode);
+    }
+
+    public function testCreateVirtualAccountWithBharatQrWithNoTerminal()
+    {
+        $this->fixtures->terminal->disableTerminal($this->t1['id']);
+
+        $this->fixtures->terminal->disableTerminal($this->t2['id']);
+
+        $this->expectException(\RZP\Exception\RuntimeException::class);
+
+        $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+        ]);
+    }
+
+    public function testCreateVirtualAccountWithBharatQrWithOneTerminal()
+    {
+        $this->fixtures->terminal->disableTerminal($this->t1['id']);
+
+        $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+        ]);
+
+        $qrCode = $this->getLastEntity('qr_code', true);
+
+        $tlvArray = $this->getTagMappedValues($qrCode['qr_string']);
+
+        $this->assertArrayNotHasKey('02', $tlvArray);
+
+        $this->assertArrayNotHasKey('04', $tlvArray);
+
+        $this->assertArrayNotHasKey('06', $tlvArray);
     }
 
     public function testTransactionRollback()

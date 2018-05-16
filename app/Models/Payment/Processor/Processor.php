@@ -439,9 +439,7 @@ class Processor
 
                 if (count($selectedTerminals) === 0)
                 {
-                    throw new Exception\RuntimeException(
-                        'No terminal found.',
-                        ['payment' => $payment->toArrayAdmin()]);
+                    return null;
                 }
 
                 return $selectedTerminals[0];

@@ -236,26 +236,21 @@ class Provider
 
         $merchantIdentifiers = $this->generateBharatQrMerchantIdentifier($qrCode);
 
-        $visaIdentifier = $merchantIdentifiers[Terminal\Entity::VISA_MPAN];
+        $merchantVpa = '';
 
-        $masterCardIdentifier =  $merchantIdentifiers[Terminal\Entity::MC_MPAN];
-
-        $rupayIdentifier = $merchantIdentifiers[Terminal\Entity::RUPAY_MPAN];
-
-        $visaTlv = Tags::VISA . $this->getLengthAndValue($visaIdentifier);
-
-        $masterCardTlv = Tags::MASTERCARD . $this->getLengthAndValue($masterCardIdentifier);
-
-        $rupayCardTlv = Tags::RUPAY . $this->getLengthAndValue($rupayIdentifier);
+        if (empty($merchantIdentifiers[Terminal\Entity::VPA]) === false)
+        {
+            $merchantVpa = $merchantIdentifiers[Terminal\Entity::VPA];
+        }
 
         $tagArray = [
             Tags::VERSION . $this->getLengthAndValue(Constants::VERSION),
             Tags::POINT_OF_INITIATION . $this->getLengthAndValue($pointOfInitiation),
-            $visaTlv,
-            $masterCardTlv,
-            $rupayCardTlv,
-            $this->getBharatQrUpiTlv($merchantIdentifiers[Terminal\Entity::VPA]),
-            $this->getBharatQrDynamicUpiTlv($qrCode),
+            $this->getIdentifierTlv(Tags::VISA, Terminal\Entity::VISA_MPAN, $merchantIdentifiers),
+            $this->getIdentifierTlv(Tags::MASTERCARD, Terminal\Entity::MC_MPAN, $merchantIdentifiers),
+            $this->getIdentifierTlv(Tags::RUPAY, Terminal\Entity::RUPAY_MPAN, $merchantIdentifiers),
+            $this->getBharatQrUpiTlv($merchantVpa),
+            $this->getBharatQrDynamicUpiTlv($qrCode, $merchantVpa),
             Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Constants::MERCHANT_CATEGORY),
             Tags::CURRENCY_CODE . $this->getLengthAndValue(Constants::CURRENCY_CODE),
             $this->getBharatQrAmountTlv($qrCode),
@@ -278,6 +273,16 @@ class Provider
         return $qrString;
     }
 
+    protected function getIdentifierTlv(string $tag, string $attr, array $merchantIdentifiers)
+    {
+        if (empty($merchantIdentifiers[$attr]) === false)
+        {
+            return $tag . $this->getLengthAndValue($merchantIdentifiers[$attr]);
+        }
+
+        return '';
+    }
+
     protected function getPointOfInitiation($qrCode)
     {
         if (empty($qrCode->getAmount()) === true)
@@ -291,6 +296,13 @@ class Provider
 
     protected function getBharatQrUpiTlv(string $merchantVpa)
     {
+        // This happens when no terminal of upi bqr
+        // is assigned to the merchant.
+        if (empty($merchantVpa) === true)
+        {
+            return '';
+        }
+
         $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(Constants::RUPAY_RID);
         $merchantVpaTlv = Tags::UPI_VPA_MERCHANT_VPA . $this->getLengthAndValue($merchantVpa);
 
@@ -299,8 +311,13 @@ class Provider
         return Tags::UPI_VPA . strlen($upiString) . $upiString;
     }
 
-    protected function getBharatQrDynamicUpiTlv(QrCode\Entity $qrCode)
+    protected function getBharatQrDynamicUpiTlv(QrCode\Entity $qrCode, string $merchantVpa)
     {
+        if (empty($merchantVpa) === true)
+        {
+            return '';
+        }
+
         $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(Constants::RUPAY_RID);
 
         //
@@ -347,9 +364,17 @@ class Provider
      * @param QrCode\Entity $qrCode
      *
      * @return array
+     * @throws Exception\RuntimeException
      */
     protected function generateBharatQrMerchantIdentifier(QrCode\Entity $qrCode)
     {
+        // This is used to identify that
+        // atleast one terminal is selected for
+        // either upi or one of the networks in
+        // card. It will be true if there is atleast
+        // one terminal
+        $isOneIdentifier = false;
+
         $identifiers = [];
 
         $bharatQrNetworks = Payment\Gateway::getBharatQrCardNetworks();
@@ -360,6 +385,13 @@ class Provider
 
             $terminal = $this->getTerminalForMethod(Payment\Method::CARD, $qrCode, $bharatQrNetwork);
 
+            if ($terminal === null)
+            {
+                continue;
+            }
+
+            $isOneIdentifier = true;
+
             $terminal->toArray();
 
             $identifiers[$mpanAttr] = $terminal[$mpanAttr];
@@ -367,7 +399,19 @@ class Provider
 
         $terminal = $this->getTerminalForMethod(Payment\Method::UPI, $qrCode);
 
-        $identifiers[Terminal\Entity::VPA] = $terminal->getVpa();
+        if ($terminal !== null)
+        {
+            $identifiers[Terminal\Entity::VPA] = $terminal->getVpa();
+
+            $isOneIdentifier = true;
+        }
+
+        if ($isOneIdentifier === false)
+        {
+            throw new Exception\RuntimeException(
+                'No terminal found.',
+                ['qr_code' => $qrCode->toArrayAdmin()]);
+        }
 
         return $identifiers;
     }
