@@ -133,6 +133,7 @@ const businessModel = [
       label: 'Do you have Website/App?',
       _cmp: Input.Radio,
       _name: 'app_type',
+      className: 'Input-vTop',
       options: [
         'Yes',
         {
@@ -196,6 +197,7 @@ const registrationDetails = [
       name: 'promoter_pan',
       placeholder: 'PAN Number',
       validator: validatePANCard,
+      className: 'Input-vTop',
     },
     {
       label: 'PAN Owner Name',
@@ -272,6 +274,7 @@ const registrationDetails = [
       _name: 'has_gstin',
       label: 'GSTIN',
       options: ['We have a registered GSTIN', "We don't have a GSTIN"],
+      className: 'Input-vTop',
       _cmp: Input.Radio,
     },
     {
