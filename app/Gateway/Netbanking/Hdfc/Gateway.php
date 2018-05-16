@@ -298,7 +298,7 @@ class Gateway extends Base\Gateway
         //
         if ($this->isFirstRecurringPayment($input))
         {
-            $txnAmount = '1';
+            $txnAmount = Fields::INIT_AMOUNT;
         }
 
         $content = array(

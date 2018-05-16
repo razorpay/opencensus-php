@@ -578,7 +578,6 @@ class Repository extends Base\Repository
         $txnRepo = $this->repo->transaction;
 
         $tRepo = $this->repo->terminal;
-        $tTableName = $tRepo->getTableName();
 
         $transactionPaymentId = $txnRepo->dbColumn(Transaction\Entity::ENTITY_ID);
         $transactionEntityType = $txnRepo->dbColumn(Transaction\Entity::TYPE);
@@ -604,13 +603,6 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Payment\Entity::ORDER_ID, '=', $orderId)
                     ->get();
-    }
-
-    public function fetchByTokenId($tokenId)
-    {
-        return $this->newQuery()
-                    ->where(Payment\Entity::TOKEN_ID, '=', $tokenId)
-                    ->firstOrFail();
     }
 
     /**

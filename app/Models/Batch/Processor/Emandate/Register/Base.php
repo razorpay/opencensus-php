@@ -10,16 +10,15 @@ use RZP\Models\Customer\Token;
 use RZP\Gateway\Base\Entity as GatewayEntity;
 use RZP\Models\Batch\Processor\Base as BaseProcessor;
 
-class Base extends BaseProcessor
+abstract class Base extends BaseProcessor
 {
     /**
      * Params expected in the getDataFromRow method's response
      */
-    const TOKEN_ID       = 'token_id';
     const GATEWAY_TOKEN  = 'gateway_token';
     const TOKEN_STATUS   = 'token_status';
     const ERROR_MESSAGE  = 'error_message';
-    const ACCOUNT_NUMBER = 'account_number';
+    const PAYMENT_ID     = 'payment_id';
 
     /**
      * @var Payment\Processor\Processor
@@ -38,20 +37,16 @@ class Base extends BaseProcessor
         // 'token_id'         : Corresponds to Token\Entity::ID
         // 'status'           : Corresponds to Token\Entity::RECURRING_STATUS
         // 'remark'           : Corresponds to Token\Entity::RECURRING_FAILURE_REASON
-        // 'gateway_token_id' : Corresponds to Token\Entity::GATEWAY_TOKEN
-        // 'account_number'   : Corresponds to Token\Entity::ACCOUNT_NUMBER
+        // 'gateway_token'    : Corresponds to Token\Entity::GATEWAY_TOKEN
         //
         $parsedData = $this->getDataFromRow($entry);
 
-        $tokenId = $parsedData[self::TOKEN_ID];
-
-        $accountNumber = $parsedData[self::ACCOUNT_NUMBER];
-
-        $payment = $this->repo->payment->fetchByTokenId($tokenId);
+        // TODO: FIX for HDFC! We are getting token id there currently.
+        $payment = $this->repo->payment->findOrFailPublic($parsedData[self::PAYMENT_ID]);
 
         $gatewayPayment = $this->getGatewayPayment($payment);
 
-        $token = $this->repo->token->getTokenByIdAndAccountNumber($tokenId, $accountNumber);
+        $token = $payment->getGlobalOrLocalTokenEntity();
 
         $oldRecurringStatus = $token->getRecurringStatus();
 
@@ -68,6 +63,11 @@ class Base extends BaseProcessor
 
         $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
     }
+
+    abstract protected function getDataFromRow(array $entry): array;
+    abstract protected function getTokenStatus(string $gatewayTokenStatus): string;
+    abstract protected function getTokenErrorMessage(string $gatewayTokenStatus, array $entry);
+    abstract protected function getGatewayPayment(Payment\Entity $payment);
 
     protected function updateGatewayPaymentEntityAndCapturePayment(
         Payment\Entity $payment,
@@ -150,7 +150,8 @@ class Base extends BaseProcessor
 
     protected function updateTokenEntity(Token\Entity $token, array $content)
     {
-        $gatewayToken = $content[self::GATEWAY_TOKEN];
+        // In some gateways like HDFC, there's no gateway token
+        $gatewayToken = $content[self::GATEWAY_TOKEN] ?? null;
 
         $currentRecurringStatus = $token->getRecurringStatus();
 
@@ -194,25 +195,5 @@ class Base extends BaseProcessor
     protected function sendProcessedMail()
     {
         return;
-    }
-
-    /**
-     * Child class must implement it
-     *
-     * @param array $entry
-     */
-    protected function getDataFromRow(array & $entry)
-    {
-        throw new \BadMethodCallException();
-    }
-
-    /**
-     * Child class must implement it
-     *
-     * @param Payment\Entity $payment
-     */
-    protected function getGatewayPayment(Payment\Entity $payment)
-    {
-        throw new \BadMethodCallException();
     }
 }

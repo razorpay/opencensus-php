@@ -14,17 +14,12 @@ class Hdfc extends Base
 {
     const GATEWAY   = Gateway::NETBANKING_HDFC;
 
-    const SUCCESS   = 'success';
-    const REJECT    = 'reject';
-
     protected $gatewayPaymentMapping = [
-        self::TOKEN_ID       => NetbankingEntity::SI_TOKEN,
         self::TOKEN_STATUS   => NetbankingEntity::SI_STATUS,
         self::ERROR_MESSAGE  => NetbankingEntity::SI_MSG,
-        self::ACCOUNT_NUMBER => NetbankingEntity::ACCOUNT_NUMBER,
     ];
 
-    protected function getDataFromRow(array & $entry): array
+    protected function getDataFromRow(array $entry): array
     {
         $tokenId = $entry[Batch\Header::HDFC_EM_REGISTER_MANDATE_ID];
 
@@ -32,14 +27,11 @@ class Hdfc extends Base
 
         $status = $this->getTokenStatus($gatewayTokenStatus);
 
-        $accountNumber = $entry[Batch\Header::HDFC_EM_REGISTER_ACCOUNT_NUMBER];
-
         return [
-            self::GATEWAY_TOKEN  => $tokenId,
             self::TOKEN_STATUS   => $status,
-            self::ACCOUNT_NUMBER => $accountNumber,
             self::ERROR_MESSAGE  => $this->getTokenErrorMessage($gatewayTokenStatus, $entry),
-            self::TOKEN_ID       => $tokenId,
+            // TODO: Fix this! We need the payment id
+            self::PAYMENT_ID     => $tokenId,
         ];
     }
 
@@ -71,6 +63,8 @@ class Hdfc extends Base
 
     protected function getGatewayPayment(Payment\Entity $payment)
     {
-        return $this->repo->netbanking->findByPaymentIdAndAction($payment['id'], Action::AUTHORIZE);
+        return $this->repo
+                    ->netbanking
+                    ->findByPaymentIdAndActionOrFail($payment['id'], Action::AUTHORIZE);
     }
 }

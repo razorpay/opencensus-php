@@ -7,7 +7,7 @@ class Status
     const DEBIT_SUCCESS = 'process';
     const DEBIT_REJECT  = 'reject';
 
-    const REGISTRATION_SUCCESS = 'confirmed';
+    const REGISTRATION_SUCCESS = 'success';
     const REGISTRATION_FAILURE = 'reject';
 
     public static function isRegistrationSuccess($status)
