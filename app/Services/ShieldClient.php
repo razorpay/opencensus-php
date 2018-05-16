@@ -186,6 +186,7 @@ class ShieldClient implements ExternalService
                 break;
 
             case Method::CARD:
+            case Method::EMI:
                 $card = $payment->card;
 
                 $methodParams['card_iin']      = $card->getIin();
