@@ -525,6 +525,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_ID);
     }
 
+    public function getPublicCustomerId()
+    {
+        return Customer\Entity::getSignedIdOrNull($this->getCustomerId());
+    }
+
     public function getCustomerName()
     {
         return $this->getAttribute(self::CUSTOMER_NAME);
@@ -1016,7 +1021,7 @@ class Entity extends Base\PublicEntity
      */
     protected function getCustomerDetailsAttribute(): array
     {
-        $customerId      = Customer\Entity::getSignedIdOrNull($this->getCustomerId());
+        $customerId      = $this->getPublicCustomerId();
         $customerName    = $this->getCustomerName();
         $customerEmail   = $this->getCustomerEmail();
         $customerContact = $this->getCustomerContact();
