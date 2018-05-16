@@ -9,24 +9,24 @@ use RZP\Reconciliator\RequestProcessor;
 class Validator
 {
     const ACCEPTED_EXTENSIONS_MAP = [
-        'csv'   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values', 'text/plain'],
-        'txt'   => ['text/plain', 'application/octet-stream'],
+        'csv'  => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values', 'text/plain'],
+        'txt'  => ['text/plain', 'application/octet-stream'],
         // Ensure that this is always above 'xlsx' because of `getExtensionFromContentType`
-        'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
-        'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    'application/zip', 'application/octet-stream', 'application/vnd.ms-excel'],
+        'zip'  => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
+        'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                   'application/zip', 'application/octet-stream', 'application/vnd.ms-excel'],
         // `text/plain` is being added here because HDFC sends CSV files with XLS extension. kthxbye
         // `application/CDFV2-unknown` is being sent for FirstData files. sigh.
-        'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
-                    'application/vnd.ms-office', 'application/octet-stream', 'text/plain',
-                    'application/cdfv2-unknown'],
-        'xlsb'  => [
+        'xls'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/excel', 'application/vnd.ms-excel', 'application/msexcel',
+                   'application/vnd.ms-office', 'application/octet-stream', 'text/plain',
+                   'application/cdfv2-unknown'],
+        'xlsb' => [
             'application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip',
             'application/octet-stream', 'application/vnd.oasis.opendocument.spreadsheet',
         ],
-        'rpt'   => ['text/plain'],
-        'dat'   => ['text/plain'],
+        'rpt'  => ['text/plain'],
+        'dat'  => ['text/plain'],
     ];
 
     const GATEWAY_SUBJECT_REGEX = [

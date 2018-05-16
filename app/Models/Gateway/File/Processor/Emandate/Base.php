@@ -4,20 +4,17 @@ namespace RZP\Models\Gateway\File\Processor\EMandate;
 
 use Mail;
 use Carbon\Carbon;
-use Razorpay\Trace\Logger as Trace;
 
-use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Gateway\File\Processor;
 use RZP\Exception\GatewayFileException;
-use RZP\Mail\Gateway\EMandate\Base as EMandatMail;
-use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
+use RZP\Mail\Gateway\EMandate\Base as EMandateMail;
 
-abstract class Base extends BaseProcessor
+abstract class Base extends Processor\Base
 {
     const FILE_METADATA            = [];
 
@@ -82,7 +79,7 @@ abstract class Base extends BaseProcessor
             $mailData = $this->formatDataForMail($data);
 
             $type = static::GATEWAY . '_' . static::STEP;
-            $mailable = new EMandatMail($mailData, $type, $recipients);
+            $mailable = new EMandateMail($mailData, $type, $recipients);
 
             Mail::queue($mailable);
 

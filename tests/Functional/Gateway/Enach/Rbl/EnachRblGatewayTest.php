@@ -180,6 +180,38 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals('rejected', $token['recurring_status']);
     }
 
+    public function testRegisterFileGeneration()
+    {
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment['bank_account'] = [
+            'account_number'    => '914010009305862',
+            'ifsc'              => 'utib0000123',
+            'name'              => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertEquals('authorize', $enach['action']);
+        $this->assertEquals(0, $enach['amount']);
+        $this->assertNotNull($enach['signed_xml']);
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['items'][0]['sent_at']);
+
+        $file = $this->getDbLastEntityToArray('file_store');
+
+        $this->assertEquals('gateway_file', $file['entity_type']);
+        $this->assertEquals('rbl_enach_register', $file['type']);
+        $this->assertEquals('zip', $file['extension']);
+        $this->assertEquals('application/x-compressed', $file['mime']);
+    }
+
     public function testRegisterSuccessReconciliation()
     {
         list($payment, $token, $order) = $this->createEmandatePayment();
@@ -302,35 +334,16 @@ class EnachRblGatewayTest extends TestCase
         $payment = $this->getDbLastEntityToArray('payment');
 
         $this->assertEquals('captured', $payment['status']);
-    }
 
-    protected function createEmandatePayment($amount = 0, $recurringType = 'initial')
-    {
-        $order = $this->fixtures->create('order:emandate_order', [
-            'status' => 'attempted',
-            'amount' => 0]);
+        $this->refundPayment($payment['public_id']);
 
-        $token = $this->fixtures->create('customer:emandate_token', [
-            'aadhaar_number' => '390051307206',
-            'auth_type' => 'aadhaar']);
+        $payment = $this->getDbLastEntity('payment')->toArray();
+        $refund = $this->getDbLastEntity('refund')->toArray();
 
-        $payment = [
-            'auth_type'         => 'aadhaar',
-            'terminal_id'       => '1000EnachRblTl',
-            'order_id'          => $order->getId(),
-            'amount'            => $order->getAmount(),
-            'amount_authorized' => $order->getAmount(),
-            'gateway'           => 'enach_rbl',
-            'bank'              => 'UTIB',
-            'recurring'         => '1',
-            'customer_id'       => $token->getCustomerId(),
-            'token_id'          => $token->getId(),
-            'recurring_type'    => $recurringType,
-        ];
-
-        $payment = $this->fixtures->create('payment:emandate_authorized', $payment);
-
-        return [$payment, $token, $order];
+        $this->assertEquals('processed', $refund['status']);
+        $this->assertEquals(0, $refund['amount']);
+        $this->assertEquals(0, $payment['amount_refunded']);
+        $this->assertEquals('refunded', $payment['status']);
     }
 
     public function testDebitFileGeneration()
@@ -555,5 +568,34 @@ class EnachRblGatewayTest extends TestCase
                     Mockery::on($closure));
 
         $this->app->instance('webhook.inferno', $inferno);
+    }
+
+    protected function createEmandatePayment($amount = 0, $recurringType = 'initial')
+    {
+        $order = $this->fixtures->create('order:emandate_order', [
+            'status' => 'attempted',
+            'amount' => 0]);
+
+        $token = $this->fixtures->create('customer:emandate_token', [
+            'aadhaar_number' => '390051307206',
+            'auth_type' => 'aadhaar']);
+
+        $payment = [
+            'auth_type'         => 'aadhaar',
+            'terminal_id'       => '1000EnachRblTl',
+            'order_id'          => $order->getId(),
+            'amount'            => $order->getAmount(),
+            'amount_authorized' => $order->getAmount(),
+            'gateway'           => 'enach_rbl',
+            'bank'              => 'UTIB',
+            'recurring'         => '1',
+            'customer_id'       => $token->getCustomerId(),
+            'token_id'          => $token->getId(),
+            'recurring_type'    => $recurringType,
+        ];
+
+        $payment = $this->fixtures->create('payment:emandate_authorized', $payment);
+
+        return [$payment, $token, $order];
     }
 }

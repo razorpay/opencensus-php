@@ -1640,3 +1640,13 @@ VALUES
 # Updates a user's name on urgent request. Currently there is no flow for same via Dashboard interface
 # Run on production live & test databases
 UPDATE users SET name = 'Nomi J Augustine' WHERE id = '8BpBceh6pcJ8ut' LIMIT 1;
+
+# Update reference2 got in recon file,
+UPDATE payments
+    SET reference2 = '91905' where id = '9eQjCOsHAtD1eS';
+
+UPDATE payments
+    SET reference2 = '1399E2' where id = '95IR6TKf4uuxlM'
+
+UPDATE payments
+    SET reference2 = '030913' where id = '9uKJiXh3PaDcYw';

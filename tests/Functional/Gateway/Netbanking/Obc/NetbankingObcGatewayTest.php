@@ -135,6 +135,13 @@ class NetbankingObcGatewayTest extends TestCase
             });
     }
 
+    public function testransactionNotFoundAtObc()
+    {
+        $this->mockTransactionNotFoundAtObc();
+
+        $this->createPaymentFailed();
+    }
+
     public function testPaymentAmountMismatch()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
@@ -223,6 +230,18 @@ class NetbankingObcGatewayTest extends TestCase
             function(& $content, $action = null)
             {
                 $content['AMT'] = '300.00';
+            }, $this->gateway);
+    }
+
+    protected function mockTransactionNotFoundAtObc()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if($action === 'verify')
+                {
+                    $content = '103922 : Transaction details cannot be fetched/No Records Fetched';
+                }
             }, $this->gateway);
     }
 }

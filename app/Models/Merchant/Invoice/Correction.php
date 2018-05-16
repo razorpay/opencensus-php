@@ -12,8 +12,6 @@ use RZP\Constants\Timezone;
 
 class Correction extends Base\Core
 {
-    protected $merchant;
-
     protected $merchantId;
 
     protected $endTimestamp   = 0;
@@ -35,8 +33,6 @@ class Correction extends Base\Core
         $this->month      = $month;
 
         $this->merchantId = $merchantId;
-
-        $this->initializeVars();
     }
 
     public function calculateAndLogInvoiceCorrection()
@@ -64,11 +60,13 @@ class Correction extends Base\Core
             return;
         }
 
+        $merchant = $this->repo->merchant->findOrFailPublicWithRelations($this->merchantId);
+
         $this->trace->info(
             TraceCode::MERCHANT_INVOICE_CORRECTION_DETAILS,
             [
                 'merchant_id'   => $this->merchantId,
-                'name'          => $this->merchant->getName(),
+                'name'          => $merchant->getName(),
                 'month'         => $this->month,
                 'year'          => $this->year,
             ] + $amountFields);
@@ -161,11 +159,15 @@ class Correction extends Base\Core
                 'year'        => $this->year
             ] + $existingInvoiceAmounts);
 
-        foreach ($this->invoiceBreakup as $type => $values)
+        $processor = new Processor($this->merchantId, $this->month, $this->year);
+
+        $commissionTypes = Type::getAllTypes();
+
+        foreach ($commissionTypes as $type)
         {
             $start = microtime(true);
 
-            $newAmounts = $this->calculateFeesForInvoiceByType($type, $isCorrection);
+            $newAmounts = $processor->calculateFeesForInvoiceByType($type, $isCorrection);
 
             $this->trace->info(
                 TraceCode::MERCHANT_INVOICE_CORRECTION_NEW_AMOUNT,
@@ -208,80 +210,5 @@ class Correction extends Base\Core
             Entity::TAX    => $newAmount[Entity::TAX] - $oldAmount[Entity::TAX],
             Entity::AMOUNT => $newAmount[Entity::AMOUNT] - $oldAmount[Entity::AMOUNT]
         ];
-    }
-
-    /**
-     * Calculates the fee for given type
-     *
-     * @param string $type invoice line item type
-     * @param bool $isCorrection indicated whether to apply correction logic
-     *                           while calculating new invoice amount
-     *
-     * @return array
-     */
-    protected function calculateFeesForInvoiceByType(string $type, bool $isCorrection)
-    {
-        $this->trace->info(
-            TraceCode::MERCHANT_INVOICE_CORRECTION_PARAMS,
-            [
-                'merchant_id'   => $this->merchantId,
-                'type'          => $type,
-                'start'         => $this->beginTimestamp,
-                'year'          => $this->endTimestamp,
-                'is_correction' => $isCorrection,
-            ]);
-
-        $txns = $this->repo
-                     ->transaction
-                     ->fetchFeesAndTaxForTransactionsByType(
-                             $this->merchantId,
-                             $this->beginTimestamp,
-                             $this->endTimestamp,
-                             $type,
-                             $isCorrection);
-
-        if (empty($txns) === true)
-        {
-            $this->trace->info(TraceCode::MERCHANT_INVOICE_CORRECTION_NO_TXN);
-            return [
-                Entity::TAX    => 0,
-                Entity::AMOUNT => 0
-            ];
-        }
-
-        $txnData = $txns->getAttributes();
-
-        $fees    = $txnData[Transaction\Entity::FEE];
-
-        $tax     = $txnData[Transaction\Entity::TAX];
-
-        return [
-            Entity::TAX    => $tax,
-            Entity::AMOUNT => $fees - $tax
-        ];
-    }
-
-    protected function initializeVars()
-    {
-        $this->merchant = $this->repo->merchant->findOrFailPublicWithRelations($this->merchantId, ['merchantDetail']);
-
-        $beginDate = Carbon::createFromDate($this->year, $this->month, 1, Timezone::IST);
-
-        $this->beginTimestamp = $beginDate->startOfMonth()->timestamp;
-
-        $this->endTimestamp = $beginDate->endOfMonth()->timestamp;
-
-        $this->invoiceBreakup = [];
-
-        $commissionTypes = Type::getAllTypes();
-
-        foreach ($commissionTypes as $key)
-        {
-            $this->invoiceBreakup[$key] = [
-                Entity::AMOUNT     => 0,
-                Entity::TAX        => 0,
-                Entity::AMOUNT_DUE => 0
-            ];
-        }
     }
 }

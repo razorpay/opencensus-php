@@ -10,6 +10,7 @@ use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Order;
+use RZP\Gateway\Enach;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
@@ -23,7 +24,9 @@ use RZP\Models\BankTransfer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Verify;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Pricing\FeeCalculator;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 
 class Repository extends Base\Repository
 {
@@ -1080,7 +1083,49 @@ class Repository extends Base\Repository
                     ->whereBetween($paymentCreatedAtColumn, [$from, $to])
                     ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
                     ->where($tokenRecurringColumn, '!=', 1)
+                    ->whereNotNull(Entity::AUTHORIZED_AT)
                     ->with(['localToken', 'globalToken', 'customer'])
+                    ->get();
+    }
+
+    public function fetchPendingEmandateRegistrationForEnach(int $from, int $to)
+    {
+        $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
+
+        $tokenRecurringColumn = $this->repo->token->dbColumn(Token\Entity::RECURRING);
+
+        $enachPaymentIdColumn = $this->repo->enach->dbColumn(Enach\Base\Entity::PAYMENT_ID);
+
+        $enachRegistrationDateColumn = $this->repo->enach->dbColumn(Enach\Base\Entity::REGISTRATION_DATE);
+
+        $selectCols = $this->repo->payment->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($selectCols)
+                    ->join(
+                        Table::TOKEN,
+                        function ($join)
+                        use($tokenIdColumn)
+                        {
+                            $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
+                            $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
+                        })
+                    ->join(Table::ENACH, $paymentIdColumn, '=', $enachPaymentIdColumn)
+                    ->where(Entity::RECURRING_TYPE, '=', RecurringType::INITIAL)
+                    ->where($paymentRecurringColumn, '=', 1)
+                    ->where($paymentMethodColumn, '=', Method::EMANDATE)
+                    ->where(Entity::GATEWAY, '=', Payment\Gateway::ENACH_RBL)
+                    ->whereBetween($enachRegistrationDateColumn, [$from, $to])
+                    ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
+                    ->where($tokenRecurringColumn, '!=', 1)
+                    ->whereNotNull(Entity::AUTHORIZED_AT)
+                    ->with(['localToken', 'globalToken', 'customer', 'enach'])
                     ->get();
     }
 
@@ -1260,4 +1305,70 @@ class Repository extends Base\Repository
 
         return $dbColumns;
     }
+
+    /**
+     * calcualtes the sum of `fee` and `tax` for the payments
+     *  - captured for a merchant in a given time frame
+     *  - based on filter type passed OTHER, CARD_LT_2K, CARD_GT_2K
+     *  - When correction flag is true the adds conition where created in given time frame
+     *
+     * @param string $merchantId
+     * @param int    $start
+     * @param int    $end
+     * @param string $filterType
+     * @param bool   $isCorrection
+     *
+     * @return mixed
+     * @throws Exception\LogicException
+     */
+    public function fetchFeesAndTaxForPaymentByType(
+        string $merchantId,
+        int $start,
+        int $end,
+        string $filterType,
+        bool $isCorrection = false)
+    {
+        $query = $this->newQuery()
+                      ->selectRaw(
+                          'SUM(' . Entity::TAX .') AS tax, SUM(' . Entity::FEE . ') AS fee')
+                      ->whereBetween(Entity::CAPTURED_AT, [$start, $end])
+                      ->whereNotNull(Entity::TRANSACTION_ID);
+
+        //
+        // If correction is true then data will be fetched which are created and captured in given time frame
+        // Else it will fetch the data which are captured in given time frame
+        //
+        if ($isCorrection === true)
+        {
+            $query->whereBetween(Entity::CREATED_AT, [$start, $end]);
+        }
+
+        $query->merchantId($merchantId);
+
+        switch ($filterType)
+        {
+            case InvoiceType::OTHERS:
+                $query = $query->whereNull(Entity::CARD_ID);
+
+                break;
+
+            case InvoiceType::CARD_LTE_2K:
+                $query = $query->whereNotNull(Entity::CARD_ID)
+                               ->where(Entity::AMOUNT, '<=', FeeCalculator::CARD_TAX_CUT_OFF);
+
+                break;
+
+            case InvoiceType::CARD_GT_2K:
+                $query = $query->whereNotNull(Entity::CARD_ID)
+                               ->where(Entity::AMOUNT, '>', FeeCalculator::CARD_TAX_CUT_OFF);
+
+                break;
+
+            default:
+                throw new Exception\LogicException('Invalid merchant invoice type: ', $filterType);
+        }
+
+        return $query->first();
+    }
+
 }

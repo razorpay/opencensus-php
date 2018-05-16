@@ -43,6 +43,10 @@ class Entity extends Base\PublicEntity
     const BILLING_ADDRESS_ID    = 'billing_address_id';
     const SHIPPING_ADDRESS_ID   = 'shipping_address_id';
 
+    // shared customer id
+    const SHARED_CUSTOMER_CONTACT = '+919999999999';
+    const SHARED_CUSTOMER_EMAIL   = 'void@razorpay.com';
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = [

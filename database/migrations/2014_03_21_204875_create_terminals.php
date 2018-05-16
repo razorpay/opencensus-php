@@ -51,10 +51,16 @@ class CreateTerminals extends Migration
             $table->text(Terminal::GATEWAY_TERMINAL_PASSWORD)
                   ->nullable();
 
+            $table->text(Terminal::GATEWAY_TERMINAL_PASSWORD2)
+                  ->nullable();
+
             $table->string(Terminal::GATEWAY_ACCESS_CODE)
                   ->nullable();
 
             $table->string(Terminal::GATEWAY_SECURE_SECRET)
+                  ->nullable();
+
+            $table->string(Terminal::GATEWAY_SECURE_SECRET2)
                   ->nullable();
 
             $table->text(Terminal::GATEWAY_RECON_PASSWORD)

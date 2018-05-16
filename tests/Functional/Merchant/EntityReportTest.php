@@ -10,10 +10,12 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Invoice;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Settlement\SettlementTrait;
 
 class EntityReportTest extends TestCase
 {
     use PaymentTrait;
+    use SettlementTrait;
 
     public function __construct()
     {
@@ -60,6 +62,33 @@ class EntityReportTest extends TestCase
         $combinedReport = $this->fetchMonthlyTransactionsReport($input);
 
         assert(count($combinedReport) === 3);
+    }
+
+    public function testSettlementReconReport()
+    {
+        $this->createPaymentEntities();
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->initiateSettlements($txn['channel']);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('settlement', $txn['type']);
+
+        $dt = Carbon::today(Timezone::IST);
+
+        $input = [
+            'year'  => $dt->year,
+            'month' => $dt->month,
+            'day'   => $dt->day
+        ];
+
+        $data = $this->fetchSettlementReconReport($input);
+
+        $this->assertEquals('collection', $data['entity']);
+        $this->assertEquals(5, $data['count']);
+        $this->assertEquals(5, count($data['items']));
     }
 
     public function testOrderReport()
@@ -434,6 +463,18 @@ class EntityReportTest extends TestCase
             'content' => $content);
 
         $this->ba->proxyAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function fetchSettlementReconReport($content)
+    {
+        $request = array(
+            'url'     => '/settlements/recon/combined',
+            'method'  => 'get',
+            'content' => $content);
+
+        $this->ba->privateAuth();
 
         return $this->makeRequestAndGetContent($request);
     }

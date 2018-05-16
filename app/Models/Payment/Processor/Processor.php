@@ -1057,11 +1057,6 @@ class Processor
 
         $gatewayData['merchant'] = $this->payment->merchant;
 
-        if (Payment\Gateway::isValidBharatQrGateway($this->payment->getGateway()) === true)
-        {
-            $gatewayData['bharat_qr'] = $this->repo->bharat_qr->findByPaymentId($this->payment->getId());
-        }
-
         // Wrapping all gateway call, We can take actions on Exception here.
         try
         {
