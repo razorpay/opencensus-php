@@ -287,6 +287,8 @@ export default class ActivationWizard extends React.Component {
         sideEffectFieldsToUpdate['business_operation_city'] = fieldValue;
       } else if (fieldName === 'business_registered_state') {
         sideEffectFieldsToUpdate['business_operation_state'] = fieldValue;
+      } else if (fieldName === 'business_registered_address') {
+        sideEffectFieldsToUpdate['business_operation_address'] = fieldValue;
       }
     }
 
@@ -298,13 +300,19 @@ export default class ActivationWizard extends React.Component {
       if (fieldValue.length === 6) {
         this.props.getPincodeDetails(fieldValue).then(data => {
           if (data) {
-            const cityField = fieldName.slice(0, -3) + 'city';
+            const cityField = fieldName.slice(0, -3) + 'city'; // It can be operation_ / registered_
             const stateField = fieldName.slice(0, -3) + 'state';
 
+            // Update dependent values
             sideEffectFieldsToUpdate[cityField] = data.city;
             sideEffectFieldsToUpdate[stateField] = data.state_code;
+            if (this.state.same_address == '1') {
+              sideEffectFieldsToUpdate['business_operation_city'] = data.city;
+              sideEffectFieldsToUpdate['business_operation_state'] =
+                data.state_code;
+            }
 
-            // Input fields are uncontrolled, so needs to be updated directly
+            // Input fields are uncontrolled, so needs to be updated directly. Updating dependent field visible in view.
             document.querySelector(
               `.form-container [name=${cityField}]`
             ).value =
@@ -313,6 +321,14 @@ export default class ActivationWizard extends React.Component {
               `.form-container [name=${stateField}]`
             ).value =
               data.state_code;
+
+            this.setState({
+              dirty: {
+                ...this.state.dirty,
+                // [target.name]: fieldValue, // No need to update, since it's already updated in state.dirty before Promise.
+                ...sideEffectFieldsToUpdate,
+              },
+            });
           }
         });
       }
@@ -650,8 +666,8 @@ function Loader({ isSaving }) {
           </React.Fragment>;
         } else if (isSaving === LOADING_STATES.SUCCESS) {
           <React.Fragment>
-            <i class="i-check" />
-            All changes saved
+            <i class="i-check text-success" />
+            <span class="text-success">All changes saved</span>
           </React.Fragment>;
         } else if (isSaving === LOADING_STATES.ERROR) {
           <React.Fragment>
