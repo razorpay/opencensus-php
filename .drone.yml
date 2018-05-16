@@ -1,12 +1,13 @@
 pipeline:
-  restore_cache:
+  restore-cache:
     image: razorpay/containers:drone-s3-cache
     restore: true
     mount:
       - docker_cache
       - npm_cache
     endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
-    path: /rzp/dashboard/
+    # See the rebuild-cache step below for an explanation
+    path: "/rzp/dashboard/${DRONE_BUILD_CREATED:0:5}.tar"
     secrets:
       - aws_access_key_id
       - aws_secret_access_key
@@ -53,7 +54,7 @@ pipeline:
       - npm test
     when:
       event: push
-  build:
+  build-docker:
     group: build
     image: plugins/docker
     repo: razorpay/dashboard
@@ -72,37 +73,14 @@ pipeline:
     when:
       status: [success]
       event: push
-  cleanup:
-    image: alpine:3.7
-    environment:
-    # Makes sure that the docker volume cache survives this run
-      PLUGIN_STORAGE_PATH: /drone/src/github.com/razorpay/dashboard/docker_cache
-    commands:
-      - rm /drone/src/github.com/razorpay/dashboard/composer-auth.json
-      - du -d2 $PLUGIN_STORAGE_PATH
-    when:
-      event: push
-  # This step is used to do a limited prune
-  # so that the cache is not filled with extra layers
-  # This is not yet functional
-  docker-cleanup:
-    image: docker:17.12.0-ce-dind
-    environment:
-    # Makes sure that the docker volume cache survives this run
-      PLUGIN_STORAGE_PATH: /drone/src/github.com/razorpay/dashboard/docker_cache
-    commands:
-      - /usr/local/bin/dockerd --data-root $PLUGIN_STORAGE_PATH
-      - docker version
-      - docker info
-      - docker images
-      - docker history "razorpay/dashboard:${DRONE_COMMIT_SHA}"
-    # Disable this for now
-    when:
-        event: neverland #push
   rebuild-cache:
     image: razorpay/containers:drone-s3-cache
     endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
-    path: '/rzp/dashboard/'
+    # This uses the first 5 characters of the Unix Epoch timestamp
+    # which roughly changes every day so that the cache size does not
+    # get huge over time (one build every day gets affected and downloads
+    # the whole cache though)
+    path: "/rzp/dashboard/${DRONE_BUILD_CREATED:0:5}.tar"
     secrets:
       - aws_region
       - aws_access_key_id
