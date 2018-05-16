@@ -47,7 +47,7 @@ class Entity extends Base\PublicEntity
         self::CARD_TYPE,
         self::NETWORK,
         self::METHOD,
-        self::TERMINAL_ID,
+        // self::TERMINAL_ID,
         self::SOURCE
     ];
 

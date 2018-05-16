@@ -58,7 +58,7 @@ class Entity extends Base\PublicEntity
         self::ACTIVE,
         self::GSTIN,
         self::CONTACT,
-        self::MERCHANT_ID,
+        // self::MERCHANT_ID,
     ];
 
     protected $visible = [

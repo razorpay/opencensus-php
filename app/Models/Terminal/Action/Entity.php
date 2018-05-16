@@ -25,7 +25,7 @@ class Entity extends Base\PublicEntity
     const ACTION_STATES = array('ACTIVATED','SUSPENDED','PRIORITY_CHANGE');
 
     protected $fillable = array(
-        self::TERMINAL_ID,
+        // self::TERMINAL_ID,
         self::ACTION,
         self::CREATED_AT,
         self::UPDATED_AT

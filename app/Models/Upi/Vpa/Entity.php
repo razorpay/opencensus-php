@@ -33,8 +33,8 @@ class Entity extends Base\PublicEntity
         self::USERNAME,
         self::HANDLE,
         self::FREQUENCY,
-        self::BANK_ACCOUNT_ID,
-        self::CUSTOMER_ID,
+        // self::BANK_ACCOUNT_ID,
+        // self::CUSTOMER_ID,
     ];
 
     protected $public = [

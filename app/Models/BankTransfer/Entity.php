@@ -76,7 +76,7 @@ class Entity extends Base\PublicEntity
     const REFUND_ID          = 'refund_id';
 
     protected $fillable = [
-        self::PAYMENT_ID,
+        // self::PAYMENT_ID,
         self::PAYER_NAME,
         self::PAYER_ACCOUNT,
         self::PAYER_IFSC,

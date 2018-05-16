@@ -13,6 +13,14 @@ class Core extends Base\Core
     {
         $app = (new AppToken\Entity)->build($input);
 
+        $customer = $this->repo->customer->findOrFailPublic($input[Entity::CUSTOMER_ID]);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
+
+        $app->customer()->associate($customer);
+
+        $app->merchant()->associate($merchant);
+
         $this->repo->saveOrFail($app);
 
         return $app;

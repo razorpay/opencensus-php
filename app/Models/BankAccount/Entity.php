@@ -59,9 +59,9 @@ class Entity extends Base\PublicEntity
     protected $entity = 'bank_account';
 
     protected $fillable = [
-        self::MERCHANT_ID,
-        self::ENTITY_ID,
-        self::TYPE,
+        // self::MERCHANT_ID,
+        // self::ENTITY_ID,
+        // self::TYPE,
         self::IFSC_CODE,
         self::MOBILE_BANKING_ENABLED,
         self::BENEFICIARY_NAME,

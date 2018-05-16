@@ -19,8 +19,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
-        self::TRANSACTION_ID,
-        self::CREDITS_ID,
+        // self::TRANSACTION_ID,
+        // self::CREDITS_ID,
         self::CREDITS_USED,
     ];
 

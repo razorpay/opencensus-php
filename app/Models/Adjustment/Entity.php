@@ -33,7 +33,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::CHANNEL,
         self::DESCRIPTION,
-        self::SETTLEMENT_ID,
+        // self::SETTLEMENT_ID,
     ];
 
     protected $visible = [

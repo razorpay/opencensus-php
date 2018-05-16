@@ -22,12 +22,12 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    protected $fillable = array(
+    protected $fillable = [
         self::ID,
         self::DEVICE_TOKEN,
-        self::CUSTOMER_ID,
-        self::MERCHANT_ID,
-    );
+        // self::CUSTOMER_ID,
+        // self::MERCHANT_ID,
+    ];
 
     protected $visible = array(
         self::ID,

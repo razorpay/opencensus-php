@@ -37,11 +37,24 @@ class Core extends Base\Core
     {
         $feature = (new Entity)->build($input);
 
+        $entityType = $input[Entity::ENTITY_TYPE];
+
+        $entityId = $input[Entity::ENTITY_ID];
+
+        if ($entityType === Constants::MERCHANT)
+        {
+            $entity = $this->repo->merchant->findOrFailPublic($entityId);
+
+            $feature->entity()->associate($entity);
+        }
+        else
+        {
+            $feature->setEntityId($entityId);
+
+            $feature->setEntityType($entityType);
+        }
+
         $feature->generateId();
-
-        $entityType = $feature->getEntityType();
-
-        $entityId = $feature->getEntityId();
 
         $existingFeatures = $this->repo->feature->fetchByEntityTypeAndEntityId($entityType, $entityId);
 
