@@ -118,10 +118,20 @@ export default class User {
   }
 
   get isOldBatchEnabled() {
-    return (this.tags || []).indexOf('Batch_import_links') !== -1;
+    // TODO: temp fix for upper/lower case tags
+    return (
+      (this.tags.map(t => t.toLowerCase()) || []).indexOf(
+        'batch_import_links'
+      ) !== -1
+    );
   }
 
   get isNewBatchEnabled() {
-    return (this.tags || []).indexOf('Batch_import_links_v2') !== -1;
+    // TODO: temp fix for upper/lower case tags
+    return (
+      (this.tags.map(t => t.toLowerCase()) || []).indexOf(
+        'batch_import_links_v2'
+      ) !== -1
+    );
   }
 }
