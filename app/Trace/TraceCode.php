@@ -24,6 +24,14 @@ class TraceCode
     // Request made to API has failed
     const API_REQUEST_FAILURE                       = 'API_REQUEST_FAILURE';
 
+    const USER_LOGIN                                = 'USER_LOGIN';
+    const SWITCH_MERCHANT                           = 'SWITCH_MERCHANT';
+    const USER_LOGOUT                               = 'USER_LOGOUT';
+
+    const ADMIN_LOGIN                               = 'ADMIN_LOGIN';
+    const ADMIN_LOGOUT                              = 'ADMIN_LOGOUT';
+    const ADMIN_AS_MERCHANT                         = 'ADMIN_AS_MERCHANT';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',
@@ -33,8 +41,9 @@ class TraceCode
     /**
      * Translate event code to message
      *
-     * @param $eventCode event code
-     * @return
+     * @param  string $code
+     *
+     * @return string
      */
     public static function getMessage($code)
     {

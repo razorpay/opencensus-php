@@ -343,6 +343,11 @@ export default class TerminalForm extends Component {
             <option value="2">Purchase</option>
           </SelectField>
 
+          <Field label="Master card mpan" name="mc_mpan" />
+          <Field label="Visa mpan" name="visa_mpan" />
+          <Field label="Rupay mpan" name="rupay_mpan" />
+          <Field label="VPA" name="vpa" />
+
           <CheckField
             label="Non recurring"
             name="type[non_recurring]"
@@ -392,6 +397,13 @@ export default class TerminalForm extends Component {
             name="type[pin]"
             defaultChecked={
               entity && entity.type && entity.type.indexOf('pin') >= 0
+            }
+          />
+          <CheckField
+            label="Bharat Qr"
+            name="type[bharat_qr]"
+            defaultChecked={
+              entity && entity.type && entity.type.indexOf('bharat_qr') >= 0
             }
           />
 

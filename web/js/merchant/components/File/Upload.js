@@ -1,5 +1,3 @@
-import React, { Component, Fragment } from 'react';
-
 import { readableFileSize } from 'rzp/utils/rzp-utils';
 import { classList } from 'common/util';
 
@@ -23,8 +21,9 @@ import Staged from './Staged';
  *                       Note:- Please refer `fileTypesMap` for issues related to mime types
  *
  */
-export default class FileUpload extends Component {
+export default class FileUpload extends React.Component {
   static defaultProps = {
+    size: 'small',
     multi: false,
     acceptedTypes: [],
     uploadedBytes: 0,
@@ -131,6 +130,8 @@ export default class FileUpload extends Component {
 
     let infotext = 'Upload ';
 
+    accept = accept.map(fileType => `.${fileType}`);
+
     if (accept.length > 1) {
       infotext += `${accept.slice(0, -1).join(', ')} or ${accept.slice(-1)}`;
     } else {
@@ -142,7 +143,10 @@ export default class FileUpload extends Component {
     return infotext;
   };
 
-  handleCloseClick = fileIndex => () => {
+  handleCloseClick = fileIndex => e => {
+    e.preventDefault();
+    e.stopPropagation();
+
     if (this.props.disabled) {
       return;
     }
@@ -182,8 +186,8 @@ export default class FileUpload extends Component {
     }
   };
 
-  handleDragOver = event => {
-    event.preventDefault();
+  handleDragOver = e => {
+    e.preventDefault();
   };
 
   toggleDragWithFile = e => {
@@ -208,6 +212,7 @@ export default class FileUpload extends Component {
       showStagedFileStatus,
       showAcceptInfo,
       showFileSize,
+      size,
     } = this.props;
     let { isDocPreUploaded } = this.state;
 
@@ -217,6 +222,7 @@ export default class FileUpload extends Component {
     return (
       <div
         class="Dropzone"
+        id={`Dropzone-${name}`}
         onDragLeave={isDocPreUploaded ? undefined : this.toggleDragWithFile}
       >
         {!multi &&
@@ -233,9 +239,8 @@ export default class FileUpload extends Component {
               onDragEnter={
                 isDocPreUploaded ? undefined : this.toggleDragWithFile
               }
-              onClick={this.handleClick}
             >
-              <div class="Dropzone-content">
+              <div class={`Dropzone-content ${size}`}>
                 {children || (
                   <React.Fragment>
                     <img
@@ -243,13 +248,26 @@ export default class FileUpload extends Component {
                       src={'img/files/file-placeholder.svg'}
                       alt=""
                     />
-                    <p class="Dropzone-content-desc--primary">
-                      Drop file here or{' '}
-                      <b class="text-primary">Click to Upload</b>{' '}
-                      {maxSize && (
-                        <Fragment>{readableFileSize(maxSize)} Max</Fragment>
-                      )}
-                    </p>
+                    <div class="Dropzone-content-desc">
+                      <p class="Dropzone-content-desc--primary">
+                        Drop file here or{' '}
+                        <b class="text-primary">Click to Upload</b>{' '}
+                        {maxSize && (
+                          <React.Fragment>
+                            ({readableFileSize(maxSize)} Max)
+                          </React.Fragment>
+                        )}
+                      </p>
+                      {do {
+                        const acceptedFileTypes = this.getAcceptedFileTypesInfo();
+
+                        if (acceptedFileTypes && showAcceptInfo) {
+                          <p class="Dropzone-content-desc--secondary text-muted small-text">
+                            {acceptedFileTypes}
+                          </p>;
+                        }
+                      }}
+                    </div>
                     <input
                       type="file"
                       id={`fileInput-${name}`}
@@ -260,15 +278,6 @@ export default class FileUpload extends Component {
                       disabled={disabled}
                       hidden
                     />
-                    {do {
-                      const acceptedFileTypes = this.getAcceptedFileTypesInfo();
-
-                      if (acceptedFileTypes && showAcceptInfo) {
-                        <p class="Dropzone-content-desc--secondary text-muted small-text">
-                          {acceptedFileTypes}
-                        </p>;
-                      }
-                    }}
                   </React.Fragment>
                 )}
               </div>
@@ -293,6 +302,7 @@ export default class FileUpload extends Component {
               showFileSize={showFileSize && maxSize}
               showStagedFileStatus={showStagedFileStatus}
               name={name}
+              size={size}
             />
           </div>
         )}

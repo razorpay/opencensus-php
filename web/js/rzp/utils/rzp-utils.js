@@ -521,6 +521,9 @@ export const trim = str => {
   return str.replace(/\s+/g, '');
 };
 
+export const pluralize = (str, length) => {
+  return length > 1 ? `${str}s` : str;
+};
 /**
  * Returns whether or not a GSTIN is valid.
  * @param {String} gstin
@@ -544,4 +547,16 @@ export const isValidGSTIN = gstin => {
    */
   let regex = /^[0123][0-9][a-z]{5}[0-9]{4}[a-z][0-9][z][a-z0-9]$/gi;
   return regex.test(gstin);
+};
+
+export const subString = (str, length) => {
+  if (!str) {
+    return str;
+  }
+
+  if (str.length > length) {
+    return `${str.substr(0, length)} ...`;
+  } else {
+    return str;
+  }
 };
