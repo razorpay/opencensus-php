@@ -62,6 +62,8 @@ export default class BatchValidate extends Component {
       })
       .catch(error => {
         this.changeBatchState('error', error.errors[0]);
+
+        return error;
       });
   };
 
