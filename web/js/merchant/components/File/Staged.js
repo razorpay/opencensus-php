@@ -98,7 +98,8 @@ export default class Staged extends React.Component {
         </div>
         <div>{this.props.children}</div>
         {!isDisabled &&
-          onCloseClick && (
+          onCloseClick &&
+          currentStatus !== 'process' && (
             <span class="icon i-close Dropzone-close" onClick={onCloseClick} />
           )}
 
