@@ -33,6 +33,7 @@ class Header
     const CUSTOMER_NAME       = 'Customer Name';
     const CUSTOMER_EMAIL      = 'Customer Email';
     const CUSTOMER_CONTACT    = 'Customer Contact';
+    const AMOUNT_IN_PAISE     = 'Amount (In Paise)';
     const DESCRIPTION         = 'Description';
     const EXPIRE_BY           = 'Expire By';
     const PARTIAL_PAYMENT     = 'Partial Payment';
@@ -250,6 +251,25 @@ class Header
     const PAYOUT_NOTES               = 'payout_notes';
     const PAYOUT_FEE                 = 'payout_fee';
     const PAYOUT_TAX                 = 'payout_tax';
+
+    const DIRECT_DEBIT_EMAIL           = 'email';
+    const DIRECT_DEBIT_CONTACT         = 'contact';
+    const DIRECT_DEBIT_CARD_NUMBER     = 'card_number';
+    const DIRECT_DEBIT_EXPIRY_MONTH    = 'expiry_month';
+    const DIRECT_DEBIT_EXPIRY_YEAR     = 'expiry_year';
+    const DIRECT_DEBIT_CARDHOLDER_NAME = 'cardholder_name';
+    const DIRECT_DEBIT_AMOUNT          = 'amount';
+    const DIRECT_DEBIT_CURRENCY        = 'currency';
+    const DIRECT_DEBIT_RECEIPT         = 'receipt';
+    const DIRECT_DEBIT_DESCRIPTION     = 'description';
+    const DIRECT_DEBIT_NOTES_1         = 'notes_1';
+    const DIRECT_DEBIT_NOTES_2         = 'notes_2';
+    const DIRECT_DEBIT_NOTES_3         = 'notes_3';
+    const DIRECT_DEBIT_NOTES_4         = 'notes_4';
+    const DIRECT_DEBIT_NOTES_5         = 'notes_5';
+    const DIRECT_DEBIT_ORDER_ID        = 'order_id';
+    const DIRECT_DEBIT_PAYMENT_ID      = 'payment_id';
+    const DIRECT_DEBIT_REMARKS         = 'remarks';
 
     const ELFIN_LONG_URL             = 'Long Url';
     const ELFIN_SHORT_URL            = 'Short Url';
@@ -654,6 +674,46 @@ class Header
             ],
         ],
 
+        Type::DIRECT_DEBIT  =>  [
+            self::INPUT =>  [
+                self::DIRECT_DEBIT_EMAIL,
+                self::DIRECT_DEBIT_CONTACT,
+                self::DIRECT_DEBIT_CARD_NUMBER,
+                self::DIRECT_DEBIT_EXPIRY_MONTH,
+                self::DIRECT_DEBIT_EXPIRY_YEAR,
+                self::DIRECT_DEBIT_CARDHOLDER_NAME,
+                self::DIRECT_DEBIT_AMOUNT,
+                self::DIRECT_DEBIT_CURRENCY,
+                self::DIRECT_DEBIT_RECEIPT,
+                self::DIRECT_DEBIT_DESCRIPTION,
+                self::DIRECT_DEBIT_NOTES_1,
+                self::DIRECT_DEBIT_NOTES_2,
+                self::DIRECT_DEBIT_NOTES_3,
+                self::DIRECT_DEBIT_NOTES_4,
+                self::DIRECT_DEBIT_NOTES_5,
+            ],
+
+            self::OUTPUT    =>  [
+                self::DIRECT_DEBIT_EMAIL,
+                self::DIRECT_DEBIT_CONTACT,
+                self::DIRECT_DEBIT_CARD_NUMBER,
+                self::DIRECT_DEBIT_EXPIRY_MONTH,
+                self::DIRECT_DEBIT_EXPIRY_YEAR,
+                self::DIRECT_DEBIT_CARDHOLDER_NAME,
+                self::DIRECT_DEBIT_AMOUNT,
+                self::DIRECT_DEBIT_CURRENCY,
+                self::DIRECT_DEBIT_RECEIPT,
+                self::DIRECT_DEBIT_DESCRIPTION,
+                self::DIRECT_DEBIT_NOTES_1,
+                self::DIRECT_DEBIT_NOTES_2,
+                self::DIRECT_DEBIT_NOTES_3,
+                self::DIRECT_DEBIT_NOTES_4,
+                self::DIRECT_DEBIT_NOTES_5,
+                self::DIRECT_DEBIT_ORDER_ID,
+                self::DIRECT_DEBIT_PAYMENT_ID,
+            ],
+        ],
+
         Type::ELFIN => [
 
             self::INPUT => [
@@ -682,30 +742,33 @@ class Header
     /**
      * Validates headers of batch input file.
      *
-     * @param string $headerKey
-     * @param array  $keys
+     * @param string $type
+     * @param array  $actualHeaders
      *
      * @throws BadRequestException
      */
-    public static function validate(string $headerKey, array $keys)
+    public static function validate(string $type, array $actualHeaders)
     {
-        $expectedHeaders = self::HEADER_MAP[$headerKey][self::INPUT];
+        $expectedHeaders = self::HEADER_MAP[$type][self::INPUT];
 
-        $headersMissing = (bool) array_diff($expectedHeaders, $keys);
+        $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
 
-        $extraHeadersInInput = (count($expectedHeaders) !== count($keys));
+        // Todo: Fix this hack!
+        if (($valid === false) and ($type === Type::PAYMENT_LINK))
+        {
+            $expectedHeaders = array_replace($expectedHeaders, [4 => self::AMOUNT_IN_PAISE]);
+            $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
+        }
 
-        if (($headersMissing === true) or ($extraHeadersInInput === true))
+        if ($valid === false)
         {
             throw new BadRequestException(
-                        ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
-                        null,
-                        [
-                            'expected_headers'  => $expectedHeaders,
-                            'input_headers'     => $keys,
-                            'headers_missing'   => $headersMissing,
-                            'extra_headers'     => $extraHeadersInInput,
-                        ]);
+                ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
+                null,
+                [
+                    'expected_headers'  => $expectedHeaders,
+                    'input_headers'     => $actualHeaders,
+                ]);
         }
     }
 
@@ -743,5 +806,11 @@ class Header
             default:
                 throw new LogicException("Invalid file type: $fileType");
         }
+    }
+
+    public static function areTwoHeadersSame(array $headings1, array $headings2): bool
+    {
+        return ((count($headings1) === count($headings2)) and
+                (array_diff($headings1, $headings2) === array_diff($headings2, $headings1)));
     }
 }

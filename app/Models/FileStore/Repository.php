@@ -13,4 +13,12 @@ class Repository extends Base\Repository
     ];
 
     protected $entity = 'file_store';
+
+    public function findByBatchId(string $batchId)
+    {
+        return $this->newQuery()
+            ->where(Entity::ENTITY_TYPE, '=', 'batch')
+            ->where(Entity::ENTITY_ID, '=', $batchId)
+            ->first();
+    }
 }

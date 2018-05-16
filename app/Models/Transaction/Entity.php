@@ -600,11 +600,17 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::FEE_MODEL) === Merchant\FeeModel::POSTPAID);
     }
 
-    public function toArrayReport()
+    public function hasSettlement()
     {
-        $reportTxn = parent::toArrayReport();
+        return ($this->isAttributeNotNull(self::SETTLEMENT_ID));
+    }
+
+    public function toArrayPublic()
+    {
+        $reportTxn = parent::toArrayPublic();
 
         unset($reportTxn[self::ID]);
+        unset($reportTxn[self::ENTITY]);
 
         //
         // For linked accounts alone, add the transfer_id
@@ -627,10 +633,6 @@ class Entity extends Base\PublicEntity
         $reportTxn['card_issuer'] = null;
         $reportTxn['card_type'] = null;
         $reportTxn[Adjustment\Entity::DISPUTE_ID] = null;
-
-        // settled_at will by default have date and time (d/m/y h:m:s) in it
-        // while we only want to provide date.
-        $reportTxn[self::SETTLED_AT] = $this->getDateInFormatDMY(self::SETTLED_AT);
 
         if ($this->isTypePayment() === true)
         {
@@ -673,6 +675,7 @@ class Entity extends Base\PublicEntity
             $settlement = $this->source;
 
             $reportTxn['settlement_utr'] = $settlement->getUtr();
+
             $reportTxn[self::SETTLED] = null;
         }
         else if ($this->isTypeAdjustment() === true)
@@ -712,6 +715,25 @@ class Entity extends Base\PublicEntity
             {
                 $reportTxn[Refund\Entity::PAYMENT_ID] = Payment\Entity::getSignedId($transfer->getSourceId());
             }
+        }
+
+        if ($this->hasSettlement() === true)
+        {
+            $reportTxn['settlement_utr'] = $this->settlement->getUtr();
+        }
+
+        return $reportTxn;
+    }
+
+    public function toArrayReport()
+    {
+        $reportTxn = parent::toArrayReport();
+
+        if ($reportTxn !== null)
+        {
+            // settled_at will by default have date and time (d/m/y h:m:s) in it
+            // while we only want to provide date.
+            $reportTxn[self::SETTLED_AT] = $this->getDateInFormatDMY(self::SETTLED_AT);
         }
 
         return $reportTxn;

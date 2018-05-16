@@ -5,11 +5,9 @@ namespace RZP\Models\Payment;
 use App;
 use RZP\Exception;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
-use RZP\Models\Feature\Constants;
 use Razorpay\IFSC\IFSC as BaseIFSC;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
@@ -142,6 +140,7 @@ class Gateway
         self::NETBANKING_RBL,
         self::NETBANKING_INDUSIND,
         self::NETBANKING_PNB,
+        self::NETBANKING_OBC,
         self::WALLET_OPENWALLET,
     ];
 
@@ -427,6 +426,14 @@ class Gateway
             Network::RUPAY,
         ],
         self::CARD_FSS => [
+            Network::MC,
+            Network::VISA,
+            Network::RUPAY,
+        ],
+    ];
+
+    public static $bharatQrCardNetwork = [
+        self::HITACHI => [
             Network::MC,
             Network::VISA,
             Network::RUPAY,
@@ -820,6 +827,7 @@ class Gateway
         //corp banks
         Netbanking::ICIC_C => Gateway::NETBANKING_ICICI,
         Netbanking::UTIB_C => Gateway::NETBANKING_AXIS,
+        Netbanking::BARB_C => Gateway::NETBANKING_BOB,
 
         // retail banks
         IFSC::ICIC         => Gateway::NETBANKING_ICICI,
@@ -1009,6 +1017,18 @@ class Gateway
         }
 
         return array_values(array_unique($banks));
+    }
+
+    public static function getBharatQrCardNetworks(): array
+    {
+        $networks = [];
+
+        foreach (self::$bharatQrCardNetwork as $bharatQrGateways)
+        {
+            $networks = array_merge($networks, $bharatQrGateways);
+        }
+
+        return array_values(array_unique($networks));
     }
 
     public static function getZeroRupeeEmandateBanks(): array
@@ -1230,6 +1250,13 @@ class Gateway
         }
 
         return $supported;
+    }
+
+
+    public static function isBharatQrCardNetworkSupported(string $network, string $gateway)
+    {
+        return ((array_key_exists($gateway, self::$bharatQrCardNetwork) === true) and
+                (in_array($network, self::$bharatQrCardNetwork[$gateway], true) === true));
     }
 
     public static function getNetworksSupportedForCardRecurring(): array

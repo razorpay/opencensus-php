@@ -853,6 +853,7 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]),
             BharatQr\GatewayResponseParams::VPA                   => $input[Fields::PAYER_VA],
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
+            BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[Fields::MERCHANT_ID],
             BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[Fields::MERCHANT_TRAN_ID],
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => (string) $input[Fields::BANK_RRN],
         ];

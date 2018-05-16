@@ -2,17 +2,24 @@
 
 namespace RZP\Jobs;
 
+use App;
+
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Invoice\Correction;
 
 class MerchantInvoiceCorrection extends Job
 {
+    const MUTEX_LOCK_TIMEOUT = 3600; // sec
+
     protected $merchantId;
 
     protected $month;
 
     protected $year;
+
+    protected $mutex;
 
     /**
      * {@inheritDoc}
@@ -47,21 +54,29 @@ class MerchantInvoiceCorrection extends Job
 
         try
         {
-            $creator = new Correction($this->merchantId, $this->month, $this->year);
+            $this->mutex = App::getFacadeRoot()['api.mutex'];
 
-            $creator->calculateAndLogInvoiceCorrection();
+            $this->mutex->acquireAndRelease(
+                $this->merchantId,
+                function ()
+                {
+                    $creator = new Correction($this->merchantId, $this->month, $this->year);
+
+                    $creator->calculateAndLogInvoiceCorrection();
+                },
+                self::MUTEX_LOCK_TIMEOUT,
+                ErrorCode::MERCHANT_INVOICE_CORRECTION_IN_PROGRESS);
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException(
-                    $e,
-                    Trace::CRITICAL,
+            $this->trace->error(
                     TraceCode::MERCHANT_INVOICE_CORRECTION_FAILED,
                     [
                         'merchant_id'   => $this->merchantId,
                         'month'         => $this->month,
                         'year'          => $this->year,
                         'mode'          => $this->mode,
+                        'message'       => $e->getMessage(),
                     ]);
         }
     }

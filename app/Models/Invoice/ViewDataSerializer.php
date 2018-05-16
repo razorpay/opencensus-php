@@ -84,12 +84,13 @@ class ViewDataSerializer extends Base\Core
         return $serialized;
     }
 
-    protected function getMerchantKeyId(): string
+    /**
+     * @return string|null
+     */
+    protected function getMerchantKeyId()
     {
-        return $this->repo
-                    ->key
-                    ->getFirstActiveKeyForMerchantOrFail($this->merchant->getId())
-                    ->getPublicKey($this->mode);
+        return optional($this->repo->key->getFirstActiveKeyForMerchant($this->merchant->getId()))
+                ->getPublicKey($this->mode);
     }
 
     protected function serializeMerchantForHosted(): array
@@ -105,8 +106,10 @@ class ViewDataSerializer extends Base\Core
 
     protected function serializeInvoiceForHosted(): array
     {
+        //
         // Reload is needed as from Payment\Processor\Notify, the invoice
         // object passed as part of construct does not have relations loaded.
+        //
         $this->repo->loadRelations($this->invoice);
 
         $serialized = $this->invoice->toArrayHosted();
@@ -133,6 +136,7 @@ class ViewDataSerializer extends Base\Core
         $serialized[Entity::PAYMENTS]        = $serializedPayments;
         $serialized[Entity::CALLBACK_URL]    = $this->invoice->getCallbackUrl();
         $serialized[Entity::CALLBACK_METHOD] = $this->invoice->getCallbackMethod();
+        $serialized[Entity::MERCHANT_LABEL]  = $this->invoice->getMerchantLabel();
 
         //
         // Additionally, if it's type=link and description is blank we fill it with first line item's description else

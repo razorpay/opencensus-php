@@ -39,9 +39,13 @@ class Axis extends Base
             $begin,
             $end,
             static::GATEWAY,
-            $statuses,
             $corporate
         );
+
+        $claims = $claims->reject(function($claim)
+        {
+            return ($claim->isEmandate() === true);
+        });
 
         return $claims;
     }

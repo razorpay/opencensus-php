@@ -89,6 +89,39 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceWithDefinedDisplayName()
+    {
+        $merchanLabel = 'Awesome and Co';
+
+        $merchantAttrs = [
+            'name'                => 'ASD Enterprise',
+            'billing_label'       => $merchanLabel,
+            'invoice_label_field' => 'billing_label',
+        ];
+
+        $this->fixtures->merchant->edit('10000000000000', $merchantAttrs);
+
+        $this->startTest();
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($merchanLabel, $invoice['merchant_label']);
+    }
+
+    public function testCreateInvoiceWithNestedCustomerIdAndDetails()
+    {
+        $this->fixtures->create(
+            'customer',
+            [
+                'id'      => '100001customer',
+                'name'    => 'Test Old',
+                'email'   => 'testold@razorpay.com',
+                'contact' => '1234567890',
+            ]);
+
+        $this->startTest();
+    }
+
     public function testCreateInvoiceAndPay()
     {
         Mail::fake();
@@ -582,6 +615,13 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateDraftInvoiceWithNestedCustomerIdAndDetails()
+    {
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
     public function testUpdateDraftInvoiceWithCustomerBillingAddressId()
     {
         $this->fixtures->create(
@@ -657,6 +697,13 @@ class InvoiceTest extends TestCase
         $this->startTest();
 
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
+    public function testUpdateDraftInvoiceUnsetCustomerWithNestedCustomerId()
+    {
+        $this->createDraftInvoice();
+
+        $this->startTest();
     }
 
     public function testUpdateIssuedInvoice()

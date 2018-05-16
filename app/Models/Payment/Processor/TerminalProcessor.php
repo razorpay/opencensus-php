@@ -35,6 +35,11 @@ class TerminalProcessor extends Base\Core
             return [];
         }
 
+        if ($this->payment->isBharatQr() === true)
+        {
+            return [];
+        }
+
         $options = $this->getTerminalSelectionOptions();
 
         $input = [

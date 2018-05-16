@@ -25,6 +25,7 @@ class Constants
     const AXIS_CYBERSOURCE = 'axis_cybersource';
     const HDFC_FSS         = 'hdfc_fss';
     const ENACH_RBL        = 'enach_rbl';
+    const OBC              = 'obc';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -51,10 +52,12 @@ class Constants
             self::BOB,
             self::RBL,
             self::INDUSIND,
+            self::OBC,
             self::CSB
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
+            self::ENACH_RBL,
         ],
         Type::EMANDATE_DEBIT => [
             self::HDFC,
@@ -97,11 +100,13 @@ class Constants
             self::FEDERAL  => ['federal.netbanking.refunds@razorpay.com'],
             self::BOB      => ['bob.netbanking.refunds@razorpay.com'],
             self::INDUSIND => ['indusind.netbanking.refunds@razorpay.com'],
+            self::OBC      => ['obc.netbanking.refunds@razorpay.com'],
             self::CSB      => ['csb.netbanking.refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [
-            self::HDFC => ['hdfc.emandate@razorpay.com'],
+            self::HDFC      => ['hdfc.emandate@razorpay.com'],
+            self::ENACH_RBL => ['rbl.emandate@razorpay.com'],
         ],
 
         Type::EMANDATE_DEBIT => [

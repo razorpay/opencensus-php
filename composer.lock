@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a229b07af48421c85942bf40d07724b9",
+    "content-hash": "e5810dc4d2b0a69cb75e1d32d8af33db",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -517,6 +517,55 @@
                 "tls"
             ],
             "time": "2017-03-06T11:59:08+00:00"
+        },
+        {
+            "name": "datadog/php-datadogstatsd",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/DataDog/php-datadogstatsd.git",
+                "reference": "fb210a54037ec4653751c01fe286aa21d869e6be"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/DataDog/php-datadogstatsd/zipball/fb210a54037ec4653751c01fe286aa21d869e6be",
+                "reference": "fb210a54037ec4653751c01fe286aa21d869e6be",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "lib-curl": "*",
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "DataDog\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Alex Corley",
+                    "email": "anthroprose@gmail.com",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Datadog",
+                    "email": "dev@datadoghq.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "This is an extremely simple PHP datadogstatsd client",
+            "homepage": "https://www.datadoghq.com/",
+            "keywords": [
+                "DataDog",
+                "php"
+            ],
+            "time": "2017-12-26T15:24:11+00:00"
         },
         {
             "name": "defuse/php-encryption",
@@ -1447,16 +1496,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "8.9.4",
+            "version": "8.9.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "dcdd1257eff60f3f3c72ba3e2d5a3b73efe317e9"
+                "reference": "3fa83ad80f9ac06fa9c105640dc0fffbe1086614"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/dcdd1257eff60f3f3c72ba3e2d5a3b73efe317e9",
-                "reference": "dcdd1257eff60f3f3c72ba3e2d5a3b73efe317e9",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/3fa83ad80f9ac06fa9c105640dc0fffbe1086614",
+                "reference": "3fa83ad80f9ac06fa9c105640dc0fffbe1086614",
                 "shasum": ""
             },
             "require": {
@@ -1511,7 +1560,7 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2018-04-17T10:23:54+00:00"
+            "time": "2018-05-15T11:28:45+00:00"
         },
         {
             "name": "giggsey/locale",
@@ -2608,7 +2657,7 @@
                 {
                     "name": "Luís Otávio Cobucci Oblonczyk",
                     "email": "lcobucci@gmail.com",
-                    "role": "developer"
+                    "role": "Developer"
                 }
             ],
             "description": "A simple library to work with JSON Web Token and JSON Web Signature",
@@ -5288,16 +5337,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.1.0",
+            "version": "1.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "733dbf70dc2add1e3b3016562dbda02c08f96de0"
+                "reference": "67a822b5ce0aa6bc24b6b7b7f308b62f33249ed9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/733dbf70dc2add1e3b3016562dbda02c08f96de0",
-                "reference": "733dbf70dc2add1e3b3016562dbda02c08f96de0",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/67a822b5ce0aa6bc24b6b7b7f308b62f33249ed9",
+                "reference": "67a822b5ce0aa6bc24b6b7b7f308b62f33249ed9",
                 "shasum": ""
             },
             "require": {
@@ -5331,7 +5380,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2018-03-19T14:00:07+00:00"
+            "time": "2018-05-09T06:59:35+00:00"
         },
         {
             "name": "razorpay/oauth",
@@ -5596,16 +5645,16 @@
         },
         {
             "name": "razorpay/trace",
-            "version": "2.0.11",
+            "version": "2.0.12",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "3197dd6bcc32ab7f614c6a4b46bb52083816991d"
+                "reference": "69ba90cfe4585d5e2b97ed954b9cff3a97028c64"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/3197dd6bcc32ab7f614c6a4b46bb52083816991d",
-                "reference": "3197dd6bcc32ab7f614c6a4b46bb52083816991d",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/69ba90cfe4585d5e2b97ed954b9cff3a97028c64",
+                "reference": "69ba90cfe4585d5e2b97ed954b9cff3a97028c64",
                 "shasum": ""
             },
             "require": {
@@ -5665,10 +5714,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/2.0.11",
+                "source": "https://github.com/razorpay/trace/tree/2.0.12",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2018-03-14T07:28:59+00:00"
+            "time": "2018-05-10T13:42:30+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",

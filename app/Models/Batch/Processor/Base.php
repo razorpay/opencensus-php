@@ -5,19 +5,19 @@ namespace RZP\Models\Batch\Processor;
 use Mail;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
-use Symfony\Component\HttpFoundation\File\File;
 
 use RZP\Models\Batch;
 use RZP\Models\Invoice;
-use RZP\Models\Settings;
+use RZP\Encryption\Type;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Settings;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
-use RZP\Models\Batch\Constants;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
+use Symfony\Component\HttpFoundation\File\File;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -225,9 +225,9 @@ class Base extends BaseModel\Core
         $this->removeErrorColumnsFromEntries($previewData);
 
         $response = [
-            Constants::PROCESSABLE_COUNT     => count($correctEntries),
-            Constants::ERROR_COUNT           => count($entries) - count($correctEntries),
-            Constants::PARSED_ENTRIES        => $previewData,
+            Batch\Constants::PROCESSABLE_COUNT => count($correctEntries),
+            Batch\Constants::ERROR_COUNT       => count($entries) - count($correctEntries),
+            Batch\Constants::PARSED_ENTRIES    => $previewData,
         ];
 
         return $response;
@@ -341,7 +341,25 @@ class Base extends BaseModel\Core
 
         $this->batch->incrementAttempts();
 
+        $this->resetBatchAttributes();
+
         $this->downloadAndSetInputFile();
+    }
+
+    /**
+     * Resets batch attributes conditionally for processing to happen
+     */
+    protected function resetBatchAttributes()
+    {
+        //
+        // If in the previous run the batch has been failed, we reset the status and failure reason here.
+        // Status and reason will be set again in current run based on processing result.
+        //
+        if ($this->batch->isFailed() === true)
+        {
+            $this->batch->setStatusNull();
+            $this->batch->unsetFailureReason();
+        }
     }
 
     protected function parseAndProcessEntries()
@@ -367,7 +385,6 @@ class Base extends BaseModel\Core
             $tracePayload = [
                 Batch\Entity::ID          => $this->batch->getId(),
                 Batch\Entity::MERCHANT_ID => $this->batch->getMerchantId(),
-                'entry'                   => $entry,
             ];
 
             try
@@ -900,6 +917,14 @@ class Base extends BaseModel\Core
             $ufh->entity($this->batch);
         }
 
+        if ($this->shouldEncrypt() and ($type == FileStore\Type::BATCH_INPUT))
+        {
+            $ufh->encrypt(Type::AES_ENCRYPTION, [
+                    'mode'   =>   \phpseclib\Crypt\Base::MODE_CBC,
+                    'secret' =>  openssl_random_pseudo_bytes(256)
+                ]);
+        }
+
         return $ufh->localFilePath($filePath)
                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$ext][0])
                    ->name($name)
@@ -1119,5 +1144,10 @@ class Base extends BaseModel\Core
     protected function increaseAllowedSystemLimits()
     {
         return;
+    }
+
+    protected function shouldEncrypt()
+    {
+        return false;
     }
 }

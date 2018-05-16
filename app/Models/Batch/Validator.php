@@ -36,7 +36,10 @@ class Validator extends Base\Validator
                                     . 'application/xml,'
                                     . 'text/csv,'
                                     . 'text/plain,'
-                                    . 'application/cdfv2-unknown'
+                                    . 'application/cdfv2-unknown,'
+                                    . 'application/vnd.ms-office,'
+                                    . 'application/excel,'
+                                    . 'application/msexcel'
                                 . '|mimes:'
                                     . 'zip,'
                                     . 'xlsx,'
@@ -66,6 +69,18 @@ class Validator extends Base\Validator
         Invoice\Entity::SMS_NOTIFY      => 'filled|in:0,1',
         Invoice\Entity::EMAIL_NOTIFY    => 'filled|in:0,1',
         Entity::CONFIG                  => 'filled|array',
+    ];
+
+    protected static $directDebitCreateRules = [
+        Entity::TYPE            => 'required|in:direct_debit',
+        Entity::FILE            => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::NAME            => 'filled|string|max:255',
+        Entity::TOKEN           => 'required_without:file_id|max:255|alpha_num',
+        Entity::FILE_ID         => 'required_without:file|public_id',
+    ];
+
+    protected static $tokenRules = [
+        Entity::TOKEN           => 'required|max:255|alpha_num',
     ];
 
     protected static $reconciliationCreateRules = [
@@ -283,24 +298,30 @@ class Validator extends Base\Validator
 
         foreach ($entries as $idx => $entry)
         {
-            $input = Helpers\PaymentLink::getEntityInput($entry, $params);
-
-            // Need to create dummy entity and associate merchant
-            // for the validation around max allowed payment to happen.
-
-            $rule = Invoice\Validator::CREATE_DRAFT;
-
-            if ($input[Invoice\Entity::DRAFT] === '0')
-            {
-                $rule = Invoice\Validator::CREATE_ISSUED;
-            }
-
-            $invoice = new Invoice\Entity;
-
-            $invoice->merchant()->associate($merchant);
-
+            //
+            // This whole block needs to be in try..catch as following line may
+            // also throw bad request exception per row while parsing human readable
+            // date time values as epoch.
+            //
             try
             {
+                $input = Helpers\PaymentLink::getEntityInput($entry, $params);
+
+                $rule = Invoice\Validator::CREATE_DRAFT;
+
+                if ($input[Invoice\Entity::DRAFT] === '0')
+                {
+                    $rule = Invoice\Validator::CREATE_ISSUED;
+                }
+
+                //
+                // Need to create dummy entity and associate merchant for
+                // the validation around max allowed payment to happen.
+                //
+                $invoice = new Invoice\Entity;
+
+                $invoice->merchant()->associate($merchant);
+
                 $invoice->getValidator()->validateInput($rule, $input);
 
                 $error = [

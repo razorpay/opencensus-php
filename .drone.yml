@@ -1,5 +1,6 @@
 pipeline:
   test:
+    group: A
     image: razorpay/containers:php7
     secrets: [docker_username, docker_password, git_token, rzp_api]
     environment:
@@ -28,6 +29,7 @@ pipeline:
         include: [push]
   build:
     image: plugins/docker
+    group: A
     repo: razorpay/api
     secrets: [docker_username, docker_password, git_token]
     build_args_from_env: [git_token]

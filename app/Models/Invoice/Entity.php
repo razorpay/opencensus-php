@@ -61,6 +61,7 @@ class Entity extends Base\PublicEntity
     const EMAIL_STATUS              = 'email_status';
     const SMS_STATUS                = 'sms_status';
     const DESCRIPTION               = 'description';
+    const MERCHANT_LABEL            = 'merchant_label';
     const TERMS                     = 'terms';
     const NOTES                     = 'notes';
     const COMMENT                   = 'comment';
@@ -213,6 +214,7 @@ class Entity extends Base\PublicEntity
         self::EXPIRED_AT                => null,
         self::EXPIRE_BY                 => null,
         self::RECEIPT                   => null,
+        self::MERCHANT_LABEL            => null,
         self::DESCRIPTION               => null,
         self::NOTES                     => [],
         self::COMMENT                   => null,
@@ -294,6 +296,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::MERCHANT_ID,
         self::DATE,
+        self::MERCHANT_LABEL,
         self::DESCRIPTION,
         self::TERMS,
         self::NOTES,
@@ -517,6 +520,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SMS_STATUS);
     }
 
+    public function getCustomerId()
+    {
+        return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
+    public function getPublicCustomerId()
+    {
+        return Customer\Entity::getSignedIdOrNull($this->getCustomerId());
+    }
+
     public function getCustomerName()
     {
         return $this->getAttribute(self::CUSTOMER_NAME);
@@ -605,6 +618,11 @@ class Entity extends Base\PublicEntity
     public function getUserId()
     {
         return $this->getAttribute(self::USER_ID);
+    }
+
+    public function getMerchantLabel()
+    {
+        return $this->getAttribute(self::MERCHANT_LABEL);
     }
 
     public function getDescription()
@@ -956,6 +974,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::USER_ID, $userId);
     }
 
+    public function setMerchantLabel(string $merchantLabel)
+    {
+        $this->setAttribute(self::MERCHANT_LABEL, $merchantLabel);
+    }
+
     /**
      * Sets all amounts field to null.
      * Used when all line items of draft invoice are removed.
@@ -998,12 +1021,14 @@ class Entity extends Base\PublicEntity
      */
     protected function getCustomerDetailsAttribute(): array
     {
+        $customerId      = $this->getPublicCustomerId();
         $customerName    = $this->getCustomerName();
         $customerEmail   = $this->getCustomerEmail();
         $customerContact = $this->getCustomerContact();
         $customerGstin   = $this->getCustomerGstin();
 
         $details = [
+            Customer\Entity::ID               => $customerId,
             Customer\Entity::NAME             => $customerName,
             Customer\Entity::EMAIL            => $customerEmail,
             Customer\Entity::CONTACT          => $customerContact,
@@ -1094,6 +1119,11 @@ class Entity extends Base\PublicEntity
     public function getInvoiceNumberAttribute()
     {
         return $this->getAttribute(self::RECEIPT);
+    }
+
+    public function getMerchantLabelAttribute($label)
+    {
+        return $label ?: $this->merchant->getLabelForInvoice();
     }
 
     // -------------------------------------- End Accessors ----------

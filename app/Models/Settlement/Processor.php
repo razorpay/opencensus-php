@@ -141,11 +141,11 @@ class Processor extends Base\Core
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::SETTLEMENT_INITIATE_FAILED,
+                TraceCode::SETTLEMENT_CREATE_FAILED,
                 ['channel' => $channel]
             );
 
-            $this->settlementFailure($channel, $e, TraceCode::SETTLEMENT_INITIATE_FAILED);
+            $this->settlementFailure($channel, $e, TraceCode::SETTLEMENT_CREATE_FAILED);
         }
 
         return $response;
@@ -284,10 +284,10 @@ class Processor extends Base\Core
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::DAILY_SETTLEMENT_INITIATE_FAILED
+                TraceCode::DAILY_SETTLEMENT_CREATE_FAILED
             );
 
-            $this->settlementFailure($channel, $e, TraceCode::DAILY_SETTLEMENT_INITIATE_FAILED);
+            $this->settlementFailure($channel, $e, TraceCode::DAILY_SETTLEMENT_CREATE_FAILED);
         }
 
         return $response;
@@ -483,7 +483,7 @@ class Processor extends Base\Core
     protected function isTestMode(): bool
     {
         if (($this->mode === Mode::TEST) or
-            (in_array($this->env, ['testing','qa'], true) === true))
+            (in_array($this->env, ['testing', 'perf', 'func'], true) === true))
         {
             return true;
         }

@@ -3,8 +3,6 @@
 namespace RZP\Reconciliator\HDFC;
 
 use RZP\Reconciliator\Base;
-use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicEntity;
 
 class RefundReconciliate extends Base\RefundReconciliate
@@ -12,12 +10,29 @@ class RefundReconciliate extends Base\RefundReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_REFUND_ID      = ['merchant_trackid', 'MERCHANT_TRACKID'];
-    const COLUMN_REFUND_AMOUNT  = ['domestic_amt', 'DOMESTIC AMT'];
-    const COLUMN_ARN            = ['arn_no', 'ARN NO'];
+    const COLUMN_REFUND_ID          = ['merchant_trackid', 'MERCHANT_TRACKID'];
+    const COLUMN_REFUND_AMOUNT      = ['domestic_amt', 'DOMESTIC AMT'];
+    const COLUMN_ARN                = ['arn_no', 'ARN NO'];
+    const COLUMN_SEQUENCE_NUMBER    = ['sequence_number', 'SEQUENCE NUMBER'];
 
     const COLUMN_TERMINAL_NUMBER    = ['terminal_number', 'TERMINAL NUMBER'];
 
+    /**
+     * If we are not able to find refund id to reconcile,
+     * this ratio defines the minimum proportion of columns to be filled in a valid row.
+     * In HDFC MIS, many gst params and other params are always set to 0,
+     * therefore if less than 10% of data is present, we don't mark row as failure.
+     */
+    const MIN_ROW_FILLED_DATA_RATIO = 0.10;
+
+    /**
+     * In case refund id is not set, function will return null,
+     * row will be marked as failure in such case.
+     *
+     * @param array $row
+     *
+     * @return null|string
+     */
     protected function getRefundId($row)
     {
         if ($this->isCybersource($row) === true)
@@ -27,6 +42,11 @@ class RefundReconciliate extends Base\RefundReconciliate
         else
         {
             $refundId = $this->getRefundIdForFss($row);
+        }
+
+        if (empty($refundId) === true)
+        {
+            $this->evaluateRowProcessedStatus($row);
         }
 
         return $refundId;
@@ -91,7 +111,7 @@ class RefundReconciliate extends Base\RefundReconciliate
 
                 if (stripos($arn, 'onus') !== false)
                 {
-                    $arn = 'NA';
+                    $arn = $this->getRRNForOnusTransaction($row);
                 }
 
                 break;
@@ -156,5 +176,54 @@ class RefundReconciliate extends Base\RefundReconciliate
         $isCybersource = (in_array($terminalId, Reconciliate::CYBERSOURCE_HDFC_TERMINAL_IDS, true) === true);
 
         return $isCybersource;
+    }
+
+    /**
+     * This function evaluate and marks the row processing as success or failure based on
+     * percentage of data available in a row.
+     *
+     * @param $row
+     */
+    protected function evaluateRowProcessedStatus(array $row)
+    {
+        $nonEmptyData = array_filter($row, function($value) {
+            return ((filled($value)) and ($value !== "' "));
+        });
+
+        $rowFilledRatio = count($nonEmptyData) / count($row);
+
+        if ($rowFilledRatio < self::MIN_ROW_FILLED_DATA_RATIO)
+        {
+            $this->setFailUnprocessedRow(false);
+        }
+    }
+
+    /**
+     * In case of onus transaction, we don't receive ARN.
+     * Storing 12 digit RRN in place of ARN, to share as a transaction reference with customers
+     * If that is also not set, ARN will be set as 'NA'
+     * @param array $row
+     * @return string
+     */
+    protected function getRRNForOnusTransaction(array $row): string
+    {
+        $sequenceNumber = 'NA';
+
+        $columnSeqNumber = array_first(self::COLUMN_SEQUENCE_NUMBER, function ($csn) use ($row)
+        {
+            return (empty($row[$csn]) === false);
+        });
+
+        if ($columnSeqNumber !== null)
+        {
+            $sequenceNumberValue = str_replace("'", '', $row[$columnSeqNumber]);
+
+            if (filled($sequenceNumberValue) === true)
+            {
+                $sequenceNumber = trim($sequenceNumberValue);
+            }
+        }
+
+        return $sequenceNumber;
     }
 }

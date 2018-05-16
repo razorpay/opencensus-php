@@ -717,6 +717,76 @@ return [
         ],
     ],
 
+    'testCreateInvoiceLineItemWithItemCessTax' => [
+        'request' => [
+            'url'    => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'item_id'       => 'item_00000000000003',
+                        'quantity'      => 5,
+                        'tax_ids'       => [
+                            T::getIdPrefix() . GstTaxIdMap::CGST_500,
+                            T::getIdPrefix() . GstTaxIdMap::SGST_500
+                        ],
+                        'tax_inclusive' => false,
+                    ],
+                ],
+                'type'     => 'invoice',
+                'draft'    => '0',
+                'customer' => [
+                    'email' => 'test@test.test'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details' => [
+                    'name'    => null,
+                    'email'   => 'test@test.test',
+                    'contact' => null
+                ],
+                'line_items' => [
+                    [
+                        'name'          => 'Item Name',
+                        'currency'      => 'INR',
+                        'quantity'      => 5,
+                        'taxes'         => [
+                            [
+                                'tax_id'     => 'tax_00000000000002',
+                                'name'       => 'Tax #2',
+                                'rate'       => 2000,
+                                'rate_type'  => 'percentage',
+                                'group_id'   => null,
+                                'group_name' => null,
+                            ],
+                            [
+                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::CGST_500,
+                                'name'       => 'CGST 5%',
+                                'rate'       => 500,
+                                'rate_type'  => 'percentage',
+                                'group_id'   => null,
+                                'group_name' => null,
+                                'tax_amount' => 25000,
+                            ],
+                            [
+                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::SGST_500,
+                                'name'       => 'SGST 5%',
+                                'rate'       => 500,
+                                'rate_type'  => 'percentage',
+                                'group_id'   => null,
+                                'group_name' => null,
+                                'tax_amount' => 25000,
+                            ],
+                        ],
+                    ],
+                ],
+                'type'                  => 'invoice',
+            ],
+        ],
+    ],
+
     'testUpdateInvoiceWithTaxes' => [
         'request' => [
             'url'    => '/invoices/inv_1000000invoice',

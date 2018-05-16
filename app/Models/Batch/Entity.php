@@ -62,6 +62,8 @@ class Entity extends Base\PublicEntity
      */
     const WITH_CONFIG               = 'with_config';
 
+    const TOKEN = 'token';
+
     protected static $sign = 'batch';
 
     protected $entity = 'batch';
@@ -429,6 +431,17 @@ class Entity extends Base\PublicEntity
         Status::validateStatus($status);
 
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    /**
+     * At the time of retrying failed batch we temporarily set status to null so
+     * that processer code will continue and evaluate new status and set at the end.
+     * Note that null is not a valid status and if processor failed to evaluate &
+     * set new status entity save will fail (which is expected & good).
+     */
+    public function setStatusNull()
+    {
+        $this->setAttribute(self::STATUS, null);
     }
 
     public function setProcessing(bool $value)
