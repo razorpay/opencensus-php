@@ -29,7 +29,7 @@ class Server extends Base\Mock\Server
             'fldSessionNbr' => '5',
         );
 
-        $this->content($content);
+        $this->content($content, 'authorize');
 
         // Send checksum only if it's not an emandate/recurring payment
         if (isset($input['ClientAccNum']) === true)

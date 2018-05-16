@@ -578,7 +578,6 @@ class Repository extends Base\Repository
         $txnRepo = $this->repo->transaction;
 
         $tRepo = $this->repo->terminal;
-        $tTableName = $tRepo->getTableName();
 
         $transactionPaymentId = $txnRepo->dbColumn(Transaction\Entity::ENTITY_ID);
         $transactionEntityType = $txnRepo->dbColumn(Transaction\Entity::TYPE);
