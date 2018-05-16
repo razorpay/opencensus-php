@@ -195,6 +195,8 @@ class ShieldClient implements ExternalService
                 $methodParams['card_country']  = $card->getCountry();
                 $methodParams['card_issuer']   = $card->getIssuer();
                 $methodParams['card_name']     = $card->getName();
+                $methodParams['card_last4']    = $card->getLast4();
+                $methodParams['card_length']   = $card->getLength();
                 break;
 
         }
