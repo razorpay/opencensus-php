@@ -2697,8 +2697,8 @@ class Entity extends Base\PublicEntity
     public function isNetbankingCorporate()
     {
         return (
-            ($this->getMethod() === Method::NETBANKING) and
-            (Netbanking::isCorporate($this->getBank()))
+            ($this->isNetbanking()) and
+            (Netbanking::isCorporateBank($this->getBank()))
         );
     }
 }

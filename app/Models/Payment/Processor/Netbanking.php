@@ -513,15 +513,10 @@ class Netbanking
         return in_array($issuer, $gatewayExclusiveBanks, true) === true;
     }
 
-    public static function isCorporateTerminalRequired($bank)
+    public static function isCorporateBank($bank)
     {
         $corpExclusiveBank = array_merge(self::$selfCorp, self::$billdeskCorp);
 
         return in_array($bank, $corpExclusiveBank, true) === true;
-    }
-
-    public static function isCorporate(string $bankCode)
-    {
-        return (in_array($bankCode, self::$selfCorp) === true);
     }
 }
