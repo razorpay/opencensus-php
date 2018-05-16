@@ -42,7 +42,7 @@ pipeline:
       - npm link gulp
       - node signup.js
       # Web directory
-      - cd web && npm link gulp && npm install npm run build
+      - cd web && npm link gulp && npm install && npm run build
     when:
         event: push
   test-js:
