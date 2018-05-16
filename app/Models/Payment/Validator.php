@@ -21,6 +21,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\VirtualAccount\Receiver;
 
 class Validator extends Base\Validator
 {
@@ -384,6 +385,13 @@ class Validator extends Base\Validator
 
         $method = $input['method'];
 
+        $receiverType = null;
+
+        if (isset($input[Entity::RECEIVER]) === true)
+        {
+            $receiverType = $input[Entity::RECEIVER]['type'];
+        }
+
         if ($method !== Payment\Method::EMANDATE)
         {
             if ($amount < 100)
@@ -410,8 +418,15 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        // No limit on amount for payments of method deinfed in Method::$methodsWithoutAmountValidation
+        // No limit on amount for payments of method defined in Method::$methodsWithoutAmountValidation
         if (in_array($method, Method::$methodsWithoutAmountValidation, true) === true)
+        {
+            return;
+        }
+
+        // The payments received on these receivers are push based. We can't really control after
+        // we already received a payments. So removing amount validation check on it
+        if (empty($receiverType) === false)
         {
             return;
         }
