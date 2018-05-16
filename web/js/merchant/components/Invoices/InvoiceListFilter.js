@@ -27,6 +27,16 @@ export default ({ type, ...otherProps }) => {
         <Field name="id" component="input" class="form-control input-sm" />
       </div>
 
+      {label === 'Payment Link' && (
+        <div class="form-group list-filter-item">
+          <label>Batch Id</label>
+          <Field
+            name="batch_id"
+            component="input"
+            class="form-control input-sm"
+          />
+        </div>
+      )}
       <div class="form-group list-filter-item">
         <label>Receipt No.</label>
         <Field name="receipt" component="input" class="form-control input-sm" />
