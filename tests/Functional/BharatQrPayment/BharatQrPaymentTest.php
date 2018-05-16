@@ -37,6 +37,8 @@ class BharatQrPaymentTest extends TestCase
 
         $qrCodeId = substr($this->qrCode['id'], 3);
 
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 100]);
+
         $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
 
         $request['content'] = $content;
@@ -62,6 +64,10 @@ class BharatQrPaymentTest extends TestCase
 
         $this->assertEquals($bharatQr['payment_id'], $payment['id']);
         $this->assertEquals($bharatQr['expected'], true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('Random Name', $card['name']);
     }
 
     public function testHitachiVerifyAndRefund()
