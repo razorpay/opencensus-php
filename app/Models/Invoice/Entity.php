@@ -64,9 +64,13 @@ class Entity extends Base\PublicEntity
     const MERCHANT_LABEL            = 'merchant_label';
 
     /**
-     * Captures the Place of Supply GST TIN code for the invoice
-     * GST state codes are the keys defined in Lib\GSTIN::$gstinToStateCodeMap
-     * Ex: '05', '31', '35'
+     * Captures the Place of Supply GSTIN code for the invoice. (Ex: '05', '31', '35' etc.)
+     * Value of this field would be valid GSTIN (For India 2 digit numeric number). We can't use state code(such as. BR,
+     * KA etc) because those are not standard yet. For example for Bihar there is 2 state code used by different govt.
+     * departments but both of them point to same GSTIN number.
+     *
+     * Ref: Lib\GSTIN::$gstinToStateCodeMap
+     *
      */
     const SUPPLY_STATE_CODE         = 'supply_state_code';
     const TERMS                     = 'terms';
