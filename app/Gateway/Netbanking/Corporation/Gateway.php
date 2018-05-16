@@ -70,14 +70,20 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::PAYMENT_ID]
         );
 
+        // For those payments whose amounts are integer values,
+        // the amount in the callback is rounded off to 1 decimal place.
+        // For those with amount having 1 or 2 decimal places, it is kept as it is.
+        // Hence, we need to format the amount in the callback as well before making
+        // the amount assertion
         $this->assertAmount(
-            $this->formatAmount($input['payment']['amount']), $content[ResponseFields::AMOUNT]
+            $this->formatAmount($input['payment']['amount']),
+            $this->formatAmount($content[ResponseFields::AMOUNT])
         );
 
         $this->verifyCallback($input, $content);
 
         // Saving callback response only if the verification passes
-        $gatewayPayment = $this->saveCallbackResponse($content);
+        $this->saveCallbackResponse($content);
 
         $this->checkCallbackStatus($content);
 
@@ -266,9 +272,7 @@ class Gateway extends Base\Gateway
 
     protected function parseVerifyResponse($content)
     {
-        parse_str($content, $data);
-
-        return $this->getEncryptor()->decryptData($data[ResponseFields::VERIFY_DATA]);
+        return $this->getEncryptor()->decryptData($content);
     }
 
     protected function getVerifyRequest(array $input)
