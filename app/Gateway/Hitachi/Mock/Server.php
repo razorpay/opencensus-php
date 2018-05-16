@@ -52,7 +52,7 @@ class Server extends Base\Mock\Server
             'F043'       => 'RazorpayBangalore',
             'F102'       => 'paymentId',
             'PurchaseID' => $qrCodeId,
-            'SenderName' => 'Razorpay',
+            'SenderName' => 'Random Name',
         ];
 
         $hash = $this->getGatewayInstance()->getStringToHashForBharatQr($data);

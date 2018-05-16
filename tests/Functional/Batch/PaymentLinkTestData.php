@@ -47,6 +47,32 @@ return [
         ],
     ],
 
+    'testCreateBatchOfPaymentLinkTypeWithNewHeaderValues' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payment_link',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testCreateBatchOfPaymentLinkTypeWithNewHeaderValuesFileRows' => [
+        [
+            Header::INVOICE_NUMBER   => '#1',
+            Header::CUSTOMER_NAME    => 'test',
+            Header::CUSTOMER_EMAIL   => 'test@test.test',
+            Header::CUSTOMER_CONTACT => '9999998888',
+            Header::AMOUNT_IN_PAISE  => 500,
+            Header::DESCRIPTION      => 'test payment link',
+            Header::EXPIRE_BY        => null,
+            Header::PARTIAL_PAYMENT  => 'YES',
+        ],
+    ],
+
     'testCreateBatchOfPaymentLinkTypeWithInvalidFile1' => [
         'request' => [
             'url'     => '/batches',

@@ -5,11 +5,9 @@ namespace RZP\Models\Payment;
 use App;
 use RZP\Exception;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
-use RZP\Models\Feature\Constants;
 use Razorpay\IFSC\IFSC as BaseIFSC;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
@@ -829,6 +827,7 @@ class Gateway
         //corp banks
         Netbanking::ICIC_C => Gateway::NETBANKING_ICICI,
         Netbanking::UTIB_C => Gateway::NETBANKING_AXIS,
+        Netbanking::BARB_C => Gateway::NETBANKING_BOB,
 
         // retail banks
         IFSC::ICIC         => Gateway::NETBANKING_ICICI,
@@ -1251,6 +1250,13 @@ class Gateway
         }
 
         return $supported;
+    }
+
+
+    public static function isBharatQrCardNetworkSupported(string $network, string $gateway)
+    {
+        return ((array_key_exists($gateway, self::$bharatQrCardNetwork) === true) and
+                (in_array($network, self::$bharatQrCardNetwork[$gateway], true) === true));
     }
 
     public static function getNetworksSupportedForCardRecurring(): array

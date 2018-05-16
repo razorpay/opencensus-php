@@ -71,4 +71,19 @@ trait BatchTestTrait
 
         return $file;
     }
+
+    /*
+     * Retries failed batch by Id.
+     */
+    protected function retryFailedBatch($id)
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'method' => 'POST',
+            'url'    => '/batches/' . $id . '/process'
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
 }

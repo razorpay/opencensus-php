@@ -18,7 +18,8 @@ class Service extends Base\Service
      * List of gateways where we are doing recon processing via batch.
      */
     const BATCH_RECON_GATEWAYS = [
-        RequestProcessor\Base::AXIS,
+        // Removing Axis from batch temporary because of laravel excel's active sheet index issue
+        //RequestProcessor\Base::AXIS,
         RequestProcessor\Base::HDFC,
         RequestProcessor\Base::HITACHI,
         RequestProcessor\Base::JIOMONEY,

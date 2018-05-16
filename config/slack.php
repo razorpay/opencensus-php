@@ -138,6 +138,8 @@ return array(
         'reconciliation'       => 'C1GNPHC07',
         // reconciliation 2
         'reconciliation2'      => 'C847BUR61',
+        // reconciliation_info
+        'reconciliation_info'  => 'CAP0K6S5U',
         // transactions_risky
         'risky'                => 'C0RL2C917',
         // settlements
