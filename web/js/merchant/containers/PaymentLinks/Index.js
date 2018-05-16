@@ -32,6 +32,14 @@ export default class PaymentLinksContainer extends Component {
           >
             <NavLink exact to="/paymentlinks/batchuploads">
               Batch Uploads
+              {user.isNewBatchEnabled && (
+                <span
+                  class="badge bg-success hidden-xs"
+                  style={{ marginLeft: '5px' }}
+                >
+                  new
+                </span>
+              )}
             </NavLink>
           </ShowWhen>
         </header>
