@@ -176,7 +176,8 @@ class VirtualAccountTest extends TestCase
 
         $this->fixtures->terminal->disableTerminal($this->t2['id']);
 
-        $this->expectException(\RZP\Exception\RuntimeException::class);
+        $this->expectException(\RZP\Exception\LogicException::class);
+        $this->expectExceptionMessage('No identifiers found for the merchant');
 
         $this->createVirtualAccount([
             'receiver_types'  => 'qr_code',

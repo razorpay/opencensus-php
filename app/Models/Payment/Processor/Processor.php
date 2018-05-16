@@ -437,12 +437,7 @@ class Processor
 
                 $selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
-                if (count($selectedTerminals) === 0)
-                {
-                    return null;
-                }
-
-                return $selectedTerminals[0];
+                return $selectedTerminals[0] ?? null;
             });
 
         return $terminal;

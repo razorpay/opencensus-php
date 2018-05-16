@@ -236,21 +236,14 @@ class Provider
 
         $merchantIdentifiers = $this->generateBharatQrMerchantIdentifier($qrCode);
 
-        $merchantVpa = '';
-
-        if (empty($merchantIdentifiers[Terminal\Entity::VPA]) === false)
-        {
-            $merchantVpa = $merchantIdentifiers[Terminal\Entity::VPA];
-        }
-
         $tagArray = [
             Tags::VERSION . $this->getLengthAndValue(Constants::VERSION),
             Tags::POINT_OF_INITIATION . $this->getLengthAndValue($pointOfInitiation),
             $this->getIdentifierTlv(Tags::VISA, Terminal\Entity::VISA_MPAN, $merchantIdentifiers),
             $this->getIdentifierTlv(Tags::MASTERCARD, Terminal\Entity::MC_MPAN, $merchantIdentifiers),
             $this->getIdentifierTlv(Tags::RUPAY, Terminal\Entity::RUPAY_MPAN, $merchantIdentifiers),
-            $this->getBharatQrUpiTlv($merchantVpa),
-            $this->getBharatQrDynamicUpiTlv($qrCode, $merchantVpa),
+            $this->getBharatQrUpiTlv($merchantIdentifiers),
+            $this->getBharatQrDynamicUpiTlv($qrCode, $merchantIdentifiers),
             Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Constants::MERCHANT_CATEGORY),
             Tags::CURRENCY_CODE . $this->getLengthAndValue(Constants::CURRENCY_CODE),
             $this->getBharatQrAmountTlv($qrCode),
@@ -273,14 +266,14 @@ class Provider
         return $qrString;
     }
 
-    protected function getIdentifierTlv(string $tag, string $attr, array $merchantIdentifiers)
+    protected function getIdentifierTlv(string $tag, string $networkMpan, array $merchantIdentifiers)
     {
-        if (empty($merchantIdentifiers[$attr]) === false)
+        if (empty($merchantIdentifiers[$networkMpan]) === false)
         {
-            return $tag . $this->getLengthAndValue($merchantIdentifiers[$attr]);
+            return $tag . $this->getLengthAndValue($merchantIdentifiers[$networkMpan]);
         }
 
-        return '';
+        return null;
     }
 
     protected function getPointOfInitiation($qrCode)
@@ -294,13 +287,15 @@ class Provider
         return Constants::DYNAMIC_POI;
     }
 
-    protected function getBharatQrUpiTlv(string $merchantVpa)
+    protected function getBharatQrUpiTlv(array $merchantIdentifiers)
     {
-        // This happens when no terminal of upi bqr
-        // is assigned to the merchant.
+        $merchantVpa = $merchantIdentifiers[Terminal\Entity::VPA] ?? null;
+
+        // This happens when no terminal of upi
+        // bqr is assigned to the merchant.
         if (empty($merchantVpa) === true)
         {
-            return '';
+            return null;
         }
 
         $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(Constants::RUPAY_RID);
@@ -311,11 +306,15 @@ class Provider
         return Tags::UPI_VPA . strlen($upiString) . $upiString;
     }
 
-    protected function getBharatQrDynamicUpiTlv(QrCode\Entity $qrCode, string $merchantVpa)
+    protected function getBharatQrDynamicUpiTlv(QrCode\Entity $qrCode, array $merchantIdentifiers)
     {
+        $merchantVpa = $merchantIdentifiers[Terminal\Entity::VPA] ?? null;
+
+        // This happens when no terminal of upi
+        // bqr is assigned to the merchant.
         if (empty($merchantVpa) === true)
         {
-            return '';
+            return null;
         }
 
         $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(Constants::RUPAY_RID);
@@ -364,17 +363,34 @@ class Provider
      * @param QrCode\Entity $qrCode
      *
      * @return array
-     * @throws Exception\RuntimeException
+     * @throws Exception\LogicException
      */
     protected function generateBharatQrMerchantIdentifier(QrCode\Entity $qrCode)
     {
-        // This is used to identify that
-        // atleast one terminal is selected for
-        // either upi or one of the networks in
-        // card. It will be true if there is atleast
-        // one terminal
-        $isOneIdentifier = false;
+        $cardIdentifiers = array_filter($this->getCardIdentifiers($qrCode));
 
+        $upiIdentifier = array_filter($this->getUpiIdentifier($qrCode));
+
+        $allIdentifiers = array_merge($cardIdentifiers, $upiIdentifier);
+
+        //
+        // This is important to be here for the calling function.
+        //
+        if (count(array_filter($allIdentifiers)) === 0)
+        {
+            throw new Exception\LogicException(
+                'No identifiers found for the merchant',
+                null,
+                [
+                    'qr_code' => $qrCode->toArray()
+                ]);
+        }
+
+        return $allIdentifiers;
+    }
+
+    protected function getCardIdentifiers(QrCode\Entity $qrCode): array
+    {
         $identifiers = [];
 
         $bharatQrNetworks = Payment\Gateway::getBharatQrCardNetworks();
@@ -385,35 +401,35 @@ class Provider
 
             $terminal = $this->getTerminalForMethod(Payment\Method::CARD, $qrCode, $bharatQrNetwork);
 
+            //
+            // For a given network, we may not get any terminal at all. This is okay.
+            // If we don't, we just search for the next network's terminal
+            //
             if ($terminal === null)
             {
                 continue;
             }
 
-            $isOneIdentifier = true;
-
-            $terminal->toArray();
+            $terminal = $terminal->toArray();
 
             $identifiers[$mpanAttr] = $terminal[$mpanAttr];
         }
 
+        return $identifiers;
+    }
+
+    protected function getUpiIdentifier(QrCode\Entity $qrCode): array
+    {
         $terminal = $this->getTerminalForMethod(Payment\Method::UPI, $qrCode);
 
         if ($terminal !== null)
         {
-            $identifiers[Terminal\Entity::VPA] = $terminal->getVpa();
-
-            $isOneIdentifier = true;
+            $vpa = $terminal->getVpa();
         }
 
-        if ($isOneIdentifier === false)
-        {
-            throw new Exception\RuntimeException(
-                'No terminal found.',
-                ['qr_code' => $qrCode->toArrayAdmin()]);
-        }
+        $identifier[Terminal\Entity::VPA] = $vpa ?? null;
 
-        return $identifiers;
+        return $identifier;
     }
 
     /**
