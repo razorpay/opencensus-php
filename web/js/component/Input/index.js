@@ -431,7 +431,9 @@ Field.Select = ({ options, ...props }) => (
         );
       }
       return (
-        <option key={i} value={i}>
+        <option key={i} value={i === 0 ? '' : i}>
+          {' '}
+          {/* Keeping the first entry as empty string because generally 1st field is empty(invalid) in Select options*/}
           {o}
         </option>
       );

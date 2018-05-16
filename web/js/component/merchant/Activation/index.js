@@ -44,7 +44,6 @@ let FORM_TABS_CONTENT; // Actual tab content corresponding to FORM_TABS
 export default class ActivationWizard extends React.Component {
   state = {
     isSaving: LOADING_STATES.INITIAL,
-    data: this.props.data || {},
     dirty: {},
     tabs: [],
     same_address: '1',
@@ -108,13 +107,6 @@ export default class ActivationWizard extends React.Component {
       FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(
         a =>
           (a.onChange = (file, progressTracker) => {
-            this.setState({
-              data: {
-                ...this.state.data,
-                [a.name]: file.name,
-              },
-            });
-
             return props.saveFile(a.name, file, progressTracker);
           })
       );
@@ -133,10 +125,6 @@ export default class ActivationWizard extends React.Component {
       this.props.data &&
       this.props.data.updated_at !== nextProps.data.updated_at
     ) {
-      this.setState({
-        data: nextProps.data,
-      });
-
       this.markTabIfActive();
     }
   }
@@ -197,17 +185,6 @@ export default class ActivationWizard extends React.Component {
       return;
     }
 
-    if (DOCUMENT_UPLOAD_STEP && currentActive === BUSINESS_TYPE_FORM_STEP) {
-      if (this.state.dirty.business_type) {
-        let isDocumentStepValid = this.tabValidity(DOCUMENT_UPLOAD_STEP);
-        tabs[DOCUMENT_UPLOAD_STEP] = isDocumentStepValid;
-
-        this.setState({
-          tabs,
-        });
-      }
-    }
-
     const data = { ...this.state.dirty };
 
     // Setting the empty strings as null. Changed to null, since this is the default value in database.
@@ -229,6 +206,18 @@ export default class ActivationWizard extends React.Component {
     }
 
     this.props.save(data).then(data => {
+      // After updating 'Business type' detail, now update dependent field on FE.
+      if (DOCUMENT_UPLOAD_STEP && currentActive === BUSINESS_TYPE_FORM_STEP) {
+        if (this.state.dirty.business_type) {
+          let isDocumentStepValid = this.tabValidity(DOCUMENT_UPLOAD_STEP);
+          tabs[DOCUMENT_UPLOAD_STEP] = isDocumentStepValid;
+
+          this.setState({
+            tabs,
+          });
+        }
+      }
+
       let isSaving;
 
       if (data.errors) {
@@ -329,7 +318,7 @@ export default class ActivationWizard extends React.Component {
     }
 
     if (fieldName === 'business_website') {
-      // fieldValue = autoPrefixUrls(fieldValue); // Updating in view will happen if he comes to this tab again. Otherwise single backspace on 'http' must be handled as full word not single character.
+      fieldValue = autoPrefixUrls(fieldValue); // Updating in view will happen if he comes to this tab again. Otherwise single backspace on 'http' must be handled as full word not single character.
     }
 
     /* Step Last: */
@@ -340,10 +329,6 @@ export default class ActivationWizard extends React.Component {
 
       if (Object.keys(sideEffectFieldsToUpdate).length) {
         this.setState({
-          data: {
-            ...this.state.data,
-            ...sideEffectFieldsToUpdate,
-          },
           dirty: {
             ...this.state.dirty,
             ...sideEffectFieldsToUpdate,
@@ -352,11 +337,6 @@ export default class ActivationWizard extends React.Component {
       }
     } else {
       this.setState({
-        data: {
-          ...this.state.data,
-          [target.name]: fieldValue,
-          ...sideEffectFieldsToUpdate,
-        },
         dirty: {
           ...this.state.dirty,
           [target.name]: fieldValue,

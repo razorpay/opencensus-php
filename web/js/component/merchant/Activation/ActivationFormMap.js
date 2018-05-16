@@ -80,7 +80,7 @@ const businessModel = [
       options: [],
       _optionsFn: function(activation, categories) {
         // For setting options dynamically on basis some condition or other field selection
-        const userSelection = activation.state.data.business_category;
+        const userSelection = activation.props.data.business_category;
 
         if (userSelection && categories[userSelection]) {
           const subCategories = categories[userSelection].subcategories;
@@ -98,9 +98,9 @@ const businessModel = [
       _when: activation => {
         // 'Others' business_category has no sub_category
         return (
-          activation.state.data.business_category &&
-          activation.state.data.business_category != 0 &&
-          activation.state.data.business_category != 'others'
+          activation.props.data.business_category &&
+          activation.props.data.business_category != 0 &&
+          activation.props.data.business_category != 'others'
         ); // It's a string
       },
     },
@@ -343,13 +343,13 @@ const uploadFields = [
     name: 'form_12a_url',
     label: 'Form 12A Allotment Letter',
     _when: activation =>
-      activation.state.data.business_type == NGO_BUSINESS_TYPE,
+      activation.props.data.business_type == NGO_BUSINESS_TYPE,
   },
   {
     name: 'form_80g_url',
     label: 'Form 80G Allotment Letter',
     _when: activation =>
-      activation.state.data.business_type == NGO_BUSINESS_TYPE,
+      activation.props.data.business_type == NGO_BUSINESS_TYPE,
   },
 ];
 
