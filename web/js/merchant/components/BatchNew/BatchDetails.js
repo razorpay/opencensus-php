@@ -53,7 +53,8 @@ export default function BatchDetails(props) {
       ) : (
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
-            <i class="i i-plan text-primary" /> <strong>{batchName}</strong>
+            <i class="i i-plan text-primary" />{' '}
+            <strong>{batchName || batch.id}</strong>
           </div>
           <div class="SliderPanel__Body">
             <Banner
