@@ -504,7 +504,7 @@ class InvoiceTest extends TestCase
 
     public function testUpdateDraftInvoiceWithAmount()
     {
-        $this->createDraftInvoice();
+        $this->createDraftInvoice(['supply_state_code' => '29']);
 
         $this->startTest();
     }

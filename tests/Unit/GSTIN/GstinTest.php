@@ -41,7 +41,7 @@ class GstinTest extends TestCase
         foreach ($list as $code)
         {
             $this->assertTrue(
-                Gstin::isStateCodeValid($code),
+                Gstin::isValidStateCode($code),
                 'Failed validity test for GST State Code: ' . $code);
         }
     }
@@ -53,7 +53,7 @@ class GstinTest extends TestCase
         foreach ($list as $code)
         {
             $this->assertFalse(
-                Gstin::isStateCodeValid($code),
+                Gstin::isValidStateCode($code),
                 'Failed invalid test for GST State Code: ' . $code);
         }
     }

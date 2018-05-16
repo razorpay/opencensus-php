@@ -1219,15 +1219,16 @@ return [
     // ------------------------------------------------------------
 
     'testUpdateDraftInvoiceWithAmount' => [
-        'request' => [
-            'url'       => '/invoices/inv_1000000invoice',
-            'method'    => 'patch',
-            'content'   => [
-                'amount' => 1000,
+        'request'   => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'amount'            => 1000,
+                'supply_state_code' => null,
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'amount can be only sent for ecod or link types.',

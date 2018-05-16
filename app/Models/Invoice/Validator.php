@@ -164,7 +164,7 @@ class Validator extends Base\Validator
         Entity::BILLING_END         => 'filled|epoch',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
         Entity::DRAFT               => 'filled|boolean',
-        Entity::SUPPLY_STATE_CODE   => 'filled|nullable|string|custom',
+        Entity::SUPPLY_STATE_CODE   => 'sometimes|nullable|custom',
         Entity::CALLBACK_URL        => 'sometimes|url|nullable',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|sometimes|string|in:get|nullable',
     ];
@@ -359,12 +359,12 @@ class Validator extends Base\Validator
 
     public function validateSupplyStateCode($attribute, $value)
     {
-        if (Gstin::isStateCodeValid($value) === false)
+        if (Gstin::isValidStateCode($value) === false)
         {
             throw new BadRequestValidationFailureException(
                 'Supply state code is not valid',
                 Entity::SUPPLY_STATE_CODE,
-                ['code' => $value]);
+                [Entity::SUPPLY_STATE_CODE => $value]);
         }
     }
 

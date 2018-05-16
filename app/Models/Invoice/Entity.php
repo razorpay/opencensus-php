@@ -62,6 +62,12 @@ class Entity extends Base\PublicEntity
     const SMS_STATUS                = 'sms_status';
     const DESCRIPTION               = 'description';
     const MERCHANT_LABEL            = 'merchant_label';
+
+    /**
+     * Captures the Place of Supply GST TIN code for the invoice
+     * GST state codes are the keys defined in Lib\GSTIN::$gstinToStateCodeMap
+     * Ex: '05', '31', '35'
+     */
     const SUPPLY_STATE_CODE         = 'supply_state_code';
     const TERMS                     = 'terms';
     const NOTES                     = 'notes';
