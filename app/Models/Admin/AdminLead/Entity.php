@@ -30,8 +30,8 @@ class Entity extends Base\Entity
     protected $generateIdOnCreate = false;
 
     protected $fillable = [
-        self::ADMIN_ID,
-        self::ORG_ID,
+        // self::ADMIN_ID,
+        // self::ORG_ID,
         self::SIGNED_UP_AT,
         self::TOKEN,
         self::EMAIL,

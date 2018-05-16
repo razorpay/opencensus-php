@@ -89,7 +89,7 @@ class Entity extends Base\Entity
         self::REMEMBER_TOKEN,
         self::OAUTH_ACCESS_TOKEN,
         self::OAUTH_PROVIDER_ID,
-        self::ORG_ID,
+        // self::ORG_ID,
         self::USER_TYPE,
         self::EMPLOYEE_CODE,
         self::BRANCH_CODE,

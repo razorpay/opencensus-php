@@ -40,9 +40,9 @@ class Entity extends Base\Entity
     protected $generateIdOnCreate = false;
 
     protected $fillable = [
-        self::ADMIN_ID,
-        self::ACTION_ID,
-        self::NAME,
+        // self::ADMIN_ID,
+        // self::ACTION_ID,
+        // self::NAME,
     ];
 
     protected $visible = [

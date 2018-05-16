@@ -45,7 +45,7 @@ class Entity extends Base\Entity
         self::ID,
         self::NAME,
         self::DESCRIPTION,
-        self::ORG_ID,
+        // self::ORG_ID,
     ];
 
     protected $public = [
