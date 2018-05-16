@@ -23,3 +23,7 @@ Alert.Warning = props => (
 Alert.Info = props => (
   <Alert {...props} class={classList(props.className, 'Alert--info')} />
 );
+
+Alert.Error = props => (
+  <Alert {...props} class={classList(props.className, 'Alert--error')} />
+);

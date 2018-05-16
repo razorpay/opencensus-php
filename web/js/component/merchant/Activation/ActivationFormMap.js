@@ -372,10 +372,10 @@ const uploadFields = [
 
 // Tabs name
 export const mainFormTabs = [
-  'Contact Details',
+  'Contact Info',
   'Business Model',
   'Registration Details',
-  'Bank Account Details',
+  'Bank Account',
   'Documents Upload',
 ];
 

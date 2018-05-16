@@ -297,20 +297,19 @@ const SuccessScreen = _ => {
         <div class="submit-illustration" />
       </div>
       <div class="Activation-info">
-        <i class="i i-check" /> Your form is submitted successfully
+        <i class="i i-check" /> Activation Form Submitted
         <p class="desc">
-          The process usually takes 2 to 3 working days* (which may vary
-          depending on our partner bank). We will reach out on your contact
-          email for further clarifications.
+          The review process usually takes 2 to 3 working days. For any
+          clarifications, we will reach out on your contact email.
         </p>
       </div>
 
       <div class="Activation-actions">
         <side-title>What's Next?</side-title>
         <LinkCard
-          title={'Finish Profile Settings'}
+          title={'Personalise Your Account'}
           description={
-            'Complete your account settings such as theme color, logo, etc.'
+            'Personalise your checkout form, emails and pages with your logo and brand.'
           }
           icon={'icon-done'}
           to="/config"
@@ -327,20 +326,21 @@ const WelcomeScreen = ({ onClose, openWizard }) => {
   return (
     <div class="Activation--welcome">
       <div class="short-content">
-        <h3> Welcome to Razorpay! Let's get you going.</h3>
+        <h3> Welcome to Razorpay! Get Started with Activation.</h3>
         <div class="underline" />
         <p>
-          Congrats on signing up with Razorpay. Let's start by filling in your
-          basic information such has Business type, Account details, GST info,
-          etc.
+          Simply submit your business details and relavant proofs online to
+          start accpeting payments.
         </p>
         <p>
-          We'll review your details and documents after which you can begin
-          accepting payments on your Razorpay dashboard.
+          Once you submit the form, it may take upto 2 to 3 working days to get
+          you account activated.
         </p>
 
         {onClose && <Button onClick={onClose}>Activate Later</Button>}
-        <Button.Primary onClick={openWizard}>Activate Now</Button.Primary>
+        <Button.Primary onClick={openWizard}>
+          Go to Activation Form
+        </Button.Primary>
       </div>
     </div>
   );

@@ -457,13 +457,10 @@ export default class ActivationWizard extends React.Component {
       <div class="Activation--wizard">
         {/* Activation form tabs */}
         <aside>
-          <side-title>Account Activation</side-title>
+          <side-title>Activation Form</side-title>
           {!isLinkedAccountForm &&
             !isSubmitFormRemoved && (
-              <p>
-                Fill and submit the activation form to start transacting live
-                from your Razorpay account.
-              </p>
+              <p>Complete and submit the form to start accepting payments.</p>
             )}
           <ul>
             {/* Activation form tabs */}
@@ -498,7 +495,7 @@ export default class ActivationWizard extends React.Component {
                 Submit Form
                 {!this.isAllTabsValid() && (
                   <div style={{ marginTop: -20, fontSize: 12 }}>
-                    Fill required fields to submit
+                    Complete the form to submit
                   </div>
                 )}
               </li>
@@ -540,30 +537,67 @@ export default class ActivationWizard extends React.Component {
               (!!this.props.data.locked ||
                 !!this.props.data.submitted ||
                 !!this.props.data.activated); // Later activated condition to be removed as form will never be shown in this scenario.
+
+            const { data } = this.props;
+            let Component = Alert.Info;
             let icon, msg;
 
+            let secondaryMsg = (
+              <React.Fragment>
+                For any clarifications, you can reach out to us at{' '}
+                <a href="mailto:support@razorpay.com">support@razorpay.com</a>.
+              </React.Fragment>
+            );
+
             if (showFormDisabledAlert) {
-              if (!!this.props.data.activated) {
+              if (!!data.activated) {
+                // Account is Activated
                 icon = 'i-done-all';
                 msg = 'Congratulations! Your account is Activated.';
-              } else if (!!this.props.data.locked) {
-                // 'locked' has priority than 'submitted'
+              } else if (
+                data.activation_status === 'needs_clarification' ||
+                data.activation_status === 'rejected'
+              ) {
+                icon = 'i-close';
+                Component = Alert.Error;
+
+                if (data.activation_status === 'needs_clarification') {
+                  msg =
+                    'There are some issues in your activation form that needs attention. Please check your mail and respond at the earliest.';
+                  secondaryMsg = (
+                    <React.Fragment>
+                      In case of any queries, you can reach out to us at{' '}
+                      <a href="mailto:support@razorpay.com">
+                        support@razorpay.com
+                      </a>.
+                    </React.Fragment>
+                  );
+                } else if (data.activation_status === 'rejected') {
+                  msg =
+                    'Your activation form has been rejected as your request was not accepted by our partner banks. Hence, we would not be able support your business at this moment. ';
+                  secondaryMsg =
+                    'We have sent you an email with necessary details.';
+                }
+              } else if (!!data.locked) {
+                // Form is Locked (for reasons other than above)
+                // 'locked' status has more priority than 'submitted'
                 icon = 'i-outline-lock';
                 msg =
                   "Your activation form is locked as it's under review. We'll inform you once your account gets activated.";
-              } else if (!!this.props.data.submitted) {
+              } else if (!!data.submitted) {
+                // Form is submitted
                 icon = 'i-check';
+                console.log('...');
                 msg =
-                  "Your activation form is already submitted. We'll inform you once your account gets activated.";
+                  'Your activation form is already submitted. The review process usually takes 2-3 working days.';
+                secondaryMsg =
+                  'For any clarifications, we will reach out on your contact email.';
               }
 
-              <Alert.Info iconBefore={icon}>
+              <Component iconBefore={icon}>
                 {msg}
-                <div class="side-description">
-                  In case of any queries, you can reach out to us at{' '}
-                  <a href="mailto:support@razorpay.com">support@razorpay.com</a>.
-                </div>
-              </Alert.Info>;
+                <div class="side-description">{secondaryMsg}</div>
+              </Component>;
             }
           }}
 
@@ -810,9 +844,8 @@ class SubmitForm extends React.Component {
 
           {/* Secondary copy */}
           <p class="text-fade">
-            Please review the form before submitting as you cannot make any
-            changes after submitting. For changes hereafter, contact us at
-            support@razorpay.com.
+            Please review the form before submitting. For any changes after
+            submission, you can contact us at support@razorpay.com.
           </p>
 
           {/* Action button 1 */}
