@@ -220,11 +220,17 @@ class VirtualAccountTest extends TestCase
     {
         $this->fixtures->terminal->edit($this->t1['id'], ['mc_mpan' => null]);
 
-        $this->expectException(\Throwable::class);
-
         $response = $this->createVirtualAccount([
             'receiver_types'  => 'qr_code',
         ]);
+
+        $qrCode = $this->getLastEntity('qr_code', true);
+
+        $qrString = $qrCode['qr_string'];
+
+        $tlvArray = $this->getTagMappedValues($qrString);
+
+        $this->assertArrayNotHasKey('04', $tlvArray);
     }
 
     public function testCreateVirtualAccountWithBharatQrWithAmount()
