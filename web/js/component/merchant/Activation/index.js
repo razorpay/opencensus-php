@@ -166,6 +166,10 @@ export default class ActivationWizard extends React.Component {
     this.goto(parseInt(target.getAttribute('data-index')));
 
   goto = newActiveTab => {
+    if (newActiveTab === this.state.activeTab) {
+      return; // No action if clicked on same Tab.
+    }
+
     let currentActive = this.state.activeTab;
     let tabs = this.state.tabs.slice();
 
@@ -255,13 +259,14 @@ export default class ActivationWizard extends React.Component {
     let fieldName = target.name;
 
     let sideEffectFieldsToUpdate = {}; // Some fields might lead to other fields get dirty. So, they also needs to be updated alongside
+    const { dirty } = this.state;
+    const { data } = this.props;
 
     /*
     * Step 1: These 4 fields are directly filled on user's behalf,
     * And marked dirty to be sent on click of Save
     * */
     if (stateName === 'same_address' && target.checked) {
-      const { dirty, data } = this.state;
       // Checking the box, sets the ALL operation fields also dirty.
       sideEffectFieldsToUpdate['business_operation_address'] =
         dirty['business_registered_address'] ||
@@ -313,10 +318,23 @@ export default class ActivationWizard extends React.Component {
       }
     }
 
-    if (fieldName === 'business_category' && fieldValue === 'others') {
-      sideEffectFieldsToUpdate['business_subcategory'] = null; // To override if user previously have some saved subcategory
+    /* Step 4: Business category and sub category are always marked dirty in pairs. BE validates them in pair. */
+    if (fieldName === 'business_category') {
+      // Set first option in new set of subcategory. It remains '', it would convert to null before making api call.
+      sideEffectFieldsToUpdate['business_subcategory'] = '';
+
+      const el = document.querySelector(
+        `.form-container [name=business_subcategory]`
+      );
+      el && (el.value = '');
     }
 
+    if (fieldName === 'business_subcategory') {
+      sideEffectFieldsToUpdate['business_category'] =
+        dirty['business_category'] || data['business_category'];
+    }
+
+    /* Step 5: Business website must have http/https prepended */
     if (fieldName === 'business_website') {
       fieldValue = autoPrefixUrls(fieldValue); // Updating in view will happen if he comes to this tab again. Otherwise single backspace on 'http' must be handled as full word not single character.
     }
@@ -380,6 +398,8 @@ export default class ActivationWizard extends React.Component {
     let isSubmitFormRemoved = isSubmitFormDisabled(this.props.data); // Submit form is removed if locked, activated or in submitted state
 
     let activeTab = this.state.activeTab;
+    activeTab = activeTab < 0 ? 0 : activeTab; // Graceful failure in case activeTab becomes negative. To handle non-reproducible weird error.
+
     let isLastTab = activeTab == FORM_TABS.length - 1;
 
     // Data would be present, otherwise spinner is shown before this activation wizard

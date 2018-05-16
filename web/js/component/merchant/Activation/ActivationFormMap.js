@@ -81,7 +81,9 @@ const businessModel = [
       options: [],
       _optionsFn: function(activation, categories) {
         // For setting options dynamically on basis some condition or other field selection
-        const userSelection = activation.props.data.business_category;
+        const userSelection =
+          activation.state.dirty.business_category ||
+          activation.props.data.business_category;
 
         if (userSelection && categories[userSelection]) {
           const subCategories = categories[userSelection].subcategories;
@@ -97,12 +99,20 @@ const businessModel = [
         return this.options;
       },
       _when: activation => {
+        let { state, props } = activation;
+        let hasBusinessCategory = false;
+
+        let businessCategory =
+          state.dirty.business_category != null
+            ? state.dirty.business_category
+            : props.data.business_category;
+
+        if (businessCategory) {
+          hasBusinessCategory = businessCategory !== 'others';
+        }
+
         // 'Others' business_category has no sub_category
-        return (
-          activation.props.data.business_category &&
-          activation.props.data.business_category != 0 &&
-          activation.props.data.business_category != 'others'
-        ); // It's a string
+        return hasBusinessCategory;
       },
     },
   ],
