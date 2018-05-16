@@ -48,6 +48,11 @@ class EntityReportTest extends TestCase
 
     public function testTransactionReport()
     {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
         $this->doAuthAndCapturePayment();
         $this->doAuthCaptureAndRefundPayment();
 
