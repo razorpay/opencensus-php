@@ -152,15 +152,16 @@ class Processor extends VirtualAccount\Processor
 
     protected function getDummyCardDetails()
     {
+        $cardHolderName = preg_replace("/[^ \w]+/", "", $this->gatewayInput[GatewayResponseParams::SENDER_NAME]);
+
         //
         // TODO: Card processor should be able to accept
         // null CVV and null expiry month and year
         //
-
         $card = [
             Card\Entity::NUMBER       => $this->getLuhnValidCardNumber(),
             Card\Entity::CVV          => Constants::CARD_CVV,
-            Card\Entity::NAME         => Constants::CARD_NAME,
+            Card\Entity::NAME         => $cardHolderName ?: Constants::CARD_NAME,
             Card\Entity::EXPIRY_MONTH => Constants::CARD_EXPIRY_MONTH,
             Card\Entity::EXPIRY_YEAR  => Constants::CARD_EXPIRY_YEAR,
         ];
