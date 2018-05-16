@@ -21,8 +21,6 @@ class Hdfc extends Base
 
     protected function getDataFromRow(array $entry): array
     {
-        $tokenId = $entry[Batch\Header::HDFC_EM_REGISTER_MANDATE_ID];
-
         $paymentId = $entry[Batch\Header::HDFC_EM_REGISTER_MERCHANT_UNIQUE_REF_NO];
 
         $gatewayTokenStatus = $entry[Batch\Header::HDFC_EM_REGISTER_STATUS];

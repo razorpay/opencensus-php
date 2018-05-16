@@ -82,6 +82,6 @@ class Fields
     {
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        return self::getEMandateRegistrationData($token, $payment->getId());
+        return self::getEmandateRegistrationData($token, $payment->getId());
     }
 }
