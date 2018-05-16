@@ -119,20 +119,6 @@ class Header
     const VA_BANK_ACCOUNT_IFSC   = 'bank_account_ifsc';
 
     //
-    // HDFC Emandate Debit Response File Headers
-    //
-    const HDFC_EM_DEBIT_TRANSACTION_REF_NO  = HdfcEMDebitHeadings::TRANSACTION_REF_NO;
-    const HDFC_EM_DEBIT_MANDATE_ID          = HdfcEMDebitHeadings::MANDATE_ID;
-    const HDFC_EM_DEBIT_ACCOUNT_NO          = HdfcEMDebitHeadings::ACCOUNT_NO;
-    const HDFC_EM_DEBIT_AMOUNT              = HdfcEMDebitHeadings::AMOUNT;
-    const HDFC_EM_DEBIT_SIP_DATE            = HdfcEMDebitHeadings::SIP_DATE;
-    const HDFC_EM_DEBIT_FREQUENCY           = HdfcEMDebitHeadings::FREQUENCY;
-    const HDFC_EM_DEBIT_FROM_DATE           = HdfcEMDebitHeadings::FROM_DATE;
-    const HDFC_EM_DEBIT_TO_DATE             = HdfcEMDebitHeadings::TO_DATE;
-    const HDFC_EM_DEBIT_STATUS              = HdfcEMDebitHeadings::STATUS;
-    const HDFC_EM_DEBIT_REJECTION_REMARKS   = HdfcEMDebitHeadings::REJECTION_REMARKS;
-
-    //
     // Bank Transfer Bulk Insertion
     //
     const PROVIDER       = 'provider';
@@ -166,7 +152,6 @@ class Header
     // HDFC Emandate Register Response File Headers
     //
     const HDFC_EM_REGISTER_CLIENT_NAME                      = HdfcEMRegisterHeadings::CLIENT_NAME;
-    const HDFC_EM_REGISTER_MERCHANT_UNIQUE_REFERENCE_NO     = HdfcEMRegisterHeadings::MERCHANT_UNIQUE_REFERENCE_NO;
     const HDFC_EM_REGISTER_CUSTOMER_NAME                    = HdfcEMRegisterHeadings::CUSTOMER_NAME;
     const HDFC_EM_REGISTER_ACCOUNT_NUMBER                   = HdfcEMRegisterHeadings::CUSTOMER_ACCOUNT_NUMBER;
     const HDFC_EM_REGISTER_AMOUNT                           = HdfcEMRegisterHeadings::AMOUNT;
@@ -174,14 +159,29 @@ class Header
     const HDFC_EM_REGISTER_START_DATE                       = HdfcEMRegisterHeadings::START_DATE;
     const HDFC_EM_REGISTER_END_DATE                         = HdfcEMRegisterHeadings::END_DATE;
     const HDFC_EM_REGISTER_FREQUENCY                        = HdfcEMRegisterHeadings::FREQUENCY;
-    const HDFC_EM_REGISTER_MANDATE_SERIAL_NUMBER            = HdfcEMRegisterHeadings::MANDATE_SERIAL_NUMBER;
-    const HDFC_EM_REGISTER_MERCHANT_REQUEST_NO              = HdfcEMRegisterHeadings::MERCHANT_REQUEST_NO;
     const HDFC_EM_REGISTER_MANDATE_ID                       = HdfcEMRegisterHeadings::MANDATE_ID;
+    const HDFC_EM_REGISTER_MERCHANT_UNIQUE_REF_NO           = HdfcEMRegisterHeadings::MERCHANT_UNIQUE_REFERENCE_NO;
+    const HDFC_EM_REGISTER_MANDATE_SERIAL_NO                = HdfcEMRegisterHeadings::MANDATE_SERIAL_NUMBER;
+    const HDFC_EM_REGISTER_MERCHANT_REQUEST_NO              = HdfcEMRegisterHeadings::MERCHANT_REQUEST_NO;
     const HDFC_EM_REGISTER_STATUS                           = HdfcEMRegisterHeadings::STATUS;
     const HDFC_EM_REGISTER_REMARK                           = HdfcEMRegisterHeadings::REMARK;
 
     //
-    // eNach eMandate Register Response File Headers
+    // HDFC Emandate Debit Response File Headers
+    //
+    const HDFC_EM_DEBIT_TRANSACTION_REF_NO  = HdfcEMDebitHeadings::TRANSACTION_REF_NO;
+    const HDFC_EM_DEBIT_MANDATE_ID          = HdfcEMDebitHeadings::MANDATE_ID;
+    const HDFC_EM_DEBIT_ACCOUNT_NO          = HdfcEMDebitHeadings::ACCOUNT_NO;
+    const HDFC_EM_DEBIT_AMOUNT              = HdfcEMDebitHeadings::AMOUNT;
+    const HDFC_EM_DEBIT_SIP_DATE            = HdfcEMDebitHeadings::SIP_DATE;
+    const HDFC_EM_DEBIT_FREQUENCY           = HdfcEMDebitHeadings::FREQUENCY;
+    const HDFC_EM_DEBIT_FROM_DATE           = HdfcEMDebitHeadings::FROM_DATE;
+    const HDFC_EM_DEBIT_TO_DATE             = HdfcEMDebitHeadings::TO_DATE;
+    const HDFC_EM_DEBIT_STATUS              = HdfcEMDebitHeadings::STATUS;
+    const HDFC_EM_DEBIT_REJECTION_REMARKS   = HdfcEMDebitHeadings::REJECTION_REMARKS;
+
+    //
+    // eNach Register Response File Headers
     //
     const ENACH_REGISTER_SRNO               = 'SRNO';
     const ENACH_REGISTER_MANDATE_DATE       = 'MANDATE_DATE';
@@ -528,19 +528,19 @@ class Header
 
         'emandate_register_hdfc' => [
             self::INPUT => [
-                self::HDFC_EM_REGISTER_ACCOUNT_NUMBER,
-                self::HDFC_EM_REGISTER_MANDATE_ID,
-                self::HDFC_EM_REGISTER_STATUS,
-                self::HDFC_EM_REGISTER_REMARK,
                 self::HDFC_EM_REGISTER_CLIENT_NAME,
-                self::HDFC_EM_REGISTER_MERCHANT_UNIQUE_REFERENCE_NO,
                 self::HDFC_EM_REGISTER_CUSTOMER_NAME,
+                self::HDFC_EM_REGISTER_ACCOUNT_NUMBER,
                 self::HDFC_EM_REGISTER_AMOUNT,
                 self::HDFC_EM_REGISTER_AMOUNT_TYPE,
                 self::HDFC_EM_REGISTER_START_DATE,
                 self::HDFC_EM_REGISTER_END_DATE,
                 self::HDFC_EM_REGISTER_FREQUENCY,
-                self::HDFC_EM_REGISTER_MANDATE_SERIAL_NUMBER,
+                self::HDFC_EM_REGISTER_MANDATE_ID,
+                self::HDFC_EM_REGISTER_STATUS,
+                self::HDFC_EM_REGISTER_REMARK,
+                self::HDFC_EM_REGISTER_MERCHANT_UNIQUE_REF_NO,
+                self::HDFC_EM_REGISTER_MANDATE_SERIAL_NO,
                 self::HDFC_EM_REGISTER_MERCHANT_REQUEST_NO,
             ],
         ],
@@ -674,8 +674,8 @@ class Header
             ],
         ],
 
-        Type::DIRECT_DEBIT  =>  [
-            self::INPUT =>  [
+        Type::DIRECT_DEBIT  => [
+            self::INPUT => [
                 self::DIRECT_DEBIT_EMAIL,
                 self::DIRECT_DEBIT_CONTACT,
                 self::DIRECT_DEBIT_CARD_NUMBER,
@@ -693,7 +693,7 @@ class Header
                 self::DIRECT_DEBIT_NOTES_5,
             ],
 
-            self::OUTPUT    =>  [
+            self::OUTPUT    => [
                 self::DIRECT_DEBIT_EMAIL,
                 self::DIRECT_DEBIT_CONTACT,
                 self::DIRECT_DEBIT_CARD_NUMBER,

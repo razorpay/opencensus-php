@@ -2,12 +2,19 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
-use RZP\Models\Base\PublicCollection;
-use RZP\Models\Transaction;
-
 class Payment extends Base
 {
     use TransactionTrait;
+
+    protected $emandateRegistrationInitialPaymentDefaultAttributes = [
+        'amount'         => 0,
+        'method'         => 'emandate',
+        'customer_id'    => '100000customer',
+        'email'          => 'a@b.com',
+        'contact'        => '+919918899029',
+        'recurring_type' => 'initial',
+        'auth_type'      => 'netbanking',
+    ];
 
     public function createCaptured(array $attributes = array())
     {
@@ -414,5 +421,47 @@ class Payment extends Base
     {
         $this->edit(
             $id, ['status' => 'failed', 'error_code' => 'BAD_REQUEST_PAYMENT_FAILED']);
+    }
+
+    public function createEmandateRegistrationInitial(array $attributes = [])
+    {
+        $defaults = array_merge(
+            $this->emandateRegistrationInitialPaymentDefaultAttributes,
+            ['status'         => 'authorized']
+        );
+
+        $attributes = array_merge($defaults, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createEmandateRegistrationConfirmed(array $attributes = [])
+    {
+        $defaults = array_merge(
+            $this->emandateRegistrationInitialPaymentDefaultAttributes,
+            ['status'         => 'captured']
+        );
+
+        $attributes = array_merge($defaults, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createEmandateDebit(array $attributes = [])
+    {
+        $defaults = [
+            'method'         => 'emandate',
+            'customer_id'    => '100000customer',
+            'auto_captured'  => false,
+            'email'          => 'a@b.com',
+            'contact'        => '+919918899029',
+            'recurring_type' => 'auto',
+            'auth_type'      => 'netbanking',
+            'recurring'      => 1,
+        ];
+
+        $attributes = array_merge($defaults, $attributes);
+
+        return $this->create($attributes);
     }
 }
