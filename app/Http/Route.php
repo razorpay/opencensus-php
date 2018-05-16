@@ -2431,7 +2431,7 @@ final class Route
             ->get('/v1/status',
                 [
                     'as' => 'api_status',
-                    'uses' => '\RZP\Http\Controllers\PublicController@getstatus'
+                    'uses' => '\RZP\Http\Controllers\PublicController@getStatus'
                 ]);
     }
 

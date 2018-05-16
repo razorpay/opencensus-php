@@ -20,14 +20,34 @@ class PublicController extends Controller
 
     public function getStatus()
     {
-        return [
+        $statusCode = 200;
+
+        $okStatusRequired = [
+            'db',
+            'db_read',
+            'cache'
+        ];
+
+        $status = [
             'commit'    => env('GIT_COMMIT_HASH') ?? 'Commit hash is not available',
             'db'        => $this->getDbStatus(),
-            'db-read'   => $this->getDbStatus('read'),
+            'db_read'   => $this->getDbStatus('read'),
             'cache'     => $this->getCacheStatus(),
-            'sec-cache' => $this->getCacheStatus('secure'),
+            'sec_cache' => $this->getCacheStatus('secure'),
             'es'        => $this->getEsStatus(),
         ];
+
+        foreach ($okStatusRequired as $field)
+        {
+            if (($status[$field] !== 'ok'))
+            {
+                $statusCode = 503;
+
+                break;
+            }
+        }
+
+        return ApiResponse::json($status, $statusCode);
     }
 
     public function getCatchAllRoute(string $uri = null)
@@ -161,7 +181,7 @@ class PublicController extends Controller
         }
         catch (\Throwable $e)
         {
-            return 'ko';
+            return 'error';
         }
     }
 
@@ -176,7 +196,7 @@ class PublicController extends Controller
         }
         catch (\Throwable $e)
         {
-            return 'ko';
+            return 'error';
         }
     }
 
@@ -195,11 +215,11 @@ class PublicController extends Controller
 
             $count = $es->catCount();
 
-            return $count ? 'ok' : 'ko';
+            return $count ? 'ok' : 'error';
         }
         catch (\Throwable $e)
         {
-            return 'ko';
+            return 'error';
         }
     }
 }
