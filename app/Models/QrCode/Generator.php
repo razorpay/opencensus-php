@@ -69,8 +69,6 @@ class Generator extends Base\Core
 
         $this->setShortUrl();
 
-        // TODO- check if this needs to be inside a transaction, as there is an
-        // already existing transaction.
         $this->repo->transaction(function() use ($qrCode)
         {
             $this->repo->saveOrFail($qrCode);

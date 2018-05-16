@@ -61,8 +61,6 @@ class Entity extends Base\PublicEntity
         'source'
     ];
 
-    protected $generateIdOnCreate = true;
-
     // --------------------- RELATIONS ---------------------
 
     public function source()

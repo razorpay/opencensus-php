@@ -3,10 +3,12 @@
 namespace RZP\Base;
 
 use Carbon\Carbon;
+use Razorpay\Trace\Facades\Trace;
 use Illuminate\Database\Eloquent\Model;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
 use RZP\Base\Database\QueryBuilder;
 
@@ -36,12 +38,10 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
         if (count($nonExistentRelations) > 0)
         {
-            throw new Exception\RuntimeException(
-                'All parent relations must exist',
-                [
-                    'entity'                 => $this->entity,
-                    'non_existent_relations' => array_keys($nonExistentRelations),
-                ]);
+            Trace::critical(TraceCode::DB_DATA_INTEGRITY_ERROR, [
+                'entity'                 => $this->entity,
+                'non_existent_relations' => array_keys($nonExistentRelations),
+            ]);
         }
 
         return parent::save($options);

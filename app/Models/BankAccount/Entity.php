@@ -4,10 +4,10 @@ namespace RZP\Models\BankAccount;
 
 use App;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Razorpay\IFSC\IFSC;
+
 use RZP\Models\Base;
 use RZP\Models\VirtualAccount;
-use Razorpay\IFSC\IFSC;
-use RZP\Exception;
 
 class Entity extends Base\PublicEntity
 {

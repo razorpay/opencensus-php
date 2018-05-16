@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Schedule\Task;
 
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Models\Schedule;
