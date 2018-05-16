@@ -33,7 +33,4 @@ chmod 777 /tmp
 
 /usr/sbin/php-fpm7
 
-# Moving these logs to after the php-fpm7 creation.
-chmod 644 /var/log/phpfpm/php7.0-fpm.log
-
 /usr/sbin/nginx -g 'daemon off;'
