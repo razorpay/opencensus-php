@@ -56,6 +56,7 @@ export default class Staged extends React.Component {
       stagedFileStatus: currentStatus,
       showFileSize,
       name,
+      size,
       isDisabled,
       onCloseClick,
       showStagedFileStatus,
@@ -66,7 +67,7 @@ export default class Staged extends React.Component {
     const isDocPreUploaded = !file && defaultFile; // if data already has file id
 
     return (
-      <div class="Dropzone-content" key={name}>
+      <div class={`Dropzone-content ${size}`} key={name}>
         {!isDocPreUploaded && (
           <img
             class="Dropzone-file-icon"
@@ -117,6 +118,6 @@ export default class Staged extends React.Component {
 }
 
 const stagedStatusMsgMap = {
-  process: 'Uploading File...',
+  process: 'Processing File...',
   error: 'Processing Failed.',
 };

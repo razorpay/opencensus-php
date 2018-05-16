@@ -1,0 +1,94 @@
+import { Component } from 'react';
+import { connect } from 'react-redux';
+
+import ModalHeader from 'rzp/ui/ModalHeader';
+import { closeModal, openModal } from 'rzp/modules/modals';
+
+import BatchValidate from './Validate';
+import BatchCreate from './Create';
+import SuccessModal from 'merchant/components/BatchNew/SuccessModal';
+import { trackUploadBatch } from './ga';
+
+/**
+ * Container:  Switches between validation or creation of batch.
+ */
+
+@connect(null, { closeModal, openModal })
+export default class BatchUpload extends Component {
+  state = {
+    batchName: '',
+    currentStatus: 'validate',
+    batch: null,
+  };
+
+  handleValidation = (batch, batchName) => {
+    this.setState({
+      batch,
+      batchName,
+      currentStatus: 'create',
+    });
+  };
+
+  handleCreation = batch => {
+    this.setState({
+      batch: { ...this.state.batch, ...batch },
+      currentStatus: 'success',
+    });
+    this.props.onSave(batch);
+  };
+
+  componentDidMount() {
+    trackUploadBatch('Open');
+  }
+
+  onModalClose = () => {
+    trackUploadBatch('Close');
+    this.props.closeModal();
+  };
+  render() {
+    return (
+      <div class={`batch-upload-modal ${this.state.currentStatus}`}>
+        <ModalHeader
+          title={this.state.currentStatus !== 'success' ? 'Batch Upload' : ''}
+          onCloseClick={this.onModalClose}
+        />
+        {(() => {
+          switch (this.state.currentStatus) {
+            case 'validate':
+              return (
+                <BatchValidate
+                  onValidation={this.handleValidation}
+                  batchType={this.props.batchType}
+                  sampleUrl={this.props.sampleUrl}
+                  docUrl={this.props.docUrl}
+                />
+              );
+            case 'create':
+              return (
+                <BatchCreate
+                  onCreation={this.handleCreation}
+                  batchName={this.state.batchName}
+                  batch={this.state.batch}
+                  batchType={this.props.batchType}
+                />
+              );
+            case 'success':
+              return (
+                <SuccessModal onModalClose={this.onModalClose}>
+                  <p class="text-center">
+                    You can download the output file from batch detail view to
+                    check payment links generated. For the links that could not
+                    be generated due to some issues, please upload a new batch
+                    file.
+                    <br />
+                  </p>
+                </SuccessModal>
+              );
+            case 'default':
+              return null;
+          }
+        })()}
+      </div>
+    );
+  }
+}

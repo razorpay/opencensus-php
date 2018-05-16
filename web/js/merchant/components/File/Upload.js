@@ -23,6 +23,7 @@ import Staged from './Staged';
  */
 export default class FileUpload extends React.Component {
   static defaultProps = {
+    size: 'small',
     multi: false,
     acceptedTypes: [],
     uploadedBytes: 0,
@@ -129,6 +130,8 @@ export default class FileUpload extends React.Component {
 
     let infotext = 'Upload ';
 
+    accept = accept.map(fileType => `.${fileType}`);
+
     if (accept.length > 1) {
       infotext += `${accept.slice(0, -1).join(', ')} or ${accept.slice(-1)}`;
     } else {
@@ -209,6 +212,7 @@ export default class FileUpload extends React.Component {
       showStagedFileStatus,
       showAcceptInfo,
       showFileSize,
+      size,
     } = this.props;
     let { isDocPreUploaded } = this.state;
 
@@ -236,7 +240,7 @@ export default class FileUpload extends React.Component {
                 isDocPreUploaded ? undefined : this.toggleDragWithFile
               }
             >
-              <div class="Dropzone-content">
+              <div class={`Dropzone-content ${size}`}>
                 {children || (
                   <React.Fragment>
                     <img
@@ -250,7 +254,7 @@ export default class FileUpload extends React.Component {
                         <b class="text-primary">Click to Upload</b>{' '}
                         {maxSize && (
                           <React.Fragment>
-                            {readableFileSize(maxSize)} Max
+                            ({readableFileSize(maxSize)} Max)
                           </React.Fragment>
                         )}
                       </p>
@@ -298,6 +302,7 @@ export default class FileUpload extends React.Component {
               showFileSize={showFileSize && maxSize}
               showStagedFileStatus={showStagedFileStatus}
               name={name}
+              size={size}
             />
           </div>
         )}

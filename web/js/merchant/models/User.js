@@ -116,4 +116,12 @@ export default class User {
       return object[pluckKey];
     });
   }
+
+  get isOldBatchEnabled() {
+    return (this.tags || []).indexOf('Batch_import_links') !== -1;
+  }
+
+  get isNewBatchEnabled() {
+    return (this.tags || []).indexOf('Batch_import_links_v2') !== -1;
+  }
 }

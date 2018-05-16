@@ -28,6 +28,7 @@ export default function DataTable(props) {
     customClass,
     noStripe,
     panelHeading,
+    EmptyComponent, //-render empty component when the items are 0. see batch list
   } = props;
 
   const classes = `${noStripe ? '' : 'table-striped'} ${
@@ -62,9 +63,12 @@ export default function DataTable(props) {
           </div>
         )}
       {!loading &&
-        !items.length && (
+        !items.length &&
+        (EmptyComponent ? (
+          <EmptyComponent />
+        ) : (
           <h4 class="empty-table-message">{`No ${title} Found!`}</h4>
-        )}
+        ))}
 
       {paginate && (
         <Pager
