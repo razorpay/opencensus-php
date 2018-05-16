@@ -1120,7 +1120,6 @@ class Gateway
     {
         return ((empty($this->input['payment'][Payment\Entity::RECEIVER_TYPE]) === false) and
                 ($this->input['payment'][Payment\Entity::RECEIVER_TYPE] === Receiver::QR_CODE));
-
     }
 
     /**

@@ -59,11 +59,9 @@ trait Authorize
      * @param array $input
      * @return array
      */
-    public function authorize(Payment\Entity $payment, array $input): array
+    public function authorize(Payment\Entity $payment, array $input, array $gatewayInput = []): array
     {
         $this->verifyMerchantIsLiveForLiveRequest();
-
-        $gatewayInput = [];
 
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
@@ -95,7 +93,7 @@ trait Authorize
         // for s2s recurring payments, so that terminal can be set later
         // using this instance variable.
         //
-        $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+        $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment, $gatewayInput);
 
         if ($this->shouldHitGatewayForPayment($payment) === false)
         {
@@ -1253,9 +1251,7 @@ trait Authorize
         // Call gateway input
         //
         $gatewayInput['payment'] = $payment->toArrayGateway();
-
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
-
         $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
 
         if ($payment->hasOrder())
@@ -3592,6 +3588,16 @@ trait Authorize
         }
     }
 
+    /**
+     * Creates the card entity
+     *
+     * @param array $cardInput
+     * @param bool $vault
+     * @param Merchant\Entity $merchant
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
     protected function createCardEntity(array $cardInput, bool $vault, Merchant\Entity $merchant)
     {
         //
@@ -4035,10 +4041,9 @@ trait Authorize
     {
         //
         // No gateway for bank transfer or Bharat Qr, everything is internal
-        // TODO: To be changed after refactor
         //
         if (($payment->isBankTransfer() === true) or
-            (Route::currentRouteName() === 'gateway_payment_callback_bharatqr'))
+            ($payment->isBharatQr() === true))
         {
             return false;
         }

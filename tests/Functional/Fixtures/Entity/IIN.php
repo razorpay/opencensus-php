@@ -6,6 +6,15 @@ class Iin extends Base
 {
     protected $items = [
             [
+                'iin'           => '222100',
+                'category'      => 'CORPORATE T&E',
+                'network'       => 'MasterCard',
+                'type'          => 'debit',
+                'country'       => 'IN',
+                'issuer_name'   => 'STATE BANK OF INDI',
+                'trivia'        => 'random',
+            ],
+            [
                 'iin'           => '400040',
                 'category'      => 'CORPORATE T&E',
                 'network'       => 'Visa',

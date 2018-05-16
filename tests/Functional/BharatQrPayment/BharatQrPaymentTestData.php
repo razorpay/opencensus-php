@@ -42,7 +42,7 @@ return [
         'method'  => 'post',
         'content' => [
             Fields::RESPONSE         => '92',
-            Fields::MERCHANT_ID      => '2q484',
+            Fields::MERCHANT_ID      => 'abcd_bharat_qr',
             Fields::SUBMERCHANT_ID   => '42324',
             Fields::TERMINAL_ID      => '2425',
             Fields::SUCCESS          => 'true',

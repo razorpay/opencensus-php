@@ -2,17 +2,16 @@
 
 namespace RZP\Models\BharatQr;
 
+use RZP\Exception;
 use RZP\Base\Luhn;
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
 use RZP\Models\QrCode\Entity as QrCode;
-use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Processor extends VirtualAccount\Processor
@@ -21,11 +20,15 @@ class Processor extends VirtualAccount\Processor
 
     protected $gatewayInput;
 
-    public function __construct( array $gatewayInput, string $provider = null)
+    protected $callbackData;
+
+    public function __construct(array $gatewayResponse, string $provider = null)
     {
         parent::__construct($provider);
 
-        $this->gatewayInput = $gatewayInput;
+        $this->gatewayInput = $gatewayResponse['qr_data'];
+
+        $this->callbackData = $gatewayResponse['callback_data'];
     }
 
     protected function isDuplicate(Base\PublicEntity $bharatQr)
@@ -55,7 +58,14 @@ class Processor extends VirtualAccount\Processor
                         {
                             $paymentInput = $this->getPaymentArray($bharatQr);
 
-                            $paymentProcessor->process($paymentInput);
+                            // This is being done because we want
+                            // to skip terminal selection on payment
+                            // creation and use this terminal instead
+                            // as the payment has already gone through
+                            // this terminal.
+                            $this->setTerminalIdInCallback();
+
+                            $res = $paymentProcessor->process($paymentInput, $this->callbackData);
 
                             $payment = $paymentProcessor->getPayment();
 
@@ -78,14 +88,35 @@ class Processor extends VirtualAccount\Processor
         {
             $paymentProcessor->autoCapturePayment($payment);
         }
-
-        return $bharatQr;
     }
+
+    protected function setTerminalIdInCallback()
+    {
+        $gatewayMerchantId = $this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID];
+
+        $gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
+
+        $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
+
+        if ($terminal === null)
+        {
+            throw new Exception\LogicException(
+                'Terminal should not be null here',
+                null,
+                ['gateway_merchant_id' => $gatewayMerchantId]);
+        }
+
+        $this->callbackData[Constants::RAZORPAY_TERMINAL_ID] = $terminal->getId();
+    }
+
 
     protected function getVirtualAccountFromEntity(Base\PublicEntity $bharatQr)
     {
         $qrCodeId = $bharatQr->getMerchantReference();
 
+        // Here we use stripSignWithoutValidation because
+        // we don't want to throw exception in case it is
+        // unknown id. It will be accepted as unexpected payment
         (new QrCode)->stripSignWithoutValidation($qrCodeId);
 
         $qrCode = $this->repo->qr_code->find($qrCodeId);
@@ -152,19 +183,16 @@ class Processor extends VirtualAccount\Processor
 
     protected function getDummyCardDetails()
     {
+        $card = (new Card\Entity)->getDummyCardArray();
+
+        $card[Card\Entity::NUMBER] = $this->getLuhnValidCardNumber();
+
         $cardHolderName = preg_replace("/[^ \w]+/", "", $this->gatewayInput[GatewayResponseParams::SENDER_NAME]);
 
-        //
-        // TODO: Card processor should be able to accept
-        // null CVV and null expiry month and year
-        //
-        $card = [
-            Card\Entity::NUMBER       => $this->getLuhnValidCardNumber(),
-            Card\Entity::CVV          => Constants::CARD_CVV,
-            Card\Entity::NAME         => $cardHolderName ?: Constants::CARD_NAME,
-            Card\Entity::EXPIRY_MONTH => Constants::CARD_EXPIRY_MONTH,
-            Card\Entity::EXPIRY_YEAR  => Constants::CARD_EXPIRY_YEAR,
-        ];
+        if (empty($cardHolderName) === false)
+        {
+            $card[Card\Entity::NAME] = $cardHolderName;
+        }
 
         return $card;
     }

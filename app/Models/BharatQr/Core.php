@@ -23,9 +23,9 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function processPayment(array $gatewayInput)
+    public function processPayment(array $gatewayResponse)
     {
-        $input = $this->getBharatQrInputParams($gatewayInput);
+        $input = $this->getBharatQrInputParams($gatewayResponse['qr_data']);
 
         $this->trace->info(
             TraceCode::BHARAT_QR_PAYMENT_PROCESS_REQUEST,
@@ -40,9 +40,9 @@ class Core extends Base\Core
 
             $bharatQr = $this->mutex->acquireAndRelease(
                 $input[Entity::MERCHANT_REFERENCE],
-                function() use ($bharatQr, $gatewayInput)
+                function() use ($bharatQr, $gatewayResponse)
                 {
-                    $bharatQr = (new Processor($gatewayInput))->process($bharatQr);
+                    $bharatQr = (new Processor($gatewayResponse))->process($bharatQr);
 
                     // This will be null in case it's a duplicate notification
                     return $bharatQr;
@@ -58,16 +58,16 @@ class Core extends Base\Core
             $valid = false;
         }
 
-        return [$valid, $bharatQr];
+        return $valid;
     }
 
-    protected function getBharatQrInputParams(array $gatewayInput)
+    protected function getBharatQrInputParams(array $gatewayInputQrData)
     {
         return [
-            Entity::PROVIDER_REFERENCE_ID => $gatewayInput[Entity::PROVIDER_REFERENCE_ID],
-            Entity::MERCHANT_REFERENCE    => $gatewayInput[Entity::MERCHANT_REFERENCE],
-            Entity::METHOD                => $gatewayInput[Entity::METHOD],
-            Entity::AMOUNT                => $gatewayInput[Entity::AMOUNT],
+            Entity::PROVIDER_REFERENCE_ID => $gatewayInputQrData[Entity::PROVIDER_REFERENCE_ID],
+            Entity::MERCHANT_REFERENCE    => $gatewayInputQrData[Entity::MERCHANT_REFERENCE],
+            Entity::METHOD                => $gatewayInputQrData[Entity::METHOD],
+            Entity::AMOUNT                => $gatewayInputQrData[Entity::AMOUNT],
         ];
     }
 }

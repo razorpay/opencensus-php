@@ -449,6 +449,8 @@ class Entity extends Base\PublicEntity
 
     const DUMMY_PHONE = '+919999999999';
 
+    const DUMMY_VPA = 'dummy@razorpay';
+
     // --------------------- Modifiers ---------------------------------------------
 
     protected function modifyEmail(& $input)
@@ -2678,6 +2680,31 @@ class Entity extends Base\PublicEntity
     public function isAcknowledged(): bool
     {
         return $this->isAttributeNotNull(self::ACKNOWLEDGED_AT);
+    }
+
+    public function getDummyPaymentArray(string $method, string $network = null): array
+    {
+        $paymentArray =  [
+            self::CURRENCY    => Currency\Currency::INR,
+            self::METHOD      => $method,
+            self::AMOUNT      => 100,
+            self::DESCRIPTION => 'Dummy Payment',
+            self::CONTACT     => self::DUMMY_PHONE,
+            self::EMAIL       => self::DUMMY_EMAIL,
+        ];
+
+        switch ($method)
+        {
+            case Method::CARD:
+                $paymentArray[self::CARD] = (new Card\Entity)->getDummyCardArray($network);
+                break;
+
+            case Method::UPI:
+                $paymentArray[self::VPA] = self::DUMMY_VPA;
+
+        }
+
+        return $paymentArray;
     }
 
     // Query scopes

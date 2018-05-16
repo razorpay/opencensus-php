@@ -68,10 +68,11 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        if ((isset($input['qr_notification']) === true) and
-            ($input['qr_notification'] === true))
+        if ($this->isBharatQrPayment() === true)
         {
-            return $this->createGatewayPaymentEntity($input);
+            $this->createGatewayPaymentEntity($input);
+
+            return null;
         }
 
         if ((isset($input['upi']['flow']) === true) and
@@ -269,11 +270,6 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId(): string
     {
-        if ($this->isBharatQrPayment() === true)
-        {
-            return $this->config['bharatqr_merchant_id'];
-        }
-
         if ($this->mode === Mode::TEST)
         {
             return $this->config['test_merchant_id'];
@@ -859,7 +855,7 @@ class Gateway extends Base\Gateway
         ];
 
         return [
-            'gateway_input' => $input,
+            'callback_data' => $input,
             'qr_data'       => $qrData
         ];
     }

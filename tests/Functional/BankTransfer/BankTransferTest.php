@@ -28,6 +28,16 @@ class BankTransferTest extends TestCase
 
         $this->bankAccount = $this->createVirtualAccount();
 
+        $this->fixtures->create('terminal:bharat_qr_terminal');
+
+        $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+
+        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
+
+        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal_upi');
+
+        $this->fixtures->on('test');
+
         $this->ba->appAuth();
     }
 

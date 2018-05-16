@@ -22,6 +22,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'qr_code';
 
+    protected $generateIdOnCreate = true;
+
     protected $fillable = [
         self::AMOUNT,
         self::PROVIDER,
@@ -46,8 +48,6 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::AMOUNT => 'int',
     ];
-
-    protected $generateIdOnCreate = true;
 
     // --------------------- RELATIONS ---------------------
 

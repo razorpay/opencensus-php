@@ -24,6 +24,16 @@ class BharatQrPaymentTest extends TestCase
 
         $this->fixtures->merchant->activate();
 
+        $this->fixtures->create('terminal:bharat_qr_terminal');
+
+        $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+
+        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
+
+        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal_upi');
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
     }
 
@@ -101,8 +111,6 @@ class BharatQrPaymentTest extends TestCase
         $refund = $this->getLastEntity('hitachi', true);
 
         $this->assertEquals('refund', $refund['action']);
-
-        $this->assertNull($refund['acquirer']);
     }
 
     public function testHitachiBadCheckSum()
@@ -186,9 +194,7 @@ class BharatQrPaymentTest extends TestCase
 
         $request = $this->testData[__FUNCTION__];
 
-        $qrCode = $this->getLastEntity('qr_code', true);
-
-        $qrCodeId = substr($qrCode['id'], 3);
+        $qrCodeId = substr($this->qrCode['id'], 3);
 
         $request['content']['merchantTranId'] = $qrCodeId;
 
@@ -230,9 +236,7 @@ class BharatQrPaymentTest extends TestCase
 
         $request = $this->testData['testUpiQrPaymentProcess'];
 
-        $qrCode = $this->getLastEntity('qr_code', true);
-
-        $qrCodeId = substr($qrCode['id'], 3);
+        $qrCodeId = substr($this->qrCode['id'], 3);
 
         $request['content']['merchantTranId'] = $qrCodeId;
 
