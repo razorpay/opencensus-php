@@ -32,9 +32,8 @@ class Entity extends Base\PublicEntity
     const ERROR_DESCRIPTION   = 'error_description';
     const ERROR_CODE          = 'error_code';
 
-    protected $fillable = array(
-        self::MERCHANT_ID,
-        self::CUSTOMER_ID,
+    protected $fillable = [
+        self::STATUS,
         self::AMOUNT,
         self::DESCRIPTION,
         self::TYPE,
@@ -44,9 +43,9 @@ class Entity extends Base\PublicEntity
         self::INTERNAL_ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::ERROR_CODE,
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::TXN_ID,
         self::SOURCE_ID,
@@ -63,7 +62,7 @@ class Entity extends Base\PublicEntity
         self::INTERNAL_ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::ERROR_CODE,
-    );
+    ];
 
     protected static $sign = 'p2p';
 

@@ -6,6 +6,7 @@ use Config;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
@@ -228,6 +229,12 @@ class Merchant extends Base
         $detailsAttributes = array_merge(['merchant_id' => $id], $detailsAttributes);
 
         $merchant = $this->fixtures->create('merchant', $attributes);
+
+        $org = OrgEntity::find($orgId);
+
+        $merchant->org()->associate($org);
+
+        $merchant->saveOrFail();
 
         $this->fixtures->create('merchant_detail:sane', $detailsAttributes);
 

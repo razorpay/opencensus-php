@@ -2,20 +2,17 @@
 
 namespace RZP\Models\Customer\AppToken;
 
-use RZP\Models\Base;
-use RZP\Models\Customer\AppToken;
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\Customer\AppToken;
 
 class Core extends Base\Core
 {
-    public function create($input)
+    public function create($input, Customer\Entity $customer, Merchant\Entity $merchant)
     {
         $app = (new AppToken\Entity)->build($input);
-
-        $customer = $this->repo->customer->findOrFailPublic($input[Entity::CUSTOMER_ID]);
-
-        $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
 
         $app->customer()->associate($customer);
 

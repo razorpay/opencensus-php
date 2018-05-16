@@ -39,7 +39,6 @@ class Entity extends Base\PublicEntity
         self::DEBIT,
         self::BALANCE,
         self::DESCRIPTION,
-        self::CUSTOMER_ID
     ];
 
     protected $visible = [

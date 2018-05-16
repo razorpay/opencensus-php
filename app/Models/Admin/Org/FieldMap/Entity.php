@@ -41,7 +41,7 @@ class Entity extends Base\PublicEntity
 
     public function org()
     {
-        return $this->belongsTo('RZP\Models\Admin\Org\Entity');
+        return $this->belongsTo(Org\Entity::class);
     }
 
     public function setFieldsAttribute(array $fields)

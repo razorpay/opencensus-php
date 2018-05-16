@@ -27,21 +27,21 @@ class Entity extends Base\PublicEntity
         self::DEVICE_TOKEN,
     ];
 
-    protected $visible = array(
+    protected $visible = [
         self::ID,
         self::DEVICE_TOKEN,
         self::CUSTOMER_ID,
         self::MERCHANT_ID,
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::DEVICE_TOKEN,
         self::CUSTOMER_ID,
-    );
+    ];
 
-    protected static $generators = array(
+    protected static $generators = [
         self::DEVICE_TOKEN,
-    );
+    ];
 
     public function merchant()
     {

@@ -301,7 +301,7 @@ class Service extends Base\Service
                 AppToken\Entity::MERCHANT_ID     => $this->merchant->getId(),
                 AppToken\Entity::DEVICE_TOKEN    => $deviceToken);
 
-            $app = (new AppToken\Core)->create($custAppInput);
+            $app = (new AppToken\Core)->create($custAppInput, $customer, $this->merchant);
 
             $this->core->putAppTokenInSession($app);
 
