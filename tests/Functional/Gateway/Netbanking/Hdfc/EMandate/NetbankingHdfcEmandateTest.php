@@ -592,17 +592,20 @@ class NetbankingHdfcEmandateTest extends TestCase
         foreach ($entities as $entityList)
         {
             $items[] = [
-                'Client Name'             => 'RAZORPAY',
-                'Customer Name'           => 'User Name',
-                'Customer Account Number' => '50100100708641',
-                'Amount'                  => '1.00',
-                'Amount Type'             => 'Maximum',
-                'Start_Date'              => '07/05/2018',
-                'End_Date'                => '07/05/2028',
-                'Frequency'               => 'As & when Presented',
-                'Mandate ID'              => $entityList['token']['id'],
-                'Status'                  => $entityList['status_in_file'],
-                'Remark'                  => '',
+                'Client Name'                  => 'RAZORPAY',
+                'Customer Name'                => 'User Name',
+                'Customer Account Number'      => '50100100708641',
+                'Amount'                       => '1.00',
+                'Amount Type'                  => 'Maximum',
+                'Start_Date'                   => '07/05/2018',
+                'End_Date'                     => '07/05/2028',
+                'Frequency'                    => 'As & when Presented',
+                'Mandate ID'                   => $entityList['token']['id'],
+                'Status'                       => $entityList['status_in_file'],
+                'Remark'                       => '',
+                'Merchant Unique Reference No' => $entityList['payment']['id'],
+                'Mandate Serial Number'        => $entityList['token']['id'],
+                'Merchant Request No'          => $entityList['payment']['id'],
             ];
         }
 

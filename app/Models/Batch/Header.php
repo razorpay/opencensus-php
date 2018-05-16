@@ -160,6 +160,9 @@ class Header
     const HDFC_EM_REGISTER_END_DATE                         = HdfcEMRegisterHeadings::END_DATE;
     const HDFC_EM_REGISTER_FREQUENCY                        = HdfcEMRegisterHeadings::FREQUENCY;
     const HDFC_EM_REGISTER_MANDATE_ID                       = HdfcEMRegisterHeadings::MANDATE_ID;
+    const HDFC_EM_REGISTER_MERCHANT_UNIQUE_REF_NO           = HdfcEMRegisterHeadings::MERCHANT_UNIQUE_REFERENCE_NO;
+    const HDFC_EM_REGISTER_MANDATE_SERIAL_NO                = HdfcEMRegisterHeadings::MANDATE_SERIAL_NUMBER;
+    const HDFC_EM_REGISTER_MERCHANT_REQUEST_NO              = HdfcEMRegisterHeadings::MERCHANT_REQUEST_NO;
     const HDFC_EM_REGISTER_STATUS                           = HdfcEMRegisterHeadings::STATUS;
     const HDFC_EM_REGISTER_REMARK                           = HdfcEMRegisterHeadings::REMARK;
 
@@ -536,6 +539,9 @@ class Header
                 self::HDFC_EM_REGISTER_MANDATE_ID,
                 self::HDFC_EM_REGISTER_STATUS,
                 self::HDFC_EM_REGISTER_REMARK,
+                self::HDFC_EM_REGISTER_MERCHANT_UNIQUE_REF_NO,
+                self::HDFC_EM_REGISTER_MANDATE_SERIAL_NO,
+                self::HDFC_EM_REGISTER_MERCHANT_REQUEST_NO,
             ],
         ],
 
@@ -668,8 +674,8 @@ class Header
             ],
         ],
 
-        Type::DIRECT_DEBIT  =>  [
-            self::INPUT =>  [
+        Type::DIRECT_DEBIT  => [
+            self::INPUT => [
                 self::DIRECT_DEBIT_EMAIL,
                 self::DIRECT_DEBIT_CONTACT,
                 self::DIRECT_DEBIT_CARD_NUMBER,
@@ -687,7 +693,7 @@ class Header
                 self::DIRECT_DEBIT_NOTES_5,
             ],
 
-            self::OUTPUT    =>  [
+            self::OUTPUT    => [
                 self::DIRECT_DEBIT_EMAIL,
                 self::DIRECT_DEBIT_CONTACT,
                 self::DIRECT_DEBIT_CARD_NUMBER,

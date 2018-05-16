@@ -41,7 +41,6 @@ abstract class Base extends BaseProcessor
         //
         $parsedData = $this->getDataFromRow($entry);
 
-        // TODO: FIX for HDFC! We are getting token id there currently.
         $payment = $this->repo->payment->findOrFailPublic($parsedData[self::PAYMENT_ID]);
 
         $gatewayPayment = $this->getGatewayPayment($payment);

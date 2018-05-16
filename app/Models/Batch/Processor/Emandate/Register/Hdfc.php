@@ -23,6 +23,8 @@ class Hdfc extends Base
     {
         $tokenId = $entry[Batch\Header::HDFC_EM_REGISTER_MANDATE_ID];
 
+        $paymentId = $entry[Batch\Header::HDFC_EM_REGISTER_MERCHANT_UNIQUE_REF_NO];
+
         $gatewayTokenStatus = $entry[Batch\Header::HDFC_EM_REGISTER_STATUS];
 
         $status = $this->getTokenStatus($gatewayTokenStatus);
@@ -30,8 +32,7 @@ class Hdfc extends Base
         return [
             self::TOKEN_STATUS   => $status,
             self::ERROR_MESSAGE  => $this->getTokenErrorMessage($gatewayTokenStatus, $entry),
-            // TODO: Fix this! We need the payment id
-            self::PAYMENT_ID     => $tokenId,
+            self::PAYMENT_ID     => $paymentId,
         ];
     }
 

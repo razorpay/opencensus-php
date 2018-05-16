@@ -2,10 +2,8 @@
 
 namespace RZP\Gateway\Netbanking\Hdfc;
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
-use RZP\Gateway\Netbanking\Base as Netbanking;
+use RZP\Models\Payment;
 
 class Fields
 {
@@ -49,11 +47,12 @@ class Fields
      * Returns values required for e-mandate registration
      *
      * @param Token\Entity $token
-     *
+     * @param string $paymentId
      * @return array
      */
-    public static function getEMandateRegistrationData(Token\Entity $token): array
+    public static function getEmandateRegistrationData(Token\Entity $token, string $paymentId): array
     {
+
         $tokenId = $token->getId();
 
         $accountNumber = $token->getAccountNumber();
@@ -61,17 +60,28 @@ class Fields
         $customerName = $token->customer->getName();
 
         return [
-            EMandateRegisterFileHeadings::MERCHANT_UNIQUE_REFERENCE_NO  => $tokenId,
+            EMandateRegisterFileHeadings::MERCHANT_UNIQUE_REFERENCE_NO  => $paymentId,
             EMandateRegisterFileHeadings::CUSTOMER_NAME                 => $customerName,
             EMandateRegisterFileHeadings::CUSTOMER_ACCOUNT_NUMBER       => $accountNumber,
             EMandateRegisterFileHeadings::FREQUENCY                     => self::FREQUENCY,
             EMandateRegisterFileHeadings::MANDATE_SERIAL_NUMBER         => $tokenId,
             EMandateRegisterFileHeadings::MANDATE_ID                    => $tokenId,
-            EMandateRegisterFileHeadings::MERCHANT_REQUEST_NO           => $tokenId,
+            EMandateRegisterFileHeadings::MERCHANT_REQUEST_NO           => $paymentId,
             EMandateRegisterFileHeadings::AMOUNT_TYPE                   => self::AMOUNT_TYPE,
             EMandateRegisterFileHeadings::CLIENT_NAME                   => self::CLIENT_NAME,
             self::START_TIMESTAMP                                       => $token->getCreatedAt(),
             self::END_TIMESTAMP                                         => $token->getExpiredAt(),
         ];
+    }
+
+    /**
+     * @param Payment\Entity $payment
+     * @return array
+     */
+    public static function getEmandateRegistrationDataForRegisterFile(Payment\Entity $payment): array
+    {
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        return self::getEMandateRegistrationData($token, $payment->getId());
     }
 }
