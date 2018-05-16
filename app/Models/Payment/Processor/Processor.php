@@ -406,13 +406,12 @@ class Processor
     }
 
     /**
-     * This function is used while creating the Qr codes
-     * It will create dummy payment and fetch terminal corresponding to
-     * that
+     * This function is used while creating the Qr codes. It will
+     * create dummy payment and fetch terminal corresponding to that.
      *
      * @param array $input
+     *
      * @return mixed
-     * @throws Exception\RuntimeException
      */
     public function processAndReturnTerminal(array & $input)
     {
@@ -422,29 +421,31 @@ class Processor
 
         $this->tracePaymentNewRequest($input);
 
-        $terminal = $this->repo->beginTransactionAndRollback(function() use ($input, $receiver) {
-            //
-            // We only create a dummy payment entity for purpose
-            // of bharat qr terminal selection and returning it.
-            // It's not going to be saved in the database.
-            //
-            $payment = $this->buildPaymentEntity($input);
-
-            $payment->receiver()->associate($receiver);
-
-            $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
-
-            $selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
-
-            if (count($selectedTerminals) === 0)
+        $terminal = $this->repo->beginTransactionAndRollback(
+            function() use ($input, $receiver)
             {
-                throw new Exception\RuntimeException(
-                    'No terminal found.',
-                    ['payment' => $payment->toArrayAdmin()]);
-            }
+                //
+                // We only create a dummy payment entity for purpose
+                // of bharat qr terminal selection and returning it.
+                // It's not going to be saved in the database.
+                //
+                $payment = $this->buildPaymentEntity($input);
 
-            return $selectedTerminals[0];
-        });
+                $payment->receiver()->associate($receiver);
+
+                $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
+
+                $selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+
+                if (count($selectedTerminals) === 0)
+                {
+                    throw new Exception\RuntimeException(
+                        'No terminal found.',
+                        ['payment' => $payment->toArrayAdmin()]);
+                }
+
+                return $selectedTerminals[0];
+            });
 
         return $terminal;
     }

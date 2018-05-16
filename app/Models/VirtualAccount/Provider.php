@@ -232,8 +232,6 @@ class Provider
 
     protected function getBharatQrCode($qrCode)
     {
-        $merchant = $qrCode->merchant;
-
         $pointOfInitiation = $this->getPointOfInitiation($qrCode);
 
         $merchantIdentifiers = $this->generateBharatQrMerchantIdentifier($qrCode);
@@ -346,7 +344,8 @@ class Provider
      * This will generate merchant identifier using network
      * network could be Visa , MasterCard or Rupay
      *
-     * @param string $network
+     * @param QrCode\Entity $qrCode
+     *
      * @return array
      */
     protected function generateBharatQrMerchantIdentifier(QrCode\Entity $qrCode)
@@ -355,7 +354,7 @@ class Provider
 
         $bharatQrNetworks = Payment\Gateway::getBharatQrCardNetworks();
 
-        foreach ($bharatQrNetworks as  $bharatQrNetwork)
+        foreach ($bharatQrNetworks as $bharatQrNetwork)
         {
             $mpanAttr = strtolower($bharatQrNetwork) . '_mpan';
 
@@ -380,6 +379,8 @@ class Provider
      *
      * @param string        $method
      * @param QrCode\Entity $qrCode
+     *
+     * @param string|null   $network
      *
      * @return mixed
      */
