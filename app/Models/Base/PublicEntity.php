@@ -129,6 +129,11 @@ class PublicEntity extends UniqueIdEntity
     {
         $array = $this->toArrayPublic();
 
+        if ($array === null)
+        {
+            return null;
+        }
+
         unset($array[self::ENTITY]);
 
         // Remove fields hidden in reports

@@ -96,10 +96,7 @@ class Core extends Base\Core
         return $invoice;
     }
 
-    public function update(
-        Entity $invoice,
-        array $input,
-        Merchant\Entity $merchant): Entity
+    public function update(Entity $invoice, array $input, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(TraceCode::INVOICE_UPDATE_REQUEST,
             [

@@ -10,6 +10,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Report\Types\BasicEntityReport;
+use RZP\Models\Report\Types\SettlementReconReport;
 use RZP\Models\FundTransfer\Base\Reconciliation\Mock;
 use RZP\Models\Settlement;
 
@@ -181,6 +182,13 @@ class Service extends Base\Service
     public function getSettlementCombinedReport($input)
     {
         $report = new BasicEntityReport(E::TRANSACTION);
+
+        return $report->getReport($input);
+    }
+
+    public function getSettlementCombinedReconReport($input)
+    {
+        $report = new SettlementReconReport(E::TRANSACTION);
 
         return $report->getReport($input);
     }
