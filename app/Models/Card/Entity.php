@@ -45,7 +45,7 @@ class Entity extends Base\PublicEntity
 
     const COUNTRY_LENGTH = 2;
 
-    const DUMMY_EXPIRY_YEAR      = '2021';
+    const DUMMY_EXPIRY_YEAR      = '2099';
     const DUMMY_EXPIRY_MONTH     = '12';
     const DUMMY_CVV              = '123';
     const DUMMY_CVV_AMEX         = '1234';

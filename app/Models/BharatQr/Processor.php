@@ -58,6 +58,11 @@ class Processor extends VirtualAccount\Processor
                         {
                             $paymentInput = $this->getPaymentArray($bharatQr);
 
+                            // This is being done because we want
+                            // to skip terminal selection on payment
+                            // creation and use this terminal instead
+                            // as the payment has already gone through
+                            // this terminal.
                             $this->setTerminalIdInCallback();
 
                             $res = $paymentProcessor->process($paymentInput, $this->callbackData);
