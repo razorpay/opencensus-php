@@ -120,7 +120,7 @@ export default class ActivationWizard extends React.Component {
     removeDropShield('.Activation--wizard');
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate(nextProps) {
     if (
       this.props.data &&
       this.props.data.updated_at !== nextProps.data.updated_at

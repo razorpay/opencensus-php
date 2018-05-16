@@ -61,7 +61,12 @@ export class ActivationContainer extends React.Component {
 
   updateSession(data) {
     const { session, accountId } = this.props;
-    const { activation_progress, activated, submitted } = data;
+    const {
+      activation_progress,
+      activated,
+      activation_status,
+      submitted,
+    } = data;
 
     // Update data
     this.setState({ data });
@@ -75,6 +80,7 @@ export class ActivationContainer extends React.Component {
       ...session.user,
       activation_progress,
       activated,
+      activation_status,
       submitted: +submitted,
     });
 
