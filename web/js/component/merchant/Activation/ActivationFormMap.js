@@ -46,6 +46,8 @@ const businessModel = [
   {
     label: 'Billing Label',
     name: 'business_dba',
+    info:
+      'The brand name that your customers are familiar with. It should either be similar to your registered name or website name. It will appear on payment screen, emails and more.',
   },
   {
     label: 'Business Type',
@@ -177,13 +179,15 @@ const registrationDetails = [
     label: 'CIN',
     name: 'company_cin',
     validator: validateCIN,
+    info: 'Mandatory for Companies. Example : U 67190 TN 2014 PTC 096978',
   },
   [
     {
       label: 'Company PAN Details',
       name: 'company_pan',
       placeholder: 'PAN Number',
-      info: 'PAN details should belong to the business mentioned above',
+      info:
+        'Mandatory for Companies. PAN details should be of the mentioned business only.',
       validator: validatePANCard,
     },
     {
@@ -282,6 +286,8 @@ const registrationDetails = [
       _when: activation => activation.state.has_gstin === '0',
       placeholder: 'Enter GSTIN',
       size: 'small',
+      info:
+        'The entered GST Number should match your Operational Address. Example: 29AAGCR4375J1ZU',
       validator: value => {
         if (!isValidGSTIN(value)) {
           return 'Please provite valid GSTIN';
@@ -306,16 +312,17 @@ const bankAccountFields = [
     name: 'bank_account_number',
     label: 'Account Number',
     type: 'password',
-    info: 'Your company account to which your payments will be settled',
+    info: 'Your company account to which your payments will be settled.',
   },
   {
     _name: 'account_no',
     label: 'Re-Enter Account Number',
+    info: 'Please re-enter the bank account number.',
   },
   {
     name: 'bank_account_name',
     label: 'Beneficiary Name',
-    description:
+    info:
       'The beneficiary name should be same as the company name or individual name, in case of an LLP/Individual.',
   },
 ];

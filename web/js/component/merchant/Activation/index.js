@@ -530,7 +530,7 @@ export default class ActivationWizard extends React.Component {
               <Alert.Info>The account has been activated</Alert.Info>
             )}
 
-          {/* Show alert: if main activation form is in locked state */}
+          {/* Alert: if main activation form is in locked state */}
           {do {
             const showFormDisabledAlert =
               !isLinkedAccountForm &&
@@ -551,7 +551,7 @@ export default class ActivationWizard extends React.Component {
 
             if (showFormDisabledAlert) {
               if (!!data.activated) {
-                // Account is Activated
+                // **1. Alert: Account Activated
                 icon = 'i-done-all';
                 msg = 'Congratulations! Your account is Activated.';
               } else if (
@@ -562,6 +562,7 @@ export default class ActivationWizard extends React.Component {
                 Component = Alert.Error;
 
                 if (data.activation_status === 'needs_clarification') {
+                  // **2. Alert: Need clarification
                   msg =
                     'There are some issues in your activation form that needs attention. Please check your mail and respond at the earliest.';
                   secondaryMsg = (
@@ -573,19 +574,20 @@ export default class ActivationWizard extends React.Component {
                     </React.Fragment>
                   );
                 } else if (data.activation_status === 'rejected') {
+                  // **3. Alert: Form Rejected
                   msg =
                     'Your activation form has been rejected as your request was not accepted by our partner banks. Hence, we would not be able support your business at this moment. ';
                   secondaryMsg =
                     'We have sent you an email with necessary details.';
                 }
               } else if (!!data.locked) {
-                // Form is Locked (for reasons other than above)
+                // **4. Alert: Form is Locked (for reasons other than above)
                 // 'locked' status has more priority than 'submitted'
                 icon = 'i-outline-lock';
                 msg =
                   "Your activation form is locked as it's under review. We'll inform you once your account gets activated.";
               } else if (!!data.submitted) {
-                // Form is submitted
+                // **5. Alert: Form is Submitted
                 icon = 'i-check';
                 console.log('...');
                 msg =
@@ -601,7 +603,7 @@ export default class ActivationWizard extends React.Component {
             }
           }}
 
-          {/* Show Alert: if user has selected individual business type */}
+          {/* Alert: if user has selected individual business type */}
           {!isLinkedAccountForm &&
             currentBusinessType == 2 && (
               <Alert.Warning>
