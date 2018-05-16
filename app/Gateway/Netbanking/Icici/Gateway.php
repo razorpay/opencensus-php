@@ -7,7 +7,6 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
-use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Verify;
@@ -295,17 +294,14 @@ class Gateway extends Base\Gateway
         // Default banking type is retail
         if (isset($input['payment']) === true)
         {
-            $payment = $this->app['repo']->payment->find($input['payment']['id']);
-
-            if ($payment->isNetbankingCorporate() === true)
+            if ($input['payment']['bank'] === Payment\Processor\Netbanking::ICIC_C)
             {
                 $this->setBankingType(BankingType::CORPORATE);
             }
 
         }
 
-        if ((isset($terminal) === true) and
-                 ($terminal->isRecurring() === true))
+        if ((isset($terminal) === true) and ($terminal->isRecurring() === true))
         {
             $this->setBankingType(BankingType::RECURRING);
         }

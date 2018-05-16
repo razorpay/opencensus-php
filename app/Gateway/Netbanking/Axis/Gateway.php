@@ -578,11 +578,12 @@ class Gateway extends Base\Gateway
     {
         if (isset($input['payment']) === true)
         {
+            // If emandate registration payment
             if (($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL))
             {
                 $this->setBankingType(BankingType::EMANDATE);
             }
-            else if ($input['payment']['bank'] === 'UTIB_C')
+            else if ($input['payment']['bank'] === Payment\Processor\Netbanking::UTIB_C)
             {
                 $this->setBankingType(BankingType::CORPORATE);
             }
