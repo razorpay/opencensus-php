@@ -1,5 +1,6 @@
 import Input from 'component/Input';
 import { getDetailsForIFSC } from 'common/util';
+import { validatePANCard } from 'rzp/utils/validators';
 
 // For marketplace linked account which required kyc
 const needsKYC = activation => !!activation.props.data.need_kyc;
@@ -35,12 +36,14 @@ const businessFields = [
     name: 'company_pan',
     placeholder: 'PAN Number',
     info: 'PAN details should belong to the business mentioned above',
+    validator: validatePANCard,
     _when: needsKYC,
   },
   {
     label: 'PAN info of Authorized Signatory/Promoter/Director',
     name: 'promoter_pan',
     placeholder: 'PAN Number',
+    validator: validatePANCard,
     _when: needsKYC,
   },
 ];

@@ -3,6 +3,7 @@ import { states } from 'rzp/utils/constants';
 
 import { getDetailsForIFSC } from 'common/util';
 import { isValidGSTIN } from 'rzp/utils/rzp-utils';
+import { validateCIN, validatePANCard } from 'rzp/utils/validators';
 
 const NGO_BUSINESS_TYPE = 7;
 const differentAddress = activation => activation.state.same_address === '0';
@@ -164,6 +165,7 @@ const registrationDetails = [
   {
     label: 'CIN',
     name: 'company_cin',
+    validator: validateCIN,
   },
   [
     {
@@ -171,6 +173,7 @@ const registrationDetails = [
       name: 'company_pan',
       placeholder: 'PAN Number',
       info: 'PAN details should belong to the business mentioned above',
+      validator: validatePANCard,
     },
     {
       label: 'PAN Owner Name',
@@ -182,6 +185,7 @@ const registrationDetails = [
       label: 'PAN info of Authorized Signatory/Promoter/Director',
       name: 'promoter_pan',
       placeholder: 'PAN Number',
+      validator: validatePANCard,
     },
     {
       label: 'PAN Owner Name',
