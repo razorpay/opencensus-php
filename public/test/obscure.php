@@ -79,8 +79,7 @@ function disableEmptyInputs(form) {
         <td>
             <select name="method">
                 <option value="netbanking">Net Banking</option>
-                <option value="emandate" selected>E-mandate</option>
-                <option value="card">Card</option>
+                <option value="card" selected>Card</option>
                 <option value="wallet">Wallet</option>
                 <option value="emi">Emi</option>
                 <option value="upi">UPI</option>
@@ -94,7 +93,7 @@ function disableEmptyInputs(form) {
                 <option value="CSBK">Catholic Syrian Bank</option>
                 <option value="BARB_C">Bank of Baroda - Corporate</option>
                 <option value="BARB_R">Bank of Baroda - Retail</option>
-                <option value="HDFC" selected>HDFC Bank</option>
+                <option value="HDFC">HDFC Bank</option>
                 <option value="CORP">Corporation Bank</option>
                 <option value="SBIN">SBI Bank</option>
                 <option value="ICIC">ICICI Bank</option>
@@ -167,7 +166,7 @@ function disableEmptyInputs(form) {
         <td><input type="text" name="card[expiry_year]" value="2020"></td>
         <tr>
             <td colspan='40'>Amount:</td>
-            <td><input type="text" name="amount" size="25" value="0"></td>
+            <td><input type="text" name="amount" size="25" value="100"></td>
             <td>
             <select name="currency">
                 <option value="INR">Indian Rupee</option>
@@ -190,7 +189,7 @@ function disableEmptyInputs(form) {
     </tr>
     <tr>
         <td colspan='40'>Customer Id:</td>
-        <td><input type="text" name="customer_id" size="25" value="cust_64UtLHKtfc7Nn1"></td>
+        <td><input type="text" name="customer_id" size="25" value=""></td>
     </tr>
     <tr>
         <td colspan='40'>App Token:</td>
@@ -202,9 +201,9 @@ function disableEmptyInputs(form) {
     </tr>
     <tr>
         <td colspan='40'>Account Number:</td>
-        <td><input type="text" name="bank_account[account_number]" size="25" value="50100100708641"></td>
-        <td><input type="text" name="bank_account[ifsc]" size="25" value="HDFC0001759"></td>
-        <td><input type="text" name="bank_account[name]" size="25" value="Jesly Varghese"></td>
+<!--        <td><input type="text" name="bank_account[account_number]" size="25" value=""></td>-->
+<!--        <td><input type="text" name="bank_account[ifsc]" size="25" value=""></td>-->
+<!--        <td><input type="text" name="bank_account[name]" size="25" value=""></td>-->
     </tr>
     <tr>
         <td colspan="40">Select Auth Type </td>
@@ -224,7 +223,7 @@ function disableEmptyInputs(form) {
     </tr>
     <tr>
         <td colspan='40'><label for="recurring">Recurring:</label></td>
-        <td><input type="checkbox" name="recurring" value="1" id="recurring" checked></td>
+        <td><input type="checkbox" name="recurring" value="1" id="recurring"></td>
     </tr>
     <tr>
         <td colspan="100" align="center">
