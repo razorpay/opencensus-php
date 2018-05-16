@@ -85,7 +85,7 @@ class InvoiceMetricTest extends TestCase
 
         $mock = $this->createMetricsMock();
 
-        $mock->expects($this->exactly(7))
+        $mock->expects($this->exactly(10))
              ->method('count')
              ->withConsecutive(
                 [
@@ -121,6 +121,18 @@ class InvoiceMetricTest extends TestCase
                     ],
                 ],
                 [
+                    'traces_total',
+                    1,
+                    [
+                        'code'       => 'INVOICE_CREATE_REQUEST',
+                        'level'      => 200,
+                        'level_name' => 'INFO',
+                        'channel'    => 'Razorpay API',
+                        'route'      => 'invoice_create',
+                        'rzp_mode'   => 'test',
+                    ],
+                ],
+                [
                     'async_jobs_received_total',
                     1,
                     [
@@ -130,12 +142,36 @@ class InvoiceMetricTest extends TestCase
                     ],
                 ],
                 [
+                    'traces_total',
+                    1,
+                    [
+                        'code'       => 'ES_SYNC_REQUEST',
+                        'level'      => 100,
+                        'level_name' => 'DEBUG',
+                        'channel'    => 'Razorpay API',
+                        'route'      => 'invoice_create',
+                        'rzp_mode'   => 'test',
+                    ],
+                ],
+                [
                     'async_jobs_processed_total',
                     1,
                     [
                         'async_job_connection' => 'sync',
                         'async_job_queue'      => 'sync',
                         'async_job_name'       => 'RZP\Jobs\EsSync',
+                    ],
+                ],
+                [
+                    'traces_total',
+                    1,
+                    [
+                        'code'       => 'INVOICE_CREATED',
+                        'level'      => 200,
+                        'level_name' => 'INFO',
+                        'channel'    => 'Razorpay API',
+                        'route'      => 'invoice_create',
+                        'rzp_mode'   => 'test',
                     ],
                 ],
                 [

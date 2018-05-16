@@ -33,7 +33,7 @@ return [
             'F043'       => 'RazorpayBangalore',
             'F102'       => 'paymentId',
             'PurchaseID' => 'tobefilled',
-            'SenderName' => 'Razorpay',
+            'SenderName' => 'Random Name',
         ],
     ],
 

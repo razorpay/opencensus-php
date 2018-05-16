@@ -627,7 +627,7 @@ trait Authorize
         Payment\Entity $payment,
         array $input)
     {
-        $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
+        $cardChange = $payment->isRecurringTypeCardChange();
 
         if ($cardChange === true)
         {
@@ -2872,7 +2872,7 @@ trait Authorize
                 ]);
         }
 
-        if ($this->isCardChangeFlow($subscription) === true)
+        if ($payment->isRecurringTypeCardChange() === true)
         {
             $this->processCardChangeForSubscription($subscription, $payment);
 
@@ -2891,57 +2891,6 @@ trait Authorize
                                                                             $subscription,
                                                                             $oldStatus,
                                                                             $options);
-    }
-
-    /**
-     * TODO: This needs to be fixed!!!!!
-     *
-     * @param Subscription\Entity $subscription
-     *
-     * @return bool
-     */
-    protected function isCardChangeFlow(Subscription\Entity $subscription)
-    {
-        if ($subscription->hasBeenAuthenticated() === false)
-        {
-            return false;
-        }
-
-        if ($subscription->isCardChangeStatus() === false)
-        {
-            return false;
-        }
-
-        //
-        // If it's not skipped, we know for sure that the customer was involved in this.
-        // TODO: This is not a very robust check. Should figure out a good way.
-        // Also, this won't work when we create invoices and then after an hour, we charge.
-        // In these cases, the customer can make a payment on the latest invoice generated
-        // via public auth (two fa not skipped). The customer can pay with emandate also then.
-        //
-        // We can remove this once we add recurring_type in the payment entity!
-        //
-        // if ($payment->getTwoFactorAuth() === TwoFactorAuth::SKIPPED)
-        // {
-        //     return false;
-        // }
-        // else
-        // {
-        //     return true;
-        // }
-
-        // NOTE: 2FA WILL NOT WORK FOR INTERNATIONAL.
-
-        //
-        // TODO: Public auth check does not work! Use Redis or something here. FIX ASAP!
-        // Ideally we should have gotten this from subscription_card_change
-        // attribute which would have been sent in payment create input.
-        // But, since we don't store that attribute and this would be in
-        // the callback flow, we don't know whether this is card change flow.
-        // So, what we can do instead is rely on recurring_type attribute of payment
-        // entity. recurring_type can be set to initial or card_change or something.
-        //
-        return ($this->ba->isPublicAuth() === true);
     }
 
     protected function processCardChangeForSubscription(

@@ -114,6 +114,24 @@ class Core extends Base\Core
     }
 
     /**
+     * This function is used to patch merchant details fields
+     * @param Entity $merchantDetails
+     * @param array $input
+     *
+     * @return Entity
+     */
+    public function patchMerchantDetails(Entity $merchantDetails, array $input): Entity
+    {
+        $merchantDetails->getValidator()->validateInput('patchMerchantDetails', $input);
+
+        $merchantDetails->edit($input);
+
+        $this->repo->saveOrFail($merchantDetails);
+
+        return $merchantDetails;
+    }
+
+    /**
      * This function is used to sync fields transaction_report_email and website
      * in both merchant and merchantDetail entities
      *

@@ -17,6 +17,7 @@ class Metric
     const ASYNC_JOBS_RECEIVED_TOTAL             = 'async_jobs_received_total';
     const ASYNC_JOBS_PROCESSED_TOTAL            = 'async_jobs_processed_total';
     const ASYNC_JOBS_ERRORS_TOTAL               = 'async_jobs_errors_total';
+    const TRACES_TOTAL                          = 'traces_total';
 
     // Summary type metric names
     const HTTP_REQUEST_DURATION_MICROSECONDS    = 'http_request_duration_microseconds';
@@ -34,6 +35,10 @@ class Metric
     const LABEL_ASYNC_JOB_CONNECTION            = 'async_job_connection';
     const LABEL_ASYNC_JOB_QUEUE                 = 'async_job_queue';
     const LABEL_ASYNC_JOB_NAME                  = 'async_job_name';
+    const LABEL_TRACE_CHANNEL                   = 'channel';
+    const LABEL_TRACE_CODE                      = 'code';
+    const LABEL_TRACE_LEVEL                     = 'level';
+    const LABEL_TRACE_LEVEL_NAME                = 'level_name';
 
     // Default label values
     const LABEL_DEFAULT_VALUE                   = 'other';

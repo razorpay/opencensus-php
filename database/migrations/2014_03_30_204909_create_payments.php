@@ -289,6 +289,7 @@ class CreatePayments extends Migration
             $table->index(Payment::MERCHANT_ID);
             $table->index([Payment::MERCHANT_ID, Payment::CREATED_AT]);
             $table->index([Payment::MERCHANT_ID, Payment::STATUS, Payment::CREATED_AT]);
+            $table->index([Payment::MERCHANT_ID, Payment::CAPTURED_AT]);
 
             $table->index(Payment::RECEIVER_ID);
 

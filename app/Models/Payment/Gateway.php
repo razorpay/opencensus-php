@@ -827,6 +827,7 @@ class Gateway
         //corp banks
         Netbanking::ICIC_C => Gateway::NETBANKING_ICICI,
         Netbanking::UTIB_C => Gateway::NETBANKING_AXIS,
+        Netbanking::BARB_C => Gateway::NETBANKING_BOB,
 
         // retail banks
         IFSC::ICIC         => Gateway::NETBANKING_ICICI,

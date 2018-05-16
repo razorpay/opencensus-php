@@ -187,6 +187,13 @@ class Processor extends VirtualAccount\Processor
 
         $card[Card\Entity::NUMBER] = $this->getLuhnValidCardNumber();
 
+        $cardHolderName = preg_replace("/[^ \w]+/", "", $this->gatewayInput[GatewayResponseParams::SENDER_NAME]);
+
+        if (empty($cardHolderName) === false)
+        {
+            $card[Card\Entity::NAME] = $cardHolderName;
+        }
+
         return $card;
     }
 

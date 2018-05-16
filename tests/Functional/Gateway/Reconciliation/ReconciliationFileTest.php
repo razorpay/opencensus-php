@@ -9,13 +9,15 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 use RZP\Gateway\Blade\Mock\CardNumber;
 
-use RZP\Reconciliator\FirstData\PaymentReconciliate as FDPaymentRecon;
+use RZP\Reconciliator\HDFC\RefundReconciliate as HdfcRefundRecon;
 use RZP\Reconciliator\HDFC\PaymentReconciliate as HDFCPaymentRecon;
 use RZP\Reconciliator\Axis\PaymentReconciliate as AxisPaymentRecon;
-use RZP\Reconciliator\VirtualAccYesBank\PaymentReconciliate as VirtualAccYesBank;
+use RZP\Reconciliator\FirstData\PaymentReconciliate as FDPaymentRecon;
+use RZP\Reconciliator\Hitachi\RefundReconciliate as HitachiRefundRecon;
 use RZP\Reconciliator\BillDesk\RefundReconciliate as BilldeskRefundRecon;
 use RZP\Reconciliator\Hitachi\PaymentReconciliate as HitachiPaymentRecon;
-use RZP\Reconciliator\Hitachi\RefundReconciliate as HitachiRefundRecon;
+
+use RZP\Reconciliator\VirtualAccYesBank\PaymentReconciliate as VirtualAccYesBank;
 
 class ReconciliationFileTest extends TestCase
 {
@@ -214,8 +216,6 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
         $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
-
-        $this->assertBatchStatus();
     }
 
     public function testVirtualAccYesBankReconFile()
@@ -270,8 +270,6 @@ class ReconciliationFileTest extends TestCase
         // Recon should not overwrite reference2 if it was saved before
         $this->assertEquals($payment1['reference2'], $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
-
-        $this->assertBatchStatus();
     }
 
     public function testHdfcFssReconRefundFile()
@@ -345,6 +343,8 @@ class ReconciliationFileTest extends TestCase
      */
     public function testAxisMigsBatchProcessTest()
     {
+        $this->markTestSkipped('Axis removed from batch because of excel issue');
+
         $this->fixtures->create('terminal:shared_migs_recurring_terminals');
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
@@ -486,6 +486,17 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
+    private function overrideHdfcOnusRefund(array $payment, array $forceOverride = [], $gateway = 'fss')
+    {
+        $facade = $this->overrideHdfcPayment($payment, $forceOverride, $gateway);
+
+        $facade['rec_fmt'] = 'CVD';
+        $facade[HdfcRefundRecon::COLUMN_ARN[0]]       = "'(Onus transaction)";
+        $facade[HdfcRefundRecon::COLUMN_REFUND_ID[0]] = $payment['refund_id'];
+
+        return $facade;
+    }
+
     private function overrideBilldeskRefund(array $refund)
     {
         $facade = $this->testData['facades']['billdesk'];
@@ -609,6 +620,28 @@ class ReconciliationFileTest extends TestCase
         $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
 
         $this->assertEquals($entries[0][HitachiRefundRecon::COLUMN_ARN], $updatedRefund1['arn']);
+    }
+
+    public function testHdfcFssOnusTransactionRecon()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $refund1 = $this->getNewRefundEntity(true, false);
+        $gatewayPayment1 = $this->getDbLastEntityToArray('hdfc');
+
+        $this->assertNull($refund1['arn']);
+
+        $entries[] = $this->overrideHdfcOnusRefund($gatewayPayment1);
+
+        $file = $this->writeToExcelFile($entries, 'fss');
+        $this->runForFiles([$file], 'HDFC');
+
+        $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
+
+        $this->assertEquals($entries[0][HdfcRefundRecon::COLUMN_SEQUENCE_NUMBER[0]], "'" . $updatedRefund1['arn']);
+
+        $this->assertBatchStatus();
     }
 
     /**
