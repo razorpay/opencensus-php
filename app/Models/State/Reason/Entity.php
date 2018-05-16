@@ -20,7 +20,6 @@ class Entity extends Base\PublicEntity
     protected $entity = 'state_reason';
 
     protected $fillable = [
-        // self::STATE_ID,
         self::REASON_TYPE,
         self::REASON_CATEGORY,
         self::REASON_CODE,

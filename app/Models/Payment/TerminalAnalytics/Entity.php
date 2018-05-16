@@ -21,8 +21,6 @@ class Entity extends Base\PublicEntity
     public $incrementing = true;
 
     protected $fillable = [
-        // self::PAYMENT_ID,
-        // self::TERMINAL_ID,
         self::PAYMENT_TYPE,
         self::TERMINAL_STATUS,
         self::TERMINAL_RESPONSE_TIME,

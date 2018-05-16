@@ -11,13 +11,9 @@ class Service extends Base\Service
     {
         $input['org_id'] = Org\Entity::verifyIdAndStripSign($orgId);
 
-        $org = $this->repo->org->findOrFailPublic($orgId);
-
         $entityMap = (new Entity)->generateId();
 
         $entityMap->build($input);
-
-        $entityMap->org()->associate($org);
 
         $this->repo->saveOrFail($entityMap);
 

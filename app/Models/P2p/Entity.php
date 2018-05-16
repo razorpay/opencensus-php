@@ -33,11 +33,6 @@ class Entity extends Base\PublicEntity
     const ERROR_CODE          = 'error_code';
 
     protected $fillable = array(
-        // self::SOURCE_ID,
-        // self::SOURCE_TYPE,
-        // self::SINK_ID,
-        // self::SINK_TYPE,
-        // self::STATUS,
         self::MERCHANT_ID,
         self::CUSTOMER_ID,
         self::AMOUNT,

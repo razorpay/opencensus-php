@@ -25,10 +25,6 @@ class Core extends Base\Core
 
         $lead->build($entityData);
 
-        $lead->admin()->associate($admin);
-
-        $lead->org()->associate($admin->org);
-
         $this->repo->saveOrFail($lead);
 
         return $lead;

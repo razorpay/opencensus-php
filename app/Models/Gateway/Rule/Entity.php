@@ -165,7 +165,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
-        // self::MERCHANT_ID,
         self::GATEWAY,
         self::TYPE,
         self::GROUP,

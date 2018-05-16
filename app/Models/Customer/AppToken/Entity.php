@@ -25,8 +25,6 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::ID,
         self::DEVICE_TOKEN,
-        // self::CUSTOMER_ID,
-        // self::MERCHANT_ID,
     ];
 
     protected $visible = array(

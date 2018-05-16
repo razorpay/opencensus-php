@@ -27,7 +27,6 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::AMOUNT,
         self::PERCENTAGE,
-        // self::PRICING_RULE_ID,
     ];
 
     protected $public = [
