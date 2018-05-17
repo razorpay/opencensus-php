@@ -19,12 +19,14 @@ import TestModeBanner from 'merchant/containers/TestModeBanner';
 import {
   getConfigs,
   generateReport,
+  emailReportV2,
   generateReportV2,
   addReportToList,
   removeReportFromList,
 } from 'merchant/modules/reports';
 import SelectConfig from 'merchant/components/Reports/ReportsNew/SelectConfig';
 import EmailReport from 'merchant/components/Reports/ReportsNew/EmailReport';
+import ReportLoader from 'merchant/components/Reports/ReportsNew/ReportLoader';
 
 import {
   getCustomConfig,
@@ -52,10 +54,6 @@ const requestFailedFunc = () => {
   downloadStartedMessage = {
     type: 'success',
     message: 'Your report will download shortly',
-  },
-  emailingStartedMessage = {
-    type: 'success',
-    message: 'Your report will be emailed to you shortly',
   };
 
 @connect(
@@ -152,7 +150,7 @@ export default class ReportsContainer extends Component {
     this.validateInvoiceMonthYear = ::this.validateInvoiceMonthYear;
 
     store.subscribe(() => {
-      //update state when store changes
+      //update state when report list store changes
       this.setState({
         currentReportList: store.getState().reports.currentReportList,
       });
@@ -257,22 +255,14 @@ export default class ReportsContainer extends Component {
       });
   }
 
-  generateReport(_, emails = null) {
+  generateReport(_, emails = null, shouldUpdate) {
     const { selectedConfig, selectedAccount } = this.state,
       { date, type, invoiceDate } = this.props,
       day = date.date(),
       month = date.month() + 1, // Jan is 0 in moment library
       year = date.year(),
       titleForTracking = `${titleCase(type)} ${selectedConfig.label} Report`,
-      descForTracking = type === 'daily' ? `date` : `month`,
-      notificationMsg = emails
-        ? emailingStartedMessage
-        : downloadStartedMessage;
-
-    //close email reports modal
-    if (emails) {
-      this.props.closeModal();
-    }
+      descForTracking = type === 'daily' ? `date` : `month`;
 
     if (selectedConfig.value === 'monthlyInvoice') {
       const month = invoiceDate.month() + 1,
@@ -300,8 +290,6 @@ export default class ReportsContainer extends Component {
             .endOf(timeFactor)
             .unix();
 
-        this.props.showNotification(notificationMsg);
-
         const { user } = this.props,
           selectedAccountId = (selectedConfig.type in marketplaceConfigTypes
             ? selectedAccount.id
@@ -317,11 +305,17 @@ export default class ReportsContainer extends Component {
             ...(emails && { emails }),
           };
 
-        this.props.addReportToList(reqData);
+        if (emails) {
+          return this.emailReport(reqData, isMerchantAccount, shouldUpdate);
+        } else {
+          this.props.showNotification(downloadStartedMessage);
+          this.props.addReportToList(reqData);
+        }
 
         return generateReportV2(reqData, isMerchantAccount).then(data => {
           if (data.error) {
-            // this.props.removeReportFromList(selectedConfig.value);
+            this.props.removeReportFromList(selectedConfig.value);
+
             return this.props.showNotification({
               type: 'error',
               message: data.error,
@@ -342,8 +336,8 @@ export default class ReportsContainer extends Component {
       let data = {
         month,
         year,
-        //add emails if selected
-        ...(emails && { emails }),
+        //TODO: add emails if selected
+        // ...(emails && { emails }),
       };
 
       if (type === 'daily') {
@@ -371,7 +365,7 @@ export default class ReportsContainer extends Component {
 
       return generateReport(ajaxParams)
         .payload.then(data => {
-          this.props.showNotification(notificationMsg);
+          this.props.showNotification(downloadStartedMessage);
 
           if (entity === 'broking') {
             var blob = new Blob([data], {
@@ -392,26 +386,58 @@ export default class ReportsContainer extends Component {
     }
   }
 
-  handleCancel = () => {};
+  emailToSentence = emails => {
+    if (emails.length === 1) {
+      return emails[0];
+    } else {
+      return `${emails[0]} and ${emails.length - 1} others`;
+    }
+  };
+
+  emailReport = (params, isMerchantAccount, shouldUpdate) => {
+    const { selectedConfig } = this.state;
+
+    return emailReportV2(params, isMerchantAccount, shouldUpdate)
+      .then(data => {
+        if (data.error) {
+          return this.props.showNotification({
+            type: 'error',
+            message: data.error,
+          });
+        }
+
+        this.props.closeModal();
+
+        return this.props.showNotification({
+          type: 'success',
+          message: `${
+            selectedConfig.label
+          } will be emailed to ${this.emailToSentence(
+            data.data.emails
+          )} shortly`,
+        });
+      })
+      .catch(err => console.log(err));
+  };
 
   openEmailReportModal = e => {
     const { user } = this.props;
     const { accounts } = this.state;
 
-    const isPatch = !!e.target.dataset.ispatch;
-
     const emails = [
+      // first email will always be of owner
       user.contact_email,
-      ...user.transaction_report_email.split(','),
-      ...accounts.map(acc => acc.email),
+      ...(user.transaction_report_email !== null &&
+        user.transaction_report_email.split(',')),
+      ...(accounts && accounts.map(acc => acc.email)),
     ];
-
     this.props.openModal({
       size: 'small',
       component: (
         <EmailReport
           closeModal={this.props.closeModal}
           emails={emails}
+          shouldUpdate={e.target.dataset.shouldupdate || false}
           onSend={this.generateReport}
         />
       ),
@@ -588,26 +614,10 @@ export default class ReportsContainer extends Component {
                   </button>
                 </Fragment>
               )}
-
-              {Object.keys(currentReportList).map(config_id => (
-                <div
-                  class="report-progress"
-                  key={config_id}
-                  style={{ margin: '20px 0' }}
-                >
-                  {/* TODO: add report type */}
-                  Genrating Report
-                  <div class="bar-loader" />
-                  This may take some time to download. You can also choose to
-                  <span
-                    class="btn-link"
-                    onClick={this.openEmailReportModal}
-                    data-ispatch={1}
-                  >
-                    Email this report.
-                  </span>
-                </div>
-              ))}
+              <ReportLoader
+                reportList={currentReportList}
+                openEmailReportModal={this.openEmailReportModal}
+              />
             </div>
           </div>
         </div>

@@ -786,7 +786,7 @@ dl.rzp-definition {
   left: -200px;
   width: 200px;
   height: 4px;
-  background-color: #2980b9;
+  background-color: $primary-color;
   animation: bar-loading 2s linear infinite;
 }
 
@@ -799,4 +799,23 @@ dl.rzp-definition {
     to {left: 100%;}
 }
 /* End Component: Infinite Loader Bar */
+
+/* Component: Infinite Loader Circle*/
+
+.spin-loader {
+  display: inline-block;
+  margin: 0 5px;
+  height: 15px;
+  width: 15px;
+  animation: spin-loading 0.8s infinite linear;
+  border: 2px solid $primary-color;
+  border-right-color: transparent;
+  border-radius: 50%;
+  vertical-align: middle
+}
+
+@keyframes spin-loading {
+  0%    { transform: rotate(0deg); }
+  100%  { transform: rotate(360deg); }
+} 
 

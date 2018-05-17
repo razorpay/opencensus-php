@@ -43,7 +43,7 @@ export default class EmailReport extends Component {
       .join(',');
 
     //send empty event
-    return this.props.onSend(null, emails);
+    return this.props.onSend(null, emails, this.props.shouldUpdate);
   };
 
   render() {
@@ -63,7 +63,7 @@ export default class EmailReport extends Component {
           </p>
           <form>
             <strong>Choose Email:</strong>
-            {Object.keys(emailsMap).map(emailId => (
+            {Object.keys(emailsMap).map((emailId, index) => (
               <div class="form-group" key={emailId}>
                 <div class="checkbox rzpCheckbox next">
                   <input
@@ -76,7 +76,7 @@ export default class EmailReport extends Component {
                     onChange={this.handleChange}
                   />
                   <label class="icon i-check" for={emailId}>
-                    {emailsMap[emailId]}
+                    {emailsMap[emailId]} {index === 0 && ' (you)'}
                   </label>
                 </div>
               </div>

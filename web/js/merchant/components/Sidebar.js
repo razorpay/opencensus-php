@@ -5,6 +5,7 @@ import ProgressBar from 'rzp/ui/ProgressBar';
 
 import MainNavLink from 'merchant/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
+import store from 'merchant/store';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals)/;
@@ -19,6 +20,21 @@ const RZPLogoPNG = '/img/logo.png';
 
 @withRouter
 export default class Sidebar extends Component {
+  constructor(props) {
+    super(props);
+
+    //reference store data to update UI of sidebar navs
+    this.state = {
+      reportList: store.getState().reports.currentReportList,
+    };
+
+    store.subscribe(() => {
+      //update state when report list store changes
+      this.setState({
+        reportList: store.getState().reports.currentReportList,
+      });
+    });
+  }
   // currently active routes in tabbed containers
   // populated with initial values
   routes = {
@@ -58,6 +74,7 @@ export default class Sidebar extends Component {
   }
 
   render() {
+    const { reportList } = this.state;
     let { user, logoURL } = this.props;
     let routes = this.routes;
     let isMerchant = !!user.current;
@@ -177,6 +194,7 @@ export default class Sidebar extends Component {
                   icon="i i-books text-danger"
                   to="/reports"
                   notMyRole="sellerapp support"
+                  isPending={Object.keys(reportList).length > 0}
                 />
                 <MainNavLink
                   label="My Account"

@@ -8,13 +8,17 @@ const GENERATE_REPORT = 'GENERATE_REPORT';
 const ADD_REPORT = 'ADD_REPORT';
 const REMOVE_REPORT = 'REMOVE_REPORT';
 
-const reportErrorMsg = {
+const downloadReportErrorMsg = {
   error: 'Oops!, Unable to generate report',
+};
+
+const emailReportErrorMsg = {
+  error: 'Oops!, Unable to email report',
 };
 
 const handleError = e => {
   console.error(e);
-  return reportErrorMsg;
+  return downloadReportErrorMsg;
 };
 
 const createLog = (data, accountId) => {
@@ -36,6 +40,15 @@ const getLog = (logId, accountId) => {
 const getFile = (fileId, accountId) => {
   return merchantFetch({
     url: `ufh/file/${fileId}/get-signed-url`,
+    ...(!!accountId && { accountId }),
+  });
+};
+
+const updateLog = (data, accountId) => {
+  return merchantFetch({
+    url: 'reporting/logs',
+    method: 'patch',
+    data,
     ...(!!accountId && { accountId }),
   });
 };
@@ -66,15 +79,10 @@ export const generateReportV2 = (params, isMerchantAccount) => {
   return createLog(params, accountHeaderVal)
     .then(resp => {
       if (!resp.success || !resp.data || !resp.data.id) {
-        return reportErrorMsg;
+        return downloadReportErrorMsg;
       }
 
       const logId = resp.data.id;
-
-      // if sending emails don't poll
-      if (params.emails) {
-        return;
-      }
 
       const logPoll = poll({
         fetchFunc: () => getLog(resp.data.id, accountHeaderVal),
@@ -121,7 +129,7 @@ export const generateReportV2 = (params, isMerchantAccount) => {
             resp.data.status === 'failed' ||
             resp.data.status === 'created'
           ) {
-            return reportErrorMsg;
+            return downloadReportErrorMsg;
           }
 
           const fileId = resp.data.file_id;
@@ -135,7 +143,7 @@ export const generateReportV2 = (params, isMerchantAccount) => {
           return getFile(fileId, accountHeaderVal)
             .then(resp => {
               if (!resp.success) {
-                return reportErrorMsg;
+                return downloadReportErrorMsg;
               }
 
               return {
@@ -147,6 +155,27 @@ export const generateReportV2 = (params, isMerchantAccount) => {
         .catch(handleError);
     })
     .catch(handleError);
+};
+
+export const emailReportV2 = (
+  params,
+  isMerchantAccount,
+  shouldUpdate = false
+) => {
+  const accountHeaderVal = !isMerchantAccount && params.generated_by;
+  const reqFunc = shouldUpdate ? updateLog : createLog;
+
+  return reqFunc(params, accountHeaderVal)
+    .then(resp => {
+      if (!resp.success || !resp.data || !resp.data.id) {
+        return emailReportErrorMsg;
+      }
+
+      return resp;
+    })
+    .catch(err => {
+      return emailReportErrorMsg;
+    });
 };
 
 export const addReportToList = report => {
