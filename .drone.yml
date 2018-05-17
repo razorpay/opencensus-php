@@ -28,7 +28,9 @@ pipeline:
         event: push
   build-js:
     group: build
-    image: node:9-alpine
+    # TODO: Get the source for this image and push it
+    # to razorpay
+    image: pronav/dash
     pull: false
     environment:
       CHROME_BIN: /usr/bin/chromium
