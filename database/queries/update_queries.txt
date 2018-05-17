@@ -1651,6 +1651,10 @@ UPDATE payments
 UPDATE payments
     SET reference2 = '030913' where id = '9uKJiXh3PaDcYw';
 
+# Failed batch was retried but status was not updated due to code bug.
+# Fixed with https://github.com/razorpay/api/pull/8262
+UPDATE batches SET status = 'processed', failure_reason = NULL where id = 'AApDFev3MSDXV6';
+
 UPDATE bank_accounts
 SET    deleted_at = now()
 WHERE  id IN ( '6P2UjB7AZkp3h5', '7wptZXq8xk3Hhi', '9qIJjdfTUc048v', '9yak56TeQGngUL',
