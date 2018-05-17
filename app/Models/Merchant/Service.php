@@ -128,7 +128,7 @@ class Service extends Base\Service
         $userMerchantMappingInputData = [
             'action'      => 'attach',
             'role'        => 'owner',
-            'merchant_id' => $subMerchant->id,
+            'merchant_id' => $subMerchant->getId(),
         ];
 
         (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
@@ -1803,7 +1803,7 @@ class Service extends Base\Service
         return $subMerchantUser;
     }
 
-    private function formatUserCreationData($input, $subMerchant)
+    public function formatUserCreationData(array $input, Merchant\Entity $subMerchant)
     {
         return [
             User\Entity::NAME                  => $subMerchant->getName(),

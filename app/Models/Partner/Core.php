@@ -7,7 +7,6 @@ use Razorpay\OAuth;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Models\Feature\Constants as Feature;
 
 class Core extends Base\Core
 {
@@ -24,7 +23,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Connects a sub-merchant to an application, and return a
+     * Connects a sub-merchant to an application, and return a partner token
      *
      * @param OAuth\Application\Entity $app
      * @param Merchant\Entity          $merchant
