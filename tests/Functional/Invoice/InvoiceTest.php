@@ -101,11 +101,29 @@ class InvoiceTest extends TestCase
 
         $this->fixtures->merchant->edit('10000000000000', $merchantAttrs);
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        // supply_state_code should not be in private auth response
+        $this->assertArrayNotHasKey('supply_state_code', $response);
 
         $invoice = $this->getLastEntity('invoice', true);
 
         $this->assertEquals($merchanLabel, $invoice['merchant_label']);
+        $this->assertEquals('29', $invoice['supply_state_code']);
+    }
+
+    public function testCreateInvoiceWithNestedCustomerIdAndDetails()
+    {
+        $this->fixtures->create(
+            'customer',
+            [
+                'id'      => '100001customer',
+                'name'    => 'Test Old',
+                'email'   => 'testold@razorpay.com',
+                'contact' => '1234567890',
+            ]);
+
+        $this->startTest();
     }
 
     public function testCreateInvoiceAndPay()
@@ -486,7 +504,7 @@ class InvoiceTest extends TestCase
 
     public function testUpdateDraftInvoiceWithAmount()
     {
-        $this->createDraftInvoice();
+        $this->createDraftInvoice(['supply_state_code' => '29']);
 
         $this->startTest();
     }
@@ -601,6 +619,13 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateDraftInvoiceWithNestedCustomerIdAndDetails()
+    {
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
     public function testUpdateDraftInvoiceWithCustomerBillingAddressId()
     {
         $this->fixtures->create(
@@ -676,6 +701,13 @@ class InvoiceTest extends TestCase
         $this->startTest();
 
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
+    public function testUpdateDraftInvoiceUnsetCustomerWithNestedCustomerId()
+    {
+        $this->createDraftInvoice();
+
+        $this->startTest();
     }
 
     public function testUpdateIssuedInvoice()
@@ -1446,9 +1478,9 @@ class InvoiceTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->createDraftInvoice();
-        $this->createDraftInvoice(['id' => '1000001invoice', 'type' => 'link']);
-        $this->createDraftInvoice(['id' => '1000002invoice', 'type' => 'ecod']);
-        $this->createDraftInvoice(['id' => '1000003invoice', 'type' => 'ecod']);
+        $this->createDraftInvoice(['id' => '1000001invoice', 'type' => 'link', 'supply_state_code' => '29']);
+        $this->createDraftInvoice(['id' => '1000002invoice', 'type' => 'ecod', 'supply_state_code' => '29']);
+        $this->createDraftInvoice(['id' => '1000003invoice', 'type' => 'ecod', 'supply_state_code' => '29']);
 
         $this->startTest();
     }

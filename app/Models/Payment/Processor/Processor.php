@@ -22,8 +22,6 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Methods;
-use RZP\Models\Plan\Subscription\Addon;
-use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
 use RZP\Models\Risk;
@@ -123,6 +121,8 @@ class Processor
      * @var Order\Entity
      */
     protected $order;
+
+    protected $receiver;
     protected $segment;
 
     protected $verifyRefundStatus;
@@ -179,7 +179,7 @@ class Processor
         $this->type    = null;
     }
 
-    public function process(array $input): array
+    public function process(array $input, $gatewayInput = []): array
     {
         $this->setMethodForInput($input);
 
@@ -202,7 +202,7 @@ class Processor
         // This flow is being used for only hosted (Shopify).
         $this->checkSignature($input, $payment);
 
-        return $this->authorize($payment, $input);
+        return $this->authorize($payment, $input, $gatewayInput);
     }
 
     public function getPayment(): Payment\Entity
@@ -403,6 +403,44 @@ class Processor
         ];
 
         return $coproto;
+    }
+
+    /**
+     * This function is used while creating the Qr codes. It will
+     * create dummy payment and fetch terminal corresponding to that.
+     *
+     * @param array $input
+     *
+     * @return mixed
+     */
+    public function processAndReturnTerminal(array & $input)
+    {
+        $receiver = $input[Payment\Entity::RECEIVER];
+
+        unset($input[Payment\Entity::RECEIVER]);
+
+        $this->tracePaymentNewRequest($input);
+
+        $terminal = $this->repo->beginTransactionAndRollback(
+            function() use ($input, $receiver)
+            {
+                //
+                // We only create a dummy payment entity for purpose
+                // of bharat qr terminal selection and returning it.
+                // It's not going to be saved in the database.
+                //
+                $payment = $this->buildPaymentEntity($input);
+
+                $payment->receiver()->associate($receiver);
+
+                $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
+
+                $selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+
+                return $selectedTerminals[0] ?? null;
+            });
+
+        return $terminal;
     }
 
     public function processAndReturnFees(array & $input)
@@ -1032,35 +1070,21 @@ class Processor
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
-        $terminalId = $this->payment->getTerminalId();
+        $terminal = $this->repo->terminal->fetchForPayment($this->payment);
+
+        if ($terminal === null)
+        {
+            throw new Exception\LogicException(
+                'Terminal should not be null here',
+                null,
+                ['payment_id' => $this->payment->getId()]);
+        }
 
         $gateway = $this->payment->getGateway();
-
-        $terminal = null;
-
-        // This will be removed after terminal association with bharat qr payments
-        if (($terminalId !== null) or
-            (Payment\Gateway::isValidBharatQrGateway($gateway) === false))
-        {
-            $terminal = $this->repo->terminal->fetchForPayment($this->payment);
-
-            if ($terminal === null)
-            {
-                throw new Exception\LogicException(
-                    'Terminal should not be null here',
-                    null,
-                    ['payment_id' => $this->payment->getId()]);
-            }
-        }
 
         $gatewayData['terminal'] = $terminal;
 
         $gatewayData['merchant'] = $this->payment->merchant;
-
-        if (Payment\Gateway::isValidBharatQrGateway($this->payment->getGateway()) === true)
-        {
-            $gatewayData['bharat_qr'] = $this->repo->bharat_qr->findByPaymentId($this->payment->getId());
-        }
 
         // Wrapping all gateway call, We can take actions on Exception here.
         try
@@ -1959,25 +1983,6 @@ class Processor
         }
 
         if ($payment->isBankTransfer() === true)
-        {
-            return false;
-        }
-
-        if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
-        {
-            return false;
-        }
-
-        //
-        // TODO: route check to be changed after refactor
-        //
-        // If this is hit while creating a payment, gateway would not have been set yet.
-        // Hence, gateway check in the previous block would not work.
-        // This function is hit in the refund flow also, in which the gateway
-        // would have been set already.
-        // The gateway would be set AFTER the payment is created and processed.
-        //
-        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
         {
             return false;
         }

@@ -2,8 +2,10 @@
 
 namespace RZP\Providers;
 
+use Config;
+use Barryvdh\Debugbar;
+use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
-use RZP\Trace\ApiTraceProcessor;
 
 class FirstServiceProvider extends ServiceProvider
 {
@@ -21,6 +23,8 @@ class FirstServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->registerDebugbarIfApplicable();
+
         $this->registerRequestGetIdMacro();
 
         $this->registerRequestSetTaskIdMacro();
@@ -67,6 +71,20 @@ class FirstServiceProvider extends ServiceProvider
             return new \RZP\Models\Base\ExtendedValidations(
                             $translator, $data, $rules, $messages, $customAttributes);
         });
+    }
+
+    /**
+     * Register Debugbar ServiceProvider and Facade for API Inspector
+     * for debug mode, non-production requests.
+     */
+    protected function registerDebugbarIfApplicable()
+    {
+        if ((Config::get('app.debug') === true) and
+            ($this->app->environment() !== 'production'))
+        {
+            $this->app->register(Debugbar\ServiceProvider::class);
+            AliasLoader::getInstance()->alias('Debugbar', Debugbar\Facade::class);
+        }
     }
 
     /**

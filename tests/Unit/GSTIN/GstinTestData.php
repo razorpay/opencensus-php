@@ -17,6 +17,21 @@ return [
         '00ABCDE1237L1R1',
     ],
 
+    'testValidStateCode' => [
+        '29',
+        '37',
+        '37',
+        '01',
+    ],
+
+    'testInvalidStateCode' => [
+        '',
+        '123',
+        '00',
+        '99',
+        '-1',
+    ],
+
     'testGstinStateMap' => [
         [
             'name'  => 'Andaman and Nicobar Islands',

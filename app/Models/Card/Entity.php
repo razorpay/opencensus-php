@@ -45,10 +45,14 @@ class Entity extends Base\PublicEntity
 
     const COUNTRY_LENGTH = 2;
 
-    const DUMMY_EXPIRY_YEAR  = '2021';
-    const DUMMY_EXPIRY_MONTH = '12';
-    const DUMMY_CVV          = '123';
-    const DUMMY_CVV_AMEX     = '1234';
+    const DUMMY_EXPIRY_YEAR      = '2099';
+    const DUMMY_EXPIRY_MONTH     = '12';
+    const DUMMY_CVV              = '123';
+    const DUMMY_CVV_AMEX         = '1234';
+    const DUMMY_NAME             = 'dummy card';
+    const DUMMY_MASTERCARD_CARD  = '2221000000511237';
+    const DUMMY_VISA_CARD        = '4231560000511234';
+    const DUMMY_RUPAY_CARD       = '5085000000521234';
 
     const NETWORK_CODE = 'network_code';
 
@@ -318,6 +322,11 @@ class Entity extends Base\PublicEntity
     public function getLast4()
     {
         return $this->getAttribute(self::LAST4);
+    }
+
+    public function getLength()
+    {
+        return $this->getAttribute(self::LENGTH);
     }
 
     public function getMaskedCardNumber()
@@ -707,5 +716,35 @@ class Entity extends Base\PublicEntity
         }
 
         return $dummyCvv;
+    }
+
+    public function getDummyCardArray(string $network = null)
+    {
+        $card = [
+            Card\Entity::CVV          => self::DUMMY_CVV,
+            Card\Entity::NAME         => self::DUMMY_NAME,
+            Card\Entity::EXPIRY_MONTH => self::DUMMY_EXPIRY_MONTH,
+            Card\Entity::EXPIRY_YEAR  => self::DUMMY_EXPIRY_YEAR,
+        ];
+
+        switch ($network)
+        {
+            case Card\Network::MC:
+                $card[Card\Entity::NUMBER] = self::DUMMY_MASTERCARD_CARD;
+                break;
+
+            case Card\Network::VISA:
+                $card[Card\Entity::NUMBER] = self::DUMMY_VISA_CARD;
+                break;
+
+            case Card\Network::RUPAY:
+                $card[Card\Entity::NUMBER] = self::DUMMY_RUPAY_CARD;
+                break;
+
+            default:
+                break;
+        }
+
+        return $card;
     }
 }

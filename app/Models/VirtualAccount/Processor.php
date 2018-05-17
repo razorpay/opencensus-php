@@ -3,15 +3,11 @@
 namespace RZP\Models\VirtualAccount;
 
 use App;
+use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Constants\Mode as RzpMode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
-use RZP\Models\BankAccount;
+use RZP\Trace\TraceCode;
 use RZP\Models\VirtualAccount;
-use RZP\Models\Currency\Currency;
-use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 abstract class Processor extends Base\Core
 {
@@ -19,6 +15,7 @@ abstract class Processor extends Base\Core
     protected $provider;
     protected $merchant;
     protected $validator;
+    protected $receiver;
 
     public function __construct(string $provider = null)
     {
@@ -43,26 +40,77 @@ abstract class Processor extends Base\Core
     }
 
     /**
-     * TODO: need to make this generic
+     * Entry point for  virtual account  process flow.
+     * Check if the payment was a duplicate.
+     * - payment was duplicate?
+     *   - Yes
+     *    - Do nothing.
+     *   - No
+     *    - payment is expected?
+     *     - Yes
+     *      - Set VA to the recognized VA
+     *     - No
+     *      - Set VA to demo merchant's static VA
      *
      * @param Base\PublicEntity $entity
      *
-     * @return
+     * @return Base\PublicEntity
      */
-    abstract public function process(Base\PublicEntity $entity);
+    public function process(Base\PublicEntity $entity)
+    {
+        if ($this->isDuplicate($entity) === true)
+        {
+            //
+            // The payment is an expected one, i.e. it is made to a valid account
+            // but the UTR is a duplicate, indicating that a payment is being processed
+            // for a second time. In this case, we do nothing.
+            //
+
+            return null;
+        }
+
+        $paymentExpected = $this->checkPaymentExpectedAndSetVirtualAccount($entity);
+
+        $entity->setExpected($paymentExpected);
+
+        $this->setMerchant();
+
+        $entity = $this->processPayment($entity);
+
+        // This will be null in case of
+        // bank transfer payments if the payment
+        // is made to reserved account
+        if ($entity === null)
+        {
+            return null;
+        }
+
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_PAYMENT_SUCCESSFUL,
+            $entity->toArray());
+
+        return $entity;
+    }
+
+    abstract protected function isDuplicate(Base\PublicEntity $entity);
+
+    abstract protected function processPayment(Base\PublicEntity $entity);
 
     abstract protected function getVirtualAccountFromEntity(Base\PublicEntity $entity);
+
+    abstract protected function getReceiver();
 
     /**
      * A receiver is expected if there exists an active VA
      * to receive it. If such a VA does not exist, or exists but
      * has been closed/paid, the payment is to be refunded.
      *
-     * @param Base\PublicEntity $entity
+     * @param Base\PublicEntity $entity This is the receiver entity:
+     *                                  bank_transfer, qr_code
      *
      * @return bool
      */
-    protected function isPaymentExpected(Base\PublicEntity $entity): bool
+    protected function checkPaymentExpectedAndSetVirtualAccount(Base\PublicEntity $entity): bool
     {
         $this->setVirtualAccount($entity);
 
@@ -71,10 +119,10 @@ abstract class Processor extends Base\Core
             $this->trace->info(
                 TraceCode::VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT,
                 [
-                    'message'      => 'Unexpected Payment',
-                    'entity'       => $entity->toArray(),
-                ]
-            );
+                    'entity' => $entity->toArray(),
+                ]);
+
+            $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
 
             return false;
         }
@@ -82,35 +130,34 @@ abstract class Processor extends Base\Core
         return true;
     }
 
-    /**
-     * For unexpected virtual account payment, we set the merchant to
-     * the demo merchant. A new VA is created specifically
-     * for this payment, to be closed immediately afterwards.
-     *
-     * @param Base\PublicEntity $entity
-     */
-    protected function preProcessUnexpectedPayment(Base\PublicEntity $entity)
+    protected function getDefaultPaymentArray(): array
     {
-        $entity->setExpected(false);
+        $paymentArray = $this->getReceiverPaymentArray();
 
-        $this->setDefaultMerchant();
+        if ($this->virtualAccount->hasCustomer() === true)
+        {
+            $customer = $this->virtualAccount->customer;
 
-        $this->createAndSetVirtualAccount($entity->getAmount());
+            $paymentArray[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
+            $paymentArray[Payment\Entity::CONTACT]     = $customer->getContact();
+            $paymentArray[Payment\Entity::EMAIL]       = $customer->getEmail();
+        }
+
+        return $paymentArray;
     }
 
-    /**
-     * A throwaway VA is to be created for the default merchant. Create it use the amount
-     * being paid as the expected amount, so that it is closed after the payment is processed.
-     *
-     * @param int $amount
-     */
-    protected function createAndSetVirtualAccount(int $amount)
+    protected function getReceiverPaymentArray(): array
     {
-        $data = $this->virtualAccountCreationArray($amount);
+        $receiver = $this->getReceiver();
 
-        $virtualAccount = (new VirtualAccount\Core)->createWithoutReceivers($data, $this->merchant);
+        $paymentArray = [
+            Payment\Entity::RECEIVER => [
+                'id'   => $receiver->getPublicId(),
+                'type' => $receiver->getEntity(),
+            ],
+        ];
 
-        $this->virtualAccount = $virtualAccount;
+        return $paymentArray;
     }
 
     /**
@@ -121,20 +168,6 @@ abstract class Processor extends Base\Core
     protected function setVirtualAccount(Base\PublicEntity $entity)
     {
         $this->virtualAccount = $this->getVirtualAccountFromEntity($entity);
-    }
-
-    /**
-     * Throwaway VAs for unexpected payments
-     *
-     * @param int $amount
-     *
-     * @return array
-     */
-    protected function virtualAccountCreationArray(int $amount): array
-    {
-        return [
-            VirtualAccount\Entity::AMOUNT_EXPECTED => $amount,
-        ];
     }
 
     /**
@@ -152,32 +185,8 @@ abstract class Processor extends Base\Core
         $this->repo->saveOrFail($this->virtualAccount);
     }
 
-    /**
-     * Set default merchant for future processing.
-     * Use default merchant for this env.
-     */
-    protected function setDefaultMerchant()
+    protected function setMerchant()
     {
-        $defaultMerchantId = self::getDefaultMerchantId();
-
-        $this->merchant = $this->repo->merchant->findByPublicId($defaultMerchantId);
-    }
-
-    /**
-     * For unexpected payments, we use the demo page merchant. This merchant only
-     * exists on prod. For other envs, we use the test merchant, i.e. '10000000000000'.
-     */
-    public static function getDefaultMerchantId()
-    {
-        $defaultMerchantId = Merchant\Account::DEMO_PAGE_ACCOUNT;
-
-        $env = App::getFacadeRoot()->environment();
-
-        if ($env !== 'production')
-        {
-            $defaultMerchantId = Merchant\Account::TEST_ACCOUNT;
-        }
-
-        return $defaultMerchantId;
+        $this->merchant = $this->virtualAccount->merchant;
     }
 }

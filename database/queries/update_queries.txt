@@ -1650,3 +1650,26 @@ UPDATE payments
 
 UPDATE payments
     SET reference2 = '030913' where id = '9uKJiXh3PaDcYw';
+
+# Failed batch was retried but status was not updated due to code bug.
+# Fixed with https://github.com/razorpay/api/pull/8262
+UPDATE batches SET status = 'processed', failure_reason = NULL where id = 'AApDFev3MSDXV6';
+
+UPDATE bank_accounts
+SET    deleted_at = now()
+WHERE  id IN ( '6P2UjB7AZkp3h5', '7wptZXq8xk3Hhi', '9qIJjdfTUc048v', '9yak56TeQGngUL',
+               '9ydP7CUH5NZKJD', '9ye7NdsrzsBCca', '9yeCgEHREYw6VD', '9yg47GwA1reCst',
+               '9yikr4b1q8TTyk', '9yld7KUXWIvMmq', '9ylxUgAWGDOunb', '9zoHLO2ivuzAHg',
+               '9zpwAtI6jbZeop', '9zr6qGoJp83bOP', '9zsqzHsJO1cafw', '9zxEyNqcKkexri',
+               'A0EkarVUb4y9h6', 'A0dqgDL5oGXFPg', 'A0jeJl8lqux5Xg', 'A0kZ6k485rb2PP',
+               'A10r1vVjVj4OmC', 'A16T8UZzbTbqRI', 'A1VQtjDmLkvNqV', 'A1VXx8msDGrJk6',
+               'A1VhzewBKQLswZ', 'A1ViEtLmVgQWMR', 'A1ViwC7YGjlUbb', 'A1yZLoNRz6XEIy',
+               'A2gCHd9ae6IffC', 'A2hG5NvwOU1kdp', 'A2hPL3m1AbxD3O', 'A2i5Q0Mb1DQQ9r',
+               'A2xD4L8yGCFqFJ', 'A35xgVyZ63DKlu', 'A36PlJHBwUvFzZ', 'A36SwMlR0i1dRD',
+               'A3M24zOvDJNKgO', 'A3MtZXUTYXxMk0', 'A3UgaOGi9AyrGJ', 'A3UmwkMfpQFsgH',
+               'A4EWOHBm2p2rHf', 'A4efVcTsWfFbly', 'A5PYXT8lEyiNp1', 'A5TjJOgQpAvpSD',
+               'A5mYqqLUwbe5xT', 'A6AJNCzJFb1a9f', 'A6DIpygf1Vt66h', 'A6E3l4AfNlF2lk',
+               'A6FLjkHqHk01xT', 'A6FMiT5izXikbt', 'A6apTx9dmDmF83', 'A6aqSwbIhUslGQ',
+               'A6arDl0wwwds3D', 'A7MVCY5zOegGQ0', 'A7h1HCuWhuE6qB', 'A894C2t1U3gJwq',
+               'A89Q9ehP4c29ay', 'A8Dkkq0zImHQhe', 'A8U3Esrz88wjU2', 'A8X8Gm29WZCdJH',
+               'A8bsJrEkWALzqF', 'AArsGstS2RaWTK' );

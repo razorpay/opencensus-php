@@ -128,6 +128,7 @@ class Terminal extends Base
             'gateway_terminal_password' => 'abcdef',
             'card'                      => 1,
             'netbanking'                => 1,
+            'network_category'          => 'ecommerce',
         ];
 
         return parent::create($attributes);
@@ -211,6 +212,7 @@ class Terminal extends Base
             'netbanking'                => 1,
             'gateway_merchant_id'       => 'razorpay',
             'gateway_terminal_password' => 'razorpay_password',
+            'network_category'          => 'ecommerce',
         ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
@@ -230,6 +232,7 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'razorpay',
             'gateway_access_code'   => 'random_code',
             'gateway_secure_secret' => 'random_secret',
+            'network_category'      => 'ecommerce',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -249,6 +252,7 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'razorpay',
             'gateway_access_code'   => 'random_code',
             'gateway_secure_secret' => 'random_secret',
+            'network_category'      => 'ecommerce',
         ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);

@@ -45,7 +45,7 @@ class Service extends Base\Service
 
         try
         {
-            $callbackData = $gatewayClass->preProcessServerCallback($input, true);
+            $gatewayResponse = $gatewayClass->preProcessServerCallback($input, true);
         }
         catch (\Exception $ex)
         {
@@ -54,8 +54,7 @@ class Service extends Base\Service
             return $this->getResponse(false);
         }
 
-        $qrData = $callbackData['qr_data'];
-        $gatewayInput = $callbackData['gateway_input'];
+        $qrData = $gatewayResponse['qr_data'];
 
         (new Validator)->validateInput('gateway_response', $qrData);
 
@@ -63,33 +62,13 @@ class Service extends Base\Service
 
         $this->determineAndSetModeForQr($qrCodeId);
 
-        $qrData[GatewayResponseParams::GATEWAY] = $gateway;
+        $gatewayResponse['qr_data'][GatewayResponseParams::GATEWAY] = $gateway;
 
-        list($valid, $bharatQr) = $this->core->processPayment($qrData);
-
-        //
-        // In case of duplicate notification
-        // we don't create new payment
-        //
-        if ($bharatQr !== null)
-        {
-            $gatewayInput['payment'] = $bharatQr->payment->toArray();
-
-            $this->callGatewayAuthorize($gateway, $gatewayInput);
-        }
+        $valid = $this->core->processPayment($gatewayResponse);
 
         $response = $this->getResponse($valid);
 
         return $response;
-    }
-
-    // This will be removed from here after terminal association with bharat qr
-    // payments
-    protected function callGatewayAuthorize(string $gateway, array $gatewayInput)
-    {
-        $gatewayInput['qr_notification'] = true;
-
-        return $this->app['gateway']->call($gateway, Action::AUTHORIZE, $gatewayInput, null);
     }
 
     protected function getResponse(bool $valid)

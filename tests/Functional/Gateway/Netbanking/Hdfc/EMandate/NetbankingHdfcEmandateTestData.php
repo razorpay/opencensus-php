@@ -9,11 +9,11 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-    'testEMandateInitialPayment' => [
+    'testEmandateInitialPayment' => [
         'gateway'           => 'netbanking_hdfc',
         'status'            => 'authorized',
-        'amount_authorized' => 4000,
-        'amount'            => 4000,
+        'amount_authorized' => 0,
+        'amount'            => 0,
         'verified'          => null,
         'late_authorized'   => false,
         'two_factor_auth'   => 'unavailable',
@@ -52,7 +52,7 @@ return [
         ],
     ],
 
-    'testEMandateRegistration' => [
+    'testEmandateRegistration' => [
         'request' => [
             'content' => [
                 'type'    => 'emandate_register',
@@ -85,7 +85,7 @@ return [
         ]
     ],
 
-    'testEMandateDebit' => [
+    'testEmandateDebit' => [
         'request' => [
             'content' => [
                 'type'    => 'emandate_debit',
@@ -122,7 +122,6 @@ return [
         'action'            => 'authorize',
         'bank'              => 'HDFC',
         'received'          => false,
-        'merchant_code'     => '10000000000000',
         'bank_payment_id'   => null,
         'status'            => null,
         'error_message'     => null,
@@ -131,7 +130,7 @@ return [
         'si_message'        => null,
     ],
 
-    'testEMandateDebitCreateFileFailure' => [
+    'testEmandateDebitCreateFileFailure' => [
         'request' => [
             'content' => [
                 'type'    => 'emandate_debit',
@@ -164,7 +163,7 @@ return [
         ]
     ],
 
-    'testEMandateDebitOnRetry' => [
+    'testEmandateDebitOnRetry' => [
         'request' => [
             'content' => [
                 'type'    => 'emandate_debit',
@@ -195,5 +194,21 @@ return [
                 ],
             ]
         ]
+    ],
+
+    'testEmandateInitialPaymentFailure' => [
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,
+        ],
     ],
 ];

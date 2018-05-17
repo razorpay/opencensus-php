@@ -91,6 +91,7 @@ function disableEmptyInputs(form) {
         <td>
             <select name="bank">
                 <option value="CSBK">Catholic Syrian Bank</option>
+                <option value="BARB_C">Bank of Baroda - Corporate</option>
                 <option value="BARB_R">Bank of Baroda - Retail</option>
                 <option value="HDFC">HDFC Bank</option>
                 <option value="CORP">Corporation Bank</option>
@@ -200,7 +201,9 @@ function disableEmptyInputs(form) {
     </tr>
     <tr>
         <td colspan='40'>Account Number:</td>
-<!--        <td><input type="text" name="account_number" size="25" value=""></td>-->
+<!--        <td><input type="text" name="bank_account[account_number]" size="25" value=""></td>-->
+<!--        <td><input type="text" name="bank_account[ifsc]" size="25" value=""></td>-->
+<!--        <td><input type="text" name="bank_account[name]" size="25" value=""></td>-->
     </tr>
     <tr>
         <td colspan="40">Select Auth Type </td>

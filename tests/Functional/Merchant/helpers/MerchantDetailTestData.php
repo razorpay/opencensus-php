@@ -314,6 +314,27 @@ return [
         ],
     ],
 
+    'testMerchantDetailsPatch' => [
+        'request' => [
+            'content' => [
+                'business_operation_address' => 'Test address',
+                'business_operation_state'   => 'Karnataka',
+                'business_operation_city'    => 'Bengaluru',
+                'business_operation_pin'     => '560030'
+            ],
+            'url'     => '/merchants/details',
+            'method'  => 'PATCH',
+        ],
+        'response' => [
+            'content' => [
+                'business_operation_address' => 'Test address',
+                'business_operation_state'   => 'Karnataka',
+                'business_operation_city'    => 'Bengaluru',
+                'business_operation_pin'     => '560030'
+            ],
+        ],
+    ],
+
     'testMerchantUpdateWebsiteDetails' => [
         'request' => [
             'content' => [

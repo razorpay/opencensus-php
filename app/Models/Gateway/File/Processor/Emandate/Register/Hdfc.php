@@ -24,7 +24,7 @@ class Hdfc extends Base
     public function fetchEntities(): PublicCollection
     {
         $begin = $this->gatewayFile->getBegin();
-        $end = $this->gatewayFile->getEnd();
+        $end   = $this->gatewayFile->getEnd();
 
         $payments = $this->repo->payment->fetchPendingEMandateRegistration(static::GATEWAY, $begin, $end);
 
@@ -53,9 +53,7 @@ class Hdfc extends Base
 
         foreach ($payments as $payment)
         {
-            $token = $payment->getGlobalOrLocalTokenEntity();
-
-            $data = Fields::getEMandateRegistrationData($token);
+            $data = Fields::getEmandateRegistrationDataForRegisterFile($payment);
 
             $startDate = Carbon::createFromTimestamp($data[Fields::START_TIMESTAMP], Timezone::IST)
                                ->format('d/m/Y');
@@ -64,18 +62,18 @@ class Hdfc extends Base
                              ->format('d/m/Y');
 
             $row = [
-                Headings::CLIENT_NAME                   => $data[Headings::CLIENT_NAME],
-                Headings::MERCHANT_UNIQUE_REFERENCE_NO  => $data[Headings::MERCHANT_UNIQUE_REFERENCE_NO],
-                Headings::CUSTOMER_NAME                 => $data[Headings::CUSTOMER_NAME],
-                Headings::CUSTOMER_ACCOUNT_NUMBER       => $data[Headings::CUSTOMER_ACCOUNT_NUMBER],
-                Headings::AMOUNT                        => $this->getFormattedAmount($payment->getAmount()),
-                Headings::AMOUNT_TYPE                   => $data[Headings::AMOUNT_TYPE],
-                Headings::START_DATE                    => $startDate,
-                Headings::END_DATE                      => $endDate,
-                Headings::FREQUENCY                     => $data[Headings::FREQUENCY],
-                Headings::MANDATE_SERIAL_NUMBER         => $data[Headings::MANDATE_SERIAL_NUMBER],
-                Headings::MANDATE_ID                    => $data[Headings::MANDATE_ID],
-                Headings::MERCHANT_REQUEST_NO           => $data[Headings::MERCHANT_REQUEST_NO],
+                Headings::CLIENT_NAME                  => $data[Headings::CLIENT_NAME],
+                Headings::CUSTOMER_NAME                => $data[Headings::CUSTOMER_NAME],
+                Headings::CUSTOMER_ACCOUNT_NUMBER      => $data[Headings::CUSTOMER_ACCOUNT_NUMBER],
+                Headings::AMOUNT                       => number_format(Fields::INIT_AMOUNT, 2, '.', ''),
+                Headings::AMOUNT_TYPE                  => $data[Headings::AMOUNT_TYPE],
+                Headings::START_DATE                   => $startDate,
+                Headings::END_DATE                     => $endDate,
+                Headings::FREQUENCY                    => $data[Headings::FREQUENCY],
+                Headings::MANDATE_ID                   => $data[Headings::MANDATE_ID],
+                Headings::MERCHANT_UNIQUE_REFERENCE_NO => $data[Headings::MERCHANT_UNIQUE_REFERENCE_NO],
+                Headings::MANDATE_SERIAL_NUMBER        => $data[Headings::MANDATE_SERIAL_NUMBER],
+                Headings::MERCHANT_REQUEST_NO          => $data[Headings::MERCHANT_REQUEST_NO],
             ];
 
             $rows[] = $row;

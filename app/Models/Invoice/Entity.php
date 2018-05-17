@@ -14,8 +14,8 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Address;
 use RZP\Models\Customer;
-use RZP\Models\LineItem;
 use RZP\Models\FileStore;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Plan\Subscription;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -62,6 +62,17 @@ class Entity extends Base\PublicEntity
     const SMS_STATUS                = 'sms_status';
     const DESCRIPTION               = 'description';
     const MERCHANT_LABEL            = 'merchant_label';
+
+    /**
+     * Captures the Place of Supply GSTIN code for the invoice. (Ex: '05', '31', '35' etc.)
+     * Value of this field would be valid GSTIN (For India 2 digit numeric number). We can't use state code(such as. BR,
+     * KA etc) because those are not standard yet. For example for Bihar there is 2 state code used by different govt.
+     * departments but both of them point to same GSTIN number.
+     *
+     * Ref: Lib\GSTIN::$gstinToStateCodeMap
+     *
+     */
+    const SUPPLY_STATE_CODE         = 'supply_state_code';
     const TERMS                     = 'terms';
     const NOTES                     = 'notes';
     const COMMENT                   = 'comment';
@@ -215,6 +226,7 @@ class Entity extends Base\PublicEntity
         self::EXPIRE_BY                 => null,
         self::RECEIPT                   => null,
         self::MERCHANT_LABEL            => null,
+        self::SUPPLY_STATE_CODE         => null,
         self::DESCRIPTION               => null,
         self::NOTES                     => [],
         self::COMMENT                   => null,
@@ -268,6 +280,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_START,
         self::BILLING_END,
         self::EXPIRE_BY,
+        self::SUPPLY_STATE_CODE,
         self::CALLBACK_URL,
         self::CALLBACK_METHOD,
     ];
@@ -297,6 +310,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::DATE,
         self::MERCHANT_LABEL,
+        self::SUPPLY_STATE_CODE,
         self::DESCRIPTION,
         self::TERMS,
         self::NOTES,
@@ -361,6 +375,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_END,
         self::TYPE,
         self::GROUP_TAXES_DISCOUNTS,
+        self::SUPPLY_STATE_CODE,
         self::SUBSCRIPTION_STATUS,
         self::USER_ID,
         self::USER,
@@ -401,6 +416,7 @@ class Entity extends Base\PublicEntity
         self::SHORT_URL,
         self::TYPE,
         self::GROUP_TAXES_DISCOUNTS,
+        self::SUPPLY_STATE_CODE,
         self::SUBSCRIPTION_STATUS,
         self::CREATED_AT,
     ];
@@ -421,10 +437,8 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::ORDER_ID,
         self::SUBSCRIPTION_ID,
-        // Later, we will come up with a proper structure to show
-        // fields based on proper auth structure.
-        // TODO: Remove this when the above is implemented
         self::SUBSCRIPTION_STATUS,
+        self::SUPPLY_STATE_CODE,
     ];
 
     protected $casts = [
@@ -518,6 +532,16 @@ class Entity extends Base\PublicEntity
     public function getSmsStatus()
     {
         return $this->getAttribute(self::SMS_STATUS);
+    }
+
+    public function getCustomerId()
+    {
+        return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
+    public function getPublicCustomerId()
+    {
+        return Customer\Entity::getSignedIdOrNull($this->getCustomerId());
     }
 
     public function getCustomerName()
@@ -1011,12 +1035,14 @@ class Entity extends Base\PublicEntity
      */
     protected function getCustomerDetailsAttribute(): array
     {
+        $customerId      = $this->getPublicCustomerId();
         $customerName    = $this->getCustomerName();
         $customerEmail   = $this->getCustomerEmail();
         $customerContact = $this->getCustomerContact();
         $customerGstin   = $this->getCustomerGstin();
 
         $details = [
+            Customer\Entity::ID               => $customerId,
             Customer\Entity::NAME             => $customerName,
             Customer\Entity::EMAIL            => $customerEmail,
             Customer\Entity::CONTACT          => $customerContact,
@@ -1146,15 +1172,38 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    /**
+     * TODO: Move to entity serializer
+     * @param array $array
+     */
     public function setPublicSubscriptionStatusAttribute(array & $array)
     {
         $app = App::getFacadeRoot();
 
+        /** @var BasicAuth $basicAuth */
         $basicAuth = $app['basicauth'];
 
         if ($basicAuth->isProxyOrPrivilegeAuth() === false)
         {
             unset($array[self::SUBSCRIPTION_STATUS]);
+        }
+    }
+
+    /**
+     * TODO: Move to entity serializer
+     * @param array $array
+     */
+    public function setPublicSupplyStateCodeAttribute(array & $array)
+    {
+        $app = App::getFacadeRoot();
+
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = $app['basicauth'];
+
+        // Unset the attribute, only on strictly private auth
+        if ($basicAuth->isStrictPrivateAuth() === true)
+        {
+            unset($array[self::SUPPLY_STATE_CODE]);
         }
     }
 
