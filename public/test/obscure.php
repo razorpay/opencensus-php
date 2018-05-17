@@ -79,8 +79,8 @@ function disableEmptyInputs(form) {
         <td>
             <select name="method">
                 <option value="netbanking">Net Banking</option>
-                <option value="card">Card</option>
-                <option value="wallet" selected>Wallet</option>
+                <option value="card" selected>Card</option>
+                <option value="wallet">Wallet</option>
                 <option value="emi">Emi</option>
                 <option value="upi">UPI</option>
                 <option value="emandate">E-Mandate</option>

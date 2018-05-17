@@ -11,7 +11,6 @@ use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields;
 use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class AmazonpayGatewayTest extends TestCase
@@ -57,9 +56,9 @@ class AmazonpayGatewayTest extends TestCase
         $this->assertTestResponse($wallet);
 
         // We store the callback signature in reference1
-        $this->assertNotNull($wallet[Netbanking::REFERENCE1]);
+        $this->assertNotNull($wallet[WalletEntity::REFERENCE1]);
 
-        $this->assertNotNull($wallet[Netbanking::DATE]);
+        $this->assertNotNull($wallet[WalletEntity::DATE]);
     }
 
     /**
@@ -90,9 +89,9 @@ class AmazonpayGatewayTest extends TestCase
         $this->assertTestResponse($wallet, __FUNCTION__ . 'Wallet');
 
         // We store the callback signature in reference1
-        $this->assertNotNull($wallet[Netbanking::REFERENCE1]);
+        $this->assertNotNull($wallet[WalletEntity::REFERENCE1]);
 
-        $this->assertNotNull($wallet[Netbanking::DATE]);
+        $this->assertNotNull($wallet[WalletEntity::DATE]);
     }
 
     /**
@@ -328,7 +327,7 @@ class AmazonpayGatewayTest extends TestCase
 
         $refund = $this->getDbLastEntityPublic(ConstantsEntity::REFUND);
 
-        $this->assertEquals(Refund\Status::INITIATED, $refund[Refund\Entity::STATUS]);
+        $this->assertEquals(Refund\Status::PROCESSED, $refund[Refund\Entity::STATUS]);
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
@@ -435,16 +434,20 @@ class AmazonpayGatewayTest extends TestCase
         $this->doAuthCaptureAndRefundPayment($this->payment);
 
         $refund = $this->getDbLastRefund(ConstantsEntity::REFUND);
+        $this->assertEquals(Refund\Status::PROCESSED, $refund->getStatus());
 
-        $this->assertEquals(Refund\Status::INITIATED, $refund->getStatus());
+        $gatewayHit = false;
 
         $this->mockServerContentFunction(
-            function(&$content) use ($refund)
+            function(& $content) use (& $gatewayHit, $refund)
             {
-                 $content = str_replace('random_reference_id', $refund->getId(), $content);
+                $gatewayHit = true;
             });
 
+        // Since the refund is processed, we are checking the gateway is not hit.
+        // TODO: We may need to change this to verify refund
         $this->retryFailedRefund($refund->getPublicId());
+        $this->assertFalse($gatewayHit);
 
         $this->assertEquals(Refund\Status::PROCESSED, $refund->reload()->getStatus());
     }
@@ -454,20 +457,30 @@ class AmazonpayGatewayTest extends TestCase
         $this->doAuthCaptureAndRefundPayment($this->payment);
 
         $refund = $this->getDbLastRefund(ConstantsEntity::REFUND);
+        $this->assertEquals(Refund\Status::PROCESSED, $refund->getStatus());
 
-        $this->assertEquals(Refund\Status::INITIATED, $refund->getStatus());
+        $refund->setStatus(Refund\Status::FAILED);
+        $refund->save();
 
-        $this->mockServerContentFunction(function(&$content) use ($refund)
-        {
-            $content = str_replace(['random_reference_id', 'Completed'],
-                                   [$refund->getId(), 'Declined'],
-                                   $content);
-        });
+        $gatewayHit = false;
+
+        $this->mockServerContentFunction(
+            function(& $content) use (& $gatewayHit, $refund)
+            {
+                $gatewayHit = true;
+
+                $content = str_replace(['random_reference_id', 'Completed'],
+                                       [$refund->getId(), 'Declined'],
+                                       $content);
+            });
 
         $this->retryFailedRefund($refund->getPublicId());
 
-        // TODO: Move this failed
-        $this->assertEquals(Refund\Status::INITIATED, $refund->reload()->getStatus());
+        $this->assertTrue($gatewayHit);
+
+        $walletEntity = $this->getDbEntities(ConstantsEntity::WALLET);
+
+        $this->assertEquals(Refund\Status::PROCESSED, $refund->reload()->getStatus());
     }
 
     // ------------------------------------------------- Helpers -------------------------------------------------------

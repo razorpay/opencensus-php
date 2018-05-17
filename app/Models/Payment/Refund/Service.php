@@ -705,7 +705,7 @@ class Service extends Base\Service
                 //
                 // Every combination of gateway / refund needs to be processed
                 // Get the appropriate refunds and pass them as part of the refund
-                // Get refunds that are in [failed, initiated] state and those that have not been
+                // Get refunds that have failed and those that have not been
                 // retried more than 3. Post every retry update last retried at.
                 //
                 $refunds = $this->repo

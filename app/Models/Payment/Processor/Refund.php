@@ -554,18 +554,7 @@ trait Refund
                 $this->callGatewayFunction(Payment\Action::REFUND, $data);
             }
 
-            if (in_array($data['payment']['gateway'], Payment\Gateway::REFUND_INITIATED_GATEWAYS, true))
-            {
-                //
-                // For some gateways like AmazonPay, the returned refund response is initiated,
-                // and we are notified of the status as processed or failed asynchronously.
-                //
-                $this->refund->setStatus(Payment\Refund\Status::INITIATED);
-            }
-            else
-            {
-                $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
-            }
+            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
 
             $gatewayRefunded = true;
         }

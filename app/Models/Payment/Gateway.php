@@ -119,16 +119,6 @@ class Gateway
     ];
 
     /**
-     * List of gateways that mark the refund as initiated first,
-     * and then share a response with us via a notification system
-     * or via verifyRefund or any other asynchronous form to tell
-     * us that the refund is actually processed or failed.
-     */
-    const REFUND_INITIATED_GATEWAYS = [
-        self::WALLET_AMAZONPAY
-    ];
-
-    /**
     * Gateways for which we can validate the refunds
     * if they are successful after they are 'initiated'
     */

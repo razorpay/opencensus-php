@@ -627,7 +627,7 @@ class Repository extends Base\Repository
                     ->select($attrs)
                     ->join($pTableName, $rPaymentId, '=', $pId)
                     ->where($rAttempts, '<', $attempts)
-                    ->whereIn($rStatus, [Refund\Status::FAILED, Refund\Status::INITIATED])
+                    ->where($rStatus, '=', Refund\Status::FAILED)
                     ->where($rCreatedAt, '>', 1493323209)
                     ->whereIn($pGateway, $gateways)
                     ->where($rLastAttemptedAt, '<', $timeLimit)

@@ -269,7 +269,7 @@ class Gateway extends Base\Gateway
 
         $gatewayRefund = $this->repo->findByRefundId($entity[Entity::REFUND_ID]);
 
-        $this->updateGatewayRefundEntity($gatewayRefund, $entity);
+        $this->updateGatewayRefundEntity($gatewayRefund, $entity, false);
 
         return ($entity[Entity::STATUS_CODE] === Status::COMPLETED);
     }
@@ -355,7 +355,6 @@ class Gateway extends Base\Gateway
         //
         $response = $this->getRelevantRefundDetail($response);
 
-        // TODO: Is this necessary?
         $this->assertRefundPaymentIdAndAmount($input, $response);
 
         $attributesToSave = $this->getRefundResponseAttributesToSave($response);
@@ -515,13 +514,8 @@ class Gateway extends Base\Gateway
 
         if ($throwException === true)
         {
-            //
-            // Throwing an exception here automatically sets the refund to failed
-            // No need to trace, as it is already traced in the class mentioned below
-            // @see \RZP\Models\Payment\Processor\Refund.php #563
-            //
             throw new GatewayErrorException(
-                ErrorCode::BAD_REQUEST_REFUND_FAILED,
+                ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
                 null,
                 null,
                 $response);
@@ -919,12 +913,12 @@ class Gateway extends Base\Gateway
         {
             $refund = $input['GetRefundDetailsResult']['RefundDetails'];
 
-            $output['error'] = false;
-
             $output['entity'] = [
                 Entity::REFUND_ID              => $refund[ResponseFields::REFUND_REF_ID],
                 Entity::STATUS_CODE            => $refund[ResponseFields::REFUND_STATUS][ResponseFields::REFUND_STATE],
             ];
+
+            $output['error'] = false;
         }
 
         return $output;
