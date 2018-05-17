@@ -91,6 +91,7 @@ class Core extends Base\Core
             $data += [
                 Entity::BANK           => $order->getBank(),
                 Entity::ACCOUNT_NUMBER => $order->getMaskedAccountNumber(),
+                Entity::METHOD         => $order->getMethod(),
             ];
         }
         else if ($order->getBank() !== null)
