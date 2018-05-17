@@ -122,6 +122,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
   const merchant = model.merchant;
   const isDetailsLoading = !Object.keys(toJS(merchant.details)).length;
   const isFeaturesLoading = !Object.keys(toJS(merchant.features)).length;
+  const isAdminsLoading = !Object.keys(toJS(merchant.adminsMap)).length;
 
   /* Confirmation Messages */
   const toggleArchiveMerchantCM = function() {
@@ -437,10 +438,16 @@ const ActionsList = ({ model, merchantId, actions }) => {
           </div>
         </ShowWhen>
         <ShowWhen permission="edit_merchant">
-          <div onClick={isDetailsLoading ? null : actions.EditMerchant}>
+          <div
+            onClick={
+              isAdminsLoading || isDetailsLoading ? null : actions.EditMerchant
+            }
+          >
             Edit Merchant
             <i class="pull-right i i-edit-form" />
-            {isDetailsLoading && <div class="dot-loader">.</div>}
+            {(isAdminsLoading || isDetailsLoading) && (
+              <div class="dot-loader">.</div>
+            )}
           </div>
         </ShowWhen>
         <ShowWhen permission="edit_merchant_risk_threshold">
