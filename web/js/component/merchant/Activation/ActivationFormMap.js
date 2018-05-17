@@ -305,13 +305,25 @@ const bankAccountFields = [
   {
     name: 'bank_account_number',
     label: 'Account Number',
-    type: 'password',
     info: 'Your company account to which your payments will be settled.',
+    type: 'password',
+    onFocus: e => {
+      document.getElementsByName('bank_account_number')[0].type = 'text';
+    },
+    onBlur: e => {
+      document.getElementsByName('bank_account_number')[0].type = 'password';
+    },
   },
   {
     _name: 'account_no',
     label: 'Re-Enter Account Number',
     info: 'Please re-enter the bank account number.',
+    onFocus: e => {
+      document.querySelector('[data-name="account_no"]').type = 'text';
+    },
+    onBlur: e => {
+      document.querySelector('[data-name="account_no"]').type = 'password';
+    },
   },
   {
     name: 'bank_account_name',

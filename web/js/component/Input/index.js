@@ -132,13 +132,18 @@ export default class Field extends React.PureComponent {
   requiredError = 'Please fill out this field';
   patternError = 'Please enter valid value';
 
-  focus = e => this.setState({ focus: true });
-  blur = e => this.setState({ focus: false, mature: true });
+  focus = e => {
+    this.props.onFocus && this.props.onFocus(e);
+    this.setState({ focus: true });
+  };
+
+  blur = e => {
+    this.props.onBlur && this.props.onBlur(e);
+    this.setState({ focus: false, mature: true });
+  };
   change = e => {
     this.valid();
-    if (this.props.onChange) {
-      this.props.onChange(e);
-    }
+    this.props.onChange && this.props.onChange(e);
 
     if (typeof this.props.info === 'function') {
       let info = this.props.info(e);
@@ -147,7 +152,7 @@ export default class Field extends React.PureComponent {
         // Handle api based information
         if (info.then) {
           this.setState({ infoString: '...' }); // Dummy loader while resolving promise
-          info
+          infoblur
             .then(data => {
               if (data) {
                 this.setState({ infoString: data });
