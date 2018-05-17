@@ -12,13 +12,11 @@ use RZP\Models\Admin\Permission\Name as Permission;
 
 final class Route
 {
-    /*
-     | The order in which routes are defined is very important.
-     | Whenever the order of routes is changed,
-     | make sure to run the full test suite
-     */
-
     protected static $apiRoutes = [
+        // Dev routes
+        'inspector_view_get'                      => ['get',      '_inspector',                                      'GenericController@getInspectorIndex'                               ],
+
+        // App routes
         'account'                                  => ['get',      'account',                                        'PublicController@getAccount'                                       ],
         'checkout'                                 => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                          => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
@@ -1819,6 +1817,7 @@ final class Route
     ];
 
     public static $direct = [
+        'inspector_view_get',
         'batch_upload_form_get',
         'batch_upload_form_validate_file',
         'device_verify',
