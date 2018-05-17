@@ -1,4 +1,4 @@
-import { isPresent } from './rzp-utils';
+import { isPresent, isValidGSTIN } from './rzp-utils';
 
 export const isEmail = email => {
   email = email || '';
@@ -13,6 +13,18 @@ export const isUrlLenient = url => {
   url = url || '';
 
   let urlRegExp = /^(https?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
+  return urlRegExp.test(url);
+};
+
+/*
+* Regex to allow development urls like localhost:8000, localhost, anything that user can put in url.
+* It doesn't allow strange urls like ...., etc. which are not allowed in url in general
+* */
+export const flexibleDevUrl = url => {
+  url = url || '';
+
+  let urlRegExp = /^(http(s?)?:\/\/)?\w+(\.\w+)*(:[0-9]+)?\/?(\/[.\w]*)*$/;
+
   return urlRegExp.test(url);
 };
 
@@ -107,3 +119,21 @@ export const phone = makeValidator(isPhone, 'Invalid Contact');
 export const lenientUrl = makeValidator(isUrlLenient, 'Invalid Url');
 export const deepLink = makeValidator(isDeepLink, 'Invalid Link');
 export const amount = makeValidator(isAmount, 'Invalid amount');
+
+/**
+ * GSTIN Validator for Redux-Form.
+ * @param {String} gstin
+ * @return {String}
+ */
+export function validateGSTIN(gstin) {
+  // No error if field is empty.
+  if (!gstin) return undefined;
+
+  // Return error message if invalid.
+  if (!isValidGSTIN(gstin)) {
+    return 'Invalid GSTIN';
+  }
+
+  // Implicit is better than explicit.
+  return undefined;
+}

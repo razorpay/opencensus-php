@@ -1,17 +1,102 @@
 pipeline:
+  restore_cache:
+    image: razorpay/containers:drone-s3-cache
+    restore: true
+    mount:
+      - docker_cache
+    endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
+    path: /rzp/dashboard/
+    secrets:
+      - aws_access_key_id
+      - aws_secret_access_key
+      - aws_region
+    when:
+      event: push
   build:
     image: plugins/docker
     repo: razorpay/dashboard
     secrets: [docker_username, docker_password, git_token]
     build_args_from_env: [git_token]
+    environment:
+    # Makes sure that the docker volume cache survives this run
+      PLUGIN_STORAGE_PATH: /drone/src/github.com/razorpay/dashboard/docker_cache
     build_args:
      - GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}
     tags: ${DRONE_COMMIT_SHA}
+    compress: true
+    # Ensures that docker prune is called at the end of the build
+    docker:
+      purge: false
     when:
       status: [success]
       event:
         exclude: [deployment]
         include: [push]
+  rebuild-cache:
+    image: razorpay/containers:drone-s3-cache
+    endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
+    path: '/rzp/dashboard/'
+    secrets:
+      - aws_region
+      - aws_access_key_id
+      - aws_secret_access_key
+    rebuild: true
+    mount:
+      - docker_cache
+    when:
+      event: push
+  # This is a trick step to use the artifacts from the above step
+  # Since we have pushed this image above, we can use the same
+  # without pulling it
+  deploy-s3-beta:
+    image: "razorpay/dashboard:${DRONE_COMMIT_SHA}"
+    pull: false
+    environment:
+        - AWS_CDN_BUCKET=betacdn
+        - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
+        - CDN_DASHBOARD_URL=https://betacdn.razorpay.com/dashboard
+    secrets: [AWS_KEY, AWS_SECRET]
+    commands:
+        - cd /app/
+        # Have to re-install npm
+        - apk add nodejs-current nodejs-npm
+        # Requirements for running s3sync.js
+        - npm install multi-glob aws-sdk
+        # Show what all will get synced
+        - ls -laR public/dist/
+        - ls -laR public/js/generated/
+        - ls -laR public/css/generated/
+        - ./s3sync.js
+    when:
+      environment: never
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-s3-prod:
+    image: "razorpay/dashboard:${DRONE_COMMIT_SHA}"
+    pull: false
+    environment:
+        - AWS_CDN_BUCKET=checkout-live
+        - AWS_CLOUDFRONT_DISTRIBUTION_ID=E34MFQ6HI02NUZ
+        - CDN_DASHBOARD_URL=https://cdn.razorpay.com/dashboard
+    secrets: [AWS_KEY, AWS_SECRET]
+    commands:
+        - cd /app/
+        # Have to re-install npm
+        - apk add nodejs-current nodejs-npm
+        # Requirements for running s3sync.js
+        - npm install multi-glob aws-sdk
+        # Show what all will get synced
+        - ls -laR public/dist/
+        - ls -laR public/js/generated/
+        - ls -laR public/css/generated/
+        - ./s3sync.js
+    when:
+      # Disable this step
+      environment: never
+      event:
+        exclude: [push]
+        include: [deployment]
   deploy-beta:
     image: razorpay/drone-kubernetes
     pull: true
@@ -32,6 +117,29 @@ pipeline:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: beta
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-prod:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_prod
+      - server_cert_prod
+      - client_cert_prod
+      - client_key_prod
+    user: drone
+    cluster: prod
+    auth_mode: client-cert
+    deployment: dashboard
+    repo: razorpay/dashboard
+    namespace: dashboard
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: prod
       event:
         exclude: [push]
         include: [deployment]

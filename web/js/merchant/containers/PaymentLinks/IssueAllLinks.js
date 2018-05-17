@@ -57,7 +57,7 @@ export default class IssueAllLinksModal extends Component {
         <form class="form-horizontal">
           <div class="modal-body">
             <p>Are you sure to issue all links? </p>
-            <div class="rzpCheckbox">
+            <div class="rzpCheckbox next">
               <Field
                 name="sms_notify"
                 id="sms_notify"
@@ -69,7 +69,7 @@ export default class IssueAllLinksModal extends Component {
               </label>
             </div>
 
-            <div class="rzpCheckbox">
+            <div class="rzpCheckbox next">
               <Field
                 name="email_notify"
                 id="email_notify"

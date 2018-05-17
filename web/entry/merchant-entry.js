@@ -1,25 +1,24 @@
-function prefixCdn(url) {
-  prefix = '';
-  var match = location.hostname.match(/(.+dashboard)?\.razorpay\.com$/);
-  if (location.protocol === 'https:' && match) {
-    prefix =
-      'https://' + (match[1] ? 'beta' : '') + 'cdn.razorpay.com/dashboard';
-  }
-  return prefix + '/dist/' + url;
-}
+(function() {
+  var base = Array.prototype.slice
+    .call(document.querySelectorAll('script[src]'), -1)[0]
+    .src.replace(/[^\/]+$/, '');
 
-// TODO: Make common utilty folder for admin and merchant(refer same fn. in admin-entry.js)
-function appendLink(src) {
-  var link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = src;
-  document.documentElement.appendChild(link);
-}
+  var appendLink = function(src) {
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = src;
+    document.documentElement.appendChild(link);
+  };
 
-document.write('<script src="' + prefixCdn('vendor_m.js') + '"></script>');
-document.write('<script src="' + prefixCdn('merchant.js') + '"></script>');
+  // polyfills for ie 10/11
+  document.write(
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.min.js"></script>'
+  );
 
-appendLink(prefixCdn('css/merchant.css'));
-appendLink(
-  'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
-);
+  document.write('<script src="' + base + 'vendor_m.js"></script>');
+  document.write('<script src="' + base + 'merchant.js"></script>');
+  appendLink(base + 'css/merchant.css');
+  appendLink(
+    'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
+  );
+})();

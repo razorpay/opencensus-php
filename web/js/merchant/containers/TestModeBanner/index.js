@@ -4,11 +4,16 @@ import { Link } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'rzp/utils/localStorage';
 import Banner from 'rzp/ui/Banner';
+import { trackLinkClick } from './ga';
 
 @connect(state => state.session)
 export default class TestModeBanner extends Component {
   switchToLiveMode = () => {
-    LocalStorageService.setItem('rzp_mode', 'live');
+    const { user } = this.props;
+
+    trackLinkClick('Swith - Mode');
+
+    LocalStorageService.setItem(`rzp_mode--${user.current}`, 'live');
     window.location.reload();
   };
 
@@ -33,8 +38,13 @@ export default class TestModeBanner extends Component {
             <ShowWhen myRole="owner manager admin">
               <span>
                 {' '}
-                <Link to="/activation">Activate your account</Link> to start
-                making live transactions.
+                <Link
+                  to="/activation"
+                  onClick={() => trackLinkClick('Go To - Activation Form')}
+                >
+                  Activate your account
+                </Link>{' '}
+                to start making live transactions.
               </span>
             </ShowWhen>
           )}

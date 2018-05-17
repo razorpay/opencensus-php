@@ -17,8 +17,20 @@ class TraceCode
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
     const SLACK_QUERY_RESPONSE                      = 'SLACK_QUERY_RESPONSE';
 
+    const ADMIN_ACTION_SLACK_LOG                    = 'ADMIN_ACTION_SLACK_LOG';
+    const SLACK_QUERY_LOG                           = 'SLACK_QUERY_LOG';
+    const SLACK_DATA_EXPORT_LOG                     = 'SLACK_DATA_EXPORT_LOG';
+
     // Request made to API has failed
     const API_REQUEST_FAILURE                       = 'API_REQUEST_FAILURE';
+
+    const USER_LOGIN                                = 'USER_LOGIN';
+    const SWITCH_MERCHANT                           = 'SWITCH_MERCHANT';
+    const USER_LOGOUT                               = 'USER_LOGOUT';
+
+    const ADMIN_LOGIN                               = 'ADMIN_LOGIN';
+    const ADMIN_LOGOUT                              = 'ADMIN_LOGOUT';
+    const ADMIN_AS_MERCHANT                         = 'ADMIN_AS_MERCHANT';
 
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
@@ -29,8 +41,9 @@ class TraceCode
     /**
      * Translate event code to message
      *
-     * @param $eventCode event code
-     * @return
+     * @param  string $code
+     *
+     * @return string
      */
     public static function getMessage($code)
     {

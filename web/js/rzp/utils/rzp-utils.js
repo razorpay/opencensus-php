@@ -361,7 +361,7 @@ export const getEventCategoryFromPath = pathname => {
     case 'virtualaccounts':
       return 'Dashboard - Smart Collect';
     default:
-      return null;
+      return 'Dashboard - Home';
   }
 };
 
@@ -438,9 +438,19 @@ export const arrayToCsvDataUrl = array => {
 };
 
 /**
+ * @param {*} url
+ * Check if valid secure production URL (i.e, HTTPS)
+ */
+export const checkIfHTTPS = url => {
+  const regex = /^https:\/\//i;
+
+  return regex.test(url);
+};
+
+/**
  *
  * @param {*} url
- * Add 'http' to the URL is not available
+ * Add 'http' to the URL if http/https not there
  */
 export const autoPrefixUrls = url => {
   const regex = /^https?:\/\//i;
@@ -466,6 +476,18 @@ export const isWebkit =
     : false;
 
 export { acronyms, shortenText };
+
+/**
+ *Get human readable file size
+ * @param {*} fileSize in bytes in Binary prefixes
+ */
+export const readableFileSize = bytes => {
+  const sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+
+  if (!bytes) return `0 bytes`;
+  var e = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, e)).toFixed(2)} ${sizes[e]}`;
+};
 
 /**
  * Method to create a query string separated by | instead of &
@@ -497,4 +519,44 @@ export const getKeysSeparatedByPipe = params => {
  **/
 export const trim = str => {
   return str.replace(/\s+/g, '');
+};
+
+export const pluralize = (str, length) => {
+  return length > 1 ? `${str}s` : str;
+};
+/**
+ * Returns whether or not a GSTIN is valid.
+ * @param {String} gstin
+ * @return {Boolean}
+ */
+export const isValidGSTIN = gstin => {
+  // If GSTIN is not provided or it isn't 15-char long, it is invalid.
+  if (!gstin || gstin.length !== 15) {
+    return false;
+  }
+
+  /**
+   * 1st character ∈ {0,1,2,3} (3 for future)
+   * 2nd character ∈ {0...9}
+   * 3rd - 7th characters are alphabets
+   * 8th - 11th characters are numbers
+   * 12th character is an alphabet
+   * 13th character is a number
+   * 14th character is “Z”
+   * 15th character could be anything (alphabet or number)
+   */
+  let regex = /^[0123][0-9][a-z]{5}[0-9]{4}[a-z][0-9][z][a-z0-9]$/gi;
+  return regex.test(gstin);
+};
+
+export const subString = (str, length) => {
+  if (!str) {
+    return str;
+  }
+
+  if (str.length > length) {
+    return `${str.substr(0, length)} ...`;
+  } else {
+    return str;
+  }
 };

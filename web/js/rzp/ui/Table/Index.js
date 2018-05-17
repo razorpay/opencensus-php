@@ -9,6 +9,7 @@ export default ({
   limit,
   loading,
   progressLoader = false,
+  tableStyle = null,
 }) => {
   let rowItems = [];
 
@@ -53,7 +54,7 @@ export default ({
 
   return (
     <div class="table-responsive">
-      <table class={`table table-hover ${className}`}>
+      <table class={`table table-hover ${className}`} style={tableStyle}>
         {showHeaders ? (
           <thead>
             <tr>

@@ -9,6 +9,8 @@ import Credits from 'merchant/containers/Credits/List';
 import Referrals from 'merchant/containers/Referrals/List';
 import TeamManagement from 'merchant/containers/Team';
 
+import { trackLinkClick } from './ga';
+
 export default class MyAccount extends Component {
   render() {
     return (
@@ -16,7 +18,12 @@ export default class MyAccount extends Component {
         <header id="myaccount-header">
           <NavLink to="/profile">Profile</NavLink>
           <ShowWhen myRole="owner manager admin">
-            <NavLink to="/activation">Activation</NavLink>
+            <NavLink
+              to="/activation"
+              onClick={trackLinkClick('Go To - Activation form')}
+            >
+              Activation
+            </NavLink>
           </ShowWhen>
 
           <ShowWhen notMyRole="sellerapp support">

@@ -69,8 +69,16 @@ export default class User {
     return !!parseInt(this.activated);
   }
 
+  get needsClarification() {
+    return this.activation_status === 'needs_clarification';
+  }
+
   get isSubmitted() {
     return !!parseInt(this.submitted);
+  }
+
+  get isRejected() {
+    return this.activation_status === 'rejected';
   }
 
   get isMarketplaceEnabled() {
@@ -96,8 +104,9 @@ export default class User {
     // return this.isFeatureEnabled('report_v2');
   }
 
+  // TODO: Remove this code when confirmed no rollbacks
   get isNewAnalyticsEnabled() {
-    return (this.tags || []).indexOf('New_Analytics') !== -1;
+    return true;
   }
 
   get enabledFeatures() {
@@ -106,5 +115,23 @@ export default class User {
     return (this.features || []).map(object => {
       return object[pluckKey];
     });
+  }
+
+  get isOldBatchEnabled() {
+    // TODO: temp fix for upper/lower case tags
+    return (
+      (this.tags.map(t => t.toLowerCase()) || []).indexOf(
+        'batch_import_links'
+      ) !== -1
+    );
+  }
+
+  get isNewBatchEnabled() {
+    // TODO: temp fix for upper/lower case tags
+    return (
+      (this.tags.map(t => t.toLowerCase()) || []).indexOf(
+        'batch_import_links_v2'
+      ) !== -1
+    );
   }
 }

@@ -149,7 +149,7 @@ function openSettlementSchedule() {
   window.open(`/admin/entity/schedule/live/${this.schedule_id}`);
 }
 
-function _getCreditsFields(deleteCreditLogs) {
+function _getCreditsFields() {
   // Delete btn is based on mode(state of component where this table is used )
   return mode => {
     return [
@@ -158,17 +158,6 @@ function _getCreditsFields(deleteCreditLogs) {
       ['Type', item => item.type],
       ['Value', item => item.value],
       ['Created At', item => formatDate(item.created_at)],
-      [
-        'Delete',
-        item => (
-          <div
-            class="link danger"
-            onClick={() => deleteCreditLogs(item.id, mode)}
-          >
-            Delete
-          </div>
-        ),
-      ],
     ];
   };
 }
@@ -394,7 +383,6 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Features',
-      permission: 'view_merchant_features',
       children: () => (
         <FeaturesDetails
           features={features}
@@ -416,7 +404,6 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Balance',
-      permission: 'view_merchant_balance',
       value: Object.keys(balanceDetails).length
         ? () => (
             <div style={{ width: '80%', borderLeft: '1px solid #edf1f2' }}>
@@ -643,6 +630,16 @@ export function getDetailsViewMap(model) {
       value: titleCase(details.fee_model),
     },
     {
+      label: 'Auto Refund Delay',
+      value: details.auto_refund_delay_val
+        ? details.auto_refund_delay_val + ' ' + details.auto_refund_delay_type
+        : '5 Days',
+    },
+    {
+      label: 'Auto Capture Late Auth',
+      value: _getBoolIcon(details.auto_capture_late_auth),
+    },
+    {
       label: 'Settlement Schedule',
       children: () => (
         <div>
@@ -691,7 +688,6 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Pricing Plan',
-      permission: 'view_merchant_pricing',
       children: () => (
         <div>
           <EntityRow label="Plan Id" value={pricingPlans.id} />
@@ -745,7 +741,7 @@ export function getDetailsViewMap(model) {
         <CreditsDetails
           creditsLogs={creditsLogs}
           fetchCreditsLogs={model.fetchCreditsLogs}
-          getCreditsFields={_getCreditsFields(model.deleteCreditLogs)}
+          getCreditsFields={_getCreditsFields()}
         />
       ),
     },

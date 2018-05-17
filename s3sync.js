@@ -42,7 +42,9 @@ glob(
   (error, files) => {
     files.forEach(file => {
       var fileParams = {
-        ...params,
+        Bucket: params.Bucket,
+        ACL: params.ACL,
+        CacheControl: params.CacheControl,
         Key: file.replace(/^public/, 'dashboard'),
         Body: readFileSync(file),
       };

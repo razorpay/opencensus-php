@@ -19,6 +19,7 @@ import Profile from 'admin/profile';
 import MerchantList from 'admin/merchants/MerchantList';
 import PlanList from 'admin/plans/List';
 import GatewayRulesList from 'admin/gatewayrules/List';
+import GatewayDowntimes from 'admin/gatewaydowntimes/List';
 import Entities from 'admin/entities/List';
 import ActionsList from 'admin/adminActions/ActionsList';
 import EmailLogsList from 'admin/emailLogs/EmailLogsList';
@@ -46,6 +47,8 @@ import PermissionsList from 'admin/permissions/List';
 import AuditLog from 'admin/auditlog/List';
 import OrgEntity from 'admin/organizations/Entity';
 import InvitesList from 'admin/invites/List';
+
+import ActivationList from 'admin/activations/List';
 
 import AsyncButton from 'ui/AsyncButton';
 
@@ -97,6 +100,7 @@ export default class App extends Component {
               <Route path="/merchants" component={MerchantList} />
               <Route path="/pricing-plans" component={PlanList} />
               <Route path="/gateway-rules" component={GatewayRulesList} />
+              <Route path="/downtimes" component={GatewayDowntimes} />
               <Route
                 path="/entities/:mode?/:selectedEntity?"
                 component={Entities}
@@ -128,6 +132,8 @@ export default class App extends Component {
               <Route path="/entity/:type/:id" component={GenericEntity} />
 
               <Route path="/invites" component={InvitesList} />
+
+              <Route path="/activation" component={ActivationList} />
 
               <Redirect to="/merchants" />
             </Switch>
@@ -183,8 +189,10 @@ const links = [
   [
     // title, url, permission, icon
     ['Merchants', '/merchants', 'view_all_merchants', 'user-manager'],
+    ['Activations', '/activation', 'view_activation_form'],
     ['Pricing Plans', '/pricing-plans', 'view_pricing_list', 'rupee'],
     ['Gateway Rules', '/gateway-rules', 'view_gateway_rule'],
+    ['Downtimes', '/downtimes', '', 'pulse'],
     ['Entities', '/entities', 'view_all_entity'],
     ['Actions', '/actions', 'view_actions'],
     ['Email Logs', '/email-logs', 'view_email_logs', 'email'],

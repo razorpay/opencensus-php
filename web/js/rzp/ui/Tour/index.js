@@ -1,5 +1,4 @@
 import { Component, Children, cloneElement } from 'react';
-import TetherComponent from 'react-tether';
 
 import scrollTo from 'rzp/utils/scrollTo';
 

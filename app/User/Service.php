@@ -9,20 +9,14 @@ use Input;
 use Queue;
 use Config;
 use Session;
-use Requests;
 use App\Base;
-use App\User;
 use App\Generic;
 use App\Merchant;
 use App\AdminLead;
-use Carbon\Carbon;
-use App\Invitation;
-use App\User\Helper;
+use App\Trace\TraceCode;
 use App\MerchantDetails;
-use App\Mailers\UserMailer;
 use App\Providers\GenericUser;
 use App\Session as SessionTable;
-use Illuminate\Hashing\BcryptHasher;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Foundation\Application;
 
@@ -40,6 +34,8 @@ class Service extends Base\Service
      */
     protected $app;
 
+    protected $trace;
+
     /**
      * @var Store
      */
@@ -51,6 +47,8 @@ class Service extends Base\Service
 
         $this->app = $app;
 
+        $this->trace = $app['trace'];
+
         $this->cache = $app['cache'];
     }
 
@@ -60,6 +58,10 @@ class Service extends Base\Service
      * HACKING.md for a bit more details.
      *
      * @param  array  $input [description]
+     *
+     * @return array
+     *
+     * @throws \Razorpay\Api\Errors\BadRequestError
      */
     public function register($input)
     {
@@ -81,6 +83,8 @@ class Service extends Base\Service
 
     /**
      * @param  array  $input [description]
+     *
+     * @return array
      */
     public function login(array $input)
     {
@@ -103,6 +107,16 @@ class Service extends Base\Service
                 'id' => $genericUser->id,
             ];
         }
+
+        $user = Auth::user();
+
+        $traceData = [
+            'id'          => $user->id,
+            'email'       => $user->email,
+            'merchant_id' => $user->currentMerchant()->id,
+        ];
+
+        $this->trace->info(TraceCode::USER_LOGIN, $traceData);
 
         return [$error, $res];
     }
@@ -144,6 +158,14 @@ class Service extends Base\Service
             if ($currentMerchant !== null)
             {
                 Session::put('current_merchant_id', $currentMerchant->id);
+
+                $traceData = [
+                    'id'          => $genericUser->id,
+                    'email'       => $genericUser->email,
+                    'merchant_id' => $currentMerchant->id,
+                ];
+
+                $this->trace->info(TraceCode::SWITCH_MERCHANT, $traceData);
 
                 return [];
             }

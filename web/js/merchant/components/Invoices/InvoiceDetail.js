@@ -128,6 +128,20 @@ export default props => {
                     />
                   )}
                 />
+                <ShowWhen featureEnabled="Invoice_Partial_Payments">
+                  <EntityDetailRow
+                    label="Partial Payment"
+                    value={() => (
+                      <i
+                        class={
+                          invoice.partial_payment
+                            ? 'i i-check text-success'
+                            : 'i i-close text-danger'
+                        }
+                      />
+                    )}
+                  />
+                </ShowWhen>
                 <EntityDetailRow
                   label="Status"
                   value={() => <InvoiceStatusLabel status={invoice.status} />}

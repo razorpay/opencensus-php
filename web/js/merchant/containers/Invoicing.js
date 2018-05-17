@@ -16,11 +16,7 @@ export default class InvoicingContainer extends Component {
       <tabbed-container>
         <header id="invoicing-header">
           <NavLink to="/invoices">Invoices</NavLink>
-          <ShowWhen notMyRole="sellerapp" featureEnabled="Invoice">
-            <span>
-              <NavLink to="/items">Items</NavLink>
-            </span>
-          </ShowWhen>
+          <NavLink to="/items">Items</NavLink>
         </header>
         <TestModeBanner />
         <content>

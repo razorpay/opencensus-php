@@ -11,33 +11,12 @@ import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { saveGST } from 'merchant/modules/profile';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
-
-// Conditional field-level validation has some bug https://github.com/erikras/redux-form/issues/3012.
-// So using the form-level validation
-function validate(values) {
-  const errors = {};
-  const errorMsg = 'Must be 15 characters';
-
-  let { gst_type, p_gstin, gstin } = values;
-
-  if (gst_type === 'p_gstin') {
-    if (!p_gstin || p_gstin.length !== 15) {
-      errors.p_gstin = errorMsg;
-    }
-  } else if (gst_type === 'gstin') {
-    if (!gstin || gstin.length !== 15) {
-      errors.gstin = errorMsg;
-    }
-  }
-
-  return errors;
-}
+import { required, validateGSTIN } from 'rzp/utils/validators';
 
 const selector = formValueSelector('newGST');
 @connect(
   state => {
     return {
-      selectedGSTType: selector(state, 'gst_type'),
       merchant_gst: state.profile.merchant_gst,
       rzp_gst: state.profile.rzp_gst,
     };
@@ -50,7 +29,6 @@ const selector = formValueSelector('newGST');
 )
 @reduxForm({
   form: 'newGST',
-  validate,
 })
 export default class AddGST extends Component {
   state = {};
@@ -61,8 +39,7 @@ export default class AddGST extends Component {
     let { merchant_gst } = this.props;
 
     let initialValues = {
-      gst_type:
-        !merchant_gst.gstin && !merchant_gst.p_gstin ? 'p_gstin' : 'gstin',
+      gst_type: 'gstin',
     };
 
     this.props.initialize({
@@ -108,7 +85,6 @@ export default class AddGST extends Component {
       openedFromTopbar,
     } = this.props;
     let isNew = !merchant_gst.p_gstin && !merchant_gst.gstin;
-    let isPGST = selectedGSTType === 'p_gstin';
 
     return (
       <div>
@@ -183,86 +159,31 @@ export default class AddGST extends Component {
                 Entered GSTIN will appear on invoices that we send to you
               </div>
 
-              <ul class="block-radio-group list-group">
-                <li class="list-group-item">
+              <div class="form-group">
+                <label class="label-required">GSTIN</label>
+                <div>
                   <Field
-                    name="gst_type"
-                    component="input"
-                    type="radio"
-                    id="p_gstin"
-                    value="p_gstin"
-                    disabled={this.props.merchant_gst.p_gstin}
+                    name="gstin"
+                    component={InputField}
+                    class="form-control"
+                    autoFocus={true}
+                    placeholder="19AAAAAA1234YYY"
+                    validate={[required(), validateGSTIN]}
                   />
-                  <label for="p_gstin">
-                    Provisional GSTIN
-                    <i class="pull-right fa fa-check" />
-                  </label>
-                </li>
-                <li class="list-group-item">
-                  <Field
-                    name="gst_type"
-                    component="input"
-                    type="radio"
-                    id="gstin"
-                    value="gstin"
-                  />
-                  <label for="gstin">
-                    GSTIN
-                    <i class="pull-right fa fa-check" />
-                  </label>
-                </li>
-              </ul>
-
-              {isPGST ? (
-                <div class="form-group">
-                  <label class="label-required">Provisional GSTIN</label>
-                  <div>
-                    <Field
-                      name="p_gstin"
-                      component={InputField}
-                      class="form-control"
-                      autoFocus={true}
-                      placeholder="19AAAAAA1234YYY"
-                    />
-                  </div>
-                  <div className="gst-update-note">
-                    <Banner>
-                      <b>Note:</b> {this.gst_success_msg}
-                    </Banner>
-                  </div>
                 </div>
-              ) : (
-                <div class="form-group">
-                  <label class="label-required">GSTIN</label>
-                  <div>
-                    <Field
-                      name="gstin"
-                      component={InputField}
-                      class="form-control"
-                      autoFocus={true}
-                      placeholder="19AAAAAA1234YYY"
-                    />
-                  </div>
-                  <div className="gst-update-note">
-                    <Banner>
-                      <b>Note:</b> {this.gst_success_msg}
-                    </Banner>
-                  </div>
+                <div className="gst-update-note">
+                  <Banner>
+                    <b>Note:</b> {this.gst_success_msg}
+                  </Banner>
                 </div>
-              )}
+              </div>
 
               <div class="help-block">
-                {isPGST ? (
-                  'You can submit your final GSTIN here once you have received it.'
-                ) : (
-                  <span>
-                    Final GSTIN once submitted cannot be updated via dashboard.
-                    To update it, write to us at{' '}
-                    <a href="mailto:support@razorpay.com">
-                      support@razorpay.com
-                    </a>
-                  </span>
-                )}
+                <span>
+                  Final GSTIN once submitted cannot be updated via dashboard. To
+                  update it, write to us at{' '}
+                  <a href="mailto:support@razorpay.com">support@razorpay.com</a>
+                </span>
               </div>
 
               <div class="Modal__actions">

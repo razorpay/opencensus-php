@@ -339,6 +339,23 @@ const ActionsList = ({ model, merchantId, actions }) => {
     window.open(`/admin/merchant/${merchantId}/login`, '_blank');
   }
 
+  function grantKeyAccessToMerchant() {
+    return adminPut({
+      url: `live/merchants/${merchantId}/update_key_access`,
+      data: {
+        has_key_access: true,
+      },
+    }).then(response => {
+      if (response) {
+        if (isWorkflow(response)) {
+          return;
+        }
+        notifySuccess('Merchant granted key access successfully.');
+        model.updateDetails(response);
+      }
+    });
+  }
+
   return (
     <aside class="">
       <div class="heading">Actions</div>
@@ -389,6 +406,11 @@ const ActionsList = ({ model, merchantId, actions }) => {
             <AsyncButton
               onClick={toggleLockOnActivationForm}
               pendingClass="btn-pending"
+              confirm={
+                !merchant.details.merchant_details.locked &&
+                !merchant.details.merchant_details.submitted &&
+                'Merchant has not submitted the form yet. Do you still want to lock the form?'
+              }
             >
               {merchant.details.merchant_details.locked ? 'Unlock' : 'Lock'}{' '}
               Activation Form
@@ -460,6 +482,23 @@ const ActionsList = ({ model, merchantId, actions }) => {
         <ShowWhen permission="add_merchant_credits">
           <div onClick={actions.AddCredits}>Add Credits</div>
         </ShowWhen>
+        {//only for activated merchants
+        merchant.details.activated == 1 && (
+          <ShowWhen permission="edit_merchant_key_access">
+            {/* provide access only when it's not available */}
+            {merchant.details.has_key_access ? null : (
+              <AsyncButton
+                onClick={grantKeyAccessToMerchant}
+                pendingClass="btn-pending"
+                confirm="Are you sure you want to Grant Key Access to this merchant?"
+              >
+                Grant Key Access
+                <span class="spin-btn" />
+                <i class="pull-right i i-hand-stop" />
+              </AsyncButton>
+            )}
+          </ShowWhen>
+        )}
       </div>
 
       <div class="group">
@@ -611,10 +650,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
           <i class="pull-right i i-terminal" />
         </div>
 
-        <div onClick={actions.AssignBanks}>
-          Assign Banks
-          <i class="pull-right i i-bank" />
-        </div>
+        <ShowWhen permission="assign_merchant_banks">
+          <div onClick={actions.AssignBanks}>
+            Assign Banks
+            <i class="pull-right i i-bank" />
+          </div>
+        </ShowWhen>
         <ShowWhen permission="merchant_autofill_form">
           <div
             onClick={isDetailsLoading ? null : actions.AutoFillActivationForm}

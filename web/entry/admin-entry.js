@@ -1,21 +1,16 @@
-function prefixCdn(url) {
-  prefix = '';
-  var match = location.hostname.match(/(.+dashboard)?\.razorpay\.com$/);
-  if (location.protocol === 'https:' && match) {
-    prefix =
-      'https://' + (match[1] ? 'beta' : '') + 'cdn.razorpay.com/dashboard';
-  }
-  return prefix + '/dist/' + url;
-}
+(function() {
+  var base = Array.prototype.slice
+    .call(document.querySelectorAll('script[src]'), -1)[0]
+    .src.replace(/[^\/]+$/, '');
 
-function appendLink(src) {
-  var link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = src;
-  document.documentElement.appendChild(link);
-}
+  var appendLink = function(src) {
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = src;
+    document.documentElement.appendChild(link);
+  };
 
-document.write('<script src="' + prefixCdn('vendor_a.js') + '"></script>');
-document.write('<script src="' + prefixCdn('admin.js') + '"></script>');
-
-appendLink(prefixCdn('css/admin.css'));
+  document.write('<script src="' + base + 'vendor_a.js"></script>');
+  document.write('<script src="' + base + 'admin.js"></script>');
+  appendLink(base + 'css/admin.css');
+})();
