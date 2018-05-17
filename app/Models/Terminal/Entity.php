@@ -62,6 +62,7 @@ class Entity extends Base\PublicEntity
 
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
+    const BANKING_TYPES                 = 'banking_types';
 
     const DELETED                       = 'deleted';
     const DELETED_AT                    = 'deleted_at';
@@ -167,6 +168,7 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = [
         'method',
+        'banking_type'
     ];
 
     protected static $modifiers = [
@@ -221,6 +223,7 @@ class Entity extends Base\PublicEntity
 
     protected $appends = [
         self::SHARED,
+        self::BANKING_TYPES
     ];
 
     protected $publicSetters = [
@@ -413,16 +416,9 @@ class Entity extends Base\PublicEntity
      *
      * @return bool
      */
-    public function isCorporate()
+    public function isBankingTypeBoth()
     {
-        $type = $this->getAttribute(self::CORPORATE);
-
-        if (($type === 1) or ($type === 2))
-        {
-            return true;
-        }
-
-        return false;
+        return ($this->getAttribute(self::CORPORATE) === '2');
     }
 
     // ---------------------- SETTERS ----------------------
@@ -549,6 +545,11 @@ class Entity extends Base\PublicEntity
     protected function getSharedAttribute()
     {
         return $this->isShared();
+    }
+
+    public function getBankingTypesAttribute()
+    {
+        return BankingType::getBankingTypes($this->getAttribute(self::CORPORATE));
     }
 
     // ---------------------- END ACCESSORS ----------------------

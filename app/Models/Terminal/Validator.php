@@ -498,6 +498,7 @@ class Validator extends Base\Validator
             $input[Entity::SHARED],
             $input[Entity::CATEGORY],
             $input[Entity::CORPORATE],
+            $input[Entity::BANKING_TYPES],
             $input[Entity::NETBANKING],
             $input[Entity::EMANDATE],
             $input[Entity::MERCHANT_ID],
