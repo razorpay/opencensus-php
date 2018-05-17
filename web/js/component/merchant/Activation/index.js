@@ -50,7 +50,6 @@ export default class ActivationWizard extends React.Component {
     dirty: {},
     tabs: [],
     same_address: '1',
-    app_type: this.props.data && this.props.data.business_website ? '0' : '1',
     has_gstin: this.props.data && this.props.data.gstin ? '0' : '1',
     account_no: '',
     activeTab: 0, // Fallback for all cases.

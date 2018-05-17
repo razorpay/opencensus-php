@@ -147,48 +147,25 @@ const businessModel = [
     description:
       'We’ll reach out to you as we might require some additional information to avail this feature. Please note that the application for international payments takes longer than usual to process.',
   },
-  [
-    {
-      label: 'Do you have Website/App?',
-      _cmp: Input.Radio,
-      _name: 'app_type',
-      className: 'Input-vTop',
-      options: [
-        'Yes',
-        {
-          label: "We don't have either",
-          description: (
-            <React.Fragment>
-              You can still accept payments through <b>Razorpay Invoices</b> and
-              <b> Razorpay Payment Links</b>. You can request access to other
-              products (<b>Route</b>, <b>Subscription</b>, <b>Smart Collect</b>)
-              once you have a website or app.
-            </React.Fragment>
-          ),
-        },
-      ],
-    },
-    {
-      name: 'business_website',
-      placeholder: 'Enter URL',
-      type: 'url',
-      required: false,
-      description: (
-        <React.Fragment>
-          Your website should have following information easily accessible:
-          <b> About Us</b>,<b> Contact</b>,<b> Privacy Policy</b>,
-          <b> Terms & Conditions</b>, <b>Refund Policy</b> & <b>Pricing</b>.
-          Please refer our{' '}
-          <a href="" target="_blank">
-            Compliance Policies{' '}
-          </a>
-          for more details.
-        </React.Fragment>
-      ),
-      _when: activation => activation.state.app_type !== '1',
-      info: 'Example: https://www.company.com',
-    },
-  ],
+  {
+    label: 'Business Website/App',
+    name: 'business_website',
+    placeholder: 'Enter URL',
+    type: 'url',
+    description: (
+      <React.Fragment>
+        Your website should have following information easily accessible:
+        <b> About Us</b>,<b> Contact</b>,<b> Privacy Policy</b>,
+        <b> Terms & Conditions</b>, <b>Refund Policy</b> & <b>Pricing</b>.
+        Please refer our{' '}
+        <a href="" target="_blank">
+          Compliance Policies{' '}
+        </a>
+        for more details.
+      </React.Fragment>
+    ),
+    info: 'Example: https://www.company.com',
+  },
 ];
 
 const registrationDetails = [
