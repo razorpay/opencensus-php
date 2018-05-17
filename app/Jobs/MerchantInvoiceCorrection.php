@@ -69,15 +69,14 @@ class MerchantInvoiceCorrection extends Job
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException(
-                    $e,
-                    Trace::CRITICAL,
+            $this->trace->error(
                     TraceCode::MERCHANT_INVOICE_CORRECTION_FAILED,
                     [
                         'merchant_id'   => $this->merchantId,
                         'month'         => $this->month,
                         'year'          => $this->year,
                         'mode'          => $this->mode,
+                        'message'       => $e->getMessage(),
                     ]);
         }
     }

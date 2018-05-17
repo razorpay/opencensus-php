@@ -1051,7 +1051,7 @@
               window.t0 = (new Date()).getTime(); // initial time stamp
 
               function initAnalytics() {
-                analytics.init(['ga'], window.location.hostname.indexOf('razorpay.com') < 0);
+                analytics.init(['ga', 'hotjar'], window.location.hostname.indexOf('razorpay.com') < 0);
                 analytics.track('ga', 'pageview');
               }
 

@@ -18,11 +18,21 @@ class BharatQrPaymentTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->merchant->addFeatures('bharat_qr');
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
 
-        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
         $this->fixtures->merchant->activate();
+
+        $this->fixtures->create('terminal:bharat_qr_terminal');
+
+        $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+
+        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
+
+        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal_upi');
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
     }
@@ -36,6 +46,8 @@ class BharatQrPaymentTest extends TestCase
         $this->ba->directAuth();
 
         $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 100]);
 
         $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
 
@@ -58,9 +70,14 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals(200, $payment['amount']);
         $this->assertEquals('hitachi', $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
 
         $this->assertEquals($bharatQr['payment_id'], $payment['id']);
         $this->assertEquals($bharatQr['expected'], true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('Random Name', $card['name']);
     }
 
     public function testHitachiVerifyAndRefund()
@@ -94,8 +111,6 @@ class BharatQrPaymentTest extends TestCase
         $refund = $this->getLastEntity('hitachi', true);
 
         $this->assertEquals('refund', $refund['action']);
-
-        $this->assertNull($refund['acquirer']);
     }
 
     public function testHitachiBadCheckSum()
@@ -138,11 +153,7 @@ class BharatQrPaymentTest extends TestCase
                 'pricing_plan_id' => '1hDYlICobzOCYt',
             ]);
 
-        $this->qrCode = $this->createVirtualAccount();
-
         $this->ba->directAuth();
-
-        $qrCodeId = substr($this->qrCode['id'], 3);
 
         $content = $this->getMockServer('hitachi')->getBharatQrCallback('tobefilled');
 
@@ -164,8 +175,15 @@ class BharatQrPaymentTest extends TestCase
 
         $this->assertEquals('card', $payment['method']);
         $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
 
         $this->assertEquals($bharatQr['expected'], false);
+
+        $virtualAccount =  $this->getDbLastEntity('virtual_account', 'live');
+
+        $this->assertEquals('10000000000000', $virtualAccount['merchant_id']);
+        $this->assertEquals('ShrdVirtualAcc', $virtualAccount['id']);
+        $this->assertEquals('active', $virtualAccount['status']);
     }
 
     public function testUpiQrPaymentProcess()
@@ -176,9 +194,7 @@ class BharatQrPaymentTest extends TestCase
 
         $request = $this->testData[__FUNCTION__];
 
-        $qrCode = $this->getLastEntity('qr_code', true);
-
-        $qrCodeId = substr($qrCode['id'], 3);
+        $qrCodeId = substr($this->qrCode['id'], 3);
 
         $request['content']['merchantTranId'] = $qrCodeId;
 
@@ -220,9 +236,7 @@ class BharatQrPaymentTest extends TestCase
 
         $request = $this->testData['testUpiQrPaymentProcess'];
 
-        $qrCode = $this->getLastEntity('qr_code', true);
-
-        $qrCodeId = substr($qrCode['id'], 3);
+        $qrCodeId = substr($this->qrCode['id'], 3);
 
         $request['content']['merchantTranId'] = $qrCodeId;
 

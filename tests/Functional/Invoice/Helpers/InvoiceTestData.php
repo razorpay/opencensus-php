@@ -235,26 +235,63 @@ return [
             'url'     => '/invoices',
             'method'  => 'post',
             'content' => [
-                'customer_id' => 'cust_100000customer',
-                'line_items'  => [
+                'customer_id'       => 'cust_100000customer',
+                'line_items'        => [
                     [
                         'name'        => 'Some item name',
                         'description' => 'Some item description',
                         'amount'      => 100000,
                     ]
                 ],
-                'currency'    => 'INR',
-                'date'        => 1480666664,
+                'supply_state_code' => '29',
+                'currency'          => 'INR',
+                'date'              => 1480666664,
             ],
         ],
         'response' => [
             'content' => [
+                'status'       => 'issued',
+                'sms_status'   => 'pending',
+                'email_status' => 'pending',
+                'date'         => 1480666664,
+                'view_less'    => true,
+                'amount'       => 100000
+            ],
+        ],
+    ],
+
+
+    'testCreateInvoiceWithNestedCustomerIdAndDetails' => [
+        'request'  => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'customer'   => [
+                    'id'    => 'cust_100001customer',
+                    'name'  => 'Test Override',
+                    'email' => 'testoverride@razorpay.com',
+                ],
+                'line_items' => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                    ]
+                ],
+                'currency'   => 'INR',
+                'date'       => 1480666664,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id'      => 'cust_100001customer',
+                'customer_details' => [
+                    'id'      => 'cust_100001customer',
+                    'name'    => 'Test Override',
+                    'email'   => 'testoverride@razorpay.com',
+                    'contact' => '1234567890',
+                ],
                 'status'           => 'issued',
-                'sms_status'       => 'pending',
-                'email_status'     => 'pending',
-                'date'             => 1480666664,
-                'view_less'        => true,
-                'amount'           => 100000
             ],
         ],
     ],
@@ -1182,15 +1219,16 @@ return [
     // ------------------------------------------------------------
 
     'testUpdateDraftInvoiceWithAmount' => [
-        'request' => [
-            'url'       => '/invoices/inv_1000000invoice',
-            'method'    => 'patch',
-            'content'   => [
-                'amount' => 1000,
+        'request'   => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'amount'            => 1000,
+                'supply_state_code' => null,
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'amount can be only sent for ecod or link types.',
@@ -1534,6 +1572,41 @@ return [
         ],
     ],
 
+    'testUpdateDraftInvoiceWithNestedCustomerIdAndDetails' => [
+        'request'  => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'customer'   => [
+                    'id'    => 'cust_100000customer',
+                    'name'  => 'Test Override',
+                    'email' => 'testoverride@razorpay.com',
+                ],
+                'line_items' => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                    ]
+                ],
+                'currency'   => 'INR',
+                'date'       => 1480666664,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id'      => 'cust_100000customer',
+                'customer_details' => [
+                    'id'      => 'cust_100000customer',
+                    'name'    => 'Test Override',
+                    'email'   => 'testoverride@razorpay.com',
+                    'contact' => '1234567890',
+                ],
+                'status'           => 'issued',
+            ],
+        ],
+    ],
+
     'testUpdateDraftInvoiceWithCustomerBillingAddressId' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
@@ -1666,11 +1739,37 @@ return [
                 'entity'           => 'invoice',
                 'customer_id'      => null,
                 'customer_details' => [
+                    'id'      => null,
                     'name'    => null,
                     'email'   => null,
                     'contact' => null,
                 ],
                 'status' => 'draft',
+            ],
+        ],
+    ],
+
+    'testUpdateDraftInvoiceUnsetCustomerWithNestedCustomerId' => [
+        'request'  => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'customer' => [
+                    'id' => null,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'inv_1000000invoice',
+                'entity'           => 'invoice',
+                'customer_id'      => null,
+                'customer_details' => [
+                    'name'    => null,
+                    'email'   => null,
+                    'contact' => null,
+                ],
+                'status'           => 'draft',
             ],
         ],
     ],
@@ -2888,14 +2987,17 @@ return [
                     [
                         'id'   => 'inv_1000003invoice',
                         'type' => 'ecod',
+                        'supply_state_code' => '29',
                     ],
                     [
                         'id'   => 'inv_1000002invoice',
                         'type' => 'ecod',
+                        'supply_state_code' => '29',
                     ],
                     [
                         'id'   => 'inv_1000001invoice',
                         'type' => 'link',
+                        'supply_state_code' => '29',
                     ],
                 ]
             ],

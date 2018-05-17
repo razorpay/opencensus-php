@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use phpseclib\Crypt\AES;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Enach\Base;
+use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
 use RZP\Models\Settlement\Holidays;
 
@@ -23,6 +24,12 @@ class Gateway extends Base\Gateway
 
         $input['gateway'] = $this->getGatewayInput($input);
 
+        $content = [
+            Base\Entity::REGISTRATION_DATE => $input['gateway']['next_working_dt']->getTimestamp()
+        ];
+
+        $this->createGatewayPaymentEntity($content, 'authorize');
+
         return $this->callAuthenticationGateway($input);
     }
 
@@ -32,7 +39,12 @@ class Gateway extends Base\Gateway
 
         $authResponse = $this->callAuthenticationGateway($input);
 
-        $this->createGatewayPaymentEntity($authResponse, 'authorize');
+        $enach = $this->repo->findByPaymentIdAndAction(
+            $input['payment']['id'],
+            Action::AUTHORIZE
+        );
+
+        $this->updateGatewayPaymentEntity($enach, $authResponse, false);
 
         $data = [];
 

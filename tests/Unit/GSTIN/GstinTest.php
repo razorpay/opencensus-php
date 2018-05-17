@@ -34,6 +34,30 @@ class GstinTest extends TestCase
         }
     }
 
+    public function testValidStateCode()
+    {
+        $list = $this->testData[__FUNCTION__];
+
+        foreach ($list as $code)
+        {
+            $this->assertTrue(
+                Gstin::isValidStateCode($code),
+                'Failed validity test for GST State Code: ' . $code);
+        }
+    }
+
+    public function testInvalidStateCode()
+    {
+        $list = $this->testData[__FUNCTION__];
+
+        foreach ($list as $code)
+        {
+            $this->assertFalse(
+                Gstin::isValidStateCode($code),
+                'Failed invalid test for GST State Code: ' . $code);
+        }
+    }
+
     /**
      * Asserts the state metadata returned by the lib function.
      *

@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\Hitachi;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
@@ -22,6 +23,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_CARD_INTERCHANGE_TYPE  = 'interchange_type';
     const COLUMN_ISSETTLED              = 'issettled';
 
+    const BHARAT_QR_TERMINAL            = '38R00450';
+
     protected function getPaymentId(array $row)
     {
         // Unsettled rows should be skipped while processing.
@@ -39,7 +42,37 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             
             return null;
         }
-        
+
+        return $this->validatePaymentId($row);
+    }
+
+    /**
+     * Receiving random bharat qr reference number in invoice number,
+     * which is not our payment id. Skipping such rows based on id pattern and terminal check.
+     *
+     * @param array $row
+     * @return mixed|null
+     */
+    protected function validatePaymentId(array $row)
+    {
+        if ((UniqueIdEntity::verifyUniqueId($row[self::COLUMN_PAYMENT_ID], false) === false)
+            and ($row['terminal_id'] === self::BHARAT_QR_TERMINAL))
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'message'       => 'Payment ID being sent in the file is not as expected.',
+                    'info_code'     => 'PAYMENT_ABSENT',
+                    'row'           => $row,
+                    'payment_id'    => $row[self::COLUMN_PAYMENT_ID],
+                    'gateway'       => $this->gateway
+                ]);
+
+            $this->setFailUnprocessedRow(false);
+
+            return null;
+        }
+
         return $row[self::COLUMN_PAYMENT_ID];
     }
 

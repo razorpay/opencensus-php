@@ -347,7 +347,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
         $rowDetails = [
             BaseReconciliate::REFUND_ID             => $refundId,
             BaseReconciliate::GATEWAY_SETTLED_AT    => $gatewaySettledAt,
-            BaseReconciliate::ARN                   => $arn,
+            BaseReconciliate::ARN                   => trim($arn),
         ];
 
         return $rowDetails;

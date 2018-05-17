@@ -3472,6 +3472,10 @@ ALTER TABLE invoices
     ADD COLUMN customer_shipping_addr_id CHAR(14) DEFAULT NULL AFTER customer_billing_addr_id,
     ADD CONSTRAINT invoices_customer_shipping_addr_id_foreign FOREIGN KEY (customer_shipping_addr_id) REFERENCES addresses (id);
 
+ALTER TABLE enach
+    ADD COLUMN registration_date INTEGER UNSIGNED AFTER registration_status,
+    ADD INDEX enach_registration_date_index (registration_date);
+
 //Atom Entity refactor
 
 ALTER TABLE atom DROP FOREIGN KEY atom_id_foreign;
@@ -3539,3 +3543,13 @@ ALTER TABLE terminals
 ALTER TABLE terminals
     CHANGE mastercard_mpan mc_mpan varchar(16),
     rename index terminals_mastercard_mpan_index to terminals_mc_mpan_index;
+
+ALTER TABLE terminals
+    ADD COLUMN gateway_terminal_password2 text DEFAULT NULL AFTER gateway_terminal_password,
+    ADD COLUMN gateway_secure_secret2 VARCHAR(255) DEFAULT NULL AFTER gateway_secure_secret;
+
+ALTER TABLE payments
+    ADD INDEX `payments_merchant_id_captured_at_index` (merchant_id, captured_at);
+
+ALTER TABLE invoices
+    ADD COLUMN supply_state_code CHAR(4) DEFAULT NULL AFTER merchant_label;

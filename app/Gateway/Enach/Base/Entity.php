@@ -20,6 +20,7 @@ class Entity extends Base\Entity
     const GATEWAY_REFERENCE_ID  = 'gateway_reference_id';
     const ACKNOWLEDGE_STATUS    = 'acknowledge_status';
     const REGISTRATION_STATUS   = 'registration_status';
+    const REGISTRATION_DATE     = 'registration_date';
     const ERROR_MESSAGE         = 'error_message';
     const ERROR_CODE            = 'error_code';
 
@@ -49,6 +50,7 @@ class Entity extends Base\Entity
         self::GATEWAY_REFERENCE_ID,
         self::ACKNOWLEDGE_STATUS,
         self::REGISTRATION_STATUS,
+        self::REGISTRATION_DATE,
         self::ERROR_MESSAGE,
         self::ERROR_CODE,
     ];
@@ -60,9 +62,40 @@ class Entity extends Base\Entity
         self::GATEWAY_REFERENCE_ID  => null,
         self::ACKNOWLEDGE_STATUS    => null,
         self::REGISTRATION_STATUS   => null,
+        self::REGISTRATION_DATE     => null,
         self::ERROR_MESSAGE         => null,
         self::ERROR_CODE            => null,
     ];
+
+    public function getReceived()
+    {
+        return $this->getAttribute(self::RECEIVED);
+    }
+
+    public function getSignedXml()
+    {
+        return $this->getAttribute(self::SIGNED_XML);
+    }
+
+    public function setUmrn(string $umrn)
+    {
+        $this->setAttribute(self::UMRN, $umrn);
+    }
+
+    public function setAcquirer(string $acquirer)
+    {
+        $this->setAttribute(self::ACQUIRER, $acquirer);
+    }
+
+    public function setAmount(string $amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setBank(string $bank)
+    {
+        $this->setAttribute(self::BANK, $bank);
+    }
 
     public function payment()
     {
@@ -87,30 +120,5 @@ class Entity extends Base\Entity
         }
 
         return Crypt::decrypt($signedXml);
-    }
-
-    public function setUmrn(string $umrn)
-    {
-        $this->setAttribute(self::UMRN, $umrn);
-    }
-
-    public function setAcquirer(string $acquirer)
-    {
-        $this->setAttribute(self::ACQUIRER, $acquirer);
-    }
-
-    public function setAmount(string $amount)
-    {
-        $this->setAttribute(self::AMOUNT, $amount);
-    }
-
-    public function setBank(string $bank)
-    {
-        $this->setAttribute(self::BANK, $bank);
-    }
-
-    public function getReceived()
-    {
-        return $this->getAttribute(self::RECEIVED);
     }
 }

@@ -79,7 +79,15 @@ class Server extends Base\Mock\Server
 
         $this->content($content, $this->action);
 
-        $stringResponse = http_build_query($content, null, '|');
+        // when BID is not found in OBC db, response is a string. refer testVerifyBidNotfound
+        if (is_array($content) === true)
+        {
+            $stringResponse = http_build_query($content, null, '|');
+        }
+        else
+        {
+            $stringResponse = $content;
+        }
 
         return $stringResponse;
     }

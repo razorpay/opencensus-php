@@ -82,7 +82,7 @@ class Obc extends Base
 
     protected function getFormattedAmount($amount)
     {
-        return number_format($amount / 100, 2);
+        return number_format($amount / 100, 2, '.', ',');
     }
 
     protected function getRefundType($refundType)

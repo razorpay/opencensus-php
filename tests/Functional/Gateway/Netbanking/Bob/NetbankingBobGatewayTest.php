@@ -38,6 +38,15 @@ class NetbankingBobGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $this->fixtures->create('terminal:shared_netbanking_bob_terminal');
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'name'          => 'corporate_banks',
+                'entity_id'     => '10000000000000',
+                'entity_type'   => 'merchant'
+            ]
+        );
     }
 
     public function testPayment()
@@ -126,53 +135,6 @@ class NetbankingBobGatewayTest extends TestCase
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
         $this->assertTestResponse($gatewayPayment, 'testAuthFailedEntity');
-    }
-
-    public function testRefundExcelFile()
-    {
-        Mail::fake();
-
-        $payments = [];
-
-        $payment = $this->doAuthAndCapturePayment($this->payment);
-
-        $payments[] = $payment['id'];
-
-        $refund = $this->refundPayment($payment['id']);
-
-        $payment = $this->doAuthAndCapturePayment($this->payment);
-
-        $payments[] = $payment['id'];
-
-        $this->refundPayment($payment['id'], 10000);
-        $this->refundPayment($payment['id']);
-
-        $refunds = $this->getEntities('refund', [], true);
-
-        // Convert the created_at dates to yesterday's so that they are picked
-        // up during refund excel generation
-        foreach ($refunds['items'] as $refund)
-        {
-            $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 10;
-
-            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
-        }
-
-        $payment = $this->doAuthAndCapturePayment($this->payment);
-
-        $payments[] = $payment['id'];
-
-        $this->updateAccountDetailsInNetbankingEntity($payments);
-
-        $this->refundPayment($payment['id']);
-
-        $data = $this->generateRefundsExcelForNb('BARB_R');
-
-        $this->assertEquals($data['netbanking_bob']['count'], 3);
-
-        $this->assertTrue(file_exists($data['netbanking_bob']['file']));
-
-        unlink($data['netbanking_bob']['file']);
     }
 
     protected function mockFailedCallbackResponse()

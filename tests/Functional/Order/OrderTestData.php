@@ -464,6 +464,7 @@ return [
                 'order' => [
                     'bank'           => 'UTIB',
                     'account_number' => 'XXXXXXXXXXXXX40',
+                    'method'         => 'netbanking',
                 ],
             ],
         ],

@@ -7,9 +7,7 @@ use Cache;
 
 use Exception;
 use RZP\Models\Base;
-use RZP\Constants\Mode as RzpMode;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
@@ -20,181 +18,7 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Processor extends VirtualAccount\Processor
 {
-    const DEFAULT_BANK_TRANSFER_ARRAY = [
-        Payment\Entity::CURRENCY => Currency::INR,
-        Payment\Entity::METHOD   => Payment\Method::BANK_TRANSFER,
-    ];
-
     const PAYER_BANK_ACCOUNT_MAX_LENGTH = 20;
-
-    /**
-     * Entry point for bank transfer process flow.
-     * Check if the bankTransfer was an expected one.
-     * - BankTransfer was expected?
-     *   - Yes
-     *     - UTR unique?
-     *       - Yes
-     *         - Process the payment towards the owner of the VA
-     *       - No
-     *         - Duplicate payment, save entity and ignore
-     *   - No
-     *     - Reserved account?
-     *       - Yes
-     *         - Do nothing
-     *       - No
-     *         - Process payment toward demo merchant, auto-refund it later.
-     *
-     * @param Entity|Base\PublicEntity $bankTransfer
-     *
-     * @return null|Entity
-     */
-    public function process(Base\PublicEntity $bankTransfer)
-    {
-        if ($this->isDuplicate($bankTransfer) === true)
-        {
-            //
-            // The transfer is an expected one, i.e. it is made to a valid account
-            // but the UTR is a duplicate, indicating that a payment is being processed
-            // for a second time. In this case, we do nothing.
-            //
-
-            return null;
-        }
-
-        if ($this->isPaymentExpected($bankTransfer) === true)
-        {
-            $bankTransfer->setExpected(true);
-
-            $this->setMerchant();
-        }
-        else
-        {
-            if ($this->checkReservedAccount($bankTransfer) === true)
-            {
-                return null;
-            }
-
-            $this->preProcessUnexpectedPayment($bankTransfer);
-        }
-
-        $this->processBankTransfer($bankTransfer);
-
-        $this->trace->info(
-                TraceCode::BANK_TRANSFER_PROCESSING_SUCCESSFUL,
-                $bankTransfer->toArray());
-
-        return $bankTransfer;
-    }
-
-    /**
-     * Processing the bank transfer
-     *  - Create bank transfer, associate with the merchant, and the identified VA
-     *  - Create payment, associate with the bank transfer
-     *  - Create payer bank account, associate with bank transfer
-     *  - Update VA amount fields and status, if necessary
-     *
-     * @param Entity $bankTransfer
-     */
-    protected function processBankTransfer(Entity $bankTransfer)
-    {
-        $paymentProcessor = new PaymentProcessor($this->merchant);
-
-        $payment = $this->repo->transaction(function() use (
-            $bankTransfer,
-            $paymentProcessor)
-        {
-            $paymentInput = $this->bankTransferPaymentArray($bankTransfer);
-
-            $paymentProcessor->process($paymentInput);
-
-            $payment = $paymentProcessor->getPayment();
-
-            $bankTransfer->payment()->associate($payment);
-
-            $bankTransfer->merchant()->associate($this->merchant);
-
-            $bankTransfer->virtualAccount()->associate($this->virtualAccount);
-
-            $this->createAndAssociatePayerBankAccount($bankTransfer);
-
-            $this->repo->saveOrFail($bankTransfer);
-
-            $this->virtualAccount->updateWithBankTransfer($bankTransfer);
-
-            $this->repo->saveOrFail($this->virtualAccount);
-
-            return $payment;
-        });
-
-        if ($bankTransfer->isExpected() === true)
-        {
-            // Amount mismatched payments made to order VAs are immediately refunded
-            if ($this->shouldRefundOrderPayment($bankTransfer) === true)
-            {
-                $paymentProcessor->refundAuthorizedPayment($payment);
-            }
-            else
-            {
-                $paymentProcessor->autoCapturePayment($payment);
-            }
-        }
-    }
-
-    protected function shouldRefundOrderPayment(Entity $bankTransfer)
-    {
-        if ($bankTransfer->virtualAccount->hasOrder() === false)
-        {
-            return false;
-        }
-
-        if (($bankTransfer->virtualAccount->getAmountExpected() != $bankTransfer->getAmount()) or
-            ($bankTransfer->virtualAccount->entity->isPaid() === true))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    protected function isPaymentExpected(Base\PublicEntity $bankTransfer): bool
-    {
-        //
-        // This needs to be done first because isPaymentExpected sets
-        // $this->virtualAccount which is required in the below block
-        //
-        $isExpected = parent::isPaymentExpected($bankTransfer);
-
-        // VA payments for crypto merchants are blocked based on cache key
-        if (($this->virtualAccount !== null) and
-            ($this->virtualAccount->merchant->isCategory2Cryptocurrency() === true) and
-            ($this->areBankTransfersBlockedForCrypto() === true))
-        {
-            return false;
-        }
-
-        return $isExpected;
-    }
-
-    protected function areBankTransfersBlockedForCrypto(): bool
-    {
-        try
-        {
-            $block = (bool) Cache::get(ConfigKey::BLOCK_BANK_TRANSFERS_FOR_CRYPTO);
-        }
-        catch (\Throwable $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                Trace::CRITICAL,
-                [
-                    'virtual_account_id' => $this->virtualAccount->getId()
-                ]);
-
-            $block = false;
-        }
-
-        return $block;
-    }
 
     /**
      * Check if the UTR received has ever been encountered before for the same
@@ -203,14 +27,13 @@ class Processor extends VirtualAccount\Processor
      * The ref number for IMPS (RRN) actually can be the same for
      * two distinct transactions (around the same time), as long
      * as the remitter bank is different. Here, we query by ref
-     * number + virtual account number to identify a duplicate
-     * (we can't use source bank info, as it is not always available).
+     * number + source bank info to identify a duplicate.
      *
-     * @param Entity $bankTransfer
+     * @param Base\PublicEntity $bankTransfer
      *
      * @return bool
      */
-    protected function isDuplicate(Entity $bankTransfer): bool
+    protected function isDuplicate(Base\PublicEntity $bankTransfer): bool
     {
         $utr = $bankTransfer->getUtr();
 
@@ -238,12 +61,190 @@ class Processor extends VirtualAccount\Processor
     }
 
     /**
-     * Set the merchant for future processing.
-     * Use the owner of the VA for this.
+     * Processing the bank transfer
+     *  - Create bank transfer, associate with the merchant, and the identified VA
+     *  - Create payment, associate with the bank transfer
+     *  - Create payer bank account, associate with bank transfer
+     *  - Update VA amount fields and status, if necessary
+     *
+     * @param Base\PublicEntity $bankTransfer
+     *
+     * @return null|Base\PublicEntity
      */
-    protected function setMerchant()
+    protected function processPayment(Base\PublicEntity $bankTransfer)
     {
-        $this->merchant = $this->virtualAccount->merchant;
+        if ($bankTransfer->isExpected() === false)
+        {
+            if ($this->checkReservedAccount($bankTransfer) === true)
+            {
+                return null;
+            }
+        }
+
+        $paymentProcessor = new PaymentProcessor($this->merchant);
+
+        $payment = $this->repo->transaction(
+                        function() use ($bankTransfer, $paymentProcessor)
+                        {
+                            $paymentInput = $this->getPaymentArray($bankTransfer);
+
+                            $paymentProcessor->process($paymentInput);
+
+                            $payment = $paymentProcessor->getPayment();
+
+                            $bankTransfer->payment()->associate($payment);
+
+                            $bankTransfer->merchant()->associate($this->merchant);
+
+                            $bankTransfer->virtualAccount()->associate($this->virtualAccount);
+
+                            $this->createAndAssociatePayerBankAccount($bankTransfer);
+
+                            $this->repo->saveOrFail($bankTransfer);
+
+                            $this->virtualAccount->updateWithBankTransfer($bankTransfer);
+
+                            $this->repo->saveOrFail($this->virtualAccount);
+
+                            return $payment;
+                        });
+
+        if ($bankTransfer->isExpected() === true)
+        {
+            // Amount mismatched payments made to order VAs are immediately refunded
+            if ($this->shouldRefundOrderPayment($bankTransfer) === true)
+            {
+                $paymentProcessor->refundAuthorizedPayment($payment);
+            }
+            else
+            {
+                $paymentProcessor->autoCapturePayment($payment);
+            }
+        }
+
+        return $bankTransfer;
+    }
+
+    /**
+     * Given a bank transfer, locate the bank account that is
+     * being paid, and the associated active VA, if present.
+     *
+     * @param Base\PublicEntity $bankTransfer
+     *
+     * @return null|VirtualAccount\Entity
+     */
+    protected function getVirtualAccountFromEntity(Base\PublicEntity $bankTransfer)
+    {
+        // TODO: Put assert on entity type
+        $accountNumber = $bankTransfer->getPayeeAccount();
+
+        $bankAccount = $this->getBankAccountFromNumber($accountNumber);
+
+        if ($bankAccount === null)
+        {
+            return null;
+        }
+
+        $virtualAccount = $this->repo
+                               ->virtual_account
+                               ->getActiveVirtualAccountFromBankAccountId($bankAccount->getId());
+
+        return $virtualAccount;
+    }
+
+    /**
+     * Payment array use to send to Payment\Processor for bank transfer payments
+     * Bank transfer description field may contain customer remarks, so use that.
+     * If the VA has an associated customer, use those details as well.
+     *
+     * @param Base\PublicEntity $bankTransfer
+     *
+     * @return array
+     */
+    protected function getPaymentArray(Base\PublicEntity $bankTransfer): array
+    {
+        $parentPaymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray = [
+            Payment\Entity::CURRENCY    => Currency::INR,
+            Payment\Entity::METHOD      => Payment\Method::BANK_TRANSFER,
+            Payment\Entity::AMOUNT      => $bankTransfer->getAmount(),
+            Payment\Entity::DESCRIPTION => $bankTransfer->getDescription() ?? '',
+        ];
+
+        $paymentArray = array_merge($paymentArray, $parentPaymentArray);
+
+        if ($this->virtualAccount->hasOrder() === true)
+        {
+            $order = $this->virtualAccount->entity;
+
+            $paymentArray[Payment\Entity::ORDER_ID] = $order->getPublicId();
+
+            if ($this->virtualAccount->merchant->isFeeBearerCustomer() === true)
+            {
+                $paymentArray[Payment\Entity::FEE] = (new Core)->getFeesForOrder($order);
+            }
+        }
+
+        return $paymentArray;
+    }
+
+    protected function checkPaymentExpectedAndSetVirtualAccount(Base\PublicEntity $bankTransfer): bool
+    {
+        //
+        // This needs to be done first because isPaymentExpected sets
+        // $this->virtualAccount which is required in the below block
+        //
+        $isExpected = parent::checkPaymentExpectedAndSetVirtualAccount($bankTransfer);
+
+        // VA payments for crypto merchants are blocked based on cache key
+        if (($isExpected === true) and
+            ($this->virtualAccount->merchant->isCategory2Cryptocurrency() === true) and
+            ($this->areBankTransfersBlockedForCrypto() === true))
+        {
+            $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
+
+            return false;
+        }
+
+        return $isExpected;
+    }
+
+    protected function shouldRefundOrderPayment(Entity $bankTransfer)
+    {
+        if ($bankTransfer->virtualAccount->hasOrder() === false)
+        {
+            return false;
+        }
+
+        if (($bankTransfer->virtualAccount->getAmountExpected() != $bankTransfer->getAmount()) or
+            ($bankTransfer->virtualAccount->entity->isPaid() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function areBankTransfersBlockedForCrypto(): bool
+    {
+        try
+        {
+            $block = (bool) Cache::get(ConfigKey::BLOCK_BANK_TRANSFERS_FOR_CRYPTO);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                [
+                    'virtual_account_id' => $this->virtualAccount->getId()
+                ]);
+
+            $block = false;
+        }
+
+        return $block;
     }
 
     /**
@@ -273,33 +274,6 @@ class Processor extends VirtualAccount\Processor
     }
 
     /**
-     * Given a bank transfer, locate the bank account that is
-     * being paid, and the associated active VA, if present.
-     *
-     * @param Base\PublicEntity $entity
-     *
-     * @return null|VirtualAccount\Entity
-     */
-    protected function getVirtualAccountFromEntity(Base\PublicEntity $entity)
-    {
-        // TODO: Put assert on entity type
-        $accountNumber = $entity->getPayeeAccount();
-
-        $bankAccount = $this->getBankAccountFromNumber($accountNumber);
-
-        if ($bankAccount === null)
-        {
-            return null;
-        }
-
-        $virtualAccount = $this->repo
-                               ->virtual_account
-                               ->getActiveVirtualAccountFromBankAccountId($bankAccount->getId());
-
-        return $virtualAccount;
-    }
-
-    /**
      * Find the bank account being paid. We search only amongst
      * the bank accounts that were created by the current provider.
      *
@@ -316,24 +290,6 @@ class Processor extends VirtualAccount\Processor
                             ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode);
 
         return $bankAccount;
-    }
-
-    /**
-     * Throwaway VAs for unexpected bank transfers don't need much to be created.
-     *
-     * @param int $amount
-     *
-     * @return array
-     */
-    protected function virtualAccountCreationArray(int $amount): array
-    {
-        return [
-            VirtualAccount\Entity::AMOUNT_EXPECTED => $amount,
-            VirtualAccount\Entity::RECEIVERS => [
-                VirtualAccount\Entity::TYPES => [
-                ],
-            ],
-        ];
     }
 
     /**
@@ -401,43 +357,8 @@ class Processor extends VirtualAccount\Processor
         return $bankAccount;
     }
 
-    /**
-     * Payment array use to send to Payment\Processor for bank transfer payments
-     * Bank transfer description field may contain customer remarks, so use that.
-     * If the VA has an associated customer, use those details as well.
-     *
-     * @param Entity $bankTransfer
-     *
-     * @return array
-     */
-    protected function bankTransferPaymentArray(Entity $bankTransfer): array
+    protected function getReceiver()
     {
-        $paymentArray = self::DEFAULT_BANK_TRANSFER_ARRAY;
-
-        $paymentArray[Payment\Entity::AMOUNT]      = $bankTransfer->getAmount();
-        $paymentArray[Payment\Entity::DESCRIPTION] = $bankTransfer->getDescription() ?? "";
-
-        if ($this->virtualAccount->hasCustomer() === true)
-        {
-            $customer = $this->virtualAccount->customer;
-
-            $paymentArray[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
-            $paymentArray[Payment\Entity::CONTACT]     = $customer->getContact();
-            $paymentArray[Payment\Entity::EMAIL]       = $customer->getEmail();
-        }
-
-        if ($this->virtualAccount->hasOrder() === true)
-        {
-            $order = $this->virtualAccount->entity;
-
-            $paymentArray[Payment\Entity::ORDER_ID] = $order->getPublicId();
-
-            if ($this->virtualAccount->merchant->isFeeBearerCustomer() === true)
-            {
-                $paymentArray[Payment\Entity::FEE] = (new Core)->getFeesForOrder($order);
-            }
-        }
-
-        return $paymentArray;
+        return $this->virtualAccount->bankAccount;
     }
 }

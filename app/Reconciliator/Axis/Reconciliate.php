@@ -95,7 +95,7 @@ class Reconciliate extends Base\Reconciliate
         // the start row is different from `1`.
         //
         if (($fileDetails[FileProcessor::EXTENSION] === Format::XLS) and
-            (strpos('RAZORPAYADD', $fileDetails[FileProcessor::FILE_NAME]) === false))
+            (strpos($fileDetails[FileProcessor::FILE_NAME], 'razorpayadd') === false))
         {
             return self::START_ROW;
         }

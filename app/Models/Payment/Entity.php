@@ -26,6 +26,7 @@ use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Netbanking;
 
 /**
@@ -447,6 +448,8 @@ class Entity extends Base\PublicEntity
     const DUMMY_EMAIL = 'void@razorpay.com';
 
     const DUMMY_PHONE = '+919999999999';
+
+    const DUMMY_VPA = 'dummy@razorpay';
 
     // --------------------- Modifiers ---------------------------------------------
 
@@ -1041,6 +1044,20 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::CANCELLATION_REASON] = mb_substr($reason, 0, 255);
     }
 
+    protected function setReference1Attribute($reference1)
+    {
+        $trimmedReference1 = (blank($reference1) === true) ? null : trim($reference1);
+
+        $this->attributes[self::REFERENCE1] =  $trimmedReference1;
+    }
+
+    protected function setReference2Attribute($reference2)
+    {
+        $trimmedReference2 = (blank($reference2) === true) ? null : trim($reference2);
+
+        $this->attributes[self::REFERENCE2] =  $trimmedReference2;
+    }
+
 // ----------------------- Mutator Ends ----------------------------------------
 
 // ----------------------- Accessor --------------------------------------------
@@ -1355,6 +1372,11 @@ class Entity extends Base\PublicEntity
     public function isBankTransfer()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::BANK_TRANSFER);
+    }
+
+    public function isBharatQr()
+    {
+        return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE);
     }
 
     public function isGateway($gateway)
@@ -2382,6 +2404,11 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
     }
 
+    public function enach()
+    {
+        return $this->hasOne('RZP\Gateway\Enach\Base\Entity');
+    }
+
     // using hasOne here as we need only the first billdesk entity, actual relation can be one-to-many
     public function billdesk()
     {
@@ -2653,6 +2680,31 @@ class Entity extends Base\PublicEntity
     public function isAcknowledged(): bool
     {
         return $this->isAttributeNotNull(self::ACKNOWLEDGED_AT);
+    }
+
+    public function getDummyPaymentArray(string $method, string $network = null): array
+    {
+        $paymentArray =  [
+            self::CURRENCY    => Currency\Currency::INR,
+            self::METHOD      => $method,
+            self::AMOUNT      => 100,
+            self::DESCRIPTION => 'Dummy Payment',
+            self::CONTACT     => self::DUMMY_PHONE,
+            self::EMAIL       => self::DUMMY_EMAIL,
+        ];
+
+        switch ($method)
+        {
+            case Method::CARD:
+                $paymentArray[self::CARD] = (new Card\Entity)->getDummyCardArray($network);
+                break;
+
+            case Method::UPI:
+                $paymentArray[self::VPA] = self::DUMMY_VPA;
+
+        }
+
+        return $paymentArray;
     }
 
     // Query scopes

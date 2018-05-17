@@ -474,32 +474,33 @@ class Core extends Base\Core
 
         $question = Constants::VENDOR_AGREEMENT;
 
+        $replacementVariable = null;
+
+        //
+        // Adding multiple key checks since this function can be called with response of a single feature submissions
+        // or responses of all submissions fetched together, which causes the responses array to be either without
+        // key of feature name or keyed by feature name respectively in both cases.
+        //
         if (isset($response[$featureName][$question]) === true)
         {
             $fileId = $response[$featureName][$question];
 
-            // TODO :: replace its usage with the one from FileStore\Core
-            $fileUrl = $this->getSignedUrl($fileId, $merchant->getId());
-
-            $response[$featureName][$question] = $fileUrl;
+            $replacementVariable = &$response[$featureName][$question];
         }
-    }
 
-    /**
-     * @param string $fileStoreId
-     * @param string $merchantId
-     *
-     * @return mixed
-     */
-    protected function getSignedUrl(string $fileStoreId, string $merchantId)
-    {
-        $accessor = new FileStore\Accessor;
+        if (isset($response[$question]) === true)
+        {
+            $fileId = $response[$question];
 
-        $signedUrls = $accessor->id($fileStoreId)
-                               ->merchantId($merchantId)
-                               ->getSignedUrl();
+            $replacementVariable = &$response[$question];
+        }
 
-        return $signedUrls[$fileStoreId];
+        if (empty($replacementVariable) === false)
+        {
+            $fileUrl = (new FileStore\Core)->getSignedUrl($fileId, $merchant->getId());
+
+            $replacementVariable = $fileUrl;
+        }
     }
 
     /**

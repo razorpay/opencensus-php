@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\BankTransfer;
 
+use RZP\Constants\Entity;
 use RZP\Models\Payment\Refund;
 use RZP\Models\BankTransfer\Entity as E;
 use RZP\Tests\Functional\TestCase;
@@ -23,9 +24,19 @@ class BankTransferTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
-        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
 
         $this->bankAccount = $this->createVirtualAccount();
+
+        $this->fixtures->create('terminal:bharat_qr_terminal');
+
+        $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+
+        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
+
+        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal_upi');
+
+        $this->fixtures->on('test');
 
         $this->ba->appAuth();
     }
@@ -52,6 +63,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
 
         // Customer bank account created
         $bankAccount = $this->getLastEntity('bank_account', true);
@@ -947,14 +959,15 @@ class BankTransferTest extends TestCase
         $this->assertEquals('10000000000000', $virtualAccount['merchant_id']);
         $this->assertEquals(5000000, $virtualAccount['amount_paid']);
         $this->assertEquals(5000000, $virtualAccount['amount_received']);
-        $this->assertEquals(5000000, $virtualAccount['amount_expected']);
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals('va_ShrdVirtualAcc', $virtualAccount['id']);
+        $this->assertEquals('active', $virtualAccount['status']);
 
         // Payment is not captured, but left in authorized state for auto-refund
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('authorized', $payment['status']);
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertNotNull($payment['receiver_type']);
 
         $this->refundAuthorizedPayment($payment['id']);
 
@@ -1012,8 +1025,9 @@ class BankTransferTest extends TestCase
         $this->assertEquals('10000000000000', $virtualAccount['merchant_id']);
         $this->assertEquals(5000000, $virtualAccount['amount_paid']);
         $this->assertEquals(5000000, $virtualAccount['amount_received']);
-        $this->assertEquals(5000000, $virtualAccount['amount_expected']);
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals(null, $virtualAccount['amount_expected']);
+        $this->assertEquals('active', $virtualAccount['status']);
+        $this->assertEquals('va_ShrdVirtualAcc', $virtualAccount['id']);
 
         // Payment is not captured, but left in authorized state for auto-refund
         $payment =  $this->getLastEntity('payment', true);

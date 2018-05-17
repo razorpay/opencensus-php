@@ -21,6 +21,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\VirtualAccount\Receiver;
 
 class Validator extends Base\Validator
 {
@@ -49,9 +50,9 @@ class Validator extends Base\Validator
         'order_id'                      => 'sometimes|filled',
         'customer_id'                   => 'sometimes|public_id|filled',
         'subscription_id'               => 'sometimes|public_id',
-        'receiver'                      => 'sometimes_if:method,card,upi|associative_array|filled',
+        'receiver'                      => 'sometimes_if:method,card,upi,bank_transfer|associative_array|filled',
         'receiver.type'                 => 'required_with:receiver|filled|string|in:qr_code,bank_account',
-        'receiver.id'                   => 'required_with:receiver|filled|alpha_num|size:17|public_id',
+        'receiver.id'                   => 'required_with:receiver|filled|size:17|public_id',
         'app_token'                     => 'sometimes',
         'token'                         => 'sometimes',
         'save'                          => 'sometimes|in:0,1',
@@ -385,6 +386,13 @@ class Validator extends Base\Validator
 
         $method = $input['method'];
 
+        $receiverType = null;
+
+        if (isset($input[Entity::RECEIVER]) === true)
+        {
+            $receiverType = $input[Entity::RECEIVER]['type'];
+        }
+
         if ($method !== Payment\Method::EMANDATE)
         {
             if ($amount < 100)
@@ -411,8 +419,15 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        // No limit on amount for payments of method deinfed in Method::$methodsWithoutAmountValidation
+        // No limit on amount for payments of method defined in Method::$methodsWithoutAmountValidation
         if (in_array($method, Method::$methodsWithoutAmountValidation, true) === true)
+        {
+            return;
+        }
+
+        // The payments received on these receivers are push based. We can't really control after
+        // we already received a payments. So removing amount validation check on it
+        if (empty($receiverType) === false)
         {
             return;
         }
