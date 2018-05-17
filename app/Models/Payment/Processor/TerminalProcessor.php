@@ -5,11 +5,10 @@ namespace RZP\Models\Payment\Processor;
 use App;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 use RZP\Models\Terminal;
-use RZP\Models\Order;
+use RZP\Models\BharatQr;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment\Analytics;
+use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 
 class TerminalProcessor extends Base\Core
 {
@@ -23,9 +22,11 @@ class TerminalProcessor extends Base\Core
      *
      * @param Payment\Entity $payment
      *
-     * @return Terminal\Entity
+     * @param array          $gatewayData
+     *
+     * @return array
      */
-    public function getTerminalsForPayment(Payment\Entity $payment)
+    public function getTerminalsForPayment(Payment\Entity $payment, array $gatewayData = [])
     {
         $this->payment = $payment;
 
@@ -35,9 +36,12 @@ class TerminalProcessor extends Base\Core
             return [];
         }
 
-        if ($this->payment->isBharatQr() === true)
+        if (($payment->isBharatQr() === true) and
+            (empty($gatewayData) === false))
         {
-            return [];
+            $terminalId = $gatewayData[BharatQr\Constants::RAZORPAY_TERMINAL_ID];
+
+            return [$this->repo->terminal->find($terminalId)];
         }
 
         $options = $this->getTerminalSelectionOptions();

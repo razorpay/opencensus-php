@@ -433,9 +433,10 @@ class Gateway
     ];
 
     public static $bharatQrCardNetwork = [
+        // IMP: Order of networks matter!
         self::HITACHI => [
-            Network::MC,
             Network::VISA,
+            Network::MC,
             Network::RUPAY,
         ],
     ];
@@ -1251,7 +1252,6 @@ class Gateway
 
         return $supported;
     }
-
 
     public static function isBharatQrCardNetworkSupported(string $network, string $gateway)
     {

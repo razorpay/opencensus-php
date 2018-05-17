@@ -53,7 +53,6 @@ class Hdfc extends Base
             $token = $payment->getGlobalOrLocalTokenEntity();
 
             $row = [
-
                 Headings::TRANSACTION_REF_NO  => $paymentId,
                 Headings::MANDATE_ID          => $token->getId(),
                 Headings::ACCOUNT_NO          => $token->getAccountNumber(),

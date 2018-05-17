@@ -578,7 +578,6 @@ class Repository extends Base\Repository
         $txnRepo = $this->repo->transaction;
 
         $tRepo = $this->repo->terminal;
-        $tTableName = $tRepo->getTableName();
 
         $transactionPaymentId = $txnRepo->dbColumn(Transaction\Entity::ENTITY_ID);
         $transactionEntityType = $txnRepo->dbColumn(Transaction\Entity::TYPE);
@@ -1312,6 +1311,9 @@ class Repository extends Base\Repository
      *  - based on filter type passed OTHER, CARD_LT_2K, CARD_GT_2K
      *  - When correction flag is true the adds conition where created in given time frame
      *
+     * - Here cut off amount is checked on base_amount to handle multiple currencies
+     *   In payments table base_amount field will hold the amount in INR(paise) regardless of what type of currency been used
+     *
      * @param string $merchantId
      * @param int    $start
      * @param int    $end
@@ -1354,13 +1356,13 @@ class Repository extends Base\Repository
 
             case InvoiceType::CARD_LTE_2K:
                 $query = $query->whereNotNull(Entity::CARD_ID)
-                               ->where(Entity::AMOUNT, '<=', FeeCalculator::CARD_TAX_CUT_OFF);
+                               ->where(Entity::BASE_AMOUNT, '<=', FeeCalculator::CARD_TAX_CUT_OFF);
 
                 break;
 
             case InvoiceType::CARD_GT_2K:
                 $query = $query->whereNotNull(Entity::CARD_ID)
-                               ->where(Entity::AMOUNT, '>', FeeCalculator::CARD_TAX_CUT_OFF);
+                               ->where(Entity::BASE_AMOUNT, '>', FeeCalculator::CARD_TAX_CUT_OFF);
 
                 break;
 

@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Netbanking\Base;
 
-use RZP\Exception;
 use RZP\Gateway\Base;
 
 class Repository extends Base\Repository

@@ -18,6 +18,9 @@ class TestCase extends ParentTestCase
 {
     use CustomAssertions;
 
+    /**
+     * @var Fixtures\Fixtures
+     */
     protected $fixtures;
 
     /**
