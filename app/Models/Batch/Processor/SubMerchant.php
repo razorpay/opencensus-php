@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use Mail;
 use Razorpay\OAuth;
 
 use RZP\Models\User;
