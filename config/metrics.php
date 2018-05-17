@@ -31,7 +31,6 @@ return [
     |
     */
     'drivers'    => [
-
         'mock'      => [],
 
         'dogstatsd' => [
@@ -54,7 +53,6 @@ return [
     |
     */
     'whitelisted_label_values' => [
-
         Metric::LABEL_RZP_KEY_ID          => [
         ],
 

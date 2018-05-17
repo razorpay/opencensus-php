@@ -47,9 +47,9 @@ abstract class Driver
 
     /**
      * Modifies values in dimensions. For a list of labels only allows white-
-     * listed values or else usage default. This way we ensure that labels with
-     * high cardinality are not cuasing troubles in monitoring system and we
-     * only instrument where monitoring needed (e.g. for big merchants etc).
+     * listed values or else uses default. This way we ensure that labels with
+     * high cardinality are not causing issues in monitoring system and we
+     * only instrument where monitoring is needed (e.g. for big merchants etc).
      *
      * @param  array $dimensions
      * @return array

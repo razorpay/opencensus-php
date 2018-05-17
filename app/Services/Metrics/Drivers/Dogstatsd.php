@@ -25,6 +25,7 @@ class Dogstatsd extends Driver
         parent::__construct($config);
 
         $statsdClientOptions = $config['drivers']['dogstatsd']['client'];
+
         $this->statsd = new DataDog\DogStatsd($statsdClientOptions);
     }
 
