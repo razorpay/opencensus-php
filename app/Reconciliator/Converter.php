@@ -121,6 +121,20 @@ class Converter extends Base\Core
 
         Config::set('excel.import.startRow', $startRow);
 
+        //
+        // Calling LaravelExcelReader's setSelectedSheets() and setSelectedSheetIndices() to
+        // reset selected sheet names and indices here, as its not happening in LaravelExcelReader.
+        // If previous run has set some sheet name in selectSheets(), its retaining that sheet name
+        // until it is replaced with new sheet name.
+        // Causes issue if Axis file get parses first as it sets the sheet name to `Maestro Refund` and then
+        // reader tries to search index for `Maestro Refund` at the time of next recon's file parsing too.
+        // Throws exception of `Your requested sheet index: -1 is out of bounds` in such case.
+        // Its Maatwebsite issue, that's why calling in this function only.
+        //
+        $this->app['excel.reader']->setSelectedSheets([]);
+
+        $this->app['excel.reader']->setSelectedSheetIndices([]);
+
         $allSheetsContent = [];
 
         if (empty($sheetNames) === false)
