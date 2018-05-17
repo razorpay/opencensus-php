@@ -39,6 +39,19 @@ class AmazonpayGatewayTest extends TestCase
         $this->ba->publicAuth();
     }
 
+    // ------------------------------------------------- Merchant test cases -------------------------------------------
+
+    public function testMerchantPrefrences()
+    {
+        $preferences = $this->makeRequestAndGetContent([
+            'url'       => '/preferences',
+            'method'    => 'GET',
+        ]);
+
+        $this->assertArrayHasKey('amazonpay', $preferences['methods']['wallet']);
+        $this->assertTrue($preferences['methods']['wallet']['amazonpay']);
+    }
+
     // ------------------------------------------------- Payment test cases --------------------------------------------
 
     /**

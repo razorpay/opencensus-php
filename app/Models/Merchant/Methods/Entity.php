@@ -66,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::DEBIT_CARD,
         self::CREDIT_CARD,
         self::BANK_TRANSFER,
+        self::AMAZONPAY,
     ];
 
     protected $visible = [
@@ -92,6 +93,7 @@ class Entity extends Base\PublicEntity
         self::DEBIT_CARD,
         self::CREDIT_CARD,
         self::BANK_TRANSFER,
+        self::AMAZONPAY,
     ];
 
     protected $public = [
@@ -119,6 +121,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT_CARD,
         self::ENTITY,
         self::BANK_TRANSFER,
+        self::AMAZONPAY,
     ];
 
     protected $defaults = array(
@@ -144,6 +147,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT_CARD    => true,
         self::DEBIT_CARD     => true,
         self::BANK_TRANSFER  => true,
+        self::AMAZONPAY      => false,
     );
 
     protected $wallets = array(
@@ -158,6 +162,7 @@ class Entity extends Base\PublicEntity
         self::SBIBUDDY,
         self::OPENWALLET,
         self::MPESA,
+        self::AMAZONPAY,
     );
 
     protected static $methods = [
