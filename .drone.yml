@@ -33,6 +33,7 @@ pipeline:
     environment:
       CHROME_BIN: /usr/bin/chromium
     commands:
+      - apk add --no-cache bash
       # Fix for https://github.com/npm/uid-number/issues/3
       - npm config set unsafe-perm true
       - npm config set cache npm_cache
