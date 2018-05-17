@@ -18,7 +18,6 @@ RUN composer install --no-dev --no-interaction --no-autoloader --no-scripts && r
 # This is the final production image
 # Define these late so as to improve docker caching
 ARG GIT_COMMIT_HASH
-ARG GIT_TOKEN
 
 RUN mkdir -p public && \
     echo ${GIT_COMMIT_HASH} > public/commit.txt

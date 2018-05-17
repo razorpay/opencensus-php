@@ -19,7 +19,7 @@ pipeline:
   # JSON file
   generate-composer-auth-file:
     image: razorpay/pithos:rzp-php7.1
-    secrets: [docker_username, docker_password, git_token]
+    secrets: [GIT_TOKEN]
     commands:
       - composer config -g "github-oauth.github.com" "$GIT_TOKEN"
       - cp /root/.composer/auth.json /drone/src/github.com/razorpay/dashboard/composer-auth.json
@@ -76,8 +76,7 @@ pipeline:
     group: build
     image: plugins/docker
     repo: razorpay/dashboard
-    secrets: [docker_username, docker_password, git_token]
-    build_args_from_env: [git_token]
+    secrets: [docker_username, docker_password]
     environment:
     # Makes sure that the docker volume cache survives this run
       PLUGIN_STORAGE_PATH: /drone/src/github.com/razorpay/dashboard/docker_cache
@@ -159,8 +158,7 @@ pipeline:
         - ls -laR public/css/generated/
         - ./s3sync.js
     when:
-      # Disable this step while in testing
-      environment: never
+      environment: prod
       event: deployment
   deploy-beta:
     image: razorpay/drone-kubernetes
@@ -182,9 +180,7 @@ pipeline:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: beta
-      event:
-        exclude: [push]
-        include: [deployment]
+      event: deployment
   deploy-prod:
     image: razorpay/drone-kubernetes
     pull: true
@@ -205,9 +201,7 @@ pipeline:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: prod
-      event:
-        exclude: [push]
-        include: [deployment]
+      event: deployment
   deploy-qa-func:
     image: razorpay/drone-kubernetes
     pull: true
@@ -228,9 +222,7 @@ pipeline:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: qa-func
-      event:
-        exclude: [push]
-        include: [deployment]
+      event: deployment
   build-notify:
     image: plugins/slack
     secrets: [slack_webhook]
@@ -259,4 +251,4 @@ pipeline:
     secrets:
       - plugin_headers
     when:
-      status: [ success, failure ]
+      status: [success, failure]
