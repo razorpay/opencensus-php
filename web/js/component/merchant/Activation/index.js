@@ -524,7 +524,7 @@ export default class ActivationWizard extends React.Component {
             {FORM_TABS[activeTab]}
           </main-title>
 
-          {/* Show Alert: if linked account has been activated */}
+          {/* Alert: if linked account has been activated */}
           {isLinkedAccountForm &&
             !!this.props.data.activated && (
               <Alert.Info>The account has been activated</Alert.Info>
@@ -542,56 +542,71 @@ export default class ActivationWizard extends React.Component {
             let Component = Alert.Info;
             let icon, msg;
 
-            let secondaryMsg = (
-              <React.Fragment>
-                For any clarifications, you can reach out to us at{' '}
-                <a href="mailto:support@razorpay.com">support@razorpay.com</a>.
-              </React.Fragment>
+            let secondaryMsg =
+              'For any clarifications, you can reach out to us at';
+            const emailLink = (
+              <a href="mailto:support@razorpay.com">support@razorpay.com</a>
             );
 
             if (showFormDisabledAlert) {
               if (!!data.activated) {
                 // **1. Alert: Account Activated
+
                 icon = 'i-done-all';
-                msg = 'Congratulations! Your account is Activated.';
-              } else if (
-                data.activation_status === 'needs_clarification' ||
-                data.activation_status === 'rejected'
-              ) {
+                msg = 'Your account is activated.';
+                secondaryMsg = (
+                  <React.Fragment>
+                    For any changes, please write to {emailLink} from your
+                    registered email.
+                  </React.Fragment>
+                );
+              } else if (data.activation_status === 'needs_clarification') {
+                // **2. Alert: Need clarification
+                let clarificationMode = this.props.data.clarification_mode;
+                let subMsg;
+                if (clarificationMode.toLowerCase() === 'email') {
+                  subMsg =
+                    'Please check your mail and respond at the earliest.';
+                } else {
+                  subMsg = 'We will call you over phone for clarification.';
+                }
+
+                icon = 'i-warning';
+                Component = Alert.Warning;
+                msg = 'There are issues with your activation form. ' + subMsg;
+                secondaryMsg = (
+                  <React.Fragment>
+                    In case of any queries, you can reach out to us at{' '}
+                    {emailLink}
+                  </React.Fragment>
+                );
+              } else if (data.activation_status === 'rejected') {
+                // **3. Alert: Form Rejected
+
                 icon = 'i-close';
                 Component = Alert.Error;
-
-                if (data.activation_status === 'needs_clarification') {
-                  // **2. Alert: Need clarification
-                  msg =
-                    'There are some issues in your activation form that needs attention. Please check your mail and respond at the earliest.';
-                  secondaryMsg = (
-                    <React.Fragment>
-                      In case of any queries, you can reach out to us at{' '}
-                      <a href="mailto:support@razorpay.com">
-                        support@razorpay.com
-                      </a>.
-                    </React.Fragment>
-                  );
-                } else if (data.activation_status === 'rejected') {
-                  // **3. Alert: Form Rejected
-                  msg =
-                    'Your activation form has been rejected as your request was not accepted by our partner banks. Hence, we would not be able support your business at this moment. ';
-                  secondaryMsg =
-                    'We have sent you an email with necessary details.';
-                }
+                msg =
+                  'Your activation form has been rejected by our partner banks. Hence, we would not be able support your business at this moment.';
+                secondaryMsg = 'We have sent you an email with the details.';
               } else if (!!data.locked) {
                 // **4. Alert: Form is Locked (for reasons other than above)
                 // 'locked' status has more priority than 'submitted'
+
                 icon = 'i-outline-lock';
                 msg =
-                  "Your activation form is locked as it's under review. We'll inform you once your account gets activated.";
+                  'Your activation form under review. We will let you know once your account gets activated.';
+                secondaryMsg = (
+                  <React.Fragment>
+                    In case of any queries, you can reach out to us at{' '}
+                    {emailLink}
+                  </React.Fragment>
+                );
               } else if (!!data.submitted) {
                 // **5. Alert: Form is Submitted
+
                 icon = 'i-check';
-                console.log('...');
                 msg =
-                  'Your activation form is already submitted. The review process usually takes 2-3 working days.';
+                  'Your activation form is already submitted. It usually takes 2 to 3 working days for the review.';
                 secondaryMsg =
                   'For any clarifications, we will reach out on your contact email.';
               }
