@@ -44,7 +44,7 @@ class AuthService
 
         if ($type !== null)
         {
-            $input['type'] = $type;
+            $input[Application\Entity::TYPE] = $type;
         }
 
         return $this->sendRequest('applications', Requests::POST, $input);

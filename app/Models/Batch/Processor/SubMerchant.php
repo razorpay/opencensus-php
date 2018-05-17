@@ -13,6 +13,7 @@ use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
 use RZP\Models\Merchant\Detail as MerchantDetail;
 use RZP\Models\Batch\Helpers\SubMerchant as Helper;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class SubMerchant extends Base
 {
@@ -73,11 +74,20 @@ class SubMerchant extends Base
             return;
         }
 
-        $this->partnerApp = (new OAuth\Application\Repository)->findOrFailPublic($appId);
+        /** @var OAuth\Application\Entity $app */
+        $app = (new OAuth\Application\Repository)->findOrFailPublic($appId);
 
-        // Validate that the app is a partner app
+        $appType = $app->getType();
 
-        // Get the app->client, client should be of type 'partner'
+        if ($appType !== OAuth\Application\Type::PARTNER)
+        {
+            throw new BadRequestValidationFailureException(
+                'Application is not of type partner',
+                Entity::APPLICATION_ID,
+                ['type' => $appType]);
+        }
+
+        $this->partnerApp = $app;
     }
 
     /**
