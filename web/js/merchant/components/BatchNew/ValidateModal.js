@@ -45,6 +45,7 @@ export default function BatchValidateModal({
           files={files}
           showCloseBtn={true}
           showStagedFileStatus
+          showFileSize={false}
         />
         {notifyMsg && (
           <h5 class={`notification ${status}`}>

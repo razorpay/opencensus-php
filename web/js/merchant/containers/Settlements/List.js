@@ -7,6 +7,7 @@ import ListContainer from 'merchant/containers/ListContainer';
 import SettlementsList from 'merchant/components/Settlements/List';
 import SettlementsListFilter from 'merchant/components/Settlements/ListFilter';
 import SettlementBreakupModal from './BreakupModal';
+import HeaderAction from 'rzp/ui/HeaderAction';
 import { fetchSettlements as fetchAll } from 'rzp/modules/collection';
 import * as ModalActions from 'rzp/modules/modals';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
@@ -83,6 +84,15 @@ export default class SettlementsListContainer extends ListContainer {
 
         <content>
           <div class="content-wrapper">
+            <HeaderAction>
+              <a
+                class="btn btn-link"
+                href="http://razorpay.com/settlement"
+                target="_blank"
+              >
+                How settlements work?&nbsp;<span class="icon i-external-link" />
+              </a>
+            </HeaderAction>
             <SettlementsListFilter
               form="settlementsListFilter"
               count={this.state.count}
@@ -108,11 +118,20 @@ export default class SettlementsListContainer extends ListContainer {
 
             <div class="row">
               <div class="col-md-6 col-md-offset-3 col-sm-12 text-center">
-                <p>
-                  A settlement is an aggregate of payments and refunds, and as
-                  such the fees in a settlement is not reflective of the
-                  pricing. We only charge fees on a captured payment.
-                </p>
+                <div>
+                  The amount that gets settled to your bank account will show up
+                  here.
+                </div>
+                <div>
+                  <a
+                    class="btn-link"
+                    target="_blank"
+                    href="http://razorpay.com/settlement"
+                  >
+                    See our Settlements Guide
+                  </a>{' '}
+                  to understand how it works.
+                </div>
               </div>
             </div>
           </div>
