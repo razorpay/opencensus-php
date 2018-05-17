@@ -222,7 +222,6 @@ class Gateway extends Base\Gateway
             $endDate = Carbon::createFromTimestamp($emData[Fields::END_TIMESTAMP], Timezone::IST)
                              ->format('dmY');
 
-            $data[Fields::CLIENT_ACCOUNT_NUMBER] = $emData[RHeadings::CUSTOMER_ACCOUNT_NUMBER];
             $data[Fields::REF1]                  = $emData[RHeadings::MERCHANT_UNIQUE_REFERENCE_NO];
             $data[Fields::REF2]                  = $emData[RHeadings::CUSTOMER_NAME];
             $data[Fields::REF3]                  = $emData[RHeadings::CUSTOMER_ACCOUNT_NUMBER];
@@ -242,6 +241,8 @@ class Gateway extends Base\Gateway
             // verified, the same amount would be refunded to the account holder the next day
             //
             $data['TxnAmount']                   = Fields::INIT_AMOUNT;
+
+            $data[Fields::CLIENT_ACCOUNT_NUMBER] = $emData[RHeadings::CUSTOMER_ACCOUNT_NUMBER];
         }
 
         // Moving this as the HDFC TPV requires the ClientAccCode to
