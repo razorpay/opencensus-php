@@ -77,6 +77,23 @@ const businessModel = [
       options: [],
     },
     {
+      label: 'Business Model',
+      name: 'business_model',
+      info:
+        'Please give a brief explanation of your business model and future plans',
+      _cmp: Input.Textarea,
+      _when: activation => {
+        let { state, props } = activation;
+
+        let businessCategory =
+          state.dirty.business_category != null
+            ? state.dirty.business_category
+            : props.data.business_category;
+
+        return businessCategory === 'others'; // If businessCategory is selected to others, then Business Model is to be filled
+      },
+    },
+    {
       label: 'Sub Category',
       name: 'business_subcategory',
       _cmp: Input.Select,

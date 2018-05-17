@@ -33,6 +33,9 @@ const defaultFieldProps = f => {
   if (!f.hasOwnProperty('required')) {
     f.required = true;
   }
+  if (!f.hasOwnProperty('autoComplete')) {
+    f.autoComplete = 'off';
+  }
 };
 
 let DOCUMENT_UPLOAD_STEP; // To handle specific case for document step
@@ -338,10 +341,16 @@ export default class ActivationWizard extends React.Component {
     if (fieldName === 'business_category') {
       // Set first option in new set of subcategory. It remains '', it would convert to null before making api call.
       sideEffectFieldsToUpdate['business_subcategory'] = '';
+      sideEffectFieldsToUpdate['business_model'] = ''; // Reset Business Model as well.
 
-      const el = document.querySelector(
+      // Update Business Subcategory in view
+      let el = document.querySelector(
         `.form-container [name=business_subcategory]`
       );
+      el && (el.value = '');
+
+      // Update Business Model in view
+      el = document.querySelector(`.form-container [name=business_model]`);
       el && (el.value = '');
     }
 
