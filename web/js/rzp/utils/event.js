@@ -12,3 +12,5 @@ function Event(name, options = {}) {
 
   return event;
 }
+
+export default Event;
