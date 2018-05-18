@@ -9,9 +9,8 @@ import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
 import {
   EmptyComponent,
   batchStatus,
-  batchIdLink,
 } from 'merchant/components/BatchNew/ListAddons';
-import { batchId, totalCount, batchName } from 'rzp/ui/item/pair';
+import { batchIdLink, totalCount, batchName } from 'rzp/ui/item/pair';
 import { openModal } from 'rzp/modules/modals';
 
 import { luminateRow } from 'merchant/modules/app';

@@ -32,22 +32,6 @@ const BatchStatus = ({ status }) => (
   </span>
 );
 
-/**
- * Render NavLink of batch
- */
-const BatchNavLink = ({ batchType, batchId }) => (
-  <Link to={`/${batchType.split('_').join('')}s/batchuploads/${batchId}`}>
-    <code>{batchId}</code>
-  </Link>
-);
-
-// Pairs
-
-export const batchIdLink = {
-  title: 'Batch ID',
-  value: batch => <BatchNavLink batchId={batch.id} batchType={batch.type} />,
-};
-
 export const batchStatus = {
   title: 'Status',
   value: item => <BatchStatus status={item.status} />,
