@@ -2,7 +2,6 @@
 
 namespace RZP\Models\PaymentLink;
 
-
 class StatusReason
 {
     const EXPIRED           = 'expired';

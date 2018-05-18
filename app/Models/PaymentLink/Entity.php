@@ -29,9 +29,6 @@ class Entity extends Base\PublicEntity
     const TITLE                 = 'title';
     const DESCRIPTION           = 'description';
     const NOTES                 = 'notes';
-    const CREATED_AT            = 'created_at';
-    const UPDATED_AT            = 'updated_at';
-    const DELETED_AT            = 'deleted_at';
 
     protected static $sign = 'pl';
 
@@ -107,8 +104,6 @@ class Entity extends Base\PublicEntity
         self::TOTAL_AMOUNT      => 'int',
     ];
 
-    protected $guarded = [self::ID];
-
     protected $dates = [
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -132,7 +127,7 @@ class Entity extends Base\PublicEntity
 
     public function merchant()
     {
-        return $this->belongsTo('RZP\Models\Merchant\Entity');
+        return $this->belongsTo(Merchant\Entity::class);
     }
 
     public function user()
@@ -145,6 +140,4 @@ class Entity extends Base\PublicEntity
         return $this->hasMany(Payment\Entity::class)
                     ->orderBy(Payment\Entity::CREATED_AT, 'desc');
     }
-
-
 }
