@@ -21,18 +21,3 @@ export const EmptyComponent = (uploadUrl, openModalFunc) => {
     </div>
   );
 };
-
-/**
- *  Render customized status pill for batch
- */
-const BatchStatus = ({ status }) => (
-  <span title="Please refresh the page to check status.">
-    <BatchUploadStatusLabel status={status} />
-    {status === 'created' && <i class={`i i-refresh spin refetch-batch-btn`} />}
-  </span>
-);
-
-export const batchStatus = {
-  title: 'Status',
-  value: item => <BatchStatus status={item.status} />,
-};

@@ -6,11 +6,8 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import { Link } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
-import {
-  EmptyComponent,
-  batchStatus,
-} from 'merchant/components/BatchNew/ListAddons';
-import { batchIdLink, totalCount, batchName } from 'rzp/ui/item/pair';
+import { EmptyComponent } from 'merchant/components/BatchNew/ListAddons';
+import { batchIdLink, totalCount, batchName, status } from 'rzp/ui/item/pair';
 import { openModal } from 'rzp/modules/modals';
 
 import { luminateRow } from 'merchant/modules/app';
@@ -165,7 +162,7 @@ export default class BatchList extends Component {
             batchIdLink,
             batchName,
             totalCount,
-            batchStatus,
+            status,
             batchActions({
               mode,
               sendAll,
