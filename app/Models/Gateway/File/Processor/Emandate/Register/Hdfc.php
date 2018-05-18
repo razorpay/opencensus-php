@@ -55,7 +55,7 @@ class Hdfc extends Base
         {
             $token = $payment->getGlobalOrLocalTokenEntity();
 
-            $data = Fields::getEmandateRegistrationDataForRegisterFile($payment, $token);
+            $data = Fields::getEmandateRegistrationData($token, $payment->getId());
 
             $startDate = Carbon::createFromTimestamp($data[Fields::START_TIMESTAMP], Timezone::IST)
                                ->format('d/m/Y');

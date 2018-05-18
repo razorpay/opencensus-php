@@ -601,11 +601,11 @@ class NetbankingHdfcEmandateTest extends TestCase
                 'End_Date'                     => '07/05/2028',
                 'Frequency'                    => 'As & when Presented',
                 'Mandate ID'                   => $entityList['token']['id'],
-                'Status'                       => $entityList['status_in_file'],
-                'Remark'                       => '',
                 'Merchant Unique Reference No' => $entityList['payment']['id'],
                 'Mandate Serial Number'        => $entityList['token']['id'],
                 'Merchant Request No'          => $entityList['payment']['id'],
+                'Status'                       => $entityList['status_in_file'],
+                'Remarks'                      => '',
             ];
         }
 

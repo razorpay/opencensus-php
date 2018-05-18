@@ -164,7 +164,7 @@ class Header
     const HDFC_EM_REGISTER_MANDATE_SERIAL_NO                = HdfcEMRegisterHeadings::MANDATE_SERIAL_NUMBER;
     const HDFC_EM_REGISTER_MERCHANT_REQUEST_NO              = HdfcEMRegisterHeadings::MERCHANT_REQUEST_NO;
     const HDFC_EM_REGISTER_STATUS                           = HdfcEMRegisterHeadings::STATUS;
-    const HDFC_EM_REGISTER_REMARK                           = HdfcEMRegisterHeadings::REMARK;
+    const HDFC_EM_REGISTER_REMARKS                          = HdfcEMRegisterHeadings::REMARKS;
 
     //
     // HDFC Emandate Debit Response File Headers
@@ -537,11 +537,11 @@ class Header
                 self::HDFC_EM_REGISTER_END_DATE,
                 self::HDFC_EM_REGISTER_FREQUENCY,
                 self::HDFC_EM_REGISTER_MANDATE_ID,
-                self::HDFC_EM_REGISTER_STATUS,
-                self::HDFC_EM_REGISTER_REMARK,
                 self::HDFC_EM_REGISTER_MERCHANT_UNIQUE_REF_NO,
                 self::HDFC_EM_REGISTER_MANDATE_SERIAL_NO,
                 self::HDFC_EM_REGISTER_MERCHANT_REQUEST_NO,
+                self::HDFC_EM_REGISTER_STATUS,
+                self::HDFC_EM_REGISTER_REMARKS,
             ],
         ],
 
