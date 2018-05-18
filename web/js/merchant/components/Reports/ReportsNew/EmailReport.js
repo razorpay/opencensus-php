@@ -4,26 +4,13 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import AsyncButton from 'react-async-button';
 
 export default class EmailReport extends Component {
-  // emails map for tracking duplicate entries
-  // format {email_id : email@example.com}
-  emailsMap = {};
-
   state = {
     //list of selected email ids
     selectedEmails: [],
   };
 
-  componentWillMount() {
-    const { emails } = this.props;
-
-    //create <email_id -> email> map
-    emails.forEach(
-      (email, index) => (this.emailsMap[`email_${index}`] = email)
-    );
-  }
-
   handleChange = e => {
-    const email = e.target.dataset.emailid;
+    const email = e.target.dataset.email;
     let selectedEmails = [...this.state.selectedEmails];
 
     const foundIndex = selectedEmails.indexOf(email);
@@ -38,9 +25,7 @@ export default class EmailReport extends Component {
   };
 
   handleSend = () => {
-    let emails = this.state.selectedEmails
-      .map(emailId => this.emailsMap[emailId])
-      .join(',');
+    let emails = this.state.selectedEmails.join(',');
 
     //send empty event
     return this.props.onSend(null, emails);
@@ -48,7 +33,6 @@ export default class EmailReport extends Component {
 
   render() {
     const { selectedEmails } = this.state;
-    const { emailsMap } = this;
 
     return (
       <div>
@@ -63,20 +47,20 @@ export default class EmailReport extends Component {
           </p>
           <form>
             <strong>Choose Email:</strong>
-            {Object.keys(emailsMap).map((emailId, index) => (
-              <div class="form-group" key={emailId}>
+            {this.props.emails.map((email, index) => (
+              <div class="form-group" key={email}>
                 <div class="checkbox rzpCheckbox next">
                   <input
-                    name={emailId}
-                    id={emailId}
+                    name={email}
+                    id={email}
                     type="checkbox"
                     class="form-control"
-                    data-emailid={emailId}
-                    checked={selectedEmails.indexOf(emailId) > -1}
+                    data-email={email}
+                    checked={selectedEmails.indexOf(email) > -1}
                     onChange={this.handleChange}
                   />
-                  <label class="icon i-check" for={emailId}>
-                    {emailsMap[emailId]} {index === 0 && ' (you)'}
+                  <label class="icon i-check" for={email}>
+                    {email} {index === 0 && ' (you)'}
                   </label>
                 </div>
               </div>

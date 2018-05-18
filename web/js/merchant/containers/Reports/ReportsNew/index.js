@@ -401,17 +401,21 @@ export default class ReportsContainer extends Component {
 
   emailReport = (params, isMerchantAccount) => {
     const { currentReportList } = this.state;
-    let shouldUpdate = false;
+    let shouldUpdate = false,
+      newParams = {};
 
     if (currentReportList[params.config_id]) {
-      params = {
+      newParams = {
+        ...currentReportList[params.config_id],
         emails: params.emails,
-        id: currentReportList[params.config_id]['id'],
       };
+
       shouldUpdate = true;
+    } else {
+      newParams = params;
     }
 
-    return emailReportV2(params, isMerchantAccount, shouldUpdate)
+    return emailReportV2(newParams, isMerchantAccount, shouldUpdate)
       .then(data => {
         if (data.error) {
           return this.props.showNotification({
@@ -422,7 +426,7 @@ export default class ReportsContainer extends Component {
 
         this.props.closeModal();
 
-        if (configIdToUpdate) {
+        if (shouldUpdate) {
           this.props.updateReportInList(resp);
         }
 
@@ -440,13 +444,20 @@ export default class ReportsContainer extends Component {
     const { user } = this.props;
     const { accounts } = this.state;
 
-    const emails = [
+    let emails = [
       // first email will always be of owner
       user.contact_email,
       ...(user.transaction_report_email !== null &&
         user.transaction_report_email.split(',')),
       ...(accounts && accounts.map(acc => acc.email)),
     ];
+
+    //unique items
+    emails = [...new Set(emails)];
+
+    //remove empty vals
+    emails = emails.filter(email => email !== '');
+
     this.props.openModal({
       size: 'small',
       component: (
