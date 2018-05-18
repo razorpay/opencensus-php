@@ -21,6 +21,15 @@ import {
   { fetchAll, fetchIssuableBatchList, openModal }
 )
 export default class BatchListContainer extends ListContainer {
+  constructor(props) {
+    super(props);
+    //hotjar integration
+    if (typeof window.hj === 'function') {
+      window.hj('trigger', 'batch_payment_links');
+      window.hj('tagRecording', ['batch_payment_links']);
+    }
+  }
+
   sendAll = item => {
     this.props.openModal({
       size: 'small',
