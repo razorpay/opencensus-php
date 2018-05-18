@@ -1,5 +1,6 @@
 import { getCookie } from './cookies';
 import { getMode } from 'merchant/store';
+import { Event } from './event';
 
 export function merchantFetch(params) {
   if (typeof params === 'string') {
@@ -65,8 +66,15 @@ export default function ajax(params = {}) {
       },
       err => {
         let message = '';
-        if (err.status === 401) {
+        if (err.status === 401 || err.state === 403) {
           message = 'Unauthorized';
+
+          document.body.dispatchEvent(
+            new Event(
+              err.status === 401 ? 'UNAUTHORIZED' : 'NOT_AUTHENTICATED',
+              { bubbles: true }
+            )
+          );
         }
 
         reject(
