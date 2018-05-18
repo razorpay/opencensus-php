@@ -16,7 +16,7 @@ export default class ReportLoader extends Component {
             Genrating Report
             <div class="bar-loader" />
             <small class="help-block">
-              <i class="i i-info-circle" />
+              <i class="i i-info-circle" style={{ marginRight: '5px' }} />
               This may take some time to download. You can also choose to{' '}
               <span
                 class="btn-link"
