@@ -64,6 +64,17 @@ export default class App extends Component {
   }
 
   componentWillMount() {
+    /*
+    * Event Based Redirection
+    */
+    window.addEventListener('NOT_AUTHENTICATED', () => {
+      window.location.reload();
+    });
+
+    window.addEventListener('UNAUTHORIZED', () => {
+      this.props.history.push('/');
+    });
+
     let currentMode = LocalStorageService.getItem(this.modeToken);
 
     this.props.fetchGST();

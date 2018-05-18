@@ -221,14 +221,3 @@ const links = [
     ['Audit Log', '/audit-log', 'view_auditlog'],
   ],
 ];
-
-/*
- * Event Based Redirection
- */
-window.addEventListener('NOT_AUTHENTICATED', () => {
-  window.location.reload();
-});
-
-window.addEventListener('UNAUTHORIZED', () => {
-  window.location = '/';
-});
