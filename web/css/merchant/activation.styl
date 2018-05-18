@@ -87,6 +87,9 @@ $height = 600px
     &.main--hide
       display: none
 
+    &.main--full
+      bottom: 0
+
     &.block-scroll
       overflow: hidden
       bottom: 0
@@ -94,10 +97,10 @@ $height = 600px
     &.overlay-container
       bottom: 0
 
-  .btn--mobile
+  .device--mobile
     display: none
 
-  .btn--desktop
+  .device--desktop
     display: inline
 
   footer
@@ -140,7 +143,7 @@ $height = 600px
       .Dropzone-content
         font-size: 14px
 
-  main-title
+  header
     text-transform: uppercase
     display: block
     font-weight: 600
@@ -228,7 +231,7 @@ $height = 600px
     background: #fff
     padding: 24px 6%
     margin: -20px -12% 30px -12%
-    border: 1px solid $prime
+    border: 1px solid #e0e0e0
     box-shadow: 8px 8px 8px 0 rgba(132,155,191,0.1)
     color: #4D4D4D
     font-weight: 600
@@ -356,20 +359,52 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
   .ActivationContainer
     margin: 80px auto 40px
 
-  .btn--desktop
+  .device--desktop
     display: none !important
 
-  .btn--mobile
+  .device--mobile
     display: inline !important
-
-  .btn--back
-    margin: 0
-    position: absolute
-    right: 10px
-    top: 20px
 
   .Activation--wizard
     overflow: hidden
+
+    .main-title
+      position: absolute
+      padding: 20px
+      text-align: center
+      top: 0
+      left: 0
+      right: 0
+      background: white
+      font-size: 14px
+
+      .main-title-icon
+        vertical-align: middle
+        margin-right: 4px
+        font-size: 20px
+        opacity: 0
+        transition: 0.2s
+
+        &.drishy
+          opacity: 1
+
+    .btn--back
+      position: absolute
+      margin: 0
+      left: 8px
+      top: 50%
+      padding: 0 12px !important
+      font-size: 20px
+      border: none !important
+      background: transparent !important
+      transform: translateY(-50%)
+
+      i
+        margin: 0
+
+
+    .Form
+      margin-top: 60px
 
     .Input-el
       width: 220px

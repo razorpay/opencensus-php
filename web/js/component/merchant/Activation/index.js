@@ -169,6 +169,9 @@ export default class ActivationWizard extends React.Component {
 
   goto = newActiveTab => {
     if (newActiveTab === this.state.activeTab) {
+      this.setState({
+        showSubmitLayer: false,
+      });
       return; // No action if clicked on same Tab.
     }
 
@@ -249,7 +252,7 @@ export default class ActivationWizard extends React.Component {
   removeLoader = _ => {
     setTimeout(_ => {
       this.setState({ isSaving: LOADING_STATES.INITIAL });
-    }, 7000);
+    }, 227000);
   };
 
   next = e => this.goto(this.state.activeTab + 1);
@@ -424,6 +427,8 @@ export default class ActivationWizard extends React.Component {
     let activeTab = this.state.activeTab;
     activeTab = activeTab < 0 ? 0 : activeTab; // Graceful failure in case activeTab becomes negative. To handle non-reproducible weird error.
 
+    const isCurrentTabValid = this.state.tabs[activeTab];
+
     let isLastTab = activeTab == FORM_TABS.length - 1;
 
     // Data would be present, otherwise spinner is shown before this activation wizard
@@ -515,27 +520,37 @@ export default class ActivationWizard extends React.Component {
         <main
           class={classList(
             'form-container',
-            this.state.showSubmitLayer && 'block-scroll'
+            this.state.showSubmitLayer && 'block-scroll',
+            isSubmitFormRemoved && 'main--full'
           )}
         >
           {/* Active tab title */}
-          <main-title>
+          <header class="main-title">
             {activeTab != 0 && (
               <Button
-                class="btn--mobile btn--back"
-                iconBefore="chevron-left"
+                class="device--mobile btn--back"
+                iconBefore="arrow-back"
                 onClick={this.prev}
-              >
-                Back
-              </Button>
+              />
             )}
+            <span class="device--mobile">
+              <i
+                class={classList(
+                  'i-check text-success main-title-icon',
+                  isCurrentTabValid && 'drishy'
+                )}
+              />
+            </span>
+
             {FORM_TABS[activeTab]}
-          </main-title>
+          </header>
 
           {/* Alert: if linked account has been activated */}
           {isLinkedAccountForm &&
             !!this.props.data.activated && (
-              <Alert.Info>The account has been activated</Alert.Info>
+              <Alert.Info iconBefore="i-done-all">
+                The account has been activated
+              </Alert.Info>
             )}
 
           {/* Alert: if main activation form is in locked state */}
@@ -661,36 +676,37 @@ export default class ActivationWizard extends React.Component {
           )}
 
         {/* Activation form footer, to show actions / saving state */}
-        {!this.state.showSubmitLayer && (
-          <footer>
-            {/* Spinner state */}
-            <Loader isSaving={this.state.isSaving} />
+        {!isSubmitFormRemoved &&
+          !this.state.showSubmitLayer && (
+            <footer>
+              {/* Spinner state */}
+              <Loader isSaving={this.state.isSaving} />
 
-            {/* Action Button 1 */}
-            {activeTab != DOCUMENT_UPLOAD_STEP && (
-              <Button onClick={_ => this.goto()}>Save</Button>
-            )}
+              {/* Action Button 1 */}
+              {activeTab != DOCUMENT_UPLOAD_STEP && (
+                <Button onClick={_ => this.goto()}>Save</Button>
+              )}
 
-            {/* Action Button 2 */}
-            {isLastTab || (
-              <Button.Primary iconAfter="chevron-right" onClick={this.next}>
-                <span class="btn--desktop">Save & Next</span>
-                <span class="btn--mobile">Next</span>
-              </Button.Primary>
-            )}
-
-            {/* Action Button 3 */}
-            {isLastTab &&
-              !isSubmitFormRemoved && (
-                <Button.Primary
-                  class={classList(!this.isAllTabsValid() && 'disabled')}
-                  onClick={this.toggleSubmitLayer}
-                >
-                  Submit Form
+              {/* Action Button 2 */}
+              {isLastTab || (
+                <Button.Primary iconAfter="chevron-right" onClick={this.next}>
+                  <span class="device--desktop">Save & Next</span>
+                  <span class="device--mobile">Next</span>
                 </Button.Primary>
               )}
-          </footer>
-        )}
+
+              {/* Action Button 3 */}
+              {isLastTab &&
+                !isSubmitFormRemoved && (
+                  <Button.Primary
+                    class={classList(!this.isAllTabsValid() && 'disabled')}
+                    onClick={this.toggleSubmitLayer}
+                  >
+                    Submit Form
+                  </Button.Primary>
+                )}
+            </footer>
+          )}
       </div>
     );
   }
@@ -721,17 +737,22 @@ function Loader({ isSaving }) {
         if (isSaving === LOADING_STATES.PENDING) {
           <React.Fragment>
             <span class="spin-btn" />
-            Saving Changes...
+            <span class="device--desktop">Saving Changes...</span>
+            <span class="device--mobile">Saving</span>
           </React.Fragment>;
         } else if (isSaving === LOADING_STATES.SUCCESS) {
           <React.Fragment>
             <i class="i-check text-success" />
-            <span class="text-success">All changes saved</span>
+            <span class="text-success device--desktop">All changes saved</span>
+            <span class="text-success device--mobile">Saved</span>
           </React.Fragment>;
         } else if (isSaving === LOADING_STATES.ERROR) {
           <React.Fragment>
             <i class="i-close text-danger" />
-            <span class="text-danger">Last changes are not saved!</span>
+            <span class="text-danger device--desktop">
+              Last changes are not saved!
+            </span>
+            <span class="text-danger device--mobile">Not Saved!</span>
           </React.Fragment>;
         }
       }}
@@ -826,7 +847,7 @@ class SubmitForm extends React.Component {
     return (
       <div class="SubmitForm-backdrop">
         <div class="SubmitForm-modal">
-          <main-title>SUBMIT FORM</main-title>
+          <header>SUBMIT FORM</header>
 
           <div class="tnc-text">
             {/* Confirmation checkbox*/}
@@ -878,7 +899,8 @@ class SubmitForm extends React.Component {
             iconBefore="chevron-left"
             onClick={e => closeSubmitForm(e, false)}
           >
-            Back to form
+            <span class="device--desktop">Back to form</span>
+            <span class="device--mobile">Close</span>
           </Button>
 
           {/* Action button 2 */}
