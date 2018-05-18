@@ -122,7 +122,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
   const merchant = model.merchant;
   const isDetailsLoading = !Object.keys(toJS(merchant.details)).length;
   const isFeaturesLoading = !Object.keys(toJS(merchant.features)).length;
-  const isAdminsLoading = !Object.keys(toJS(merchant.adminsMap)).length;
+  let isAdminsLoading = !Object.keys(toJS(merchant.adminsMap)).length;
+
+  // If user has no permission, then don't wait for this
+  if (!user.permissions.find(perm => perm === 'view_all_admin')) {
+    isAdminsLoading = false;
+  }
 
   /* Confirmation Messages */
   const toggleArchiveMerchantCM = function() {
