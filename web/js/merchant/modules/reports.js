@@ -7,6 +7,7 @@ const GENERATE_REPORT = 'GENERATE_REPORT';
 
 const ADD_REPORT = 'ADD_REPORT';
 const REMOVE_REPORT = 'REMOVE_REPORT';
+const UPDATE_REPORT = 'UPDATE_REPORT';
 
 const downloadReportErrorMsg = {
   error: 'Oops!, Unable to generate report',
@@ -44,9 +45,14 @@ const getFile = (fileId, accountId) => {
   });
 };
 
+//TODO: not working!
 const updateLog = (data, accountId) => {
+  const logId = data.id;
+
+  delete data.id;
+
   return merchantFetch({
-    url: 'reporting/logs',
+    url: `reporting/logs/${logId}`,
     method: 'patch',
     data,
     ...(!!accountId && { accountId }),
@@ -69,7 +75,7 @@ export const generateReport = ajaxParams => {
 const pollInterval = 2, // poll interval in SECONDS
   timeout = 30 * 60 * 1000; // 30 minutes
 
-export const generateReportV2 = (params, isMerchantAccount) => {
+export const generateReportV2 = (params, isMerchantAccount, addReport) => {
   const startTime = new Date(),
     accountHeaderVal = !isMerchantAccount && params.generated_by;
 
@@ -81,6 +87,8 @@ export const generateReportV2 = (params, isMerchantAccount) => {
       if (!resp.success || !resp.data || !resp.data.id) {
         return downloadReportErrorMsg;
       }
+
+      addReport(resp.data);
 
       const logId = resp.data.id;
 
@@ -192,17 +200,23 @@ export const removeReportFromList = reportId => {
   };
 };
 
+export const updateReportInList = report => {
+  return {
+    type: UPDATE_REPORT,
+    report,
+  };
+};
+
 let initialState = {
   currentReportList: {},
 };
 
 export function reportsReducer(state = initialState, action) {
   let currentReportList = {};
+  currentReportList = { ...state.currentReportList };
 
   switch (action.type) {
     case `${ADD_REPORT}`:
-      currentReportList = { ...state.currentReportList };
-
       //attach unload event at the first report download
       if (
         Object.keys(currentReportList).length === 0 &&
@@ -213,9 +227,8 @@ export function reportsReducer(state = initialState, action) {
 
       currentReportList[action.report.config_id] = action.report;
       return set(state, 'currentReportList', currentReportList);
-    case `${REMOVE_REPORT}`:
-      currentReportList = { ...state.currentReportList };
 
+    case `${REMOVE_REPORT}`:
       if (currentReportList[action.reportId]) {
         delete currentReportList[action.reportId];
       }
@@ -224,6 +237,14 @@ export function reportsReducer(state = initialState, action) {
       if (Object.keys(currentReportList).length === 0) {
         window.onbeforeunload = null;
       }
+      return set(state, 'currentReportList', currentReportList);
+
+    // add emails to report config
+    case `${UPDATE_REPORT}`:
+      if (currentReportList[action.report.config_id]) {
+        currentReportList[action.report.config_id] = action.report;
+      }
+
       return set(state, 'currentReportList', currentReportList);
     default:
       return state;

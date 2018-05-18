@@ -43,7 +43,7 @@ export default class EmailReport extends Component {
       .join(',');
 
     //send empty event
-    return this.props.onSend(null, emails, this.props.shouldUpdate);
+    return this.props.onSend(null, emails);
   };
 
   render() {

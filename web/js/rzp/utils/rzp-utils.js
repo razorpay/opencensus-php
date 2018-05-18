@@ -498,3 +498,16 @@ export const getKeysSeparatedByPipe = params => {
 export const trim = str => {
   return str.replace(/\s+/g, '');
 };
+
+/**
+ * convert array of items to a sentence
+ * ex. item1, item2 and item3
+ */
+
+export const arrayToSentence = (arr = []) => {
+  if (arr.length === 1) {
+    return arr[0];
+  } else {
+    return arr.slice(0, arr.length - 1).join(', ') + ', and ' + arr.slice(-1);
+  }
+};

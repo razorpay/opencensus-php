@@ -22,6 +22,7 @@ import {
   emailReportV2,
   generateReportV2,
   addReportToList,
+  updateReportInList,
   removeReportFromList,
 } from 'merchant/modules/reports';
 import SelectConfig from 'merchant/components/Reports/ReportsNew/SelectConfig';
@@ -71,6 +72,7 @@ const requestFailedFunc = () => {
     openModal,
     closeModal,
     addReportToList,
+    updateReportInList,
     removeReportFromList,
   }
 )
@@ -255,7 +257,7 @@ export default class ReportsContainer extends Component {
       });
   }
 
-  generateReport(_, emails = null, shouldUpdate) {
+  generateReport(_, emails = null) {
     const { selectedConfig, selectedAccount } = this.state,
       { date, type, invoiceDate } = this.props,
       day = date.date(),
@@ -306,15 +308,18 @@ export default class ReportsContainer extends Component {
           };
 
         if (emails) {
-          return this.emailReport(reqData, isMerchantAccount, shouldUpdate);
+          return this.emailReport(reqData, isMerchantAccount);
         } else {
           this.props.showNotification(downloadStartedMessage);
-          this.props.addReportToList(reqData);
         }
 
-        return generateReportV2(reqData, isMerchantAccount).then(data => {
+        return generateReportV2(
+          reqData,
+          isMerchantAccount,
+          this.props.addReportToList
+        ).then(data => {
           if (data.error) {
-            this.props.removeReportFromList(selectedConfig.value);
+            // this.props.removeReportFromList(selectedConfig.value);
 
             return this.props.showNotification({
               type: 'error',
@@ -394,8 +399,17 @@ export default class ReportsContainer extends Component {
     }
   };
 
-  emailReport = (params, isMerchantAccount, shouldUpdate) => {
-    const { selectedConfig } = this.state;
+  emailReport = (params, isMerchantAccount) => {
+    const { currentReportList } = this.state;
+    let shouldUpdate = false;
+
+    if (currentReportList[params.config_id]) {
+      params = {
+        emails: params.emails,
+        id: currentReportList[params.config_id]['id'],
+      };
+      shouldUpdate = true;
+    }
 
     return emailReportV2(params, isMerchantAccount, shouldUpdate)
       .then(data => {
@@ -408,11 +422,13 @@ export default class ReportsContainer extends Component {
 
         this.props.closeModal();
 
+        if (configIdToUpdate) {
+          this.props.updateReportInList(resp);
+        }
+
         return this.props.showNotification({
           type: 'success',
-          message: `${
-            selectedConfig.label
-          } will be emailed to ${this.emailToSentence(
+          message: `Report will be emailed to ${this.emailToSentence(
             data.data.emails
           )} shortly`,
         });
@@ -437,7 +453,6 @@ export default class ReportsContainer extends Component {
         <EmailReport
           closeModal={this.props.closeModal}
           emails={emails}
-          shouldUpdate={e.target.dataset.shouldupdate || false}
           onSend={this.generateReport}
         />
       ),
@@ -513,8 +528,19 @@ export default class ReportsContainer extends Component {
           {/*Report Generate Panel*/}
           <div className={reportPanelClasses}>
             {!this.isMobileDevice && (
-              <div class="form-heading">{selectedConfig.label}</div>
+              <div class="form-heading">
+                {selectedConfig.label}
+                {selectedConfig.description && (
+                  <small
+                    className="help-block"
+                    style={{ fontWeight: 'normal' }}
+                  >
+                    {selectedConfig.description}
+                  </small>
+                )}
+              </div>
             )}
+
             {this.isMarketplaceEnabled &&
             selectedConfig.type in marketplaceConfigTypes ? (
               <div className="form-element">
@@ -594,13 +620,6 @@ export default class ReportsContainer extends Component {
             </div>
 
             <div class="form-element">
-              {selectedConfig.description && (
-                <footer style={{ marginBottom: '16px' }}>
-                  {selectedConfig.description}
-                </footer>
-              )}
-              <hr />
-
               {!currentReportList[selectedConfig.value] && (
                 <Fragment>
                   <button class="btn btn-primary" onClick={this.generateReport}>
