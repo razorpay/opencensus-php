@@ -34,10 +34,33 @@ class EnachRbl extends Base
                                     'mode'  => '33188'
                                   ];
 
+    const NUM_SECS_IN_ONE_DAY = 86400;
+
     public function fetchEntities(): PublicCollection
     {
         $begin = $this->gatewayFile->getBegin();
         $end = $this->gatewayFile->getEnd();
+
+        //
+        // We add one day to this because in case of enach, we fetch the
+        // entities from enach entity. In enach entity, we store the date
+        // when we are supposed to pick that entity up in the cron.
+        // In this case, we don't care about the time, but only the date.
+        // So, on day T, we should be picking up all enach entities which
+        // have registration_date set to day T.
+        // Hence, we are adding one day to gateway file's begin and end because
+        // gateway file's begin and end are always automatically set to the
+        // previous day's begin and end. So, on day T, gateway file's
+        // begin and end will be set to that of day T-1.
+        // The above happens only for cron. Hence, the check against cron app.
+        // For manual run, the expectation is that the caller understands how
+        // enach gateway files work and would send begin and end of day T only.
+        //
+        if ($this->app['basicauth']->isCron() === true)
+        {
+            $begin += self::NUM_SECS_IN_ONE_DAY;
+            $end += self::NUM_SECS_IN_ONE_DAY;
+        }
 
         $payments = $this->repo->payment->fetchPendingEmandateRegistrationForEnach($begin, $end);
 
