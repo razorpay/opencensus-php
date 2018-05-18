@@ -66,12 +66,12 @@ export default function ajax(params = {}) {
       },
       err => {
         let message = '';
-        if (err.status === 401 || err.state === 403) {
+        if (err.status === 401 || err.status === 403) {
           message = 'Unauthorized';
 
           document.body.dispatchEvent(
             new Event(
-              err.status === 401 ? 'UNAUTHORIZED' : 'NOT_AUTHENTICATED',
+              err.status === 403 ? 'UNAUTHORIZED' : 'NOT_AUTHENTICATED',
               { bubbles: true }
             )
           );
