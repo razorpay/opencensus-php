@@ -15,6 +15,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\EMandate\Base;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as Headings;
 use RZP\Gateway\Netbanking\Hdfc\Fields;
+use RZP\Models\FileStore\Utility;
 use ZipArchive;
 use Carbon\Carbon;
 
@@ -73,7 +74,7 @@ class EnachRbl extends Base
 
             $fileName = $this->getZipFileToWriteName(false);
 
-            $zipFilePath = sys_get_temp_dir() . $fileName . '.zip';
+            $zipFilePath = $this->getLocalSaveDir() . DIRECTORY_SEPARATOR . $fileName . '.zip';
 
             $fileName = $this->getZipFileToWriteName();
 
@@ -197,5 +198,17 @@ class EnachRbl extends Base
     protected function getStorageDir()
     {
         return storage_path(FileStore\Store::STORAGE_DIRECTORY);
+    }
+
+    protected function getLocalSaveDir(): string
+    {
+        $dirPath = storage_path('files/emandate');
+
+        if (file_exists($dirPath) === false)
+        {
+            (new Utility)->callFileOperation('mkdir', [$dirPath, 0777, true]);
+        }
+
+        return $dirPath;
     }
 }
