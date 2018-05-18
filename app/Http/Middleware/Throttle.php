@@ -69,12 +69,12 @@ final class Throttle
             Metric::LABEL_METHOD                => $request->getMethod(),
             Metric::LABEL_ROUTE                 => $request->route()->getName(),
             Metric::LABEL_STATUS                => $response->getStatusCode(),
-            Metric::LABEL_RZP_MODE              => $requestCtx->getMode(),
-            Metric::LABEL_RZP_KEY_ID            => $requestCtx->getKeyId(),
-            Metric::LABEL_RZP_MERCHANT_ID       => $requestCtx->getMid(),
-            Metric::LABEL_RZP_OAUTH_CLIENT_ID   => $requestCtx->getOauthClientId(),
+            Metric::LABEL_RZP_MODE              => $requestCtx->getMode() ?: Metric::LABEL_NONE_VALUE,
+            Metric::LABEL_RZP_KEY_ID            => $requestCtx->getKeyId() ?: Metric::LABEL_NONE_VALUE,
+            Metric::LABEL_RZP_MERCHANT_ID       => $requestCtx->getMid() ?: Metric::LABEL_NONE_VALUE,
+            Metric::LABEL_RZP_OAUTH_CLIENT_ID   => $requestCtx->getOauthClientId() ?: Metric::LABEL_NONE_VALUE,
             Metric::LABEL_RZP_AUTH              => $requestCtx->getAuth(),
-            Metric::LABEL_RZP_INTERNAL_APP_NAME => $requestCtx->getInternalAppName(),
+            Metric::LABEL_RZP_INTERNAL_APP_NAME => $requestCtx->getInternalAppName() ?: Metric::LABEL_NONE_VALUE,
         ];
     }
 }
