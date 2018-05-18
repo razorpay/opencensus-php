@@ -16,6 +16,10 @@ import accountFormTabsContent, {
   accountFormTabs,
 } from './AccountActivationFormMap';
 
+import * as trackers from 'merchant/containers/Activation/ga_new';
+
+let onAction = trackers;
+
 const LOADING_STATES = {
   ERROR: -1, // Error = show error msg
   SUCCESS: 1, // Success = show success msg
@@ -59,6 +63,10 @@ export default class ActivationWizard extends React.Component {
     super(props);
     this.prepareTabs(props);
     this.setInitialTab();
+
+    if (props.accountId) {
+      onAction = null; // Only tracking for main activation form
+    }
   }
 
   prepareTabs(props) {
@@ -164,15 +172,77 @@ export default class ActivationWizard extends React.Component {
     });
   }
 
-  changeTab = ({ target }) =>
-    this.goto(parseInt(target.getAttribute('data-index')));
+  saveCurrentTab = () => {
+    const callBack =
+      onAction &&
+      function(result, error) {
+        onAction.trackSave({
+          tabId: this.state.activeTab,
+          type: result, // result = true for Success, false for Error, null for no api call
+          error,
+        });
+      };
 
-  goto = newActiveTab => {
+    this.goto(null, callBack);
+  };
+
+  next = e => {
+    const callBack =
+      onAction &&
+      function(result, error) {
+        onAction.trackSaveAndNext({
+          tabId: this.state.activeTab,
+          type: result, // result = true for Success, false for Error, null for no api call
+          error,
+        });
+      };
+
+    this.goto(this.state.activeTab + 1, callBack);
+  };
+
+  prev = e => {
+    const callBack =
+      onAction &&
+      function(result, error) {
+        onAction.trackBack({
+          tabId: this.state.activeTab,
+          type: result, // result = true for Success, false for Error, null for no api call
+          error,
+        });
+      };
+
+    this.goto(this.state.activeTab - 1, callBack);
+  };
+
+  changeTab = ({ target }) => {
+    const tabId = parseInt(target.getAttribute('data-index'));
+    const currentActiveTab = this.state.activeTab;
+
+    const callBack =
+      onAction &&
+      function(result, error) {
+        onAction.trackTabClick(tabId); // Tracks current tab clicked
+
+        if (typeof result !== 'undefined') {
+          onAction.trackSaveOnTabClick({
+            tabId: currentActiveTab, // Tracks for tab that got saved
+            type: result, // result = true for Success, false for Error, null for no api call
+            error,
+          });
+        }
+      };
+
+    this.goto(tabId, callBack);
+  };
+
+  goto = (newActiveTab, cb) => {
     if (newActiveTab === this.state.activeTab) {
+      // cb is ignored if same tab
+
       this.setState({
         showSubmitLayer: false,
       });
-      return; // No action if clicked on same Tab.
+      return; // No action if clicked on same Tab. (Click on Save sends newActiveTab = null, so it's not same as click on same tab)
     }
 
     let currentActive = this.state.activeTab;
@@ -191,6 +261,7 @@ export default class ActivationWizard extends React.Component {
     });
 
     if (!shouldSave) {
+      cb && cb();
       return;
     }
 
@@ -231,8 +302,10 @@ export default class ActivationWizard extends React.Component {
 
       if (data.errors) {
         isSaving = LOADING_STATES.ERROR;
+        cb && cb(false, data.errors);
       } else {
         isSaving = LOADING_STATES.SUCCESS;
+        cb && cb(true);
       }
 
       this.setState({
@@ -245,7 +318,21 @@ export default class ActivationWizard extends React.Component {
   };
 
   submitForm = () => {
-    return this.props.submitForm();
+    const promise = this.props.submitForm();
+
+    onAction &&
+      promise.then(data => {
+        if (data.errors) {
+          onAction.trackSubmit({
+            error: data.errors,
+            type: false,
+          });
+        } else {
+          onAction.trackSubmit({
+            type: true,
+          });
+        }
+      });
   };
 
   /* Fadeout based loader text */
@@ -254,9 +341,6 @@ export default class ActivationWizard extends React.Component {
       this.setState({ isSaving: LOADING_STATES.INITIAL });
     }, 227000);
   };
-
-  next = e => this.goto(this.state.activeTab + 1);
-  prev = e => this.goto(this.state.activeTab - 1);
 
   onChange = ({ target }) => {
     let stateName = target.getAttribute('data-name');
@@ -425,7 +509,8 @@ export default class ActivationWizard extends React.Component {
     let isSubmitFormRemoved = isSubmitFormDisabled(this.props.data); // Submit form is removed if locked, activated or in submitted state
 
     let activeTab = this.state.activeTab;
-    activeTab = activeTab < 0 ? 0 : activeTab; // Graceful failure in case activeTab becomes negative. To handle non-reproducible weird error.
+    console.log('....ACTIVE TAB...', activeTab);
+    activeTab = activeTab < 0 || !activeTab ? 0 : activeTab; // Graceful failure in case activeTab becomes negative. To handle non-reproducible weird error.
 
     const isCurrentTabValid = this.state.tabs[activeTab];
 
@@ -684,7 +769,7 @@ export default class ActivationWizard extends React.Component {
 
               {/* Action Button 1 */}
               {activeTab != DOCUMENT_UPLOAD_STEP && (
-                <Button onClick={_ => this.goto()}>Save</Button>
+                <Button onClick={_ => this.saveCurrentTab}>Save</Button>
               )}
 
               {/* Action Button 2 */}
@@ -866,6 +951,9 @@ class SubmitForm extends React.Component {
                 href="https://razorpay.com/terms/"
                 target="_blank"
                 class="highlight"
+                onClick={() =>
+                  onAction && onAction.trackLinkClick('Terms of use')
+                }
               >
                 Terms & Conditions
               </a>,{' '}
@@ -873,6 +961,9 @@ class SubmitForm extends React.Component {
                 href="https://razorpay.com/agreement/"
                 target="_blank"
                 class="highlight"
+                onClick={() =>
+                  onAction && onAction.trackLinkClick('Merchant Agreement')
+                }
               >
                 Merchant Agreement
               </a>{' '}
@@ -881,6 +972,9 @@ class SubmitForm extends React.Component {
                 href="https://razorpay.com/privacy/"
                 target="_blank"
                 class="highlight"
+                onClick={() =>
+                  onAction && onAction.trackLinkClick('Privacy Policy')
+                }
               >
                 Privacy Policy
               </a>. By submitting the form, I agree to abide by the rules at all

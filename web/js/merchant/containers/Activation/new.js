@@ -13,6 +13,7 @@ import { updateSession } from 'merchant/modules/session';
 import User from 'merchant/models/User';
 
 import { withRouter } from 'react-router-dom';
+import { trackActivateNow, trackGoToConfig } from './ga_new';
 
 /*
 * ActivationContainer is used in:
@@ -225,6 +226,11 @@ export class ActivationContainer extends React.Component {
       });
   }
 
+  openWizard = () => {
+    trackActivateNow();
+    this.setState({ openWizard: true });
+  };
+
   /*
   * 1. For linked account form, only spinner or Activation wizard.
   * 2. For main account form, spinner, Welcome Screen, Activation wizard and Success screens are shown.
@@ -255,10 +261,7 @@ export class ActivationContainer extends React.Component {
     ) {
       modalClass = 'Activation--welcome';
       content = (
-        <WelcomeScreen
-          onClose={this.props.onClose}
-          openWizard={() => this.setState({ openWizard: true })}
-        />
+        <WelcomeScreen onClose={this.props.onClose} openWizard={openWizard} />
       );
     } else {
       modalClass = 'Activation--wizard';
@@ -290,6 +293,10 @@ export class ActivationContainer extends React.Component {
  * Success screen is shown only when the user has submitted the form. It's not shown in linked account activation but only main form.
  * */
 const SuccessScreen = _ => {
+  function clickConfig(e) {
+    onAction.trackGoToConfig();
+  }
+
   return (
     <div class="Activation--success">
       <div class="Activation-title">
@@ -312,6 +319,7 @@ const SuccessScreen = _ => {
             'Personalise your checkout form, emails and pages with your logo and brand.'
           }
           icon={'icon-done'}
+          onClick={this.clickConfig}
           to="/config"
         />
       </div>
