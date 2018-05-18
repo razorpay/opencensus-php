@@ -85,7 +85,7 @@ class Service
         return new static;
     }
 
-    public function core()
+    public function core(): Core
     {
         if ($this->core !== null)
         {

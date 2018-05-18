@@ -4,9 +4,9 @@ namespace RZP\Models\PaymentLink;
 
 class StatusReason
 {
-    const EXPIRED           = 'expired';
-    const DEACTIVATED       = 'deactivated';
-    const COMPLETED         = 'completed';
+    const EXPIRED     = 'expired';
+    const DEACTIVATED = 'deactivated';
+    const COMPLETED   = 'completed';
 
     public static $statusReasons = [
         self::EXPIRED,
@@ -14,8 +14,10 @@ class StatusReason
         self::COMPLETED,
     ];
 
-    public static function exists(string $status): bool
+    public static function isValid(string $status): bool
     {
-        return defined(get_class() . '::' . strtoupper($status));
+        $key = __CLASS__ . '::' . strtoupper($status);
+
+        return ((defined($key) === true) and (constant($key) === $status));
     }
 }
