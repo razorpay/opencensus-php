@@ -76,12 +76,12 @@ class Fields
 
     /**
      * @param Payment\Entity $payment
+     * @param Token\Entity   $token
+     *
      * @return array
      */
-    public static function getEmandateRegistrationDataForRegisterFile(Payment\Entity $payment): array
+    public static function getEmandateRegistrationDataForRegisterFile(Payment\Entity $payment, Token\Entity $token): array
     {
-        $token = $payment->getGlobalOrLocalTokenEntity();
-
         return self::getEmandateRegistrationData($token, $payment->getId());
     }
 }

@@ -53,7 +53,9 @@ class Hdfc extends Base
 
         foreach ($payments as $payment)
         {
-            $data = Fields::getEmandateRegistrationDataForRegisterFile($payment);
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
+            $data = Fields::getEmandateRegistrationDataForRegisterFile($payment, $token);
 
             $startDate = Carbon::createFromTimestamp($data[Fields::START_TIMESTAMP], Timezone::IST)
                                ->format('d/m/Y');
@@ -65,7 +67,7 @@ class Hdfc extends Base
                 Headings::CLIENT_NAME                  => $data[Headings::CLIENT_NAME],
                 Headings::CUSTOMER_NAME                => $data[Headings::CUSTOMER_NAME],
                 Headings::CUSTOMER_ACCOUNT_NUMBER      => $data[Headings::CUSTOMER_ACCOUNT_NUMBER],
-                Headings::AMOUNT                       => number_format(Fields::INIT_AMOUNT, 2, '.', ''),
+                Headings::AMOUNT                       => number_format($token->getMaxAmount() / 100, 2, '.', ''),
                 Headings::AMOUNT_TYPE                  => $data[Headings::AMOUNT_TYPE],
                 Headings::START_DATE                   => $startDate,
                 Headings::END_DATE                     => $endDate,
