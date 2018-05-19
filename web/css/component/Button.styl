@@ -8,12 +8,16 @@
   border: 1px solid #e6e7e8
   outline: none
   margin-right: 12px
-  transition: 0.2s, 0.3s border
+  transition: 0.15s, 0.3s border
   &:active
-    box-shadow: 0 2px 4px rgba(0,0,0,.15) inset
+    color: #58666e
+    background-color: #cfcfcf
+    border-color: #94abb1
+    box-shadow: inset 0 3px 5px rgba(0,0,0,0.125)
+
   &:hover
-    color: $primary-color
-    border-color: lighten($primary-color, 30%)
+    background-color: #f2f2f2
+
   &.disabled
     cursor: not-allowed
     opacity: 0.5
@@ -22,8 +26,16 @@
   background-color: #528FF0
   color: #fff
   border: darken($primary-color, 10%)
+
   &:hover
     color: #fff
+    background-color: #2371ec
+    border-color: #135fd9
+
+  &:active
+    color: #fff
+    background-color: #135fd9
+    border-color: #0e449c
 
 .Button-icon
   float: left

@@ -13,7 +13,7 @@ import { updateSession } from 'merchant/modules/session';
 import User from 'merchant/models/User';
 
 import { withRouter } from 'react-router-dom';
-import { trackActivateNow, trackGoToConfig } from './ga_new';
+import { trackLinkClick, trackGoToConfig } from './ga_new';
 
 /*
 * ActivationContainer is used in:
@@ -62,6 +62,15 @@ export class ActivationContainer extends React.Component {
 
   updateSession(data) {
     const { session, accountId } = this.props;
+
+    // Update data
+    this.setState({ data });
+
+    // Session need not be updated if it's linked account form
+    if (accountId) {
+      return;
+    }
+
     const {
       activation_progress,
       activated,
@@ -69,14 +78,7 @@ export class ActivationContainer extends React.Component {
       submitted,
     } = data;
 
-    // Update data
-    this.setState({ data });
-
-    // Ideally, updateSession must not be called if accountId present. Here is just Safe check.
-    if (accountId) {
-      return;
-    }
-
+    // Updating % activation_progress (side bar) and other important activation fields
     const user = new User({
       ...session.user,
       activation_progress,
@@ -136,7 +138,7 @@ export class ActivationContainer extends React.Component {
             message: response.errors,
           });
         } else {
-          !this.props.accountId && this.updateSession(response.data); // Updating % activation_progress (side bar)
+          this.updateSession(response.data);
         }
 
         return response;
@@ -226,8 +228,14 @@ export class ActivationContainer extends React.Component {
       });
   }
 
+  closeWelcomeScreen = e => {
+    trackLinkClick('Activate Later');
+
+    this.props.onClose(e);
+  };
+
   openWizard = () => {
-    trackActivateNow();
+    trackLinkClick('Activate Now');
     this.setState({ openWizard: true });
   };
 
@@ -261,7 +269,10 @@ export class ActivationContainer extends React.Component {
     ) {
       modalClass = 'Activation--welcome';
       content = (
-        <WelcomeScreen onClose={this.props.onClose} openWizard={openWizard} />
+        <WelcomeScreen
+          onClose={this.closeWelcomeScreen}
+          openWizard={this.openWizard}
+        />
       );
     } else {
       modalClass = 'Activation--wizard';
@@ -270,6 +281,7 @@ export class ActivationContainer extends React.Component {
           accountId={this.props.accountId}
           data={data}
           categories={categories}
+          isFormTouched={this.state.isFormTouched}
           save={this.saveStep}
           saveFile={this.saveFile}
           submitForm={this.submitForm}
@@ -294,7 +306,7 @@ export class ActivationContainer extends React.Component {
  * */
 const SuccessScreen = _ => {
   function clickConfig(e) {
-    onAction.trackGoToConfig();
+    trackGoToConfig();
   }
 
   return (
@@ -385,6 +397,7 @@ function isFormTouched(data) {
 const defaultKeysInForm = ['contact_name', 'contact_email', 'contact_mobile'];
 const excludedFieldsInForm = [
   'created_at',
+  'business_international',
   'locked',
   'updated_at',
   'submitted',

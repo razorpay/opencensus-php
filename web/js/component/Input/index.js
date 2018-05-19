@@ -152,7 +152,7 @@ export default class Field extends React.PureComponent {
         // Handle api based information
         if (info.then) {
           this.setState({ infoString: '...' }); // Dummy loader while resolving promise
-          infoblur
+          info
             .then(data => {
               if (data) {
                 this.setState({ infoString: data });

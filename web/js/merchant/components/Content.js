@@ -248,7 +248,9 @@ export default class Content extends Component {
           />
         </ModalMask>
       ) : (
-        <ModalFormView {...this.detailProps} />
+        <ErrorBoundary>
+          <ModalFormView {...this.detailProps} />
+        </ErrorBoundary>
       );
     }
 

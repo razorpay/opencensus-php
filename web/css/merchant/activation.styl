@@ -95,7 +95,8 @@ $height = 600px
       bottom: 0
 
     &.overlay-container
-      bottom: 0
+      background-color: #fafafa
+      z-index: 2
 
   .device--mobile
     display: none
@@ -143,33 +144,17 @@ $height = 600px
       .Dropzone-content
         font-size: 14px
 
-  header
+  main-title
     text-transform: uppercase
     display: block
     font-weight: 600
     margin-bottom: 12px
+    font-size: 14px !important
 
   .Form
     margin-top: 36px
 
-  .SubmitForm-backdrop
-    background-color: rgba(17,30,60, 0.1)
-    width: 100%
-    height: 100%
-    position: absolute
-    top: 0
-    left: 0
-    pointer-events: auto
-
   .SubmitForm-modal
-    position: absolute
-    bottom: 0
-    left: 0
-    width: 100%
-    padding: 24px 32px 32px
-    background-color: #F6F6F6
-    box-shadow: 0 -2px 10px 0 rgba(121,121,121,0.21)
-
     p
       width: 95%
 
@@ -184,6 +169,9 @@ $height = 600px
       .Input--checkbox
         position: absolute
         margin: 4px 8px 0 0
+
+  .SubmitForm-content
+    margin-top: 36px
 
     button:nth-of-type(1)
       margin-left: 0
@@ -286,7 +274,7 @@ $height = 600px
     margin-bottom: 6px
 
     &:last-child
-      padding: 10px 48px
+      padding: 10px 36px
 
 /* Standalone page size */
 .ActivationContainer
@@ -368,7 +356,7 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
   .Activation--wizard
     overflow: hidden
 
-    .main-title
+    main-title
       position: absolute
       padding: 20px
       text-align: center
@@ -379,14 +367,18 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
       font-size: 14px
 
       .main-title-icon
-        vertical-align: middle
-        margin-right: 4px
-        font-size: 20px
-        opacity: 0
-        transition: 0.2s
+        position: relative
 
-        &.drishy
-          opacity: 1
+        i
+          position: absolute
+          font-size: 16px
+          left: -24px
+          top: -2px
+          opacity: 0
+          transition: 0.2s
+
+          &.drishy
+            opacity: 1
 
     .btn--back
       position: absolute
@@ -404,6 +396,9 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
 
 
     .Form
+      margin-top: 60px
+
+    .Form, .SubmitForm-content
       margin-top: 60px
 
     .Input-el

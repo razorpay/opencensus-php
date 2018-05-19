@@ -135,7 +135,7 @@ export default class ActivationWizard extends React.Component {
       this.props.data &&
       this.props.data.updated_at !== nextProps.data.updated_at
     ) {
-      this.markTabIfActive();
+      this.markTabIfActive(); // Tick/untick all tabs
     }
   }
 
@@ -149,12 +149,17 @@ export default class ActivationWizard extends React.Component {
       if (!tabStatusValid && firstInValid === null) {
         firstInValid = i;
       }
-      this.state.tabs[i] = tabStatusValid; // Mark tabs as valid-invalid
+      this.state.tabs[i] = tabStatusValid; // Mark tabs as valid-invalid (IMPORTANT STEP)
+    }
+
+    // If main Form is not touched ever, then set initial tab = 0
+    if (!this.props.accountId && this.props.isFormTouched === false) {
+      firstInValid = 0;
     }
 
     if (firstInValid === null) {
       firstInValid = FORM_TABS.length - 1; // In case all are filled then set last tab(which is actually filled)
-      !isSubmitFormRemoved && (this.state.showSubmitLayer = true); // Don't show submit form if it's already activated/locked/submitted
+      !isSubmitFormRemoved && (this.state.showSubmitLayer = true); // Directly show submit form if it's NOT activated/locked/submitted
     }
 
     this.state.activeTab = firstInValid;
@@ -167,17 +172,26 @@ export default class ActivationWizard extends React.Component {
 
     tabs[lastActive] = isValid;
 
+    // To handle case if user directly clicked on 'Submit Form' tab to send dirty data
+    if (!isValid) {
+      this.setState({
+        showSubmitLayer: false,
+      });
+    }
+
     this.setState({
       tabs,
     });
   }
 
   saveCurrentTab = () => {
+    const currenActiveTab = this.state.activeTab;
+
     const callBack =
       onAction &&
       function(result, error) {
         onAction.trackSave({
-          tabId: this.state.activeTab,
+          tabId: currenActiveTab,
           type: result, // result = true for Success, false for Error, null for no api call
           error,
         });
@@ -187,11 +201,13 @@ export default class ActivationWizard extends React.Component {
   };
 
   next = e => {
+    const currenActiveTab = this.state.activeTab;
+
     const callBack =
       onAction &&
       function(result, error) {
         onAction.trackSaveAndNext({
-          tabId: this.state.activeTab,
+          tabId: currenActiveTab,
           type: result, // result = true for Success, false for Error, null for no api call
           error,
         });
@@ -201,11 +217,13 @@ export default class ActivationWizard extends React.Component {
   };
 
   prev = e => {
+    const currenActiveTab = this.state.activeTab;
+
     const callBack =
       onAction &&
       function(result, error) {
         onAction.trackBack({
-          tabId: this.state.activeTab,
+          tabId: currenActiveTab,
           type: result, // result = true for Success, false for Error, null for no api call
           error,
         });
@@ -236,20 +254,22 @@ export default class ActivationWizard extends React.Component {
   };
 
   goto = (newActiveTab, cb) => {
-    if (newActiveTab === this.state.activeTab) {
-      // cb is ignored if same tab
-
+    // Hide only if it's already visible. To handle if the person has clicked on 'Submit Form' to save dirty data.
+    if (this.state.showSubmitLayer) {
       this.setState({
         showSubmitLayer: false,
       });
+    }
+
+    // cb is ignored if clicked on same tab. And no further action taken.
+    if (newActiveTab === this.state.activeTab) {
       return; // No action if clicked on same Tab. (Click on Save sends newActiveTab = null, so it's not same as click on same tab)
     }
 
     let currentActive = this.state.activeTab;
     let tabs = this.state.tabs.slice();
 
-    newActiveTab =
-      typeof newActiveTab === 'undefined' ? currentActive : newActiveTab; // currentActive tab remains (To handle Save btn click).
+    newActiveTab = newActiveTab != null ? newActiveTab : currentActive; // currentActive tab remains (To handle Save btn click).
 
     let shouldSave = Object.keys(this.state.dirty).length ? true : null;
 
@@ -257,33 +277,21 @@ export default class ActivationWizard extends React.Component {
       lastActiveTab: currentActive,
       activeTab: newActiveTab,
       isSaving: shouldSave ? LOADING_STATES.PENDING : LOADING_STATES.INITIAL,
-      showSubmitLayer: false,
     });
 
     if (!shouldSave) {
-      cb && cb();
+      cb && cb(); // If clicked on Save/Save-Next btn
       return;
     }
 
     const data = { ...this.state.dirty };
 
-    // Setting the empty strings as null. Changed to null, since this is the default value in database.
-    Object.keys(data).forEach(k => {
-      if (data[k] === '') {
-        data[k] = null;
+    // // If user empties the field, it must be set to NULL in DB, since this is the default value in database.
+    Object.keys(data).forEach(field => {
+      if (data[field] === '') {
+        data[field] = null;
       }
     });
-
-    for (let i = 0; i < Object.keys(data).length; i++) {
-      let key = Object.keys(this.state.dirty)[i];
-
-      if (data.hasOwnProperty(key)) {
-        if (data[key] === '') {
-          // If user empties the field, it must be set to NULL in DB
-          data[key] = null;
-        }
-      }
-    }
 
     this.props.save(data).then(data => {
       // After updating 'Business type' detail, now update dependent field on FE.
@@ -306,10 +314,13 @@ export default class ActivationWizard extends React.Component {
       } else {
         isSaving = LOADING_STATES.SUCCESS;
         cb && cb(true);
+
+        this.setState({
+          dirty: {},
+        });
       }
 
       this.setState({
-        dirty: {},
         isSaving,
       });
 
@@ -490,18 +501,47 @@ export default class ActivationWizard extends React.Component {
   }
 
   /*
-  * Opens backdrop submit layer
+  * Toggles backdrop submit layer
   * - By default is opens the submit layer.
   * - Closes the layer if false passed explicitly
   * */
-  toggleSubmitLayer = (e, mode = true) => {
-    if (mode && !this.isAllTabsValid()) {
-      return;
+  toggleSubmitLayer = e => {
+    if (!this.isAllTabsValid()) {
+      return; // Now allowed to go to submit form unless all tabs are valid
     }
 
-    this.setState({
-      showSubmitLayer: mode,
-    });
+    if (this.state.showSubmitLayer) {
+      this.setState({
+        showSubmitLayer: false,
+      });
+    } else {
+      this.setState({
+        showSubmitLayer: true,
+      });
+
+      // Click on 'Submit Form' tab is tracked only when it's not current tab
+      const currentActiveTab = this.state.activeTab;
+
+      if (currentActiveTab === DOCUMENT_UPLOAD_STEP) {
+        return; // There is nothing to auto save in Document Upload section
+      }
+
+      const callBack =
+        onAction &&
+        function(result, error) {
+          onAction.trackSubmitFormTabClick();
+
+          if (typeof result !== 'undefined') {
+            onAction.trackSaveOnTabClick({
+              tabId: currentActiveTab, // Tracks for tab that got saved
+              type: result, // result = true for Success, false for Error, null for no api call
+              error,
+            });
+          }
+        };
+
+      this.goto(null, callBack);
+    }
   };
 
   render() {
@@ -509,7 +549,6 @@ export default class ActivationWizard extends React.Component {
     let isSubmitFormRemoved = isSubmitFormDisabled(this.props.data); // Submit form is removed if locked, activated or in submitted state
 
     let activeTab = this.state.activeTab;
-    console.log('....ACTIVE TAB...', activeTab);
     activeTab = activeTab < 0 || !activeTab ? 0 : activeTab; // Graceful failure in case activeTab becomes negative. To handle non-reproducible weird error.
 
     const isCurrentTabValid = this.state.tabs[activeTab];
@@ -610,7 +649,7 @@ export default class ActivationWizard extends React.Component {
           )}
         >
           {/* Active tab title */}
-          <header class="main-title">
+          <main-title class="main-title">
             {activeTab != 0 && (
               <Button
                 class="device--mobile btn--back"
@@ -618,17 +657,18 @@ export default class ActivationWizard extends React.Component {
                 onClick={this.prev}
               />
             )}
-            <span class="device--mobile">
-              <i
-                class={classList(
-                  'i-check text-success main-title-icon',
-                  isCurrentTabValid && 'drishy'
-                )}
-              />
+            <span
+              class={classList(
+                'device--mobile main-title-icon',
+                isCurrentTabValid && 'text-success '
+              )}
+            >
+              <i class={classList('i-check', isCurrentTabValid && 'drishy')} />
+              {FORM_TABS[activeTab]}
             </span>
 
-            {FORM_TABS[activeTab]}
-          </header>
+            <span class="device--desktop">{FORM_TABS[activeTab]}</span>
+          </main-title>
 
           {/* Alert: if linked account has been activated */}
           {isLinkedAccountForm &&
@@ -754,44 +794,48 @@ export default class ActivationWizard extends React.Component {
           this.state.showSubmitLayer && (
             <main class="overlay-container">
               <SubmitForm
-                closeSubmitForm={this.toggleSubmitLayer}
+                closeActivationForm={() => {
+                  this.goto(FORM_TABS.length - 1);
+                }}
                 submitActvationForm={this.submitForm}
               />
             </main>
           )}
 
         {/* Activation form footer, to show actions / saving state */}
-        {!isSubmitFormRemoved &&
-          !this.state.showSubmitLayer && (
-            <footer>
-              {/* Spinner state */}
-              <Loader isSaving={this.state.isSaving} />
+        {!isSubmitFormRemoved && (
+          <footer>
+            {/* Spinner state */}
+            <Loader isSaving={this.state.isSaving} />
+            {!this.state.showSubmitLayer && (
+              <React.Fragment>
+                {/* Action Button 1 */}
+                {activeTab != DOCUMENT_UPLOAD_STEP && (
+                  <Button onClick={this.saveCurrentTab}>Save</Button>
+                )}
 
-              {/* Action Button 1 */}
-              {activeTab != DOCUMENT_UPLOAD_STEP && (
-                <Button onClick={_ => this.saveCurrentTab}>Save</Button>
-              )}
-
-              {/* Action Button 2 */}
-              {isLastTab || (
-                <Button.Primary iconAfter="chevron-right" onClick={this.next}>
-                  <span class="device--desktop">Save & Next</span>
-                  <span class="device--mobile">Next</span>
-                </Button.Primary>
-              )}
-
-              {/* Action Button 3 */}
-              {isLastTab &&
-                !isSubmitFormRemoved && (
-                  <Button.Primary
-                    class={classList(!this.isAllTabsValid() && 'disabled')}
-                    onClick={this.toggleSubmitLayer}
-                  >
-                    Submit Form
+                {/* Action Button 2 */}
+                {isLastTab || (
+                  <Button.Primary iconAfter="chevron-right" onClick={this.next}>
+                    <span class="device--desktop">Save & Next</span>
+                    <span class="device--mobile">Next</span>
                   </Button.Primary>
                 )}
-            </footer>
-          )}
+
+                {/* Action Button 3 */}
+                {isLastTab &&
+                  !isSubmitFormRemoved && (
+                    <Button.Primary
+                      class={classList(!this.isAllTabsValid() && 'disabled')}
+                      onClick={this.toggleSubmitLayer}
+                    >
+                      Submit Form
+                    </Button.Primary>
+                  )}
+              </React.Fragment>
+            )}
+          </footer>
+        )}
       </div>
     );
   }
@@ -930,10 +974,17 @@ class SubmitForm extends React.Component {
     const { closeSubmitForm } = this.props;
 
     return (
-      <div class="SubmitForm-backdrop">
-        <div class="SubmitForm-modal">
-          <header>SUBMIT FORM</header>
+      <div class="SubmitForm-modal">
+        <main-title>
+          <Button
+            class="device--mobile btn--back"
+            iconBefore="arrow-back"
+            onClick={this.props.closeActivationForm}
+          />
+          SUBMIT FORM
+        </main-title>
 
+        <div class="SubmitForm-content">
           <div class="tnc-text">
             {/* Confirmation checkbox*/}
             <Input.Check
@@ -988,16 +1039,7 @@ class SubmitForm extends React.Component {
             submission, you can contact us at support@razorpay.com.
           </p>
 
-          {/* Action button 1 */}
-          <Button
-            iconBefore="chevron-left"
-            onClick={e => closeSubmitForm(e, false)}
-          >
-            <span class="device--desktop">Back to form</span>
-            <span class="device--mobile">Close</span>
-          </Button>
-
-          {/* Action button 2 */}
+          {/* Action button */}
           <AsyncBtn.Primary
             class={this.state.allowSubmit ? '' : 'disabled'}
             onClick={this.submit}

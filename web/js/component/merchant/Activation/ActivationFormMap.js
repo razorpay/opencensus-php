@@ -306,6 +306,7 @@ const bankAccountFields = [
     name: 'bank_account_number',
     label: 'Account Number',
     info: 'Your company account to which your payments will be settled.',
+    autoComplete: 'new-password',
     type: 'password',
     onFocus: e => {
       document.getElementsByName('bank_account_number')[0].type = 'text';
@@ -317,6 +318,7 @@ const bankAccountFields = [
   {
     _name: 'account_no',
     label: 'Re-Enter Account Number',
+    autoComplete: 'new-password',
     info: 'Please re-enter the bank account number.',
     onFocus: e => {
       document.querySelector('[data-name="account_no"]').type = 'text';

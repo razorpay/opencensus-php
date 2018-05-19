@@ -31,18 +31,19 @@ function _pipeLabelWithError(label, result, error) {
   return label;
 }
 
-/* Track 'Activate now' btn on Welcome screen */
-export const trackActivateNow = () => {
-  track({
-    eventAction: 'Click - Activate Now',
-  });
-};
-
 /* Track tab change clicks on activation form */
 export const trackTabClick = tabId => {
   track({
     eventAction: 'Click - Activation Tab',
     eventLabel: mainFormTabs[tabId],
+  });
+};
+
+/* Track 'submit form' click in activation form */
+export const trackSubmitFormTabClick = () => {
+  track({
+    eventAction: 'Click - Activation Tab',
+    eventLabel: 'Submit Form',
   });
 };
 
@@ -105,18 +106,23 @@ export const trackBack = data => {
   });
 };
 
+/* Tracks following:
+ * - link clicks : 'Terms & Conditions', 'Merchant Agreement' and 'Privacy Policy'
+ * - 'Activate Now' btn on Welcome screen
+ * - 'Activate Later' btn on Welcome screen
+ **/
+export const trackLinkClick = action => {
+  track({
+    eventAction: 'Click - ' + action,
+  });
+};
+
 /* Click 'Activation Form' */
-export const trackGoToConfig = _ => {
+export const trackGoToConfig = () => {
   track({
     eventAction: 'Go to - Config',
     eventLabel: 'From Activation Success Modal',
   });
 };
-
-/* Track link clicks : 'Terms & Conditions', 'Merchant Agreement' and 'Privacy Policy' */
-export const trackLinkClick = action => e =>
-  track({
-    eventAction: action,
-  });
 
 export default track;

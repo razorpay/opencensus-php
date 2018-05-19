@@ -64,16 +64,31 @@ const bankAccountFields = [
     name: 'bank_account_number',
     label: 'Account Number',
     type: 'password',
+    autoComplete: 'new-password',
     info: 'Your company account to which your payments will be settled',
+    onFocus: e => {
+      document.getElementsByName('bank_account_number')[0].type = 'text';
+    },
+    onBlur: e => {
+      document.getElementsByName('bank_account_number')[0].type = 'password';
+    },
   },
   {
     _name: 'account_no',
     label: 'Re-Enter Account Number',
+    autoComplete: 'new-password',
+    info: 'Please re-enter the bank account number.',
+    onFocus: e => {
+      document.querySelector('[data-name="account_no"]').type = 'text';
+    },
+    onBlur: e => {
+      document.querySelector('[data-name="account_no"]').type = 'password';
+    },
   },
   {
     name: 'bank_account_name',
     label: 'Beneficiary Name',
-    description:
+    info:
       'The beneficiary name should be same as the company name or individual name, in case of an LLP/Individual.',
   },
 ];
