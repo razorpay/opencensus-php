@@ -944,6 +944,8 @@ function isFieldValid(field, activation) {
 
   let value = data[field.name];
   if (field.required && !value) {
+    field.autoFocus = true; // To autofocus first unfilled required field
+
     // value missing in required field
     return false;
   }

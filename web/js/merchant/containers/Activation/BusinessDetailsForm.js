@@ -343,7 +343,6 @@ export default class BusinessDetailsForm extends Component {
                     name="business_website"
                     component={InputField}
                     class="form-control"
-                    autoFocus={true}
                     validate={[
                       required(),
                       lenientUrl('Please enter a valid URL'),

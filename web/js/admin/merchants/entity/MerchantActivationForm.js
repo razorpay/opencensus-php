@@ -181,6 +181,7 @@ export default class MerchantActivationForm extends Component {
               />
               <BusinessDetails
                 {...details}
+                merchantId={this.merchantId}
                 title={tabNames[1]}
                 onIssueSelection={this.handleIssueSelection}
                 doesIssueExist={this.handleIssueExistence}

@@ -18,7 +18,7 @@ export default class BusinessDetails extends Component {
 
   componentWillMount() {
     adminFetch(
-      `live_${this.merchantId}/merchant/activation/business_categories`
+      `live_${this.props.merchantId}/merchant/activation/business_categories`
     ).then(data => {
       if (data) {
         this.setState({
