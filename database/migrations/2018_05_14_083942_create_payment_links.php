@@ -47,9 +47,9 @@ class CreatePaymentLinks extends Migration
             $table->bigInteger(Entity::TOTAL_AMOUNT)
                   ->default(0);
 
-            $table->enum(Entity::STATUS, Status::$statuses);
+            $table->string(Entity::STATUS, 255);
 
-            $table->enum(Entity::STATUS_REASON, StatusReason::$statusReasons)
+            $table->string(Entity::STATUS_REASON, 255)
                   ->nullable();
 
             $table->string(Entity::SHORT_URL, 255)

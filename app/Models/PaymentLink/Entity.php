@@ -85,7 +85,6 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::DELETED_AT,
     ];
 
     protected $hosted = [
