@@ -1,6 +1,6 @@
 import Input from 'component/Input';
 import { getDetailsForIFSC } from 'common/util';
-import { validatePANCard } from 'rzp/utils/validators';
+import { validatePANCard, validateIFSC } from 'rzp/utils/validators';
 
 // For marketplace linked account which required kyc
 const needsKYC = activation => !!activation.props.data.need_kyc;
@@ -59,6 +59,7 @@ const bankAccountFields = [
 
       return getDetailsForIFSC(e.target.value);
     },
+    validator: validateIFSC,
   },
   {
     name: 'bank_account_number',

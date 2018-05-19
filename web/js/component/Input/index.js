@@ -147,29 +147,34 @@ export default class Field extends React.PureComponent {
 
     if (typeof this.props.info === 'function') {
       let info = this.props.info(e);
+      let infoString;
 
-      if (info) {
+      if (info != null) {
         // Handle api based information
         if (info.then) {
-          this.setState({ infoString: '...' }); // Dummy loader while resolving promise
+          infoString = '...'; // Dummy loader while resolving promise
           info
             .then(data => {
-              if (data) {
-                this.setState({ infoString: data });
-              } else {
-                this.setState({ infoString: null });
-              }
+              this.setState({
+                infoString: data || null,
+              });
             })
             .catch(err => {
-              this.setState({ infoString: null });
+              this.setState({
+                infoString: null,
+              });
             });
         } else {
           // If props.info is simple function
-          this.setState({
-            infoString: info,
-          });
+          infoString = info;
         }
+      } else {
+        infoString = null; // Unset info if undefined/null.
       }
+
+      this.setState({
+        infoString,
+      });
     }
   };
 

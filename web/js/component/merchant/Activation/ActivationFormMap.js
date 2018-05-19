@@ -3,7 +3,11 @@ import { states } from 'rzp/utils/constants';
 
 import { getDetailsForIFSC } from 'common/util';
 import { isValidGSTIN } from 'rzp/utils/rzp-utils';
-import { validateCIN, validatePANCard } from 'rzp/utils/validators';
+import {
+  validateCIN,
+  validateIFSC,
+  validatePANCard,
+} from 'rzp/utils/validators';
 
 const NGO_BUSINESS_TYPE = 7;
 const differentAddress = activation => activation.state.same_address === '0';
@@ -302,6 +306,7 @@ const bankAccountFields = [
       }
       return getDetailsForIFSC(e.target.value);
     },
+    validator: validateIFSC,
   },
   {
     name: 'bank_account_number',
