@@ -173,6 +173,7 @@ const registrationDetails = [
     label: 'CIN',
     name: 'company_cin',
     validator: validateCIN,
+    required: false, // It's mandatory only for Companies
     info: 'Mandatory for Companies. Example : U 67190 TN 2014 PTC 096978',
   },
   [

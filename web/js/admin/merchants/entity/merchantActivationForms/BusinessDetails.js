@@ -16,6 +16,18 @@ import Table from 'ui/Table';
 export default class BusinessDetails extends Component {
   state = { panVerified: false, companyInfo: null };
 
+  componentWillMount() {
+    adminFetch(
+      `live_${this.merchantId}/merchant/activation/business_categories`
+    ).then(data => {
+      if (data) {
+        this.setState({
+          businessCategories: data,
+        });
+      }
+    });
+  }
+
   verifyPAN(signatories, pan_name, pan_number) {
     for (let i in signatories) {
       const person = signatories[i];
@@ -48,6 +60,39 @@ export default class BusinessDetails extends Component {
       });
   };
 
+  getBusinessCategory() {
+    const { merchant_details: merchantDetails } = this.props;
+
+    if (!merchantDetails.business_category) {
+      return '';
+    }
+
+    const businessCategories = this.state.businessCategories;
+
+    if (businessCategories) {
+      return businessCategories[merchantDetails.business_category].description;
+    } else {
+      return 'Loading...';
+    }
+  }
+
+  getBusinessSubcategory() {
+    const { merchant_details: merchantDetails } = this.props;
+
+    if (!merchantDetails.business_subcategory) {
+      return '';
+    }
+
+    const businessCategories = this.state.businessCategories;
+
+    if (businessCategories) {
+      return businessCategories[merchantDetails.business_category]
+        .subcategories[merchantDetails.business_subcategory];
+    } else {
+      return 'Loading...';
+    }
+  }
+
   render() {
     const {
       merchant_details: merchantDetails,
@@ -67,8 +112,39 @@ export default class BusinessDetails extends Component {
             style={{ maxWidth: '800px' }}
           >
             <div class="mulitple-fields-group">
+              <Field
+                label="Business Name"
+                name="business_name"
+                defaultValue={merchantDetails.business_name}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="business_name"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('business_name')}
+              />
+            </div>
+
+            <div class="mulitple-fields-group">
+              <Field
+                label="Billing Label"
+                name="business_dba"
+                type="email"
+                defaultValue={merchantDetails.business_dba}
+                disabled
+              />
+              <CheckField
+                label="Has Issue"
+                data-issuename="business_dba"
+                onChange={onIssueSelection}
+                checked={doesIssueExist('business_dba')}
+              />
+            </div>
+
+            <div class="mulitple-fields-group">
               <SelectField
-                label="Organisation Type"
+                label="Business Type"
                 name="business_type"
                 defaultValue={merchantDetails.business_type}
                 disabled
@@ -95,41 +171,6 @@ export default class BusinessDetails extends Component {
             </div>
 
             <div class="mulitple-fields-group">
-              <Field
-                label="Full Business Name"
-                name="business_name"
-                defaultValue={merchantDetails.business_name}
-                disabled
-              />
-              <CheckField
-                label="Has Issue"
-                data-issuename="business_name"
-                onChange={onIssueSelection}
-                checked={doesIssueExist('business_name')}
-              />
-            </div>
-
-            <div class="mulitple-fields-group">
-              <Field
-                label={
-                  <span>
-                    Doing Business As<br />(If Different from Above)
-                  </span>
-                }
-                name="business_dba"
-                type="email"
-                defaultValue={merchantDetails.business_dba}
-                disabled
-              />
-              <CheckField
-                label="Has Issue"
-                data-issuename="business_dba"
-                onChange={onIssueSelection}
-                checked={doesIssueExist('business_dba')}
-              />
-            </div>
-
-            <div class="mulitple-fields-group">
               <SelectField
                 label="International Payments Required?"
                 name="business_international"
@@ -151,7 +192,7 @@ export default class BusinessDetails extends Component {
 
             <div class="mulitple-fields-group">
               <Field
-                label="Website/App URL"
+                label="Business Website/App"
                 name="business_website"
                 defaultValue={merchantDetails.business_website}
                 disabled
@@ -180,20 +221,54 @@ export default class BusinessDetails extends Component {
             </div>
 
             <div class="mulitple-fields-group">
-              <TextAreaField
-                label="Business Model"
-                name="business_model"
-                helpMsg="Please give a brief explanation of your business model and future plans (Essential for startups)"
-                defaultValue={merchantDetails.business_model}
+              <Field
+                label="Business Category"
+                name="business_category"
+                value={this.getBusinessCategory()}
                 disabled
               />
               <CheckField
                 label="Has Issue"
-                data-issuename="business_model"
+                data-issuename="business_category"
                 onChange={onIssueSelection}
-                checked={doesIssueExist('business_model')}
+                checked={doesIssueExist('business_category')}
               />
             </div>
+
+            {merchantDetails.business_category === 'others' ? (
+              <div class="mulitple-fields-group">
+                <TextAreaField
+                  label="Business Model"
+                  name="business_model"
+                  helpMsg="Please give a brief explanation of your business model and future plans (Essential for startups)"
+                  value={merchantDetails.business_model}
+                  disabled
+                />
+                <CheckField
+                  label="Has Issue"
+                  data-issuename="business_model"
+                  onChange={onIssueSelection}
+                  checked={doesIssueExist('business_model')}
+                />
+              </div>
+            ) : (
+              <div class="mulitple-fields-group">
+                <Field
+                  label="Business Subcategory"
+                  name="business_subcategory"
+                  value={this.getBusinessSubcategory()}
+                  disabled
+                />
+                <CheckField
+                  label="Has Issue"
+                  data-issuename="business_subcategory"
+                  onChange={onIssueSelection}
+                  checked={doesIssueExist('business_subcategory')}
+                />
+              </div>
+            )}
+
+            <div class="separate" style={{ margin: '30px 0' }} />
 
             <div class="mulitple-fields-group">
               <Field
@@ -212,7 +287,7 @@ export default class BusinessDetails extends Component {
 
             <div class="mulitple-fields-group">
               <Field
-                label="Registration Address State"
+                label="State"
                 name="business_registered_state"
                 defaultValue={
                   merchantDetails.business_registered_state &&
@@ -230,7 +305,7 @@ export default class BusinessDetails extends Component {
 
             <div class="mulitple-fields-group">
               <Field
-                label="Registered Address City"
+                label="City"
                 name="business_registered_city"
                 defaultValue={merchantDetails.business_registered_city}
                 disabled
@@ -245,7 +320,7 @@ export default class BusinessDetails extends Component {
 
             <div class="mulitple-fields-group">
               <Field
-                label="Registered Address Pincode"
+                label="Pincode"
                 name="business_registered_pin"
                 defaultValue={merchantDetails.business_registered_pin}
                 disabled
@@ -257,6 +332,8 @@ export default class BusinessDetails extends Component {
                 checked={doesIssueExist('business_registered_pin')}
               />
             </div>
+
+            <br />
 
             <div class="mulitple-fields-group">
               <Field
@@ -275,7 +352,7 @@ export default class BusinessDetails extends Component {
 
             <div class="mulitple-fields-group">
               <Field
-                label="Operation Address State"
+                label="State"
                 name="business_operation_state"
                 defaultValue={
                   merchantDetails.business_operation_state &&
@@ -293,7 +370,7 @@ export default class BusinessDetails extends Component {
 
             <div class="mulitple-fields-group">
               <Field
-                label="Operation Address City"
+                label="City"
                 name="business_operation_city"
                 defaultValue={merchantDetails.business_operation_city}
                 disabled
@@ -308,7 +385,7 @@ export default class BusinessDetails extends Component {
 
             <div class="mulitple-fields-group">
               <Field
-                label="Operation Address Pincode"
+                label="Pincode"
                 name="business_operation_pin"
                 defaultValue={merchantDetails.business_operation_pin}
                 disabled
@@ -320,6 +397,8 @@ export default class BusinessDetails extends Component {
                 checked={doesIssueExist('business_operation_pin')}
               />
             </div>
+
+            <br />
 
             <div class="mulitple-fields-group">
               <Field

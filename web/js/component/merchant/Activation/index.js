@@ -91,7 +91,7 @@ export default class ActivationWizard extends React.Component {
       FORM_TABS_CONTENT = mainFormTabsContent;
       DOCUMENT_UPLOAD_STEP = 4;
 
-      // Business Category in "Business Modal" exists in main activation form. Setting value dynamically from props.
+      // Business Category in "Business Model" exists in main activation form. Setting value dynamically from props.
       FORM_TABS_CONTENT[1][3][0].options = [''].concat(
         Object.keys(props.categories).map(c => ({
           name: c,
