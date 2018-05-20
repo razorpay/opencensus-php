@@ -588,6 +588,21 @@ class TransactionFilter extends Terminal\Filter
 
                         break;
 
+                    case Payment\AuthType::OTP:
+                        if ($terminal->isIvr() === true)
+                        {
+                            return true;
+                        }
+
+                        $gateway = $terminal->getGateway();
+
+                        if (Gateway::supportsHeadlessBrowser($gateway) === true)
+                        {
+                            return true;
+                        }
+
+                        break;
+
                     case Payment\AuthType::_3DS:
                         if ($this->is3DSTerminal($terminal) === true)
                         {

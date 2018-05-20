@@ -944,8 +944,16 @@ class Entity extends Base\PublicEntity
                 $isEnabled = $this->isPin();
                 break;
 
+            case Payment\AuthType::OTP:
+                $gateway = $this->getGateway();
+
+                $isEnabled = (($this->isIvr() === true) or
+                              (Payment\Gateway::supportsHeadlessBrowser($gateway) === true));
+
+                break;
+
             default:
-                $isEnabled = ($this->isPin() === false);
+                $isEnabled = (($this->isPin() === false) and ($this->isIvr() === false));
                 break;
         }
 

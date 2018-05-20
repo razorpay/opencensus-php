@@ -9,6 +9,7 @@ class Flow
 {
     const HEADLESS_OTP = 'headless_otp';
     const INTENT       = 'intent';
+    const COLLECT      = 'collect';
 
     public static $flows = [
         Method::CARD => [
@@ -16,6 +17,7 @@ class Flow
         ],
         Method::UPI  => [
             self::INTENT,
+            self::COLLECT,
         ],
     ];
 

@@ -17,10 +17,10 @@ trait HeadlessOtp
 {
     protected function canRunHeadlessOtpFlow($payment)
     {
-        if (($payment->isCard() === true) and
+        if (($payment->isCardOrEmi() === true) and
             (Payment\Flow::isFeatureBasedFlowEnabled(Payment\Flow::HEADLESS_OTP) === true))
         {
-            if ((Payment\Gateway::supportsHeadlessOtp($payment->getGateway()) === true) and
+            if ((Payment\Gateway::supportsHeadlessBrowser($payment->getGateway()) === true) and
                 ($payment->card->iin->supports(IIN\Flow::HEADLESS_OTP) === true))
             {
                 return true;
@@ -32,6 +32,9 @@ trait HeadlessOtp
 
     protected function openHeadlessBrowser($payment, $request)
     {
+        //
+        // This will happen in case of single step payment.
+        // Where payment is not to be authenticated
         if ($request === null)
         {
             return false;
@@ -46,7 +49,8 @@ trait HeadlessOtp
 
         $response = $this->app['card.otpelf']->otpSend($data);
 
-        if (($response['success'] === true) and
+        if ((empty($response) === false) and
+            ($response['success'] === true) and
             ($response['data']['action'] === 'page_resolved') and
             ($response['data']['data']['type'] === 'otp'))
         {

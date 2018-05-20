@@ -1269,7 +1269,7 @@ class Gateway
         return in_array($gateway, self::$asynchronous, true);
     }
 
-    public static function supportsHeadlessOtp($gateway)
+    public static function supportsHeadlessBrowser($gateway)
     {
         return in_array($gateway, self::$headless, true);
     }
