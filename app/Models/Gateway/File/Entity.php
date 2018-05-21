@@ -28,6 +28,8 @@ class Entity extends Base\PublicEntity
     const ACKNOWLEDGED_AT     = 'acknowledged_at';
     const FAILED_AT           = 'failed_at';
 
+    const TIME_RANGE          = 'time_range';
+
     protected $entity = 'gateway_file';
 
     protected $generateIdOnCreate = true;
@@ -103,6 +105,7 @@ class Entity extends Base\PublicEntity
     ];
 
     // --------------------------GENERATORS-------------------------------------
+
     protected function generateSender(array $input)
     {
         if (empty($input[self::SENDER]) === true)
@@ -126,6 +129,7 @@ class Entity extends Base\PublicEntity
     // -------------------------GENERATORS END----------------------------------
 
     // -----------------------------GETTERS-------------------------------------
+
     public function files()
     {
         return $this->morphMany(FileStore\Entity::class, 'entity');

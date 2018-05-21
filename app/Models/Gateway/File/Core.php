@@ -14,7 +14,9 @@ class Core extends Base\Core
     /**
      * Creates a gateway file entity with input provided and processes it.
      *
-     * @param  array        $input input data
+     * @param  array $input input data
+     *
+     * @return PublicCollection
      */
     public function create(array $input): PublicCollection
     {

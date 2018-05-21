@@ -1152,14 +1152,12 @@ class BasicAuth
 
     public function isDashboardApp()
     {
-        return ($this->internalApp === 'dashboard');
+        return ($this->getInternalApp() === 'dashboard');
     }
 
     public function isCron()
     {
-        $cron = ($this->internalApp === 'cron');
-
-        return $cron;
+        return ($this->getInternalApp() === 'cron');
     }
 
     public function getOAuthApplicationId()

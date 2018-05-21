@@ -150,6 +150,13 @@ class Reporting implements ExternalService
         return $this->createAndSendRequest(Requests::POST, self::LOG_PATH, $input);
     }
 
+    public function editLog(string $id, array $input): array
+    {
+        $path = self::LOG_PATH . '/' . $id;
+
+        return $this->createAndSendRequest(Requests::PATCH, $path, $input);
+    }
+
     public function fetchLogById(string $id): array
     {
         $path = self::LOG_PATH . '/' . $id;
