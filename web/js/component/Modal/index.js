@@ -63,12 +63,14 @@ export class ModalMask extends React.PureComponent {
 * @props
 *   - {Boolean, optional} showCloseBtn, by default close button is shown. Can be hidden if false is passed
 *   - {Function} onClose, action on close btn press
+*   - {Function, optional} onCloseCB, Callback after closing modal
 * */
 export const Modal = ({
   children,
   showCloseBtn = true,
   className,
   onClose,
+  onCloseCB,
 }) => {
   let classArray = className
     ? className.split(' ').map(cls => 'Modal-container--' + cls)
@@ -77,7 +79,13 @@ export const Modal = ({
   return (
     <div class={classList('Modal-container', classArray)}>
       {showCloseBtn && (
-        <span class="Modal-close" onClick={onClose}>
+        <span
+          class="Modal-close"
+          onClick={e => {
+            onCloseCB(e);
+            onClose(e);
+          }}
+        >
           &times;
         </span>
       )}

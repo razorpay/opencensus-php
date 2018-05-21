@@ -28,7 +28,7 @@ const FORM_BusinessTypes = [
   10, // 'Society'
 ];
 
-const stateOptions = [''].concat(
+const stateOptions = ['--Select--'].concat(
   Object.keys(states).map(c => {
     return {
       name: c,
@@ -74,7 +74,7 @@ const businessModel = [
     name: 'business_type',
     _cmp: Input.Select,
     options: [
-      '',
+      '--Select--',
       'Proprietorship',
       'Individual',
       'Partnership',
@@ -127,7 +127,7 @@ const businessModel = [
         if (userSelection && categories[userSelection]) {
           const subCategories = categories[userSelection].subcategories;
 
-          this.options = [''].concat(
+          this.options = ['--Select--'].concat(
             Object.keys(subCategories).map(c => ({
               name: c,
               label: subCategories[c],

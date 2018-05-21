@@ -54,7 +54,7 @@ export default class ActivationWizard extends React.Component {
     dirty: {},
     tabs: [],
     same_address: '1',
-    has_gstin: this.props.data && this.props.data.gstin ? '0' : '1',
+    has_gstin: '0',
     account_no: '',
     activeTab: 0, // Fallback for all cases.
   };
@@ -92,7 +92,7 @@ export default class ActivationWizard extends React.Component {
       DOCUMENT_UPLOAD_STEP = 4;
 
       // Business Category in "Business Model" exists in main activation form. Setting value dynamically from props.
-      FORM_TABS_CONTENT[1][3][0].options = [''].concat(
+      FORM_TABS_CONTENT[1][3][0].options = ['--Select--'].concat(
         Object.keys(props.categories).map(c => ({
           name: c,
           label: props.categories[c].description,
@@ -128,6 +128,7 @@ export default class ActivationWizard extends React.Component {
 
   componentWillUnmount() {
     removeDropShield('.Activation--wizard');
+    this.unMounted = true; // Used while using this.goto to update state while closing modal
   }
 
   componentDidUpdate(nextProps) {
@@ -294,6 +295,10 @@ export default class ActivationWizard extends React.Component {
     });
 
     this.props.save(data).then(data => {
+      if (this.unMounted) {
+        return; // No further actions if component unmounted
+      }
+
       // After updating 'Business type' detail, now update dependent field on FE.
       if (DOCUMENT_UPLOAD_STEP && currentActive === BUSINESS_TYPE_FORM_STEP) {
         if (this.state.dirty.business_type) {

@@ -237,7 +237,7 @@ export default class Content extends Component {
     } else if (ModalFormView) {
       ModalFormView = BaseView ? (
         <ModalMask
-          maskClosable={true}
+          maskClosable={false}
           onClose={this.closeModalView}
           class={ModalFormView.MODAL_MASK_CLASS}
         >

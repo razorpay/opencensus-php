@@ -16,7 +16,7 @@ const businessFields = [
     name: 'business_type',
     _cmp: Input.Select,
     options: [
-      '',
+      '--Select--',
       'Proprietorship',
       'Individual',
       'Partnership',
