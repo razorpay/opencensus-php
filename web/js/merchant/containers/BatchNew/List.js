@@ -22,52 +22,6 @@ import {
   trackDownloadProcessedBatchReport,
 } from './ga';
 
-function batchActions({ mode, sendAll, onDownloadClick }) {
-  return {
-    title: 'Actions',
-    value: item => (
-      <div class="btn-toolbar">
-        <button
-          class="btn btn-xs btn-default"
-          onClick={() => onDownloadClick(item.id)}
-        >
-          <i class="i i-download" /> Download
-        </button>
-        {/* hide for below statuses  */}
-        {['created', 'failure'].indexOf(item.status) < 0 &&
-        item.success_count > 0 ? (
-          <button
-            class="btn btn-default btn-xs"
-            onClick={_ => sendAll(item)}
-            disabled={!allowSendAllLinks(item)}
-          >
-            {allowSendAllLinks(item) ? 'Send all links' : 'All links sent'}
-          </button>
-        ) : null}
-      </div>
-    ),
-  };
-}
-
-function allowSendAllLinks(batch) {
-  // config object will not be available for older batches
-  // duplicate batches will have no success count
-  if (Object.keys(batch.config).length) {
-    if (
-      parseInt(batch.config.sms_notify) > 0 ||
-      parseInt(batch.config.email_notify) > 0
-    ) {
-      //if more than 0 payment link(s) has been sent, disable the btn
-      return false;
-    } else {
-      return true;
-    }
-  } else {
-    //disable for older batches
-    false;
-  }
-}
-
 @connect(null, {
   batchDownload,
   fetchBatch,
@@ -76,7 +30,7 @@ function allowSendAllLinks(batch) {
   ...NotificationsActions,
 })
 export default class BatchList extends Component {
-  dowload = id => {
+  handleDownloadClick = id => {
     let windowRef = window.open('', '_blank');
     trackDownloadProcessedBatchReport();
     this.props
@@ -123,7 +77,6 @@ export default class BatchList extends Component {
       sampleUrl,
       sendAll,
     } = this.props;
-    let handleDownloadClick = this.dowload;
 
     return (
       <div class="content-wrapper batch-upload-wrapper">
@@ -163,11 +116,7 @@ export default class BatchList extends Component {
             batchName,
             totalCount,
             status,
-            batchActions({
-              mode,
-              sendAll,
-              onDownloadClick: handleDownloadClick,
-            }),
+            batchActions(this.handleDownloadClick, this.props.batchActions),
           ]}
           count={count}
           skip={skip}
@@ -178,4 +127,21 @@ export default class BatchList extends Component {
       </div>
     );
   }
+}
+
+function batchActions(onDownloadClick, otherBatchActions = []) {
+  return {
+    title: 'Actions',
+    value: item => (
+      <div class="btn-toolbar">
+        <button
+          class="btn btn-xs btn-default"
+          onClick={() => onDownloadClick(item.id)}
+        >
+          <i class="i i-download" /> Download
+        </button>
+        {otherBatchActions.map(batchAction => batchAction(item))}
+      </div>
+    ),
+  };
 }
