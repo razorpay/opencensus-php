@@ -45,16 +45,11 @@ const getFile = (fileId, accountId) => {
   });
 };
 
-//TODO: not working!
 const updateLog = (data, accountId) => {
-  const logId = data.id;
-
-  delete data.id;
-
   return merchantFetch({
-    url: `reporting/logs/${logId}`,
+    url: `reporting/logs/${data.id}`,
     method: 'patch',
-    data,
+    data: { emails: data.emails },
     ...(!!accountId && { accountId }),
   });
 };
@@ -252,5 +247,5 @@ export function reportsReducer(state = initialState, action) {
 }
 
 const alertBeforeClose = () => {
-  return 'Some reports are currently being downloaded. Are you sure that you want to close the app right now?';
+  return 'Some reports are currently being downloaded. Are you sure you want to close the app right now?';
 };

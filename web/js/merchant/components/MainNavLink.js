@@ -47,7 +47,7 @@ export default class MainNavLink extends Component {
     console.log();
     //show infinite spin loader if there are some pending items in that section of the app
     if (isPending) {
-      loader = <span class="spin-loader" />;
+      loader = <span class="spin-loader pull-right  hidden-xs" />;
     }
 
     return (

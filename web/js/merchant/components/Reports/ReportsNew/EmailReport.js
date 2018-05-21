@@ -25,10 +25,9 @@ export default class EmailReport extends Component {
   };
 
   handleSend = () => {
-    let emails = this.state.selectedEmails.join(',');
-
+    let emails = this.state.selectedEmails;
     //send empty event
-    return this.props.onSend(null, emails);
+    return this.props.onSend(null, emails, this.props.configId);
   };
 
   render() {

@@ -14,6 +14,7 @@ import AccountsList from 'rzp/ui/AccountsList/index.js';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import store from 'merchant/store';
 
+import ModalHeader from 'rzp/ui/ModalHeader';
 import { fetchAccountsApi } from 'merchant/modules/marketplace/accounts';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import {
@@ -157,6 +158,8 @@ export default class ReportsContainer extends Component {
         currentReportList: store.getState().reports.currentReportList,
       });
     });
+
+    this.configsLableMap = {};
   }
 
   onConfigChange({ option }) {
@@ -237,6 +240,10 @@ export default class ReportsContainer extends Component {
           //sort configs
           configs = this.sortConfigs(configs);
 
+          configs.map(
+            config => (this.configsLableMap[config.value] = config.label)
+          );
+
           this.setState({
             configs,
             selectedConfig: configs[0],
@@ -257,14 +264,19 @@ export default class ReportsContainer extends Component {
       });
   }
 
-  generateReport(_, emails = null) {
-    const { selectedConfig, selectedAccount } = this.state,
+  generateReport(_, emails = null, currentconfigId = null) {
+    let selectedConfig = { ...this.state.selectedConfig };
+    const { selectedAccount, currentReportList } = this.state,
       { date, type, invoiceDate } = this.props,
       day = date.date(),
       month = date.month() + 1, // Jan is 0 in moment library
       year = date.year(),
       titleForTracking = `${titleCase(type)} ${selectedConfig.label} Report`,
       descForTracking = type === 'daily' ? `date` : `month`;
+
+    if (currentconfigId) {
+      selectedConfig = currentReportList[currentconfigId];
+    }
 
     if (selectedConfig.value === 'monthlyInvoice') {
       const month = invoiceDate.month() + 1,
@@ -299,7 +311,7 @@ export default class ReportsContainer extends Component {
           ).replace('acc_', ''),
           isMerchantAccount = selectedAccountId === user.current,
           reqData = {
-            config_id: selectedConfig._item.id,
+            config_id: currentconfigId || selectedConfig._item.id,
             generated_by: selectedAccountId,
             start_time: startTime,
             end_time: endTime,
@@ -318,6 +330,10 @@ export default class ReportsContainer extends Component {
           isMerchantAccount,
           this.props.addReportToList
         ).then(data => {
+          //return nothing if cancelled by user
+          if (!this.state.currentReportList[reqData['config_id']]) {
+            return;
+          }
           if (data.error) {
             // this.props.removeReportFromList(selectedConfig.value);
 
@@ -425,9 +441,8 @@ export default class ReportsContainer extends Component {
         }
 
         this.props.closeModal();
-
         if (shouldUpdate) {
-          this.props.updateReportInList(resp);
+          this.props.updateReportInList(data.data);
         }
 
         return this.props.showNotification({
@@ -443,6 +458,7 @@ export default class ReportsContainer extends Component {
   openEmailReportModal = e => {
     const { user } = this.props;
     const { accounts } = this.state;
+    const configId = e.target.dataset.configid;
 
     let emails = [
       // first email will always be of owner
@@ -465,6 +481,7 @@ export default class ReportsContainer extends Component {
           closeModal={this.props.closeModal}
           emails={emails}
           onSend={this.generateReport}
+          configId={configId}
         />
       ),
     });
@@ -498,6 +515,42 @@ export default class ReportsContainer extends Component {
     });
 
     return [...merchantConfigs, ...rzpConfigs];
+  };
+
+  openCancelConfirmModal = config_id => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <div>
+          <ModalHeader
+            title="Are you sure you want to stop the report download?"
+            onCloseClick={this.props.closeModal}
+          />
+          <div class="modal-body">
+            <p>We will still email you this report.</p>
+            <button
+              class="btn btn-default m-all"
+              style={{ padding: '6px 30px' }}
+              onClick={this.props.closeModal}
+            >
+              No, don't
+            </button>
+            <button
+              class="btn btn-primary m-all"
+              style={{ padding: '6px 30px' }}
+              onClick={() => this.cancelReportDownload(config_id)}
+            >
+              Yes, stop
+            </button>
+          </div>
+        </div>
+      ),
+    });
+  };
+
+  cancelReportDownload = config_id => {
+    this.props.closeModal();
+    this.props.removeReportFromList(config_id);
   };
 
   render() {
@@ -631,7 +684,7 @@ export default class ReportsContainer extends Component {
             </div>
 
             <div class="form-element">
-              {!currentReportList[selectedConfig.value] && (
+              {!currentReportList[selectedConfig.value] ? (
                 <Fragment>
                   <button class="btn btn-primary" onClick={this.generateReport}>
                     Download Report
@@ -643,10 +696,15 @@ export default class ReportsContainer extends Component {
                     Email Report
                   </button>
                 </Fragment>
+              ) : (
+                <small class="help-block">This report is being generated</small>
               )}
               <ReportLoader
                 reportList={currentReportList}
                 openEmailReportModal={this.openEmailReportModal}
+                configsLableMap={this.configsLableMap}
+                cancelDownload={this.openCancelConfirmModal}
+                selectedConfig={selectedConfig.value}
               />
             </div>
           </div>
