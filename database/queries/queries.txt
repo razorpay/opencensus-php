@@ -3555,3 +3555,7 @@ ALTER TABLE invoices
     ADD COLUMN supply_state_code CHAR(4) DEFAULT NULL AFTER merchant_label;
 
 ALTER TABLE card_fss MODIFY COLUMN status VARCHAR(255) DEFAULT NULL;
+
+DROP INDEX `card_fss_status_index` on `card_fss`;
+
+CREATE INDEX `card_fss_status_index` ON card_fss (status(50));
