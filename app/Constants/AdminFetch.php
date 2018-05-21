@@ -233,6 +233,11 @@ class AdminFetch
                     Fetch::LABEL  => 'Date',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
+                'channel' => [
+                       Fetch::LABEL  => 'Channel',
+                       Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                       Fetch::VALUES => Channel::getChannels()
+                ],
             ],
 
             Entity::BILLDESK => [
