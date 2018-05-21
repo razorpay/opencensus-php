@@ -43,7 +43,7 @@ class CreateFssGateway extends Migration
             $table->string(FSS::CURRENCY, 3)
                   ->nullable();
 
-            $table->string(FSS::STATUS, 20)
+            $table->string(FSS::STATUS, 255)
                   ->nullable();
 
             $table->string(FSS::GATEWAY_PAYMENT_ID, 25)

@@ -3553,3 +3553,5 @@ ALTER TABLE payments
 
 ALTER TABLE invoices
     ADD COLUMN supply_state_code CHAR(4) DEFAULT NULL AFTER merchant_label;
+
+ALTER TABLE card_fss MODIFY COLUMN status VARCHAR(255) DEFAULT NULL;
