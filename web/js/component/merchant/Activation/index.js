@@ -254,6 +254,7 @@ export default class ActivationWizard extends React.Component {
     this.goto(tabId, callBack);
   };
 
+  //newActiveTab = null -> clicked on same tab
   goto = (newActiveTab, cb) => {
     // Hide only if it's already visible. To handle if the person has clicked on 'Submit Form' to save dirty data.
     if (this.state.showSubmitLayer) {
@@ -316,6 +317,12 @@ export default class ActivationWizard extends React.Component {
       if (data.errors) {
         isSaving = LOADING_STATES.ERROR;
         cb && cb(false, data.errors);
+
+        if (newActiveTab && newActiveTab === this.state.activeTab) {
+          this.setState({
+            dirty: {},
+          }); // If different tab, then remove the previous tabs's dirty state. Handles edge case when one tab is filled wrong but it's ghost is bugging the other field to save.
+        }
       } else {
         isSaving = LOADING_STATES.SUCCESS;
         cb && cb(true);
