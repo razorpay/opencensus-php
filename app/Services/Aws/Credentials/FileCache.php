@@ -1,0 +1,71 @@
+<?php
+
+namespace RZP\Services\Aws\Credentials;
+
+use Aws\CacheInterface;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
+use Illuminate\Cache\Repository;
+
+/**
+ * Implements file store as cache adapter to cache credentials received from EC2 meta data server.
+ */
+final class FileCache implements CacheInterface
+{
+    const NAMESPACE = 'aws:credentials:';
+
+    /**
+     * {@inheritDoc}
+     */
+    public function get($key)
+    {
+        return $this->getCache()->get($this->getNamespacedKey($key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function set($key, $value, $ttl = 60)
+    {
+        //
+        // Keeping this trace for debug purposes - to know how many times creds is being fetched from meta server and
+        // then written to cache.
+        //
+        $this->getTrace()->debug(TraceCode::AWS_CREDS_CACHE_SET, []);
+
+        return $this->getCache()->set($this->getNamespacedKey($key), $value, $ttl);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function remove($key)
+    {
+        return $this->getCache()->forget($this->getNamespacedKey($key));
+    }
+
+    /**
+     * Returns namespaced key string
+     * @return string
+     */
+    protected function getNamespacedKey($key)
+    {
+        return self::NAMESPACE . $key;
+    }
+
+    /**
+     * @return Repository
+     */
+    protected function getCache(): Repository
+    {
+        return app('cache')->store('file');
+    }
+
+    /**
+     * @return Logger
+     */
+    protected function getTrace(): Logger
+    {
+        return app('trace');
+    }
+}
