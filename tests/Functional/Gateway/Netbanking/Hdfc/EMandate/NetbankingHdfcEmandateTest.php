@@ -642,7 +642,7 @@ class NetbankingHdfcEmandateTest extends TestCase
                 'FROM_DATE'          => '09/05/2018',
                 'TO_DATE'            => '31/12/2099',
                 'Status'             => $entityList['status_in_file'],
-                'Rejection_Remarks'  => '',
+                'Remark'             => '',
             ];
         }
 
