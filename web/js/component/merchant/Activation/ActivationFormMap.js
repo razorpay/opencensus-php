@@ -252,11 +252,8 @@ const registrationDetails = [
     },
     {
       name: 'business_registered_pin',
-      type: 'number',
       label: 'Pincode',
       size: 'small',
-      min: '100000',
-      max: '999999',
       validator: value => {
         let pin = Number(value);
         if (!pin || pin < 100000 || pin > 999999) {

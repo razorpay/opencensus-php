@@ -228,12 +228,6 @@ export class ActivationContainer extends React.Component {
       });
   }
 
-  closeWelcomeScreen = e => {
-    trackLinkClick('Activate Later');
-
-    this.props.onClose(e);
-  };
-
   openWizard = () => {
     trackLinkClick('Activate Now');
     this.setState({ openWizard: true });
@@ -270,7 +264,7 @@ export class ActivationContainer extends React.Component {
       modalClass = 'Activation--welcome';
       content = (
         <WelcomeScreen
-          onClose={this.closeWelcomeScreen}
+          onClose={this.props.onClose}
           openWizard={this.openWizard}
         />
       );
@@ -331,7 +325,7 @@ const SuccessScreen = _ => {
             'Personalise your checkout form, emails and pages with your logo and brand.'
           }
           icon={'icon-done'}
-          onClick={this.clickConfig}
+          onClick={clickConfig}
           to="/config"
         />
       </div>
@@ -342,7 +336,7 @@ const SuccessScreen = _ => {
 /*
 * Welcome screen is shown only when the user has not started filling the form. It's not shown in linked account activation but only main form.
 * */
-const WelcomeScreen = ({ onClose, openWizard }) => {
+const WelcomeScreen = ({ openWizard }) => {
   return (
     <div class="Activation--welcome">
       <div class="short-content">
@@ -357,7 +351,6 @@ const WelcomeScreen = ({ onClose, openWizard }) => {
           you account activated.
         </p>
 
-        {onClose && <Button onClick={onClose}>Activate Later</Button>}
         <Button.Primary onClick={openWizard}>
           Go to Activation Form
         </Button.Primary>
@@ -398,6 +391,11 @@ const defaultKeysInForm = ['contact_name', 'contact_email', 'contact_mobile'];
 const excludedFieldsInForm = [
   'created_at',
   'business_international',
+  'business_name',
+  'business_type',
+  'transaction_volume',
+  'role',
+  'department',
   'locked',
   'updated_at',
   'submitted',
