@@ -75,9 +75,9 @@ build:
           name: Create certificate directories
           code: |
               mkdir -p /opt/razorpay/certs/first_data
-#      - script:
-#          name: Run unit tests
-#          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --printer=Codedungeon\\PHPUnitPrettyResultPrinter\\Printer
+      - script:
+          name: Run unit tests
+          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --printer=Codedungeon\\PHPUnitPrettyResultPrinter\\Printer
       - script:
           name: List directory
           code: ls -lah
