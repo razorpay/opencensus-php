@@ -706,6 +706,7 @@ final class Route
         'oauth_token_fetch'                        => ['get',      'oauth/tokens/{id}',                              'OAuthTokenController@get'                                          ],
         'oauth_token_revoke'                       => ['put',      'oauth/tokens/{id}/revoke',                       'OAuthTokenController@revoke'                                       ],
         'oauth_application_create'                 => ['post',     'oauth/applications',                             'OAuthApplicationController@create'                                 ],
+        'oauth_application_create_partner'         => ['post',     'oauth/applications/partner',                     'OAuthApplicationController@createPartner'                          ],
         'oauth_application_fetch_multiple'         => ['get',      'oauth/applications',                             'OAuthApplicationController@getMultiple'                            ],
         'oauth_application_fetch'                  => ['get',      'oauth/applications/{id}',                        'OAuthApplicationController@get'                                    ],
         'oauth_application_delete'                 => ['delete',   'oauth/applications/{id}',                        'OAuthApplicationController@delete'                                 ],
@@ -1189,6 +1190,7 @@ final class Route
         'oauth_token_fetch',
         'oauth_token_revoke',
         'oauth_application_create',
+        'oauth_application_create_partner',
         'oauth_application_fetch_multiple',
         'oauth_application_fetch',
         'oauth_application_delete',
@@ -2088,6 +2090,7 @@ final class Route
         'beta_account_post_bank_account'       => [Feature::MARKETPLACE],
         'beta_account_fetch_setl_destinations' => [Feature::MARKETPLACE],
         'account_fetch'                        => [Feature::MARKETPLACE],
+        'oauth_application_create_partner'     => [Feature::PARTNER],
     ];
 
     /*
