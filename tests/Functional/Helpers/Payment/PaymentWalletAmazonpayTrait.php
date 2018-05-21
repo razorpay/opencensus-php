@@ -10,6 +10,8 @@ trait PaymentWalletAmazonpayTrait
 
         $requestUrl = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
 
+        $requestUrl = $this->makeFirstGatewayPaymentMockRequest($requestUrl, $method, $content);
+
         return $this->submitPaymentCallbackRequest(['url' => $requestUrl]);
     }
 }

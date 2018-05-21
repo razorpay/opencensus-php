@@ -242,6 +242,51 @@ class GatewayController extends Controller
         return Redirect::to($url);
     }
 
+    public function callbackAmazonpay()
+    {
+        $input = Request::all();
+
+        $this->app['trace']->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'gateway' => Gateway::WALLET_AMAZONPAY,
+                'input'   => $input,
+            ]);
+
+        $gateway = $this->app['gateway']->gateway(Gateway::WALLET_AMAZONPAY);
+
+        $paymentId = $gateway->getPaymentIdFromServerCallback($input);
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        if ($mode === null)
+        {
+            throw new Exception\LogicException(
+                'Payment id not found in either database',
+                null,
+                [
+                    'gateway'    => Gateway::WALLET_AMAZONPAY,
+                    'payment_id' => $paymentId
+                ]);
+        }
+
+        \Database\DefaultConnection::set($mode);
+
+        $this->app['basicauth']->setMode($mode);
+
+        $payment = $this->repo->payment->findOrFailPublic($paymentId);
+        $publicPaymentId = $payment->getPublicId();
+
+        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
+        $publicKey = $keys->first()->getPublicKey($mode);
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
+
+        $query = http_build_query($input);
+
+        return Redirect::to($url . '?'. $query);
+    }
+
     protected function getNetbankingEntityAndModeByTraceId($traceId)
     {
         $app = $this->app;

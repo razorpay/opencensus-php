@@ -161,6 +161,17 @@ class Gateway extends Base\Gateway
         return $refunded;
     }
 
+    public function getPaymentIdFromServerCallback(array $input)
+    {
+        if (isset($input[ResponseFields::SELLER_ORDER_ID]) === false)
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_CALLBACK_URL, null, null, $input);
+        }
+
+        return $input[ResponseFields::SELLER_ORDER_ID];
+    }
+
     public final function getAmazonPaySdk(): PWAINBackendSDK
     {
         if ($this->amazonPaySdk === null)
@@ -807,11 +818,13 @@ class Gateway extends Base\Gateway
             RequestFields::TXN_TIMEOUT       => Constant::TIMEOUT,
         ];
 
+        $callbackUrl = $this->route->getUrl('gateway_payment_callback_amazonpay');
+
         //
         // The SDK is used to add a signature to the request, as well as encrypt the request
         // The signature serves as an extra layer of authentication on Amazon's side.
         //
-        $relativeUrl = $this->getAmazonPaySdk()->getProcessPaymentUrl($content, $input['callbackUrl']);
+        $relativeUrl = $this->getAmazonPaySdk()->getProcessPaymentUrl($content, $callbackUrl);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
