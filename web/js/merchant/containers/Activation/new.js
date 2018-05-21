@@ -144,12 +144,22 @@ export class ActivationContainer extends React.Component {
         return response;
       })
       .catch(err => {
+        let errors = [];
+
+        if (err.errors) {
+          err.errors.forEach(err => {
+            if (err.toLowerCase().indexOf('status code') === -1) {
+              errors.push(err);
+            }
+          });
+        }
+
         this.props.showNotification({
           type: 'error',
-          message: err.errors ? err.errors : err,
+          message: errors,
         });
 
-        return err;
+        return errors;
       });
   };
 
@@ -233,6 +243,10 @@ export class ActivationContainer extends React.Component {
     this.setState({ openWizard: true });
   };
 
+  saveDirtyState = e => {
+    this.wizard.goto(null); // To save existing tab
+  };
+
   /*
   * 1. For linked account form, only spinner or Activation wizard.
   * 2. For main account form, spinner, Welcome Screen, Activation wizard and Success screens are shown.
@@ -274,6 +288,7 @@ export class ActivationContainer extends React.Component {
         <ActivationWizard
           accountId={this.props.accountId}
           data={data}
+          ref={refId => (this.wizard = refId)}
           categories={categories}
           isFormTouched={this.state.isFormTouched}
           save={this.saveStep}
@@ -286,7 +301,11 @@ export class ActivationContainer extends React.Component {
 
     // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
     return this.props.onClose ? (
-      <Modal class={'animate-down ' + modalClass} onClose={this.props.onClose}>
+      <Modal
+        class={'animate-down ' + modalClass}
+        onClose={this.props.onClose}
+        onCloseCB={this.saveDirtyState}
+      >
         <ModalContent>{content}</ModalContent>
       </Modal>
     ) : (
