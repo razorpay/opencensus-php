@@ -172,11 +172,7 @@ export default class BatchList extends Component {
           count={count}
           skip={skip}
           paginate={paginate}
-          EmptyComponent={EmptyComponent.bind(
-            this,
-            uploadUrl,
-            this.openUploadModal
-          )}
+          EmptyComponent={EmptyComponent(uploadUrl, this.openUploadModal)}
           {...this.props}
         />
       </div>
