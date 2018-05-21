@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Currency;
 use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
@@ -34,6 +35,12 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'pl';
 
     protected $entity = 'payment_link';
+
+    protected $generateIdOnCreate = true;
+
+    protected static $generators = [
+        self::ID,
+    ];
 
     protected $fillable = [
         self::AMOUNT,
@@ -114,6 +121,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
+        self::CURRENCY          => Currency\Currency::INR,
         self::EXPIRE_BY         => null,
         self::TIMES_PAYABLE     => null,
         self::TIMES_PAID        => 0,
@@ -123,6 +131,11 @@ class Entity extends Base\PublicEntity
         self::USER_ID           => null,
         self::DESCRIPTION       => null,
     ];
+
+    public function getExpireBy()
+    {
+        return $this->getAttribute(self::EXPIRE_BY);
+    }
 
     // -------------------------------------- Relations -------------------------------
 
@@ -140,4 +153,6 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany(Payment\Entity::class);
     }
+
+    // -------------------------------------- End Relations ---------------------------
 }
