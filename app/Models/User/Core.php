@@ -19,7 +19,7 @@ use RZP\Constants\Timezone;
 
 class Core extends Base\Core
 {
-    public function create(array $input)
+    public function create(array $input): Entity
     {
         $user = (new Entity)->build($input);
 
