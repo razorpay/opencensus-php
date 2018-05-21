@@ -29,7 +29,7 @@ export default class ReportLoader extends Component {
             <div>
               <div class="bar-loader" />
               <span
-                class="report-close btn-link"
+                class="report-close"
                 onClick={() => cancelDownload(config_id)}
               >
                 <i class="i i-close" />
@@ -47,6 +47,7 @@ export default class ReportLoader extends Component {
                 <span>
                   You can also choose to{' '}
                   <span
+                    class="btn-link"
                     data-configid={config_id}
                     onClick={this.props.openEmailReportModal}
                   >

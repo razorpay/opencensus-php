@@ -518,26 +518,22 @@ export default class ReportsContainer extends Component {
   };
 
   openCancelConfirmModal = config_id => {
+    const { currentReportList } = this.state;
+
     this.props.openModal({
       size: 'small',
       component: (
         <div>
-          <ModalHeader
-            title="Are you sure you want to stop the report download?"
-            onCloseClick={this.props.closeModal}
-          />
-          <div class="modal-body">
-            <p>We will still email you this report.</p>
-            <button
-              class="btn btn-default m-all"
-              style={{ padding: '6px 30px' }}
-              onClick={this.props.closeModal}
-            >
+          <ModalHeader title="Are you sure you want to stop the report download?" />
+          <div class="modal-body report-cancel-download">
+            {currentReportList[config_id]['emails'] && (
+              <p class="p-b">We will still email you this report.</p>
+            )}
+            <button class="btn btn-default" onClick={this.props.closeModal}>
               No, don't
             </button>
             <button
-              class="btn btn-primary m-all"
-              style={{ padding: '6px 30px' }}
+              class="btn btn-primary pull-right"
               onClick={() => this.cancelReportDownload(config_id)}
             >
               Yes, stop
