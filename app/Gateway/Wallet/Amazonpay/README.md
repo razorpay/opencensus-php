@@ -3,7 +3,7 @@
 **Documentation**: 
 https://drive.google.com/open?id=1eYrSunmXQ3JFSQ5qm3pHYvaAxsq3LENT
 
-**People**: Mayank / Vivek
+**People**: Junaid / Vivek
 
 # Payment flow
 - Buyer places order, and that hits `Razorpay` Server.
@@ -19,7 +19,7 @@ https://drive.google.com/open?id=1eYrSunmXQ3JFSQ5qm3pHYvaAxsq3LENT
 - The SDK contains encryption logic. We will have to build the decryption logic ourselves for mock server.
 - For success, and failed cases, `AmazonPay` returns the user to the return url with the corresponding parameters.
 - The response sent back will contain a signature, which must be verified. An example of the response is outlined below:
-    ```angular2html
+    ```
       {
         "amazonOrderId": "S04-3441699-5326071",
         "description": "Txn Success",
@@ -36,7 +36,7 @@ https://drive.google.com/open?id=1eYrSunmXQ3JFSQ5qm3pHYvaAxsq3LENT
 - `AmazonPay` uses `AES-GCM` No Padding algorithm for plaintext encryption.
 - The plaintext is encrypted with a key and the key is then encrypted using `RSA-ECB` with `OAEPWithSHA-1AndMGF1Padding` algorithm. This concept of encrypting the key that can used to decrypt the `ciphertext` is called envelope encryption. The key encryption key `(KEK)` is used to encrypt the data key. 
 - `Razorpay` sends as part of the request, 3 parameters to `AmazonPay`
-    ```angular2html
+    ```
       1. The encrypted payload
       2. The encrypted data key to decrypt the above payload
       3. The initialization vector used to decrypt the above payload
@@ -54,7 +54,7 @@ https://drive.google.com/open?id=1eYrSunmXQ3JFSQ5qm3pHYvaAxsq3LENT
 - The `AmazonPay` Refund API supports both partial and full refunds.
 - If the refund is successful, it is in `Completed` state and if it fails, it is in `Declined` state.
 - The Refund API has the following features
-    ```angular2html
+    ```
       1. Make a call to the RefundPayment API.
       2. Listen for the Refund IPN returned by AmazonPay.  
       3. Refunds are not processed in real time, and the initial status is always pending. 
@@ -62,7 +62,7 @@ https://drive.google.com/open?id=1eYrSunmXQ3JFSQ5qm3pHYvaAxsq3LENT
       5. We can get the details of the refund via the GetRefundStatus API using the AmazonRefundId returned in the Refund API response. 
     ```
 - Refund API
-    ```angular2html
+    ```
       1. Rate limited and throttled API 
       2. Generate the Refund API request params
       3. Make a call to the SDK's refund API
@@ -74,7 +74,7 @@ https://drive.google.com/open?id=1eYrSunmXQ3JFSQ5qm3pHYvaAxsq3LENT
     
 - Verify Refund API
     - `Razorpay` will get the status of the refund via this API and not via the IPN system
-    ```angular2html
+    ```
       1. If a refund's request to AmazonPay failed, then the refund would have been updated to failed. If the response was received, we update the status to initiated
       2. Via Verify Refund we will pick up all the refunds in failed / initiated state and send AmazonPay a verify refund API call
       3. Via the response, we will be notified of the refund's status, and we will update the internal refund status accordingly
