@@ -12,6 +12,16 @@ import {
 const NGO_BUSINESS_TYPE = 7;
 const differentAddress = activation => activation.state.same_address === '0';
 
+const CIN_BusinessTypes = [
+  4, // 'Private Limited',
+  5, // 'Public Limited',
+  11, // 'Not yet registered',
+];
+
+const LLPIN_BusinessTypes = [
+  6, // 'LLP'
+];
+
 const stateOptions = [''].concat(
   Object.keys(states).map(c => {
     return {
@@ -177,8 +187,28 @@ const registrationDetails = [
     label: 'CIN',
     name: 'company_cin',
     validator: validateCIN,
-    required: false, // It's mandatory only for Companies
-    info: 'Mandatory for Companies. Example : U 67190 TN 2014 PTC 096978',
+    required: true, // It's mandatory only for certain orgs
+    info:
+      'Mandatory for Companies. Example : U 67190 TN 2014 PTC 096978 (no spaces)',
+    _when: activation => {
+      return (
+        activation.props.data.business_type &&
+        CIN_BusinessTypes.indexOf(
+          Number(activation.props.data.business_type)
+        ) !== -1
+      );
+    },
+  },
+  {
+    label: 'LLPIN',
+    name: 'company_cin',
+    required: true, // It's mandatory only for LLP
+    info: 'Mandatory for LLP business. Example : AAB-1111',
+    _when: activation =>
+      activation.props.data.business_type &&
+      LLPIN_BusinessTypes.indexOf(
+        Number(activation.props.data.business_type)
+      ) !== -1,
   },
   [
     {
