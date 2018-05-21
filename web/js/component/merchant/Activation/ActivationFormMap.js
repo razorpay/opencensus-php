@@ -22,6 +22,12 @@ const LLPIN_BusinessTypes = [
   6, // 'LLP'
 ];
 
+const FORM_BusinessTypes = [
+  7, // 'NGO'
+  9, // 'Trust'
+  10, // 'Society'
+];
+
 const stateOptions = [''].concat(
   Object.keys(states).map(c => {
     return {
@@ -411,13 +417,19 @@ const uploadFields = [
     name: 'form_12a_url',
     label: 'Form 12A Allotment Letter',
     _when: activation =>
-      activation.props.data.business_type == NGO_BUSINESS_TYPE,
+      activation.props.data.business_type &&
+      FORM_BusinessTypes.indexOf(
+        Number(activation.props.data.business_type)
+      ) !== -1,
   },
   {
     name: 'form_80g_url',
     label: 'Form 80G Allotment Letter',
     _when: activation =>
-      activation.props.data.business_type == NGO_BUSINESS_TYPE,
+      activation.props.data.business_type &&
+      FORM_BusinessTypes.indexOf(
+        Number(activation.props.data.business_type)
+      ) !== -1,
   },
 ];
 
