@@ -129,19 +129,25 @@ class SubMerchant extends Base
 
         $this->repo->saveOrFail($subMerchant);
 
+        $status = Status::SUCCESS;
+
         // Fill in merchant details (activation form)
         $detailInput = Helper::getSubMerchantDetailInput($entry);
         $this->merchantDetailCore->saveMerchantDetails($detailInput, $subMerchant);
 
-        // Save files
-        $this->merchantDetailCore->saveDummyActivationFiles($subMerchant);
+        // Add files and submit for non-partner flow
+        if ($this->partnerApp === null)
+        {
+            // Save files
+            $this->merchantDetailCore->saveDummyActivationFiles($subMerchant);
 
-        // Submit activation form
-        $submitData = [MerchantDetail\Entity::SUBMIT => '1'];
-        $response   = $this->merchantDetailCore->saveMerchantDetails($submitData, $subMerchant);
+            // Submit activation form
+            $submitData = [MerchantDetail\Entity::SUBMIT => '1'];
+            $response   = $this->merchantDetailCore->saveMerchantDetails($submitData, $subMerchant);
 
-        $status = ($response[MerchantDetail\Entity::SUBMITTED] === true) ?
-            Status::SUCCESS : Status::FAILURE;
+            $status = ($response[MerchantDetail\Entity::SUBMITTED] === true) ?
+                Status::SUCCESS : Status::FAILURE;
+        }
 
         $entry[Header::MERCHANT_ID] = $subMerchant->getId();
         $entry[Header::STATUS]      = $status;
