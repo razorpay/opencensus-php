@@ -101,11 +101,15 @@ class InvoiceTest extends TestCase
 
         $this->fixtures->merchant->edit('10000000000000', $merchantAttrs);
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        // supply_state_code should not be in private auth response
+        $this->assertArrayNotHasKey('supply_state_code', $response);
 
         $invoice = $this->getLastEntity('invoice', true);
 
         $this->assertEquals($merchanLabel, $invoice['merchant_label']);
+        $this->assertEquals('29', $invoice['supply_state_code']);
     }
 
     public function testCreateInvoiceWithNestedCustomerIdAndDetails()
@@ -500,7 +504,7 @@ class InvoiceTest extends TestCase
 
     public function testUpdateDraftInvoiceWithAmount()
     {
-        $this->createDraftInvoice();
+        $this->createDraftInvoice(['supply_state_code' => '29']);
 
         $this->startTest();
     }
@@ -1474,9 +1478,9 @@ class InvoiceTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->createDraftInvoice();
-        $this->createDraftInvoice(['id' => '1000001invoice', 'type' => 'link']);
-        $this->createDraftInvoice(['id' => '1000002invoice', 'type' => 'ecod']);
-        $this->createDraftInvoice(['id' => '1000003invoice', 'type' => 'ecod']);
+        $this->createDraftInvoice(['id' => '1000001invoice', 'type' => 'link', 'supply_state_code' => '29']);
+        $this->createDraftInvoice(['id' => '1000002invoice', 'type' => 'ecod', 'supply_state_code' => '29']);
+        $this->createDraftInvoice(['id' => '1000003invoice', 'type' => 'ecod', 'supply_state_code' => '29']);
 
         $this->startTest();
     }

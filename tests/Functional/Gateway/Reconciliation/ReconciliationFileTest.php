@@ -216,6 +216,8 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
         $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $this->assertBatchStatus();
     }
 
     public function testVirtualAccYesBankReconFile()
@@ -270,6 +272,8 @@ class ReconciliationFileTest extends TestCase
         // Recon should not overwrite reference2 if it was saved before
         $this->assertEquals($payment1['reference2'], $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $this->assertBatchStatus();
     }
 
     public function testHdfcFssReconRefundFile()
@@ -341,12 +345,11 @@ class ReconciliationFileTest extends TestCase
     /**
      * Test for success and failure count of a processed batch
      */
-    public function testAxisMigsBatchProcessTest()
+    public function testAxisMigsBatchProcessTest(bool $addFeature = true)
     {
-        $this->markTestSkipped('Axis removed from batch because of excel issue');
-
         $this->fixtures->create('terminal:shared_migs_recurring_terminals');
-        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        if ($addFeature === true) $this->fixtures->merchant->addFeatures('charge_at_will');
 
         // Recurring authorised payments
         $this->getNewPaymentEntity(true, false);
@@ -364,7 +367,7 @@ class ReconciliationFileTest extends TestCase
         // Passing payment id in refund also for a failure case
         $entries['Refund'][2] = $this->overrideAxisPayment($gatewayPayment3, [], 'migs');
 
-        $file = $this->writeToExcelFile($entries, 'axis', 'files/settlement', ['Sale', 'Refund']);
+        $file = $this->writeToExcelFile($entries, 'axis_razorpayadd', 'files/settlement', ['Sale', 'Refund'], 'xls');
 
         $this->runForFiles([$file], 'Axis');
 
@@ -376,6 +379,65 @@ class ReconciliationFileTest extends TestCase
 
         // One failure, status will be partially_processed
         $this->assertEquals($batch['status'], Status::PARTIALLY_PROCESSED);
+    }
+
+    /**
+     * Tests the flow of HDFC recon after Axis recon.
+     * Aim is to test flow where recon setting sheet name runs first and then
+     * and recon having sheet indices.
+     * This tests if selectedSheets gets reset after parsing finished.
+     */
+    public function testLaravelExcelReaderSheetNamesReset()
+    {
+        // Run Axis migs test
+        $this->testAxisMigsBatchProcessTest();
+
+        $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
+
+        // Recurring authorised payment
+        $payment3 = $this->getNewPaymentEntity(true, false);
+        $gatewayPayment3 = $this->getDbLastEntityToArray('hdfc');
+
+        $entries2[] = $this->overrideHdfcPayment($gatewayPayment3);
+
+        $file = $this->writeToExcelFile($entries2, 'fss', 'files/settlement', ['Sheet 1'], 'xls');
+        $this->runForFiles([$file], 'HDFC');
+
+        $updatedPayment2 = $this->getDbEntityById('payment', $payment3['id']);
+
+        $this->assertEquals($entries2[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedPayment2['reference1']);
+
+        $this->assertBatchStatus();
+    }
+
+    /**
+     * Tests the flow of Axis recon after First Data recon
+     * Aim is to test flow where recon setting sheet indices runs first and then
+     * and recon having sheet names.
+     * This tests if selectedSheetIndices gets reset to empty after parsing finished.
+     */
+    public function testLaravelExcelReaderSheetNamesResetReverse()
+    {
+        $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $payment1 = $this->getNewPaymentEntity(true, false);
+        $gatewayPayment1 = $this->getDbLastEntityToArray('first_data');
+
+        $entries[] = $this->overrideFirstDataPayment($gatewayPayment1);
+
+        $file = $this->writeToExcelFile($entries, 'first_data', 'files/settlement', ['Sheet 1'], 'xls');
+        $this->runForFiles([$file], 'FirstData');
+
+        $updatedPayment1 = $this->getDbEntityById('payment', $payment1['id']);
+
+        $this->assertEquals($entries[0][FDPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
+        $this->assertEquals($entries[0][FDPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
+        $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        // Run Axis migs test
+        $this->testAxisMigsBatchProcessTest(false);
     }
 
     /*

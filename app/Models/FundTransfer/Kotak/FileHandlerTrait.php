@@ -67,17 +67,17 @@ trait FileHandlerTrait
         return $url;
     }
 
-    public function writeToExcelFile($data, $name, $dir = 'files/settlement', $sheetNames = ['Sheet 1'])
+    public function writeToExcelFile($data, $name, $dir = 'files/settlement', $sheetNames = ['Sheet 1'], $extension = 'xlsx')
     {
-        $fullpath = $this->createExcelFile($data, $name, $dir, $sheetNames);
+        $fullpath = $this->createExcelFile($data, $name, $dir, $sheetNames, $extension);
 
-        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        $xlsxMimeType = (($extension === 'xls') ? 'application/vnd.ms-office'
+                                             : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
-        $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType);
+        $url = $this->saveToAws($name . '.' . $extension, $fullpath, $xlsxMimeType);
 
         return $url;
     }
-
 
     public function writeToExcelFileH2H($data, $name, $dir = 'files/settlement')
     {
@@ -94,7 +94,7 @@ trait FileHandlerTrait
         return $url;
     }
 
-    public function createExcelFile($data, $name, $dir, $sheetNames = ['Sheet 1'])
+    public function createExcelFile($data, $name, $dir, $sheetNames = ['Sheet 1'], $extension = 'xlsx')
     {
         \Config::set('excel::export.calculate', true);
 
@@ -102,7 +102,7 @@ trait FileHandlerTrait
 
         $excel = $this->createExcelObject($data, $name, $columnFormat, $sheetNames);
 
-        $fileMetadata = $excel->store('xlsx', storage_path($dir), true);
+        $fileMetadata = $excel->store($extension, storage_path($dir), true);
 
         $fullpath = $fileMetadata['full'];
 

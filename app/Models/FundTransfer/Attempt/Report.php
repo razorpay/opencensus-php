@@ -173,6 +173,11 @@ class Report extends Base\Core
 
         foreach ($records as $record)
         {
+            if ($record->source->getBatchFundTransferId() !== $record->getBatchFundTransferId())
+            {
+                continue;
+            }
+
             $isCriticalError = $statusClass::isCriticalError($record);
 
             if ($isCriticalError === true)

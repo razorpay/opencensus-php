@@ -282,8 +282,6 @@ EOT;
 
     public function testInvalidVpa()
     {
-        self::markTestSkipped('Removed psp validation temporarily');
-
         $vpas = [
             // Emails are not VPAs
             'nemo@razorpay.com',

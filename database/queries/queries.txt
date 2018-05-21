@@ -3550,3 +3550,6 @@ ALTER TABLE terminals
 
 ALTER TABLE payments
     ADD INDEX `payments_merchant_id_captured_at_index` (merchant_id, captured_at);
+
+ALTER TABLE invoices
+    ADD COLUMN supply_state_code CHAR(4) DEFAULT NULL AFTER merchant_label;
