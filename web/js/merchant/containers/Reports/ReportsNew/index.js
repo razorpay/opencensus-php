@@ -25,6 +25,8 @@ import {
   addReportToList,
   updateReportInList,
   removeReportFromList,
+  hasReportDownloaded,
+  removeFromDownloadStatuses,
 } from 'merchant/modules/reports';
 import SelectConfig from 'merchant/components/Reports/ReportsNew/SelectConfig';
 import EmailReport from 'merchant/components/Reports/ReportsNew/EmailReport';
@@ -75,6 +77,8 @@ const requestFailedFunc = () => {
     addReportToList,
     updateReportInList,
     removeReportFromList,
+    hasReportDownloaded,
+    removeFromDownloadStatuses,
   }
 )
 @reduxForm({
@@ -145,6 +149,7 @@ export default class ReportsContainer extends Component {
         .subtract(1, 'months')
         .startOf('month'),
       currentReportList: store.getState().reports.currentReportList,
+      reportsDownloadStatus: store.getState().reports.reportsDownloadStatus,
     };
 
     this.onConfigChange = ::this.onConfigChange;
@@ -156,6 +161,7 @@ export default class ReportsContainer extends Component {
       //update state when report list store changes
       this.setState({
         currentReportList: store.getState().reports.currentReportList,
+        reportsDownloadStatus: store.getState().reports.reportsDownloadStatus,
       });
     });
 
@@ -335,13 +341,16 @@ export default class ReportsContainer extends Component {
             return;
           }
           if (data.error) {
-            // this.props.removeReportFromList(selectedConfig.value);
-
+            this.props.removeReportFromList(selectedConfig.value);
+            this.props.hasReportDownloaded(selectedConfig.value, false);
             return this.props.showNotification({
               type: 'error',
               message: data.error,
             });
           }
+
+          this.props.removeReportFromList(selectedConfig.value);
+          this.props.hasReportDownloaded(selectedConfig.value, true);
 
           window.location = data.url;
         });
@@ -520,33 +529,43 @@ export default class ReportsContainer extends Component {
   openCancelConfirmModal = config_id => {
     const { currentReportList } = this.state;
 
-    this.props.openModal({
-      size: 'small',
-      component: (
-        <div>
-          <ModalHeader title="Are you sure you want to stop the report download?" />
-          <div class="modal-body report-cancel-download">
-            {currentReportList[config_id]['emails'] && (
-              <p class="p-b">We will still email you this report.</p>
-            )}
-            <button class="btn btn-default" onClick={this.props.closeModal}>
-              No, don't
-            </button>
-            <button
-              class="btn btn-primary pull-right"
-              onClick={() => this.cancelReportDownload(config_id)}
-            >
-              Yes, stop
-            </button>
+    if (currentReportList[config_id]) {
+      this.props.openModal({
+        size: 'small',
+        component: (
+          <div>
+            <ModalHeader title="Are you sure you want to stop the report download?" />
+            <div class="modal-body report-cancel-download">
+              {currentReportList[config_id]['emails'] && (
+                <p class="p-b">We will still email you this report.</p>
+              )}
+              <button class="btn btn-default" onClick={this.props.closeModal}>
+                No, don't
+              </button>
+              <button
+                class="btn btn-primary pull-right"
+                onClick={() => this.cancelReportDownload(config_id)}
+              >
+                Yes, stop
+              </button>
+            </div>
           </div>
-        </div>
-      ),
-    });
+        ),
+      });
+    } else {
+      this.cancelReportDownload(config_id);
+    }
   };
 
   cancelReportDownload = config_id => {
+    const { reportsDownloadStatus, currentReportList } = this.state;
+
     this.props.closeModal();
-    this.props.removeReportFromList(config_id);
+    if (reportsDownloadStatus[config_id]) {
+      this.props.removeFromDownloadStatuses(config_id);
+    } else {
+      this.props.removeReportFromList(config_id);
+    }
   };
 
   render() {
@@ -558,6 +577,7 @@ export default class ReportsContainer extends Component {
       selectedConfig,
       selectedAccount,
       currentReportList,
+      reportsDownloadStatus,
     } = this.state;
 
     const { type, date, invoiceDate } = this.props;
@@ -697,6 +717,7 @@ export default class ReportsContainer extends Component {
               )}
               <ReportLoader
                 reportList={currentReportList}
+                reportsStatus={reportsDownloadStatus}
                 openEmailReportModal={this.openEmailReportModal}
                 configsLableMap={this.configsLableMap}
                 cancelDownload={this.openCancelConfirmModal}

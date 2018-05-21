@@ -44,7 +44,7 @@ export default class EmailReport extends Component {
             Select email addresses from below to which you want to send the
             reports.
           </p>
-          <form>
+          <form class="m-t">
             <strong>Choose Email:</strong>
             {this.props.emails.map((email, index) => (
               <div class="form-group" key={email}>
@@ -65,7 +65,7 @@ export default class EmailReport extends Component {
               </div>
             ))}
             <AsyncButton
-              class="btn btn-primary btn-block"
+              class="btn btn-primary btn-block m-t"
               text="Email Report"
               onClick={this.handleSend}
               disabled={selectedEmails.length < 1}

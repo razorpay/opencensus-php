@@ -8,6 +8,9 @@ const GENERATE_REPORT = 'GENERATE_REPORT';
 const ADD_REPORT = 'ADD_REPORT';
 const REMOVE_REPORT = 'REMOVE_REPORT';
 const UPDATE_REPORT = 'UPDATE_REPORT';
+const DOWNLOAD_REPORT_SUCCESS = 'DOWNLOAD_REPORT_SUCCESS';
+const DOWNLOAD_REPORT_FAILED = 'DOWNLOAD_REPORT_FAILED';
+const REMOVE_DOWNLOAD_STATUS = 'REMOVE_DOWNLOAD_STATUS';
 
 const downloadReportErrorMsg = {
   error: 'Oops!, Unable to generate report',
@@ -202,13 +205,31 @@ export const updateReportInList = report => {
   };
 };
 
+export const hasReportDownloaded = (reportId, status) => {
+  return {
+    type: status ? DOWNLOAD_REPORT_SUCCESS : DOWNLOAD_REPORT_FAILED,
+    reportId,
+  };
+};
+
+export const removeFromDownloadStatuses = reportId => {
+  return {
+    type: REMOVE_DOWNLOAD_STATUS,
+    reportId,
+  };
+};
+
 let initialState = {
   currentReportList: {},
+  reportsDownloadStatus: {},
 };
 
 export function reportsReducer(state = initialState, action) {
-  let currentReportList = {};
+  let currentReportList = {},
+    reportsDownloadStatus = {};
+
   currentReportList = { ...state.currentReportList };
+  reportsDownloadStatus = { ...state.reportsDownloadStatus };
 
   switch (action.type) {
     case `${ADD_REPORT}`:
@@ -241,6 +262,18 @@ export function reportsReducer(state = initialState, action) {
       }
 
       return set(state, 'currentReportList', currentReportList);
+
+    case `${DOWNLOAD_REPORT_SUCCESS}`:
+      reportsDownloadStatus[action.reportId] = 'success';
+      return set(state, 'reportsDownloadStatus', reportsDownloadStatus);
+
+    case `${DOWNLOAD_REPORT_FAILED}`:
+      reportsDownloadStatus[action.reportId] = 'failed';
+      return set(state, 'reportsDownloadStatus', reportsDownloadStatus);
+
+    case `${REMOVE_DOWNLOAD_STATUS}`:
+      delete reportsDownloadStatus[action.reportId];
+      return set(state, 'reportsDownloadStatus', reportsDownloadStatus);
     default:
       return state;
   }

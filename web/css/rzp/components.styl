@@ -777,17 +777,18 @@ dl.rzp-definition {
   background-color: #ddd;
   margin: 10px 0;
   border-radius: 2px;
-}
-
-.bar-loader:before{
-  display: block;
-  position: absolute;
-  content: "";
-  left: -200px;
-  width: 200px;
-  height: 4px;
-  background-color: $primary-color;
-  animation: bar-loading 2s linear infinite;
+  &.pending {
+    &:before{
+      display: block;
+      position: absolute;
+      content: "";
+      left: -200px;
+      width: 200px;
+      height: 4px;
+      background-color: $primary-color;
+      animation: bar-loading 2s linear infinite;
+    }  
+  }
 }
 
 @keyframes bar-loading {
