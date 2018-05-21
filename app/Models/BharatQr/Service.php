@@ -60,7 +60,7 @@ class Service extends Base\Service
 
         $qrCodeId = $qrData[GatewayResponseParams::MERCHANT_REFERENCE];
 
-        $this->determineAndSetModeForQr($qrCodeId);
+        $this->determineAndSetModeForQr($qrCodeId, $gateway);
 
         $gatewayResponse['qr_data'][GatewayResponseParams::GATEWAY] = $gateway;
 
@@ -91,7 +91,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    protected function determineAndSetModeForQr(string $merchantReference)
+    protected function determineAndSetModeForQr(string $merchantReference, string $gateway)
     {
         // We are not using verifyIdAndSilentlyStripSign here because in case
         // of unexpected payments reference id will be random and this will throw
@@ -100,7 +100,11 @@ class Service extends Base\Service
 
         $mode = $this->repo->determineLiveOrTestModeForEntity($merchantReference, Constants\Entity::QR_CODE);
 
-        if ($mode === null)
+        if ($gateway === Payment\Gateway::SHARP)
+        {
+            $mode = Mode::TEST;
+        }
+        else if ($mode === null)
         {
             $mode = Mode::LIVE;
         }

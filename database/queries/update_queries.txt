@@ -1673,3 +1673,12 @@ WHERE  id IN ( '6P2UjB7AZkp3h5', '7wptZXq8xk3Hhi', '9qIJjdfTUc048v', '9yak56TeQG
                'A6arDl0wwwds3D', 'A7MVCY5zOegGQ0', 'A7h1HCuWhuE6qB', 'A894C2t1U3gJwq',
                'A89Q9ehP4c29ay', 'A8Dkkq0zImHQhe', 'A8U3Esrz88wjU2', 'A8X8Gm29WZCdJH',
                'A8bsJrEkWALzqF', 'AArsGstS2RaWTK' );
+
+
+# Set BQR Details in Sharp Terminal
+Update terminals
+    SET upi = 1, mc_mpan = '1234560000000000', visa_mpan = '1234560000000001', rupay_mpan = '1234560000000002',
+     vpa = 'random@razorpay' where id = '1000SharpTrmnl';
+
+# Set default BQR pricing plan in test mode
+update pricing set id = 'ADpwof4PvULLDD' where id = 'ADpwof4PvULLDD';

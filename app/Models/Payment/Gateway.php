@@ -609,6 +609,7 @@ class Gateway
     public static $bharatQrGateways = [
         self::UPI_ICICI,
         self::HITACHI,
+        self::SHARP,
     ];
 
     public static $authTypeToEmandateGatewayMap = [
