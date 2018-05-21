@@ -3,6 +3,7 @@
 namespace RZP\Models\Invoice;
 
 use App;
+use Lib\Gstin;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -148,6 +149,9 @@ class Entity extends Base\PublicEntity
     const SMS                      = 'sms';
     const ITEMS                    = 'items';
     const IS_PAID                  = 'is_paid';
+    const SUPPLY_STATE_NAME        = 'supply_state_name';
+    const BILLING_ADDRESS_TEXT     = 'billing_address_text';
+    const SHIPPING_ADDRESS_TEXT    = 'shipping_address_text';
 
     const DEFAULT_DUE_DAYS         = 60;
 
@@ -564,6 +568,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_GSTIN);
     }
 
+    public function getCustomerBillingAddressAsText()
+    {
+        return optional($this->customerBillingAddress)->formatAsText();
+    }
+
+    public function getCustomerShippingAddressAsText()
+    {
+        return optional($this->customerShippingAddress)->formatAsText();
+    }
+
     public function getScheduledAt()
     {
         return $this->getAttribute(self::SCHEDULED_AT);
@@ -637,6 +651,16 @@ class Entity extends Base\PublicEntity
     public function getMerchantLabel()
     {
         return $this->getAttribute(self::MERCHANT_LABEL);
+    }
+
+    public function getSupplyStateCode()
+    {
+        return $this->getAttribute(self::SUPPLY_STATE_CODE);
+    }
+
+    public function getSupplyStateName()
+    {
+        return Gstin::getStateNameByGstin($this->getSupplyStateCode());
     }
 
     public function getDescription()

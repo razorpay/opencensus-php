@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Detail;
 
 use RZP\Models\Base;
+use RZP\Models\Address;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
 
@@ -454,6 +455,18 @@ class Entity extends Base\PublicEntity
     public function getBusinessRegisteredAddress()
     {
         return $this->getAttribute(self::BUSINESS_REGISTERED_ADDRESS);
+    }
+
+    public function getBusinessRegisteredAddressAsText()
+    {
+        return Address\Utility::formatAddressAsText(
+            [
+                Address\Entity::LINE1     => optional($this->merchantDetail)->getBusinessRegisteredAddress(),
+                Address\Entity::CITY      => optional($this->merchantDetail)->getBusinessRegisteredCity(),
+                Address\Entity::STATE     => optional($this->merchantDetail)->getBusinessRegisteredState(),
+                Address\Entity::COUNTRY   => 'India',
+                Address\Entity::ZIPCODE   => optional($this->merchantDetail)->getBusinessRegisteredPin(),
+            ]);
     }
 
     public function getBusinessRegisteredCity()

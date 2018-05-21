@@ -532,6 +532,11 @@ class Country
         return $countryCode;
     }
 
+    public static function getCountryNameByCode(string $code = null)
+    {
+        return self::$countryCodeNameMap[$code] ?? null;
+    }
+
     public static function checkIfValidCountry($value)
     {
         if (self::getCountryCode($value) === null)
