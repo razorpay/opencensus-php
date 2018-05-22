@@ -13,6 +13,7 @@ class Encryptor extends AESCrypto
     {
         parent::__construct($mode, $masterKey, $initializationVector);
 
+        // AES encryption with 256 block length
         $this->aes->setKeyLength(128);
         $this->aes->setBlockLength(256);
     }

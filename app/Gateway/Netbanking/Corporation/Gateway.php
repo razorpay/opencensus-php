@@ -76,7 +76,7 @@ class Gateway extends Base\Gateway
         // Hence, we need to format the amount in the callback as well before making
         // the amount assertion
         $this->assertAmount(
-            $this->formatAmount($input['payment']['amount']),
+            $this->formatAmount($input['payment']['amount'] / 100),
             $this->formatAmount($content[ResponseFields::AMOUNT])
         );
 
@@ -293,8 +293,6 @@ class Gateway extends Base\Gateway
         ];
 
         $request = $this->getStandardRequestArray($content, 'get', Action::VERIFY);
-
-        $request['url'] .= '?' . http_build_query($content);
 
         // Since they don't have a valid SSL certificate on UAT site.
         if ($this->mode === Mode::TEST)
