@@ -9,16 +9,16 @@ use Mail;
 
 use App;
 use RZP\Exception;
-use RZP\Mail\Settlement as SettlementMail;
 use RZP\Models\Base;
-use RZP\Models\BankAccount;
+use RZP\Constants\Mode;
 use RZP\Models\FileStore;
+use RZP\Models\Settlement;
+use RZP\Models\BankAccount;
 use RZP\Models\FundTransfer;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Attempt\Type;
+use RZP\Mail\Settlement\Settlement as SettlementMail;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
-use RZP\Models\Settlement;
-use RZP\Constants\Mode;
 
 class NodalAccount extends NodalBase\FileProcessor
 {
@@ -45,26 +45,6 @@ class NodalAccount extends NodalBase\FileProcessor
         $this->hour = Carbon::now(Timezone::IST)->hour;
 
         $this->app = App::getFacadeRoot();
-
-        $this->initSummary();
-    }
-
-    protected function initSummary()
-    {
-        $this->summary['total']['amount'] = 0;
-        $this->summary['total']['count'] = 0;
-
-        $this->summary['NEFT']['amount'] = 0;
-        $this->summary['NEFT']['count'] = 0;
-
-        $this->summary['IFT']['amount'] = 0;
-        $this->summary['IFT']['count'] = 0;
-
-        $this->summary['RTGS']['amount'] = 0;
-        $this->summary['RTGS']['count'] = 0;
-
-        $this->summary['IMPS']['amount'] = 0;
-        $this->summary['IMPS']['count'] = 0;
     }
 
     public static function getHeadings()
@@ -171,6 +151,8 @@ class NodalAccount extends NodalBase\FileProcessor
 
         $type = $this->getPaymentType($ba, $amount, $attempt);
 
+        $this->updateSummary($type, $amount);
+
         $array = [
             Headings::CLIENT_CODE             => 'RAZORNODAL',
             Headings::PRODUCT_CODE            => 'REFUND',
@@ -258,15 +240,6 @@ class NodalAccount extends NodalBase\FileProcessor
         return $type;
     }
 
-    protected function updateSummary($type, $amount)
-    {
-        $this->summary['total']['count']++;
-        $this->summary['total']['amount'] += $amount;
-
-        $this->summary[$type]['amount'] += $amount;
-        $this->summary[$type]['count']++;
-    }
-
     protected function getEmptyArray()
     {
         $headings = self::getHeadings();
@@ -320,29 +293,17 @@ class NodalAccount extends NodalBase\FileProcessor
 
     protected function sendSettlementMail(FileStore\Creator $textFileEntity)
     {
-        // Don't send mail if mode is test and env is not dev or testing
-        if (($this->getMode() === Mode::TEST) and
-            ($this->app->environment('dev', 'testing') === false))
-        {
-            return;
-        }
-
-        $summary = $this->summary;
-
-        $channel = 'Kotak';
-
-        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
-        $subject = "$channel Settlement files for $today";
-
-        $data = compact('summary', 'subject', 'channel');
-
         $textFileEntity = $textFileEntity->get();
 
-        $data['textFile'] = $textFileEntity['local_file_path'];
+        $data = [
+            'summary'  => $this->summary,
+            'channel'  => $this->channel,
+            'textFile' => $textFileEntity['local_file_path']
+        ];
 
-        $kotakSettlementMail = new SettlementMail\KotakSettlement($data);
+        $settlementMail = new SettlementMail($data);
 
-        Mail::queue($kotakSettlementMail);
+        Mail::queue($settlementMail);
     }
 
     protected function getFileToWriteNameWithoutExt()
