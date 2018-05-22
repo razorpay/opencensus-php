@@ -2722,7 +2722,7 @@ class Entity extends Base\PublicEntity
               ->where(Entity::RECEIVER_TYPE, '=', $entity->getEntity());
     }
 
-    public function isNetbankingCorporate()
+    public function isCorporateNetbanking()
     {
         return (
             ($this->isNetbanking()) and
