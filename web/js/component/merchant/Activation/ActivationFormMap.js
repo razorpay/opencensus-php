@@ -9,7 +9,7 @@ import {
   validatePANCard,
 } from 'rzp/utils/validators';
 
-const NGO_BUSINESS_TYPE = 7;
+const INDIVIDUAL_BUSINESS_TYPE = 2;
 const differentAddress = activation => activation.state.same_address === '0';
 
 const CIN_BusinessTypes = [
@@ -88,6 +88,25 @@ const businessModel = [
       'Not yet registered',
       'Other',
     ],
+    description: function(e) {
+      // Changing description of self
+
+      let currentBusinessType = e && e.target.value;
+      if (!currentBusinessType) {
+        currentBusinessType = this.props.data.business_type;
+      }
+
+      {
+        /* Alert: if user has selected individual business type */
+      }
+      if (
+        currentBusinessType &&
+        !this.props.accountId &&
+        currentBusinessType == INDIVIDUAL_BUSINESS_TYPE
+      ) {
+        return 'Applications for Individuals might take longer to review';
+      }
+    },
   },
   [
     {
@@ -172,18 +191,22 @@ const businessModel = [
     name: 'business_website',
     placeholder: 'Enter URL',
     type: 'url',
-    description: (
-      <React.Fragment>
-        Your website should have following information easily accessible:
-        <b> About Us</b>,<b> Contact</b>,<b> Privacy Policy</b>,
-        <b> Terms & Conditions</b>, <b>Refund Policy</b> & <b>Pricing</b>.
-        Please refer our{' '}
-        <a href="" target="_blank">
-          Compliance Policies{' '}
-        </a>
-        for more details.
-      </React.Fragment>
-    ),
+    _autoRenderImpure: true, // Here, Description on other field while render.
+    description: () => {
+      // console.log('DYNAMIC DESC....');
+      return (
+        <React.Fragment>
+          Your website should have following information easily accessible:
+          <b> About Us</b>,<b> Contact</b>,<b> Privacy Policy</b>,
+          <b> Terms & Conditions</b>, <b>Refund Policy</b> & <b>Pricing</b>.
+          Please refer our{' '}
+          <a href="" target="_blank">
+            Compliance Policies{' '}
+          </a>
+          for more details.
+        </React.Fragment>
+      );
+    },
     info: 'Example: https://www.company.com',
   },
 ];
@@ -318,6 +341,7 @@ const registrationDetails = [
       _when: activation => activation.state.has_gstin === '0',
       placeholder: 'Enter GSTIN',
       size: 'small',
+      required: false,
       info:
         'The entered GST Number should match your Operational Address. Example: 29AAGCR4375J1ZU',
       validator: value => {
@@ -378,20 +402,23 @@ const uploadFields = [
   {
     name: 'business_proof_url',
     label: 'Business Registration Proof',
-    description: (
-      <ul>
-        Upload scan of the following:
-        <li>
-          Sales Tax/Service Tax or Shop Act Registration or GST Certificate
-          (mandatory, if Proprietorship firm)
-        </li>
-        <li>Partnership Deed (mandatory, if Partnership firm)</li>
-        <li>
-          Certificate of Incorporation (mandatory, if Private Limited or LLP)
-        </li>
-        <li>Registration Proof or Certificate (Trust/Society/NGO etc.)</li>
-      </ul>
-    ),
+    description: function(e) {
+      // console.log('Dynamic Description based on other field...', this.props.data);
+      return (
+        <ul>
+          Upload scan of the following:
+          <li>
+            Sales Tax/Service Tax or Shop Act Registration or GST Certificate
+            (mandatory, if Proprietorship firm)
+          </li>
+          <li>Partnership Deed (mandatory, if Partnership firm)</li>
+          <li>
+            Certificate of Incorporation (mandatory, if Private Limited or LLP)
+          </li>
+          <li>Registration Proof or Certificate (Trust/Society/NGO etc.)</li>
+        </ul>
+      );
+    },
   },
   {
     name: 'business_pan_url',

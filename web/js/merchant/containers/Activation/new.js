@@ -154,6 +154,11 @@ export class ActivationContainer extends React.Component {
           });
         }
 
+        // In Internal server error, only 1 error is sent and that is also removed above.
+        if (!errors.length) {
+          errors.push('Some error occurred');
+        }
+
         this.props.showNotification({
           type: 'error',
           message: errors,

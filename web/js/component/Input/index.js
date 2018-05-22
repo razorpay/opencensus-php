@@ -51,6 +51,7 @@ function separateDomProps(props) {
     addonAfter,
     validator,
     info,
+    autoRender,
     ...rest
   } = props;
 
@@ -61,6 +62,7 @@ function separateDomProps(props) {
     options,
     defaultValue,
     info,
+    autoRender,
     props: rest,
   };
 }
@@ -92,8 +94,14 @@ class Info extends React.PureComponent {
 
 class Description extends React.PureComponent {
   render() {
+    const text = this.props.text;
+
     if (this.props.text) {
-      return <div class="Input-desc">{this.props.text}</div>;
+      return (
+        <div class="Input-desc">
+          {typeof text === 'function' ? text() : text}
+        </div>
+      );
     }
     return null;
   }
@@ -122,7 +130,13 @@ class Error extends React.PureComponent {
   }
 }
 
-export default class Field extends React.PureComponent {
+/**
+ * General Field component
+ * @props
+ *  - {String/Fn, optional} `info` - Info can also be a Promise, pure function, or string. Fn. helps to change description on basis of value selected
+ *  - {String/Fn, optional} `description` - Description can be a string or pure function. Fn. helps to change description on basis of value selected
+ * */
+export default class Field extends React.Component {
   state = {
     mature: this.props.mature,
     focus: false,
@@ -145,35 +159,45 @@ export default class Field extends React.PureComponent {
     this.valid();
     this.props.onChange && this.props.onChange(e);
 
+    // Change description on basis of value changed
+    if (typeof this.props.description === 'function') {
+      const descriptionString = this.props.description(e);
+
+      this.setState({
+        descriptionEle: descriptionString || null, // If set undefined, description might take set its content based on default data.
+      });
+    }
+
+    // Change info on basis of value changed
     if (typeof this.props.info === 'function') {
       let info = this.props.info(e);
-      let infoString;
+      let infoEle;
 
       if (info != null) {
         // Handle api based information
         if (info.then) {
-          infoString = '...'; // Dummy loader while resolving promise
+          infoEle = '...'; // Dummy loader while resolving promise
           info
             .then(data => {
               this.setState({
-                infoString: data || null,
+                infoEle: data || null,
               });
             })
             .catch(err => {
               this.setState({
-                infoString: null,
+                infoEle: null,
               });
             });
         } else {
           // If props.info is simple function
-          infoString = info;
+          infoEle = info;
         }
       } else {
-        infoString = null; // Unset info if undefined/null.
+        infoEle = null; // Unset info if undefined/null.
       }
 
       this.setState({
-        infoString,
+        infoEle,
       });
     }
   };
@@ -211,6 +235,15 @@ export default class Field extends React.PureComponent {
     }
   };
 
+  shouldComponentUpdate(nextProps, nextState) {
+    // If field is dependent on render of other field, then allow 'auto re-render'.
+    if (this.props.autoRender === true || this.state !== nextState) {
+      return true;
+    }
+
+    return false; // Pure Component by default will not re-render
+  }
+
   render() {
     let allProps = separateDomProps(this.props);
     let InputTag = allProps.tag;
@@ -220,11 +253,20 @@ export default class Field extends React.PureComponent {
       defaultValue = undefined; // File input doesn't take defaultValue
     }
 
-    let infoString = allProps.info;
+    let infoEle = allProps.info;
+    let descriptionEle = allProps.description;
 
-    // It is expected that info is function only when onChange is trigger is needed
-    if (typeof infoString === 'function') {
-      infoString = this.state.infoString;
+    // It is expected that info is passed as function only when onChange it's dependent on onChange
+    if (typeof infoEle === 'function') {
+      infoEle = this.state.infoEle; // infoEle must always rely on state as its content is dependent on onChange
+    }
+
+    // It is expected that description is passed as function only when onChange it's dependent on onChange
+    if (typeof descriptionEle === 'function') {
+      descriptionEle =
+        this.state.descriptionEle !== undefined
+          ? this.state.descriptionEle
+          : this.props.description(); // description can rely on onChange, and also default data
     }
 
     let InputComponent = (
@@ -261,10 +303,10 @@ export default class Field extends React.PureComponent {
         <div class="Input-content">
           <div class="Input-elWrapper">
             {InputComponent}
-            <Info text={infoString} />
+            <Info text={infoEle} />
           </div>
           <Error text={this.state.error} />
-          <Description text={allProps.description} />
+          <Description text={descriptionEle} />
         </div>
       </label>
     );

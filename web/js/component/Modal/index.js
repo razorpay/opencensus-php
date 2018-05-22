@@ -82,7 +82,7 @@ export const Modal = ({
         <span
           class="Modal-close"
           onClick={e => {
-            onCloseCB(e);
+            onCloseCB && onCloseCB(e);
             onClose(e);
           }}
         >

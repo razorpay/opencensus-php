@@ -109,7 +109,6 @@ export const trackBack = data => {
 /* Tracks following:
  * - link clicks : 'Terms & Conditions', 'Merchant Agreement' and 'Privacy Policy'
  * - 'Activate Now' btn on Welcome screen
- * - 'Activate Later' btn on Welcome screen
  **/
 export const trackLinkClick = action => {
   track({

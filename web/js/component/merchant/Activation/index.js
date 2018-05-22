@@ -27,9 +27,11 @@ const LOADING_STATES = {
   INITIAL: null, // Initial = hide spinner
 };
 
-const defaultFieldProps = f => {
+function defaultFieldProps(f) {
+  const self = this;
+
   if (Array.isArray(f)) {
-    return f.forEach(defaultFieldProps);
+    return f.forEach(defaultFieldProps.bind(self));
   }
   if (!f._cmp) {
     f._cmp = Input;
@@ -37,10 +39,15 @@ const defaultFieldProps = f => {
   if (!f.hasOwnProperty('required')) {
     f.required = true;
   }
+
+  if (f.hasOwnProperty('description') && typeof f.description === 'function') {
+    f.description = f.description.bind(self); // Dynamic description based on other fields must be able to access this.state.dirty and this.props
+  }
+
   if (!f.hasOwnProperty('autoComplete')) {
     f.autoComplete = 'off';
   }
-};
+}
 
 let DOCUMENT_UPLOAD_STEP; // To handle specific case for document step
 const BUSINESS_TYPE_FORM_STEP = 1; // If NGO is selected, then Document Upload would have 2 more fields
@@ -100,7 +107,7 @@ export default class ActivationWizard extends React.Component {
       );
     }
 
-    defaultFieldProps(FORM_TABS_CONTENT); // Set the default props for all tab content views
+    defaultFieldProps.call(this, FORM_TABS_CONTENT); // Set the default props for all tab content views
 
     // All document fields in activation form to have same footprint
     DOCUMENT_UPLOAD_STEP &&
@@ -117,6 +124,10 @@ export default class ActivationWizard extends React.Component {
       FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(
         a =>
           (a.onChange = (file, progressTracker) => {
+            this.setState({
+              tabSaveInProgress: DOCUMENT_UPLOAD_STEP,
+            });
+
             return props.saveFile(a.name, file, progressTracker);
           })
       );
@@ -167,11 +178,11 @@ export default class ActivationWizard extends React.Component {
   }
 
   markTabIfActive() {
-    let lastActive = this.state.lastActiveTab; // Last active tab while saving should update its tick
-    let isValid = this.tabValidity(lastActive);
+    let tabSaveInProgress = this.state.tabSaveInProgress; // Last active tab while saving should update its tick
+    let isValid = this.tabValidity(tabSaveInProgress);
     let tabs = this.state.tabs.slice();
 
-    tabs[lastActive] = isValid;
+    tabs[tabSaveInProgress] = isValid;
 
     // To handle case if user directly clicked on 'Submit Form' tab to send dirty data
     if (!isValid) {
@@ -254,7 +265,7 @@ export default class ActivationWizard extends React.Component {
     this.goto(tabId, callBack);
   };
 
-  //newActiveTab = null -> clicked on same tab
+  //newActiveTab = null -> clicked on Save btn clicked
   goto = (newActiveTab, cb) => {
     // Hide only if it's already visible. To handle if the person has clicked on 'Submit Form' to save dirty data.
     if (this.state.showSubmitLayer) {
@@ -268,15 +279,15 @@ export default class ActivationWizard extends React.Component {
       return; // No action if clicked on same Tab. (Click on Save sends newActiveTab = null, so it's not same as click on same tab)
     }
 
-    let currentActive = this.state.activeTab;
+    let currentActive = this.state.activeTab; // currentActive = The tab of which dirty data is saved
     let tabs = this.state.tabs.slice();
 
-    newActiveTab = newActiveTab != null ? newActiveTab : currentActive; // currentActive tab remains (To handle Save btn click).
+    newActiveTab = newActiveTab != null ? newActiveTab : currentActive; // currentActive tab remains as newActiveTab (To handle Save btn click).
 
     let shouldSave = Object.keys(this.state.dirty).length ? true : null;
 
     this.setState({
-      lastActiveTab: currentActive,
+      tabSaveInProgress: currentActive,
       activeTab: newActiveTab,
       isSaving: shouldSave ? LOADING_STATES.PENDING : LOADING_STATES.INITIAL,
     });
@@ -778,17 +789,6 @@ export default class ActivationWizard extends React.Component {
             }
           }}
 
-          {/* Alert: if user has selected individual business type */}
-          {!isLinkedAccountForm &&
-            currentBusinessType == 2 && (
-              <Alert.Warning>
-                We may not be able to support individual as of now. Get in touch
-                with{' '}
-                <a href="mailto:support@razorpay.com">support@razorpay.com</a>{' '}
-                for more details.
-              </Alert.Warning>
-            )}
-
           {/* Activation form starts here */}
           <Form onChange={this.onChange} layout="tabular">
             {/* Other form content shown if not Document */}
@@ -854,6 +854,8 @@ export default class ActivationWizard extends React.Component {
 
   // returns validity
   tabValidity(i) {
+    console.log('I...', i);
+
     return FORM_TABS_CONTENT[i].every(
       c =>
         Array.isArray(c)
@@ -902,11 +904,34 @@ function Loader({ isSaving }) {
 }
 
 function ActivationField(field) {
-  let { _cmp: Component, _name, _when, _optionsFn, ...rest } = field;
+  let {
+    _cmp: Component,
+    _name,
+    _when,
+    _optionsFn,
+    _autoRenderImpure,
+    ...rest
+  } = field;
 
   if (_when && !_when(this)) {
     return null;
   }
+
+  /*
+   * NOTE:
+   * Different types of Unique Fns.:
+   * - Dependent on other fields, and "specific" to this Activation Wizard
+   *  + Fields dependent on other fields, need states.dirty/props
+   *  + So, they must be having unique fn. that can be called here whenever something gets changed.
+   *  + This way, all such unique fns. will be evaluated once some field is changed.
+   *  + Example: '_optionsFn' is 1 such unique fn.
+   *
+   * - Generalised Fns. Dependent on other fields or onChange of self.
+   *  + Fields which change description/info on their own value change can be generalised and handled in onChange/onFocus, etc.
+   *  + onChange and onFocus are automatically called by Input Field component.
+   *  + Cases like description need to be called on onChange and also on render. So, this must be handled in render of Input Field component.
+   *  + BUT, here, re-render of dirty won't automatically trigger description of other fields. Because it's PureComponent. So, _autoRenderImpure is used to watch the state of parent Component.
+   * */
 
   // Need to update options using rest.options to update in view, otherwise calling JUST _optionsFn changes options but doesnt change view.
   if (_optionsFn) {
@@ -930,6 +955,7 @@ function ActivationField(field) {
       data-name={_name}
       defaultValue={defaultValue}
       disabled={isSubmitFormDisabled(this.props.data)} // If form cannot be submitted, then all fields are disabled.
+      autoRender={_autoRenderImpure}
       {...rest}
     />
   );
