@@ -23,6 +23,11 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        if ($this->isBharatQrPayment() === true)
+        {
+            return null;
+        }
+
         $this->failIfRequired($input);
 
         if ($this->isSecondRecurringPaymentRequest($input))

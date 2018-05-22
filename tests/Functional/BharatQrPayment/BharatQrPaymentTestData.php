@@ -37,6 +37,11 @@ return [
         ],
     ],
 
+    'testMakeTestPayments' => [
+        'url'     => '/payment/callback/bharatqr/sharp',
+        'method'  => 'post',
+    ],
+
     'testUpiQrPaymentProcess' => [
         'url'     => '/payment/callback/bharatqr/upi_icici',
         'method'  => 'post',
