@@ -117,7 +117,7 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchantDetails);
 
-        $response = array_merge($response, $merchantDetails->toArrayPublic()); // verification key is only in $response. array_merge will also add some additional keys missing in $merchantDetails.
+        $response['updated_at'] = $merchantDetails->getUpdatedAt(); // To add the latest update_at value in $response.
 
         return $response;
     }
