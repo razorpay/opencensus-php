@@ -73,6 +73,7 @@ class CreateFssGateway extends Migration
 
             $table->index(FSS::PAYMENT_ID);
 
+            // Index length is 50, couldn't add here because of laravel constraints.
             $table->index(FSS::STATUS);
 
             $table->index(FSS::ACTION);
