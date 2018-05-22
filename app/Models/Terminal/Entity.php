@@ -168,7 +168,6 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = [
         'method',
-        'banking_type'
     ];
 
     protected static $modifiers = [
