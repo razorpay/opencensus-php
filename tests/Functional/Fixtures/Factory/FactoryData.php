@@ -62,6 +62,17 @@ final class FactoryData
             'tax'               => 2200,
         ]);
 
+        $factory(\RZP\Models\PaymentLink\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'receipt'     => '00000000000001',
+            'merchant_id' => '10000000000000',
+            'currency'    => 'INR',
+            'amount'      => 100000,
+            'status'      => \RZP\Models\PaymentLink\Status::ACTIVE,
+            'title'       => 'Sample title',
+            'description' => 'Sample description',
+        ]);
+
         $factory(\RZP\Models\Merchant\Balance\Entity::class, [
             'id'                        => $faker->uniqueid,
             'balance'                   => 0,

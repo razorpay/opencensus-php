@@ -18,9 +18,9 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::RECEIPT       => 'required|string|min:1|max:40',
         Entity::AMOUNT        => 'required|mysql_unsigned_int|min:100',
-        Entity::CURRENCY      => 'sometimes|in:INR',
+        Entity::CURRENCY      => 'filled|in:INR',
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
-        Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|nullable',
+        Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable',
         Entity::TITLE         => 'required|string|max:255',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes|nullable',
@@ -29,7 +29,6 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::RECEIPT       => 'sometimes|string|min:1|max:40',
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
-        Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|nullable',
         Entity::TITLE         => 'sometimes|string|max:255',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes|nullable',
@@ -37,14 +36,6 @@ class Validator extends Base\Validator
 
     public function validateExpireBy($attribute, $expireBy)
     {
-        $paymentLink = $this->entity;
-
-        // If expire_by is not set at all, nothing to validate.
-        if ($paymentLink->getExpireBy() === null)
-        {
-            return;
-        }
-
         $now = Carbon::now(Timezone::IST);
 
         $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
