@@ -76,6 +76,11 @@ export const Modal = ({
     ? className.split(' ').map(cls => 'Modal-container--' + cls)
     : '';
 
+  // Add the class if not present on body
+  if (!document.body.classList.contains('noscroll')) {
+    document.body.classList.add('noscroll');
+  }
+
   return (
     <div class={classList('Modal-container', classArray)}>
       {showCloseBtn && (
@@ -83,6 +88,8 @@ export const Modal = ({
           class="Modal-close"
           onClick={e => {
             onCloseCB && onCloseCB(e);
+            document.body.classList.remove('noscroll');
+
             onClose(e);
           }}
         >

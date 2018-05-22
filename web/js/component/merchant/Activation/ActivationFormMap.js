@@ -9,24 +9,27 @@ import {
   validatePANCard,
 } from 'rzp/utils/validators';
 
-const INDIVIDUAL_BUSINESS_TYPE = 2;
+const PROPRIETORSHIP = 1;
+const INDIVIDUAL = 2;
+const PARTNERSHIP = 3;
+const PRIVATE = 4; // 'Private Limited',
+const PUBLIC = 5; // 'Public Limited',
+const LLP = 6; // 'LLP'
+const NGO = 7; // 'NGO'
+const TRUST = 9; // 'Trust'
+const SOCIETY = 10; // 'Society'
+
 const differentAddress = activation => activation.state.same_address === '0';
 
 const CIN_BusinessTypes = [
-  4, // 'Private Limited',
-  5, // 'Public Limited',
+  PRIVATE,
+  PUBLIC,
   11, // 'Not yet registered',
 ];
 
-const LLPIN_BusinessTypes = [
-  6, // 'LLP'
-];
+const LLPIN_BusinessTypes = [LLP];
 
-const FORM_BusinessTypes = [
-  7, // 'NGO'
-  9, // 'Trust'
-  10, // 'Society'
-];
+const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
 
 const stateOptions = ['--Select--'].concat(
   Object.keys(states).map(c => {
@@ -102,7 +105,7 @@ const businessModel = [
       if (
         currentBusinessType &&
         !this.props.accountId &&
-        currentBusinessType == INDIVIDUAL_BUSINESS_TYPE
+        currentBusinessType == INDIVIDUAL
       ) {
         return 'Applications for Individuals might take longer to review';
       }
@@ -184,29 +187,29 @@ const businessModel = [
     _cmp: Input.Check,
     required: false,
     description:
-      'We’ll reach out to you as we might require some additional information to avail this feature. Please note that the application for international payments takes longer than usual to process.',
+      'Please note, application for international payment takes longer than usual process. We may reach out to you if we need any additional information.',
   },
   {
     label: 'Business Website/App',
     name: 'business_website',
     placeholder: 'Enter URL',
     type: 'url',
-    _autoRenderImpure: true, // Here, Description on other field while render.
-    description: () => {
-      // console.log('DYNAMIC DESC....');
-      return (
-        <React.Fragment>
-          Your website should have following information easily accessible:
-          <b> About Us</b>,<b> Contact</b>,<b> Privacy Policy</b>,
-          <b> Terms & Conditions</b>, <b>Refund Policy</b> & <b>Pricing</b>.
-          Please refer our{' '}
-          <a href="" target="_blank">
-            Compliance Policies{' '}
-          </a>
-          for more details.
-        </React.Fragment>
-      );
-    },
+    description: (
+      <React.Fragment>
+        Your website should have following information easily accessible:
+        <b class="shallow"> About Us</b>,<b class="shallow"> Contact</b>,<b class="shallow">
+          {' '}
+          Privacy Policy
+        </b>,
+        <b class="shallow"> Terms & Conditions</b>,{' '}
+        <b class="shallow">Refund Policy</b> & <b class="shallow">Pricing</b>.
+        Please refer our{' '}
+        <a href="" target="_blank">
+          Compliance Policies{' '}
+        </a>
+        for more details.
+      </React.Fragment>
+    ),
     info: 'Example: https://www.company.com',
   },
 ];
@@ -396,22 +399,59 @@ const uploadFields = [
   {
     name: 'business_proof_url',
     label: 'Business Registration Proof',
+    _autoRenderImpure: true, // Here, Description on other field while render.
     description: function(e) {
-      // console.log('Dynamic Description based on other field...', this.props.data);
-      return (
-        <ul>
-          Upload scan of the following:
-          <li>
-            Sales Tax/Service Tax or Shop Act Registration or GST Certificate
-            (mandatory, if Proprietorship firm)
-          </li>
-          <li>Partnership Deed (mandatory, if Partnership firm)</li>
-          <li>
-            Certificate of Incorporation (mandatory, if Private Limited or LLP)
-          </li>
-          <li>Registration Proof or Certificate (Trust/Society/NGO etc.)</li>
-        </ul>
-      );
+      const currentBusinessType =
+        this.state.dirty.business_type != null
+          ? this.state.dirty.business_type
+          : this.props.data.business_type;
+
+      const li1 = 'GST Certificate / Shop Act Registration';
+      const li2 = 'Partnership Deed';
+      const li3 = 'Certificate of Incorporation';
+      const li4 = 'Registration Proof or Certificate';
+
+      let description;
+
+      if (currentBusinessType == PARTNERSHIP) {
+        description = li2;
+      } else if (currentBusinessType == PROPRIETORSHIP) {
+        description = li1;
+      } else if (
+        [PRIVATE, PUBLIC, LLP].indexOf(Number(currentBusinessType)) > -1
+      ) {
+        description = li3;
+      } else if (ORG_BusinessTypes.indexOf(Number(currentBusinessType)) > -1) {
+        description = li4;
+      } else if (currentBusinessType == null) {
+        description = (
+          <ul>
+            Upload scan as per your Business:
+            <li>
+              <b>Proprietorship firm: </b>
+              {li1}
+            </li>
+            <li>
+              <b>Partnership firm: </b>
+              {li2}
+            </li>
+            <li>
+              <b>Private Limited or LLP: </b>
+              {li3}
+            </li>
+            <li>
+              <b>Trust, Society, NGO or others: </b>
+              {li4}
+            </li>
+          </ul>
+        );
+      }
+
+      if (typeof description === 'string') {
+        description = 'Upload the scan of ' + description;
+      }
+
+      return description;
     },
   },
   {
@@ -436,18 +476,16 @@ const uploadFields = [
     label: 'Form 12A Allotment Letter',
     _when: activation =>
       activation.props.data.business_type &&
-      FORM_BusinessTypes.indexOf(
-        Number(activation.props.data.business_type)
-      ) !== -1,
+      ORG_BusinessTypes.indexOf(Number(activation.props.data.business_type)) !==
+        -1,
   },
   {
     name: 'form_80g_url',
     label: 'Form 80G Allotment Letter',
     _when: activation =>
       activation.props.data.business_type &&
-      FORM_BusinessTypes.indexOf(
-        Number(activation.props.data.business_type)
-      ) !== -1,
+      ORG_BusinessTypes.indexOf(Number(activation.props.data.business_type)) !==
+        -1,
   },
 ];
 

@@ -57,8 +57,21 @@
   position: relative
   font-size: 0
 
+  &.Select-elWrapper
+    &::before
+      content: '\f105'
+      position: absolute
+      left: 236px
+      top: 4px
+      font-size: 20px
+      font-family: merchant-icons !important
+      font-style: normal
+      font-weight: normal !important
+      pointer-events: none
+
   select
-    text-indent: 4px
+    -webkit-appearance: none
+    -webkit-border-radius: 2px
 
 .Input-info
   max-width: 250px
@@ -119,8 +132,11 @@
   &[type=checkbox], &[type=radio]
     display: none
 
+  &:hover
+    border-color: #c1c1c1
+
   &:focus
-    border-color: #528ff0;
+    border-color: #528ff0
 
 .Input--file-upload
   margin-left: 4px
@@ -208,6 +224,9 @@ textarea.Input-el
   b
     color: #111
     font-weight: normal
+
+    &.shallow
+      color: #606061
 
 .Input-error
   display: none

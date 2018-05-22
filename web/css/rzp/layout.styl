@@ -9,11 +9,14 @@ a, .btn-link {
 
 html, body {
   background-color: #f0f3f4;
-  overflow-x: hidden;
 }
 
 body {
   -webkit-font-smoothing: antialiased;
+
+  &.noscroll {
+    overflow: hidden;
+  }
 }
 
 *:focus {

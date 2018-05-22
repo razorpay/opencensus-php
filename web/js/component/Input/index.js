@@ -1,4 +1,5 @@
 import FileUpload from 'merchant/components/File/Upload';
+import { classList } from 'common/util';
 
 function inputClass({ props, state, className }) {
   let wrapperClass = 'Input';
@@ -92,7 +93,7 @@ class Info extends React.PureComponent {
   }
 }
 
-class Description extends React.PureComponent {
+class Description extends React.Component {
   render() {
     const text = this.props.text;
 
@@ -107,7 +108,7 @@ class Description extends React.PureComponent {
   }
 }
 
-class Label extends React.PureComponent {
+class Label extends React.Component {
   render() {
     const text = this.props.text;
     if (text) {
@@ -301,7 +302,12 @@ export default class Field extends React.Component {
       <label class={inputClass(this)}>
         <Label text={allProps.label} />
         <div class="Input-content">
-          <div class="Input-elWrapper">
+          <div
+            class={classList(
+              'Input-elWrapper',
+              InputTag.toLowerCase() === 'select' && 'Select-elWrapper'
+            )}
+          >
             {InputComponent}
             <Info text={infoEle} />
           </div>
@@ -459,7 +465,6 @@ Field.File = _ => {
             showStagedFileStatus={_._showStagedFileStatus}
           />
         </div>
-        <Description text={selectedDescription} />
         <Description text={description} />
       </div>
     </label>

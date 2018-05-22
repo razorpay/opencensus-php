@@ -854,8 +854,6 @@ export default class ActivationWizard extends React.Component {
 
   // returns validity
   tabValidity(i) {
-    console.log('I...', i);
-
     return FORM_TABS_CONTENT[i].every(
       c =>
         Array.isArray(c)
