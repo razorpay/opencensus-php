@@ -81,6 +81,14 @@ class Constants
     const CREATE           = 'create';
     const UPDATE           = 'update';
 
+    /**
+     * For push based payments like bharat qr
+     * payments merchant completely relies on
+     * webhook. So if one event is failing we
+     * cant disable the webhook altogether
+     */
+    const ENDLESS_WEBHOOKS = 'endless_webhooks';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -166,6 +174,7 @@ class Constants
         self::EXPOSE_CARD_IIN               => true,
         self::S2S_OPTIONAL_DATA             => true,
         self::PARTNER                       => true,
+        self::ENDLESS_WEBHOOKS              => true,
     ];
 
     // Entity type constants

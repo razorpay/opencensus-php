@@ -5,9 +5,11 @@ namespace RZP\Models\Merchant\Webhook;
 use App;
 use Mail;
 
+use RZP\Models\Feature;
 use RZP\Http\Response\Header;
 use RZP\Http\Response\StatusCode;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
+use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 use RZP\Trace\TraceCode;
 
 use Http\Client\Common\PluginClient;
@@ -436,8 +438,13 @@ class Inferno
 
         $lastSuccessDifference = $webhook->getTimeDifferenceFromLastSuccessInHour();
 
+        $toDisableWebhook =
+            ($lastSuccessDifference > self::WEBHOOK_FAILURE_HOURS) &&
+            ($webhook->merchant->isFeatureEnabled(Feature\Constants::ENDLESS_WEBHOOKS) === false);
+
+
         // If (LSA - current time) > 24hrs, mark deactivated.
-        if ($lastSuccessDifference > self::WEBHOOK_FAILURE_HOURS)
+        if ($toDisableWebhook === true)
         {
             $this->trace->info(
                 TraceCode::WEBHOOK_DEACTIVATE,
