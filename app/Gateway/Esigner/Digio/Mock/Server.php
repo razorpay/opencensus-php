@@ -13,6 +13,21 @@ class Server extends Base\Mock\Server
 
         // $this->validateAuthorizeInput($input);
 
+        $inputArray = json_decode(json_decode($input, true)['content'], true);
+
+        $accountNumber = $inputArray['customer_account_number'];
+
+        if ($accountNumber === '914010009305864')
+        {
+            $response = [
+                'details'    => str_random(20),
+                'code'       => 'REQUEST_VALIDATION_FAILED',
+                'message'    => 'Invalid Aadhaar id',
+            ];
+
+            return $this->makeJsonResponse($response, 502);
+        }
+
         $response = [
             'id' => str_random(20),
             'enach_type' => 'CREATE',
@@ -53,11 +68,11 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
-    protected function makeJsonResponse(array $content)
+    protected function makeJsonResponse(array $content, $statusCode = 200)
     {
         $json = json_encode($content);
 
-        $response = $this->makeResponse($json);
+        $response = \Response::make($json, $statusCode);
 
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
 
