@@ -73,15 +73,4 @@ class Fields
             self::END_TIMESTAMP                                         => $token->getExpiredAt(),
         ];
     }
-
-    /**
-     * @param Payment\Entity $payment
-     * @return array
-     */
-    public static function getEmandateRegistrationDataForRegisterFile(Payment\Entity $payment): array
-    {
-        $token = $payment->getGlobalOrLocalTokenEntity();
-
-        return self::getEmandateRegistrationData($token, $payment->getId());
-    }
 }
