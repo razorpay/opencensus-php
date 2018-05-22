@@ -10,7 +10,6 @@ use RZP\Models\FundTransfer\Mode;
 use RZP\Exception\RuntimeException;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Batch\Entity;
-use RZP\Constants\Entity as EntityConstants;
 
 abstract class NodalAccount extends Base\Core
 {
@@ -22,19 +21,28 @@ abstract class NodalAccount extends Base\Core
 
     protected $batchFundTransfer = null;
 
-    protected $amount            = 0;
+    protected $amount = 0;
 
-    protected $fees              = 0;
+    protected $fees = 0;
 
-    protected $tax               = 0;
+    protected $tax = 0;
 
-    protected $count             = 0;
+    protected $count = 0;
 
-    protected $txnsCount         = 0;
+    protected $txnsCount = 0;
 
-    protected $channel           = null;
+    protected $channel = null;
 
-    protected $type              = null;
+    protected $type = null;
+
+    protected $summary = [];
+
+    public function __construct()
+    {
+        $this->initSummary();
+
+        parent::__construct();
+    }
 
     protected $purpose           = null;
 
@@ -168,4 +176,43 @@ abstract class NodalAccount extends Base\Core
                 return 1;
         }
     }
+
+    /**
+     * Initialize the Settlement summary variables
+     */
+    protected function initSummary()
+    {
+        $this->summary = [
+            'total' => [
+                'amount'    => 0,
+                'count'     => 0
+            ],
+            Mode::NEFT  => [
+                'amount'    => 0,
+                'count'     => 0
+            ],
+            Mode::RTGS  => [
+                'amount'    => 0,
+                'count'     => 0
+            ],
+            Mode::IFT   => [
+                'amount'    => 0,
+                'count'     => 0
+            ],
+            Mode::IMPS   => [
+                'amount'    => 0,
+                'count'     => 0
+            ],
+        ];
+    }
+
+    protected function updateSummary($type, $amount)
+    {
+        $this->summary['total']['count']++;
+        $this->summary['total']['amount'] += $amount;
+
+        $this->summary[$type]['amount'] += $amount;
+        $this->summary[$type]['count']++;
+    }
+
 }

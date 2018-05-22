@@ -12,10 +12,10 @@ use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base\PublicCollection;
-use RZP\Mail\Settlement as SettlementMail;
 use RZP\Models\BankAccount\Entity as BankEntity;
 use RZP\Models\FundTransfer\Mode as TransferMode;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Mail\Settlement\Settlement as SettlementMail;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 
 class NodalAccount extends NodalBase\FileProcessor
@@ -32,40 +32,9 @@ class NodalAccount extends NodalBase\FileProcessor
     {
         parent::__construct($purpose);
 
-        $this->initSummary();
-
         $this->date     = Carbon::today(Timezone::IST)->format('d/m/Y');
 
         $this->emptyRow = $this->getEmptyArray();
-    }
-
-    /**
-     * Initialize the Settlement summary variables
-     */
-    protected function initSummary()
-    {
-        $this->summary = [
-            'total' => [
-                'amount'    => 0,
-                'count'     => 0
-            ],
-            TransferMode::NEFT => [
-                'amount'    => 0,
-                'count'     => 0
-            ],
-            TransferMode::RTGS => [
-                'amount'    => 0,
-                'count'     => 0
-            ],
-            TransferMode::IFT  => [
-                'amount'    => 0,
-                'count'     => 0
-            ],
-            TransferMode::IMPS => [
-                'amount'    => 0,
-                'count'     => 0
-            ]
-        ];
     }
 
     /**
@@ -230,9 +199,9 @@ class NodalAccount extends NodalBase\FileProcessor
      */
     protected function getSettlementFileDestination(): string
     {
-        $date       = Carbon::now(Timezone::IST)->format('dm');
+        $date = Carbon::now(Timezone::IST)->format('dm');
 
-        $serialNo   = $this->getFileSerialNo(Channel::HDFC);
+        $serialNo = $this->getFileSerialNo(Channel::HDFC);
 
         return 'hdfc/outgoing/' . Constants::DOMAIN . '_' . Constants::CLIENT_CODE
                . '_' . Constants::CLIENT_CODE . $date . '.' . $serialNo;
@@ -247,48 +216,23 @@ class NodalAccount extends NodalBase\FileProcessor
      */
     protected function getFileSerialNo(string $channel): string
     {
-        $settlementCount    = $this->repo->batch_fund_transfer->getSettlementBatchCountOfDay($channel);
+        $settlementCount = $this->repo->batch_fund_transfer->getSettlementBatchCountOfDay($channel);
 
-        $count              = $settlementCount + 1;
+        $count = $settlementCount + 1;
 
         return str_pad($count, 3, '0', STR_PAD_LEFT);
     }
 
-    protected function updateSummary($type, $amount)
-    {
-        $this->summary['total']['count']++;
-        $this->summary['total']['amount'] += $amount;
-
-        $this->summary[$type]['amount'] += $amount;
-        $this->summary[$type]['count']++;
-    }
-
     protected function sendSettlementMail(FileStore\Creator $textFileEntity)
     {
-        // Don't send mail if mode is test and env is not dev or testing
-        if (($this->getMode() === Mode::TEST) and
-            ($this->app->environment('dev', 'testing') === false))
-        {
-            return;
-        }
+        $data = [
+            'channel'   => $this->channel,
+            'summary'   => $this->summary,
+            'file_data' => $this->getFileData($textFileEntity)
+        ];
 
-        $data               = $this->prepareDataForMail($textFileEntity);
-
-        $settlementMail     = new SettlementMail\HdfcSettlement($data);
+        $settlementMail = new SettlementMail($data);
 
         Mail::queue($settlementMail);
-    }
-
-    protected function prepareDataForMail(FileStore\Creator $textFileEntity): array
-    {
-        $channel             = Constants::NAME;
-
-        $summary             = $this->summary;
-
-        $data                = compact('summary', 'channel');
-
-        $data['file_data']   = $this->getFileData($textFileEntity);
-
-        return $data;
     }
 }
