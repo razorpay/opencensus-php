@@ -299,7 +299,7 @@ export default class Field extends React.Component {
     }
 
     return (
-      <label class={inputClass(this)}>
+      <div class={inputClass(this)}>
         <Label text={allProps.label} />
         <div class="Input-content">
           <div
@@ -314,7 +314,7 @@ export default class Field extends React.Component {
           <Error text={this.state.error} />
           <Description text={descriptionEle} />
         </div>
-      </label>
+      </div>
     );
   }
 }
@@ -335,19 +335,21 @@ class Check extends Field {
     let { label, description, info, props } = separateDomProps(this.props);
 
     return (
-      <label class={inputClass(this)}>
-        <input
-          {...props}
-          defaultChecked={this.checked}
-          class="Input-el"
-          type="checkbox"
-          onChange={this.toggle}
-          disabled={this.props.disabled}
-        />
-        <div className="Input-checkbox" />
-        <Label class="Input-inlineLabel" text={label} />
+      <div class={inputClass(this)}>
+        <label>
+          <input
+            {...props}
+            defaultChecked={this.checked}
+            class="Input-el"
+            type="checkbox"
+            onChange={this.toggle}
+            disabled={this.props.disabled}
+          />
+          <div className="Input-checkbox" />
+          <Label class="Input-inlineLabel" text={label} />
+        </label>
         <Description text={description} />
-      </label>
+      </div>
     );
   }
 }
@@ -448,7 +450,7 @@ Field.File = _ => {
   } = separateDomProps(_);
 
   return (
-    <label class={inputClass({ props: _ })}>
+    <div class={inputClass({ props: _ })}>
       <Label text={label} />
       <div class="Input-content Input-File">
         <div class="Input-elWrapper">
@@ -467,7 +469,7 @@ Field.File = _ => {
         </div>
         <Description text={description} />
       </div>
-    </label>
+    </div>
   );
 };
 

@@ -334,8 +334,11 @@ $height = 600px
 /* Small screens for Activation wizard */
 @media (max-width: 972px)
   .ActivationContainer .Activation--wizard
-    .Input-content
+    .Input-content:not(.Input--checkbox)
       margin: 0 0 16px
+
+    .Input--checkbox
+      margin: 24px 0 16px
 
     .Input-label
       margin-bottom: 8px
@@ -415,7 +418,11 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
       margin-top: 60px
 
     .Input-el
-      width: 220px
+      width: 100%
+
+    .Select-elWrapper::before
+      left: unset !important
+      right: 4px
 
     aside
       display: none
