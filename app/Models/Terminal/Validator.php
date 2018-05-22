@@ -64,6 +64,7 @@ class Validator extends Base\Validator
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::UPI_MINDGATE,
         Payment\Gateway::NETBANKING_CSB,
+        Payment\Gateway::NETBANKING_BOB,
         Payment\Gateway::NETBANKING_ICICI,
         Payment\Gateway::NETBANKING_INDUSIND,
     ];
@@ -437,6 +438,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
+    ];
+
+    protected static $netbankingBobEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_BOB,
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
+        Entity::CORPORATE                   => 'sometimes|int|in:0,1,2',
     ];
 
     protected static $cardFssTerminalRules = [
