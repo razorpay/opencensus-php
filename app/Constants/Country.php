@@ -532,7 +532,7 @@ class Country
         return $countryCode;
     }
 
-    public static function getCountryNameByCode(string $code = null)
+    public static function getCountryNameByCode(string $code)
     {
         return self::$countryCodeNameMap[$code] ?? null;
     }

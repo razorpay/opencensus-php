@@ -660,7 +660,12 @@ class Entity extends Base\PublicEntity
 
     public function getSupplyStateName()
     {
-        return Gstin::getStateNameByGstin($this->getSupplyStateCode());
+        $code = $this->getSupplyStateCode();
+
+        if ($code !== null)
+        {
+            return Gstin::getStateNameByCode($code);
+        }
     }
 
     public function getDescription()

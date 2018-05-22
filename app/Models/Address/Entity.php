@@ -134,14 +134,17 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Returns mapped country name else the country attribute itself. Note that country attribute actually holds code.
+     * Returns mapped country name. Note that country attribute actually holds code.
      * @return string|null
      */
     public function getCountryName()
     {
         $code = $this->getAttribute(self::COUNTRY);
 
-        return Constants\Country::getCountryNameByCode($code) ?? $code;
+        if ($code !== null)
+        {
+            return Constants\Country::getCountryNameByCode($code);
+        }
     }
 
     public function getCountryNameFormatted()
