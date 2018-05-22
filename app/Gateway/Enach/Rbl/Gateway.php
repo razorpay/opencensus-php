@@ -28,9 +28,33 @@ class Gateway extends Base\Gateway
             Base\Entity::REGISTRATION_DATE => $input['gateway']['next_working_dt']->getTimestamp()
         ];
 
-        $this->createGatewayPaymentEntity($content, 'authorize');
+        try
+        {
+            $authenticationResponse = $this->callAuthenticationGateway($input);
 
-        return $this->callAuthenticationGateway($input);
+            $content[Base\Entity::GATEWAY_REFERENCE_ID] = $authenticationResponse['content']['reference_id'];
+
+            $this->createGatewayPaymentEntity($content, 'authorize');
+
+            unset($authenticationResponse['content']['reference_id']);
+        }
+
+        catch (Exception\GatewayErrorException $e)
+        {
+            $responseArrary = $e->getData();
+
+            $content[Base\Entity::ERROR_CODE] = $responseArrary['code'];
+
+            $content[Base\Entity::ERROR_MESSAGE] = $responseArrary['message'];
+
+            $content[Base\Entity::GATEWAY_REFERENCE_ID] = $responseArrary['details'];
+
+            $this->createGatewayPaymentEntity($content, 'authorize');
+
+            throw $e;
+        }
+
+        return $authenticationResponse;
     }
 
     public function callback(array $input)

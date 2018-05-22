@@ -440,6 +440,7 @@ class Entity extends Base\PublicEntity
         self::LATE_AUTHORIZED      => 'bool',
         self::CONVERT_CURRENCY     => 'bool',
         self::DISPUTED             => 'bool',
+        self::VERIFY_BUCKET        => 'int',
     ];
 
     // window in secs, used to fetch payments with same checkout id
@@ -942,7 +943,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONVERT_CURRENCY, $convert);
     }
 
-    public function setAuthType(string $authType)
+    public function setAuthType($authType)
     {
         $this->setAttribute(self::AUTH_TYPE, $authType);
     }
