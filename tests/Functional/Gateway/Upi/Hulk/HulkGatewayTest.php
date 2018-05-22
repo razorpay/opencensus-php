@@ -31,10 +31,24 @@ class HulkGatewayTest extends TestCase
 
     public function testPayment($status = 'created')
     {
+        $gatewayHit = false;
+
+        $this->mockServerRequestFunction(
+            function($content, $action) use (& $gatewayHit)
+            {
+                $gatewayHit = true;
+                $this->assertSame('authorize', $action);
+                // Preset category for test merchant
+                $this->assertSame('1100', $content['category_code']);
+            });
+
         unset($this->payment['description']);
 
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
         $paymentId = $response['payment_id'];
+
+        // Checking whether gateway was hit
+        $this->assertTrue($gatewayHit);
 
         // Co Proto must be working
         $this->assertEquals('async', $response['type']);
@@ -377,7 +391,7 @@ class HulkGatewayTest extends TestCase
         $this->assertArrayHasKey('intent_url', $response['data']);
 
         $expectedUrl = 'upi://pay?pa=testmerchant@razor&pn=TestMerchant&'.
-                       'tr=A11zpSL1413XHi&tn=TestMerchant&am=500&cu=INR&mc=5411';
+                       'tr=A11zpSL1413XHi&tn=TestMerchant&am=500&cu=INR&mc=1100';
 
         $this->assertSame($expectedUrl, $response['data']['intent_url']);
 

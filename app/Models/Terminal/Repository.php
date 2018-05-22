@@ -94,6 +94,14 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function findByGatewayMerchantId(string $gatewayMerchantId, string $gateway)
+    {
+        return $this->newQuery()
+                    ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
+                    ->where(Entity::GATEWAY, '=', $gateway)
+                    ->first();
+    }
+
     public function getTerminalsForMerchantAndSharedMerchant(Merchant\Entity $merchant)
     {
         $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT];

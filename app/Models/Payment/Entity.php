@@ -440,6 +440,7 @@ class Entity extends Base\PublicEntity
         self::LATE_AUTHORIZED      => 'bool',
         self::CONVERT_CURRENCY     => 'bool',
         self::DISPUTED             => 'bool',
+        self::VERIFY_BUCKET        => 'int',
     ];
 
     // window in secs, used to fetch payments with same checkout id
@@ -448,6 +449,8 @@ class Entity extends Base\PublicEntity
     const DUMMY_EMAIL = 'void@razorpay.com';
 
     const DUMMY_PHONE = '+919999999999';
+
+    const DUMMY_VPA = 'dummy@razorpay';
 
     // --------------------- Modifiers ---------------------------------------------
 
@@ -940,7 +943,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONVERT_CURRENCY, $convert);
     }
 
-    public function setAuthType(string $authType)
+    public function setAuthType($authType)
     {
         $this->setAttribute(self::AUTH_TYPE, $authType);
     }
@@ -2678,6 +2681,31 @@ class Entity extends Base\PublicEntity
     public function isAcknowledged(): bool
     {
         return $this->isAttributeNotNull(self::ACKNOWLEDGED_AT);
+    }
+
+    public function getDummyPaymentArray(string $method, string $network = null): array
+    {
+        $paymentArray =  [
+            self::CURRENCY    => Currency\Currency::INR,
+            self::METHOD      => $method,
+            self::AMOUNT      => 100,
+            self::DESCRIPTION => 'Dummy Payment',
+            self::CONTACT     => self::DUMMY_PHONE,
+            self::EMAIL       => self::DUMMY_EMAIL,
+        ];
+
+        switch ($method)
+        {
+            case Method::CARD:
+                $paymentArray[self::CARD] = (new Card\Entity)->getDummyCardArray($network);
+                break;
+
+            case Method::UPI:
+                $paymentArray[self::VPA] = self::DUMMY_VPA;
+
+        }
+
+        return $paymentArray;
     }
 
     // Query scopes

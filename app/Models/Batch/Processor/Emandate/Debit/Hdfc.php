@@ -26,6 +26,7 @@ class Hdfc extends Base
             'account_number'    => $row[Headings::ACCOUNT_NO],
             'error_message'     => $row[Headings::REJECTION_REMARKS],
             'status'            => $row[Headings::STATUS],
+            'amount'            => $row[Headings::AMOUNT],
         ];
     }
 
@@ -51,7 +52,7 @@ class Hdfc extends Base
 
     protected function isAuthorized(array $content): bool
     {
-        return (strtolower($content['status']) === self::PROCESS);
+        return Netbanking\Hdfc\Status::isDebitSuccess($content['status']);
     }
 
     protected function getErrorDescription(array $content)

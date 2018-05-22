@@ -142,6 +142,11 @@ class Gstin
         'West Bengal'                 => self::WB,
     ];
 
+    public static function isValidStateCode(string $stateCode): bool
+    {
+        return (array_key_exists($stateCode, static::$gstinToStateCodeMap) === true);
+    }
+
     public static function isValid(string $gstin): bool
     {
         $valid = preg_match(self::GSTIN_REGEX, $gstin, $matches);
@@ -152,7 +157,7 @@ class Gstin
         // - Regex is valid and
         // - state code is valid as per list in `$stateCodes`
         //
-        return (($valid === 1) and (array_key_exists($stateCode, static::$gstinToStateCodeMap) === true));
+        return (($valid === 1) and self::isValidStateCode($stateCode));
     }
 
     public static function getGstinStateMetadata(): array

@@ -114,6 +114,9 @@ class CreateInvoices extends Migration
             $table->string(Entity::MERCHANT_LABEL, 255)
                   ->nullable();
 
+            $table->char(Entity::SUPPLY_STATE_CODE, 4)
+                  ->nullable();
+
             $table->text(Entity::DESCRIPTION)
                   ->nullable();
 

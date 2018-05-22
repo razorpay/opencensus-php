@@ -59,11 +59,9 @@ trait Authorize
      * @param array $input
      * @return array
      */
-    public function authorize(Payment\Entity $payment, array $input): array
+    public function authorize(Payment\Entity $payment, array $input, array $gatewayInput = []): array
     {
         $this->verifyMerchantIsLiveForLiveRequest();
-
-        $gatewayInput = [];
 
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
@@ -95,7 +93,7 @@ trait Authorize
         // for s2s recurring payments, so that terminal can be set later
         // using this instance variable.
         //
-        $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+        $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment, $gatewayInput);
 
         if ($this->shouldHitGatewayForPayment($payment) === false)
         {
@@ -151,8 +149,6 @@ trait Authorize
             // $currentTerminal = Terminal\Entity::findOrFail('2czHdeTG32rFhB');
 
             $payment->associateTerminal($currentTerminal);
-
-            // @todo: Add function to set auth type
 
             $terminalGatewayInput = $gatewayInput;
 
@@ -629,7 +625,7 @@ trait Authorize
         Payment\Entity $payment,
         array $input)
     {
-        $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
+        $cardChange = $payment->isRecurringTypeCardChange();
 
         if ($cardChange === true)
         {
@@ -1244,6 +1240,8 @@ trait Authorize
 
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
     {
+        $this->setAuthTypeInPayment($payment);
+
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
@@ -1253,9 +1251,7 @@ trait Authorize
         // Call gateway input
         //
         $gatewayInput['payment'] = $payment->toArrayGateway();
-
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
-
         $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
 
         if ($payment->hasOrder())
@@ -1276,6 +1272,31 @@ trait Authorize
         // subscriptions/terminals.
         //
         $this->setGatewayTokenInInput($payment, $gatewayInput);
+    }
+
+    protected function setAuthTypeInPayment(Payment\Entity $payment)
+    {
+        //
+        // We set `auth_type` from `preferred_auth` field here
+        // on the basis of the used terminal
+        //
+        if (($payment->isMethodCardOrEmi() === false) or
+            (empty($payment->getMetadata(Payment\Entity::PREFERRED_AUTH)) === true))
+        {
+            return;
+        }
+
+        // Setting default auth type as null for cards
+        $payment->setAuthType(null);
+
+        //
+        // Currently, we are only storing auth type for
+        // debit pin payments
+        //
+        if ($payment->terminal->isPin() === true)
+        {
+            $payment->setAuthType(Payment\AuthType::PIN);
+        }
     }
 
     protected function setGatewayTokenInInput(Payment\Entity $payment, array & $gatewayInput)
@@ -2876,7 +2897,7 @@ trait Authorize
                 ]);
         }
 
-        if ($this->isCardChangeFlow($subscription) === true)
+        if ($payment->isRecurringTypeCardChange() === true)
         {
             $this->processCardChangeForSubscription($subscription, $payment);
 
@@ -2895,57 +2916,6 @@ trait Authorize
                                                                             $subscription,
                                                                             $oldStatus,
                                                                             $options);
-    }
-
-    /**
-     * TODO: This needs to be fixed!!!!!
-     *
-     * @param Subscription\Entity $subscription
-     *
-     * @return bool
-     */
-    protected function isCardChangeFlow(Subscription\Entity $subscription)
-    {
-        if ($subscription->hasBeenAuthenticated() === false)
-        {
-            return false;
-        }
-
-        if ($subscription->isCardChangeStatus() === false)
-        {
-            return false;
-        }
-
-        //
-        // If it's not skipped, we know for sure that the customer was involved in this.
-        // TODO: This is not a very robust check. Should figure out a good way.
-        // Also, this won't work when we create invoices and then after an hour, we charge.
-        // In these cases, the customer can make a payment on the latest invoice generated
-        // via public auth (two fa not skipped). The customer can pay with emandate also then.
-        //
-        // We can remove this once we add recurring_type in the payment entity!
-        //
-        // if ($payment->getTwoFactorAuth() === TwoFactorAuth::SKIPPED)
-        // {
-        //     return false;
-        // }
-        // else
-        // {
-        //     return true;
-        // }
-
-        // NOTE: 2FA WILL NOT WORK FOR INTERNATIONAL.
-
-        //
-        // TODO: Public auth check does not work! Use Redis or something here. FIX ASAP!
-        // Ideally we should have gotten this from subscription_card_change
-        // attribute which would have been sent in payment create input.
-        // But, since we don't store that attribute and this would be in
-        // the callback flow, we don't know whether this is card change flow.
-        // So, what we can do instead is rely on recurring_type attribute of payment
-        // entity. recurring_type can be set to initial or card_change or something.
-        //
-        return ($this->ba->isPublicAuth() === true);
     }
 
     protected function processCardChangeForSubscription(
@@ -3643,6 +3613,16 @@ trait Authorize
         }
     }
 
+    /**
+     * Creates the card entity
+     *
+     * @param array $cardInput
+     * @param bool $vault
+     * @param Merchant\Entity $merchant
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
     protected function createCardEntity(array $cardInput, bool $vault, Merchant\Entity $merchant)
     {
         //
@@ -4086,10 +4066,9 @@ trait Authorize
     {
         //
         // No gateway for bank transfer or Bharat Qr, everything is internal
-        // TODO: To be changed after refactor
         //
         if (($payment->isBankTransfer() === true) or
-            (Route::currentRouteName() === 'gateway_payment_callback_bharatqr'))
+            ($payment->isBharatQr() === true))
         {
             return false;
         }

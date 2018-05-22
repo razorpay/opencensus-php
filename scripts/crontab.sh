@@ -102,12 +102,14 @@ add_cron "*/15 * * * *"     "refund_failed_retry"            POST "$BASE_URL/ref
 add_cron "*/15 * * * *"     "virtual_account_refund_excess"  POST "$BASE_URL/virtual_accounts/refund/excess"             ""                              $LIVE_AUTH
 
 # Gateway File
-add_cron "15 3 * * *"       "gateway_file_refunds_prod"      POST "$BASE_URL/gateway/files"              "type=refund&targets[]=hdfc&targets[]=icici"                                                            $LIVE_AUTH
-add_cron "25 3 * * *"       "gateway_file_emi_prod"          POST "$BASE_URL/gateway/files"              "type=emi&targets[]=indusind&targets[]=kotak&targets[]=axis&targets[]=rbl&targets[]=scbl"               $LIVE_AUTH
-add_cron "30 3 * * *"       "gateway_file_axis_corp_prod"    POST "$BASE_URL/gateway/files"              "type=combined&targets[]=axis&sub_type=corporate"                                                       $LIVE_AUTH
-add_cron "31 3 * * *"       "gateway_file_axis_ncorp_prod"   POST "$BASE_URL/gateway/files"              "type=combined&targets[]=axis&sub_type=non_corporate"                                                   $LIVE_AUTH
-add_cron "32 3 * * *"       "gateway_file_combined_prod"     POST "$BASE_URL/gateway/files"              "type=combined&targets[]=indusind&targets[]=federal"                                                    $LIVE_AUTH
-add_cron "00 9 * * *"       "gateway_file_combined_csb_prod" POST "$BASE_URL/gateway/files"              "type=combined&targets[]=csb"                                                                           $LIVE_AUTH
+add_cron "15 3 * * *"       "gateway_file_refunds_prod"           POST "$BASE_URL/gateway/files"              "type=refund&targets[]=hdfc&targets[]=icici"                                                            $LIVE_AUTH
+add_cron "25 3 * * *"       "gateway_file_emi_prod"               POST "$BASE_URL/gateway/files"              "type=emi&targets[]=indusind&targets[]=kotak&targets[]=axis&targets[]=rbl&targets[]=scbl"               $LIVE_AUTH
+add_cron "30 3 * * *"       "gateway_file_axis_corp_prod"         POST "$BASE_URL/gateway/files"              "type=combined&targets[]=axis&sub_type=corporate"                                                       $LIVE_AUTH
+add_cron "31 3 * * *"       "gateway_file_axis_ncorp_prod"        POST "$BASE_URL/gateway/files"              "type=combined&targets[]=axis&sub_type=non_corporate"                                                   $LIVE_AUTH
+add_cron "32 3 * * *"       "gateway_file_combined_prod"          POST "$BASE_URL/gateway/files"              "type=combined&targets[]=indusind&targets[]=federal"                                                    $LIVE_AUTH
+add_cron "00 9 * * *"       "gateway_file_combined_csb_prod"      POST "$BASE_URL/gateway/files"              "type=combined&targets[]=csb"                                                                           $LIVE_AUTH
+add_cron "00 9 * * *"       "gateway_file_emandate_register_hdfc" POST "$BASE_URL/gateway/files"              "type=emandate_register&targets[]=hdfc"                                                                 $LIVE_AUTH
+add_cron "00 9 * * *"       "gateway_file_emandate_debit_hdfc"    POST "$BASE_URL/gateway/files"              "type=emandate_debit&targets[]=hdfc"                                                                    $LIVE_AUTH
 
 # Invoice
 add_cron "*/10 * * * *"     "invoice_expire_bulk_test"       POST "$BASE_URL/invoices/expire"                            ""                              $TEST_AUTH

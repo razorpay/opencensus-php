@@ -125,8 +125,6 @@ return [
         'test_terminal_id'     => env('HITACHI_GATEWAY_TEST_TERMINAL_ID'),
         'test_hash_secret'     => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
         'test_hash_secret2'    => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
-        'bharatqr_terminal_id' => env('HITACHI_GATEWAY_BHARAT_QR_TERMINAL_ID'),
-        'bharatqr_merchant_id' => env('HITACHI_GATEWAY_BHARAT_QR_MERCHANT_ID'),
         'bharatqr_salt'        => env('HITACHI_GATEWAY_BHARAT_QR_SALT'),
     ],
 
@@ -261,7 +259,6 @@ return [
         'live_merchant_id'       => env('UPI_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
         'live_public_key'        => env('UPI_ICICI_LIVE_PUBLIC_KEY'),
         'live_private_key'       => env('UPI_ICICI_LIVE_PRIVATE_KEY'),
-        'bharatqr_merchant_id'   => env('UPI_ICICI_BHARATQR_KEY'),
     ],
 
     'aeps_icici' => [
@@ -482,13 +479,6 @@ return [
     ],
 
     'sharp' => [
-    ],
-
-    'bharat_qr' => [
-        'visa_acquirer_code'       => env('BHARAT_QR_VISA_ACQUIRER_CODE'),
-        'mastercard_acquirer_code' => env('BHARAT_QR_MASTERCARD_ACQUIRER_CODE'),
-        'rupay_acquirer_code'      => env('BHARAT_QR_RUPAY_ACQUIRER_CODE'),
-        'identifier_padding'       => env('BHARAT_QR_IDENTIFIER_PADDING'),
     ],
 
     'proxy_enabled' => env('PROXY_ENABLED'),

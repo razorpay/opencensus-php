@@ -133,6 +133,13 @@ class Validator extends Base\Validator
         HdfcEMDebitHeadings::STATUS                 => 'Status must be present',
     ];
 
+    protected static $subMerchantCreateRules = [
+        Entity::TYPE                 => 'required|in:sub_merchant',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::APPLICATION_ID       => 'filled|string|size:14',
+    ];
+
     protected function validateType($attribute, $value)
     {
         Type::validateType($value);
@@ -167,11 +174,9 @@ class Validator extends Base\Validator
      * @param array           $params
      * @param Merchant\Entity $merchant
      *
+     * @throws BadRequestException
      */
-    public function validateEntries(
-        array & $entries,
-        array $params,
-        Merchant\Entity $merchant)
+    public function validateEntries(array & $entries, array $params, Merchant\Entity $merchant)
     {
         $rules = $this->getRuleNames();
 
@@ -466,6 +471,17 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException(
                 'Sub-merchant creation not allowed for merchant',
                 null,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+
+        if ((isset($params[Entity::APPLICATION_ID]) === true) and
+            ($merchant->isFeatureEnabled(Feature::PARTNER) === false))
+        {
+            throw new BadRequestValidationFailureException(
+                'Application ID cannot be sent, and is not allowed',
+                Entity::APPLICATION_ID,
                 [
                     Entity::MERCHANT_ID => $merchant->getId(),
                 ]);

@@ -46,10 +46,11 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        if ((isset($input['qr_notification']) === true) and
-            ($input['qr_notification'] === true))
+        if ($this->isBharatQrPayment() === true)
         {
-            return $this->createGatewayPaymentEntityForQr($input);
+            $this->createGatewayPaymentEntityForQr($input);
+
+            return null;
         }
 
         if ($this->isSecondRecurringPaymentRequest($input) === true)
@@ -166,7 +167,7 @@ class Gateway extends Base\Gateway
 
             return [
                 'qr_data'           => $qrData,
-                'gateway_input'     => $input,
+                'callback_data'     => $input,
             ];
         }
 
@@ -738,12 +739,9 @@ class Gateway extends Base\Gateway
 
         $action = $action ?: $this->action;
 
-        if (empty($input['terminal']) === false)
-        {
-            $acquirer = $input['terminal']->getGatewayAcquirer();
+        $acquirer = $input['terminal']->getGatewayAcquirer();
 
-            $gatewayPayment->setAcquirer($acquirer);
-        }
+        $gatewayPayment->setAcquirer($acquirer);
 
         $gatewayPayment->setAction($action);
 
@@ -882,11 +880,6 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId()
     {
-        if ($this->isBharatQrPayment() === true)
-        {
-            return $this->config['bharatqr_merchant_id'];
-        }
-
         $merchantId = $this->getLiveMerchantId();
 
         if ($this->mode === Mode::TEST)
@@ -899,11 +892,6 @@ class Gateway extends Base\Gateway
 
     protected function getTerminalId()
     {
-        if ($this->isBharatQrPayment() === true)
-        {
-            return $this->config['bharatqr_terminal_id'];
-        }
-
         $terminalId = $this->terminal['gateway_terminal_id'];
 
         if ($this->mode === Mode::TEST)

@@ -7,6 +7,7 @@ use Razorpay\Trace\Logger as Trace;
 use Illuminate\Foundation\Application;
 
 use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Base\RepositoryManager;
 
 class Core
@@ -44,6 +45,9 @@ class Core
      */
     protected $env;
 
+    /**
+     * @var Merchant\Entity
+     */
     protected $merchant;
 
     public function __construct()

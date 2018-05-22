@@ -12,13 +12,11 @@ use RZP\Models\Admin\Permission\Name as Permission;
 
 final class Route
 {
-    /*
-     | The order in which routes are defined is very important.
-     | Whenever the order of routes is changed,
-     | make sure to run the full test suite
-     */
-
     protected static $apiRoutes = [
+        // Dev routes
+        'inspector_view_get'                      => ['get',      '_inspector',                                      'GenericController@getInspectorIndex'                               ],
+
+        // App routes
         'account'                                  => ['get',      'account',                                        'PublicController@getAccount'                                       ],
         'checkout'                                 => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                          => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
@@ -94,6 +92,7 @@ final class Route
         'payment_timeout'                          => ['post',     'payments/timeout',                               'PaymentController@postTimeout'                                     ],
         'payment_auto_capture'                     => ['post',     'payments/autocapture',                           'PaymentController@postAutoCapture'                                 ],
         'payment_auto_capture_email'               => ['get',      'payments/autocapture/email',                     'PaymentController@getAutoCaptureEmail'                             ],
+        'payment_verify_bulk'                      => ['post',     'payments/verify/bulk',                           'PaymentController@postVerifyPaymentsBulk'                          ],
         'payment_verify_multiple'                  => ['post',     'payments/verify/{filter}',                       'PaymentController@postVerifyPayments'                              ],
         'payment_capture_reminder'                 => ['get',      'payments/all/reminder',                          'PaymentController@sendReminderMailForAuthorizedPayments'           ],
         'payment_refund_authorized'                => ['post',     'payments/refund/authorized',                     'PaymentController@postRefundOldAuthorizedPayments'                 ],
@@ -708,6 +707,7 @@ final class Route
         'oauth_token_fetch'                        => ['get',      'oauth/tokens/{id}',                              'OAuthTokenController@get'                                          ],
         'oauth_token_revoke'                       => ['put',      'oauth/tokens/{id}/revoke',                       'OAuthTokenController@revoke'                                       ],
         'oauth_application_create'                 => ['post',     'oauth/applications',                             'OAuthApplicationController@create'                                 ],
+        'oauth_application_create_partner'         => ['post',     'oauth/applications/partner',                     'OAuthApplicationController@createPartner'                          ],
         'oauth_application_fetch_multiple'         => ['get',      'oauth/applications',                             'OAuthApplicationController@getMultiple'                            ],
         'oauth_application_fetch'                  => ['get',      'oauth/applications/{id}',                        'OAuthApplicationController@get'                                    ],
         'oauth_application_delete'                 => ['delete',   'oauth/applications/{id}',                        'OAuthApplicationController@delete'                                 ],
@@ -754,6 +754,7 @@ final class Route
         'reporting_log_get'                        => ['get',      'reporting/logs/{id}',                            'ReportingController@getLog'                                        ],
         'reporting_log_list'                       => ['get',      'reporting/logs',                                 'ReportingController@listLog'                                       ],
         'reporting_log_create'                     => ['post',     'reporting/logs',                                 'ReportingController@createLog'                                     ],
+        'reporting_log_update'                     => ['patch',    'reporting/logs/{id}',                            'ReportingController@updateLog'                                     ],
         'reporting_schedule_get'                   => ['get',      'reporting/schedules/{id}',                       'ReportingController@getSchedule'                                   ],
         'reporting_schedule_list'                  => ['get',      'reporting/schedules',                            'ReportingController@listSchedule'                                  ],
         'reporting_schedule_create'                => ['post',     'reporting/schedules',                            'ReportingController@createSchedule'                                ],
@@ -1190,6 +1191,7 @@ final class Route
         'oauth_token_fetch',
         'oauth_token_revoke',
         'oauth_application_create',
+        'oauth_application_create_partner',
         'oauth_application_fetch_multiple',
         'oauth_application_fetch',
         'oauth_application_delete',
@@ -1212,6 +1214,7 @@ final class Route
         'reporting_config_delete',
         'reporting_log_get',
         'reporting_log_list',
+        'reporting_log_update',
         'reporting_log_create',
         'reporting_schedule_get',
         'reporting_schedule_list',
@@ -1350,6 +1353,7 @@ final class Route
         'pricing_get_plan',
         'pricing_delete_plan_rule',
         'payment_verify',
+        'payment_verify_bulk',
         'payment_authorize_failed',
         'iin_add',
         'emi_plan_add',
@@ -1669,6 +1673,7 @@ final class Route
         'pricing_get_plan'                         => '*',
         'pricing_delete_plan_rule'                 => '*',
         'payment_verify'                           => '*',
+        'payment_verify_bulk'                      => '*',
         'payment_authorize_failed'                 => '*',
         'iin_add'                                  => '*',
         'emi_plan_add'                             => '*',
@@ -1798,6 +1803,7 @@ final class Route
         'reporting_config_delete'                  => '*',
         'reporting_log_get'                        => '*',
         'reporting_log_list'                       => '*',
+        'reporting_log_update'                     => '*',
         'reporting_log_create'                     => '*',
         'reporting_schedule_get'                   => '*',
         'reporting_schedule_list'                  => '*',
@@ -1819,6 +1825,7 @@ final class Route
     ];
 
     public static $direct = [
+        'inspector_view_get',
         'batch_upload_form_get',
         'batch_upload_form_validate_file',
         'device_verify',
@@ -2086,6 +2093,7 @@ final class Route
         'beta_account_post_bank_account'       => [Feature::MARKETPLACE],
         'beta_account_fetch_setl_destinations' => [Feature::MARKETPLACE],
         'account_fetch'                        => [Feature::MARKETPLACE],
+        'oauth_application_create_partner'     => [Feature::PARTNER],
     ];
 
     /*

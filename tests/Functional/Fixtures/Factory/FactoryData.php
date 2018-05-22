@@ -880,6 +880,9 @@ final class FactoryData
             'updated_at' => $faker->timestamp,
         ]);
 
+        $factory(\RZP\Models\VirtualAccount\Entity::class, [
+        ]);
+
         $factory(\RZP\Models\QrCode\Entity::class, [
             'id'          => $faker->uniqueid,
             'created_at'  => $faker->timestamp,
