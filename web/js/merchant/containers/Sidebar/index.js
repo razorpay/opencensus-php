@@ -107,6 +107,20 @@ export default class Sidebar extends Component {
             if (!isMerchant) {
               null;
             } else {
+              let actionCopy;
+
+              if (user.activation_progress < 100) {
+                // If user form is still unfilled
+                actionCopy = 'Activate your account';
+              } else if (user.isSubmitted) {
+                actionCopy = 'Form submitted';
+              } else if (user.activation_progress == 100) {
+                // Form is unfilled and Not submitted
+                actionCopy = 'Submit Form';
+              } else if (user.isActivated) {
+                actionCopy = 'Account Activated';
+              }
+
               <div class="nav">
                 <ShowWhen myRole="owner manager admin">
                   {(!user.isSubmitted || !config.hasPersonalised) && (
@@ -123,13 +137,7 @@ export default class Sidebar extends Component {
                         }`}
                       >
                         <div className="clearfix">
-                          <div className="pull-left">
-                            {!user.isSubmitted
-                              ? 'Activate your account'
-                              : !user.isActivated
-                                ? 'Form submitted'
-                                : 'Account Activated'}
-                          </div>
+                          <div className="pull-left">{actionCopy}</div>
                           <div className="pull-right">
                             <i className="i i-chevron-right" />
                           </div>

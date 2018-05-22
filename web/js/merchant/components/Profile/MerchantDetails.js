@@ -29,9 +29,15 @@ export default ({ user }) => {
         value={() => (
           <span>
             <Link to={'/activation'}>
-              {user.activated || user.locked || user.submitted
-                ? 'View'
-                : 'Fill'}{' '}
+              {do {
+                if (user.activated || user.locked || user.submitted) {
+                  ('View');
+                } else if (user.activation_progress == 100 && !user.submitted) {
+                  ('Submit');
+                } else {
+                  ('Fill');
+                }
+              }}{' '}
               Activation Form
             </Link>
           </span>
