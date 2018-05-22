@@ -95,3 +95,15 @@ export function isBlank(value) {
   }
   return isNone(value);
 }
+
+export function subString(str, length) {
+  if (!str) {
+    return str;
+  }
+
+  if (str.length > length) {
+    return `${str.substr(0, length)} ...`;
+  } else {
+    return str;
+  }
+}

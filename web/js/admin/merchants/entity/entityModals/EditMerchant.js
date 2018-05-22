@@ -316,15 +316,17 @@ export default class EditMerchant extends Component {
             />
           </div>
 
-          <MultiSelectField
-            label="Admins"
-            name="admins"
-            options={adminsList}
-            defaultValue={details.admins}
-            trackBy="id"
-            keys={['name', 'email']}
-            placeholder="Select users"
-          />
+          {user.permissions.find(perm => perm === 'view_all_admin') && (
+            <MultiSelectField
+              label="Admins"
+              name="admins"
+              options={adminsList}
+              defaultValue={details.admins}
+              trackBy="id"
+              keys={['name', 'email']}
+              placeholder="Select users"
+            />
+          )}
 
           <AsyncButton
             text="Cancel"
