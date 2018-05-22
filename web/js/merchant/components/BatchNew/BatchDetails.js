@@ -33,8 +33,9 @@ const InvoicesListItem = ({ invoice }) => {
   );
 };
 
-export default function BatchDetails(props) {
-  let { batch, stats, invoices, isLoading, onDownload } = props;
+export default function BatchDetails({ renderDetails, ...props }) {
+  console.log(props);
+  let { batch = {}, stats = {}, invoices = [], isLoading, onDownload } = props;
   let batchName =
     batch.name && batch.name.length > 24
       ? `${batch.name.substr(0, 24)}...`
@@ -66,36 +67,7 @@ export default function BatchDetails(props) {
               </span>
             </Banner>
             <div class="panel-body">
-              <div class="stats-info equal-margin">
-                <table class="table">
-                  <tbody>
-                    <tr>
-                      <td class="td-info">
-                        <span class="td-heading">Total rows processed</span>
-                        <span class="td-value">{stats.batch_total}</span>
-                      </td>
-                      <td class="td-info">
-                        <span class="td-heading">Payment Links Created</span>
-                        <span class="td-value">{stats.issued_count}</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td-info">
-                        <span class="td-heading">Paid</span>
-                        <span class="td-value text-success">
-                          {stats.paid_count}
-                        </span>
-                      </td>
-                      <td class="td-info">
-                        <span class="td-heading">Expired</span>
-                        <span class="td-value text-danger">
-                          {stats.expired_count}
-                        </span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              {renderDetails && renderDetails(props)}
               <div class="equal-margin">
                 <EntityDetailRow
                   label="Status"
