@@ -262,14 +262,18 @@ export default class App extends Component {
     let email = this.props.user.user.email;
 
     if (window.Raven && window.Raven.captureMessage) {
-      Raven.captureMessage('Dashboard Locked', {
+      window.Raven.captureMessage('Dashboard Locked', {
         level: 'info',
       });
     }
 
     return this.props.logout().then(() => {
-      location.hash = `/access/lockme/${email}`;
-      location.reload();
+      // waiting for 100ms more hoping raven call
+      // would be resolved by then
+      window.setTimeout(() => {
+        location.hash = `/access/lockme/${email}`;
+        location.reload();
+      }, 100);
     });
   };
 
