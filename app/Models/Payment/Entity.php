@@ -943,7 +943,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONVERT_CURRENCY, $convert);
     }
 
-    public function setAuthType(string $authType)
+    public function setAuthType($authType)
     {
         $this->setAttribute(self::AUTH_TYPE, $authType);
     }
