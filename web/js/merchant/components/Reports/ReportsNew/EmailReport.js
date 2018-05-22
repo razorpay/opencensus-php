@@ -3,11 +3,26 @@ import React, { Component } from 'react';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import AsyncButton from 'react-async-button';
 
+import { trackReportGenericActions } from 'merchant/containers/Reports/ReportsNew/ga';
+
 export default class EmailReport extends Component {
   state = {
     //list of selected email ids
     selectedEmails: [],
   };
+
+  allEmails = [];
+
+  componentWillMount() {
+    const { emailsMap } = this.props;
+
+    Object.keys(emailsMap).forEach(emailType => {
+      this.allEmails = [...this.allEmails, ...emailsMap[emailType]];
+    });
+
+    //unique emails
+    this.allEmails = [...new Set(this.allEmails)];
+  }
 
   handleChange = e => {
     const email = e.target.dataset.email;
@@ -25,9 +40,32 @@ export default class EmailReport extends Component {
   };
 
   handleSend = () => {
-    let emails = this.state.selectedEmails;
+    const { selectedEmails } = this.state;
+    const { emailsMap } = this.props;
+
+    let trackLabel = [];
+
+    // for ga track email event with following precedence
+    // contact > transaction > account
+    selectedEmails.forEach((email, index) => {
+      if (emailsMap['account'].indexOf(email) > -1) {
+        trackLabel[index] = 'account';
+      }
+
+      if (emailsMap['transaction'].indexOf(email) > -1) {
+        trackLabel[index] = 'transaction';
+      }
+
+      if (emailsMap['contact'].indexOf(email) > -1) {
+        trackLabel[index] = 'contact';
+      }
+    });
+
+    trackLabel = [...new Set(trackLabel)].join(' | ');
+
+    trackReportGenericActions('Click - Email Report || Email To', trackLabel);
     //send empty event
-    return this.props.onSend(null, emails, this.props.configId);
+    return this.props.onSend(null, selectedEmails, this.props.configId);
   };
 
   render() {
@@ -46,7 +84,7 @@ export default class EmailReport extends Component {
           </p>
           <form class="m-t">
             <strong>Choose Email:</strong>
-            {this.props.emails.map((email, index) => (
+            {this.allEmails.map((email, index) => (
               <div class="form-group" key={email}>
                 <div class="checkbox rzpCheckbox next">
                   <input

@@ -37,7 +37,13 @@ import {
   marketplaceConfigTypes,
   rzpConfigOrder,
 } from './data';
-import { trackDownload } from './ga';
+
+import {
+  trackDownload,
+  trackReportTabsClick,
+  trackReportActions,
+  trackTimeLapse,
+} from './ga';
 
 const validYear = current => {
   return current._d.getTime() <= Date.now() && current.year() >= 2015;
@@ -169,6 +175,7 @@ export default class ReportsContainer extends Component {
   }
 
   onConfigChange({ option }) {
+    trackReportTabsClick(option.label);
     this.setState({ selectedConfig: option });
   }
 
@@ -280,15 +287,28 @@ export default class ReportsContainer extends Component {
       titleForTracking = `${titleCase(type)} ${selectedConfig.label} Report`,
       descForTracking = type === 'daily' ? `date` : `month`;
 
+    //tracking vars for reports v2
+    let reportActionTypeForTracking = emails
+      ? 'Email Report'
+      : 'Download Report';
+    let downloadTimeLapse = new Date().getTime();
+
     if (currentconfigId) {
       selectedConfig = currentReportList[currentconfigId];
+      reportActionTypeForTracking += ' (While Downloading)';
     }
-
     if (selectedConfig.value === 'monthlyInvoice') {
       const month = invoiceDate.month() + 1,
         year = invoiceDate.year();
 
       trackDownload(titleForTracking, `month`);
+
+      trackReportActions(
+        reportActionTypeForTracking,
+        type,
+        month,
+        titleForTracking
+      );
 
       return window.open(
         `/${this.props.mode}/reports/invoice` +
@@ -298,6 +318,13 @@ export default class ReportsContainer extends Component {
       );
     } else {
       trackDownload(titleForTracking, descForTracking);
+
+      trackReportActions(
+        reportActionTypeForTracking,
+        type,
+        day,
+        titleForTracking
+      );
 
       if (selectedConfig.type !== 'custom') {
         const timeFactor = type === 'daily' ? 'day' : 'month',
@@ -331,11 +358,12 @@ export default class ReportsContainer extends Component {
           this.props.showNotification(downloadStartedMessage);
         }
 
-        return generateReportV2(
-          reqData,
-          isMerchantAccount,
-          this.props.addReportToList
-        ).then(data => {
+        return generateReportV2(reqData, isMerchantAccount, data => {
+          downloadTimeLapse = new Date().getTime() - downloadTimeLapse;
+          this.props.addReportToList(data);
+
+          trackTimeLapse('Download Start', downloadTimeLapse);
+        }).then(data => {
           //return nothing if cancelled by user
           if (!this.state.currentReportList[reqData['config_id']]) {
             return;
@@ -469,26 +497,20 @@ export default class ReportsContainer extends Component {
     const { accounts } = this.state;
     const configId = e.target.dataset.configid;
 
-    let emails = [
-      // first email will always be of owner
-      user.contact_email,
-      ...(user.transaction_report_email !== null &&
-        user.transaction_report_email.split(',')),
-      ...(accounts && accounts.map(acc => acc.email)),
-    ];
-
-    //unique items
-    emails = [...new Set(emails)];
-
-    //remove empty vals
-    emails = emails.filter(email => email !== '');
+    let emailsMap = {
+      ...(user.contact_email && { contact: [user.contact_email] }),
+      ...(user.transaction_report_email && {
+        transaction: user.transaction_report_email.split(','),
+      }),
+      ...(accounts && { account: accounts.map(acc => acc.email) }),
+    };
 
     this.props.openModal({
       size: 'small',
       component: (
         <EmailReport
           closeModal={this.props.closeModal}
-          emails={emails}
+          emailsMap={emailsMap}
           onSend={this.generateReport}
           configId={configId}
         />
@@ -528,6 +550,7 @@ export default class ReportsContainer extends Component {
 
   openCancelConfirmModal = config_id => {
     const { currentReportList } = this.state;
+    const timeLapse = new Date().getTime();
 
     if (currentReportList[config_id]) {
       this.props.openModal({
@@ -544,7 +567,7 @@ export default class ReportsContainer extends Component {
               </button>
               <button
                 class="btn btn-primary pull-right"
-                onClick={() => this.cancelReportDownload(config_id)}
+                onClick={() => this.cancelReportDownload(config_id, timeLapse)}
               >
                 Yes, stop
               </button>
@@ -557,9 +580,12 @@ export default class ReportsContainer extends Component {
     }
   };
 
-  cancelReportDownload = config_id => {
+  cancelReportDownload = (config_id, timeLapse) => {
     const { reportsDownloadStatus, currentReportList } = this.state;
 
+    timeLapse = new Date().getTime() - timeLapse;
+
+    trackTimeLapse('Click - Download Cancel', timeLapse);
     this.props.closeModal();
     if (reportsDownloadStatus[config_id]) {
       this.props.removeFromDownloadStatuses(config_id);

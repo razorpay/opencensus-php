@@ -2,6 +2,7 @@ import ajax from 'merchant/utils/ajax';
 import { set } from 'rzp/utils/immutable';
 import poll from 'rzp/utils/poll/longPoll';
 import { merchantFetch } from 'rzp/utils/ajax';
+import { trackReportGenericActions } from 'merchant/containers/Reports/ReportsNew/ga';
 
 const GENERATE_REPORT = 'GENERATE_REPORT';
 
@@ -280,5 +281,7 @@ export function reportsReducer(state = initialState, action) {
 }
 
 const alertBeforeClose = () => {
+  trackReportGenericActions('Attempt to Close Browser Window');
+
   return 'Some reports are currently being downloaded. Are you sure you want to close the app right now?';
 };
