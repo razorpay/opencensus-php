@@ -21,6 +21,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
+use RZP\Models\PaymentLink;
 use RZP\Models\BankTransfer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Verify;
@@ -146,6 +147,13 @@ class Repository extends Base\Repository
                     ->whereBetween(Payment\Entity::AUTHORIZED_AT, array($from, $to))
                     ->whereIn('status', $status)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
+                    ->get();
+    }
+
+    public function fetchPaymentsForPaymentLink($paymentLinkId)
+    {
+        return $this->newQuery()
+                    ->where(Payment\Entity::PAYMENT_LINK_ID, '=', $paymentLinkId)
                     ->get();
     }
 

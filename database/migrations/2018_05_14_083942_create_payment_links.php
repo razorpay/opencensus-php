@@ -6,8 +6,6 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\PaymentLink\Entity;
-use RZP\Models\PaymentLink\Status;
-use RZP\Models\PaymentLink\StatusReason;
 
 class CreatePaymentLinks extends Migration
 {
@@ -83,6 +81,16 @@ class CreatePaymentLinks extends Migration
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
+
+            // This should be here and not in payments table because
+            // payment_links table is created after payments.
+            // Schema::table(Table::PAYMENT, function($table)
+            // {
+            //     $table->foreign(Payment\Entity::PAYMENT_LINK_ID)
+            //           ->references(Entity::ID)
+            //           ->on(Table::PAYMENT_LINK)
+            //           ->on_delete('restrict');
+            // });
         });
     }
 

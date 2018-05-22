@@ -55,6 +55,7 @@ class Entity extends Base\PublicEntity
     const ORDER_ID              = 'order_id';
     const INVOICE_ID            = 'invoice_id';
     const TRANSFER_ID           = 'transfer_id';
+    const PAYMENT_LINK_ID       = 'payment_link_id';
     const RECEIVER_ID           = 'receiver_id';
     const RECEIVER_TYPE         = 'receiver_type';
     const INTERNATIONAL         = 'international';
@@ -289,6 +290,7 @@ class Entity extends Base\PublicEntity
         self::DISPUTED,
         self::RECURRING_TYPE,
         self::ACKNOWLEDGED_AT,
+        self::PAYMENT_LINK_ID,
     ];
 
     protected $public = [
@@ -415,6 +417,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
         self::ACKNOWLEDGED_AT      => null,
+        self::PAYMENT_LINK_ID      => null,
     ];
 
     protected $amounts = [
