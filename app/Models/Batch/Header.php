@@ -91,16 +91,7 @@ class Header
     const PROMOTER_PAN             = 'promoter_pan';
     const PROMOTER_PAN_NAME        = 'promoter_pan_name';
     const WEBSITE_URL              = 'website';
-    const WEBSITE_ABOUT            = 'website_about';
-    const WEBSITE_CONTACT          = 'website_contact';
-    const WEBSITE_PRICING          = 'website_pricing';
-    const WEBSITE_PRIVACY          = 'website_privacy';
-    const WEBSITE_REFUND           = 'website_refund';
-    const WEBSITE_TERMS            = 'wesbite_terms';
-    const BANK_ACCOUNT_ADDRESS_1   = 'bank_address_1';
-    const BANK_ACCOUNT_CITY        = 'bank_account_city';
-    const BANK_ACCOUNT_STATE       = 'bank_account_state';
-    const BANK_ACCOUNT_PINCODE     = 'bank_account_pincode';
+    const PARTNER_TOKEN            = 'Partner Token';
 
     //
     // Virtual Account Bulk Creation Headers
@@ -164,7 +155,7 @@ class Header
     const HDFC_EM_REGISTER_MANDATE_SERIAL_NO                = HdfcEMRegisterHeadings::MANDATE_SERIAL_NUMBER;
     const HDFC_EM_REGISTER_MERCHANT_REQUEST_NO              = HdfcEMRegisterHeadings::MERCHANT_REQUEST_NO;
     const HDFC_EM_REGISTER_STATUS                           = HdfcEMRegisterHeadings::STATUS;
-    const HDFC_EM_REGISTER_REMARK                           = HdfcEMRegisterHeadings::REMARK;
+    const HDFC_EM_REGISTER_REMARKS                          = HdfcEMRegisterHeadings::REMARKS;
 
     //
     // HDFC Emandate Debit Response File Headers
@@ -537,11 +528,11 @@ class Header
                 self::HDFC_EM_REGISTER_END_DATE,
                 self::HDFC_EM_REGISTER_FREQUENCY,
                 self::HDFC_EM_REGISTER_MANDATE_ID,
-                self::HDFC_EM_REGISTER_STATUS,
-                self::HDFC_EM_REGISTER_REMARK,
                 self::HDFC_EM_REGISTER_MERCHANT_UNIQUE_REF_NO,
                 self::HDFC_EM_REGISTER_MANDATE_SERIAL_NO,
                 self::HDFC_EM_REGISTER_MERCHANT_REQUEST_NO,
+                self::HDFC_EM_REGISTER_STATUS,
+                self::HDFC_EM_REGISTER_REMARKS,
             ],
         ],
 
@@ -643,32 +634,20 @@ class Header
                 self::OPERATIONAL_PINCODE,
                 self::DOE,
                 self::GSTIN,
-                self::EXPECTED_ANNUAL_VOLUME,
-                self::AVG_TRANSACTION_VALUE,
                 self::PROMOTER_PAN,
                 self::PROMOTER_PAN_NAME,
                 self::WEBSITE_URL,
-                self::WEBSITE_ABOUT,
-                self::WEBSITE_CONTACT,
-                self::WEBSITE_PRICING,
-                self::WEBSITE_PRIVACY,
-                self::WEBSITE_REFUND,
-                self::WEBSITE_TERMS,
                 self::BANK_ACCOUNT_NAME,
                 self::BANK_BRANCH_IFSC,
                 self::BANK_ACCOUNT_NUMBER,
-                self::BANK_ACCOUNT_TYPE,
-                self::BANK_ACCOUNT_ADDRESS_1,
-                self::BANK_ACCOUNT_CITY,
-                self::BANK_ACCOUNT_STATE,
-                self::BANK_ACCOUNT_PINCODE,
             ],
 
             self::OUTPUT => [
                 self::MERCHANT_NAME,
                 self::MERCHANT_EMAIL,
-                self::MERCHANT_ID,
                 self::STATUS,
+                self::MERCHANT_ID,
+                self::PARTNER_TOKEN,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],

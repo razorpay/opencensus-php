@@ -10,8 +10,6 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-    const TIME_RANGE = 'time_range';
-
     protected static $createRules = [
         Entity::TYPE              => 'required|string|max:20|custom',
         Entity::TARGET            => 'required|string|max:50',
@@ -32,7 +30,7 @@ class Validator extends Base\Validator
     protected static $createValidators = [
         Entity::TARGET,
         Entity::SUB_TYPE,
-        self::TIME_RANGE,
+        Entity::TIME_RANGE,
     ];
 
     /**

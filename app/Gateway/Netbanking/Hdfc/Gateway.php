@@ -214,7 +214,9 @@ class Gateway extends Base\Gateway
             // add the following data in the same sequence
             //
 
-            $emData = Fields::getEmandateRegistrationData($input['token'], $input['payment']['id']);
+            $token = $input['token'];
+
+            $emData = Fields::getEmandateRegistrationData($token, $input['payment']['id']);
 
             $startDate = Carbon::createFromTimestamp($emData[Fields::START_TIMESTAMP], Timezone::IST)
                                ->format('dmY');
@@ -222,11 +224,10 @@ class Gateway extends Base\Gateway
             $endDate = Carbon::createFromTimestamp($emData[Fields::END_TIMESTAMP], Timezone::IST)
                              ->format('dmY');
 
-            $data[Fields::CLIENT_ACCOUNT_NUMBER] = $emData[RHeadings::CUSTOMER_ACCOUNT_NUMBER];
             $data[Fields::REF1]                  = $emData[RHeadings::MERCHANT_UNIQUE_REFERENCE_NO];
             $data[Fields::REF2]                  = $emData[RHeadings::CUSTOMER_NAME];
             $data[Fields::REF3]                  = $emData[RHeadings::CUSTOMER_ACCOUNT_NUMBER];
-            $data[Fields::REF4]                  = Fields::INIT_AMOUNT;
+            $data[Fields::REF4]                  = number_format($token->getMaxAmount() / 100, 2, '.', '');
             $data[Fields::REF5]                  = $emData[RHeadings::FREQUENCY];
             $data[Fields::REF6]                  = $emData[RHeadings::MANDATE_SERIAL_NUMBER];
             $data[Fields::REF7]                  = $emData[RHeadings::MANDATE_ID];
@@ -242,6 +243,8 @@ class Gateway extends Base\Gateway
             // verified, the same amount would be refunded to the account holder the next day
             //
             $data['TxnAmount']                   = Fields::INIT_AMOUNT;
+
+            $data[Fields::CLIENT_ACCOUNT_NUMBER] = $emData[RHeadings::CUSTOMER_ACCOUNT_NUMBER];
         }
 
         // Moving this as the HDFC TPV requires the ClientAccCode to

@@ -56,7 +56,7 @@ class Hdfc extends Base
         }
         else
         {
-            return $entry[Batch\Header::HDFC_EM_REGISTER_REMARK] ?? 'FAILED';
+            return $entry[Batch\Header::HDFC_EM_REGISTER_REMARKS] ?? 'FAILED';
         }
     }
 

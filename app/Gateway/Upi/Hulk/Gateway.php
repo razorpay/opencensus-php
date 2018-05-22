@@ -137,7 +137,7 @@ class Gateway extends Base\Gateway
             Base\IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
             Base\IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
             Base\IntentParams::TXN_CURRENCY  => $input['payment']['currency'],
-            Base\IntentParams::MCC           => '5411',
+            Base\IntentParams::MCC           => (string) ($input['merchant']['category'] ?? 5411),
         ];
 
         return ['data' => ['intent_url' => $this->generateIntentString($content)]];
@@ -303,6 +303,7 @@ class Gateway extends Base\Gateway
                 'razorpay_payment_id'       => $payment['id'],
             ],
             Fields::MERCHANT_REFERENCE_ID   => $payment['id'],
+            Fields::CATEGORY_CODE           => (string) ($input['merchant']['category'] ?? 5411),
         ];
 
         $request = $this->getStandardRequestArray($content);
