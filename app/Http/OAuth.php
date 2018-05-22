@@ -58,14 +58,7 @@ class OAuth
      */
     public function hasOAuthPublicToken(): bool
     {
-        $keyParam = $this->request->input('key_id');
-        $key = $keyParam ?? $this->request->getUser();
-        // For callback routes, gets the key from route parameter
-        $route = $this->router->currentRouteName();
-        if ((empty($key) === true) and (in_array($route, Route::$publicCallback, true) === true))
-        {
-            $key = $this->router->current()->parameter('key');
-        }
+        $key = $this->ba->getKeyForNonBasicAuthTokens();
 
         //
         // If the key was empty or null, return false and allow
@@ -89,24 +82,19 @@ class OAuth
         $this->publicToken = $key;
 
         //
+        // If the request was authenticated with key_id sent in the request params
+        // we remove the key_id attribute before proceeding
+        //
+        $this->request->query->remove('key_id');
+        $this->request->request->remove('key_id');
+
+        //
         // Set the public_key on BasicAuth
         // We need to do this as public_key gets used to create callback URL
         // which gets sent as query parameter to some of the external calls to
         // bank/gateways.
         //
         $this->ba->setPublicKey($key);
-
-        //
-        // If $keyParam is non-null, it means the request was authenticated with
-        // key_id sent in the request params and not via Basic Auth header.
-        // In this case, we remove the key_id attribute before proceeding
-        //
-        if ($keyParam !== null)
-        {
-            // Remove 'key_id' from query params
-            $this->request->query->remove('key_id');
-            $this->request->request->remove('key_id');
-        }
 
         return $isPublicToken;
     }
@@ -203,9 +191,7 @@ class OAuth
         $mode = $response[OAuthToken::MODE];
 
         // Sets the mode for the request, and database connection
-        $this->ba->setMode($mode);
-
-        \Database\DefaultConnection::set($mode);
+        $this->ba->setModeAndDbConnection($mode);
 
         //
         // Set merchant for the current request

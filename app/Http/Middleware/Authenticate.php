@@ -133,7 +133,11 @@ class Authenticate
         }
         else if (in_array($route, Route::$publicCallback, true) === true)
         {
-            if ($this->oauth->hasOAuthPublicToken() === true)
+            if ($this->ba->hasPartnerTokenCallbackKey() === true)
+            {
+                $ret = $this->ba->handlePartnerTokenOnPublicCallback();
+            }
+            else if ($this->oauth->hasOAuthPublicToken() === true)
             {
                 $ret = $this->authenticateOAuthPublicToken();
             }

@@ -241,6 +241,8 @@ class BasicAuth
 
     protected $adminOrgId  = null;
 
+    protected $adminToken;
+
     protected $orgId       = null;
 
     protected $orgHostName = null;
@@ -262,6 +264,14 @@ class BasicAuth
      * @var string
      */
     protected $keylessXEntityId;
+
+    /**
+     * Partner token recieved in the callback flow
+     * Sample: rzp_partner_test_10000000000000
+     *
+     * @var string|null
+     */
+    public $publicCallbackPartnerToken;
 
     public function __construct($app)
     {
@@ -377,6 +387,12 @@ class BasicAuth
         return null;
     }
 
+    /**
+     * If Partner token was sent, verify and set its value in $this->creds[]
+     *
+     * @param  string|null      $token
+     * @return ApiResponse|null
+     */
     protected function checkAndSetPartnerToken(string $token = null)
     {
         if ($token === null)
@@ -389,9 +405,66 @@ class BasicAuth
             return $this->invalidPartnerToken($token);
         }
 
-        $this->creds['partner_token'] = OAuth\Token\Entity::stripPartnerTokenPrefix($token);
+        $strippedToken = OAuth\Token\Entity::stripPartnerTokenPrefix($token);
+
+        $this->creds['partner_token'] = $strippedToken;
+
+        // Create a custom key including mode, for public callback requests
+        $callbackKey = OAuth\Token\Entity::PARTNER_TOKEN_PREFIX .
+                       $this->getMode() . '_' .
+                       $strippedToken;
+
+        $this->setPublicKey($callbackKey);
 
         return null;
+    }
+
+    /**
+     * Tests if a given request has the partner token callback key
+     *
+     * Sample callback key for partner tokens:
+     * rzp_partner_test_10000000000000
+     *
+     * @return bool
+     */
+    public function hasPartnerTokenCallbackKey(): bool
+    {
+        $key = $this->getKeyForNonBasicAuthTokens();
+
+        $matches = [];
+
+        $validKey = (preg_match('/^rzp_partner_(test|live)_([a-zA-Z0-9]{14})$/', $key, $matches) === 1);
+
+        if ($validKey === true)
+        {
+            $mode = $matches[1];
+            $this->setModeAndDbConnection($mode);
+
+            $strippedKey = str_replace_first("_$mode", '', $key);
+
+            $this->publicCallbackPartnerToken = $strippedKey;
+
+            //
+            // If the request was authenticated with key_id sent in the request params
+            // we remove the key_id attribute before proceeding
+            //
+            $this->request->query->remove('key_id');
+            $this->request->request->remove('key_id');
+        }
+
+        return $validKey;
+    }
+
+    /**
+     * Handles public callback auth when a partner token is used
+     */
+    public function handlePartnerTokenOnPublicCallback()
+    {
+        $key = $this->publicCallbackPartnerToken;
+
+        $this->checkAndSetPartnerToken($key);
+
+        $this->checkAndSetPartnerMerchantScope();
     }
 
 // --------------------- Basic Auths -------------------------------------------
@@ -470,7 +543,9 @@ class BasicAuth
 
     /**
      * Handles keyless auth on public routes. Ref; KeylessPublicAuth.php
+     *
      * @return mixed
+     * @throws Exception\BadRequestException
      */
     public function keylessPublicAuth()
     {
@@ -1447,24 +1522,31 @@ class BasicAuth
 
         $this->setPartnerMerchantId($this->merchant->getId());
 
-        // Change repo function to fetchPartnerToken()
+        /** @var Oauth\Token\Entity $token */
         $token = (new OAuth\Token\Repository)->findOrFailPublic($this->getPartnerToken());
 
+        /** @var Merchant\Entity $merchant */
         $merchant = $this->repo->merchant->findOrFail($token->getMerchantId());
 
-        $this->setMerchant($merchant);
+        $this->setAndCheckMerchantActivatedForLive($merchant);
     }
 
     protected function isPartnerTokenAuthAllowed(): bool
     {
-        //
-        // $this->>merchant needs to have been set, and have the 'partner' feature
-        // enabled for Partner token auth to apply
-        //
-        if ((empty($this->merchant) === true) or
-            ($this->merchant->isFeatureEnabled(Feature::PARTNER) === false))
+        $route = $this->router->currentRouteName();
+        if (in_array($route, Route::$publicCallback, true) === false)
         {
-            return false;
+            //
+            // $this->merchant needs to have been set, and have the 'partner' feature
+            // enabled for Partner token auth to apply
+            //
+            if ((empty($this->merchant) === true) or
+                ($this->merchant->isFeatureEnabled(Feature::PARTNER) === false))
+            {
+                return false;
+            }
+
+            // validate merchant belongs to partner (via MAP)
         }
 
         if ($this->getPartnerToken() === '')
@@ -1743,5 +1825,21 @@ class BasicAuth
 
             $this->setUser($user);
         }
+    }
+
+    public function getKeyForNonBasicAuthTokens()
+    {
+        // Check `key_id` first, else fallback to BasicAuth user
+        $keyParam = $this->request->input('key_id');
+        $key = $keyParam ?? $this->request->getUser();
+
+        // For callback routes, gets the key from route parameter
+        $route = $this->router->currentRouteName();
+        if ((empty($key) === true) and (in_array($route, Route::$publicCallback, true) === true))
+        {
+            $key = $this->router->current()->parameter('key');
+        }
+
+        return $key;
     }
 }
