@@ -893,7 +893,7 @@ function Loader({ isSaving }) {
           <React.Fragment>
             <i class="i-close text-danger" />
             <span class="text-danger device--desktop">
-              Last changes are not saved!
+              Recent changes were not saved!
             </span>
             <span class="text-danger device--mobile">Not Saved!</span>
           </React.Fragment>;

@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 import { merchantFetch } from 'rzp/utils/ajax';
 import { showNotification } from 'rzp/modules/notifications';
 import { without } from 'rzp/utils/rzp-utils';
-import Spinner from 'rzp/ui/Spinner';
+import { classList } from 'common/util';
 import { Modal, ModalContent } from 'component/Modal';
 import { LinkCard } from 'component/Cards';
 import ActivationWizard from 'component/merchant/Activation';
@@ -249,7 +249,7 @@ export class ActivationContainer extends React.Component {
   };
 
   saveDirtyState = e => {
-    this.wizard.goto(null); // To save existing tab
+    this.wizard && this.wizard.goto(null); // To save existing tab in Activation Wizard
   };
 
   /*
@@ -257,22 +257,28 @@ export class ActivationContainer extends React.Component {
   * 2. For main account form, spinner, Welcome Screen, Activation wizard and Success screens are shown.
   * */
   render() {
+    // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
+    const IS_MODAL = this.props.onClose;
     const accountId = this.props.accountId; // If accountId present, then Welcome screen and Success screen are not required.
 
     let { data, categories } = this.state;
-
-    const filledEvenSingleDetail = false;
-
-    let content, modalClass;
+    let content, spinner, modalClass;
 
     if (!accountId && this.state.showSuccessScreen) {
       modalClass = 'Activation--success';
       content = <SuccessScreen />;
     } else if (!data) {
-      modalClass = 'Activation--welcome';
-      content = (
-        <div class="page-spinner-container">
-          <Spinner />
+      modalClass = 'spinner transparent';
+
+      content = null;
+      spinner = (
+        <div class="spinner-container">
+          <div
+            class={classList(
+              'spin-btn large page-center visible',
+              IS_MODAL && 'gray'
+            )}
+          />
         </div>
       );
     } else if (
@@ -304,17 +310,16 @@ export class ActivationContainer extends React.Component {
       );
     }
 
-    // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
-    return this.props.onClose ? (
+    return IS_MODAL ? (
       <Modal
-        class={'animate-down ' + modalClass}
+        class={classList(modalClass, content && 'animate-down')}
         onClose={this.props.onClose}
         onCloseCB={this.saveDirtyState}
       >
-        <ModalContent>{content}</ModalContent>
+        <ModalContent>{content || spinner}</ModalContent>
       </Modal>
     ) : (
-      <div class="ActivationContainer">{content}</div>
+      <div class="ActivationContainer">{content || spinner}</div>
     );
   }
 }
@@ -363,12 +368,13 @@ const SuccessScreen = _ => {
 const WelcomeScreen = ({ openWizard }) => {
   return (
     <div class="Activation--welcome">
+      <h3> Get Started with Activation</h3>
+      <div class="underline" />
+      <div class="welcome-illustration" />
       <div class="short-content">
-        <h3> Welcome to Razorpay! Get Started with Activation.</h3>
-        <div class="underline" />
         <p>
           Simply submit your business details and relavant proofs online to
-          start accpeting payments.
+          start accepting payments.
         </p>
         <p>
           Once you submit the form, it may take upto 2 to 3 working days to get

@@ -67,7 +67,7 @@ const businessModel = [
     label: 'Billing Label',
     name: 'business_dba',
     info:
-      'The brand name that your customers are familiar with. It should either be similar to your registered name or website name. It will appear on payment screen, emails and more.',
+      'This is the brand name that your customers are familiar with. It will appear on payment screen, emails and more.',
   },
   {
     label: 'Business Type',
@@ -239,20 +239,14 @@ const registrationDetails = [
         Number(activation.props.data.business_type)
       ) !== -1,
   },
-  [
-    {
-      label: 'Company PAN Details',
-      name: 'company_pan',
-      placeholder: 'PAN Number',
-      info:
-        'Mandatory for Companies. PAN details should be of the mentioned business only.',
-      validator: validatePANCard,
-    },
-    {
-      label: 'PAN Owner Name',
-      name: 'company_pan_name',
-    },
-  ],
+  {
+    label: 'Company PAN Details',
+    name: 'company_pan',
+    placeholder: 'PAN Number',
+    info:
+      'Mandatory for Companies. PAN details should be of the mentioned business only.',
+    validator: validatePANCard,
+  },
   [
     {
       label: 'PAN info of Authorized Signatory/Promoter/Director',

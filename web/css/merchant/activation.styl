@@ -6,6 +6,9 @@ $height = 600px
   width: 92%
   margin: 80px auto
 
+  .spinner-container
+    height: 300px
+
 .Activation--wizard, .Activation--success
   side-title
     font-size: 18px
@@ -203,6 +206,7 @@ $height = 600px
 
   .side-title
     margin-bottom: 4px
+    text-align: center
 
   .submit-illustration
     background: url(assets/activation-submit-success.svg) no-repeat
@@ -223,13 +227,13 @@ $height = 600px
     margin: -20px -12% 30px -12%
     border: 1px solid #e0e0e0
     box-shadow: 8px 8px 8px 0 rgba(132,155,191,0.1)
-    color: #4D4D4D
+    color: $heading-primary
     font-weight: 600
     border-radius: 2px
 
     .desc
       font-size: 14px
-      color: #808080
+      color: #515978
       font-weight: 400
 
     .i
@@ -254,12 +258,23 @@ $height = 600px
 .Activation--welcome
   padding: 40px
 
+  .welcome-illustration
+    position: absolute
+    bottom: 0
+    right: 0
+    width: 72%
+    height: 94%
+    background: url(assets/activation-welcome.svg) no-repeat
+    background-position: bottom right
+    background-size: contain
+
   .short-content
-    width: 55%
+    width: 51%
 
   h3
     line-height: 32px
-    width: 210px
+    width: 50%
+    max-width: 240px
 
   .underline
     width: 24px
@@ -268,15 +283,12 @@ $height = 600px
     margin: 24px 0
 
   p
-    font-size: #909090
-    margin: 24px 0
+    color: #515978
+    margin: 16px 0
 
   button
-    margin-top: 16px
+    margin-top: 80px
     margin-bottom: 6px
-
-    &:last-child
-      padding: 10px 36px
 
 /* Standalone page size */
 .ActivationContainer
