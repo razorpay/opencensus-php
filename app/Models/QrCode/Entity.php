@@ -33,6 +33,7 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
+        self::REFERENCE,
         self::AMOUNT,
         self::PROVIDER,
         self::SHORT_URL,
@@ -42,12 +43,18 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::REFERENCE,
         self::SHORT_URL,
         self::CREATED_AT,
     ];
 
     protected $casts = [
         self::AMOUNT => 'int',
+    ];
+
+    protected static $generators = [
+        self::ID,
+        self::REFERENCE,
     ];
 
     // --------------------- RELATIONS ---------------------
@@ -73,6 +80,14 @@ class Entity extends Base\PublicEntity
     }
 
     // --------------------- END RELATIONS ---------------------
+
+    public function generateReference($input)
+    {
+        if (isset($input[self::REFERENCE]) === false)
+        {
+            $this->setReference($this->getId());
+        }
+    }
 
     // --------------------- GETTERS ---------------------
 
@@ -146,6 +161,11 @@ class Entity extends Base\PublicEntity
     // --------------------- END GETTERS ---------------------
 
     // --------------------- SETTERS ---------------------
+
+    public function setReference(string $reference)
+    {
+        $this->setAttribute(self::REFERENCE, $reference);
+    }
 
     public function setShortUrl(string $shortUrl)
     {
