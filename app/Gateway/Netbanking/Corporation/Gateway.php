@@ -275,14 +275,37 @@ class Gateway extends Base\Gateway
         return $this->getEncryptor()->decryptData($content);
     }
 
+    /**
+     * @param array $input
+     * @return array
+     * @throws Exception\LogicException
+     */
     protected function getVerifyRequest(array $input)
     {
+        $bankRefNumber = '';
+
+        if ($this->action === Action::VERIFY)
+        {
+            $gatewayPayment = $this->repo->findByPaymentIdAndAction($input['payment']['id'], Action::AUTHORIZE);
+
+            $bankRefNumber = $gatewayPayment['bank_payment_id'];
+        }
+        elseif ($this->action === Action::CALLBACK)
+        {
+            $bankRefNumber = $input['gateway'][ResponseFields::BANK_REF_NUMBER];
+        }
+        else
+        {
+            throw new Exception\LogicException('Verify should be called from either verify or callback actions');
+        }
+
         $data = [
             RequestFields::VERIFY_MERCHANT_CODE         => $this->getMerchantId(),
             RequestFields::VERIFY_PAYMENT_ID            => $input['payment']['id'],
             RequestFields::VERIFY_AMOUNT                => $this->formatAmount($input['payment']['amount']),
-            RequestFields::VERIFY_BANK_REF_NUMBER       => $input['gateway'][ResponseFields::BANK_REF_NUMBER],
+            RequestFields::VERIFY_BANK_REF_NUMBER       => $bankRefNumber,
             RequestFields::VERIFY_MODE_OF_TRANSACTION   => RequestFields::VERIFY_MODE_OF_TRANSACTION_VALUE,
+            RequestFields::FUND_TRANSFER                => Constants::FUND_TRANSFER,
         ];
 
         $encryptedString = $this->getEncryptor()->encryptData($data);

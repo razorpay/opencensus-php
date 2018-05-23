@@ -28,7 +28,13 @@ class Server extends Base\Mock\Server
 
         $callbackUrl = $this->route->getUrl('gateway_payment_callback_corporation');
 
-        return $callbackUrl . '?' . (http_build_query($response));
+        $request = array(
+            'url' => $callbackUrl,
+            'content' => $response,
+            'method' => 'get',
+        );
+
+        return $this->makePostResponse($request);
     }
 
     // In the callback method, we do a verification call.
@@ -45,7 +51,7 @@ class Server extends Base\Mock\Server
     {
         $data = $this->getVerifyResponseData($input);
 
-        return $this->makeResponse(http_build_query($data));
+        return $this->makeResponse($data);
     }
 
     protected function getCallbackResponseData(array $input)
@@ -64,17 +70,11 @@ class Server extends Base\Mock\Server
 
     protected function getVerifyResponseData(array $input)
     {
-        $merchantId = $input[RequestFields::VERIFY_MERCHANT_CODE];
-
         $data = $this->getGatewayInstance()->getEncryptor()->decryptData(
             $input[RequestFields::VERIFY_DATA]
         );
 
-        $data = $this->buildVerifyResponseContent($data);
-
-        return [
-            ResponseFields::VERIFY_DATA => $data
-        ];
+        return $this->buildVerifyResponseContent($data);
     }
 
     protected function buildVerifyResponseContent($input)
