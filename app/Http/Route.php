@@ -2238,6 +2238,14 @@ final class Route
         {
             $parameters['x_entity_id'] = $this->ba->getKeylessXEntityId();
         }
+        // For a partner token authenticated route, keep the token in the public URL
+        if (($key === '') and ($this->ba->getPartnerToken() !== ''))
+        {
+            $parts = explode(BasicAuth::PARTNER_CALLBACK_KEY_DELIMITER, $this->ba->getPublicKey());
+
+            $key                         = $parts[0];
+            $parameters['partner_token'] = $parts[1];
+        }
         // Else continue with the key_id flow
         else if ($key === '')
         {

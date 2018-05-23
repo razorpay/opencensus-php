@@ -60,6 +60,14 @@ class BasicAuth
     const ADMIN_TOKEN_HEADER      = 'X-Admin-Token';
 
     /**
+     * Callback key in the partner token flow looks like this:
+     * rzp_test_1DP5mmOlF5G5ag~rzp_partner_ACIg2tb8NySnuh
+     *
+     * Delimiter used is defined in this const.
+     */
+    const PARTNER_CALLBACK_KEY_DELIMITER = '~';
+
+    /**
      * The application instance.
      *
      * @var \Illuminate\Foundation\Application
@@ -405,14 +413,9 @@ class BasicAuth
             return $this->invalidPartnerToken($token);
         }
 
-        $strippedToken = OAuth\Token\Entity::stripPartnerTokenPrefix($token);
+        $this->creds['partner_token'] = $token;
 
-        $this->creds['partner_token'] = $strippedToken;
-
-        // Create a custom key including mode, for public callback requests
-        $callbackKey = OAuth\Token\Entity::PARTNER_TOKEN_PREFIX .
-                       $this->getMode() . '_' .
-                       $strippedToken;
+        $callbackKey = $this->getPublicKey() . self::PARTNER_CALLBACK_KEY_DELIMITER . $token;
 
         $this->setPublicKey($callbackKey);
 
@@ -1183,7 +1186,7 @@ class BasicAuth
         return $this->creds['account_id'];
     }
 
-    protected function getPartnerToken()
+    public function getPartnerToken()
     {
         return $this->creds['partner_token'];
     }
@@ -1458,6 +1461,8 @@ class BasicAuth
         {
             return $this->invalidApiKey();
         }
+
+        return $this->setCredentialsFromHeaders();
     }
 
     protected function fetchKey($keyId)
@@ -1522,8 +1527,10 @@ class BasicAuth
 
         $this->setPartnerMerchantId($this->merchant->getId());
 
+        $strippedToken = OAuth\Token\Entity::stripPartnerTokenPrefix($this->getPartnerToken());
+
         /** @var Oauth\Token\Entity $token */
-        $token = (new OAuth\Token\Repository)->findOrFailPublic($this->getPartnerToken());
+        $token = (new OAuth\Token\Repository)->findOrFailPublic($strippedToken);
 
         /** @var Merchant\Entity $merchant */
         $merchant = $this->repo->merchant->findOrFail($token->getMerchantId());
