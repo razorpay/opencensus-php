@@ -294,7 +294,6 @@ export default class ActivationWizard extends React.Component {
     this.setState({
       tabSaveInProgress: currentActive,
       activeTab: newActiveTab,
-      isSaving: shouldSave ? LOADING_STATES.PENDING : LOADING_STATES.INITIAL,
     });
 
     if (!shouldSave) {
@@ -303,6 +302,10 @@ export default class ActivationWizard extends React.Component {
       cb && cb(); // If clicked on Save/Save-Next btn without any change
       return;
     }
+
+    this.setState({
+      isSaving: LOADING_STATES.PENDING,
+    });
 
     const data = { ...this.state.dirty };
 
@@ -330,31 +333,27 @@ export default class ActivationWizard extends React.Component {
         }
       }
 
-      let isSaving;
-
       if (data.errors) {
-        isSaving = LOADING_STATES.ERROR;
         cb && cb(false, data.errors);
 
         if (newActiveTab && newActiveTab === this.state.activeTab) {
           this.setState({
             dirty: {},
+            isSaving: LOADING_STATES.ERROR,
           }); // If different tab, then remove the previous tabs's dirty state. Handles edge case when one tab is filled wrong but it's ghost is bugging the other field to save.
         }
+
+        this.removeLoader();
       } else {
-        isSaving = LOADING_STATES.SUCCESS;
         cb && cb(true);
 
         this.setState({
           dirty: {},
+          isSaving: LOADING_STATES.SUCCESS,
         });
+
+        this.removeLoader(3000);
       }
-
-      this.setState({
-        isSaving,
-      });
-
-      this.removeLoader();
     });
   };
 
@@ -402,11 +401,14 @@ export default class ActivationWizard extends React.Component {
       });
   };
 
-  /* Fadeout based loader text */
-  removeLoader = _ => {
+  /*
+  * Fadeout based loader text.
+  * Default delay = 7 sec
+  * */
+  removeLoader = delay => {
     setTimeout(_ => {
       this.setState({ isSaving: LOADING_STATES.INITIAL });
-    }, 7000);
+    }, delay || 7000); // Success states can be removed in 3sec.
   };
 
   onChange = ({ target }) => {
@@ -417,9 +419,6 @@ export default class ActivationWizard extends React.Component {
     let sideEffectFieldsToUpdate = {}; // Some fields might lead to other fields get dirty. So, they also needs to be updated alongside
     const { dirty } = this.state;
     const { data } = this.props;
-
-    console.log(stateName);
-    console.log(fieldValue);
 
     /*
     * Step 1: These 4 fields are directly filled on user's behalf,
