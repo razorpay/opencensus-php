@@ -343,7 +343,7 @@ class TransactionFilter extends Terminal\Filter
 
             $bank = $payment->getBank();
 
-            $terminalBankingTypes = $terminal->getBankingTypesAttribute();
+            $terminalBankingTypes = $terminal->banking_types;
 
             // For corporate bank, the terminal should support corporate type
             if ((Netbanking::isCorporateBank($bank) === true) and

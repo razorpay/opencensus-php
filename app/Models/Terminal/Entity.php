@@ -546,7 +546,7 @@ class Entity extends Base\PublicEntity
         return $this->isShared();
     }
 
-    public function getBankingTypesAttribute()
+    protected function getBankingTypesAttribute()
     {
         return BankingType::getBankingTypes($this->getAttribute(self::CORPORATE));
     }

@@ -8,8 +8,8 @@ class BankingType
     const CORPORATE_ONLY = '1';
     const BOTH           = '2';
 
-    const RETAIL    = 'RETAIL';
-    const CORPORATE = 'CORPORATE';
+    const RETAIL    = 'retail';
+    const CORPORATE = 'corporate';
 
     public static function getBankingTypes(string $type): array
     {
