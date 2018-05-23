@@ -60,8 +60,13 @@ export default class ActivationWizard extends React.Component {
     isSaving: LOADING_STATES.INITIAL,
     dirty: {},
     tabs: [],
-    same_address: '1',
-    has_gstin: this.props.data && this.props.data.gstin ? '0' : '1',
+    same_address:
+      this.props.data &&
+      this.props.data.business_operation_pin ==
+        this.props.data.business_registered_pin
+        ? '1'
+        : '0', // '1' => checkbox ticked
+    has_gstin: this.props.data && this.props.data.gstin ? '0' : '1', // '0' => value exists
     account_no: '',
     activeTab: 0, // Fallback for all cases.
   };
@@ -292,15 +297,9 @@ export default class ActivationWizard extends React.Component {
       isSaving: shouldSave ? LOADING_STATES.PENDING : LOADING_STATES.INITIAL,
     });
 
-    // Handle case where user changed to 'no gst' option. But since we don't modify GST once filled, 1st radio box must get auto selected if GST value exists.
-    // has_gstin  = 0 => selected 1st radio box => Has GSTIN
-    if (this.props.data.gstin && this.state.has_gstin === '1') {
-      this.setState({
-        has_gstin: '0',
-      });
-    }
-
     if (!shouldSave) {
+      this.updateFEOnlyValues();
+
       cb && cb(); // If clicked on Save/Save-Next btn without any change
       return;
     }
@@ -359,6 +358,32 @@ export default class ActivationWizard extends React.Component {
     });
   };
 
+  /*
+  * Fn. to keep _name fields(FE only fields) in sync with updated values(props.data) on tab change.
+  * + Checking/Unchecking/Changing _name FE fields will remain as it is throughout(in state). But changing them might not always save data.
+  * + Example: Changing 'has_gstin' from 1 -> 0 (not have-> have) but value is not filled, then tab change won't save anything. So next time, tab is selected, radio box must display as per saved value, not last state value.
+  * + Example: If `same_address` ticked but values not saved due to some reason.
+  * */
+  updateFEOnlyValues() {
+    // Step 1:
+    // Handle case where user changed to 'no gst' option. But since we don't modify GST once filled, 1st radio box must get auto selected if GST value exists.
+    // has_gstin  = 0 => selected 1st radio box => Has GSTIN
+    this.setState({
+      has_gstin: this.props.data.gstin ? '0' : '1', // '1' => no value
+    });
+
+    // Step 2:
+    // Handle case where user changed to 'no gst' option. But since we don't modify GST once filled, 1st radio box must get auto selected if GST value exists.
+    // has_gstin  = 0 => selected 1st radio box => Has GSTIN
+    this.setState({
+      same_address:
+        this.props.data.business_operation_pin ==
+        this.props.data.business_registered_pin
+          ? '1'
+          : '0', // '1' => checkbox ticked
+    });
+  }
+
   submitForm = () => {
     const promise = this.props.submitForm();
 
@@ -381,7 +406,7 @@ export default class ActivationWizard extends React.Component {
   removeLoader = _ => {
     setTimeout(_ => {
       this.setState({ isSaving: LOADING_STATES.INITIAL });
-    }, 227000);
+    }, 7000);
   };
 
   onChange = ({ target }) => {
@@ -413,7 +438,14 @@ export default class ActivationWizard extends React.Component {
         dirty['business_registered_state'] || data['business_registered_state'];
     }
 
-    /* Step 2: If same_address is already ticked and any of business_registered fields are changed, then mark operational fields dirty;'.*/
+    /*
+     * Step 2: If user marks no GSTIN from radio box
+     * */
+    if (stateName === 'has_gstin' && fieldValue === '1') {
+      sideEffectFieldsToUpdate['gstin'] = null;
+    }
+
+    /* Step 3: If same_address is already ticked and any of business_registered fields are changed, then mark operational fields dirty;'.*/
     if (this.state.same_address == '1') {
       if (fieldName === 'business_registered_pin') {
         sideEffectFieldsToUpdate['business_operation_pin'] = fieldValue;
@@ -426,7 +458,7 @@ export default class ActivationWizard extends React.Component {
       }
     }
 
-    /* Step 3: Auto fill city and state based on pin */
+    /* Step 4: Auto fill city and state based on pin */
     if (
       fieldName === 'business_operation_pin' ||
       fieldName === 'business_registered_pin'
@@ -468,7 +500,7 @@ export default class ActivationWizard extends React.Component {
       }
     }
 
-    /* Step 4: Business category and sub category are always marked dirty in pairs. BE validates them in pair. */
+    /* Step 5: Business category and sub category are always marked dirty in pairs. BE validates them in pair. */
     if (fieldName === 'business_category') {
       // Set first option in new set of subcategory. It remains '', it would convert to null before making api call.
       sideEffectFieldsToUpdate['business_subcategory'] = '';
@@ -490,7 +522,7 @@ export default class ActivationWizard extends React.Component {
         dirty['business_category'] || data['business_category'];
     }
 
-    /* Step 5: Business website must have http/https prepended */
+    /* Step 6: Business website must have http/https prepended */
     if (fieldName === 'business_website') {
       fieldValue = autoPrefixUrls(fieldValue); // Updating in view will happen if he comes to this tab again. Otherwise single backspace on 'http' must be handled as full word not single character.
     }
