@@ -136,7 +136,6 @@ class Entity extends Base\PublicEntity
 
     public function payments()
     {
-        return $this->hasMany(Payment\Entity::class)
-                    ->orderBy(Payment\Entity::CREATED_AT, 'desc');
+        return $this->hasMany(Payment\Entity::class);
     }
 }
