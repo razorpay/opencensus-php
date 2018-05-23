@@ -12,6 +12,8 @@ import Form from 'ui/Form';
 import Field, { SelectField, TextAreaField, CheckField } from 'ui/Field';
 import Table from 'ui/Table';
 
+const LLP_Type = 6;
+
 @observer
 export default class BusinessDetails extends Component {
   state = { panVerified: false, companyInfo: null };
@@ -402,7 +404,11 @@ export default class BusinessDetails extends Component {
 
             <div class="mulitple-fields-group">
               <Field
-                label="Company CIN"
+                label={
+                  merchantDetails && merchantDetails.business_type == LLP_Type
+                    ? 'Company LLPIN'
+                    : 'Company CIN'
+                }
                 name="company_cin"
                 helpMsg={() => (
                   <AsyncButton

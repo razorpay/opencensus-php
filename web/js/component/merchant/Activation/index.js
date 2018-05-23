@@ -337,11 +337,16 @@ export default class ActivationWizard extends React.Component {
         cb && cb(false, data.errors);
 
         if (newActiveTab && newActiveTab === this.state.activeTab) {
+          // If different tab, then remove the previous tabs's dirty state. Handles edge case when one tab is filled wrong but it's ghost is bugging the other field to save.
+          // So person will have to fill all 'being removed' dirty data again if it failed on save if he used 'Change Tab' functionality to save this data.
           this.setState({
             dirty: {},
-            isSaving: LOADING_STATES.ERROR,
-          }); // If different tab, then remove the previous tabs's dirty state. Handles edge case when one tab is filled wrong but it's ghost is bugging the other field to save.
+          });
         }
+
+        this.setState({
+          isSaving: LOADING_STATES.ERROR,
+        });
 
         this.removeLoader();
       } else {

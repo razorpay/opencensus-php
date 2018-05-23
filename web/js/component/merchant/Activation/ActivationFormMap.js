@@ -9,6 +9,7 @@ import {
   validatePANCard,
 } from 'rzp/utils/validators';
 
+// This is as per the value saved in BE database
 const PROPRIETORSHIP = 1;
 const INDIVIDUAL = 2;
 const PARTNERSHIP = 3;
@@ -18,14 +19,12 @@ const LLP = 6; // 'LLP'
 const NGO = 7; // 'NGO'
 const TRUST = 9; // 'Trust'
 const SOCIETY = 10; // 'Society'
+const NOT_REGISTERED = 11; // 'Society'
+// Educational Institute: 8 and Others: 12 are removed now.
 
 const differentAddress = activation => activation.state.same_address === '0';
 
-const CIN_BusinessTypes = [
-  PRIVATE,
-  PUBLIC,
-  11, // 'Not yet registered',
-];
+const CIN_BusinessTypes = [PRIVATE, PUBLIC];
 
 const LLPIN_BusinessTypes = [LLP];
 
@@ -77,19 +76,17 @@ const businessModel = [
     name: 'business_type',
     _cmp: Input.Select,
     options: [
-      '--Select--',
-      'Proprietorship',
-      'Individual',
-      'Partnership',
-      'Private Limited',
-      'Public Limited',
-      'LLP',
-      'NGO',
-      'Educational Institutes',
-      'Trust',
-      'Society',
-      'Not yet registered',
-      'Other',
+      { label: '--Select--', name: '0' },
+      { label: 'Proprietorship', name: PROPRIETORSHIP },
+      { label: 'Individual', name: INDIVIDUAL },
+      { label: 'Partnership', name: PARTNERSHIP },
+      { label: 'Private Limited', name: PRIVATE },
+      { label: 'Public Limited', name: PUBLIC },
+      { label: 'LLP', name: LLP },
+      { label: 'NGO', name: NGO },
+      { label: 'Trust', name: TRUST },
+      { label: 'Society', name: SOCIETY },
+      { label: 'Not yet registered', name: NOT_REGISTERED },
     ],
     description: function(e) {
       // Changing description of self
@@ -99,15 +96,13 @@ const businessModel = [
         currentBusinessType = this.props.data.business_type;
       }
 
-      {
-        /* Alert: if user has selected individual business type */
-      }
-      if (
-        currentBusinessType &&
-        !this.props.accountId &&
-        currentBusinessType == INDIVIDUAL
-      ) {
-        return 'Applications for Individuals might take longer to review';
+      // if user has selected individual/not yet registered business type
+      if (currentBusinessType && !this.props.accountId) {
+        if (currentBusinessType == INDIVIDUAL) {
+          return 'Review for activation form for individuals takes longer. We may not be able to support a few business models at this moment.';
+        } else if (currentBusinessType == NOT_REGISTERED) {
+          return 'Review for activation form for business not-registered takes longer. We may not be able to support a few business models at this moment.';
+        }
       }
     },
   },
@@ -188,6 +183,7 @@ const businessModel = [
     required: false,
     description:
       'Please note, application for international payment takes longer than usual process. We may reach out to you if we need any additional information.',
+    _when: excludeFor_Indiv_NotReg,
   },
   {
     label: 'Business Website/App',
@@ -223,11 +219,13 @@ const registrationDetails = [
     info:
       'Mandatory for Companies. Example : U 67190 TN 2014 PTC 096978 (no spaces)',
     _when: activation => {
+      const currentBusinessType =
+        activation.state.dirty.business_type ||
+        activation.props.data.business_type;
+
       return (
-        activation.props.data.business_type &&
-        CIN_BusinessTypes.indexOf(
-          Number(activation.props.data.business_type)
-        ) !== -1
+        currentBusinessType &&
+        CIN_BusinessTypes.indexOf(Number(currentBusinessType)) !== -1
       );
     },
   },
@@ -249,6 +247,7 @@ const registrationDetails = [
     info:
       'Mandatory for Companies. PAN details should be of the mentioned business only.',
     validator: validatePANCard,
+    _when: excludeFor_Indiv_NotReg,
   },
   [
     {
@@ -332,10 +331,16 @@ const registrationDetails = [
       options: ['We have a registered GSTIN', "We don't have a GSTIN"],
       className: 'Input-vTop',
       _cmp: Input.Radio,
+      _when: excludeFor_Indiv_NotReg,
     },
     {
       name: 'gstin',
-      _when: activation => activation.state.has_gstin === '0',
+      _when: activation => {
+        return (
+          excludeFor_Indiv_NotReg(activation) &&
+          activation.state.has_gstin === '0'
+        );
+      },
       placeholder: 'Enter GSTIN',
       size: 'small',
       required: false,
@@ -343,7 +348,7 @@ const registrationDetails = [
         'The entered GST Number should match your Operational Address. Example: 29AAGCR4375J1ZU',
       validator: value => {
         if (!isValidGSTIN(value)) {
-          return 'Please provite valid GSTIN';
+          return 'Please provide valid GSTIN';
         }
       },
     },
@@ -406,20 +411,19 @@ const uploadFields = [
           ? this.state.dirty.business_type
           : this.props.data.business_type;
 
-      const li1 = 'GST Certificate / Shop Act Registration';
+      const li1 =
+        'Proprietorship firm: GST Certificate / Shop Establishment Act Certificate / Registration Certificate';
       const li2 = 'Partnership Deed';
       const li3 = 'Certificate of Incorporation';
       const li4 = 'Registration Proof or Certificate';
 
       let description;
 
-      if (currentBusinessType == PARTNERSHIP) {
-        description = li2;
-      } else if (currentBusinessType == PROPRIETORSHIP) {
+      if (currentBusinessType == PROPRIETORSHIP) {
         description = li1;
-      } else if (
-        [PRIVATE, PUBLIC, LLP].indexOf(Number(currentBusinessType)) > -1
-      ) {
+      } else if ([LLP, PARTNERSHIP].indexOf(Number(currentBusinessType)) > -1) {
+        description = li2;
+      } else if ([PRIVATE, PUBLIC].indexOf(Number(currentBusinessType)) > -1) {
         description = li3;
       } else if (ORG_BusinessTypes.indexOf(Number(currentBusinessType)) > -1) {
         description = li4;
@@ -453,11 +457,13 @@ const uploadFields = [
 
       return description;
     },
+    _when: excludeFor_Indiv_NotReg,
   },
   {
     name: 'business_pan_url',
-    label: 'Business PAN',
+    label: 'Company PAN',
     description: 'The PAN details should match the ones provided earlier',
+    _when: excludeFor_Indiv_NotReg,
   },
   {
     name: 'address_proof_url',
@@ -488,6 +494,16 @@ const uploadFields = [
         -1,
   },
 ];
+
+/* Return true IF NOT 'Individual/Not registered' business type */
+function excludeFor_Indiv_NotReg(activation) {
+  const currentBusinessType =
+    activation.state.dirty.business_type || activation.props.data.business_type;
+
+  return (
+    [NOT_REGISTERED, INDIVIDUAL].indexOf(Number(currentBusinessType)) === -1
+  );
+}
 
 // Tabs name
 export const mainFormTabs = [
