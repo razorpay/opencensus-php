@@ -44,7 +44,7 @@ class CreatePaymentLinks extends Migration
             $table->bigInteger(Entity::TIMES_PAID)
                   ->default(0);
 
-            $table->bigInteger(Entity::TOTAL_AMOUNT)
+            $table->bigInteger(Entity::TOTAL_AMOUNT_PAID)
                   ->default(0);
 
             $table->string(Entity::STATUS, 255);
