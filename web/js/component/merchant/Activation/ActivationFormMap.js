@@ -313,12 +313,14 @@ const registrationDetails = [
     {
       name: 'business_registered_city',
       label: 'City',
+      _autoRenderImpure: true, // Re-evaluate errors if pincode is updated
     },
     {
       name: 'business_registered_state',
       label: 'State',
       _cmp: Input.Select,
       options: stateOptions,
+      _autoRenderImpure: true, // Re-evaluate errors if pincode is updated
     },
   ],
   {
@@ -346,6 +348,7 @@ const registrationDetails = [
       name: 'business_operation_city',
       label: 'City',
       _when: differentAddress,
+      _autoRenderImpure: true, // Re-evaluate errors if pincode is updated
     },
     {
       name: 'business_operation_state',
@@ -353,6 +356,7 @@ const registrationDetails = [
       _when: differentAddress,
       _cmp: Input.Select,
       options: stateOptions,
+      _autoRenderImpure: true, // Re-evaluate errors if pincode is updated
     },
   ],
   [

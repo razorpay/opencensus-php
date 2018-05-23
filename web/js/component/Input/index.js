@@ -68,7 +68,7 @@ function separateDomProps(props) {
   };
 }
 
-class Info extends React.PureComponent {
+class Info extends React.Component {
   render() {
     const { text } = this.props;
 
@@ -122,7 +122,7 @@ class Label extends React.Component {
   }
 }
 
-class Error extends React.PureComponent {
+class Error extends React.Component {
   render() {
     if (this.props.text) {
       return <div class="Input-error">{this.props.text}</div>;
@@ -146,6 +146,22 @@ export default class Field extends React.Component {
 
   requiredError = 'Please fill out this field';
   patternError = 'Please enter valid value';
+
+  shouldComponentUpdate(nextProps, nextState) {
+    // Field is marked impure-component if it's to auto-render, cuz it's dependent on render of other field, then allow 'auto re-render'.
+    if (this.props.autoRender === true || this.state !== nextState) {
+      return true;
+    }
+
+    return false; // Pure Component by default will not re-render
+  }
+
+  // Will be called only in cases of impure-component fields
+  componentWillUpdate(nextProps) {
+    if (nextProps !== this.props) {
+      this.valid();
+    }
+  }
 
   focus = e => {
     this.props.onFocus && this.props.onFocus(e);
@@ -245,15 +261,6 @@ export default class Field extends React.Component {
       this.valid();
     }
   };
-
-  shouldComponentUpdate(nextProps, nextState) {
-    // If field is dependent on render of other field, then allow 'auto re-render'.
-    if (this.props.autoRender === true || this.state !== nextState) {
-      return true;
-    }
-
-    return false; // Pure Component by default will not re-render
-  }
 
   render() {
     let allProps = separateDomProps(this.props);
