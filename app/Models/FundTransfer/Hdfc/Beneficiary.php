@@ -37,14 +37,18 @@ class Beneficiary extends Base\Beneficiary
 
             list ($paymentType, $copyFlag) = $this->getPaymentType($ifscCode);
 
+            $beneficiaryName = $ba->getBeneficiaryName();
+
+            $address = $ba->getBeneficiaryAddress1() ?? $city;
+
             $array[Headings::FLAG] = Constants::ADD;
             $array[Headings::IFSC] = $ifscCode;
             $array[Headings::PAYMENT_TYPE] = $paymentType;
-            $array[Headings::BENE_ADDRESS_1] = $ba->getBeneficiaryAddress1() ?? $city;
-            $array[Headings::CITY] = $city;
+            $array[Headings::BENE_ADDRESS_1] = $this->normalizeString($address, 35);
+            $array[Headings::CITY] = $this->normalizeString($city, 35);
             $array[Headings::CREDIT_ACCOUNT] = $ba->getAccountNumber();
             $array[Headings::BENEFICIARY_CODE] = $ba->getId();
-            $array[Headings::BENEFICIARY_NAME] = $ba->getBeneficiaryName();
+            $array[Headings::BENEFICIARY_NAME] = $this->normalizeString($beneficiaryName, 35);
             $array[Headings::BENE_FUNCTION_TYPE] = Constants::BENE_FUNCTION_TYPE;
             $array[Headings::COPY_TO_PAYMENT_TYPE] = $copyFlag;
 
@@ -108,7 +112,7 @@ class Beneficiary extends Base\Beneficiary
 
         $sequenceNumber = $this->getSequenceNumber();
 
-        $fileName = 'BEN' . $date . $sequenceNumber;
+        $fileName = 'BEN' . $date . '.' . $sequenceNumber;
 
         return $fileName;
     }
@@ -148,5 +152,24 @@ class Beneficiary extends Base\Beneficiary
         $count    = count($headings);
 
         return array_combine($headings, array_fill(0, $count, null));
+    }
+
+    /**
+     * Currently csv file is generated like excel in `creator`. Which will not consider delimiter being part of string.
+     * Also base on observation its understood that file should not contain special characters.
+     * So this method will take care of those things.
+     *
+     * {@inheritdoc}
+     */
+    protected function normalizeString(string $string, int $length = 0): string
+    {
+        $normalizedString = preg_replace("/\r\n|\r|\n|,|'/", ' ', $string);
+
+        if ($length > 0)
+        {
+            $normalizedString = substr($normalizedString, 0, $length);
+        }
+
+        return $normalizedString;
     }
 }
