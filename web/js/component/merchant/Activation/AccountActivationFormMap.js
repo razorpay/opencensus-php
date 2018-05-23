@@ -2,6 +2,20 @@ import Input from 'component/Input';
 import { getDetailsForIFSC } from 'common/util';
 import { validatePANCard, validateIFSC } from 'rzp/utils/validators';
 
+// This is as per the value saved in BE database
+const PROPRIETORSHIP = 1;
+const INDIVIDUAL = 2;
+const PARTNERSHIP = 3;
+const PRIVATE = 4; // 'Private Limited',
+const PUBLIC = 5; // 'Public Limited',
+const LLP = 6; // 'LLP'
+const NGO = 7; // 'NGO'
+//const Educational_Institute = 8 // Removed now
+const TRUST = 9; // 'Trust'
+const SOCIETY = 10; // 'Society'
+const NOT_REGISTERED = 11; // 'Society'
+//const Others = 12 // Removed now
+
 // For marketplace linked account which required kyc
 const needsKYC = activation => !!activation.props.data.need_kyc;
 
@@ -16,19 +30,16 @@ const businessFields = [
     name: 'business_type',
     _cmp: Input.Select,
     options: [
-      '--Select--',
-      'Proprietorship',
-      'Individual',
-      'Partnership',
-      'Private Limited',
-      'Public Limited',
-      'LLP',
-      'NGO',
-      'Educational Institutes',
-      'Trust',
-      'Society',
-      'Not yet registered',
-      'Other',
+      { label: 'Private Limited', name: PRIVATE },
+      { label: 'Proprietorship', name: PROPRIETORSHIP },
+      { label: 'Partnership', name: PARTNERSHIP },
+      { label: 'Individual', name: INDIVIDUAL },
+      { label: 'Not yet registered', name: NOT_REGISTERED },
+      { label: 'Public Limited', name: PUBLIC },
+      { label: 'LLP', name: LLP },
+      { label: 'Trust', name: TRUST },
+      { label: 'Society', name: SOCIETY },
+      { label: 'NGO', name: NGO },
     ],
   },
   {

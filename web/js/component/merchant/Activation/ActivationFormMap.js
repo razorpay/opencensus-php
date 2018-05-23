@@ -19,17 +19,14 @@ const PRIVATE = 4; // 'Private Limited',
 const PUBLIC = 5; // 'Public Limited',
 const LLP = 6; // 'LLP'
 const NGO = 7; // 'NGO'
+//const Educational_Institute = 8 // Removed now
 const TRUST = 9; // 'Trust'
 const SOCIETY = 10; // 'Society'
 const NOT_REGISTERED = 11; // 'Society'
-// Educational Institute: 8 and Others: 12 are removed now.
-
-const differentAddress = activation => activation.state.same_address === '0';
+//const Others = 12 // Removed now
 
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
-
 const LLPIN_BusinessTypes = [LLP];
-
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
 
 const stateOptions = ['--Select--'].concat(
@@ -78,16 +75,16 @@ const businessModel = [
     name: 'business_type',
     _cmp: Input.Select,
     options: [
-      { label: 'Proprietorship', name: PROPRIETORSHIP },
-      { label: 'Individual', name: INDIVIDUAL },
-      { label: 'Partnership', name: PARTNERSHIP },
       { label: 'Private Limited', name: PRIVATE },
+      { label: 'Proprietorship', name: PROPRIETORSHIP },
+      { label: 'Partnership', name: PARTNERSHIP },
+      { label: 'Individual', name: INDIVIDUAL },
+      { label: 'Not yet registered', name: NOT_REGISTERED },
       { label: 'Public Limited', name: PUBLIC },
       { label: 'LLP', name: LLP },
-      { label: 'NGO', name: NGO },
       { label: 'Trust', name: TRUST },
       { label: 'Society', name: SOCIETY },
-      { label: 'Not yet registered', name: NOT_REGISTERED },
+      { label: 'NGO', name: NGO },
     ],
     description: function(e) {
       // Changing description of self
@@ -528,6 +525,11 @@ const uploadFields = [
         -1,
   },
 ];
+
+/* Show fields if same_address is not ticked */
+function differentAddress(activation) {
+  return activation.state.same_address === '0';
+}
 
 /* Return true IF NOT 'Individual/Not registered' business type */
 function excludeFor_Indiv_NotReg(activation) {
