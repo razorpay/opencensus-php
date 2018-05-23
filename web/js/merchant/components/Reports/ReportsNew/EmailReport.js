@@ -15,13 +15,14 @@ export default class EmailReport extends Component {
 
   componentWillMount() {
     const { emailsMap } = this.props;
+    let allEmails = [];
 
     Object.keys(emailsMap).forEach(emailType => {
-      this.allEmails = [...this.allEmails, ...emailsMap[emailType]];
+      allEmails = [...allEmails, ...emailsMap[emailType]];
     });
 
     //unique emails
-    this.allEmails = [...new Set(this.allEmails)];
+    this.allEmails = Array.from(new Set(allEmails));
   }
 
   handleChange = e => {
@@ -64,7 +65,7 @@ export default class EmailReport extends Component {
       }
     });
 
-    trackLabel = [...new Set(trackLabel)].join(' | ');
+    trackLabel = Array.from(new Set(trackLabel)).join(' | ');
 
     trackReportGenericActions('Click - Email Report || Email To', trackLabel);
     //send empty event
