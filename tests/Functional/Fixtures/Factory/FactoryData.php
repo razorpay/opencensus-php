@@ -71,6 +71,7 @@ final class FactoryData
             'status'      => \RZP\Models\PaymentLink\Status::ACTIVE,
             'title'       => 'Sample title',
             'description' => 'Sample description',
+            'notes'       => null,
         ]);
 
         $factory(\RZP\Models\Merchant\Balance\Entity::class, [

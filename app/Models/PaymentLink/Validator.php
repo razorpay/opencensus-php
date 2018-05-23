@@ -23,7 +23,7 @@ class Validator extends Base\Validator
         Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable',
         Entity::TITLE         => 'required|string|max:255',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
-        Entity::NOTES         => 'sometimes|notes|nullable',
+        Entity::NOTES         => 'sometimes|notes',
     ];
 
     protected static $editRules = [
@@ -31,7 +31,7 @@ class Validator extends Base\Validator
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
         Entity::TITLE         => 'sometimes|string|max:255',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
-        Entity::NOTES         => 'sometimes|notes|nullable',
+        Entity::NOTES         => 'sometimes|notes',
     ];
 
     public function validateExpireBy($attribute, $expireBy)

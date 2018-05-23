@@ -130,6 +130,7 @@ class Entity extends Base\PublicEntity
         self::STATUS_REASON     => null,
         self::USER_ID           => null,
         self::DESCRIPTION       => null,
+        self::NOTES             => [],
     ];
 
     public function getExpireBy()
