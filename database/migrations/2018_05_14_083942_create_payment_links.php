@@ -64,8 +64,7 @@ class CreatePaymentLinks extends Migration
             $table->text(Entity::DESCRIPTION)
                   ->nullable();
 
-            $table->text(Entity::NOTES)
-                  ->nullable();
+            $table->text(Entity::NOTES);
 
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);

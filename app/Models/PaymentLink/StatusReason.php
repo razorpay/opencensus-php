@@ -14,10 +14,10 @@ class StatusReason
         self::COMPLETED,
     ];
 
-    public static function isValid(string $status): bool
+    public static function isValid(string $statusReason): bool
     {
-        $key = __CLASS__ . '::' . strtoupper($status);
+        $key = __CLASS__ . '::' . strtoupper($statusReason);
 
-        return ((defined($key) === true) and (constant($key) === $status));
+        return ((defined($key) === true) and (constant($key) === $statusReason));
     }
 }
