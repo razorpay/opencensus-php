@@ -23,7 +23,6 @@ class Base extends BaseProcessor
      */
     const SUPPRESSED_ERROR_CODES = [
         ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND,
-        ErrorCode::SERVER_ERROR_GATEWAY_FILE_CLAIMS_LESSER_THAN_REFUNDS
     ];
 
     public function fetchEntities(): PublicCollection
@@ -55,6 +54,16 @@ class Base extends BaseProcessor
         {
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
+        }
+
+        if ($this->isTotalAmountValid($refunds, $claims) === false)
+        {
+            $this->trace->info(TraceCode::GATEWAY_FILE_CLAIMS_LESSER_THAN_REFUNDS,
+                                [
+                                    'refund_amount' => $refunds->sum('amount'),
+                                    'claim_amount'  => $claims->sum('amount'),
+                                    'gateway'       => $this->gatewayFile->getTarget(),
+                                ]);
         }
     }
 
@@ -125,6 +134,15 @@ class Base extends BaseProcessor
                 ],
                 $e);
         }
+    }
+
+    protected function isTotalAmountValid(PublicCollection $refunds, PublicCollection $claims): bool
+    {
+        $totalRefundAmount = $refunds->sum('amount');
+
+        $totalClaimAmount = $claims->sum('amount');
+
+        return ($totalClaimAmount >= $totalRefundAmount);
     }
 
     protected function getFileProcessor(string $type)
