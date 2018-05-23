@@ -14,9 +14,19 @@ class Helpers
 
     public static function addExtraColumns(&$entry)
     {
-        $entry['recon_count_percentage'] = number_format(($entry['recon_count']/$entry['total_count']) * 100, 2);
+        $entry['recon_count_percentage'] = number_format(($entry['recon_count'] / $entry['total_count']) * 100, 2);
 
-        $entry['recon_amount_percentage'] = number_format(($entry['recon_amount']/$entry['total_amount']) * 100,2);
+        //
+        // Note: In case of emandate payments, amount can be 0, resulting total amount 0. In this case,
+        // if all reconciled transactions are of 0 amount, recon_count_percentage will be nonzero
+        // but recon_amount_percentage will be 0.
+        //
+        $entry['recon_amount_percentage'] = 0;
+
+        if ($entry['total_amount'] > 0)
+        {
+            $entry['recon_amount_percentage'] = number_format(($entry['recon_amount'] / $entry['total_amount']) * 100, 2);
+        }
     }
 
     public static function getFormattedDate($timestamp, $format = 'jS F, Y')

@@ -13,7 +13,7 @@ use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Encryption\AESEncryption;
-use RZP\Mail\Settlement as SettlementMail;
+use RZP\Mail\Settlement\Settlement as SettlementMail;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 
 class NodalAccount extends NodalBase\FileProcessor
@@ -109,6 +109,8 @@ class NodalAccount extends NodalBase\FileProcessor
             $ba = $entity->bankAccount;
 
             $mode = $this->getPaymentType($ba, $amount);
+
+            $this->updateSummary($mode, $amount);
 
             $mode = self::MODE_MAPPING[$mode];
 
@@ -228,18 +230,21 @@ class NodalAccount extends NodalBase\FileProcessor
 
     protected function sendIciciTransferMail(array $fileData, array $rows = null)
     {
-        $data['body'] = 'PFA ICICI Settlement file';
+        $data = [
+            'body'      => 'PFA ICICI Settlement file',
+            'channel'   => $this->channel,
+            'summary'   => $this->summary,
+            'file_data' => $fileData
+        ];
 
         if ($rows !== null)
         {
             $data['body'] = json_encode($rows, JSON_PRETTY_PRINT);
         }
 
-        $data['file_data'] = $fileData;
+        $settlementMail = new SettlementMail($data);
 
-        $iciciSettlementMail = new SettlementMail\IciciSettlement($data);
-
-        Mail::queue($iciciSettlementMail);
+        Mail::queue($settlementMail);
     }
 
     protected function formatAmount($amount)

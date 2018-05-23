@@ -150,8 +150,6 @@ trait Authorize
 
             $payment->associateTerminal($currentTerminal);
 
-            // @todo: Add function to set auth type
-
             $terminalGatewayInput = $gatewayInput;
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
@@ -1242,6 +1240,8 @@ trait Authorize
 
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
     {
+        $this->setAuthTypeInPayment($payment);
+
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
@@ -1272,6 +1272,31 @@ trait Authorize
         // subscriptions/terminals.
         //
         $this->setGatewayTokenInInput($payment, $gatewayInput);
+    }
+
+    protected function setAuthTypeInPayment(Payment\Entity $payment)
+    {
+        //
+        // We set `auth_type` from `preferred_auth` field here
+        // on the basis of the used terminal
+        //
+        if (($payment->isMethodCardOrEmi() === false) or
+            (empty($payment->getMetadata(Payment\Entity::PREFERRED_AUTH)) === true))
+        {
+            return;
+        }
+
+        // Setting default auth type as null for cards
+        $payment->setAuthType(null);
+
+        //
+        // Currently, we are only storing auth type for
+        // debit pin payments
+        //
+        if ($payment->terminal->isPin() === true)
+        {
+            $payment->setAuthType(Payment\AuthType::PIN);
+        }
     }
 
     protected function setGatewayTokenInInput(Payment\Entity $payment, array & $gatewayInput)

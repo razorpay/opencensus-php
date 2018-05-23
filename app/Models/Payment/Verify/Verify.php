@@ -200,7 +200,7 @@ class Verify extends Base\Core
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
      */
-    public function verifyPaymentsWithFilter(string $filter, array $bucketFilter = [])
+    public function verifyPaymentsWithFilter(string $filter, array $bucketFilter, string $gateway = null)
     {
         $verifyFetchStartTime = time();
 
@@ -214,6 +214,12 @@ class Verify extends Base\Core
 
         $disabledGateways = $this->getBlockedGateways();
 
+        if (($gateway !== null) and
+            (in_array($gateway, $disabledGateways, true) === true))
+        {
+            return ['message' => 'no payment to verify'];
+        }
+
         //
         // We Fetch Twice the number of required payments,
         // and filtering extra payments in later stage
@@ -224,6 +230,7 @@ class Verify extends Base\Core
                                                                 $verifyStatus,
                                                                 $paymentStatus,
                                                                 self::ROWS_TO_FETCH * 2,
+                                                                $gateway,
                                                                 $disabledGateways);
 
         $payments = $paymentsCollectionWithCount['payments'];
@@ -235,6 +242,34 @@ class Verify extends Base\Core
         $verifyFetchTime = $verifyFetchEndTime - $verifyFetchStartTime;
 
         return $this->verifyMultiplePayments($payments, $filter, $bucketFilter, $verifiableCount, $verifyFetchTime);
+    }
+
+
+
+    public function verifyPaymentsWithIds(array $paymentIds)
+    {
+        $verifyFetchStartTime = time();
+
+        $disabledGateways = $this->getBlockedGateways();
+
+        // //
+        // // We Fetch Twice the number of required payments,
+        // // and filtering extra payments in later stage
+        // //
+        $paymentsCollectionWithCount = $this->repo->payment->getPaymentsToVerifyByIds(
+                                                                $paymentIds,
+                                                                self::ROWS_TO_FETCH * 2,
+                                                                $disabledGateways);
+
+        $payments = $paymentsCollectionWithCount['payments'];
+
+        $verifiableCount = $paymentsCollectionWithCount['verifiable_count'];
+
+        $verifyFetchEndTime = time();
+
+        $verifyFetchTime = $verifyFetchEndTime - $verifyFetchStartTime;
+
+        return $this->verifyMultiplePayments($payments, '', [], $verifiableCount, $verifyFetchTime);
     }
 
     /**
