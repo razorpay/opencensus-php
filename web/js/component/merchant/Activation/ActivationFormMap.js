@@ -243,7 +243,7 @@ const registrationDetails = [
       ) !== -1,
   },
   {
-    label: 'Company PAN Details',
+    label: 'Company PAN Number',
     name: 'company_pan',
     placeholder: 'PAN Number',
     info:

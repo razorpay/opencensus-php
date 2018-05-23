@@ -154,11 +154,21 @@ export default class Field extends React.Component {
 
   blur = e => {
     this.props.onBlur && this.props.onBlur(e);
-    this.setState({ focus: false, mature: true });
+    this.setState({ focus: false });
+
+    // dirty = Touched the input field
+    if (this.state.dirty) {
+      this.setState({ mature: true });
+    }
   };
+
   change = e => {
     this.valid();
     this.props.onChange && this.props.onChange(e);
+
+    if (!this.state.dirty) {
+      this.setState({ dirty: true });
+    }
 
     // Change description on basis of value changed
     if (typeof this.props.description === 'function') {
@@ -476,9 +486,9 @@ Field.File = _ => {
 Field.Time = _ => <Field {..._} type="time" />;
 
 /*
-* Input type=select Component
-* Note: o.name is same as value for option
-* */
+ * Input type=select Component
+ * Note: o.name is same as value for option
+ * */
 Field.Select = ({ options, ...props }) => (
   <Field {...props} tag="select">
     {options.map((o, i) => {
