@@ -1970,6 +1970,7 @@ trait Authorize
         // an app_token when we are processing 2FA.
         //
         if (($this->ba->isProxyOrPrivilegeAuth() === false) and
+            ($this->ba->isDirectAuth() === false) and
             ($customerApp === null))
         {
             throw new Exception\LogicException(

@@ -31,6 +31,14 @@ class Customer extends Base
             'contact'       => '+919988776655',
             'merchant_id'   => '100000Razorpay'
         ),
+        array(
+            'id'                 => '100011customer',
+            'global_customer_id' => '10000gcustomer',
+            'name'               => 'test',
+            'email'              => 'test@razorpay.com',
+            'contact'            => '1234567890',
+            'merchant_id'        => '10000000000000'
+        ),
     );
 
     protected $customerApps = array(

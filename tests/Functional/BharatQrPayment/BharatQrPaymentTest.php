@@ -113,6 +113,47 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals('refund', $refund['action']);
     }
 
+    public function testWithGlobalCustomer()
+    {
+        $this->ba->privateAuth();
+
+        $request = $this->testData['createVirtualAccount'];
+
+        $request['content']['customer_id'] = 'cust_100011customer';
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $qrCode = $response['receivers'][0];
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($qrCode['id'], 3);
+
+        $request = $this->testData['testQrPaymentProcess'];
+
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
+
+        $request['content'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->verifyPayment($payment['id']);
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('hitachi', true);
+
+        $this->assertEquals('refund', $refund['action']);
+    }
+
     public function testHitachiBadCheckSum()
     {
         $request = $this->testData['testQrPaymentProcess'];
