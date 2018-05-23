@@ -38,7 +38,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($paymentLink);
 
-        $this->trace->info(TraceCode::PAYMENT_LINK_CREATED, $paymentLink->toArrayPublic());
+        $this->trace->info(TraceCode::PAYMENT_LINK_CREATED, $paymentLink->toArray());
 
         return $paymentLink;
     }
@@ -54,16 +54,15 @@ class Core extends Base\Core
     public function update(Entity $paymentLink, array $input): Entity
     {
         $this->trace->info(TraceCode::PAYMENT_LINK_UPDATE_REQUEST, [
-            'pl_id' => $paymentLink->getId(),
+            'id'    => $paymentLink->getPublicId(),
             'input' => $input,
         ]);
 
-        $paymentLinkId = $paymentLink->getId();
-
         return $this->mutex->acquireAndRelease(
-            $paymentLinkId,
+            $paymentLink->getId(),
             function() use ($paymentLink, $input)
             {
+                // TODO: cases related to expire_by and times_payable to be handled
                 $paymentLink->edit($input);
 
                 $this->repo->saveOrFail($paymentLink);

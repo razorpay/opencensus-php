@@ -28,6 +28,7 @@ use RZP\Models\Payment\Verify;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Pricing\FeeCalculator;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 
 class Repository extends Base\Repository
@@ -150,7 +151,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchPaymentsForPaymentLink($paymentLinkId)
+    /**
+     * Returns all the payments of a payment_link
+     * @param string $paymentLinkId
+     *
+     * @return PublicCollection
+     */
+    public function fetchPaymentsForPaymentLink(string $paymentLinkId): PublicCollection
     {
         return $this->newQuery()
                     ->where(Payment\Entity::PAYMENT_LINK_ID, '=', $paymentLinkId)
