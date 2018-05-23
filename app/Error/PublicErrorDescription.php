@@ -201,6 +201,7 @@ class PublicErrorDescription
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY                              = 'The api key provided is invalid';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET                           = 'The api secret provided is invalid';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID                           = 'The Account ID provided is invalid';
+    const BAD_REQUEST_UNAUTHORIZED_INVALID_PARTNER_TOKEN                        = 'The Partner token provided is invalid';
     const BAD_REQUEST_UNAUTHORIZED_USER_ROLE_MISSING                            = 'Unauthorized Action';
     const BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED                          = 'Please provide api secret';
     const BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE                  = 'Please do not provide your secret on public sided requests';
