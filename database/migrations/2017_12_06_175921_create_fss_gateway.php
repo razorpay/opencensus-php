@@ -43,7 +43,7 @@ class CreateFssGateway extends Migration
             $table->string(FSS::CURRENCY, 3)
                   ->nullable();
 
-            $table->string(FSS::STATUS, 20)
+            $table->string(FSS::STATUS, 255)
                   ->nullable();
 
             $table->string(FSS::GATEWAY_PAYMENT_ID, 25)
@@ -73,6 +73,7 @@ class CreateFssGateway extends Migration
 
             $table->index(FSS::PAYMENT_ID);
 
+            // Index length is 50, couldn't add here because of laravel constraints.
             $table->index(FSS::STATUS);
 
             $table->index(FSS::ACTION);

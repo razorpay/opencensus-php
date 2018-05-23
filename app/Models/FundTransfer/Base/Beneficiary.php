@@ -70,6 +70,25 @@ abstract class Beneficiary extends BaseCore
         return $data;
     }
 
+    /**
+     * Normalizes the given string based on the specification of file
+     *
+     * @param string $string
+     * @param int    $length
+     * @return null|string|string[]
+     */
+    protected function normalizeString(string $string, int $length = 0): string
+    {
+        $normalizedString =  preg_replace("/\r\n|\r|\n/", ' ', $string);
+
+        if ($length > 0)
+        {
+            $normalizedString = substr($normalizedString, 0, $length);
+        }
+
+        return $normalizedString;
+    }
+
     abstract protected function getData(PublicCollection $bankAccounts): array;
 
     abstract protected function generateFile($data): FileStore\Creator;
