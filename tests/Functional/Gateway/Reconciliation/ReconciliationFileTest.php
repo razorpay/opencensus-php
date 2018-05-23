@@ -7,7 +7,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
-use RZP\Gateway\Blade\Mock\CardNumber;
+use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 
 use RZP\Reconciliator\HDFC\RefundReconciliate as HdfcRefundRecon;
 use RZP\Reconciliator\HDFC\PaymentReconciliate as HDFCPaymentRecon;

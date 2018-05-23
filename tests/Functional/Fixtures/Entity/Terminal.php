@@ -324,7 +324,7 @@ class Terminal extends Base
         $defaultValues = [
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
-            'gateway'                   => 'blade',
+            'gateway'                   => 'mpi_blade',
             'card'                      => 1,
             'shared'                    => 1,
             'gateway_merchant_id'       => 'random',

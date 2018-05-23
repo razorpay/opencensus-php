@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Blade;
+namespace RZP\Gateway\Mpi\Base;
 
 use RZP\Gateway\Base;
 use RZP\Constants;
@@ -46,14 +46,14 @@ class Entity extends Base\Entity
         self::AMOUNT,
         self::PAYMENT_ID,
         self::CURRENCY,
-        self::ACC_ID
+        self::ACC_ID,
     ];
 
     protected $casts = [
         self::AMOUNT      => 'int'
     ];
 
-    protected $entity = Constants\Entity::BLADE;
+    protected $entity = Constants\Entity::MPI_BLADE;
 
     public $incrementing = true;
 

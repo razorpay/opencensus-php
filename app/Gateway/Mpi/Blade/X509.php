@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Blade;
+namespace RZP\Gateway\Mpi\Blade;
 
 use phpseclib\File\X509 as BaseX509;
 

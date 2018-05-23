@@ -1,8 +1,8 @@
 <?php
 
-namespace RZP\Gateway\Blade\Mock\Response;
+namespace RZP\Gateway\Mpi\Blade\Mock\Response;
 
-use RZP\Gateway\Blade\Mock\CardNumber;
+use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 
 class Vereq
 {
@@ -19,7 +19,7 @@ class Vereq
                 'enrolled' => 'Y',
                 'acctID'   => CardNumber::getAccId($cardNo),
             ],
-            'url'      => $this->route->getUrl('mock_acs', ['gateway'=> 'blade']),
+            'url'      => $this->route->getUrl('mock_acs', ['gateway'=> 'mpi_blade']),
             'protocol' => 'ThreeDSecure'
         ];
     }
@@ -42,7 +42,7 @@ class Vereq
                 'enrolled' => 'Y',
                 'acctID'   => CardNumber::getAccId($cardNo),
             ],
-            'url'      => $this->route->getUrl('mock_acs', ['gateway'=> 'blade']),
+            'url'      => $this->route->getUrl('mock_acs', ['gateway'=> 'mpi_blade']),
             'protocol' => 'ThreeDSecure'
         ];
     }
@@ -60,7 +60,7 @@ class Vereq
                 'enrolled' => 'Y',
                 'acctID'   => CardNumber::getAccId($cardNo),
             ],
-            'url'      => $this->route->getUrl('mock_acs', ['gateway'=> 'blade']),
+            'url'      => $this->route->getUrl('mock_acs', ['gateway'=> 'mpi_blade']),
             'protocol' => 'ThreeDSecure'
         ];
     }
