@@ -61,7 +61,7 @@ export default class ActivationWizard extends React.Component {
     dirty: {},
     tabs: [],
     same_address: '1',
-    has_gstin: '0',
+    has_gstin: this.props.data && this.props.data.gstin ? '0' : '1',
     account_no: '',
     activeTab: 0, // Fallback for all cases.
   };
@@ -292,8 +292,16 @@ export default class ActivationWizard extends React.Component {
       isSaving: shouldSave ? LOADING_STATES.PENDING : LOADING_STATES.INITIAL,
     });
 
+    // Handle case where user changed to 'no gst' option. But since we don't modify GST once filled, 1st radio box must get auto selected if GST value exists.
+    // has_gstin  = 0 => selected 1st radio box => Has GSTIN
+    if (this.props.data.gstin && this.state.has_gstin === '1') {
+      this.setState({
+        has_gstin: '0',
+      });
+    }
+
     if (!shouldSave) {
-      cb && cb(); // If clicked on Save/Save-Next btn
+      cb && cb(); // If clicked on Save/Save-Next btn without any change
       return;
     }
 
@@ -384,6 +392,9 @@ export default class ActivationWizard extends React.Component {
     let sideEffectFieldsToUpdate = {}; // Some fields might lead to other fields get dirty. So, they also needs to be updated alongside
     const { dirty } = this.state;
     const { data } = this.props;
+
+    console.log(stateName);
+    console.log(fieldValue);
 
     /*
     * Step 1: These 4 fields are directly filled on user's behalf,
