@@ -98,10 +98,6 @@ app
               name: 'LLP',
               value: 6,
             },
-            8: {
-              name: 'Educational Institutes',
-              value: 8,
-            },
             9: {
               name: 'Trust',
               value: 9,
@@ -113,10 +109,6 @@ app
             11: {
               name: 'NGO',
               value: 7,
-            },
-            12: {
-              name: 'Other',
-              value: 12,
             },
           },
 
