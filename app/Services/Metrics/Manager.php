@@ -56,11 +56,11 @@ class Manager extends IlluminateManager
     {
         $impl = __NAMESPACE__ . '\\Drivers\\' . studly_case($driver);
 
+        //
         // In cases of corrupt configurations deployed, don't fail critical path. Just work with mock implementation.
         // Also no need to log here, we would come to know of monitoring not working via other means.
-        $config   = $this->config['drivers'][$driver];
-        $instance = class_exists($impl) === true ? new $impl($config) : new Drivers\Mock($config);
-        $instance->namespace($this->config['namespace']);
+        //
+        return (class_exists($impl) === true) ? new $impl($this->config) : new Drivers\Mock($this->config);
 
         return $instance;
     }

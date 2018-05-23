@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Unit\Services;
+namespace RZP\Tests\Unit\Services\Metrics;
 
 use RZP\Tests\TestCase;
 use RZP\Services\Metrics\Manager;
