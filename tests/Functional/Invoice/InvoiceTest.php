@@ -264,7 +264,7 @@ class InvoiceTest extends TestCase
 
     public function testCreateInvoiceWithMultipleLineItemsAndUsingExistingItem()
     {
-        $this->fixtures->create('item');
+        $this->fixtures->create('item', ['tax_rate' => 120]);
 
         $response = $this->startTest();
 

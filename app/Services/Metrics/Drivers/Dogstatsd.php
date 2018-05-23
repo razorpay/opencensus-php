@@ -24,7 +24,9 @@ class Dogstatsd extends Driver
     {
         parent::__construct($config);
 
-        $this->statsd = new DataDog\DogStatsd($this->config['client']);
+        $statsdClientOptions = $config['drivers']['dogstatsd']['client'];
+
+        $this->statsd = new DataDog\DogStatsd($statsdClientOptions);
     }
 
     /**
@@ -34,7 +36,10 @@ class Dogstatsd extends Driver
     {
         while ($times--)
         {
-            $this->statsd->increment($this->getNamespacedMetric($metric), self::SAMPLE_RATE, $dimensions);
+            $this->statsd->increment(
+                $this->getNamespacedMetric($metric),
+                self::SAMPLE_RATE,
+                $this->getModifiedDimensions($dimensions));
         }
     }
 
@@ -43,7 +48,11 @@ class Dogstatsd extends Driver
      */
     public function gauge(string $metric, float $value, array $dimensions = [])
     {
-        $this->statsd->gauge($this->getNamespacedMetric($metric), $value, self::SAMPLE_RATE, $dimensions);
+        $this->statsd->gauge(
+            $this->getNamespacedMetric($metric),
+            $value,
+            self::SAMPLE_RATE,
+            $this->getModifiedDimensions($dimensions));
     }
 
     /**
@@ -53,6 +62,10 @@ class Dogstatsd extends Driver
     {
         // TODO: Histogram support is limited in some sense via statsd interface; To check and have fixed later;
         // For now it's reported as summary in Prometheus with default 50, 90 and 99 %ile.
-        $this->statsd->histogram($this->getNamespacedMetric($metric), $value, self::SAMPLE_RATE, $dimensions);
+        $this->statsd->histogram(
+            $this->getNamespacedMetric($metric),
+            $value,
+            self::SAMPLE_RATE,
+            $this->getModifiedDimensions($dimensions));
     }
 }

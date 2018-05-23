@@ -1009,7 +1009,7 @@ class Service extends Base\Service
         return ['payments_count' => $count, 'emails_count' => $emailCount];
     }
 
-    public function verifyPaymentsInBulk(string $filter, array $input)
+    public function verifyPaymentsInBulk(array $input)
     {
         (new Payment\Validator)->validateInput('bulk_verify', $input);
 

@@ -3553,3 +3553,6 @@ ALTER TABLE payments
 
 ALTER TABLE invoices
     ADD COLUMN supply_state_code CHAR(4) DEFAULT NULL AFTER merchant_label;
+
+ALTER TABLE line_items
+    ADD COLUMN tax_rate INTEGER UNSIGNED DEFAULT NULL AFTER sac_code;
