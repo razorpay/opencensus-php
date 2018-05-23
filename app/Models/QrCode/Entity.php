@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
 {
     const ID                        = 'id';
     const MERCHANT_ID               = 'merchant_id';
+    const REFERENCE                 = 'reference';
     const PROVIDER                  = 'provider';
     const ENTITY_ID                 = 'entity_id';
     const ENTITY_TYPE               = 'entity_type';
@@ -102,6 +103,11 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getReference()
+    {
+        return $this->getAttribute(self::REFERENCE);
     }
 
     public function getQrString()

@@ -3554,9 +3554,11 @@ ALTER TABLE payments
 ALTER TABLE invoices
     ADD COLUMN supply_state_code CHAR(4) DEFAULT NULL AFTER merchant_label;
 
-ALTER TABLE card_fss MODIFY COLUMN status VARCHAR(255) DEFAULT NULL;
+ALTER TABLE terminals
+    ADD COLUMN expected BOOLEAN DEFAULT 0 NOT NULL after corporate;
 
-DROP INDEX `card_fss_status_index` on `card_fss`; CREATE INDEX `card_fss_status_index` ON card_fss (status(50));
-
-ALTER TABLE line_items
-    ADD COLUMN tax_rate INTEGER UNSIGNED DEFAULT NULL AFTER sac_code;
+ALTER TABLE qr_code
+    ADD COLUMN reference varchar(255) DEFAULT NULL after merchant_id,
+    ADD INDEX `qr_code_reference_index` (reference),
+    MODIFY COLUMN qr_string TEXT DEFAULT NULL,
+    MODIFY COLUMN short_url varchar(255) DEFAULT NULL;

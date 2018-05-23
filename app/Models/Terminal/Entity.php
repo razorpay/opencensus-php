@@ -63,6 +63,9 @@ class Entity extends Base\PublicEntity
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
 
+    // This is used to mark the payments always expected ones
+    const EXPECTED                      = 'expected';
+
     const DELETED                       = 'deleted';
     const DELETED_AT                    = 'deleted_at';
 
@@ -96,6 +99,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::MODE,
         self::CORPORATE,
+        self::EXPECTED,
         self::CURRENCY,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
@@ -145,6 +149,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::MODE,
         self::CORPORATE,
+        self::EXPECTED,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -193,6 +198,7 @@ class Entity extends Base\PublicEntity
         ],
         self::MODE                      => Mode::DUAL,
         self::CORPORATE                 => 0,
+        self::EXPECTED                  => 0,
         self::CURRENCY                  => self::DEFAULT_CURRENCY,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
@@ -216,6 +222,7 @@ class Entity extends Base\PublicEntity
         self::MODE                      => 'int',
         self::CATEGORY                  => 'int',
         self::CORPORATE                 => 'boolean',
+        self::EXPECTED                  => 'boolean',
         self::USED                      => 'boolean',
     ];
 
@@ -408,6 +415,11 @@ class Entity extends Base\PublicEntity
     public function isCorporate()
     {
         return $this->getAttribute(self::CORPORATE);
+    }
+
+    public function isExpected()
+    {
+        return $this->getAttribute(self::EXPECTED);
     }
 
     // ---------------------- SETTERS ----------------------
