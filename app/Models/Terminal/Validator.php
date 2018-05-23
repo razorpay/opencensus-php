@@ -242,6 +242,9 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_ACQUIRER           => 'sometimes|in:ratn',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::MC_MPAN                    => 'sometimes|string|size:16',
+        Entity::VISA_MPAN                  => 'sometimes|string|size:16',
+        Entity::RUPAY_MPAN                 => 'sometimes|string|size:16',
     ];
 
     protected static $firstDataEditTerminalRules = [
