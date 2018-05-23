@@ -664,6 +664,12 @@ class Core extends Base\Core
             $validationFields = array_merge($validationFields, $ngoValidationFields);
         }
 
+        // Total set of fields for Individual and Not-yet-registered business types are limited
+        if ($merchantDetails->getBusinessType() === BusinessType::INDIVIDUAL || $merchantDetails->getBusinessType() === BusinessType::NOT_YET_REGISTERED)
+        {
+            $validationFields = ValidationFields::DASHBOARD_FIELDS_LIMITED;
+        }
+
         $merchant = $merchantDetails->merchant;
 
         if ($merchant->isLinkedAccount() === true)
