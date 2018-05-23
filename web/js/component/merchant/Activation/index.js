@@ -129,11 +129,9 @@ export default class ActivationWizard extends React.Component {
       FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(
         a =>
           (a.onChange = (file, progressTracker) => {
-            this.setState({
-              tabSaveInProgress: DOCUMENT_UPLOAD_STEP,
+            return props.saveFile(a.name, file, progressTracker).then(resp => {
+              this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
             });
-
-            return props.saveFile(a.name, file, progressTracker);
           })
       );
   }
@@ -145,15 +143,6 @@ export default class ActivationWizard extends React.Component {
   componentWillUnmount() {
     removeDropShield('.Activation--wizard');
     this.unMounted = true; // Used while using this.goto to update state while closing modal
-  }
-
-  componentDidUpdate(nextProps) {
-    if (
-      this.props.data &&
-      this.props.data.updated_at !== nextProps.data.updated_at
-    ) {
-      this.markTabIfActive(); // Tick/untick all tabs
-    }
   }
 
   setInitialTab() {
@@ -182,12 +171,11 @@ export default class ActivationWizard extends React.Component {
     this.state.activeTab = firstInValid;
   }
 
-  markTabIfActive() {
-    let tabSaveInProgress = this.state.tabSaveInProgress; // Last active tab while saving should update its tick
-    let isValid = this.tabValidity(tabSaveInProgress);
+  markTabIfActive(updatedTabId) {
+    let isValid = this.tabValidity(updatedTabId);
     let tabs = this.state.tabs.slice();
 
-    tabs[tabSaveInProgress] = isValid;
+    tabs[updatedTabId] = isValid;
 
     // To handle case if user directly clicked on 'Submit Form' tab to send dirty data
     if (!isValid) {
@@ -270,10 +258,12 @@ export default class ActivationWizard extends React.Component {
     this.goto(tabId, callBack);
   };
 
-  //newActiveTab = null -> clicked on Save btn clicked
+  //newActiveTab = null -> clicked on Save btn / 'Submit Form' tab
   goto = (newActiveTab, cb) => {
-    // Hide only if it's already visible. To handle if the person has clicked on 'Submit Form' to save dirty data.
     if (this.state.showSubmitLayer) {
+      // Hide only if it's already visible. To handle if the person has clicked on 'Submit Form' to save dirty data, then submit layer should still be shown.
+      // And since showSubmitLayer is set true in same cycle as click on 'Submit Form' handler, it will take previous value which is false.
+
       this.setState({
         showSubmitLayer: false,
       });
@@ -287,12 +277,11 @@ export default class ActivationWizard extends React.Component {
     let currentActive = this.state.activeTab; // currentActive = The tab of which dirty data is saved
     let tabs = this.state.tabs.slice();
 
-    newActiveTab = newActiveTab != null ? newActiveTab : currentActive; // currentActive tab remains as newActiveTab (To handle Save btn click).
+    newActiveTab = newActiveTab != null ? newActiveTab : currentActive; // currentActive tab remains as newActiveTab (To handle Save btn click and 'Submit Form' tab click).
 
     let shouldSave = Object.keys(this.state.dirty).length ? true : null;
 
     this.setState({
-      tabSaveInProgress: currentActive,
       activeTab: newActiveTab,
     });
 
@@ -307,42 +296,78 @@ export default class ActivationWizard extends React.Component {
       isSaving: LOADING_STATES.PENDING,
     });
 
-    const data = { ...this.state.dirty };
+    const currentDirty = this.state.dirty;
+    const data = {};
 
-    // // If user empties the field, it must be set to NULL in DB, since this is the default value in database.
-    Object.keys(data).forEach(field => {
-      if (data[field] === '') {
-        data[field] = null;
+    Object.keys(currentDirty).forEach(field => {
+      if (currentDirty.hasOwnProperty(field)) {
+        const fieldVal = currentDirty[field];
+        data[field] = fieldVal === '' ? null : fieldVal; // '' -> null. DB has default values as NULL.
       }
     });
 
+    this.setState({
+      dirty: data,
+    }); // '' -> null inside state.dirty for easy OLD and LATEST data comparison.
+
+    /* Following is api call and post response handling */
+    const savingWhichTab = currentActive;
+    const savingDataOfWhichTab = { ...data };
+
     this.props.save(data).then(data => {
       if (this.unMounted) {
-        return; // No further actions if component unmounted
+        return; // No further actions if component unmounted. To handle cross btn close, where only hit Api without doing then.
       }
 
-      // After updating 'Business type' detail, now update dependent field on FE.
-      if (DOCUMENT_UPLOAD_STEP && currentActive === BUSINESS_TYPE_FORM_STEP) {
-        if (this.state.dirty.business_type) {
-          let isDocumentStepValid = this.tabValidity(DOCUMENT_UPLOAD_STEP);
-          tabs[DOCUMENT_UPLOAD_STEP] = isDocumentStepValid;
+      this.markTabIfActive(savingWhichTab); // Re-evaluate tab being saved tab.
 
-          this.setState({
-            tabs,
-          });
+      // After updating 'Business type' detail, now update dependent field on FE.
+      // Can loop and re-evaluate all tabs, IF more dependent fields are there. But this is for optimization.
+      if (DOCUMENT_UPLOAD_STEP && savingWhichTab === BUSINESS_TYPE_FORM_STEP) {
+        if (this.state.dirty.business_type) {
+          // Document fields are only dependent on business_type field.
+          this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
         }
       }
 
       if (data.errors) {
         cb && cb(false, data.errors);
 
-        if (newActiveTab && newActiveTab === this.state.activeTab) {
-          // If different tab, then remove the previous tabs's dirty state. Handles edge case when one tab is filled wrong but it's ghost is bugging the other field to save.
-          // So person will have to fill all 'being removed' dirty data again if it failed on save if he used 'Change Tab' functionality to save this data.
+        if (savingWhichTab && savingWhichTab !== this.state.activeTab) {
+          // On error, "IF TAB IS CHANGED", then remove the 'savingFieldsOfWhichTab' keys from state.dirty.
+          // To handle cases where Ghost of incorrect filled value in previous tab is not letting current tab being saved.
+          // Also, person will have to fill all 'savingFieldsOfWhichTab' fields in dirty data again..
+
+          const latestDirty = { ...this.state.dirty };
+
+          // TODO: -> If connection is slow, user edited AND SAVED the different tab field before previous response(having error), then this SAVE will also fail.
+          // TODO: + This could be handlded by each tab having its own dirty state.
+          // TODO: + Note, this won't create problem for same tab field editing-saving, cuz anyways, dirty will get retained by default.
+          Object.keys(savingDataOfWhichTab).forEach(key => {
+            if (
+              savingDataOfWhichTab.hasOwnProperty(key) &&
+              savingDataOfWhichTab[key] == this.state.dirty[key]
+            ) {
+              /*
+              * Remove only those set of fields whose api request failed, while retaining changes of new form edits(latest state.dirty).
+              * Also, handles case where user edited same field whose request failed. But it's treated as fresh value.
+              * Also, otherwise if deleted from state.dirty, DOM form view will display a value that's not present in state.dirty.
+              * */
+
+              delete latestDirty[key];
+            }
+          });
+
+          // Don't set dirty = {}, cuz internet might be slow and user has already edited some other fields.
           this.setState({
-            dirty: {},
+            dirty: latestDirty,
           });
         }
+
+        /*
+        * We're not doing any change on dirty, if it's SAME tab.
+        * Bcoz, for 1 api-errored field, all other fields must be retained for Saving again.
+        * */
 
         this.setState({
           isSaving: LOADING_STATES.ERROR,
@@ -352,8 +377,24 @@ export default class ActivationWizard extends React.Component {
       } else {
         cb && cb(true);
 
+        const latestDirty = { ...this.state.dirty };
+        Object.keys(savingDataOfWhichTab).forEach(key => {
+          if (
+            savingDataOfWhichTab.hasOwnProperty(key) &&
+            savingDataOfWhichTab[key] == this.state.dirty[key]
+          ) {
+            /*
+             * Remove only those set of fields whose api request is success, while retaining changes of new form edits(latest state.dirty).
+             * Also, handles case where user edited same field whose request is success. But it's treated as fresh value.
+             * Also, otherwise if deleted from state.dirty, DOM form view will display a value that's not present in state.dirty.
+             * */
+            delete latestDirty[key];
+          }
+        });
+
+        // Don't set dirty = {}, cuz internet might be slow and user has already edited some other field.
         this.setState({
-          dirty: {},
+          dirty: latestDirty,
           isSaving: LOADING_STATES.SUCCESS,
         });
 
