@@ -14,9 +14,14 @@ class Gateway extends Base\Gateway
      */
     const MOCK_ROUTE    = 'mock_upi_payment';
 
-    protected function createGatewayPaymentEntity($attributes, $action = null)
+    protected function createGatewayPaymentEntity($attributes, $action = null, $shouldMap = true)
     {
-        $attr = $this->getMappedAttributes($attributes);
+        $attr = $attributes;
+
+        if ($shouldMap === true)
+        {
+            $attr = $this->getMappedAttributes($attributes);
+        }
 
         $entity = $this->getNewGatewayPaymentEntity();
 

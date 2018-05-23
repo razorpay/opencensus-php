@@ -50,7 +50,6 @@ class Gateway extends Base\Gateway
         Entity::EXPIRY_TIME               => Entity::EXPIRY_TIME,
         Entity::PROVIDER                  => Entity::PROVIDER,
         Entity::BANK                      => Entity::BANK,
-        Entity::TYPE                      => Entity::TYPE,
         Entity::RECEIVED                  => Entity::RECEIVED,
         Fields::CALLER_ACCOUNT_NUMBER     => Entity::ACCOUNT_NUMBER,
         Fields::CALLER_IFSC_CODE          => Entity::IFSC,
@@ -74,7 +73,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getGatewayEntityAttributes($input);
 
-        $payment = $this->createGatewayPaymentEntity($attributes);
+        $payment = $this->createGatewayPaymentEntity($attributes, null, false);
 
         $request =  $this->getAuthorizeRequestArray($input);
 
@@ -111,7 +110,7 @@ class Gateway extends Base\Gateway
             Entity::TYPE => Base\Type::PAY,
         ];
 
-        $payment = $this->createGatewayPaymentEntity($attributes);
+        $payment = $this->createGatewayPaymentEntity($attributes, null, false);
 
         $request =  $this->getPayAuthorizeRequestArray($input);
 
