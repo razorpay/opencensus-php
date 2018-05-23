@@ -1,6 +1,8 @@
 import Input from 'component/Input';
 import { states } from 'rzp/utils/constants';
 
+import { WarningSvg } from 'merchant/components/Home/GenericPanel';
+
 import { getDetailsForIFSC } from 'common/util';
 import { isValidGSTIN } from 'rzp/utils/rzp-utils';
 import {
@@ -99,9 +101,26 @@ const businessModel = [
       // if user has selected individual/not yet registered business type
       if (currentBusinessType && !this.props.accountId) {
         if (currentBusinessType == INDIVIDUAL) {
-          return 'Review for activation form for individuals takes longer. We may not be able to support a few business models at this moment.';
+          return (
+            <div class="warning-svg">
+              {WarningSvg()}
+              <span>
+                Review for activation form for individuals takes longer. We may
+                not be able to support a few business models at this moment.
+              </span>
+            </div>
+          );
         } else if (currentBusinessType == NOT_REGISTERED) {
-          return 'Review for activation form for business not-registered takes longer. We may not be able to support a few business models at this moment.';
+          return (
+            <div class="warning-svg">
+              {WarningSvg()}
+              <span>
+                Review for activation form for business-not yet registered takes
+                longer. We may not be able to support a few business models at
+                this moment.
+              </span>
+            </div>
+          );
         }
       }
     },
@@ -182,7 +201,7 @@ const businessModel = [
     _cmp: Input.Check,
     required: false,
     description:
-      'Please note, application for international payment takes longer than usual process. We may reach out to you if we need any additional information.',
+      'Approval for international payments takes extra time to process. We will reach out to you as we may require some additional information.',
     _when: excludeFor_Indiv_NotReg,
   },
   {
@@ -192,18 +211,33 @@ const businessModel = [
     type: 'url',
     description: (
       <React.Fragment>
-        Your website should have following information easily accessible:
-        <b class="shallow"> About Us</b>,<b class="shallow"> Contact</b>,<b class="shallow">
-          {' '}
-          Privacy Policy
-        </b>,
-        <b class="shallow"> Terms & Conditions</b>,{' '}
-        <b class="shallow">Refund Policy</b> & <b class="shallow">Pricing</b>.
-        Please refer our{' '}
-        <a href="" target="_blank">
-          Compliance Policies{' '}
-        </a>
-        for more details.
+        The entered App/Website should contain:
+        <b class="shallow"> About Us</b>, <b class="shallow"> Contact</b>,{' '}
+        <b class="shallow">
+          <a
+            href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
+            target="_blank"
+          >
+            Privacy Policy
+          </a>
+        </b>,{' '}
+        <b class="shallow">
+          <a
+            href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
+            target="_blank"
+          >
+            Terms & Conditions
+          </a>
+        </b>,{' '}
+        <b class="shallow">
+          <a
+            href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
+            target="_blank"
+          >
+            Cancellation/Refund Policy
+          </a>
+        </b>{' '}
+        & <b class="shallow">Pricing</b>. (Refer these links for sample pages)
       </React.Fragment>
     ),
     info: 'Example: https://www.company.com',
