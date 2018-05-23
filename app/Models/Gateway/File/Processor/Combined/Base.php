@@ -56,12 +56,6 @@ class Base extends BaseProcessor
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
         }
-
-        if ($this->isTotalAmountValid($refunds, $claims) === false)
-        {
-            throw new GatewayFileException(
-                ErrorCode::SERVER_ERROR_GATEWAY_FILE_CLAIMS_LESSER_THAN_REFUNDS);
-        }
     }
 
     public function generateData(PublicCollection $entities)
@@ -131,15 +125,6 @@ class Base extends BaseProcessor
                 ],
                 $e);
         }
-    }
-
-    protected function isTotalAmountValid(PublicCollection $refunds, PublicCollection $claims): bool
-    {
-        $totalRefundAmount = $refunds->sum('amount');
-
-        $totalClaimAmount = $claims->sum('amount');
-
-        return ($totalClaimAmount >= $totalRefundAmount);
     }
 
     protected function getFileProcessor(string $type)
