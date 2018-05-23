@@ -78,7 +78,6 @@ const businessModel = [
     name: 'business_type',
     _cmp: Input.Select,
     options: [
-      { label: '--Select--', name: '0' },
       { label: 'Proprietorship', name: PROPRIETORSHIP },
       { label: 'Individual', name: INDIVIDUAL },
       { label: 'Partnership', name: PARTNERSHIP },
@@ -343,6 +342,7 @@ const registrationDetails = [
       name: 'business_operation_pin',
       type: 'number',
       label: 'Pincode',
+      size: 'small',
       _when: differentAddress,
     },
     {
@@ -446,7 +446,7 @@ const uploadFields = [
           : this.props.data.business_type;
 
       const li1 =
-        'Proprietorship firm: GST Certificate / Shop Establishment Act Certificate / Registration Certificate';
+        'GST Certificate / Shop Establishment Act Certificate / Registration Certificate';
       const li2 = 'Partnership Deed';
       const li3 = 'Certificate of Incorporation';
       const li4 = 'Registration Proof or Certificate';
@@ -470,11 +470,11 @@ const uploadFields = [
               {li1}
             </li>
             <li>
-              <b>Partnership firm: </b>
+              <b>Partnership firm or LLP: </b>
               {li2}
             </li>
             <li>
-              <b>Private Limited or LLP: </b>
+              <b>Private Limited or Public: </b>
               {li3}
             </li>
             <li>
