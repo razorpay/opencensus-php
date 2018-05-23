@@ -367,6 +367,12 @@ const registrationDetails = [
       className: 'Input-vTop',
       _cmp: Input.Radio,
       _when: excludeFor_Indiv_NotReg,
+      onChange: e => {
+        if (e.target.value == '0') {
+          // setTimeout to skip render cycle when GSTIN is being rendered in DOM
+          setTimeout(() => document.getElementsByName('gstin')[0].focus(), 10); // Auto-select input box
+        }
+      },
     },
     {
       name: 'gstin',
@@ -376,6 +382,7 @@ const registrationDetails = [
           activation.state.has_gstin === '0'
         );
       },
+      _autoRenderImpure: true, // Re-render to show the error
       placeholder: 'Enter GSTIN',
       size: 'small',
       required: false,
@@ -413,18 +420,39 @@ const bankAccountFields = [
     },
     onBlur: e => {
       document.getElementsByName('bank_account_number')[0].type = 'password';
+      document.querySelector('[data-name="account_no"]').focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
     },
   },
   {
     _name: 'account_no',
     label: 'Re-Enter Account Number',
+    type: 'password',
     autoComplete: 'new-password',
     info: 'Please re-enter the bank account number.',
+    _autoRenderImpure: true, // Re-render to show the error
+    onPaste: function(e) {
+      e.preventDefault();
+    }, // Disable copy-paste in this field
     onFocus: e => {
       document.querySelector('[data-name="account_no"]').type = 'text';
     },
     onBlur: e => {
       document.querySelector('[data-name="account_no"]').type = 'password';
+    },
+    validator: function(value) {
+      const bankAccountNo = this.state.dirty.bank_account_number;
+
+      if (bankAccountNo && value !== bankAccountNo) {
+        // Something changed in main 'bank account' field
+        return "Value doesn't match Account Number";
+      }
+    },
+    _disabledWhen: activation => {
+      const bankAccountNo = activation.state.dirty.bank_account_number;
+      if (!bankAccountNo) {
+        // Nothing changed in main 'bank account' field
+        return true;
+      }
     },
   },
   {

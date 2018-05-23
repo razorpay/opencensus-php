@@ -44,6 +44,10 @@ function defaultFieldProps(f) {
     f.description = f.description.bind(self); // Dynamic description based on other fields must be able to access this.state.dirty and this.props
   }
 
+  if (f.hasOwnProperty('validator') && typeof f.validator === 'function') {
+    f.validator = f.validator.bind(self); // Dynamic description based on other fields must be able to access this.state.dirty and this.props
+  }
+
   if (!f.hasOwnProperty('autoComplete')) {
     f.autoComplete = 'off';
   }
@@ -67,7 +71,7 @@ export default class ActivationWizard extends React.Component {
         ? '1'
         : '0', // '1' => checkbox ticked
     has_gstin: this.props.data && this.props.data.gstin ? '0' : '1', // '0' => value exists
-    account_no: '',
+    account_no: this.props.data && this.props.data.bank_account_number,
     activeTab: 0, // Fallback for all cases.
   };
 
@@ -572,6 +576,16 @@ export default class ActivationWizard extends React.Component {
       fieldValue = autoPrefixUrls(fieldValue); // Updating in view will happen if he comes to this tab again. Otherwise single backspace on 'http' must be handled as full word not single character.
     }
 
+    /* Step 7: Empty the account_no if anything changed in bank_account_number */
+    if (fieldName === 'bank_account_number') {
+      document.querySelector(
+        `.form-container [data-name=account_no]`
+      ).value = null;
+      this.setState({
+        account_no: null,
+      }); // We can have sideEffectStatesToUpdate also if more such cases are there
+    }
+
     /* Step Last: */
     if (stateName) {
       this.setState({
@@ -996,6 +1010,7 @@ function ActivationField(field) {
     _when,
     _optionsFn,
     _autoRenderImpure,
+    _disabledWhen,
     ...rest
   } = field;
 
@@ -1035,12 +1050,20 @@ function ActivationField(field) {
     key = _name;
   }
 
+  let isComponentDisabled = isSubmitFormDisabled(this.props.data); // If form cannot be submitted, then all fields are disabled.
+
+  // TODO: Ideally, what's disabled cannot be 'required = true'. Currently no such requirement. To handle, support 'required' as a function
+  if (_disabledWhen && _disabledWhen(this)) {
+    // Overiride the value if it's disabled
+    isComponentDisabled = true;
+  }
+
   return (
     <Component
       key={key}
       data-name={_name}
       defaultValue={defaultValue}
-      disabled={isSubmitFormDisabled(this.props.data)} // If form cannot be submitted, then all fields are disabled.
+      disabled={isComponentDisabled}
       autoRender={_autoRenderImpure}
       {...rest}
     />

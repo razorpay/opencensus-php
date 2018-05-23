@@ -61,14 +61,19 @@ export function validatePincodeLength(value) {
     : 'Pin Code must be 6 digits';
 }
 
+// TODO: Convert to return true/false and make it consumable
 // Use required validator if the field is mandatory. This fn. only check whether value if present is valid or not
 export function validatePANCard(value) {
-  return !value ||
-    (value.length === 10 && /^[a-zA-z]{5}\d{4}[a-zA-Z]{1}$/.test(value))
-    ? undefined
-    : 'Invalid PAN card';
+  if (value) {
+    if (value.length !== 10) {
+      return 'PAN card must be 10 characters';
+    } else if (!/^[a-zA-z]{5}\d{4}[a-zA-Z]{1}$/.test(value)) {
+      return 'Invalid PAN card';
+    }
+  }
 }
 
+// TODO: Convert to return true/false and make it consumable
 // Use required validator if the field is mandatory. This fn. only check whether value if present is valid or not
 export function validateCIN(value) {
   return value && value.length != 21
@@ -76,6 +81,7 @@ export function validateCIN(value) {
     : undefined;
 }
 
+// TODO: Convert to return true/false and make it consumable
 // Use required validator if the field is mandatory. This fn. only check whether value if present is valid or not
 export function validateIFSC(value) {
   return value && value.length != 11

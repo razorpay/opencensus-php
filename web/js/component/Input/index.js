@@ -157,9 +157,9 @@ export default class Field extends React.Component {
   }
 
   // Will be called only in cases of impure-component fields
-  componentWillUpdate(nextProps) {
+  componentWillReceiveProps(nextProps) {
     if (nextProps !== this.props) {
-      this.valid();
+      this.el && this.valid();
     }
   }
 
@@ -171,19 +171,14 @@ export default class Field extends React.Component {
   blur = e => {
     this.props.onBlur && this.props.onBlur(e);
     this.setState({ focus: false });
-
-    // dirty = Touched the input field
-    if (this.state.dirty) {
-      this.setState({ mature: true });
-    }
   };
 
   change = e => {
     this.valid();
     this.props.onChange && this.props.onChange(e);
 
-    if (!this.state.dirty) {
-      this.setState({ dirty: true });
+    if (!this.state.mature) {
+      this.setState({ mature: true });
     }
 
     // Change description on basis of value changed
@@ -392,9 +387,8 @@ class Radio extends Field {
     this.setState({
       value: target.value,
     });
-    if (this.props.onChange) {
-      this.props.onChange(e);
-    }
+
+    this.props.onChange && this.props.onChange(e);
   };
 
   render() {

@@ -88,6 +88,11 @@ const bankAccountFields = [
   {
     _name: 'account_no',
     label: 'Re-Enter Account Number',
+    type: 'password',
+    _autoRenderImpure: true, // Re-render to show the error
+    onPaste: function(e) {
+      e.preventDefault();
+    }, // Disable copy-paste in this field
     autoComplete: 'new-password',
     info: 'Please re-enter the bank account number.',
     onFocus: e => {
@@ -95,6 +100,21 @@ const bankAccountFields = [
     },
     onBlur: e => {
       document.querySelector('[data-name="account_no"]').type = 'password';
+    },
+    validator: function(value) {
+      const bankAccountNo = this.state.dirty.bank_account_number;
+
+      if (bankAccountNo && value !== bankAccountNo) {
+        // Something changed in main 'bank account' field
+        return "Value doesn't match Account Number";
+      }
+    },
+    _disabledWhen: activation => {
+      const bankAccountNo = activation.state.dirty.bank_account_number;
+      if (!bankAccountNo) {
+        // Nothing changed in main 'bank account' field
+        return true;
+      }
     },
   },
   {
