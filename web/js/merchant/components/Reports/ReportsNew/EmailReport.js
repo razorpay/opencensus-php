@@ -48,15 +48,18 @@ export default class EmailReport extends Component {
     // for ga track email event with following precedence
     // contact > transaction > account
     selectedEmails.forEach((email, index) => {
-      if (emailsMap['account'].indexOf(email) > -1) {
+      if (emailsMap['account'] && emailsMap['account'].indexOf(email) > -1) {
         trackLabel[index] = 'account';
       }
 
-      if (emailsMap['transaction'].indexOf(email) > -1) {
+      if (
+        emailsMap['transaction'] &&
+        emailsMap['transaction'].indexOf(email) > -1
+      ) {
         trackLabel[index] = 'transaction';
       }
 
-      if (emailsMap['contact'].indexOf(email) > -1) {
+      if (emailsMap['contact'] && emailsMap['contact'].indexOf(email) > -1) {
         trackLabel[index] = 'contact';
       }
     });

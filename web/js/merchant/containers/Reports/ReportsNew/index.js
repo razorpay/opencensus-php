@@ -524,10 +524,8 @@ export default class ReportsContainer extends Component {
   sortConfigs = configs => {
     const rzpId = '100000Razorpay';
     const merchantId = this.props.user.user.id;
-
     let merchantConfigs = [],
       rzpConfigs = [];
-
     configs.forEach(config => {
       if (config._item) {
         if (config._item.merchant_id === merchantId) {
@@ -537,6 +535,8 @@ export default class ReportsContainer extends Component {
         }
       }
     });
+
+    rzpConfigs.push(configs[configs.length - 1]);
 
     rzpConfigs.sort((config1, config2) => {
       let index1 = rzpConfigOrder.indexOf(config1.label),
@@ -731,12 +731,14 @@ export default class ReportsContainer extends Component {
                   <button class="btn btn-primary" onClick={this.generateReport}>
                     Download Report
                   </button>
-                  <button
-                    class="btn btn-default m-l"
-                    onClick={this.openEmailReportModal}
-                  >
-                    Email Report
-                  </button>
+                  {selectedConfig.type !== 'custom' && (
+                    <button
+                      class="btn btn-default m-l"
+                      onClick={this.openEmailReportModal}
+                    >
+                      Email Report
+                    </button>
+                  )}
                 </Fragment>
               ) : (
                 <small class="help-block">This report is being generated</small>
