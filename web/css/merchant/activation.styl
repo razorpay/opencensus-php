@@ -275,19 +275,23 @@ $height = 600px
     position: absolute
     bottom: 0
     right: 0
-    width: 72%
+    width: 58%
     height: 94%
     background: url(assets/activation-welcome.svg) no-repeat
     background-position: bottom right
     background-size: contain
+    z-index: 1
 
   .short-content
-    width: 51%
+    width: 100%
+    max-width: 320px
+    position: relative
+    z-index: 2
 
   h3
     line-height: 32px
-    width: 50%
-    max-width: 240px
+    width: 100%
+    max-width: 260px
 
   .underline
     width: 24px
@@ -384,6 +388,17 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
 
   .device--mobile
     display: inline !important
+
+
+  .Activation--welcome
+
+    .short-content .Button--primary
+      margin-top: 40px
+
+    .welcome-illustration
+      width: 70%
+      opacity: 0.1
+
 
   .Activation--wizard
     overflow: hidden
