@@ -48,27 +48,27 @@ const contactFields = [
     name: 'contact_mobile',
     type: 'tel',
     addonBefore: '+91',
-    info: "We'll reach out on this number for any account related issues.",
+    info: 'We will reach out to this phone for any account related issues.',
   },
   {
     label: 'Contact Email',
     name: 'contact_email',
     type: 'email',
-    info: "We'll reach out to this email for any account related issues.",
+    info: 'We will reach out to this email for any account related issues.',
   },
 ];
 
 const businessModel = [
   {
-    label: 'Business Name',
+    label: 'Full Business Name',
     name: 'business_name',
-    info: 'Example: Acme Private Limited',
+    info: 'Example: Acme Infotech Private Limited',
   },
   {
     label: 'Billing Label',
     name: 'business_dba',
     info:
-      'This is the brand name that your customers are familiar with. It will appear on payment screen, emails and more.',
+      'The brand name that your customers are familiar with. It should either be similar to your registered business name or website name.',
   },
   {
     label: 'Business Type',
@@ -98,7 +98,7 @@ const businessModel = [
             <div class="warning-svg">
               {WarningSvg()}
               <span>
-                Review for activation form for individuals takes longer. We may
+                Review of activation form for individuals takes longer. We may
                 not be able to support a few business models at this moment.
               </span>
             </div>
@@ -108,9 +108,8 @@ const businessModel = [
             <div class="warning-svg">
               {WarningSvg()}
               <span>
-                Review for activation form for business-not yet registered takes
-                longer. We may not be able to support a few business models at
-                this moment.
+                Review of activation form for your case may take longer. We may
+                not be able to support unregistered businesses at this moment.
               </span>
             </div>
           );
@@ -185,11 +184,7 @@ const businessModel = [
     },
   ],
   {
-    label: () => (
-      <span>
-        We want to accept <b>International Payments</b> as well
-      </span>
-    ),
+    label: () => <span>Want to accept international card payments</span>,
     name: 'business_international',
     _cmp: Input.Check,
     required: false,
@@ -198,7 +193,7 @@ const businessModel = [
     _when: excludeFor_Indiv_NotReg,
   },
   {
-    label: 'Business Website/App',
+    label: 'Link to Website/App',
     name: 'business_website',
     placeholder: 'Enter URL',
     type: 'url',
@@ -233,7 +228,7 @@ const businessModel = [
         & <b class="shallow">Pricing</b>. (Refer these links for sample pages)
       </React.Fragment>
     ),
-    info: 'Example: https://www.company.com',
+    info: 'Example: razorpay.com, play.google.com/?id=com.rzp',
   },
 ];
 
@@ -243,8 +238,8 @@ const registrationDetails = [
     name: 'company_cin',
     validator: validateCIN,
     required: true, // It's mandatory only for certain orgs
-    info:
-      'Mandatory for Companies. Example : U 67190 TN 2014 PTC 096978 (no spaces)',
+    maxLength: '21',
+    info: 'Example : U67190TN014PTC096978',
     _when: activation => {
       const currentBusinessType =
         activation.state.dirty.business_type ||
@@ -260,7 +255,7 @@ const registrationDetails = [
     label: 'LLPIN',
     name: 'company_cin',
     required: true, // It's mandatory only for LLP
-    info: 'Mandatory for LLP business. Example : AAB-1111',
+    info: 'Example : AAB-2933',
     _when: activation =>
       activation.props.data.business_type &&
       LLPIN_BusinessTypes.indexOf(
@@ -301,6 +296,7 @@ const registrationDetails = [
       name: 'business_registered_pin',
       label: 'Pincode',
       size: 'small',
+      maxLength: '6',
       validator: value => {
         let pin = Number(value);
         if (!pin || pin < 100000 || pin > 999999) {
@@ -324,7 +320,7 @@ const registrationDetails = [
   {
     _name: 'same_address',
     label: 'Operational Address same as Registered Address',
-    description: 'Physical verification may be performed at this address',
+    description: 'Physical Verification may take place at this address',
     _cmp: Input.Check,
   },
   [
@@ -337,9 +333,15 @@ const registrationDetails = [
     },
     {
       name: 'business_operation_pin',
-      type: 'number',
       label: 'Pincode',
       size: 'small',
+      maxLength: '6',
+      validator: value => {
+        let pin = Number(value);
+        if (!pin || pin < 100000 || pin > 999999) {
+          return 'Please enter 6 digit pincode';
+        }
+      },
       _when: differentAddress,
     },
     {
@@ -385,7 +387,7 @@ const registrationDetails = [
       size: 'small',
       required: false,
       info:
-        'The entered GST Number should match your Operational Address. Example: 29AAGCR4375J1ZU',
+        'The entered GST Number should match either of the Address given above.',
       validator: value => {
         if (!isValidGSTIN(value)) {
           return 'Please provide valid GSTIN';
@@ -410,7 +412,8 @@ const bankAccountFields = [
   {
     name: 'bank_account_number',
     label: 'Account Number',
-    info: 'Your company account to which your payments will be settled.',
+    info:
+      'Should be a current bank account of the company to which your payments will be settled.',
     autoComplete: 'new-password',
     type: 'password',
     onFocus: e => {
@@ -465,8 +468,15 @@ const bankAccountFields = [
   {
     name: 'bank_account_name',
     label: 'Beneficiary Name',
-    info:
-      'The beneficiary name should be same as the company name or individual name, in case of an LLP/Individual.',
+    info: function() {
+      const currentBusinessType =
+        this.state.dirty.business_type || this.props.data.business_type;
+      if ([LLP, INDIVIDUAL].indexOf(Number(currentBusinessType)) !== -1) {
+        return 'The beneficiary name should be same as Individual name';
+      }
+
+      return 'The beneficiary name should be same as the Company name';
+    },
   },
 ];
 
@@ -532,7 +542,7 @@ const uploadFields = [
   {
     name: 'business_pan_url',
     label: 'Company PAN',
-    description: 'The PAN details should match the ones provided earlier',
+    description: 'PAN details should be of the mentioned business only.',
     _when: excludeFor_Indiv_NotReg,
   },
   {
@@ -544,8 +554,16 @@ const uploadFields = [
   {
     name: 'promoter_address_url',
     label: "Authorized Signatory's Address Proof",
-    description:
-      'Upload both sides of the government issued photo ID (Passport/Aadhaar/Driving License/Election Card)',
+    description: (
+      <span>
+        Upload<b> both sides </b>of the government issued photo ID (Passport /
+        Aadhaar / Driving License / Election Card). You can use{' '}
+        <a href="www.pdfjoiner.com" target="_blank">
+          pdfjoiner.com
+        </a>{' '}
+        to join 2 different photos.
+      </span>
+    ),
   },
   {
     name: 'form_12a_url',

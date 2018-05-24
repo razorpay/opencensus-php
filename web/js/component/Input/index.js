@@ -175,6 +175,8 @@ export default class Field extends React.Component {
   focus = e => {
     this.props.onFocus && this.props.onFocus(e);
     this.setState({ focus: true });
+
+    this.updateInfo(e); // On focus, it must display information based on some value of self / other field.
   };
 
   blur = e => {
@@ -190,38 +192,7 @@ export default class Field extends React.Component {
       this.setState({ mature: true });
     }
 
-    // Change info on basis of value changed
-    if (typeof this.props.info === 'function') {
-      let info = this.props.info(e);
-      let infoEle;
-
-      if (info != null) {
-        // Handle api based information
-        if (info.then) {
-          infoEle = '...'; // Dummy loader while resolving promise
-          info
-            .then(data => {
-              this.setState({
-                infoEle: data || null,
-              });
-            })
-            .catch(err => {
-              this.setState({
-                infoEle: null,
-              });
-            });
-        } else {
-          // If props.info is simple function
-          infoEle = info;
-        }
-      } else {
-        infoEle = null; // Unset info if undefined/null.
-      }
-
-      this.setState({
-        infoEle,
-      });
-    }
+    this.updateInfo(e); // On focus, it must display information based on some value of self / other field.
   };
 
   valid() {
@@ -257,6 +228,39 @@ export default class Field extends React.Component {
     }
   };
 
+  /* Updates the info based on onFocus and onInfo */
+  updateInfo(e) {
+    let infoEle = this.props.info;
+
+    // It is expected that info is passed as function only when onChange it's dependent on onChange
+    if (typeof infoEle === 'function') {
+      infoEle = infoEle(e);
+
+      if (infoEle) {
+        // If info is thenable to get real time info based on input
+        if (infoEle.then) {
+          infoEle = '...';
+
+          infoEle
+            .then(data => {
+              this.setState({
+                infoEle: data || null,
+              });
+            })
+            .catch(err => {
+              this.setState({
+                infoEle: null,
+              });
+            });
+        }
+
+        this.setState({
+          infoEle,
+        });
+      }
+    }
+  }
+
   render() {
     let allProps = separateDomProps(this.props);
     let InputTag = allProps.tag;
@@ -267,12 +271,11 @@ export default class Field extends React.Component {
     }
 
     let infoEle = allProps.info;
-    let descriptionEle = allProps.description;
-
-    // It is expected that info is passed as function only when onChange it's dependent on onChange
     if (typeof infoEle === 'function') {
-      infoEle = this.state.infoEle; // infoEle must always rely on state as its content is dependent on onChange
+      infoEle = this.state.infoEle;
     }
+
+    let descriptionEle = allProps.description;
 
     let InputComponent = (
       <InputTag

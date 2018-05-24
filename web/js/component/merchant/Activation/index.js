@@ -55,6 +55,10 @@ function defaultFieldProps(f) {
     f.onBlur = f.onBlur.bind(self); // Control dependent field for auto-focus, etc.
   }
 
+  if (f.hasOwnProperty('info') && typeof f.info === 'function') {
+    f.info = f.info.bind(self); // Show different info based on other fields
+  }
+
   if (!f.hasOwnProperty('autoComplete')) {
     f.autoComplete = 'off';
   }

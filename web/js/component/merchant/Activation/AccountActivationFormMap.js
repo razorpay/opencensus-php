@@ -131,8 +131,15 @@ const bankAccountFields = [
   {
     name: 'bank_account_name',
     label: 'Beneficiary Name',
-    info:
-      'The beneficiary name should be same as the company name or individual name, in case of an LLP/Individual.',
+    info: function() {
+      const currentBusinessType =
+        this.state.dirty.business_type || this.props.data.business_type;
+      if ([LLP, INDIVIDUAL].indexOf(Number(currentBusinessType)) !== -1) {
+        return 'The beneficiary name should be same as Individual name';
+      }
+
+      return 'The beneficiary name should be same as the Company name';
+    },
   },
 ];
 
