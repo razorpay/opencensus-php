@@ -117,7 +117,8 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchantDetails);
 
-        $response = $core->createResponse($merchantDetails); // Earlier $response could become stale while simulataneous uploads. So prepare fresh response.
+        // Previous $response would become stale while simulataneous uploads. So prepare fresh response.
+        $response = $core->createResponse($merchantDetails);
 
         return $response;
     }
