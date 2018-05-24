@@ -1699,6 +1699,57 @@ return [
         ],
     ],
 
+    'testUpdateDraftInvoiceWithSameBillingAndShippingAddressIds' => [
+        'request'  => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'receipt'  => 'inv_receipt_0001',
+                'customer' => [
+                    'name'                => 'new customer',
+                    'email'               => 'new@razorpay.com',
+                    'billing_address_id'  => 'addr_1000000address',
+                    'shipping_address_id' => 'addr_1000000address',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'inv_1000000invoice',
+                'entity'           => 'invoice',
+                'receipt'          => 'inv_receipt_0001',
+                'customer_details' => [
+                    'name'             => 'new customer',
+                    'email'            => 'new@razorpay.com',
+                    'contact'          => '1234567890',
+                    'billing_address'  => [
+                        'id'      => 'addr_1000000address',
+                        'type'    => 'billing_address',
+                        'primary' => false,
+                        'line1'   => 'some line one',
+                        'line2'   => 'some line two',
+                        'zipcode' => '560078',
+                        'city'    => 'Bangalore',
+                        'state'   => 'Karnataka',
+                        'country' => 'in',
+                    ],
+                    'shipping_address' => [
+                        'id'      => 'addr_1000000address',
+                        'type'    => 'billing_address',
+                        'primary' => false,
+                        'line1'   => 'some line one',
+                        'line2'   => 'some line two',
+                        'zipcode' => '560078',
+                        'city'    => 'Bangalore',
+                        'state'   => 'Karnataka',
+                        'country' => 'in',
+                    ],
+                ],
+                'status'           => 'draft',
+            ],
+        ],
+    ],
+
     'testUpdateDraftInvoiceWithInvalidCustomerBillingAddressId' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
