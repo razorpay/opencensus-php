@@ -7,7 +7,8 @@ use RZP\Base;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::AMOUNT   => 'sometimes|integer|nullable',
-        Entity::PROVIDER => 'required|in:bharat_qr',
+        Entity::AMOUNT    => 'sometimes|integer|nullable',
+        Entity::PROVIDER  => 'required|in:bharat_qr',
+        Entity::REFERENCE => 'sometimes|string',
     ];
 }

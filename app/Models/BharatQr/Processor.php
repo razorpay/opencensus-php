@@ -146,7 +146,7 @@ class Processor extends VirtualAccount\Processor
     {
         if ($this->terminal !== null)
         {
-            return $this->terminal->get();
+            return $this->terminal;
         }
 
         $gatewayMerchantId = $this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID];

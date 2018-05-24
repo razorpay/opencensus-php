@@ -65,7 +65,6 @@ class Generator extends Base\Core
 
         $qrCode->source()->associate($virtualAccount);
 
-
         // These two won't be equal when we receive a random
         // reference from the bank and there is not qr code with
         // that reference in our system but the terminal assigned
@@ -91,7 +90,7 @@ class Generator extends Base\Core
 
     protected function createAndSetQrCode(array $input)
     {
-        $this->qrCode = (new Entity)->build($input)->generateId();
+        $this->qrCode = (new Entity)->build($input);
     }
 
     protected function setShortUrl()
