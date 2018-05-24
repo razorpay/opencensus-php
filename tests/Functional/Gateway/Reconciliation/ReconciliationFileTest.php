@@ -125,8 +125,8 @@ class ReconciliationFileTest extends TestCase
 
         $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
 
-        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedPayment1['reference1']);
-        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE[0]], "'" . $updatedPayment1['reference2']);
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedPayment1['reference1']);
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE], "'" . $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
 
         $this->assertBatchStatus();
@@ -161,8 +161,8 @@ class ReconciliationFileTest extends TestCase
 
         $updatedPayment = $this->getDbLastPayment();
 
-        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedPayment['reference1']);
-        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE[0]], "'" . $updatedPayment['reference2']);
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedPayment['reference1']);
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE], "'" . $updatedPayment['reference2']);
         $this->assertTrue($updatedPayment['gateway_captured']);
 
         $this->assertBatchStatus();
@@ -187,8 +187,8 @@ class ReconciliationFileTest extends TestCase
 
         $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
 
-        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedPayment1['reference1']);
-        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE[0]], "'" . $updatedPayment1['reference2']);
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedPayment1['reference1']);
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE], "'" . $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
 
         $this->assertBatchStatus();
@@ -294,17 +294,17 @@ class ReconciliationFileTest extends TestCase
 
         $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
 
-        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedRefund1['arn']);
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedRefund1['arn']);
 
         // Test for for update ARN
-        $entries[0][HDFCPaymentRecon::COLUMN_ARN[0]] .= str_random(2);
+        $entries[0][HDFCPaymentRecon::COLUMN_ARN] .= str_random(2);
 
         $file = $this->writeToExcelFile($entries, 'fss');
         $this->runForFiles([$file], 'HDFC', ['refund_arn']);
 
         $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
 
-        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedRefund1['arn']);
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedRefund1['arn']);
 
         $this->assertBatchStatus();
     }
@@ -405,7 +405,7 @@ class ReconciliationFileTest extends TestCase
 
         $updatedPayment2 = $this->getDbEntityById('payment', $payment3['id']);
 
-        $this->assertEquals($entries2[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedPayment2['reference1']);
+        $this->assertEquals($entries2[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedPayment2['reference1']);
 
         $this->assertBatchStatus();
     }
@@ -499,13 +499,13 @@ class ReconciliationFileTest extends TestCase
     {
         $facade = $this->testData['facades']['hdfc'];
 
-        $facade[HDFCPaymentRecon::COLUMN_PAYMENT_ID[0]] = $payment['payment_id'];
-        $facade[HDFCPaymentRecon::COLUMN_AUTH_CODE[0]]  = "'" . random_integer(6);
-        $facade[HDFCPaymentRecon::COLUMN_ARN[0]]        = "'" . str_random(24);
+        $facade[HDFCPaymentRecon::COLUMN_PAYMENT_ID] = $payment['payment_id'];
+        $facade[HDFCPaymentRecon::COLUMN_AUTH_CODE]  = "'" . random_integer(6);
+        $facade[HDFCPaymentRecon::COLUMN_ARN]        = "'" . str_random(24);
 
         if ($gateway === 'cybersource')
         {
-            $facade[HDFCPaymentRecon::COLUMN_TERMINAL_NUMBER[0]] = "'89050258";
+            $facade[HDFCPaymentRecon::COLUMN_TERMINAL_NUMBER] = "'89050258";
         }
 
         return $facade;
@@ -543,7 +543,7 @@ class ReconciliationFileTest extends TestCase
         $facade = $this->overrideHdfcPayment($payment, $forceOverride, $gateway);
 
         $facade['rec_fmt'] = 'CVD';
-        $facade[HDFCPaymentRecon::COLUMN_PAYMENT_ID[0]] = $payment['refund_id'];
+        $facade[HDFCPaymentRecon::COLUMN_PAYMENT_ID] = $payment['refund_id'];
 
         return $facade;
     }
@@ -553,8 +553,8 @@ class ReconciliationFileTest extends TestCase
         $facade = $this->overrideHdfcPayment($payment, $forceOverride, $gateway);
 
         $facade['rec_fmt'] = 'CVD';
-        $facade[HdfcRefundRecon::COLUMN_ARN[0]]       = "'(Onus transaction)";
-        $facade[HdfcRefundRecon::COLUMN_REFUND_ID[0]] = $payment['refund_id'];
+        $facade[HdfcRefundRecon::COLUMN_ARN]       = "'(Onus transaction)";
+        $facade[HdfcRefundRecon::COLUMN_REFUND_ID] = $payment['refund_id'];
 
         return $facade;
     }
@@ -701,7 +701,7 @@ class ReconciliationFileTest extends TestCase
 
         $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
 
-        $this->assertEquals($entries[0][HdfcRefundRecon::COLUMN_SEQUENCE_NUMBER[0]], "'" . $updatedRefund1['arn']);
+        $this->assertEquals($entries[0][HdfcRefundRecon::COLUMN_SEQUENCE_NUMBER], "'" . $updatedRefund1['arn']);
 
         $this->assertBatchStatus();
     }

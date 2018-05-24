@@ -9,10 +9,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID     = 'OrderID';
-    const COLUMN_SERVICE_TAX    = 'ServiceTax';
-    const COLUMN_FEE            = 'Fee';
-    const COLUMN_PAYMENT_AMOUNT = 'TxnAmount';
+    const COLUMN_PAYMENT_ID     = 'orderid';
+    const COLUMN_SERVICE_TAX    = 'servicetax';
+    const COLUMN_FEE            = 'fee';
+    const COLUMN_PAYMENT_AMOUNT = 'txnamount';
 
     /**
      * Gets payment_id from row data
