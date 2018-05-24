@@ -73,12 +73,19 @@ abstract class Beneficiary extends BaseCore
     /**
      * Normalizes the given string based on the specification of file
      *
-     * @param string $string
-     * @param int    $length
-     * @return null|string|string[]
+     * @param string|null $string
+     * @param int         $length
+     * @param string      $default Will be returned if the string evaluates to empty.
+     *                             This will give flexibility to return different values based on the field
+     * @return null|string
      */
-    protected function normalizeString(string $string, int $length = 0): string
+    protected function normalizeString($string, int $length = 0, string $default = ''): string
     {
+        if (empty($string) === true)
+        {
+            return $default;
+        }
+
         $normalizedString =  preg_replace("/\r\n|\r|\n/", ' ', $string);
 
         if ($length > 0)

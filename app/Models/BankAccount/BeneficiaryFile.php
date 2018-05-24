@@ -59,16 +59,24 @@ class BeneficiaryFile extends Base\Core
 
         $newBeneficiaryCount = $bankAccounts->count();
 
-        $message = "Merchant Beneficiary file generated. Beneficiary added since".
-            " last report is ". $newBeneficiaryCount;
-
-        $this->app['slack']->queue($message, [], ['channel' => Config::get('slack.channels.settlements')]);
-
         $this->trace->info(
             TraceCode::MERCHANT_BENEFICIARY_FILE_GENERATE,
             ['new_beneficiaries_added' => $newBeneficiaryCount]);
 
         $result = $this->generateBeneficiaryFile($bankAccounts, $channel, $input);
+
+        // should notify after beneficiary file is generated.
+        $message = "Merchant Beneficiary file generated. Beneficiary added since".
+            " last report is ". $newBeneficiaryCount;
+
+        $this->app['slack']->queue(
+            $message,
+            [
+                'channel' => $channel,
+            ],
+            [
+                'channel' => Config::get('slack.channels.settlements')
+            ]);
 
         return $result;
     }
