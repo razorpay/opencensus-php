@@ -42,8 +42,8 @@ export default class EmailLogsList extends Component {
               placeholder="abc@xyz.com"
             />
             <Field
-              name="tag"
-              label="Tag"
+              name="tags"
+              label="Tags"
               placeholder="payment_successful AND pay_7baYnDji90l"
               style={{ width: '280px' }}
             />
