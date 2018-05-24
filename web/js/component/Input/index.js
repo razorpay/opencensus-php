@@ -181,15 +181,6 @@ export default class Field extends React.Component {
       this.setState({ mature: true });
     }
 
-    // Change description on basis of value changed
-    if (typeof this.props.description === 'function') {
-      const descriptionString = this.props.description(e);
-
-      this.setState({
-        descriptionEle: descriptionString || null, // If set undefined, description might take set its content based on default data.
-      });
-    }
-
     // Change info on basis of value changed
     if (typeof this.props.info === 'function') {
       let info = this.props.info(e);
@@ -272,14 +263,6 @@ export default class Field extends React.Component {
     // It is expected that info is passed as function only when onChange it's dependent on onChange
     if (typeof infoEle === 'function') {
       infoEle = this.state.infoEle; // infoEle must always rely on state as its content is dependent on onChange
-    }
-
-    // It is expected that description is passed as function only when onChange it's dependent on onChange
-    if (typeof descriptionEle === 'function') {
-      descriptionEle =
-        this.state.descriptionEle !== undefined
-          ? this.state.descriptionEle
-          : this.props.description(); // description can rely on onChange, and also default data
     }
 
     let InputComponent = (

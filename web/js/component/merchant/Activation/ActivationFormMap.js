@@ -86,13 +86,10 @@ const businessModel = [
       { label: 'Society', name: SOCIETY },
       { label: 'NGO', name: NGO },
     ],
-    description: function(e) {
+    description: function() {
       // Changing description of self
-
-      let currentBusinessType = e && e.target.value;
-      if (!currentBusinessType) {
-        currentBusinessType = this.props.data.business_type;
-      }
+      const currentBusinessType =
+        this.state.dirty.business_type || this.props.data.business_type;
 
       // if user has selected individual/not yet registered business type
       if (currentBusinessType && !this.props.accountId) {
@@ -290,6 +287,7 @@ const registrationDetails = [
     {
       label: 'PAN Owner Name',
       name: 'promoter_pan_name',
+      required: false,
     },
   ],
   [
@@ -477,7 +475,7 @@ const uploadFields = [
     name: 'business_proof_url',
     label: 'Business Registration Proof',
     _autoRenderImpure: true, // Here, Description on other field while render.
-    description: function(e) {
+    description: function() {
       const currentBusinessType =
         this.state.dirty.business_type != null
           ? this.state.dirty.business_type
