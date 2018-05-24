@@ -13,9 +13,10 @@ class Utility
      * <city>, <state>, <country> - <zipcode>
      *
      * @param  array       $parts
+     * @param  string      $delimiter
      * @return string|null
      */
-    public static function formatAddressAsText(array $parts = [])
+    public static function formatAddressAsText(array $parts = [], string $delimiter = PHP_EOL)
     {
         // Filters out null values
         $parts = array_filter($parts);
@@ -36,6 +37,6 @@ class Utility
             return null;
         }
 
-        return implode(PHP_EOL, $lines);
+        return implode($delimiter, $lines);
     }
 }

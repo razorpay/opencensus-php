@@ -59,7 +59,7 @@ return [
 
     'expectedReplacedSerializedInvoiceWithTaxesAndCustomerAddresses' => [
         'merchant' => [
-            'business_registered_address_text' => 'India',
+            'business_registered_address_text' => 'Line 1, Bangalore, India',
         ],
         'invoice' => [
             'customer_details' => [

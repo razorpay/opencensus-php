@@ -110,7 +110,7 @@ class ViewDataSerializer extends Base\Core
             'cin'                              => $cin,
             'gstin'                            => $gstin,
             'has_cin_or_gstin'                 => $hasCinOrGstin,
-            'business_registered_address_text' => $this->merchant->getBusinessRegisteredAddressAsText(),
+            'business_registered_address_text' => $this->merchant->getBusinessRegisteredAddressAsText(', '),
         ];
     }
 
@@ -150,8 +150,8 @@ class ViewDataSerializer extends Base\Core
         $serialized[Entity::SUPPLY_STATE_NAME] = $this->invoice->getSupplyStateName();
 
         $serialized[Entity::CUSTOMER_DETAILS]  += [
-            Entity::BILLING_ADDRESS_TEXT  => $this->invoice->getCustomerBillingAddressAsText(),
-            Entity::SHIPPING_ADDRESS_TEXT => $this->invoice->getCustomerShippingAddressAsText(),
+            Entity::BILLING_ADDRESS_TEXT  => optional($this->invoice->customerBillingAddress)->formatAsText(),
+            Entity::SHIPPING_ADDRESS_TEXT => optional($this->invoice->customerShippingAddress)->formatAsText(),
         ];
 
         //

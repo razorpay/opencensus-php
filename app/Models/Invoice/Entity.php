@@ -568,16 +568,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_GSTIN);
     }
 
-    public function getCustomerBillingAddressAsText()
-    {
-        return optional($this->customerBillingAddress)->formatAsText();
-    }
-
-    public function getCustomerShippingAddressAsText()
-    {
-        return optional($this->customerShippingAddress)->formatAsText();
-    }
-
     public function getScheduledAt()
     {
         return $this->getAttribute(self::SCHEDULED_AT);

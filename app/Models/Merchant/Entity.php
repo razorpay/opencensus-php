@@ -1217,9 +1217,9 @@ class Entity extends Base\PublicEntity
         return optional($this->merchantDetail)->getCompanyCin();
     }
 
-    public function getBusinessRegisteredAddressAsText()
+    public function getBusinessRegisteredAddressAsText(string $delimiter = PHP_EOL)
     {
-        return optional($this->merchantDetail)->getBusinessRegisteredAddressAsText();
+        return optional($this->merchantDetail)->getBusinessRegisteredAddressAsText($delimiter);
     }
 
     public function getBusinessRegisteredState()

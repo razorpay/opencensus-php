@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Address;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
+use RZP\Constants\IndianStates;
 
 /**
  * Class Entity
@@ -457,16 +458,17 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BUSINESS_REGISTERED_ADDRESS);
     }
 
-    public function getBusinessRegisteredAddressAsText()
+    public function getBusinessRegisteredAddressAsText(string $delimiter = PHP_EOL)
     {
         return Address\Utility::formatAddressAsText(
             [
-                Address\Entity::LINE1     => optional($this->merchantDetail)->getBusinessRegisteredAddress(),
-                Address\Entity::CITY      => optional($this->merchantDetail)->getBusinessRegisteredCity(),
-                Address\Entity::STATE     => optional($this->merchantDetail)->getBusinessRegisteredState(),
+                Address\Entity::LINE1     => $this->getBusinessRegisteredAddress(),
+                Address\Entity::CITY      => $this->getBusinessRegisteredCity(),
+                Address\Entity::STATE     => $this->getBusinessRegisteredStateName(),
                 Address\Entity::COUNTRY   => 'India',
-                Address\Entity::ZIPCODE   => optional($this->merchantDetail)->getBusinessRegisteredPin(),
-            ]);
+                Address\Entity::ZIPCODE   => $this->getBusinessRegisteredPin(),
+            ],
+            $delimiter);
     }
 
     public function getBusinessRegisteredCity()
@@ -477,6 +479,16 @@ class Entity extends Base\PublicEntity
     public function getBusinessRegisteredState()
     {
         return $this->getAttribute(self::BUSINESS_REGISTERED_STATE);
+    }
+
+    public function getBusinessRegisteredStateName()
+    {
+        $state = $this->getBusinessRegisteredState();
+
+        if ($state !== null)
+        {
+            return ucwords(strtolower(IndianStates::getStateNameByCode($state)));
+        }
     }
 
     public function getBusinessRegisteredPin()

@@ -180,7 +180,7 @@ class Gstin
         return $data;
     }
 
-    public static function getStateNameByCode(string $code)
+    public static function getStateNameByCode(string $code): string
     {
         return array_flip(self::$nameToStateCodeMap)[self::$gstinToStateCodeMap[$code]];
     }

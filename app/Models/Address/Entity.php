@@ -216,7 +216,7 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------- END RELATIONS -----------------------------------
 
-    public function formatAsText(): string
+    public function formatAsText(string $delimiter = PHP_EOL): string
     {
         return Utility::formatAddressAsText(
             [
@@ -226,6 +226,7 @@ class Entity extends Base\PublicEntity
                 self::CITY      => $this->getAttribute(self::CITY),
                 self::STATE     => $this->getAttribute(self::STATE),
                 self::COUNTRY   => $this->getCountryNameFormatted(),
-            ]);
+            ],
+            $delimiter);
     }
 }
