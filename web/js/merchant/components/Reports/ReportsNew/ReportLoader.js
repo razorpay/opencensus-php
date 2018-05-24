@@ -1,99 +1,118 @@
 import React, { Component } from 'react';
 import { arrayToSentence } from 'rzp/utils/rzp-utils';
 
-const getReportText = reportName => {
-  const isReportTextThere = reportName.toLowerCase().indexOf('report') > -1;
-  return isReportTextThere ? reportName : `${reportName} Report`;
+const ReportHelperText = ({ id, emails, status, openEmailReportModal }) => {
+  return (
+    <small class={`help-block ${status}`}>
+      <i class="i i-info-circle" />
+      {status === 'pending' ? (
+        <span>
+          This may take some time to download.{' '}
+          {emails ? (
+            <span>
+              We will also email this report to {arrayToSentence(emails)}
+            </span>
+          ) : (
+            <span>
+              You can also choose to{' '}
+              <span
+                class="btn-link"
+                data-reportid={id}
+                onClick={openEmailReportModal}
+              >
+                Email this report.
+              </span>
+            </span>
+          )}
+        </span>
+      ) : (
+        <span>
+          {status === 'success'
+            ? `Report downloaded successfully.`
+            : `There was an error while generating this report.`}
+        </span>
+      )}
+    </small>
+  );
 };
 
-const DownloadStatusLoader = ({
+const ReportProgress = ({
+  id,
+  name,
   status,
+  children,
+  isSelected,
   cancelDownload,
-  config_id,
-  configsLableMap,
 }) => {
   return (
-    <div class={`report-progress ${status}`} key={config_id}>
-      {/* TODO: add report type */}
-      Generating {getReportText(configsLableMap[config_id])} ...
+    <div class={`report-progress ${isSelected ? 'current' : ''}`}>
+      Generating {name} ...
       <div>
         <div class={`bar-loader ${status}`} />
-        <span class="report-close" onClick={() => cancelDownload(config_id)}>
+        <span class="report-close" onClick={() => cancelDownload(id)}>
           <i class="i i-close" />
         </span>
       </div>
-      <small class={`help-block ${status}`}>
-        <i class="i i-info-circle" />
-        {status === 'success'
-          ? `Report downloaded successfully.`
-          : `There was an error while generating this report.`}
-      </small>
+      {children}
     </div>
   );
 };
 
 export default class ReportLoader extends Component {
+  getReportText = reportName => {
+    const isReportTextThere = reportName.toLowerCase().indexOf('report') > -1;
+    return isReportTextThere ? reportName : `${reportName} Report`;
+  };
+
+  getReportStatus = reportId => {
+    const { reportList } = this.props;
+    let reportStatus = 'pending';
+
+    switch (reportList[reportId]['status']) {
+      case 'failed':
+        reportStatus = 'failed';
+        break;
+      case 'created':
+        reportStatus = 'pending';
+        break;
+      case 'processed':
+        if (reportList[reportId]['file_id']) {
+          reportStatus = 'success';
+        } else {
+          reportStatus = 'failed';
+        }
+        break;
+      default:
+        reportStatus = 'failed';
+        break;
+    }
+    return reportStatus;
+  };
+
   render() {
-    const {
-      selectedConfig,
-      reportList,
-      reportsStatus,
-      cancelDownload,
-      configsLableMap,
-    } = this.props;
+    const { selectedConfigId, reportList, configsLableMap } = this.props;
 
     return (
       <div class="report-loader">
         <hr />
-        {Object.keys(reportList).map(config_id => (
-          <div
-            class={`report-progress ${
-              selectedConfig === config_id ? 'current' : ''
-            }`}
-            key={config_id}
+        {Object.keys(reportList).map(reportId => (
+          <ReportProgress
+            id={reportId}
+            key={reportId}
+            status={this.getReportStatus(reportId)}
+            isSelected={selectedConfigId === reportList[reportId]['config_id']}
+            name={this.getReportText(
+              configsLableMap[reportList[reportId]['config_id']]
+            )}
+            cancelDownload={this.props.cancelDownload}
           >
-            {/* TODO: add report type */}
-            Generating {getReportText(configsLableMap[config_id])} ...
-            <div>
-              <div class="bar-loader pending" />
-              <span
-                class="report-close"
-                onClick={() => cancelDownload(config_id)}
-              >
-                <i class="i i-close" />
-              </span>
-            </div>
-            <small class="help-block">
-              <i class="i i-info-circle" />
-              This may take some time to download.{' '}
-              {reportList[config_id]['emails'] ? (
-                <span>
-                  We will also email this report to{' '}
-                  {arrayToSentence(reportList[config_id]['emails'])}
-                </span>
-              ) : (
-                <span>
-                  You can also choose to{' '}
-                  <span
-                    class="btn-link"
-                    data-configid={config_id}
-                    onClick={this.props.openEmailReportModal}
-                  >
-                    Email this report.
-                  </span>
-                </span>
-              )}
-            </small>
-          </div>
-        ))}
-        {Object.keys(reportsStatus).map(config_id => (
-          <DownloadStatusLoader
-            key={config_id}
-            config_id={config_id}
-            status={reportsStatus[config_id]}
-            cancelDownload={cancelDownload}
-            configsLableMap={configsLableMap}
-          />
+            <ReportHelperText
+              id={reportId}
+              emails={reportList[reportId]['emails']}
+              status={this.getReportStatus(reportId)}
+              openEmailReportModal={this.props.openEmailReportModal}
+            />
+          </ReportProgress>
         ))}
       </div>
     );

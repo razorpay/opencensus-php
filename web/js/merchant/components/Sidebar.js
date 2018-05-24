@@ -7,6 +7,8 @@ import MainNavLink from 'merchant/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import store from 'merchant/store';
 
+import { areReportsStillDownloading } from 'merchant/modules/reports';
+
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals)/;
 const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|applications|applications\/new)/;
@@ -25,13 +27,15 @@ export default class Sidebar extends Component {
 
     //reference store data to update UI of sidebar navs
     this.state = {
-      reportList: store.getState().reports.currentReportList,
+      isReportsPending: false,
     };
 
     store.subscribe(() => {
       //update state when report list store changes
+      const reportList = store.getState().reports.currentReportList;
+
       this.setState({
-        reportList: store.getState().reports.currentReportList,
+        isReportsPending: areReportsStillDownloading(reportList),
       });
     });
   }
@@ -74,7 +78,7 @@ export default class Sidebar extends Component {
   }
 
   render() {
-    const { reportList } = this.state;
+    const { isReportsPending } = this.state;
     let { user, logoURL } = this.props;
     let routes = this.routes;
     let isMerchant = !!user.current;
@@ -194,7 +198,7 @@ export default class Sidebar extends Component {
                   icon="i i-books text-danger"
                   to="/reports"
                   notMyRole="sellerapp support"
-                  isPending={Object.keys(reportList).length > 0}
+                  isPending={isReportsPending}
                 />
                 <MainNavLink
                   label="My Account"

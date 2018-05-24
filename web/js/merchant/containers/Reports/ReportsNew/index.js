@@ -25,8 +25,6 @@ import {
   addReportToList,
   updateReportInList,
   removeReportFromList,
-  hasReportDownloaded,
-  removeFromDownloadStatuses,
 } from 'merchant/modules/reports';
 import SelectConfig from 'merchant/components/Reports/ReportsNew/SelectConfig';
 import EmailReport from 'merchant/components/Reports/ReportsNew/EmailReport';
@@ -71,6 +69,7 @@ const requestFailedFunc = () => {
     return {
       mode: state.session.mode,
       user: state.session.user,
+      currentReportList: state.reports.currentReportList,
       type: selector(state, 'type'),
       date: selector(state, 'date'),
       invoiceDate: selector(state, 'invoiceDate'),
@@ -83,8 +82,6 @@ const requestFailedFunc = () => {
     addReportToList,
     updateReportInList,
     removeReportFromList,
-    hasReportDownloaded,
-    removeFromDownloadStatuses,
   }
 )
 @reduxForm({
@@ -101,8 +98,7 @@ const requestFailedFunc = () => {
 export default class ReportsContainer extends Component {
   constructor(props) {
     super(props);
-
-    const { user } = props,
+    const { user, currentReportList } = props,
       tags = user.tags.map(tag => tag.toLowerCase()),
       configs = [getCustomConfig('monthlyInvoice')],
       accounts = [],
@@ -154,8 +150,7 @@ export default class ReportsContainer extends Component {
       invoiceDate: moment()
         .subtract(1, 'months')
         .startOf('month'),
-      currentReportList: store.getState().reports.currentReportList,
-      reportsDownloadStatus: store.getState().reports.reportsDownloadStatus,
+      currentReportList,
     };
 
     this.onConfigChange = ::this.onConfigChange;
@@ -167,7 +162,6 @@ export default class ReportsContainer extends Component {
       //update state when report list store changes
       this.setState({
         currentReportList: store.getState().reports.currentReportList,
-        reportsDownloadStatus: store.getState().reports.reportsDownloadStatus,
       });
     });
 
@@ -277,7 +271,18 @@ export default class ReportsContainer extends Component {
       });
   }
 
-  generateReport(_, emails = null, currentconfigId = null) {
+  updateStore = (data, shoudlInitialize) => {
+    let downloadTimeLapse = new Date().getTime() - data.created_at * 1000;
+
+    if (shoudlInitialize) {
+      this.props.addReportToList(data);
+      trackTimeLapse('Download Start', downloadTimeLapse);
+    } else {
+      this.props.updateReportInList(data);
+    }
+  };
+
+  generateReport(_, emails = null) {
     let selectedConfig = { ...this.state.selectedConfig };
     const { selectedAccount, currentReportList } = this.state,
       { date, type, invoiceDate } = this.props,
@@ -288,15 +293,9 @@ export default class ReportsContainer extends Component {
       descForTracking = type === 'daily' ? `date` : `month`;
 
     //tracking vars for reports v2
-    let reportActionTypeForTracking = emails
-      ? 'Email Report'
-      : 'Download Report';
+    let reportActionTypeForTracking = 'Download Report';
     let downloadTimeLapse = new Date().getTime();
 
-    if (currentconfigId) {
-      selectedConfig = currentReportList[currentconfigId];
-      reportActionTypeForTracking += ' (While Downloading)';
-    }
     if (selectedConfig.value === 'monthlyInvoice') {
       const month = invoiceDate.month() + 1,
         year = invoiceDate.year();
@@ -344,41 +343,25 @@ export default class ReportsContainer extends Component {
           ).replace('acc_', ''),
           isMerchantAccount = selectedAccountId === user.current,
           reqData = {
-            config_id: currentconfigId || selectedConfig._item.id,
+            config_id: selectedConfig._item.id,
             generated_by: selectedAccountId,
             start_time: startTime,
             end_time: endTime,
-            //add emails if selected
-            ...(emails && { emails }),
           };
 
-        if (emails) {
-          return this.emailReport(reqData, isMerchantAccount);
-        } else {
-          this.props.showNotification(downloadStartedMessage);
-        }
+        this.props.showNotification(downloadStartedMessage);
 
-        return generateReportV2(reqData, isMerchantAccount, data => {
-          downloadTimeLapse = new Date().getTime() - downloadTimeLapse;
-          this.props.addReportToList(data);
-
-          trackTimeLapse('Download Start', downloadTimeLapse);
-        }).then(data => {
-          //return nothing if cancelled by user
-          if (!this.state.currentReportList[reqData['config_id']]) {
-            return;
-          }
+        return generateReportV2(
+          reqData,
+          isMerchantAccount,
+          this.updateStore
+        ).then(data => {
           if (data.error) {
-            this.props.removeReportFromList(selectedConfig.value);
-            this.props.hasReportDownloaded(selectedConfig.value, false);
             return this.props.showNotification({
               type: 'error',
               message: data.error,
             });
           }
-
-          this.props.removeReportFromList(selectedConfig.value);
-          this.props.hasReportDownloaded(selectedConfig.value, true);
 
           window.location = data.url;
         });
@@ -394,8 +377,6 @@ export default class ReportsContainer extends Component {
       let data = {
         month,
         year,
-        //TODO: add emails if selected
-        // ...(emails && { emails }),
       };
 
       if (type === 'daily') {
@@ -444,58 +425,10 @@ export default class ReportsContainer extends Component {
     }
   }
 
-  emailToSentence = emails => {
-    if (emails.length === 1) {
-      return emails[0];
-    } else {
-      return `${emails[0]} and ${emails.length - 1} others`;
-    }
-  };
-
-  emailReport = (params, isMerchantAccount) => {
-    const { currentReportList } = this.state;
-    let shouldUpdate = false,
-      newParams = {};
-
-    if (currentReportList[params.config_id]) {
-      newParams = {
-        ...currentReportList[params.config_id],
-        emails: params.emails,
-      };
-
-      shouldUpdate = true;
-    } else {
-      newParams = params;
-    }
-
-    return emailReportV2(newParams, isMerchantAccount, shouldUpdate)
-      .then(data => {
-        if (data.error) {
-          return this.props.showNotification({
-            type: 'error',
-            message: data.error,
-          });
-        }
-
-        this.props.closeModal();
-        if (shouldUpdate) {
-          this.props.updateReportInList(data.data);
-        }
-
-        return this.props.showNotification({
-          type: 'success',
-          message: `Report will be emailed to ${this.emailToSentence(
-            data.data.emails
-          )} shortly`,
-        });
-      })
-      .catch(err => console.log(err));
-  };
-
   openEmailReportModal = e => {
-    const { user } = this.props;
-    const { accounts } = this.state;
-    const configId = e.target.dataset.configid;
+    const { user, type, date } = this.props;
+    const { accounts, selectedAccount, selectedConfig } = this.state;
+    const reportId = e.target.dataset.reportid;
 
     let emailsMap = {
       ...(user.contact_email && { contact: [user.contact_email] }),
@@ -509,10 +442,16 @@ export default class ReportsContainer extends Component {
       size: 'small',
       component: (
         <EmailReport
-          closeModal={this.props.closeModal}
+          selectedType={type}
+          selectedDate={date}
+          reportId={reportId}
           emailsMap={emailsMap}
           onSend={this.generateReport}
-          configId={configId}
+          selectedAccount={selectedAccount}
+          selectedConfig={selectedConfig}
+          closeModal={this.props.closeModal}
+          defaultAccount={this.defaultAccount}
+          updateStore={this.updateStore}
         />
       ),
     });
@@ -548,18 +487,18 @@ export default class ReportsContainer extends Component {
     return [...merchantConfigs, ...rzpConfigs];
   };
 
-  openCancelConfirmModal = config_id => {
+  openCancelConfirmModal = reportId => {
     const { currentReportList } = this.state;
     const timeLapse = new Date().getTime();
 
-    if (currentReportList[config_id]) {
+    if (currentReportList[reportId]['status'] === 'created') {
       this.props.openModal({
         size: 'small',
         component: (
           <div>
             <ModalHeader title="Are you sure you want to stop the report download?" />
             <div class="modal-body report-cancel-download">
-              {currentReportList[config_id]['emails'] && (
+              {currentReportList[reportId]['emails'] && (
                 <p class="p-b">We will still email you this report.</p>
               )}
               <button class="btn btn-default" onClick={this.props.closeModal}>
@@ -567,7 +506,7 @@ export default class ReportsContainer extends Component {
               </button>
               <button
                 class="btn btn-primary pull-right"
-                onClick={() => this.cancelReportDownload(config_id, timeLapse)}
+                onClick={() => this.cancelReportDownload(reportId, timeLapse)}
               >
                 Yes, stop
               </button>
@@ -576,21 +515,20 @@ export default class ReportsContainer extends Component {
         ),
       });
     } else {
-      this.cancelReportDownload(config_id);
+      this.cancelReportDownload(reportId);
     }
   };
 
-  cancelReportDownload = (config_id, timeLapse) => {
-    const { reportsDownloadStatus, currentReportList } = this.state;
+  cancelReportDownload = (reportId, timeLapse) => {
+    const { currentReportList } = this.state;
 
     timeLapse = new Date().getTime() - timeLapse;
 
-    trackTimeLapse('Click - Download Cancel', timeLapse);
     this.props.closeModal();
-    if (reportsDownloadStatus[config_id]) {
-      this.props.removeFromDownloadStatuses(config_id);
-    } else {
-      this.props.removeReportFromList(config_id);
+    this.props.removeReportFromList(reportId);
+
+    if (timeLapse) {
+      trackTimeLapse('Click - Download Cancel', timeLapse);
     }
   };
 
@@ -603,7 +541,6 @@ export default class ReportsContainer extends Component {
       selectedConfig,
       selectedAccount,
       currentReportList,
-      reportsDownloadStatus,
     } = this.state;
 
     const { type, date, invoiceDate } = this.props;
@@ -611,6 +548,14 @@ export default class ReportsContainer extends Component {
     const entity = selectedConfig && selectedConfig.value;
 
     let content = null;
+
+    let isCurrentConfigSelected = false;
+
+    Object.keys(currentReportList).forEach(reportId => {
+      if (currentReportList[reportId]['config_id'] === selectedConfig.value) {
+        isCurrentConfigSelected = true;
+      }
+    });
 
     if (isLoading) {
       content = (
@@ -726,7 +671,7 @@ export default class ReportsContainer extends Component {
             </div>
 
             <div class="form-element">
-              {!currentReportList[selectedConfig.value] ? (
+              {!isCurrentConfigSelected ? (
                 <Fragment>
                   <button class="btn btn-primary" onClick={this.generateReport}>
                     Download Report
@@ -745,11 +690,10 @@ export default class ReportsContainer extends Component {
               )}
               <ReportLoader
                 reportList={currentReportList}
-                reportsStatus={reportsDownloadStatus}
                 openEmailReportModal={this.openEmailReportModal}
                 configsLableMap={this.configsLableMap}
                 cancelDownload={this.openCancelConfirmModal}
-                selectedConfig={selectedConfig.value}
+                selectedConfigId={selectedConfig.value}
               />
             </div>
           </div>

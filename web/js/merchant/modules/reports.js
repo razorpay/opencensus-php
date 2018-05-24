@@ -7,11 +7,8 @@ import { trackReportGenericActions } from 'merchant/containers/Reports/ReportsNe
 const GENERATE_REPORT = 'GENERATE_REPORT';
 
 const ADD_REPORT = 'ADD_REPORT';
-const REMOVE_REPORT = 'REMOVE_REPORT';
 const UPDATE_REPORT = 'UPDATE_REPORT';
-const DOWNLOAD_REPORT_SUCCESS = 'DOWNLOAD_REPORT_SUCCESS';
-const DOWNLOAD_REPORT_FAILED = 'DOWNLOAD_REPORT_FAILED';
-const REMOVE_DOWNLOAD_STATUS = 'REMOVE_DOWNLOAD_STATUS';
+const REMOVE_REPORT = 'REMOVE_REPORT';
 
 const downloadReportErrorMsg = {
   error: 'Oops!, Unable to generate report',
@@ -74,7 +71,7 @@ export const generateReport = ajaxParams => {
 const pollInterval = 2, // poll interval in SECONDS
   timeout = 30 * 60 * 1000; // 30 minutes
 
-export const generateReportV2 = (params, isMerchantAccount, addReport) => {
+export const generateReportV2 = (params, isMerchantAccount, updateStore) => {
   const startTime = new Date(),
     accountHeaderVal = !isMerchantAccount && params.generated_by;
 
@@ -84,10 +81,11 @@ export const generateReportV2 = (params, isMerchantAccount, addReport) => {
   return createLog(params, accountHeaderVal)
     .then(resp => {
       if (!resp.success || !resp.data || !resp.data.id) {
+        updateStore(resp.data);
         return downloadReportErrorMsg;
       }
 
-      addReport(resp.data);
+      updateStore(resp.data, true);
 
       const logId = resp.data.id;
 
@@ -136,12 +134,16 @@ export const generateReportV2 = (params, isMerchantAccount, addReport) => {
             resp.data.status === 'failed' ||
             resp.data.status === 'created'
           ) {
+            updateStore({ ...resp.data, status: 'failed' });
             return downloadReportErrorMsg;
           }
+
+          updateStore(resp.data);
 
           const fileId = resp.data.file_id;
 
           if (!fileId) {
+            updateStore(resp.data);
             return {
               error: 'No data found for the given dates',
             };
@@ -177,7 +179,6 @@ export const emailReportV2 = (
       if (!resp.success || !resp.data || !resp.data.id) {
         return emailReportErrorMsg;
       }
-
       return resp;
     })
     .catch(err => {
@@ -192,13 +193,6 @@ export const addReportToList = report => {
   };
 };
 
-export const removeReportFromList = reportId => {
-  return {
-    type: REMOVE_REPORT,
-    reportId,
-  };
-};
-
 export const updateReportInList = report => {
   return {
     type: UPDATE_REPORT,
@@ -206,23 +200,29 @@ export const updateReportInList = report => {
   };
 };
 
-export const hasReportDownloaded = (reportId, status) => {
+export const removeReportFromList = reportId => {
   return {
-    type: status ? DOWNLOAD_REPORT_SUCCESS : DOWNLOAD_REPORT_FAILED,
+    type: REMOVE_REPORT,
     reportId,
   };
 };
 
-export const removeFromDownloadStatuses = reportId => {
-  return {
-    type: REMOVE_DOWNLOAD_STATUS,
-    reportId,
-  };
+export const areReportsStillDownloading = reports => {
+  const list = Object.keys(reports);
+  let isDownloading = false;
+
+  for (let i = 0, len = list.length; i < len; i++) {
+    if (reports[list[i]].status === 'created') {
+      isDownloading = true;
+      break;
+    }
+  }
+
+  return isDownloading;
 };
 
 let initialState = {
   currentReportList: {},
-  reportsDownloadStatus: {},
 };
 
 export function reportsReducer(state = initialState, action) {
@@ -242,7 +242,14 @@ export function reportsReducer(state = initialState, action) {
         window.onbeforeunload = alertBeforeClose;
       }
 
-      currentReportList[action.report.config_id] = action.report;
+      currentReportList[action.report.id] = action.report;
+      return set(state, 'currentReportList', currentReportList);
+
+    case `${UPDATE_REPORT}`:
+      if (currentReportList[action.report.id]) {
+        currentReportList[action.report.id] = action.report;
+      }
+
       return set(state, 'currentReportList', currentReportList);
 
     case `${REMOVE_REPORT}`:
@@ -255,26 +262,6 @@ export function reportsReducer(state = initialState, action) {
         window.onbeforeunload = null;
       }
       return set(state, 'currentReportList', currentReportList);
-
-    // add emails to report config
-    case `${UPDATE_REPORT}`:
-      if (currentReportList[action.report.config_id]) {
-        currentReportList[action.report.config_id] = action.report;
-      }
-
-      return set(state, 'currentReportList', currentReportList);
-
-    case `${DOWNLOAD_REPORT_SUCCESS}`:
-      reportsDownloadStatus[action.reportId] = 'success';
-      return set(state, 'reportsDownloadStatus', reportsDownloadStatus);
-
-    case `${DOWNLOAD_REPORT_FAILED}`:
-      reportsDownloadStatus[action.reportId] = 'failed';
-      return set(state, 'reportsDownloadStatus', reportsDownloadStatus);
-
-    case `${REMOVE_DOWNLOAD_STATUS}`:
-      delete reportsDownloadStatus[action.reportId];
-      return set(state, 'reportsDownloadStatus', reportsDownloadStatus);
     default:
       return state;
   }

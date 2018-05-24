@@ -40,8 +40,10 @@ export const trackReportGenericActions = (
 };
 
 export const trackTimeLapse = (action, timeLapse) => {
+  const secondsLapse = (timeLapse / 1000).toFixed(2);
+
   return track_v2({
     eventAction: action,
-    eventValue: (timeLapse / 1000).toFixed(2),
+    eventValue: secondsLapse,
   });
 };
