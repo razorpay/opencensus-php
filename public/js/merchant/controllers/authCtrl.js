@@ -355,12 +355,19 @@ app
 
       $scope.quickSendDetails = function(detailField, key) {
         $scope.signup.merchantData[detailField] = key;
+
+        var reqPayload = Object.assign({}, $scope.signup.merchantData);
+        // Business name cannot be empty or null
+        if (!reqPayload.business_name) {
+          delete reqPayload['business_name'];
+        }
+
         pushToDrip();
         var payload = {
           method: 'post',
           url: '/user/pre_signup',
           transformRequest: transformRequestAsFormPost,
-          data: $scope.signup.merchantData,
+          data: reqPayload,
         };
 
         var request = $http(payload);
