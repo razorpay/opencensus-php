@@ -306,28 +306,6 @@ export default class ActivationWizard extends React.Component {
       return;
     }
 
-    this.setState(
-      {
-        isSaving: LOADING_STATES.PENDING,
-      },
-      () => {
-        window.clearTimeout(this.loaderTimeout); // Reset the previous removeLoader-call timer on each new Pending
-      }
-    );
-
-    /* Check validity of 'Bank account no.' before saving */
-    if (currentActive == BANK_ACCOUNT_TAB) {
-      if (
-        this.state.dirty.hasOwnProperty('bank_account_number') &&
-        (!this.state.dirty.bank_account_number ||
-          this.state.dirty.bank_account_number != this.state.account_no)
-      ) {
-        this.handleBankAccountMismatch(newActiveTab !== currentActive); // Tab is changed
-
-        return; // Don't make api call if mismatch
-      }
-    }
-
     const currentDirty = this.state.dirty;
     const reqData = {};
 
@@ -345,6 +323,28 @@ export default class ActivationWizard extends React.Component {
 
     if (!Object.keys(reqData).length) {
       return; // Nothing changed on the currentActive Tab, although the data do exist in dirty
+    }
+
+    this.setState(
+      {
+        isSaving: LOADING_STATES.PENDING,
+      },
+      () => {
+        window.clearTimeout(this.loaderTimeout); // Reset the previous removeLoader-call timer on each new Pending
+      }
+    );
+
+    /* Check validity of 'Bank account no.' before saving */
+    if (currentActive == BANK_ACCOUNT_TAB) {
+      if (
+        reqData.hasOwnProperty('bank_account_number') &&
+        (!reqData.bank_account_number ||
+          reqData.bank_account_number != this.state.account_no)
+      ) {
+        this.handleBankAccountMismatch(newActiveTab !== currentActive); // Tab is changed
+
+        return; // Don't make api call if mismatch
+      }
     }
 
     // '' -> null inside state.dirty for easy OLD and LATEST data comparison. Also, update dirty to the last saved
@@ -374,6 +374,30 @@ export default class ActivationWizard extends React.Component {
 
       if (data.errors) {
         cb && cb(false, data.errors);
+
+        // TODO: This is to avoid too many api calls and consequent ERROR even when user is not intending to save.
+        if (savingWhichTab && savingWhichTab !== this.state.activeTab) {
+          const latestDirty = { ...this.state.dirty };
+          Object.keys(savingDataOfWhichTab).forEach(key => {
+            if (
+              savingDataOfWhichTab.hasOwnProperty(key) &&
+              savingDataOfWhichTab[key] == this.state.dirty[key]
+            ) {
+              /*
+               * Remove only those set of fields whose api request failed, while retaining changes of new form edits(latest state.dirty).
+               * Also, handles case where user edited same field whose request failed. But it's treated as fresh value.
+               * Also, otherwise if deleted from state.dirty, DOM form view will display a value that's not present in state.dirty.
+               * */
+
+              delete latestDirty[key];
+            }
+          });
+
+          // Don't set dirty = {}, cuz internet might be slow and user has already edited some other fields.
+          this.setState({
+            dirty: latestDirty,
+          });
+        }
 
         /*
         * We're not doing any change on dirty, if it's SAME tab.
@@ -448,7 +472,7 @@ export default class ActivationWizard extends React.Component {
     if (isTabSwitched) {
       const latestDirty = { ...this.state.dirty };
 
-      delete latestDirty['bank_account_number']; // Remove 'bank_account_number', so it's Ghost won't prevent other tabs to save, once switched
+      delete latestDirty['bank_account_number']; // Remove 'bank_account_number', so there is no attempt to save repeatedly
 
       this.setState({
         dirty: latestDirty,
@@ -466,7 +490,7 @@ export default class ActivationWizard extends React.Component {
       });
 
       this.removeLoader();
-    }, 1000); // Let loader be seen for 1 sec
+    }, 500); // Let loader be seen for 0.5 sec
   }
 
   submitForm = () => {
