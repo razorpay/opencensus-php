@@ -22,7 +22,7 @@
                 </RefundAmount>
             </RefundDetail>
             <RefundDetail>
-                <RefundReferenceId>random_reference_id</RefundReferenceId>
+                <RefundReferenceId>random_2_reference_id</RefundReferenceId>
                 <RefundType>SellerInitiated</RefundType>
                 <SellerRefundNote>Random refund</SellerRefundNote>
                 <CreationTimestamp>2017-04-17T06:54:47.837Z</CreationTimestamp>
@@ -35,7 +35,7 @@
                     <CurrencyCode>INR</CurrencyCode>
                     <Amount>refund_amount</Amount>
                 </FeeRefunded>
-                <AmazonRefundId>S04-2665653-4222901-R066827</AmazonRefundId>
+                <AmazonRefundId>S04-2665653-4222901-R066828</AmazonRefundId>
                 <RefundAmount>
                     <CurrencyCode>INR</CurrencyCode>
                     <Amount>refund_amount</Amount>

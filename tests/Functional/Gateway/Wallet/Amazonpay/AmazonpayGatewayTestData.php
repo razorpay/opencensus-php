@@ -3,7 +3,7 @@
 return [
     'testPayment' => [
         'action'               => 'authorize',
-        'amount'               => '500.00',
+        'amount'               => '50000',
         'wallet'               => 'amazonpay',
         'received'             => true,
         'email'                => 'a@b.com',
@@ -35,7 +35,7 @@ return [
 
     'testPaymentFailedWallet' => [
         'action'               => 'authorize',
-        'amount'               => '500.00',
+        'amount'               => '50000',
         'wallet'               => 'amazonpay',
         'received'             => true,
         'email'                => 'a@b.com',
@@ -68,7 +68,7 @@ return [
 
     'testPaymentSignatureVerificationFailureWallet' => [
         'action'               => 'authorize',
-        'amount'               => '500.00',
+        'amount'               => '50000',
         'wallet'               => 'amazonpay',
         'received'             => false,
         'email'                => 'a@b.com',
@@ -96,7 +96,7 @@ return [
             'gatewaySuccess' => true,
             'gatewayPayment' => [
                 'action'               => 'authorize',
-                'amount'               => '500.00',
+                'amount'               => '50000',
                 'wallet'               => 'amazonpay',
                 'received'             => true,
                 'email'                => 'a@b.com',
@@ -149,7 +149,7 @@ return [
 
     'testPaymentRefundInitiated' => [
         'action'               => 'refund',
-        'amount'               => '500',
+        'amount'               => '50000',
         'wallet'               => 'amazonpay',
         'received'             => true,
         'email'                => 'a@b.com',
@@ -167,7 +167,7 @@ return [
 
     'testPaymentRefundInitiationFailed' => [
         'action'               => 'refund',
-        'amount'               => '500',
+        'amount'               => '50000',
         'wallet'               => 'amazonpay',
         'received'             => true,
         'email'                => 'a@b.com',
@@ -185,7 +185,7 @@ return [
 
     'testPaymentRefundInitiateEmptyResult' => [
         'action'               => 'refund',
-        'amount'               => '500',
+        'amount'               => '50000',
         'wallet'               => 'amazonpay',
         'received'             => true,
         'email'                => 'a@b.com',
@@ -203,7 +203,7 @@ return [
 
     'testPaymentRefundInitiateEmptyStatus' => [
         'action'               => 'refund',
-        'amount'               => '500',
+        'amount'               => '50000',
         'wallet'               => 'amazonpay',
         'received'             => true,
         'email'                => 'a@b.com',
@@ -221,19 +221,19 @@ return [
 
     'testPaymentRefundInitiateMultiplePending' => [
         'action'               => 'refund',
-        'amount'               => '500',
+        'amount'               => '50000',
         'wallet'               => 'amazonpay',
-        'received'             => false,
+        'received'             => true,
         'email'                => 'a@b.com',
         'contact'              => '+919918899029',
         'gateway_merchant_id'  => 'random_dummy_value',
         'response_code'        => null,
         'entity'               => 'wallet',
-        'status_code'          => null,
+        'status_code'          => 'Pending',
         'response_description' => null,
         'gateway_payment_id'   => null,
         'reference1'           => null,
         'date'                 => null,
-        'gateway_refund_id'    => null,
+        'gateway_refund_id'    => 'S04-2665653-4222901-R066827',
     ],
 ];

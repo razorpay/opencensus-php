@@ -5,7 +5,7 @@ namespace RZP\Gateway\Wallet\Amazonpay\Mock;
 use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Constants\Timezone;
-use RZP\Gateway\Wallet\Amazonpay\Action;
+use RZP\Models\Payment\Action;
 use RZP\Gateway\Wallet\Amazonpay\ReasonCode;
 use RZP\Gateway\Wallet\Amazonpay\RequestFields;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields;
@@ -157,9 +157,9 @@ class Server extends Base\Mock\Server
     {
         $xml = file_get_contents(__DIR__ . '/Xml/refund_response.xml');
 
-        $xml = $this->modifyRefundReference($xml, $request);
-
         $this->content($xml, $this->action);
+
+        $xml = $this->modifyRefundReference($xml, $request);
 
         return $xml;
     }

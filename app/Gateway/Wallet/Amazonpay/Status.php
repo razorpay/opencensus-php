@@ -26,4 +26,16 @@ final class Status
 
         return self::FAILURE;
     }
+
+    /**
+     * Since amazon returns status
+     *
+     * @param string $expected
+     * @param string $actual
+     * @return bool
+     */
+    public static function matches(string $expected, string $actual): bool
+    {
+        return (strcasecmp($expected, $actual) === 0);
+    }
 }

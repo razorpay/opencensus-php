@@ -428,7 +428,7 @@ class AmazonpayGatewayTest extends TestCase
 
         $refund = $this->getDbLastEntityPublic(ConstantsEntity::REFUND);
 
-        $this->assertEquals(Refund\Status::FAILED, $refund[Refund\Entity::STATUS]);
+        $this->assertEquals(Refund\Status::PROCESSED, $refund[Refund\Entity::STATUS]);
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
@@ -437,9 +437,6 @@ class AmazonpayGatewayTest extends TestCase
         $this->assertEquals($refund[Refund\Entity::ID], Refund\Entity::getSignedId($wallet[WalletEntity::REFUND_ID]));
         $this->assertEquals($refund[Refund\Entity::PAYMENT_ID],
                             Payment\Entity::getSignedId($wallet[WalletEntity::PAYMENT_ID]));
-
-        // Request ID is not saved in the reference2 attribute, as an exception is thrown before that happens
-        $this->assertNull($wallet[WalletEntity::REFERENCE2]);
     }
 
     public function testPaymentRefundVerifyWhenSuccess()

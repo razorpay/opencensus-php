@@ -69,7 +69,7 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity(
             [
-                RequestFields::TOTAL_AMOUNT      => $this->formatAmount($input['payment']['amount'] / 100),
+                RequestFields::TOTAL_AMOUNT      => $input['payment']['amount'],
                 Entity::GATEWAY_MERCHANT_ID      => $this->getMerchantId(),
             ]);
 
@@ -82,21 +82,27 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        $this->assertPaymentId($input['payment']['id'], $content[ResponseFields::SELLER_ORDER_ID]);
+        $this->assertPaymentId($content[ResponseFields::SELLER_ORDER_ID], $input['payment']['id']);
 
-        $this->assertAmount($input['payment']['amount'] / 100, $content[ResponseFields::AMOUNT]);
+        // Amazon may return amount as 100 or 100.00
+        // Just to be at safe side, we are converting to int
+        $this->assertAmount(intval($content[ResponseFields::AMOUNT] * 100), $input['payment']['amount']);
 
         $this->verifySecureHash($content);
 
-        $wallet = $this->repo->findByPaymentIdAndAction(
+        $wallet = $this->repo->findByPaymentIdAndActionOrFail(
                     $input['payment']['id'],
                     Base\Action::AUTHORIZE);
 
         $content[Entity::RECEIVED] = 1;
 
+        // We need to unset the amount from getting mapped as it will be in rupees
+        // And we have already filled it while creating the gateway entity
+        unset($content[ResponseFields::AMOUNT]);
+
         $this->updateGatewayPaymentEntity($wallet, $content, true);
 
-        $this->checkResponseStatus($content);
+        $this->checkCallbackResponseStatus($content);
 
         return $this->getCallbackResponseData($input);
     }
@@ -150,7 +156,7 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
-        parent::action($input, Action::VERIFY_REFUND);
+        parent::action($input, Payment\Action::VERIFY_REFUND);
 
         $verify = new Verify($this->gateway, $input);
 
@@ -275,18 +281,6 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * @param $expectedAmount
-     * @param $actualAmount
-     */
-    protected final function assertAmount($expectedAmount, $actualAmount)
-    {
-        $expectedAmount = number_format($expectedAmount, 2, '.', '');
-        $actualAmount = number_format($actualAmount, 2, '.', '');
-
-        parent::assertAmount($expectedAmount, $actualAmount);
-    }
-
-    /**
      * @param array $content
      * @throws RuntimeException
      */
@@ -315,11 +309,15 @@ class Gateway extends Base\Gateway
      * @param array $content
      * @throws GatewayErrorException
      */
-    private function checkResponseStatus(array $content)
+    private function checkCallbackResponseStatus(array $content)
     {
-        if ((empty($content[ResponseFields::REASON_CODE]) === false) and
-            ($content[ResponseFields::REASON_CODE] !== ReasonCode::SUCCESS))
+        if (isset($content[ResponseFields::REASON_CODE]) === true)
         {
+            if ($content[ResponseFields::REASON_CODE] === ReasonCode::SUCCESS)
+            {
+                return;
+            }
+
             $gatewayErrorCode = $content[ResponseFields::REASON_CODE];
 
             $gatewayErrorDesc = $content[ResponseFields::DESCRIPTION];
@@ -328,16 +326,22 @@ class Gateway extends Base\Gateway
 
             throw new GatewayErrorException($code, $gatewayErrorCode, $gatewayErrorDesc, $content);
         }
+
+        throw new GatewayErrorException(
+            ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+            null,
+            'Reason code is missing from callback',
+            $content);
     }
 
     private function getRefundRequest(array $input, Entity $wallet): array
     {
         $parameters = [
             RequestFields::AMAZON_TRAN_TYPE => Constant::ORDER_REF_ID,
-            RequestFields::AMAZON_TRAN_ID   => $wallet->getGatewayPaymentId(), // TODO: What if this is not saved in the DB?
+            RequestFields::AMAZON_TRAN_ID   => $wallet->getGatewayPaymentId(),
             RequestFields::REFUND_REF_ID    => $input['refund']['id'],
-            RequestFields::REFUND_AMOUNT    => round($input['refund']['amount'] / 100, 2),
-            RequestFields::REFUND_CURRENCY  => Currency::INR,
+            RequestFields::REFUND_AMOUNT    => $this->formatAmount($input['refund']['amount']),
+            RequestFields::REFUND_CURRENCY  => $input['refund']['currency'],
         ];
 
         return [
@@ -353,9 +357,8 @@ class Gateway extends Base\Gateway
         // Either get an array with only the requestId or
         // get the relevant refund detail array whose status we can check.
         //
-        $response = $this->getRelevantRefundDetail($response);
 
-        $this->assertRefundPaymentIdAndAmount($input, $response);
+        $response = $this->getRelevantRefundDetail($response, $refund);
 
         $attributesToSave = $this->getRefundResponseAttributesToSave($response);
 
@@ -369,29 +372,35 @@ class Gateway extends Base\Gateway
         $this->checkRefundStatus($response);
     }
 
-    private function getRelevantRefundDetail(array $response): array
+    private function getRelevantRefundDetail(array $response, Entity $refund): array
     {
         $requestId = $response[ResponseFields::RESPONSE_METADATA][ResponseFields::REQUEST_ID] ??
                      $response[ResponseFields::RESPONSE_METADATA][ResponseFields::REQUEST_UC_ID];
+
+        $toReturn = [ResponseFields::REQUEST_ID => $requestId];
 
         if ((empty($response[ResponseFields::REFUND_PAYMENT_RESULT]) === true) or
             (empty($response[ResponseFields::REFUND_PAYMENT_RESULT][ResponseFields::REFUND_DETAILS]) === true))
         {
             // We do a sanity check to ensure that the refund list is set in the parsed response array
-            return [ResponseFields::REQUEST_ID => $requestId];
+            return $toReturn;
         }
 
         $refundDetails = $response[ResponseFields::REFUND_PAYMENT_RESULT][ResponseFields::REFUND_DETAILS];
 
         // Pick the head of the refund details list as default list to be returned
-        $refundDetailToBeReturned = head($refundDetails);
+        $refundDetail = head($refundDetails);
 
-        $numRelevantRefunds = 0;
+        // In case of single refund in details, the head will consist refund_ref_id
+        // Note:: PHP Xml to Array make child node as associative array
+        if (isset($refundDetail[ResponseFields::REFUND_REF_ID]) === true and
+           ($refundDetail[ResponseFields::REFUND_REF_ID] === $refund->getRefundId()))
+        {
+            return array_merge($toReturn, $refundDetail);
+        }
 
-        //
-        // Parsing an XML with n <RefundDetail> tags causes the parsed XML array to
-        // contain one key called RefundDetail, with an array of size n containing each detail.
-        //
+        // In case of multiple refund we loop through all refund and
+        // find relevant one by matching the Refund Id,
         foreach ($refundDetails[ResponseFields::REFUND_DETAIL] as $refundDetail)
         {
             if (empty($refundDetail[ResponseFields::REFUND_STATUS]) === true)
@@ -399,73 +408,21 @@ class Gateway extends Base\Gateway
                 // We skip the entries without the refund status array
                 continue;
             }
-            elseif ((empty($refundDetail[ResponseFields::REFUND_STATUS][ResponseFields::REFUND_STATE]) === false) and
-                    ($refundDetail[ResponseFields::REFUND_STATUS][ResponseFields::REFUND_STATE] === Status::PENDING))
-            {
-                // Only find the relevant refund detail with pending state
-                $numRelevantRefunds++;
 
-                $refundDetailToBeReturned = $refundDetail;
+            // We can validate current refund by refund_reference_id
+            if($refundDetail[ResponseFields::REFUND_REF_ID] === $refund->getRefundId())
+            {
+                return array_merge($toReturn, $refundDetail);
             }
         }
 
-        if ($numRelevantRefunds > 1)
-        {
-            // If there are more than relevant refunds, we throw an exception
-            $this->handleMultiplePendingRefundsInResponse($response, $numRelevantRefunds);
-        }
-
-        // We find the 1 relevant refund and add the request id to the response
-        $refundDetailToBeReturned[ResponseFields::REQUEST_ID] = $requestId;
-
-        return $refundDetailToBeReturned;
-    }
-
-    /**
-     * This case occurs when there are multiple refunds in the response with pending state
-     * @param array $response
-     * @param int $numRelevantRefunds
-     * @throws GatewayErrorException
-     */
-    private function handleMultiplePendingRefundsInResponse(array $response, int $numRelevantRefunds)
-    {
-        $data = [
-            'response_array' => $response,
-            'payment_id'     => $this->input['payment']['id'],
-            'num_success'    => $numRelevantRefunds,
-            'gateway'        => $this->gateway,
-        ];
-
-        $this->trace->error(TraceCode::REFUND_MULTIPLE_SUCCESS_IN_RESPONSE, ['response_data' => $data]);
-
         throw new GatewayErrorException(
-            ErrorCode::SERVER_ERROR_MULTIPLE_REFUNDS_FOUND,
+            ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
             null,
-            null,
-            $data
-        );
-    }
-
-    private function assertRefundPaymentIdAndAmount(array $input, array $response)
-    {
-        if (empty($content[ResponseFields::REFUND_REF_ID]) === false)
-        {
-            $actualPaymentId = $content[ResponseFields::REFUND_REF_ID];
-
-            // We assert that the verify response payment id is the same as the one being verified on API
-            $this->assertPaymentId($input['payment']['id'], $actualPaymentId);
-        }
-
-        if (empty($content[ResponseFields::ORDER_TOTAL][ResponseFields::ORDER_AMOUNT]) === false)
-        {
-            //
-            // Fee refunded contains the amount refunded by the gateway - we check
-            // if it is the same as the amount that was requested for the refund
-            //
-            $actualAmount = $content[ResponseFields::FEE_REFUNDED][ResponseFields::REFUNDED_AMOUNT];
-
-            $this->assertAmount($input['payment']['amount'] / 100, $actualAmount);
-        }
+            'Refund not found in response',
+            [
+                'refund_id' => $refund->getRefundId(),
+            ]);
     }
 
     private function getRefundResponseAttributesToSave(array $response): array
@@ -803,7 +760,7 @@ class Gateway extends Base\Gateway
     {
         $content = [
             // Mandatory fields
-            RequestFields::TOTAL_AMOUNT      => $this->formatAmount($input['payment']['amount'] / 100),
+            RequestFields::TOTAL_AMOUNT      => $this->formatAmount($input['payment']['amount']),
             RequestFields::CURRENCY_CODE     => Currency::INR,
             RequestFields::ORDER_ID          => $input['payment']['id'],
 
@@ -853,7 +810,7 @@ class Gateway extends Base\Gateway
         return $this->createGatewayRefundEntity(
                     [
                         Entity::PAYMENT_ID          => $input['payment']['id'],
-                        Entity::AMOUNT              => $input['refund']['amount'] / 100,
+                        Entity::AMOUNT              => $input['refund']['amount'],
                         Entity::WALLET              => $input['payment']['wallet'],
                         Entity::EMAIL               => $input['payment']['email'],
                         Entity::CONTACT             => $input['payment']['contact'],
@@ -897,9 +854,9 @@ class Gateway extends Base\Gateway
         return $accessCode;
     }
 
-    private function formatAmount(float $amount): string
+    private function formatAmount($amount): string
     {
-        return number_format($amount, 2, '.', '');
+        return number_format(floatval($amount / 100), 2, '.', '');
     }
 
     private function parseRefundDetails($input)

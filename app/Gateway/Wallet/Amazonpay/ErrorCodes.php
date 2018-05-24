@@ -27,7 +27,7 @@ final class ErrorCodes
 
     public static function getInternalErrorCode(string $reasonCode)
     {
-        if (array_key_exists($reasonCode, self::$reasonCodeToErrorCodeMap) === true)
+        if (isset(self::$reasonCodeToErrorCodeMap[$reasonCode]) === true)
         {
             return self::$reasonCodeToErrorCodeMap[$reasonCode];
         }
