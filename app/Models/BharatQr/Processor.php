@@ -22,6 +22,8 @@ class Processor extends VirtualAccount\Processor
 
     protected $callbackData;
 
+    protected $terminal;
+
     public function __construct(array $gatewayResponse, string $provider = null)
     {
         parent::__construct($provider);
@@ -63,7 +65,7 @@ class Processor extends VirtualAccount\Processor
                             // creation and use this terminal instead
                             // as the payment has already gone through
                             // this terminal.
-                            $this->setTerminalIdInCallback();
+                            $this->callbackData[Constants::RAZORPAY_TERMINAL_ID] = $this->getTerminal()->getId();
 
                             $res = $paymentProcessor->process($paymentInput, $this->callbackData);
 
@@ -90,8 +92,63 @@ class Processor extends VirtualAccount\Processor
         }
     }
 
-    protected function setTerminalIdInCallback()
+    /**
+     * A receiver is expected if there exists an active VA
+     * to receive it. If such a VA does not exist, or exists but
+     * has been closed/paid, the payment is to be refunded.
+     *
+     * @param Base\PublicEntity $entity This is the receiver entity:
+     *                                  bank_transfer, qr_code
+     *
+     * @return bool
+     */
+    protected function checkPaymentExpectedAndSetVirtualAccount(Base\PublicEntity $entity): bool
     {
+        $this->setVirtualAccount($entity);
+
+        if ($this->virtualAccount === null)
+        {
+            if ($this->getTerminal()->isExpected() === false)
+            {
+                $this->trace->info(
+                    TraceCode::VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT,
+                    [
+                        'entity' => $entity->toArray(),
+                    ]);
+
+                $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
+
+                return false;
+            }
+            else
+            {
+                $input = [
+                    VirtualAccount\Entity::RECEIVERS => [
+                        VirtualAccount\Entity::TYPES => [
+                            VirtualAccount\Receiver::QR_CODE,
+                        ],
+                        VirtualAccount\Receiver::QR_CODE => [
+                            QrCode::REFERENCE => $this->gatewayInput[GatewayResponseParams::MERCHANT_REFERENCE]
+                        ]
+                    ],
+                ];
+
+                $this->virtualAccount = (new VirtualAccount\Core)->create($input, $this->terminal->merchant);
+
+                return true;
+            }
+        }
+
+        return true;
+    }
+
+    protected function getTerminal()
+    {
+        if ($this->terminal !== null)
+        {
+            return $this->terminal->get();
+        }
+
         $gatewayMerchantId = $this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID];
 
         $gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
@@ -106,7 +163,9 @@ class Processor extends VirtualAccount\Processor
                 ['gateway_merchant_id' => $gatewayMerchantId]);
         }
 
-        $this->callbackData[Constants::RAZORPAY_TERMINAL_ID] = $terminal->getId();
+        $this->terminal = $terminal;
+
+        return $terminal;
     }
 
 

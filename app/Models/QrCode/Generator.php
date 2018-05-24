@@ -65,9 +65,19 @@ class Generator extends Base\Core
 
         $qrCode->source()->associate($virtualAccount);
 
-        $qrCode->generateQrString();
 
-        $this->setShortUrl();
+        // These two won't be equal when we receive a random
+        // reference from the bank and there is not qr code with
+        // that reference in our system but the terminal assigned
+        // to it says expected is true. so we need to create a qrcode
+        // with that reference but we don't need to generate qrstring
+        // or short url as that image will be useless and won't be used
+        if ($qrCode->getReference() === $qrCode->getId())
+        {
+            $qrCode->generateQrString();
+
+            $this->setShortUrl();
+        }
 
         $this->repo->transaction(function() use ($qrCode)
         {
@@ -81,7 +91,7 @@ class Generator extends Base\Core
 
     protected function createAndSetQrCode(array $input)
     {
-        $this->qrCode = (new Entity)->build($input);
+        $this->qrCode = (new Entity)->build($input)->generateId();
     }
 
     protected function setShortUrl()
@@ -128,6 +138,11 @@ class Generator extends Base\Core
 
     protected function generateQrCodeFile()
     {
+        if (empty($this->qrCode->getQrString()) === true)
+        {
+            return;
+        }
+
         $localFilePath = $this->generateQrCodeImage();
 
         $ext = self::QR_CODE_EXTENSION;
