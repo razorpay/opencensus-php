@@ -155,8 +155,8 @@ export class ActivationContainer extends React.Component {
         }
 
         // In Internal server error, only 1 error is sent and that is also removed above.
-        if (!errors.length) {
-          errors.push('Some error occurred');
+        if (!errors.length || (errors.length === 1 && !errors[0])) {
+          errors[0] = 'Network error occurred';
         }
 
         this.props.showNotification({
@@ -164,7 +164,9 @@ export class ActivationContainer extends React.Component {
           message: errors,
         });
 
-        return errors;
+        return {
+          errors,
+        };
       });
   };
 

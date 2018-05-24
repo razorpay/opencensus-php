@@ -18,9 +18,7 @@
         transform: none
 
 .Input--required
-  .Input-label
-    position: relative
-    &:after
+  .Input-label::after
       content: '*'
       font-size: 12px
       position: absolute
@@ -49,6 +47,7 @@
 
 .Input-label
   font-weight: bold
+  position: relative
 
 .Input:not(.Input-vTop) .Input-label
   top: 7px
