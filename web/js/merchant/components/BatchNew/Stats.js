@@ -1,7 +1,7 @@
 import { Fragment } from 'react';
 
 export default ({ stats }) => (
-  <div class="stats-info equal-margin">
+  <div class="stats-info">
     <table class="table">
       <tbody>
         {chunk(stats).map(([item0, item1]) => (
