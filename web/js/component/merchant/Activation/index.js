@@ -11,7 +11,10 @@ import {
   removeDropShield,
 } from 'merchant/components/File/Upload';
 
-import mainFormTabsContent, { mainFormTabs } from './ActivationFormMap';
+import mainFormTabsContent, {
+  mainFormTabs,
+  fieldNameMeta,
+} from './ActivationFormMap';
 import accountFormTabsContent, {
   accountFormTabs,
 } from './AccountActivationFormMap';
@@ -63,6 +66,7 @@ const BUSINESS_TYPE_FORM_STEP = 1; // If NGO is selected, then Document Upload w
 
 let FORM_TABS; // Maintains naming of the tabs
 let FORM_TABS_CONTENT; // Actual tab content corresponding to FORM_TABS
+let FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
 
 export default class ActivationWizard extends React.Component {
   state = {
@@ -111,6 +115,7 @@ export default class ActivationWizard extends React.Component {
 
       FORM_TABS = mainFormTabs;
       FORM_TABS_CONTENT = mainFormTabsContent;
+      FORM_TABS_NAMES = fieldNameMeta;
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
 
@@ -306,7 +311,7 @@ export default class ActivationWizard extends React.Component {
         isSaving: LOADING_STATES.PENDING,
       },
       () => {
-        window.clearTimeout(this.loaderTimeout); // Forget the previous loader timer on each new Pending
+        window.clearTimeout(this.loaderTimeout); // Reset the previous removeLoader-call timer on each new Pending
       }
     );
 
@@ -324,24 +329,34 @@ export default class ActivationWizard extends React.Component {
     }
 
     const currentDirty = this.state.dirty;
-    const data = {};
+    const reqData = {};
 
-    Object.keys(currentDirty).forEach(field => {
-      if (currentDirty.hasOwnProperty(field)) {
-        const fieldVal = currentDirty[field];
-        data[field] = fieldVal === '' ? null : fieldVal; // '' -> null. DB has default values as NULL.
+    /* Send only those fields which belongs to the TAB being saved */
+    Object.keys(currentDirty).forEach(name => {
+      if (
+        currentDirty.hasOwnProperty(name) &&
+        FORM_TABS_NAMES[currentActive].indexOf(name) !== -1
+      ) {
+        // Saving only the fields corresponding to currentActive tab.
+        const fieldVal = currentDirty[name];
+        reqData[name] = fieldVal === '' ? null : fieldVal; // '' -> null. DB has default values as NULL.
       }
     });
 
+    if (!Object.keys(reqData).length) {
+      return; // Nothing changed on the currentActive Tab, although the data do exist in dirty
+    }
+
+    // '' -> null inside state.dirty for easy OLD and LATEST data comparison. Also, update dirty to the last saved
     this.setState({
-      dirty: data,
-    }); // '' -> null inside state.dirty for easy OLD and LATEST data comparison.
+      dirty: { ...currentDirty, ...reqData }, // dirty must be exact same as per above modifications
+    });
 
     /* Following is api call and post response handling */
     const savingWhichTab = currentActive;
-    const savingDataOfWhichTab = { ...data };
+    const savingDataOfWhichTab = { ...reqData };
 
-    this.props.save(data).then(data => {
+    this.props.save(reqData).then(data => {
       if (this.unMounted) {
         return; // No further actions if component unmounted. To handle cross btn close, where only hit Api without doing then.
       }
@@ -359,37 +374,6 @@ export default class ActivationWizard extends React.Component {
 
       if (data.errors) {
         cb && cb(false, data.errors);
-
-        if (savingWhichTab && savingWhichTab !== this.state.activeTab) {
-          // On error, "IF TAB IS CHANGED", then remove the 'savingFieldsOfWhichTab' keys from state.dirty.
-          // To handle cases where Ghost of incorrect filled value in previous tab is not letting current tab being saved.
-          // Also, person will have to fill all 'savingFieldsOfWhichTab' fields in dirty data again..
-
-          const latestDirty = { ...this.state.dirty };
-
-          // TODO: -> If connection is slow, user edited AND SAVED the different tab field before previous response(having error), then this SAVE will also fail.
-          // TODO: + This could be handlded by each tab having its own dirty state.
-          // TODO: + Note, this won't create problem for same tab field editing-saving, cuz anyways, dirty will get retained by default.
-          Object.keys(savingDataOfWhichTab).forEach(key => {
-            if (
-              savingDataOfWhichTab.hasOwnProperty(key) &&
-              savingDataOfWhichTab[key] == this.state.dirty[key]
-            ) {
-              /*
-              * Remove only those set of fields whose api request failed, while retaining changes of new form edits(latest state.dirty).
-              * Also, handles case where user edited same field whose request failed. But it's treated as fresh value.
-              * Also, otherwise if deleted from state.dirty, DOM form view will display a value that's not present in state.dirty.
-              * */
-
-              delete latestDirty[key];
-            }
-          });
-
-          // Don't set dirty = {}, cuz internet might be slow and user has already edited some other fields.
-          this.setState({
-            dirty: latestDirty,
-          });
-        }
 
         /*
         * We're not doing any change on dirty, if it's SAME tab.
@@ -1092,7 +1076,10 @@ function ActivationField(field) {
   let defaultValue, key;
   if (rest.name) {
     key = rest.name;
-    defaultValue = this.props.data[key];
+    /*
+    * Dirty data is priority as user can switch tabs fast before api success, so dirty would have latest FE data but props not
+    * */
+    defaultValue = this.state.dirty[key] || this.props.data[key];
   } else if (_name) {
     defaultValue = this.state[_name];
     key = _name;

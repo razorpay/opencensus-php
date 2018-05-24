@@ -590,10 +590,37 @@ export const mainFormTabs = [
 ];
 
 // Tabs content
-export default [
+let tabsData;
+export default (tabsData = [
   contactFields,
   businessModel,
   registrationDetails,
   bankAccountFields,
   uploadFields,
-];
+]);
+
+/* Note: This works only when FORM_TAB_CONTENT is has not splied out anything from middle */
+export const fieldNameMeta = (function() {
+  const formNames = [];
+
+  for (let t = 0; t < tabsData.length; t++) {
+    const tabNames = [];
+    tabsData[t].forEach(f => {
+      if (Array.isArray(f)) {
+        return f.forEach(gf => {
+          // groups fields are array.
+          if (gf.name) {
+            tabNames.push(gf.name); // Check if this field has name attribute
+          }
+        });
+      } else if (f.name) {
+        // Check if the field has name attribute
+        tabNames.push(f.name);
+      }
+    });
+
+    formNames.push(tabNames);
+  }
+
+  return formNames;
+})();
