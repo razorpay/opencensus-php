@@ -1681,3 +1681,5 @@ UPDATE line_items l
 SET    l.tax_rate = i.tax_rate
 WHERE  l.tax_rate IS NULL
        AND i.tax_rate IS NOT NULL;
+
+update qr_code set reference = id;
