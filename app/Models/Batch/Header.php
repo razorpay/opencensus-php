@@ -285,11 +285,13 @@ class Header
             self::INPUT => [
                 self::PAYMENT_ID,
                 self::AMOUNT,
+                self::NOTES,
             ],
 
             self::OUTPUT => [
                 self::PAYMENT_ID,
                 self::AMOUNT,
+                self::NOTES,
                 self::REFUND_ID,
                 self::REFUNDED_AMOUNT,
                 self::STATUS,
