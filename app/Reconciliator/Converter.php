@@ -33,6 +33,14 @@ class Converter extends Base\Core
         'ref'  => 'reference',
     ];
 
+    const NORMALIZED_HEADER_GATEWAYS = [
+        RequestProcessor\Base::BILLDESK,
+        RequestProcessor\Base::FREECHARGE,
+        RequestProcessor\Base::HDFC,
+        RequestProcessor\Base::MOBIKWIK,
+        RequestProcessor\Base::PAYZAPP
+    ];
+
     const MAX_SHEETS_ALLOWED = 3;
     const ROW_CHUNK_SIZE = 3000;
 
@@ -191,10 +199,11 @@ class Converter extends Base\Core
     }
 
     public function convertCsvToArray(
-        $fileDetails,
-        $columnHeaders = [],
+        array $fileDetails,
+        array $columnHeaders = [],
         array $linesToSkip = [],
-        $delimiter = ',')
+        string $delimiter = ',',
+        string $gateway): array
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
@@ -251,6 +260,16 @@ class Converter extends Base\Core
                             'The number of columns in the row does not match the column headers count.',
                             ['file_details' => $fileDetails, 'column_headers' => $columnHeaders, 'row' => $row]
                         );
+                    }
+
+                    /**
+                     * Enabling header normalization for limited gateways for now.
+                     * Will migrate other gateways gradually.
+                     */
+                    if(in_array($gateway,self::NORMALIZED_HEADER_GATEWAYS, true) === true)
+                    {
+                        //Normalizes the header values of file
+                        $columnHeaders = $this->normalizeHeaders($columnHeaders);
                     }
 
                     // Combines the columnHeaders(keys) with the row(values).

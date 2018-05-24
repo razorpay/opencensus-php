@@ -414,7 +414,12 @@ class Orchestrator extends Base\Core
 
         $delimiter = $this->gatewayReconciliator->getDelimiter();
 
-        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders, $linesToSkip, $delimiter);
+        $csvArray = $this->converter->convertCsvToArray(
+            $fileDetails,
+            $columnHeaders,
+            $linesToSkip,
+            $delimiter,
+            $this->gateway);
 
         $this->setExtraDetails($csvArray, $fileDetails);
         $this->allFilesContents[] = $csvArray;

@@ -13,13 +13,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID      = 'Order Id';
-    const COLUMN_SERVICE_TAX     = 'Service Tax';
-    const COLUMN_SB_CESS         = 'Swachh Bharat Cess';
-    const COLUMN_KK_CESS         = 'Krishi Kalyan Cess';
-    const COLUMN_FEE             = 'Net Deduction';
-    const COLUMN_PAYMENT_AMOUNT  = 'Total Transaction Amount';
-    const COLUMN_SETTLED_AT      = 'Settlement Date';
+    const COLUMN_PAYMENT_ID      = 'order_id';
+    const COLUMN_SERVICE_TAX     = 'service_tax';
+    const COLUMN_SB_CESS         = 'swachh_bharat_cess';
+    const COLUMN_KK_CESS         = 'krishi_kalyan_cess';
+    const COLUMN_FEE             = 'net_deduction';
+    const COLUMN_PAYMENT_AMOUNT  = 'total_transaction_amount';
+    const COLUMN_SETTLED_AT      = 'settlement_date';
 
     const SETTLEMENT_DATE_FORMAT = 'jS F Y';
 
@@ -104,7 +104,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'trace_code'    => TraceCode::RECON_INFO_ALERT,
                     'message'       => 'Unable to parse settlement date -> ' . $ex->getMessage(),
                     'row'           => $row,
-                    'gateway'       => get_called_class()
+                    'gateway'       => $this->gateway
                 ]);
 
             $this->app['trace']->traceException($ex);
@@ -124,7 +124,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
-                    'gateway'         => get_called_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             return false;

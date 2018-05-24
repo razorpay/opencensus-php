@@ -9,8 +9,8 @@ class RefundReconciliate extends Base\RefundReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID    = 'OrderID';
-    const COLUMN_REFUND_AMOUNT = 'RefundAmount';
+    const COLUMN_PAYMENT_ID    = 'orderid';
+    const COLUMN_REFUND_AMOUNT = 'refundamount';
 
     /**
      * Gets refund Id from row data
