@@ -80,12 +80,12 @@ class Gateway extends Base\Gateway
             $this->formatAmount($content[ResponseFields::AMOUNT])
         );
 
+        $this->checkCallbackStatus($content);
+
         $this->verifyCallback($input, $content);
 
         // Saving callback response only if the verification passes
         $this->saveCallbackResponse($content);
-
-        $this->checkCallbackStatus($content);
 
         return $this->getCallbackResponseData($input);
     }
