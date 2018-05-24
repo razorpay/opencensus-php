@@ -301,9 +301,14 @@ export default class ActivationWizard extends React.Component {
       return;
     }
 
-    this.setState({
-      isSaving: LOADING_STATES.PENDING,
-    });
+    this.setState(
+      {
+        isSaving: LOADING_STATES.PENDING,
+      },
+      () => {
+        window.clearTimeout(this.loaderTimeout); // Forget the previous loader timer on each new Pending
+      }
+    );
 
     /* Check validity of 'Bank account no.' before saving */
     if (currentActive == BANK_ACCOUNT_TAB) {
@@ -503,7 +508,7 @@ export default class ActivationWizard extends React.Component {
   * Default delay = 7 sec
   * */
   removeLoader = delay => {
-    setTimeout(() => {
+    this.loaderTimeout = setTimeout(() => {
       this.setState({ isSaving: LOADING_STATES.INITIAL });
     }, delay || 7000); // Success states can be removed in 3sec.
   };
