@@ -151,6 +151,7 @@ export default class ReportsContainer extends Component {
         .subtract(1, 'months')
         .startOf('month'),
       currentReportList,
+      pollInstances: {},
     };
 
     this.onConfigChange = ::this.onConfigChange;
@@ -271,10 +272,10 @@ export default class ReportsContainer extends Component {
       });
   }
 
-  updateStore = (data, shoudlInitialize) => {
+  updateStore = (data, shouldInitialize) => {
     let downloadTimeLapse = new Date().getTime() - data.created_at * 1000;
 
-    if (shoudlInitialize) {
+    if (shouldInitialize) {
       this.props.addReportToList(data);
       trackTimeLapse('Download Start', downloadTimeLapse);
     } else {
@@ -282,7 +283,15 @@ export default class ReportsContainer extends Component {
     }
   };
 
-  generateReport(_, emails = null) {
+  saveLongPollInstances = (reportId, pollInstance) => {
+    let pollInstances = { ...this.state.pollInstances };
+
+    pollInstances[reportId] = pollInstance;
+
+    this.setState({ pollInstances });
+  };
+
+  generateReport() {
     let selectedConfig = { ...this.state.selectedConfig };
     const { selectedAccount, currentReportList } = this.state,
       { date, type, invoiceDate } = this.props,
@@ -354,7 +363,8 @@ export default class ReportsContainer extends Component {
         return generateReportV2(
           reqData,
           isMerchantAccount,
-          this.updateStore
+          this.updateStore,
+          this.saveLongPollInstances
         ).then(data => {
           if (data.error) {
             return this.props.showNotification({
@@ -362,8 +372,8 @@ export default class ReportsContainer extends Component {
               message: data.error,
             });
           }
-
-          window.location = data.url;
+          window.open(data.url, '_blank');
+          // window.location = ;
         });
       }
 
@@ -520,9 +530,11 @@ export default class ReportsContainer extends Component {
   };
 
   cancelReportDownload = (reportId, timeLapse) => {
-    const { currentReportList } = this.state;
+    const { currentReportList, pollInstances } = this.state;
 
     timeLapse = new Date().getTime() - timeLapse;
+
+    pollInstances[reportId].abort();
 
     this.props.closeModal();
     this.props.removeReportFromList(reportId);
@@ -552,7 +564,10 @@ export default class ReportsContainer extends Component {
     let isCurrentConfigSelected = false;
 
     Object.keys(currentReportList).forEach(reportId => {
-      if (currentReportList[reportId]['config_id'] === selectedConfig.value) {
+      if (
+        currentReportList[reportId]['config_id'] === selectedConfig.value &&
+        currentReportList[reportId]['status'] === 'created'
+      ) {
         isCurrentConfigSelected = true;
       }
     });

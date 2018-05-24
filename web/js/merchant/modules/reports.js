@@ -71,7 +71,12 @@ export const generateReport = ajaxParams => {
 const pollInterval = 2, // poll interval in SECONDS
   timeout = 30 * 60 * 1000; // 30 minutes
 
-export const generateReportV2 = (params, isMerchantAccount, updateStore) => {
+export const generateReportV2 = (
+  params,
+  isMerchantAccount,
+  updateStore,
+  saveLongPollInstances
+) => {
   const startTime = new Date(),
     accountHeaderVal = !isMerchantAccount && params.generated_by;
 
@@ -124,6 +129,8 @@ export const generateReportV2 = (params, isMerchantAccount, updateStore) => {
           return nextCallWaittime;
         },
       });
+
+      saveLongPollInstances(logId, logPoll);
 
       return logPoll.promise
         .then(resp => {
