@@ -100,7 +100,12 @@ class IcicFirstData extends Base
 
         $gatewayEntitiesAll = $this->repo
                                    ->$gateway
-                                   ->fetchByPaymentIdsAndActions($paymentIds, [Action::AUTHORIZE, Action::CAPTURE]);
+                                   ->fetchByPaymentIdsAndActions($paymentIds,
+                                       [
+                                           Action::PURCHASE,
+                                           Action::AUTHORIZE,
+                                           Action::CAPTURE
+                                       ]);
 
         $gatewayEntities = [];
 
