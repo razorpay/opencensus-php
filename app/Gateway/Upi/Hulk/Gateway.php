@@ -379,6 +379,9 @@ class Gateway extends Base\Gateway
 
     protected function updateGatewayPaymentResponse($payment, array $response)
     {
+        // Unsetting as we don't want to override it
+        unset($response[Entity::TYPE]);
+
         $attr = $this->getMappedAttributes($response);
 
         $attr[Entity::VPA] = array_get($response, Fields::SENDER.'.'.Fields::ADDRESS);
