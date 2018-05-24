@@ -117,7 +117,7 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchantDetails);
 
-        $response['updated_at'] = $merchantDetails->getUpdatedAt(); // To add the latest update_at value in $response.
+        $response = $core->createResponse($merchantDetails); // Earlier $response could become stale while simulataneous uploads. So prepare fresh response.
 
         return $response;
     }
