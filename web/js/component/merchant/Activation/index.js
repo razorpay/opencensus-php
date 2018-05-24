@@ -45,7 +45,11 @@ function defaultFieldProps(f) {
   }
 
   if (f.hasOwnProperty('validator') && typeof f.validator === 'function') {
-    f.validator = f.validator.bind(self); // Dynamic description based on other fields must be able to access this.state.dirty and this.props
+    f.validator = f.validator.bind(self); // Field dependent on other field must auto update its validator. Recommended to use with `_autoRenderImpure` to auto show error simultaneously as the other fiels is being updated.
+  }
+
+  if (f.hasOwnProperty('onBlur') && typeof f.onBlur === 'function') {
+    f.onBlur = f.onBlur.bind(self); // Control dependent field for auto-focus, etc.
   }
 
   if (!f.hasOwnProperty('autoComplete')) {
@@ -54,6 +58,7 @@ function defaultFieldProps(f) {
 }
 
 let DOCUMENT_UPLOAD_STEP; // To handle specific case for document step
+let BANK_ACCOUNT_TAB; // To handle specific case for bank account step
 const BUSINESS_TYPE_FORM_STEP = 1; // If NGO is selected, then Document Upload would have 2 more fields
 
 let FORM_TABS; // Maintains naming of the tabs
@@ -91,6 +96,7 @@ export default class ActivationWizard extends React.Component {
 
       FORM_TABS = [...accountFormTabs];
       FORM_TABS_CONTENT = [...accountFormTabsContent];
+      BANK_ACCOUNT_TAB = 1;
       DOCUMENT_UPLOAD_STEP = 2;
 
       // Removing document upload
@@ -105,6 +111,7 @@ export default class ActivationWizard extends React.Component {
 
       FORM_TABS = mainFormTabs;
       FORM_TABS_CONTENT = mainFormTabsContent;
+      BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
 
       // Business Category in "Business Model" exists in main activation form. Setting value dynamically from props.
@@ -133,7 +140,7 @@ export default class ActivationWizard extends React.Component {
       FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(
         a =>
           (a.onChange = (file, progressTracker) => {
-            return props.saveFile(a.name, file, progressTracker).then(resp => {
+            return props.saveFile(a.name, file, progressTracker).then(() => {
               this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
             });
           })
@@ -279,16 +286,14 @@ export default class ActivationWizard extends React.Component {
     }
 
     let currentActive = this.state.activeTab; // currentActive = The tab of which dirty data is saved
-    let tabs = this.state.tabs.slice();
 
     newActiveTab = newActiveTab != null ? newActiveTab : currentActive; // currentActive tab remains as newActiveTab (To handle Save btn click and 'Submit Form' tab click).
-
-    let shouldSave = Object.keys(this.state.dirty).length ? true : null;
 
     this.setState({
       activeTab: newActiveTab,
     });
 
+    let shouldSave = Object.keys(this.state.dirty).length ? true : null;
     if (!shouldSave) {
       this.updateFEOnlyValues();
 
@@ -299,6 +304,19 @@ export default class ActivationWizard extends React.Component {
     this.setState({
       isSaving: LOADING_STATES.PENDING,
     });
+
+    /* Check validity of 'Bank account no.' before saving */
+    if (currentActive == BANK_ACCOUNT_TAB) {
+      if (
+        this.state.dirty.hasOwnProperty('bank_account_number') &&
+        (!this.state.dirty.bank_account_number ||
+          this.state.dirty.bank_account_number != this.state.account_no)
+      ) {
+        this.handleBankAccountMismatch(newActiveTab !== currentActive); // Tab is changed
+
+        return; // Don't make api call if mismatch
+      }
+    }
 
     const currentDirty = this.state.dirty;
     const data = {};
@@ -433,6 +451,35 @@ export default class ActivationWizard extends React.Component {
     });
   }
 
+  /*
+  * Handle Account No. re-enter match before saving.
+  * It mimicks loader used for API to handle cases if tab is changed.
+  * */
+  handleBankAccountMismatch(isTabSwitched) {
+    if (isTabSwitched) {
+      const latestDirty = { ...this.state.dirty };
+
+      delete latestDirty['bank_account_number']; // Remove 'bank_account_number', so it's Ghost won't prevent other tabs to save, once switched
+
+      this.setState({
+        dirty: latestDirty,
+        account_no: this.props.data && this.props.data.bank_account_number, // Reset account_no
+      });
+    }
+
+    /*
+     Not resetting state.dirty / account_no if tab is not changed.
+    * */
+
+    setTimeout(() => {
+      this.setState({
+        isSaving: LOADING_STATES.ERROR, // Mimick api behavior on FE
+      });
+
+      this.removeLoader();
+    }, 1000); // Let loader be seen for 1 sec
+  }
+
   submitForm = () => {
     const promise = this.props.submitForm();
 
@@ -456,7 +503,7 @@ export default class ActivationWizard extends React.Component {
   * Default delay = 7 sec
   * */
   removeLoader = delay => {
-    setTimeout(_ => {
+    setTimeout(() => {
       this.setState({ isSaving: LOADING_STATES.INITIAL });
     }, delay || 7000); // Success states can be removed in 3sec.
   };
@@ -679,10 +726,6 @@ export default class ActivationWizard extends React.Component {
     const isCurrentTabValid = this.state.tabs[activeTab];
 
     let isLastTab = activeTab == FORM_TABS.length - 1;
-
-    // Data would be present, otherwise spinner is shown before this activation wizard
-    let currentBusinessType =
-      this.state.dirty.business_type || this.props.data.business_type;
 
     let content;
     let documentContent; // Document content will always be shown so that upload progress is maintained in DOM
@@ -1103,7 +1146,6 @@ function isFieldValid(field, activation) {
 * Submit Form opens with backdrop inside Activation form's main content
 * - The activeTab keeps showing in the background
 * - @props
-*     {Function} CloseSubmitForm, just closes the submit form layer and focuses back the activeTab
 *     {Function} submitActvationForm, call the submit form api
 * */
 class SubmitForm extends React.Component {
@@ -1120,8 +1162,6 @@ class SubmitForm extends React.Component {
   };
 
   render() {
-    const { closeSubmitForm } = this.props;
-
     return (
       <div class="SubmitForm-modal">
         <main-title>

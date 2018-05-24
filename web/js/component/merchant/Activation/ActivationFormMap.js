@@ -418,15 +418,24 @@ const bankAccountFields = [
     onFocus: e => {
       document.getElementsByName('bank_account_number')[0].type = 'text';
     },
-    onBlur: e => {
+    onBlur: function(e) {
       document.getElementsByName('bank_account_number')[0].type = 'password';
-      document.querySelector('[data-name="account_no"]').focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
+
+      const bankAccountNumber = this.state.dirty.bank_account_number;
+      const accountNo = this.state.account_no;
+
+      const isMatching = bankAccountNumber && bankAccountNumber == accountNo;
+
+      if ((!!bankAccountNumber && !accountNo) || !isMatching) {
+        document.querySelector('[data-name="account_no"]').focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
+      }
     },
   },
   {
     _name: 'account_no',
     label: 'Re-Enter Account Number',
     type: 'password',
+    required: false,
     autoComplete: 'new-password',
     info: 'Please re-enter the bank account number.',
     _autoRenderImpure: true, // Re-render to show the error
