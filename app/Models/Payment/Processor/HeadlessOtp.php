@@ -54,12 +54,19 @@ trait HeadlessOtp
             ($response['data']['action'] === 'page_resolved') and
             ($response['data']['data']['type'] === 'otp'))
         {
-            $payment->setFlow(Payment\Flow::HEADLESS_OTP);
+            $this->cache->set($this->getHeadlessCacheKey($payment), true);
 
             return ['url' => $this->getOtpSubmitUrl(), 'method' => 'POST'];
         }
 
         return $request;
+    }
+
+    protected function getHeadlessCacheKey($payment)
+    {
+        $key = $payment->getId() . '_headless';
+
+        return $key;
     }
 
     protected function submitHeadlessOtp($payment, $gatewayInput)
