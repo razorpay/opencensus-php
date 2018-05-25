@@ -113,7 +113,7 @@ export default class ActivationWizard extends React.Component {
 
       FORM_TABS = [...accountFormTabs];
       FORM_TABS_CONTENT = [...accountFormTabsContent];
-      FORM_TABS_NAMES = accountFormFieldNamesMeta;
+      FORM_TABS_NAMES = [...accountFormFieldNamesMeta];
       BANK_ACCOUNT_TAB = 1;
       DOCUMENT_UPLOAD_STEP = 2;
 
@@ -121,6 +121,7 @@ export default class ActivationWizard extends React.Component {
       if (!props.data.need_kyc) {
         FORM_TABS.splice(DOCUMENT_UPLOAD_STEP, 1);
         FORM_TABS_CONTENT.splice(DOCUMENT_UPLOAD_STEP, 1);
+        FORM_TABS_NAMES.splice(DOCUMENT_UPLOAD_STEP, 1);
 
         DOCUMENT_UPLOAD_STEP = null; // To set 'Document Upload Step' is not available.
       }

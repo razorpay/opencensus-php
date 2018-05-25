@@ -147,6 +147,8 @@ export default class Field extends React.Component {
   requiredError = 'Please fill out this field';
   patternError = 'Please enter valid value';
 
+  // Note 'autoRender' is not to update the value. It's just to update non-value stuffs like : info, description, etc.
+  // To update value of such use pure JS.
   shouldComponentUpdate(nextProps, nextState) {
     // Field is marked impure-component if it's to auto-render, cuz it's dependent on render of other field, then allow 'auto re-render'.
     if (this.props.autoRender === true || this.state !== nextState) {

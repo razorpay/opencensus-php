@@ -84,9 +84,7 @@ export function validateCIN(value) {
 // TODO: Convert to return true/false and make it consumable
 // Use required validator if the field is mandatory. This fn. only check whether value if present is valid or not
 export function validateIFSC(value) {
-  return value && value.length != 11
-    ? 'IFSC code must be 11 characters'
-    : undefined;
+  return value && value.length != 11 && 'IFSC code must be 11 characters';
 }
 
 export function validateMultipleEmails(emails) {

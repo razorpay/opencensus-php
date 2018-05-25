@@ -472,11 +472,14 @@ const bankAccountFields = [
     info: function() {
       const currentBusinessType =
         this.state.dirty.business_type || this.props.data.business_type;
+
+      let text = 'Company';
+
       if ([LLP, INDIVIDUAL].indexOf(Number(currentBusinessType)) !== -1) {
-        return 'The beneficiary name should be same as Individual name';
+        text = 'Individual';
       }
 
-      return 'The beneficiary name should be same as the Company name';
+      return `The beneficiary name should be same as ${text} name`;
     },
   },
 ];
@@ -609,16 +612,18 @@ export const mainFormTabs = [
 ];
 
 // Tabs content
-let tabsData;
-export default (tabsData = [
+const tabsData = [
   contactFields,
   businessModel,
   registrationDetails,
   bankAccountFields,
   uploadFields,
-]);
+];
 
-/* Note: This works only when FORM_TAB_CONTENT is has not splied out anything from middle */
+/*
+* Note: If some Form Tab is removed from `tabsData`, then it's corresponding fields must also be removed from formNamesMeta.
+* The same you can check for data.need_kyc LA accounts
+*/
 export const mainFormFieldNamesMeta = (function() {
   const formNames = [];
 
@@ -643,3 +648,5 @@ export const mainFormFieldNamesMeta = (function() {
 
   return formNames;
 })();
+
+export default tabsData;
