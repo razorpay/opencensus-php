@@ -494,9 +494,13 @@ class Generator extends Base\Core
             return;
         }
 
+        //
+        // Note: Currently address has to be of type - billing or shipping. In invoice, an address(be billing or
+        // shipping) can be used for any purpose without type restriction.
+        //
         $address = $this->repo
                         ->address
-                        ->findByPublicIdEntityAndTypeOrFail($id, $this->invoice->customer, $type);
+                        ->findByPublicIdEntityAndTypeOrFail($id, $this->invoice->customer);
 
         $this->invoice->$relation()->associate($address);
     }

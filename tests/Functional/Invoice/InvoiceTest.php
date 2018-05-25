@@ -665,6 +665,21 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateDraftInvoiceWithSameBillingAndShippingAddressIds()
+    {
+        $this->fixtures->create(
+            'address',
+            [
+                'id'      => '1000000address',
+                'type'    => 'billing_address',
+                'primary' => false,
+            ]);
+
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
     public function testUpdateDraftInvoiceWithInvalidCustomerBillingAddressId()
     {
         //
