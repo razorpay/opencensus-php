@@ -17,6 +17,7 @@ class RefundReconciliate extends Base\RefundReconciliate
     const COLUMN_REFUND_AMOUNT          = 'amount';
     const COLUMN_ISSETTLED              = 'issettled';
     const COLUMN_DATETIME               = 'datetime';
+    const COLUMN_CURRENCY_CODE          = 'tran_currency_code';
 
     const REFUND_RECON_SKIP_TIMESTAMP   = '2018-03-05 23:48:09';
 
@@ -126,7 +127,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      */
     protected function validateRefundAmountEqualsReconAmount(array $row)
     {
-        if ($this->refund->getBaseAmount() !== $this->getReconRefundAmount($row))
+        if ($this->refund->getAmount() !== $this->getReconRefundAmount($row))
         {
             $this->messenger->raiseReconAlert(
                 [
@@ -140,6 +141,42 @@ class RefundReconciliate extends Base\RefundReconciliate
 
             return false;
         }
+        return true;
+    }
+
+    protected function getReconCurrencyCode($row)
+    {
+        if (empty($row[self::COLUMN_CURRENCY_CODE]) === true)
+        {
+            $this->reportMissingColumn($row, self::COLUMN_CURRENCY_CODE);
+
+            return null;
+        }
+
+        return $row[self::COLUMN_CURRENCY_CODE];
+    }
+
+    protected function validateRefundCurrencyCodeEqualsReconCurrencyCode(array $row)
+    {
+        $expectedCurrency = Currency::getIsoCode($this->refund->getCurrency());
+
+        $reconCurrency = $this->getReconCurrencyCode($row);
+
+        if ($expectedCurrency !== $reconCurrency)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'message'           => 'Refund currency mismatch',
+                    'expected_currency' => $expectedCurrency,
+                    'recon_currency'    => $reconCurrency,
+                    'row'               => $row,
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+
         return true;
     }
 }

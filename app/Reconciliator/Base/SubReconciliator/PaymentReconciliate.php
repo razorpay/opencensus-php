@@ -191,7 +191,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $validPaymentAmount = $this->validatePaymentAmountEqualsReconAmount($row);
 
-        $validPaymentDetails = ($validPaymentStatus and $validPaymentAmount);
+        $validCurrencyCode  = $this->validatePaymentCurrencyCodeEqualsReconCurrencyCode($row);
+
+        $validPaymentDetails = ($validPaymentStatus and $validPaymentAmount and $validCurrencyCode);
 
         return $validPaymentDetails;
     }
@@ -1667,6 +1669,19 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * @return bool
      */
     protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        return true;
+    }
+
+    /**
+     * Checks if currency code in recon file matches the actual currency in payment entity
+     * Implementation to be provided by child classes
+     *
+     * @param  array $row Row data
+     *
+     * @return bool
+     */
+    protected function validatePaymentCurrencyCodeEqualsReconCurrencyCode(array $row)
     {
         return true;
     }
