@@ -12,6 +12,7 @@ class AuthType
     const SKIP          = 'skip';
     const PIN           = 'pin';
     const _3DS          = '3ds';
+    const OTP           = 'otp';
 
     public static $types = [
         Method::EMANDATE => [
@@ -21,11 +22,13 @@ class AuthType
         Method::CARD    => [
             self::PIN,
             self::_3DS,
+            self::OTP,
             self::SKIP,
         ],
         Method::EMI     => [
             self::PIN,
-            self::_3DS
+            self::_3DS,
+            self::OTP,
         ],
     ];
 
