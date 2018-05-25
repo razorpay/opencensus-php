@@ -558,7 +558,7 @@ const uploadFields = [
       <span>
         Upload<b> both sides </b>of the government issued photo ID (Passport /
         Aadhaar / Driving License / Election Card). You can use{' '}
-        <a href="www.pdfjoiner.com" target="_blank">
+        <a href="http://www.pdfjoiner.com" target="_blank">
           pdfjoiner.com
         </a>{' '}
         to join 2 different photos.

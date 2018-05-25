@@ -239,8 +239,6 @@ export default class Field extends React.Component {
       if (infoEle) {
         // If info is thenable to get real time info based on input
         if (infoEle.then) {
-          infoEle = '...';
-
           infoEle
             .then(data => {
               this.setState({
@@ -252,6 +250,8 @@ export default class Field extends React.Component {
                 infoEle: null,
               });
             });
+
+          infoEle = '...'; // Setting loading state
         }
 
         this.setState({
