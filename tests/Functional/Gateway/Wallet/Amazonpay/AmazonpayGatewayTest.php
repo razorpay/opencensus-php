@@ -7,7 +7,9 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Exception\GatewayErrorException;
 use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Exception\PaymentVerificationException;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields;
 use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -206,7 +208,13 @@ class AmazonpayGatewayTest extends TestCase
 
     public function testPaymentSuccessVerifyInvalidParams()
     {
-        $this->runVerifyFailureFlow(__FUNCTION__);
+        $this->makeRequestAndCatchException(
+            function()
+            {
+                $this->runVerifyFailureFlow(
+                    'testPaymentSuccessVerifyInvalidParams',
+                    GatewayErrorException::class);
+            });
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
@@ -216,13 +224,18 @@ class AmazonpayGatewayTest extends TestCase
         $this->assertNotNull($wallet[WalletEntity::REFERENCE1]);
 
         // We store the verify response request id in reference2
-        $this->assertNotNull($wallet[WalletEntity::REFERENCE2]);
+        $this->assertNull($wallet[WalletEntity::REFERENCE2]);
     }
 
     public function testPaymentSuccessVerifyEmptyString()
     {
-        // xml converstion to array for empty string '' equals FALSE
-        $this->runVerifyFailureFlow(__FUNCTION__);
+        $this->makeRequestAndCatchException(
+            function()
+            {
+                $this->runVerifyFailureFlow(
+                    'testPaymentSuccessVerifyEmptyString',
+                    GatewayErrorException::class);
+            });
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
@@ -237,8 +250,13 @@ class AmazonpayGatewayTest extends TestCase
 
     public function testPaymentSuccessVerifyRandomString()
     {
-        // xml converstion to array for random string 'Mayank' results in an exception
-        $this->runVerifyFailureFlow(__FUNCTION__);
+        $this->makeRequestAndCatchException(
+            function()
+            {
+                $this->runVerifyFailureFlow(
+                    'testPaymentSuccessVerifyRandomString',
+                    GatewayErrorException::class);
+            });
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
@@ -276,7 +294,13 @@ class AmazonpayGatewayTest extends TestCase
     public function testPaymentVerifyIncompleteResponse()
     {
         // Incomplete response causes gatewaySuccess = false
-        $this->runVerifyFailureFlow(__FUNCTION__);
+        $this->makeRequestAndCatchException(
+            function()
+            {
+                $this->runVerifyFailureFlow(
+                    'testPaymentVerifyIncompleteResponse',
+                    GatewayErrorException::class);
+            });
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
@@ -284,9 +308,6 @@ class AmazonpayGatewayTest extends TestCase
 
         // We store the Signature in this field during authorize flow
         $this->assertNotNull($wallet[WalletEntity::REFERENCE1]);
-
-        // Failure response also contains a requestId that we can save
-        $this->assertNotNull($wallet[WalletEntity::REFERENCE2]);
     }
 
     public function testVerifyMutlipleVerifyTablesOneSuccess()
@@ -338,20 +359,16 @@ class AmazonpayGatewayTest extends TestCase
     {
         $this->doAuthCaptureAndRefundPayment($this->payment);
 
-        $refund = $this->getDbLastEntityPublic(ConstantsEntity::REFUND);
+        $refund = $this->getDbLastRefund();
 
-        $this->assertEquals(Refund\Status::PROCESSED, $refund[Refund\Entity::STATUS]);
+        $this->assertTrue($refund->isProcessed());
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
         $this->assertTestResponse($wallet);
 
-        $this->assertEquals($refund[Refund\Entity::ID], Refund\Entity::getSignedId($wallet[WalletEntity::REFUND_ID]));
-        $this->assertEquals($refund[Refund\Entity::PAYMENT_ID],
-                            Payment\Entity::getSignedId($wallet[WalletEntity::PAYMENT_ID]));
-
-        // Request ID is saved in the reference2 attribute
-        $this->assertNotNull($wallet[WalletEntity::REFERENCE2]);
+        $this->assertEquals($refund->getId(), $wallet[WalletEntity::REFUND_ID]);
+        $this->assertEquals($refund->getPaymentId(), $wallet[WalletEntity::PAYMENT_ID]);
     }
 
     public function testPaymentRefundInitiationFailed()
@@ -360,20 +377,13 @@ class AmazonpayGatewayTest extends TestCase
 
         $this->doAuthCaptureAndRefundPayment($this->payment);
 
-        $refund = $this->getDbLastEntityPublic(ConstantsEntity::REFUND);
+        $refund = $this->getDbLastRefund();
 
-        $this->assertEquals(Refund\Status::FAILED, $refund[Refund\Entity::STATUS]);
+        $this->assertTrue($refund->isStatusFailed());
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
         $this->assertTestResponse($wallet);
-
-        $this->assertEquals($refund[Refund\Entity::ID], Refund\Entity::getSignedId($wallet[WalletEntity::REFUND_ID]));
-        $this->assertEquals($refund[Refund\Entity::PAYMENT_ID],
-                            Payment\Entity::getSignedId($wallet[WalletEntity::PAYMENT_ID]));
-
-        // Request ID is saved in the reference2 attribute
-        $this->assertNotNull($wallet[WalletEntity::REFERENCE2]);
     }
 
     public function testPaymentRefundInitiateEmptyResult()
@@ -382,20 +392,13 @@ class AmazonpayGatewayTest extends TestCase
 
         $this->doAuthCaptureAndRefundPayment($this->payment);
 
-        $refund = $this->getDbLastEntityPublic(ConstantsEntity::REFUND);
+        $refund = $this->getDbLastRefund();
 
-        $this->assertEquals(Refund\Status::FAILED, $refund[Refund\Entity::STATUS]);
+        $this->assertTrue($refund->isStatusFailed());
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
         $this->assertTestResponse($wallet);
-
-        $this->assertEquals($refund[Refund\Entity::ID], Refund\Entity::getSignedId($wallet[WalletEntity::REFUND_ID]));
-        $this->assertEquals($refund[Refund\Entity::PAYMENT_ID],
-                            Payment\Entity::getSignedId($wallet[WalletEntity::PAYMENT_ID]));
-
-        // Request ID is saved in the reference2 attribute
-        $this->assertNotNull($wallet[WalletEntity::REFERENCE2]);
     }
 
     public function testPaymentRefundInitiateEmptyStatus()
@@ -404,20 +407,13 @@ class AmazonpayGatewayTest extends TestCase
 
         $this->doAuthCaptureAndRefundPayment($this->payment);
 
-        $refund = $this->getDbLastEntityPublic(ConstantsEntity::REFUND);
+        $refund = $this->getDbLastRefund();
 
-        $this->assertEquals(Refund\Status::FAILED, $refund[Refund\Entity::STATUS]);
+        $this->assertTrue($refund->isStatusFailed());
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
         $this->assertTestResponse($wallet);
-
-        $this->assertEquals($refund[Refund\Entity::ID], Refund\Entity::getSignedId($wallet[WalletEntity::REFUND_ID]));
-        $this->assertEquals($refund[Refund\Entity::PAYMENT_ID],
-                            Payment\Entity::getSignedId($wallet[WalletEntity::PAYMENT_ID]));
-
-        // Request ID is saved in the reference2 attribute
-        $this->assertNotNull($wallet[WalletEntity::REFERENCE2]);
     }
 
     public function testPaymentRefundInitiateMultiplePending()
@@ -426,17 +422,13 @@ class AmazonpayGatewayTest extends TestCase
 
         $this->doAuthCaptureAndRefundPayment($this->payment);
 
-        $refund = $this->getDbLastEntityPublic(ConstantsEntity::REFUND);
+        $refund = $this->getDbLastRefund();
 
-        $this->assertEquals(Refund\Status::PROCESSED, $refund[Refund\Entity::STATUS]);
+        $this->assertTrue($refund->isProcessed());
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
         $this->assertTestResponse($wallet);
-
-        $this->assertEquals($refund[Refund\Entity::ID], Refund\Entity::getSignedId($wallet[WalletEntity::REFUND_ID]));
-        $this->assertEquals($refund[Refund\Entity::PAYMENT_ID],
-                            Payment\Entity::getSignedId($wallet[WalletEntity::PAYMENT_ID]));
     }
 
     public function testPaymentRefundVerifyWhenSuccess()
@@ -493,6 +485,40 @@ class AmazonpayGatewayTest extends TestCase
         $this->assertEquals(Refund\Status::PROCESSED, $refund->reload()->getStatus());
     }
 
+    public function testPaymentMultipleRefundsInitiated()
+    {
+        $this->doAuthCaptureAndRefundPayment($this->payment, 10000);
+
+        $payment = $this->getDbLastPayment();
+        $refund1 = $this->getDbLastRefund();
+
+        $this->assertTrue($refund1->isProcessed());
+        $this->assertTrue($payment->isPartiallyRefunded());
+
+        $wallet1 = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
+
+        $this->assertEquals($refund1->getId(), $wallet1[WalletEntity::REFUND_ID]);
+        $this->assertEquals($refund1->getPaymentId(), $wallet1[WalletEntity::PAYMENT_ID]);
+
+        $this->assertEquals($refund1->getAmount(), $wallet1[WalletEntity::AMOUNT]);
+
+        // Refund the payment again with different amount
+        $this->refundPayment($payment->getPublicId(), 20000);
+
+        $payment->reload();
+        $refund2 = $this->getDbLastRefund();
+
+        $this->assertSame(30000, $payment->getAmountRefunded());
+        $this->assertNotEquals($refund1->getId(), $refund2->getId());
+
+        $wallet2 = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
+
+        $this->assertEquals($refund2->getId(), $wallet2[WalletEntity::REFUND_ID]);
+        $this->assertEquals($refund2->getPaymentId(), $wallet2[WalletEntity::PAYMENT_ID]);
+
+        $this->assertEquals($refund2->getAmount(), $wallet2[WalletEntity::AMOUNT]);
+    }
+
     // ------------------------------------------------- Helpers -------------------------------------------------------
 
     /**
@@ -533,7 +559,9 @@ class AmazonpayGatewayTest extends TestCase
      * Helper used to run the authorize + callback + verify failure steps
      * @param string $function
      */
-    private function runVerifyFailureFlow(string $function)
+    private function runVerifyFailureFlow(
+        string $function,
+        string $expection = PaymentVerificationException::class)
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
@@ -541,6 +569,8 @@ class AmazonpayGatewayTest extends TestCase
         $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
 
         $data = $this->testData['testVerifyFailed'];
+
+        $data['exception']['class'] = $expection;
 
         $this->mockVerifyFailedResponse($function);
 
@@ -654,7 +684,7 @@ class AmazonpayGatewayTest extends TestCase
                     switch ($testCase)
                     {
                         case 'testPaymentRefundInitiationFailed':
-                            $content = str_replace('Pending', 'FAILED', $content);
+                            $content = str_replace('Pending', 'Declined', $content);
                             break;
 
                         case 'testPaymentRefundInitiateEmptyResult':

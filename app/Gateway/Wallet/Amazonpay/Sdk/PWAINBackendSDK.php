@@ -21,7 +21,7 @@ final class PWAINBackendSDK
      * The url used to generate the request signature
      * @var string
      */
-    private $serviceUrl = Url::DOMAIN_WO_HTTPS;
+    private $serviceUrl = Url::SERVICE_HOSTNAME;
 
     /**
      * Request method used to generate request signature

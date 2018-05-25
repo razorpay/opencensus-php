@@ -13,9 +13,9 @@ final class Status
     /**
      * Refund specific statuses
      */
-    const PENDING                 = 'Pending';
-    const COMPLETED               = 'Completed';
-    const DECLINED                = 'Declined';
+    const PENDING                 = 'pending';
+    const COMPLETED               = 'completed';
+    const DECLINED                = 'declined';
 
     public static function getVerifyReasonCodeMappedToAuthStatus(string $reasonCode)
     {

@@ -47,7 +47,7 @@ class Server extends Base\Mock\Server
     {
         parent::verify($input);
 
-        $this->validateActionInput($input, $this->action);
+        $this->validateActionInput($input);
 
         $this->getGatewayInstance()->getAmazonPaySdk()->verifyMockGatewayS2sSignature($input);
 
@@ -60,7 +60,7 @@ class Server extends Base\Mock\Server
     {
         parent::refund($input);
 
-        $this->validateActionInput($input, $this->action);
+        $this->validateActionInput($input);
 
         $xml = $this->getRefundResponse($input);
 
@@ -70,9 +70,10 @@ class Server extends Base\Mock\Server
     public final function verifyRefund($input)
     {
         $this->setInput($input);
+
         $this->setAction(Action::VERIFY_REFUND);
 
-        $this->validateActionInput($input, $this->action);
+        $this->validateActionInput($input);
 
         $xml = $this->getVerifyRefundResponse($input);
 
@@ -138,7 +139,7 @@ class Server extends Base\Mock\Server
         return $xml;
     }
 
-    private function modifyOrderReference(string& $xml, array $request)
+    private function modifyOrderReference(string &$xml, array $request)
     {
         $paymentId = $request[RequestFields::QUERY_ID];
 
@@ -164,7 +165,7 @@ class Server extends Base\Mock\Server
         return $xml;
     }
 
-    private function modifyRefundReference(string& $xml, array $request)
+    private function modifyRefundReference(string &$xml, array $request)
     {
         $refundId = $request[RequestFields::REFUND_REF_ID];
 

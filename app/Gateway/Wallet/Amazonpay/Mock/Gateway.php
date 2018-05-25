@@ -16,9 +16,9 @@ final class Gateway extends Amazonpay\Gateway
 
         $baseUrl = $this->route->getUrlWithPublicAuth('mock_wallet_payment', ['wallet' => Wallet::AMAZONPAY]);
 
-        $relativeUrl = explode('?', $request['url'])[1];
+        $queryString = parse_url($request['url'], PHP_URL_QUERY);
 
-        $request['url'] = $baseUrl . '&' . $relativeUrl;
+        $request['url'] = $baseUrl . '&' . $queryString;
 
         return $request;
     }

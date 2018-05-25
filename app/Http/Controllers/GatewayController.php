@@ -14,6 +14,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Gateway\Netbanking\Corporation;
+use RZP\Gateway\Wallet\Amazonpay\ResponseFields;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 
 class GatewayController extends Controller
@@ -253,20 +254,30 @@ class GatewayController extends Controller
                 'input'   => $input,
             ]);
 
-        $gateway = $this->app['gateway']->gateway(Gateway::WALLET_AMAZONPAY);
+        if (isset($input[ResponseFields::SELLER_ORDER_ID]) === true)
+        {
+            $paymentId = $input[ResponseFields::SELLER_ORDER_ID];
 
-        $paymentId = $gateway->getPaymentIdFromServerCallback($input);
+            $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                'Invalid callback url',
+                null,
+                [
+                    'gateway'    => Gateway::WALLET_AMAZONPAY,
+                ]);
+        }
 
-        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
-
-        if ($mode === null)
+        if (empty($mode) === true)
         {
             throw new Exception\LogicException(
                 'Payment id not found in either database',
                 null,
                 [
                     'gateway'    => Gateway::WALLET_AMAZONPAY,
-                    'payment_id' => $paymentId
+                    'payment_id' => $paymentId,
                 ]);
         }
 

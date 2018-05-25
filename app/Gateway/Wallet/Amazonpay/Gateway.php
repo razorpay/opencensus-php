@@ -126,7 +126,17 @@ class Gateway extends Base\Gateway
 
         $request = $this->getRefundRequest($input, $wallet);
 
-        $refund = $this->createAmazonPayRefundEntity($input);
+        $refundData = [
+            Entity::PAYMENT_ID          => $input['payment']['id'],
+            Entity::AMOUNT              => $input['refund']['amount'],
+            Entity::WALLET              => $input['payment']['wallet'],
+            Entity::EMAIL               => $input['payment']['email'],
+            Entity::CONTACT             => $input['payment']['contact'],
+            Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
+            Entity::REFUND_ID           => $input['refund']['id']
+        ];
+
+        $refund = $this->createGatewayRefundEntity($refundData);
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_REQUEST,
@@ -165,17 +175,6 @@ class Gateway extends Base\Gateway
         $refunded = $this->verifyRefundResponse($verify);
 
         return $refunded;
-    }
-
-    public function getPaymentIdFromServerCallback(array $input)
-    {
-        if (isset($input[ResponseFields::SELLER_ORDER_ID]) === false)
-        {
-            throw new GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_CALLBACK_URL, null, null, $input);
-        }
-
-        return $input[ResponseFields::SELLER_ORDER_ID];
     }
 
     public final function getAmazonPaySdk(): PWAINBackendSDK
@@ -264,25 +263,23 @@ class Gateway extends Base\Gateway
 
     protected function verifyRefundResponse(Verify $verify)
     {
-        $parsed = $this->parseRefundDetails($verify->verifyResponseContent);
+        $response = $this->getRelevantRefundDetail(
+                               ResponseFields::GET_REFUND_DETAILS_RESULT_WRAPPER,
+                               $verify->verifyResponseContent,
+                               $verify->input['refund']['id']);
 
-        if ($parsed['error'] === true)
-        {
-            return false;
-        }
+        $attributes = $this->getRefundResponseAttributesToSave($response);
 
-        $entity = $parsed['entity'];
+        $gatewayRefund = $this->repo->findByRefundId($verify->input['refund']['id']);
 
-        $gatewayRefund = $this->repo->findByRefundId($entity[Entity::REFUND_ID]);
+        $this->updateGatewayRefundEntity($gatewayRefund, $attributes, false);
 
-        $this->updateGatewayRefundEntity($gatewayRefund, $entity, false);
-
-        return ($entity[Entity::STATUS_CODE] === Status::COMPLETED);
+        return ($attributes[Entity::STATUS_CODE] === Status::COMPLETED);
     }
 
     /**
      * @param array $content
-     * @throws RuntimeException
+     * @throws GatewayErrorException
      */
     protected final function verifySecureHash(array $content)
     {
@@ -290,14 +287,14 @@ class Gateway extends Base\Gateway
 
         if (hash_equals($actualSign, $generatedSign) === false)
         {
-            $this->trace->info(
-                TraceCode::GATEWAY_CHECKSUM_VERIFY_FAILED,
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED,
+                null,
+                null,
                 [
                     'actual'    => $actualSign,
                     'generated' => $generatedSign
                 ]);
-
-            throw new RuntimeException('Failed checksum verification');
         }
     }
 
@@ -353,64 +350,38 @@ class Gateway extends Base\Gateway
 
     private function handleRefundResponse(array $input, array $response, Entity $refund)
     {
-        //
-        // Either get an array with only the requestId or
-        // get the relevant refund detail array whose status we can check.
-        //
-
-        $response = $this->getRelevantRefundDetail($response, $refund);
+        $response = $this->getRelevantRefundDetail(
+                               ResponseFields::REFUND_PAYMENT_RESULT_WRAPPER,
+                               $response,
+                               $refund->getRefundId());
 
         $attributesToSave = $this->getRefundResponseAttributesToSave($response);
 
         $this->updateGatewayRefundEntity($refund, $attributesToSave, false);
 
-        //
-        // We do a sanity check that refund status is pending
-        // If it is then we mark the refund as initiated on our end,
-        // if not, we mark the refund as failed on our end.
-        //
-        $this->checkRefundStatus($response);
+        $this->checkRefundStatus($response, Status::PENDING);
     }
 
-    private function getRelevantRefundDetail(array $response, Entity $refund): array
+    private function getRelevantRefundDetail(string $wrapper, array $response, string $refundId): array
     {
         $requestId = $response[ResponseFields::RESPONSE_METADATA][ResponseFields::REQUEST_ID] ??
                      $response[ResponseFields::RESPONSE_METADATA][ResponseFields::REQUEST_UC_ID];
 
         $toReturn = [ResponseFields::REQUEST_ID => $requestId];
 
-        if ((empty($response[ResponseFields::REFUND_PAYMENT_RESULT]) === true) or
-            (empty($response[ResponseFields::REFUND_PAYMENT_RESULT][ResponseFields::REFUND_DETAILS]) === true))
-        {
-            // We do a sanity check to ensure that the refund list is set in the parsed response array
-            return $toReturn;
-        }
-
-        $refundDetails = $response[ResponseFields::REFUND_PAYMENT_RESULT][ResponseFields::REFUND_DETAILS];
-
-        // Pick the head of the refund details list as default list to be returned
-        $refundDetail = head($refundDetails);
-
+        $refundDetails = array_get($response, $wrapper, []);
+\mc::log($refundDetails);
         // In case of single refund in details, the head will consist refund_ref_id
         // Note:: PHP Xml to Array make child node as associative array
-        if (isset($refundDetail[ResponseFields::REFUND_REF_ID]) === true and
-           ($refundDetail[ResponseFields::REFUND_REF_ID] === $refund->getRefundId()))
+        if (isset($refundDetails[ResponseFields::REFUND_REF_ID]) === true)
         {
-            return array_merge($toReturn, $refundDetail);
+            $refundDetails = [$refundDetails];
         }
 
-        // In case of multiple refund we loop through all refund and
-        // find relevant one by matching the Refund Id,
-        foreach ($refundDetails[ResponseFields::REFUND_DETAIL] as $refundDetail)
+        foreach ($refundDetails as $refundDetail)
         {
-            if (empty($refundDetail[ResponseFields::REFUND_STATUS]) === true)
-            {
-                // We skip the entries without the refund status array
-                continue;
-            }
-
             // We can validate current refund by refund_reference_id
-            if($refundDetail[ResponseFields::REFUND_REF_ID] === $refund->getRefundId())
+            if($refundDetail[ResponseFields::REFUND_REF_ID] === $refundId)
             {
                 return array_merge($toReturn, $refundDetail);
             }
@@ -421,19 +392,18 @@ class Gateway extends Base\Gateway
             null,
             'Refund not found in response',
             [
-                'refund_id' => $refund->getRefundId(),
+                'refund_id' => $refundId,
             ]);
     }
 
     private function getRefundResponseAttributesToSave(array $response): array
     {
+        $statusCode = strtolower($response[ResponseFields::REFUND_STATUS][ResponseFields::REFUND_STATE]);
+
         return [
             Entity::RECEIVED          => true,
-            // We default the status to a failure, if not present
-            Entity::STATUS_CODE       => $response[ResponseFields::REFUND_STATUS][ResponseFields::REFUND_STATE]
-                                         ?? Status::FAILURE,
-            Entity::GATEWAY_REFUND_ID => $response[ResponseFields::AMAZON_REFUND_ID] ?? null,
-            // requestId is set in all cases, and in failure cases, as long as we get the response from the gateway
+            Entity::STATUS_CODE       => $statusCode,
+            Entity::GATEWAY_REFUND_ID => $response[ResponseFields::AMAZON_REFUND_ID],
             Entity::REFERENCE2        => $response[ResponseFields::REQUEST_ID],
         ];
     }
@@ -448,59 +418,50 @@ class Gateway extends Base\Gateway
      * @param array $response
      * @throws GatewayErrorException
      */
-    private function checkRefundStatus(array $response)
+    private function checkRefundStatus(array $response, string $status)
     {
         $throwException = false;
 
-        if (empty($response[ResponseFields::REFUND_STATUS]) === true)
+        if (isset($response[ResponseFields::REFUND_STATUS][ResponseFields::REFUND_STATE]) === true)
         {
-            // If refund status array is not present in the detail, we throw an exception
-            $throwException = true;
-        }
-        else
-        {
-            $refundStatus = $response[ResponseFields::REFUND_STATUS];
+            $refundState = $response[ResponseFields::REFUND_STATUS][ResponseFields::REFUND_STATE];
 
-            if ((empty($refundStatus[ResponseFields::REFUND_STATE]) === true) or
-                ($refundStatus[ResponseFields::REFUND_STATE] !== Status::PENDING))
+            if (Status::matches($status, $refundState) === true)
             {
-                // If STATE is not set or if STATE is not Pending, we throw an exception
-                $throwException = true;
+                return true;
             }
         }
 
-        if ($throwException === true)
-        {
-            throw new GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
-                null,
-                null,
-                $response);
-        }
+        throw new GatewayErrorException(
+            ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
+            null,
+            null,
+            $response);
     }
 
     private function assertVerifyAmountAndPaymentId(Verify $verify)
     {
         $content = $verify->verifyResponseContent;
 
-        $input = $verify->input;
+        $payment = $verify->input['payment'];
 
-        if (empty($content[ResponseFields::SELLER_ORDER_ATTRS][ResponseFields::UC_SELLER_ORDER_ID]) === false)
-        {
-            $actualPaymentId = $content[ResponseFields::SELLER_ORDER_ATTRS][ResponseFields::UC_SELLER_ORDER_ID];
-
-            // We assert that the verify response payment id is the same as the one being verified on API
-            $this->assertPaymentId($input['payment']['id'], $actualPaymentId);
-        }
-
-        if (empty($content[ResponseFields::ORDER_TOTAL][ResponseFields::ORDER_AMOUNT]) === false)
+        if (isset($content[ResponseFields::ORDER_TOTAL][ResponseFields::ORDER_AMOUNT]) === true)
         {
             $actualAmount = $content[ResponseFields::ORDER_TOTAL][ResponseFields::ORDER_AMOUNT];
 
-            $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-            $actualAmount = number_format($actualAmount, 2, '.', '');
+            $expectedAmount = $this->formatAmount($payment['amount']);
 
-            $verify->amountMismatch = ($expectedAmount !== $actualAmount);
+            $verify->amountMismatch = ($expectedAmount === $actualAmount);
+        }
+        else
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                'Invalid Verify Response',
+                null,
+                [
+                    'content' => $content
+                ]);
         }
     }
 
@@ -765,16 +726,15 @@ class Gateway extends Base\Gateway
             RequestFields::ORDER_ID          => $input['payment']['id'],
 
             // Optional fields
-            RequestFields::IS_SANDBOX        => ($this->mode === Mode::TEST) ? "true" : "false",
+            RequestFields::IS_SANDBOX        => $this->isSandbox() ? 'true' : 'false',
             RequestFields::TXN_TIMEOUT       => Constant::TIMEOUT,
         ];
 
+        // Callback Url needs to whitelisted at Amazon, thus can't use payment's callback url
         $callbackUrl = $this->route->getUrl('gateway_payment_callback_amazonpay');
 
-        //
         // The SDK is used to add a signature to the request, as well as encrypt the request
         // The signature serves as an extra layer of authentication on Amazon's side.
-        //
         $relativeUrl = $this->getAmazonPaySdk()->getProcessPaymentUrl($content, $callbackUrl);
 
         $this->trace->info(
@@ -805,20 +765,6 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    private function createAmazonpayRefundEntity(array $input): Entity
-    {
-        return $this->createGatewayRefundEntity(
-                    [
-                        Entity::PAYMENT_ID          => $input['payment']['id'],
-                        Entity::AMOUNT              => $input['refund']['amount'],
-                        Entity::WALLET              => $input['payment']['wallet'],
-                        Entity::EMAIL               => $input['payment']['email'],
-                        Entity::CONTACT             => $input['payment']['contact'],
-                        Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
-                        Entity::REFUND_ID           => $input['refund']['id']
-                    ]);
-    }
-
     private function getConfigArray(): array
     {
         return [
@@ -826,7 +772,7 @@ class Gateway extends Base\Gateway
             Config::ACCESS_KEY  => $this->getAccessCode(),
             Config::SECRET_KEY  => $this->getSecret(),
             Config::BASE_URL    => $this->getUrlDomain(),
-            Config::SANDBOX     => ($this->mode === Mode::TEST)
+            Config::SANDBOX     => $this->isSandbox(),
         ];
     }
 
@@ -852,6 +798,11 @@ class Gateway extends Base\Gateway
         }
 
         return $accessCode;
+    }
+
+    protected function isSandbox(): bool
+    {
+        return ($this->mode === Mode::TEST);
     }
 
     private function formatAmount($amount): string
