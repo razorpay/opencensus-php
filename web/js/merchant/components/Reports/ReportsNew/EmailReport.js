@@ -33,20 +33,7 @@ export default class EmailReport extends Component {
   //used for ga tracking
   reportList = this.props.currentReportList || {};
 
-  componentWillMount() {
-    const { emailsMap } = this.props;
-    let allEmails = [];
-
-    Object.keys(emailsMap).forEach(emailType => {
-      allEmails = [...allEmails, ...emailsMap[emailType]];
-    });
-
-    //unique emails
-    this.allEmails = Array.from(new Set(allEmails));
-  }
-
-  handleChange = e => {
-    const email = e.target.dataset.email;
+  handleChange = email => {
     let selectedEmails = [...this.state.selectedEmails];
 
     const foundIndex = selectedEmails.indexOf(email);
@@ -66,23 +53,8 @@ export default class EmailReport extends Component {
 
     let trackLabel = [];
 
-    // for ga track email event with following precedence
-    // contact > transaction > account
-    selectedEmails.forEach((email, index) => {
-      if (emailsMap['account'] && emailsMap['account'].indexOf(email) > -1) {
-        trackLabel[index] = 'account';
-      }
-
-      if (
-        emailsMap['transaction'] &&
-        emailsMap['transaction'].indexOf(email) > -1
-      ) {
-        trackLabel[index] = 'transaction';
-      }
-
-      if (emailsMap['contact'] && emailsMap['contact'].indexOf(email) > -1) {
-        trackLabel[index] = 'contact';
-      }
+    Object.keys(emailsMap).map(email => {
+      trackLabel.push(emailsMap[email]);
     });
 
     trackLabel = Array.from(new Set(trackLabel)).join(' | ');
@@ -198,6 +170,7 @@ export default class EmailReport extends Component {
 
   render() {
     const { selectedEmails } = this.state;
+    const { emailsMap } = this.props;
 
     return (
       <div>
@@ -212,7 +185,7 @@ export default class EmailReport extends Component {
           </p>
           <form class="m-t">
             <strong>Choose Email:</strong>
-            {this.allEmails.map((email, index) => (
+            {Object.keys(emailsMap).map((email, index) => (
               <div class="form-group" key={email}>
                 <div class="checkbox rzpCheckbox next">
                   <input
@@ -220,9 +193,8 @@ export default class EmailReport extends Component {
                     id={email}
                     type="checkbox"
                     class="form-control"
-                    data-email={email}
                     checked={selectedEmails.indexOf(email) > -1}
-                    onChange={this.handleChange}
+                    onChange={() => this.handleChange(email)}
                   />
                   <label class="icon i-check" for={email}>
                     {email} {index === 0 && ' (you)'}

@@ -441,13 +441,24 @@ export default class ReportsContainer extends Component {
     const { accounts, selectedAccount, selectedConfig } = this.state;
     const reportId = e.target.dataset.reportid;
 
-    let emailsMap = {
-      ...(user.contact_email && { contact: [user.contact_email] }),
-      ...(user.transaction_report_email && {
-        transaction: user.transaction_report_email.split(','),
-      }),
-      ...(accounts && { account: accounts.map(acc => acc.email) }),
-    };
+    let emailsMap = {};
+
+    // save email priority based on following precedence
+    // contact_email > transaction_report_email > accounts
+
+    if (accounts) {
+      accounts.map(acc => (emailsMap[acc.email] = 3));
+    }
+
+    if (user.transaction_report_email) {
+      user.transaction_report_email.split(',').map(email => {
+        emailsMap[email] = 2;
+      });
+    }
+
+    if (user.contact_email) {
+      emailsMap[user.contact_email] = 1;
+    }
 
     this.props.openModal({
       size: 'small',
@@ -486,6 +497,7 @@ export default class ReportsContainer extends Component {
       }
     });
 
+    // push `monthly invoices`
     rzpConfigs.push(configs[configs.length - 1]);
 
     rzpConfigs.sort((config1, config2) => {

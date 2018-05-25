@@ -1,14 +1,21 @@
 import React, { Component } from 'react';
 import { arrayToSentence } from 'rzp/utils/rzp-utils';
 
-const ReportHelperText = ({ id, emails, status, openEmailReportModal }) => {
+const ReportHelperText = ({ report, status, openEmailReportModal }) => {
+  const isNoDataFound = report['status'] === 'processed' && !report['filedId'];
+
+  const successMsg = 'Report downloaded successfully.',
+    failureMsg = isNoDataFound
+      ? 'No data found!'
+      : 'There was an error while generating this report.';
+
   return (
     <small class={`help-block ${status}`}>
       <i class="i i-info-circle" />
       {status === 'pending' ? (
         <span>
           This may take some time to download.{' '}
-          {emails ? (
+          {report.emails ? (
             <span>
               We will also email this report to {arrayToSentence(emails)}
             </span>
@@ -17,7 +24,7 @@ const ReportHelperText = ({ id, emails, status, openEmailReportModal }) => {
               You can also choose to{' '}
               <span
                 class="btn-link"
-                data-reportid={id}
+                data-reportid={report.id}
                 onClick={openEmailReportModal}
               >
                 Email this report.
@@ -26,11 +33,7 @@ const ReportHelperText = ({ id, emails, status, openEmailReportModal }) => {
           )}
         </span>
       ) : (
-        <span>
-          {status === 'success'
-            ? `Report downloaded successfully.`
-            : `There was an error while generating this report.`}
-        </span>
+        <span>{status === 'success' ? successMsg : failureMsg}</span>
       )}
     </small>
   );
@@ -81,11 +84,12 @@ export default class ReportLoader extends Component {
 
   render() {
     const { selectedConfigId, reportList, configsLableMap } = this.props;
+    const reportsKeysList = Object.keys(reportList);
 
     return (
       <div class="report-loader">
-        <hr />
-        {Object.keys(reportList).map(reportId => (
+        {reportsKeysList.length > 0 && <hr />}
+        {reportsKeysList.map(reportId => (
           <ReportProgress
             id={reportId}
             key={reportId}
@@ -97,8 +101,7 @@ export default class ReportLoader extends Component {
             cancelDownload={this.props.cancelDownload}
           >
             <ReportHelperText
-              id={reportId}
-              emails={reportList[reportId]['emails']}
+              report={reportList[reportId]}
               status={this.getReportStatus(reportId)}
               openEmailReportModal={this.props.openEmailReportModal}
             />
