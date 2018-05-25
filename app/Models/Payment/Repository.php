@@ -966,35 +966,40 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function fetchBankTransferPaymentsByPublicVaIdAndMerchant(
+    public function fetchPaymentsByPublicVaIdAndMerchant(
         string $virtualAccountId,
         Merchant\Entity $merchant
         )
     {
-        $paymentId = $this->dbColumn(Payment\Entity::ID);
-        $paymentMethod = $this->dbColumn(Payment\Entity::METHOD);
+        $paymentReceiverId = $this->dbColumn(Payment\Entity::RECEIVER_ID);
         $paymentMerchantId = $this->dbColumn(Payment\Entity::MERCHANT_ID);
+
+        $virtualAccountIdCol = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::ID);
 
         $paymentColumns = $this->dbColumn('*');
 
-        $bankTransferTable = $this->repo->bank_transfer->getTableName();
+        $virtualAccountTable = $this->repo->virtual_account->getTableName();
 
-        $bankTransferPaymentId = $this->repo
-                                      ->bank_transfer
-                                      ->dbColumn(BankTransfer\Entity::PAYMENT_ID);
+        $qrcodeId = $this->repo
+                         ->virtual_account
+                         ->dbColumn(VirtualAccount\Entity::QR_CODE_ID);
 
-        $bankTransferVirtualAccountId = $this->repo
-                                             ->bank_transfer
-                                             ->dbColumn(BankTransfer\Entity::VIRTUAL_ACCOUNT_ID);
+        $bankAccountId = $this->repo
+                              ->virtual_account
+                              ->dbColumn(VirtualAccount\Entity::BANK_ACCOUNT_ID);
 
         VirtualAccount\Entity::verifyIdAndSilentlyStripSign($virtualAccountId);
 
         return $this->newQuery()
                     ->select($paymentColumns)
-                    ->join($bankTransferTable, $paymentId, '=', $bankTransferPaymentId)
-                    ->where($bankTransferVirtualAccountId, '=', $virtualAccountId)
-                    ->where($paymentMerchantId, '=', $merchant->getId())
-                    ->where($paymentMethod, '=', Method::BANK_TRANSFER)
+                    ->join($virtualAccountTable)
+                    ->where($virtualAccountIdCol, '=', $virtualAccountId)
+                    ->andWhere($paymentMerchantId, '=', $merchant->getId())
+                    ->where(function($query) use($paymentReceiverId, $qrcodeId, $bankAccountId)
+                    {
+                        $query->where($paymentReceiverId, '=', $qrcodeId)
+                              ->orWhere($paymentReceiverId, '=', $bankAccountId);
+                    })
                     ->orderByCreatedAt()
                     ->get();
     }
