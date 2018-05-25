@@ -679,16 +679,6 @@ export default class ActivationWizard extends React.Component {
       fieldValue = autoPrefixUrls(fieldValue); // Updating in view will happen if he comes to this tab again. Otherwise single backspace on 'http' must be handled as full word not single character.
     }
 
-    /* Step 7: Empty the account_no if anything changed in bank_account_number */
-    if (fieldName === 'bank_account_number') {
-      document.querySelector(
-        `.form-container [data-name=account_no]`
-      ).value = null;
-      this.setState({
-        account_no: null,
-      }); // We can have sideEffectStatesToUpdate also if more such cases are there
-    }
-
     /* Step Last: */
     if (stateName) {
       this.setState({

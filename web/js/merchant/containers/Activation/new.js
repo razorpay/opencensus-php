@@ -499,7 +499,7 @@ function isOldUser(user) {
     return false; // Fallback to new
   }
 
-  let currentTime = 1526031000; // TODO: It IS TO BE THE DATE OF DEPLOYMENT.. Currently, 11 May, 3:00pm
+  let currentTime = 1527208200; // 25 May, 6:00am
   let isCreatedEarlier = user.created_at < currentTime;
 
   return isCreatedEarlier;

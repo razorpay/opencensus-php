@@ -73,61 +73,60 @@ const bankAccountFields = [
     },
     validator: validateIFSC,
   },
-  {
-    name: 'bank_account_number',
-    label: 'Account Number',
-    type: 'password',
-    autoComplete: 'new-password',
-    info: 'Your company account to which your payments will be settled',
-    onFocus: e => {
-      document.getElementsByName('bank_account_number')[0].type = 'text';
-    },
-    onBlur: function(e) {
-      document.getElementsByName('bank_account_number')[0].type = 'password';
+  [
+    {
+      name: 'bank_account_number',
+      label: 'Account Number',
+      info:
+        'Should be a current bank account of the company to which your payments will be settled.',
+      autoComplete: 'new-password',
+      type: 'password',
+      onFocus: e => {
+        document.getElementsByName('bank_account_number')[0].type = 'text';
+      },
+      onBlur: function(e) {
+        document.getElementsByName('bank_account_number')[0].type = 'password';
 
-      const bankAccountNumber = this.state.dirty.bank_account_number;
-      const accountNo = this.state.account_no;
+        const bankAccountNumber = this.state.dirty.bank_account_number;
+        const accountNo = this.state.account_no;
 
-      const isMatching = bankAccountNumber && bankAccountNumber == accountNo;
+        const isMatching = bankAccountNumber && bankAccountNumber == accountNo;
 
-      if ((!!bankAccountNumber && !accountNo) || !isMatching) {
-        document.querySelector('[data-name="account_no"]').focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
-      }
+        if ((!!bankAccountNumber && !accountNo) || !isMatching) {
+          document.querySelector('[data-name="account_no"]').focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
+        }
+      },
     },
-  },
-  {
-    _name: 'account_no',
-    label: 'Re-Enter Account Number',
-    type: 'password',
-    required: false,
-    autoComplete: 'new-password',
-    info: 'Please re-enter the bank account number.',
-    _autoRenderImpure: true, // Re-render to show the error
-    onPaste: function(e) {
-      e.preventDefault();
-    }, // Disable copy-paste in this field
-    onFocus: e => {
-      document.querySelector('[data-name="account_no"]').type = 'text';
-    },
-    onBlur: e => {
-      document.querySelector('[data-name="account_no"]').type = 'password';
-    },
-    validator: function(value) {
-      const bankAccountNo = this.state.dirty.bank_account_number;
+    {
+      _name: 'account_no',
+      label: 'Re-Enter Account Number',
+      type: 'password',
+      required: false,
+      autoComplete: 'new-password',
+      info: 'Please re-enter the bank account number.',
+      _autoRenderImpure: true, // Re-render to show the error
+      onPaste: function(e) {
+        e.preventDefault();
+      }, // Disable copy-paste in this field
+      onFocus: e => {
+        document.querySelector('[data-name="account_no"]').type = 'text';
+      },
+      onBlur: e => {
+        document.querySelector('[data-name="account_no"]').type = 'password';
+      },
+      validator: function(value) {
+        const bankAccountNo = this.state.dirty.bank_account_number;
+        if (!value) {
+          return;
+        }
 
-      if (bankAccountNo && value !== bankAccountNo) {
-        // Something changed in main 'bank account' field
-        return "Value doesn't match Account Number";
-      }
+        if (bankAccountNo && value !== bankAccountNo) {
+          // Something changed in main 'bank account' field
+          return 'Account no. does not match';
+        }
+      },
     },
-    _disabledWhen: activation => {
-      const bankAccountNo = activation.state.dirty.bank_account_number;
-      if (!bankAccountNo) {
-        // Nothing changed in main 'bank account' field
-        return true;
-      }
-    },
-  },
+  ],
   {
     name: 'bank_account_name',
     label: 'Beneficiary Name',
