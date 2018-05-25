@@ -599,7 +599,7 @@ function excludeFor_Indiv_NotReg(activation) {
 // Tabs name
 export const mainFormTabs = [
   'Contact Info',
-  'Business Model',
+  'Business Overview',
   'Registration Details',
   'Bank Account',
   'Documents Upload',

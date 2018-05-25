@@ -3,6 +3,8 @@ import { merchantFetch } from 'rzp/utils/ajax';
 import { showNotification } from 'rzp/modules/notifications';
 import { without } from 'rzp/utils/rzp-utils';
 import { classList } from 'common/util';
+import { activationDuration } from 'common/data';
+
 import { Modal, ModalContent } from 'component/Modal';
 import { LinkCard } from 'component/Cards';
 import ActivationWizard from 'component/merchant/Activation';
@@ -349,8 +351,8 @@ const SuccessScreen = _ => {
       <div class="Activation-info">
         <i class="i i-check" /> Activation Form Submitted
         <p class="desc">
-          The review process usually takes 2 to 3 working days. For any
-          clarifications, we will reach out on your contact email.
+          `The review process usually takes ${activationDuration}. For any
+          clarifications, we will reach out on your contact email.`
         </p>
       </div>
 
@@ -381,12 +383,12 @@ const WelcomeScreen = ({ openWizard }) => {
       <div class="welcome-illustration" />
       <div class="short-content">
         <p>
-          Simply submit your business details and relavant proofs online to
+          Simply submit your business details and upload relavant proofs to
           start accepting payments.
         </p>
         <p>
-          Once you submit the form, it may take upto 2 to 3 working days to get
-          you account activated.
+          `Once you submit the form, it may take upto ${activationDuration} to
+          get you account activated.`
         </p>
 
         <Button.Primary onClick={openWizard}>

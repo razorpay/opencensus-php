@@ -6,6 +6,8 @@ import { classList } from 'common/util';
 import { prevent } from 'common/util';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
 
+import { activationDuration } from 'common/data';
+
 import {
   addDropShield,
   removeDropShield,
@@ -967,8 +969,7 @@ export default class ActivationWizard extends React.Component {
                 // **5. Alert: Form is Submitted
 
                 icon = 'i-check';
-                msg =
-                  'Your activation form is already submitted. It usually takes 2 to 3 working days for the review.';
+                msg = `Your activation form is already submitted. It usually takes ${activationDuration} for the review.`;
                 secondaryMsg =
                   'For any clarifications, we will reach out on your contact email.';
               }
