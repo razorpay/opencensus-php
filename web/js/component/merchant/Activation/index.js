@@ -536,26 +536,25 @@ export default class ActivationWizard extends React.Component {
   }
 
   submitForm = () => {
-    const promise = this.props.submitForm();
+    return this.props.submitForm().then(data => {
+      if (data.errors) {
+        // Track session for any error on submission (non-LA account)
+        if (!this.isLinkedAccount && typeof window.hj === 'function') {
+          window.hj('tagRecording', ['activation_form_save_error']);
+        }
 
-    onAction &&
-      promise.then(data => {
-        if (data.errors) {
-          // Track session for any error on submission (non-LA account)
-          if (!this.isLinkedAccount && typeof window.hj === 'function') {
-            window.hj('tagRecording', ['activation_form_save_error']);
-          }
-
+        onAction &&
           onAction.trackSubmit({
             error: data.errors,
             type: false,
           });
-        } else {
+      } else {
+        onAction &&
           onAction.trackSubmit({
             type: true,
           });
-        }
-      });
+      }
+    });
   };
 
   /*

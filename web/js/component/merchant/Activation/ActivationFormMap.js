@@ -417,6 +417,9 @@ const bankAccountFields = [
         'Should be a current bank account of the company to which your payments will be settled.',
       autoComplete: 'new-password',
       type: 'password',
+      onPaste: function(e) {
+        e.preventDefault();
+      }, // Disable copy-paste in this field
       onFocus: e => {
         document.getElementsByName('bank_account_number')[0].type = 'text';
       },
@@ -451,10 +454,10 @@ const bankAccountFields = [
         document.querySelector('[data-name="account_no"]').type = 'password';
       },
       validator: function(value) {
-        const bankAccountNo = this.state.dirty.bank_account_number;
         if (!value) {
           return;
         }
+        const bankAccountNo = this.state.dirty.bank_account_number;
 
         if (bankAccountNo && value !== bankAccountNo) {
           // Something changed in main 'bank account' field

@@ -177,8 +177,9 @@ export class ActivationContainer extends React.Component {
       this.props.callback && this.props.callback(); // Support for callback for linked_account activation
     } else {
       this.setState({ showSuccessScreen: true });
-      this.updateSession(response.data); // Updating % activation_progress (side bar)
     }
+
+    this.updateSession(response.data); // Updating % activation_progress (side bar)
   }
 
   saveFile = (fieldName, file, progressTracker) => {
