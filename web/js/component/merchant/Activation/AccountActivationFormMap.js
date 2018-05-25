@@ -172,7 +172,7 @@ export default (tabsData = [
 ]);
 
 /* Note: This works only when FORM_TAB_CONTENT is has not splied out anything from middle */
-export const fieldNameMeta = (function() {
+export const accountFormFieldNamesMeta = (function() {
   const formNames = [];
 
   for (let t = 0; t < tabsData.length; t++) {

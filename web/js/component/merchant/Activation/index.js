@@ -15,10 +15,11 @@ import {
 
 import mainFormTabsContent, {
   mainFormTabs,
-  fieldNameMeta,
+  mainFormFieldNamesMeta,
 } from './ActivationFormMap';
 import accountFormTabsContent, {
   accountFormTabs,
+  accountFormFieldNamesMeta,
 } from './AccountActivationFormMap';
 
 import * as trackers from 'merchant/containers/Activation/ga_new';
@@ -112,6 +113,7 @@ export default class ActivationWizard extends React.Component {
 
       FORM_TABS = [...accountFormTabs];
       FORM_TABS_CONTENT = [...accountFormTabsContent];
+      FORM_TABS_NAMES = accountFormFieldNamesMeta;
       BANK_ACCOUNT_TAB = 1;
       DOCUMENT_UPLOAD_STEP = 2;
 
@@ -127,7 +129,7 @@ export default class ActivationWizard extends React.Component {
 
       FORM_TABS = mainFormTabs;
       FORM_TABS_CONTENT = mainFormTabsContent;
-      FORM_TABS_NAMES = fieldNameMeta;
+      FORM_TABS_NAMES = mainFormFieldNamesMeta;
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
 
