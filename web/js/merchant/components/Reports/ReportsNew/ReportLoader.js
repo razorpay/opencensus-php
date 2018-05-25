@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { arrayToSentence } from 'rzp/utils/rzp-utils';
 
 const ReportHelperText = ({ report, status, openEmailReportModal }) => {
-  const isNoDataFound = report['status'] === 'processed' && !report['filedId'];
+  const isNoDataFound = report['status'] === 'processed' && !report['file_id'];
 
   const successMsg = 'Report downloaded successfully.',
     failureMsg = isNoDataFound
@@ -17,7 +17,7 @@ const ReportHelperText = ({ report, status, openEmailReportModal }) => {
           This may take some time to download.{' '}
           {report.emails ? (
             <span>
-              We will also email this report to {arrayToSentence(emails)}
+              We will also email this report to {arrayToSentence(report.emails)}
             </span>
           ) : (
             <span>
@@ -82,9 +82,27 @@ export default class ReportLoader extends Component {
     return 'failed';
   };
 
+  //- return selected config's reports first
+  sortReportLoaderList = reportsKeysList => {
+    const { selectedConfigId, reportList } = this.props;
+
+    return (reportsKeysList = reportsKeysList.sort((a, b) => {
+      if (
+        reportList[a]['config_id'] === selectedConfigId &&
+        reportList[b]['config_id'] !== selectedConfigId
+      ) {
+        return -1;
+      } else {
+        return 1;
+      }
+    }));
+  };
+
   render() {
     const { selectedConfigId, reportList, configsLableMap } = this.props;
-    const reportsKeysList = Object.keys(reportList);
+    let reportsKeysList = Object.keys(reportList);
+
+    reportsKeysList = this.sortReportLoaderList(reportsKeysList);
 
     return (
       <div class="report-loader">

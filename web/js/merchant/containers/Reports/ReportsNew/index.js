@@ -495,10 +495,11 @@ export default class ReportsContainer extends Component {
           rzpConfigs.push(config);
         }
       }
+      //push `custom` types first
+      if (config.type === 'custom') {
+        rzpConfigs.push(config);
+      }
     });
-
-    // push `monthly invoices`
-    rzpConfigs.push(configs[configs.length - 1]);
 
     rzpConfigs.sort((config1, config2) => {
       let index1 = rzpConfigOrder.indexOf(config1.label),

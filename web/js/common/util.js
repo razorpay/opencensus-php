@@ -64,3 +64,46 @@ export const isWorkflow = (response, history = null) => {
     return false;
   }
 };
+
+export function classList(...args) {
+  const classes = [];
+
+  for (var i = 0; i < args.length; i++) {
+    if (args[i]) {
+      if (args[i] instanceof Array) {
+        args[i] = args[i].join(' ');
+      }
+
+      classes.push(args[i]);
+    }
+  }
+
+  return classes.join(' ');
+}
+
+/**
+ * Check for empty string/object
+ * @param {*} value
+ */
+export function isBlank(value) {
+  if (value !== null && typeof value === 'object') {
+    return !Object.keys(value).length;
+  }
+  if (typeof value === 'string') {
+    value = value.trim();
+    return !value;
+  }
+  return isNone(value);
+}
+
+export function subString(str, length) {
+  if (!str) {
+    return str;
+  }
+
+  if (str.length > length) {
+    return `${str.substr(0, length)} ...`;
+  } else {
+    return str;
+  }
+}

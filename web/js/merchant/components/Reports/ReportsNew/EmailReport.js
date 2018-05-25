@@ -4,6 +4,7 @@ import AsyncButton from 'react-async-button';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
 import * as NotificationsActions from 'rzp/modules/notifications';
+import { pluralize } from 'rzp/utils/rzp-utils';
 
 import { emailReportV2 } from 'merchant/modules/reports';
 import { marketplaceConfigTypes } from 'merchant/containers/Reports/ReportsNew/data';
@@ -67,7 +68,10 @@ export default class EmailReport extends Component {
     if (emails.length === 1) {
       return emails[0];
     } else {
-      return `${emails[0]} and ${emails.length - 1} others`;
+      return `${emails[0]} and ${emails.length - 1} ${pluralize(
+        'other',
+        emails.length - 1
+      )}`;
     }
   };
 

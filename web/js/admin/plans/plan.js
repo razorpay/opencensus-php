@@ -105,6 +105,10 @@ export const options = {
     0: 'No',
     1: 'Yes',
   },
+  receiver_type: {
+    '': 'All',
+    qr_code: 'QR Code',
+  },
   amount_range: {
     '': 'None',
     '0-100000': '0-100000',
@@ -316,6 +320,15 @@ class Rule extends CollectionItem {
       var field = this.binaryField('international');
       if (field) {
         return <div>International {field}</div>;
+      }
+    }
+  }
+
+  receiverTypeField() {
+    if (this.payment_method === 'card' || this.payment_method === 'upi') {
+      var field = this.selectField('receiver_type');
+      if (field) {
+        return <div>Receiver Type: {field}</div>;
       }
     }
   }

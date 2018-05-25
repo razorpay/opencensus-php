@@ -1,21 +1,33 @@
 import React, { Component } from 'react';
 import { Route, Switch, NavLink } from 'react-router-dom';
+import { connect } from 'react-redux';
+
+import { getURLQueryParams } from 'rzp/utils/rzp-utils';
+import LocalStorageService from 'rzp/utils/localStorage';
+
 import ShowWhen from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import PaymentsList from 'merchant/containers/Payments/List';
+import PaymentsBatchList from 'merchant/containers/Payments/BatchList';
 import RefundsList from 'merchant/containers/Refunds/List';
 import BatchUpload from 'merchant/containers/Refunds/BatchUpload';
 import BatchUploads from 'merchant/containers/Refunds/BatchList';
 import OrdersList from 'merchant/containers/Orders/List';
 import DisputesList from 'merchant/containers/Disputes/List';
 
-import { getURLQueryParams } from 'rzp/utils/rzp-utils';
-
 export default function TransactionsContainer(props) {
   return (
     <tabbed-container>
       <header id="transactions-header">
-        <NavLink to="/payments">Payments</NavLink>
+        <NavLink to="/payments" exact>
+          Payments
+        </NavLink>
+        <ShowWhen
+          featureEnabled="direct_debit"
+          myRole="owner manager operations admin finance"
+        >
+          <NavLink to="/payments/batchuploads">Batch Payments</NavLink>
+        </ShowWhen>
         <NavLink to="/refunds" exact>
           Refunds
         </NavLink>
@@ -43,6 +55,11 @@ export default function TransactionsContainer(props) {
           <Route path="/refunds/batchuploads" component={BatchUploads} />
           <Route path="/refunds" component={RefundsList} />
           <Route path="/orders" component={OrdersList} />
+          <Route
+            path="/payments/batchuploads/:mode"
+            component={PaymentsBatchList}
+          />
+          <Route path="/payments/batchuploads" component={PaymentsBatchList} />
           <Route path="/payments" component={PaymentsList} />
           <Route path="/disputes" component={DisputesList} />
         </Switch>

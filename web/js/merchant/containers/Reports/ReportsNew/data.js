@@ -31,7 +31,7 @@ export const marketplaceConfigTypes = {
 export const rzpConfigOrder = [
   'Combined Report',
   'Payments',
-  'Settlements Recon',
+  'Settlement Recon',
   'Settlements',
   'Orders',
   'Transactions',

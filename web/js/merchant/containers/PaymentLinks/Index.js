@@ -1,13 +1,25 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import LinkList from 'merchant/containers/PaymentLinks/List';
 import BatchList from 'merchant/containers/PaymentLinks/BatchList';
+import BatchListNew from 'merchant/containers/PaymentLinks/BatchListNew';
 import BatchUpload from 'merchant/containers/PaymentLinks/BatchUpload';
 
+const OLD_BATCH_TAG = 'batch_import_links';
+const NEW_BATCH_TAG = 'batch_import_links_v2';
+
+@connect(state => {
+  return {
+    user: state.session.user,
+  };
+})
 export default class PaymentLinksContainer extends Component {
   render() {
+    const { user } = this.props;
+
     return (
       <tabbed-container>
         <header id="link-header">
@@ -16,21 +28,40 @@ export default class PaymentLinksContainer extends Component {
           </NavLink>
           <ShowWhen
             myRole="owner manager operations admin"
-            featureEnabled="batch_import_links"
+            featureEnabled={[OLD_BATCH_TAG, NEW_BATCH_TAG]}
           >
             <NavLink exact to="/paymentlinks/batchuploads">
               Batch Uploads
+              {user.isNewBatchEnabled && (
+                <span
+                  class="badge bg-success hidden-xs"
+                  style={{ marginLeft: '5px' }}
+                >
+                  new
+                </span>
+              )}
             </NavLink>
           </ShowWhen>
         </header>
 
         <content>
           <Switch>
-            <Route
-              path="/paymentlinks/batchuploads/new"
-              component={BatchUpload}
-            />
-            <Route path="/paymentlinks/batchuploads" component={BatchList} />
+            {user.isOldBatchEnabled && !user.isNewBatchEnabled ? (
+              <Route
+                path="/paymentlinks/batchuploads/new"
+                component={BatchUpload}
+              />
+            ) : null}
+
+            {user.isNewBatchEnabled ? (
+              <Route
+                path="/paymentlinks/batchuploads"
+                component={BatchListNew}
+              />
+            ) : (
+              <Route path="/paymentlinks/batchuploads" component={BatchList} />
+            )}
+
             <Route path="/paymentlinks" component={LinkList} />
           </Switch>
         </content>

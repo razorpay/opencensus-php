@@ -43,6 +43,9 @@ const gatewayMapping = {
   netbanking_indusind: 'Netbanking Indusind',
   netbanking_rbl: 'Netbanking RBL',
   netbanking_pnb: 'Netbanking PNB',
+  netbanking_obc: 'Netbanking OBC',
+  netbanking_csb: 'Netbanking CSB',
+  netbanking_bob: 'Netbanking BOB',
   cybersource: 'Cybersource',
   hitachi: 'Hitachi',
   wallet_openwallet: 'RZP Open Wallet',
@@ -105,8 +108,8 @@ export default class TerminalForm extends Component {
     let mode = body.mode;
     delete body.mode;
 
-    if (!body.terminal_mode) {
-      delete body.mode;
+    if (body.terminal_mode) {
+      body.mode = body.terminal_mode; // Terminal mode is sent as mode. And mode(test/live) is just for api url.
     }
 
     delete body.terminal_mode;
@@ -208,8 +211,18 @@ export default class TerminalForm extends Component {
             />
           )}
 
+          <Field
+            label="Gateway Terminal Password 2"
+            name="gateway_terminal_password2"
+            type="password"
+          />
+
           <Field label="Gateway Access Code" name="gateway_access_code" />
           <Field label="Gateway Secure Secret" name="gateway_secure_secret" />
+          <Field
+            label="Gateway Secure Secret 2"
+            name="gateway_secure_secret2"
+          />
 
           {!isEditMode && (
             <FileField
@@ -330,6 +343,11 @@ export default class TerminalForm extends Component {
             <option value="2">Purchase</option>
           </SelectField>
 
+          <Field label="Master card mpan" name="mc_mpan" />
+          <Field label="Visa mpan" name="visa_mpan" />
+          <Field label="Rupay mpan" name="rupay_mpan" />
+          <Field label="VPA" name="vpa" />
+
           <CheckField
             label="Non recurring"
             name="type[non_recurring]"
@@ -348,18 +366,45 @@ export default class TerminalForm extends Component {
             label="Recurring Non 3DS"
             name="type[recurring_non_3ds]"
             defaultChecked={
-              entity && entity.type && entity.type.indexOf('recurring_non_3ds') >= 0
+              entity &&
+              entity.type &&
+              entity.type.indexOf('recurring_non_3ds') >= 0
             }
           />
           <CheckField
             label="IVR"
             name="type[ivr]"
-            defaultChecked={entity && entity.type && entity.type.indexOf('ivr') >= 0}
+            defaultChecked={
+              entity && entity.type && entity.type.indexOf('ivr') >= 0
+            }
           />
           <CheckField
             label="No 2FA"
             name="type[no_2fa]"
-            defaultChecked={entity && entity.type && entity.type.indexOf('no_2fa') >= 0}
+            defaultChecked={
+              entity && entity.type && entity.type.indexOf('no_2fa') >= 0
+            }
+          />
+          <CheckField
+            label="UPI Pay"
+            name="type[pay]"
+            defaultChecked={
+              entity && entity.type && entity.type.indexOf('pay') >= 0
+            }
+          />
+          <CheckField
+            label="Pin Auth"
+            name="type[pin]"
+            defaultChecked={
+              entity && entity.type && entity.type.indexOf('pin') >= 0
+            }
+          />
+          <CheckField
+            label="Bharat Qr"
+            name="type[bharat_qr]"
+            defaultChecked={
+              entity && entity.type && entity.type.indexOf('bharat_qr') >= 0
+            }
           />
 
           <div class="m-t m-b" />

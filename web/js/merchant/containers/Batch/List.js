@@ -4,9 +4,14 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import { Link } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import BatchListFilter from 'merchant/components/Batch/ListFilter';
-import { batchId, totalCount, status } from 'rzp/ui/item/pair';
+import { batchId, totalCount, status, createdAt } from 'rzp/ui/item/pair';
 import { batchDownload } from 'merchant/modules/batches';
 import * as NotificationsActions from 'rzp/modules/notifications';
+
+const batchName = {
+  title: 'Name',
+  value: ({ name }) => name,
+};
 
 function batchActions({
   mode,
@@ -19,16 +24,16 @@ function batchActions({
     viewAll,
     issueAll,
     title: 'Actions',
-    value: item => (
-      <div class="btn-toolbar">
-        <button
-          class="btn btn-xs btn-default"
-          onClick={() => onDownloadClick(item.id)}
-        >
-          Download
-        </button>
-        {
-          do {
+    value: item =>
+      item.status === 'processed' && (
+        <div class="btn-toolbar">
+          <button
+            class="btn btn-xs btn-default"
+            onClick={() => onDownloadClick(item.id)}
+          >
+            Download
+          </button>
+          {do {
             if (item.type === 'payment_link') {
               if (viewAll) {
                 <button
@@ -55,10 +60,9 @@ function batchActions({
                 </button>;
               }
             }
-          }
-        }
-      </div>
-    ),
+          }}
+        </div>
+      ),
   };
 }
 
@@ -95,6 +99,7 @@ export default class BatchList extends Component {
       viewAll,
       issueAll,
       issuableIdList,
+      showBatchName,
     } = this.props;
     let handleDownloadClick = this.dowload;
 
@@ -124,8 +129,10 @@ export default class BatchList extends Component {
           title="Batch Uploads"
           columns={[
             batchId,
+            ...(showBatchName ? [batchName] : []),
             totalCount,
             status,
+            createdAt,
             batchActions({
               mode,
               viewAll,

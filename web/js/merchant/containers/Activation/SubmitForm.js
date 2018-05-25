@@ -5,10 +5,25 @@ import AsyncButton from 'react-async-button';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
 import { required } from 'rzp/utils/validators';
 
+import { trackLinkClick } from './ga';
+
 @connect(state => state.session, null)
 export default class SubmitForm extends Component {
+  /**
+   * Wrapper around `trackLinkClick` to allow not sending
+   * events for Linked Account activation form.
+   * @param {String} action
+   * @return {Function}
+   */
+  _trackLinkClick = action => {
+    if (this.props.accountId) {
+      return () => {};
+    }
+    return trackLinkClick(action);
+  };
+
   render() {
-    let { handleSubmit, save, goBack, invalid } = this.props;
+    let { handleSubmit, save, goBack, invalid, accountId } = this.props;
     let { locked, submitted } = this.props.data;
 
     return (
@@ -36,6 +51,7 @@ export default class SubmitForm extends Component {
                       href="https://razorpay.com/terms/"
                       target="_blank"
                       class="highlight"
+                      onClick={this._trackLinkClick('Terms of Use')}
                     >
                       terms and conditions
                     </a>
@@ -44,6 +60,7 @@ export default class SubmitForm extends Component {
                       href="https://razorpay.com/agreement/"
                       target="_blank"
                       class="highlight"
+                      onClick={this._trackLinkClick('Merchant Agreement')}
                     >
                       merchant agreement
                     </a>
@@ -52,6 +69,7 @@ export default class SubmitForm extends Component {
                       href="https://razorpay.com/privacy/"
                       target="_blank"
                       class="highlight"
+                      onClick={this._trackLinkClick('Privacy Policy')}
                     >
                       privacy policy
                     </a>{' '}

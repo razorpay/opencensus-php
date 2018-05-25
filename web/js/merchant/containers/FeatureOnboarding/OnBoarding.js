@@ -111,7 +111,9 @@ export default class OnBoarding extends Component {
   };
 
   switchToTestMode = () => {
-    LocalStorageService.setItem('rzp_mode', 'test');
+    const { user } = this.props;
+
+    LocalStorageService.setItem(`rzp_mode--${user.current}`, 'test');
     window.location.reload();
   };
 

@@ -10,18 +10,20 @@ import PlanDetails from 'merchant/containers/Plans/Details';
 import SubscriptionDetails from 'merchant/containers/Subscriptions/Details';
 import TransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
 import DisputeDetails from 'merchant/containers/Disputes/Details';
+import BatchDetails from 'merchant/containers/BatchNew/Details';
 
 import PlanNew from 'merchant/containers/Plans/New';
 
 const entityMap = {
   '/payments/:id(pay_.+)/:entity_name(transfers)/new': PaymentsDetails,
   '/payments/:id(pay_.+)/:transfer_id(trf_.+)': PaymentsDetails,
-  '/payments/:id': PaymentsDetails,
+  '/payments/:id(pay_.+)': PaymentsDetails,
 
   '/refunds/:id(rfnd_.+)': RefundDetails,
   '/orders/:id': OrderDetails,
   '/settlements/:id': SettlementDetails,
   '/paymentlinks/:id(inv_.+)': PaymentLinkDetails,
+  '/paymentlinks/batchuploads/:id(batch_.+)': BatchDetails,
   '/invoices/:id/details': PaymentLinkDetails,
 
   '/route/payments/:id': PaymentsDetails,

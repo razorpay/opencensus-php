@@ -23,8 +23,8 @@ const gateWayOptions = [
   'SBI Buddy',
   'UpiSbi',
   'UpiIcici',
-  'Netbanking AXIS',
-  'Netbanking ICICI',
+  'Netbanking Axis',
+  'Netbanking Icici',
   'Netbanking Corporation',
   'Netbanking Federal',
   'Netbanking Rbl',
@@ -33,10 +33,14 @@ const gateWayOptions = [
   'First Data',
   'Virtual Accounts Kotak',
   'Virtual Accounts Yes Bank',
+  'Netbanking Bob',
+  'Netbanking Pnb',
+  'Netbanking Obc',
+  'Netbanking Csb',
 ];
 
 const optionValueMap = {
-  'Virtual Accounts Kotak'   : 'VirtualAccKotak',
+  'Virtual Accounts Kotak': 'VirtualAccKotak',
   'Virtual Accounts Yes Bank': 'VirtualAccYesBank',
 };
 

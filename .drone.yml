@@ -1,17 +1,50 @@
 pipeline:
+  restore_cache:
+    image: razorpay/containers:drone-s3-cache
+    restore: true
+    mount:
+      - docker_cache
+    endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
+    path: /rzp/dashboard/
+    secrets:
+      - aws_access_key_id
+      - aws_secret_access_key
+      - aws_region
+    when:
+      event: push
   build:
     image: plugins/docker
     repo: razorpay/dashboard
     secrets: [docker_username, docker_password, git_token]
     build_args_from_env: [git_token]
+    environment:
+    # Makes sure that the docker volume cache survives this run
+      PLUGIN_STORAGE_PATH: /drone/src/github.com/razorpay/dashboard/docker_cache
     build_args:
      - GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}
     tags: ${DRONE_COMMIT_SHA}
+    compress: true
+    # Ensures that docker prune is called at the end of the build
+    docker:
+      purge: false
     when:
       status: [success]
       event:
         exclude: [deployment]
         include: [push]
+  rebuild-cache:
+    image: razorpay/containers:drone-s3-cache
+    endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
+    path: '/rzp/dashboard/'
+    secrets:
+      - aws_region
+      - aws_access_key_id
+      - aws_secret_access_key
+    rebuild: true
+    mount:
+      - docker_cache
+    when:
+      event: push
   # This is a trick step to use the artifacts from the above step
   # Since we have pushed this image above, we can use the same
   # without pulling it
@@ -35,7 +68,6 @@ pipeline:
         - ls -laR public/css/generated/
         - ./s3sync.js
     when:
-      # Disable this step
       environment: never
       event:
         exclude: [push]

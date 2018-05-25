@@ -1,3 +1,8 @@
+$anchor-text-color = $primary-color;
+$anchor-text-color-hover = darken($primary-color, 20%);
+$anchor-text-color-dark-hover = lighten($primary-color, 20%);
+$dark-bg-color = #2C3243;
+
 .rzp-tooltip {
 
   display: table;
@@ -17,11 +22,42 @@
     margin-top: 0;
   }
 
+  &.theme-dark {
+
+    .rzp-tooltip-inner {
+
+      background-color: $dark-bg-color;
+
+      .rzp-popover-content {
+
+        .rzp-popover-body {
+ 
+          color: #FFFFFF;
+        }
+      }
+
+      a:hover {
+
+        color: $anchor-text-color-dark-hover;
+      }
+    }
+  }
+
   .rzp-tooltip-inner {
 
     padding: 5px 10px;
     background-color: #FFFFFF;
     box-shadow: 0 6px 15px rgba(0,0,0,0.13);
     border-radius: 2px;
+
+    a {
+
+      color: $anchor-text-color;
+
+      &:hover {
+
+        color: $anchor-text-color-hover;
+      }
+    }
   }
 }

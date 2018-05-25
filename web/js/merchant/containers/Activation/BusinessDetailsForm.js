@@ -12,6 +12,7 @@ import {
   validatePANCard,
   validateCIN,
   lenientUrl,
+  validateGSTIN,
 } from 'rzp/utils/validators';
 import { states } from 'rzp/utils/constants';
 
@@ -561,19 +562,11 @@ export default class BusinessDetailsForm extends Component {
                   GST Identification Number
                 </label>
                 <div class="col-md-9">
-                  <Field name="gstin" component="input" class="form-control" />
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="col-md-3 control-label">
-                  Provisional GST Identification Number
-                </label>
-                <div class="col-md-9">
                   <Field
-                    name="p_gstin"
-                    component="input"
+                    name="gstin"
+                    component={InputField}
                     class="form-control"
+                    validate={[validateGSTIN]}
                   />
                 </div>
               </div>

@@ -23,29 +23,21 @@ export default class GSTDetails extends Component {
       <div class="panel panel-default">
         <div class="panel-heading">
           GST Details
-          <span class="pull-right">
-            {do {
-              if (!merchant_gst.gstin && !merchant_gst.p_gstin) {
-                <a onClick={this.openAddGSTModal}>Add your GST details</a>;
-              } else if (!merchant_gst.gstin && merchant_gst.p_gstin) {
-                <a onClick={this.openAddGSTModal}>Update GST details</a>;
-              }
-            }}
-          </span>
+          {!merchant_gst.gstin && (
+            <span class="pull-right">
+              <a onClick={this.openAddGSTModal}>Add your GST details</a>
+            </span>
+          )}
         </div>
         <div class="list-group details-row-container">
           <div class="list-group-item">
             <span>GST Details</span>
 
-            {do {
-              if (!merchant_gst.gstin && !merchant_gst.p_gstin) {
-                <span class="text-danger">Not Updated</span>;
-              } else if (!merchant_gst.gstin && merchant_gst.p_gstin) {
-                <span>{merchant_gst.p_gstin} (Provisional)</span>;
-              } else {
-                <span>{merchant_gst.gstin}</span>;
-              }
-            }}
+            {merchant_gst.gstin ? (
+              <span>{merchant_gst.gstin}</span>
+            ) : (
+              <span class="text-danger">Not Updated</span>
+            )}
           </div>
 
           <div class="list-group-item">
