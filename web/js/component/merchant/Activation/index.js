@@ -23,7 +23,7 @@ import * as trackers from 'merchant/containers/Activation/ga_new';
 
 let onAction = trackers;
 
-const LOADING_STATES = {
+const LOADING = {
   ERROR: -1, // Error = show error msg
   SUCCESS: 1, // Success = show success msg
   PENDING: 0, // Pending = show spinner
@@ -74,7 +74,7 @@ let FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
 
 export default class ActivationWizard extends React.Component {
   state = {
-    isSaving: LOADING_STATES.INITIAL,
+    isSaving: LOADING.INITIAL,
     dirty: {},
     tabs: [],
     same_address:
@@ -93,13 +93,19 @@ export default class ActivationWizard extends React.Component {
     this.prepareTabs(props);
     this.setInitialTab();
 
-    if (props.accountId) {
+    if (this.isLinkedAccount) {
       onAction = null; // Only tracking for main activation form
+    } else {
+      // recording new activation form in hotjar for New accounts (non-LA account)
+      if (typeof window.hj === 'function') {
+        window.hj('trigger', 'activation_form_open');
+        window.hj('tagRecording', ['activation_form_open']);
+      }
     }
   }
 
   prepareTabs(props) {
-    if (props.accountId) {
+    if (this.isLinkedAccount) {
       // Activation form for linked account
 
       FORM_TABS = [...accountFormTabs];
@@ -179,7 +185,7 @@ export default class ActivationWizard extends React.Component {
     }
 
     // If main Form is not touched ever, then set initial tab = 0
-    if (!this.props.accountId && this.props.isFormTouched === false) {
+    if (!this.isLinkedAccount && this.props.isFormTouched === false) {
       firstInValid = 0;
     }
 
@@ -331,7 +337,7 @@ export default class ActivationWizard extends React.Component {
 
     this.setState(
       {
-        isSaving: LOADING_STATES.PENDING,
+        isSaving: LOADING.PENDING,
       },
       () => {
         window.clearTimeout(this.loaderTimeout); // Reset the previous removeLoader-call timer on each new Pending
@@ -379,6 +385,11 @@ export default class ActivationWizard extends React.Component {
       if (data.errors) {
         cb && cb(false, data.errors);
 
+        // Track session for any error on submission
+        if (!this.isLinkedAccount) {
+          window.hj('tagRecording', ['activation_form_save_error']);
+        }
+
         // TODO: This is to avoid too many api calls and consequent ERROR even when user is not intending to save.
         if (savingWhichTab && savingWhichTab !== this.state.activeTab) {
           const latestDirty = { ...this.state.dirty };
@@ -409,10 +420,17 @@ export default class ActivationWizard extends React.Component {
         * */
 
         this.setState({
-          isSaving: LOADING_STATES.ERROR,
+          isSaving: LOADING.ERROR,
         });
 
         this.removeLoader();
+
+        // Track abrupt state change
+        if (this.state.isSaving !== LOADING.PENDING) {
+          if (!this.isLinkedAccount) {
+            window.hj('tagRecording', ['activation_form_save_abrupt']);
+          }
+        }
       } else {
         cb && cb(true);
 
@@ -434,10 +452,17 @@ export default class ActivationWizard extends React.Component {
         // Don't set dirty = {}, cuz internet might be slow and user has already edited some other field.
         this.setState({
           dirty: latestDirty,
-          isSaving: LOADING_STATES.SUCCESS,
+          isSaving: LOADING.SUCCESS,
         });
 
         this.removeLoader(3000);
+
+        // Track abrupt state change (non-LA account)
+        if (this.state.isSaving !== LOADING.PENDING) {
+          if (!this.isLinkedAccount) {
+            window.hj('tagRecording', ['activation_form_save_abrupt']);
+          }
+        }
       }
     });
   };
@@ -468,6 +493,10 @@ export default class ActivationWizard extends React.Component {
     });
   }
 
+  get isLinkedAccount() {
+    return !!this.props.accountId;
+  }
+
   /*
   * Handle Account No. re-enter match before saving.
   * It mimicks loader used for API to handle cases if tab is changed.
@@ -488,9 +517,14 @@ export default class ActivationWizard extends React.Component {
      Not resetting state.dirty / account_no if tab is not changed.
     * */
 
+    // Track FE error for bank account mismatch (non-LA account)
+    if (!this.isLinkedAccount) {
+      window.hj('tagRecording', ['activation_form_save_error']);
+    }
+
     setTimeout(() => {
       this.setState({
-        isSaving: LOADING_STATES.ERROR, // Mimick api behavior on FE
+        isSaving: LOADING.ERROR, // Mimick api behavior on FE
       });
 
       this.removeLoader();
@@ -503,6 +537,11 @@ export default class ActivationWizard extends React.Component {
     onAction &&
       promise.then(data => {
         if (data.errors) {
+          // Track session for any error on submission (non-LA account)
+          if (!this.isLinkedAccount) {
+            window.hj('tagRecording', ['activation_form_save_error']);
+          }
+
           onAction.trackSubmit({
             error: data.errors,
             type: false,
@@ -521,7 +560,7 @@ export default class ActivationWizard extends React.Component {
   * */
   removeLoader = delay => {
     this.loaderTimeout = setTimeout(() => {
-      this.setState({ isSaving: LOADING_STATES.INITIAL });
+      this.setState({ isSaving: LOADING.INITIAL });
     }, delay || 7000); // Success states can be removed in 3sec.
   };
 
@@ -734,7 +773,7 @@ export default class ActivationWizard extends React.Component {
   };
 
   render() {
-    let isLinkedAccountForm = !!this.props.accountId; // Check if this activation wizard is invoked from Linked accounts.
+    let isLinkedAccountForm = this.isLinkedAccount; // Check if this activation wizard is invoked from Linked accounts.
     let isSubmitFormRemoved = isSubmitFormDisabled(this.props.data); // Submit form is removed if locked, activated or in submitted state
 
     let activeTab = this.state.activeTab;
@@ -971,6 +1010,7 @@ export default class ActivationWizard extends React.Component {
                 closeActivationForm={() => {
                   this.goto(FORM_TABS.length - 1);
                 }}
+                isLinkedAccount={this.isLinkedAccount}
                 submitActvationForm={this.submitForm}
               />
             </main>
@@ -1030,26 +1070,26 @@ export default class ActivationWizard extends React.Component {
 * @prop {Boolean or null} isSaving - Current status of Loader
 * */
 function Loader({ isSaving }) {
-  if (isSaving === LOADING_STATES.INITIAL) {
+  if (isSaving === LOADING.INITIAL) {
     return <span class="Loader" />;
   }
 
   return (
     <span class="Loader Loader--visible">
       {do {
-        if (isSaving === LOADING_STATES.PENDING) {
+        if (isSaving === LOADING.PENDING) {
           <React.Fragment>
             <span class="spin-btn" />
             <span class="device--desktop">Saving Changes...</span>
             <span class="device--mobile">Saving</span>
           </React.Fragment>;
-        } else if (isSaving === LOADING_STATES.SUCCESS) {
+        } else if (isSaving === LOADING.SUCCESS) {
           <React.Fragment>
             <i class="i-check text-success" />
             <span class="text-success device--desktop">All changes saved</span>
             <span class="text-success device--mobile">Saved</span>
           </React.Fragment>;
-        } else if (isSaving === LOADING_STATES.ERROR) {
+        } else if (isSaving === LOADING.ERROR) {
           <React.Fragment>
             <i class="i-close text-danger" />
             <span class="text-danger device--desktop">
@@ -1201,6 +1241,11 @@ class SubmitForm extends React.Component {
                 this.setState({
                   allowSubmit: e.target.checked,
                 });
+
+                // Track session for submitting form activity (non-LA account)
+                if (!this.props.isLinkedAccount) {
+                  window.hj('tagRecording', ['activation_form_submitted']);
+                }
               }}
             />
 

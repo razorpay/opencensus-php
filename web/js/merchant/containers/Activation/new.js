@@ -223,6 +223,12 @@ export class ActivationContainer extends React.Component {
             message: err.errors,
           });
         }
+
+        // Track session for any error on file upload (non-LA account)
+        if (!this.props.accountId) {
+          window.hj('tagRecording', ['activation_form_save_error']);
+        }
+
         return err;
       });
   };
