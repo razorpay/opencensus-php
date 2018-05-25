@@ -9,7 +9,7 @@ class RefundReconciliate extends Base\RefundReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_REFUND_ID = 'PG TXN ID';
+    const COLUMN_REFUND_ID = 'pg_txn_id';
 
     protected function getRefundId($row)
     {

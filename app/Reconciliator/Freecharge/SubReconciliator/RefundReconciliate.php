@@ -10,10 +10,10 @@ use RZP\Models\Payment;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
-    const COLUMN_REFUND_ID     = 'Transaction Id';
-    const COLUMN_PAYMENT_ID    = 'Order Id';
-    const COLUMN_SETTLED_AT    = 'Settlement Date';
-    const COLUMN_REFUND_AMOUNT = 'Total Transaction Amount';
+    const COLUMN_REFUND_ID     = 'transaction_id';
+    const COLUMN_PAYMENT_ID    = 'order_id';
+    const COLUMN_SETTLED_AT    = 'settlement_date';
+    const COLUMN_REFUND_AMOUNT = 'total_transaction_amount';
 
     const SETTLEMENT_DATE_FORMAT = 'jS F Y';
 
@@ -72,7 +72,7 @@ class RefundReconciliate extends Base\RefundReconciliate
                     'trace_code'    => TraceCode::RECON_INFO_ALERT,
                     'message'       => 'Unable to parse settlement date -> ' . $ex->getMessage(),
                     'row'           => $row,
-                    'gateway'       => get_called_class()
+                    'gateway'       => $this->gateway
                 ]);
 
             $this->app['trace']->traceException($ex);
@@ -99,7 +99,7 @@ class RefundReconciliate extends Base\RefundReconciliate
                     'expected_amount'   => $this->refund->getBaseAmount(),
                     'currency'          => $this->refund->getCurrency(),
                     'row'               => $row,
-                    'gateway'           => get_called_class()
+                    'gateway'           => $this->gateway
                 ]);
 
             return false;

@@ -10,7 +10,7 @@ class CombinedReconciliate extends Base\CombinedReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_REFUND_AMOUNT    = 'RefundAmount';
+    const COLUMN_REFUND_AMOUNT    = 'refundamount';
 
     /**
      * There is no column defining whether the row is refund or payment

@@ -46,6 +46,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         RequestProcessor\Base::HITACHI
     ];
 
+    const GATEWAY_FEES_MISSING_GATEWAYS = [
+        // For HDFC, record gateway fees of payments before 7th Nov
+        RequestProcessor\Base::HDFC => 1509993000
+    ];
+
     /*******************
      * Instance objects
      *******************/
@@ -108,6 +113,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             if ($this->reconciled === true)
             {
                 $this->handleAlreadyReconciled($paymentId);
+
+                //
+                // Record gateway fee and service tax for reconciled payments
+                //
+                $this->recordMissingGatewayFeeAndServiceTax($rowDetails);
             }
             else
             {
@@ -1320,6 +1330,67 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
 
         return false;
+    }
+
+    /*
+     * Record gateway fee and service tax for already reconciled
+     * payments.
+     * Happening only for HDFC currently : Because of code bug, fee and service tax of
+     * payments reconciled before 7th Nov,17 are not filled.
+     */
+    protected function recordMissingGatewayFeeAndServiceTax(array $rowDetails)
+    {
+        if (in_array($this->gateway, array_keys(self::GATEWAY_FEES_MISSING_GATEWAYS), true) === true)
+        {
+            // Skipping slack messages here, only want to trace the errors
+            $this->messenger->setSkipSlack(true);
+
+            //
+            // Check if payment is created after the given date for current gateway, don't proceed
+            // Payment must have gateway fee already recorded
+            //
+            $paymentMaxCreatedAt = self::GATEWAY_FEES_MISSING_GATEWAYS[$this->gateway];
+
+            if ($this->payment->getCreatedAt() > $paymentMaxCreatedAt)
+            {
+                return;
+            }
+
+            $reconGatewayFee = $rowDetails[BaseReconciliate::GATEWAY_FEE];
+
+            $reconGatewayServiceTax = $rowDetails[BaseReconciliate::GATEWAY_SERVICE_TAX];
+
+            if ($this->paymentTransaction === null)
+            {
+                $this->trace->warning(
+                    TraceCode::RECON_INFO_ALERT,
+                    [
+                        'info_code'     => 'PAYMENT_TRANSACTION_ABSENT',
+                        'message'       => 'Transaction not present for the given payment ID.',
+                        'row_details'   => $rowDetails,
+                        'gateway'       => $this->gateway
+                    ]);
+
+                return;
+            }
+
+            $currentGatewayFee = $this->paymentTransaction->getGatewayFee();
+
+            $currentGatewayServiceTax = $this->paymentTransaction->getGatewayServiceTax();
+
+            $recordGatewayFeeSuccess = $this->recordGatewayFee($reconGatewayFee, $currentGatewayFee);
+
+            if ($recordGatewayFeeSuccess === true)
+            {
+                $recordGatewayServiceTaxSuccess = $this->recordGatewayServiceTax($reconGatewayServiceTax,
+                                                                                 $currentGatewayServiceTax);
+
+                if ($recordGatewayServiceTaxSuccess === true)
+                {
+                    $this->paymentTransaction->saveOrFail();
+                }
+            }
+        }
     }
 
     protected function attemptToCreateMissingPaymentTransaction()

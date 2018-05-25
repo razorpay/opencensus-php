@@ -50,6 +50,10 @@ class HulkGatewayTest extends TestCase
         // Checking whether gateway was hit
         $this->assertTrue($gatewayHit);
 
+        $upiPayment = $this->getDbLastEntity('upi');
+
+        $this->assertSame('collect', $upiPayment['type']);
+
         // Co Proto must be working
         $this->assertEquals('async', $response['type']);
 
@@ -399,7 +403,7 @@ class HulkGatewayTest extends TestCase
         $payment = $this->getDbLastPayment('payment');
 
         $this->assertSame('created', $payment->getStatus());
-        $this->assertEquals('push', $upiEntity['type']);
+        $this->assertEquals('pay', $upiEntity['type']);
         $this->assertEquals('1UPIInHulkTrml', $payment['terminal_id']);
         $this->assertNull($payment['vpa']);
 
@@ -455,6 +459,6 @@ class HulkGatewayTest extends TestCase
 
         $gatewayEntity = $this->getDbLastEntity('upi');
 
-        $this->assertEquals('push', $gatewayEntity['type']);
+        $this->assertEquals('pay', $gatewayEntity['type']);
     }
 }

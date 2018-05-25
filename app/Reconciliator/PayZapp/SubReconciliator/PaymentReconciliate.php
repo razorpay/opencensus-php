@@ -9,13 +9,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID  = 'TRACK ID';
-    const COLUMN_CARD_TYPE   = 'CREDIT/DEBIT CARD FLAG';
-    const COLUMN_SERVICE_TAX = 'SERVICE TAX';
-    const COLUMN_SB_CESS     = 'SWACH BHARAT CESS';
-    const COLUMN_KK_CESS     = 'KRISHI KALYAN CESS';
-    const COLUMN_EDU_CESS    = 'EDUCESS';
-    const COLUMN_FEE         = 'COMMISSION AMT';
+    const COLUMN_PAYMENT_ID  = 'track_id';
+    const COLUMN_CARD_TYPE   = 'creditdebit_card_flag';
+    const COLUMN_SERVICE_TAX = 'service_tax';
+    const COLUMN_SB_CESS     = 'swach_bharat_cess';
+    const COLUMN_KK_CESS     = 'krishi_kalyan_cess';
+    const COLUMN_EDU_CESS    = 'educess';
+    const COLUMN_FEE         = 'commission_amt';
 
     protected function getPaymentId(array $row)
     {
