@@ -3614,10 +3614,14 @@ trait Authorize
 
         // If the payment is card payment with headless browser flow then
         // we render the otp submission page to the user
-        if (($payment->isCard() === true) and
-            ($payment->getFlow() === Payment\Flow::HEADLESS_OTP))
+        if ($payment->isCard() === true)
         {
-            return true;
+            $headless = $this->cache->get($this->getHeadlessCacheKey($payment), false);
+
+            if ($headless === true)
+            {
+                return true;
+            }
         }
 
         $wallet = $payment->getWallet();
