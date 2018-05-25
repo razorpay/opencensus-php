@@ -50,6 +50,8 @@ class Repository extends Base\Repository
         Entity::EMAIL           => 'sometimes',
         Entity::STATUS          => 'sometimes|string',
         Entity::NOTES           => 'sometimes|string|max:500',
+        Entity::INVOICE_ID      => 'sometimes|string|min:14|max:18',
+        Entity::PAYMENT_LINK_ID => 'sometimes|string|min:14|max:18',
         Entity::SUBSCRIPTION_ID => 'sometimes|string|min:14|max:18',
         Entity::BANK_REFERENCE  => 'sometimes|alpha_num|max:22',
         self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes',
@@ -148,19 +150,6 @@ class Repository extends Base\Repository
                     ->whereBetween(Payment\Entity::AUTHORIZED_AT, array($from, $to))
                     ->whereIn('status', $status)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
-                    ->get();
-    }
-
-    /**
-     * Returns all the payments of a payment_link
-     * @param string $paymentLinkId
-     *
-     * @return PublicCollection
-     */
-    public function fetchPaymentsForPaymentLink(string $paymentLinkId): PublicCollection
-    {
-        return $this->newQuery()
-                    ->where(Payment\Entity::PAYMENT_LINK_ID, '=', $paymentLinkId)
                     ->get();
     }
 

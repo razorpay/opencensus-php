@@ -16,7 +16,9 @@ return [
                 'currency'      => 'INR',
                 'title'         => 'Sample title',
                 'description'   => 'Sample description',
-                'notes'         => ['Sample notes'],
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
             ],
         ],
         'response' => [
@@ -30,14 +32,46 @@ return [
         ],
     ],
 
+    'testCreatePaymentLinkWithBadExpireBy' => [
+        'request'  => [
+            'url'     => '/payment_links',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'amount'        => 100000,
+                'currency'      => 'INR',
+                'expire_by'     => 1400000000,
+                'title'         => 'Sample title',
+                'description'   => 'Sample description',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'expire_by should be at least 15 minutes after the current time.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testFetchPaymentLink' => [
         'request'  => [
-            'url'     => '/payment_links/%s',
+            'url'     => '/payment_links/pl_100000000000pl',
             'method'  => 'get',
             'content' => [],
         ],
         'response' => [
             'content' => [
+                'id'            => 'pl_100000000000pl',
                 'receipt'       => '00000000000001',
                 'amount'        => 100000,
                 'currency'      => 'INR',
@@ -58,6 +92,7 @@ return [
                 'count' => 1,
                 'items' => [
                     [
+                        'id'            => 'pl_100000000000pl',
                         'receipt'       => '00000000000001',
                         'amount'        => 100000,
                         'currency'      => 'INR',
@@ -71,17 +106,20 @@ return [
 
     'testUpdatePaymentLink' => [
         'request' => [
-            'url'     => '/payment_links/%s',
+            'url'     => '/payment_links/pl_100000000000pl',
             'method'  => 'patch',
             'content' => [
                 'receipt'       => '00000000000002',
                 'title'         => 'Sample test title',
                 'description'   => 'Sample test description',
-                'notes'         => ['Sample test notes'],
+                'notes'         => [
+                    'sample_key' => 'Sample test notes',
+                ],
             ],
         ],
         'response' => [
             'content' => [
+                'id'            => 'pl_100000000000pl',
                 'receipt'       => '00000000000002',
                 'title'         => 'Sample test title',
                 'description'   => 'Sample test description',
@@ -89,15 +127,44 @@ return [
         ],
     ],
 
+    'testUpdatePaymentLinkWithBadExpireBy' => [
+        'request' => [
+            'url'     => '/payment_links/pl_100000000000pl',
+            'method'  => 'patch',
+            'content' => [
+                'receipt'       => '00000000000002',
+                'expire_by'     => 1400000000,
+                'title'         => 'Sample test title',
+                'description'   => 'Sample test description',
+                'notes'         => [
+                    'sample_key' => 'Sample test notes',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'expire_by should be at least 15 minutes after the current time.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testFetchPaymentLinkPayments' => [
         'request'  => [
-            'url'     => '/payment_links/%s/payments',
+            'url'     => '/payment_links/pl_100000000000pl/payments',
             'method'  => 'get',
             'content' => [],
         ],
         'response' => [
             'content' => [
-                'items' => [],
+                'count' => 1,
             ],
         ],
     ],

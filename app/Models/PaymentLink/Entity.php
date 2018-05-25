@@ -38,10 +38,6 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    protected static $generators = [
-        self::ID,
-    ];
-
     protected $fillable = [
         self::AMOUNT,
         self::CURRENCY,
@@ -121,7 +117,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::CURRENCY          => Currency\Currency::INR,
         self::EXPIRE_BY         => null,
         self::TIMES_PAYABLE     => null,
         self::TIMES_PAID        => 0,

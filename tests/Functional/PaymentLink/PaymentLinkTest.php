@@ -2,12 +2,15 @@
 
 namespace RZP\Tests\Functional\PaymentLink;
 
+use RZP\Models\Payment;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class PaymentLinkTest extends TestCase
 {
     use RequestResponseFlowTrait;
+
+    const DEFAULT_PAYMENT_LINK_ID = '100000000000pl';
 
     public function setUp()
     {
@@ -23,61 +26,56 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePaymentLinkWithBadExpireBy()
+    {
+        $this->startTest();
+    }
+
     public function testFetchPaymentLink()
     {
-        $testData = & $this->testData[__FUNCTION__];
-
-        $paymentLink = $this->fixtures->create('payment_link');
-
-        $paymentLinkId = $paymentLink->getPublicId();
-
-        $url = $testData['request']['url'];
-
-        $url = sprintf($url, $paymentLinkId);
-
-        $testData['request']['url'] = $url;
+        $this->createPaymentLinkWithId(self::DEFAULT_PAYMENT_LINK_ID);
 
         $this->startTest();
     }
 
     public function testFetchPaymentLinks()
     {
-        $this->fixtures->create('payment_link');
+        $this->createPaymentLinkWithId(self::DEFAULT_PAYMENT_LINK_ID);
 
         $this->startTest();
     }
 
     public function testUpdatePaymentLink()
     {
-        $testData = & $this->testData[__FUNCTION__];
+        $this->createPaymentLinkWithId(self::DEFAULT_PAYMENT_LINK_ID);
 
-        $paymentLink = $this->fixtures->create('payment_link');
+        $this->startTest();
+    }
 
-        $paymentLinkId = $paymentLink->getPublicId();
-
-        $url = $testData['request']['url'];
-
-        $url = sprintf($url, $paymentLinkId);
-
-        $testData['request']['url'] = $url;
+    public function testUpdatePaymentLinkWithBadExpireBy()
+    {
+        $this->createPaymentLinkWithId(self::DEFAULT_PAYMENT_LINK_ID);
 
         $this->startTest();
     }
 
     public function testFetchPaymentLinkPayments()
     {
-        $testData = & $this->testData[__FUNCTION__];
+        $this->createPaymentLinkWithId(self::DEFAULT_PAYMENT_LINK_ID);
 
-        $paymentLink = $this->fixtures->create('payment_link');
-
-        $paymentLinkId = $paymentLink->getPublicId();
-
-        $url = $testData['request']['url'];
-
-        $url = sprintf($url, $paymentLinkId);
-
-        $testData['request']['url'] = $url;
+        $this->fixtures->create('payment', [
+            Payment\Entity::PAYMENT_LINK_ID => self::DEFAULT_PAYMENT_LINK_ID
+        ]);
 
         $this->startTest();
+    }
+
+    // -------------------- Protected methods --------------------
+
+    protected function createPaymentLinkWithId($id)
+    {
+        $this->fixtures->create('payment_link', [
+            'id' => self::DEFAULT_PAYMENT_LINK_ID,
+        ]);
     }
 }

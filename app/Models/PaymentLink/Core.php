@@ -38,7 +38,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($paymentLink);
 
-        $this->trace->info(TraceCode::PAYMENT_LINK_CREATED, $paymentLink->toArray());
+        $this->trace->info(TraceCode::PAYMENT_LINK_CREATED, $paymentLink->toArrayPublic());
 
         return $paymentLink;
     }
@@ -62,6 +62,8 @@ class Core extends Base\Core
             $paymentLink->getId(),
             function() use ($paymentLink, $input)
             {
+                $paymentLink->reload();
+
                 // TODO: cases related to expire_by and times_payable to be handled
                 $paymentLink->edit($input);
 
