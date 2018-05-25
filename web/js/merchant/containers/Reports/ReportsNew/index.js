@@ -26,6 +26,7 @@ import {
   updateReportInList,
   removeReportFromList,
   areReportsStillDownloading,
+  addPollInstance,
 } from 'merchant/modules/reports';
 import SelectConfig from 'merchant/components/Reports/ReportsNew/SelectConfig';
 import EmailReport from 'merchant/components/Reports/ReportsNew/EmailReport';
@@ -72,6 +73,7 @@ const requestFailedFunc = () => {
       mode: state.session.mode,
       user: state.session.user,
       currentReportList: state.reports.currentReportList,
+      pollInstances: state.reports.pollInstances,
       type: selector(state, 'type'),
       date: selector(state, 'date'),
       invoiceDate: selector(state, 'invoiceDate'),
@@ -84,6 +86,7 @@ const requestFailedFunc = () => {
     addReportToList,
     updateReportInList,
     removeReportFromList,
+    addPollInstance,
   }
 )
 @reduxForm({
@@ -100,7 +103,7 @@ const requestFailedFunc = () => {
 export default class ReportsContainer extends Component {
   constructor(props) {
     super(props);
-    const { user, currentReportList } = props,
+    const { user, currentReportList, pollInstances } = props,
       tags = user.tags.map(tag => tag.toLowerCase()),
       configs = [getCustomConfig('monthlyInvoice')],
       accounts = [],
@@ -153,7 +156,7 @@ export default class ReportsContainer extends Component {
         .subtract(1, 'months')
         .startOf('month'),
       currentReportList,
-      pollInstances: {},
+      pollInstances,
     };
 
     this.onConfigChange = ::this.onConfigChange;
@@ -165,6 +168,7 @@ export default class ReportsContainer extends Component {
       //update state when report list store changes
       this.setState({
         currentReportList: store.getState().reports.currentReportList,
+        pollInstances: store.getState().reports.pollInstances,
       });
     });
 
@@ -286,11 +290,7 @@ export default class ReportsContainer extends Component {
   };
 
   saveLongPollInstances = (reportId, pollInstance) => {
-    let pollInstances = { ...this.state.pollInstances };
-
-    pollInstances[reportId] = pollInstance;
-
-    this.setState({ pollInstances });
+    this.props.addPollInstance(reportId, pollInstance);
   };
 
   generateReport() {

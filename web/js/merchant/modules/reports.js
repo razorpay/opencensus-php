@@ -9,6 +9,7 @@ const GENERATE_REPORT = 'GENERATE_REPORT';
 const ADD_REPORT = 'ADD_REPORT';
 const UPDATE_REPORT = 'UPDATE_REPORT';
 const REMOVE_REPORT = 'REMOVE_REPORT';
+const ADD_POLL_INSTANCE = 'ADD_POLL_INSTANCE';
 
 const downloadReportErrorMsg = {
   error: 'Oops!, Unable to generate report',
@@ -74,8 +75,8 @@ const pollInterval = 2, // poll interval in SECONDS
 export const generateReportV2 = (
   params,
   isMerchantAccount,
-  updateStore,
-  saveLongPollInstances
+  onProgress,
+  onPollStart
 ) => {
   const startTime = new Date(),
     accountHeaderVal = !isMerchantAccount && params.generated_by;
@@ -86,11 +87,12 @@ export const generateReportV2 = (
   return createLog(params, accountHeaderVal)
     .then(resp => {
       if (!resp.success || !resp.data || !resp.data.id) {
-        updateStore(resp.data);
+        onProgress(resp.data);
         return downloadReportErrorMsg;
       }
 
-      updateStore(resp.data, true);
+      //
+      onProgress(resp.data, true);
 
       const logId = resp.data.id;
 
@@ -130,7 +132,8 @@ export const generateReportV2 = (
         },
       });
 
-      saveLongPollInstances(logId, logPoll);
+      //save log poll instances in the store
+      onPollStart(logId, logPoll);
 
       return logPoll.promise
         .then(resp => {
@@ -141,16 +144,16 @@ export const generateReportV2 = (
             resp.data.status === 'failed' ||
             resp.data.status === 'created'
           ) {
-            updateStore({ ...resp.data, status: 'failed' });
+            onProgress({ ...resp.data, status: 'failed' });
             return downloadReportErrorMsg;
           }
 
-          updateStore(resp.data);
+          onProgress(resp.data);
 
           const fileId = resp.data.file_id;
 
           if (!fileId) {
-            updateStore(resp.data);
+            onProgress(resp.data);
             return {
               error: 'No data found for the given dates',
             };
@@ -214,6 +217,16 @@ export const removeReportFromList = reportId => {
   };
 };
 
+export const addPollInstance = (logId, pollInstance) => {
+  return {
+    type: ADD_POLL_INSTANCE,
+    payload: {
+      logId,
+      pollInstance,
+    },
+  };
+};
+
 export const areReportsStillDownloading = reports => {
   const list = Object.keys(reports);
   let isDownloading = false;
@@ -230,13 +243,15 @@ export const areReportsStillDownloading = reports => {
 
 let initialState = {
   currentReportList: {},
+  pollInstances: {},
 };
 
 export function reportsReducer(state = initialState, action) {
   let currentReportList = {},
-    isDownloading = false;
+    pollInstances = {};
 
   currentReportList = { ...state.currentReportList };
+  pollInstances = { ...state.pollInstances };
 
   switch (action.type) {
     case `${ADD_REPORT}`:
@@ -254,7 +269,14 @@ export function reportsReducer(state = initialState, action) {
       if (currentReportList[action.reportId]) {
         delete currentReportList[action.reportId];
       }
+
       return set(state, 'currentReportList', currentReportList);
+    case `${ADD_POLL_INSTANCE}`:
+      if (!pollInstances[action.payload.logId]) {
+        pollInstances[action.payload.logId] = action.payload.pollInstance;
+      }
+
+      return set(state, 'pollInstances', pollInstances);
     default:
       return state;
   }

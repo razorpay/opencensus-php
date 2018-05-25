@@ -44,7 +44,6 @@ export default class MainNavLink extends Component {
     } else if (isNew) {
       tag = <span class="badge bg-success pull-right hidden-xs">new</span>;
     }
-    console.log();
     //show infinite spin loader if there are some pending items in that section of the app
     if (isPending) {
       loader = <span class="spin-loader pull-right  hidden-xs" />;

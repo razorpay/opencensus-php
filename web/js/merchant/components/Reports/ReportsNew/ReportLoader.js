@@ -66,27 +66,17 @@ export default class ReportLoader extends Component {
 
   getReportStatus = reportId => {
     const { reportList } = this.props;
-    let reportStatus = 'pending';
+    let reportStatus = reportList[reportId]['status'];
 
-    switch (reportList[reportId]['status']) {
-      case 'failed':
-        reportStatus = 'failed';
-        break;
-      case 'created':
-        reportStatus = 'pending';
-        break;
-      case 'processed':
-        if (reportList[reportId]['file_id']) {
-          reportStatus = 'success';
-        } else {
-          reportStatus = 'failed';
-        }
-        break;
-      default:
-        reportStatus = 'failed';
-        break;
+    if (reportStatus === 'created') {
+      return 'pending';
     }
-    return reportStatus;
+
+    if (reportStatus === 'processed' && reportList[reportId]['file_id']) {
+      return 'success';
+    }
+
+    return 'failed';
   };
 
   render() {

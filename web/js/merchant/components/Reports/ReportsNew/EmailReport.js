@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import AsyncButton from 'react-async-button';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
-import AsyncButton from 'react-async-button';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
 import { emailReportV2 } from 'merchant/modules/reports';
@@ -30,6 +30,7 @@ export default class EmailReport extends Component {
 
   allEmails = [];
 
+  //used for ga tracking
   reportList = this.props.currentReportList || {};
 
   componentWillMount() {
@@ -187,6 +188,7 @@ export default class EmailReport extends Component {
         });
       })
       .catch(err => {
+        console.error(err);
         this.props.showNotification({
           type: 'error',
           message: 'Oops! Unable to email reports.',
