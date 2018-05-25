@@ -234,21 +234,12 @@ let initialState = {
 
 export function reportsReducer(state = initialState, action) {
   let currentReportList = {},
-    reportsDownloadStatus = {};
+    isDownloading = false;
 
   currentReportList = { ...state.currentReportList };
-  reportsDownloadStatus = { ...state.reportsDownloadStatus };
 
   switch (action.type) {
     case `${ADD_REPORT}`:
-      //attach unload event at the first report download
-      if (
-        Object.keys(currentReportList).length === 0 &&
-        !window.onbeforeunload
-      ) {
-        window.onbeforeunload = alertBeforeClose;
-      }
-
       currentReportList[action.report.id] = action.report;
       return set(state, 'currentReportList', currentReportList);
 
@@ -263,19 +254,8 @@ export function reportsReducer(state = initialState, action) {
       if (currentReportList[action.reportId]) {
         delete currentReportList[action.reportId];
       }
-
-      //de-attach unload event at the first report download
-      if (Object.keys(currentReportList).length === 0) {
-        window.onbeforeunload = null;
-      }
       return set(state, 'currentReportList', currentReportList);
     default:
       return state;
   }
 }
-
-const alertBeforeClose = () => {
-  trackReportGenericActions('Attempt to Close Browser Window');
-
-  return 'Some reports are currently being downloaded. Are you sure you want to close the app right now?';
-};

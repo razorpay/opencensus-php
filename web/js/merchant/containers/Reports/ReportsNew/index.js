@@ -25,6 +25,7 @@ import {
   addReportToList,
   updateReportInList,
   removeReportFromList,
+  areReportsStillDownloading,
 } from 'merchant/modules/reports';
 import SelectConfig from 'merchant/components/Reports/ReportsNew/SelectConfig';
 import EmailReport from 'merchant/components/Reports/ReportsNew/EmailReport';
@@ -41,6 +42,7 @@ import {
   trackReportTabsClick,
   trackReportActions,
   trackTimeLapse,
+  trackReportGenericActions,
 } from './ga';
 
 const validYear = current => {
@@ -372,8 +374,7 @@ export default class ReportsContainer extends Component {
               message: data.error,
             });
           }
-          window.open(data.url, '_blank');
-          // window.location = ;
+          window.location = data.url;
         });
       }
 
