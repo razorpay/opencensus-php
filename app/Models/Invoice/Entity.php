@@ -652,10 +652,7 @@ class Entity extends Base\PublicEntity
     {
         $code = $this->getSupplyStateCode();
 
-        if ($code !== null)
-        {
-            return Gstin::getStateNameByCode($code);
-        }
+        return $code !== null ? Gstin::getStateNameByCode($code) : null;
     }
 
     public function getDescription()

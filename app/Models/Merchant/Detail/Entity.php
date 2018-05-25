@@ -483,12 +483,10 @@ class Entity extends Base\PublicEntity
 
     public function getBusinessRegisteredStateName()
     {
-        $state = $this->getBusinessRegisteredState();
+        $state     = $this->getBusinessRegisteredState();
+        $stateName = $state !== null ? IndianStates::getStateNameByCode($state) : null;
 
-        if ($state !== null)
-        {
-            return ucwords(strtolower(IndianStates::getStateNameByCode($state)));
-        }
+        return $stateName !== null ? ucwords(strtolower($stateName)) : null;
     }
 
     public function getBusinessRegisteredPin()
