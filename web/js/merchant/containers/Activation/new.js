@@ -225,7 +225,7 @@ export class ActivationContainer extends React.Component {
         }
 
         // Track session for any error on file upload (non-LA account)
-        if (!this.props.accountId) {
+        if (!this.props.accountId && typeof window.hj === 'function') {
           window.hj('tagRecording', ['activation_form_save_error']);
         }
 

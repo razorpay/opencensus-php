@@ -386,7 +386,7 @@ export default class ActivationWizard extends React.Component {
         cb && cb(false, data.errors);
 
         // Track session for any error on submission
-        if (!this.isLinkedAccount) {
+        if (!this.isLinkedAccount && typeof window.hj === 'function') {
           window.hj('tagRecording', ['activation_form_save_error']);
         }
 
@@ -427,7 +427,7 @@ export default class ActivationWizard extends React.Component {
 
         // Track abrupt state change
         if (this.state.isSaving !== LOADING.PENDING) {
-          if (!this.isLinkedAccount) {
+          if (!this.isLinkedAccount && typeof window.hj === 'function') {
             window.hj('tagRecording', ['activation_form_save_abrupt']);
           }
         }
@@ -459,7 +459,7 @@ export default class ActivationWizard extends React.Component {
 
         // Track abrupt state change (non-LA account)
         if (this.state.isSaving !== LOADING.PENDING) {
-          if (!this.isLinkedAccount) {
+          if (!this.isLinkedAccount && typeof window.hj === 'function') {
             window.hj('tagRecording', ['activation_form_save_abrupt']);
           }
         }
@@ -518,7 +518,7 @@ export default class ActivationWizard extends React.Component {
     * */
 
     // Track FE error for bank account mismatch (non-LA account)
-    if (!this.isLinkedAccount) {
+    if (!this.isLinkedAccount && typeof window.hj === 'function') {
       window.hj('tagRecording', ['activation_form_save_error']);
     }
 
@@ -538,7 +538,7 @@ export default class ActivationWizard extends React.Component {
       promise.then(data => {
         if (data.errors) {
           // Track session for any error on submission (non-LA account)
-          if (!this.isLinkedAccount) {
+          if (!this.isLinkedAccount && typeof window.hj === 'function') {
             window.hj('tagRecording', ['activation_form_save_error']);
           }
 
@@ -1243,7 +1243,10 @@ class SubmitForm extends React.Component {
                 });
 
                 // Track session for submitting form activity (non-LA account)
-                if (!this.props.isLinkedAccount) {
+                if (
+                  !this.props.isLinkedAccount &&
+                  typeof window.hj === 'function'
+                ) {
                   window.hj('tagRecording', ['activation_form_submitted']);
                 }
               }}
