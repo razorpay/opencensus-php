@@ -423,9 +423,9 @@ class Gateway extends Base\Gateway
         // Trace payment decrypted data as string because if their
         // is any error in data format we can get to know about this.
         $this->traceGatewayData([
-                                    "gateway_data" => $decryptedString,
-                                    "payment_id"   => $input['payment']['id'],
-                                    "gateway"      => $this->gateway,
+                                    'gateway_data' => $decryptedString,
+                                    'payment_id'   => $input['payment']['id'],
+                                    'gateway'      => $this->gateway,
                                 ],
                                 TraceCode::GATEWAY_PAYMENT_CALLBACK);
 
