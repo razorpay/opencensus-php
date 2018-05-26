@@ -35,6 +35,37 @@ class ApiRequestAny
 
     protected $shouldProcessInput = true;
 
+    /**
+     * Whitelist of API hosts that can be sent in the `rzp_api_host` cookie
+     * @var array
+     */
+    protected $allowedApiHostsForEnv = [
+        'dev'     => '*',
+        'beta'    => [
+            'https://beta-api.razorpay.com/v1/',
+            'https://beta-api-canary.razorpay.com/v1/',
+            'https://beta-api.razorpay.in/v1/',
+            'https://beta-api-canary.razorpay.in/v1/',
+        ],
+        'charlie' => [
+            'https://charlie-api.razorpay.com/v1/',
+            'https://charlie-api.razorpay.in/v1/',
+        ],
+        'delta'   => [
+            'https://delta-api.razorpay.com/v1/',
+            'https://delta-api.razorpay.in/v1/',
+        ],
+        'echo'    => [
+            'https://echo-api.razorpay.com/v1/',
+            'https://echo-api.razorpay.in/v1/',
+        ],
+        'production' => [
+            'https://api.razorpay.com/v1/',
+            'https://prod-api-canary.razorpay.com/v1/',
+            'https://prod-api-dark.razorpay.com/v1/',
+        ]
+    ];
+
     const RAZORPAY_ACCOUNT_HEADER = 'X-Razorpay-Account';
 
     const CONTENT_TYPE_JSON = 'application/json';
@@ -42,6 +73,8 @@ class ApiRequestAny
     const CONTENT_TYPE_FORM = 'application/x-www-form-urlencoded';
 
     const CONTENT_TYPE_MULTIPART_PREFIX = 'multipart/form-data;';
+
+    const API_HOST_COOKIE_KEY = 'rzp_api_host';
 
     /**
      * Construct a RawApiRequest instance
@@ -100,12 +133,10 @@ class ApiRequestAny
             'headers' => $headers,
         ];
 
-        $base_url = Config::get('api.url');
-
         // === Guzzle client
 
         $this->client = new Guzzle([
-            'base_url' => $base_url
+            'base_url' => $this->getApiBaseUrl()
         ]);
 
         // === Get API Route map config
@@ -231,6 +262,35 @@ class ApiRequestAny
         }
 
         return $this;
+    }
+
+    protected function getApiBaseUrl()
+    {
+        $url = Config::get('api.url');
+
+        $hostCookie = Request::cookie(self::API_HOST_COOKIE_KEY);
+
+        if ($this->isValidApiHostCookie($hostCookie) === true)
+        {
+            $url = $hostCookie;
+        }
+
+        return $url;
+    }
+
+    protected function isValidApiHostCookie(string $cookie = null)
+    {
+        if (empty($cookie) === true)
+        {
+            return false;
+        }
+
+        $env = \App::environment();
+
+        $allowedHosts = $this->allowedApiHostsForEnv[$env] ?? [];
+
+        return (($allowedHosts === '*') or
+                (in_array($cookie, $allowedHosts, true) === true));
     }
 
     // process body according to content-type
@@ -376,7 +436,7 @@ class ApiRequestAny
 
     public function forwardCookies()
     {
-        // UTM cookies needs forwarding with some manipulation because php cookies only accept asci
+        // UTM cookies needs forwarding with some manipulation because PHP cookies only accept ASCII
         if (empty($_COOKIE['rzp_utm']) === false)
         {
             $cookie = $_COOKIE['rzp_utm'];
