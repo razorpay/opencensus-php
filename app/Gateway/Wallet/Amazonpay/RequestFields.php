@@ -55,6 +55,8 @@ final class RequestFields
     const SIGNATURE_VERSION   = 'SignatureVersion';
     const TIMESTAMP           = 'Timestamp';
     const VERSION             = 'Version';
+    const VERIFY_START_TIME   = 'CreatedTimeRange.StartTime';
+    const VERIFY_END_TIME     = 'CreatedTimeRange.EndTime';
 
     /**
      * Below are the parameters sent across in the refund API

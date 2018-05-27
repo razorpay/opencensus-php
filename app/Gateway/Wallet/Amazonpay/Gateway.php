@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Wallet\Amazonpay;
 
+use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -370,7 +371,7 @@ class Gateway extends Base\Gateway
         $toReturn = [ResponseFields::REQUEST_ID => $requestId];
 
         $refundDetails = array_get($response, $wrapper, []);
-\mc::log($refundDetails);
+
         // In case of single refund in details, the head will consist refund_ref_id
         // Note:: PHP Xml to Array make child node as associative array
         if (isset($refundDetails[ResponseFields::REFUND_REF_ID]) === true)
@@ -447,17 +448,17 @@ class Gateway extends Base\Gateway
 
         if (isset($content[ResponseFields::ORDER_TOTAL][ResponseFields::ORDER_AMOUNT]) === true)
         {
-            $actualAmount = $content[ResponseFields::ORDER_TOTAL][ResponseFields::ORDER_AMOUNT];
+            $actualAmount = intval($content[ResponseFields::ORDER_TOTAL][ResponseFields::ORDER_AMOUNT] * 100);
 
-            $expectedAmount = $this->formatAmount($payment['amount']);
+            $expectedAmount = $payment['amount'];
 
-            $verify->amountMismatch = ($expectedAmount === $actualAmount);
+            $verify->amountMismatch = ($expectedAmount !== $actualAmount);
         }
         else
         {
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                'Invalid Verify Response',
+                'Invalid Verify Response: Order amount missing',
                 null,
                 [
                     'content' => $content
@@ -701,9 +702,18 @@ class Gateway extends Base\Gateway
     private function getVerifyRequestData(array $input): array
     {
         $request = [
-            RequestFields::PAYMENT_DOMAIN => Constant::PAYMENT_DOMAIN,
-            RequestFields::QUERY_ID       => $input['payment']['id'],
-            RequestFields::QUERY_ID_TYPE  => ucfirst(RequestFields::ORDER_ID),
+            RequestFields::PAYMENT_DOMAIN       => Constant::PAYMENT_DOMAIN,
+
+            // We search payment by razorpay payment id, we are not using get by id api
+            RequestFields::QUERY_ID             => $input['payment']['id'],
+            RequestFields::QUERY_ID_TYPE        => ucfirst(RequestFields::ORDER_ID),
+
+            // Amazon puts default time span of 3 days if we do set it explicitly
+            RequestFields::VERIFY_START_TIME    => Carbon::createFromTimestamp($input['payment']['created_at'])
+                                                         ->subMinute(1)
+                                                         ->toIso8601String(),
+            RequestFields::VERIFY_END_TIME      => Carbon::now()
+                                                         ->toIso8601String(),
         ];
 
         return [

@@ -49,6 +49,14 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input);
 
+        // PHP Parse URL converts `.` to `_` which results in signature mismatch
+        // We need to validate the input first with `_` as laravel considers `.` as array notation
+        $input[RequestFields::VERIFY_START_TIME] = $input['CreatedTimeRange_StartTime'];
+        $input[RequestFields::VERIFY_END_TIME]   = $input['CreatedTimeRange_EndTime'];
+        unset($input['CreatedTimeRange_StartTime'], $input['CreatedTimeRange_EndTime']);
+
+        $this->setInput($input);
+
         $this->getGatewayInstance()->getAmazonPaySdk()->verifyMockGatewayS2sSignature($input);
 
         $xml = $this->getVerifyResponse($input);

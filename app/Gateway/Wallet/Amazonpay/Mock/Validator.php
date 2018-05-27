@@ -38,6 +38,8 @@ final class Validator extends Base\Validator
         RequestFields::TIMESTAMP         => 'required|string|date_format:Y-m-d\TH:i:s.\\0\\0\\0\\Z',
         RequestFields::VERSION           => 'required|string|in:2013-01-01',
         RequestFields::SIGNATURE         => 'required|string|size:44',
+        'CreatedTimeRange_StartTime'     => 'required|string|date',
+        'CreatedTimeRange_EndTime'       => 'required|string|date',
     ];
 
     protected static $refundRules = [
