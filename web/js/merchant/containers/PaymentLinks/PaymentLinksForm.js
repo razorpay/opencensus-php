@@ -1,41 +1,40 @@
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { Field } from 'redux-form';
+
+import CheckBoxField from 'rzp/ui/Forms/CheckboxField';
 
 /**
  * Batch Payment Links Form
  * - Send Email/Send SMS
  */
 
-export default function PaymentLinksForm({
-  batchType,
-  sms_notify,
-  email_notify,
-  onChange,
-}) {
+export default ({ batchType, sms_notify, email_notify, onChange }) => {
+  const handleChange = propName => (_, value) => {
+    onChange(propName, value);
+  };
+
   return (
     <div>
       <h5 class="send-link-head">
-        <strong>SEND {titleCase(batchType)}S</strong>
+        <strong>SEND PAYMENT LINKS</strong>
       </h5>
       <div class="form-group send-links-form">
         <div class="checkbox rzpCheckbox next m-r">
-          <input
-            name="sms_notify"
+          <Field
+            name="config.sms_notify"
             id="sms_notify"
-            type="checkbox"
-            value={sms_notify}
-            onChange={e => onChange('sms_notify', e.target.checked)}
+            component={CheckBoxField}
+            onChange={handleChange(onChange, 'sms_notify')}
           />
           <label for="sms_notify" class="icon i-check">
             Send SMS
           </label>
         </div>
         <div class="checkbox rzpCheckbox next m-r">
-          <input
-            name="email_notify"
+          <Field
+            name="config.email_notify"
             id="email_notify"
-            type="checkbox"
-            value={email_notify}
-            onChange={e => onChange('email_notify', e.target.checked)}
+            component={CheckBoxField}
+            onChange={handleChange('email_notify')}
           />
           <label for="email_notify" class="icon i-check">
             Send Email
@@ -48,4 +47,4 @@ export default function PaymentLinksForm({
       </p>
     </div>
   );
-}
+};

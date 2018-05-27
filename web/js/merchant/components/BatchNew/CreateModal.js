@@ -67,7 +67,7 @@ export default class BatchCreateModal extends Component {
               />
             </div>
 
-            {/* Batch Payment Links */}
+            {/* extra fields sent with create batch */}
             {children}
 
             <AsyncButton

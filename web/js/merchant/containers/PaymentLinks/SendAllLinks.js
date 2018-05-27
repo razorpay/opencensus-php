@@ -7,7 +7,7 @@ import CheckboxField from 'rzp/ui/Forms/CheckboxField';
 import { closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import { notifyBatch } from 'merchant/modules/batches';
-import { trackSendAllLinks } from './ga';
+import { trackSendAllLinks } from 'merchant/containers/BatchNew/ga';
 
 @connect(state => state.session, {
   showNotification,

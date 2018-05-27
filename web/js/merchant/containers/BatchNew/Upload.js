@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { closeModal, openModal } from 'rzp/modules/modals';
+import { luminateRow } from 'merchant/modules/app';
 
 import BatchValidate from './Validate';
 import BatchCreate from './Create';
@@ -13,7 +14,7 @@ import { trackUploadBatch } from './ga';
  * Container:  Switches between validation or creation of batch.
  */
 
-@connect(null, { closeModal, openModal })
+@connect(null, { closeModal, openModal, luminateRow })
 export default class BatchUpload extends Component {
   state = {
     batchName: '',
@@ -34,7 +35,7 @@ export default class BatchUpload extends Component {
       batch: { ...this.state.batch, ...batch },
       currentStatus: 'success',
     });
-    this.props.onSave(batch);
+    this.props.luminateRow(batch.id);
   };
 
   componentDidMount() {
@@ -70,6 +71,8 @@ export default class BatchUpload extends Component {
                   batchName={this.state.batchName}
                   batch={this.state.batch}
                   batchType={this.props.batchType}
+                  batchFormInitialValues={this.props.batchFormInitialValues}
+                  renderBatchCreationForm={this.props.renderBatchCreationForm}
                 />
               );
             case 'success':

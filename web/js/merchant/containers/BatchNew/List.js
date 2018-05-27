@@ -12,7 +12,6 @@ import { openModal } from 'rzp/modules/modals';
 
 import { luminateRow } from 'merchant/modules/app';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import BatchUpload from './Upload';
 
 import { batchDownload, fetchBatch } from 'merchant/modules/batches';
 import {
@@ -50,14 +49,7 @@ export default class BatchList extends Component {
   openUploadModal = () => {
     this.props.openModal({
       size: 'large',
-      component: (
-        <BatchUpload
-          onSave={batch => {
-            this.props.luminateRow(batch.id);
-          }}
-          {...this.props}
-        />
-      ),
+      component: this.props.renderUploadModal(),
     });
   };
 

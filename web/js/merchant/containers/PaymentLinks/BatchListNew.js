@@ -2,12 +2,15 @@ import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import ListContainer from 'merchant/containers/ListContainer';
 import BatchList from 'merchant/containers/BatchNew/List';
-import SendAllLinks from 'merchant/containers/BatchNew/SendAllLinks';
+import BatchUpload from 'merchant/containers/Batchnew/Upload';
 import { openModal } from 'rzp/modules/modals';
 import {
   fetchPaymentLinkBatches as fetchAll,
   fetchIssuableBatchList,
 } from 'merchant/modules/batches';
+
+import PaymentLinksForm from './PaymentLinksForm';
+import SendAllLinks from './SendAllLinks';
 
 @connect(
   state => {
@@ -29,6 +32,17 @@ export default class BatchListContainer extends ListContainer {
       window.hj('tagRecording', ['batch_payment_links']);
     }
   }
+
+  state = {
+    sms_notify: 0,
+    email_notify: 0,
+  };
+
+  handlePaymentLinksFormChange = (propName, value) => {
+    this.setState({
+      [propName]: value,
+    });
+  };
 
   sendAll = item => {
     this.props.openModal({
@@ -56,6 +70,33 @@ export default class BatchListContainer extends ListContainer {
     return null;
   };
 
+  renderUploadModal = () => {
+    const { sms_notify, email_notify } = this.state;
+    const notify = sms_notify || email_notify;
+    const batchFormInitialValues = {
+      draft: 0, //for backward compatibility
+      config: {
+        sms_notify: false,
+        email_notify: false,
+      },
+    };
+    return (
+      <BatchUpload
+        ctaText={`Create Batch${notify ? ' & Send Payment Links' : ''}`}
+        pendingText={`Creating${notify ? ' & Sending' : ''}...`}
+        batchFormInitialValues={batchFormInitialValues}
+        renderBatchCreationForm={() => (
+          <PaymentLinksForm
+            batchType={this.props.batchType}
+            sms_notify={this.state.sms_notify}
+            email_notify={this.state.email_notify}
+            onChange={this.handlePaymentLinksFormChange}
+          />
+        )}
+      />
+    );
+  };
+
   render() {
     return (
       <BatchList
@@ -69,6 +110,7 @@ export default class BatchListContainer extends ListContainer {
         sendAll={this.sendAll}
         batchType="payment_link"
         batchActions={[this.sendAllLinks]}
+        renderUploadModal={this.renderUploadModal}
         {...this.props}
       />
     );
