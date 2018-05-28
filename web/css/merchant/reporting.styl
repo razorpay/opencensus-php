@@ -1,0 +1,41 @@
+
+$failedColor = #f56a6a
+$successColor = #0b5
+
+.report-loader
+  .i-info-circle
+    margin-right: 5px
+  .report-progress
+    margin: 20px 0
+    padding: 5px 10px
+    .help-block
+      margin: 0
+      &.success
+        color: $successColor
+      &.failed
+        color: $failedColor
+    &.current
+      background: rgba(185, 185, 185, 0.1)
+      border-radius: 5px
+  .report-close
+    display: inline-block
+    width: 7%
+    vertical-align: top
+    text-align: right
+    font-weight: bold
+    margin-top: 2px
+    color: #757575
+    cursor: pointer
+  .bar-loader
+    width: 93%
+    display: inline-block
+    &.success
+      background-color: $successColor
+    &.failed
+      background-color: $failedColor
+
+.report-cancel-download
+  p
+    margin-top: -5px
+  button
+    padding: 6px 38px

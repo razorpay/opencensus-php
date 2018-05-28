@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import AsyncButton from 'react-async-button';
+
 import { saveAs } from 'file-saver';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import moment from 'moment';
@@ -11,18 +11,40 @@ import { prefixEntityValue } from 'common/data';
 import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import AccountsList from 'rzp/ui/AccountsList/index.js';
+import { openModal, closeModal } from 'rzp/modules/modals';
+import store from 'merchant/store';
 
+import ModalHeader from 'rzp/ui/ModalHeader';
 import { fetchAccountsApi } from 'merchant/modules/marketplace/accounts';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import {
   getConfigs,
   generateReport,
+  emailReportV2,
   generateReportV2,
+  addReportToList,
+  updateReportInList,
+  removeReportFromList,
+  areReportsStillDownloading,
+  addPollInstance,
 } from 'merchant/modules/reports';
 import SelectConfig from 'merchant/components/Reports/ReportsNew/SelectConfig';
+import EmailReport from 'merchant/components/Reports/ReportsNew/EmailReport';
+import ReportLoader from 'merchant/components/Reports/ReportsNew/ReportLoader';
 
-import { getCustomConfig, marketplaceConfigTypes } from './data';
-import { trackDownload } from './ga';
+import {
+  getCustomConfig,
+  marketplaceConfigTypes,
+  rzpConfigOrder,
+} from './data';
+
+import {
+  trackDownload,
+  trackReportTabsClick,
+  trackReportActions,
+  trackTimeLapse,
+  trackReportGenericActions,
+} from './ga';
 
 const validYear = current => {
   return current._d.getTime() <= Date.now() && current.year() >= 2015;
@@ -50,12 +72,22 @@ const requestFailedFunc = () => {
     return {
       mode: state.session.mode,
       user: state.session.user,
+      currentReportList: state.reports.currentReportList,
+      pollInstances: state.reports.pollInstances,
       type: selector(state, 'type'),
       date: selector(state, 'date'),
       invoiceDate: selector(state, 'invoiceDate'),
     };
   },
-  { ...NotificationsActions }
+  {
+    ...NotificationsActions,
+    openModal,
+    closeModal,
+    addReportToList,
+    updateReportInList,
+    removeReportFromList,
+    addPollInstance,
+  }
 )
 @reduxForm({
   form: 'generateReports',
@@ -71,8 +103,7 @@ const requestFailedFunc = () => {
 export default class ReportsContainer extends Component {
   constructor(props) {
     super(props);
-
-    const { user } = props,
+    const { user, currentReportList, pollInstances } = props,
       tags = user.tags.map(tag => tag.toLowerCase()),
       configs = [getCustomConfig('monthlyInvoice')],
       accounts = [],
@@ -124,15 +155,28 @@ export default class ReportsContainer extends Component {
       invoiceDate: moment()
         .subtract(1, 'months')
         .startOf('month'),
+      currentReportList,
+      pollInstances,
     };
 
     this.onConfigChange = ::this.onConfigChange;
     this.onAccountChange = ::this.onAccountChange;
     this.generateReport = ::this.generateReport;
     this.validateInvoiceMonthYear = ::this.validateInvoiceMonthYear;
+
+    store.subscribe(() => {
+      //update state when report list store changes
+      this.setState({
+        currentReportList: store.getState().reports.currentReportList,
+        pollInstances: store.getState().reports.pollInstances,
+      });
+    });
+
+    this.configsLableMap = {};
   }
 
   onConfigChange({ option }) {
+    trackReportTabsClick(option.label);
     this.setState({ selectedConfig: option });
   }
 
@@ -168,7 +212,6 @@ export default class ReportsContainer extends Component {
   componentWillMount() {
     // 992 is col-md bootstrap (for adaptive design)
     this.isMobileDevice = window.outerWidth < 992;
-
     this.requests
       .then(resps => {
         const { 0: configResp, 1: accountsResp } = resps,
@@ -208,6 +251,13 @@ export default class ReportsContainer extends Component {
               .concat(configs);
           }
 
+          //sort configs
+          configs = this.sortConfigs(configs);
+
+          configs.map(
+            config => (this.configsLableMap[config.value] = config.label)
+          );
+
           this.setState({
             configs,
             selectedConfig: configs[0],
@@ -228,8 +278,24 @@ export default class ReportsContainer extends Component {
       });
   }
 
+  updateStore = (data, shouldInitialize) => {
+    let downloadTimeLapse = new Date().getTime() - data.created_at * 1000;
+
+    if (shouldInitialize) {
+      this.props.addReportToList(data);
+      trackTimeLapse('Download Start', downloadTimeLapse);
+    } else {
+      this.props.updateReportInList(data);
+    }
+  };
+
+  saveLongPollInstances = (reportId, pollInstance) => {
+    this.props.addPollInstance(reportId, pollInstance);
+  };
+
   generateReport() {
-    const { selectedConfig, selectedAccount } = this.state,
+    let selectedConfig = { ...this.state.selectedConfig };
+    const { selectedAccount, currentReportList } = this.state,
       { date, type, invoiceDate } = this.props,
       day = date.date(),
       month = date.month() + 1, // Jan is 0 in moment library
@@ -237,11 +303,22 @@ export default class ReportsContainer extends Component {
       titleForTracking = `${titleCase(type)} ${selectedConfig.label} Report`,
       descForTracking = type === 'daily' ? `date` : `month`;
 
+    //tracking vars for reports v2
+    let reportActionTypeForTracking = 'Download Report';
+    let downloadTimeLapse = new Date().getTime();
+
     if (selectedConfig.value === 'monthlyInvoice') {
       const month = invoiceDate.month() + 1,
         year = invoiceDate.year();
 
       trackDownload(titleForTracking, `month`);
+
+      trackReportActions(
+        reportActionTypeForTracking,
+        type,
+        month,
+        titleForTracking
+      );
 
       return window.open(
         `/${this.props.mode}/reports/invoice` +
@@ -251,6 +328,13 @@ export default class ReportsContainer extends Component {
       );
     } else {
       trackDownload(titleForTracking, descForTracking);
+
+      trackReportActions(
+        reportActionTypeForTracking,
+        type,
+        day,
+        titleForTracking
+      );
 
       if (selectedConfig.type !== 'custom') {
         const timeFactor = type === 'daily' ? 'day' : 'month',
@@ -262,8 +346,6 @@ export default class ReportsContainer extends Component {
             .clone()
             .endOf(timeFactor)
             .unix();
-
-        this.props.showNotification(downloadStartedMessage);
 
         const { user } = this.props,
           selectedAccountId = (selectedConfig.type in marketplaceConfigTypes
@@ -278,14 +360,20 @@ export default class ReportsContainer extends Component {
             end_time: endTime,
           };
 
-        return generateReportV2(reqData, isMerchantAccount).then(data => {
+        this.props.showNotification(downloadStartedMessage);
+
+        return generateReportV2(
+          reqData,
+          isMerchantAccount,
+          this.updateStore,
+          this.saveLongPollInstances
+        ).then(data => {
           if (data.error) {
             return this.props.showNotification({
               type: 'error',
               message: data.error,
             });
           }
-
           window.location = data.url;
         });
       }
@@ -348,6 +436,128 @@ export default class ReportsContainer extends Component {
     }
   }
 
+  openEmailReportModal = e => {
+    const { user, type, date } = this.props;
+    const { accounts, selectedAccount, selectedConfig } = this.state;
+    const reportId = e.target.dataset.reportid;
+
+    let emailsMap = {};
+
+    // save email priority based on following precedence
+    // contact_email > transaction_report_email > accounts
+
+    if (accounts) {
+      accounts.map(acc => (emailsMap[acc.email] = 3));
+    }
+
+    if (user.transaction_report_email) {
+      user.transaction_report_email.split(',').map(email => {
+        emailsMap[email] = 2;
+      });
+    }
+
+    if (user.contact_email) {
+      emailsMap[user.contact_email] = 1;
+    }
+
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <EmailReport
+          selectedType={type}
+          selectedDate={date}
+          reportId={reportId}
+          emailsMap={emailsMap}
+          onSend={this.generateReport}
+          selectedAccount={selectedAccount}
+          selectedConfig={selectedConfig}
+          closeModal={this.props.closeModal}
+          defaultAccount={this.defaultAccount}
+          updateStore={this.updateStore}
+        />
+      ),
+    });
+  };
+
+  //sort configs in the following order
+  // 1. merchant custom report configs
+  // 2. rzp owned report configs
+  sortConfigs = configs => {
+    const rzpId = '100000Razorpay';
+    const merchantId = this.props.user.user.id;
+    let merchantConfigs = [],
+      rzpConfigs = [];
+    configs.forEach(config => {
+      if (config._item) {
+        if (config._item.merchant_id === merchantId) {
+          merchantConfigs.push(config);
+        } else {
+          rzpConfigs.push(config);
+        }
+      }
+      //push `custom` types first
+      if (config.type === 'custom') {
+        rzpConfigs.push(config);
+      }
+    });
+
+    rzpConfigs.sort((config1, config2) => {
+      let index1 = rzpConfigOrder.indexOf(config1.label),
+        index2 = rzpConfigOrder.indexOf(config2.label);
+
+      return index1 - index2;
+    });
+
+    return [...merchantConfigs, ...rzpConfigs];
+  };
+
+  openCancelConfirmModal = reportId => {
+    const { currentReportList } = this.state;
+    const timeLapse = new Date().getTime();
+
+    if (currentReportList[reportId]['status'] === 'created') {
+      this.props.openModal({
+        size: 'small',
+        component: (
+          <div>
+            <ModalHeader title="Are you sure you want to stop the report download?" />
+            <div class="modal-body report-cancel-download">
+              {currentReportList[reportId]['emails'] && (
+                <p class="p-b">We will still email you this report.</p>
+              )}
+              <button class="btn btn-default" onClick={this.props.closeModal}>
+                No, don't
+              </button>
+              <button
+                class="btn btn-primary pull-right"
+                onClick={() => this.cancelReportDownload(reportId, timeLapse)}
+              >
+                Yes, stop
+              </button>
+            </div>
+          </div>
+        ),
+      });
+    } else {
+      this.cancelReportDownload(reportId);
+    }
+  };
+
+  cancelReportDownload = (reportId, timeLapse) => {
+    const { currentReportList, pollInstances } = this.state;
+
+    timeLapse = new Date().getTime() - timeLapse;
+
+    pollInstances[reportId].abort();
+
+    this.props.closeModal();
+    this.props.removeReportFromList(reportId);
+
+    if (timeLapse) {
+      trackTimeLapse('Click - Download Cancel', timeLapse);
+    }
+  };
+
   render() {
     const {
       isLoading,
@@ -356,6 +566,7 @@ export default class ReportsContainer extends Component {
       accounts,
       selectedConfig,
       selectedAccount,
+      currentReportList,
     } = this.state;
 
     const { type, date, invoiceDate } = this.props;
@@ -363,6 +574,17 @@ export default class ReportsContainer extends Component {
     const entity = selectedConfig && selectedConfig.value;
 
     let content = null;
+
+    let isCurrentConfigSelected = false;
+
+    Object.keys(currentReportList).forEach(reportId => {
+      if (
+        currentReportList[reportId]['config_id'] === selectedConfig.value &&
+        currentReportList[reportId]['status'] === 'created'
+      ) {
+        isCurrentConfigSelected = true;
+      }
+    });
 
     if (isLoading) {
       content = (
@@ -386,8 +608,19 @@ export default class ReportsContainer extends Component {
           {/*Report Generate Panel*/}
           <div className={reportPanelClasses}>
             {!this.isMobileDevice && (
-              <div class="form-heading">{selectedConfig.label}</div>
+              <div class="form-heading">
+                {selectedConfig.label}
+                {selectedConfig.description && (
+                  <small
+                    className="help-block"
+                    style={{ fontWeight: 'normal' }}
+                  >
+                    {selectedConfig.description}
+                  </small>
+                )}
+              </div>
             )}
+
             {this.isMarketplaceEnabled &&
             selectedConfig.type in marketplaceConfigTypes ? (
               <div className="form-element">
@@ -467,18 +700,30 @@ export default class ReportsContainer extends Component {
             </div>
 
             <div class="form-element">
-              <AsyncButton
-                class="btn btn-primary"
-                onClick={this.generateReport}
-                text="Generate and Download Report"
-                pendingText="Generating..."
-              />
-
-              {selectedConfig.description && (
-                <footer style={{ marginTop: '16px' }}>
-                  {selectedConfig.description}
-                </footer>
+              {!isCurrentConfigSelected ? (
+                <Fragment>
+                  <button class="btn btn-primary" onClick={this.generateReport}>
+                    Download Report
+                  </button>
+                  {selectedConfig.type !== 'custom' && (
+                    <button
+                      class="btn btn-default m-l"
+                      onClick={this.openEmailReportModal}
+                    >
+                      Email Report
+                    </button>
+                  )}
+                </Fragment>
+              ) : (
+                <small class="help-block">This report is being generated</small>
               )}
+              <ReportLoader
+                reportList={currentReportList}
+                openEmailReportModal={this.openEmailReportModal}
+                configsLableMap={this.configsLableMap}
+                cancelDownload={this.openCancelConfirmModal}
+                selectedConfigId={selectedConfig.value}
+              />
             </div>
           </div>
         </div>
