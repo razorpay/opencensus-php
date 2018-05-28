@@ -44,7 +44,7 @@ const businessFields = [
     ],
   },
   {
-    label: 'Business PAN Details',
+    label: 'Business PAN Number',
     name: 'company_pan',
     placeholder: 'PAN Number',
     info: 'PAN details should belong to the business mentioned above',

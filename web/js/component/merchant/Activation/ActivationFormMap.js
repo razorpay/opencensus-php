@@ -282,7 +282,6 @@ const registrationDetails = [
     {
       label: 'PAN Owner Name',
       name: 'promoter_pan_name',
-      required: false,
     },
   ],
   [
