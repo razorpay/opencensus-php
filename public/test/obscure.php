@@ -152,6 +152,12 @@ function disableEmptyInputs(form) {
         </td>
     </tr>
     <tr>
+        <td colspan="40">Razorpay Partner Token:</td>
+        <td>
+            <input type="text" value="" name="partner_token">
+        </td>
+    </tr>
+    <tr>
         <td colspan='40'>Card Holder Name:</td>
         <td><input type="text" name="card[name]" size="25" value="shashank"></td>
         <!-- <td><input type="text" name="callback_url" value="<?= $callback_url ?>"></td> -->

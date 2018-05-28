@@ -274,12 +274,16 @@ class BasicAuth
     protected $keylessXEntityId;
 
     /**
-     * Partner token recieved in the callback flow
-     * Sample: rzp_partner_test_10000000000000
+     * Partner token parts received in the callback flow
+     * Sample:
+     * [
+     *  'key' => 'rzp_test_1DP5mmOlF5G5ag'
+     *  'partner_token' => 'rzp_partner_ACIg2tb8NySnuh'
+     * ]
      *
-     * @var string|null
+     * @var array
      */
-    public $publicCallbackPartnerToken;
+    public $partnerTokenCallbackData = [];
 
     public function __construct($app)
     {
@@ -327,7 +331,7 @@ class BasicAuth
             return $keyError;
         }
 
-        return $this->setCredentialsFromHeaders();
+        return $this->setExtraCredentialsIfSent();
     }
 
     public function checkAndSetKeyId($key)
@@ -350,16 +354,21 @@ class BasicAuth
         $this->creds['key'] = $keyId;
     }
 
-    protected function setCredentialsFromHeaders()
+    protected function setExtraCredentialsIfSent()
     {
         $accountId    = $this->request->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
         $partnerToken = $this->request->headers->get(RequestHeader::X_RAZORPAY_PARTNER_TOKEN);
+
+        $partnerToken = $partnerToken ?: $this->request->input('partner_token');
+
+        $this->request->query->remove('partner_token');
+        $this->request->request->remove('partner_token');
 
         if ((empty($accountId) === false) and
             (empty($partnerToken) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Both X-Razorpay-Account and X-Razorpay-Partner-Token headers cannot be sent');
+                'Both X-Razorpay-Account and Partner token cannot be sent');
         }
 
         $error = $this->checkAndSetAccountId($accountId);
@@ -436,16 +445,17 @@ class BasicAuth
 
         $matches = [];
 
-        $validKey = (preg_match('/^rzp_partner_(test|live)_([a-zA-Z0-9]{14})$/', $key, $matches) === 1);
+        // Sample token: rzp_test_1DP5mmOlF5G5ag~rzp_partner_ACIg2tb8NySnuh
+        $keyRegex = '/^(rzp_(test|live)_[a-zA-Z0-9]{14})~(rzp_partner_[a-zA-Z0-9]{14})$/';
 
-        if ($validKey === true)
+        $validCallbackKey = (preg_match($keyRegex, $key, $matches) === 1);
+
+        if ($validCallbackKey === true)
         {
-            $mode = $matches[1];
-            $this->setModeAndDbConnection($mode);
-
-            $strippedKey = str_replace_first("_$mode", '', $key);
-
-            $this->publicCallbackPartnerToken = $strippedKey;
+            $this->partnerTokenCallbackData = [
+                'key'           => $matches[1],
+                'partner_token' => $matches[3],
+            ];
 
             //
             // If the request was authenticated with key_id sent in the request params
@@ -455,7 +465,7 @@ class BasicAuth
             $this->request->request->remove('key_id');
         }
 
-        return $validKey;
+        return $validCallbackKey;
     }
 
     /**
@@ -463,9 +473,37 @@ class BasicAuth
      */
     public function handlePartnerTokenOnPublicCallback()
     {
-        $key = $this->publicCallbackPartnerToken;
+        $this->setType(Type::PUBLIC_AUTH);
 
-        $this->checkAndSetPartnerToken($key);
+        $data = $this->partnerTokenCallbackData;
+
+        $key          = $data['key'];
+        $partnerToken = $data['partner_token'];
+
+        $this->creds['key']           = $key;
+        $this->creds['partner_token'] = $partnerToken;
+
+        if ($this->checkAndSetKeyId($key) !== null)
+        {
+            return $this->invalidApiKey();
+        }
+
+        $response = $this->verifyKeyExistence();
+
+        if ($response !== true)
+        {
+            return $response;
+        }
+
+        $this->setPublicKey($key);
+        $this->fetchMerchantOfKey($this->key);
+
+        $error = $this->checkAndSetPartnerToken($partnerToken);
+
+        if ($error !== null)
+        {
+            return $error;
+        };
 
         $this->checkAndSetPartnerMerchantScope();
     }
@@ -1462,7 +1500,7 @@ class BasicAuth
             return $this->invalidApiKey();
         }
 
-        return $this->setCredentialsFromHeaders();
+        return $this->setExtraCredentialsIfSent();
     }
 
     protected function fetchKey($keyId)
@@ -1540,21 +1578,17 @@ class BasicAuth
 
     protected function isPartnerTokenAuthAllowed(): bool
     {
-        $route = $this->router->currentRouteName();
-        if (in_array($route, Route::$publicCallback, true) === false)
+        //
+        // $this->merchant needs to have been set, and have the 'partner' feature
+        // enabled for Partner token auth to apply
+        //
+        if ((empty($this->merchant) === true) or
+            ($this->merchant->isFeatureEnabled(Feature::PARTNER) === false))
         {
-            //
-            // $this->merchant needs to have been set, and have the 'partner' feature
-            // enabled for Partner token auth to apply
-            //
-            if ((empty($this->merchant) === true) or
-                ($this->merchant->isFeatureEnabled(Feature::PARTNER) === false))
-            {
-                return false;
-            }
-
-            // validate merchant belongs to partner (via MAP)
+            return false;
         }
+
+        // validate merchant belongs to partner (via MAP)
 
         if ($this->getPartnerToken() === '')
         {

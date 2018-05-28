@@ -409,7 +409,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Both X-Razorpay-Account and X-Razorpay-Partner-Token headers cannot be sent',
+                    'description' => 'Both X-Razorpay-Account and Partner token cannot be sent',
                 ],
             ],
             'status_code' => 400,
