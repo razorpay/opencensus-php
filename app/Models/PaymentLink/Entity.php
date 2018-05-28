@@ -133,6 +133,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EXPIRE_BY);
     }
 
+    public function setShortUrl(string $shortUrl)
+    {
+        $this->setAttribute(self::SHORT_URL, $shortUrl);
+    }
+
     // -------------------------------------- Relations -------------------------------
 
     public function merchant()
