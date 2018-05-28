@@ -671,7 +671,12 @@ class VirtualAccountTest extends TestCase
 
     public function testFetchPaymentsForVirtualAccountForQrCode()
     {
-        $virtualAccount = $this->createVirtualAccount();
+        $virtualAccount = $this->createVirtualAccount(
+            [],
+            true,
+            null,
+            true
+        );
 
         $qrCodeId = substr($virtualAccount['receivers'][1]['id'], 3);
 
