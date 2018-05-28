@@ -5,6 +5,13 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
+
+    @if (isset($data['invoice']) && $data['invoice']['type'] !== 'invoice')
+        <meta property="og:title" content="Payment of Rs. {{format_amount($data['invoice']['amount'])}} requested by {{$data['invoice']['merchant_label']}} for {{$data['invoice']['description']}}">
+        <meta property="og:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://razorpay.com/favicon.png'}}">
+        <meta property="og:description" content="Click on this link to pay to {{$data['invoice']['merchant_label']}}">
+    @endif
+
     <?php date_default_timezone_set('Asia/Kolkata') ?>
     <link href="https://fonts.googleapis.com/css?family=Lato:300,400,600" rel="stylesheet" type="text/css"></link>
     <link rel="icon" href="https://razorpay.com/favicon.png" type="image/x-icon" />
