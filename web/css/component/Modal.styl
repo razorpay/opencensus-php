@@ -1,0 +1,70 @@
+.Modal-mask
+  position: fixed
+  background-color: rgba(17, 30, 60, 0.6)
+  top:0
+  left: 0
+  width: 100%
+  height: 100%
+  z-index: 9999
+  overflow: scroll
+  transition: opacity 250ms ease-in-out
+
+  &--hide
+    opacity: 0
+
+    .Modal-container
+      opacity: 0
+
+.Modal-container
+  position: absolute
+  background: #fff
+  border-radius: 2px
+  overflow: hidden
+  left: 50%
+  top: 50%
+  transform: translate(-50%, -50%)
+
+  &--transparent
+    background: transparent
+
+  &--spinner
+    width: 100%
+    height: 100%
+
+    .Modal-close
+      background: #fff
+      border-radius: 50%
+
+  .Modal-close
+    position: absolute
+    color: #58666E
+    font-size: 30px
+    padding: 9px 12px 11px
+    right: 8px
+    top: 8px
+    line-height: 20px
+    cursor: pointer
+    z-index: 10
+    user-select: none
+
+    &:hover
+      color: #333
+
+.Modal-content
+  header
+    border-bottom: 2px solid #eee
+    padding: 12px 44px 16px 20px
+    font-size: 20px
+
+    & + .Modal-body
+      padding: 24px
+
+.Modal-container--animate-down
+  animation: appear-down 250ms ease-in-out
+
+@keyframes appear-down
+  0%
+    transform: translate(-50%, calc(-50% - 48px))
+
+  100%
+    transform: translate(-50%, -50%)

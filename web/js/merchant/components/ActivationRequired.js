@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import ModalHeader from 'rzp/ui/ModalHeader';
+import { activationDuration } from 'common/data';
 
 export default ({ onCloseClick, user }) => {
   let modalBody = (
@@ -48,9 +49,10 @@ export default ({ onCloseClick, user }) => {
           You can only use Razorpay in test mode until your account is
           activated.
           <br />
-          Your account is Under Review. The process usually takes 2 to 3 working
-          days. We will reach out on your contact email for further
-          clarifications.
+          `Your account is Under Review. The process usually takes ${
+            activationDuration
+          }. We will reach out on your contact email for further
+          clarifications.`
           {modalAction}
         </div>
       );

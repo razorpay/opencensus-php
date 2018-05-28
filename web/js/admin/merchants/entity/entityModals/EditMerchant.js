@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import { toJS, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
@@ -188,7 +188,7 @@ export default class EditMerchant extends Component {
     });
 
     return (
-      <BaseModal header="Edit Merchant">
+      <ModalContent header="Edit Merchant">
         <Form class="full-span full-elements" style={{ width: '650px' }}>
           <Field label="Name" name="name" defaultValue={details.name} />
           <Field label="MCC" name="category" defaultValue={details.category} />
@@ -341,7 +341,7 @@ export default class EditMerchant extends Component {
             onSubmit={this.handleConfirm}
           />
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

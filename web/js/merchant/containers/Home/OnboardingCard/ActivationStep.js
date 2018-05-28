@@ -88,7 +88,7 @@ const WrapperElement = ({
    * 1) Activation form is rejected
    * 2) Submitted, Activated and Mode is test, where we show a link
    *    to "Switch to Live mode" using "Text" component
-   * 3) If submitted and Personalized account, there is nothing he 
+   * 3) If submitted and Personalized account, there is nothing he
    *    needs to do , so no link is required
    */
   if (
@@ -104,7 +104,7 @@ const WrapperElement = ({
   }
 
   /*
-   * show link to 
+   * show link to
    * 1) Activations tab if the user has not submitted his actiavation form
    * 2) Config page if not personalised, where he needs to update logo
    *    and theme color
@@ -211,6 +211,7 @@ const Text = ({
   hasPersonalised,
   needsClarification,
   clarificationMode,
+  activationProgress,
   stepNum,
 }) => {
   if (isRejected) {
@@ -232,7 +233,11 @@ const Text = ({
       {!isActivated && !isSubmitted ? (
         // if he is neither actived nor submitted
 
-        'Fill Activation form to accept payments.'
+        activationProgress == '100' ? (
+          'Submit Activation form to accept payments.'
+        ) : (
+          'Fill Activation form to accept payments.'
+        )
       ) : //if he is either activated or submitted or both
 
       !hasPersonalised ? (
@@ -385,6 +390,7 @@ export default class ActivationStep extends Component {
               hasPersonalised={hasPersonalised}
               needsClarification={needsClarification}
               clarificationMode={clarificationMode}
+              activationProgress={user.activation_progress}
               stepNum={stepNum}
             />
           </div>

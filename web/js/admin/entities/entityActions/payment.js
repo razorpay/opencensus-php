@@ -7,7 +7,7 @@ import user from 'admin/user';
 
 import Duplex from 'ui/Duplex';
 import AsyncButton from 'ui/AsyncButton';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import Form from 'ui/Form';
 import Field, { CheckField, TextAreaField } from 'ui/Field';
 import Table from 'ui/Table';
@@ -209,7 +209,7 @@ export default ({ entity, mode, updateEntity }) => {
 // Edit Offer Form
 const EditOfferForm = ({ entity, handleSubmit }) => {
   return (
-    <BaseModal header="Edit Offer">
+    <ModalContent header="Edit Offer">
       <Form class="full-span full-elements">
         <Field label="Name" name="name" defaultValue={entity.name} />
         {['netbanking', 'wallet', 'upi'].indexOf(entity.payment_method) ===
@@ -254,7 +254,7 @@ const EditOfferForm = ({ entity, handleSubmit }) => {
           onSubmit={handleSubmit}
         />
       </Form>
-    </BaseModal>
+    </ModalContent>
   );
 };
 
@@ -277,14 +277,14 @@ class PaymentAnalytics extends Component {
 
   render() {
     return (
-      <BaseModal header="Payment Analytics">
+      <ModalContent header="Payment Analytics">
         <Duplex
           pending={!this.state.data}
           fields={this.fields()}
           model={this.state.data}
           mode={this.props.mode}
         />
-      </BaseModal>
+      </ModalContent>
     );
   }
 }
@@ -316,7 +316,7 @@ class PaymentRefundModal extends Component {
     const { refundPayment, maxRefundableAmount, currency } = this.props;
 
     return (
-      <BaseModal header="Refund Payment">
+      <ModalContent header="Refund Payment">
         <Form class="full-span" style={{ width: '500px' }}>
           <Field
             label="Amount to Refund (Paisa)"
@@ -349,7 +349,7 @@ class PaymentRefundModal extends Component {
             Refund
           </AsyncButton>
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

@@ -7,7 +7,7 @@ import Table from 'ui/Table';
 import Field, { CheckField, TextAreaField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { openModal } from 'common/modal';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import { snakeToTitleCase } from 'common/util';
 import ShowWhen from 'admin/components/ShowWhen';
@@ -195,7 +195,7 @@ export default class ReviewNotesDetails extends Component {
  * It's editable
  */
 const EmailModal = ({ issues, comment }) => (
-  <BaseModal header="Email Preview (editable)">
+  <ModalContent header="Email Preview (editable)">
     <div class="email-preview" contentEditable={true}>
       <p>
         Hey,
@@ -234,7 +234,7 @@ const EmailModal = ({ issues, comment }) => (
         </a>
       </p>
     </div>
-  </BaseModal>
+  </ModalContent>
 );
 
 // mapping fields with there labels used in `merchant` activation form

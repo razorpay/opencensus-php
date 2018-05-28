@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 
 import Form from 'ui/Form';
 import Table from 'ui/Table';
-import BaseModal from 'ui/BaseModal';
 import AsyncButton from 'ui/AsyncButton';
 import { TextAreaField, SelectMode } from 'ui/Field';
 

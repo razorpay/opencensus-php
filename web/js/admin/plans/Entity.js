@@ -7,7 +7,7 @@ import { observer } from 'mobx-react';
 import * as item from 'ui/Item';
 import AsyncButton from 'ui/AsyncButton';
 import Field from 'ui/Field';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import { adminFetch } from 'common/fetch';
 
 let sharedNetworks = observable.shallowBox();
@@ -35,8 +35,8 @@ export default class PlanEntity extends Component {
     let isLoading = !sharedNetworks.get();
 
     return (
-      <BaseModal
-        customClass="pricing-container"
+      <ModalContent
+        class="pricing-container"
         header={
           (props.id && props.name) || (
             <div class="pricing-header">
@@ -70,7 +70,7 @@ export default class PlanEntity extends Component {
             fields={fields}
           />
         )}
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

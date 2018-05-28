@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { openModal, confirm } from 'common/modal';
 import * as actionModals from './actionModals';
 import Table from 'ui/Table';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import user from 'admin/user';
 
 // Access actions using actions.FileName (FileName is the export name of that modal content in entity/index.js)
@@ -32,8 +32,8 @@ const fields = [['', item => item && item.title]];
 
 function onClick(e) {
   openModal(
-    <BaseModal header={this.title}>
+    <ModalContent header={this.title}>
       <this />
-    </BaseModal>
+    </ModalContent>
   );
 }

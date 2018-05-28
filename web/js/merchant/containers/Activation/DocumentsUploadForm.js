@@ -177,7 +177,7 @@ export default class DocumentsUploadForm extends Component {
 
           <div class="form-group">
             <div class="col-md-offset-3 col-md-9">
-              <div class="btn-toolbar">
+              <div class="btn-toolbar m-t m-b">
                 <AsyncButton
                   class="btn btn-default pull-left"
                   text="Back"

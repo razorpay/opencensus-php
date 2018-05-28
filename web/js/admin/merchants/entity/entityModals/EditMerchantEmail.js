@@ -1,5 +1,5 @@
 import React from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import Form from 'ui/Form';
 import Field from 'ui/Field';
@@ -29,7 +29,7 @@ export default ({ merchantId }) => {
   }
 
   return (
-    <BaseModal header="Edit Merchant Email">
+    <ModalContent header="Edit Merchant Email">
       <Form class="full-span full-elements" style={{ width: '350px' }}>
         <Field label="Email" name="email" type="email" />
 
@@ -47,6 +47,6 @@ export default ({ merchantId }) => {
           onSubmit={onSubmit}
         />
       </Form>
-    </BaseModal>
+    </ModalContent>
   );
 };

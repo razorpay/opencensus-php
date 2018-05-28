@@ -17,6 +17,7 @@ export function merchantFetch(params) {
 
   if (params.accountId) {
     params.headers = {
+      ...params.headers,
       'X-Razorpay-Account': params.accountId,
     };
   }

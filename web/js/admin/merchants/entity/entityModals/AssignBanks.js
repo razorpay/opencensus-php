@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import { closeModal, confirm, notifyError, notifySuccess } from 'common/modal';
 
@@ -83,7 +83,7 @@ export default class PricingPlanModal extends Component {
 
   render() {
     return (
-      <BaseModal header="Assign Banks">
+      <ModalContent header="Assign Banks">
         <Form>
           {!this.state.banksList ? (
             <div class="spinner center" />
@@ -109,7 +109,7 @@ export default class PricingPlanModal extends Component {
             </div>
           )}
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

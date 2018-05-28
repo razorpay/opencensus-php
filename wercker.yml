@@ -58,7 +58,7 @@ build:
 
       - script:
           name: remove heavy directories
-          code: rm --recursive --force web/node_modules
+          code: rm --recursive --force web/node_modules public/playground
 
       # - script:
       #     name: run unit tests
