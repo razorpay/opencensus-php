@@ -189,7 +189,7 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $sequenceNumber = 'NA';
 
-        if (empty($row[self::COLUMN_SEQUENCE_NUMBER]) !== null)
+        if (empty($row[self::COLUMN_SEQUENCE_NUMBER]) === false)
         {
             $columnSeqNumber = $row[self::COLUMN_SEQUENCE_NUMBER];
 
