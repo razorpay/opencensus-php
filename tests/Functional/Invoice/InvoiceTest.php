@@ -13,6 +13,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
@@ -23,10 +24,11 @@ use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
  */
 class InvoiceTest extends TestCase
 {
-    use InvoiceTestTrait;
-    use CreatesInvoice;
     use PaymentTrait;
     use MocksDnsTrait;
+    use CreatesInvoice;
+    use InvoiceTestTrait;
+    use DbEntityFetchTrait;
 
     const TEST_INV_ID = 'inv_1000000invoice';
 
@@ -74,6 +76,12 @@ class InvoiceTest extends TestCase
 
         // Asserts if have assigned default value to invoices.date
         $this->assertNotNull($response['date']);
+
+        // Asserts that proper value for merchant label & merchant gstin is set (not exposed in public response)
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $this->assertEquals('Test Merchant', $invoice->getMerchantLabel());
+        $this->assertEquals('29kjsngjk213922', $invoice->getMerchantGstin());
     }
 
     public function testCreateInvoiceWithExistingCustomer()

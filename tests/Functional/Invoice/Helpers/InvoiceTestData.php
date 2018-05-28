@@ -31,8 +31,6 @@ return [
                         'hsn_code'      => '00110022'
                     ],
                 ],
-                'merchant_gstin' => '29kjsngjk213922',
-                'merchant_label' => 'Test Merchant',
             ],
         ],
         'response' => [
@@ -1528,24 +1526,26 @@ return [
                 'receipt'      => 'inv_receipt_0001',
                 'customer'  => [
                     'name'  => 'new customer',
-                    'email' => 'new@razorpay.com',
+                    'email' => null,
                     'gstin' => '29CFZPR4093Q1ZA',
                 ],
             ],
         ],
         'response' => [
             'content' => [
-                'id'                   => 'inv_1000000invoice',
-                'entity'               => 'invoice',
-                'receipt'              => 'inv_receipt_0001',
-                'customer_details'     => [
+                'id'               => 'inv_1000000invoice',
+                'entity'           => 'invoice',
+                'receipt'          => 'inv_receipt_0001',
+                'status'           => 'draft',
+                // On update of basic attributes, customer reference will be intact, only local copy gets updated
+                'customer_id'      => 'cust_100000customer',
+                'customer_details' => [
                     'name'            => 'new customer',
-                    'email'           => 'new@razorpay.com',
+                    'email'           => null,
                     'contact'         => '1234567890',
                     'gstin'           => '29CFZPR4093Q1ZA',
                     'billing_address' => null,
                 ],
-                'status'               => 'draft',
             ],
         ],
     ],
