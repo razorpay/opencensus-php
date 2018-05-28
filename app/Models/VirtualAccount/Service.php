@@ -150,7 +150,7 @@ class Service extends Base\Service
     {
         $payments = $this->repo
                          ->payment
-                         ->fetchBankTransferPaymentsByPublicVaIdAndMerchant(
+                         ->fetchPaymentsByPublicVaIdAndMerchant(
                             $virtualAccountId,
                             $this->merchant
                             );
@@ -214,7 +214,7 @@ class Service extends Base\Service
 
         $payments = $this->repo
                          ->payment
-                         ->fetchBankTransferPaymentsByPublicVaIdAndMerchant(
+                         ->fetchPaymentsByPublicVaIdAndMerchant(
                             $virtualAccount->getPublicId(),
                             $merchant
                             );

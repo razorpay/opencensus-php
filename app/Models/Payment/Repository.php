@@ -978,8 +978,6 @@ class Repository extends Base\Repository
 
         $paymentColumns = $this->dbColumn('*');
 
-        $virtualAccountTable = $this->repo->virtual_account->getTableName();
-
         $qrcodeId = $this->repo
                          ->virtual_account
                          ->dbColumn(VirtualAccount\Entity::QR_CODE_ID);
@@ -992,14 +990,16 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->select($paymentColumns)
-                    ->join($virtualAccountTable)
+                    ->join(
+                        Table::VIRTUAL_ACCOUNT,
+                        function ($join)
+                        use($paymentReceiverId, $qrcodeId, $bankAccountId)
+                        {
+                            $join->on($paymentReceiverId, '=', $qrcodeId);
+                            $join->orOn($paymentReceiverId, '=', $bankAccountId);
+                        })
                     ->where($virtualAccountIdCol, '=', $virtualAccountId)
-                    ->andWhere($paymentMerchantId, '=', $merchant->getId())
-                    ->where(function($query) use($paymentReceiverId, $qrcodeId, $bankAccountId)
-                    {
-                        $query->where($paymentReceiverId, '=', $qrcodeId)
-                              ->orWhere($paymentReceiverId, '=', $bankAccountId);
-                    })
+                    ->where($paymentMerchantId, '=', $merchant->getId())
                     ->orderByCreatedAt()
                     ->get();
     }

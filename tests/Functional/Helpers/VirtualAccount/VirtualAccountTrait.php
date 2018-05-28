@@ -224,6 +224,7 @@ trait VirtualAccountTrait
             'receivers'   => [
                 'types' => [
                     'bank_account',
+                    'qr_code',
                 ],
             ],
             'notes'       => [
