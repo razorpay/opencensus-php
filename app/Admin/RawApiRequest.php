@@ -2,6 +2,7 @@
 
 namespace App\Admin;
 
+use App\Http\ApiUrl;
 use Config;
 use Input;
 use Auth;
@@ -44,7 +45,7 @@ class RawApiRequest
         set_time_limit(600);
 
         $options = [
-            'base_url' => Config::get('api.url'),
+            'base_url' => ApiUrl::getApiBaseUrl(),
             // We already have a few headers initialized for this class
             // including the X-Dashboard and Razorpay-API Header
             'defaults' => [

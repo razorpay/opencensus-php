@@ -2,6 +2,7 @@
 
 namespace App\Admin;
 
+use App\Http\ApiUrl;
 use DB;
 use Auth;
 use Hash;
@@ -1345,8 +1346,9 @@ class Service extends Base\Service
 
         try
         {
+            $apiBaseUrl = ApiUrl::getApiBaseUrl();
             // removing the /v1/ part at the end in the apiURL obtained from config
-            $apiURL = substr(config('api.url'), 0, -4);
+            $apiURL = substr($apiBaseUrl, 0, -4);
 
             $APIConnection = Requests::request($apiURL);
         }
