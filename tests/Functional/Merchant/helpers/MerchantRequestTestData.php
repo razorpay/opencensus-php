@@ -172,6 +172,54 @@ return [
         ],
     ],
 
+    'bulkUpdateMerchantRequestsTimestampsOnce' => [
+        'request'  => [
+            'url'     => '/merchant/requests/bulk',
+            'method'  => 'PUT',
+            'content' => [
+                '10000000000000' => [
+                    [
+                        'name'       => 'marketplace',
+                        'type'       => 'product',
+                        'status'     => 'rejected',
+                        'created_at' => '1527501443',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success'     => 1,
+                'failed'      => 0,
+                'failedItems' => [],
+            ],
+        ],
+    ],
+
+    'testBulkUpdateMerchantRequestsTimestamps' => [
+        'request'  => [
+            'url'     => '/merchant/requests/bulk',
+            'method'  => 'PUT',
+            'content' => [
+                '10000000000000' => [
+                    [
+                        'name'       => 'marketplace',
+                        'type'       => 'product',
+                        'status'     => 'rejected',
+                        'created_at' => '1527500000',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success'     => 1,
+                'failed'      => 0,
+                'failedItems' => [],
+            ],
+        ],
+    ],
+
     'testBulkUpdateMerchantRequestsWithErrors' => [
         'request'  => [
             'url'     => '/merchant/requests/bulk',
