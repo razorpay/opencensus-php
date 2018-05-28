@@ -54,12 +54,32 @@ export class ActivationContainer extends React.Component {
       }),
       !accountId && merchantFetch('merchant/activation/business_categories'),
     ]).then(([data, categories]) => {
+      const someDetailsFilled = isFormTouched(data.data);
+
+      if (someDetailsFilled) {
+        this.preloadWelcomeAsset();
+      }
+
+      if (data.data.can_submit) {
+        this.preloadSuccessAsset();
+      }
+
       this.setState({
         data: data.data,
         categories: categories.data,
-        isFormTouched: isFormTouched(data.data),
+        isFormTouched: someDetailsFilled,
       });
     });
+  }
+
+  preloadWelcomeAsset() {
+    const welcome = new Image();
+    welcome.src = 'img/activation/welcome.svg';
+  }
+
+  preloadSuccessAsset() {
+    const success = new Image();
+    success.src = 'img/activation/submit-success.svg';
   }
 
   updateSession(data) {
@@ -71,6 +91,10 @@ export class ActivationContainer extends React.Component {
     // Session need not be updated if it's linked account form
     if (accountId) {
       return;
+    }
+
+    if (data.can_submit) {
+      this.preloadSuccessAsset();
     }
 
     const {
