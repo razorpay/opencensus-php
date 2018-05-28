@@ -526,7 +526,7 @@ function isOldUser(user) {
     return false; // Fallback to new
   }
 
-  let currentTime = 1527467400; // New activation form launch Day: 28 May, 6:00am
+  let currentTime = 1527517800; // New activation form launch Day: 28 May, 8:00pm
   let isCreatedEarlier = user.created_at < currentTime;
 
   return isCreatedEarlier;

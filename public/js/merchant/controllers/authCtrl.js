@@ -257,7 +257,13 @@ app
         };
 
         payload.data.password_confirmation = payload.data.password;
+
         payload.data.business_name = payload.data.business_name || '';
+
+        // Business name cannot be empty or null. Same as quickSendDetails
+        if (!payload.data.business_name) {
+          delete payload.data.business_name;
+        }
 
         $scope.alerts.resetAlerts();
         var request = $http(payload);
