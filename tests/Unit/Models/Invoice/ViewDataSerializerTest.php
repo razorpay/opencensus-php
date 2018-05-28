@@ -123,6 +123,7 @@ class ViewDataSerializerTest extends TestCase
         $invoice  = $this->createInvoice(
             [
                 Invoice\Entity::SUPPLY_STATE_CODE => 10,
+                Invoice\Entity::MERCHANT_GSTIN    => '29kjsngjk213922',
             ]);
 
         // Adds customer billing & shipping addresses & associates with the invoice

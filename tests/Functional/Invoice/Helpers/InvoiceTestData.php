@@ -31,6 +31,8 @@ return [
                         'hsn_code'      => '00110022'
                     ],
                 ],
+                'merchant_gstin' => '29kjsngjk213922',
+                'merchant_label' => 'Test Merchant',
             ],
         ],
         'response' => [

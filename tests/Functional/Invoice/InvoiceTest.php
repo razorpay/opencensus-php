@@ -42,6 +42,7 @@ class InvoiceTest extends TestCase
             [
                 'merchant_id'                 => '10000000000000',
                 'business_registered_address' => '#1205, Rzp, Outer Ring Road, Bangalore',
+                'gstin'                       => '29kjsngjk213922',
             ]);
 
         $this->fixtures->create('user', ['id' => '1000000000user']);
