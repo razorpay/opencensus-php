@@ -171,14 +171,14 @@ class Processor extends VirtualAccount\Processor
 
     protected function getVirtualAccountFromEntity(Base\PublicEntity $bharatQr)
     {
-        $qrCodeId = $bharatQr->getMerchantReference();
+        $merchantReference = $bharatQr->getMerchantReference();
 
         // Here we use stripSignWithoutValidation because
         // we don't want to throw exception in case it is
         // unknown id. It will be accepted as unexpected payment
-        (new QrCode)->stripSignWithoutValidation($qrCodeId);
+        (new QrCode)->stripSignWithoutValidation($merchantReference);
 
-        $qrCode = $this->repo->qr_code->find($qrCodeId);
+        $qrCode = $this->repo->qr_code->findByMerchantReference($merchantReference);
 
         if ($qrCode === null)
         {

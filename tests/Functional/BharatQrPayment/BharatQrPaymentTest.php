@@ -235,6 +235,28 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals('10000000000000', $virtualAccount['merchant_id']);
         $this->assertNotEquals('ShrdVirtualAcc', $virtualAccount['id']);
         $this->assertEquals('active', $virtualAccount['status']);
+
+        $qrCode = $this->getDbLastEntity('qr_code','live');
+
+
+        $vid = $virtualAccount['id'];
+
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback('tobefilled', 'abc');
+
+        $request['content'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $virtualAccount =  $this->getDbLastEntity('virtual_account', 'live');
+
+        $bharatQr = $this->getDbLastEntity('bharat_qr', 'live');
+
+        $this->assertEquals($bharatQr['expected'], true);
+
+        $this->assertEquals($vid, $virtualAccount['id']);
+
+        $this->assertEquals(400, $virtualAccount['amount_paid']);
+
     }
 
     public function testUpiQrPaymentProcess()

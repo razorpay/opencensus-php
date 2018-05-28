@@ -28,6 +28,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::AMOUNT,
         self::PROVIDER,
+        self::REFERENCE,
         self::QR_STRING,
     ];
 

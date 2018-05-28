@@ -35,7 +35,7 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    public function getBharatQrCallback($qrCodeId)
+    public function getBharatQrCallback($qrCodeId, $ref = null)
     {
         $data = [
             'F002'       => '423156XXXXXX1234',
@@ -54,6 +54,11 @@ class Server extends Base\Mock\Server
             'PurchaseID' => $qrCodeId,
             'SenderName' => 'Random Name',
         ];
+
+        if ($ref != null)
+        {
+            $data['F038'] = $ref;
+        }
 
         $hash = $this->getGatewayInstance()->getStringToHashForBharatQr($data);
 
