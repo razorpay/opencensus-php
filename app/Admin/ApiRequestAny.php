@@ -2,23 +2,19 @@
 
 namespace App\Admin;
 
-use Config;
+use Auth;
 use Input;
 use Route;
-use Auth;
+use Trace;
+use Config;
+use Request;
 
-use GuzzleHttp\Client as Guzzle;
+use App\Http\ApiUrl;
+use App\Trace\TraceCode;
 use GuzzleHttp\Post\PostFile;
+use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Errors as RZPErrors;
 use App\Merchant\Service as MerchantService;
-use Trace;
-use App\Trace\TraceCode;
-use App\Http\ApiUrl;
-
-// This is the default class we use for making requests
-use App\RZP\Api as Api;
-
-use Request;
 
 class ApiRequestAny
 {

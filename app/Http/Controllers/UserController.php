@@ -1,11 +1,11 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Http\ApiUrl;
 use Auth;
 use Input;
 use App\User;
 use App\Admin;
+use App\Http\ApiUrl;
 use App\Trace\TraceCode;
 use App\Http\AppResponse;
 

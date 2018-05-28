@@ -2,7 +2,6 @@
 
 namespace App\Admin;
 
-use App\Http\ApiUrl;
 use DB;
 use Auth;
 use Hash;
@@ -15,9 +14,9 @@ use Input;
 use Config;
 use Session;
 use Requests;
-use Exception;
 use App\Base;
 use App\User;
+use Exception;
 use App\Admin;
 use App\Generic;
 use App\Merchant;
@@ -27,6 +26,7 @@ use Carbon\Carbon;
 use App\User\Helper;
 use App\Transaction;
 use UAParser\Parser;
+use App\Http\ApiUrl;
 use App\MerchantDetails;
 use App\Trace\TraceCode;
 use App\Mailers\MiscMailer;

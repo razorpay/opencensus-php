@@ -2,9 +2,9 @@
 
 namespace App\RZP;
 
-use App\Http\ApiUrl;
-use Razorpay;
 use Config;
+use Razorpay;
+use App\Http\ApiUrl;
 
 class Api extends Razorpay\Api\Api
 {

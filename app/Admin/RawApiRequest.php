@@ -2,23 +2,18 @@
 
 namespace App\Admin;
 
-use App\Http\ApiUrl;
-use Config;
-use Input;
 use Auth;
-
-use GuzzleHttp\Client as Guzzle;
-use GuzzleHttp\Post\PostFile;
-
-use Razorpay\Api\Request as ApiRequest;
-use Razorpay\Api\Errors as RZPErrors;
+use Input;
 use Trace;
-use App\Trace\TraceCode;
-
-// This is the default class we use for making requests
-use App\RZP\Api as Api;
-
+use Config;
 use Request;
+
+use App\Http\ApiUrl;
+use App\Trace\TraceCode;
+use GuzzleHttp\Post\PostFile;
+use GuzzleHttp\Client as Guzzle;
+use Razorpay\Api\Errors as RZPErrors;
+use Razorpay\Api\Request as ApiRequest;
 
 class RawApiRequest
 {

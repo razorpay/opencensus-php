@@ -37,7 +37,7 @@ class ApiUrl
         'production' => [
             'https://api.razorpay.com/v1/',
             'https://prod-api-canary.razorpay.com/v1/',
-            'https://api-dark.razorpay.com/v1',
+            'https://api-dark.razorpay.com/v1/',
         ],
     ];
 
