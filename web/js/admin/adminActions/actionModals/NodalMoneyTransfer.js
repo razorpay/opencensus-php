@@ -20,16 +20,15 @@ export default function NodalMoneyTransfer() {
         ))}
       </SelectField>
 
-      <Field label="Gateway" name="gateway" />
-
       <Field
         label="Amount (in paise)"
         name="amount"
         infoMsg="Please enter the amount in paise"
         type="number"
+        required={true}
       />
 
-      <SelectField label="Channel" name="channel">
+      <SelectField label="Channel" name="channel" required={true}>
         {Object.keys(options).map(opt => (
           <option value={opt} key={opt}>
             {options[opt]}
@@ -43,11 +42,11 @@ export default function NodalMoneyTransfer() {
         pendingClass="small spinner"
         onSubmit={data => {
           return adminPost({
-            url: 'live/nodal/transfer',
+            url: 'live/nodal/transfer/admin',
             data,
           }).then(response => {
             if (response) {
-              notifySuccess('Money transferred successfully.');
+              notifySuccess('Transfer created successfully.');
               closeModal();
             }
           });
