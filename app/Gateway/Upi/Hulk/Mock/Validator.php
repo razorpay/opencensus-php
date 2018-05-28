@@ -16,6 +16,7 @@ class Validator extends Base\Validator
         'description'           => 'required|string|max:255',
         'notes'                 => 'sometimes|array',
         'merchant_reference_id' => 'required|string|size:14',
+        'category_code'         => 'sometimes|string|size:4',
     ];
 
     protected static $verifyRules = [

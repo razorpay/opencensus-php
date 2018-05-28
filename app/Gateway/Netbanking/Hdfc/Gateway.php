@@ -214,7 +214,9 @@ class Gateway extends Base\Gateway
             // add the following data in the same sequence
             //
 
-            $emData = Fields::getEmandateRegistrationData($input['token'], $input['payment']['id']);
+            $token = $input['token'];
+
+            $emData = Fields::getEmandateRegistrationData($token, $input['payment']['id']);
 
             $startDate = Carbon::createFromTimestamp($emData[Fields::START_TIMESTAMP], Timezone::IST)
                                ->format('dmY');
@@ -225,7 +227,7 @@ class Gateway extends Base\Gateway
             $data[Fields::REF1]                  = $emData[RHeadings::MERCHANT_UNIQUE_REFERENCE_NO];
             $data[Fields::REF2]                  = $emData[RHeadings::CUSTOMER_NAME];
             $data[Fields::REF3]                  = $emData[RHeadings::CUSTOMER_ACCOUNT_NUMBER];
-            $data[Fields::REF4]                  = Fields::INIT_AMOUNT;
+            $data[Fields::REF4]                  = number_format($token->getMaxAmount() / 100, 2, '.', '');
             $data[Fields::REF5]                  = $emData[RHeadings::FREQUENCY];
             $data[Fields::REF6]                  = $emData[RHeadings::MANDATE_SERIAL_NUMBER];
             $data[Fields::REF7]                  = $emData[RHeadings::MANDATE_ID];

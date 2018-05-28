@@ -264,7 +264,7 @@ class InvoiceTest extends TestCase
 
     public function testCreateInvoiceWithMultipleLineItemsAndUsingExistingItem()
     {
-        $this->fixtures->create('item');
+        $this->fixtures->create('item', ['tax_rate' => 120]);
 
         $response = $this->startTest();
 
@@ -657,6 +657,21 @@ class InvoiceTest extends TestCase
                 'id'      => '1000001address',
                 'type'    => 'shipping_address',
                 'zipcode' => '560080',
+                'primary' => false,
+            ]);
+
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testUpdateDraftInvoiceWithSameBillingAndShippingAddressIds()
+    {
+        $this->fixtures->create(
+            'address',
+            [
+                'id'      => '1000000address',
+                'type'    => 'billing_address',
                 'primary' => false,
             ]);
 

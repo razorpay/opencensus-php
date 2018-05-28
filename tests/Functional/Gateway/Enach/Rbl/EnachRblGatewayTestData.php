@@ -1,9 +1,27 @@
 <?php
 
 use Carbon\Carbon;
+
+use RZP\Error\PublicErrorCode;
 use RZP\Constants\Timezone;
 
 return [
+    'testAuthenticationFailed' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => 'Payment processing failed due to error at bank or wallet gateway'
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => 'GATEWAY_ERROR_MANDATE_CREATION_FAILED',
+        ],
+    ],
+
     'testDebitFileGeneration' => [
         'request' => [
             'content' => [

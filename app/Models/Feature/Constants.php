@@ -68,6 +68,7 @@ class Constants
     const EXPOSE_CARD_EXPIRY            = 'expose_card_expiry';
     const EXPOSE_CARD_IIN               = 'expose_card_iin';
     const S2S_OPTIONAL_DATA             = 's2s_optional_data';
+    const PARTNER                       = 'partner';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -75,6 +76,9 @@ class Constants
 
     // Payment authentication
     const ATM_PIN_AUTH                  = 'atm_pin_auth';
+
+    // Payment headless otp auth
+    const HEADLESS_OTP                  = 'headless_otp';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -164,6 +168,8 @@ class Constants
         self::EXPOSE_CARD_EXPIRY            => true,
         self::EXPOSE_CARD_IIN               => true,
         self::S2S_OPTIONAL_DATA             => true,
+        self::PARTNER                       => true,
+        self::HEADLESS_OTP                  => true,
     ];
 
     // Entity type constants

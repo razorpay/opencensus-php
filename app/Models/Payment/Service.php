@@ -1009,16 +1009,24 @@ class Service extends Base\Service
         return ['payments_count' => $count, 'emails_count' => $emailCount];
     }
 
+    public function verifyPaymentsInBulk(array $input)
+    {
+        (new Payment\Validator)->validateInput('bulk_verify', $input);
+
+        $paymentIds = Payment\Entity::verifyIdAndStripSignMultiple($input['payment_ids']);
+
+        return (new Verify)->verifyPaymentsWithIds($paymentIds);
+    }
+
     public function verifyMultiplePayments(string $filter, array $input)
     {
-        $bucket = [];
+        (new Payment\Validator)->validateInput('verify', $input);
 
-        if (isset($input['bucket']) === true)
-        {
-            $bucket = $input['bucket'];
-        }
+        $bucket = $input['bucket'] ?? [];
 
-        return (new Verify)->verifyPaymentsWithFilter($filter, $bucket);
+        $gateway = $input['gateway'] ?? null;
+
+        return (new Verify)->verifyPaymentsWithFilter($filter, $bucket, $gateway);
     }
 
     public function verifyPayment($payment)

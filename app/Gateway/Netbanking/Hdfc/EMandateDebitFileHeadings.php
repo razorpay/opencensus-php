@@ -16,5 +16,5 @@ class EMandateDebitFileHeadings
 
     // Additional headings in response file
     const STATUS              = 'Status';
-    const REJECTION_REMARKS   = 'Rejection_Remarks';
+    const REJECTION_REMARKS   = 'Remark';
 }

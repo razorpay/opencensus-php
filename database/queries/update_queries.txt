@@ -1673,3 +1673,22 @@ WHERE  id IN ( '6P2UjB7AZkp3h5', '7wptZXq8xk3Hhi', '9qIJjdfTUc048v', '9yak56TeQG
                'A6arDl0wwwds3D', 'A7MVCY5zOegGQ0', 'A7h1HCuWhuE6qB', 'A894C2t1U3gJwq',
                'A89Q9ehP4c29ay', 'A8Dkkq0zImHQhe', 'A8U3Esrz88wjU2', 'A8X8Gm29WZCdJH',
                'A8bsJrEkWALzqF', 'AArsGstS2RaWTK' );
+
+# Copies items.tax_rate to line_items.tax_rate for existing entities. Now line_items has tax_rate too.
+UPDATE line_items l
+       LEFT JOIN items i
+              ON l.item_id = i.id
+SET    l.tax_rate = i.tax_rate
+WHERE  l.tax_rate IS NULL
+       AND i.tax_rate IS NOT NULL;
+
+# Update UPI type for hulk payments
+UPDATE upi
+SET `type` = 'collect'
+WHERE `gateway_payment_id` LIKE 'p2p_%'
+  AND `type` = 'pull';
+
+UPDATE upi
+SET `type` = 'pay'
+WHERE `gateway_payment_id` LIKE 'p2p_%'
+  AND `type` = 'push';
