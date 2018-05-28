@@ -605,6 +605,25 @@
             font-size: 13px;
         }
 
+        .testmode-warning {
+            padding: 12px 24px;
+            background-color: #fcf8e3;
+            color: #8a6d3b;
+            font-size: 12px;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            position: relative;
+            display: block;
+        }
+
+        .testmode-warning + .inv-details {
+            border-radius: 0 !important;
+        }
+
+        #desktop-container .testmode-warning {
+            padding-left: 40px;
+        }
+
     </style>
   </head>
   <body>
@@ -743,6 +762,11 @@
 
                       <div class="table-box" id="inv-info-par">
                           <div id="inv-info-box">
+                              @if($data['is_test_mode'] === true)
+                                  <span class="testmode-warning">
+                                    This payment link is created in <b>Test Mode</b>. Only test payments can be made for this.
+                                  </span>
+                              @endif
                               <div class="inv-details">
                                   <div class="inv-for">
                                     Payment Request from {{$data['invoice']['merchant_label']}}
@@ -891,6 +915,11 @@
                     </div>
                   </div>
                   <div id="inv-info-container">
+                        @if($data['is_test_mode'] === true)
+                            <span class="testmode-warning">
+                              This payment link is created in <b>Test Mode</b>. Only test payments can be made for this.
+                            </span>
+                        @endif
                       <div class="inv-details">
                           <div id="inv-details-main">
                               <div class="info">
