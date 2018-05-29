@@ -49,10 +49,9 @@ export default ({ onCloseClick, user }) => {
           You can only use Razorpay in test mode until your account is
           activated.
           <br />
-          `Your account is Under Review. The process usually takes ${
-            activationDuration
-          }. We will reach out on your contact email for further
-          clarifications.`
+          Your account is Under Review. The process usually takes{' '}
+          {activationDuration}. We will reach out on your contact email for
+          further clarifications.
           {modalAction}
         </div>
       );

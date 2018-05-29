@@ -6,6 +6,8 @@ import LocalStorageService from 'rzp/utils/localStorage';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import ProgressBar from 'rzp/ui/ProgressBar';
 
+import { activationDuration } from 'common/data';
+
 import {
   NEEDS_CLARIFICATION,
   ACTIVATION_URL,
@@ -182,9 +184,9 @@ const Title = ({
                 <i className="i i-info-circle text-fade" />
                 <Popover align="top" followPointer={true} theme="dark">
                   <PopoverBody>
-                    Your account is Under Review. The process usually takes 2 to
-                    3 working days. We will reach out on your contact email for
-                    further clarifications.
+                    Your account is Under Review. The process usually takes{' '}
+                    {activationDuration}. We will reach out on your contact
+                    email for further clarifications.
                   </PopoverBody>
                 </Popover>
               </small>
