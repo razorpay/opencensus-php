@@ -596,7 +596,7 @@ class Core extends Base\Core
                     // The timestamp when the request status was updated
                     $statusDate = $request[Entity::CREATED_AT] ?? null;
 
-                    if ($statusDate === 0)
+                    if (($statusDate !== null) and ((int) $statusDate <= 0))
                     {
                         throw new Exception\LogicException('The timestamp must be a valid epoch');
                     }

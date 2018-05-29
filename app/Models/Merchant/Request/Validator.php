@@ -4,7 +4,6 @@ namespace RZP\Models\Merchant\Request;
 
 use RZP\Base;
 use RZP\Exception;
-use RZP\Models\State;
 use RZP\Models\Feature;
 
 class Validator extends Base\Validator
