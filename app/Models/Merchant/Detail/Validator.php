@@ -376,7 +376,8 @@ class Validator extends Base\Validator
 
     public function validateForm12aUrl($attribute, $value)
     {
-        if ($this->entity->getBusinessType() !== BusinessType::NGO)
+        $form12aBusinessTypes = [BusinessType::SOCIETY, BusinessType::TRUST, BusinessType::NGO];
+        if (in_array($this->entity->getBusinessType(), $form12aBusinessTypes, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_FILE_NON_NGO_ORGANISATION_TYPE);
         }
@@ -384,7 +385,8 @@ class Validator extends Base\Validator
 
     public function validateForm80gUrl($attribute, $value)
     {
-        if ($this->entity->getBusinessType() !== BusinessType::NGO)
+        $form80gBusinessTypes = [BusinessType::SOCIETY, BusinessType::TRUST, BusinessType::NGO];
+        if (in_array($this->entity->getBusinessType(), $form80gBusinessTypes, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_FILE_NON_NGO_ORGANISATION_TYPE);
         }
