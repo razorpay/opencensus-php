@@ -463,6 +463,12 @@ const bankAccountFields = [
           return 'Account no. does not match';
         }
       },
+      _when: activation => {
+        const isSubmitDisabled =
+          activation.props.data.locked || activation.props.data.activated;
+
+        return !isSubmitDisabled; // Not shown if locked / activated (TODO: Should have 'submitted' check as well)
+      },
     },
   ],
   {
