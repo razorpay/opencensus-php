@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\PaymentLink;
 
 use RZP\Models\Payment;
+use RZP\Models\PaymentLink;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -33,35 +34,35 @@ class PaymentLinkTest extends TestCase
 
     public function testFetchPaymentLink()
     {
-        $this->createPaymentLinkWithId(self::DEFAULT_PAYMENT_LINK_ID);
+        $this->createPaymentLink();
 
         $this->startTest();
     }
 
     public function testFetchPaymentLinks()
     {
-        $this->createPaymentLinkWithId(self::DEFAULT_PAYMENT_LINK_ID);
+        $this->createPaymentLink();
 
         $this->startTest();
     }
 
     public function testUpdatePaymentLink()
     {
-        $this->createPaymentLinkWithId(self::DEFAULT_PAYMENT_LINK_ID);
+        $this->createPaymentLink();
 
         $this->startTest();
     }
 
     public function testUpdatePaymentLinkWithBadExpireBy()
     {
-        $this->createPaymentLinkWithId(self::DEFAULT_PAYMENT_LINK_ID);
+        $this->createPaymentLink();
 
         $this->startTest();
     }
 
     public function testFetchPaymentLinkPayments()
     {
-        $this->createPaymentLinkWithId(self::DEFAULT_PAYMENT_LINK_ID);
+        $this->createPaymentLink();
 
         $this->fixtures->create('payment', [
             Payment\Entity::PAYMENT_LINK_ID => self::DEFAULT_PAYMENT_LINK_ID
@@ -72,10 +73,10 @@ class PaymentLinkTest extends TestCase
 
     // -------------------- Protected methods --------------------
 
-    protected function createPaymentLinkWithId($id)
+    protected function createPaymentLink(string $id = self::DEFAULT_PAYMENT_LINK_ID, array $attributes = [])
     {
-        $this->fixtures->create('payment_link', [
-            'id' => self::DEFAULT_PAYMENT_LINK_ID,
-        ]);
+        $attributes[PaymentLink\Entity::ID] = $id;
+
+        $this->fixtures->create('payment_link', $attributes);
     }
 }

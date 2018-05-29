@@ -2,8 +2,9 @@
 
 namespace RZP\Models\PaymentLink;
 
-use RZP\Base;
 use Carbon\Carbon;
+
+use RZP\Base;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -42,8 +43,7 @@ class Validator extends Base\Validator
 
         if ($expireBy < $minExpireBy->getTimestamp())
         {
-            $message = 'expire_by should be at least ' .
-                        $minExpireBy->diffForHumans($now) . ' the current time.';
+            $message = 'expire_by should be at least ' . $minExpireBy->diffForHumans($now) . ' the current time.';
 
             throw new BadRequestValidationFailureException($message);
         }

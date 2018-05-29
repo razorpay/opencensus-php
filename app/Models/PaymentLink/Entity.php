@@ -86,6 +86,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT,
         self::TITLE,
         self::DESCRIPTION,
+        self::NOTES,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];

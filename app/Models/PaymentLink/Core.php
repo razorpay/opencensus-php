@@ -2,8 +2,6 @@
 
 namespace RZP\Models\PaymentLink;
 
-use Config;
-
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
@@ -25,7 +23,7 @@ class Core extends Base\Core
      * Base payment link url from which payment link is generated.
      * @var string
      */
-    protected $basePaymentLinkUrl;
+    protected $payment_link_base_url;
 
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
@@ -34,9 +32,9 @@ class Core extends Base\Core
     {
         parent::__construct();
 
-        $this->mutex              = $this->app['api.mutex'];
-        $this->elfin              = $this->app['elfin'];
-        $this->basePaymentLinkUrl = Config::get('app.payment_link');
+        $this->mutex                 = $this->app['api.mutex'];
+        $this->elfin                 = $this->app['elfin'];
+        $this->payment_link_base_url = $this->app['config']->get('app.payment_link');
     }
 
     /**
@@ -80,7 +78,7 @@ class Core extends Base\Core
     public function update(Entity $paymentLink, array $input): Entity
     {
         $this->trace->info(TraceCode::PAYMENT_LINK_UPDATE_REQUEST, [
-            'id'    => $paymentLink->getPublicId(),
+            'id'    => $paymentLink->getId(),
             'input' => $input,
         ]);
 
@@ -109,12 +107,6 @@ class Core extends Base\Core
 
         $shortenedUrl = $this->elfin->shorten($longUrl);
 
-        $this->trace->info(TraceCode::PAYMENT_LINK_URLS, [
-            'id'        => $paymentLink->getId(),
-            'short_url' => $shortenedUrl,
-            'long_url'  => $longUrl,
-        ]);
-
         $paymentLink->setShortUrl($shortenedUrl);
     }
 
@@ -135,7 +127,7 @@ class Core extends Base\Core
             $shortMode = self::SHORT_MODE_LIVE;
         }
 
-        $paymentLinkLongUrl = $this->basePaymentLinkUrl . '/' . $shortMode . '/' . $paymentLink->getPublicId();
+        $paymentLinkLongUrl = $this->payment_link_base_url . '/' . $shortMode . '/' . $paymentLink->getPublicId();
 
         return $paymentLinkLongUrl;
     }

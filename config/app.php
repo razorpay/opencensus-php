@@ -259,7 +259,7 @@ return array(
 
     'invoice' => env('INVOICE_URL'),
 
-    'payment_link' => env('PAYMENT_LINK_URL'),
+    'payment_link' => env('PAYMENT_LINK_BASE_URL'),
 
     'cdn_v1_url' => env('CDN_V1_URL'),
 
