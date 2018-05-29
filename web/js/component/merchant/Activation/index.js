@@ -1154,6 +1154,12 @@ function ActivationField(field) {
     isComponentDisabled = true;
   }
 
+  // Show bank account number if it's activated/locked
+  if (rest.hasOwnProperty('type') && rest.type === 'password') {
+    !!(this.props.data.locked || this.props.data.activated) &&
+      (rest.type = 'text'); // This check is not needed
+  }
+
   return (
     <Component
       key={key}
