@@ -14,12 +14,6 @@ import { luminateRow } from 'merchant/modules/app';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
 import { batchDownload, fetchBatch } from 'merchant/modules/batches';
-import {
-  trackGoToLinks,
-  trackSampleFileDownload,
-  trackSearchFilters,
-  trackDownloadProcessedBatchReport,
-} from './ga';
 
 @connect(null, {
   batchDownload,
@@ -31,7 +25,7 @@ import {
 export default class BatchList extends Component {
   handleDownloadClick = id => {
     let windowRef = window.open('', '_blank');
-    trackDownloadProcessedBatchReport();
+    this.props.gaEvents.trackDownloadProcessedBatchReport();
     this.props
       .batchDownload(id)
       .then(response => {
@@ -54,7 +48,7 @@ export default class BatchList extends Component {
   };
 
   componentDidMount() {
-    trackGoToLinks('Batch Uploads');
+    this.props.gaEvents.trackGoToLinks('Batch Uploads');
   }
 
   render() {
@@ -72,34 +66,36 @@ export default class BatchList extends Component {
 
     return (
       <div class="content-wrapper batch-upload-wrapper">
-        <div class="btn-toolbar pull-right header-btns">
-          <a
-            class="btn btn-link hidden-xs"
-            href={sampleUrl}
-            onClick={trackSampleFileDownload}
-          >
-            Download Sample File
-          </a>
-          {docUrl && (
-            <a class="btn btn-link hidden-xs" href={docUrl} target="_blank">
-              Documentation &nbsp;
-              <i class="i i-external-link" />
+        <HeaderAction>
+          <div class="btn-toolbar pull-right">
+            <a
+              class="btn btn-link hidden-xs"
+              href={sampleUrl}
+              onClick={this.props.gaEvents.trackSampleFileDownload}
+            >
+              Download Sample File
             </a>
-          )}
+            {docUrl && (
+              <a class="btn btn-link hidden-xs" href={docUrl} target="_blank">
+                Documentation &nbsp;
+                <i class="i i-external-link" />
+              </a>
+            )}
 
-          <button
-            class="btn btn-primary pull-right"
-            onClick={this.openUploadModal}
-          >
-            Click here to upload
-          </button>
-        </div>
+            <button
+              class="btn btn-primary pull-right"
+              onClick={this.openUploadModal}
+            >
+              Click here to upload
+            </button>
+          </div>
+        </HeaderAction>
 
         <BatchListFilter
           form="batchListFilter"
           count={count}
           onSubmit={onSubmit}
-          onSearchAnalytics={trackSearchFilters}
+          onSearchAnalytics={this.props.gaEvents.trackSearchFilters}
         />
         <DataTable
           title="Batch Uploads"

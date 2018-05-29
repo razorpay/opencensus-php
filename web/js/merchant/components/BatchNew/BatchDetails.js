@@ -3,8 +3,6 @@ import React, { Component } from 'react';
 import Banner from 'rzp/ui/Banner';
 import Spinner from 'rzp/ui/Spinner';
 
-import { trackSeeAllLinks } from 'merchant/containers/BatchNew/ga';
-
 export default function BatchDetails({ renderDetails, ...props }) {
   let { batch = {}, isLoading, onDownload } = props;
   let batchName =

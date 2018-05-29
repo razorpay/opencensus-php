@@ -8,9 +8,12 @@ import {
   fetchPaymentLinkBatches as fetchAll,
   fetchIssuableBatchList,
 } from 'merchant/modules/batches';
+import setGaTrack from 'merchant/containers/BatchNew/ga';
 
 import PaymentLinksForm from './PaymentLinksForm';
 import SendAllLinks from './SendAllLinks';
+
+const gaEvents = setGaTrack('Dashboard - Payment Links');
 
 @connect(
   state => {
@@ -48,7 +51,11 @@ export default class BatchListContainer extends ListContainer {
     this.props.openModal({
       size: 'small',
       component: (
-        <SendAllLinks batchId={item.id} fetchAll={this.props.fetchAll} />
+        <SendAllLinks
+          trackSendAllLinks={gaEvents.trackSendAllLinks}
+          batchId={item.id}
+          fetchAll={this.props.fetchAll}
+        />
       ),
     });
   };
@@ -85,6 +92,7 @@ export default class BatchListContainer extends ListContainer {
         ctaText={`Create Batch${notify ? ' & Send Payment Links' : ''}`}
         pendingText={`Creating${notify ? ' & Sending' : ''}...`}
         batchFormInitialValues={batchFormInitialValues}
+        gaEvents={gaEvents}
         renderBatchCreationForm={() => (
           <PaymentLinksForm
             batchType={this.props.batchType}
@@ -112,6 +120,7 @@ export default class BatchListContainer extends ListContainer {
         batchActions={[this.sendAllLinks]}
         renderUploadModal={this.renderUploadModal}
         {...this.props}
+        gaEvents={gaEvents}
       />
     );
   }

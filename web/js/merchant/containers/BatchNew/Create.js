@@ -7,7 +7,6 @@ import BatchCreateModal from 'merchant/components/BatchNew/CreateModal';
 
 import { createPaymentLinkBatch as createBatch } from 'merchant/modules/batches';
 
-import { trackUploadBatch } from './ga';
 @connect(state => state.session, { createBatch, showNotification })
 export default class BatchCreate extends Component {
   formInitialValues = {
@@ -18,7 +17,7 @@ export default class BatchCreate extends Component {
     let data = { ...props };
 
     data.file_id = this.props.batch.file_id;
-    trackUploadBatch('Create');
+    this.props.trackUploadBatch('Create');
     return this.props
       .createBatch(data)
       .then(response => {

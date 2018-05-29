@@ -5,6 +5,7 @@ import { NavLink } from 'react-router-dom';
 import BatchDetails from 'merchant/containers/BatchNew/Details';
 import { fetchPaymentLinkBatchesDetails as fetchBatchDetails } from 'merchant/modules/batches';
 import { pluralize } from 'rzp/utils/rzp-utils';
+import setGaTrack from 'merchant/containers/BatchNew/ga';
 
 import BatchStats from 'merchant/components/BatchNew/Stats';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
@@ -14,6 +15,8 @@ import ListToggler from 'rzp/ui/Toggler/ListToggler';
 import Time from 'rzp/ui/Time';
 import { amount, status } from 'rzp/ui/item/pair';
 import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
+
+const gaEvents = setGaTrack('Dashboard - Payment Links');
 
 const renderBatchDetails = props => {
   const { batch, stats, invoices } = props;
@@ -55,6 +58,7 @@ export default class PaymentLinksBatchDetailsContainer extends Component {
         id={this.props.id}
         fetchBatchDetails={this.props.fetchBatchDetails}
         renderDetails={renderBatchDetails}
+        gaEvents={gaEvents}
       />
     );
   }
@@ -68,6 +72,7 @@ function InvoicesTable({ invoices, batchId }) {
       limit={4}
       limitUrl={`/paymentlinks?batch_id=${batchId}`}
       totalItems={invoices.length}
+      onViewAllClick={gaEvents.trackSeeAllLinks(batchId)}
     >
       <DataTable
         columns={[invoiceEmail, amount, status]}

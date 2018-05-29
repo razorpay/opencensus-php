@@ -8,7 +8,6 @@ import { luminateRow } from 'merchant/modules/app';
 import BatchValidate from './Validate';
 import BatchCreate from './Create';
 import SuccessModal from 'merchant/components/BatchNew/SuccessModal';
-import { trackUploadBatch } from './ga';
 
 /**
  * Container:  Switches between validation or creation of batch.
@@ -39,11 +38,11 @@ export default class BatchUpload extends Component {
   };
 
   componentDidMount() {
-    trackUploadBatch('Open');
+    this.props.gaEvents.trackUploadBatch('Open');
   }
 
   onModalClose = () => {
-    trackUploadBatch('Close');
+    this.props.trackUploadBatch('Close');
     this.props.closeModal();
   };
   render() {
@@ -62,6 +61,7 @@ export default class BatchUpload extends Component {
                   batchType={this.props.batchType}
                   sampleUrl={this.props.sampleUrl}
                   docUrl={this.props.docUrl}
+                  gaEvents={this.props.gaEvents}
                 />
               );
             case 'create':
@@ -73,6 +73,7 @@ export default class BatchUpload extends Component {
                   batchType={this.props.batchType}
                   batchFormInitialValues={this.props.batchFormInitialValues}
                   renderBatchCreationForm={this.props.renderBatchCreationForm}
+                  trackUploadBatch={this.props.gaEvents.trackUploadBatch}
                 />
               );
             case 'success':

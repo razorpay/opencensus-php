@@ -11,8 +11,6 @@ import {
 
 import BatchDetails from 'merchant/components/BatchNew/BatchDetails';
 
-import { trackDetails } from './ga';
-
 @withRouter
 @connect(
   state => {
@@ -62,11 +60,11 @@ export default class BatchDetailsContainer extends Component {
   }
 
   componentDidMount() {
-    trackDetails('Open', this.props.id);
+    this.props.gaEvents.trackDetails('Open', this.props.id);
   }
 
   componentWillUnmount() {
-    trackDetails('Close', this.props.id);
+    this.props.gaEvents.trackDetails('Close', this.props.id);
   }
 
   render() {
