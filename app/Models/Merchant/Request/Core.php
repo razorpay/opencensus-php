@@ -75,11 +75,11 @@ class Core extends Base\Core
      * @param string       $state
      * @param Entity       $request
      * @param PublicEntity $maker
-     * @param string       $statusDate
+     * @param int          $statusDate
      *
      * @return State\Entity
      */
-    protected function createState(string $state, Entity $request, PublicEntity $maker, string $statusDate = null)
+    protected function createState(string $state, Entity $request, PublicEntity $maker, int $statusDate = null)
     {
         $params = [
             State\Entity::NAME => $state,
@@ -87,7 +87,7 @@ class Core extends Base\Core
 
         if ($statusDate !== null)
         {
-            $params[State\Entity::CREATED_AT] = (int) $statusDate;
+            $params[State\Entity::CREATED_AT] = $statusDate;
         }
 
         $stateObj = (new State\Core)->createForMakerAndEntity($params, $maker, $request);
@@ -359,7 +359,7 @@ class Core extends Base\Core
      * @param string          $feature
      * @param string          $type
      * @param string          $requestStatus
-     * @param string          $statusDate
+     * @param int             $statusDate
      *
      * @return Entity
      */
@@ -368,7 +368,7 @@ class Core extends Base\Core
         string $feature,
         string $type,
         string $requestStatus,
-        string $statusDate = null)
+        int $statusDate = null)
     {
         $request = $this->findOrCreateMerchantRequest($merchant, [Entity::NAME => $feature, Entity::TYPE => $type]);
 
@@ -392,7 +392,7 @@ class Core extends Base\Core
 
             $stateEntity = $this->repo->state->findLastMerchantRequestState($request);
 
-            $stateEntity->setCreatedAt((int) $statusDate);
+            $stateEntity->setCreatedAt($statusDate);
 
             $this->repo->saveOrFail($stateEntity);
         }
@@ -594,9 +594,9 @@ class Core extends Base\Core
                 try
                 {
                     // The timestamp when the request status was updated
-                    $statusDate = $request[Entity::CREATED_AT] ?? null;
+                    $statusDate = (int) ($request[Entity::CREATED_AT] ?? null);
 
-                    if (($statusDate !== null) and ((int) $statusDate <= 0))
+                    if ($statusDate <= 0)
                     {
                         throw new Exception\LogicException('The timestamp must be a valid epoch');
                     }
@@ -611,7 +611,7 @@ class Core extends Base\Core
                         $request[Entity::NAME],
                         $request[Entity::TYPE],
                         $request[Entity::STATUS],
-                        (int) $statusDate
+                        $statusDate
                     );
 
                     if (empty($response) === true)
