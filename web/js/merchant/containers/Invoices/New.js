@@ -779,7 +779,7 @@ export default class InvoicesNewContainer extends Component {
                                 });
                               })}
                             >
-                              <i class="i i-done" />
+                              <i class="i i-check" />
                               <span>Finalize and Issue</span>
                             </AsyncButton>
                           )}
