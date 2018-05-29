@@ -412,8 +412,8 @@ const WelcomeScreen = ({ openWizard }) => {
           start accepting payments.
         </p>
         <p>
-          `Once you submit the form, it may take upto ${activationDuration} to
-          get you account activated.`
+          Once you submit the form, it may take upto ${activationDuration} to
+          get you account activated.
         </p>
 
         <Button.Primary onClick={openWizard}>
@@ -526,7 +526,7 @@ function isOldUser(user) {
     return false; // Fallback to new
   }
 
-  let currentTime = 1527517800; // New activation form launch Day: 28 May, 8:00pm
+  let currentTime = 1523407001; // New activation form launch Day: 28 May, 8:00pm
   let isCreatedEarlier = user.created_at < currentTime;
 
   return isCreatedEarlier;
