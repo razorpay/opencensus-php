@@ -39,9 +39,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'row'       => $row,
                     'gateway'   => $this->gateway
                 ]);
-            
+
             $this->setFailUnprocessedRow(false);
-            
+
             return null;
         }
 
@@ -111,7 +111,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             BaseReconciliate::CARD_TRIVIA => $cardTrivia,
         ];
     }
-    
+
     protected function getColumnCardLocale($row)
     {
         if (empty($row[self::COLUMN_CARD_COUNTRY]) === true)
@@ -121,7 +121,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         return strtolower($row[self::COLUMN_CARD_COUNTRY]);
     }
-    
+
     protected function getColumnCardTrivia($row)
     {
         if (empty($row[self::COLUMN_CARD_INTERCHANGE_TYPE]) === true)
@@ -258,13 +258,17 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
-        if ($this->payment->getAmount() !== $this->getReconPaymentAmount($row))
+        $convertCurrency = $this->payment->getConvertCurrency();
+
+        $paymentAmount = ($convertCurrency === true) ? $this->payment->getBaseAmount() : $this->payment->getAmount();
+
+        if ($paymentAmount !== $this->getReconPaymentAmount($row))
         {
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
                     'message'           => 'Payment amount mismatch',
-                    'expected_amount'   => $this->payment->getAmount(),
+                    'expected_amount'   => $paymentAmount,
                     'currency'          => $this->payment->getCurrency(),
                     'row'               => $row,
                     'gateway'           => $this->gateway

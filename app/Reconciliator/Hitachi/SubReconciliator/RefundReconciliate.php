@@ -35,7 +35,7 @@ class RefundReconciliate extends Base\RefundReconciliate
         }
 
         $refundId = null;
-        
+
         // Unsettled rows should be skipped while processing.
         if ($row[self::COLUMN_ISSETTLED] !== 'S')
         {
@@ -127,13 +127,17 @@ class RefundReconciliate extends Base\RefundReconciliate
      */
     protected function validateRefundAmountEqualsReconAmount(array $row)
     {
-        if ($this->refund->getAmount() !== $this->getReconRefundAmount($row))
+        $convertCurrency = $this->payment->getConvertCurrency();
+
+        $refundAmount = ($convertCurrency === true) ? $this->refund->getBaseAmount() : $this->refund->getAmount();
+
+        if ($refundAmount !== $this->getReconRefundAmount($row))
         {
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
                     'message'           => 'Refund amount mismatch',
-                    'expected_amount'   => $this->refund->getBaseAmount(),
+                    'expected_amount'   => $refundAmount,
                     'currency'          => $this->refund->getCurrency(),
                     'row'               => $row,
                     'gateway'           => $this->gateway
