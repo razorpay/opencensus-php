@@ -1167,7 +1167,8 @@ function ActivationField(field) {
 }
 
 function isSubmitFormDisabled(data) {
-  let isSubmitFormRemoved = data.activated || data.submitted || data.locked; // Linked accounts form can still be seen after activation.
+  let isSubmitFormRemoved = data.activated || data.locked; // Linked accounts form can still be seen after activation.
+  //TODO: Currently removing condition `|| data.submitted` because certain fields cannot be edited from admin side like CIN.
 
   return !!isSubmitFormRemoved;
 }
