@@ -266,10 +266,16 @@ class Validator extends Base\Validator
 
     protected function validateEmail(array $input)
     {
-        //
-        // TODO: To be changed after refactor. No validation required for Bharat qr
-        //
-        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
+        $receiverType = null;
+
+        if (isset($input[Entity::RECEIVER]) === true)
+        {
+            $receiverType = $input[Entity::RECEIVER]['type'];
+        }
+
+        // The payments received on these receivers are push based. We can't really know the
+        // contact of person making a payment
+        if (empty($receiverType) === false)
         {
             return;
         }
@@ -551,10 +557,16 @@ class Validator extends Base\Validator
 
     protected function validateContact($input)
     {
-        //
-        // TODO: To be changed after refactor. No validation required for Bharat qr
-        //
-        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
+        $receiverType = null;
+
+        if (isset($input[Entity::RECEIVER]) === true)
+        {
+            $receiverType = $input[Entity::RECEIVER]['type'];
+        }
+
+        // The payments received on these receivers are push based. We can't really know the
+        // contact of person making a payment
+        if (empty($receiverType) === false)
         {
             return;
         }

@@ -805,6 +805,11 @@ trait Authorize
             return;
         }
 
+        if ($payment->isBharatQr() === true)
+        {
+            return;
+        }
+
         //
         // We need to check if S2S is enabled only if the payment create
         // call has been made via private auth.

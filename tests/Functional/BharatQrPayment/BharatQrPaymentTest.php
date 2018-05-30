@@ -92,7 +92,7 @@ class BharatQrPaymentTest extends TestCase
 
         $this->qrCode = $this->createVirtualAccount();
 
-        $this->ba->directAuth();
+        $this->ba->proxyAuth();
 
         $qrCodeId = substr($this->qrCode['id'], 3);
 
@@ -103,6 +103,8 @@ class BharatQrPaymentTest extends TestCase
         ];
 
         $request['content'] = $content;
+
+        $request['url'] = '/bharatqr/pay/test';
 
         $response = $this->makeRequestAndGetContent($request);
 
