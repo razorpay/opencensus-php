@@ -238,6 +238,15 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postVerifyPaymentsBulk()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyPaymentsInBulk($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postVerifyPayments($filter)
     {
         $input = Request::all();

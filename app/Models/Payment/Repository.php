@@ -36,9 +36,10 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::EMAIL              => 'sometimes|email',
         Entity::ORDER_ID           => 'sometimes|string|size:20',
+        Entity::INVOICE_ID         => 'sometimes|public_id|size:18',
         Entity::TRANSFERRED        => 'sometimes|boolean|in:0,1',
-        self::EXPAND . '.*'        => 'filled|string|in:card',
         Entity::CUSTOMER_ID        => 'sometimes|size:19|custom',
+        self::EXPAND . '.*'        => 'filled|string|in:card',
     ];
 
     // These are proxy allowed params to search on.
@@ -46,7 +47,6 @@ class Repository extends Base\Repository
         Entity::EMAIL           => 'sometimes',
         Entity::STATUS          => 'sometimes|string',
         Entity::NOTES           => 'sometimes|string|max:500',
-        Entity::INVOICE_ID      => 'sometimes|string|min:14|max:18',
         Entity::SUBSCRIPTION_ID => 'sometimes|string|min:14|max:18',
         Entity::BANK_REFERENCE  => 'sometimes|alpha_num|max:22',
         self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes',
@@ -342,14 +342,22 @@ class Repository extends Base\Repository
                         $verifyStatus = null,
                         $paymentStatus = null,
                         int $rowsToFetch = 100,
+                        string $gateway = null,
                         array $disabledGateways = [],
                         bool $random = true)
     {
-        $query = $this->newQuery()
-                      ->whereNotNull(Payment\Entity::GATEWAY)
-                      ->whereNotIn(
-                          Payment\Entity::GATEWAY,
-                          $disabledGateways);
+        $query = $this->newQuery();
+
+        if ($gateway === null)
+        {
+            $query->whereNotNull(Payment\Entity::GATEWAY)
+                  ->whereNotIn(Payment\Entity::GATEWAY, $disabledGateways);
+        }
+        else
+        {
+            $query->where(Payment\Entity::GATEWAY, '=', $gateway);
+        }
+
 
         if ($verifyStatus !== null)
         {
@@ -396,6 +404,25 @@ class Repository extends Base\Repository
         // LIMIT  100
 
         // We want total number of Payments which are awaiting verify, for logging
+        $verifiableCount = $query->count();
+
+        $payments = $query->take($rowsToFetch)
+                          ->with('merchant')
+                          ->get();
+
+        return ['payments' => $payments, 'verifiable_count' => $verifiableCount];
+    }
+
+    public function getPaymentsToVerifyByIds(
+        array $paymentIds,
+        int $rowsToFetch = 100,
+        array $disabledGateways = [])
+    {
+        $query = $this->newQuery()
+                      ->whereIn(Payment\Entity::ID, $paymentIds)
+                      ->whereNotIn(Payment\Entity::GATEWAY, $disabledGateways)
+                      ->whereNull(Payment\Entity::AUTHORIZED_AT);
+
         $verifiableCount = $query->count();
 
         $payments = $query->take($rowsToFetch)

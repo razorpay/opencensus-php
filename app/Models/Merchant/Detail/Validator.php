@@ -43,7 +43,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_CITY         => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_PIN          => 'sometimes|max:15',
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
-        Entity::GSTIN                           => 'sometimes|string|size:15',
+        Entity::GSTIN                           => 'sometimes|string|size:15|nullable',
         Entity::P_GSTIN                         => 'sometimes|string|size:15',
         Entity::COMPANY_CIN                     => 'sometimes|alpha_num|max:21',
         Entity::COMPANY_PAN                     => 'sometimes|alpha_num|max:15',
@@ -96,7 +96,7 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE                  => 'sometimes|numeric|digits_between:8,11',
         Entity::CONTACT_LANDLINE                => 'sometimes|numeric|digits_between:8,11',
         Entity::BUSINESS_TYPE                   => 'sometimes|numeric|digits_between:1,10',
-        Entity::BUSINESS_NAME                   => 'sometimes|max:255',
+        Entity::BUSINESS_NAME                   => 'filled|max:255',
         Entity::BUSINESS_DBA                    => 'sometimes|max:255',
         Entity::BUSINESS_WEBSITE                => 'sometimes|max:255|url',
         Entity::BUSINESS_INTERNATIONAL          => 'sometimes|in:0,1',
@@ -111,7 +111,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_CITY         => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_PIN          => 'sometimes|max:15',
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
-        Entity::GSTIN                           => 'sometimes|string|size:15',
+        Entity::GSTIN                           => 'sometimes|string|size:15|nullable',
         Entity::P_GSTIN                         => 'sometimes|string|size:15',
         Entity::COMPANY_CIN                     => 'sometimes|alpha_num|max:21',
         Entity::COMPANY_PAN                     => 'sometimes|alpha_num|max:15',
@@ -376,7 +376,8 @@ class Validator extends Base\Validator
 
     public function validateForm12aUrl($attribute, $value)
     {
-        if ($this->entity->getBusinessType() !== BusinessType::NGO)
+        $form12aBusinessTypes = [BusinessType::SOCIETY, BusinessType::TRUST, BusinessType::NGO];
+        if (in_array($this->entity->getBusinessType(), $form12aBusinessTypes, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_FILE_NON_NGO_ORGANISATION_TYPE);
         }
@@ -384,7 +385,8 @@ class Validator extends Base\Validator
 
     public function validateForm80gUrl($attribute, $value)
     {
-        if ($this->entity->getBusinessType() !== BusinessType::NGO)
+        $form80gBusinessTypes = [BusinessType::SOCIETY, BusinessType::TRUST, BusinessType::NGO];
+        if (in_array($this->entity->getBusinessType(), $form80gBusinessTypes, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_FILE_NON_NGO_ORGANISATION_TYPE);
         }

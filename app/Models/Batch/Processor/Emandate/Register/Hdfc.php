@@ -15,8 +15,8 @@ class Hdfc extends Base
     const GATEWAY   = Gateway::NETBANKING_HDFC;
 
     protected $gatewayPaymentMapping = [
-        self::TOKEN_STATUS   => NetbankingEntity::SI_STATUS,
-        self::ERROR_MESSAGE  => NetbankingEntity::SI_MSG,
+        self::TOKEN_STATUS     => NetbankingEntity::SI_STATUS,
+        self::TOKEN_ERROR_CODE => NetbankingEntity::SI_MSG,
     ];
 
     protected function getDataFromRow(array $entry): array
@@ -28,9 +28,9 @@ class Hdfc extends Base
         $status = $this->getTokenStatus($gatewayTokenStatus);
 
         return [
-            self::TOKEN_STATUS   => $status,
-            self::ERROR_MESSAGE  => $this->getTokenErrorMessage($gatewayTokenStatus, $entry),
-            self::PAYMENT_ID     => $paymentId,
+            self::TOKEN_STATUS     => $status,
+            self::TOKEN_ERROR_CODE => $this->getTokenErrorMessage($gatewayTokenStatus, $entry),
+            self::PAYMENT_ID       => $paymentId,
         ];
     }
 
@@ -56,7 +56,7 @@ class Hdfc extends Base
         }
         else
         {
-            return $entry[Batch\Header::HDFC_EM_REGISTER_REMARK] ?? 'FAILED';
+            return $entry[Batch\Header::HDFC_EM_REGISTER_REMARKS] ?? 'FAILED';
         }
     }
 

@@ -115,12 +115,10 @@ class GatewayCombinedFileTest extends TestCase
 
         $content = $content['items'][0];
 
-        $this->assertNull($content[File\Entity::FILE_GENERATED_AT]);
-        $this->assertNull($content[File\Entity::SENT_AT]);
-        $this->assertNull($content[File\Entity::FAILED_AT]);
-        $this->assertNotNull($content[File\Entity::ACKNOWLEDGED_AT]);
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull($content[File\Entity::SENT_AT]);
 
-        Mail::assertNotSent(DailyFileMail::class);
+        Mail::assertSent(DailyFileMail::class);
     }
 
     public function testGenerateCombinedFileWithFileGenerationError()

@@ -61,6 +61,10 @@ class CreateLineItems extends Migration
             $table->string(Entity::SAC_CODE, 20)
                   ->nullable();
 
+            $table->integer(Entity::TAX_RATE)
+                  ->unsigned()
+                  ->nullable();
+
             $table->string(Entity::UNIT, 512)
                   ->nullable();
 
