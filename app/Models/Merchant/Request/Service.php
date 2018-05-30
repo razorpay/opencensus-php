@@ -96,7 +96,7 @@ class Service extends Base\Service
 
         $core->updateMerchantRequest($request, $input);
 
-        return $core->getMerchantRequestDetails($id, $request->merchant->getId());
+        return $core->getMerchantRequestDetails($id);
     }
 
     public function bulkUpdate(array $input)

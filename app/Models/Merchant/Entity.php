@@ -1034,6 +1034,11 @@ class Entity extends Base\PublicEntity
         return $this->isAttributeNotNull(self::PARTNER_TYPE);
     }
 
+    public function setPartnerType($partnerType)
+    {
+        $this->setAttribute(self::PARTNER_TYPE, $partnerType);
+    }
+
     protected function setEmailAttribute($email)
     {
         $formattedEmail = ($email === null) ? null : mb_strtolower(trim($email));

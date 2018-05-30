@@ -754,4 +754,15 @@ class Core extends Base\Core
 
         return $emails;
     }
+
+    public function markAsPartner(string $merchantId, string $partnerType)
+    {
+        $merchant =  $this->repo->merchant->findOrFail($merchantId);
+
+        (new Validator)->validatePartnerType($partnerType);
+
+        $merchant->setPartnerType($partnerType);
+
+        $this->repo->saveOrFail($merchant);
+    }
 }

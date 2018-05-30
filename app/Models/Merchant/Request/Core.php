@@ -107,12 +107,6 @@ class Core extends Base\Core
      */
     public function changeStatus(Entity $request, array $input, $useWorkflow = true, $validateStatusChange = true)
     {
-        // Ignore workflows if not a product request
-        if (($request->isProductRequest() === false) and ($request->isPartnerRequest() === false))
-        {
-            $useWorkflow = false;
-        }
-
         $request->getValidator()->validateInput('change_status', $input);
 
         if ($validateStatusChange === true)
@@ -204,7 +198,14 @@ class Core extends Base\Core
 
                 case Status::ACTIVATED:
 
-                    $this->addFeatureIfNotEnabled($request);
+                    if ($request->isProductRequest() === true)
+                    {
+                        $this->addFeatureIfNotEnabled($request);
+                    }
+                    else if ($request->isProductRequest() === true)
+                    {
+                        (new Merchant\Core)->markAsPartner($request->getMerchantId(), $request->getName());
+                    }
 
                     break;
 
@@ -537,6 +538,18 @@ class Core extends Base\Core
         //
         if ($input[Entity::TYPE] === Type::PARTNER)
         {
+            //
+            // Product onboarding submissions and partner activation requests must only be inserted in the live db.
+            // Force set the database connection and mode to live.
+            //
+            if (($input[Entity::TYPE] === Type::PRODUCT) or ($input[Entity::TYPE] === Type::PARTNER))
+            {
+                $liveMode = $this->app['basicauth']->getLiveConnection();
+
+                // Sets the mode for the request, and database connection
+                $this->setModeAndDefaultConnection($liveMode);
+            }
+
             $input[Entity::MERCHANT_ID] = $this->merchant->getId();
 
             $input[Entity::STATUS]      = Status::UNDER_REVIEW;

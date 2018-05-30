@@ -443,6 +443,20 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * @param $partnerType
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validatePartnerType($partnerType)
+    {
+        if (in_array($partnerType, Constants::$partnerTypes, true) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INCORRECT_PARTNER_TYPE);
+        }
+    }
+
     protected function validateVisibleFeatures(array $input)
     {
         $featureNames = array_keys($input['features']);
