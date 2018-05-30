@@ -321,21 +321,36 @@ class Gateway extends Base\Gateway
             if ((empty($gatewayPayment[Entity::GATEWAY_PAYMENT_ID]) === false) and
                 ($gatewayPayment[Entity::GATEWAY_PAYMENT_ID] !== $content[VerifyResponseFields::GATEWAY_TRANSACTION_ID]))
             {
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-                    null,
-                    null,
+                throw new Exception\LogicException(
+                    'Gateway Payment ID Mismatch',
+                    ErrorCode::SERVER_ERROR_GATEWAY_FIELD_MISMATCH,
                     [
+                        'payment_id'         => $gatewayPayment[Entity::PAYMENT_ID],
                         'gateway_payment_id' => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID],
                         'atomtxnId'          => $content[VerifyResponseFields::GATEWAY_TRANSACTION_ID],
                         'gateway'            => $this->gateway,
                     ]
                 );
             }
-            else
+
+            if ((empty($gatewayPayment[Entity::BANK_PAYMENT_ID]) === false) and
+                ($gatewayPayment[Entity::BANK_PAYMENT_ID] !== $content[VerifyResponseFields::BANK_TRANSACTION_ID]))
             {
-                $attributes[Entity::GATEWAY_PAYMENT_ID] = $content[VerifyResponseFields::GATEWAY_TRANSACTION_ID];
+                throw new Exception\LogicException(
+                    'Bank Payment ID Mismatch',
+                    ErrorCode::SERVER_ERROR_GATEWAY_FIELD_MISMATCH,
+                    [
+                        'payment_id'      => $gatewayPayment[Entity::PAYMENT_ID],
+                        'bank_payment_id' => $gatewayPayment[Entity::BANK_PAYMENT_ID],
+                        'bid'             => $content[VerifyResponseFields::BANK_TRANSACTION_ID],
+                        'gateway'         => $this->gateway,
+                    ]
+                );
             }
+
+            $attributes[Entity::GATEWAY_PAYMENT_ID] = $content[VerifyResponseFields::GATEWAY_TRANSACTION_ID];
+
+            $attributes[Entity::BANK_PAYMENT_ID] = $content[VerifyResponseFields::BANK_TRANSACTION_ID];
         }
 
         return $attributes;
