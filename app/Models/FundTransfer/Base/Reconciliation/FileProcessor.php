@@ -284,10 +284,13 @@ abstract class FileProcessor extends Base\Core
         #TODO:: What date to put here?
         $this->date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
-        $data['date'] = $this->date;
-        $data['body'] = $msg;
+        $data = [
+            'date'    => $this->date,
+            'body'    => $msg,
+            'channel' => static::$channel
+        ];
 
-        $email = new ReconciliationEmail($data, static::$channel);
+        $email = new ReconciliationEmail($data);
 
         Mail::queue($email);
     }

@@ -15,10 +15,15 @@ abstract class Base extends BaseProcessor
     /**
      * Params expected in the getDataFromRow method's response
      */
-    const GATEWAY_TOKEN  = 'gateway_token';
-    const TOKEN_STATUS   = 'token_status';
-    const ERROR_MESSAGE  = 'error_message';
-    const PAYMENT_ID     = 'payment_id';
+    const GATEWAY_TOKEN               = 'gateway_token';
+    const TOKEN_STATUS                = 'token_status';
+    const PAYMENT_ID                  = 'payment_id';
+    // Stored in gateway entity
+    const GATEWAY_REGISTRATION_STATUS = 'gateway_registration_status';
+    const GATEWAY_ERROR_CODE          = 'gateway_error_code';
+    const GATEWAY_ERROR_DESCRIPTION   = 'gateway_error_description';
+    // Stored in token entity
+    const TOKEN_ERROR_CODE            = 'token_error_code';
 
     /**
      * @var Payment\Processor\Processor
@@ -173,7 +178,7 @@ abstract class Base extends BaseProcessor
         $tokenParams = [
             Token\Entity::RECURRING_STATUS          => $newRecurringStatus,
             Token\Entity::GATEWAY_TOKEN             => $gatewayToken,
-            Token\Entity::RECURRING_FAILURE_REASON  => $content[self::ERROR_MESSAGE],
+            Token\Entity::RECURRING_FAILURE_REASON  => $content[self::TOKEN_ERROR_CODE],
         ];
 
         (new Token\Core)->updateTokenFromEmandateGatewayData($token, $tokenParams);

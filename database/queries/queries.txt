@@ -3554,5 +3554,18 @@ ALTER TABLE payments
 ALTER TABLE invoices
     ADD COLUMN supply_state_code CHAR(4) DEFAULT NULL AFTER merchant_label;
 
+ALTER TABLE card_fss MODIFY COLUMN status VARCHAR(255) DEFAULT NULL;
+
+DROP INDEX `card_fss_status_index` on `card_fss`; CREATE INDEX `card_fss_status_index` ON card_fss (status(50));
+
+ALTER TABLE line_items
+    ADD COLUMN tax_rate INTEGER UNSIGNED DEFAULT NULL AFTER sac_code;
+    
+Alter table terminals
+    Modify column type integer default '1'; 
+    
+ALTER TABLE invoices
+    ADD COLUMN merchant_gstin VARCHAR(20) DEFAULT NULL AFTER customer_gstin;
+
 ALTER TABLE webhooks
     ADD COLUMN disable_on_failure TINYINT(1) NOT NULL DEFAULT 1 AFTER active;

@@ -6,6 +6,8 @@ echo "== Setting BASEDIR =="
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )
 API_INSTALL_DIR="/home/ubuntu/api"
 ALOHOMORA_BIN="$(which alohomora)"
+echo "== Setting Nginx path =="
+NGINX_BIN=/usr/sbin/nginx
 
 # TODO do this in a better way
 # Fix permissions
@@ -25,9 +27,16 @@ cd "$API_INSTALL_DIR" && sudo chmod 777 -R storage
 echo  "== Running alohomora =="
 $ALOHOMORA_BIN cast --region ap-south-1 --env $DEPLOYMENT_GROUP_NAME --app $APPLICATION_NAME "$API_INSTALL_DIR/environment/.env.vault.j2" "$API_INSTALL_DIR/environment/env.php.j2"
 
+# Check Nginx existence
+if [ -x $NGINX_BIN ]; then
+echo "== php-fpm && nginx restart =="
+sudo systemctl restart php7.0-fpm.service
+sudo systemctl reload nginx
+else
 # This clears the mod_php opcache
 echo "== apache restart =="
 sudo service apache2 restart
+fi
 
 echo "== opcache cli clear =="
 php $BASEDIR/scripts/clear_cli_opcache.php
