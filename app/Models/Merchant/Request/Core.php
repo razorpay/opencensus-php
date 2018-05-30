@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Request;
 
 use Mail;
+
 use RZP\Exception;
 use RZP\Base\Common;
 use RZP\Models\Base;
@@ -11,6 +12,7 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\State\Reason;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Settings\Accessor;
 use RZP\Mail\Merchant\RequestRejection;
 use RZP\Mail\Merchant\RequestNeedsClarification;
 
@@ -106,7 +108,7 @@ class Core extends Base\Core
     public function changeStatus(Entity $request, array $input, $useWorkflow = true, $validateStatusChange = true)
     {
         // Ignore workflows if not a product request
-        if ($request->isProductRequest() === false)
+        if (($request->isProductRequest() === false) and ($request->isPartnerRequest() === false))
         {
             $useWorkflow = false;
         }
@@ -525,13 +527,28 @@ class Core extends Base\Core
     {
         $validator = new Validator;
 
-        $validator->validateInput('create_merchant_request', $input);
-
-        $validator->validateSubmissionsForProductType($input);
+        $validator->validateSubmissions($input);
 
         $validator->validateTypeAndProduct($input[Entity::TYPE], $input[Entity::NAME]);
 
-        return $this->findOrCreateMerchantRequest($this->merchant, $input);
+        //
+        // @todo: Once the product activation requests are migrated to the merchant requests table,
+        // remove the flow with findOrCreateMerchantRequest function. Create a new request every time.
+        //
+        if ($input[Entity::TYPE] === Type::PARTNER)
+        {
+            $input[Entity::MERCHANT_ID] = $this->merchant->getId();
+
+            $input[Entity::STATUS]      = Status::UNDER_REVIEW;
+
+            $request = $this->create($input);
+        }
+        else
+        {
+            $request = $this->findOrCreateMerchantRequest($this->merchant, $input);
+        }
+
+        return $request;
     }
 
     /**

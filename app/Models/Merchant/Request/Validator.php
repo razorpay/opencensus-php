@@ -8,9 +8,9 @@ use RZP\Models\Feature;
 
 class Validator extends Base\Validator
 {
+    const INVALID_NAME                  = 'Invalid request name';
     const INVALID_TYPE                  = 'Invalid request type';
     const INVALID_INPUT                 = 'Invalid input';
-    const INVALID_FEATURE               = 'Invalid feature';
     const MISSING_SUBMISSIONS           = 'Missing submissions in request';
     const INVALID_STATUS_MESSAGE        = 'Invalid status';
     const INVALID_STATUS_CHANGE_MESSAGE = 'Invalid status change';
@@ -20,13 +20,6 @@ class Validator extends Base\Validator
         Entity::TYPE        => 'required|string|max:25|custom',
         Entity::STATUS      => 'required|max:30',
         Entity::MERCHANT_ID => 'required|string|size:14',
-    ];
-
-    // Required for the API which not only creates the entity but also form submissions if any.
-    protected static $createMerchantRequestRules = [
-        Entity::NAME           => 'required|string|max:40|custom',
-        Entity::TYPE           => 'required|string|max:25|custom',
-        Constants::SUBMISSIONS => 'sometimes|array',
     ];
 
     protected static $editRules = [
@@ -69,13 +62,14 @@ class Validator extends Base\Validator
 
     public function validateName($attribute, $value)
     {
-        if (in_array($value, array_keys(Feature\Constants::$featureValueMap)) === false)
+        if (in_array($value, Constants::$names, true) === false)
         {
-            $traceData = [
-                'input_name' => $value
-            ];
-
-            throw new Exception\BadRequestValidationFailureException(self::INVALID_FEATURE, Entity::NAME, $traceData);
+            throw new Exception\BadRequestValidationFailureException(
+                self::INVALID_NAME,
+                Entity::NAME,
+                [
+                    Entity::NAME => $value
+                ]);
         }
     }
 
@@ -160,18 +154,25 @@ class Validator extends Base\Validator
     }
 
     /**
-     * Validate existence of submissions in case it is a Product type request
+     * Validates submissions
      *
      * @param array  $input
      *
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function validateSubmissionsForProductType(array $input)
+    public function validateSubmissions(array $input)
     {
-        if (($input[Entity::TYPE] === Type::PRODUCT) and
-            (isset($input[Constants::SUBMISSIONS]) === false))
+        switch ($input[Entity::TYPE])
         {
-            throw new Exception\BadRequestValidationFailureException(self::MISSING_SUBMISSIONS);
+            case Type::PRODUCT:
+                if (isset($input[Constants::SUBMISSIONS]) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(self::MISSING_SUBMISSIONS);
+                }
+                break;
+
+            default:
+                break;
         }
     }
 

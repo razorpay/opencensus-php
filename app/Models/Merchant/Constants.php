@@ -14,6 +14,14 @@ final class Constants
     const DATE                                    = 'date';
     const SIGNUP_DATE                             = 'signup_date';
 
+    // Constants used in the partners context
+    const BANK                                    = 'bank';
+    const PARTNER                                 = 'partner';
+    const RESELLER                                = 'reseller';
+    const AGGREGATOR                              = 'aggregator';
+    const FULLY_MANAGED                           = 'fully_managed';
+    const PURE_PLATFORM                           = 'pure_platform';
+
     /**
      * Step Map gives information on attributes filled by merchant Step wise.
      * this is used to let merchant know what all the steps are finished and
