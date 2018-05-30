@@ -711,13 +711,10 @@ class SettlementTest extends TestCase
         {
             $this->assertEquals($txn['settled'], false);
         }
-
     }
 
     public function testNodalTransferWithGateway()
     {
-        Mail::fake();
-
         $this->ba->appAuth();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_first_data_terminal');
@@ -762,8 +759,6 @@ class SettlementTest extends TestCase
 
     public function testNodalTransferWithAmount()
     {
-        Mail::fake();
-
         $this->ba->appAuth();
 
         $request = [
@@ -773,6 +768,35 @@ class SettlementTest extends TestCase
                 'amount'        => 1076,
                 'channel'       => 'axis',
                 'destination'   => 'kotak'
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEquals(null, $content);
+
+        $adj = $this->getLastEntity('adjustment', true);
+
+        $expected = [
+            'amount'        => 1076,
+            'channel'       => 'axis',
+            'merchant_id'   => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expected, $adj);
+    }
+
+    public function testNodalTransferAdmin()
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'url'     => '/nodal/transfer/admin',
+            'method'  => 'POST',
+            'content' => [
+                'amount'        => 1076,
+                'channel'       => 'axis',
+                'destination'   => 'icici'
             ]
         ];
 

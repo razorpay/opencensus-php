@@ -258,6 +258,7 @@ return [
 
         PermissionCategory::SETTLEMENT  => [
             Permission::SETTLEMENT_BULK_UPDATE  => '',
+            Permission::CREATE_NODAL_ACCOUNT_TRANSFER => '',
         ],
 
         PermissionCategory::DISPUTE => [
