@@ -1009,8 +1009,9 @@ export default class ActivationWizard extends React.Component {
             </main>
           )}
 
+        {/* TODO: It should use isSubmitFormRemoved. Temporarily allowing to edit after Submit */}
         {/* Activation form footer, to show actions / saving state */}
-        {!isSubmitFormRemoved && (
+        {!(this.props.data.locked || this.props.data.activated) && (
           <footer>
             {/* Spinner state */}
             <Loader isSaving={this.state.isSaving} />
@@ -1146,7 +1147,7 @@ function ActivationField(field) {
     key = _name;
   }
 
-  let isComponentDisabled = isSubmitFormDisabled(this.props.data); // If form cannot be submitted, then all fields are disabled.
+  let isComponentDisabled = this.props.data.locked || this.props.data.activated; // TODO: Currently not disabled for submitted state... isSubmitFormDisabled(this.props.data); // If form cannot be submitted, then all fields are disabled.
 
   // TODO: Ideally, what's disabled cannot be 'required = true'. Currently no such requirement. To handle, support 'required' as a function
   if (_disabledWhen && _disabledWhen(this)) {
@@ -1172,9 +1173,9 @@ function ActivationField(field) {
   );
 }
 
+/* To universally disabling/hiding fields-view-etc */
 function isSubmitFormDisabled(data) {
-  let isSubmitFormRemoved = data.activated || data.locked; // Linked accounts form can still be seen after activation.
-  //TODO: Currently removing condition `|| data.submitted` because certain fields cannot be edited from admin side like CIN.
+  let isSubmitFormRemoved = data.activated || data.submitted || data.locked; // Linked accounts form can still be seen after activation.
 
   return !!isSubmitFormRemoved;
 }
