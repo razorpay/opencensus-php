@@ -36,18 +36,26 @@ export default class BatchValidate extends Component {
 
   handleBatchValidation = (file, progressTracker) => {
     this.changeBatchState('process');
-    this.props.gaEvents.trackUploadBatchFile();
+
+    let secondsSinceStart = 0;
+    const t = setInterval(() => {
+      secondsSinceStart++;
+    }, 1000);
+
     return this.props
       .validateBatch(file, progressTracker)
       .then(response => {
+        clearInterval(t);
         if (response.data.error_count) {
           this.changeBatchState(
             'error',
             'Some fields have invalid entries',
             response.data.signed_url
           );
+          this.props.gaEvents.trackUploadBatchFile('error', 'Some fields have invalid entries', secondsSinceStart);
         } else {
           this.changeBatchState('success');
+          this.props.gaEvents.trackUploadBatchFile('success', undefined, secondsSinceStart)
           this.props.onValidation(
             response.data,
             file.name.replace(/\.[^/.]+$/, '')
@@ -57,7 +65,8 @@ export default class BatchValidate extends Component {
       })
       .catch(error => {
         this.changeBatchState('error', error.errors[0]);
-
+        clearInterval(t);
+        this.props.gaEvents.trackUploadBatchFile('error', error.errors[0], secondsSinceStart);
         return error;
       });
   };
