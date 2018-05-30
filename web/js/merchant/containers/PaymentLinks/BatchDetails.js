@@ -16,7 +16,7 @@ import Time from 'rzp/ui/Time';
 import { amount, status } from 'rzp/ui/item/pair';
 import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
 
-const gaEvents = setGaTrack('Dashboard - Payment Links');
+const gaEvents = setGaTrack('Dashboard - Payment Links - BU');
 
 const renderBatchDetails = props => {
   const { batch, stats, invoices } = props;
