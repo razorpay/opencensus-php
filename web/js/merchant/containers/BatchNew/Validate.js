@@ -72,10 +72,6 @@ export default class BatchValidate extends Component {
     this.changeBatchState('exceed');
   };
 
-  handleSampleFileDownload = () => {
-    this.props.gaEvents.trackSampleFileDownload('From New Modal');
-  };
-
   handleErrorReportDownload = () => {
     this.props.gaEvents.trackDownloadErrorReport();
   };
@@ -87,7 +83,7 @@ export default class BatchValidate extends Component {
         onFileChange={this.handleBatchValidation}
         onBiggerFileSize={this.handleBiggerFileSize}
         onCloseClick={this.changeBatchState}
-        onSampleFileDownload={this.handleSampleFileDownload}
+        onSampleFileDownload={this.props.gaEvents.trackSampleFileDownload('From New Modal')}
         onErrorReportDownload={this.handleErrorReportDownload}
         maxRows={5000}
         {...this.state}

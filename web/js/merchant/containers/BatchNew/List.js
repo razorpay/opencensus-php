@@ -71,7 +71,7 @@ export default class BatchList extends Component {
             <a
               class="btn btn-link hidden-xs"
               href={sampleUrl}
-              onClick={this.props.gaEvents.trackSampleFileDownload}
+              onClick={this.props.gaEvents.trackSampleFileDownload('From List View')}
             >
               Download Sample File
             </a>
