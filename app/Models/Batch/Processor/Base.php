@@ -615,7 +615,11 @@ class Base extends BaseModel\Core
                 // If given header doesn't exist in entry, put a null value
                 if (array_key_exists($header, $entry) === false)
                 {
-                    $dict[$header] = null;
+                    // Optional fields if not sent, shouldn't be in output file as well
+                    if ($header !== Batch\Header::NOTES)
+                    {
+                        $dict[$header] = null;
+                    }
                 }
                 else
                 {
