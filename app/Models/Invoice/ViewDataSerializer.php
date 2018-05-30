@@ -146,6 +146,7 @@ class ViewDataSerializer extends Base\Core
         $serialized[Entity::PAYMENTS]          = $serializedPayments;
         $serialized[Entity::CALLBACK_URL]      = $this->invoice->getCallbackUrl();
         $serialized[Entity::CALLBACK_METHOD]   = $this->invoice->getCallbackMethod();
+        $serialized[Entity::MERCHANT_GSTIN]    = $this->invoice->getMerchantGstin();
         $serialized[Entity::MERCHANT_LABEL]    = $this->invoice->getMerchantLabel();
         $serialized[Entity::SUPPLY_STATE_NAME] = $this->invoice->getSupplyStateName();
 

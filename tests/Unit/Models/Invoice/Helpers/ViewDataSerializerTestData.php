@@ -54,6 +54,8 @@ return [
             // 'expire_by_formatted'   => '6 Dec 2017',
             'expired_at_formatted'  => null,
             'supply_state_name'     => null,
+            'merchant_gstin'        => null,
+            'merchant_label'        => 'Test Merchant',
         ],
     ],
 
@@ -79,6 +81,7 @@ return [
                 'shipping_address_text' => "some line one\nsome line two\nBangalore, Karnataka, India - 560078",
             ],
             'supply_state_name' => 'Bihar',
+            'merchant_gstin'    => '29kjsngjk213922',
         ],
     ],
 
