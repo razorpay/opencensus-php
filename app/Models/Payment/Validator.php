@@ -266,16 +266,10 @@ class Validator extends Base\Validator
 
     protected function validateEmail(array $input)
     {
-        $receiverType = null;
-
-        if (isset($input[Entity::RECEIVER]) === true)
-        {
-            $receiverType = $input[Entity::RECEIVER]['type'];
-        }
-
         // The payments received on these receivers are push based. We can't really know the
-        // contact of person making a payment
-        if (empty($receiverType) === false)
+        // email of person making a payment
+        if ((isset($input[Entity::RECEIVER]) === true) and
+            (empty($input[Entity::RECEIVER]['type']) === false))
         {
             return;
         }
@@ -557,16 +551,10 @@ class Validator extends Base\Validator
 
     protected function validateContact($input)
     {
-        $receiverType = null;
-
-        if (isset($input[Entity::RECEIVER]) === true)
-        {
-            $receiverType = $input[Entity::RECEIVER]['type'];
-        }
-
         // The payments received on these receivers are push based. We can't really know the
         // contact of person making a payment
-        if (empty($receiverType) === false)
+        if ((isset($input[Entity::RECEIVER]) === true) and
+            (empty($input[Entity::RECEIVER]['type']) === false))
         {
             return;
         }

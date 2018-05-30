@@ -98,15 +98,15 @@ class Service extends Base\Service
         // exception.
         (new QrCode\Entity)->stripSignWithoutValidation($merchantReference);
 
-        $mode = $this->repo->determineLiveOrTestModeForEntity($merchantReference, Constants\Entity::QR_CODE);
-
         if ($gateway === Payment\Gateway::SHARP)
         {
             $mode = Mode::TEST;
         }
-        else if ($mode === null)
+        else
         {
-            $mode = Mode::LIVE;
+            $mode = $this->repo->determineLiveOrTestModeForEntity($merchantReference, Constants\Entity::QR_CODE);
+
+            $mode = $mode ?? Mode::LIVE;
         }
 
         $this->app['basicauth']->setModeAndDbConnection($mode);

@@ -88,8 +88,6 @@ class BharatQrPaymentTest extends TestCase
 
         $this->fixtures->create('terminal:shared_sharp_terminal');
 
-        $request = $this->testData[__FUNCTION__];
-
         $this->qrCode = $this->createVirtualAccount();
 
         $this->ba->proxyAuth();
@@ -103,6 +101,8 @@ class BharatQrPaymentTest extends TestCase
         ];
 
         $request['content'] = $content;
+
+        $request['method'] = 'post';
 
         $request['url'] = '/bharatqr/pay/test';
 
