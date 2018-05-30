@@ -17,6 +17,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Settlement\Holidays;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Mail\Gateway\EMandate\Base as Email;
 use Illuminate\Http\Testing\File as TestingFile;
@@ -211,7 +212,9 @@ class EnachRblGatewayTest extends TestCase
 
     public function testRegisterFileGeneration()
     {
-        $this->markTestSkipped('Todo: Needs to be fixed - Fails at specific time(probably) of the day!');
+        $dt = Carbon::create(2018, 05, 27, 12, 35, 00, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
         $payment['bank_account'] = [
@@ -230,6 +233,17 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals('authorize', $enach['action']);
         $this->assertEquals(0, $enach['amount']);
         $this->assertNotNull($enach['signed_xml']);
+
+        //
+        // We choose 28th May because registration happened on 27th May
+        // need to be sent on 28th May. This date will change if value
+        // of is `$dt` is changed.
+        //
+        $dt = Carbon::create(2018, 05, 28, 7, 35, 00, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->ba->cronAuth();
 
         $response = $this->startTest();
 
