@@ -36,6 +36,9 @@ class Event
     const SETTLEMENT_PROCESSED      = 'settlement.processed';
     const VIRTUAL_ACCOUNT_CREDITED  = 'virtual_account.credited';
     const VIRTUAL_ACCOUNT_CREATED   = 'virtual_account.created';
+    const DISPUTE_WON               = 'dispute.won';
+    const DISPUTE_LOST              = 'dispute.lost';
+    const DISPUTE_CLOSED            = 'dispute.closed';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -62,6 +65,9 @@ class Event
         self::SETTLEMENT_PROCESSED,
         self::VIRTUAL_ACCOUNT_CREDITED,
         self::VIRTUAL_ACCOUNT_CREATED,
+        self::DISPUTE_WON,
+        self::DISPUTE_LOST,
+        self::DISPUTE_CLOSED,
     ];
 
     /**
@@ -94,6 +100,9 @@ class Event
         self::SETTLEMENT_PROCESSED,
         self::VIRTUAL_ACCOUNT_CREDITED,
         self::VIRTUAL_ACCOUNT_CREATED,
+        self::DISPUTE_WON,
+        self::DISPUTE_LOST,
+        self::DISPUTE_CLOSED,
     ];
 
     protected static $bitPosition = [
@@ -121,6 +130,9 @@ class Event
         self::PAYMENT_DISPUTE_CREATED   => 22,
         self::VIRTUAL_ACCOUNT_CREDITED  => 23,
         self::VIRTUAL_ACCOUNT_CREATED   => 24,
+        self::DISPUTE_WON               => 25,
+        self::DISPUTE_LOST              => 26,
+        self::DISPUTE_CLOSED            => 27,
     ];
 
     /**
@@ -153,6 +165,9 @@ class Event
         self::SETTLEMENT_PROCESSED,
         self::VIRTUAL_ACCOUNT_CREDITED,
         self::VIRTUAL_ACCOUNT_CREATED,
+        self::DISPUTE_WON,
+        self::DISPUTE_LOST,
+        self::DISPUTE_CLOSED,
     ];
 
     /**
@@ -182,6 +197,9 @@ class Event
         self::TOKEN_CONFIRMED           => Entity::TOKEN,
         self::TOKEN_REJECTED            => Entity::TOKEN,
         self::SETTLEMENT_PROCESSED      => Entity::SETTLEMENT,
+        self::DISPUTE_WON               => Entity::DISPUTE,
+        self::DISPUTE_LOST              => Entity::DISPUTE,
+        self::DISPUTE_CLOSED            => Entity::DISPUTE,
     ];
 
     public static $eventsToFeatureMap = [
