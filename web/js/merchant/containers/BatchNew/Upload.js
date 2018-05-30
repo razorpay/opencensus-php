@@ -42,7 +42,7 @@ export default class BatchUpload extends Component {
   }
 
   onModalClose = () => {
-    this.props.trackUploadBatch('Close');
+    this.props.gaEvents.trackUploadBatch('Close');
     this.props.closeModal();
   };
   render() {
@@ -74,6 +74,9 @@ export default class BatchUpload extends Component {
                   batchFormInitialValues={this.props.batchFormInitialValues}
                   renderBatchCreationForm={this.props.renderBatchCreationForm}
                   trackUploadBatch={this.props.gaEvents.trackUploadBatch}
+                  trackSampleInterpretation={
+                    this.props.gaEvents.trackSampleInterpretation
+                  }
                 />
               );
             case 'success':

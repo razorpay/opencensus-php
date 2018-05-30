@@ -43,6 +43,7 @@ export default class BatchCreate extends Component {
         batchType,
         renderBatchCreationForm,
         batchFormInitialValues = {},
+        trackSampleInterpretation,
       },
     } = this;
 
@@ -55,6 +56,7 @@ export default class BatchCreate extends Component {
         initialValues={{ name: batchName, ...batchFormInitialValues }}
         ctaText={ctaText}
         pendingText={pendingText}
+        trackSampleInterpretation={trackSampleInterpretation}
       >
         {renderBatchCreationForm && renderBatchCreationForm()}
       </BatchCreateModal>
