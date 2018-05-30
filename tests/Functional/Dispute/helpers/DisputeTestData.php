@@ -123,6 +123,35 @@ return [
         ],
     ],
 
+    'testDisputeLostEventData' => [
+        'entity'   => 'event',
+        'event'    => 'dispute.lost',
+        'contains' => [
+            'dispute',
+            'payment',
+        ],
+        'payload' => [
+            'dispute' => [
+                'entity' => [
+                    'entity'             => 'dispute',
+                    'amount'             => 1000000,
+                    'currency'           => 'INR',
+                    'status'             => 'lost',
+                    'reason_code'        => 'SOMETHING_BAD',
+                ],
+            ],
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 1000000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'captured'   => true,
+                ],
+            ],
+        ],
+    ],
+
     'testDisputeCreateWithDeduct' => [
         'request' => [
             'method'  => 'post',

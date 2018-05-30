@@ -306,6 +306,8 @@ class DisputeTest extends TestCase
 
     public function testDisputeEditDeductOnLost()
     {
+        $this->createWebhook(['events' => ['payment.dispute.created' => '1', 'dispute.lost' => '1']]);
+
         $data = $this->updateEditTestData();
 
         $txn = $this->getLastEntity('transaction', true);
@@ -313,6 +315,10 @@ class DisputeTest extends TestCase
         $this->assertEquals('payment', $txn['type']);
 
         $this->ba->adminProxyAuth();
+
+        $eventTestDataKey = 'testDisputeLostEventData';
+
+        $this->setInfernoExpectations([$eventTestDataKey]);
 
         $this->runRequestResponseFlow($data);
 
