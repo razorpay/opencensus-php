@@ -25,13 +25,16 @@ final class FileCache implements CacheInterface
     /**
      * {@inheritDoc}
      */
-    public function set($key, $value, $ttl = 60)
+    public function set($key, $value, $ttl = 0)
     {
+        $this->getTrace()->debug(TraceCode::AWS_CREDS_CACHE_SET, compact('key', 'ttl'));
+
         //
-        // Keeping this trace for debug purposes - to know how many times creds is being fetched from meta server and
-        // then written to cache.
+        // Aws's sdk calls this method with ttl value(creds expiry time) in seconds.
+        // (Ref: vendor/aws/aws-sdk-php/src/Credentials/CredentialProvider.php)
+        // Laravel's cache interface expects ttl in minutes & hence following conversion.
         //
-        $this->getTrace()->debug(TraceCode::AWS_CREDS_CACHE_SET, []);
+        $ttl = (int) floor($ttl/60);
 
         return $this->getCache()->set($this->getNamespacedKey($key), $value, $ttl);
     }
