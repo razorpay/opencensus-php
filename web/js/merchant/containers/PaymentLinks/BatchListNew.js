@@ -115,7 +115,6 @@ export default class BatchListContainer extends ListContainer {
         onSubmit={this.search}
         docUrl="https://razorpay.com/docs/private/payment-links-batch-uploads/"
         sampleUrl="/files/sample_batch_payment_links_v2.xlsx"
-        sendAll={this.sendAll}
         batchType="payment_link"
         batchActions={[this.sendAllLinks]}
         renderUploadModal={this.renderUploadModal}

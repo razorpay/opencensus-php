@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
@@ -14,6 +14,18 @@ import { luminateRow } from 'merchant/modules/app';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
 import { batchDownload, fetchBatch } from 'merchant/modules/batches';
+
+const batchStatus = {
+  ...status,
+  value: item => (
+    <Fragment>
+      {status.value(item)}
+      {item.status === 'created' && (
+        <i class="i i-refresh spin refetch-batch-btn" />
+      )}
+    </Fragment>
+  ),
+};
 
 @connect(null, {
   batchDownload,
@@ -71,7 +83,9 @@ export default class BatchList extends Component {
             <a
               class="btn btn-link hidden-xs"
               href={sampleUrl}
-              onClick={this.props.gaEvents.trackSampleFileDownload('From List View')}
+              onClick={this.props.gaEvents.trackSampleFileDownload(
+                'From List View'
+              )}
             >
               Download Sample File
             </a>
@@ -103,7 +117,7 @@ export default class BatchList extends Component {
             batchIdLink,
             batchName,
             totalCount,
-            status,
+            batchStatus,
             batchActions(this.handleDownloadClick, this.props.batchActions),
           ]}
           count={count}
