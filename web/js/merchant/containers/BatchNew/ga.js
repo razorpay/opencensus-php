@@ -12,9 +12,10 @@ export default pageTitle => {
       });
     },
 
-    trackSampleFileDownload: () => {
+    trackSampleFileDownload: label => () => {
       track({
         eventAction: 'Download - Batch Sample File',
+        eventLabel: label,
       });
     },
 
@@ -33,9 +34,11 @@ export default pageTitle => {
       });
     },
 
-    trackUploadBatchFile: () => {
+    trackUploadBatchFile: (action, label, secondsTaken) => {
       track({
-        eventAction: 'Upload - Batch File',
+        eventAction: `Upload - Batch File (${action})`,
+        eventLabel: label,
+        eventValue: secondsTaken,
       });
     },
 
@@ -69,6 +72,12 @@ export default pageTitle => {
     trackUploadBatch: action => {
       track({
         eventAction: `${action} Form - Create Batch`,
+      });
+    },
+
+    trackSampleInterpretation: () => {
+      track({
+        eventAction: 'Click - Interpret Sample',
       });
     },
   };
