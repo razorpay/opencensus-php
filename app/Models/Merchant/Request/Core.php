@@ -594,11 +594,17 @@ class Core extends Base\Core
                 try
                 {
                     // The timestamp when the request status was updated
-                    $statusDate = (int) ($request[Entity::CREATED_AT] ?? null);
+                    $statusDate = (int) ($request[State\Entity::CREATED_AT] ?? null);
 
-                    if ($statusDate <= 0)
+                    if ((isset($request[State\Entity::CREATED_AT]) === true) and ($statusDate <= 0))
                     {
-                        throw new Exception\LogicException('The timestamp must be a valid epoch');
+                        throw new Exception\LogicException(
+                            'The timestamp must be a valid epoch',
+                            null,
+                            [
+                                Entity::MERCHANT_ID      => $merchantId,
+                                State\Entity::CREATED_AT => $statusDate,
+                            ]);
                     }
 
                     if (empty($merchant) === true)
