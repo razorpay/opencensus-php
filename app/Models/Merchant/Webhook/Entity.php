@@ -20,6 +20,13 @@ class Entity extends Base\PublicEntity
     const ENTITY_ID          = 'entity_id';
     const FAILURE_COUNT      = 'failure_count';
     const ACTIVE             = 'active';
+    /**
+     * For push based payments like bharat qr
+     * payments merchant completely relies on
+     * webhook. So if one event is failing we
+     * cant disable the webhook altogether
+     */
+    const DISABLE_ON_FAILURE = 'disable_on_failure';
     const CREATED_AT         = 'created_at';
     const UPDATED_AT         = 'updated_at';
     const SECRET             = 'secret';
@@ -40,6 +47,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::ACTIVE        => true,
         self::FAILURE_COUNT => 0,
+        self::DISABLE_ON_FAILURE => 1,
     ];
 
     protected $fillable = [
@@ -47,6 +55,7 @@ class Entity extends Base\PublicEntity
         self::ACTIVE,
         self::EVENTS,
         self::SECRET,
+        self::DISABLE_ON_FAILURE,
         /*
          * Entity type and id are fillable as in case
          * of OAuth application, `application` and
@@ -62,6 +71,7 @@ class Entity extends Base\PublicEntity
         self::URL,
         self::EVENTS,
         self::ACTIVE,
+        self::DISABLE_ON_FAILURE,
         self::MERCHANT_ID,
         self::FAILURE_COUNT,
         self::CREATED_AT,
@@ -110,6 +120,11 @@ class Entity extends Base\PublicEntity
         $count = $this->getFailureCount() + 1;
 
         $this->setFailureCountAttribute($count);
+    }
+
+    public function disableOnFailure()
+    {
+        return $this->getAttribute(self::DISABLE_ON_FAILURE);
     }
 
     public function getUrl()

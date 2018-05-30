@@ -19,6 +19,7 @@ use RZP\Mail\Merchant\Webhook as WebhookMail;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use Http\Client\Common\Exception\ClientErrorException;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 
@@ -31,6 +32,7 @@ class WebhookTest extends TestCase
     use AttemptReconcileTrait;
     use MocksDnsTrait;
     use WebhookTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -46,6 +48,19 @@ class WebhookTest extends TestCase
     public function testCreateWebhook()
     {
         $this->startTest();
+
+        $webhook = $this->getDbLastEntity('webhook');
+
+        $this->assertEquals(true, $webhook['disable_on_failure']);
+    }
+
+    public function testCreateWebhookWithdisableWebhookFalse()
+    {
+        $this->startTest();
+
+        $webhook = $this->getDbLastEntity('webhook');
+
+        $this->assertEquals(false, $webhook['disable_on_failure']);
     }
 
     public function testCreateWebhookWhenAlreadyCreated()

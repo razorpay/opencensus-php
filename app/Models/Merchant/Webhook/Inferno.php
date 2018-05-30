@@ -440,7 +440,7 @@ class Inferno
 
         $toDisableWebhook =
             ($lastSuccessDifference > self::WEBHOOK_FAILURE_HOURS) &&
-            ($webhook->merchant->isFeatureEnabled(Feature\Constants::ENDLESS_WEBHOOKS) === false);
+            ($webhook->disableOnFailure() === true);
 
 
         // If (LSA - current time) > 24hrs, mark deactivated.
