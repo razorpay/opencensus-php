@@ -123,14 +123,6 @@ class Gateway extends Base\Gateway
      */
     public function preProcessServerCallback($body, $isBharatQr = false): array
     {
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            [
-                'body'      => $body,
-                'headers'   => $this->app['request']->header(),
-                'gateway'   => $this->gateway,
-            ]);
-
         $response = $body;
 
         if ($isBharatQr === true)
@@ -152,7 +144,7 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::SENDER_NAME           => 'Razorpay',
         ];
 
-        switch($input[Fields::METHOD])
+        switch ($input[Fields::METHOD])
         {
             case Payment\Method::CARD:
                 $qrData[BharatQr\GatewayResponseParams::CARD_FIRST6] = Constants::CARD_FIRST_SIX;
@@ -165,7 +157,7 @@ class Gateway extends Base\Gateway
 
             default:
                 throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_ACTION_INVALID_METHOD);
+                    ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD);
         }
 
         return [
