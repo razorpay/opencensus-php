@@ -12,6 +12,7 @@ import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
 import * as InvoiceActions from 'merchant/modules/invoices/list';
 import * as ModalActions from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 @connect(state => ({ ...state.invoices, ...state.session }), {
@@ -19,7 +20,7 @@ import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
   ...ModalActions,
   luminateRow,
 })
-export default class PaymentLinksContainer extends ListContainer {
+export default class PLResuableContianer extends ListContainer {
   fetchEntityList(params) {
     params.types = ['link', 'ecod'];
     return this.props.fetchInvoices(params);
@@ -93,21 +94,18 @@ export default class PaymentLinksContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
-        <ShowWhen notMyRole="support">
-          <div class="btn-toolbar pull-right header-btns">
-            <NavLink class="btn btn-primary" to="/paymentlinks/new">
-              <i class="i i-plus" />
-              <span>Create Payment Link</span>
-            </NavLink>
-            <button
-              class="btn btn-primary"
-              onClick={() => this.showPaymentLinkModal()}
-            >
-              <i class="i i-plus" />
-              <span>Create Payment Link - old</span>
-            </button>
-          </div>
-        </ShowWhen>
+        <TestModeBanner />
+
+        <HeaderAction>
+          <ShowWhen notMyRole="support">
+            <div class="btn-toolbar pull-right">
+              <NavLink class="btn btn-primary" to="/paymentlinks/reusable/new">
+                <i class="i i-plus" />
+                <span>Create Payment Link</span>
+              </NavLink>
+            </div>
+          </ShowWhen>
+        </HeaderAction>
 
         <InvoiceListFilter
           form="InvoiceListFilter"

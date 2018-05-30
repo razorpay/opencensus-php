@@ -1,0 +1,87 @@
+$side-width = 240px
+$side-width-large = 280px
+
+.Wizard
+  aside
+    padding: 24px 0
+    width: $side-width
+    background: #fff
+    position: absolute
+    height: 100%
+    border-right: 1px solid #eee
+
+    side-title, p
+      padding: 0 24px
+
+    ul
+      margin: 30px 0
+      padding: 0
+    li
+      cursor: pointer
+      list-style: none
+      padding: 10px 24px
+      margin: 4px 0
+      color: #57666d
+      position: relative
+
+      .li--broad
+        padding: 2px 0
+        font-weight: 600
+        display: block
+        pointer-events: none
+
+      .description
+        color: inherit
+        opacity: 0.8
+        font-weight: 400
+        pointer-events: none
+
+        &.small
+          font-size: 12px
+
+        &.large
+          font-size: 14px
+          line-height: 20px
+          margin-top: 8px
+
+      .i-check
+        margin-right: 6px
+        line-height: initial
+        vertical-align: middle
+
+
+      &::after
+        content: "\f10d"
+        color: #fff
+        position: absolute
+        right: 8px
+        font-family: merchant-icons
+        opacity: 0
+        top: 50%
+        transform: translate(-4px, -50%)
+        transition: 0.35s
+
+      &:hover
+        background: #fafbfc
+      &.text-success
+        color: #27c24c
+      &.active
+        background: #528FF0
+        color: #fff
+
+        .i-check::before
+          color: #fff
+
+        &::after
+          opacity: 1
+          transform: translate(0, -50%)
+
+      &.disabled
+        cursor: not-allowed
+        color: #b6c0c4
+
+  &--broad
+    aside
+      width: $side-width-large
+    footer, main
+      left: $side-width-large

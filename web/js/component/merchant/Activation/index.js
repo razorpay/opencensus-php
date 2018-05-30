@@ -2,10 +2,10 @@ import Form from 'component/Form';
 import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 import Alert from 'component/Alert';
-import { classList } from 'common/util';
+import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
-
+import { classList } from 'common/util';
 import { activationDuration } from 'common/data';
 
 import {
@@ -823,55 +823,44 @@ export default class ActivationWizard extends React.Component {
         return ActivationField.call(this, field);
       });
 
+    let moreTabs = [];
+    if (!isFormSubmitted) {
+      moreTabs.push(
+        <li
+          key="submit-tab"
+          onClick={this.toggleSubmitLayer}
+          class={classList(
+            !this.isAllTabsValid() && 'disabled',
+            this.state.showSubmitLayer && 'active',
+            'li--submit'
+          )}
+        >
+          Submit Form
+          {!this.isAllTabsValid() && (
+            <div class="description small">Complete the form to submit</div>
+          )}
+        </li>
+      );
+    }
+
     return (
-      <div class="Activation--wizard">
+      <div class="Activation--wizard Wizard">
         {/* Activation form tabs */}
-        <aside>
-          <side-title>Activation Form</side-title>
-          {!this.isLinkedAccountForm &&
+        <ModalAsideNav
+          title="Activation Form"
+          description={
+            !this.isLinkedAccountForm &&
             !isFormSubmitted && (
               <p>Complete and submit the form to start accepting payments.</p>
-            )}
-          <ul>
-            {/* Activation form tabs */}
-            {FORM_TABS.map((t, i) => {
-              let isTabValid = this.state.tabs[i];
-              return (
-                <li
-                  class={classList(
-                    i === activeTab && !this.state.showSubmitLayer && 'active',
-                    isTabValid && 'text-success'
-                  )}
-                  key={i}
-                  data-index={i}
-                  onClick={this.changeTab}
-                >
-                  {isTabValid && <i class={'i-check text-success'} />}
-                  {t}
-                </li>
-              );
-            })}
-
-            {/* Submit form tab*/}
-            {!isFormSubmitted && (
-              <li
-                onClick={this.toggleSubmitLayer}
-                class={classList(
-                  !this.isAllTabsValid() && 'disabled',
-                  this.state.showSubmitLayer && 'active',
-                  'li--submit'
-                )}
-              >
-                Submit Form
-                {!this.isAllTabsValid() && (
-                  <div style={{ marginTop: -20, fontSize: 12 }}>
-                    Complete the form to submit
-                  </div>
-                )}
-              </li>
-            )}
-          </ul>
-        </aside>
+            )
+          }
+          tabs={FORM_TABS}
+          moreTabs={moreTabs}
+          tabsValidity={this.state.tabs}
+          tabClickHandler={this.changeTab}
+          activeTab={activeTab}
+          activeTabContdition={!this.state.showSubmitLayer}
+        />
 
         {/* Activation form Content */}
         <main

@@ -1,7 +1,4 @@
-// Parent control the width of ActivationWizard component
-$height = 600px
-
-.ActivationContainer
+.StandAloneContainer
   position: relative
   width: 92%
   margin: 80px auto
@@ -9,17 +6,15 @@ $height = 600px
   .spinner-container
     height: 300px
 
-.Activation--wizard, .Activation--success
+.PaymentLinks--Create
   side-title
     font-size: 18px
     font-weight: bold
     display: block
     margin-bottom: 20px
 
-$side-width = 240px
-
 /* Activation wizard screen */
-.Activation--wizard
+.PaymentLinks--Create
   max-width: 1024px
   height: 80vh
   max-height: 640px
@@ -40,8 +35,7 @@ $side-width = 240px
       display: inline-block
       width: 80%
 
-  aside .li--submit
-    margin-top: 28px
+  $side-width = 240px
 
   main
     left: $side-width
@@ -154,155 +148,26 @@ $side-width = 240px
   padding-left: 180px
 
 
-.Activation--success, .Activation--welcome
-  border-radius: 2px
-  background: #fafafa
-  margin: 0 auto
-  position: relative
-
-.Modal-container--Activation--success
-  overflow: visible !important
-
-/* Activation success screen */
-.Activation--success
-  padding: 24px
-
-  .side-title
-    margin-bottom: 4px
-    text-align: center
-
-  .submit-illustration
-    background: url(/img/activation/submit-success.svg) no-repeat
-    width: calc(100% + 48px)
-    height: 175px
-    margin-left: -24px
-    background-position: right
-
-  .LinkCard
-    color: #58666e
-    margin: 0 auto
-
-  .Activation-info
-    text-align: center
-    font-size: 16px
-    background: #fff
-    padding: 24px 6%
-    margin: -20px -12% 30px -12%
-    border: 1px solid #e0e0e0
-    box-shadow: 8px 8px 8px 0 rgba(132,155,191,0.1)
-    color: $heading-primary
-    font-weight: 600
-    border-radius: 2px
-
-    .desc
-      font-size: 14px
-      color: #515978
-      font-weight: 400
-
-    .i
-      margin-right: 8px
-      border-radius: 50%
-      background: #2dbe6f
-      font-size: 14px
-      color: #fff
-      padding: 2px 2px 0;
-      vertical-align: middle
-
-    .desc
-      margin: 10px 0 0
-
-  .Activation-actions
-    color: #4d4d4d
-
-    side-title
-      text-align: center
-
-/* Activation welcome screen */
-.Activation--welcome
-  padding: 40px
-
-  .welcome-illustration
-    position: absolute
-    bottom: 0
-    right: 0
-    width: 58%
-    height: 94%
-    background: url(/img/activation/welcome.svg) no-repeat
-    background-position: bottom right
-    background-size: contain
-    z-index: 1
-
-  .short-content
-    width: 100%
-    max-width: 320px
-    position: relative
-    z-index: 2
-
-  h3
-    line-height: 32px
-    width: 100%
-    max-width: 260px
-
-  .underline
-    width: 24px
-    height: 4px
-    background: #96c5ff
-    margin: 24px 0
-
-  p
-    color: #515978
-    margin: 16px 0
-
-  button
-    margin-top: 80px
-    margin-bottom: 6px
-
-/* Standalone page size */
-.ActivationContainer
-  .Activation--success
-    max-width: 400px
-
-  .Activation--welcome
-    max-width: 720px
-
-
 /* Modal-container size */
 .Modal-container
-  &--Activation--wizard
+  &--PaymentLinks
     width: 90%
     max-width: 960px
     min-height: 560px
     height: 80vh
     max-height: 640px
 
-  &--Activation--success
-    width: 90%
-    max-width: 400px
-
-  &--Activation--welcome
-    width: 90%
-    max-width: 720px
-
 // For linked-account activation form
 .Modal-mask--Account-Activation
-  .Modal-container--Activation--wizard, .Activation--wizard
+  .Modal-container--PaymentLinks, .PaymentLinks--Create
     min-height: 400px
     height: 70vh
     max-height: 480px
 
-.Modal-container.Modal-container--Activation--wizard--old
-  overflow: auto
-
-  .activation-wizard
-    margin-top: 20px
-
-  .panel-body
-    padding: 24px
-
 
 /* Small screens for Activation wizard */
 @media (max-width: 972px)
-  .ActivationContainer .Activation--wizard
+  .StandAloneContainer .PaymentLinks--Create
     .Input-content:not(.Input--checkbox)
       margin: 0 0 16px
 
@@ -316,7 +181,7 @@ $side-width = 240px
 
 
 @media (max-width: 820px)
-  .Modal-container .Activation--wizard
+  .Modal-container .PaymentLinks--Create
     .Input-content
       margin: 0 0 16px
 
@@ -330,7 +195,7 @@ TODO: Style written in consideration that instead of modal, standalone page woul
 TODO: Display aside on top of form as expandable slider OR else show PREV button
 */
 @media (max-width: 610px)
-  .ActivationContainer
+  .StandAloneContainer
     margin: 80px auto 40px
 
   .device--desktop
@@ -340,17 +205,7 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
     display: inline !important
 
 
-  .Activation--welcome
-
-    .short-content .Button--primary
-      margin-top: 40px
-
-    .welcome-illustration
-      width: 70%
-      opacity: 0.1
-
-
-  .Activation--wizard
+  .PaymentLinks--Create
     overflow: hidden
 
     main-title

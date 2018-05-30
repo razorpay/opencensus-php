@@ -2,6 +2,8 @@ import { matchPath } from 'react-router-dom';
 
 import SettlementDetails from 'merchant/containers/Settlements/Details';
 import PaymentLinkDetails from 'merchant/containers/PaymentLinks/Details';
+import PaymentLinksReusable from 'merchant/containers/PaymentLinks/Reusable/List';
+import PaymentLinksNew from 'merchant/containers/PaymentLinks/New';
 import PaymentsDetails from 'merchant/containers/Payments/Details';
 import RefundDetails from 'merchant/containers/Refunds/Details';
 import OrderDetails from 'merchant/containers/Orders/Details';
@@ -29,6 +31,7 @@ const entityDetailsMap = {
   '/settlements/:id': SettlementDetails,
   '/paymentlinks/:id(inv_.+)': PaymentLinkDetails,
   '/paymentlinks/batchuploads/:id(batch_.+)': PaymentLinkBatchDetails,
+  '/paymentlinks/reusable/:id(inv_.+)': PaymentLinksReusable,
   '/invoices/:id/details': PaymentLinkDetails,
 
   '/route/payments/:id': PaymentsDetails,
@@ -46,6 +49,8 @@ const entityDetailsMap = {
 
 const entityModalsMap = {
   '/activation': ActivationContainer,
+  '/paymentlinks/new': PaymentLinksNew,
+  '/paymentlinks/reusable/new': PaymentLinksNew,
 };
 
 export function matchDetail(pathname) {

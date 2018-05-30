@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
-
 import LinkList from 'merchant/containers/PaymentLinks/List';
 import BatchListNew from 'merchant/containers/PaymentLinks/BatchListNew';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
+import PaymentLinksReusable from 'merchant/containers/PaymentLinks/Reusable/List';
 
 import Button from 'component/Button';
 
@@ -78,6 +78,9 @@ export default class PaymentLinksContainer extends Component {
           <NavLink exact to="/paymentlinks">
             Payment Links
           </NavLink>
+          <NavLink exact to="/paymentlinks/reusable">
+            Reusable Links
+          </NavLink>
           <ShowWhen myRole="owner manager operations admin">
             <NavLink exact to="/paymentlinks/batchuploads">
               Batch Uploads
@@ -99,6 +102,10 @@ export default class PaymentLinksContainer extends Component {
           <Switch>
             <Route path="/paymentlinks/batchuploads" component={BatchListNew} />
 
+            <Route
+              path="/paymentlinks/reusable"
+              component={PaymentLinksReusable}
+            />
             <Route path="/paymentlinks" component={LinkList} />
           </Switch>
         </content>

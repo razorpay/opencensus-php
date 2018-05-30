@@ -18,7 +18,7 @@ const ACCOUNTS_ROUTES_REGEX = /^\/(profile|credits|addfunds|referrals)/;
 const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|applications|applications\/new)/;
 const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
-const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads)?/;
+const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/(batchuploads|reusable))?/;
 const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions|plans|addons)/;
 
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
