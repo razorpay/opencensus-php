@@ -464,10 +464,9 @@ const bankAccountFields = [
         }
       },
       _when: activation => {
-        const isSubmitDisabled =
-          activation.props.data.locked || activation.props.data.activated;
+        const isLocked = activation.props.data.locked;
 
-        return !isSubmitDisabled; // Not shown if locked / activated (TODO: Should have 'submitted' check as well)
+        return !isLocked;
       },
     },
   ],
