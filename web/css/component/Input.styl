@@ -30,14 +30,14 @@
   label
     cursor: unset !important
 
-  input, select, .Input-checkbox, .Input-radio, textarea
+  input, select, .Input-checkbox, .Input-checkbox + .Input-inlineLabel, .Input-radio, textarea
     background-color: #f8f8f8
     cursor: unset
 
   input:checked + .Input-radio
     border-color: #fafafa
 
-  input[type='file']
+  .Input-checkbox, .Input-radio, input[type='file']
     cursor: not-allowed
 
 .Input--checkbox

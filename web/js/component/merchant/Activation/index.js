@@ -24,6 +24,17 @@ import accountFormTabsContent, {
 
 import * as trackers from 'merchant/containers/Activation/ga_new';
 
+/*
+*             Main-form        LA-form
+* Submited      E F ~S        ~E ~F ~S
+* Activated     E F ~S        ~E ~F ~S
+* Locked      ~E ~F ~S        ~E ~F ~S (Takes priority)
+*
+* E = Can edit
+* F = Footer
+* S = Show 'submit form' (view,) tab and button
+* */
+
 let onAction = trackers;
 
 const LOADING = {
@@ -96,7 +107,7 @@ export default class ActivationWizard extends React.Component {
     this.prepareTabs(props);
     this.setInitialTab();
 
-    if (this.isLinkedAccount) {
+    if (this.isLinkedAccountForm) {
       onAction = null; // Only tracking for main activation form
     } else {
       // recording new activation form in hotjar for New accounts (non-LA account)
@@ -108,7 +119,7 @@ export default class ActivationWizard extends React.Component {
   }
 
   prepareTabs(props) {
-    if (this.isLinkedAccount) {
+    if (this.isLinkedAccountForm) {
       // Activation form for linked account
 
       FORM_TABS = [...accountFormTabs];
@@ -178,7 +189,7 @@ export default class ActivationWizard extends React.Component {
 
   setInitialTab() {
     let firstInValid = null;
-    let isSubmitFormRemoved = isSubmitFormDisabled(this.props.data); // Linked accounts form can still be seen after activation.
+    let isFormSubmitted = !!this.props.data.submitted; // Linked accounts form can still be seen after activation.
 
     for (let i = 0; i < FORM_TABS.length; i++) {
       let tabStatusValid = this.tabValidity(i);
@@ -190,13 +201,13 @@ export default class ActivationWizard extends React.Component {
     }
 
     // If main Form is not touched ever, then set initial tab = 0
-    if (!this.isLinkedAccount && this.props.isFormTouched === false) {
+    if (!this.isLinkedAccountForm && this.props.isFormTouched === false) {
       firstInValid = 0;
     }
 
     if (firstInValid === null) {
       firstInValid = FORM_TABS.length - 1; // In case all are filled then set last tab(which is actually filled)
-      !isSubmitFormRemoved && (this.state.showSubmitLayer = true); // Directly show submit form if it's NOT activated/locked/submitted
+      !isFormSubmitted && (this.state.showSubmitLayer = true); // Directly show submit form if it's NOT activated/locked/submitted
     }
 
     this.state.activeTab = firstInValid;
@@ -391,7 +402,7 @@ export default class ActivationWizard extends React.Component {
         cb && cb(false, data.errors);
 
         // Track session for any error on submission
-        if (!this.isLinkedAccount && typeof window.hj === 'function') {
+        if (!this.isLinkedAccountForm && typeof window.hj === 'function') {
           window.hj('tagRecording', ['activation_form_save_error']);
         }
 
@@ -432,7 +443,7 @@ export default class ActivationWizard extends React.Component {
 
         // Track abrupt state change
         if (this.state.isSaving !== LOADING.PENDING) {
-          if (!this.isLinkedAccount && typeof window.hj === 'function') {
+          if (!this.isLinkedAccountForm && typeof window.hj === 'function') {
             window.hj('tagRecording', ['activation_form_save_abrupt']);
           }
         }
@@ -464,7 +475,7 @@ export default class ActivationWizard extends React.Component {
 
         // Track abrupt state change (non-LA account)
         if (this.state.isSaving !== LOADING.PENDING) {
-          if (!this.isLinkedAccount && typeof window.hj === 'function') {
+          if (!this.isLinkedAccountForm && typeof window.hj === 'function') {
             window.hj('tagRecording', ['activation_form_save_abrupt']);
           }
         }
@@ -498,7 +509,7 @@ export default class ActivationWizard extends React.Component {
     });
   }
 
-  get isLinkedAccount() {
+  get isLinkedAccountForm() {
     return !!this.props.accountId;
   }
 
@@ -523,7 +534,7 @@ export default class ActivationWizard extends React.Component {
     * */
 
     // Track FE error for bank account mismatch (non-LA account)
-    if (!this.isLinkedAccount && typeof window.hj === 'function') {
+    if (!this.isLinkedAccountForm && typeof window.hj === 'function') {
       window.hj('tagRecording', ['activation_form_save_error']);
     }
 
@@ -540,7 +551,7 @@ export default class ActivationWizard extends React.Component {
     return this.props.submitForm().then(data => {
       if (data.errors) {
         // Track session for any error on submission (non-LA account)
-        if (!this.isLinkedAccount && typeof window.hj === 'function') {
+        if (!this.isLinkedAccountForm && typeof window.hj === 'function') {
           window.hj('tagRecording', ['activation_form_save_error']);
         }
 
@@ -701,7 +712,7 @@ export default class ActivationWizard extends React.Component {
       this.setState({
         dirty: {
           ...this.state.dirty,
-          [target.name]: fieldValue,
+          [fieldName]: fieldValue,
           ...sideEffectFieldsToUpdate,
         },
       });
@@ -767,8 +778,9 @@ export default class ActivationWizard extends React.Component {
   };
 
   render() {
-    let isLinkedAccountForm = this.isLinkedAccount; // Check if this activation wizard is invoked from Linked accounts.
-    let isSubmitFormRemoved = isSubmitFormDisabled(this.props.data); // Submit form is removed if locked, activated or in submitted state
+    const isFormLocked = !!this.props.data.locked;
+    const isFormActivated = !!this.props.data.activated;
+    const isFormSubmitted = !!this.props.data.submitted;
 
     let activeTab = this.state.activeTab;
     activeTab = activeTab < 0 || !activeTab ? 0 : activeTab; // Graceful failure in case activeTab becomes negative. To handle non-reproducible weird error.
@@ -813,8 +825,8 @@ export default class ActivationWizard extends React.Component {
         {/* Activation form tabs */}
         <aside>
           <side-title>Activation Form</side-title>
-          {!isLinkedAccountForm &&
-            !isSubmitFormRemoved && (
+          {!this.isLinkedAccountForm &&
+            !isFormSubmitted && (
               <p>Complete and submit the form to start accepting payments.</p>
             )}
           <ul>
@@ -838,7 +850,7 @@ export default class ActivationWizard extends React.Component {
             })}
 
             {/* Submit form tab*/}
-            {!isSubmitFormRemoved && (
+            {!isFormSubmitted && (
               <li
                 onClick={this.toggleSubmitLayer}
                 class={classList(
@@ -863,7 +875,7 @@ export default class ActivationWizard extends React.Component {
           class={classList(
             'form-container',
             this.state.showSubmitLayer && 'block-scroll',
-            isSubmitFormRemoved && 'main--full'
+            isFormLocked && 'main--full'
           )}
         >
           {/* Active tab title */}
@@ -888,21 +900,18 @@ export default class ActivationWizard extends React.Component {
             <span class="device--desktop">{FORM_TABS[activeTab]}</span>
           </main-title>
 
-          {/* Alert: if linked account has been activated */}
-          {isLinkedAccountForm &&
-            !!this.props.data.activated && (
+          {/* Alert: For linked account if activated */}
+          {this.isLinkedAccountForm &&
+            isFormActivated && (
               <Alert.Info iconBefore="i-done-all">
                 The account has been activated
               </Alert.Info>
             )}
 
-          {/* Alert: if main activation form is in locked state */}
+          {/* Alerts: for MAIN activation form */}
           {do {
             const showFormDisabledAlert =
-              !isLinkedAccountForm &&
-              (!!this.props.data.locked ||
-                !!this.props.data.submitted ||
-                !!this.props.data.activated); // Later activated condition to be removed as form will never be shown in this scenario.
+              !this.isLinkedAccountForm && (isFormLocked || isFormSubmitted); // '|| isFormActivated' is redundant check. Always covered by isFormSubmitted;
 
             const { data } = this.props;
             let Component = Alert.Info;
@@ -915,7 +924,7 @@ export default class ActivationWizard extends React.Component {
             );
 
             if (showFormDisabledAlert) {
-              if (!!data.activated) {
+              if (isFormActivated) {
                 // **1. Alert: Account Activated
 
                 icon = 'i-done-all';
@@ -954,9 +963,10 @@ export default class ActivationWizard extends React.Component {
                 msg =
                   'Your activation form has been rejected by our partner banks. Hence, we would not be able support your business at this moment.';
                 secondaryMsg = 'We have sent you an email with the details.';
-              } else if (!!data.locked) {
+              } else if (isFormLocked && isFormSubmitted) {
                 // **4. Alert: Form is Locked (for reasons other than above)
                 // 'locked' status has more priority than 'submitted'
+                // If admins locked form before submiddion, then this alert is not shown
 
                 icon = 'i-outline-lock';
                 msg =
@@ -967,7 +977,7 @@ export default class ActivationWizard extends React.Component {
                     {emailLink}
                   </React.Fragment>
                 );
-              } else if (!!data.submitted) {
+              } else if (isFormSubmitted) {
                 // **5. Alert: Form is Submitted
 
                 icon = 'i-check';
@@ -976,10 +986,14 @@ export default class ActivationWizard extends React.Component {
                   'For any clarifications, we will reach out on your contact email.';
               }
 
-              <Component iconBefore={icon}>
-                {msg}
-                <div class="side-description">{secondaryMsg}</div>
-              </Component>;
+              {
+                msg && (
+                  <Component iconBefore={icon}>
+                    {msg}
+                    <div class="side-description">{secondaryMsg}</div>
+                  </Component>
+                );
+              }
             }
           }}
 
@@ -995,23 +1009,28 @@ export default class ActivationWizard extends React.Component {
           </Form>
         </main>
 
-        {/* Submit form overlay view */}
-        {!isSubmitFormRemoved &&
+        {/* Submit form overlay view, Lock check not necessary here. Just ensured, 'Submit Form' checkbox must be disabled if locked */}
+        {!isFormSubmitted &&
           this.state.showSubmitLayer && (
-            <main class="overlay-container">
+            <main
+              class={classList(
+                'overlay-container',
+                isFormLocked && 'main--full'
+              )}
+            >
               <SubmitForm
                 closeActivationForm={() => {
                   this.goto(FORM_TABS.length - 1);
                 }}
-                isLinkedAccount={this.isLinkedAccount}
+                isFormLocked={isFormLocked}
+                isLinkedAccount={this.isLinkedAccountForm}
                 submitActvationForm={this.submitForm}
               />
             </main>
           )}
 
-        {/* TODO: It should use isSubmitFormRemoved. Temporarily allowing to edit after Submit */}
-        {/* Activation form footer, to show actions / saving state */}
-        {!(this.props.data.locked || this.props.data.activated) && (
+        {/* Form Footer, to show actions btns / saving state */}
+        {!isFormLocked && (
           <footer>
             {/* Spinner state */}
             <Loader isSaving={this.state.isSaving} />
@@ -1032,7 +1051,7 @@ export default class ActivationWizard extends React.Component {
 
                 {/* Action Button 3 */}
                 {isLastTab &&
-                  !isSubmitFormRemoved && (
+                  !isFormSubmitted && (
                     <Button.Primary
                       class={classList(!this.isAllTabsValid() && 'disabled')}
                       onClick={this.toggleSubmitLayer}
@@ -1147,7 +1166,10 @@ function ActivationField(field) {
     key = _name;
   }
 
-  let isComponentDisabled = this.props.data.locked || this.props.data.activated; // TODO: Currently not disabled for submitted state... isSubmitFormDisabled(this.props.data); // If form cannot be submitted, then all fields are disabled.
+  const isFormLocked = !!this.props.data.locked;
+
+  // For LA, form is automatically locked when submitted(activated). For main form, it can be manually controlled.
+  let isComponentDisabled = isFormLocked;
 
   // TODO: Ideally, what's disabled cannot be 'required = true'. Currently no such requirement. To handle, support 'required' as a function
   if (_disabledWhen && _disabledWhen(this)) {
@@ -1156,9 +1178,8 @@ function ActivationField(field) {
   }
 
   // Show bank account number if it's activated/locked
-  if (rest.hasOwnProperty('type') && rest.type === 'password') {
-    !!(this.props.data.locked || this.props.data.activated) &&
-      (rest.type = 'text'); // This check is not needed
+  if (rest.hasOwnProperty('type') && rest.type === 'password' && isFormLocked) {
+    rest.type = 'text';
   }
 
   return (
@@ -1171,13 +1192,6 @@ function ActivationField(field) {
       {...rest}
     />
   );
-}
-
-/* To universally disabling/hiding fields-view-etc */
-function isSubmitFormDisabled(data) {
-  let isSubmitFormRemoved = data.activated || data.submitted || data.locked; // Linked accounts form can still be seen after activation.
-
-  return !!isSubmitFormRemoved;
 }
 
 function isFieldValid(field, activation) {
@@ -1238,6 +1252,7 @@ class SubmitForm extends React.Component {
           <div class="tnc-text">
             {/* Confirmation checkbox*/}
             <Input.Check
+              disabled={this.props.isFormLocked}
               onChange={e => {
                 this.setState({
                   allowSubmit: e.target.checked,
