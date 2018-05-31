@@ -191,6 +191,27 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onPaymentDisputeLost($payment)
+    {
+        $payload = $this->getPaymentPayloadWithDispute($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPaymentDisputeWon($payment)
+    {
+        $payload = $this->getPaymentPayloadWithDispute($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPaymentDisputeClosed($payment)
+    {
+        $payload = $this->getPaymentPayloadWithDispute($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onOrderPaid($payment)
     {
         $payload = $this->getOrderPayload($payment);
@@ -342,27 +363,6 @@ class ApiEventSubscriber extends Base\Core
     protected function onSettlementProcessed($settlement)
     {
         $payload = $this->getSettlementPayload($settlement);
-
-        $this->prepareAndDispatchWebhook($payload);
-    }
-
-    protected function onDisputeLost($dispute)
-    {
-        $payload = $this->getDisputePayloadWithPayment($dispute);
-
-        $this->prepareAndDispatchWebhook($payload);
-    }
-
-    protected function onDisputeWon($dispute)
-    {
-        $payload = $this->getDisputePayloadWithPayment($dispute);
-
-        $this->prepareAndDispatchWebhook($payload);
-    }
-
-    protected function onDisputeClosed($dispute)
-    {
-        $payload = $this->getDisputePayloadWithPayment($dispute);
 
         $this->prepareAndDispatchWebhook($payload);
     }
@@ -530,20 +530,6 @@ class ApiEventSubscriber extends Base\Core
         $partialPayload = $this->getPaymentPayload($payment);
 
         // Add dispute entity defined in `withPayload`
-        $this->addExtraDataToPayload($partialPayload);
-
-        return $partialPayload;
-    }
-
-    protected function getDisputePayloadWithPayment($dispute)
-    {
-        $partialPayload = [
-            Constants\Entity::DISPUTE => [
-                'entity' => $dispute->toArrayPublic(),
-            ],
-        ];
-
-        // Add payment entity defined in `withPayload`
         $this->addExtraDataToPayload($partialPayload);
 
         return $partialPayload;

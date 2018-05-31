@@ -29,9 +29,9 @@ class Core extends Base\Core
     const CREDIT_ADJUSTMENT_DESCRIPTION = 'Credit to reverse a previous dispute debit';
 
     protected static $statusWebhookMap = [
-        Status::WON    => WebhookEvent::DISPUTE_WON,
-        Status::LOST   => WebhookEvent::DISPUTE_LOST,
-        Status::CLOSED => WebhookEvent::DISPUTE_CLOSED,
+        Status::WON    => WebhookEvent::PAYMENT_DISPUTE_WON,
+        Status::LOST   => WebhookEvent::PAYMENT_DISPUTE_LOST,
+        Status::CLOSED => WebhookEvent::PAYMENT_DISPUTE_CLOSED,
     ];
 
     /**
@@ -107,7 +107,7 @@ class Core extends Base\Core
 
                 $this->sendDisputeMailToMerchant($dispute, $merchant, $input);
 
-                $this->firePaymentDisputedEvent($payment, $dispute);
+                $this->firePaymentDisputeWebhookEvent($payment, $dispute, WebhookEvent::PAYMENT_DISPUTE_CREATED);
 
                 return $dispute;
 
@@ -149,7 +149,7 @@ class Core extends Base\Core
                 {
                     $this->handleDisputeClosure($dispute, $input);
 
-                    $this->fireDisputeWebhookEvent($dispute);
+                    $this->fireDisputeStatusChangeWebhookEvent($dispute);
 
                     $this->repo->saveOrFail($dispute);
 
@@ -557,7 +557,24 @@ class Core extends Base\Core
         return $input;
     }
 
-    protected function firePaymentDisputedEvent(Payment\Entity $payment, Entity $dispute)
+    protected function fireDisputeStatusChangeWebhookEvent(Entity $dispute)
+    {
+        // Webhooks are only sent when updated to these statuses
+        $eventStatuses = [Status::WON, Status::LOST, Status::CLOSED];
+
+        $status = $dispute->getStatus();
+
+        if (in_array($status, $eventStatuses, true) === false)
+        {
+            return;
+        }
+
+        $eventName = self::$statusWebhookMap[$status];
+
+        $this->firePaymentDisputeWebhookEvent($dispute->payment, $dispute, $eventName);
+    }
+
+    protected function firePaymentDisputeWebhookEvent(Payment\Entity $payment, Entity $dispute, string $event)
     {
         //
         // `reason_description` should not be exposed on API or webhook responses.
@@ -573,38 +590,7 @@ class Core extends Base\Core
             ],
         ];
 
-        $eventName = 'api.' . WebhookEvent::PAYMENT_DISPUTE_CREATED;
-
-        $this->app['events']->fire($eventName, $eventPayload);
-    }
-
-    protected function fireDisputeWebhookEvent(Entity $dispute)
-    {
-        // Webhooks are only sent when updated to these statuses
-        $eventStatuses = [Status::WON, Status::LOST, Status::CLOSED];
-
-        $status = $dispute->getStatus();
-
-        if (in_array($status, $eventStatuses, true) === false)
-        {
-            return;
-        }
-
-        //
-        // `reason_description` should not be exposed on API or webhook responses.
-        // However, since the dispute is updated via admin dashboard, the publicSetter
-        // used to under reason_description will not work in this flow
-        //
-        $dispute->makeHidden(Entity::REASON_DESCRIPTION);
-
-        $eventPayload = [
-            ApiEventSubscriber::MAIN => $dispute,
-            ApiEventSubscriber::WITH => [
-                E::PAYMENT => $dispute->payment,
-            ],
-        ];
-
-        $eventName = 'api.' . self::$statusWebhookMap[$status];
+        $eventName = 'api.' . $event;
 
         $this->app['events']->fire($eventName, $eventPayload);
     }
