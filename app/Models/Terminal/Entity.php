@@ -417,7 +417,7 @@ class Entity extends Base\PublicEntity
      */
     public function isBankingTypeBoth()
     {
-        return ($this->getAttribute(self::CORPORATE) === '2');
+        return ($this->getAttribute(self::CORPORATE) === BankingType::BOTH);
     }
 
     // ---------------------- SETTERS ----------------------

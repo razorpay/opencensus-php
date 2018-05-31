@@ -352,7 +352,7 @@ class TransactionFilter extends Terminal\Filter
                 return true;
             }
             else if ((Netbanking::isCorporateBank($bank) === false) and
-                (in_array(Terminal\BankingType::RETAIL, $terminalBankingTypes) === true))
+                     (in_array(Terminal\BankingType::RETAIL, $terminalBankingTypes) === true))
             {
                 return true;
             }
