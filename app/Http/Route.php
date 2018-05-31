@@ -1169,6 +1169,8 @@ final class Route
         'merchant_details_patch',
         'merchant_get_features',
         'merchant_update_features',
+        'merchant_features_fetch',
+        'merchant_features_update',
         'merchant_create_key',
         'merchant_fetch_keys',
         'merchant_replace_key',
