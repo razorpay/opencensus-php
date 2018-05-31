@@ -43,7 +43,7 @@ class Throttler
     /**
      * @var RequestContext
      */
-    protected $reqctx;
+    protected $reqCtx;
 
     /**
      * @var RedisManager
@@ -62,7 +62,7 @@ class Throttler
 
         $this->config = $app['config']->get('throttle');
         $this->trace  = $app['trace'];
-        $this->reqctx = $app['request.ctx'];
+        $this->reqCtx = $app['request.ctx'];
     }
 
     public function throttle()
@@ -161,30 +161,30 @@ class Throttler
 
     protected function getIdSettingsKey(): string
     {
-        return $this->reqctx->getOauthClientId() ?:
-                $this->reqctx->getAdminEmail() ?:
-                $this->reqctx->getMid() ?:
-                $this->reqctx->getInternalAppName() ?:
-                '';
+        return $this->reqCtx->getOAuthClientId() ?:
+               $this->reqCtx->getAdminEmail() ?:
+               $this->reqCtx->getMid() ?:
+               $this->reqCtx->getInternalAppName() ?:
+               '';
     }
 
     protected function getThrottleKey(): string
     {
-        $id = $this->reqctx->getMid() ?:
-                $this->reqctx->getAdminEmail() ?:
-                $this->reqctx->getOauthPublicToken() ?:
-                $this->reqctx->getInternalAppName();
+        $id = $this->reqCtx->getMid() ?:
+              $this->reqCtx->getAdminEmail() ?:
+              $this->reqCtx->getOAuthPublicToken() ?:
+              $this->reqCtx->getInternalAppName();
 
         // Only use ip address for public and direct routes
-        $ip = ($this->reqctx->isPublicAuth() or $this->reqctx->isDirectAuth()) ? $this->reqctx->getRequest()->ip() : '';
+        $ip = ($this->reqCtx->isPublicAuth() or $this->reqCtx->isDirectAuth()) ? $this->reqCtx->getRequest()->ip() : '';
 
         // E.g.: payments_create:live:private:0::10000000000000:
         $args = [
-            $this->reqctx->getRoute(),
-            $this->reqctx->getMode(),
-            $this->reqctx->getAuth(),
-            (int) $this->reqctx->getProxy(),
-            $this->reqctx->getOauthClientId(),
+            $this->reqCtx->getRoute(),
+            $this->reqCtx->getMode(),
+            $this->reqCtx->getAuth(),
+            (int) $this->reqCtx->getProxy(),
+            $this->reqCtx->getOAuthClientId(),
             $id,
             $ip
         ];
@@ -274,29 +274,29 @@ class Throttler
         //
 
         // If mode is not available at this layer just pick live mode settings
-        $mode  = $this->reqctx->getMode() ?: Mode::LIVE;
+        $mode  = $this->reqCtx->getMode() ?: Mode::LIVE;
         // Boolean value doesn't get type-casted to string properly
-        $auth  = $this->reqctx->getAuth();
-        $proxy = (int) $this->reqctx->getProxy();
-        $route = $this->reqctx->getRoute();
+        $auth  = $this->reqCtx->getAuth();
+        $proxy = (int) $this->reqCtx->getProxy();
+        $route = $this->reqCtx->getRoute();
 
                 // Value for given mid/application id, mode, auth & route
         return $this->settings[K::ID_LEVEL]["{$mode}:{$auth}:{$proxy}:{$route}:{$key}"] ??
-                // Value for given mid/application id, mode & auth
-                $this->settings[K::ID_LEVEL]["{$mode}:{$auth}:{$proxy}:{$key}"] ??
-                // Value for given mid/application id & mode
-                $this->settings[K::ID_LEVEL]["{$mode}:{$key}"] ??
-                // Value for given mid/application id
-                $this->settings[K::ID_LEVEL]["{$key}"] ??
-                // Value for given mode, auth & route
-                $this->settings[K::GLOBAL]["{$mode}:{$auth}:{$proxy}:{$route}:{$key}"] ??
-                // Value for given mode & auth
-                $this->settings[K::GLOBAL]["{$mode}:{$auth}:{$proxy}:{$key}"] ??
-                // Value for given mode
-                $this->settings[K::GLOBAL]["{$mode}:{$key}"] ??
-                // Finally, global default value
-                $this->settings[K::GLOBAL]["{$key}"] ??
-                // Again finally, the default by callee :)
-                $default;
+               // Value for given mid/application id, mode & auth
+               $this->settings[K::ID_LEVEL]["{$mode}:{$auth}:{$proxy}:{$key}"] ??
+               // Value for given mid/application id & mode
+               $this->settings[K::ID_LEVEL]["{$mode}:{$key}"] ??
+               // Value for given mid/application id
+               $this->settings[K::ID_LEVEL]["{$key}"] ??
+               // Value for given mode, auth & route
+               $this->settings[K::GLOBAL]["{$mode}:{$auth}:{$proxy}:{$route}:{$key}"] ??
+               // Value for given mode & auth
+               $this->settings[K::GLOBAL]["{$mode}:{$auth}:{$proxy}:{$key}"] ??
+               // Value for given mode
+               $this->settings[K::GLOBAL]["{$mode}:{$key}"] ??
+               // Finally, global default value
+               $this->settings[K::GLOBAL]["{$key}"] ??
+               // Again finally, the default by callee :)
+               $default;
     }
 }

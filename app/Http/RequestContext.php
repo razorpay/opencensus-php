@@ -188,12 +188,12 @@ final class RequestContext
         return $this->mid;
     }
 
-    public function getOauthClientId()
+    public function getOAuthClientId()
     {
         return $this->oauthClientId;
     }
 
-    public function getOauthPublicToken()
+    public function getOAuthPublicToken()
     {
         return $this->oauthPublicToken;
     }
@@ -238,11 +238,11 @@ final class RequestContext
         return $this->isRunningUnitTests ? $this->request->bearerToken() : $this->getBearerTokenFromRequestForApache();
     }
 
-    public function getBearerTokenFromRequestForApache()
+    public function getBearerTokenFromRequestForApache(): string
     {
         $headers = getallheaders()['Authorization'] ?? null;
 
-        return starts_with($headers, 'Bearer ') ? substr($headers, 7) : '';
+        return (starts_with($headers, 'Bearer ') ? substr($headers, 7) : '');
     }
 
     public function isKeyOAuthPublicToken(): bool
@@ -256,8 +256,8 @@ final class RequestContext
      */
 
     /**
-     * Initializes varisou instance variables - e.g. request, repo etc. This needs to be done outside construction of
-     * this service because otherwise in testing environement it will continue pointing to same first request instance.
+     * Initializes various instance variables - e.g. request, repo etc. This needs to be done outside the construction
+     * of this service because otherwise in testing environment it will continue pointing to same first request instance.
      * In some tests we are making multiple api calls (which internally is direct kernel's call() method).
      */
     protected function initInstanceVars()
@@ -285,7 +285,7 @@ final class RequestContext
                 $this->request->route()->parameter('key') ?:
                 $this->request->input('key_id');
 
-        // If key is empty (direct auth & bearer token case) or is of invalid lenght just return from this method.
+        // If key is empty (direct auth & bearer token case) or is of invalid length just return from this method.
         if ($this->isKeyOfValidLength($key) === false)
         {
             return;
@@ -300,7 +300,8 @@ final class RequestContext
     }
 
     /**
-     * Extracts additional information from requests per route's auth group.
+     * Extracts additional information from requests as per route's auth group.
+     * @throws BadRequestException
      */
     protected function setAdditionalVars()
     {
@@ -331,7 +332,7 @@ final class RequestContext
     }
 
     /**
-     * Resolves $keyId and sets $key entity instance as well as $mid instance.
+     * Resolves $keyId and sets $keyEntity as well as $mid instance
      */
     protected function resolveKeyIdIfApplicable()
     {
@@ -343,9 +344,18 @@ final class RequestContext
         }
 
         //
-        // Note: We don't do a find or fail here. That is responsibility of basic auth. This class only deals with
-        // having all request context variables initialized. For e.g. in case of invalid keyId, keyEntity woudl just be
-        // null. It's upto next layers - Authenticate to throw errors etc.
+        // Skipping this for partner auth for now. We have to fix on whether the client's merchant should be throttled
+        // or the account passed in the input/header i.e. the sub merchant.
+        //
+        if (str_contains($this->keyId, 'partner_') === true)
+        {
+            return;
+        }
+
+        //
+        // Note: We don't do a findOrFail() here. That is the responsibility of basic auth. This class only deals with
+        // initializing all the request context variables. For e.g. in case of invalid keyId, keyEntity would just be
+        // null. It's up to next layers - Authenticate to throw errors etc.
         //
         $this->keyEntity = $this->repo->key->connection($this->mode)->find($this->keyId);
         $this->mid = optional($this->keyEntity)->getMerchantId();
@@ -417,11 +427,13 @@ final class RequestContext
         if (in_array($this->route, Route::$internal, true) === true)
         {
             $this->setInternalAppNameByAuth();
+
             return true;
         }
         else if (in_array($this->route, Route::$admin, true) === true)
         {
             $this->adminEmail = $this->request->headers->get(RequestHeader::X_DASHBOARD_ADMIN_EMAIL);
+
             return true;
         }
 
@@ -449,6 +461,7 @@ final class RequestContext
             if (($config['secret'] ?? '') === $this->secret)
             {
                 $this->internalAppName = $name;
+
                 return;
             }
         }

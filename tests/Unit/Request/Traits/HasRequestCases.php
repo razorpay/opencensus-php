@@ -52,6 +52,7 @@ trait HasRequestCases
     protected function invokeRequestCaseAndBindNewContext(string $case, ...$args): Request
     {
         $mock = $this->invokeRequestCase($case, ...$args);
+
         $this->app->instance('request.ctx', new RequestContext($this->app));
 
         return $mock;
