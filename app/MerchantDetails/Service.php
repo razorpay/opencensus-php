@@ -38,6 +38,45 @@ class Service extends Base\Service
         'website_pricing'
     ];
 
+    const CODE_TO_STATE_MAPPING = array(
+      "AN" => "Andaman And Nicobar",
+      "AP" => "Andhra Pradesh",
+      "AR" => "Arunachal Pradesh",
+      "AS" => "Assam",
+      "BI" => "Bihar",
+      "CH" => "Chandigarh (UT)",
+      "CT" => "Chattisgarh",
+      "DN" => "Dadra And Nagar Haveli",
+      "DD" => "Daman And Diu (UT)",
+      "DL" => "Delhi",
+      "GO" => "Goa",
+      "GJ" => "Gujarat",
+      "HA" => "Haryana",
+      "HP" => "Himachal Pradesh",
+      "JK" => "Jammu And Kashmir",
+      "JH" => "Jharkhand",
+      "KA" => "Karnataka",
+      "KE" => "Kerala",
+      "LD" => "Lakshadweep",
+      "MP" => "Madhya Pradesh",
+      "MH" => "Maharashtra",
+      "MA" => "Manipur",
+      "ME" => "Meghalaya",
+      "MI" => "Mizoram",
+      "NA" => "Nagaland",
+      "OR" => "Orissa",
+      "PO" => "Pondicherry(UT)",
+      "PB" => "Punjab",
+      "RJ" => "Rajasthan",
+      "SK" => "Sikkim",
+      "TG" => "Telangana",
+      "TN" => "Tamilnadu",
+      "TR" => "Tripura",
+      "UP" => "Uttar Pradesh",
+      "UT" => "Uttranchal",
+      "WB" => "West Bengal",
+    );
+
     public function __construct()
     {
         $user = Auth::user();
@@ -62,6 +101,18 @@ class Service extends Base\Service
 
         return $merchantDetails;
     }
+
+    public function getStateFromCode($state_code = null)
+    {
+        $state = self::CODE_TO_STATE_MAPPING[$state_code] ?? null;
+        if (isset($state))
+        {
+            return $state;
+        }
+
+        return $state_code;
+    }
+
 
     public function getPresignupDetails($merchantId, $merchantDetails = null)
     {

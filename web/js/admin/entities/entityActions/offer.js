@@ -4,7 +4,7 @@ import { notifyError, notifySuccess } from 'common/modal';
 
 import ShowWhen from 'admin/components/ShowWhen';
 import AsyncButton from 'ui/AsyncButton';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import Form from 'ui/Form';
 import Field from 'ui/Field';
 import { formatDate } from 'common/util';
@@ -92,7 +92,7 @@ export default ({ entity, mode, updateEntity }) => {
 // Edit Offer Form
 const EditOfferForm = ({ entity, handleSubmit }) => {
   return (
-    <BaseModal header="Edit Offer">
+    <ModalContent header="Edit Offer">
       <Form class="full-span full-elements">
         <Field label="Name" name="name" defaultValue={entity.name} />
         {['netbanking', 'wallet', 'upi'].indexOf(entity.payment_method) ===
@@ -143,6 +143,6 @@ const EditOfferForm = ({ entity, handleSubmit }) => {
           onSubmit={handleSubmit}
         />
       </Form>
-    </BaseModal>
+    </ModalContent>
   );
 };

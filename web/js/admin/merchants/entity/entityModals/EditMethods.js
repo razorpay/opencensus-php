@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import Form from 'ui/Form';
 import { SwitchField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
@@ -90,7 +90,7 @@ export default ({ props, merchantId }) => {
   }
 
   return (
-    <BaseModal header="Activate/Deactivate Merchant Payment Methods">
+    <ModalContent header="Activate/Deactivate Merchant Payment Methods">
       <Form class="">
         {getFormFields()}
 
@@ -103,7 +103,7 @@ export default ({ props, merchantId }) => {
           onSubmit={onSubmit}
         />
       </Form>
-    </BaseModal>
+    </ModalContent>
   );
 };
 

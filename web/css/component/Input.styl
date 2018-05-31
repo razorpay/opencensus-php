@@ -1,0 +1,245 @@
+.Input
+  font-weight: normal
+  display: block
+  margin: 24px 0 8px
+  position: relative
+
+  label
+    font-weight: normal
+    margin-bottom: 0
+  input[type=file]
+    padding-top: 6px
+  &.is-focused
+    .Input-info
+      transform: translateY(-50%)
+      opacity: 1
+
+      @media (max-width: 1024px)
+        transform: none
+
+.Input--required
+  .Input-label::after
+      content: '*'
+      font-size: 12px
+      position: absolute
+      margin-left: 1px
+      top: 0
+      color: $textDangerColor
+
+.Input--disabled
+  label
+    cursor: unset !important
+
+  input, select, .Input-checkbox, .Input-checkbox + .Input-inlineLabel, .Input-radio, textarea
+    background-color: #f8f8f8
+    cursor: unset
+
+  input:checked + .Input-radio
+    border-color: #fafafa
+
+  .Input-checkbox, .Input-radio, input[type='file']
+    cursor: not-allowed
+
+.Input--checkbox
+  white-space: nowrap
+  .Input-inlineLabel
+    margin: -4px 0 0 0
+
+.Input-label
+  font-weight: bold
+  position: relative
+
+.Input:not(.Input-vTop) .Input-label
+  top: 7px
+
+.Input-elWrapper
+  position: relative
+  font-size: 0
+
+  &.Select-elWrapper
+    &::before
+      content: '\f105'
+      position: absolute
+      left: 236px
+      top: 4px
+      font-size: 20px
+      font-family: merchant-icons !important
+      font-style: normal
+      font-weight: normal !important
+      pointer-events: none
+
+  select
+    -webkit-appearance: none
+    -webkit-border-radius: 2px
+
+.Input-info
+  max-width: 250px
+  display: inline-block
+  position: absolute
+  margin-left: 12px
+  background: #DFEBFF
+  padding: 8px 14px
+  color: #666
+  border-radius: 2px
+  font-size: 12px
+  top: 50%
+  transform: translateY(-50%) translateX(-6px) scale(0.97)
+  opacity: 0
+  pointer-events: none
+  transition: 0.2s
+  overflow-wrap: break-word
+  z-index: 2
+
+  ul
+    padding: 0
+    list-style: none
+
+    li:not(:last-child)
+      margin-bottom: 4px
+
+  &:before
+    border: 8px solid transparent
+    border-right-color: #DFEBFF
+    content: ''
+    position: absolute
+    right: 100%
+    top: 50%
+    margin-top: -8px
+
+  @media (max-width: 1024px)
+    margin-left: 0
+    margin-top: 8px
+    left: 0
+    top: 100%
+
+    &:before
+      border-right-color: transparent
+      border-bottom-color: #dfebff
+      right: auto
+      left: 0
+      top: -7px
+
+.Input-el
+  line-height: 16px
+  height: 36px
+  width: 260px
+  background: #fff
+  font-size: 14px
+  padding: 0 12px
+  border: 1px solid #E2E2E2
+  border-radius: 2px
+  &[type=checkbox], &[type=radio]
+    display: none
+
+.Input:not(.Input--disabled) .Input-el
+    &:hover
+      border-color: #c1c1c1
+
+    &:focus
+      border-color: #528ff0
+
+.Input--file-upload
+  margin-left: 4px
+  vertical-align: middle
+
+
+.Input--small
+  .Input-el
+    max-width: 170px
+
+textarea.Input-el
+  height: 70px
+  resize: vertical
+  padding: 10px 12px
+
+.Input-checkbox
+  margin-right: 6px
+  width: 18px
+  height: 18px
+  background: #fff
+  border-radius: 2px
+  float: left
+  transition: .3s
+  cursor: pointer
+  border: 1px solid #ccc
+
+  & + .Input-inlineLabel
+    cursor: pointer
+
+  &:after
+    content: ''
+    display: block
+    width: 6px
+    height: 11px
+    opacity: 0
+    transition: .2s
+    border: solid #fff
+    border-width: 0 2px 2px 0
+    transform: rotate(45deg) scale(1.5)
+    margin: 1px 0 0 5px
+
+:checked + .Input-checkbox
+  background: $primary-color
+  border-color: $primary-color
+  &:after
+    opacity: 1
+    transform: rotate(45deg)
+
+.Input--radio
+  label
+    display: inline-block
+    cursor: pointer
+    margin-right: 20px
+
+.Input-inlineLabel
+  white-space: normal
+  display: inline-block
+  font-weight: normal
+  vertical-align: middle
+
+.Input-radio
+  display: inline-block
+  vertical-align: middle
+  margin-right: 6px
+  cursor: pointer
+  position: relative
+  width: 18px
+  height: @width
+  background: #fff
+  border-radius: 50%
+  border: 1px solid #ccc
+  transition: .2s
+
+:checked + .Input-radio
+  background: $primary-color
+  border: 3px solid #fff
+  box-shadow: 0 0 1px 1px #bbb
+
+.Input-desc
+  margin: 6px 0
+  color: #838383
+  font-size: 13px
+  white-space: normal
+
+  b
+    color: #111
+    font-weight: normal
+
+    &.shallow
+      color: #606061
+
+.Input-error
+  display: none
+  color: $textDangerColor
+
+.is-mature
+  .is-invalid, &.is-invalid
+    .Input-el
+      border-color: $textDangerColor
+    .Input-error
+      display: block
+
+.InputGroup
+  margin: 24px 0 0
+  .Input
+    margin: 8px 0

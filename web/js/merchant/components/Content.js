@@ -2,8 +2,11 @@ import React, { Component } from 'react';
 import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { matchDetail } from 'merchant/routes';
+import { classList } from 'common/util';
+import { matchDetail, matchModal } from 'merchant/routes';
 import Slider from 'rzp/ui/Slider';
+import { ModalMask } from 'component/Modal';
+
 import ShowWhen from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
 import HomeNew from 'merchant/containers/Home/New';
@@ -16,25 +19,15 @@ import Subscriptions from 'merchant/containers/Subscriptions/Index';
 import Customers from 'merchant/containers/Customers/List';
 import Marketplace from 'merchant/containers/Marketplace/Index';
 import Reports from 'merchant/containers/Reports';
-import TeamManagement from 'merchant/containers/Team';
 import MyAccount from 'merchant/containers/MyAccount';
 import Settings from 'merchant/containers/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
+import ActivationContainer from 'merchant/containers/Activation/new';
 
 // Below will be removed with old navigation removal
-import PaymentsList from 'merchant/containers/Payments/List';
 import RefundsList from 'merchant/containers/Refunds/List';
 import BatchUpload from 'merchant/containers/Refunds/BatchUpload';
 import BatchUploads from 'merchant/containers/Refunds/BatchList';
-import OrdersList from 'merchant/containers/Orders/List';
-import Profile from 'merchant/containers/Profile';
-import Activation from 'merchant/containers/Activation';
-import AddFunds from 'merchant/containers/AddFunds';
-import Credits from 'merchant/containers/Credits/List';
-import Referrals from 'merchant/containers/Referrals/List';
-import Configuration from 'merchant/containers/Configuration';
-import ApiKeys from 'merchant/containers/Keys/List';
-import Webhooks from 'merchant/containers/Webhooks/List';
 
 import ErrorBoundary from 'common/ErrorBoundary';
 
@@ -103,22 +96,36 @@ const RefundsTabbedContainer = () => {
 export default class Content extends Component {
   setBaseLocation = location => {
     let { setBaseLocation, setActiveEntity, setSecActiveEntity } = this.props;
-    var matchResult = matchDetail(location.pathname);
+    var matchDetailsRoute = matchDetail(location.pathname);
+    var matchModalsRoute = matchModal(location.pathname);
 
-    if (matchResult) {
-      this.detailView = matchResult.component;
+    if (matchDetailsRoute || matchModalsRoute) {
+      let resultRoute;
 
-      const params = matchResult.match.params;
+      if (matchModalsRoute && matchModalsRoute.match) {
+        resultRoute = matchModalsRoute;
+
+        this.modalView = matchModalsRoute.component;
+        this.detailView = null;
+      } else if (matchDetailsRoute && matchDetailsRoute.match) {
+        resultRoute = matchDetailsRoute;
+
+        this.modalView = null;
+        this.detailView = matchDetailsRoute.component;
+      }
+
+      const params = resultRoute.match.params;
       setActiveEntity(params.id);
 
       this.detailProps = params;
 
-      setActiveEntity(matchResult.match.params.id);
+      setActiveEntity(resultRoute.match.params.id);
       if (Object.keys(params > 1)) {
         setSecActiveEntity(params[Object.keys(params)[1]]);
       }
     } else {
       this.detailView = null;
+      this.modalView = null;
       this.detailProps = null;
       setActiveEntity(null);
       setSecActiveEntity(null);
@@ -169,7 +176,7 @@ export default class Content extends Component {
           <Route path="/reports" component={Reports} />
 
           <Route path="/profile" component={MyAccount} />
-          <Route path="/activation" component={MyAccount} />
+          <Route path="/activation" component={ActivationContainer} />
           <Route path="/addfunds" component={MyAccount} />
           <Route path="/credits" component={MyAccount} />
           <Route path="/referrals" component={MyAccount} />
@@ -181,7 +188,7 @@ export default class Content extends Component {
           <Route path="/applications" component={Settings} />
 
           <Redirect to="/dashboard" />
-        </Switch>;
+        </Switch>
       </ErrorBoundary>
     );
   };
@@ -201,9 +208,15 @@ export default class Content extends Component {
     }
   }
 
+  closeModalView = e => {
+    this.props.history.replace(this.baseLocation.pathname);
+  };
+
   render() {
     var DetailView = this.detailView;
     var BaseView = this.baseLocation ? this.getBaseView() : null;
+
+    let ModalFormView = this.modalView;
 
     if (DetailView) {
       DetailView = BaseView ? (
@@ -221,12 +234,31 @@ export default class Content extends Component {
           <DetailView {...this.detailProps} />
         </ErrorBoundary>
       );
+    } else if (ModalFormView) {
+      ModalFormView = BaseView ? (
+        <ModalMask
+          maskClosable={false}
+          onClose={this.closeModalView}
+          class={ModalFormView.MODAL_MASK_CLASS}
+        >
+          <ModalFormView
+            {...this.detailProps}
+            onClose={this.closeModalView}
+            closeUrl={BaseView ? this.baseLocation.pathname : undefined}
+          />
+        </ModalMask>
+      ) : (
+        <ErrorBoundary>
+          <ModalFormView {...this.detailProps} />
+        </ErrorBoundary>
+      );
     }
 
     return (
       <main class="main-content">
         {BaseView}
         {DetailView}
+        {ModalFormView}
       </main>
     );
   }

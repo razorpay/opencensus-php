@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import fetch, { adminFetch } from 'common/fetch';
 import { SelectField, SwitchField } from 'ui/Field';
 import Form from 'ui/Form';
@@ -113,7 +113,7 @@ export class RejectActivation extends Component {
     } = this.state;
 
     return (
-      <BaseModal
+      <ModalContent
         header={
           <div>
             Change status to: Rejected
@@ -169,14 +169,14 @@ export class RejectActivation extends Component {
             </div>
           )}
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }
 
 //Modal when activation state is set to "needs_clarification"
 export const NeedClarificationActivation = observer(({ fetchFn }) => (
-  <BaseModal header="Change Status to: Needs Clarification">
+  <ModalContent header="Change Status to: Needs Clarification">
     <Form>
       <input
         type="hidden"
@@ -199,7 +199,7 @@ export const NeedClarificationActivation = observer(({ fetchFn }) => (
         pendingClass="small spinner"
       />
     </Form>
-  </BaseModal>
+  </ModalContent>
 ));
 
 const categoryMap = {

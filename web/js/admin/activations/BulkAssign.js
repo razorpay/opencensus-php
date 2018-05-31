@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import Form from 'ui/Form';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import AsyncButton from 'ui/AsyncButton';
 import Field, { SearchableSelectField } from 'ui/Field';
 import { openModal } from 'common/modal';
@@ -15,7 +15,7 @@ export default class BulkAssign extends Component {
     const totalForms = selectedMerchants.length;
 
     return (
-      <BaseModal header="Assign Reviewers">
+      <ModalContent header="Assign Reviewers">
         <Form>
           <p>
             <strong>
@@ -39,7 +39,7 @@ export default class BulkAssign extends Component {
             }}
           />
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

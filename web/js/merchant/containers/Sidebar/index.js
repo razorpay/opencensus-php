@@ -5,11 +5,14 @@ import ProgressBar from 'rzp/ui/ProgressBar';
 
 import MainNavLink from 'merchant/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
+import store from 'merchant/store';
+
+import { areReportsStillDownloading } from 'merchant/modules/reports';
 
 import { trackGoToActivation, trackGoToConfig } from './ga';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
-const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals)/;
+const ACCOUNTS_ROUTES_REGEX = /^\/(profile|credits|addfunds|referrals)/;
 const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|applications|applications\/new)/;
 const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
@@ -23,6 +26,20 @@ const RZPLogoPNG = '/img/logo.png';
 export default class Sidebar extends Component {
   constructor(props) {
     super(props);
+
+    //reference store data to update UI of sidebar navs
+    this.state = {
+      isReportsPending: false,
+    };
+
+    store.subscribe(() => {
+      //update state when report list store changes
+      const reportList = store.getState().reports.currentReportList;
+
+      this.setState({
+        isReportsPending: areReportsStillDownloading(reportList),
+      });
+    });
 
     this.onSidebarBannerClick = this.onSidebarBannerClick.bind(this);
   }
@@ -72,6 +89,7 @@ export default class Sidebar extends Component {
   }
 
   render() {
+    const { isReportsPending } = this.state;
     let { user, config, logoURL } = this.props;
     let routes = this.routes;
     let isMerchant = !!user.current;
@@ -89,6 +107,20 @@ export default class Sidebar extends Component {
             if (!isMerchant) {
               null;
             } else {
+              let actionCopy;
+
+              if (user.activation_progress < 100) {
+                // If user form is still unfilled
+                actionCopy = 'Activate your account';
+              } else if (user.isSubmitted) {
+                actionCopy = 'Form submitted';
+              } else if (user.activation_progress == 100) {
+                // Form is unfilled and Not submitted
+                actionCopy = 'Submit Form';
+              } else if (user.isActivated) {
+                actionCopy = 'Account Activated';
+              }
+
               <div class="nav">
                 <ShowWhen myRole="owner manager admin">
                   {(!user.isSubmitted || !config.hasPersonalised) && (
@@ -105,13 +137,7 @@ export default class Sidebar extends Component {
                         }`}
                       >
                         <div className="clearfix">
-                          <div className="pull-left">
-                            {!user.isSubmitted
-                              ? 'Activate your account'
-                              : !user.isActivated
-                                ? 'Form submitted'
-                                : 'Account Activated'}
-                          </div>
+                          <div className="pull-left">{actionCopy}</div>
                           <div className="pull-right">
                             <i className="i i-chevron-right" />
                           </div>
@@ -208,6 +234,7 @@ export default class Sidebar extends Component {
                   icon="i i-books text-danger"
                   to="/reports"
                   notMyRole="sellerapp support"
+                  isPending={isReportsPending}
                 />
                 <MainNavLink
                   label="My Account"

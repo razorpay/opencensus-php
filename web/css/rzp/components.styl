@@ -583,12 +583,13 @@ dl.rzp-definition {
     position: relative
     display:block;
     width: 100%
-    border-radius: 4px
+    border-radius: 2px
     cursor: pointer
     border: 1px dashed $primary-color
     font-weight: unset
+    background: rgba(82, 143, 240, 0.02)
 
-    &--highlight {
+    &--highlight, &:not(.Dropzone-cavity--staged):hover {
       background: #fff
       box-shadow: 2px 2px 6px rgba(0,0,0,0.12)
     }
@@ -606,7 +607,7 @@ dl.rzp-definition {
 
     &--disabled {
       cursor: not-allowed
-      background-color: #eee
+      background-color: #f8f8f8
     }
   }
 
@@ -735,3 +736,57 @@ dl.rzp-definition {
   }
 
 /* End Component: rzp/ui/TableSlider */
+
+
+/* Component: Infinite Loader Bar */
+.bar-loader {
+  height: 4px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background-color: #ddd;
+  margin: 10px 0;
+  border-radius: 2px;
+  &.pending {
+    &:before{
+      display: block;
+      position: absolute;
+      content: "";
+      left: -200px;
+      width: 200px;
+      height: 4px;
+      background-color: $primary-color;
+      animation: bar-loading 2s linear infinite;
+    }  
+  }
+}
+
+@keyframes bar-loading {
+    from {left: -200px; width: 30%;}
+    50% {width: 30%;}
+    70% {width: 70%;}
+    80% { left: 50%;}
+    95% {left: 120%;}
+    to {left: 100%;}
+}
+/* End Component: Infinite Loader Bar */
+
+/* Component: Infinite Loader Circle*/
+
+.spin-loader {
+  display: inline-block;
+  margin: 0 5px;
+  height: 20px;
+  width: 20px;
+  animation: spin-loading 0.8s infinite linear;
+  border: 2px solid $primary-color;
+  border-right-color: transparent;
+  border-radius: 50%;
+  vertical-align: middle
+}
+
+@keyframes spin-loading {
+  0%    { transform: rotate(0deg); }
+  100%  { transform: rotate(360deg); }
+} 
+
