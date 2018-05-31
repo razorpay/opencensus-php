@@ -161,8 +161,13 @@ class Beneficiary extends Base\Beneficiary
      *
      * {@inheritdoc}
      */
-    protected function normalizeString(string $string, int $length = 0): string
+    protected function normalizeString($string, int $length = 0, string $default = 'NA'): string
     {
+        if (empty($string) === true)
+        {
+            return $default;
+        }
+
         $normalizedString = preg_replace("/\r\n|\r|\n|,|'/", ' ', $string);
 
         if ($length > 0)

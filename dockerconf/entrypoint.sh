@@ -57,7 +57,7 @@ configure_cloud(){
   echo "casting alohomora - vault,env.php,apache"
   sed -i "s|APACHE_HOST|$HOSTNAME|g" dockerconf/api.apache.conf.j2
   $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app api "environment/.env.vault.j2" "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
-  echo "copying nginx config"
+  echo "copying apache config"
   cp dockerconf/api.apache.conf /etc/apache2/conf.d/api.conf
 
   ## Enable newrelic only for prod and perf

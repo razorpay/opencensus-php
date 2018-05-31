@@ -77,6 +77,9 @@ class Constants
     // Payment authentication
     const ATM_PIN_AUTH                  = 'atm_pin_auth';
 
+    // Payment headless otp auth
+    const HEADLESS_OTP                  = 'headless_otp';
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
@@ -166,6 +169,7 @@ class Constants
         self::EXPOSE_CARD_IIN               => true,
         self::S2S_OPTIONAL_DATA             => true,
         self::PARTNER                       => true,
+        self::HEADLESS_OTP                  => true,
     ];
 
     // Entity type constants

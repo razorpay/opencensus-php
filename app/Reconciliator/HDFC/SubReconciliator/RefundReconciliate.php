@@ -10,12 +10,12 @@ class RefundReconciliate extends Base\RefundReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_REFUND_ID          = ['merchant_trackid', 'MERCHANT_TRACKID'];
-    const COLUMN_REFUND_AMOUNT      = ['domestic_amt', 'DOMESTIC AMT'];
-    const COLUMN_ARN                = ['arn_no', 'ARN NO'];
-    const COLUMN_SEQUENCE_NUMBER    = ['sequence_number', 'SEQUENCE NUMBER'];
+    const COLUMN_REFUND_ID          = 'merchant_trackid';
+    const COLUMN_REFUND_AMOUNT      = 'domestic_amt';
+    const COLUMN_ARN                = 'arn_no';
+    const COLUMN_SEQUENCE_NUMBER    = 'sequence_number';
 
-    const COLUMN_TERMINAL_NUMBER    = ['terminal_number', 'TERMINAL NUMBER'];
+    const COLUMN_TERMINAL_NUMBER    = 'terminal_number';
 
     /**
      * If we are not able to find refund id to reconcile,
@@ -56,16 +56,11 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $refundId = null;
 
-        foreach (self::COLUMN_REFUND_ID as $cri)
+        if (empty($row[self::COLUMN_REFUND_ID]) === false)
         {
-            if (empty($row[$cri]) === false)
-            {
-                $refundId = $row[$cri];
+            $refundId = $row[self::COLUMN_REFUND_ID];
 
-                $refundId = trim(str_replace("'", '', $refundId));
-
-                break;
-            }
+            $refundId = trim(str_replace("'", '', $refundId));
         }
 
         return $refundId;
@@ -101,20 +96,15 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $arn = null;
 
-        foreach (self::COLUMN_ARN as $ca)
+        if (empty($row[self::COLUMN_ARN]) === false)
         {
-            if (empty($row[$ca]) === false)
+            $arn = $row[self::COLUMN_ARN];
+
+            $arn = trim(str_replace("'", '', $arn));
+
+            if (stripos($arn, 'onus') !== false)
             {
-                $arn = $row[$ca];
-
-                $arn = trim(str_replace("'", '', $arn));
-
-                if (stripos($arn, 'onus') !== false)
-                {
-                    $arn = $this->getRRNForOnusTransaction($row);
-                }
-
-                break;
+                $arn = $this->getRRNForOnusTransaction($row);
             }
         }
 
@@ -125,14 +115,9 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $refundAmount = null;
 
-        foreach (self::COLUMN_REFUND_AMOUNT as $cra)
+        if (isset($row[self::COLUMN_REFUND_AMOUNT]) === true)
         {
-            if (isset($row[$cra]) === true)
-            {
-                $refundAmount = $row[$cra];
-
-                break;
-            }
+            $refundAmount = $row[self::COLUMN_REFUND_AMOUNT];
         }
 
         return floatval($refundAmount) * 100;
@@ -161,16 +146,11 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $terminalId = null;
 
-        foreach (self::COLUMN_TERMINAL_NUMBER as $ctn)
+        if (empty($row[self::COLUMN_TERMINAL_NUMBER]) === false)
         {
-            if (empty($row[$ctn]) === false)
-            {
-                $terminalId = $row[$ctn];
+            $terminalId = $row[self::COLUMN_TERMINAL_NUMBER];
 
-                $terminalId = trim(str_replace("'", '', $terminalId));
-
-                break;
-            }
+            $terminalId = trim(str_replace("'", '', $terminalId));
         }
 
         $isCybersource = (in_array($terminalId, Reconciliate::CYBERSOURCE_HDFC_TERMINAL_IDS, true) === true);
@@ -209,14 +189,11 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $sequenceNumber = 'NA';
 
-        $columnSeqNumber = array_first(self::COLUMN_SEQUENCE_NUMBER, function ($csn) use ($row)
+        if (empty($row[self::COLUMN_SEQUENCE_NUMBER]) === false)
         {
-            return (empty($row[$csn]) === false);
-        });
+            $columnSeqNumber = $row[self::COLUMN_SEQUENCE_NUMBER];
 
-        if ($columnSeqNumber !== null)
-        {
-            $sequenceNumberValue = str_replace("'", '', $row[$columnSeqNumber]);
+            $sequenceNumberValue = str_replace("'", '', $columnSeqNumber);
 
             if (filled($sequenceNumberValue) === true)
             {

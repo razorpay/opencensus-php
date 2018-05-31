@@ -917,6 +917,11 @@ class Entity extends Base\PublicEntity
         return $isEnabled;
     }
 
+    public function isDebitRecurring()
+    {
+        return ($this->isTypeApplicable(Type::DEBIT_RECURRING) === true);
+    }
+
     public function isNo2fa()
     {
         return ($this->isTypeApplicable(Type::NO_2FA) === true);

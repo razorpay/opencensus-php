@@ -784,7 +784,8 @@ class Terminal extends Base
             'card'                      => 1,
             'type'                      => [
                 Type::RECURRING_NON_3DS => '1',
-                Type::RECURRING_3DS => '1'
+                Type::RECURRING_3DS     => '1',
+                Type::DEBIT_RECURRING   => '1',
             ],
             'gateway_merchant_id'       => 'random',
             'gateway_terminal_id'       => 'recurring_random',
@@ -793,7 +794,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $this->createEntityInTestAndLive('terminal', $attributes);
+        return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
     public function createSharedCybersourceAxisTerminal(array $attributes = [])

@@ -90,7 +90,7 @@ class Reconciliator extends Base\RefundFile
                 ClaimFields::ERROR_DESCRIPTION  => $this->getErrorMessage($row),
             ];
 
-            $totalAmount +=  $row[self::PAYMENT_ENTITY][Payment\Entity::AMOUNT] / 100;
+            $totalAmount += $row[self::PAYMENT_ENTITY][Payment\Entity::AMOUNT] / 100;
         }
 
         $this->content($data, 'claims_data');
