@@ -24,9 +24,8 @@ export default class ListToggler extends Component {
         <span class="list-label">
           <b>{label}</b> {subLabel}
         </span>
-        {!loading && limit && limit < totalItems && <span> • </span>}
 
-        <span class="primary-link">
+        <span class="primary-link pull-right">
           {!loading &&
             limit &&
             limit < totalItems && (

@@ -34,7 +34,11 @@ const renderBatchDetails = props => {
           <Time value={batch.created_at} />
         </EntityDetailRow>
       </div>
-      <InvoicesTable invoices={invoices} batchId={batch.id} />
+      <InvoicesTable
+        totalItems={stats.issued_count}
+        invoices={invoices}
+        batchId={batch.id}
+      />
       <hr />
       {stats.batch_total > stats.issued_count &&
         batch.status !== 'created' && (
@@ -64,14 +68,14 @@ export default class PaymentLinksBatchDetailsContainer extends Component {
   }
 }
 
-function InvoicesTable({ invoices, batchId }) {
+function InvoicesTable({ invoices, batchId, totalItems }) {
   return (
     <ListToggler
       label={invoices.length ? pluralize('Payment Link', invoices.length) : ''}
       subLabel={invoices.length ? 'created from this batch' : ''}
       limit={4}
       limitUrl={`/paymentlinks?batch_id=${batchId}`}
-      totalItems={invoices.length}
+      totalItems={totalItems}
       onViewAllClick={gaEvents.trackSeeAllLinks(batchId)}
     >
       <DataTable
