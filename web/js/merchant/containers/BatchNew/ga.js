@@ -1,4 +1,4 @@
-import { stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import { setTrackData } from 'rzp/utils/googleAnalytics';
 
@@ -27,7 +27,7 @@ export default pageTitle => {
     },
 
     trackSearchFilters: params => {
-      const label = stringifyQueryParamsWithPipe(params);
+      const label = getKeysSeparatedByPipe(params);
       track({
         eventAction: 'Search - Batches',
         eventLabel: label,
@@ -43,7 +43,7 @@ export default pageTitle => {
     },
 
     trackSendAllLinks: params => {
-      const label = stringifyQueryParamsWithPipe(params);
+      const label = getKeysSeparatedByPipe(params);
       track({
         eventAction: 'Send - All Payment Links ',
         eventLabel: label,

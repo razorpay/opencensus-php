@@ -134,16 +134,17 @@ export default class BatchList extends Component {
 function batchActions(onDownloadClick, otherBatchActions = []) {
   return {
     title: 'Actions',
-    value: item => (
-      <div class="btn-toolbar">
-        <button
-          class="btn btn-xs btn-default"
-          onClick={() => onDownloadClick(item.id)}
-        >
-          <i class="i i-download" /> Download
-        </button>
-        {otherBatchActions.map(batchAction => batchAction(item))}
-      </div>
-    ),
+    value: item =>
+      item.status === 'processed' && (
+        <div class="btn-toolbar">
+          <button
+            class="btn btn-xs btn-default"
+            onClick={() => onDownloadClick(item.id)}
+          >
+            <i class="i i-download" /> Download
+          </button>
+          {otherBatchActions.map(batchAction => batchAction(item))}
+        </div>
+      ),
   };
 }
