@@ -71,6 +71,7 @@ export default class BatchUpload extends Component {
                   batchName={this.state.batchName}
                   batch={this.state.batch}
                   batchType={this.props.batchType}
+                  maxRows={this.props.maxRows}
                   batchFormInitialValues={this.props.batchFormInitialValues}
                   renderBatchCreationForm={this.props.renderBatchCreationForm}
                   trackUploadBatch={this.props.gaEvents.trackUploadBatch}

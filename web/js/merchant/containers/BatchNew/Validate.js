@@ -9,7 +9,6 @@ import { validatePaymentLinkBatch as validateBatch } from 'merchant/modules/batc
 export default class BatchValidate extends Component {
   state = {
     status: null,
-    shouldLoadMore: false,
     notifyMsg: null,
     fileUrl: null,
     stagedFileStatus: null,
@@ -52,10 +51,18 @@ export default class BatchValidate extends Component {
             'Some fields have invalid entries',
             response.data.signed_url
           );
-          this.props.gaEvents.trackUploadBatchFile('error', 'Some fields have invalid entries', secondsSinceStart);
+          this.props.gaEvents.trackUploadBatchFile(
+            'error',
+            'Some fields have invalid entries',
+            secondsSinceStart
+          );
         } else {
           this.changeBatchState('success');
-          this.props.gaEvents.trackUploadBatchFile('success', undefined, secondsSinceStart)
+          this.props.gaEvents.trackUploadBatchFile(
+            'success',
+            undefined,
+            secondsSinceStart
+          );
           this.props.onValidation(
             response.data,
             file.name.replace(/\.[^/.]+$/, '')
@@ -66,15 +73,13 @@ export default class BatchValidate extends Component {
       .catch(error => {
         this.changeBatchState('error', error.errors[0]);
         clearInterval(t);
-        this.props.gaEvents.trackUploadBatchFile('error', error.errors[0], secondsSinceStart);
+        this.props.gaEvents.trackUploadBatchFile(
+          'error',
+          error.errors[0],
+          secondsSinceStart
+        );
         return error;
       });
-  };
-
-  handleLoadMore = () => {
-    this.setState({
-      shouldLoadMore: !this.state.loadMore,
-    });
   };
 
   handleBiggerFileSize = () => {
@@ -92,9 +97,10 @@ export default class BatchValidate extends Component {
         onFileChange={this.handleBatchValidation}
         onBiggerFileSize={this.handleBiggerFileSize}
         onCloseClick={this.changeBatchState}
-        onSampleFileDownload={this.props.gaEvents.trackSampleFileDownload('From New Modal')}
+        onSampleFileDownload={this.props.gaEvents.trackSampleFileDownload(
+          'From New Modal'
+        )}
         onErrorReportDownload={this.handleErrorReportDownload}
-        maxRows={5000}
         {...this.state}
         {...this.props}
       />

@@ -92,6 +92,8 @@ export default class BatchListContainer extends ListContainer {
         ctaText={`Create Batch${notify ? ' & Send Payment Links' : ''}`}
         pendingText={`Creating${notify ? ' & Sending' : ''}...`}
         batchFormInitialValues={batchFormInitialValues}
+        batchType="payment_link"
+        maxRows={5000}
         gaEvents={gaEvents}
         renderBatchCreationForm={() => (
           <PaymentLinksForm
