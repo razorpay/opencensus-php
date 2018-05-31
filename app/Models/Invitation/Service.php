@@ -52,7 +52,7 @@ class Service extends Base\Service
      */
     public function resend(string $inviteId, array $input): array
     {
-        $invitation = $this->repo->invitation->findByPublicIdAndMerchant($inviteId, $this->merchant);
+        $invitation = $this->repo->invitation->findByIdAndMerchant($inviteId, $this->merchant);
 
         $this->core()->resend($invitation, $input);
 
@@ -68,7 +68,7 @@ class Service extends Base\Service
      */
     public function edit(string $inviteId, array $input): array
     {
-        $invitation = $this->repo->invitation->findByPublicIdAndMerchant($inviteId, $this->merchant);
+        $invitation = $this->repo->invitation->findByIdAndMerchant($inviteId, $this->merchant);
 
         $invitation = $this->core()->edit($invitation, $input);
 
@@ -83,7 +83,7 @@ class Service extends Base\Service
      */
     public function delete(string $inviteId): array
     {
-        $invitation = $this->repo->invitation->findByPublicIdAndMerchant($inviteId, $this->merchant);
+        $invitation = $this->repo->invitation->findByIdAndMerchant($inviteId, $this->merchant);
 
         $invitation->deleteOrFail();
 
