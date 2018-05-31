@@ -16,6 +16,8 @@ import { showNotification } from 'rzp/modules/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 
+import { trackHelpClick } from 'merchant/containers/PaymentLinks/ga';
+
 const selector = formValueSelector('newPaymentLink');
 
 function validate(values) {
@@ -320,6 +322,14 @@ export default class CreatePaymentLink extends Component {
                         />
                         <label for="partial_payment" class="icon i-check">
                           Enable Partial Payments
+                          <a
+                            class="btn-link m-l"
+                            href="https://razorpay.com/docs/private/partial-payments/"
+                            target="_blank"
+                            onClick={trackHelpClick}
+                          >
+                            What's this?
+                          </a>
                         </label>
                       </div>
                     </div>

@@ -94,21 +94,19 @@ export default class PaymentLinksContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
-        <TestModeBanner />
+        <ShowWhen notMyRole="support">
+          <div class="btn-toolbar pull-right header-btns">
+            <button
+              class="btn btn-primary"
+              onClick={() => this.showPaymentLinkModal()}
+            >
+              <i class="i i-plus" />
+              <span>Create Payment Link</span>
+            </button>
+          </div>
+        </ShowWhen>
 
-        <HeaderAction>
-          <ShowWhen notMyRole="support">
-            <div class="btn-toolbar pull-right">
-              <button
-                class="btn btn-primary"
-                onClick={() => this.showPaymentLinkModal()}
-              >
-                <i class="i i-plus" />
-                <span>Create Payment Link</span>
-              </button>
-            </div>
-          </ShowWhen>
-        </HeaderAction>
+        <TestModeBanner />
 
         <InvoiceListFilter
           form="InvoiceListFilter"
