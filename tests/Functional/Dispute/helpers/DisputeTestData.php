@@ -125,12 +125,21 @@ return [
 
     'testDisputeLostEventData' => [
         'entity'   => 'event',
-        'event'    => 'dispute.lost',
+        'event'    => 'payment.dispute.lost',
         'contains' => [
-            'dispute',
             'payment',
+            'dispute',
         ],
         'payload' => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 1000000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'captured'   => true,
+                ],
+            ],
             'dispute' => [
                 'entity' => [
                     'entity'             => 'dispute',
@@ -140,6 +149,17 @@ return [
                     'reason_code'        => 'SOMETHING_BAD',
                 ],
             ],
+        ],
+    ],
+
+    'testDisputeWonEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payment.dispute.won',
+        'contains' => [
+            'payment',
+            'dispute',
+        ],
+        'payload' => [
             'payment' => [
                 'entity' => [
                     'entity'     => 'payment',
@@ -147,6 +167,44 @@ return [
                     'currency'   => 'INR',
                     'status'     => 'captured',
                     'captured'   => true,
+                ],
+            ],
+            'dispute' => [
+                'entity' => [
+                    'entity'             => 'dispute',
+                    'amount'             => 1000000,
+                    'currency'           => 'INR',
+                    'status'             => 'won',
+                    'reason_code'        => 'SOMETHING_BAD',
+                ],
+            ],
+        ],
+    ],
+
+    'testDisputeClosedEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payment.dispute.closed',
+        'contains' => [
+            'payment',
+            'dispute',
+        ],
+        'payload' => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 1000000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'captured'   => true,
+                ],
+            ],
+            'dispute' => [
+                'entity' => [
+                    'entity'             => 'dispute',
+                    'amount'             => 1000000,
+                    'currency'           => 'INR',
+                    'status'             => 'closed',
+                    'reason_code'        => 'SOMETHING_BAD',
                 ],
             ],
         ],
