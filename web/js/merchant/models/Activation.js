@@ -1,5 +1,7 @@
 import Entity from './Entity';
 import { merchantFetch } from 'rzp/utils/ajax';
+import { uniqueArray } from 'common/util';
+
 import {
   normalizeBoolean,
   isBlank,
@@ -144,7 +146,7 @@ export default class Activation extends Entity {
       }, []);
 
       //unique items needed & convert set to array.
-      unfinishedSteps = [...new Set(unfinishedSteps)];
+      unfinishedSteps = uniqueArray(unfinishedSteps);
 
       if (unfinishedSteps.length) {
         data.steps_finished = arrayDiff(steps, unfinishedSteps);
