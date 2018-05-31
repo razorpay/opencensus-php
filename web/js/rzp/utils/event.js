@@ -1,6 +1,6 @@
 import { isFunction } from './rzp-utils';
 
-function Event(name, options = {}) {
+function createEvent(name, options = {}) {
   if (isFunction(window.Event)) {
     return new window.Event(name, options);
   }
@@ -13,4 +13,4 @@ function Event(name, options = {}) {
   return event;
 }
 
-export default Event;
+export default createEvent;
