@@ -133,3 +133,14 @@ export function getDetailsForIFSC(ifscCode) {
     return null; // Invalid IFSC code
   });
 }
+
+/* Returns array with non-duplicate entries */
+export function uniqueArray(arr) {
+  if (!arr || !arr.length) {
+    return;
+  }
+
+  const map = {};
+
+  return arr.filter(item => !map[item] && (map[item] = true));
+}
