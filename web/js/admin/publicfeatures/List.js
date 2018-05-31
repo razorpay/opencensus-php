@@ -8,7 +8,7 @@ import Collection from 'model/collection';
 import { adminFetch } from 'common/fetch';
 import { showEntity } from './Entity';
 import { statusPill, publicFeature } from 'common/data';
-import { snakeToTitleCase, prevent, formatDate } from 'common/util';
+import { snakeToTitleCase, prevent, formatDate, subString } from 'common/util';
 
 const defaultFilters = {
   status: '',
@@ -62,6 +62,7 @@ export default class PublicFeaturesList extends Component {
     ],
     ['Product Activation Status', item => statusPill(item.status)],
     ['Submitted At', item => formatDate(item.created_at)],
+    ['Internal Comment', item => subString(item.internal_comment, 80)],
   ];
 
   onSubmit = filters => {

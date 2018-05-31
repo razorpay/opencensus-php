@@ -13,8 +13,13 @@ import DisputeDetails from 'merchant/containers/Disputes/Details';
 import BatchDetails from 'merchant/containers/BatchNew/Details';
 
 import PlanNew from 'merchant/containers/Plans/New';
+import ActivationContainer from 'merchant/containers/Activation/new';
 
-const entityMap = {
+/*
+* NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
+* */
+
+const entityDetailsMap = {
   '/payments/:id(pay_.+)/:entity_name(transfers)/new': PaymentsDetails,
   '/payments/:id(pay_.+)/:transfer_id(trf_.+)': PaymentsDetails,
   '/payments/:id(pay_.+)': PaymentsDetails,
@@ -39,8 +44,16 @@ const entityMap = {
   '/disputes/:id(disp_.+)': DisputeDetails,
 };
 
+const entityModalsMap = {
+  '/activation': ActivationContainer,
+};
+
 export function matchDetail(pathname) {
-  return matcher(entityMap, pathname);
+  return matcher(entityDetailsMap, pathname);
+}
+
+export function matchModal(pathname) {
+  return matcher(entityModalsMap, pathname);
 }
 
 function matcher(routeMap, pathname) {

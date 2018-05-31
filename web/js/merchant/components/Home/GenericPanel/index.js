@@ -10,13 +10,19 @@ import { isChildSameType, checkChildrenType } from 'rzp/utils/rzp-react-utils';
 import Overlay from 'rzp/ui/Overlay';
 import Spinner from 'rzp/ui/Spinner';
 
+export function WarningSvg() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg">
+      <path d="M20.857 16.49L11.36.457a1 1 0 0 0-1.72 0L.143 16.49a1 1 0 0 0 .86 1.51h18.994a1 1 0 0 0 .86-1.51zm-11.38-2.489a1 1 0 0 1 1-1h.046a1 1 0 0 1 0 2h-.046a1 1 0 0 1-1-1zm0-3V6.004h2.046v4.999H9.477z" />
+    </svg>
+  );
+}
+
 const NoDataMsg = ({ title = '', subtitle = '' }) => {
   return (
     <div className="no-data-msg">
       <p className="no-data-titile">
-        <svg xmlns="http://www.w3.org/2000/svg">
-          <path d="M20.857 16.49L11.36.457a1 1 0 0 0-1.72 0L.143 16.49a1 1 0 0 0 .86 1.51h18.994a1 1 0 0 0 .86-1.51zm-11.38-2.489a1 1 0 0 1 1-1h.046a1 1 0 0 1 0 2h-.046a1 1 0 0 1-1-1zm0-3V6.004h2.046v4.999H9.477z" />
-        </svg>
+        {WarningSvg()}
         <span>&nbsp;</span>
         {title}
       </p>
@@ -26,8 +32,7 @@ const NoDataMsg = ({ title = '', subtitle = '' }) => {
 };
 
 /*
- * Useful to show actionable items on top of 
- * the panel
+ * Useful to show actionable items on top of the panel
  */
 class PanelTopbar extends Component {
   constructor(props) {

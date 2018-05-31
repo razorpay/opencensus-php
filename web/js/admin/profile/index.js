@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import user, { org } from 'admin/user';
 import Duplex from 'ui/Duplex';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import Field from 'ui/Field';
 import Form from 'ui/Form';
 import { DataTable } from 'ui/Table';
@@ -214,9 +214,9 @@ export default class Profile extends Component {
             text="Change Password"
             onClick={_ => {
               openModal(
-                <BaseModal header="Change Password">
+                <ModalContent header="Change Password">
                   <PasswordResetModal />
-                </BaseModal>
+                </ModalContent>
               );
             }}
           />

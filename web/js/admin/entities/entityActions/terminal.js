@@ -2,7 +2,7 @@ import { openModal, closeModal, confirm } from 'common/modal';
 import fetch, { adminPut, adminDelete } from 'common/fetch';
 import { notifyError, notifySuccess } from 'common/modal';
 
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import Form from 'ui/Form';
 import Field from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
@@ -217,7 +217,7 @@ const AssignSubMerchants = ({
   }
 
   return (
-    <BaseModal header="Assign Sub Merchant To Terminal">
+    <ModalContent header="Assign Sub Merchant To Terminal">
       <Form class="full-span full-elements">
         <Field label="Merchant id" name="merchant_id" />
         <AsyncButton
@@ -235,14 +235,14 @@ const AssignSubMerchants = ({
             customClass="limited assign-submerchants"
           />
         )}
-    </BaseModal>
+    </ModalContent>
   );
 };
 
 // Edit primary merchant form
 const EditPrimaryMerchantForm = ({ id, handleSubmit }) => {
   return (
-    <BaseModal header="Change Primary Merchant for the Terminal">
+    <ModalContent header="Change Primary Merchant for the Terminal">
       <Form class="full-span full-elements">
         <Field
           label="Primary merchant id"
@@ -256,6 +256,6 @@ const EditPrimaryMerchantForm = ({ id, handleSubmit }) => {
           onSubmit={handleSubmit}
         />
       </Form>
-    </BaseModal>
+    </ModalContent>
   );
 };

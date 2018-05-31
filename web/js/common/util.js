@@ -95,3 +95,41 @@ export function isBlank(value) {
   }
   return isNone(value);
 }
+
+export function subString(str, length) {
+  if (!str) {
+    return str;
+  }
+
+  if (str.length > length) {
+    return `${str.substr(0, length)} ...`;
+  } else {
+    return str;
+  }
+}
+
+/*
+* Helper fn. to fetch IFSC bank details for IFSC code entered in field
+* */
+export function getDetailsForIFSC(ifscCode) {
+  if (ifscCode.length !== 11) {
+    return null;
+  }
+
+  return axios('https://ifsc.razorpay.com/' + ifscCode).then(info => {
+    info = info.data;
+
+    if (info) {
+      info = {
+        Bank: info.BANK,
+        Branch: info.BRANCH,
+        City: info.CITY,
+        State: info.STATE,
+      };
+
+      return info;
+    }
+
+    return null; // Invalid IFSC code
+  });
+}

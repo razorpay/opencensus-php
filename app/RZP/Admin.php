@@ -2,6 +2,7 @@
 
 namespace App\RZP;
 
+use App\Http\ApiUrl;
 use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Client as Guzzle;
 
@@ -41,7 +42,7 @@ class Admin extends Entity
     public function makeGuzzleFileRequest($input, $mode = 'live')
     {
         // Creates a new Guzzle client
-        $client = new Guzzle(['base_url' => Config::get('api.url')]);
+        $client = new Guzzle(['base_url' => ApiUrl::getApiBaseUrl()]);
 
         // Sets the options for the request. Auth should be part of this.
         $options = array(

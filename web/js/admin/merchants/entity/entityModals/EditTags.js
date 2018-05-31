@@ -1,6 +1,6 @@
 import React from 'react';
 import { toJS } from 'mobx';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import Form from 'ui/Form';
 import { TextAreaField } from 'ui/Field';
@@ -43,7 +43,7 @@ export default ({ props, merchantId }) => {
   }
 
   return (
-    <BaseModal header="Edit Tags">
+    <ModalContent header="Edit Tags">
       <Form class="full-span full-elements" style={{ width: '450px' }}>
         <TextAreaField
           type="textarea"
@@ -59,6 +59,6 @@ export default ({ props, merchantId }) => {
           onSubmit={onSubmit}
         />
       </Form>
-    </BaseModal>
+    </ModalContent>
   );
 };

@@ -9,11 +9,14 @@ a, .btn-link {
 
 html, body {
   background-color: #f0f3f4;
-  overflow-x: hidden;
 }
 
 body {
   -webkit-font-smoothing: antialiased;
+
+  &.noscroll {
+    overflow: hidden;
+  }
 }
 
 *:focus {
@@ -150,7 +153,7 @@ body {
       padding: 12px 20px;
       background-color: #315BC2;
       margin-bottom: 15px;
-     
+
       i.i-chevron-right {
 
         position: relative;
@@ -173,7 +176,7 @@ body {
         line-height: 20px;
         color: rgba(255, 255, 255, 0.7);
       }
- 
+
       div.activation-bar-content {
 
         display: table;
@@ -185,7 +188,7 @@ body {
 
           display: table-cell;
           vertical-align: middle;
-          
+
           &.activation-bar-text {
 
             white-space: nowrap;
@@ -250,6 +253,10 @@ body {
       border-color: $primary-color;
       color: #fff;
       background-color: #252939;
+    }
+
+    .spin-loader {
+      margin-top: 10px
     }
   }
 
@@ -919,7 +926,7 @@ tr:hover .row-action.btn-group {
   display: inline-block;
   color: #777;
 
-  .i-done {
+  .i-check {
     margin-top: 2px;
     margin-left: 5px;
   }

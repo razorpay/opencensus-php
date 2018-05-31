@@ -5,6 +5,7 @@ use Auth;
 use Input;
 use App\User;
 use App\Admin;
+use App\Http\ApiUrl;
 use App\Trace\TraceCode;
 use App\Http\AppResponse;
 
@@ -57,7 +58,7 @@ class UserController extends Controller
                 'isPreSignupComplete'   => $details['pre_signup_complete'],
                 'user'                  => json_encode($details),
                 'org'                   => json_encode($org),
-                'api_host'              => config('api.url')
+                'api_host'              => ApiUrl::getApiBaseUrl(),
             ];
         }
 

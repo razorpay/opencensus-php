@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Table from 'ui/Table';
 import { adminFetch } from 'common/fetch';
 import { openModal } from 'common/modal';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 export default class DiffModal extends Component {
   state = {
@@ -43,13 +43,13 @@ export default class DiffModal extends Component {
 
   render() {
     return (
-      <BaseModal header="Changes">
+      <ModalContent header="Changes">
         {this.state.pending ? (
           <div class="spinner center" />
         ) : (
           <Table items={this.state.items} fields={fields} />
         )}
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

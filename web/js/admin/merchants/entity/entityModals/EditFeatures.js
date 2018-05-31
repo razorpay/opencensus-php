@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import Form from 'ui/Form';
 import { TextAreaField, SelectField, SwitchField } from 'ui/Field';
@@ -79,7 +79,7 @@ export default class EditFeatures extends Component {
     }
 
     return (
-      <BaseModal header="Edit Features" customClass="edit-features">
+      <ModalContent header="Edit Features" class="edit-features">
         <Form class="full-span">
           <SelectField
             name="mode"
@@ -125,7 +125,7 @@ export default class EditFeatures extends Component {
             onSubmit={this.onSubmit}
           />
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

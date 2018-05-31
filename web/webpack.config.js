@@ -1,10 +1,34 @@
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const webpack = require('webpack');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const isProd = require('process').env.NODE_ENV === 'production';
 
-let plugins = [];
+const babelPlugins = [
+  '@babel/plugin-transform-react-display-name',
+  '@babel/plugin-transform-react-jsx',
+  ['@babel/plugin-proposal-decorators', { legacy: true }],
+  './babel-plugin-react-html-attrs',
+];
+
+if (!isProd) {
+  babelPlugins.push(
+    '@babel/plugin-transform-react-jsx-self',
+    '@babel/plugin-transform-react-jsx-source'
+  );
+}
+
+const stats = {
+  assets: false,
+  children: false,
+  version: false,
+  hash: false,
+  timings: false,
+  chunks: false,
+  chunkModules: false,
+};
 
 module.exports = {
+  mode: isProd ? 'production' : 'development',
+
   externals: [].reduce.call(
     (process.env.externals || '').split(/\s+/),
     (prev, next, index, arr) => {
@@ -31,15 +55,7 @@ module.exports = {
     modules: ['js', 'node_modules'],
   },
 
-  stats: {
-    assets: false,
-    children: false,
-    version: false,
-    hash: false,
-    timings: false,
-    chunks: false,
-    chunkModules: false,
-  },
+  stats,
 
   module: {
     rules: [
@@ -49,26 +65,41 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['env', 'react', 'stage-0'],
-            plugins: [
-              'transform-decorators-legacy',
-              'react-html-attrs',
+            presets: [
+              ['@babel/preset-env', { loose: true }],
+              [
+                '@babel/preset-stage-0',
+                { loose: true, decoratorsLegacy: true },
+              ],
             ],
+            plugins: babelPlugins,
           },
         },
+      },
+      {
+        test: /\.styl$/,
+        use: ExtractTextPlugin.extract({
+          use: [
+            {
+              loader: 'css-loader',
+            },
+            {
+              loader: 'stylus-loader',
+            },
+          ],
+        }),
       },
     ],
   },
 
   devtool: isProd ? false : false,
+  devServer: {
+    stats,
+  },
 
-  plugins,
+  plugins: [
+    new ExtractTextPlugin({
+      filename: '[name].css',
+    }),
+  ],
 };
-
-if (isProd) {
-  plugins.push(
-    new UglifyJSPlugin({
-      sourceMap: true,
-    })
-  );
-}
