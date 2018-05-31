@@ -4,3 +4,4 @@ web/node_modules
 web_modules
 vendor/
 docker_cache
+npm_cache

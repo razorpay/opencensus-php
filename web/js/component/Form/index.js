@@ -1,9 +1,8 @@
 export default class Form extends React.PureComponent {
-
   state = {
     pending: false,
-    mature: false
-  }
+    mature: false,
+  };
 
   formClass = _ => {
     let className = 'Form';
@@ -20,32 +19,25 @@ export default class Form extends React.PureComponent {
       className += ' ' + this.props.className;
     }
     return className;
-  }
+  };
 
   render() {
-    let {
-      beforeSubmit,
-      onSubmit,
-      layout,
-      className,
-      ...rest
-    } = this.props;
+    let { beforeSubmit, onSubmit, layout, className, ...rest } = this.props;
 
-    return <form
-      noValidate
-      {...rest}
-      class={this.formClass()}
-      onSubmit={this.onSubmit}
-    />
+    return (
+      <form
+        noValidate
+        {...rest}
+        class={this.formClass()}
+        onSubmit={this.onSubmit}
+      />
+    );
   }
 
   onSubmit = this.onSubmit.bind(this);
   onSubmit(e) {
     e.preventDefault();
-    let {
-      beforeSubmit,
-      validator
-    } = this.props;
+    let { beforeSubmit, validator } = this.props;
 
     let form = e.target;
     let data = this.serialize(form);
@@ -53,8 +45,8 @@ export default class Form extends React.PureComponent {
     if (validator) {
       if (validator(data, form)) {
         return this.setState({
-          mature: true
-        })
+          mature: true,
+        });
       }
     }
 
@@ -76,13 +68,13 @@ export default class Form extends React.PureComponent {
     let returnPromise = this.props.onSubmit(data);
     if (returnPromise instanceof Promise) {
       this.setState({
-        pending: true
-      })
+        pending: true,
+      });
       returnPromise.catch().then(_ => {
         this.setState({
-          pending: false
-        })
-      })
+          pending: false,
+        });
+      });
     }
     return returnPromise;
   }
@@ -92,7 +84,7 @@ export default class Form extends React.PureComponent {
     let lastData;
     Array.prototype.forEach.call(
       form.querySelectorAll('[name]'),
-      ({name, value, type, checked}) => {
+      ({ name, value, type, checked }) => {
         if (type === 'checkbox') {
           data[name] = checked;
         } else if (type === 'radio' && checked) {
@@ -101,7 +93,7 @@ export default class Form extends React.PureComponent {
           data[name] = value;
         }
       }
-    )
+    );
     return data;
   }
 }
@@ -116,7 +108,11 @@ function set(data, name, value) {
       if (!data[superKey]) {
         data[superKey] = {};
       }
-      return set(data[superKey], subKey + name.slice(matchedPart.length), value);
+      return set(
+        data[superKey],
+        subKey + name.slice(matchedPart.length),
+        value
+      );
     }
     name = subKey;
   }
