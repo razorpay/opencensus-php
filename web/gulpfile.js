@@ -103,25 +103,31 @@ let webpackCompiler;
 
 function playgroundServer() {
   const webpack = require('webpack');
-  require('http').createServer((req, res) => {
-    if (req.url === '/favicon.ico') return res.end('');
-    if (req.url === serverPath) return serveFile(req, res);
+  require('http')
+    .createServer((req, res) => {
+      if (req.url === '/favicon.ico') return res.end('');
+      if (req.url === serverPath) return serveFile(req, res);
 
-    serverPath = req.url;
-    if (webpackCompiler) webpackCompiler.close();
-    webpackConfig.entry = {
-      [req.url]: '.' + [req.url]
-    };
-    webpackCompiler = webpack(webpackConfig).watch({}, (err, stats) => {
-      serveFile(req, res);
-      console.log(stats.toString({
-        colors: true
-      }));
-    });
-  }).listen(3000);
+      serverPath = req.url;
+      if (webpackCompiler) webpackCompiler.close();
+      webpackConfig.entry = {
+        [req.url]: '.' + [req.url],
+      };
+      webpackCompiler = webpack(webpackConfig).watch({}, (err, stats) => {
+        serveFile(req, res);
+        console.log(
+          stats.toString({
+            colors: true,
+          })
+        );
+      });
+    })
+    .listen(3000);
 }
 
 const serveFile = (req, res) => {
   res.setHeader('Content-Type', 'application/javascript');
-  readFile(__dirname + '/../public/dist' + req.url, (e, content) => res.end(content));
-}
+  readFile(__dirname + '/../public/dist' + req.url, (e, content) =>
+    res.end(content)
+  );
+};

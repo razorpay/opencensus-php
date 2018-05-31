@@ -41,13 +41,13 @@ vendor_m=$(cat <<-END
 END
 )
 
-even=true
+EVEN=true
 for j in vendor_a vendor_m; do
   for i in ${!j}; do
-    if [ $even = true ] ; then
-      even=false
+    if [ "$EVEN" = "true" ] ; then
+      EVEN=false
     else
-      even=true
+      EVEN=true
       cat ./node_modules/$i
       printf '\n'
     fi
