@@ -28,12 +28,6 @@ class Core extends Base\Core
     const DEBIT_ADJUSTMENT_DESCRIPTION  = 'Debit disputed amount';
     const CREDIT_ADJUSTMENT_DESCRIPTION = 'Credit to reverse a previous dispute debit';
 
-    protected static $statusWebhookMap = [
-        Status::WON    => WebhookEvent::PAYMENT_DISPUTE_WON,
-        Status::LOST   => WebhookEvent::PAYMENT_DISPUTE_LOST,
-        Status::CLOSED => WebhookEvent::PAYMENT_DISPUTE_CLOSED,
-    ];
-
     /**
      * @var Mutex
      */
@@ -559,17 +553,15 @@ class Core extends Base\Core
 
     protected function fireDisputeStatusChangeWebhookEvent(Entity $dispute)
     {
-        // Webhooks are only sent when updated to these statuses
-        $eventStatuses = [Status::WON, Status::LOST, Status::CLOSED];
-
         $status = $dispute->getStatus();
 
-        if (in_array($status, $eventStatuses, true) === false)
+        if (($dispute->isDirty(Entity::STATUS) === false) or
+            (isset(Status::$webhookEventMap[$status]) === false))
         {
             return;
         }
 
-        $eventName = self::$statusWebhookMap[$status];
+        $eventName = Status::$webhookEventMap[$status];
 
         $this->firePaymentDisputeWebhookEvent($dispute->payment, $dispute, $eventName);
     }
