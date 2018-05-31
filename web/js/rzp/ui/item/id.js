@@ -60,8 +60,11 @@ export const source = item => idLink(item[sources[item.entity]]);
 export const recipient = makePropLink('recipient');
 export const reversal = makeIdLink('reversal');
 
-export const batchLink = item => (
-  <Link to={`/${batchBaseUrls[item.type]}/batchuploads/${item.id}`}>
-    {idItem(item.id)}
-  </Link>
-);
+export const batchLink = item => {
+  const url = batchBaseUrls[item.type];
+  return !!url ? (
+    <Link to={`/${url}/batchuploads/${item.id}`}>{idItem(item.id)}</Link>
+  ) : (
+    idItem(item.id)
+  );
+};
