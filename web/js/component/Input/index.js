@@ -45,6 +45,7 @@ function separateDomProps(props) {
   let {
     tag = 'input',
     label,
+    fieldLabel,
     description,
     options,
     defaultValue,
@@ -59,9 +60,12 @@ function separateDomProps(props) {
   return {
     tag,
     label,
+    fieldLabel,
     description,
     options,
     defaultValue,
+    addonBefore,
+    addonAfter,
     info,
     autoRender,
     props: rest,
@@ -285,7 +289,11 @@ export default class Field extends React.Component {
         onFocus={this.focus}
         onBlur={this.blur}
         onChange={this.change}
-        class="Input-el"
+        class={classList(
+          'Input-el',
+          allProps.addonBefore && 'Input-el--before',
+          allProps.addonAfters && 'Input-el--after'
+        )}
         defaultValue={defaultValue}
         ref={this.setRef}
       />
@@ -301,7 +309,17 @@ export default class Field extends React.Component {
               InputTag.toLowerCase() === 'select' && 'Select-elWrapper'
             )}
           >
+            {allProps.addonBefore && (
+              <span class="Input-addons Input-addons--before">
+                {allProps.addonBefore}
+              </span>
+            )}
             {InputComponent}
+            {allProps.addonAfter && (
+              <span class="Input-addons  Input-addons--after">
+                {allProps.addonAfter}
+              </span>
+            )}
             <Info text={infoEle} />
           </div>
           <Error text={this.state.error} />
@@ -313,7 +331,7 @@ export default class Field extends React.Component {
 }
 
 class Check extends Field {
-  className = 'Input--checkbox Input-content';
+  className = 'Input';
 
   toggle = e => {
     e.target.value = e.target.checked ? 1 : 0;
@@ -325,23 +343,28 @@ class Check extends Field {
   checked = Boolean(Number(this.props.defaultValue));
 
   render() {
-    let { label, description, info, props } = separateDomProps(this.props);
+    let { label, fieldLabel, description, info, props } = separateDomProps(
+      this.props
+    );
 
     return (
       <div class={inputClass(this)}>
-        <label>
-          <input
-            {...props}
-            defaultChecked={this.checked}
-            class="Input-el"
-            type="checkbox"
-            onChange={this.toggle}
-            disabled={this.props.disabled}
-          />
-          <div className="Input-checkbox" />
-          <Label class="Input-inlineLabel" text={label} />
-        </label>
-        <Description text={description} />
+        {label && <Label text={label} />}
+        <div class="Input-content Input--checkbox">
+          <label>
+            <input
+              {...props}
+              defaultChecked={this.checked}
+              class="Input-el"
+              type="checkbox"
+              onChange={this.toggle}
+              disabled={this.props.disabled}
+            />
+            <div className="Input-checkbox" />
+            <Label class="Input-inlineLabel" text={fieldLabel} />
+          </label>
+          <Description text={description} />
+        </div>
       </div>
     );
   }
@@ -445,20 +468,18 @@ Field.File = _ => {
     <div class={inputClass({ props: _ })}>
       <Label text={label} />
       <div class="Input-content Input-File">
-        <div class="Input-elWrapper">
-          <FileUpload
-            name={_.name}
-            onBiggerFileSize={_ => {
-              console.log('File size is bigger');
-            }}
-            onFileChange={_.onChange}
-            defaultValue={_.defaultValue}
-            disabled={_.disabled}
-            accept={_._accept}
-            showAcceptInfo={_._showAcceptInfo}
-            showStagedFileStatus={_._showStagedFileStatus}
-          />
-        </div>
+        <FileUpload
+          name={_.name}
+          onBiggerFileSize={_ => {
+            console.log('File size is bigger');
+          }}
+          onFileChange={_.onChange}
+          defaultValue={_.defaultValue}
+          disabled={_.disabled}
+          accept={_._accept}
+          showAcceptInfo={_._showAcceptInfo}
+          showStagedFileStatus={_._showStagedFileStatus}
+        />
         <Description text={description} />
       </div>
     </div>

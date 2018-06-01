@@ -55,6 +55,32 @@
 .Input-elWrapper
   position: relative
   font-size: 0
+  width: 260px
+
+  .Input-addons
+    position: absolute
+    top: 1px
+    bottom: 1px
+    width: 36px
+    font-size: 14px
+    background-color: #EEEEEE
+    color: #57666D
+    text-align: center
+    line-height: 36px
+
+    i
+      font-size: 16px
+      line-height: unset
+
+    &--before
+      left: 1px
+      border-top-left-radius: 1px
+      border-bottom-left-radius: 1px
+
+    &--after
+      right: 1px
+      border-top-right-radius: 1px
+      border-bottom-right-radius: 1px
 
   &.Select-elWrapper
     &::before
@@ -122,14 +148,21 @@
 .Input-el
   line-height: 16px
   height: 36px
-  width: 260px
+  width: 100%
   background: #fff
-  font-size: 14px
-  padding: 0 12px
   border: 1px solid #E2E2E2
   border-radius: 2px
+  overflow: hidden
+  font-size: 14px
+  padding: 0 12px
   &[type=checkbox], &[type=radio]
     display: none
+
+  &--before
+    padding-left: 48px
+
+  &--after
+    padding-right: 48px
 
 .Input:not(.Input--disabled) .Input-el
     &:hover

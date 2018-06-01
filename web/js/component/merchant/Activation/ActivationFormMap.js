@@ -47,7 +47,6 @@ const contactFields = [
     label: 'Contact Number',
     name: 'contact_mobile',
     type: 'tel',
-    addonBefore: '+91',
     info: 'We will reach out to this phone for any account related issues.',
   },
   {
@@ -185,7 +184,7 @@ const businessModel = [
     },
   ],
   {
-    label: () => <span>Want to accept international card payments</span>,
+    fieldLabel: () => <span>Want to accept international card payments</span>,
     name: 'business_international',
     _cmp: Input.Check,
     required: false,
@@ -319,7 +318,7 @@ const registrationDetails = [
   ],
   {
     _name: 'same_address',
-    label: 'Operational Address same as Registered Address',
+    fieldLabel: 'Operational Address same as Registered Address',
     description: 'Physical Verification may take place at this address',
     _cmp: Input.Check,
   },
