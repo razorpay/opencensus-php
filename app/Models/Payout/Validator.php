@@ -37,6 +37,11 @@ class Validator extends Base\Validator
         Entity::BUFFER_AMOUNT  => 'sometimes|integer|min:10000000'
     ];
 
+    protected static $payoutRetryRules = [
+        'ids'    => 'required|array',
+        'ids.*'  => 'required|public_id|size:19'
+    ];
+
     protected static $createValidators = [
         Entity::METHOD
     ];
