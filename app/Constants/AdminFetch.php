@@ -33,10 +33,40 @@ class AdminFetch
                 'merchant_id'       => Fetch::FIELD_MERCHANT_ID
             ],
             Entity::SHIELD_RULES => [
-
+                'is_active'         => [
+                    Fetch::LABEL        => 'active',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        '0',
+                        '1',
+                    ],
+                ],
+                'action'            => [
+                    Fetch::LABEL        => 'action',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'block',
+                        'review',
+                        'allow'
+                    ]
+                ]
             ],
             Entity::SHIELD_RULE_ANALYTICS => [
-
+                'entity_id'         => 'entity_id',
+                'rule_id'           => 'rule_id',
+                'email'             => 'email',
+                'contact'           => 'contact',
+                'card_iin'          => 'card_iin',
+                'merchant_id'       => 'merchant_id',
+                'action'            => [
+                    Fetch::LABEL        => 'action',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'block',
+                        'review',
+                        'allow'
+                    ]
+                ]
             ]
         ];
     }
