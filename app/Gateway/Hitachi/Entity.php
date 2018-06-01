@@ -21,7 +21,7 @@ class Entity extends Base\Entity
     const MASKED_CARD_NUMBER     = 'masked_card_number';
     const CARD_NETWORK           = 'card_network';
     const MERCHANT_REFERENCE     = 'merchant_reference';
-    const AUTHENTICATION_GATEWAY =  'authentication_gateway';
+    const AUTHENTICATION_GATEWAY = 'authentication_gateway';
 
     protected $entity = 'hitachi';
 
@@ -88,6 +88,11 @@ class Entity extends Base\Entity
     public function setAction($action)
     {
         $this->setAttribute(self::ACTION, $action);
+    }
+
+    public function setAuthenticationGateway(string $authenticationGateway)
+    {
+        return $this->setAttribute(self::AUTHENTICATION_GATEWAY, $authenticationGateway);
     }
 
     public function getRrn()

@@ -74,7 +74,8 @@ class CreateHitachiGateway extends Migration
 
             $table->string(Hitachi::UPDATED_AT);
 
-            $table->string(Hitachi::AUTHENTICATION_GATEWAY);
+            $table->string(Hitachi::AUTHENTICATION_GATEWAY)
+                  ->nullable();
 
             $table->foreign(Hitachi::PAYMENT_ID)
                   ->references(Payment::ID)

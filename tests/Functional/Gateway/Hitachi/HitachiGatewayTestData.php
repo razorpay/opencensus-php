@@ -37,6 +37,7 @@ return [
         'pAuthStatus' => null,
         'entity' => 'hitachi',
         'admin' => true,
+        'authentication_gateway' => 'mpi_blade',
     ],
 
     'testHitachiRefundEntity' => [
@@ -194,14 +195,15 @@ return [
         'entity'            => 'payment',
     ],
     'testPaymentEnrollEntity' => [
-        'entity'      => 'hitachi',
-        'action'      => 'authorize',
-        'received'    => true,
-        'amount'      => 50000,
-        'currency'    => 'INR',
-        'pAuthStatus' => 'Y',
-        'pECI'        => '06',
-        'pALGO'       => 2,
+        'entity'                 => 'hitachi',
+        'action'                 => 'authorize',
+        'received'               => true,
+        'amount'                 => 50000,
+        'currency'               => 'INR',
+        'pAuthStatus'            => 'Y',
+        'pECI'                   => '06',
+        'pALGO'                  => 2,
+        'authentication_gateway' => 'mpi_blade',
     ],
 
     'testPaymentNotEnrollEntity' => [
@@ -216,6 +218,7 @@ return [
         'pAuthStatus' => null,
         'pECI'        => null,
         'pALGO'       => null,
+        'authentication_gateway' => 'mpi_blade',
     ],
 
     'testPaymentEnrollUnavailableEntity' => [

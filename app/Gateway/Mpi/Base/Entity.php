@@ -103,6 +103,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::XID);
     }
 
+    public function getGateway()
+    {
+        return $this->getAttribute(self::GATEWAY);
+    }
+
     public function getEnrolled()
     {
         return $this->getAttribute(self::ENROLLED);

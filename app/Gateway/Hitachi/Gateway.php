@@ -59,7 +59,9 @@ class Gateway extends Base\Gateway
             return $this->authorizeRecurring($input);
         }
 
-        $authResponse = $this->callAuthenticationGateway($input);
+        $authenticationGateway = $this->decideAuthenticationGateway();
+
+        $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 
         if ($authResponse !== null)
         {
@@ -68,7 +70,7 @@ class Gateway extends Base\Gateway
             return $authResponse;
         }
 
-        return $this->authorizeNotEnrolled($input);
+        return $this->authorizeNotEnrolled($input, $authenticationGateway);
     }
 
     public function callback(array $input)
@@ -77,9 +79,13 @@ class Gateway extends Base\Gateway
 
         $this->setCardNumberAndCvv($input);
 
-        $authResponse = $this->callAuthenticationGateway($input);
+        $authenticationGateway = $this->app['repo']->mpi
+            ->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE)
+            ->getGateway();
 
-        $gatewayEntity = $this->authorizeEnrolled($input, $authResponse);
+        $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+        $gatewayEntity = $this->authorizeEnrolled($input, $authResponse, $authenticationGateway);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayEntity);
 
@@ -236,13 +242,18 @@ class Gateway extends Base\Gateway
      * @param array $input
      * @return array|null
      */
-    protected function callAuthenticationGateway(array $input)
+    protected function callAuthenticationGateway(array $input, $authenticationGateway)
     {
         return $this->app['gateway']->call(
-            Payment\Gateway::MPI_BLADE,
+            $authenticationGateway,
             $this->action,
             $input,
             $this->mode);
+    }
+
+    protected function decideAuthenticationGateway()
+    {
+        return Payment\Gateway::MPI_BLADE;
     }
 
     protected function authorizeRecurring(array $input)
@@ -260,7 +271,7 @@ class Gateway extends Base\Gateway
         $this->checkErrorsAndThrowException($response);
     }
 
-    protected function authorizeNotEnrolled(array $input)
+    protected function authorizeNotEnrolled(array $input, $authenticationGateway)
     {
         $request = $this->getAuthorizeRequestArrayForNotEnrolled($input);
 
@@ -270,12 +281,14 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getAttributesFromAuthResponse($response);
 
+        $attributes[Entity::AUTHENTICATION_GATEWAY] = $authenticationGateway;
+
         $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
 
         $this->checkErrorsAndThrowException($response);
     }
 
-    protected function authorizeEnrolled(array $input, array $authResponse)
+    protected function authorizeEnrolled(array $input, array $authResponse, $authenticationGateway)
     {
         $request = $this->getAuthorizeRequestArrayForEnrolled($input, $authResponse);
 
@@ -284,6 +297,8 @@ class Gateway extends Base\Gateway
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
 
         $attributes = $this->getAttributesFromAuthResponse($response);
+
+        $attributes[Entity::AUTHENTICATION_GATEWAY] = $authenticationGateway;
 
         $gatewayEntity = $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
 
