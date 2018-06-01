@@ -22,13 +22,13 @@ const FORM_TABS = [
     title: 'Payment Link',
     desc: 'The link gets expired automatically once its paid.',
     url: '/paymentlinks/new',
-    content: PLFormFields,
+    content: [...PLFormFields],
   },
   {
     title: 'Reusable Link',
     desc: 'Accept payments multiple times on a single payment link.',
     url: '/paymentlinks/reusable/new',
-    content: RPLFormFields,
+    content: [...RPLFormFields],
   },
 ];
 
@@ -42,7 +42,12 @@ function defaultFieldProps(f) {
   if (!f._cmp) {
     f._cmp = Input;
   }
+
+  if (!f.size) {
+    f.size = 'large';
+  }
 }
+
 function WizardFields(field) {
   let {
     _cmp: Component,
@@ -135,10 +140,10 @@ export default class CreateNewContainer extends React.Component {
       _newName[activeTabIndx][stateName] = fieldValue;
       this.setState({ _name: _newName });
     } else {
-      const newDirty = [...this.state.dirty];
+      const newDirty = { ...this.state.dirty };
 
       newDirty[activeTabIndx] = {
-        ...curDirty[activeTabIndx],
+        ...newDirty[activeTabIndx],
         [fieldName]: fieldValue,
       };
 

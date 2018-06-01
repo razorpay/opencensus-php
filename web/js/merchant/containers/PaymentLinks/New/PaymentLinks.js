@@ -13,7 +13,17 @@ export default [
     label: 'Payment For',
     placeholder: 'Payment Description',
     required: true,
+    description: 'This will be visible to the customer',
     _cmp: Input.Textarea,
+  },
+  {
+    name: 'partial_payment',
+    fieldLabel: <b>Enable Partial Payment</b>,
+    _cmp: Input.Check,
+  },
+  {
+    name: 'receipt_no',
+    label: 'Receipt No.',
   },
   {
     _name: 'expiry',
@@ -42,6 +52,7 @@ export default [
     {
       label: 'Notify Customer',
       name: 'contact_mobile',
+      size: 'small',
       type: 'tel',
       placeholder: 'Enter 10-digit phone number',
       addonBefore: <i class="i i-account" />,

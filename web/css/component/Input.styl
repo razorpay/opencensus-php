@@ -4,59 +4,6 @@
   margin: 24px 0 8px
   position: relative
 
-  label
-    font-weight: normal
-    margin-bottom: 0
-  input[type=file]
-    padding-top: 6px
-  &.is-focused
-    .Input-info
-      transform: translateY(-50%)
-      opacity: 1
-
-      @media (max-width: 1024px)
-        transform: none
-
-.Input--required
-  .Input-label::after
-      content: '*'
-      font-size: 12px
-      position: absolute
-      margin-left: 1px
-      top: 0
-      color: $textDangerColor
-
-.Input--disabled
-  label
-    cursor: unset !important
-
-  input, select, .Input-checkbox, .Input-checkbox + .Input-inlineLabel, .Input-radio, textarea
-    background-color: #f8f8f8
-    cursor: unset
-
-  input:checked + .Input-radio
-    border-color: #fafafa
-
-  .Input-checkbox, .Input-radio, input[type='file']
-    cursor: not-allowed
-
-.Input--checkbox
-  white-space: nowrap
-  .Input-inlineLabel
-    margin: -4px 0 0 0
-
-.Input-label
-  font-weight: bold
-  position: relative
-
-.Input:not(.Input-vTop) .Input-label
-  top: 7px
-
-.Input-elWrapper
-  position: relative
-  font-size: 0
-  width: 260px
-
   .Input-addons
     position: absolute
     top: 1px
@@ -81,6 +28,71 @@
       right: 1px
       border-top-right-radius: 1px
       border-bottom-right-radius: 1px
+
+  label
+    font-weight: normal
+    margin-bottom: 0
+  input[type=file]
+    padding-top: 6px
+  &.is-focused
+    .Input-addons
+      background-color: rgba(82,143,240,0.17)
+
+    .Input-info
+      transform: translateY(-50%)
+      opacity: 1
+
+      @media (max-width: 1024px)
+        transform: none
+
+  &.Input--small .Input-elWrapper
+    width: 260px
+
+  &.Input--medium .Input-elWrapper
+    width: 290px
+
+  &.Input--large .Input-elWrapper
+    width: 320px
+
+.Input--required
+  .Input-label::after
+      content: '*'
+      font-size: 12px
+      position: absolute
+      margin-left: 1px
+      top: 0
+      color: $textDangerColor
+
+.Input--disabled
+  opacity: 0.5
+
+  label
+    cursor: unset !important
+
+  input, select, .Input-checkbox, .Input-checkbox + .Input-inlineLabel, .Input-radio, textarea
+    cursor: unset
+
+  input:checked + .Input-radio
+    border-color: #fafafa
+
+  .Input-checkbox, .Input-radio, input[type='file']
+    cursor: not-allowed
+
+.Input--checkbox
+  white-space: nowrap
+  .Input-inlineLabel
+    margin: -4px 0 0 0
+
+.Input-label
+  font-weight: bold
+  position: relative
+
+.Input:not(.Input-vTop) .Input-label
+  top: 7px
+
+.Input-elWrapper
+  position: relative
+  font-size: 0
 
   &.Select-elWrapper
     &::before
@@ -174,11 +186,6 @@
 .Input--file-upload
   margin-left: 4px
   vertical-align: middle
-
-
-.Input--small
-  .Input-el
-    max-width: 170px
 
 textarea.Input-el
   min-height: 36px

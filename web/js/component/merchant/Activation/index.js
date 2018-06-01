@@ -76,6 +76,10 @@ function defaultFieldProps(f) {
   if (!f.hasOwnProperty('autoComplete')) {
     f.autoComplete = 'off';
   }
+
+  if (!f.hasOwnProperty('size')) {
+    f.size = 'small';
+  }
 }
 
 let DOCUMENT_UPLOAD_STEP; // To handle specific case for document step
