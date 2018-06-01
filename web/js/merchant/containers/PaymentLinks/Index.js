@@ -63,8 +63,8 @@ export default class PaymentLinksContainer extends Component {
           hidden={!this.state.showAnnouncementBanner}
           content={
             <span>
-              Issuing hundreds of payment links manually? Instead upload an
-              excel sheet, and we handle the rest. Try our{' '}
+              Issuing hundreds of payment links manually? Instead, upload an
+              excel sheet and leave the rest to us. Try our{' '}
               <NavLink
                 class="link"
                 to="/paymentlinks/batchuploads"
