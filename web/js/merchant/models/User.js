@@ -116,22 +116,4 @@ export default class User {
       return object[pluckKey];
     });
   }
-
-  get isOldBatchEnabled() {
-    // TODO: temp fix for upper/lower case tags
-    return (
-      (this.tags.map(t => t.toLowerCase()) || []).indexOf(
-        'batch_import_links'
-      ) !== -1
-    );
-  }
-
-  get isNewBatchEnabled() {
-    // TODO: temp fix for upper/lower case tags
-    return (
-      (this.tags.map(t => t.toLowerCase()) || []).indexOf(
-        'batch_import_links_v2'
-      ) !== -1
-    );
-  }
 }
