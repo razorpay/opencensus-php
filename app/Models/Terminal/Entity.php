@@ -64,13 +64,16 @@ class Entity extends Base\PublicEntity
     const CORPORATE                     = 'corporate';
 
     //
-    // If expected is true an unexpected payment will also be marked expected.
-    // Right now this will be used to bharat qr payments for
-    // which merchant will create their own qr code because of which
-    // when we receive a notification from bank about payment, it will
-    // be marked as unexpected, but we want to mark them as expected.
-    // Therefore this variable will tell whether to mark the unexpected
-    // payments as expected or not
+    // Currenly being used to handle 'unexpected' BharatQR payments.
+    //
+    // BharatQR payments generally require QR code. This QR code can be created
+    // via Razorpay, or by the merchant himself. For the latter case, when we are
+    // notified regarding payments made to this kind of QR code, our default
+    // behaviour is to treat them as unexpected, and attempt to refund them.
+    //
+    // This flag in terminal serves to inform us that some merchants are permitted
+    // to receive such payments (made to merchant-generated QR codes), and so
+    // those payments should be treated as 'expected' ones.
     //
     const EXPECTED                      = 'expected';
 
