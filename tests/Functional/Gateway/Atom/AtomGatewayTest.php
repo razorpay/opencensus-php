@@ -285,6 +285,8 @@ class AtomGatewayTest extends TestCase
             $gatewayPayment = $this->getLastEntity('atom', true);
 
             $content['atomtxnId'] = $gatewayPayment['gateway_payment_id'];
+
+            $content['BID']       = $gatewayPayment['bank_payment_id'];
         });
     }
 }

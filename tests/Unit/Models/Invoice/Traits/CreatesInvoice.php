@@ -52,7 +52,7 @@ trait CreatesInvoice
             'order_id'   => '100000000order',
         ];
 
-        $this->fixtures->create('payment', $paymentAttributes);
+        $this->fixtures->create('payment:captured', $paymentAttributes);
 
         return $invoice;
     }
