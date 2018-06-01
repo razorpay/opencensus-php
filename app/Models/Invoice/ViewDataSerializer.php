@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
@@ -134,12 +135,11 @@ class ViewDataSerializer extends Base\Core
 
     protected function addDerivedAttributesForInvoice(array & $serialized)
     {
-        // Ordered serialized payments of invoice
+        // In view, we show only captured(successful, not refunded) payments
         $serializedPayments = $this->invoice
-                                   ->load(Entity::PAYMENTS)
-                                   ->payments
-                                   ->sortByDesc(Entity::CREATED_AT)
-                                   ->values()
+                                   ->payments()
+                                   ->status(Payment\Status::CAPTURED)
+                                   ->get()
                                    ->toArrayHosted();
 
         $serialized[Entity::IS_PAID]           = $this->invoice->isPaid();

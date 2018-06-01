@@ -330,11 +330,11 @@ return [
     ],
 
     'wallet_airtelmoney' => [
-        'test_hash_secret' => env('AIRTELMONEY_WALLET_TEST_HASH_SECRET'),
-        'test_merchant_id' => env('AIRTELMONEY_WALLET_TEST_MERCHANT_ID'),
-        'test_end_mid'     => env('AIRTELMONEY_WALLET_TEST_END_MID'),
-        'live_merchant_id' => env('AIRTELMONEY_WALLET_LIVE_MERCHANT_ID'),
-        'live_hash_secret' => env('AIRTELMONEY_WALLET_LIVE_HASH_SECRET'),
+        'test_hash_secret'       => env('AIRTELMONEY_WALLET_TEST_HASH_SECRET'),
+        'test_merchant_id2'      => env('AIRTELMONEY_WALLET_TEST_MERCHANT_ID'),
+        'test_end_merchant_id'   => env('AIRTELMONEY_WALLET_TEST_END_MERCHANT_ID'),
+        'live_merchant_id'       => env('AIRTELMONEY_WALLET_LIVE_MERCHANT_ID'),
+        'live_hash_secret'       => env('AIRTELMONEY_WALLET_LIVE_HASH_SECRET'),
     ],
 
     'wallet_freecharge' => [
