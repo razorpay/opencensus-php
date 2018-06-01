@@ -13,7 +13,7 @@ class CombinedReconciliate extends Base\CombinedReconciliate
      *******************/
     const COLUMN_ENTITY_TYPE  = 'rec_fmt';
 
-    const UNKNOWN_COLUMN_ENTITY_TYPES = ['CDP', 'CBR', 'AMC', 'MCC'];
+    const UNKNOWN_COLUMN_ENTITY_TYPES = ['CDP', 'CBR', 'AMC', 'MCC', 'GFC'];
 
     protected function getReconciliationTypeForRow($row)
     {

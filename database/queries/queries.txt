@@ -3561,5 +3561,17 @@ DROP INDEX `card_fss_status_index` on `card_fss`; CREATE INDEX `card_fss_status_
 ALTER TABLE line_items
     ADD COLUMN tax_rate INTEGER UNSIGNED DEFAULT NULL AFTER sac_code;
 
+Alter table terminals
+    Modify column type integer default '1';
+
+ALTER TABLE invoices
+    ADD COLUMN merchant_gstin VARCHAR(20) DEFAULT NULL AFTER customer_gstin;
+
+ALTER TABLE webhooks
+    ADD COLUMN disable_on_failure TINYINT(1) NOT NULL DEFAULT 1 AFTER active;
+
+ALTER TABLE offers
+    ADD COLUMN international TINYINT(1) DEFAULT NULL AFTER issuer;
+
 ALTER TABLE virtual_accounts
     ADD INDEX virtual_accounts_qr_code_id_index (qr_code_id);

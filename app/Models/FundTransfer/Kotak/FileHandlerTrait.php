@@ -684,21 +684,32 @@ trait FileHandlerTrait
         $rows = $this->getFileLines($file);
         $data = [];
 
+        $headings = $this->parseFirstRowAndGetHeadings($rows, $delimiter);
+
         foreach ($rows as $ix => $row)
         {
             // Ending row may be just empty.
             if (blank($row) === false)
             {
-                $data[] = $this->parseTextRow($row, $ix, $delimiter);
+                $data[] = $this->parseTextRow($row, $ix, $delimiter, $headings);
             }
         }
 
         return $data;
     }
 
-    protected function parseTextRow(string $row, int $ix, string $delimiter)
+    /**
+     * Reads first row and if it's the header row, pulls it from rows and usage this as heading for doing array_combine
+     * in further flows (e.g. parseTextRow).
+     * @return array|null
+     */
+    protected function parseFirstRowAndGetHeadings(array & $rows, string $delimiter)
     {
-        $headings = $this->getHeadings();
+    }
+
+    protected function parseTextRow(string $row, int $ix, string $delimiter, array $headings = null)
+    {
+        $headings = $headings ?: $this->getHeadings();
 
         $values = explode($delimiter, $row);
 

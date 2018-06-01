@@ -612,6 +612,22 @@ return [
         ],
     ],
 
+    'testPaymentWithFailedOfferCheckOnInternational' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Offer applicable only on international cards.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testPaymentWithFailedOfferCheckOnNullMethodOffer' => [
         'response' => [
             'content' => [

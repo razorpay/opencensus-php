@@ -5,6 +5,13 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
+
+    @if (isset($data['invoice']) && $data['invoice']['type'] !== 'invoice')
+        <meta property="og:title" content="Payment of Rs. {{format_amount($data['invoice']['amount'])}} requested by {{$data['invoice']['merchant_label']}} for {{$data['invoice']['description']}}">
+        <meta property="og:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://razorpay.com/favicon.png'}}">
+        <meta property="og:description" content="Click on this link to pay to {{$data['invoice']['merchant_label']}}">
+    @endif
+
     <?php date_default_timezone_set('Asia/Kolkata') ?>
     <link href="https://fonts.googleapis.com/css?family=Lato:300,400,600" rel="stylesheet" type="text/css"></link>
     <link rel="icon" href="https://razorpay.com/favicon.png" type="image/x-icon" />
@@ -598,6 +605,25 @@
             font-size: 13px;
         }
 
+        .testmode-warning {
+            padding: 12px 24px;
+            background-color: #fcf8e3;
+            color: #8a6d3b;
+            font-size: 12px;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            position: relative;
+            display: block;
+        }
+
+        .testmode-warning + .inv-details {
+            border-radius: 0 !important;
+        }
+
+        #desktop-container .testmode-warning {
+            padding-left: 40px;
+        }
+
     </style>
   </head>
   <body>
@@ -736,6 +762,11 @@
 
                       <div class="table-box" id="inv-info-par">
                           <div id="inv-info-box">
+                              @if($data['is_test_mode'] === true)
+                                  <span class="testmode-warning">
+                                    This payment link is created in <b>Test Mode</b>. Only test payments can be made for this.
+                                  </span>
+                              @endif
                               <div class="inv-details">
                                   <div class="inv-for">
                                     Payment Request from {{$data['invoice']['merchant_label']}}
@@ -780,7 +811,7 @@
                                           <div id="hist-close" onclick="closePayHist()"><b>✕</b></div>
 
                                           <div class="modal-title">
-                                            Payment History
+                                            Successful Payments
                                             <div class="modal-desc">
                                             {{count($data['invoice']['payments'])}} Payment{{(count($data['invoice']['payments']) > 1) ? 's' : ''}} made for this request
                                             </div>
@@ -857,7 +888,7 @@
                       </div>
                       <div>
                           Want to create payment links for your business? Visit
-                          <a href="razorpay.com/payment-links" target="_blank">razorpay.com/payment-links</a>
+                          <a href="https://www.razorpay.com/payment-links" target="_blank">razorpay.com/payment-links</a>
                           and get started instantly
                       </div>
                   </div>
@@ -884,6 +915,11 @@
                     </div>
                   </div>
                   <div id="inv-info-container">
+                        @if($data['is_test_mode'] === true)
+                            <span class="testmode-warning">
+                              This payment link is created in <b>Test Mode</b>. Only test payments can be made for this.
+                            </span>
+                        @endif
                       <div class="inv-details">
                           <div id="inv-details-main">
                               <div class="info">
@@ -938,7 +974,7 @@
                                 <div id="hist-close" onclick="closePayHist()"><b>✕</b></div>
 
                                 <div class="modal-title">
-                                  Payment History
+                                  Successful Payments
                                   <div class="modal-desc">{{$data['invoice']['partial_payment']}} Payment{{$data['invoice']['partial_payment'] > 1 ?: 's'}} made for this request</div>
                                 </div>
 
@@ -976,7 +1012,7 @@
                       <img id="rzp-logo" src="https://cdn.razorpay.com/logo.svg" />
                       <div>
                           Want to create payment links for your business? Visit
-                          <a href="razorpay.com/payment-links" target="_blank">razorpay.com/payment-links</a>
+                          <a href="https://www.razorpay.com/payment-links" target="_blank">razorpay.com/payment-links</a>
                           and get started instantly
                       </div>
                       <img id="fin-logo" src="data:image/jpeg;base64,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" />

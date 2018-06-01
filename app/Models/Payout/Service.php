@@ -45,4 +45,11 @@ class Service extends Base\Service
 
         return $payout;
     }
+
+    public function processFailedPayouts(array $input)
+    {
+        $data = (new Core)->retryFailedPayouts($input);
+
+        return $data;
+    }
 }

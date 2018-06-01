@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Request as MerchantRequest;
 
 class Repository extends Base\Repository
 {
@@ -34,5 +35,13 @@ class Repository extends Base\Repository
                     Entity::ENTITY_TYPE => $value
                 ]);
         }
+    }
+
+    public function findLastMerchantRequestState(MerchantRequest\Entity $request)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, $request->getId())
+                    ->where(Entity::NAME, $request->getStatus())
+                    ->firstOrFailPublic();
     }
 }
