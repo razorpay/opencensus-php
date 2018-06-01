@@ -1700,3 +1700,19 @@ UPDATE batches SET processing=0 WHERE id='AGr4YbJLIM86ff';
 Update terminals
     SET upi = 1, mc_mpan = '1234560000000000', visa_mpan = '1234560000000001', rupay_mpan = '1234560000000002',
      vpa = 'random@razorpay' where id = '1000SharpTrmnl';
+
+# Updates created_at for merchant_requests and action_state
+UPDATE action_state
+    JOIN merchant_requests
+    ON merchant_requests.id = action_state.entity_id
+    JOIN
+    (SELECT SUBSTRING_INDEX(`key`, ".", 1) AS product, entity_id as merchant_id, MIN(created_at) as created_at
+       FROM settings
+       WHERE entity_type = "merchant"
+       GROUP BY product, entity_id) as products
+    ON merchant_requests.merchant_id = products.merchant_id
+    SET
+        merchant_requests.created_at = products.created_at,
+        action_state.created_at = products.created_at
+    WHERE action_state.entity_type = "merchant_request"
+    AND action_state.name = "under_review"
