@@ -3567,3 +3567,5 @@ Alter table terminals
 ALTER TABLE invoices
     ADD COLUMN merchant_gstin VARCHAR(20) DEFAULT NULL AFTER customer_gstin;
 
+ALTER TABLE webhooks
+    ADD COLUMN disable_on_failure TINYINT(1) NOT NULL DEFAULT 1 AFTER active;
