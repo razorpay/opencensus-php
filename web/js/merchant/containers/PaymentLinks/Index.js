@@ -12,7 +12,7 @@ import Button from 'component/Button';
 
 import LocalStorageService from 'rzp/utils/localStorage';
 import { classList } from 'common/util';
-import Event from 'rzp/utils/event';
+import createEvent from 'rzp/utils/event';
 import {
   trackLinkClick,
   trackAnnouncementShown,
@@ -45,7 +45,7 @@ export default class PaymentLinksContainer extends Component {
     });
     LocalStorageService.setItem('plbu-banner-viewed', '1'); // Store in local storage.  Value can be anything. Key must exist.
 
-    const event = Event('remove_PLBU-Announcement', { bubbles: false });
+    const event = createEvent('remove_PLBU-Announcement', { bubbles: false });
     window.dispatchEvent(event);
   };
 
