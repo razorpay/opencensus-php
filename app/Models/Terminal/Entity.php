@@ -63,7 +63,15 @@ class Entity extends Base\PublicEntity
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
 
-    // This is used to mark the payments always expected ones
+    //
+    // If expected is true an unexpected payment will also be marked expected.
+    // Right now this will be used to bharat qr payments for
+    // which merchant will create their own qr code because of which
+    // when we receive a notification from bank about payment, it will
+    // be marked as unexpected, but we want to mark them as expected.
+    // Therefore this variable will tell whether to mark the unexpected
+    // payments as expected or not
+    //
     const EXPECTED                      = 'expected';
 
     const DELETED                       = 'deleted';
