@@ -45,9 +45,13 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::ACTIVE        => true,
-        self::FAILURE_COUNT => 0,
+        self::ACTIVE             => true,
+        self::FAILURE_COUNT      => 0,
         self::DISABLE_ON_FAILURE => 1,
+    ];
+
+    protected $casts = [
+        self::DISABLE_ON_FAILURE => 'bool',
     ];
 
     protected $fillable = [

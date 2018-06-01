@@ -17,7 +17,7 @@ class Validator extends Base\Validator
         Entity::ENTITY_TYPE        => 'sometimes|string|max:100|in:application',
         Entity::ENTITY_ID          => 'required_if:entity_type,application|
                                         string|size:14|unique:webhooks,entity_id',
-        Entity::DISABLE_ON_FAILURE => 'sometimes|in:0,1',
+        Entity::DISABLE_ON_FAILURE => 'sometimes|boolean',
     ];
 
     protected static $createValidators = [
@@ -30,7 +30,7 @@ class Validator extends Base\Validator
         Entity::EVENTS             => 'sometimes|array',
         Entity::ACTIVE             => 'sometimes|in:0,1',
         Entity::SECRET             => 'sometimes|string|max:255',
-        Entity::DISABLE_ON_FAILURE => 'sometimes|in:0,1',
+        Entity::DISABLE_ON_FAILURE => 'sometimes|boolean',
     ];
 
     protected static $editValidators = [

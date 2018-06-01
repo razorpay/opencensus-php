@@ -439,10 +439,12 @@ class Inferno
         $lastSuccessDifference = $webhook->getTimeDifferenceFromLastSuccessInHour();
 
         $toDisableWebhook =
-            ($lastSuccessDifference > self::WEBHOOK_FAILURE_HOURS) and
-            ($webhook->disableOnFailure() === true);
+            (($lastSuccessDifference > self::WEBHOOK_FAILURE_HOURS) and
+             ($webhook->disableOnFailure() === true));
 
-        // If (LSA - current time) > 24hrs, mark deactivated.
+        // If (LSA - current time) > 24hrs, and.
+        // webhook disable_on_failure is set to true
+        // we mark webhook deactivated.
         if ($toDisableWebhook === true)
         {
             $this->trace->info(

@@ -589,6 +589,30 @@ class WebhookTest extends TestCase
         $this->doAuthPayment();
     }
 
+    public function testWebhookDeactivationEmailWithDisableFalse()
+    {
+        $webhook = $this->createWebhook();
+        $inferno = $this->mockInferno();
+
+        $this->fixtures->edit(
+            'webhook',
+            $webhook['id'],
+            [
+                'last_successful_at' => (time() - (25 * 3600)),
+                'active' => 1,
+                'disable_on_failure' => 0,
+            ]);
+
+        $inferno->shouldReceive('sendRequest')
+            ->once()
+            ->andReturn(true);
+
+        $inferno->shouldNotHaveReceived('sendEmail');
+
+        $this->doAuthPayment();
+    }
+
+
     public function testExceptionOnWebhookFire()
     {
         $webhook = $this->createWebhook(['secret' => 'test_secret']);
