@@ -22,19 +22,6 @@
   background: #fafafa
   position: relative
 
-  .warning-svg
-    svg
-      width: 23px
-      height: 19px
-      fill: #ffa665
-      vertical-align: top
-      margin-right: 4px
-      transform: scale(0.8)
-
-    span
-      display: inline-block
-      width: 80%
-
   $side-width = 240px
 
   main
@@ -45,26 +32,6 @@
     bottom: 80px
     top: 0
     overflow: auto
-
-    &.main--hide
-      display: none
-
-    &.main--full
-      bottom: 0
-
-    &.block-scroll
-      overflow: hidden
-      bottom: 0
-
-    &.overlay-container
-      background-color: #fafafa
-      z-index: 2
-
-  .device--mobile
-    display: none
-
-  .device--desktop
-    display: inline
 
   footer
     left: $side-width
@@ -97,15 +64,6 @@
       &--visible
         opacity: 1
 
-  // File upload component
-  .Input-content
-    &.Input-File
-      width: 300px
-
-    .Dropzone
-      .Dropzone-content
-        font-size: 14px
-
   main-title
     text-transform: uppercase
     display: block
@@ -115,38 +73,6 @@
 
   .Form
     margin-top: 36px
-
-  .SubmitForm-modal
-    p
-      width: 95%
-
-    .tnc-text
-      margin-bottom: 8px
-      position: relative
-
-      p
-        width: 92%
-        padding-left: 32px
-
-      .Input--checkbox
-        position: absolute
-        margin: 4px 8px 0 0
-
-  .SubmitForm-content
-    margin-top: 36px
-
-    button:nth-of-type(1)
-      margin-left: 0
-
-    .text-fade
-      font-size: 14px
-      margin-bottom 32px
-
-.activation-field
-  clear: both
-  position: relative
-  padding-left: 180px
-
 
 /* Modal-container size */
 .Modal-container
@@ -198,13 +124,6 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
   .StandAloneContainer
     margin: 80px auto 40px
 
-  .device--desktop
-    display: none !important
-
-  .device--mobile
-    display: inline !important
-
-
   .PaymentLinks--Create
     overflow: hidden
 
@@ -218,39 +137,8 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
       background: white
       font-size: 14px
 
-      .main-title-icon
-        position: relative
-
-        i
-          position: absolute
-          font-size: 16px
-          left: -24px
-          top: -2px
-          opacity: 0
-          transition: 0.2s
-
-          &.drishy
-            opacity: 1
-
-    .btn--back
-      position: absolute
-      margin: 0
-      left: 8px
-      top: 50%
-      padding: 0 12px !important
-      font-size: 20px
-      border: none !important
-      background: transparent !important
-      transform: translateY(-50%)
-
-      i
-        margin: 0
-
     .Form
       margin-top: 0
-
-    .SubmitForm-content
-      margin-top: 60px
 
     .Input-el
       width: 100%

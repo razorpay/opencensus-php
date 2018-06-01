@@ -1,8 +1,11 @@
+import { connect } from 'react-redux';
 import { merchantFetch } from 'rzp/utils/ajax';
 import { withRouter } from 'react-router-dom';
 import { classList } from 'common/util';
 import { activationDuration } from 'common/data';
 
+import Form from 'component/Form';
+import Alert from 'component/Alert';
 import { Modal, ModalContent } from 'component/Modal';
 import { LinkCard } from 'component/Cards';
 import { ModalAsideNav } from 'component/Wizard';
@@ -11,15 +14,15 @@ import { updateSession } from 'merchant/modules/session';
 
 import Button, { AsyncBtn } from 'component/Button';
 
-const tabTypes = [
+const FORM_TABS = [
   {
-    label: 'Payment Link',
+    title: 'Payment Link',
     desc: 'The link gets expired automatically once its paid.',
     url: '/paymentlinks/new',
     fields: [],
   },
   {
-    label: 'Reusable Link',
+    title: 'Reusable Link',
     desc: 'Accept payments multiple times on a single payment link.',
     url: '/paymentlinks/reusable/new',
     fields: [],
@@ -36,13 +39,14 @@ const tabTypes = [
  * */
 
 @withRouter
+@connect(state => state.session)
 export default class ActivationContainer extends React.Component {
   constructor(props) {
     super(props);
 
-    let intent = 0; // intent = 0 => Payment Link (Order as per tabTypes)
+    let intent = 0; // intent = 0 => Payment Link (Order as per FORM_TABS)
 
-    tabTypes.forEach((t, indx) => {
+    FORM_TABS.forEach((t, indx) => {
       if (props.location.pathname === t.url) {
         intent = indx;
       }
@@ -86,6 +90,7 @@ export default class ActivationContainer extends React.Component {
         selectedTab={this.state.intent}
         submitForm={this.submitForm}
         history={this.props.history}
+        mode={this.props.mode}
       />
     );
 
@@ -115,28 +120,47 @@ class CreateWizard extends React.Component {
       activeTab: tabId,
     });
 
-    this.props.history.replace(tabTypes[tabId].url);
+    this.props.history.replace(FORM_TABS[tabId].url);
   };
 
   render() {
+    console.log(FORM_TABS[this.state.activeTab]);
     return (
       <div class="PaymentLinks--Create Wizard Wizard--broad">
         <ModalAsideNav
           title="Create Link"
-          tabs={tabTypes}
+          tabs={FORM_TABS}
           tabClickHandler={this.changeTab}
           activeTab={this.state.activeTab}
         />
 
+        <main class="form-container">
+          {/* ACTIVE TAB TITLE */}
+          <main-title class="main-title">
+            Create {FORM_TABS[this.state.activeTab].title}
+          </main-title>
+
+          {/* ALERTS */}
+          {this.props.mode === 'test' && (
+            <Alert.Warning>
+              You are creating the link in <b>Test Mode</b>. So, only test
+              payments can be made for this link.
+            </Alert.Warning>
+          )}
+
+          {/* FORM */}
+          <Form onChange={this.onChange} layout="tabular" />
+        </main>
+
+        {/* FORM FOOTER */}
         <footer>
-          {/* Spinner state */}
           {/* Action Button 1 */}
           <Button onClick={this.closeModal}>Cancel</Button>
 
           {/* Action Button 2 */}
           <Button.Primary iconAfter="chevron-right" onClick={this.next}>
             <span class="device--desktop">
-              Create {tabTypes[this.state.activeTab].label}
+              Create {FORM_TABS[this.state.activeTab].title}
             </span>
           </Button.Primary>
         </footer>

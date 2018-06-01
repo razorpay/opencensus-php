@@ -48,7 +48,7 @@ export const ModalAsideNav = _ => {
               {do {
                 if (typeof t === 'object') {
                   <span class="li--broad">
-                    {t.label}
+                    {t.title}
                     <div class="description large">{t.desc}</div>
                   </span>;
                 } else {
