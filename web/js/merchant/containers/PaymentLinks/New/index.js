@@ -5,72 +5,99 @@ import { classList } from 'common/util';
 import { activationDuration } from 'common/data';
 
 import Form from 'component/Form';
+import Input from 'component/Input';
+import Button, { AsyncBtn } from 'component/Button';
+
 import Alert from 'component/Alert';
 import { Modal, ModalContent } from 'component/Modal';
-import { LinkCard } from 'component/Cards';
 import { ModalAsideNav } from 'component/Wizard';
 
 import { updateSession } from 'merchant/modules/session';
 
-import Button, { AsyncBtn } from 'component/Button';
+import PLFormFields from './PaymentLinks';
+import RPLFormFields from './ReusableLinks';
 
 const FORM_TABS = [
   {
     title: 'Payment Link',
     desc: 'The link gets expired automatically once its paid.',
     url: '/paymentlinks/new',
-    fields: [],
+    content: PLFormFields,
   },
   {
     title: 'Reusable Link',
     desc: 'Accept payments multiple times on a single payment link.',
     url: '/paymentlinks/reusable/new',
-    fields: [],
+    content: RPLFormFields,
   },
 ];
 
-/*
- * ActivationContainer is used in:
- * 1. '/activation' route for Activation form for merchant, and
- * 2. Marketplace > Accounts for linked account (AccoundDetails)
- *
- * @props {onClose, Function, optional}. Without this modal would not be opened. Also, this would be used to close the modal
- * @props {accountId, String, optional}. Needed if the ActivationWizard is opened for Linked Account
- * */
+function defaultFieldProps(f) {
+  const self = this;
+
+  if (Array.isArray(f)) {
+    return f.forEach(defaultFieldProps.bind(self));
+  }
+
+  if (!f._cmp) {
+    f._cmp = Input;
+  }
+}
+function DefaultOpFormFields(field) {
+  let { _cmp: Component, _name, _when, _autoRenderImpure, ...rest } = field;
+
+  if (_when && !_when(this)) {
+    return null;
+  }
+
+  let defaultValue, key;
+  if (rest.name) {
+    key = rest.name;
+    defaultValue =
+      this.state.dirty[this.state.activeTab] &&
+      this.state.dirty[this.state.activeTab][key]; // Form state is stored in dirty
+  } else if (_name) {
+    defaultValue = this.state[_name];
+    key = _name;
+  }
+
+  return (
+    <Component
+      key={key}
+      data-name={_name}
+      defaultValue={defaultValue}
+      autoRender={_autoRenderImpure}
+      {...rest}
+    />
+  );
+}
 
 @withRouter
 @connect(state => state.session)
-export default class ActivationContainer extends React.Component {
+export default class CreateNewContainer extends React.Component {
   constructor(props) {
     super(props);
 
     let intent = 0; // intent = 0 => Payment Link (Order as per FORM_TABS)
 
-    FORM_TABS.forEach((t, indx) => {
-      if (props.location.pathname === t.url) {
+    FORM_TABS.forEach((TAB, indx) => {
+      if (props.location.pathname === TAB.url) {
         intent = indx;
       }
+
+      defaultFieldProps.call(this, TAB.content); // Set the default props for fields of all tabs in Wizard
     });
 
     this.state = {
-      intent,
+      activeTab: intent,
+      dirty: {}, // Initialize with no edits in dirty. Object is maintained to keep dirty data of each tab separately.
+      _name: {
+        // Object, cuz dirty is also object
+        '0': {
+          expiry: '0', // 0 is unselected
+        },
+      },
     };
-  }
-
-  componentWillMount() {
-    this.fetchActivationDetails(this.props.accountId); // accountId = undefined if not present
-  }
-
-  fetchActivationDetails(accountId) {
-    merchantFetch({
-      url: 'merchant/activation',
-      mode: 'live',
-      accountId,
-    }).then(data => {
-      this.setState({
-        data: data.data,
-      });
-    });
   }
 
   saveDirtyState = e => {
@@ -80,17 +107,42 @@ export default class ActivationContainer extends React.Component {
     );
   };
 
+  changeTab = ({ target }) => {
+    const tabId = parseInt(target.getAttribute('data-index'));
+
+    this.setState({
+      activeTab: tabId,
+    });
+
+    this.props.history.replace(FORM_TABS[tabId].url);
+  };
+
   render() {
     // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
     const IS_MODAL = this.props.onClose;
+    const { activeTab } = this.state;
+
+    const formFields = FORM_TABS[activeTab].content.map((field, i) => {
+      if (Array.isArray(field)) {
+        return (
+          <Input.Group key={i}>
+            {field.map(DefaultOpFormFields, this)}
+          </Input.Group>
+        );
+      }
+
+      return DefaultOpFormFields.call(this, field);
+    });
 
     const content = (
       <CreateWizard
         ref={refId => (this.wizardContent = refId)}
-        selectedTab={this.state.intent}
+        activeTab={activeTab}
         submitForm={this.submitForm}
         history={this.props.history}
         mode={this.props.mode}
+        content={formFields}
+        changeTab={this.changeTab}
       />
     );
 
@@ -109,35 +161,22 @@ export default class ActivationContainer extends React.Component {
 }
 
 class CreateWizard extends React.Component {
-  state = {
-    activeTab: this.props.selectedTab || 0,
-  };
-
-  changeTab = ({ target }) => {
-    const tabId = parseInt(target.getAttribute('data-index'));
-
-    this.setState({
-      activeTab: tabId,
-    });
-
-    this.props.history.replace(FORM_TABS[tabId].url);
-  };
-
   render() {
-    console.log(FORM_TABS[this.state.activeTab]);
+    const { activeTab } = this.props;
+
     return (
       <div class="PaymentLinks--Create Wizard Wizard--broad">
         <ModalAsideNav
           title="Create Link"
           tabs={FORM_TABS}
-          tabClickHandler={this.changeTab}
-          activeTab={this.state.activeTab}
+          tabClickHandler={this.props.changeTab}
+          activeTab={activeTab}
         />
 
         <main class="form-container">
           {/* ACTIVE TAB TITLE */}
           <main-title class="main-title">
-            Create {FORM_TABS[this.state.activeTab].title}
+            {FORM_TABS[activeTab].title}
           </main-title>
 
           {/* ALERTS */}
@@ -149,7 +188,9 @@ class CreateWizard extends React.Component {
           )}
 
           {/* FORM */}
-          <Form onChange={this.onChange} layout="tabular" />
+          <Form onChange={this.onChange} layout="tabular">
+            {this.props.content}
+          </Form>
         </main>
 
         {/* FORM FOOTER */}
@@ -160,7 +201,7 @@ class CreateWizard extends React.Component {
           {/* Action Button 2 */}
           <Button.Primary iconAfter="chevron-right" onClick={this.next}>
             <span class="device--desktop">
-              Create {FORM_TABS[this.state.activeTab].title}
+              Create {FORM_TABS[activeTab].title}
             </span>
           </Button.Primary>
         </footer>
