@@ -3560,3 +3560,6 @@ DROP INDEX `card_fss_status_index` on `card_fss`; CREATE INDEX `card_fss_status_
 
 ALTER TABLE line_items
     ADD COLUMN tax_rate INTEGER UNSIGNED DEFAULT NULL AFTER sac_code;
+
+ALTER TABLE virtual_accounts
+    ADD INDEX virtual_accounts_qr_code_id_index (qr_code_id);
