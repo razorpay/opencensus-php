@@ -80,8 +80,13 @@ $side-width-large = 280px
         cursor: not-allowed
         color: #b6c0c4
 
+    & ~ main, & ~ footer
+      left: $side-width
+
   &--broad
     aside
       width: $side-width-large
-    footer, main
-      left: $side-width-large
+
+      & ~ main, & ~ footer
+        left: $side-width-large
+
