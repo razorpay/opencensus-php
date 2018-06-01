@@ -58,7 +58,7 @@ export default function DataTable(props) {
       />
       {!progressLoader &&
         loading && (
-          <div style={{ padding: 77 }}>
+          <div style={{ padding: 77 }} class="text-center">
             <Spinner />
           </div>
         )}
