@@ -1,5 +1,7 @@
-import { getCookie } from './cookies';
 import { getMode } from 'merchant/store';
+
+import { getCookie } from './cookies';
+import createEvent from './event';
 
 export function merchantFetch(params) {
   if (typeof params === 'string') {
@@ -32,6 +34,7 @@ export default function ajax(params = {}) {
   return new Promise((resolve, reject) => {
     let { headers = {} } = params;
     headers['X-XSRF-TOKEN'] = getCookie('XSRF-TOKEN');
+    headers['X-Requested-With'] = 'XMLHttpRequest';
     headers['Accept'] = 'application/json, text/plain, */*';
     params.headers = headers;
 
@@ -65,8 +68,13 @@ export default function ajax(params = {}) {
       },
       err => {
         let message = '';
-        if (err.status === 401) {
+
+        if (err.response && err.response.status === 401) {
           message = 'Unauthorized';
+
+          document.body.dispatchEvent(
+            createEvent('NOT_AUTHENTICATED', { bubbles: true })
+          );
         }
 
         reject(
