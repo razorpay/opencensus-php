@@ -966,10 +966,7 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function fetchPaymentsByPublicVaIdAndMerchant(
-        string $virtualAccountId,
-        Merchant\Entity $merchant
-        )
+    public function fetchByPublicVaIdAndMerchant(string $virtualAccountId, Merchant\Entity $merchant)
     {
         $paymentReceiverId = $this->dbColumn(Payment\Entity::RECEIVER_ID);
         $paymentMerchantId = $this->dbColumn(Payment\Entity::MERCHANT_ID);
@@ -990,10 +987,7 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->select($paymentColumns)
-                    ->join(
-                        Table::VIRTUAL_ACCOUNT,
-                        function ($join)
-                        use($paymentReceiverId, $qrcodeId, $bankAccountId)
+                    ->join(Table::VIRTUAL_ACCOUNT, function ($join) use($paymentReceiverId, $qrcodeId, $bankAccountId)
                         {
                             $join->on($paymentReceiverId, '=', $qrcodeId);
                             $join->orOn($paymentReceiverId, '=', $bankAccountId);
