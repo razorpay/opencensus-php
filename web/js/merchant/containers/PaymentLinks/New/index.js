@@ -43,8 +43,15 @@ function defaultFieldProps(f) {
     f._cmp = Input;
   }
 }
-function DefaultOpFormFields(field) {
-  let { _cmp: Component, _name, _when, _autoRenderImpure, ...rest } = field;
+function WizardFields(field) {
+  let {
+    _cmp: Component,
+    _name,
+    _when,
+    _autoRenderImpure,
+    _disabledWhen,
+    ...rest
+  } = field;
 
   if (_when && !_when(this)) {
     return null;
@@ -61,12 +68,18 @@ function DefaultOpFormFields(field) {
     key = _name;
   }
 
+  let isComponentDisabled;
+  if (_disabledWhen && _disabledWhen(this)) {
+    isComponentDisabled = true;
+  }
+
   return (
     <Component
       key={key}
       data-name={_name}
       defaultValue={defaultValue}
       autoRender={_autoRenderImpure}
+      disabled={isComponentDisabled}
       {...rest}
     />
   );
@@ -107,6 +120,34 @@ export default class CreateNewContainer extends React.Component {
     );
   };
 
+  onChange = ({ target }) => {
+    let stateName = target.getAttribute('data-name');
+    let fieldValue = target.value;
+    let fieldName = target.name;
+
+    const activeTab = this.state.activeTab;
+    const activeTabIndx = String(this.state.activeTab);
+    const curDirty = this.state.dirty[activeTabIndx];
+
+    if (stateName) {
+      const _newName = { ...this.state._name };
+
+      _newName[activeTabIndx][stateName] = fieldValue;
+      this.setState({ _name: _newName });
+    } else {
+      const newDirty = [...this.state.dirty];
+
+      newDirty[activeTabIndx] = {
+        ...curDirty[activeTabIndx],
+        [fieldName]: fieldValue,
+      };
+
+      this.setState({
+        dirty: newDirty,
+      });
+    }
+  };
+
   changeTab = ({ target }) => {
     const tabId = parseInt(target.getAttribute('data-index'));
 
@@ -125,13 +166,11 @@ export default class CreateNewContainer extends React.Component {
     const formFields = FORM_TABS[activeTab].content.map((field, i) => {
       if (Array.isArray(field)) {
         return (
-          <Input.Group key={i}>
-            {field.map(DefaultOpFormFields, this)}
-          </Input.Group>
+          <Input.Group key={i}>{field.map(WizardFields, this)}</Input.Group>
         );
       }
 
-      return DefaultOpFormFields.call(this, field);
+      return WizardFields.call(this, field);
     });
 
     const content = (
@@ -143,6 +182,7 @@ export default class CreateNewContainer extends React.Component {
         mode={this.props.mode}
         content={formFields}
         changeTab={this.changeTab}
+        onChange={this.onChange}
       />
     );
 
@@ -188,7 +228,7 @@ class CreateWizard extends React.Component {
           )}
 
           {/* FORM */}
-          <Form onChange={this.onChange} layout="tabular">
+          <Form onChange={this.props.onChange} layout="tabular">
             {this.props.content}
           </Form>
         </main>

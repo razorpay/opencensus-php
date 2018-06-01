@@ -2,31 +2,40 @@ import Input from 'component/Input';
 
 export default [
   {
-    label: 'Amount',
-    required: true,
     name: 'contact_name',
+    label: 'Amount',
+    placeholder: '0.00',
+    required: true,
+    addonBefore: '₹',
   },
   {
-    label: 'Payment For',
     name: 'payment_for',
+    label: 'Payment For',
+    placeholder: 'Payment Description',
     required: true,
     _cmp: Input.Textarea,
   },
   {
     _name: 'expiry',
-    label: 'Expire By',
+    label: 'Expiry',
+    fieldLabel: 'No Expiry',
     _cmp: Input.Check,
+    className: 'Input-vTop',
   },
   [
     {
       name: 'date',
       type: 'tel',
-      _when: form => form.state._name[form.state.activeTab].expiry === '1',
+      _disabledWhen: form =>
+        form.state._name[form.state.activeTab].expiry === '1',
+      addonAfter: <i class="i i-account" />,
     },
     {
       name: 'time',
       type: 'tel',
-      _when: form => form.state._name[form.state.activeTab].expiry === '1',
+      _disabledWhen: form =>
+        form.state._name[form.state.activeTab].expiry === '1',
+      addonAfter: <i class="i i-account" />,
     },
   ],
   [
@@ -34,11 +43,14 @@ export default [
       label: 'Notify Customer',
       name: 'contact_mobile',
       type: 'tel',
-      addonBefore: '+91',
+      placeholder: 'Enter 10-digit phone number',
+      addonBefore: <i class="i i-account" />,
     },
     {
       name: 'contact_email',
       type: 'email',
+      addonBefore: <i class="i i-account" />,
+      placeholder: 'Enter email address',
       description: 'Notify customer either via phone or email, or both.',
     },
   ],
