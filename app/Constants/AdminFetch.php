@@ -58,7 +58,7 @@ class AdminFetch
                 ],
                 'rule_id'           => [
                     Fetch::LABEL        => 'rule_id',
-                    Fetch::TYPE         => Fetch::TYPE_NUMBER
+                    Fetch::TYPE         => Fetch::TYPE_STRING
                 ],
                 'email'             => [
                     Fetch::LABEL        => 'email',
