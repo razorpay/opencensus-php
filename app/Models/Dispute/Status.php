@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Dispute;
 
+use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
+
 class Status
 {
     const OPEN         = 'open';
@@ -28,6 +30,12 @@ class Status
     protected static $transactionalStatuses = [
         self::WON,
         self::LOST,
+    ];
+
+    public static $webhookEventMap = [
+        self::WON    => WebhookEvent::PAYMENT_DISPUTE_WON,
+        self::LOST   => WebhookEvent::PAYMENT_DISPUTE_LOST,
+        self::CLOSED => WebhookEvent::PAYMENT_DISPUTE_CLOSED,
     ];
 
     public static function exists(string $status): bool
