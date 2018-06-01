@@ -6,7 +6,6 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import LinkList from 'merchant/containers/PaymentLinks/List';
 import BatchList from 'merchant/containers/PaymentLinks/BatchList';
 import BatchListNew from 'merchant/containers/PaymentLinks/BatchListNew';
-import BatchUpload from 'merchant/containers/PaymentLinks/BatchUpload';
 
 import Button from 'component/Button';
 
@@ -18,9 +17,6 @@ import {
   trackAnnouncementShown,
   trackCloseAnnouncement,
 } from './ga';
-
-const OLD_BATCH_TAG = 'batch_import_links';
-const NEW_BATCH_TAG = 'batch_import_links_v2';
 
 export function toPLBUBannerShown() {
   return !LocalStorageService.getItem('plbu-banner-viewed'); // If the key exists, then already viewed
@@ -82,11 +78,11 @@ export default class PaymentLinksContainer extends Component {
           </NavLink>
           <ShowWhen
             myRole="owner manager operations admin"
-            featureEnabled={[OLD_BATCH_TAG, NEW_BATCH_TAG]}
+            featureEnabled="batch_import_links_v2"
           >
             <NavLink exact to="/paymentlinks/batchuploads">
               Batch Uploads
-              {user.isNewBatchEnabled &&
+              {user.isBatchEnabled &&
                 this.state.showAnnouncementBanner && (
                   <span
                     class="badge bg-success hidden-xs"
@@ -101,14 +97,7 @@ export default class PaymentLinksContainer extends Component {
 
         <content>
           <Switch>
-            {user.isOldBatchEnabled && !user.isNewBatchEnabled ? (
-              <Route
-                path="/paymentlinks/batchuploads/new"
-                component={BatchUpload}
-              />
-            ) : null}
-
-            {user.isNewBatchEnabled ? (
+            {user.isBatchEnabled ? (
               <Route
                 path="/paymentlinks/batchuploads"
                 component={BatchListNew}
