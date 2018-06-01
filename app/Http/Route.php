@@ -185,8 +185,13 @@ final class Route
         'credits_edit'                             => ['put',      'merchants/{mid}/credits/{id}',                   'MerchantController@putCreditsLog'                                  ],
         'credits_fetch_by_id'                      => ['get',      'credits/{id}',                                   'MerchantController@getCreditsLog'                                  ],
         'credits_fetch_multiple'                   => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
+
+        // @todo Remove the next 2 routes once the dashboard switches to the new routes
         'merchant_get_features'                    => ['get',      'merchants/{id}/features',                        'MerchantController@getMerchantFeatures'                            ],
         'merchant_update_features'                 => ['post',     'merchants/{id}/features',                        'MerchantController@updateMerchantFeatures'                         ],
+        'merchant_features_fetch'                  => ['get',      'merchants/me/features',                          'MerchantController@getMerchantFeatures'                            ],
+        'merchant_features_update'                 => ['post',     'merchants/me/features',                          'MerchantController@updateMerchantFeatures'                         ],
+
         'merchants_update_bulk'                    => ['put',      'merchants/bulk',                                 'MerchantController@updateMerchantsBulk'                            ],
         'merchants_update_channel'                 => ['put',      'merchants/channel/bulk',                         'MerchantController@updateChannelForMultipleMerchants'              ],
         'merchants_update_bank_account'            => ['put',      'merchants/bank_account/bulk',                    'MerchantController@updateBankAccountForMultipleMerchants'          ],
@@ -1164,6 +1169,8 @@ final class Route
         'merchant_details_patch',
         'merchant_get_features',
         'merchant_update_features',
+        'merchant_features_fetch',
+        'merchant_features_update',
         'merchant_create_key',
         'merchant_fetch_keys',
         'merchant_replace_key',
