@@ -4,7 +4,6 @@ import { Route, Switch, NavLink } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import LinkList from 'merchant/containers/PaymentLinks/List';
-import BatchList from 'merchant/containers/PaymentLinks/BatchList';
 import BatchListNew from 'merchant/containers/PaymentLinks/BatchListNew';
 
 import Button from 'component/Button';
@@ -54,57 +53,48 @@ export default class PaymentLinksContainer extends Component {
 
     return (
       <tabbed-container>
-        <AnnouncementBanner
-          handleClick={this.handleAnnouncementClose}
-          hidden={!this.state.showAnnouncementBanner}
-          content={
-            <span>
-              Issuing hundreds of payment links manually? Instead, upload an
-              excel sheet and leave the rest to us. Try our{' '}
-              <NavLink
-                class="link"
-                to="/paymentlinks/batchuploads"
-                onClick={trackLinkClick}
-              >
-                Batch Uploads
-              </NavLink>.
-            </span>
-          }
-        />
+        <ShowWhen myRole="owner manager operations admin">
+          <AnnouncementBanner
+            handleClick={this.handleAnnouncementClose}
+            hidden={!this.state.showAnnouncementBanner}
+            content={
+              <span>
+                Issuing hundreds of payment links manually? Instead, upload an
+                excel sheet and leave the rest to us. Try our{' '}
+                <NavLink
+                  class="link"
+                  to="/paymentlinks/batchuploads"
+                  onClick={trackLinkClick}
+                >
+                  Batch Uploads
+                </NavLink>.
+              </span>
+            }
+          />
+        </ShowWhen>
 
         <header id="link-header">
           <NavLink exact to="/paymentlinks">
             Payment Links
           </NavLink>
-          <ShowWhen
-            myRole="owner manager operations admin"
-            featureEnabled="batch_import_links_v2"
-          >
+          <ShowWhen myRole="owner manager operations admin">
             <NavLink exact to="/paymentlinks/batchuploads">
               Batch Uploads
-              {user.isBatchEnabled &&
-                this.state.showAnnouncementBanner && (
-                  <span
-                    class="badge bg-success hidden-xs"
-                    style={{ marginLeft: '5px' }}
-                  >
-                    new
-                  </span>
-                )}
+              {this.state.showAnnouncementBanner && (
+                <span
+                  class="badge bg-success hidden-xs"
+                  style={{ marginLeft: '5px' }}
+                >
+                  new
+                </span>
+              )}
             </NavLink>
           </ShowWhen>
         </header>
 
         <content>
           <Switch>
-            {user.isBatchEnabled ? (
-              <Route
-                path="/paymentlinks/batchuploads"
-                component={BatchListNew}
-              />
-            ) : (
-              <Route path="/paymentlinks/batchuploads" component={BatchList} />
-            )}
+            <Route path="/paymentlinks/batchuploads" component={BatchListNew} />
 
             <Route path="/paymentlinks" component={LinkList} />
           </Switch>
