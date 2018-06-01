@@ -31,7 +31,7 @@ class ViewDataSerializer extends Base\Core
         Entity::ISSUED_AT,
         Entity::DATE,
         Entity::EXPIRE_BY,
-        Entity::EXPIRED_AT
+        Entity::EXPIRED_AT,
     ];
 
     /**
@@ -43,7 +43,9 @@ class ViewDataSerializer extends Base\Core
     protected static $amounts = [
         Entity::AMOUNT,
         Entity::AMOUNT_DUE,
-        Entity::AMOUNT_PAID
+        Entity::AMOUNT_PAID,
+        Entity::TAX_AMOUNT,
+        Entity::GROSS_AMOUNT,
     ];
 
     /**
@@ -95,12 +97,20 @@ class ViewDataSerializer extends Base\Core
 
     protected function serializeMerchantForHosted(): array
     {
+        $cin           = $this->merchant->getCompanyCin();
+        $gstin         = $this->merchant->getGstin();
+        $hasCinOrGstin = (($cin !== null) or ($gstin !== null));
+
         return [
-            'brand_color'      => get_rgb_value($this->merchant->getBrandColorOrDefault()),
-            'brand_text_color' => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
-            'image'            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
-            'name'             => $this->merchant->getBillingLabel(),
-            'id'               => $this->merchant->getId(),
+            'id'                               => $this->merchant->getId(),
+            'name'                             => $this->invoice->getMerchantLabel(),
+            'image'                            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
+            'brand_color'                      => get_rgb_value($this->merchant->getBrandColorOrDefault()),
+            'brand_text_color'                 => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
+            'cin'                              => $cin,
+            'gstin'                            => $gstin,
+            'has_cin_or_gstin'                 => $hasCinOrGstin,
+            'business_registered_address_text' => $this->merchant->getBusinessRegisteredAddressAsText(', '),
         ];
     }
 
@@ -132,11 +142,18 @@ class ViewDataSerializer extends Base\Core
                                    ->values()
                                    ->toArrayHosted();
 
-        $serialized[Entity::IS_PAID]         = $this->invoice->isPaid();
-        $serialized[Entity::PAYMENTS]        = $serializedPayments;
-        $serialized[Entity::CALLBACK_URL]    = $this->invoice->getCallbackUrl();
-        $serialized[Entity::CALLBACK_METHOD] = $this->invoice->getCallbackMethod();
-        $serialized[Entity::MERCHANT_LABEL]  = $this->invoice->getMerchantLabel();
+        $serialized[Entity::IS_PAID]           = $this->invoice->isPaid();
+        $serialized[Entity::PAYMENTS]          = $serializedPayments;
+        $serialized[Entity::CALLBACK_URL]      = $this->invoice->getCallbackUrl();
+        $serialized[Entity::CALLBACK_METHOD]   = $this->invoice->getCallbackMethod();
+        $serialized[Entity::MERCHANT_GSTIN]    = $this->invoice->getMerchantGstin();
+        $serialized[Entity::MERCHANT_LABEL]    = $this->invoice->getMerchantLabel();
+        $serialized[Entity::SUPPLY_STATE_NAME] = $this->invoice->getSupplyStateName();
+
+        $serialized[Entity::CUSTOMER_DETAILS]  += [
+            Entity::BILLING_ADDRESS_TEXT  => optional($this->invoice->customerBillingAddress)->formatAsText(),
+            Entity::SHIPPING_ADDRESS_TEXT => optional($this->invoice->customerShippingAddress)->formatAsText(),
+        ];
 
         //
         // Additionally, if it's type=link and description is blank we fill it with first line item's description else
@@ -156,18 +173,28 @@ class ViewDataSerializer extends Base\Core
         // Adds formatted invoice's amount attributes
         foreach (self::$amounts as $key)
         {
-            $serialized[$key . '_formatted'] = number_format($serialized[$key] / 100, 2);
+            $serialized[$key . '_formatted'] = self::formatNumber($serialized[$key]);
         }
 
-        // Adds formatted invoice's line item's amount attributes
+        // Adds formatted invoice's line item's & their tax's amount attributes
         array_walk(
             $serialized[Entity::LINE_ITEMS],
             function (& $lineItem, $idx)
             {
                 $lineItem += [
-                    'amount_formatted'       => number_format($lineItem[LineItem\Entity::AMOUNT] / 100, 2),
-                    'total_amount_formatted' => number_format($lineItem[LineItem\Entity::GROSS_AMOUNT] / 100, 2),
+                    'amount_formatted'       => self::formatNumber($lineItem[LineItem\Entity::AMOUNT]),
+                    'total_amount_formatted' => self::formatNumber($lineItem[LineItem\Entity::GROSS_AMOUNT]),
+                    'has_taxes'              => (bool) $lineItem[LineItem\Entity::TAXES],
                 ];
+
+                array_walk(
+                    $lineItem[LineItem\Entity::TAXES],
+                    function (& $tax, $idx)
+                    {
+                        $tax += [
+                            'tax_amount_formatted'  => self::formatNumber($tax[LineItem\Tax\Entity::TAX_AMOUNT]),
+                        ];
+                    });
             });
     }
 
@@ -210,5 +237,17 @@ class ViewDataSerializer extends Base\Core
         $serialized[E::MERCHANT] += [
             'business_registered_address' => optional($this->merchant->merchantDetail)->getBusinessRegisteredAddress(),
         ];
+    }
+
+    // Static helper methods
+
+    /**
+     * Formats given number to string representation like 1,234.56, for null value returns 0.00
+     * @param  int|null $v
+     * @return string
+     */
+    public static function formatNumber($v): string
+    {
+        return number_format($v / 100, 2);
     }
 }

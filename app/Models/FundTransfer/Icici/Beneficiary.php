@@ -67,9 +67,7 @@ class Beneficiary extends BaseBeneficiary
             $address = $ba->source->merchantDetail->getBusinessRegisteredAddress();
 
             // Removes line break from the string
-            $address = $this->normalizeString($address);
-
-            $address = substr($address, 0, 30);
+            $address = $this->normalizeString($address, 30, '');
 
             $row = [
                 'A',

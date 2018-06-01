@@ -378,6 +378,8 @@ final class FactoryData
             'scheduled_at'             => $faker->timestamp,
             'expire_by'                => $faker->timestamp(2),
             'amount'                   => 100000,
+            'tax_amount'               => 0,
+            'gross_amount'             => 100000,
             'currency'                 => 'INR',
         ]);
 

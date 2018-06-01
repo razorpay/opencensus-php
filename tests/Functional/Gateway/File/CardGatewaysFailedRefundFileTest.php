@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Mail\Gateway\FailedRefund\Base as FailedRefundMail;
@@ -15,6 +16,9 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 {
     use PaymentTrait;
     use FileHandlerTrait;
+    use DbEntityFetchTrait;
+
+    protected $payment;
 
     public function setUp()
     {
@@ -87,9 +91,22 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
         $this->payment = $this->getDefaultPaymentArray();
 
-        $authResponse = $this->doAuthPayment($this->payment);
+        $this->doAuthPayment($this->payment);
 
         $this->createFailedRefundsforOldpayments();
+
+        $payment = $this->createFailedRefundsForOldPayment();
+
+        $gatewayEntities = $this->getDbEntities('first_data', [
+            'payment_id' => $payment->getId(),
+        ]);
+
+        // Deleting gateway entities to test missing gateway entity check
+        $gatewayEntities->each(
+            function($entity)
+            {
+                $entity->delete();
+            });
 
         $this->ba->appAuth();
 
@@ -294,36 +311,49 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         });
     }
 
+    /**
+     * Creates one older payment with 3 failed refunds,
+     * And create one current payment with one failed
+     */
     protected function createFailedRefundsforOldpayments()
     {
-        $payment = $this->getDefaultPaymentArray();
+        $this->createFailedRefundsForOldPayment(3);
 
-        $payment = $this->doAuthAndCapturePayment($payment);
+        $this->createFailedRefundsForOldPayment(1, 0);
+    }
 
-        $this->refundPayment($payment['id'], 100);
+    /**
+     * Creates a payment and makes $refundCount refund on that
+     * Sets the payment.created_at to $paymentCreatedBefore
+     *
+     * @param int $refundCount
+     * @param int $paymentCreatedBefore
+     * @return \RZP\Models\Payment\Entity
+     */
+    protected function createFailedRefundsForOldPayment(
+        int $refundCount = 1,
+        int $paymentCreatedBefore = 15552000)
+    {
+        // Create payment for default amount 500, By using refund count,
+        // we can decide for partial refunds, as each refund will of 100
+        $this->doAuthAndCapturePayment($this->payment);
 
-        $this->refundPayment($payment['id'], 100);
+        $payment = $this->getDbLastPayment();
 
-        $this->refundPayment($payment['id'], 100);
-
-        $refunds = $this->getEntities('refund', [], true);
-
-        foreach ($refunds['items'] as $refund)
+        while($refundCount-- > 0)
         {
-            $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
+            $this->refundPayment($payment->getPublicId(), 100);
 
-            // Only those refunds that cannot be processed via API needs to appear
-            $six_months_ago = $refund['created_at'] - 15552000;
+            $refund = $this->getDbLastRefund();
 
-            $this->fixtures->edit('payment', $payment['id'], ['created_at' => $six_months_ago]);
+            $refund->setStatus('failed');
+
+            $refund->saveOrFail();
         }
 
-        $payment = $this->getDefaultPaymentArray();
+        $payment->setCreatedAt($payment->getCreatedAt() - $paymentCreatedBefore)
+                ->save();
 
-        $payment2 = $this->doAuthAndCapturePayment($payment);
-
-        $refund2 = $this->refundPayment($payment2['id'], 300);
-
-        $this->fixtures->edit('refund', $refund2['id'], ['status' => 'failed']);
+        return $payment;
     }
 }
