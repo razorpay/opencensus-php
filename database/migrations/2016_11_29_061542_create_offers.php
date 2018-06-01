@@ -43,6 +43,9 @@ class CreateOffers extends Migration
             $table->string(Offer::ISSUER, Offer::ISSUER_LENGTH)
                   ->nullable();
 
+            $table->tinyInteger(Offer::INTERNATIONAL)
+                  ->nullable();
+
             $table->tinyInteger(Offer::ACTIVE)
                   ->default(1);
 
