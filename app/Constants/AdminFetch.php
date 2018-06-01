@@ -52,12 +52,30 @@ class AdminFetch
                 ]
             ],
             Entity::SHIELD_RULE_ANALYTICS => [
-                'entity_id'         => 'entity_id',
-                'rule_id'           => 'rule_id',
-                'email'             => 'email',
-                'contact'           => 'contact',
-                'card_iin'          => 'card_iin',
-                'merchant_id'       => 'merchant_id',
+                'entity_id'         => [
+                    Fetch::LABEL        => 'entity_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'rule_id'           => [
+                    Fetch::LABEL        => 'rule_id',
+                    Fetch::TYPE         => Fetch::TYPE_NUMBER
+                ],
+                'email'             => [
+                    Fetch::LABEL        => 'email',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'contact'           => [
+                    Fetch::LABEL        => 'contact',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'card_iin'          => [
+                    Fetch::LABEL        => 'card_iin',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'merchant_id'       => [
+                    Fetch::LABEL        => 'merchant_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
                 'action'            => [
                     Fetch::LABEL        => 'action',
                     Fetch::TYPE         => Fetch::TYPE_ARRAY,
