@@ -69,7 +69,7 @@ export default class App extends Component {
   componentWillMount() {
     /*
     * Event Based Redirection
-    */
+    *
     window.addEventListener('NOT_AUTHENTICATED', () => {
       if (this.logoutPopupShown) {
         return;
@@ -88,6 +88,7 @@ export default class App extends Component {
     window.addEventListener('UNAUTHORIZED', () => {
       this.props.history.push('/');
     });
+    */
 
     let currentMode = LocalStorageService.getItem(this.modeToken);
 
