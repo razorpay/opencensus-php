@@ -480,16 +480,18 @@ if (! function_exists('multidim_array_unique'))
      */
     function multidim_array_unique(array $input, string $column): array
     {
-        $tempArray = [];
+        $result = [];
 
-        foreach ($input as &$v) {
+        foreach ($input as $v)
+        {
+            $colVal = $v[$column];
 
-            if (isset($tempArray[$v[$column]]) === false)
+            if (isset($result[$colVal]) === false)
             {
-                $tempArray[$v[$column]] = &$v;
+                $result[$colVal] = $v;
             }
         }
 
-        return array_values($tempArray);
+        return array_values($result);
     }
 }
