@@ -25,9 +25,6 @@ class CreatePaymentLinks extends Migration
             $table->char(Entity::ID, Entity::ID_LENGTH)
                   ->primary();
 
-            $table->string(Entity::RECEIPT, 40)
-                  ->nullable();
-
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
             $table->bigInteger(Entity::AMOUNT)
