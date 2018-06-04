@@ -25,37 +25,37 @@ class OtpElf
         $this->baseUrl = $this->config['url'];
     }
 
-    public function otpSend($data)
+    public function otpSend(array $input)
     {
-        $response = $this->sendRequest('/', 'POST', $data);
+        $response = $this->sendRequest('/', 'POST', $input);
 
         return $response;
     }
 
-    public function otpResend($data)
+    public function otpResend(array $input)
     {
-        $input = [
+        $content = [
 
         ];
 
-        $response = $this->sendRequest('/act', 'POST', $input);
+        $response = $this->sendRequest('/act', 'POST', $content);
 
         return $response;
     }
 
-    public function otpSubmit($data)
+    public function otpSubmit(array $input)
     {
-        $input = [
-            'payment_id' => $data['payment_id'],
+        $content = [
+            'payment_id' => $input['payment_id'],
             'request'    => [
                 'action' => 'submit_otp',
                 'data'   => [
-                    'otp'    => $data['gateway']['otp']
+                    'otp'    => $input['gateway']['otp']
                 ]
             ]
         ];
 
-        $response = $this->sendRequest('/act', 'POST', $input);
+        $response = $this->sendRequest('/act', 'POST', $content);
 
         return $response;
     }

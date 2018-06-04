@@ -224,7 +224,7 @@ class PaymentCreateController extends Controller
             return $this->returnConvenienceFeesView($input, $data, $url);
         }
 
-        return ApiResponse::json(['input' => $input,'display' => $data]);
+        return ApiResponse::json(['input' => $input, 'display' => $data]);
     }
 
     public function postPaymentFees()

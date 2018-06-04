@@ -38,7 +38,7 @@ trait HeadlessOtp
         // Where payment is not to be authenticated
         if ($request === null)
         {
-            return false;
+            return;
         }
 
         $this->setHeadlessDummyCallbackUrl($request['content']);
@@ -55,7 +55,7 @@ trait HeadlessOtp
             ($response['data']['action'] === 'page_resolved') and
             ($response['data']['data']['type'] === 'otp'))
         {
-            $payment->setAuthType(Payment::HEADLESS_OTP);
+            $payment->setAuthType(Payment\AuthType::HEADLESS_OTP);
             // $this->cache->set($this->getHeadlessCacheKey($payment), true);
 
             return ['url' => $this->getOtpSubmitUrl(), 'method' => 'POST'];
@@ -90,7 +90,7 @@ trait HeadlessOtp
         return [];
     }
 
-    protected function getHeadlessDummyCallbackUrl(&$content)
+    protected function setHeadlessDummyCallbackUrl(&$content)
     {
         $content['TermUrl'] = 'https://api.razorpay.com';
     }

@@ -114,7 +114,11 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->app->singleton('card.otpelf', function($app)
         {
-            return new OtpElf($app);
+            $mock = $app['config']->get('applications.otpelf.mock');
+
+            $implementation = $mock ? Mock\OtpElf::class : OtpElf::class;
+
+            return new $implementation($app);
         });
 
         $this->app->singleton('authservice', function($app)
