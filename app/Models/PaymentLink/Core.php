@@ -2,6 +2,7 @@
 
 namespace RZP\Models\PaymentLink;
 
+use RZP\Mail\System\Trace;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -134,11 +135,11 @@ class Core extends Base\Core
      *
      * @return array
      */
-    public function updateExpired(): array
+    public function expireLinks(): array
     {
         $timeStarted = microtime(true);
 
-        $paymentLinks = $this->repo->payment_link->getActiveAndPastExpiredByPaymentLinks();
+        $paymentLinks = $this->repo->payment_link->getActiveAndPastExpireByPaymentLinks();
 
         $summary = [
             'total_payment_links_count' => $paymentLinks->count(),
@@ -155,7 +156,11 @@ class Core extends Base\Core
             {
                 $summary['failed_payment_link_ids'][] = $paymentLink->getId();
 
-                $this->trace->traceException($e, null, null, ['id' => $paymentLink->getId()]);
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYMENT_LINK_EXPIRE_ERROR,
+                    ['id' => $paymentLink->getId()]);
             }
         }
 
@@ -184,8 +189,12 @@ class Core extends Base\Core
             {
                 $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
 
-                $paymentLink->setStatus(Status::INACTIVE);
+                if ($paymentLink->isActive() === true)
+                {
+                    return;
+                }
 
+                $paymentLink->setStatus(Status::INACTIVE);
                 $paymentLink->setStatusReason(StatusReason::EXPIRED);
 
                 $this->repo->saveOrFail($paymentLink);

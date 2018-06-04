@@ -149,11 +149,6 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::INACTIVE);
     }
 
-    public function getStatus(): string
-    {
-        return $this->getAttribute(self::STATUS);
-    }
-
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
