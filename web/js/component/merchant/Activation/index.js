@@ -160,7 +160,10 @@ export default class ActivationWizard extends React.Component {
 
     defaultFieldProps.call(this, FORM_TABS_CONTENT); // Set the default props for all tab content views
 
-    // All document fields in activation form to have same footprint
+    /*
+    * All document fields in activation form to have same footprint.
+    * Adding onChange listener to all document upload fields.
+    * */
     DOCUMENT_UPLOAD_STEP &&
       FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(a => {
         a._cmp = Input.File;
@@ -171,18 +174,13 @@ export default class ActivationWizard extends React.Component {
         if (!a.hasOwnProperty('required')) {
           a.required = true;
         }
-      });
 
-    // Adding onChange listener to all document upload fields
-    DOCUMENT_UPLOAD_STEP &&
-      FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(
-        a =>
-          (a.onChange = (file, progressTracker) => {
-            return props.saveFile(a.name, file, progressTracker).then(() => {
-              this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
-            });
-          })
-      );
+        a.onChange = (file, progressTracker) => {
+          return props.saveFile(a.name, file, progressTracker).then(() => {
+            this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
+          });
+        };
+      });
   }
 
   componentDidMount() {
