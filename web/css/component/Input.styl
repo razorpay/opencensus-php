@@ -95,11 +95,13 @@
   font-weight: bold
   position: relative
 
-.Input:not(.Input--vTop) .Input-label
-  top: 7px
+.Input:not(.Input--vTop), .InputGroup:not(.InputGroup--vTop)
+  .Input-label
+    top: 7px
 
-.InputGroup:not(.InputGroup--vTop) .Input-label
-  top: 7px
+.Input--vTop, .InputGroup--vTop // Explicit style to override in case of complex hierarchies
+  .Input-label
+    top: 0 !important
 
 .Input-elWrapper
   position: relative

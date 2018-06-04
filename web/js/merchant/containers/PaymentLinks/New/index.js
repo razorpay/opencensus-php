@@ -137,6 +137,10 @@ export default class CreateNewContainer extends React.Component {
         '0': {
           expiry: '1', // 1 is selected
         },
+        '1': {
+          noLimit: '1', // 1 is selected
+          expiry: '1', // 1 is selected
+        },
       },
     };
 
@@ -336,7 +340,11 @@ class CreateWizard extends React.Component {
           )}
 
           {/* FORM */}
-          <Form onChange={this.props.onChange} layout="tabular">
+          <Form
+            onChange={this.props.onChange}
+            layout="tabular"
+            key={FORM_TABS[activeTab].title}
+          >
             {this.props.content}
           </Form>
         </main>

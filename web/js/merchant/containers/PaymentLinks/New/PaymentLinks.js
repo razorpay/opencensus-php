@@ -92,13 +92,7 @@ export default [
         _disabledWhen: form =>
           form.state._name[form.state.activeTab].expiry === '1',
         addonAfter: <i class="i i-account" />,
-        _when: form => {
-          const expireByDateExist =
-            form.state._name[form.state.activeTab].expire_by_date ||
-            form.props.expire_by;
-
-          return !!expireByDateExist;
-        },
+        _when: form => !!form.state._name[form.state.activeTab].expire_by_date,
       },
     ],
   },
