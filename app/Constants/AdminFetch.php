@@ -85,15 +85,15 @@ class AdminFetch
                         'allow'
                     ]
                 ],
-                'ruleset'       => [
+                'ruleset'           => [
                     Fetch::LABEL        => 'ruleset',
                     Fetch::TYPE         => Fetch::TYPE_STRING
                 ],
-                'ip'       => [
+                'ip'                => [
                     Fetch::LABEL        => 'ip',
                     Fetch::TYPE         => Fetch::TYPE_STRING
                 ],
-                'card_hash'       => [
+                'card_hash'         => [
                     Fetch::LABEL        => 'card_hash',
                     Fetch::TYPE         => Fetch::TYPE_STRING
                 ],
