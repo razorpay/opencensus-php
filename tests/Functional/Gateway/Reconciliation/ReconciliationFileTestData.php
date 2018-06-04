@@ -148,12 +148,11 @@ return [
             'curr_exp'             => '2',
             'arn'                  => '75105177297000905183277',
         ],
-        
 
         'billdesk' => [
-            'Refund ID'                 => 'uibpgthqndxmwcf',
-            'Ref. 1'                    => '9LRjiRNokiZ3Ww',
-            'Refund Amount (Rs. Ps.)'   => 500
+            'refund_id'                 => 'uibpgthqndxmwcf',
+            'ref_1'                     => '9LRjiRNokiZ3Ww',
+            'refund_amount_rs_ps'       => 500
         ],
 
         'hitachi' => [

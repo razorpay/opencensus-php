@@ -603,12 +603,17 @@ class Gateway
             IFSC::CSBX,
             IFSC::TMBL,
             IFSC::KAIJ,
+            IFSC::TACX,
+            IFSC::SIBL,
+            IFSC::ESFB,
+            IFSC::ACUX,
         ]
     ];
 
     public static $bharatQrGateways = [
         self::UPI_ICICI,
         self::HITACHI,
+        self::SHARP,
     ];
 
     public static $authTypeToEmandateGatewayMap = [
@@ -671,6 +676,10 @@ class Gateway
         IFSC::CSBX,
         IFSC::TMBL,
         IFSC::KAIJ,
+        IFSC::TACX,
+        IFSC::SIBL,
+        IFSC::ESFB,
+        IFSC::ACUX,
     ];
 
     /**
@@ -732,6 +741,10 @@ class Gateway
             IFSC::TMBL,
             IFSC::KAIJ,
             Netbanking::BARB_R,
+            IFSC::TACX,
+            IFSC::SIBL,
+            IFSC::ESFB,
+            IFSC::ACUX,
         ],
     ];
 

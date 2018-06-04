@@ -1682,4 +1682,23 @@ SET    l.tax_rate = i.tax_rate
 WHERE  l.tax_rate IS NULL
        AND i.tax_rate IS NOT NULL;
 
+# Update UPI type for hulk payments
+UPDATE upi
+SET `type` = 'collect'
+WHERE `gateway_payment_id` LIKE 'p2p_%'
+  AND `type` = 'pull';
+
+UPDATE upi
+SET `type` = 'pay'
+WHERE `gateway_payment_id` LIKE 'p2p_%'
+  AND `type` = 'push';
+
+# Instance killed while recon batch processing. Slack thread : https://razorpay.slack.com/archives/C6QPQKVLZ/p1527592257000322
+UPDATE batches SET processing=0 WHERE id='AGr4YbJLIM86ff';
+
+# Set BQR Details in Sharp Terminal
+Update terminals
+    SET upi = 1, mc_mpan = '1234560000000000', visa_mpan = '1234560000000001', rupay_mpan = '1234560000000002',
+     vpa = 'random@razorpay' where id = '1000SharpTrmnl';
+
 update qr_code set reference = id;

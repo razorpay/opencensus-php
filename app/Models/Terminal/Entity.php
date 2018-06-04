@@ -63,7 +63,18 @@ class Entity extends Base\PublicEntity
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
 
-    // This is used to mark the payments always expected ones
+    //
+    // Currenly being used to handle 'unexpected' BharatQR payments.
+    //
+    // BharatQR payments generally require QR code. This QR code can be created
+    // via Razorpay, or by the merchant himself. For the latter case, when we are
+    // notified regarding payments made to this kind of QR code, our default
+    // behaviour is to treat them as unexpected, and attempt to refund them.
+    //
+    // This flag in terminal serves to inform us that some merchants are permitted
+    // to receive such payments (made to merchant-generated QR codes), and so
+    // those payments should be treated as 'expected' ones.
+    //
     const EXPECTED                      = 'expected';
 
     const DELETED                       = 'deleted';
@@ -912,6 +923,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $isEnabled;
+    }
+
+    public function isDebitRecurring()
+    {
+        return ($this->isTypeApplicable(Type::DEBIT_RECURRING) === true);
     }
 
     public function isNo2fa()

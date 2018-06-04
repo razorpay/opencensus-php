@@ -182,6 +182,7 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $entities[] = $this->createRegistrationInitiatedEntities();
         $entities[1]['status_in_file'] = 'reject';
+        $entities[1]['remark_in_file'] = 'Some reject reason';
 
         $file = $this->generateEmandateRegisterReconFile($entities);
 

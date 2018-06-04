@@ -1,19 +1,12 @@
 <?php
 
-use Aws\Credentials\CredentialProvider;
-use RZP\Services\Aws\Credentials\InstanceProfileProvider;
+use RZP\Services\Aws\Credentials\FileCache;
 
-// Initializes credentials provider to be used as sqs's 'credentials' option
-$options = [
-    'timeout'     => env('AWS_CREDS_META_TIMEOUT'),
-    'cache_key'   => env('AWS_CREDS_META_CACHE_KEY'),
-    'cache_ttl'   => env('AWS_CREDS_META_CACHE_TTL'),
-];
-
-// We memoize the credentials provider to add another layer of optimization. In queue workers it'll make multiple
-// calls (polling) to SQS. Also in one HTTP request flow too, there could be multiple SQS calls.
-$instanceProfileProvider = (new InstanceProfileProvider($options))->getProvider();
-$memoizedProvider        = CredentialProvider::memoize($instanceProfileProvider);
+//
+// By default aws's php sdk usage InstanceProfileProvider mechanism to get credentials from EC2 meta data server.
+// We cache the result in file system(by using FileCache adapter).
+//
+$awsCredentialsProvider = new FileCache;
 
 return [
 
@@ -220,7 +213,7 @@ return [
             'prefix'      => env('AWS_QUEUE_PREFIX'),
             'queue'       => env('AWS_DEFAULT_QUEUE'),
             'region'      => env('AWS_REGION'),
-            'credentials' => $memoizedProvider,
+            'credentials' => $awsCredentialsProvider,
         ],
 
         // TODO: Update brahma's & k8s code & remove this block
@@ -232,7 +225,7 @@ return [
             'prefix'      => env('AWS_QUEUE_PREFIX'),
             'queue'       => env('AWS_DEFAULT_QUEUE'),
             'region'      => env('AWS_REGION'),
-            'credentials' => $memoizedProvider,
+            'credentials' => $awsCredentialsProvider,
         ],
 
         // TODO: Slack lib should expose method to set just queue name instead of connection
@@ -243,7 +236,7 @@ return [
             'prefix'      => env('AWS_QUEUE_PREFIX'),
             'queue'       => env('AWS_EMAILS_QUEUE'),
             'region'      => env('AWS_REGION'),
-            'credentials' => $memoizedProvider,
+            'credentials' => $awsCredentialsProvider,
         ],
 
         'redis' => [
