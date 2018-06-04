@@ -39,14 +39,15 @@ function defaultFieldProps(f) {
 
   if (Array.isArray(f)) {
     return f.forEach(defaultFieldProps.bind(self));
+  } else if (
+    f.hasOwnProperty('inlineFields') &&
+    Array.isArray(f.inlineFields)
+  ) {
+    return f.inlineFields.forEach(defaultFieldProps.bind(self));
   }
 
   if (!f._cmp) {
     f._cmp = Input;
-  }
-
-  if (!f.size) {
-    f.size = 'large';
   }
 }
 
@@ -171,20 +172,37 @@ export default class CreateNewContainer extends React.Component {
     this.props.history.replace(FORM_TABS[tabId].url);
   };
 
+  getFormFields() {
+    const fields = FORM_TABS[this.state.activeTab].content;
+
+    return fields.map((f, i) => {
+      if (Array.isArray(f)) {
+        return <Input.Group key={i}>{f.map(WizardFields, this)}</Input.Group>;
+      } else if (
+        f.hasOwnProperty('inlineFields') &&
+        Array.isArray(f.inlineFields)
+      ) {
+        return (
+          <Input.Group
+            key={i}
+            class={classList('InputGroup--inline', f.className)}
+            label={f.label}
+          >
+            {f.inlineFields.map(WizardFields, this)}
+          </Input.Group>
+        );
+      }
+
+      return WizardFields.call(this, f);
+    });
+  }
+
   render() {
     // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
     const IS_MODAL = this.props.onClose;
     const { activeTab } = this.state;
 
-    const formFields = FORM_TABS[activeTab].content.map((field, i) => {
-      if (Array.isArray(field)) {
-        return (
-          <Input.Group key={i}>{field.map(WizardFields, this)}</Input.Group>
-        );
-      }
-
-      return WizardFields.call(this, field);
-    });
+    const formFields = this.getFormFields();
 
     const content = (
       <CreateWizard

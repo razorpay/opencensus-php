@@ -54,7 +54,7 @@ export default [
     label: 'Expiry',
     fieldLabel: 'No Expiry',
     _cmp: Input.Check,
-    className: 'Input-vTop',
+    className: 'Input--vTop',
   },
   [
     {
@@ -79,21 +79,39 @@ export default [
       },
     },
   ],
-  [
-    {
-      label: 'Notify Customer',
-      name: 'contact_mobile',
-      size: 'small',
-      type: 'tel',
-      placeholder: 'Enter 10-digit phone number',
-    },
-    {
-      name: 'contact_email',
-      type: 'email',
-      placeholder: 'Enter email address',
-      description: 'Notify customer either via phone or email, or both.',
-    },
-  ],
+  {
+    label: 'Customer Details',
+    inlineFields: [
+      {
+        name: 'contact_mobile',
+        type: 'tel',
+        placeholder: 'Enter mobile number',
+        size: 'small',
+      },
+      {
+        name: 'contact_email',
+        type: 'email',
+        placeholder: 'Enter email address',
+      },
+    ],
+  },
+  {
+    label: 'Notify',
+    className: 'InputGroup--vTop InputGroup--near',
+    inlineFields: [
+      {
+        name: 'sms_notify',
+        fieldLabel: 'via SMS',
+        _cmp: Input.Check,
+        size: 'small',
+      },
+      {
+        name: 'email_notify',
+        fieldLabel: 'via Email',
+        _cmp: Input.Check,
+      },
+    ],
+  },
   {
     name: 'notes',
     label: 'Internal Notes',

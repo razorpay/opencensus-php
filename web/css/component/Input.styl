@@ -80,14 +80,15 @@
 
 .Input--checkbox
   white-space: nowrap
-  .Input-inlineLabel
-    margin: -4px 0 0 0
 
 .Input-label
   font-weight: bold
   position: relative
 
-.Input:not(.Input-vTop) .Input-label
+.Input:not(.Input--vTop) .Input-label
+  top: 7px
+
+.InputGroup:not(.InputGroup--vTop) .Input-label
   top: 7px
 
 .Input-elWrapper
@@ -195,8 +196,9 @@ textarea.Input-el
   padding: 10px 12px
 
 .Input-checkbox
-  margin-right: 6px
   width: 16px
+  margin-top: 3px
+  margin-right: 8px
   height: 16px
   background: #fff
   border-radius: 2px
@@ -283,5 +285,35 @@ textarea.Input-el
 
 .InputGroup
   margin: 24px 0 0
+  position: relative
+
   .Input
     margin: 8px 0
+
+  &--near // (Temporary class)
+    margin-top: 8px
+
+  &--inline
+    display: table
+
+    .Input-label
+      position: absolute
+
+    .Input
+      display: table-cell
+
+      .Input-elWrapper, .Input--checkbox
+        width: 216px
+
+      &.Input--small
+        .Input-elWrapper, .Input--checkbox
+          width: 172px
+
+      + .Input .Input-content
+          margin-left: 24px
+
+      &Input-small .Input--checkbox
+        width: 172px
+
+      + .Input .Input-content
+          margin-left: 24px

@@ -513,4 +513,13 @@ Field.Select = ({ options, ...props }) => (
   </Field>
 );
 
-Field.Group = ({ children }) => <div class="InputGroup">{children}</div>;
+Field.Group = ({ label, className, children }) => {
+  let classes = typeof className === 'string' && className.split(' ');
+
+  return (
+    <div class={classList('InputGroup', classes)}>
+      <Label text={label} />
+      {children}
+    </div>
+  );
+};
