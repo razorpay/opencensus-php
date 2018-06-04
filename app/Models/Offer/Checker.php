@@ -31,6 +31,7 @@ class Checker extends Base\Core
         Entity::PAYMENT_METHOD,
         Entity::IINS,
         Entity::ISSUER,
+        Entity::INTERNATIONAL,
         Entity::PAYMENT_NETWORK,
         Entity::PAYMENT_METHOD_TYPE,
         self::CARD_USAGE,
@@ -182,6 +183,29 @@ class Checker extends Base\Core
             default:
                 return false;
         }
+    }
+
+    protected function checkInternational(): bool
+    {
+        $isInternational = $this->offer->isInternational();
+
+        if (($isInternational === null) or ($this->payment->isMethodCardOrEmi() === false))
+        {
+            return true;
+        }
+
+        $card = $this->payment->card;
+
+        $result = ($card->isInternational() === $isInternational);
+
+        $this->traceCheckResult(TraceCode::OFFER_CARD_INTERNATIONAL_CHECK, [
+            'result'            => $result,
+            'offer_internation' => $isInternational,
+            'card_iin'          => $card->getIin(),
+            'international'     => $card->isInternational(),
+        ]);
+
+        return $result;
     }
 
     protected function checkIins(): bool
