@@ -28,6 +28,9 @@ class CreateWebhooks extends Migration
             $table->tinyInteger(Webhook::ACTIVE)
                   ->default(1);
 
+            $table->tinyInteger(Webhook::DISABLE_ON_FAILURE)
+                  ->default(1);
+
             $table->string(Webhook::URL);
 
             $table->integer(Webhook::EVENTS);

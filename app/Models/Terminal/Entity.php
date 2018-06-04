@@ -64,6 +64,20 @@ class Entity extends Base\PublicEntity
     const CORPORATE                     = 'corporate';
     const BANKING_TYPES                 = 'banking_types';
 
+    //
+    // Currenly being used to handle 'unexpected' BharatQR payments.
+    //
+    // BharatQR payments generally require QR code. This QR code can be created
+    // via Razorpay, or by the merchant himself. For the latter case, when we are
+    // notified regarding payments made to this kind of QR code, our default
+    // behaviour is to treat them as unexpected, and attempt to refund them.
+    //
+    // This flag in terminal serves to inform us that some merchants are permitted
+    // to receive such payments (made to merchant-generated QR codes), and so
+    // those payments should be treated as 'expected' ones.
+    //
+    const EXPECTED                      = 'expected';
+
     const DELETED                       = 'deleted';
     const DELETED_AT                    = 'deleted_at';
 
@@ -97,6 +111,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::MODE,
         self::CORPORATE,
+        self::EXPECTED,
         self::CURRENCY,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
@@ -146,6 +161,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::MODE,
         self::CORPORATE,
+        self::EXPECTED,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -194,6 +210,7 @@ class Entity extends Base\PublicEntity
         ],
         self::MODE                      => Mode::DUAL,
         self::CORPORATE                 => 0,
+        self::EXPECTED                  => 0,
         self::CURRENCY                  => self::DEFAULT_CURRENCY,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
@@ -217,6 +234,7 @@ class Entity extends Base\PublicEntity
         self::MODE                      => 'int',
         self::CATEGORY                  => 'int',
         self::CORPORATE                 => 'int',
+        self::EXPECTED                  => 'boolean',
         self::USED                      => 'boolean',
     ];
 
@@ -418,6 +436,11 @@ class Entity extends Base\PublicEntity
     public function isBankingTypeBoth()
     {
         return ($this->getAttribute(self::CORPORATE) === BankingType::BOTH);
+    }
+
+    public function isExpected()
+    {
+        return $this->getAttribute(self::EXPECTED);
     }
 
     // ---------------------- SETTERS ----------------------
