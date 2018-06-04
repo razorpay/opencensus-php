@@ -1777,7 +1777,7 @@ class Service extends Base\Service
      * Creates submerchant User and associates with the submerchant as owner.
      * @param array $input
      *
-     * @return array
+     * @return arrayƒ
      */
     public function createSubMerchantUser($merchantId, array $input): array
     {
@@ -1786,6 +1786,8 @@ class Service extends Base\Service
         $input['email']  = $subMerchant->getEmail();
 
         $input['merchant_id'] = $this->merchant->getId();
+
+        $this->validateAggregatorSubMerchantRelation($subMerchant, $input['merchant_id']);
 
         (new Merchant\Validator)->validateInput('createSubMerchantUser', $input);
 
@@ -1828,5 +1830,16 @@ class Service extends Base\Service
         $variant = $this->app->razorx->getTreatment($this->merchant->getId(), 'dummy', $this->mode);
 
         return ['variant' => $variant];
+    }
+
+    protected function validateAggregatorSubMerchantRelation($subMerchant, $aggregatorMerchantId)
+    {
+        $referrer = $subMerchant->getReferrer();
+
+        if (empty($referrer) === true or $referrer !== $aggregatorMerchantId)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBUSER_CREATION_NOT_ALLOWED);
+        }
     }
 }
