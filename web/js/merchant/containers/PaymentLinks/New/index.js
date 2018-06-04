@@ -16,6 +16,7 @@ import { updateSession } from 'merchant/modules/session';
 
 import PLFormFields, { PLCreate } from './PaymentLinks';
 import RPLFormFields, { RPLCreate } from './ReusableLinks';
+import ShowWhen from '../../../components/ShowWhen';
 
 const FORM_TABS = [
   {
@@ -56,6 +57,7 @@ function WizardFields(field) {
     _cmp: Component,
     _name,
     _when,
+    _featureEnabled,
     _autoRenderImpure,
     _disabledWhen,
     ...rest
@@ -81,7 +83,7 @@ function WizardFields(field) {
     isComponentDisabled = true;
   }
 
-  return (
+  let component = (
     <Component
       key={key}
       data-name={_name}
@@ -91,6 +93,16 @@ function WizardFields(field) {
       {...rest}
     />
   );
+
+  if (_featureEnabled) {
+    component = (
+      <ShowWhen key={key} featureEnabled={_featureEnabled}>
+        {component}
+      </ShowWhen>
+    );
+  }
+
+  return component;
 }
 
 @withRouter
@@ -254,8 +266,8 @@ class CreateWizard extends React.Component {
           {/* ALERTS */}
           {this.props.mode === 'test' && (
             <Alert.Warning>
-              You are creating the link in <b>Test Mode</b>. So, only test
-              payments can be made for this link.
+              You are currently in <b>Test Mode</b>. So, only test payments can
+              be made for the link created.
             </Alert.Warning>
           )}
 

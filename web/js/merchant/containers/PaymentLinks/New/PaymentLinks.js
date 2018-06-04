@@ -33,8 +33,20 @@ export default [
     },
     {
       name: 'partial_payment',
-      fieldLabel: <b>Enable Partial Payment</b>,
+      fieldLabel: (
+        <b>
+          Enable Partial Payment
+          <a
+            class="btn-link m-l"
+            href="https://razorpay.com/docs/private/partial-payments/"
+            target="_blank"
+          >
+            What's this?
+          </a>
+        </b>
+      ),
       _cmp: Input.Check,
+      _featureEnabled: 'Invoice_Partial_Payments',
     },
   ],
   {
