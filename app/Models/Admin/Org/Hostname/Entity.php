@@ -3,10 +3,12 @@
 namespace RZP\Models\Admin\Org\Hostname;
 
 use RZP\Models\Admin\Base;
+use RZP\Models\Base\Traits\HardDeletes;
 use RZP\Models\Base\Traits\RevisionableTrait;
 
 class Entity extends Base\Entity
 {
+    use HardDeletes;
     use RevisionableTrait;
 
     const ORG_ID        = 'org_id';
@@ -19,8 +21,6 @@ class Entity extends Base\Entity
     protected $revisionEnabled = true;
 
     protected $revisionCreationsEnabled = true;
-
-    protected $allowHardDelete = true;
 
     protected $fillable = [
         self::ORG_ID,

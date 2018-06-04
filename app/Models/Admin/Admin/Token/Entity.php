@@ -4,13 +4,15 @@ namespace RZP\Models\Admin\Admin\Token;
 
 use App;
 use Carbon\Carbon;
-
 use RZP\Constants\Table;
-use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Base;
+use RZP\Models\Admin\Admin;
+use RZP\Models\Base\Traits\HardDeletes;
 
 class Entity extends Base\Entity
 {
+    use HardDeletes;
+
     const ID         = 'id';
     const ADMIN_ID   = 'admin_id';
     const TOKEN      = 'token';
@@ -19,8 +21,6 @@ class Entity extends Base\Entity
     protected $entity = 'admin_token';
 
     protected $generateIdOnCreate = false;
-
-    protected $allowHardDelete = true;
 
     protected $fillable = [
         self::ADMIN_ID,

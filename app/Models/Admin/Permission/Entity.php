@@ -3,12 +3,14 @@
 namespace RZP\Models\Admin\Permission;
 
 use RZP\Constants\Table;
-use RZP\Models\Base\Traits\RevisionableTrait;
-use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Base;
+use RZP\Models\Base\Traits\HardDeletes;
+use RZP\Models\Base\Traits\RevisionableTrait;
 
 class Entity extends Base\Entity
 {
+    use HardDeletes;
     use RevisionableTrait;
 
     const NAME              = 'name';
@@ -31,8 +33,6 @@ class Entity extends Base\Entity
     protected $revisionEnabled = true;
 
     protected $revisionCreationsEnabled = true;
-
-    protected $allowHardDelete = true;
 
     protected $fillable = [
         self::ID,

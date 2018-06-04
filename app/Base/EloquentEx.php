@@ -19,10 +19,6 @@ class EloquentEx extends \Razorpay\Spine\Entity
      */
     public $incrementing = false;
 
-    /**
-     * @var bool
-     */
-    protected $allowHardDelete = false;
 
     /**
      * Parent relations which are specified here will be ignored while
@@ -90,13 +86,6 @@ class EloquentEx extends \Razorpay\Spine\Entity
      */
     public function deleteOrFail(array $options = [])
     {
-       if (($this->doesEntityUseSoftDeletes() === false) and ($this->allowHardDelete === false))
-       {
-            throw new Exception\RuntimeException('Hard deleting entity is not allowed', [
-                'entity' => $this->entity
-            ]);
-       }
-
        parent::deleteOrFail($options);
     }
 
@@ -214,5 +203,12 @@ class EloquentEx extends \Razorpay\Spine\Entity
         return (in_array($relation, $this->ignoredRelations, true) === true) ?
                 true :
                 (($model instanceof Model) ? $model->exists : true);
+    }
+
+    protected function performDeleteOnModel()
+    {
+        throw new Exception\LogicException('Should not have reached here', null, [
+            'entity' => $this->entity
+        ]);
     }
 }

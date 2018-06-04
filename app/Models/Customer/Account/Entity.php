@@ -3,16 +3,17 @@
 namespace RZP\Models\Customer;
 
 use App;
-
 use RZP\Models\Base;
 use RZP\Models\Address;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Base\Traits\HardDeletes;
 
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
+    use HardDeletes;
 
     const NAME                  = 'name';
     const CONTACT               = 'contact';
@@ -48,8 +49,6 @@ class Entity extends Base\PublicEntity
     const SHARED_CUSTOMER_EMAIL   = 'void@razorpay.com';
 
     protected $generateIdOnCreate = true;
-
-    protected $allowHardDelete = true;
 
     protected $fillable = [
         self::ID,

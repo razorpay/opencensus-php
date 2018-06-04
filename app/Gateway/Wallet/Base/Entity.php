@@ -3,9 +3,12 @@
 namespace RZP\Gateway\Wallet\Base;
 
 use RZP\Gateway\Base;
+use RZP\Models\Base\Traits\HardDeletes;
 
 class Entity extends Base\Entity
 {
+    use HardDeletes;
+
     const ID                    = 'id';
     const PAYMENT_ID            = 'payment_id';
     const WALLET                = 'wallet';
@@ -29,8 +32,6 @@ class Entity extends Base\Entity
     const REFERENCE2            = 'reference2';
 
     protected $entity = 'wallet';
-
-    protected $allowHardDelete = true;
 
     protected $fields = [
         self::ID,
