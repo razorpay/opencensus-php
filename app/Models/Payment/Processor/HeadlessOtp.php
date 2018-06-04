@@ -22,7 +22,7 @@ trait HeadlessOtp
             (Payment\Flow::isFeatureBasedFlowEnabled($this->merchant, Payment\Flow::HEADLESS_OTP) === true))
         {
             if ((Payment\Gateway::supportsHeadlessBrowser($payment->getGateway()) === true) and
-                ($payment->card->iin->supports(IIN\Flow::HEADLESS_OTP) === true))
+                ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === true))
             {
                 return true;
             }
