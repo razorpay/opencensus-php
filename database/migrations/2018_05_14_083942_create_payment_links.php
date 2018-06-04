@@ -73,7 +73,6 @@ class CreatePaymentLinks extends Migration
             $table->index(Entity::UPDATED_AT);
             $table->index(Entity::RECEIPT);
             $table->index(Entity::EXPIRE_BY);
-            $table->index(Entity::USER_ID);
             $table->index([Entity::STATUS, Entity::STATUS_REASON]);
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
 
