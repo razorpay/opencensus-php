@@ -81,13 +81,11 @@ class PaymentLinkTest extends TestCase
 
     public function testExpirePaymentLinks()
     {
-        $this->fixtures->create('payment_link', [
+        $this->fixtures->times(2)->create('payment_link', [
             'expire_by' => '1400000000',
         ]);
 
-        $this->fixtures->create('payment_link', [
-            'expire_by' => '1400000000',
-        ]);
+        $this->fixtures->create('payment_link');
 
         $this->ba->appAuth();
 

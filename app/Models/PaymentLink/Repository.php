@@ -17,7 +17,7 @@ class Repository extends Base\Repository
      *
      * @return Base\PublicCollection
      */
-    public function getActiveAndPastExpiredByPaymentLinks(): Base\PublicCollection
+    public function getActiveAndPastExpireByPaymentLinks(): Base\PublicCollection
     {
         $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
