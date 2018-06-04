@@ -1696,6 +1696,12 @@ WHERE `gateway_payment_id` LIKE 'p2p_%'
 # Instance killed while recon batch processing. Slack thread : https://razorpay.slack.com/archives/C6QPQKVLZ/p1527592257000322
 UPDATE batches SET processing=0 WHERE id='AGr4YbJLIM86ff';
 
+# In case of retry failed batch, old success count and failure count was not reset.
+UPDATE batches SET success_count = 19709 WHERE id = 'ABUmkq0y7qz2iB';
+
+UPDATE batches SET success_count = 19822, failure_count = 0, status = 'processed',
+failure_reason = NULL WHERE id='AH7zn9nf1rqrtR';
+
 # Set BQR Details in Sharp Terminal
 Update terminals
     SET upi = 1, mc_mpan = '1234560000000000', visa_mpan = '1234560000000001', rupay_mpan = '1234560000000002',
