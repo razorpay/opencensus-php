@@ -18,6 +18,7 @@ trait HeadlessOtp
     protected function canRunHeadlessOtpFlow($payment)
     {
         if (($payment->isMethodCardOrEmi() === true) and
+            ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP) and
             (Payment\Flow::isFeatureBasedFlowEnabled($this->merchant, Payment\Flow::HEADLESS_OTP) === true))
         {
             if ((Payment\Gateway::supportsHeadlessBrowser($payment->getGateway()) === true) and
@@ -54,7 +55,8 @@ trait HeadlessOtp
             ($response['data']['action'] === 'page_resolved') and
             ($response['data']['data']['type'] === 'otp'))
         {
-            $this->cache->set($this->getHeadlessCacheKey($payment), true);
+            $payment->setAuthType(Payment::HEADLESS_OTP);
+            // $this->cache->set($this->getHeadlessCacheKey($payment), true);
 
             return ['url' => $this->getOtpSubmitUrl(), 'method' => 'POST'];
         }

@@ -3616,9 +3616,9 @@ trait Authorize
         // we render the otp submission page to the user
         if ($payment->isCard() === true)
         {
-            $headless = $this->cache->get($this->getHeadlessCacheKey($payment), false);
+            // $headless = $this->cache->get($this->getHeadlessCacheKey($payment), false);
 
-            if ($headless === true)
+            if ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP)
             {
                 return true;
             }

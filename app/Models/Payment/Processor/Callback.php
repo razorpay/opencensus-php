@@ -324,10 +324,10 @@ trait Callback
     {
         $payment = $this->payment;
 
-        $headless = $this->cache->get($this->getHeadlessCacheKey($payment), false);
+        // $headless = $this->cache->get($this->getHeadlessCacheKey($payment), false);
 
         if (($payment->isCard() === true) and
-            ($headless === true))
+            ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP))
         {
             $input['gateway'] = $this->submitHeadlessOtp($payment, $input['gateway']);
         }
