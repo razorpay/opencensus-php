@@ -469,3 +469,29 @@ if (! function_exists('format_amount'))
         return number_format($amount/ 100, 2, '.', ',');
     }
 }
+
+if (! function_exists('multidim_array_unique'))
+{
+    /**
+     * Removes the duplicate array values based on a column key
+     * @param  array    $input
+     * @param  string   $column
+     * @return array
+     */
+    function multidim_array_unique(array $input, string $column): array
+    {
+        $result = [];
+
+        foreach ($input as $v)
+        {
+            $colVal = $v[$column];
+
+            if (isset($result[$colVal]) === false)
+            {
+                $result[$colVal] = $v;
+            }
+        }
+
+        return array_values($result);
+    }
+}
