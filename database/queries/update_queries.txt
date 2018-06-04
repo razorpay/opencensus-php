@@ -1702,3 +1702,26 @@ Update terminals
      vpa = 'random@razorpay' where id = '1000SharpTrmnl';
 
 update qr_code set reference = id;
+
+
+Update payments p
+    join bank_transfers bt
+        on bt.payment_id = p.id
+    join virtual_accounts va
+        on va.id = bt.virtual_account_id
+    join bank_accounts ba
+        on ba.entity_id = va.id
+    set p.receiver_id = ba.id,
+        p.receiver_type = 'bank_account'
+    where p.receiver_id is null;
+
+Update payments p
+    join bharat_qr bq
+        on bq.payment_id = p.id
+    join virtual_accounts va
+        on va.id = bq.virtual_account_id
+    join qr_code qc
+        on qc.entity_id = va.id
+    set p.receiver_id = qc.id,
+        p.receiver_type = 'qr_code'
+    where p.receiver_id is null;
