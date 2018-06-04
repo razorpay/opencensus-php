@@ -68,29 +68,33 @@ export default [
     _cmp: Input.Check,
     className: 'Input--vTop',
   },
-  [
-    {
-      _name: 'expire_by_date',
-      type: 'tel',
-      _disabledWhen: form =>
-        form.state._name[form.state.activeTab].expiry === '1',
-      addonAfter: <i class="i i-account" />,
-    },
-    {
-      name: 'expire_by',
-      type: 'tel',
-      _disabledWhen: form =>
-        form.state._name[form.state.activeTab].expiry === '1',
-      addonAfter: <i class="i i-account" />,
-      _when: form => {
-        const expireByDateExist =
-          form.state._name[form.state.activeTab].expire_by_date ||
-          form.props.expire_by;
-
-        return !!expireByDateExist;
+  {
+    label: '',
+    inlineFields: [
+      {
+        _name: 'expire_by_date',
+        placeholder: '15-04-2018',
+        size: 'small',
+        _disabledWhen: form =>
+          form.state._name[form.state.activeTab].expiry === '1',
+        addonAfter: <i class="i i-account" />,
       },
-    },
-  ],
+      {
+        name: 'expire_by',
+        placeholder: '12:00AM',
+        _disabledWhen: form =>
+          form.state._name[form.state.activeTab].expiry === '1',
+        addonAfter: <i class="i i-account" />,
+        _when: form => {
+          const expireByDateExist =
+            form.state._name[form.state.activeTab].expire_by_date ||
+            form.props.expire_by;
+
+          return !!expireByDateExist;
+        },
+      },
+    ],
+  },
   {
     label: 'Customer Details',
     inlineFields: [
