@@ -58,6 +58,9 @@ class CreatePaymentLinks extends Migration
             $table->char(Entity::USER_ID, Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->string(Entity::RECEIPT, 40)
+                  ->nullable();
+
             $table->text(Entity::TITLE)
                   ->nullable();
 
