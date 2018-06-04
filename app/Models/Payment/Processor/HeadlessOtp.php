@@ -18,7 +18,7 @@ trait HeadlessOtp
     protected function canRunHeadlessOtpFlow($payment)
     {
         if (($payment->isMethodCardOrEmi() === true) and
-            ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP) and
+            ($payment->getAuthType() === Payment\AuthType::OTP) and
             (Payment\Flow::isFeatureBasedFlowEnabled($this->merchant, Payment\Flow::HEADLESS_OTP) === true))
         {
             if ((Payment\Gateway::supportsHeadlessBrowser($payment->getGateway()) === true) and
