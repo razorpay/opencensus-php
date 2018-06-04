@@ -440,6 +440,7 @@ final class Route
         'payment_link_list'                        => ['get',      'payment_links',                                  'PaymentLinkController@list'                                        ],
         'payment_link_create'                      => ['post',     'payment_links',                                  'PaymentLinkController@create'                                      ],
         'payment_link_update'                      => ['patch',    'payment_links/{id}',                             'PaymentLinkController@update'                                      ],
+        'payment_link_notify'                      => ['post',     'payment_links/{id}/notify',                      'PaymentLinkController@sendNotification'                            ],
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
         'app_fetch_payments'                       => ['get',      'apps/payments',                                  'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
@@ -1261,6 +1262,7 @@ final class Route
         'payment_link_list',
         'payment_link_create',
         'payment_link_update',
+        'payment_link_notify',
     ];
 
     // These will run on internal auth with the assurance

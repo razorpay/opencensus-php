@@ -35,6 +35,13 @@ class Validator extends Base\Validator
         Entity::NOTES         => 'sometimes|notes',
     ];
 
+    protected static $sendNotificationRules = [
+        'emails'     => 'required_without:contacts|filled|array|size:1',
+        'emails.*'   => 'required|email|max:255',
+        'contacts'   => 'required_without:emails|filled|array|size:1',
+        'contacts.*' => 'required|numeric|digits_between:8,11',
+    ];
+
     public function validateExpireBy($attribute, $value)
     {
         $now = Carbon::now(Timezone::IST);
@@ -50,5 +57,19 @@ class Validator extends Base\Validator
                 Entity::EXPIRE_BY,
                 [Entity::EXPIRE_BY => $value]);
         }
+    }
+
+    public function validateSendNotificationAction(array $input)
+    {
+        $paymentLink = $this->entity;
+
+        if ($paymentLink->getStatus() !== Status::ACTIVE)
+        {
+            $message = 'Payment link is not active.';
+
+            throw new BadRequestValidationFailureException($message);
+        }
+
+        $this->validateInput('sendNotification', $input);
     }
 }

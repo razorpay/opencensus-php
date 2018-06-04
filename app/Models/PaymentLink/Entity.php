@@ -132,6 +132,21 @@ class Entity extends Base\PublicEntity
         self::NOTES             => [],
     ];
 
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getShortUrl()
+    {
+        return $this->getAttribute(self::SHORT_URL);
+    }
+
     public function getExpireBy()
     {
         return $this->getAttribute(self::EXPIRE_BY);

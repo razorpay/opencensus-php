@@ -70,6 +70,8 @@ class MailTags
     const ECOD                             = 'ecod';
     const LINK                             = 'link';
 
+    const PAYMENT_LINK_NOTIFY              = 'payment_link_notify';
+
     const SUBSCRIPTION_AUTHENTICATED       = 'subscription_authenticated';
     const SUBSCRIPTION_CHARGED             = 'subscription_charged';
     const SUBSCRIPTION_PENDING             = 'subscription_pending';

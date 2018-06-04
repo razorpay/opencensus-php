@@ -59,6 +59,26 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentLinkSendNotification()
+    {
+        $this->createPaymentLink();
+
+        $this->startTest();
+    }
+
+    public function testInactivePaymentLinkSendNotification()
+    {
+        $attributes = [
+            PaymentLink\Entity::STATUS        => PaymentLink\Status::INACTIVE,
+            PaymentLink\Entity::STATUS_REASON => PaymentLink\StatusReason::EXPIRED,
+            PaymentLink\Entity::EXPIRE_BY     => 1400000000,
+        ];
+
+        $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
+
+        $this->startTest();
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function createPaymentLink(string $id = self::DEFAULT_PAYMENT_LINK_ID, array $attributes = [])

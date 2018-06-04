@@ -94,6 +94,29 @@ class Core extends Base\Core
     }
 
     /**
+     * Sends email/sms notifications to a customer with a payment link
+     * @param Entity $paymentLink
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function sendNotification(Entity $paymentLink, array $input): array
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_LINK_SEND_NOTIFICATION,
+            [
+                'payment_link_id' => $paymentLink->getId(),
+                'input'           => $input,
+            ]);
+
+        $paymentLink->getValidator()->validateSendNotificationAction($input);
+
+        (new Notifier)->notifyByEmailAndSms($paymentLink, $input);
+
+        return [];
+    }
+
+    /**
      * This method sets the short_url of a paymentLink
      * @param Entity $paymentLink
      */
