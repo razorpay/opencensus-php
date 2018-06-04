@@ -60,17 +60,6 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
-    public function testFetchPaymentLinkPayments()
-    {
-        $this->createPaymentLink();
-
-        $this->fixtures->create('payment', [
-            Payment\Entity::PAYMENT_LINK_ID => self::DEFAULT_PAYMENT_LINK_ID
-        ]);
-
-        $this->startTest();
-    }
-
     // -------------------- Protected methods --------------------
 
     protected function createPaymentLink(string $id = self::DEFAULT_PAYMENT_LINK_ID, array $attributes = [])

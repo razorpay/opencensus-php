@@ -163,17 +163,4 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
-
-    'testFetchPaymentLinkPayments' => [
-        'request'  => [
-            'url'     => '/payment_links/pl_100000000000pl/payments',
-            'method'  => 'get',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'count' => 1,
-            ],
-        ],
-    ],
 ];

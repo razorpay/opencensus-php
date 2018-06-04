@@ -81,17 +81,17 @@ class CreatePaymentLinks extends Migration
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
-
-            // This should be here and not in payments table because
-            // payment_links table is created after payments.
-            // Schema::table(Table::PAYMENT, function($table)
-            // {
-            //     $table->foreign(Payment\Entity::PAYMENT_LINK_ID)
-            //           ->references(Entity::ID)
-            //           ->on(Table::PAYMENT_LINK)
-            //           ->on_delete('restrict');
-            // });
         });
+
+//        This should be here and not in payments table because
+//        payment_links table is created after payments.
+//        Schema::table(Table::PAYMENT, function($table)
+//        {
+//            $table->foreign(Payment\Entity::PAYMENT_LINK_ID)
+//                  ->references(Entity::ID)
+//                  ->on(Table::PAYMENT_LINK)
+//                  ->on_delete('restrict');
+//        });
     }
 
     /**
@@ -108,6 +108,14 @@ class CreatePaymentLinks extends Migration
                 Table::PAYMENT_LINK . '_' . Entity::MERCHANT_ID . '_foreign'
             );
         });
+
+//        Schema::table(Table::PAYMENT, function($table)
+//        {
+//            $table->dropForeign
+//            (
+//                Table::PAYMENT . '_' . Payment\Entity::PAYMENT_LINK_ID . '_foreign'
+//            );
+//        });
 
         Schema::drop(Table::PAYMENT_LINK);
     }
