@@ -132,6 +132,16 @@ class Entity extends Base\PublicEntity
         self::NOTES             => [],
     ];
 
+    public function isActive()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::ACTIVE);
+    }
+
+    public function isInActive()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::INACTIVE);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);

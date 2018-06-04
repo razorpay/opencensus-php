@@ -59,11 +59,9 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateSendNotificationAction(array $input)
+    public function validateSendNotification(array $input)
     {
-        $paymentLink = $this->entity;
-
-        if ($paymentLink->getStatus() !== Status::ACTIVE)
+        if ($this->entity->isInActive() === true)
         {
             $message = 'Payment link is not active.';
 

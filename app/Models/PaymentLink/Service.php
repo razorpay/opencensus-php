@@ -21,12 +21,10 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->payment_link;
     }
 
-    public function sendNotification(string $id, array $input): array
+    public function sendNotification(string $id, array $input)
     {
         $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $response = $this->core->sendNotification($paymentLink, $input);
-
-        return $response;
+        $this->core->sendNotification($paymentLink, $input);
     }
 }

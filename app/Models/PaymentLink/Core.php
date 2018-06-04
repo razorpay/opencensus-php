@@ -100,7 +100,7 @@ class Core extends Base\Core
      *
      * @return array
      */
-    public function sendNotification(Entity $paymentLink, array $input): array
+    public function sendNotification(Entity $paymentLink, array $input)
     {
         $this->trace->info(
             TraceCode::PAYMENT_LINK_SEND_NOTIFICATION,
@@ -109,11 +109,9 @@ class Core extends Base\Core
                 'input'           => $input,
             ]);
 
-        $paymentLink->getValidator()->validateSendNotificationAction($input);
+        $paymentLink->getValidator()->validateSendNotification($input);
 
         (new Notifier)->notifyByEmailAndSms($paymentLink, $input);
-
-        return [];
     }
 
     /**

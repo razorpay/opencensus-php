@@ -87,7 +87,7 @@ class Notifier extends Base\Core
      *
      * @return bool
      */
-    protected function notifyBySms(Entity $paymentLink, string $contact): bool
+    protected function notifyBySms(Entity $paymentLink, string $contact)
     {
         $request = $this->getRavenSendPaymentLinkRequestInput($paymentLink, $contact);
 
@@ -105,11 +105,7 @@ class Notifier extends Base\Core
                     'contact' => $contact,
                     'id'      => $paymentLink->getId(),
                 ]);
-
-            return false;
         }
-
-        return true;
     }
 
     /**

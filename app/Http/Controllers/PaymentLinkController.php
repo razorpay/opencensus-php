@@ -2,7 +2,6 @@
 
 namespace RZP\Http\Controllers;
 
-use Request;
 use ApiResponse;
 use RZP\Http\Controllers\Traits\HasCrudMethods;
 
@@ -12,10 +11,8 @@ class PaymentLinkController extends Controller
 
     public function sendNotification(string $id)
     {
-        $input = Request::all();
+        $this->service()->sendNotification($id, $this->input);
 
-        $summary = $this->service()->sendNotification($id, $input);
-
-        return ApiResponse::json($summary);
+        return ApiResponse::json(['success' => true]);
     }
 }
