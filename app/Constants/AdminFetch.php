@@ -84,7 +84,19 @@ class AdminFetch
                         'review',
                         'allow'
                     ]
-                ]
+                ],
+                'ruleset'       => [
+                    Fetch::LABEL        => 'ruleset',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'ip'       => [
+                    Fetch::LABEL        => 'ip',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'card_hash'       => [
+                    Fetch::LABEL        => 'card_hash',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
             ]
         ];
     }
