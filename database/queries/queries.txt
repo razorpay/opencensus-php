@@ -3572,3 +3572,13 @@ ALTER TABLE webhooks
 
 ALTER TABLE offers
     ADD COLUMN international TINYINT(1) DEFAULT NULL AFTER issuer;
+
+ALTER TABLE terminals
+    ADD COLUMN expected BOOLEAN DEFAULT 0 NOT NULL after corporate;
+
+ALTER TABLE qr_code
+    ADD COLUMN reference varchar(255) DEFAULT NULL after merchant_id,
+    ADD INDEX `qr_code_reference_index` (reference),
+    MODIFY COLUMN qr_string TEXT DEFAULT NULL,
+    MODIFY COLUMN short_url varchar(255) DEFAULT NULL;
+

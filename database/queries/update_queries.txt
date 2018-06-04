@@ -1700,3 +1700,5 @@ UPDATE batches SET processing=0 WHERE id='AGr4YbJLIM86ff';
 Update terminals
     SET upi = 1, mc_mpan = '1234560000000000', visa_mpan = '1234560000000001', rupay_mpan = '1234560000000002',
      vpa = 'random@razorpay' where id = '1000SharpTrmnl';
+
+update qr_code set reference = id;

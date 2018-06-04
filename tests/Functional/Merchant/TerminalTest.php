@@ -75,6 +75,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddBharatQrTerminalWithExpected()
+    {
+        $request = $this->testData['testAddBharatQrTerminal'];
+
+        $request['request']['content']['expected'] = true;
+
+        $this->startTest($request);
+    }
+
     public function testReassignBharatQrTerminal()
     {
         $this->fixtures->create('terminal:bharat_qr_terminal');
