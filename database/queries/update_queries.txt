@@ -1710,9 +1710,11 @@ UPDATE action_state
        FROM settings
        WHERE entity_type = "merchant"
        GROUP BY product, entity_id) as products
-    ON merchant_requests.merchant_id = products.merchant_id
+    ON (merchant_requests.merchant_id = products.merchant_id
+        AND merchant_requests.name = products.product)
     SET
         merchant_requests.created_at = products.created_at,
         action_state.created_at = products.created_at
     WHERE action_state.entity_type = "merchant_request"
     AND action_state.name = "under_review"
+    AND merchant_requests.type = "product"
