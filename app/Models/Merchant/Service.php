@@ -1777,7 +1777,7 @@ class Service extends Base\Service
      * Creates submerchant User and associates with the submerchant as owner.
      * @param array $input
      *
-     * @return arrayƒ
+     * @return array
      */
     public function createSubMerchantUser($merchantId, array $input): array
     {
@@ -1839,7 +1839,7 @@ class Service extends Base\Service
         if (empty($referrer) === true or $referrer !== $aggregatorMerchantId)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBUSER_CREATION_NOT_ALLOWED);
+                ErrorCode::BAD_REQUEST_FORBIDDEN);
         }
     }
 }
