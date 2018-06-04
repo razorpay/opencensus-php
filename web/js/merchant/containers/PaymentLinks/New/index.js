@@ -50,6 +50,10 @@ function defaultFieldProps(f) {
   if (!f._cmp) {
     f._cmp = Input;
   }
+
+  if (f.name === 'notes') {
+    f.onChange = self.onChangeNotes;
+  }
 }
 
 function WizardFields(field) {
@@ -151,6 +155,11 @@ export default class CreateNewContainer extends React.Component {
     let fieldValue = target.value;
     let fieldName = target.name;
 
+    /* Step 0: */
+    if (fieldName.indexOf('notes[') > -1) {
+      return true;
+    }
+
     let sideEffectFieldsToUpdate = {};
 
     const activeTab = this.state.activeTab;
@@ -202,6 +211,29 @@ export default class CreateNewContainer extends React.Component {
         dirty: newDirty,
       });
     }
+  };
+
+  onChangeNotes = pairs => {
+    const newDirty = { ...this.state.dirty };
+    const activeTabIndx = String(this.state.activeTab);
+
+    const notes = {};
+
+    pairs.forEach(p => {
+      console.log('O..', p);
+      if (p.key || p.value) {
+        notes[p.key] = p.value;
+      }
+    });
+
+    newDirty[activeTabIndx] = {
+      ...newDirty[activeTabIndx],
+      notes: notes,
+    };
+
+    this.setState({
+      dirty: newDirty,
+    });
   };
 
   changeTab = ({ target }) => {

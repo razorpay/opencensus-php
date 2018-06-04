@@ -30,6 +30,15 @@
       border-top-right-radius: 1px
       border-bottom-right-radius: 1px
 
+    &--clickable
+      border-radius: 50%
+      background: transparent
+      pointer-events: all
+      cursor: pointer
+
+      &:hover
+        background: #fafafa
+
   label
     font-weight: normal
     margin-bottom: 0
@@ -192,7 +201,7 @@
 
 textarea.Input-el
   min-height: 36px
-  height: 70px
+  height: 72px
   resize: vertical
   padding: 10px 12px
 
@@ -304,7 +313,7 @@ textarea.Input-el
       display: table-cell
 
       .Input-elWrapper, .Input--checkbox
-        width: 216px
+        width: 194px
 
       &.Input--small
         .Input-elWrapper, .Input--checkbox

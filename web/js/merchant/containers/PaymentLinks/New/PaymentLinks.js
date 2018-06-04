@@ -77,12 +77,11 @@ export default [
     },
   },
   {
-    label: '',
+    className: 'InputGroup--near',
     inlineFields: [
       {
         _name: 'expire_by_date',
         placeholder: '15-04-2018',
-        size: 'small',
         _disabledWhen: form =>
           form.state._name[form.state.activeTab].expiry === '1',
         addonAfter: <i class="i i-account" />,
@@ -110,7 +109,6 @@ export default [
         name: 'contact_mobile',
         type: 'tel',
         placeholder: 'Enter mobile number',
-        size: 'small',
       },
       {
         name: 'contact_email',
@@ -127,7 +125,6 @@ export default [
         name: 'sms_notify',
         fieldLabel: 'via SMS',
         _cmp: Input.Check,
-        size: 'small',
         onChange: e => {
           if (e.target.value == '1') {
             document.getElementsByName('contact_mobile')[0].focus();
@@ -149,5 +146,7 @@ export default [
   {
     name: 'notes',
     label: 'Internal Notes',
+    className: 'Input--vTop',
+    _cmp: Input.Pair,
   },
 ];
