@@ -3,12 +3,9 @@
 namespace RZP\Gateway\Wallet\Base;
 
 use RZP\Gateway\Base;
-use RZP\Models\Base\Traits\HardDeletes;
 
 class Entity extends Base\Entity
 {
-    use HardDeletes;
-
     const ID                    = 'id';
     const PAYMENT_ID            = 'payment_id';
     const WALLET                = 'wallet';

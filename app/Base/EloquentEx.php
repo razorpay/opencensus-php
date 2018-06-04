@@ -19,7 +19,6 @@ class EloquentEx extends \Razorpay\Spine\Entity
      */
     public $incrementing = false;
 
-
     /**
      * Parent relations which are specified here will be ignored while
      * checking existence of associated entities while saving current entity.
