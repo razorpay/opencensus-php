@@ -201,4 +201,18 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testExpirePaymentLinks' => [
+        'request'  => [
+            'url'     => '/payment_links/expire',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'total_payment_links_count' => 2,
+                'failed_payment_link_ids'   => [],
+            ],
+        ],
+    ],
 ];

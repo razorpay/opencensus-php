@@ -15,4 +15,11 @@ class PaymentLinkController extends Controller
 
         return ApiResponse::json([]);
     }
+
+    public function updateExpired()
+    {
+        $summary = $this->service()->updateExpired();
+
+        return ApiResponse::json($summary);
+    }
 }

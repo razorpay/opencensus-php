@@ -169,6 +169,26 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EXPIRE_BY);
     }
 
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getStatusReason()
+    {
+        return $this->getAttribute(self::STATUS_REASON);
+    }
+
+    public function setStatus(string $status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setStatusReason(string $statusReason)
+    {
+        $this->setAttribute(self::STATUS_REASON, $statusReason);
+    }
+
     public function setShortUrl(string $shortUrl)
     {
         $this->setAttribute(self::SHORT_URL, $shortUrl);
