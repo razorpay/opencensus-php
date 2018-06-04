@@ -49,22 +49,19 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::PAYMENT_LINK_CREATE_REQUEST, $input);
 
-        return $this->repo->transaction(function() use ($input, $merchant)
-        {
-            $paymentLink = (new Entity)->build($input);
+        $paymentLink = (new Entity)->build($input);
 
-            $paymentLink->merchant()->associate($merchant);
+        $paymentLink->merchant()->associate($merchant);
 
-            $this->repo->saveOrFail($paymentLink);
+        $paymentLink->generateId();
 
-            $this->setShortUrl($paymentLink);
+        $this->setShortUrl($paymentLink);
 
-            $this->repo->saveOrFail($paymentLink);
+        $this->repo->saveOrFail($paymentLink);
 
-            $this->trace->info(TraceCode::PAYMENT_LINK_CREATED, $paymentLink->toArrayPublic());
+        $this->trace->info(TraceCode::PAYMENT_LINK_CREATED, $paymentLink->toArrayPublic());
 
-            return $paymentLink;
-        });
+        return $paymentLink;
     }
 
     /**
@@ -92,6 +89,8 @@ class Core extends Base\Core
                 $paymentLink->edit($input);
 
                 $this->repo->saveOrFail($paymentLink);
+
+                $this->trace->info(TraceCode::PAYMENT_LINK_UPDATED, $paymentLink->toArrayPublic());
 
                 return $paymentLink;
             });

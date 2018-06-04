@@ -17,35 +17,38 @@ class Validator extends Base\Validator
     const MIN_EXPIRY_SECS = 900;
 
     protected static $createRules = [
-        Entity::RECEIPT       => 'required|string|min:1|max:40',
         Entity::AMOUNT        => 'required|mysql_unsigned_int|min:100',
         Entity::CURRENCY      => 'filled|in:INR',
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable',
+        Entity::RECEIPT       => 'required|string|min:1|max:40',
         Entity::TITLE         => 'required|string|max:255',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
     ];
 
     protected static $editRules = [
-        Entity::RECEIPT       => 'sometimes|string|min:1|max:40',
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
+        Entity::RECEIPT       => 'sometimes|string|min:1|max:40',
         Entity::TITLE         => 'sometimes|string|max:255',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
     ];
 
-    public function validateExpireBy($attribute, $expireBy)
+    public function validateExpireBy($attribute, $value)
     {
         $now = Carbon::now(Timezone::IST);
 
         $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
 
-        if ($expireBy < $minExpireBy->getTimestamp())
+        if ($value < $minExpireBy->getTimestamp())
         {
             $message = 'expire_by should be at least ' . $minExpireBy->diffForHumans($now) . ' the current time.';
 
-            throw new BadRequestValidationFailureException($message);
+            throw new BadRequestValidationFailureException(
+                $message,
+                Entity::EXPIRE_BY,
+                [Entity::EXPIRE_BY => $value]);
         }
     }
 }
