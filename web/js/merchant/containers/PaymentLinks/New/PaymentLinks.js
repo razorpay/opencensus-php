@@ -67,6 +67,14 @@ export default [
     fieldLabel: 'No Expiry',
     _cmp: Input.Check,
     className: 'Input--vTop',
+    onChange: e => {
+      if (e.target.value == '0') {
+        setTimeout(
+          () => document.querySelector('[data-name="expire_by_date"]').focus(),
+          10
+        );
+      }
+    },
   },
   {
     label: '',
@@ -120,11 +128,21 @@ export default [
         fieldLabel: 'via SMS',
         _cmp: Input.Check,
         size: 'small',
+        onChange: e => {
+          if (e.target.value == '1') {
+            document.getElementsByName('contact_mobile')[0].focus();
+          }
+        },
       },
       {
         name: 'email_notify',
         fieldLabel: 'via Email',
         _cmp: Input.Check,
+        onChange: e => {
+          if (e.target.value == '1') {
+            document.getElementsByName('contact_email')[0].focus();
+          }
+        },
       },
     ],
   },

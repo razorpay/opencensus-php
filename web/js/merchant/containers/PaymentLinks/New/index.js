@@ -74,7 +74,9 @@ function WizardFields(field) {
       this.state.dirty[this.state.activeTab] &&
       this.state.dirty[this.state.activeTab][key]; // Form state is stored in dirty
   } else if (_name) {
-    defaultValue = this.state[_name];
+    defaultValue =
+      this.state._name[this.state.activeTab] &&
+      this.state._name[this.state.activeTab][_name];
     key = _name;
   }
 
@@ -129,7 +131,7 @@ export default class CreateNewContainer extends React.Component {
       _name: {
         // Object, cuz dirty is also object
         '0': {
-          expiry: '0', // 0 is unselected
+          expiry: '1', // 1 is selected
         },
       },
     };
@@ -149,21 +151,51 @@ export default class CreateNewContainer extends React.Component {
     let fieldValue = target.value;
     let fieldName = target.name;
 
+    let sideEffectFieldsToUpdate = {};
+
     const activeTab = this.state.activeTab;
     const activeTabIndx = String(this.state.activeTab);
     const curDirty = this.state.dirty[activeTabIndx];
 
+    /* Step 1: */
+    if (fieldName === 'contact_mobile') {
+      const isChecked = !!fieldValue;
+
+      sideEffectFieldsToUpdate['sms_notify'] = isChecked ? '1' : '0';
+      document.getElementsByName('sms_notify')[0].checked = isChecked;
+    } else if (fieldName === 'contact_email') {
+      const isChecked = !!fieldValue;
+
+      sideEffectFieldsToUpdate['email_notify'] = isChecked ? '1' : '0';
+      document.getElementsByName('email_notify')[0].checked = isChecked;
+    }
+
+    /* Step Last */
     if (stateName) {
       const _newName = { ...this.state._name };
 
       _newName[activeTabIndx][stateName] = fieldValue;
       this.setState({ _name: _newName });
+
+      if (Object.keys(sideEffectFieldsToUpdate).length) {
+        const newDirty = { ...this.state.dirty };
+
+        newDirty[activeTabIndx] = {
+          ...newDirty[activeTabIndx],
+          ...sideEffectFieldsToUpdate,
+        };
+
+        this.setState({
+          dirty: newDirty,
+        });
+      }
     } else {
       const newDirty = { ...this.state.dirty };
 
       newDirty[activeTabIndx] = {
         ...newDirty[activeTabIndx],
         [fieldName]: fieldValue,
+        ...sideEffectFieldsToUpdate,
       };
 
       this.setState({
