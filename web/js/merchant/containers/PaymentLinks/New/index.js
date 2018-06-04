@@ -14,8 +14,8 @@ import { ModalAsideNav } from 'component/Wizard';
 
 import { updateSession } from 'merchant/modules/session';
 
-import PLFormFields from './PaymentLinks';
-import RPLFormFields from './ReusableLinks';
+import PLFormFields, { PLCreate } from './PaymentLinks';
+import RPLFormFields, { RPLCreate } from './ReusableLinks';
 
 const FORM_TABS = [
   {
@@ -23,12 +23,14 @@ const FORM_TABS = [
     desc: 'The link gets expired automatically once its paid.',
     url: '/paymentlinks/new',
     content: [...PLFormFields],
+    onCreate: PLCreate,
   },
   {
     title: 'Reusable Link',
     desc: 'Accept payments multiple times on a single payment link.',
     url: '/paymentlinks/reusable/new',
     content: [...RPLFormFields],
+    onCreate: RPLCreate,
   },
 ];
 
@@ -97,6 +99,7 @@ export default class CreateNewContainer extends React.Component {
     super(props);
 
     let intent = 0; // intent = 0 => Payment Link (Order as per FORM_TABS)
+    const self = this;
 
     FORM_TABS.forEach((TAB, indx) => {
       if (props.location.pathname === TAB.url) {
@@ -104,6 +107,7 @@ export default class CreateNewContainer extends React.Component {
       }
 
       defaultFieldProps.call(this, TAB.content); // Set the default props for fields of all tabs in Wizard
+      TAB.onCreate = TAB.onCreate.bind(self);
     });
 
     this.state = {
@@ -116,6 +120,8 @@ export default class CreateNewContainer extends React.Component {
         },
       },
     };
+
+    this.onCreate = FORM_TABS[intent].onCreate;
   }
 
   saveDirtyState = e => {
@@ -160,6 +166,8 @@ export default class CreateNewContainer extends React.Component {
       activeTab: tabId,
     });
 
+    this.onCreate = FORM_TABS[tabId].onCreate;
+
     this.props.history.replace(FORM_TABS[tabId].url);
   };
 
@@ -188,6 +196,7 @@ export default class CreateNewContainer extends React.Component {
         content={formFields}
         changeTab={this.changeTab}
         onChange={this.onChange}
+        onCreate={this.onCreate}
       />
     );
 
@@ -244,11 +253,12 @@ class CreateWizard extends React.Component {
           <Button onClick={this.closeModal}>Cancel</Button>
 
           {/* Action Button 2 */}
-          <Button.Primary iconAfter="chevron-right" onClick={this.next}>
-            <span class="device--desktop">
-              Create {FORM_TABS[activeTab].title}
-            </span>
-          </Button.Primary>
+          <AsyncBtn.Primary
+            onClick={this.props.onCreate}
+            pendingState={'Creating...'}
+          >
+            Create {FORM_TABS[activeTab].title}
+          </AsyncBtn.Primary>
         </footer>
       </div>
     );

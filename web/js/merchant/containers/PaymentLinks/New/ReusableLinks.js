@@ -1,5 +1,7 @@
-// Dummy fields
+/* Specific Api Actions of Reusable Payment Links */
+export function RPLCreate() {}
 
+// Dummy fields
 export default [
   {
     label: 'Contact Name',
