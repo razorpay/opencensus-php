@@ -316,7 +316,7 @@ export default class ReportsContainer extends Component {
       trackReportActions(
         reportActionTypeForTracking,
         type,
-        month,
+        invoiceDate,
         titleForTracking
       );
 
@@ -332,7 +332,7 @@ export default class ReportsContainer extends Component {
       trackReportActions(
         reportActionTypeForTracking,
         type,
-        day,
+        date,
         titleForTracking
       );
 

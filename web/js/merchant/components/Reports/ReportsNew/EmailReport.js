@@ -96,9 +96,6 @@ export default class EmailReport extends Component {
 
     const isMerchantAccount = selectedAccountId === user.current;
 
-    const timeInterval =
-      selectedType === 'daily' ? selectedDate.date() : selectedDate.month() + 1;
-
     if (reportId) {
       const timeLapse =
         new Date().getTime() - this.reportList[reportId]['created_at'] * 1000;
@@ -108,9 +105,9 @@ export default class EmailReport extends Component {
 
       trackTimeLapse('Click - Download to Email Time', timeLapse);
       trackReportActions(
-        'Click - Email Report (while downloading)',
+        'Email Report (while downloading)',
         selectedType,
-        timeInterval,
+        selectedDate.toDate(),
         selectedConfig.label
       );
     } else {
@@ -133,9 +130,9 @@ export default class EmailReport extends Component {
       };
 
       trackReportActions(
-        'Click - Email Report',
+        'Email Report',
         selectedType,
-        timeInterval,
+        selectedDate.toDate(),
         selectedConfig.label
       );
     }
