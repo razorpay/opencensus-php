@@ -2,13 +2,39 @@
 
 namespace RZP\Models\QrCode;
 
+use App;
 use RZP\Base;
+use RZP\Exception;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::AMOUNT    => 'sometimes|integer|nullable',
         Entity::PROVIDER  => 'required|in:bharat_qr',
-        Entity::REFERENCE => 'sometimes|string',
+        Entity::REFERENCE => 'sometimes|string|custom',
     ];
+
+    protected function validateReference($attribute, $value)
+    {
+        $app = App::getFacadeRoot();
+
+        $mode = $app['rzp.mode'];
+
+        //
+        // reference should not be sent when merchant is
+        // creating virtual account. In that case it will be
+        // always set to id. In case of bharat qr make payment
+        // if we are creating a virtual account , reference is set
+        // equal to reference received from bank. That route is direct
+        // in live while it is private in test mode.
+        //
+        if (($mode === Mode::LIVE) and
+            ($app['basicauth']->isPrivateAuth() === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+    }
 }

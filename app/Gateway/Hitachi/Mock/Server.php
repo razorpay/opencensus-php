@@ -55,7 +55,7 @@ class Server extends Base\Mock\Server
             'SenderName' => 'Random Name',
         ];
 
-        if ($ref != null)
+        if ($ref !== null)
         {
             $data['F038'] = $ref;
         }

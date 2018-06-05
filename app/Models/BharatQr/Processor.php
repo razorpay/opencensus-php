@@ -94,11 +94,13 @@ class Processor extends VirtualAccount\Processor
 
     /**
      * A receiver is expected if there exists an active VA
-     * to receive it. If such a VA does not exist, or exists but
-     * has been closed/paid, the payment is to be refunded.
+     * to receive it or if the terminal expected is set to
+     * true. If such a VA does not exist, or exists but
+     * has been closed/paid and terminal expected is also set to
+     * false the payment is to be refunded.
      *
      * @param Base\PublicEntity $entity This is the receiver entity:
-     *                                  bank_transfer, qr_code
+     *                                  qr_code
      *
      * @return bool
      */
@@ -122,6 +124,9 @@ class Processor extends VirtualAccount\Processor
             }
             else
             {
+                // Here if there is no va but we received a payment and terminal
+                // expected is set to true, we need to create a virtual account and
+                // receiver with the reference received from bank.
                 $input = [
                     VirtualAccount\Entity::RECEIVERS => [
                         VirtualAccount\Entity::TYPES => [

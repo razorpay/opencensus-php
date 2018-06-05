@@ -28,7 +28,7 @@ return [
         ]
     ],
 
-    'testCreateWebhookWithdisableWebhookFalse' => [
+    'testEditDisableWebhookOnPrivateAuth' => [
         'request' => [
             'url' => '/webhooks',
             'content' => [
@@ -38,7 +38,34 @@ return [
                 ],
                 'disable_on_failure' => '0',
             ],
-            'method' => 'POST'
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_URL_NOT_FOUND,
+        ],
+    ],
+
+    'testEditDisableWebhookOnProxyAuth' => [
+        'request' => [
+            'url' => '/webhooks',
+            'content' => [
+                'url' => 'http://example.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+                'disable_on_failure' => '0',
+            ],
+            'method' => 'PUT'
         ],
         'response' => [
             'content' => [

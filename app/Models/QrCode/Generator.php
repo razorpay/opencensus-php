@@ -137,6 +137,10 @@ class Generator extends Base\Core
 
     protected function generateQrCodeFile()
     {
+        //
+        // This happens in case of unexpected payments.
+        // We create a qr code but we don't generate qr code.
+        //
         if (empty($this->qrCode->getQrString()) === true)
         {
             return;
