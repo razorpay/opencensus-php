@@ -51,6 +51,10 @@ class Entity extends Base\PublicEntity
     const TO_STATUS          = 'to_status';
     const TO_STATUS_REASON   = 'to_status_reason';
 
+    /**
+     * expiry_by has to be atleast 15 mins from current timestamp
+     */
+    const MIN_EXPIRY_SECS    = 900;
 
     protected static $sign        = 'pl';
 

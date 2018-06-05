@@ -98,7 +98,7 @@ class Core extends Base\Core
         return $paymentLink;
     }
 
-    public function deactivate(Entity $paymentLink)
+    public function deactivate(Entity $paymentLink): Entity
     {
         if ($paymentLink->isInActive() === true)
         {
@@ -120,6 +120,30 @@ class Core extends Base\Core
             });
 
         $this->trace->info(TraceCode::PAYMENT_LINK_DEACTIVATED, $paymentLink->toArray());
+
+        return $paymentLink;
+    }
+
+    public function activate(Entity $paymentLink, array $input): array
+    {
+        if ($paymentLink->isActive() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_LINK_ALREADY_ACTIVE);
+        }
+
+        $this->trace->info(TraceCode::PAYMENT_LINK_ACTIVATE_REQUEST, $paymentLink->getPublicId());
+
+        $paymentLink = $this->repo->transaction(function() use ($paymentLink, $input)
+        {
+            $paymentLink = $this->updateToActivate($paymentLink, $input);
+
+            $this->repo->saveOrFail($paymentLink);
+
+            return $paymentLink;
+        });
+
+        $this->trace->info(TraceCode::PAYMENT_LINK_ACTIVATED, $paymentLink->toArray());
 
         return $paymentLink;
     }
@@ -249,6 +273,22 @@ class Core extends Base\Core
                 Entity::PAYMENT_ID => $payment->getId(),
                 E::PAYMENT_LINK    => $paymentLink->toArrayPublic(),
             ]);
+    }
+
+    protected function updateToActivate(Entity $paymentLink, array $input): Entity
+    {
+        $validator = new Validator();
+
+        $validator->validateInput(Validator::OPERATION_ACTIVATE, $input);
+
+        $validator->validatePaymentForActivate($paymentLink, $input);
+
+        $input[Entity::STATUS] = Status::ACTIVE;
+        $input[Entity::STATUS_REASON] = null;
+
+        $paymentLink->edit($input);
+
+        return $paymentLink;
     }
 
     /**

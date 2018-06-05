@@ -796,4 +796,5 @@ class ErrorCode
 
     const BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE                                      = 'BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE';
     const BAD_REQUEST_PAYMENT_LINK_ALREADY_INACTIVE                                 = 'BAD_REQUEST_PAYMENT_LINK_ALREADY_INACTIVE';
+    const BAD_REQUEST_PAYMENT_LINK_ALREADY_ACTIVE                                   = 'BAD_REQUEST_PAYMENT_LINK_ALREADY_ACTIVE';
 }
