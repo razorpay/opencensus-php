@@ -581,10 +581,9 @@ trait Capture
     {
         if ($payment->hasPaymentLink() === true)
         {
-            (new PaymentLink\Core)->checkPaymentAfterCaptureAttempt($payment);
+            (new PaymentLink\Core)->validatePaymentAfterCaptureAttempt($payment);
         }
     }
-
 
     protected function eventOrderPaid()
     {

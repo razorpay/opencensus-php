@@ -67,7 +67,6 @@ class PaymentLinkRefund extends Job
                     'payment_link_id'   => $paymentLink->getId(),
                     'refund_id'         => $refundId,
                 ]);
-
         }
         catch (\Throwable $e)
         {

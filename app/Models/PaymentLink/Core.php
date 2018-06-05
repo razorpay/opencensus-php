@@ -162,7 +162,6 @@ class Core extends Base\Core
             ($paymentLink->getTimesPayable() === $paymentLink->getTimesPaid()))
         {
             $paymentLink->setStatus(Status::INACTIVE);
-
             $paymentLink->setStatusReason(StatusReason::COMPLETED);
         }
 
@@ -176,7 +175,7 @@ class Core extends Base\Core
             ]);
     }
 
-    public function checkPaymentAfterCaptureAttempt(Payment\Entity $payment)
+    public function validatePaymentAfterCaptureAttempt(Payment\Entity $payment)
     {
         if ($payment->isCaptured() === false)
         {
@@ -190,7 +189,7 @@ class Core extends Base\Core
                 ($paymentLink->isExpired() === false));
     }
 
-    public function checkIsPaymentInitiatable(Entity $paymentLink)
+    public function validateIsPaymentInitiatable(Entity $paymentLink)
     {
         if (($this->isPayable($paymentLink) === false) or
             ($this->hasPaymentSlots($paymentLink) === false))
