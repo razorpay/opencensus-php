@@ -10,6 +10,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
+    const OPERATION_ACTIVATE = 'activate';
 
     /**
      * expiry_by has to be atleast 15 mins from current timestamp
@@ -20,7 +21,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT        => 'required|mysql_unsigned_int|min:100',
         Entity::CURRENCY      => 'filled|in:INR',
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
-        Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable',
+        Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
         Entity::RECEIPT       => 'required|string|min:1|max:40',
         Entity::TITLE         => 'required|string|max:255|min:1',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|min:1|nullable',
@@ -29,8 +30,18 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
+        Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
         Entity::RECEIPT       => 'sometimes|string|min:1|max:40|nullable',
-        Entity::TITLE         => 'sometimes|string|max:255|nullable',
+        Entity::TITLE         => 'sometimes|string|max:255',
+        Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
+        Entity::NOTES         => 'sometimes|notes',
+    ];
+
+    protected static $activateRules = [
+        Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
+        Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
+        Entity::RECEIPT       => 'sometimes|string|min:1|max:40',
+        Entity::TITLE         => 'sometimes|string|max:255',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
     ];
@@ -44,18 +55,65 @@ class Validator extends Base\Validator
 
     public function validateExpireBy($attribute, $value)
     {
+        if ($value === null)
+        {
+            return;
+        }
+
         $now = Carbon::now(Timezone::IST);
 
-        $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
+        $minExpireBy = $now->copy()->addSeconds(Entity::MIN_EXPIRY_SECS);
 
         if ($value < $minExpireBy->getTimestamp())
         {
-            $message = 'expire_by should be at least ' . $minExpireBy->diffForHumans($now) . ' the current time.';
+            throw new BadRequestValidationFailureException('expire_by should be at least ' .
+                $minExpireBy->diffForHumans($now) . ' ahead of the current time.');
+        }
+    }
 
+    public function validateTimesPayable($attribute, $value)
+    {
+        if ($value === null)
+        {
+            return;
+        }
+
+        if (($value < $this->entity->getTimesPaid()) === true)
+        {
             throw new BadRequestValidationFailureException(
-                $message,
-                Entity::EXPIRE_BY,
-                [Entity::EXPIRE_BY => $value]);
+                'Times payable cannot be less than the number of payments processed',
+                Entity::TIMES_PAYABLE,
+                ['times_payable' => $value]);
+        }
+    }
+
+    /**
+     * For activation of payment link, we only consider captured payments.
+     * This is because, in dashboard, we will recommend the merchant to enter
+     * a value greater than times_paid, and even after that, if it fails
+     * because of succeeding payments being accommodated, it leaves a bad
+     * user experience.
+     * Also, this method allows merchant to make controlled changes to
+     * times_payable, without being susceptible to payments velocity.
+     *
+     * @param Entity $paymentLink
+     * @param array $input
+     * @throws BadRequestValidationFailureException
+     */
+    public function validatePaymentForActivate(Entity $paymentLink, array $input)
+    {
+        if (isset($input[Entity::TIMES_PAYABLE]) === false)
+        {
+            return;
+        }
+
+        if ($input[Entity::TIMES_PAYABLE] <= $paymentLink->getTimesPaid())
+        {
+            throw new BadRequestValidationFailureException(
+                'To activate, times payable value must be greater than the
+                number of payments already processed',
+                Entity::TIMES_PAYABLE,
+                $input);
         }
     }
 
