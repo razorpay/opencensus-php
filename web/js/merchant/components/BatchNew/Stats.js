@@ -4,10 +4,11 @@ export default ({ stats }) => (
   <div class="stats-info">
     <table class="table">
       <tbody>
-        {chunk(stats).map(([item0, item1]) => (
-          <tr>
-            <StatItem {...item0} />
-            <StatItem {...item1} />
+        {stats.map((items, statIdx) => (
+          <tr key={statIdx}>
+            {items.map((item, itemIdx) => (
+              <StatItem key={`${statIdx}-${itemIdx}`} {...item} />
+            ))}
           </tr>
         ))}
       </tbody>
@@ -15,20 +16,11 @@ export default ({ stats }) => (
   </div>
 );
 
-function StatItem({ title, value }) {
+function StatItem({ title, value, colSpan = 1 }) {
   return (
-    <td class="td-info">
+    <td class="td-info" colSpan={colSpan}>
       <span class="td-heading">{title}</span>
       <span class="td-value">{value}</span>
     </td>
   );
-}
-
-function chunk(array, length = 2) {
-  let index = 0,
-    result = [];
-  while (index < array.length) {
-    result.push(array.slice(index, (index += length)));
-  }
-  return result;
 }

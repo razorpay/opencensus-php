@@ -111,15 +111,19 @@ var invoiceEmail = {
 
 function getStatsTable(stats) {
   return [
-    { title: 'Total rows processed', value: stats.batch_total },
-    { title: 'Payment links created', value: stats.issued_count },
-    {
-      title: 'Paid',
-      value: <span class="text-success">{stats.paid_count}</span>,
-    },
-    {
-      title: 'Expired',
-      value: <span class="text-danger">{stats.expired_count}</span>,
-    },
+    [
+      { title: 'Total rows processed', value: stats.batch_total },
+      { title: 'Payment links created', value: stats.issued_count },
+    ],
+    [
+      {
+        title: 'Paid',
+        value: <span class="text-success">{stats.paid_count}</span>,
+      },
+      {
+        title: 'Expired',
+        value: <span class="text-danger">{stats.expired_count}</span>,
+      },
+    ],
   ];
 }
