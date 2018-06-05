@@ -56,10 +56,6 @@ class AdminFetch
                     Fetch::LABEL        => 'entity_id',
                     Fetch::TYPE         => Fetch::TYPE_STRING
                 ],
-                'rule_id'           => [
-                    Fetch::LABEL        => 'rule_id',
-                    Fetch::TYPE         => Fetch::TYPE_STRING
-                ],
                 'email'             => [
                     Fetch::LABEL        => 'email',
                     Fetch::TYPE         => Fetch::TYPE_STRING
@@ -74,19 +70,6 @@ class AdminFetch
                 ],
                 'merchant_id'       => [
                     Fetch::LABEL        => 'merchant_id',
-                    Fetch::TYPE         => Fetch::TYPE_STRING
-                ],
-                'action'            => [
-                    Fetch::LABEL        => 'action',
-                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES       => [
-                        'block',
-                        'review',
-                        'allow'
-                    ]
-                ],
-                'ruleset'           => [
-                    Fetch::LABEL        => 'ruleset',
                     Fetch::TYPE         => Fetch::TYPE_STRING
                 ],
                 'ip'                => [
