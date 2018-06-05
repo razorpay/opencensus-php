@@ -1270,6 +1270,8 @@ final class Route
         'payment_link_create',
         'payment_link_update',
         'payment_link_notify',
+        'payment_link_deactivate',
+        'payment_link_activate',
     ];
 
     // These will run on internal auth with the assurance
