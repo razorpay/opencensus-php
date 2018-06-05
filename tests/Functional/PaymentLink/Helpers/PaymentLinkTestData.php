@@ -241,4 +241,137 @@ return [
             'status_reason'     => 'completed',
         ],
     ],
+
+    'testDeactivatePaymentLink' => [
+        'request' => [
+            'url'     => '/payment_links/pl_100000000000pl/deactivate',
+            'method'  => 'patch',
+            ],
+        'response' => [
+            'content' => [
+                'id'            => 'pl_100000000000pl',
+                'status'        => 'inactive',
+                'status_reason' => 'deactivated',
+            ],
+        ],
+    ],
+
+    'testDeactivateAlreadyDeactivatedPaymentLink' => [
+        'request' => [
+            'url'     => '/payment_links/pl_100000000000pl/deactivate',
+            'method'  => 'patch',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment link cannot be deactivated as it is already inactive',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_LINK_ALREADY_INACTIVE,
+        ],
+    ],
+
+    'testActivatePaymentLink' => [
+        'request' => [
+            'url'     => '/payment_links/pl_100000000000pl/activate',
+            'method'  => 'patch',
+        ],
+        'response' => [
+            'content' => [
+                'id'            => 'pl_100000000000pl',
+                'status'        => 'active',
+                'status_reason' => null,
+            ],
+        ],
+    ],
+
+    'testActivateLinkAlreadyActivated' => [
+        'request' => [
+            'url'     => '/payment_links/pl_100000000000pl/activate',
+            'method'  => 'patch',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment link cannot be activated as it is already active',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_LINK_ALREADY_ACTIVE,
+        ],
+    ],
+
+    'testActivateWithTimesPayableLessThanTimesPaid' => [
+        'request' => [
+            'url'     => '/payment_links/pl_100000000000pl/activate',
+            'method'  => 'patch',
+            'content' => [
+                'times_payable' => 1,
+            ],
+        ],
+        'response' => [
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'Times payable cannot be less than the number of payments processed',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            ],
+        ],
+    ],
+
+    'testMinExpiryTimeForActivation' => [
+        'request' => [
+            'url'     => '/payment_links/pl_100000000000pl/activate',
+            'method'  => 'patch',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'expire_by should be at least 15 minutes after ahead of the current time.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditPaymentLinkToComplete' => [
+        'request' => [
+            'url'     => '/payment_links/pl_100000000000pl',
+            'method'  => 'patch',
+            'content' => [
+                'times_payable' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'            => 'pl_100000000000pl',
+                'times_payable' => 1,
+                'status'        => 'inactive',
+                'status_reason' => 'completed',
+                'times_paid'    => 1
+            ],
+        ],
+    ],
 ];
