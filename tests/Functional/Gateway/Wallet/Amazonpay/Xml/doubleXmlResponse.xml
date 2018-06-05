@@ -12,11 +12,11 @@
                 <AmazonOrderReferenceId>S04-3441699-5326071</AmazonOrderReferenceId>
                 <CreationTimestamp>2017-11-29T04:27:46.232Z</CreationTimestamp>
                 <SellerOrderAttributes>
-                    <SellerOrderId>random_payment_id</SellerOrderId>
+                    <SellerOrderId>{{payment_id}}</SellerOrderId>
                 </SellerOrderAttributes>
                 <OrderTotal>
                     <CurrencyCode>INR</CurrencyCode>
-                    <Amount>1.00</Amount>
+                    <Amount>{{amount}}</Amount>
                 </OrderTotal>
             </OrderReference>
         </OrderReferenceList>
@@ -32,11 +32,11 @@
                 <AmazonOrderReferenceId>S04-3441699-5326071</AmazonOrderReferenceId>
                 <CreationTimestamp>2017-11-29T04:27:46.232Z</CreationTimestamp>
                 <SellerOrderAttributes>
-                    <SellerOrderId>random_payment_id</SellerOrderId>
+                    <SellerOrderId>{{payment_id}}</SellerOrderId>
                 </SellerOrderAttributes>
                 <OrderTotal>
                     <CurrencyCode>INR</CurrencyCode>
-                    <Amount>1.00</Amount>
+                    <Amount>{{amount}}</Amount>
                 </OrderTotal>
             </OrderReference>
         </OrderReferenceList>

@@ -44,7 +44,6 @@ class Gateway extends Base\Gateway
         ResponseFields::DESCRIPTION      => Entity::RESPONSE_DESCRIPTION,
         ResponseFields::STATUS           => Entity::STATUS_CODE,
         ResponseFields::TRANSACTION_DATE => Entity::DATE,
-        ResponseFields::SIGNATURE        => Entity::REFERENCE1,
         Entity::RECEIVED                 => Entity::RECEIVED,
     ];
 
@@ -732,7 +731,7 @@ class Gateway extends Base\Gateway
         $content = [
             // Mandatory fields
             RequestFields::TOTAL_AMOUNT      => $this->formatAmount($input['payment']['amount']),
-            RequestFields::CURRENCY_CODE     => Currency::INR,
+            RequestFields::CURRENCY_CODE     => $input['payment']['currency'],
             RequestFields::ORDER_ID          => $input['payment']['id'],
 
             // Optional fields

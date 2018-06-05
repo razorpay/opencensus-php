@@ -70,6 +70,8 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input);
 
+        $this->request($input, $this->action);
+
         $xml = $this->getRefundResponse($input);
 
         return $this->makeXmlResponse($xml);
@@ -140,65 +142,53 @@ class Server extends Base\Mock\Server
     {
         $xml = file_get_contents(__DIR__ . '/Xml/verify_response.xml');
 
-        $xml = $this->modifyOrderReference($xml, $request);
+        $override = [
+            '{{random_payment_id}}'     => $request[RequestFields::QUERY_ID],
+            '{{amount}}'                => '500.00',
+            '{{reason_code}}'           => 'UpfrontChargeSuccess',
+        ];
 
-        $this->content($xml, $this->action);
-
-        return $xml;
-    }
-
-    private function modifyOrderReference(string &$xml, array $request)
-    {
-        $paymentId = $request[RequestFields::QUERY_ID];
-
-        $payment = $this->repo->payment->findByPublicId('pay_' . $paymentId);
-
-        $paymentAmount = (string) ($payment->getAmount() / 100);
-
-        $find = ['random_payment_id', '1.00'];
-
-        $replace = [$paymentId, $paymentAmount];
-
-        return str_replace($find, $replace, $xml);
+        return $this->getOverriddenResponse($xml, $override);
     }
 
     private function getRefundResponse(array $request)
     {
         $xml = file_get_contents(__DIR__ . '/Xml/refund_response.xml');
 
-        $this->content($xml, $this->action);
+        $override = [
+            '{{reference_id}}'      => $request[ResponseFields::REFUND_REF_ID],
+            '{{refund_amount}}'     => $request['RefundAmount_Amount'],
+            '{{refund_state}}'      => 'Pending',
+            '{{refund_fee_amount}}' => '0.00',
+        ];
 
-        $xml = $this->modifyRefundReference($xml, $request);
-
-        return $xml;
-    }
-
-    private function modifyRefundReference(string &$xml, array $request)
-    {
-        $refundId = $request[RequestFields::REFUND_REF_ID];
-
-        $refundAmount = $request['RefundAmount_Amount'];
-
-        // TODO: Check if fee_refunded is the same as refund_amount
-        $find = ['random_reference_id', 'refund_amount'];
-
-        $replace = [$refundId, $refundAmount];
-
-        return str_replace($find, $replace, $xml);
+        return $this->getOverriddenResponse($xml, $override);
     }
 
     private function getVerifyRefundResponse(array $request)
     {
         $xml = file_get_contents(__DIR__ . '/Xml/refund_verify_response.xml');
 
-        $find = ['amazon_refund_id'];
+        $override = [
+            '{{amazon_refund_id}}'  => $request['AmazonRefundId'],
+            '{{reference_id}}'      => 'NeedToBeOverridden',
+            '{{refund_amount}}'     => '1.00',
+            '{{refund_state}}'      => 'Completed',
+            '{{refund_fee_amount}}' => '0.00',
+        ];
 
-        $replace = [$request['AmazonRefundId']];
+        return $this->getOverriddenResponse($xml, $override);
+    }
 
-        $xml = str_replace($find, $replace, $xml);
+    private function getOverriddenResponse(string $xml, array $override)
+    {
+        $content = [
+            'xml'   => $xml,
+            'data'  => $override
+        ];
 
-        $this->content($xml, $this->action);
+        $this->content($content, $this->action);
 
-        return $xml;
+        return strtr($content['xml'], $content['data']);
     }
 }

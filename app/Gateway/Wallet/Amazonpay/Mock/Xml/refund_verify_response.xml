@@ -5,20 +5,20 @@
             <SoftDescriptor>AMZ*Deepthi test</SoftDescriptor>
             <RefundStatus>
                 <LastUpdateTimestamp>2018-03-01T11:37:56.032Z</LastUpdateTimestamp>
-                <State>Completed</State>
+                <State>{{refund_state}}</State>
             </RefundStatus>
-            <RefundReferenceId>random_reference_id</RefundReferenceId>
+            <RefundReferenceId>{{reference_id}}</RefundReferenceId>
             <RefundType>SellerInitiated</RefundType>
             <CreationTimestamp>2018-03-01T11:37:25.770Z</CreationTimestamp>
             <FeeRefunded>
                 <CurrencyCode>INR</CurrencyCode>
-                <Amount>0.00</Amount>
+                <Amount>{{refund_fee_amount}}</Amount>
             </FeeRefunded>
             <RefundAmount>
                 <CurrencyCode>INR</CurrencyCode>
-                <Amount>20.00</Amount>
+                <Amount>{{refund_amount}}</Amount>
             </RefundAmount>
-            <AmazonRefundId>amazon_refund_id</AmazonRefundId>
+            <AmazonRefundId>{{amazon_refund_id}}</AmazonRefundId>
         </RefundDetails>
     </GetRefundDetailsResult>
     <ResponseMetadata>

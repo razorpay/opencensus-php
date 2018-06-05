@@ -10,6 +10,7 @@ use RZP\Models\Payment\Processor\Wallet;
 use RZP\Exception\GatewayErrorException;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Exception\PaymentVerificationException;
+use RZP\Gateway\Wallet\Amazonpay\RequestFields;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields;
 use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -70,9 +71,6 @@ class AmazonpayGatewayTest extends TestCase
 
         $this->assertTestResponse($wallet);
 
-        // We store the callback signature in reference1
-        $this->assertNotNull($wallet[WalletEntity::REFERENCE1]);
-
         $this->assertNotNull($wallet[WalletEntity::DATE]);
     }
 
@@ -102,9 +100,6 @@ class AmazonpayGatewayTest extends TestCase
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
         $this->assertTestResponse($wallet, __FUNCTION__ . 'Wallet');
-
-        // We store the callback signature in reference1
-        $this->assertNotNull($wallet[WalletEntity::REFERENCE1]);
 
         $this->assertNotNull($wallet[WalletEntity::DATE]);
     }
@@ -154,12 +149,6 @@ class AmazonpayGatewayTest extends TestCase
         $verify = $this->verifyPayment($payment[Payment\Entity::ID]);
 
         $this->assertArraySelectiveEquals($data, $verify);
-
-        // We store the Signature in this field during authorize flow
-        $this->assertNotNull($verify['gateway']['gatewayPayment'][WalletEntity::REFERENCE1]);
-
-        // We store the verify request id in this field
-        $this->assertNotNull($verify['gateway']['gatewayPayment'][WalletEntity::REFERENCE1]);
     }
 
     /**
@@ -199,9 +188,6 @@ class AmazonpayGatewayTest extends TestCase
         // Status gets updated to SUCCESS in the DB
         $this->assertTestResponse($wallet, 'testPayment');
 
-        // We store the Signature in this field during authorize flow
-        $this->assertNotNull($wallet[WalletEntity::REFERENCE1]);
-
         // We store the verify response request id in reference2
         $this->assertNotNull($wallet[WalletEntity::REFERENCE2]);
     }
@@ -219,9 +205,6 @@ class AmazonpayGatewayTest extends TestCase
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
         $this->assertTestResponse($wallet, 'testPayment');
-
-        // We store the Signature in this field during authorize flow
-        $this->assertNotNull($wallet[WalletEntity::REFERENCE1]);
 
         // We store the verify response request id in reference2
         $this->assertNull($wallet[WalletEntity::REFERENCE2]);
@@ -241,9 +224,6 @@ class AmazonpayGatewayTest extends TestCase
 
         $this->assertTestResponse($wallet, 'testPayment');
 
-        // We store the Signature in this field during authorize flow
-        $this->assertNotNull($wallet[WalletEntity::REFERENCE1]);
-
         // When the response is an empty string, we don't store the request id in the DB
         $this->assertNull($wallet[WalletEntity::REFERENCE2]);
     }
@@ -262,9 +242,6 @@ class AmazonpayGatewayTest extends TestCase
 
         $this->assertTestResponse($wallet, 'testPayment');
 
-        // We store the Signature in this field during authorize flow
-        $this->assertNotNull($wallet[WalletEntity::REFERENCE1]);
-
         // When the response is an empty string, we don't store the request id in the DB
         $this->assertNull($wallet[WalletEntity::REFERENCE2]);
     }
@@ -280,9 +257,6 @@ class AmazonpayGatewayTest extends TestCase
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
         $this->assertTestResponse($wallet, 'testPayment');
-
-        // We store the Signature in this field during authorize flow
-        $this->assertNotNull($wallet[WalletEntity::REFERENCE1]);
 
         // Failure response also contains a requestId that we can save
         $this->assertNotNull($wallet[WalletEntity::REFERENCE2]);
@@ -305,9 +279,6 @@ class AmazonpayGatewayTest extends TestCase
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
         $this->assertTestResponse($wallet, 'testPayment');
-
-        // We store the Signature in this field during authorize flow
-        $this->assertNotNull($wallet[WalletEntity::REFERENCE1]);
     }
 
     public function testVerifyMutlipleVerifyTablesOneSuccess()
@@ -320,12 +291,6 @@ class AmazonpayGatewayTest extends TestCase
         $data = $this->testData['testPaymentVerify'];
 
         $this->assertArraySelectiveEquals($data, $verify);
-
-        // We store the Signature in this field during authorize flow
-        $this->assertNotNull($verify['gateway']['gatewayPayment'][WalletEntity::REFERENCE1]);
-
-        // We store the verify request id in this field
-        $this->assertNotNull($verify['gateway']['gatewayPayment'][WalletEntity::REFERENCE1]);
     }
 
     public function testVerifyMutlipleVerifyTablesTwoSuccess()
@@ -345,9 +310,6 @@ class AmazonpayGatewayTest extends TestCase
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
         $this->assertTestResponse($wallet, 'testPayment');
-
-        // We store the Signature in this field during authorize flow
-        $this->assertNotNull($wallet[WalletEntity::REFERENCE1]);
 
         // Exception is thrown before requestId is saved to the DB
         $this->assertNull($wallet[WalletEntity::REFERENCE2]);
@@ -424,7 +386,7 @@ class AmazonpayGatewayTest extends TestCase
 
         $refund = $this->getDbLastRefund();
 
-        $this->assertTrue($refund->isProcessed());
+        $this->assertSame(Refund\Status::PROCESSED, $refund->getStatus());
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
@@ -467,20 +429,19 @@ class AmazonpayGatewayTest extends TestCase
         $gatewayHit = false;
 
         $this->mockServerContentFunction(
-            function(& $content) use (& $gatewayHit, $refund)
+            function(& $content, $action = null) use (& $gatewayHit, $refund)
             {
-                $gatewayHit = true;
-
-                $content = str_replace(['random_reference_id', 'Completed'],
-                                       [$refund->getId(), 'Declined'],
-                                       $content);
+                if ($action === 'verify_refund')
+                {
+                    $gatewayHit = true;
+                    $content['data']['{{reference_id}}'] = $refund->getId();
+                    $content['data']['{{refund_state}}'] = 'Declined';
+                }
             });
 
         $this->retryFailedRefund($refund->getPublicId());
 
         $this->assertTrue($gatewayHit);
-
-        $walletEntity = $this->getDbEntities(ConstantsEntity::WALLET);
 
         $this->assertEquals(Refund\Status::PROCESSED, $refund->reload()->getStatus());
     }
@@ -501,6 +462,13 @@ class AmazonpayGatewayTest extends TestCase
         $this->assertEquals($refund1->getPaymentId(), $wallet1[WalletEntity::PAYMENT_ID]);
 
         $this->assertEquals($refund1->getAmount(), $wallet1[WalletEntity::AMOUNT]);
+
+        $this->mockServerRequestFunction(
+            function($request, $action = null)
+            {
+                $this->assertSame('RefundPayment', $request['Action']);
+                $this->assertSame('RefundAmount_Amount', $request['200.00']);
+            });
 
         // Refund the payment again with different amount
         $this->refundPayment($payment->getPublicId(), 20000);
@@ -618,23 +586,23 @@ class AmazonpayGatewayTest extends TestCase
                     switch ($testCase)
                     {
                         case 'testPaymentSuccessVerifyInvalidParams':
-                            $content = file_get_contents(__DIR__ . '/Xml/invalidInputParams.xml');
+                            $content['xml'] = file_get_contents(__DIR__ . '/Xml/invalidInputParams.xml');
                             break;
 
                         case 'testPaymentSuccessVerifyEmptyString':
-                            $content = '';
+                            $content['xml'] = '';
                             break;
 
                         case 'testPaymentSuccessVerifyRandomString':
-                            $content = 'Random string to be converted to array';
+                            $content['xml'] = 'Random string to be converted to array';
                             break;
 
                         case 'testPaymentVerifyFailureResponse':
-                            $content = str_replace('UpfrontChargeSuccess', 'FAILED', $content);
+                            $content['data']['{{reason_code}}'] = 'FAILED';
                             break;
 
                         case 'testPaymentVerifyIncompleteResponse':
-                            $content = file_get_contents(__DIR__ . '/Xml/incompleteResponse.xml');
+                            $content['xml'] = file_get_contents(__DIR__ . '/Xml/incompleteResponse.xml');
                             break;
 
                         default:
@@ -651,25 +619,15 @@ class AmazonpayGatewayTest extends TestCase
             {
                 if ($action === 'verify')
                 {
-                    switch ($multipleSuccess)
+                    $content['xml'] = file_get_contents(__DIR__ . '/Xml/doubleXmlResponse.xml');
+
+                    if ($multipleSuccess === true)
                     {
-                        case true:
-                            $content = file_get_contents(__DIR__ . '/Xml/doubleXmlResponse.xml');
-                            $find = ['FAILURE', 'random_payment_id', '1.00'];
-                            $replace = ['UpfrontChargeSuccess', $paymentId, $amount];
-                            break;
-
-                        case false:
-                            $content = file_get_contents(__DIR__ . '/Xml/doubleXmlResponse.xml');
-                            $find = ['random_payment_id', '1.00'];
-                            $replace = [$paymentId, $amount];
-                            break;
-
-                        default:
-                            break;
+                        $content['data']['FAILURE'] = 'UpfrontChargeSuccess';
                     }
 
-                    $content = str_replace($find, $replace, $content);
+                    $content['data']['{{amount}}'] = $amount;
+                    $content['data']['{{payment_id}}'] = $paymentId;
                 }
             });
     }
@@ -684,19 +642,19 @@ class AmazonpayGatewayTest extends TestCase
                     switch ($testCase)
                     {
                         case 'testPaymentRefundInitiationFailed':
-                            $content = str_replace('Pending', 'Declined', $content);
+                            $content['data']['{{refund_state}}'] = 'Declined';
                             break;
 
                         case 'testPaymentRefundInitiateEmptyResult':
-                            $content = file_get_contents(__DIR__ . '/Xml/refundResponseEmptyDetails.xml');
+                            $content['xml'] = file_get_contents(__DIR__ . '/Xml/refundResponseEmptyDetails.xml');
                             break;
 
                         case 'testPaymentRefundInitiateEmptyStatus':
-                            $content = file_get_contents(__DIR__ . '/Xml/refundResponseEmptyStatus.xml');
+                            $content['xml'] = file_get_contents(__DIR__ . '/Xml/refundResponseEmptyStatus.xml');
                             break;
 
                         case 'testPaymentRefundInitiateMultiplePending':
-                            $content = file_get_contents(__DIR__ . '/Xml/refundResponseMultiplePending.xml');
+                            $content['xml'] = file_get_contents(__DIR__ . '/Xml/refundResponseMultiplePending.xml');
                             break;
 
                         default:

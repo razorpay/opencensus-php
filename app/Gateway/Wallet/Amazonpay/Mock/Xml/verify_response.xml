@@ -6,17 +6,17 @@
                 <OrderReferenceStatus>
                     <ReasonDescription>Txn Success</ReasonDescription>
                     <LastUpdateTimestamp>2017-11-29T04:29:08.599Z</LastUpdateTimestamp>
-                    <ReasonCode>UpfrontChargeSuccess</ReasonCode>
+                    <ReasonCode>{{reason_code}}</ReasonCode>
                     <State>Closed</State>
                 </OrderReferenceStatus>
                 <AmazonOrderReferenceId>S04-3441699-5326071</AmazonOrderReferenceId>
                 <CreationTimestamp>2017-11-29T04:27:46.232Z</CreationTimestamp>
                 <SellerOrderAttributes>
-                    <SellerOrderId>random_payment_id</SellerOrderId>
+                    <SellerOrderId>{{random_payment_id}}</SellerOrderId>
                 </SellerOrderAttributes>
                 <OrderTotal>
                     <CurrencyCode>INR</CurrencyCode>
-                    <Amount>1.00</Amount>
+                    <Amount>{{amount}}</Amount>
                 </OrderTotal>
             </OrderReference>
         </OrderReferenceList>
