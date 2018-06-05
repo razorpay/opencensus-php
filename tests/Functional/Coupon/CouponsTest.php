@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Coupon;
 
 use Carbon\Carbon;
+use RZP\Models\Merchant;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -46,7 +47,6 @@ class CouponsTest extends TestCase
             {
                 $response = $this->applyCouponOnMerchant($content);
             });
-
 
         $content = [
             'code' => 'RANDOM-123',
@@ -252,7 +252,7 @@ class CouponsTest extends TestCase
 
         $content = [
             'merchant_id' => '10000000000000',
-            'code' =>  'RANDOM-123',
+            'code'        => 'RANDOM-123',
         ];
 
         $response = $this->applyCouponOnMerchant($content);
@@ -266,7 +266,7 @@ class CouponsTest extends TestCase
 
         $content = [
             'merchant_id' => '10000000000000',
-            'code' =>  'RANDOM-123',
+            'code'        => 'RANDOM-123',
         ];
 
         $response = $this->applyCouponOnMerchant($content);
@@ -289,7 +289,7 @@ class CouponsTest extends TestCase
 
         $content = [
             'merchant_id' => '10000000000000',
-            'code' =>  'RAND123',
+            'code'        => 'RAND123',
         ];
 
         $requestData = $this->testData[__FUNCTION__];
