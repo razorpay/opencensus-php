@@ -78,20 +78,16 @@ class Core extends Base\Core
                 Entity::INPUT => $input,
             ]);
 
-        // TODO : TO change to lockForUpdate(). Has been done in subsequent PR already.
-        $paymentLink = $this->mutex->acquireAndRelease(
-                            $paymentLink->getId(),
-                            function() use ($paymentLink, $input)
-                            {
-                                $paymentLink->reload();
+        $this->repo->transaction(function() use ($paymentLink, $input)
+        {
+            $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
 
-                                // TODO: Cases related to expire_by and times_payable to be handled. Has been done in subsequent pr already.
-                                $paymentLink->edit($input);
+            $paymentLink->edit($input);
 
-                                $this->repo->saveOrFail($paymentLink);
+            $paymentLink = $this->updateStatusForEdit($paymentLink, $input);
 
-                                return $paymentLink;
-                            });
+            $this->repo->saveOrFail($paymentLink);
+        });
 
         $this->trace->info(TraceCode::PAYMENT_LINK_UPDATED, $paymentLink->toArrayPublic());
 
@@ -287,6 +283,38 @@ class Core extends Base\Core
         $input[Entity::STATUS_REASON] = null;
 
         $paymentLink->edit($input);
+
+        return $paymentLink;
+    }
+
+    /**
+     * This is called after edit operation as we want to
+     * do the basic validation of editable fields
+     * before checking corresponding payments.
+     *
+     * This updates the status of the link:
+     * - Will be marked complete if edited times_payable
+     * - Cannot get expired as there is validation on
+     * edit value of expires_by.
+     *
+     * @param Entity $paymentLink
+     * @param array $input
+     * @return Entity
+     */
+    protected function updateStatusForEdit(Entity $paymentLink, array $input)
+    {
+        if (isset($input[Entity::TIMES_PAYABLE]) === false)
+        {
+            return $paymentLink;
+        }
+
+        // Update status according to new value of time_payable
+
+        if ($paymentLink->getTimesPayable() === $paymentLink->getTimesPaid())
+        {
+            $paymentLink->setStatus(Status::INACTIVE);
+            $paymentLink->setStatusReason(StatusReason::COMPLETED);
+        }
 
         return $paymentLink;
     }
