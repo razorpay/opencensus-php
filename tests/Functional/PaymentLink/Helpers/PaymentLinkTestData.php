@@ -215,4 +215,22 @@ return [
             ],
         ],
     ],
+
+    'testPaymentLinkMakePayment' => [
+        'state' => [
+            'times_paid'        => 1,
+            'total_amount_paid' => 10100,
+            'status'            => 'active',
+            'status_reason'     => null,
+        ],
+    ],
+
+    'testPaymentLinkCompletePayments' => [
+        'state' => [
+            'times_paid'        => 2,
+            'total_amount_paid' => 20200,
+            'status'            => 'inactive',
+            'status_reason'     => 'completed',
+        ],
+    ],
 ];
