@@ -82,9 +82,11 @@ class Receiver extends Base\Core
     {
         $attempts = 0;
 
+        $this->setBankAccountOptions($options);
+
         $provider = $this->getProvider();
 
-        $bankAccount = $this->getNewBankAccountEntity($options);
+        $bankAccount = $this->getNewBankAccountEntity();
 
         while ($attempts <= self::MAX_ACCOUNT_GENERATION_ATTEMPTS)
         {
@@ -166,11 +168,9 @@ class Receiver extends Base\Core
         return $bankAccount;
     }
 
-    protected function getNewBankAccountEntity(array $options)
+    protected function getNewBankAccountEntity()
     {
         $bankAccount = new BankAccount;
-
-        $this->setBankAccountOptions($options);
 
         return $bankAccount;
     }
@@ -275,7 +275,7 @@ class Receiver extends Base\Core
             return $this->provider;
         }
 
-        $provider = Provider::KOTAK;
+        $provider = Provider::YESBANK;
 
         // The objective is to shift all new VAs to YesBank, but
         // YesBank hasn't given us an alphanumeric prefix yet, so
