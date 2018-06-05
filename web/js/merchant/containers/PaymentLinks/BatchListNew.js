@@ -6,7 +6,8 @@ import BatchUpload from 'merchant/containers/BatchNew/Upload';
 import { openModal } from 'rzp/modules/modals';
 import {
   fetchPaymentLinkBatches as fetchAll,
-  fetchIssuableBatchList,
+  createPaymentLinkBatch as createBatch,
+  validatePaymentLinkBatch as validateBatch,
 } from 'merchant/modules/batches';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
@@ -24,7 +25,7 @@ const gaEvents = setGaTrack('Dashboard - Payment Links - BU');
       ...state.paymentlinkbatches,
     };
   },
-  { fetchAll, fetchIssuableBatchList, openModal }
+  { fetchAll, createBatch, validateBatch, openModal }
 )
 export default class BatchListContainer extends ListContainer {
   constructor(props) {
@@ -95,6 +96,8 @@ export default class BatchListContainer extends ListContainer {
         batchType="payment_link"
         maxRows={5000}
         gaEvents={gaEvents}
+        createBatch={this.props.createBatch}
+        validateBatch={this.props.validateBatch}
         renderBatchCreationForm={() => (
           <PaymentLinksForm
             batchType={this.props.batchType}

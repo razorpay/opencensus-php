@@ -5,9 +5,7 @@ import { showNotification } from 'rzp/modules/notifications';
 
 import BatchCreateModal from 'merchant/components/BatchNew/CreateModal';
 
-import { createPaymentLinkBatch as createBatch } from 'merchant/modules/batches';
-
-@connect(state => state.session, { createBatch, showNotification })
+@connect(state => state.session, { showNotification })
 export default class BatchCreate extends Component {
   formInitialValues = {
     name: this.props.batchName,

@@ -3,9 +3,7 @@ import { connect } from 'react-redux';
 
 import BatchValidateModal from 'merchant/components/BatchNew/ValidateModal';
 
-import { validatePaymentLinkBatch as validateBatch } from 'merchant/modules/batches';
-
-@connect(state => state.session, { validateBatch })
+@connect(state => state.session)
 export default class BatchValidate extends Component {
   state = {
     status: null,
