@@ -160,6 +160,23 @@ class AtomGatewayTest extends TestCase
         $this->assertEquals(true, $gatewayPayment['success']);
     }
 
+    public function testAuthorizeFailedPayment()
+    {
+        $this->testFailedPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['reference1']);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNotNull($payment['reference1']);
+
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
     public function testFailedVerifyMismatch()
     {
         $this->testFailedPayment();

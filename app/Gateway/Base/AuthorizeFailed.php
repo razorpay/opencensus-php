@@ -86,7 +86,12 @@ trait AuthorizeFailed
         {
             $response['acquirer'][Entity::REFERENCE2] = $gatewayPayment->getAuthCode();
         }
-
+        
+        if (method_exists($gatewayPayment, 'getBankPaymentId') === true)
+        {
+            $response['acquirer'][Entity::REFERENCE1] = $gatewayPayment->getBankPaymentId();
+        }
+      
         if (method_exists($gatewayPayment, 'getVpa') === true)
         {
             $response['acquirer'][Entity::VPA] = $gatewayPayment->getVpa();
