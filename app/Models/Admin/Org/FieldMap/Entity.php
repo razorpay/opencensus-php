@@ -5,8 +5,6 @@ namespace RZP\Models\Admin\Org\FieldMap;
 use App;
 
 use RZP\Models\Base;
-use RZP\Constants\Table;
-use RZP\Models\Admin\Admin;
 use RZP\Models\Base\Traits\HardDeletes;
 
 class Entity extends Base\PublicEntity

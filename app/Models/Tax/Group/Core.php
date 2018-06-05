@@ -3,8 +3,8 @@
 namespace RZP\Models\Tax\Group;
 
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Models\Tax;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core

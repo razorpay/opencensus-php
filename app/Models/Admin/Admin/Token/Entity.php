@@ -4,7 +4,6 @@ namespace RZP\Models\Admin\Admin\Token;
 
 use App;
 use Carbon\Carbon;
-use RZP\Constants\Table;
 use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Base\Traits\HardDeletes;

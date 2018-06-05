@@ -204,6 +204,12 @@ class EloquentEx extends \Razorpay\Spine\Entity
                 (($model instanceof Model) ? $model->exists : true);
     }
 
+    /**
+     * Every entity which wants to implement delete should use either the
+     * SoftDeletes or HardDeletes traits. Deleting by default is not allowed
+     * here.
+     *
+     */
     protected function performDeleteOnModel()
     {
         throw new Exception\LogicException('Should not have reached here', null, [
