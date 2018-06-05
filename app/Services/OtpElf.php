@@ -70,7 +70,7 @@ class OtpElf
         }
 
         $headers = [
-            'Authorization' => 'Bearer ' . $this->apiKey,
+            'Authorization' => 'Bearer ',
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
         ];
@@ -88,6 +88,9 @@ class OtpElf
                 'headers' => $headers,
                 'options' => $options
             ]);
+
+        // Update bearer token
+        $headers['Authorization'] .= $this->apiKey;
 
         try
         {
