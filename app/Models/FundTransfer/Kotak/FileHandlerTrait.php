@@ -750,6 +750,16 @@ trait FileHandlerTrait
         Config::set('excel.import.force_sheets_collection', true);
         Config::set('excel.import.heading', 'original');
 
+        //
+        // Calling LaravelExcelReader's setSelectedSheets() and setSelectedSheetIndices() to
+        // reset selected sheet names and indices here, as its not happening in LaravelExcelReader.
+        // If previous run has set some sheet name in selectSheets(), its retaining that sheet name
+        // until it is replaced with new sheet name.
+        //
+        $this->app['excel.reader']->setSelectedSheets([]);
+
+        $this->app['excel.reader']->setSelectedSheetIndices([]);
+
         $sheets = $this->parseExcelFile($filePath);
 
         $hasSingleSheet  = (count($sheets) === 1);
