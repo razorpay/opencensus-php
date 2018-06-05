@@ -131,7 +131,7 @@ class WebhookTest extends TestCase
     {
         $webhook = $this->createWebhook();
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/admin/'.$webhook['id'];
+        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
 
         $this->ba->proxyAuth();
 

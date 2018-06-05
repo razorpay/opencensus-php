@@ -229,7 +229,6 @@ final class Route
         'virtual_account_refund_excess'            => ['post',     'virtual_accounts/refund/excess',                 'VirtualAccountController@refundExcessPayments'                     ],
         'webhook_create'                           => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                             => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
-        'webhook_edit_admin'                       => ['put',      'webhooks/admin/{id}',                             'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                            => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
         'webhook_fetch_events'                     => ['get',      'webhooks/events/all',                            'MerchantController@getWebhookEvents'                               ],
         'webhook_fetch_multiple'                   => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
@@ -1253,7 +1252,6 @@ final class Route
         'tax_get_meta_states',
         'tax_get_meta_gst_taxes',
         'bharat_qr_pay_test',
-        'webhook_edit_admin',
     ];
 
     // These will run on internal auth with the assurance
