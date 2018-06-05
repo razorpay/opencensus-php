@@ -28,4 +28,5 @@ class RequestFields
     const CVV2                = 'pCVV2';
     const REQUEST_ID          = 'pRequestId';
     const RETRIEVAL_REF_NUM   = 'pRRN';
+    const CURRENCY_CODE       = 'pCurrencyCode';
 }

@@ -16,6 +16,7 @@ use RZP\Constants\HashAlgo;
 use RZP\Constants\Timezone;
 use RZP\Models\Card\Network;
 use RZP\Gateway\Base\Verify;
+use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Base\UniqueIdEntity;
 
@@ -540,6 +541,8 @@ class Gateway extends Base\Gateway
         $time = Carbon::now(Timezone::IST)->format(self::TIME_FORMAT);
         $date = Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
 
+        $currencyCode = Currency::getIsoCode($input['payment']['currency']);
+
         $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::AUTH,
             RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['payment']['amount']),
@@ -553,6 +556,7 @@ class Gateway extends Base\Gateway
             RequestFields::ALGORITHM           => '',
             RequestFields::CAVV2               => '',
             RequestFields::UCAF                => '',
+            RequestFields::CURRENCY_CODE       => $currencyCode,
         ];
 
         return $content;
