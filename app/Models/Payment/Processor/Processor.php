@@ -21,6 +21,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
+use RZP\Models\PaymentLink;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Payment\Status;
@@ -1221,6 +1222,8 @@ class Processor
 
         $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
 
+        $this->validateAndSetPaymentLinkIfApplicable($payment, $input);
+
         $this->validateAndSetReceiverIfApplicable($payment, $input);
 
         $this->validateBankTransferDetailsIfApplicable($payment);
@@ -1476,6 +1479,21 @@ class Processor
         $payment->receiver()->associate($receiver);
     }
 
+    protected function validateAndSetPaymentLinkIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === true)
+        {
+            return;
+        }
+
+        $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant(
+            $input[Payment\Entity::PAYMENT_LINK_ID], $this->merchant);
+
+        (new PaymentLink\Core)->checkIsPaymentInitiatable($paymentLink);
+
+        $payment->paymentLink()->associate($paymentLink);
+    }
+
     protected function validateAndSetInvoiceDetailsIfApplicable(Payment\Entity $payment)
     {
         if ($this->order === null)
@@ -1671,6 +1689,14 @@ class Processor
         if ($payment->isBankTransfer() === true)
         {
             return false;
+        }
+
+        //
+        // We do an auto capture only if payment is associated with a payment link.
+        //
+        if ($payment->hasPaymentLink() === true)
+        {
+            return true;
         }
 
         //

@@ -24,6 +24,7 @@ use RZP\Models\Customer;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Models\PaymentLink;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -38,6 +39,7 @@ use RZP\Models\Payment\Processor\Netbanking;
  * @property Merchant\Entity        $merchant
  * @property Card\Entity            $card
  * @property BankTransfer\Entity    $bankTransfer
+ * @property PaymentLink\Entity     $paymentLink
  */
 class Entity extends Base\PublicEntity
 {
@@ -265,6 +267,7 @@ class Entity extends Base\PublicEntity
         self::REFERENCE2,
         self::ACQUIRER_DATA,
         self::TRANSFER_ID,
+        self::PAYMENT_LINK_ID,
         self::RECEIVER_ID,
         self::RECEIVER_TYPE,
         self::TRANSACTION_ID,
@@ -292,7 +295,6 @@ class Entity extends Base\PublicEntity
         self::DISPUTED,
         self::RECURRING_TYPE,
         self::ACKNOWLEDGED_AT,
-        self::PAYMENT_LINK_ID,
     ];
 
     protected $public = [
@@ -303,6 +305,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::ORDER_ID,
         self::INVOICE_ID,
+        self::PAYMENT_LINK_ID,
         self::INTERNATIONAL,
         self::METHOD,
         self::AMOUNT_REFUNDED,
@@ -415,11 +418,11 @@ class Entity extends Base\PublicEntity
         self::VERIFY_BUCKET        => null,
         self::TERMINAL_ID          => null,
         self::TRANSFER_ID          => null,
+        self::PAYMENT_LINK_ID      => null,
         self::DISPUTED             => false,
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
         self::ACKNOWLEDGED_AT      => null,
-        self::PAYMENT_LINK_ID      => null,
     ];
 
     protected $amounts = [
@@ -1292,6 +1295,11 @@ class Entity extends Base\PublicEntity
     public function hasTransfer()
     {
         return ($this->isAttributeNotNull(self::TRANSFER_ID));
+    }
+
+    public function hasPaymentLink()
+    {
+        return ($this->isAttributeNotNull(self::PAYMENT_LINK_ID));
     }
 
     public function hasMetadata($key = null)
@@ -2422,6 +2430,11 @@ class Entity extends Base\PublicEntity
     public function transfers()
     {
         return $this->morphMany('RZP\Models\Transfer\Entity', 'source');
+    }
+
+    public function paymentLink()
+    {
+        return $this->belongsTo('RZP\Models\PaymentLink\Entity');
     }
 
     public function receiver()
