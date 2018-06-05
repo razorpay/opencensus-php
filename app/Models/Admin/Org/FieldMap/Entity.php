@@ -21,7 +21,6 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'ofm';
 
     protected $fillable = [
-        // self::ORG_ID,
         self::ENTITY_NAME,
         self::FIELDS,
     ];

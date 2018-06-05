@@ -20,7 +20,6 @@ class Entity extends Base\PublicEntity
     protected $table = Table::LOGIN_ATTEMPT;
 
     protected $fillable = [
-        // self::ADMIN_ID,
         self::VALID,
         self::USER_AGENT,
         self::IP_ADDRESS

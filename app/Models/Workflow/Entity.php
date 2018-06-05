@@ -34,7 +34,6 @@ class Entity extends Base\Entity
     protected $fillable = [
         self::ID,
         self::NAME,
-        // self::ORG_ID,
     ];
 
     protected $visible = [
