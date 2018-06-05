@@ -32,4 +32,13 @@ class Service extends Base\Service
     {
         return $this->core->expirePaymentLinks();
     }
+
+    public function deactivate(string $id)
+    {
+        $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $paymentLink = $this->core->deactivate($paymentLink);
+
+        return $paymentLink->toArrayPublic();
+    }
 }

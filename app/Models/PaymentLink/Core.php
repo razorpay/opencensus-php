@@ -98,6 +98,32 @@ class Core extends Base\Core
         return $paymentLink;
     }
 
+    public function deactivate(Entity $paymentLink)
+    {
+        if ($paymentLink->isInActive() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_LINK_ALREADY_INACTIVE);
+        }
+
+        $this->trace->info(TraceCode::PAYMENT_LINK_DEACTIVATE_REQUEST, $paymentLink->getPublicId());
+
+        $paymentLink = $this->repo->transaction(function() use ($paymentLink)
+            {
+                $paymentLink->setStatus(Status::INACTIVE);
+
+                $paymentLink->setStatusReason(StatusReason::DEACTIVATED);
+
+                $this->repo->saveOrFail($paymentLink);
+
+                return $paymentLink;
+            });
+
+        $this->trace->info(TraceCode::PAYMENT_LINK_DEACTIVATED, $paymentLink->toArray());
+
+        return $paymentLink;
+    }
+
     /**
      * Sends email/sms notifications to a customer with a payment link
      *

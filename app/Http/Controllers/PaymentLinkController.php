@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use Request;
 use ApiResponse;
 use RZP\Http\Controllers\Traits\HasCrudMethods;
 
@@ -21,5 +22,12 @@ class PaymentLinkController extends Controller
         $summary = $this->service()->expirePaymentLinks();
 
         return ApiResponse::json($summary);
+    }
+
+    public function deactivate(string $id)
+    {
+        $response = $this->service()->deactivate($id);
+
+        return ApiResponse::json($response);
     }
 }
