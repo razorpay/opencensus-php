@@ -747,6 +747,8 @@ trait FileHandlerTrait
 
     protected function parseExcelSheets($filePath)
     {
+        $app = App::getFacadeRoot();
+
         Config::set('excel.import.force_sheets_collection', true);
         Config::set('excel.import.heading', 'original');
 
@@ -756,9 +758,9 @@ trait FileHandlerTrait
         // If previous run has set some sheet name in selectSheets(), its retaining that sheet name
         // until it is replaced with new sheet name.
         //
-        $this->app['excel.reader']->setSelectedSheets([]);
+        $app['excel.reader']->setSelectedSheets([]);
 
-        $this->app['excel.reader']->setSelectedSheetIndices([]);
+        $app['excel.reader']->setSelectedSheetIndices([]);
 
         $sheets = $this->parseExcelFile($filePath);
 
