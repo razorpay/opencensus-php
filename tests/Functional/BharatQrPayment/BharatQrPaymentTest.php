@@ -28,7 +28,7 @@ class BharatQrPaymentTest extends TestCase
 
         $this->t2 = $this->fixtures->create('terminal:bharat_qr_terminal_upi');
 
-        $this->t1 = $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
+        $this->t3 = $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
 
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal_upi');
 
@@ -247,7 +247,7 @@ class BharatQrPaymentTest extends TestCase
 
         $this->fixtures->on('live')->edit(
             'terminal',
-            $this->t1['id'],
+            $this->t3['id'],
             [
                 'expected' => true
             ]);
