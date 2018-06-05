@@ -154,7 +154,7 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
-        $request = $this->getVerifyRequest($verify->input);
+        $request = $this->getVerifyRequest($verify);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -276,17 +276,19 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * @param array $input
+     * @param Verify $verify
      * @return array
      * @throws Exception\LogicException
      */
-    protected function getVerifyRequest(array $input)
+    protected function getVerifyRequest(Verify $verify)
     {
+        $input = $verify->input;
+
         $bankRefNumber = '';
 
         if ($this->action === Action::VERIFY)
         {
-            $gatewayPayment = $this->repo->findByPaymentIdAndAction($input['payment']['id'], Action::AUTHORIZE);
+            $gatewayPayment = $this->getPaymentToVerify($verify);
 
             $bankRefNumber = $gatewayPayment['bank_payment_id'];
         }
@@ -326,11 +328,10 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
-                'gateway'                   => $this->gateway,
-                'request'                   => $request,
-                'content'                   => $data,
-                'payment_id'                => $input['payment']['id'],
-                'content_before_encryption' => $data,
+                'gateway'           => $this->gateway,
+                'request'           => $request,
+                'payment_id'        => $input['payment']['id'],
+                'decrypted_content' => $data,
             ]
         );
 

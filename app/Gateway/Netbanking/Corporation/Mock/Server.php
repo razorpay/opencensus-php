@@ -28,11 +28,11 @@ class Server extends Base\Mock\Server
 
         $callbackUrl = $this->route->getUrl('gateway_payment_callback_corporation');
 
-        $request = array(
-            'url' => $callbackUrl,
+        $request = [
+            'url'     => $callbackUrl,
             'content' => $response,
-            'method' => 'get',
-        );
+            'method'  => 'get',
+        ];
 
         return $this->makePostResponse($request);
     }
