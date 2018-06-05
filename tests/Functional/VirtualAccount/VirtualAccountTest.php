@@ -147,6 +147,8 @@ class VirtualAccountTest extends TestCase
 
         $qrCode = $this->getLastEntity('qr_code', true);
 
+        $this->assertEquals($qrCode['id'], 'qr_' . $qrCode['reference']);
+
         $qrString = $qrCode['qr_string'];
 
         $this->assertRegExp('^http://dwarf.razorpay.in/^', $qrCode['short_url']);

@@ -85,9 +85,17 @@ class RefundTest extends TestCase
 
         $entries = $this->getDefaultRefundFileEntries();
 
+        // Adding an extra entry to test an entry with no notes
+        $payment2 = $this->defaultAuthPayment();
+        $entries[] = [
+            Header::PAYMENT_ID => $payment2['id'],
+            Header::AMOUNT     => 200,
+        ];
+
         $batch = $this->fixtures->create('batch:refund', $entries);
 
-        $payment = $this->capturePayment($entries[0]['Payment Id'], 50000);
+        $this->capturePayment($entries[0][Header::PAYMENT_ID], 50000);
+        $this->capturePayment($entries[1][Header::PAYMENT_ID], 50000);
 
         $this->ba->appAuth();
 
@@ -102,6 +110,30 @@ class RefundTest extends TestCase
 
         $this->assertEquals('batch/download/' . $batch->getFileKeyWithExt(), $file->getLocation());
         $this->assertEquals('batch/download/' . $batch->getFileKey(), $file->getName());
+
+        // Validate notes
+        $refunds = $this->getEntities('refund', [], true);
+
+        $expectedRefundsWithNotes = [
+            [
+                'payment_id' => $entries[1][Header::PAYMENT_ID],
+                'amount'     => 200,
+                'notes'      => [
+                    'key_1' => null,
+                    'key_2' => null
+                ],
+            ],
+            [
+                'payment_id' => $entries[0][Header::PAYMENT_ID],
+                'amount'     => 4000,
+                'notes'      => [
+                    'key_1' => 'Notes Value 1',
+                    'key_2' => 'Notes Value 2'
+                ],
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedRefundsWithNotes, $refunds['items']);
 
         Mail::assertSent(BatchRefundFileMail::class);
     }
@@ -123,7 +155,7 @@ class RefundTest extends TestCase
 
     public function testProcessRefundFileWithRefundedBatch()
     {
-        $entries = $this->getDefaultRefundFileEntries();
+        $entries = $this->getDefaultRefundFileEntries(false);
 
         $batch = $this->fixtures->create('batch:refund', $entries);
 
@@ -134,6 +166,8 @@ class RefundTest extends TestCase
         $this->fixtures->base->editEntity('refund', $refund['id'], ['batch_id' => $batch['id']]);
 
         $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEmpty($refund['notes']);
 
         $this->ba->appAuth();
 
@@ -232,16 +266,24 @@ class RefundTest extends TestCase
         $this->assertEquals($batch['status'], 'processed');
     }
 
-    protected function getDefaultRefundFileEntries()
+    protected function getDefaultRefundFileEntries(bool $withNotes = true)
     {
         $payment = $this->defaultAuthPayment();
 
         $entries = [
             [
                 Header::PAYMENT_ID => $payment['id'],
-                Header::AMOUNT     => 4000
-            ]
+                Header::AMOUNT     => 4000,
+            ],
         ];
+
+        if ($withNotes === true)
+        {
+            $entries[0] += [
+                'Notes[key_1]'     => 'Notes Value 1',
+                'Notes[key_2]'     => 'Notes Value 2',
+            ];
+        }
 
         return $entries;
     }

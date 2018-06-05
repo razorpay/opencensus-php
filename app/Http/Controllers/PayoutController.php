@@ -40,4 +40,13 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postPayoutRetry()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->processFailedPayouts($input);
+
+        return ApiResponse::json($data);
+    }
 }

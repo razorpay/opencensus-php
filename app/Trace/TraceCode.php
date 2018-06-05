@@ -665,6 +665,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_LIVE_DISABLE_REQUEST             = 'MERCHANT_LIVE_DISABLE_REQUEST';
     const MERCHANT_PAYOUT_NOTIFICATION_REQUEST      = 'MERCHANT_PAYOUT_NOTIFICATION_REQUEST';
     const MERCHANT_PAYOUT_NOTIFICATION_RESPONSE     = 'MERCHANT_PAYOUT_NOTIFICATION_RESPONSE';
+    const MERCHANT_PAYOUT_RETRY_REQUEST             = 'MERCHANT_PAYOUT_RETRY_REQUEST';
+    const MERCHANT_PAYOUT_RETRY_FAILED              = 'MERCHANT_PAYOUT_RETRY_FAILED';
+    const MERCHANT_PAYOUT_RETRIED_IDS               = 'MERCHANT_PAYOUT_RETRIED_IDS';
 
     const MERCHANT_BALANCE_DEBIT_FAILURE            = 'MERCHANT_BALANCE_DEBIT_FAILURE';
 
@@ -921,6 +924,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFER_CARD_TYPE_CHECK                         = 'OFFER_CARD_TYPE_CHECK';
     const OFFER_CARD_NETWORK_CHECK                      = 'OFFER_CARD_NETWORK_CHECK';
     const OFFER_CARD_ISSUER_CHECK                       = 'OFFER_CARD_ISSUER_CHECK';
+    const OFFER_CARD_INTERNATIONAL_CHECK                = 'OFFER_CARD_INTERNATIONAL_CHECK';
     const OFFER_CARD_USAGE_CHECK                        = 'OFFER_CARD_USAGE_CHECK';
 
     // Trace codes for Gateway Priorities
@@ -1065,7 +1069,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
     const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
 
-    const INSTANCE_PROFILE_PROVIDER_CACHE_MISS          = 'INSTANCE_PROFILE_PROVIDER_CACHE_MISS';
+    const AWS_CREDS_CACHE_SET                           = 'AWS_CREDS_CACHE_SET';
 
     const SERVER_ERROR_LOG_RISK                         = 'SERVER_ERROR_LOG_RISK';
 

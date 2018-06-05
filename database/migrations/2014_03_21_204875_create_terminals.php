@@ -121,7 +121,7 @@ class CreateTerminals extends Migration
             $table->tinyInteger(Terminal::TPV)
                   ->default(0);
 
-            $table->tinyInteger(Terminal::TYPE)
+            $table->integer(Terminal::TYPE)
                   ->unsigned()
                   ->default(1);
 
@@ -129,6 +129,9 @@ class CreateTerminals extends Migration
                   ->default(Mode::DUAL);
 
             $table->tinyInteger(Terminal::CORPORATE)
+                  ->default(0);
+
+            $table->tinyInteger(Terminal::EXPECTED)
                   ->default(0);
 
             $table->string(Terminal::CURRENCY, 3)

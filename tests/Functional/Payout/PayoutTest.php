@@ -5,7 +5,9 @@ namespace RZP\Tests\Functional\Payout;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
+use RZP\Models\Payout;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -46,6 +48,95 @@ class PayoutTest extends TestCase
         $this->assertEquals('txn_' . $payout['transaction_id'], $txn['id']);
 
         return $payout;
+    }
+
+    public function testRetryPayout(): array
+    {
+        $payout = $this->testCreatePayout();
+
+        // ----- start testing payout retry for non failed payouts ------ //
+
+        $this->retryPayout((array) $payout['id'], false);
+
+        $payoutAfterRetry = $this->getLastEntity('payout', true);
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($payout['status'], $payoutAfterRetry['status']);
+        $this->assertNotEquals($payoutAttempt['status'], Attempt\Status::FAILED);
+
+        // Verify attempt entity
+        $this->assertEquals($payoutAfterRetry['id'], $payoutAttempt['source']);
+        $this->assertEquals($payoutAfterRetry['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals($payoutAfterRetry['destination'], 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payoutAfterRetry['batch_fund_transfer_id'], $payoutAttempt['batch_fund_transfer_id']);
+
+        // ----- End of testing payout retry for non failed payouts ------ //
+
+        // ----- start testing payout retry for failed payouts ------- //
+
+        $this->fixtures->edit(
+            'payout',
+            $payout['id'],
+            [
+                'status' => Payout\Status::FAILED
+            ]);
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $payoutAttempt['id'],
+            [
+                'status' => Attempt\Status::FAILED
+            ]);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('txn_' . $payout['transaction_id'], $txn['id']);
+
+        $this->retryPayout((array) $payout['id']);
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($payout['status'], Payout\Status::CREATED);
+        $this->assertEquals($payoutAttempt['status'], Attempt\Status::CREATED);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals($payout['destination'], 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertNull($payout['batch_fund_transfer_id']);
+        $this->assertNull($payoutAttempt['batch_fund_transfer_id']);
+
+        // ----- End of testing payout retry for failed payouts ------ //
+
+        return $payout;
+    }
+
+    protected function retryPayout(array $ids, $success = true)
+    {
+        $request = [
+            'url' => '/payouts/retry',
+            'method' => 'POST',
+            'content' => [
+                'ids' => $ids
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $key = ($success === true)? 'payouts_retried' : 'not_attempted';
+
+        $this->assertEquals(
+            $ids,
+            array_map(
+                function($val)
+                {
+                    return 'pout_' . $val;
+                },  $response[$key]));
     }
 
     public function testCreateMerchantPayout()

@@ -186,6 +186,17 @@ class Validator extends Base\Validator
         // Header validations
         Header::validate($rules['header_rule'], array_keys(current($entries)));
 
+        //
+        // Formatted notes can be present in entries. Addition to above validation (where existence of notes header is
+        // validated) per batch type, here we validate the keys count & their lengths to avoid multiple failure at later
+        // stage (consumption - entity building etc in respective processors).
+        //
+        $firstEntry = current($entries);
+        if (isset($firstEntry[Header::NOTES]) === true)
+        {
+            Header::validateNotesKeys(array_keys($firstEntry[Header::NOTES]));
+        }
+
         // Data validations
         $validatorMethodName = $rules['validator_method'];
 

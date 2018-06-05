@@ -83,6 +83,7 @@ function disableEmptyInputs(form) {
                 <option value="wallet">Wallet</option>
                 <option value="emi">Emi</option>
                 <option value="upi">UPI</option>
+                <option value="emandate">E-Mandate</option>
             </select>
         </td>
     </tr>

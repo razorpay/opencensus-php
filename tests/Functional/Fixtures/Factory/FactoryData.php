@@ -129,6 +129,7 @@ final class FactoryData
             'refund_status' => null,
             'contact' => $faker->randomElement(['+918199078685', '+17813924010', '+33751253819', '+919416544332', '+447706696711', '67332323', '+9613688111']),
             'notes' => null,
+            'fee' => 0,
             'gateway' => 'hdfc',
             'email' => $faker->email,
             'auto_captured' => 0,
