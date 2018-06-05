@@ -1836,7 +1836,7 @@ class Service extends Base\Service
     {
         $referrer = $subMerchant->getReferrer();
 
-        if (empty($referrer) === true or $referrer !== $aggregatorMerchantId)
+        if ((empty($referrer) === true) or ($referrer !== $aggregatorMerchantId))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_FORBIDDEN);
