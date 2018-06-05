@@ -197,6 +197,7 @@ const businessModel = [
     name: 'business_website',
     placeholder: 'Enter URL',
     type: 'url',
+    required: false,
     description: (
       <React.Fragment>
         The entered App/Website should contain:

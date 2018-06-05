@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 import TableBody from 'rzp/ui/TableBody';
 import Time from 'rzp/ui/Time';
 import Key from 'merchant/models/Key';
@@ -46,6 +48,7 @@ export default props => {
     keys,
     isLoading,
     merchantId,
+    hasKeyAccess,
     showRollKeyModal = () => {},
     generateKey = () => {},
   } = props;
@@ -73,14 +76,24 @@ export default props => {
             emptyTableRow={
               <tr>
                 <td class="text-center empty-table" colSpan={4}>
-                  <button
-                    class="btn btn-primary"
-                    onClick={() => {
-                      generateKey(params);
-                    }}
-                  >
-                    Generate {mode} Key
-                  </button>
+                  {hasKeyAccess ? (
+                    <button
+                      class="btn btn-primary"
+                      onClick={() => {
+                        generateKey(params);
+                      }}
+                    >
+                      Generate {mode} Key
+                    </button>
+                  ) : (
+                    <div>
+                      <p
+                      >{`Please provide your Business Website/App details in order to generate API keys in ${mode} Mode`}</p>
+                      <Link to="/website_details" className="btn btn-primary">
+                        Add Website/App URL
+                      </Link>
+                    </div>
+                  )}
                 </td>
               </tr>
             }
