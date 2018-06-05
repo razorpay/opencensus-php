@@ -29,7 +29,7 @@ class Validator extends Base\Validator
         Fields::REF7                    => 'required_with:' . Fields::CLIENT_ACCOUNT_NUMBER . '|alpha_num|max:20',
         Fields::REF8                    => 'required_with:' . Fields::CLIENT_ACCOUNT_NUMBER . '|alpha_num|max:15',
         Fields::REF9                    => 'required_with:' . Fields::CLIENT_ACCOUNT_NUMBER . '|alpha|in:Maximum',
-        Fields::REF10                   => 'required_with:' . Fields::CLIENT_ACCOUNT_NUMBER . '|string|in:RAZORPAY',
+        Fields::REF10                   => 'required_with:' . Fields::CLIENT_ACCOUNT_NUMBER . '|string',
         Fields::DATE1                   => 'required_with:' . Fields::CLIENT_ACCOUNT_NUMBER . '|date_format:"dmY"',
         Fields::DATE2                   => 'required_with:' . Fields::CLIENT_ACCOUNT_NUMBER . '|date_format:"dmY"',
     ];
