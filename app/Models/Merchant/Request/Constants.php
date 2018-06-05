@@ -3,7 +3,7 @@
 namespace RZP\Models\Merchant\Request;
 
 use RZP\Models\Feature;
-use RZP\Models\Merchant;
+use RZP\Models\Merchant\Partner;
 use RZP\Models\Merchant\Detail as MerchantDetail;
 
 class Constants
@@ -32,11 +32,11 @@ class Constants
         Feature\Constants::SUBSCRIPTIONS,
 
         // Partner activation requests
-        Merchant\Constants::BANK,
-        Merchant\Constants::RESELLER,
-        Merchant\Constants::AGGREGATOR,
-        Merchant\Constants::FULLY_MANAGED,
-        Merchant\Constants::PURE_PLATFORM,
+        Partner\Constants::BANK,
+        Partner\Constants::RESELLER,
+        Partner\Constants::AGGREGATOR,
+        Partner\Constants::FULLY_MANAGED,
+        Partner\Constants::PURE_PLATFORM,
     ];
 
     public static function getRequestStatusForOnboardingStatus(string $onboardingStatus)

@@ -11,8 +11,8 @@ use RZP\Models\State;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\State\Reason;
+use RZP\Models\Merchant\Partner;
 use RZP\Models\Base\PublicEntity;
-use RZP\Models\Settings\Accessor;
 use RZP\Mail\Merchant\RequestRejection;
 use RZP\Mail\Merchant\RequestNeedsClarification;
 
@@ -204,7 +204,7 @@ class Core extends Base\Core
                     }
                     else if ($request->isProductRequest() === true)
                     {
-                        (new Merchant\Core)->markAsPartner($request->getMerchantId(), $request->getName());
+                        (new Partner\Core)->markAsPartner($request->getMerchantId(), $request->getName());
                     }
 
                     break;
