@@ -1,3 +1,5 @@
+$max-width = 820px
+
 .StandAloneContainer
   position: relative
   width: 92%
@@ -13,6 +15,8 @@
     display: block
     margin-bottom: 20px
 
+  .form-container
+    padding: 30px 40px 30px 24px
 
   .Form--tabular
     .Input-content
@@ -22,7 +26,7 @@
 
 /* Activation wizard screen */
 .PaymentLinks--Create
-  max-width: 900px
+  max-width: $max-width
   height: 80vh
   min-height: 560px
   max-height: 640px
@@ -85,7 +89,7 @@
 .Modal-container
   &--PaymentLinks
     width: 90%
-    max-width: 900px
+    max-width: $max-width
     min-height: 560px
     max-height: 640px
     height: 80vh
@@ -101,16 +105,27 @@
 /* Small screens for Activation wizard */
 @media (max-width: 972px)
   .StandAloneContainer .PaymentLinks--Create
-    .Input-content:not(.Input--checkbox)
+    .Input-content
       margin: 0 0 16px
-
-    .Input--checkbox
-      margin: 24px 0 16px
 
     .Input-label
       margin-bottom: 8px
       text-align: left
       float: unset
+
+    .InputGroup
+      &--inline
+        .Input-label
+          position: relative !important
+
+        .Input
+          display: block
+
+        .Input .Input-content
+          margin: 4px 0
+
+      &--near .Input
+        margin-top: 0
 
 
 @media (max-width: 820px)
@@ -139,8 +154,9 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
       padding: 20px
       text-align: center
       top: -30px
-      margin-left: -30px
-      margin-right: -30px
+      margin-left: -24px
+      margin-right: -40px
+      margin-bottom: 0
       background: white
       font-size: 14px
 
@@ -158,4 +174,4 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
       display: none
 
     main, footer
-      left: 0
+      left: 0 !important

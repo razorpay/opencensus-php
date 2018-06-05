@@ -56,16 +56,18 @@ export default [
       {
         _name: 'expire_by_date',
         placeholder: '15-04-2018',
+        size: 'half',
         _disabledWhen: form =>
           form.state._name[form.state.activeTab].expiry === '1',
-        addonAfter: <i class="i i-account" />,
+        addonAfter: <i class="i i-date-range" />,
       },
       {
         name: 'expire_by',
         placeholder: '12:00AM',
+        size: 'half',
         _disabledWhen: form =>
           form.state._name[form.state.activeTab].expiry === '1',
-        addonAfter: <i class="i i-account" />,
+        addonAfter: <i class="i i-time" />,
         _when: form => !!form.state._name[form.state.activeTab].expire_by_date,
       },
     ],
@@ -89,6 +91,7 @@ export default [
     {
       name: 'times_payable',
       type: 'number',
+      size: 'half',
       description:
         'Upon reaching limit, link will close. Limit can be modified anytime.',
       _disabledWhen: form =>

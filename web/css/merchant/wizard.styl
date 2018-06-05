@@ -1,5 +1,4 @@
 $side-width = 240px
-$side-width-large = 272px
 
 .Wizard
   aside
@@ -80,13 +79,5 @@ $side-width-large = 272px
         cursor: not-allowed
         color: #b6c0c4
 
-    & ~ main, & ~ footer
-      left: $side-width
-
-  &--broad
-    aside
-      width: $side-width-large
-
-      & ~ main, & ~ footer
-        left: $side-width-large
-
+  main, footer
+    left: $side-width

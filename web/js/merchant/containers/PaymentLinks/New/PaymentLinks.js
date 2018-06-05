@@ -58,6 +58,51 @@ export default [
     _cmp: Input.Textarea,
   },
   {
+    label: 'Customer Details',
+    inlineFields: [
+      {
+        name: 'contact_mobile',
+        type: 'tel',
+        placeholder: 'Mobile (10 digits)',
+        size: 'half_small',
+      },
+      {
+        name: 'contact_email',
+        type: 'email',
+        placeholder: 'Email',
+        size: 'half_big',
+      },
+    ],
+  },
+  {
+    label: 'Notify',
+    className: 'InputGroup--vTop InputGroup--near',
+    inlineFields: [
+      {
+        name: 'sms_notify',
+        fieldLabel: 'via SMS',
+        size: 'half_small',
+        _cmp: Input.Check,
+        onChange: e => {
+          if (e.target.value == '1') {
+            document.getElementsByName('contact_mobile')[0].focus();
+          }
+        },
+      },
+      {
+        name: 'email_notify',
+        fieldLabel: 'via Email',
+        size: 'half_big',
+        _cmp: Input.Check,
+        onChange: e => {
+          if (e.target.value == '1') {
+            document.getElementsByName('contact_email')[0].focus();
+          }
+        },
+      },
+    ],
+  },
+  {
     name: 'receipt',
     label: 'Receipt No.',
   },
@@ -82,58 +127,19 @@ export default [
       {
         _name: 'expire_by_date',
         placeholder: '15-04-2018',
+        size: 'half',
         _disabledWhen: form =>
           form.state._name[form.state.activeTab].expiry === '1',
-        addonAfter: <i class="i i-account" />,
+        addonAfter: <i class="i i-date-range" />,
       },
       {
         name: 'expire_by',
         placeholder: '12:00AM',
+        size: 'half',
         _disabledWhen: form =>
           form.state._name[form.state.activeTab].expiry === '1',
-        addonAfter: <i class="i i-account" />,
+        addonAfter: <i class="i i-time" />,
         _when: form => !!form.state._name[form.state.activeTab].expire_by_date,
-      },
-    ],
-  },
-  {
-    label: 'Customer Details',
-    inlineFields: [
-      {
-        name: 'contact_mobile',
-        type: 'tel',
-        placeholder: 'Enter mobile number',
-      },
-      {
-        name: 'contact_email',
-        type: 'email',
-        placeholder: 'Enter email address',
-      },
-    ],
-  },
-  {
-    label: 'Notify',
-    className: 'InputGroup--vTop InputGroup--near',
-    inlineFields: [
-      {
-        name: 'sms_notify',
-        fieldLabel: 'via SMS',
-        _cmp: Input.Check,
-        onChange: e => {
-          if (e.target.value == '1') {
-            document.getElementsByName('contact_mobile')[0].focus();
-          }
-        },
-      },
-      {
-        name: 'email_notify',
-        fieldLabel: 'via Email',
-        _cmp: Input.Check,
-        onChange: e => {
-          if (e.target.value == '1') {
-            document.getElementsByName('contact_email')[0].focus();
-          }
-        },
       },
     ],
   },

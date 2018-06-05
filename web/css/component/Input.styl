@@ -55,11 +55,29 @@
       @media (max-width: 1024px)
         transform: none
 
+  &.Input--half
+    .Input-elWrapper, .Input--checkbox // Half of normal size
+      width: 170px
+
+    + .Input .Input-content
+      margin-left: 0
+
+  &.Input--half_small // Smaller than half size
+    .Input-elWrapper, .Input--checkbox
+      width: 148px
+
+    + .Input .Input-content
+      margin-left: 0
+
+  &.Input--half_big // Bigger than half size
+    .Input-elWrapper, .Input--checkbox
+      width: 192px
+
+    + .Input .Input-content
+      margin-left: 0
+
   &.Input--small .Input-elWrapper
     width: 260px
-
-  &.Input--medium .Input-elWrapper
-    width: 290px
 
   &.Input--large .Input-elWrapper
     width: 320px
@@ -314,18 +332,6 @@ textarea.Input-el
     .Input
       display: table-cell
 
-      .Input-elWrapper, .Input--checkbox
-        width: 194px
-
-      &.Input--small
-        .Input-elWrapper, .Input--checkbox
-          width: 172px
-
-      + .Input .Input-content
-          margin-left: 24px
-
-      &Input-small .Input--checkbox
-        width: 172px
-
-      + .Input .Input-content
-          margin-left: 24px
+    .Input-content .Input-content
+      margin-left: 0
+      margin-right: 20px

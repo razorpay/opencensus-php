@@ -268,7 +268,9 @@ export default class CreateNewContainer extends React.Component {
             class={classList('InputGroup--inline', f.className)}
             label={f.label}
           >
-            {f.inlineFields.map(WizardFields, this)}
+            <div class="Input-content">
+              {f.inlineFields.map(WizardFields, this)}
+            </div>
           </Input.Group>
         );
       }
@@ -317,7 +319,7 @@ class CreateWizard extends React.Component {
     const { activeTab } = this.props;
 
     return (
-      <div class="PaymentLinks--Create Wizard Wizard--broad">
+      <div class="PaymentLinks--Create Wizard">
         <ModalAsideNav
           title="Create Link"
           tabs={FORM_TABS}
@@ -334,8 +336,8 @@ class CreateWizard extends React.Component {
           {/* ALERTS */}
           {this.props.mode === 'test' && (
             <Alert.Warning>
-              You are currently in <b>Test Mode</b>. So, only test payments can
-              be made for the link created.
+              You are creating the link in <b>Test Mode</b>. So, only test
+              payments can be made for this link.
             </Alert.Warning>
           )}
 
