@@ -290,7 +290,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
-    public function setStatusReason(string $statusReason)
+    public function setStatusReason(string $statusReason = null)
     {
         if ($statusReason !== null)
         {

@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT        => 'required|mysql_unsigned_int|min:100',
         Entity::CURRENCY      => 'filled|in:INR',
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
-        Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
+        Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable',
         Entity::RECEIPT       => 'required|string|min:1|max:40',
         Entity::TITLE         => 'required|string|max:255|min:1',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|min:1|nullable',
