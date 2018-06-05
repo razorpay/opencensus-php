@@ -124,9 +124,11 @@ class Processor extends VirtualAccount\Processor
             }
             else
             {
+                //
                 // Here if there is no va but we received a payment and terminal
                 // expected is set to true, we need to create a virtual account and
                 // receiver with the reference received from bank.
+                //
                 $input = [
                     VirtualAccount\Entity::RECEIVERS => [
                         VirtualAccount\Entity::TYPES => [

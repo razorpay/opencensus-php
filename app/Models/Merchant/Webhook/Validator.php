@@ -187,8 +187,7 @@ class Validator extends Base\Validator
         $app = App::getFacadeRoot();
 
         //
-        // This can only be edited by
-        // an admin
+        // This can only be edited by an admin
         //
         if ($app['basicauth']->isProxyAuth() === false)
         {

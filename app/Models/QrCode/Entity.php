@@ -159,6 +159,11 @@ class Entity extends Base\PublicEntity
         return 'qrcodes/'. $this->getId();
     }
 
+    public function isGeneratedByMerchant()
+    {
+        return ($this->getReference() !== $this->getId());
+    }
+
     // --------------------- END GETTERS ---------------------
 
     // --------------------- SETTERS ---------------------
