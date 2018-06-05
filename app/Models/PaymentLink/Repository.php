@@ -5,6 +5,7 @@ namespace RZP\Models\PaymentLink;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 
 class Repository extends Base\Repository
@@ -25,5 +26,28 @@ class Repository extends Base\Repository
                     ->where(Entity::STATUS, '=', Status::ACTIVE)
                     ->where(Entity::EXPIRE_BY, '<', $currentTime)
                     ->get();
+    }
+
+    /**
+     * Returns counts of payment which are succeeding (i.e. either
+     * created, authorized) for given invoice.
+     *
+     * This method gets used in determining if enough slots are
+     * available to initiate a payment
+     *
+     * @param Entity $paymentLink
+     *
+     * @return int
+     */
+    public function getSucceedingPaymentsCount(Entity $paymentLink): int
+    {
+        return $paymentLink->payments()
+            ->whereIn(
+                Payment\Entity::STATUS,
+                [
+                    Payment\Status::CREATED,
+                    Payment\Status::AUTHORIZED,
+                ])
+            ->count();
     }
 }

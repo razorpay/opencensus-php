@@ -2,9 +2,13 @@
 
 namespace RZP\Models\PaymentLink;
 
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\PaymentLinkRefund as PaymentLinkRefundJob;
 
 class Core extends Base\Core
 {
@@ -116,6 +120,103 @@ class Core extends Base\Core
     }
 
     /**
+     * This method is executed to update the payment link entity
+     * after payment has been captured. This payment is verified
+     * to be associated with a payment link.
+     * This is executed inside a transaction, after acquiring a
+     * mutex lock on the payment entity.
+     *
+     * Check link state:
+     *  - Payable       : Update payment link entity stats
+     *  - Not payable   : Refund to customer via queue
+     *
+     * @param Payment\Entity $payment
+     */
+    public function updatePaymentLinkAfterCapture(Payment\Entity $payment)
+    {
+        $paymentLink = $payment->paymentLink;
+
+        if ($this->isPayable($paymentLink) === true)
+        {
+            $this->updateFromCapturedPayment($payment, $paymentLink);
+        }
+        else
+        {
+            $this->refundPaymentForLink($payment, $paymentLink);
+        }
+    }
+
+    /**
+     * This method should be called from a transaction
+     *
+     * @param Payment\Entity $payment
+     * @param Entity $paymentLink
+     */
+    protected function updateFromCapturedPayment(Payment\Entity $payment, Entity $paymentLink)
+    {
+        $paymentLink->incrementTimesPaid();
+
+        $paymentLink->incrementTotalAmountPaidBy($payment->getAmount());
+
+        if (($paymentLink->getTimesPayable() !== null) and
+            ($paymentLink->getTimesPayable() === $paymentLink->getTimesPaid()))
+        {
+            $paymentLink->setStatus(Status::INACTIVE);
+
+            $paymentLink->setStatusReason(StatusReason::COMPLETED);
+        }
+
+        $this->repo->payment_link->saveOrFail($paymentLink);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_LINK_PAYMENT_PAID,
+            [
+                'payment_id'        => $payment->getId(),
+                'payment_link_id'   => $paymentLink->getId(),
+            ]);
+    }
+
+    public function checkPaymentAfterCaptureAttempt(Payment\Entity $payment)
+    {
+        if ($payment->isCaptured() === false)
+        {
+            $this->refundPaymentForLink($payment);
+        }
+    }
+
+    public function isPayable(Entity $paymentLink): bool
+    {
+        return (($paymentLink->isActive() === true) and
+                ($paymentLink->isExpired() === false));
+    }
+
+    public function checkIsPaymentInitiatable(Entity $paymentLink)
+    {
+        if (($this->isPayable($paymentLink) === false) or
+            ($this->hasPaymentSlots($paymentLink) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE);
+        }
+    }
+
+    protected function hasPaymentSlots(Entity $paymentLink): bool
+    {
+        $paymentLimit = $paymentLink->getTimesPayable();
+
+        if ($paymentLimit === null)
+        {
+            return true;
+        }
+
+        $succeedingPaymentsCount = $this->repo->payment_link->getSucceedingPaymentsCount($paymentLink);
+
+        $slotsAvailable = $paymentLimit - $paymentLink->getTimesPaid() - $succeedingPaymentsCount;
+
+        return ($slotsAvailable > 0);
+    }
+
+    /**
      * This method sets the short_url of a paymentLink
      * @param Entity $paymentLink
      */
@@ -194,4 +295,17 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($paymentLink);
             });
     }
+||||||| merged common ancestors
+=======
+
+    /**
+     * Dispatches new job onto queue for asynchronous processing of it
+     *
+     * @param Payment\Entity $payment
+     */
+    protected function refundPaymentForLink(Payment\Entity $payment)
+    {
+        PaymentLinkRefundJob::dispatch($this->mode, $payment->getId(), []);
+    }
+>>>>>>> [PaymentLink] payment link core logic
 }
