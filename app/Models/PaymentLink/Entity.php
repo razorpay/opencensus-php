@@ -2,6 +2,7 @@
 
 namespace RZP\Models\PaymentLink;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
@@ -139,56 +140,6 @@ class Entity extends Base\PublicEntity
         self::NOTES             => [],
     ];
 
-    public function isActive(): bool
-    {
-        return ($this->getAttribute(self::STATUS) === Status::ACTIVE);
-    }
-
-    public function isInactive(): bool
-    {
-        return ($this->getAttribute(self::STATUS) === Status::INACTIVE);
-    }
-
-    public function getAmount()
-    {
-        return $this->getAttribute(self::AMOUNT);
-    }
-
-    public function getShortUrl()
-    {
-        return $this->getAttribute(self::SHORT_URL);
-    }
-
-    public function getExpireBy()
-    {
-        return $this->getAttribute(self::EXPIRE_BY);
-    }
-
-    public function getStatus(): string
-    {
-        return $this->getAttribute(self::STATUS);
-    }
-
-    public function getStatusReason()
-    {
-        return $this->getAttribute(self::STATUS_REASON);
-    }
-
-    public function setStatus(string $status)
-    {
-        $this->setAttribute(self::STATUS, $status);
-    }
-
-    public function setStatusReason(string $statusReason)
-    {
-        $this->setAttribute(self::STATUS_REASON, $statusReason);
-    }
-
-    public function setShortUrl(string $shortUrl)
-    {
-        $this->setAttribute(self::SHORT_URL, $shortUrl);
-    }
-
     // -------------------------------------- Relations -------------------------------
 
     public function merchant()
@@ -208,6 +159,79 @@ class Entity extends Base\PublicEntity
 
     // -------------------------------------- End Relations ---------------------------
 
+    // ----------------------------------------- Getters ------------------------------
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getStatus(): string
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getStatusReason()
+    {
+        return $this->getAttribute(self::STATUS_REASON);
+    }
+
+    public function getExpireBy()
+    {
+        return $this->getAttribute(self::EXPIRE_BY);
+    }
+
+    public function getTimesPayable()
+    {
+        return $this->getAttribute(self::TIMES_PAYABLE);
+    }
+
+    public function getTimesPaid(): int
+    {
+        return $this->getAttribute(self::TIMES_PAID);
+    }
+
+    public function getTotalAmountPaid(): int
+    {
+        return $this->getAttribute(self::TOTAL_AMOUNT_PAID);
+    }
+
+    public function isActive(): bool
+    {
+        return ($this->getStatus() === Status::ACTIVE);
+    }
+
+    public function isInactive(): bool
+    {
+        return ($this->getStatus() === Status::INACTIVE);
+    }
+
+    public function isExpired(): bool
+    {
+        if (($this->getStatus() === Status::INACTIVE) and
+            ($this->getStatusReason() === StatusReason::EXPIRED))
+        {
+            return true;
+        }
+
+        $currentTime = Carbon::now()->timestamp;
+
+        return (($this->getExpireBy() !== null) and
+            ($this->getExpireBy() <= $currentTime));
+    }
+
+    public function isCompleted(): bool
+    {
+        return (($this->getStatus() === Status::INACTIVE) and
+            ($this->getStatusReason() === StatusReason::COMPLETED));
+    }
+
+    public function isDeactivated(): bool
+    {
+        return (($this->getStatus() === Status::INACTIVE) and
+            ($this->getStatusReason() === StatusReason::DEACTIVATED));
+    }
+
     /**
      * Payment link's hosted view long url is of the following format -
      * https://api.razorpay.com/v1/payment_links/v1/:id/view
@@ -220,4 +244,51 @@ class Entity extends Base\PublicEntity
     {
         return $plHostedBaseUrl . '/v1/payment_links/' . $this->getPublicId() . '/view';
     }
+
+    // -------------------------------------- End Getters -----------------------------
+
+    // ----------------------------------------- Setters ------------------------------
+    public function setStatus(string $status)
+    {
+        Status::checkStatus($status);
+
+        $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setStatusReason(string $statusReason)
+    {
+        if ($statusReason !== null)
+        {
+            StatusReason::checkStatusReason($statusReason);
+        }
+
+        $this->setAttribute(self::STATUS_REASON, $statusReason);
+    }
+
+    public function setShortUrl(string $url)
+    {
+        $this->setAttribute(self::SHORT_URL, $url);
+    }
+
+    public function setTimesPaid(int $timesPaid)
+    {
+        $this->setAttribute(self::TIMES_PAID, $timesPaid);
+    }
+
+    public function incrementTimesPaid()
+    {
+        $this->setAttribute(self::TIMES_PAID, ($this->getTimesPaid() + 1));
+    }
+
+    public function setTotalAmountPaid(int $totalAmountPaid)
+    {
+        $this->setAttribute(self::TOTAL_AMOUNT_PAID, $totalAmountPaid);
+    }
+
+    public function incrementTotalAmountPaidBy(int $incrementValue)
+    {
+        $this->setAttribute(self::TOTAL_AMOUNT_PAID, ($this->getTotalAmountPaid() + $incrementValue));
+    }
+
+    // -------------------------------------- End Setters -----------------------------
 }

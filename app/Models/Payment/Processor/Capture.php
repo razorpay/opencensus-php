@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\PaymentLink;
 use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Plan\Subscription;
@@ -115,6 +116,10 @@ trait Capture
                     'payment_id'     => $payment->getId(),
                     'payment_status' => $payment->getStatus(),
                 ]);
+        }
+        finally
+        {
+            $this->invokedOnPaymentCaptureAttempted($payment);
         }
     }
 
@@ -521,6 +526,8 @@ trait Capture
 
             $this->updateOrderAfterCapture($payment);
 
+            $this->updatePaymentLinkAfterCapture($payment);
+
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
 
@@ -569,6 +576,15 @@ trait Capture
 
         (new Notify($this->payment))->trigger($event);
     }
+
+    protected function invokedOnPaymentCaptureAttempted(Payment\Entity $payment)
+    {
+        if ($payment->hasPaymentLink() === true)
+        {
+            (new PaymentLink\Core)->checkPaymentAfterCaptureAttempt($payment);
+        }
+    }
+
 
     protected function eventOrderPaid()
     {
@@ -771,6 +787,16 @@ trait Capture
         }
 
         return false;
+    }
+
+    protected function updatePaymentLinkAfterCapture(Payment\Entity $payment)
+    {
+        if ($payment->hasPaymentLink() === false)
+        {
+            return;
+        }
+
+        (new PaymentLink\Core)->updatePaymentLinkAfterCapture($payment);
     }
 
     /**
