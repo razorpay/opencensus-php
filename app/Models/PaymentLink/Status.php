@@ -13,4 +13,13 @@ class Status
 
         return ((defined($key) === true) and (constant($key) === $status));
     }
+
+    public static function checkStatus(string $status)
+    {
+        if (self::isValid($status) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Not a valid status: ' . $status);
+        }
+    }
 }

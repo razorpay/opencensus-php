@@ -28,4 +28,13 @@ class StatusReason
 
         return ((defined($key) === true) and (constant($key) === $statusReason));
     }
+
+    public static function checkStatusReason(string $statusReason)
+    {
+        if (self::isValid($statusReason) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Not a valid status reason: ' . $statusReason);
+        }
+    }
 }
