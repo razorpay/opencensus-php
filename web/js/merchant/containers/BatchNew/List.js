@@ -131,30 +131,28 @@ export default class BatchList extends Component {
 
     return (
       <div class="content-wrapper batch-upload-wrapper">
-        <HeaderAction>
-          <div class="btn-toolbar pull-right">
-            <a
-              class="btn btn-link hidden-xs"
-              href={sampleUrl}
-              onClick={trackSampleFileDownload}
-            >
-              Download Sample File
+        <div class="btn-toolbar pull-right header-btns">
+          <a
+            class="btn btn-link hidden-xs"
+            href={sampleUrl}
+            onClick={trackSampleFileDownload}
+          >
+            Download Sample File
+          </a>
+          {docUrl && (
+            <a class="btn btn-link hidden-xs" href={docUrl} target="_blank">
+              Documentation &nbsp;
+              <i class="i i-external-link" />
             </a>
-            {docUrl && (
-              <a class="btn btn-link hidden-xs" href={docUrl} target="_blank">
-                Documentation &nbsp;
-                <i class="i i-external-link" />
-              </a>
-            )}
+          )}
 
-            <button
-              class="btn btn-primary pull-right"
-              onClick={this.openUploadModal}
-            >
-              Click here to upload
-            </button>
-          </div>
-        </HeaderAction>
+          <button
+            class="btn btn-primary pull-right"
+            onClick={this.openUploadModal}
+          >
+            Click here to upload
+          </button>
+        </div>
 
         <BatchListFilter
           form="batchListFilter"

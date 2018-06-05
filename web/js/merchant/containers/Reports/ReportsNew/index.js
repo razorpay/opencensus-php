@@ -446,9 +446,12 @@ export default class ReportsContainer extends Component {
     // save email priority based on following precedence
     // contact_email > transaction_report_email > accounts
 
-    if (accounts) {
-      accounts.map(acc => (emailsMap[acc.email] = 3));
-    }
+    // if (accounts) {
+    //   accounts.map(acc => (emailsMap[acc.email] = 3));
+    // }
+
+    emailsMap[user.user.email] = 1; //email of logged in user
+    emailsMap[user.email] = 1; //email of merchant (can be different when merchant is sub-merchant)
 
     if (user.transaction_report_email) {
       user.transaction_report_email.split(',').map(email => {

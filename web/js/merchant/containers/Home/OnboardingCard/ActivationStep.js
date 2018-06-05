@@ -289,7 +289,7 @@ const Text = ({
       ) : (
         // if user has submitted and is under review
 
-        'It may take 2-3 working days for reivew.'
+        `It may take ${activationDuration} for review.`
       )}
     </span>
   );

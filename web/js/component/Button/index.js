@@ -2,6 +2,8 @@ import { prevent } from 'common/util';
 import { classList } from 'common/util';
 
 const PRIMARY_COLOR = className => classList(className, 'Button--primary');
+const TRANSPARENT_COLOR = className =>
+  classList(className, 'Button--transparent');
 
 export default class Button extends React.PureComponent {
   render() {
@@ -23,6 +25,10 @@ export default class Button extends React.PureComponent {
 
 Button.Primary = props => (
   <Button {...props} class={PRIMARY_COLOR(props.className)} />
+);
+
+Button.Transparent = props => (
+  <Button {...props} class={TRANSPARENT_COLOR(props.className)} />
 );
 
 /*

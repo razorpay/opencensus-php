@@ -11,6 +11,8 @@ import { areReportsStillDownloading } from 'merchant/modules/reports';
 
 import { trackGoToActivation, trackGoToConfig } from './ga';
 
+import { toPLBUBannerShown } from 'merchant/containers/PaymentLinks/Index';
+
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|credits|addfunds|referrals)/;
 const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|applications|applications\/new)/;
@@ -30,6 +32,7 @@ export default class Sidebar extends Component {
     //reference store data to update UI of sidebar navs
     this.state = {
       isReportsPending: false,
+      toPLBUBannerShown: toPLBUBannerShown(),
     };
 
     store.subscribe(() => {
@@ -43,6 +46,26 @@ export default class Sidebar extends Component {
 
     this.onSidebarBannerClick = this.onSidebarBannerClick.bind(this);
   }
+
+  componentDidMount() {
+    window.addEventListener(
+      'remove_PLBU-Announcement',
+      this.unsetNewForPaymentLinks,
+      false
+    );
+  }
+
+  unsetNewForPaymentLinks = () => {
+    this.setState({
+      toPLBUBannerShown: false,
+    });
+
+    window.removeEventListener(
+      'remove_PLBU-Announcement',
+      this.unsetNewForPaymentLinks,
+      false
+    );
+  };
 
   // currently active routes in tabbed containers
   // populated with initial values
@@ -198,6 +221,7 @@ export default class Sidebar extends Component {
                   label="Payment Links"
                   icon="i i-link text-primary"
                   to={routes.paymentlinks}
+                  isNew={this.state.toPLBUBannerShown}
                 />
                 <MainNavLink
                   label="Route"
