@@ -270,19 +270,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SHORT_URL, $url);
     }
 
-    public function setTimesPaid(int $timesPaid)
-    {
-        $this->setAttribute(self::TIMES_PAID, $timesPaid);
-    }
-
     public function incrementTimesPaid()
     {
         $this->setAttribute(self::TIMES_PAID, ($this->getTimesPaid() + 1));
-    }
-
-    public function setTotalAmountPaid(int $totalAmountPaid)
-    {
-        $this->setAttribute(self::TOTAL_AMOUNT_PAID, $totalAmountPaid);
     }
 
     public function incrementTotalAmountPaidBy(int $incrementValue)

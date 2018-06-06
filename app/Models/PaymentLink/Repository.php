@@ -42,12 +42,12 @@ class Repository extends Base\Repository
     public function getSucceedingPaymentsCount(Entity $paymentLink): int
     {
         return $paymentLink->payments()
-            ->whereIn(
-                Payment\Entity::STATUS,
-                [
-                    Payment\Status::CREATED,
-                    Payment\Status::AUTHORIZED,
-                ])
-            ->count();
+                           ->whereIn(
+                               Payment\Entity::STATUS,
+                               [
+                                   Payment\Status::CREATED,
+                                   Payment\Status::AUTHORIZED,
+                               ])
+                           ->count();
     }
 }

@@ -163,6 +163,15 @@ class Core extends Base\Core
         {
             $paymentLink->setStatus(Status::INACTIVE);
             $paymentLink->setStatusReason(StatusReason::COMPLETED);
+
+            $this->trace->debug(
+                TraceCode::PAYMENT_LINK_STATUS_CHANGE,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'payment_link_id'   => $paymentLink->getId(),
+                    'to_status'         => Status::INACTIVE,
+                    'to_status_reason'  => StatusReason::COMPLETED,
+                ]);
         }
 
         $this->repo->payment_link->saveOrFail($paymentLink);
@@ -304,6 +313,14 @@ class Core extends Base\Core
      */
     protected function refundPaymentForLink(Payment\Entity $payment)
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_LINK_PAYMENT_REFUND_REQUESTED,
+            [
+                'id'    => $payment->getPublicId(),
+                'status'=> $payment->getStatus(),
+                'pl_id' => $payment->paymentLink->getPublicId(),
+            ]);
+
         PaymentLinkRefundJob::dispatch($this->mode, $payment->getId(), []);
     }
 >>>>>>> [PaymentLink] payment link core logic

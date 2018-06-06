@@ -2,8 +2,9 @@
 
 namespace RZP\Jobs;
 
-use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
+
+use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 /**
@@ -60,7 +61,7 @@ class PaymentLinkRefund extends Job
                 $refundId = $refund->getId();
             }
 
-            $this->trace->debug(
+            $this->trace->info(
                 TraceCode::PAYMENT_LINK_PAYMENT_REFUNDED,
                 [
                     'payment_id'        => $payment->getId(),
