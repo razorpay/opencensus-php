@@ -203,9 +203,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MODE);
     }
 
+    public function getCmsRefNo()
+    {
+        return $this->getAttribute(self::CMS_REF_NO);
+    }
+
     public function isRefund()
     {
         return ($this->getAttribute(self::PURPOSE) === Purpose::REFUND);
+    }
+
+    public function getDateTime()
+    {
+        return $this->getAttribute(self::DATE_TIME);
     }
 
     // ------------------------------- setters ---------------------------------

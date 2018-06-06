@@ -12,7 +12,7 @@ use RZP\Models\FundTransfer\Hdfc\Headings;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Base\Reconciliation\FileProcessor as BaseProcessor;
 
-class FileProcessor extends BaseProcessor
+class Processor extends BaseProcessor
 {
     protected static $fileToReadName  = 'Hdfc_Settlement_Reconciliation';
 
