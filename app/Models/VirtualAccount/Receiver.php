@@ -86,13 +86,11 @@ class Receiver extends Base\Core
 
         $provider = $this->getProvider();
 
-        $bankAccount = $this->getNewBankAccountEntity();
-
         while ($attempts <= self::MAX_ACCOUNT_GENERATION_ATTEMPTS)
         {
             $accountNumber = $this->generateNewAccountNumberForProvider($provider);
 
-            $bankAccount = $this->lockAndSaveBankAccount($accountNumber, $bankAccount, $virtualAccount);
+            $bankAccount = $this->lockAndSaveBankAccount($accountNumber, $virtualAccount);
 
             if ($bankAccount !== null)
             {
@@ -121,18 +119,16 @@ class Receiver extends Base\Core
      * This allows us to 'fail' an attempt at account generation by simply returning null.
      *
      * @param  string      $accountNumber  Newly generated account number to lock and save
-     * @param  BankAccount $bankAccount    Bank account entity, with a/c num not set
      * @param  Entity      $virtualAccount VA entity to associate with the bank account.
      * @return BankAccount|null            Saved bank account, or null if no account was saved.
      */
     protected function lockAndSaveBankAccount(
         string $accountNumber,
-        BankAccount $bankAccount,
         Entity $virtualAccount)
     {
         $bankAccount = $this->mutex->acquireAndRelease(
             self::VA_BANK_ACCOUNT_GENERATION . $accountNumber,
-            function() use ($bankAccount, $virtualAccount, $accountNumber)
+            function() use ($virtualAccount, $accountNumber)
             {
                 $provider = $this->getProvider();
 
@@ -146,6 +142,8 @@ class Receiver extends Base\Core
                     // Account with this number already exists, fail this attempt
                     return;
                 }
+
+                $bankAccount = new BankAccount;
 
                 $bankAccountInput = $this->getBankAccountInput($accountNumber);
 
@@ -164,13 +162,6 @@ class Receiver extends Base\Core
             self::MAX_ACCOUNT_GENERATION_ATTEMPTS,
             300,
             600);
-
-        return $bankAccount;
-    }
-
-    protected function getNewBankAccountEntity()
-    {
-        $bankAccount = new BankAccount;
 
         return $bankAccount;
     }
