@@ -1110,7 +1110,7 @@ class Repository extends Base\Repository
                     ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
                     ->where($tokenRecurringColumn, '!=', 1)
                     ->whereNotNull(Entity::AUTHORIZED_AT)
-                    ->with(['localToken', 'globalToken', 'customer'])
+                    ->with(['localToken', 'globalToken', 'customer', 'merchant'])
                     ->get();
     }
 
