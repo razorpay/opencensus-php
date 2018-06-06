@@ -41,7 +41,9 @@ class Core extends Base\Core
                 'merchant_id' => $merchantId,
             ]);
 
-        $this->repo->terminal->removeMerchantFromTerminal($terminal, $merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $this->repo->terminal->removeMerchantFromTerminal($terminal, $merchant);
 
         return $terminal;
     }
@@ -58,7 +60,9 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_SUB_MERCHANT_ALREADY_ASSIGNED_TO_TERMINAL);
         }
 
-        $this->repo->terminal->addMerchantToTerminal($terminal, $merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $this->repo->terminal->addMerchantToTerminal($terminal, $merchant);
 
         $this->trace->info(
             TraceCode::TERMINAL_ADD_MERCHANT,

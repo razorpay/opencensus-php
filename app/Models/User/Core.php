@@ -169,6 +169,8 @@ class Core extends Base\Core
 
         $merchantId = $input[Entity::MERCHANT_ID];
 
+        $this->repo->merchant->findOrFailPublic($merchantId);
+
         $this->repo->attach($user, Entity::MERCHANTS, [$merchantId => $mappingParams]);
 
         return $user->toArrayPublic();
