@@ -12,7 +12,6 @@ use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Settlement\SlackNotification;
-use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 
 class Initiator extends Base\Core
 {
