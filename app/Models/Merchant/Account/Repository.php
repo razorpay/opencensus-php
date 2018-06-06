@@ -10,6 +10,10 @@ class Repository extends Merchant\Repository
 {
     protected $entity = 'account';
 
+    protected $entityFetchParamRules = [
+        Entity::PARENT_ID => 'sometimes|string|size:14',
+    ];
+
     public function getAccounts(string $parentId, array $input): Base\PublicCollection
     {
         $skip  = 0;
