@@ -7,9 +7,9 @@ spec:
   selector:
     matchLabels:
       name: api-web
-  strategy:
+  updateStrategy:
     rollingUpdate:
-      maxUnavailable: 0
+      maxUnavailable: 1
     type: RollingUpdate
   template:
     metadata:

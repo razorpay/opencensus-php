@@ -151,8 +151,7 @@ pipeline:
     user: drone
     cluster: stage
     auth_mode: client-cert
-    kind:
-      - daemonset
+    kind: daemonset
     daemonset:
       - api-web
     repo: razorpay/api
