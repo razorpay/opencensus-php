@@ -477,6 +477,7 @@ export default class ReportsContainer extends Component {
           closeModal={this.props.closeModal}
           defaultAccount={this.defaultAccount}
           updateStore={this.updateStore}
+          configsLableMap={this.configsLableMap}
         />
       ),
     });

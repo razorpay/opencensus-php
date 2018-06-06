@@ -48,10 +48,11 @@ export const trackReportGenericActions = (
   });
 };
 
-export const trackTimeLapse = (action, timeLapse) => {
+export const trackTimeLapse = (action, timeLapse, label) => {
   let secondsLapse = Math.round(timeLapse / 1000);
   return track_v2({
     eventAction: action,
     eventValue: secondsLapse,
+    ...(label && { eventLabel: label }),
   });
 };

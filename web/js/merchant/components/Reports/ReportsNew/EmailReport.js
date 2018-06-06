@@ -34,6 +34,29 @@ export default class EmailReport extends Component {
   //used for ga tracking
   reportList = this.props.currentReportList || {};
 
+  componentWillMount() {
+    const { reportId, configsLableMap } = this.props;
+
+    //track timelapse between download to email report click
+    if (reportId) {
+      const report = this.reportList[reportId];
+      const timeLapse = new Date().getTime() - report['created_at'] * 1000;
+      const timePeriod = Math.round(
+        (new Date(report['end_time'] * 1000) -
+          new Date(report['start_time'] * 1000)) /
+          86400000
+      );
+
+      trackTimeLapse(
+        'Click - Download to Email Time',
+        timeLapse,
+        `${timePeriod === 1 ? 'daily' : 'monthly'} | ${
+          configsLableMap[report.config_id]
+        }`
+      );
+    }
+  }
+
   handleChange = email => {
     let selectedEmails = [...this.state.selectedEmails];
 
@@ -103,7 +126,6 @@ export default class EmailReport extends Component {
       reqData = { emails: selectedEmails, id: reportId };
       shouldUpdate = true;
 
-      trackTimeLapse('Click - Download to Email Time', timeLapse);
       trackReportActions(
         'Email Report (while downloading)',
         selectedType,
