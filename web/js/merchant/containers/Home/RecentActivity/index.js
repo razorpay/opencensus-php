@@ -19,17 +19,23 @@ import PaymentsList from 'merchant/components/Payments/PaymentsList';
 
 import { trackTabClick, trackEntityClick, trackGoToLinks } from './ga';
 
-const Row = ({ record, tabName, tabTitle, sectionTitle }) => {
+const shouldDisplayCompact = () => window.outerWidth < 1186;
+
+const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
   const tabMeta = tabsMeta[tabName];
 
   return (
     <tr>
       {tabMeta.columns.map((columnMeta, index) => {
+        if (displayCompact && index === 1) {
+          return null;
+        }
+
         let value = record[columnMeta.recordKey];
 
         value =
           typeof columnMeta.transfomer === 'function'
-            ? columnMeta.transfomer(value, record, tabName)
+            ? columnMeta.transfomer(value, record, tabName, displayCompact)
             : value;
 
         if (columnMeta.recordKey === 'id') {
@@ -69,9 +75,11 @@ export default class RecentActivity extends Component {
 
     this.state = {
       selectedTab: tabs[0],
+      displayCompact: shouldDisplayCompact(),
     };
 
     this.handleTabClick = ::this.handleTabClick;
+    this.handleResize = ::this.handleResize;
   }
 
   handleTabClick(e) {
@@ -81,6 +89,12 @@ export default class RecentActivity extends Component {
 
     this.setState({ selectedTab: tabName });
     trackTabClick(titleCase(tabName), this.props.sectionTitle);
+  }
+
+  handleResize() {
+    this.setState({
+      displayCompact: shouldDisplayCompact(),
+    });
   }
 
   fetchData(params) {
@@ -98,10 +112,18 @@ export default class RecentActivity extends Component {
     this.fetchData({ count: 5 });
   }
 
+  componentDidMount() {
+    window.addEventListener('resize', this.handleResize);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handleResize);
+  }
+
   render() {
-    const { selectedTab } = this.state,
+    const { selectedTab, displayCompact } = this.state,
       selectedTabData = this.props[selectedTab],
-      numColumns = tabsMeta[selectedTab].numColumns,
+      numColumns = tabsMeta[selectedTab].columns.length,
       selectedTabTitle = titleCase(selectedTab);
 
     let body = null;
@@ -125,6 +147,7 @@ export default class RecentActivity extends Component {
             tabName={selectedTab}
             tabTitle={selectedTabTitle}
             sectionTitle={this.props.sectionTitle}
+            displayCompact={displayCompact}
           />
         );
       });

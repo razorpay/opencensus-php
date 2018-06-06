@@ -9,7 +9,6 @@ import { ModalMask } from 'component/Modal';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
-import HomeNew from 'merchant/containers/Home/New';
 import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
 import PaymentLinks from 'merchant/containers/PaymentLinks/Index';
@@ -142,7 +141,6 @@ export default class Content extends Component {
           <Route path="/dashboard" component={Home} />
           <Redirect from="/" exact to="/dashboard" />
 
-          <Route path="/dashboard_v2" component={HomeNew} />
           <Route path="/payments" component={Transactions} />
           <Route path="/refunds" component={Transactions} />
           <Route path="/orders" component={Transactions} />

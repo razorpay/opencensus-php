@@ -3,6 +3,7 @@ import { Doughnut } from 'react-chartjs-2';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
+import debounce from 'rzp/utils/debounce';
 import takeScreenshot from 'rzp/utils/screenshot';
 import { showNotification } from 'rzp/modules/notifications';
 
@@ -52,6 +53,7 @@ class Traffic extends Component {
       loading: false,
       selectedGrouping: groupMeta[groupValues[0]],
       groupsState: {},
+      windowWidth: window.innerWidth,
     };
 
     groupValues.forEach(groupValue => {
@@ -67,6 +69,7 @@ class Traffic extends Component {
 
     this.onGroupChange = ::this.onGroupChange;
     this.handleImageExportClick = ::this.handleImageExportClick;
+    this.handleResize = ::this.handleResize;
 
     this.data = null;
   }
@@ -232,12 +235,34 @@ class Traffic extends Component {
     }
   }
 
-  componentDidMount() {
+  setChartSize() {
     const { width, height } = this.chartContent.getBoundingClientRect();
 
     // fixing with and height of chart container so that
     // the chart size would not grow
     this.chartContent.style.width = width + 'px';
+  }
+
+  handleResize() {
+    return this.setState(
+      {
+        hideChart: true,
+      },
+      () => {
+        this.chartContent.style.width = '100%';
+
+        window.setTimeout(() => {
+          this.setChartSize();
+          this.setState({ hideChart: false });
+        });
+      }
+    );
+  }
+
+  componentDidMount() {
+    this.setChartSize();
+
+    window.addEventListener('resize', debounce(this.handleResize, 250));
   }
 
   render() {
@@ -285,8 +310,14 @@ class Traffic extends Component {
                 ref={node => (this.chartContent = node)}
               >
                 {!groupState.loading &&
-                  chartData && (
-                    <Doughnut options={chartOptions} data={chartData} />
+                  chartData &&
+                  !this.state.hideChart && (
+                    <Doughnut
+                      ref={node => (this.chartInstance = node)}
+                      options={chartOptions}
+                      data={chartData}
+                      windowWidth={this.state.windowWidth}
+                    />
                   )}
               </div>
             </div>

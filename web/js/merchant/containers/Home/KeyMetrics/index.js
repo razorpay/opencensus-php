@@ -236,7 +236,7 @@ class KeyMetricsContainer extends Component {
           error: '',
         },
 
-        showTab: props.isAdmin || tabName !== SAVED_CARDS,
+        showTab: true || props.isAdmin || tabName !== SAVED_CARDS,
 
         error: '',
       };
@@ -251,6 +251,7 @@ class KeyMetricsContainer extends Component {
     this.onBreakdownChange = ::this.onBreakdownChange;
     this.handleTabChange = ::this.handleTabChange;
     this.onScreenshot = ::this.onScreenshot;
+    this.setTabWidth = ::this.setTabWidth;
   }
 
   setTabWidth() {
@@ -830,6 +831,11 @@ class KeyMetricsContainer extends Component {
 
   componentDidMount() {
     this.setTabWidth();
+    window.addEventListener('resize', this.setTabWidth);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.setTabWidth);
   }
 
   handleTabChange(tabName) {

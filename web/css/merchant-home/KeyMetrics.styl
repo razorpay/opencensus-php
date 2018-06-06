@@ -262,11 +262,35 @@ placeholder () {
         }
       }
     }
+
+    &.time-breakdown-select {
+
+      display: none;
+
+      .rzp-group-item.time-breakdown {
+     
+        padding: 0;
+      }
+    }
+
+    @media (max-width: 1130px) {
+
+      &.btn-group.time-breakdown {
+
+        display: none;
+      }
+
+      &.time-breakdown-select {
+
+        display: inline-block;
+      }
+    }
   }
 
   div.chart-container {
 
     height: 248px;
+    position: relative;
   }
 
   .rzp-legend {

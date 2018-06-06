@@ -9,7 +9,7 @@ const API_ERROR = {
   OLDEST_TXN_ERROR = {
     error: 'Unable to get your first transaction date',
   },
-  isMobileDevice = window.outerWidth <= 768;
+  isMobileDevice = window.innerWidth <= 768;
 
 const paymentMethodsOrder = [
     'card',
