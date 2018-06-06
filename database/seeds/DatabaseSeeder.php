@@ -1712,6 +1712,7 @@ class DatabaseSeeder extends Seeder
             'card'                      => '0',
             'netbanking'                => '0',
             'upi'                       => '1',
+            'gateway_merchant_id'       => 'upi_sbi_merchant_id',
             'gateway_merchant_id2'      => 'razorpay@sbibank',
             'created_at'                => time(),
             'updated_at'                => time(),
