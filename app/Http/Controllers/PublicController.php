@@ -30,11 +30,16 @@ class PublicController extends Controller
 
         $status = [
             'commit' => env('GIT_COMMIT_HASH') ?? 'Commit hash is not available',
+            // Database
             'd'      => $this->getDbStatus(),
+            // Database read replica
             'dr'     => $this->getDbStatus('read'),
+            // Redis
             'c'      => $this->getCacheStatus(),
+            // sec redis
             'sc'     => $this->getCacheStatus('secure'),
-            'es'     => $this->getEsStatus(),
+            // Elastic search
+            's'      => $this->getEsStatus(),
         ];
 
         foreach ($okStatusRequired as $field)
