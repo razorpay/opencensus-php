@@ -574,7 +574,7 @@ class ReconciliationFileTest extends TestCase
         $facade = $this->testData['facades']['hitachi'];
         $facade[HitachiPaymentRecon::COLUMN_PAYMENT_ID]     = $payment['payment_id'];
         $facade[HitachiPaymentRecon::COLUMN_PAYMENT_AMOUNT] = intval($payment['amount'] / 100);
-        $facade[HitachiPaymentRecon::COLUMN_AUTH_CODE]      = random_integer(6);
+        $facade[HitachiPaymentRecon::COLUMN_AUTH_CODE]      = $payment['pAuthID'];
         $facade[HitachiPaymentRecon::COLUMN_ARN]            = str_random(24);
 
         return array_merge($facade, $forceOverride);
@@ -646,7 +646,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertNull($payment1['reference1']);
 
-        $entries[] = $this->overrideHitachiPayment($gatewayPayment1);
+        $entries[] = $this->overrideHitachiPayment($gatewayPayment1, ['auth_id' => $payment1['reference2']]);
 
         $file = $this->writeToExcelFile($entries, 'hitachi');
 

@@ -1708,3 +1708,23 @@ Update terminals
      vpa = 'random@razorpay' where id = '1000SharpTrmnl';
 
 update qr_code set reference = id;
+
+# Udaan data corrections, necessitated by duplicate virtual bank account numbers
+# 1. Close the undesired VA, and move the bank_transfers to the desired one
+UPDATE
+  virtual_accounts INNER JOIN bank_transfers
+  ON
+    virtual_accounts.id=bank_transfers.virtual_account_id
+  SET
+    bank_transfers.virtual_account_id='A8xTrQAiKHV3BO',
+    virtual_accounts.amount_paid=0,
+    virtual_accounts.amount_received=0,
+    virtual_accounts.status='closed'
+  WHERE bank_transfers.virtual_account_id='A8xTrPsTWeNBzx';
+# 2. Update amount fields in the desired VA
+UPDATE
+  virtual_accounts
+  SET
+    amount_paid=621400,
+    amount_received=621400
+  WHERE id='A8xTrQAiKHV3BO';
