@@ -784,7 +784,8 @@ class Terminal extends Base
             'card'                      => 1,
             'type'                      => [
                 Type::RECURRING_NON_3DS => '1',
-                Type::RECURRING_3DS => '1'
+                Type::RECURRING_3DS     => '1',
+                Type::DEBIT_RECURRING   => '1',
             ],
             'gateway_merchant_id'       => 'random',
             'gateway_terminal_id'       => 'recurring_random',
@@ -793,7 +794,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $this->createEntityInTestAndLive('terminal', $attributes);
+        return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
     public function createSharedCybersourceAxisTerminal(array $attributes = [])
@@ -1017,11 +1018,15 @@ class Terminal extends Base
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'sharp',
-            'gateway_merchant_id'       => 'abcd',
+            'gateway_merchant_id'       => 'test_merchant_sharp',
             'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef',
             'card'                      => 1,
             'emi'                       => 0,
+            'mc_mpan'                   => '1234560000000000',
+            'visa_mpan'                 => '1234560000000001',
+            'rupay_mpan'                => '1234560000000002',
+            'vpa'                       => 'random@razorpay',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

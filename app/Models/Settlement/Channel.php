@@ -72,6 +72,34 @@ class Channel
     }
 
     /**
+     * Gives list of channels which support API based settlement and recon
+     *
+     * @return array
+     */
+    public static function getApiBasedChannels()
+    {
+        return [
+            self::RBL
+        ];
+    }
+
+    /**
+     * Gives list of channels which support file based settlement and recon
+     *
+     * @return array
+     */
+    public static function getFileBasedChannels()
+    {
+        return [
+            self::KOTAK,
+            self::AXIS,
+            self::ICICI,
+            self::HDFC,
+            self::YESBANK,
+        ];
+    }
+
+    /**
      * Channels for which balance API is available
      *
      * @return array

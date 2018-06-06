@@ -316,7 +316,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FAILURE_REASON, $reason);
     }
 
-    public function setRemarks(string $remarks)
+    public function setRemarks(string $remarks = null)
     {
         $this->setAttribute(self::REMARKS, $remarks);
     }

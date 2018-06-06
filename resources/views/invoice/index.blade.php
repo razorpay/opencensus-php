@@ -811,7 +811,7 @@
                                           <div id="hist-close" onclick="closePayHist()"><b>✕</b></div>
 
                                           <div class="modal-title">
-                                            Payment History
+                                            Successful Payments
                                             <div class="modal-desc">
                                             {{count($data['invoice']['payments'])}} Payment{{(count($data['invoice']['payments']) > 1) ? 's' : ''}} made for this request
                                             </div>
@@ -974,7 +974,7 @@
                                 <div id="hist-close" onclick="closePayHist()"><b>✕</b></div>
 
                                 <div class="modal-title">
-                                  Payment History
+                                  Successful Payments
                                   <div class="modal-desc">{{$data['invoice']['partial_payment']}} Payment{{$data['invoice']['partial_payment'] > 1 ?: 's'}} made for this request</div>
                                 </div>
 
