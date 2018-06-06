@@ -324,6 +324,12 @@ app
 
       $scope.sendDetails = function() {
         pushToDrip();
+
+        // Fire linkedin Pixel.
+        var i = new Image();
+        i.src =
+          'https://dc.ads.linkedin.com/collect/?pid=155571&conversionId=391804&fmt=gif';
+
         var payload = {
           method: 'post',
           url: '/user/pre_signup',
