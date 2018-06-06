@@ -157,12 +157,12 @@ class Entity extends Base\PublicEntity
         self::PAYUMONEY,
         self::OLAMONEY,
         self::AIRTELMONEY,
+        self::AMAZONPAY,
         self::FREECHARGE,
         self::JIOMONEY,
         self::SBIBUDDY,
         self::OPENWALLET,
         self::MPESA,
-        self::AMAZONPAY,
     );
 
     protected static $methods = [
@@ -427,6 +427,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AIRTELMONEY);
     }
 
+    public function getAmazonpay()
+    {
+        return $this->getAttribute(self::AMAZONPAY);
+    }
+
     public function getFreecharge()
     {
         return $this->getAttribute(self::FREECHARGE);
@@ -514,6 +519,11 @@ class Entity extends Base\PublicEntity
     public function setAirtelmoney($value)
     {
         $this->setAttribute(self::AIRTELMONEY, $value);
+    }
+
+    public function setAmazonpay($value)
+    {
+        $this->setAttribute(self::AMAZONPAY, $value);
     }
 
     public function setFreecharge($value)

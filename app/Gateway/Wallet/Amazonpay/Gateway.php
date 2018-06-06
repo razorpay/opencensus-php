@@ -453,16 +453,6 @@ class Gateway extends Base\Gateway
 
             $verify->amountMismatch = ($expectedAmount !== $actualAmount);
         }
-        else
-        {
-            throw new GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                'Invalid Verify Response: Order amount missing',
-                null,
-                [
-                    'content' => $content
-                ]);
-        }
     }
 
     private function getVerifyStatus(Verify $verify): string
