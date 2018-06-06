@@ -81,7 +81,7 @@ class Generator extends Base\Core
 
     protected function createAndSetQrCode(array $input)
     {
-        $this->qrCode = (new Entity)->build($input)->generateId();
+        $this->qrCode = (new Entity)->build($input);
     }
 
     protected function setShortUrl()

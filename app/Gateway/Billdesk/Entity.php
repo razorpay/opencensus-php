@@ -117,7 +117,7 @@ class Entity extends Base\Entity
         return true;
     }
 
-    public function getBankReferenceNo()
+    public function getBankPaymentId()
     {
         return $this->getAttribute('BankReferenceNo');
     }

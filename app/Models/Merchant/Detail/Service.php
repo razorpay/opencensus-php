@@ -573,16 +573,16 @@ class Service extends Base\Service
             throw new Exception\RuntimeException('Missing Permission');
         }
 
-        $admins = new Base\Collection;
+        $admins = [];
 
         foreach ($permission->roles as $role)
         {
             foreach ($role->admins as $roleAdmin)
             {
-                $admins->push($roleAdmin->toArrayPublic());
+                $admins[] = $roleAdmin->toArrayPublic();
             }
         }
 
-        return $admins;
+        return multidim_array_unique($admins, Admin\Admin\Entity::ID);
     }
 }

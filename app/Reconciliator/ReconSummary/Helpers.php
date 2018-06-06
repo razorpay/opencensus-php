@@ -38,8 +38,8 @@ class Helpers
     {
         $entry['created_at']                = self::getFormattedDate($entry['created_at'],'jS F, Y H:m:s');
         $entry['payment_amount']            = $entry['payment_amount']/100;
-        $entry['payment_captured_at']       = self::getFormattedDate($entry['payment_captured_at'],'jS F, Y H:m:s');
-        $entry['payment_authorized_at']     = self::getFormattedDate($entry['payment_authorized_at'],'jS F, Y H:m:s');
+        $entry['payment_captured_at']       = $entry['payment_captured_at'] ? self::getFormattedDate($entry['payment_captured_at'],'jS F, Y H:m:s') : '';
+        $entry['payment_authorized_at']     = $entry['payment_authorized_at'] ? self::getFormattedDate($entry['payment_authorized_at'],'jS F, Y H:m:s') : '';
         $entry['payment_amount_refunded']   = $entry['payment_amount_refunded']/100;
 
         if (isset($entry['refund_amount']) === true)
@@ -50,4 +50,19 @@ class Helpers
         unset($entry['row_number']);
     }
 
+    public static function getFormattedSummary(array $summary)
+    {
+        $formattedSummary = [];
+
+        foreach ($summary as $entry)
+        {
+            self::addExtraColumns($entry);
+
+            $formattedSummary[$entry['date']][] =  $entry;
+        }
+
+        sortMultiDimensionalArray($formattedSummary, Constants::RESULT_SORT_KEY);
+
+        return $formattedSummary;
+    }
 }
