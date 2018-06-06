@@ -3,8 +3,8 @@
 namespace RZP\Models\Merchant\Partner;
 
 use RZP\Exception;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 
 class Validator extends Merchant\Validator
 {
