@@ -56,7 +56,7 @@ class CreateMerchantBanks extends Migration
             $table->tinyInteger(Methods::AIRTELMONEY)
                   ->default(0);
 
-            $table->tinyInteger(Methods::AMAZONPAY)
+            $table->boolean(Methods::AMAZONPAY)
                   ->default(0);
 
             $table->tinyInteger(Methods::JIOMONEY)

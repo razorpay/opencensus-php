@@ -3597,3 +3597,7 @@ ALTER TABLE orders
 # Add attempts to payouts
 ALTER TABLE payouts
     ADD COLUMN attempts integer default 1 not null after channel;
+
+# Amazon Pay is added as wallet
+ALTER TABLE merchant_banks
+    ADD COLUMN amazonpay TINYINT(1) NOT NULL DEFAULT 0 AFTER airtelmoney;
