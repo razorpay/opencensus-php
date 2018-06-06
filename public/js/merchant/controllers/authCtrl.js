@@ -330,6 +330,11 @@ app
         i.src =
           'https://dc.ads.linkedin.com/collect/?pid=155571&conversionId=391804&fmt=gif';
 
+        // Fire Quora pixel.
+        i = new Image();
+        i.src =
+          'https://q.quora.com/_/ad/0b40045f43e5492d916199b03c35aa48/pixel?tag=ViewContent&noscript=1';
+
         var payload = {
           method: 'post',
           url: '/user/pre_signup',
