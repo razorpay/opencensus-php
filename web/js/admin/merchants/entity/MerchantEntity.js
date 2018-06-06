@@ -688,6 +688,9 @@ const ActionsList = ({ model, merchantId, actions }) => {
             {isDetailsLoading && <div class="dot-loader">.</div>}
           </div>
         </ShowWhen>
+        <ShowWhen>
+          <div onClick={actions.MarkAsPartner}>Mark As Partner</div>
+        </ShowWhen>
         <ShowWhen permission="edit_merchant_screenshot">
           <div onClick={actions.UploadScreenshots}>
             Upload screenshots
