@@ -13,7 +13,7 @@ use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Encryption\AESEncryption;
-use RZP\Mail\Settlement as SettlementMail;
+use RZP\Mail\Settlement\Settlement as SettlementMail;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 
 class NodalAccount extends NodalBase\FileProcessor
@@ -32,6 +32,16 @@ class NodalAccount extends NodalBase\FileProcessor
         Mode::IFT     => 'I',
     ];
 
+    /**
+     * Prefix for filename when the purpose is `Refund`
+     */
+    const REFUND_FILE_PREFIX     = 'NRPSR_NRPSRUPLDNEW_';
+
+    /**
+     * Prefix for filename when the purpose is `Settlement`
+     */
+    const SETTLEMENT_FILE_PREFIX = 'NRPSS_NRPSSUPLDNEW_';
+
     protected $date = null;
 
     protected $data = null;
@@ -40,9 +50,9 @@ class NodalAccount extends NodalBase\FileProcessor
 
     protected $id = null;
 
-    public function __construct()
+    public function __construct(string $purpose)
     {
-        parent::__construct();
+        parent::__construct($purpose);
 
         $this->date = Carbon::today(Timezone::IST)->format('d/m/Y');
 
@@ -100,7 +110,18 @@ class NodalAccount extends NodalBase\FileProcessor
 
             $mode = $this->getPaymentType($ba, $amount);
 
+            $this->updateSummary($mode, $amount);
+
             $mode = self::MODE_MAPPING[$mode];
+
+            $beneId = ($this->isRefund() === true) ? '' : $ba->getId();
+
+            $narration = '';
+
+            if ($this->isRefund() === true)
+            {
+                $narration = $entity->getNarration() ?? 'Razorpay Refund';
+            }
 
             $rows[] = [
                 Headings::PAYMENT_MODE              => $mode,
@@ -110,11 +131,11 @@ class NodalAccount extends NodalBase\FileProcessor
                 Headings::AMOUNT                    => $this->formatAmount($amount),
                 Headings::PAYMENT_DATE              => $this->date,
                 Headings::DEBIT_ACCOUNT_NO          => self::DEBIT_ACCOUNT_NO,
-                Headings::CREDIT_NARRATION          => '',
+                Headings::CREDIT_NARRATION          => $narration,
                 Headings::INSTRUMENT_REFERENCE      => $entity->getId(),
                 Headings::DUMMY                     => '',
                 Headings::DUMMY2                    => '',
-                Headings::BENEFICIARY_CODE          => $ba->getId(),
+                Headings::BENEFICIARY_CODE          => $beneId
             ];
         }
 
@@ -137,9 +158,27 @@ class NodalAccount extends NodalBase\FileProcessor
         return $mode;
     }
 
+    /**
+     * Gives the file dentination to create file.
+     * File name will very based in the purpose
+     *
+     * @return string
+     */
+    protected function getFileDestination()
+    {
+        $identifier = self::SETTLEMENT_FILE_PREFIX;
+
+        if ($this->isRefund() === true)
+        {
+            $identifier = self::REFUND_FILE_PREFIX;
+        }
+
+        return 'icici/outgoing/' . $identifier . $this->id;
+    }
+
     protected function createFile($txt): FileStore\Creator
     {
-        $fileName = 'icici/outgoing/NRPSS_NRPSSUPLDNEW_' . $this->id;
+        $fileName = $this->getFileDestination();
 
         $metadata = $this->getH2HMetadata();
 
@@ -191,18 +230,21 @@ class NodalAccount extends NodalBase\FileProcessor
 
     protected function sendIciciTransferMail(array $fileData, array $rows = null)
     {
-        $data['body'] = 'PFA ICICI Settlement file';
+        $data = [
+            'body'      => 'PFA ICICI Settlement file',
+            'channel'   => $this->channel,
+            'summary'   => $this->summary,
+            'file_data' => $fileData
+        ];
 
         if ($rows !== null)
         {
             $data['body'] = json_encode($rows, JSON_PRETTY_PRINT);
         }
 
-        $data['file_data'] = $fileData;
+        $settlementMail = new SettlementMail($data);
 
-        $iciciSettlementMail = new SettlementMail\IciciSettlement($data);
-
-        Mail::queue($iciciSettlementMail);
+        Mail::queue($settlementMail);
     }
 
     protected function formatAmount($amount)

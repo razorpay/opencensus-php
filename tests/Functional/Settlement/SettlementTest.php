@@ -12,6 +12,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\Settlement\Entity as SettlementEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -443,6 +444,79 @@ class SettlementTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testMutualFundMarketplaceSettlementSchedule()
+    {
+        $channel = Channel::AXIS;
+
+        $this->ba->adminAuth();
+
+        $parentId = Preferences::MID_WEALTHY;
+
+        $subMid = '8lv4idBRY4C9c1';
+
+        $this->fixtures->merchant->createAccount($parentId);
+
+        $this->fixtures->merchant->createAccount($subMid);
+
+        $this->fixtures->edit('merchant', $subMid, ['parent_id' => $parentId]);
+
+        // 7th December 2017 9 am
+        $paymentTime = Carbon::create(2017, 12, 7, 9, 00, 0, Timezone::IST);
+
+        $payments = $this->createPaymentEntities(1, $subMid, $paymentTime);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit(
+            'transaction',
+            $txn['id'],
+            [
+                'settled_at' => $paymentTime->getTimestamp()
+            ]);
+
+        // 7th December 2017 10 am
+        $now = $paymentTime->copy()->addHour();
+        Carbon::setTestNow($now);
+
+        // This is outside the mutual fund settlement window, so settlement is skipped
+        $setlResponse = $this->initiateSettlements($channel);
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(0, $setlResponse[$channel]['count']);
+
+        // 1.30pm 7th December 2017
+        $dt = Carbon::create(2017, 12, 7, 13, 30, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        // This is inside the mutual fund settlement window, so settlement is initiated
+        $setlResponse = $this->initiateSettlements($channel);
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+        $this->assertEquals(1, $setlResponse[$channel]['txnCount']);
+
+        // 2.30pm 12th December 2017
+        $dt = Carbon::create(2017, 12, 12, 14, 30, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $payment = $this->createPaymentEntities(1, $subMid, $paymentTime);
+
+        $txnId = $payment->getTransactionId();
+
+        $txn = $this->fixtures->edit('transaction', $txnId, [
+            'settled_at' => $paymentTime->getTimestamp()
+        ]);
+
+        // This is outside the mutual fund settlement window, but settlement is
+        // initiated anyway, as the payment was due to be settled a while ago
+        $setlResponse = $this->initiateSettlements($channel);
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+        $this->assertEquals(1, $setlResponse[$channel]['txnCount']);
+
+        Carbon::setTestNow();
+    }
+
     public function testDailySettlement()
     {
         Carbon::setTestNow(Carbon::now(Timezone::IST));
@@ -637,13 +711,10 @@ class SettlementTest extends TestCase
         {
             $this->assertEquals($txn['settled'], false);
         }
-
     }
 
     public function testNodalTransferWithGateway()
     {
-        Mail::fake();
-
         $this->ba->appAuth();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_first_data_terminal');
@@ -688,8 +759,6 @@ class SettlementTest extends TestCase
 
     public function testNodalTransferWithAmount()
     {
-        Mail::fake();
-
         $this->ba->appAuth();
 
         $request = [
@@ -699,6 +768,35 @@ class SettlementTest extends TestCase
                 'amount'        => 1076,
                 'channel'       => 'axis',
                 'destination'   => 'kotak'
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEquals(null, $content);
+
+        $adj = $this->getLastEntity('adjustment', true);
+
+        $expected = [
+            'amount'        => 1076,
+            'channel'       => 'axis',
+            'merchant_id'   => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expected, $adj);
+    }
+
+    public function testNodalTransferAdmin()
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'url'     => '/nodal/transfer/admin',
+            'method'  => 'POST',
+            'content' => [
+                'amount'        => 1076,
+                'channel'       => 'axis',
+                'destination'   => 'icici'
             ]
         ];
 
@@ -911,7 +1009,7 @@ class SettlementTest extends TestCase
             'transfer:to_account',
             [
                 'account'     => $account,
-                'source_id'   => $account->getId(),
+                'source_id'   => '10000000000000',
                 'source_type' => 'merchant',
                 'amount'      => 1000,
                 'currency'    => 'INR',
@@ -942,17 +1040,18 @@ class SettlementTest extends TestCase
         //
         $this->assertEquals(7, $content[$channel]['txnCount']);
 
-        $lastSetl = $this->getLastEntity('settlement', true);
+        $lastSetlAcct = $this->getLastEntity('settlement', true);
+
 
         // Assert linked account settlement
-        $this->assertEquals($transfer[1]['to_id'], $lastSetl['merchant_id']);
+        $this->assertEquals($transfer[1]['to_id'], $lastSetlAcct['merchant_id']);
 
         //
         // transfer payment 1 -> credit 1000 + transfer payment 2 -> credit 1000
         // reversal refund -> debit 500
         // total => 1500
         //
-        $this->assertEquals(1500, $lastSetl['amount']);
+        $this->assertEquals(1500, $lastSetlAcct['amount']);
 
         // Set time to 3 working days from now and initiate settlements
         $settlementAfterT3 = Carbon::createFromTimestamp($createdAt, Timezone::IST)->addDays(3);
@@ -968,6 +1067,34 @@ class SettlementTest extends TestCase
 
         // Reversal to be settled => 500
         $this->assertEquals(500, $lastSetl['amount']);
+
+        // Test if the transfers can be fetched with recipient_settlement_id
+        $request = [
+            'url'     => '/transfers?recipient_settlement_id=' . $lastSetlAcct['id'],
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $response = [
+            [
+                'entity'                  => 'transfer',
+                'amount'                  => 1000,
+                'recipient_settlement_id' => $lastSetlAcct['id'],
+            ],
+            [
+                'entity'                  => 'transfer',
+                'amount'                  => 1000,
+                'recipient_settlement_id' => $lastSetlAcct['id'],
+            ],
+        ];
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+        $this->ba->privateAuth();
+        $content = $this->makeRequestAndGetContent($request);
+
+        $transferResponse = $content['items'];
+
+        $this->assertArraySelectiveEquals($response, $transferResponse);
     }
 
     public function testSettlementForReversalOfPaymentTransfer()

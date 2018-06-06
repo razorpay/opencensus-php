@@ -186,7 +186,29 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::FEATURE)->insert(
                 array(
                     'id'            => 'feature_202020',
-                    'name'          => 'recurring',
+                    'name'          => 'subscriptions',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime
+                )
+            );
+
+            DB::table(Table::FEATURE)->insert(
+                array(
+                    'id'            => 'feature_303030',
+                    'name'          => 'bharat_qr',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime
+                )
+            );
+
+            DB::table(Table::FEATURE)->insert(
+                array(
+                    'id'            => 'feature_404040',
+                    'name'          => 'virtual_accounts',
                     'entity_id'     => '10000000000000',
                     'entity_type'   => 'merchant',
                     'created_at'    => $currentTime,
@@ -480,6 +502,7 @@ class DatabaseSeeder extends Seeder
                     'aeps'          => '1',
                     'olamoney'      => '1',
                     'freecharge'    => '1',
+                    'emandate'      => '1',
                     'mobikwik'      => '1',
                     'payzapp'       => '1',
                     'payumoney'     => '1',
@@ -504,6 +527,7 @@ class DatabaseSeeder extends Seeder
                     'mobikwik'      => '1',
                     'olamoney'      => '1',
                     'freecharge'    => '1',
+                    'emandate'      => '1',
                     'payzapp'       => '1',
                     'payumoney'     => '1',
                     'airtelmoney'   => '1',
@@ -514,6 +538,7 @@ class DatabaseSeeder extends Seeder
                     'emi'           => '1',
                     'upi'           => '1',
                     'bank_transfer' => '1',
+                    'emandate'      => '1',
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                 )
@@ -1098,6 +1123,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingKotakTerminals();
         $this->createNetbankingIciciTerminals();
         $this->createNetbankingAirtelTerminals();
+        $this->createNetbankingObcTerminal();
         $this->createNetbankingAxisTerminal();
         $this->createNetbankingFederalTerminal();
         $this->createNetbankingIndusindTerminal();
@@ -1180,16 +1206,47 @@ class DatabaseSeeder extends Seeder
                 'updated_at'            => time(),
                 )
             );
+
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => Terminal\Shared::NETBANKING_HDFC_REC_TERMINAL,
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::NETBANKING_HDFC,
+                'card'                      => '0',
+                'netbanking'                => '1',
+                'gateway_merchant_id'       => 'test_merchant_netbanking_hdfc_recurring',
+                'recurring'                 => 1,
+                'emandate'                  => 1,
+                'created_at'                => time(),
+                'updated_at'                => time(),
+                'type'                      => 6,
+            ]
+        );
     }
 
     protected function createNetbankingBobTerminals()
     {
         DB::table(Table::TERMINAL)->insert(
             array(
-                'id'                    => '22BOfBaroda2m8',
+                'id'                    => '22BOfBarodaRm8',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::NETBANKING_BOB,
                 'netbanking'            => '1',
+                'corporate'             => '0',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_bob',
+                'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_bob_hash_secret'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            )
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => '22BOfBarodaCm8',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_BOB,
+                'netbanking'            => '1',
+                'corporate'             => '1',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_bob',
                 'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_bob_hash_secret'),
                 'created_at'            => time(),
@@ -1419,21 +1476,6 @@ class DatabaseSeeder extends Seeder
                 'type'                      => 6,
             ]
         );
-
-        DB::table(Table::TERMINAL)->insert(
-            [
-                'id'                        => Terminal\Shared::NETBANKING_HDFC_REC_TERMINAL,
-                'merchant_id'               => Account::TEST_ACCOUNT,
-                'gateway'                   => Gateway::NETBANKING_HDFC,
-                'card'                      => '0',
-                'netbanking'                => '1',
-                'gateway_merchant_id'       => 'test_merchant_netbanking_hdfc_recurring',
-                'recurring'                 => 1,
-                'created_at'                => time(),
-                'updated_at'                => time(),
-                'type'                      => 6,
-            ]
-        );
     }
 
     protected function createNetbankingAirtelTerminals()
@@ -1447,6 +1489,24 @@ class DatabaseSeeder extends Seeder
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_airtel',
                 'gateway_secure_secret' => Crypt::encrypt('test_airtel_terminal_salt'),
+                'recurring'             => 1,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
+    protected function createNetbankingObcTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_OBC_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_OBC,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_oriental',
+                'gateway_secure_secret' => Crypt::encrypt('test_oriental_terminal_salt'),
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
@@ -1477,7 +1537,8 @@ class DatabaseSeeder extends Seeder
                     'merchant_id'               => Account::TEST_ACCOUNT,
                     'gateway'                   => Gateway::NETBANKING_AXIS,
                     'card'                      => '0',
-                    'netbanking'                => '1',
+                    'netbanking'                => '0',
+                    'emandate'                  => '1',
                     'gateway_merchant_id'       => 'test_merchant_netbanking_axis_recurring',
                     'recurring'                 => 1,
                     'created_at'                => time(),

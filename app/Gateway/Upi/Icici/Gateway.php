@@ -68,10 +68,11 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        if ((isset($input['qr_notification']) === true) and
-            ($input['qr_notification'] === true))
+        if ($this->isBharatQrPayment() === true)
         {
-            return $this->createGatewayPaymentEntity($input);
+            $this->createGatewayPaymentEntity($input);
+
+            return null;
         }
 
         if ((isset($input['upi']['flow']) === true) and
@@ -269,11 +270,6 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId(): string
     {
-        if ($this->isBharatQrPayment() === true)
-        {
-            return $this->config['bharatqr_merchant_id'];
-        }
-
         if ($this->mode === Mode::TEST)
         {
             return $this->config['test_merchant_id'];
@@ -853,12 +849,13 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]),
             BharatQr\GatewayResponseParams::VPA                   => $input[Fields::PAYER_VA],
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
+            BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[Fields::MERCHANT_ID],
             BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[Fields::MERCHANT_TRAN_ID],
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => (string) $input[Fields::BANK_RRN],
         ];
 
         return [
-            'gateway_input' => $input,
+            'callback_data' => $input,
             'qr_data'       => $qrData
         ];
     }

@@ -41,7 +41,7 @@ trait BharatQrTrait
                 'message'        => 'Unexpected Bharat Qr Payment',
                 'bank_reference' => $merchantReference,
                 'row'            => $row,
-                'gateway'        => get_called_class()
+                'gateway'        => $this->gateway
             ]);
     }
 }

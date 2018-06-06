@@ -7,6 +7,16 @@ use RZP\Constants\Entity;
 
 trait DbEntityFetchTrait
 {
+    /**
+     * Since $generateIdOnCreate is a protected variable, we can not
+     * access it to check if verification is needed for an entity.
+     *
+     * Hence, we keep a list of entities here to check this manually.
+     */
+    protected $verificationSkipEntities = [
+        'netbanking'
+    ];
+
     protected function getDbEntities(string $entity, array $input = array(), $mode = 'test')
     {
         return $this->getEntityObjectForMode($entity, $mode)
@@ -39,7 +49,10 @@ trait DbEntityFetchTrait
     {
         $entityClass = $this->getEntityObjectForMode($entity, $mode);
 
-        $id = $entityClass::verifyIdAndStripSign($id);
+        if (in_array($entity, $this->verificationSkipEntities) === false)
+        {
+            $id = $entityClass::verifyIdAndSilentlyStripSign($id);
+        }
 
         return $entityClass->findOrFailPublic($id);
     }

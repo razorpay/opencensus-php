@@ -40,6 +40,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchByPaymentIdsAndActions($paymentIds, $actions)
+    {
+        return $this->newQuery()
+                    ->whereIn('payment_id', $paymentIds)
+                    ->whereIn('action', $actions)
+                    ->get();
+    }
+
     public function findByPaymentIdActionAndStatus(string $paymentId,
                                                    string $action,
                                                    array $statuses)
@@ -48,7 +56,7 @@ class Repository extends Base\Repository
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->where('action', '=', $action)
                     ->whereIn('status', $statuses)
-                    ->firstOrFail();
+                    ->first();
     }
 
     public function findByTraceIdAndAction($paymentId, $action)

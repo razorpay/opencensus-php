@@ -9,24 +9,24 @@ use RZP\Reconciliator\RequestProcessor;
 class Validator
 {
     const ACCEPTED_EXTENSIONS_MAP = [
-        'csv'   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values', 'text/plain'],
-        'txt'   => ['text/plain', 'application/octet-stream'],
+        'csv'  => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values', 'text/plain'],
+        'txt'  => ['text/plain', 'application/octet-stream'],
         // Ensure that this is always above 'xlsx' because of `getExtensionFromContentType`
-        'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
-        'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    'application/zip', 'application/octet-stream', 'application/vnd.ms-excel'],
+        'zip'  => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
+        'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                   'application/zip', 'application/octet-stream', 'application/vnd.ms-excel'],
         // `text/plain` is being added here because HDFC sends CSV files with XLS extension. kthxbye
         // `application/CDFV2-unknown` is being sent for FirstData files. sigh.
-        'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
-                    'application/vnd.ms-office', 'application/octet-stream', 'text/plain',
-                    'application/cdfv2-unknown'],
-        'xlsb'  => [
+        'xls'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/excel', 'application/vnd.ms-excel', 'application/msexcel',
+                   'application/vnd.ms-office', 'application/octet-stream', 'text/plain',
+                   'application/cdfv2-unknown'],
+        'xlsb' => [
             'application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip',
             'application/octet-stream', 'application/vnd.oasis.opendocument.spreadsheet',
         ],
-        'rpt'   => ['text/plain'],
-        'dat'   => ['text/plain'],
+        'rpt'  => ['text/plain'],
+        'dat'  => ['text/plain'],
     ];
 
     const GATEWAY_SUBJECT_REGEX = [
@@ -42,6 +42,7 @@ class Validator
                                                         . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/"
                                                      ],
         RequestProcessor\Base::NETBANKING_BOB     => ["/^Razorpay_Scroll_ of /"],
+        RequestProcessor\Base::NETBANKING_CSB     => ["/^RAZORPAY_Recon File/"],
         RequestProcessor\Base::NETBANKING_ICICI   => ["/^Payment Through Internet Banking Center Razorpay/"],
         RequestProcessor\Base::NETBANKING_FEDERAL => [
                                                         "/^MIS Report File Dated "
@@ -79,6 +80,7 @@ class Validator
                                                         "/Please find attached the settlement file for today."
                                                         . " You net amount settled is/"
                                                      ],
+        RequestProcessor\Base::NETBANKING_CSB     => ["/Please find attached, the recon file for the date/"],
         RequestProcessor\Base::FIRST_DATA         => ["/the statement of transactions for MID (.)*razorpay/"],
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => ["/Please find the hourly report of Virtual Accounts./"],
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK=> ["/Please find attached subject scheduled reports./"],
@@ -210,6 +212,19 @@ class Validator
             RequestProcessor\Base::NETBANKING_BOB);
 
         return $validSubject;
+    }
+
+    public function validateNetbankingCsbEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_CSB);
+
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY],
+            RequestProcessor\Base::NETBANKING_CSB);
+
+        return ($validSubject and $validBody);
     }
 
     public function validateNetbankingIciciEmail(array $emailDetails)

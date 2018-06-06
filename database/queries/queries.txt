@@ -3472,6 +3472,10 @@ ALTER TABLE invoices
     ADD COLUMN customer_shipping_addr_id CHAR(14) DEFAULT NULL AFTER customer_billing_addr_id,
     ADD CONSTRAINT invoices_customer_shipping_addr_id_foreign FOREIGN KEY (customer_shipping_addr_id) REFERENCES addresses (id);
 
+ALTER TABLE enach
+    ADD COLUMN registration_date INTEGER UNSIGNED AFTER registration_status,
+    ADD INDEX enach_registration_date_index (registration_date);
+
 //Atom Entity refactor
 
 ALTER TABLE atom DROP FOREIGN KEY atom_id_foreign;
@@ -3499,7 +3503,7 @@ ALTER TABLE atom
     MODIFY COLUMN `payment_id` char(14) NOT NULL;
 
 ALTER TABLE atom MODIFY COLUMN gateway_payment_id VARCHAR(255) DEFAULT NULL;
-    
+
 ALTER TABLE `merchant_details`
     ADD COLUMN `business_category` VARCHAR(255) DEFAULT NULL AFTER `company_pan_name`,
     ADD COLUMN `business_subcategory` VARCHAR(255) DEFAULT NULL AFTER `business_category`;
@@ -3508,3 +3512,73 @@ ALTER TABLE payments drop foreign key payments_app_id_foreign,
                      rename index payments_app_id_foreign TO payments_receiver_id_index,
                      change app_id receiver_id varchar(14),
                      change reference8 receiver_type varchar(255);
+
+# Renaming to batch_id
+ALTER TABLE payments
+    CHANGE reference7 batch_id VARCHAR(255);
+
+ALTER TABLE settlements
+    ADD INDEX settlements_channel_index (channel);
+
+ALTER TABLE pricing
+    ADD COLUMN receiver_type varchar(255) DEFAULT NULL AFTER international;
+
+# Invoice GST changes
+ALTER TABLE merchants
+    ADD COLUMN invoice_label_field varchar(50) DEFAULT NULL AFTER logo_url;
+
+ALTER TABLE invoices
+    ADD COLUMN merchant_label varchar(255) DEFAULT NULL AFTER customer_gstin;
+
+ALTER TABLE terminals
+    ADD COLUMN mastercard_mpan varchar(16) DEFAULT NULL after gateway_client_certificate,
+    ADD COLUMN visa_mpan varchar(16) DEFAULT NULL after mastercard_mpan,
+    ADD COLUMN rupay_mpan varchar(16) DEFAULT NULL after visa_mpan,
+    ADD COLUMN vpa varchar(255) DEFAULT NULL after rupay_mpan,
+    ADD INDEX terminals_mastercard_mpan_index (mastercard_mpan),
+    ADD INDEX terminals_visa_mpan_index (visa_mpan),
+    ADD INDEX terminals_rupay_mpan_index (rupay_mpan),
+    ADD INDEX terminals_vpa_index (vpa);
+
+ALTER TABLE terminals
+    CHANGE mastercard_mpan mc_mpan varchar(16),
+    rename index terminals_mastercard_mpan_index to terminals_mc_mpan_index;
+
+ALTER TABLE terminals
+    ADD COLUMN gateway_terminal_password2 text DEFAULT NULL AFTER gateway_terminal_password,
+    ADD COLUMN gateway_secure_secret2 VARCHAR(255) DEFAULT NULL AFTER gateway_secure_secret;
+
+ALTER TABLE payments
+    ADD INDEX `payments_merchant_id_captured_at_index` (merchant_id, captured_at);
+
+ALTER TABLE invoices
+    ADD COLUMN supply_state_code CHAR(4) DEFAULT NULL AFTER merchant_label;
+
+ALTER TABLE card_fss MODIFY COLUMN status VARCHAR(255) DEFAULT NULL;
+
+DROP INDEX `card_fss_status_index` on `card_fss`; CREATE INDEX `card_fss_status_index` ON card_fss (status(50));
+
+ALTER TABLE line_items
+    ADD COLUMN tax_rate INTEGER UNSIGNED DEFAULT NULL AFTER sac_code;
+
+Alter table terminals
+    Modify column type integer default '1';
+
+ALTER TABLE invoices
+    ADD COLUMN merchant_gstin VARCHAR(20) DEFAULT NULL AFTER customer_gstin;
+
+ALTER TABLE webhooks
+    ADD COLUMN disable_on_failure TINYINT(1) NOT NULL DEFAULT 1 AFTER active;
+
+ALTER TABLE offers
+    ADD COLUMN international TINYINT(1) DEFAULT NULL AFTER issuer;
+
+ALTER TABLE terminals
+    ADD COLUMN expected BOOLEAN DEFAULT 0 NOT NULL after corporate;
+
+ALTER TABLE qr_code
+    ADD COLUMN reference varchar(255) DEFAULT NULL after merchant_id,
+    ADD INDEX `qr_code_reference_index` (reference),
+    MODIFY COLUMN qr_string TEXT DEFAULT NULL,
+    MODIFY COLUMN short_url varchar(255) DEFAULT NULL;
+

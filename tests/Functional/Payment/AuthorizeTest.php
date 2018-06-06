@@ -766,8 +766,7 @@ class AuthorizeTest extends TestCase
 
         $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
 
-        // @todo: Save auth type in the payment entity
-        // $this->assertEquals('pin', $payment['auth_type']);
+        $this->assertEquals('pin', $payment['auth_type']);
         $this->assertEquals('card_fss', $payment['gateway']);
         $this->assertEquals('SharedFssTrmnl', $payment['terminal_id']);
     }
@@ -822,8 +821,7 @@ class AuthorizeTest extends TestCase
 
         $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
 
-        // @todo: Save auth type in the payment entity
-        // $this->assertEquals('pin', $payment['auth_type']);
+        $this->assertEquals('pin', $payment['auth_type']);
         $this->assertEquals('card_fss', $payment['gateway']);
         $this->assertEquals('SharedFssTrmnl', $payment['terminal_id']);
     }
@@ -878,8 +876,7 @@ class AuthorizeTest extends TestCase
 
         $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
 
-        // @todo: Save auth type in the payment entity
-        // $this->assertEquals('pin', $payment['auth_type']);
+        $this->assertEquals('pin', $payment['auth_type']);
         $this->assertEquals('card_fss', $payment['gateway']);
         $this->assertEquals('SharedFssTrmnl', $payment['terminal_id']);
     }

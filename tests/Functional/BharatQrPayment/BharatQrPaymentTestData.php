@@ -21,7 +21,7 @@ return [
         'content' => [
             'F002'       => '423156XXXXXX1234',
             'F003'       => '26000',
-            'F004'       => '2.00',
+            'F004'       => '000000000200',
             'F011'       => 'abc123',
             'F012'       => '120000',
             'F013'       => '1212',
@@ -33,7 +33,7 @@ return [
             'F043'       => 'RazorpayBangalore',
             'F102'       => 'paymentId',
             'PurchaseID' => 'tobefilled',
-            'SenderName' => 'Razorpay',
+            'SenderName' => 'Random Name',
         ],
     ],
 
@@ -42,7 +42,7 @@ return [
         'method'  => 'post',
         'content' => [
             Fields::RESPONSE         => '92',
-            Fields::MERCHANT_ID      => '2q484',
+            Fields::MERCHANT_ID      => 'abcd_bharat_qr',
             Fields::SUBMERCHANT_ID   => '42324',
             Fields::TERMINAL_ID      => '2425',
             Fields::SUCCESS          => 'true',

@@ -45,10 +45,14 @@ class Entity extends Base\PublicEntity
 
     const COUNTRY_LENGTH = 2;
 
-    const DUMMY_EXPIRY_YEAR  = '2021';
-    const DUMMY_EXPIRY_MONTH = '12';
-    const DUMMY_CVV          = '123';
-    const DUMMY_CVV_AMEX     = '1234';
+    const DUMMY_EXPIRY_YEAR      = '2099';
+    const DUMMY_EXPIRY_MONTH     = '12';
+    const DUMMY_CVV              = '123';
+    const DUMMY_CVV_AMEX         = '1234';
+    const DUMMY_NAME             = 'dummy card';
+    const DUMMY_MASTERCARD_CARD  = '2221000000511237';
+    const DUMMY_VISA_CARD        = '4231560000511234';
+    const DUMMY_RUPAY_CARD       = '5085000000521234';
 
     const NETWORK_CODE = 'network_code';
 
@@ -320,6 +324,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LAST4);
     }
 
+    public function getLength()
+    {
+        return $this->getAttribute(self::LENGTH);
+    }
+
+    public function getMaskedCardNumber()
+    {
+        return $this->getIin() . 'XXXXXX' . $this->getLast4();
+    }
+
     public function getVaultToken()
     {
         return $this->getAttribute(self::VAULT_TOKEN);
@@ -446,12 +460,15 @@ class Entity extends Base\PublicEntity
             '8YPFnW5UOM91H7', // IRCTC Mobile
             '8byazTDARv4Io0', // IRCTC Air Ticketing
             '9m4CChGex4ENkR', // IRCTC FTR
-            // Email Subject: Re: Managing NEFT transfers with Razorpay Virtual Accounts
-            '9YAQd3b47mdIQY', // Endurance
-            '9ZO8jNaR0OORNH', // Endurance
             Merchant\Account::TEST_ACCOUNT,
             Merchant\Account::SHARED_ACCOUNT,
         ];
+
+        //
+        // Email Subject: Re: Managing NEFT transfers with Razorpay Virtual Accounts
+        // https://razorpay.slack.com/archives/C3GF5LWJK/p1525965476000128
+        // /
+        $allowedMerchantIds = array_merge($allowedMerchantIds, Merchant\Preferences::MID_ENDURANCE);
 
         $cardMerchant = $this->getMerchantId();
 
@@ -468,7 +485,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicExpiryMonthAttribute(array & $array)
     {
-        if ($this->issetPublicExpiryAllowed() === false)
+        if ($this->isPublicExpiryAllowed() === false)
         {
             unset($array[self::EXPIRY_MONTH]);
         }
@@ -476,7 +493,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicExpiryYearAttribute(array & $array)
     {
-        if ($this->issetPublicExpiryAllowed() === false)
+        if ($this->isPublicExpiryAllowed() === false)
         {
             unset($array[self::EXPIRY_YEAR]);
         }
@@ -497,7 +514,7 @@ class Entity extends Base\PublicEntity
         return (int) $this->getAttributeFromArray(self::EXPIRY_YEAR);
     }
 
-    protected function issetPublicExpiryAllowed()
+    protected function isPublicExpiryAllowed()
     {
         $cardMerchant = $this->getMerchantId();
 
@@ -505,6 +522,8 @@ class Entity extends Base\PublicEntity
 
         $auth = $app['basicauth'];
 
+        // Email Subject: Re: Managing NEFT transfers with Razorpay Virtual Accounts
+        // https://razorpay.slack.com/archives/C3GF5LWJK/p1525965476000128
         $allowed = (($auth->isPrivilegeAuth() === false) and
                     (in_array($cardMerchant, Merchant\Preferences::MID_ENDURANCE, true) === true));
 
@@ -697,5 +716,35 @@ class Entity extends Base\PublicEntity
         }
 
         return $dummyCvv;
+    }
+
+    public function getDummyCardArray(string $network = null)
+    {
+        $card = [
+            Card\Entity::CVV          => self::DUMMY_CVV,
+            Card\Entity::NAME         => self::DUMMY_NAME,
+            Card\Entity::EXPIRY_MONTH => self::DUMMY_EXPIRY_MONTH,
+            Card\Entity::EXPIRY_YEAR  => self::DUMMY_EXPIRY_YEAR,
+        ];
+
+        switch ($network)
+        {
+            case Card\Network::MC:
+                $card[Card\Entity::NUMBER] = self::DUMMY_MASTERCARD_CARD;
+                break;
+
+            case Card\Network::VISA:
+                $card[Card\Entity::NUMBER] = self::DUMMY_VISA_CARD;
+                break;
+
+            case Card\Network::RUPAY:
+                $card[Card\Entity::NUMBER] = self::DUMMY_RUPAY_CARD;
+                break;
+
+            default:
+                break;
+        }
+
+        return $card;
     }
 }

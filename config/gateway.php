@@ -37,11 +37,13 @@ return [
         'netbanking_rbl',
         'netbanking_indusind',
         'netbanking_pnb',
+        'netbanking_obc',
         'netbanking_csb',
         'paytm',
         'sharp',
         'upi_icici',
         'upi_mindgate',
+        'upi_hulk',
         'upi_sbi',
         'upi_npci',
         'aeps_icici',
@@ -80,6 +82,7 @@ return [
     'mock_netbanking_rbl'         => env('NETBANKING_RBL_MOCK'),
     'mock_netbanking_indusind'    => env('NETBANKING_INDUSIND_MOCK'),
     'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
+    'mock_netbanking_obc'         => env('NETBANKING_OBC_MOCK'),
     'mock_netbanking_csb'         => env('NETBANKING_CSB_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
     'mock_blade'                  => env('BLADE_MOCK'),
@@ -93,6 +96,7 @@ return [
     'mock_upi_mindgate'           => env('UPI_MINDGATE_MOCK'),
     'mock_upi_sbi'                => env('UPI_SBI_MOCK'),
     'mock_upi_icici'              => env('UPI_ICICI_MOCK'),
+    'mock_upi_hulk'               => env('UPI_HULK_MOCK'),
     'mock_upi_npci'               => env('UPI_NPCI_MOCK'),
     'mock_aeps_icici'             => env('AEPS_ICICI_MOCK'),
     'mock_wallet_freecharge'      => env('FREECHARGE_MOCK'),
@@ -121,8 +125,6 @@ return [
         'test_terminal_id'     => env('HITACHI_GATEWAY_TEST_TERMINAL_ID'),
         'test_hash_secret'     => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
         'test_hash_secret2'    => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
-        'bharatqr_terminal_id' => env('HITACHI_GATEWAY_BHARAT_QR_TERMINAL_ID'),
-        'bharatqr_merchant_id' => env('HITACHI_GATEWAY_BHARAT_QR_MERCHANT_ID'),
         'bharatqr_salt'        => env('HITACHI_GATEWAY_BHARAT_QR_SALT'),
     ],
 
@@ -185,8 +187,6 @@ return [
         'test_merchant_id'            => env('ATOM_TEST_MERCHANT_ID'),
         'test_secure_password'        => env('ATOM_TEST_SECURE_PASSWORD'),
         'test_access_code'            => env('ATOM_TEST_ACCESS_CODE'),
-        'live_authorize_hash_secret'  => env('ATOM_GATEWAY_LIVE_AUTHORIZE_HASH_SECRET'),
-        'live_callback_hash_secret'   => env('ATOM_GATEWAY_LIVE_CALLBACK_HASH_SECRET'),
     ],
 
     'blade' => [
@@ -233,10 +233,11 @@ return [
             'merchant_id'       => env('FSS_BOB_GATEWAY_MERCHANT_ID', '123'),
             'terminal_password' => env('FSS_BOB_GATEWAY_TERMINAL_PASSWORD', 'password'),
         ],
-        'fss' => [
-            'merchant_id'      => env('FSS_GATEWAY_MERCHANT_ID', '144'),
-            'test_hash_secret' => env('FSS_GATEWAY_TEST_HASH_SECRET', 'secret'),
-            'bank_code'        => env('FSS_GATEWAY_BANK_CODE', '12345678'),
+        'fss'  => [
+            'merchant_id'       => env('FSS_GATEWAY_MERCHANT_ID', '144'),
+            'test_hash_secret'  => env('FSS_GATEWAY_TEST_HASH_SECRET', 'secret'),
+            'bank_code'         => env('FSS_GATEWAY_BANK_CODE', '12345678'),
+            'terminal_password' => env('FSS_GATEWAY_TERMINAL_PASSWORD', 'password'),
         ]
     ],
 
@@ -258,7 +259,6 @@ return [
         'live_merchant_id'       => env('UPI_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
         'live_public_key'        => env('UPI_ICICI_LIVE_PUBLIC_KEY'),
         'live_private_key'       => env('UPI_ICICI_LIVE_PRIVATE_KEY'),
-        'bharatqr_merchant_id'   => env('UPI_ICICI_BHARATQR_KEY'),
     ],
 
     'aeps_icici' => [
@@ -295,6 +295,11 @@ return [
         'gateway_encryption_key' => env('UPI_MINDGATE_GATEWAY_SECURE_SECRET'),
     ],
 
+    'upi_hulk' => [
+        'test_terminal_password'    => env('UPI_HULK_GATEWAY_TEST_SECURE_SECRET'),
+        'gateway_terminal_password' => env('UPI_HULK_GATEWAY_SECURE_SECRET'),
+    ],
+
     'upi_sbi' => [
         'merchant_id'       => env('UPI_MINDGATE_SBI_MERCHANT_ID'),
         'hash_secret'       => env('UPI_MINDGATE_SBI_HASH_SECRET'),
@@ -325,11 +330,11 @@ return [
     ],
 
     'wallet_airtelmoney' => [
-        'test_hash_secret' => env('AIRTELMONEY_WALLET_TEST_HASH_SECRET'),
-        'test_merchant_id' => env('AIRTELMONEY_WALLET_TEST_MERCHANT_ID'),
-        'test_end_mid'     => env('AIRTELMONEY_WALLET_TEST_END_MID'),
-        'live_merchant_id' => env('AIRTELMONEY_WALLET_LIVE_MERCHANT_ID'),
-        'live_hash_secret' => env('AIRTELMONEY_WALLET_LIVE_HASH_SECRET'),
+        'test_hash_secret'       => env('AIRTELMONEY_WALLET_TEST_HASH_SECRET'),
+        'test_merchant_id2'      => env('AIRTELMONEY_WALLET_TEST_MERCHANT_ID'),
+        'test_end_merchant_id'   => env('AIRTELMONEY_WALLET_TEST_END_MERCHANT_ID'),
+        'live_merchant_id'       => env('AIRTELMONEY_WALLET_LIVE_MERCHANT_ID'),
+        'live_hash_secret'       => env('AIRTELMONEY_WALLET_LIVE_HASH_SECRET'),
     ],
 
     'wallet_freecharge' => [
@@ -378,6 +383,11 @@ return [
         'test_merchant_id'       => env('NETBANKING_CORPORATION_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'       => env('NETBANKING_CORPORATION_GATEWAY_TEST_HASH_SECRET'),
         'pooling_account_number' => env('KOTAK_NODAL_ACCOUNT_NUMBER'),
+    ],
+
+    'netbanking_obc' => [
+        'test_merchant_id'       => env('NETBANKING_OBC_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'       => env('NETBANKING_OBC_GATEWAY_TEST_HASH_SECRET'),
     ],
 
     'netbanking_kotak' => [
@@ -463,19 +473,12 @@ return [
     ],
 
     'netbanking_csb' => [
-        'test_merchant_id'    => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),
-        'test_merchant_id_2'  => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID_2'),
-        'test_hash_secret'    => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id_2' => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id'   => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID_2'),
+        'test_hash_secret'   => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
     ],
 
     'sharp' => [
-    ],
-
-    'bharat_qr' => [
-        'visa_acquirer_code'       => env('BHARAT_QR_VISA_ACQUIRER_CODE'),
-        'mastercard_acquirer_code' => env('BHARAT_QR_MASTERCARD_ACQUIRER_CODE'),
-        'rupay_acquirer_code'      => env('BHARAT_QR_RUPAY_ACQUIRER_CODE'),
-        'identifier_padding'       => env('BHARAT_QR_IDENTIFIER_PADDING'),
     ],
 
     'proxy_enabled' => env('PROXY_ENABLED'),

@@ -133,6 +133,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_ID);
     }
 
+    /**
+     * Returns mapped country name. Note that country attribute actually holds code.
+     * @return string|null
+     */
+    public function getCountryName()
+    {
+        $code = $this->getAttribute(self::COUNTRY);
+
+        return $code !== null ? Constants\Country::getCountryNameByCode($code) : null;
+    }
+
+    public function getCountryNameFormatted()
+    {
+        $name = $this->getCountryName();
+
+        return $name !== null ? ucwords($name) : null;
+    }
+
     // ----------------------------------- END GETTERS -----------------------------------
 
     // ----------------------------------- SETTERS -----------------------------------
@@ -196,4 +214,18 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------------------- END RELATIONS -----------------------------------
+
+    public function formatAsText(string $delimiter = PHP_EOL): string
+    {
+        return Utility::formatAddressAsText(
+            [
+                self::LINE1     => $this->getAttribute(self::LINE1),
+                self::LINE2     => $this->getAttribute(self::LINE2),
+                self::ZIPCODE   => $this->getAttribute(self::ZIPCODE),
+                self::CITY      => $this->getAttribute(self::CITY),
+                self::STATE     => $this->getAttribute(self::STATE),
+                self::COUNTRY   => $this->getCountryNameFormatted(),
+            ],
+            $delimiter);
+    }
 }

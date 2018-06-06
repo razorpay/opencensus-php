@@ -641,6 +641,36 @@ class OrderTest extends TestCase
         $this->fixtures->merchant->disableMobikwik();
     }
 
+    public function testPaymentWithFailedOfferCheckOnInternational()
+    {
+        $offer = $this->fixtures->create('offer', [
+            'starts_at' => Carbon::now(Timezone::IST)->subMonth()->timestamp,
+            'international' => true,
+            'error_message' => 'Offer applicable only on international cards.'
+        ]);
+
+        $order = $this->fixtures->create('order', [
+            'merchant_id' => '10000000000000',
+            'offer_id' => $offer->getId(),
+            'amount' => 1000,
+        ]);
+
+        $this->mockTokenex();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment['card']['number'] = '4012010000000007';
+        $this->doAuthPayment($payment);
+    }
+
     public function testPaymentWithFailedOfferWithCustomErrorMessage()
     {
         $this->fixtures->merchant->enableMobikwik();

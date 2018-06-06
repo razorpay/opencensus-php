@@ -12,7 +12,6 @@ use RZP\Exception;
 use RZP\Jobs\EsSync;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
-use RZP\Jobs\DispatchRouter;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\EsRepository;
@@ -611,14 +610,8 @@ class Repository extends \Razorpay\Spine\Repository
 
         try
         {
-            $job = (new EsSync(
-                        $mode,
-                        $action,
-                        $entity->getEntity(),
-                        $entity->getId()
-                    ))->delay(self::ES_JOB_DELAY);
-
-            (new DispatchRouter)->dispatchOn($job, DispatchRouter::ES_V2);
+            // We do delayed dispatch here to account for time taken in db transaction(with numbers of queries) commit.
+            EsSync::dispatch($mode, $action, $entity->getEntity(), $entity->getId())->delay(self::ES_JOB_DELAY);
         }
         catch (\Throwable $e)
         {

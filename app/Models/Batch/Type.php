@@ -32,6 +32,13 @@ class Type
 
     const SUB_MERCHANT          = 'sub_merchant';
 
+    const DIRECT_DEBIT          = 'direct_debit';
+
+    /**
+     * This type is used to create short urls in bulk async using elfin (hence gimli) service via api
+     */
+    const ELFIN                 = 'elfin';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -65,7 +72,9 @@ class Type
         self::EMANDATE,
         self::PAYOUT,
         self::SUB_MERCHANT,
+        self::DIRECT_DEBIT,
         self::RECURRING_CHARGE,
+        self::ELFIN,
     ];
 
     public static function exists(string $type)

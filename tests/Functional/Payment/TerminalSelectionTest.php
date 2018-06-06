@@ -711,6 +711,9 @@ class TerminalSelectionTest extends TestCase
 
     public function testSecuritiesMerchantTerminalSelection()
     {
+        // Removed ICICI from billdesk tpv
+        $this->markTestSkipped();
+
         $this->fixtures->merchant->enableTPV();
 
         $this->fixtures->create('terminal:shared_billdesk_terminal',
@@ -844,6 +847,9 @@ class TerminalSelectionTest extends TestCase
 
     public function testCorporateMerchantsSharedBilldeskICICI()
     {
+        // Skipping this test as removing ICICI from billdesk.
+        $this->markTestSkipped();
+
         $this->fixtures->merchant->editCategory2('corporate');
 
         $this->fixtures->create('terminal:shared_billdesk_terminal',
@@ -888,6 +894,9 @@ class TerminalSelectionTest extends TestCase
 
     public function testCorporateMerchantsBilldeskCorporateICICISelection()
     {
+        // Skipping test as removing icici from billdesk
+        $this->markTestSkipped();
+
         // Corporate Enabled Icici terminal for Billdesk
         $this->fixtures->create('terminal:shared_billdesk_terminal',
              [
@@ -1363,5 +1372,43 @@ class TerminalSelectionTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($mgTerminal->getId(), $payment['terminal_id']);
+    }
+
+    public function testUpiFilterWithBharatQrFilter()
+    {
+        $mgTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal', ['gateway' => 'upi_mindgate']);
+
+        $this->fixtures->merchant->enableUpi();
+
+        $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($mgTerminal->getId(), $payment['terminal_id']);
+    }
+
+    public function testHitachiFilterWithBharatQrFilter()
+    {
+        $this->mockTokenex();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $hitachiTerminal = $this->fixtures->create('terminal:shared_hitachi_terminal');
+
+        $this->fixtures->create('terminal:bharat_qr_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '5257834104683413';
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($hitachiTerminal->getId(), $payment['terminal_id']);
     }
 }

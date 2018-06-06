@@ -33,6 +33,14 @@ class Converter extends Base\Core
         'ref'  => 'reference',
     ];
 
+    const NORMALIZED_HEADER_GATEWAYS = [
+        RequestProcessor\Base::BILLDESK,
+        RequestProcessor\Base::FREECHARGE,
+        RequestProcessor\Base::HDFC,
+        RequestProcessor\Base::MOBIKWIK,
+        RequestProcessor\Base::PAYZAPP
+    ];
+
     const MAX_SHEETS_ALLOWED = 3;
     const ROW_CHUNK_SIZE = 3000;
 
@@ -111,15 +119,7 @@ class Converter extends Base\Core
                 'gateway' => get_called_class(),
         ]);
 
-        //
-        // For the current implementation to work the way it is expected to,
-        // force_sheets_collection MUST be set to false. We are loading sheet
-        // by sheet in this particular implementation and hence would want
-        // an array of rows to be returned rather than an array of sheets.
-        //
-        Config::set('excel.import.force_sheets_collection', false);
-
-        Config::set('excel.import.startRow', $startRow);
+        $this->setConfigOptions($startRow);
 
         $allSheetsContent = [];
 
@@ -177,10 +177,11 @@ class Converter extends Base\Core
     }
 
     public function convertCsvToArray(
-        $fileDetails,
-        $columnHeaders = [],
+        array $fileDetails,
+        array $columnHeaders = [],
         array $linesToSkip = [],
-        $delimiter = ',')
+        string $delimiter = ',',
+        string $gateway): array
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
@@ -237,6 +238,16 @@ class Converter extends Base\Core
                             'The number of columns in the row does not match the column headers count.',
                             ['file_details' => $fileDetails, 'column_headers' => $columnHeaders, 'row' => $row]
                         );
+                    }
+
+                    /**
+                     * Enabling header normalization for limited gateways for now.
+                     * Will migrate other gateways gradually.
+                     */
+                    if(in_array($gateway,self::NORMALIZED_HEADER_GATEWAYS, true) === true)
+                    {
+                        //Normalizes the header values of file
+                        $columnHeaders = $this->normalizeHeaders($columnHeaders);
                     }
 
                     // Combines the columnHeaders(keys) with the row(values).
@@ -532,5 +543,46 @@ class Converter extends Base\Core
         }
 
         return $normalized;
+    }
+
+    /**
+     * Sets the config for Maatwebsite Excel reader
+     * @param int $startRow
+     */
+    protected function setConfigOptions(int $startRow)
+    {
+        //
+        // For the current implementation to work the way it is expected to,
+        // force_sheets_collection MUST be set to false. We are loading sheet
+        // by sheet in this particular implementation and hence would want
+        // an array of rows to be returned rather than an array of sheets.
+        //
+        Config::set('excel.import.force_sheets_collection', false);
+
+        //
+        // Default setting of headers in Excel.php is `slugged` but that is being
+        // overridden in FileHandlerTrait to `original` while parsing other batch files.
+        // In recon files, we strictly require slugged headers.
+        // Because of the old config values (if not reset), subsequent parsing of recon excel files fails
+        // with the error of unable to find expected headers in the file.
+        // This is temporary fix. TODO : Fix the same with refactored code (https://razorpay.atlassian.net/browse/PP-36)
+        //
+        Config::set('excel.import.heading', 'slugged');
+
+        Config::set('excel.import.startRow', $startRow);
+
+        //
+        // Calling LaravelExcelReader's setSelectedSheets() and setSelectedSheetIndices() to
+        // reset selected sheet names and indices here, as its not happening in LaravelExcelReader.
+        // If previous run has set some sheet name in selectSheets(), its retaining that sheet name
+        // until it is replaced with new sheet name.
+        // Causes issue if Axis file get parses first as it sets the sheet name to `Maestro Refund` and then
+        // reader tries to search index for `Maestro Refund` at the time of next recon's file parsing too.
+        // Throws exception of `Your requested sheet index: -1 is out of bounds` in such case.
+        // Its Maatwebsite issue, that's why calling in this function only.
+        //
+        $this->app['excel.reader']->setSelectedSheets([]);
+
+        $this->app['excel.reader']->setSelectedSheetIndices([]);
     }
 }

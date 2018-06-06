@@ -89,6 +89,23 @@ class Handler extends BaseHandler
         return $result['ObjectURL'];
     }
 
+    public function delete(array $bucketConfig, $key)
+    {
+        if ($this->config['mock'] === true)
+        {
+            $filePath = storage_path(Store::STORAGE_DIRECTORY) . $key;
+            unlink($filePath);
+            return;
+        }
+
+        $s3 = self::getClient($bucketConfig['region']);
+
+        return $s3->deleteObject([
+            'Bucket'    =>  $bucketConfig['name'],
+            'Key'       =>  $key,
+        ]);
+    }
+
     /**
      * Download File from AWS and stores in the $filePath provided
      *

@@ -79,7 +79,7 @@ trait AttemptTrait
 
         $this->assertEntitiesAfterInitiateTransfer($channel, $purpose, $sourceType, $setlCount);
 
-        $mailClass = 'RZP\\Mail\\Settlement\\' . ucfirst($channel) . 'Settlement';
+        $mailClass = 'RZP\\Mail\\Settlement\\Settlement';
 
         Mail::assertQueued($mailClass);
 
@@ -127,7 +127,7 @@ trait AttemptTrait
                 return $this->createPayoutData($channel, $purpose, $sourceCount);
 
             default:
-                throw Exception\LogicException('Invalid source type: ' . $sourceType);
+                throw new Exception\LogicException('Invalid source type: ' . $sourceType);
         }
     }
 

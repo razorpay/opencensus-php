@@ -3,6 +3,7 @@
 namespace RZP\Models\Invoice;
 
 use Carbon\Carbon;
+use Lib\Gstin;
 use RZP\Constants\Timezone;
 
 use RZP\Base;
@@ -78,6 +79,7 @@ class Validator extends Base\Validator
         Entity::BILLING_END         => 'filled|epoch',
         Entity::DRAFT               => 'filled|boolean',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
+        Entity::SUPPLY_STATE_CODE   => 'filled|string|custom',
         Entity::CALLBACK_URL        => 'filled|url',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|filled|string|in:get',
     ];
@@ -110,6 +112,7 @@ class Validator extends Base\Validator
         Entity::BILLING_END         => 'filled|epoch',
         Entity::DRAFT               => 'filled|boolean',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
+        Entity::SUPPLY_STATE_CODE   => 'filled|string|custom',
         Entity::CALLBACK_URL        => 'filled|url',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|filled|string|in:get',
     ];
@@ -137,6 +140,7 @@ class Validator extends Base\Validator
         Entity::BILLING_END         => 'filled|epoch',
         Entity::DRAFT               => 'filled|in:0',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
+        Entity::SUPPLY_STATE_CODE   => 'filled|string|custom',
         Entity::CALLBACK_URL        => 'filled|url',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|filled|string|in:get',
     ];
@@ -160,6 +164,7 @@ class Validator extends Base\Validator
         Entity::BILLING_END         => 'filled|epoch',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
         Entity::DRAFT               => 'filled|boolean',
+        Entity::SUPPLY_STATE_CODE   => 'sometimes|nullable|custom',
         Entity::CALLBACK_URL        => 'sometimes|url|nullable',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|sometimes|string|in:get|nullable',
     ];
@@ -188,8 +193,8 @@ class Validator extends Base\Validator
      */
     protected static $editCustomerDetailsRules = [
         Customer\Entity::NAME                => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:50|nullable',
-        Customer\Entity::EMAIL               => 'sometimes|email',
-        Customer\Entity::CONTACT             => 'sometimes|contact_syntax',
+        Customer\Entity::EMAIL               => 'sometimes|nullable|email',
+        Customer\Entity::CONTACT             => 'sometimes|nullable|contact_syntax',
         Customer\Entity::GSTIN               => 'sometimes|nullable|gstin',
         Customer\Entity::BILLING_ADDRESS_ID  => 'sometimes|public_id|size:19|nullable',
         Customer\Entity::SHIPPING_ADDRESS_ID => 'sometimes|public_id|size:19|nullable',
@@ -352,6 +357,17 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateSupplyStateCode($attribute, $value)
+    {
+        if (Gstin::isValidStateCode($value) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Supply state code is not valid',
+                Entity::SUPPLY_STATE_CODE,
+                [Entity::SUPPLY_STATE_CODE => $value]);
+        }
+    }
+
     /**
      * Does few validations around merchant data to decide if invoice should
      * allowed to be created or not.
@@ -362,54 +378,13 @@ class Validator extends Base\Validator
      */
     public function validateMerchantSpecificData()
     {
-        $invoice = $this->entity;
+        $invoice  = $this->entity;
         $merchant = $invoice->merchant;
 
-        $this->validateMerchantHasKeys($merchant);
         $this->validateMerchantIsNotFeeBearer($merchant, $invoice);
     }
 
-    /**
-     * Validates if merchant has API keys generated in advance before using
-     * invoices.
-     * This is done because hosted page (invoice payment) will not load
-     * and will throw an exception if Invoice gets created without
-     * merchant having API keys.
-     *
-     * @param Merchant\Entity $merchant
-     *
-     * @throws BadRequestException
-     */
-    protected function validateMerchantHasKeys(Merchant\Entity $merchant)
-    {
-        //
-        // Validates if merchant has API keys generated in advance before using
-        // invoices.
-        // This is done because hosted page (invoice payment) will not load
-        // and will throw an exception if Invoice gets created without
-        // merchant having API keys.
-        //
-
-        $keys = $merchant->keys->filter(
-                    function($key, $index)
-                    {
-                        return ($key->isExpiredOrExpiring() === false);
-                    });
-
-        if ($keys->count() === 0)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_API_KEY_NOT_PRESENT,
-                null,
-                [
-                    'merchant_id' => $merchant->getId(),
-                ]);
-        }
-    }
-
-    protected function validateMerchantIsNotFeeBearer(
-        Merchant\Entity $merchant,
-        Entity $invoice)
+    protected function validateMerchantIsNotFeeBearer(Merchant\Entity $merchant, Entity $invoice)
     {
         //
         // If merchant is a customer-fee-bearer client, for now don't allow

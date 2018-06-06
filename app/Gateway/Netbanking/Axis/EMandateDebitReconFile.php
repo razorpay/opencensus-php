@@ -15,31 +15,37 @@ class EMandateDebitReconFile extends BaseEMandateDebitReconFile
     // Status codes
     // Keep these values in lowercase to do a case-insensitive check
     const STATUS_SUCCESS = 'success';
-    const STATUS_FAILURE = 'return';
+    const STATUS_FAILURE = 'rejected';
 
     // Headings
-    const HEADING_PAYMENT_ID        = 'INVOICE_NO';
-    const HEADING_DEBIT_DATE        = 'BILL_DEBIT_DATE';
-    const HEADING_MERCHANT_ID       = 'COMPANY_CODE';
-    const HEADING_BANK_REF_NUMBER   = 'CUSTOMER_UID';
-    const HEADING_CUSTOMER_NAME     = 'CUSTOMER_NAME';
-    const HEADING_DEBIT_ACCOUNT     = 'DEBIT_ACCOUNT';
-    const HEADING_DEBIT_AMOUNT      = 'DEBIT_BILL_AMOUNT';
-    const HEADING_STATUS            = 'STATUS';
-    const HEADING_REMARK            = 'REMARKS';
+    const HEADING_PAYMENT_ID        = 'Txn Reference';
+    const HEADING_DEBIT_DATE        = 'Execution Date';
+    const HEADING_MERCHANT_ID       = 'Originator ID';
+    const HEADING_BANK_REF_NUMBER   = 'Mandate Ref/UMR';
+    const HEADING_CUSTOMER_NAME     = 'Customer Name';
+    const HEADING_DEBIT_ACCOUNT     = 'Customer Bank Account';
+    const HEADING_DEBIT_AMOUNT      = 'Paid In Amount';
+    const HEADING_STATUS            = 'Status';
+    const HEADING_REMARK            = 'Return reason';
 
     protected $gateway = Payment\Gateway::NETBANKING_AXIS;
 
     protected $allowedStatuses = [
         self::STATUS_SUCCESS,
-        self::STATUS_FAILURE
+        self::STATUS_FAILURE,
     ];
 
     protected function updatePaymentEntities(array $row)
     {
-        // Trimming the values, since w're getting these values from excel sheet
-        // and might contain spaces at either ends of the values
-        $row = array_map('trim', $row);
+        //
+        // Trimming the values, since w're getting these values from excel
+        // sheet and might contain spaces at either ends of the values
+        //
+        $row = array_map(
+            function($value) use ($row)
+            {
+                return trim(trim(str_replace("'", '', $value)));
+            }, $row);
 
         $gatewayPayment = $this->updateGatewayPayment($row);
 

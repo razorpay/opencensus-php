@@ -40,19 +40,19 @@ class Server extends Base\Mock\Server
         $data = [
             'F002'       => '423156XXXXXX1234',
             'F003'       => '26000',
-            'F004'       => '2.00',
+            'F004'       => '000000000200',
             'F011'       => 'abc123',
             'F012'       => '120000',
             'F013'       => '1212',
             'F037'       => 'somethingabc',
             'F038'       => 'randoma',
             'F039'       => '0',
-            'F041'       => 'abc',
-            'F042'       => 'random',
+            'F041'       => 'abcd_hitachi_bharat',
+            'F042'       => 'abcd_hitachi_bharat',
             'F043'       => 'RazorpayBangalore',
             'F102'       => 'paymentId',
             'PurchaseID' => $qrCodeId,
-            'SenderName' => 'Razorpay',
+            'SenderName' => 'Random Name',
         ];
 
         $hash = $this->getGatewayInstance()->getStringToHashForBharatQr($data);

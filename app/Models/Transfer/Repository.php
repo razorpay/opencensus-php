@@ -4,6 +4,7 @@ namespace RZP\Models\Transfer;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Settlement;
 
 class Repository extends Base\Repository
 {
@@ -14,8 +15,9 @@ class Repository extends Base\Repository
     ];
 
     protected $entityFetchParamRules = [
-        Entity::RECIPIENT           => 'sometimes|string|max:20',
-        self::EXPAND . '.*'         => 'filled|string|in:recipient_settlement,',
+        Entity::RECIPIENT               => 'sometimes|string|max:20',
+        Entity::RECIPIENT_SETTLEMENT_ID => 'filled|string|public_id',
+        self::EXPAND . '.*'             => 'filled|string|in:recipient_settlement,',
     ];
 
     protected $appFetchParamRules = [
@@ -57,5 +59,14 @@ class Repository extends Base\Repository
         Entity::stripSignWithoutValidation($toId);
 
         $query->where(Entity::TO_ID, $toId);
+    }
+
+    protected function addQueryParamRecipientSettlementId($query, $params)
+    {
+        $id = $params[Entity::RECIPIENT_SETTLEMENT_ID];
+
+        Settlement\Entity::verifyIdAndStripSign($id);
+
+        $query->where(Entity::RECIPIENT_SETTLEMENT_ID, $id);
     }
 }

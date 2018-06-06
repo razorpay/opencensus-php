@@ -230,6 +230,72 @@ return [
         ],
     ],
 
+    'testCreateInvoiceWithDefinedDisplayName' => [
+        'request'  => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'customer_id'       => 'cust_100000customer',
+                'line_items'        => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                    ]
+                ],
+                'supply_state_code' => '29',
+                'currency'          => 'INR',
+                'date'              => 1480666664,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'       => 'issued',
+                'sms_status'   => 'pending',
+                'email_status' => 'pending',
+                'date'         => 1480666664,
+                'view_less'    => true,
+                'amount'       => 100000
+            ],
+        ],
+    ],
+
+
+    'testCreateInvoiceWithNestedCustomerIdAndDetails' => [
+        'request'  => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'customer'   => [
+                    'id'    => 'cust_100001customer',
+                    'name'  => 'Test Override',
+                    'email' => 'testoverride@razorpay.com',
+                ],
+                'line_items' => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                    ]
+                ],
+                'currency'   => 'INR',
+                'date'       => 1480666664,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id'      => 'cust_100001customer',
+                'customer_details' => [
+                    'id'      => 'cust_100001customer',
+                    'name'    => 'Test Override',
+                    'email'   => 'testoverride@razorpay.com',
+                    'contact' => '1234567890',
+                ],
+                'status'           => 'issued',
+            ],
+        ],
+    ],
+
     'testCreateLinkWithSource' => [
         'request' => [
             'url' => '/invoices',
@@ -448,12 +514,14 @@ return [
                         'description'   => 'Some item description',
                         'amount'        => 100000,
                         'quantity'      => 5,
+                        'tax_rate'      => 120,
                     ],
                     [
-                        'name' => 'Some item name',
+                        'name'        => 'Some item name',
                         'description' => 'Some item description',
-                        'amount' => 100000,
-                        'quantity' => 1,
+                        'amount'      => 100000,
+                        'quantity'    => 1,
+                        'tax_rate'    => null,
                     ],
                 ],
                 'currency'     => 'INR',
@@ -1153,15 +1221,16 @@ return [
     // ------------------------------------------------------------
 
     'testUpdateDraftInvoiceWithAmount' => [
-        'request' => [
-            'url'       => '/invoices/inv_1000000invoice',
-            'method'    => 'patch',
-            'content'   => [
-                'amount' => 1000,
+        'request'   => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'amount'            => 1000,
+                'supply_state_code' => null,
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'amount can be only sent for ecod or link types.',
@@ -1457,24 +1526,26 @@ return [
                 'receipt'      => 'inv_receipt_0001',
                 'customer'  => [
                     'name'  => 'new customer',
-                    'email' => 'new@razorpay.com',
+                    'email' => null,
                     'gstin' => '29CFZPR4093Q1ZA',
                 ],
             ],
         ],
         'response' => [
             'content' => [
-                'id'                   => 'inv_1000000invoice',
-                'entity'               => 'invoice',
-                'receipt'              => 'inv_receipt_0001',
-                'customer_details'     => [
+                'id'               => 'inv_1000000invoice',
+                'entity'           => 'invoice',
+                'receipt'          => 'inv_receipt_0001',
+                'status'           => 'draft',
+                // On update of basic attributes, customer reference will be intact, only local copy gets updated
+                'customer_id'      => 'cust_100000customer',
+                'customer_details' => [
                     'name'            => 'new customer',
-                    'email'           => 'new@razorpay.com',
+                    'email'           => null,
                     'contact'         => '1234567890',
                     'gstin'           => '29CFZPR4093Q1ZA',
                     'billing_address' => null,
                 ],
-                'status'               => 'draft',
             ],
         ],
     ],
@@ -1502,6 +1573,41 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateDraftInvoiceWithNestedCustomerIdAndDetails' => [
+        'request'  => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'customer'   => [
+                    'id'    => 'cust_100000customer',
+                    'name'  => 'Test Override',
+                    'email' => 'testoverride@razorpay.com',
+                ],
+                'line_items' => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                    ]
+                ],
+                'currency'   => 'INR',
+                'date'       => 1480666664,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id'      => 'cust_100000customer',
+                'customer_details' => [
+                    'id'      => 'cust_100000customer',
+                    'name'    => 'Test Override',
+                    'email'   => 'testoverride@razorpay.com',
+                    'contact' => '1234567890',
+                ],
+                'status'           => 'issued',
+            ],
         ],
     ],
 
@@ -1595,6 +1701,57 @@ return [
         ],
     ],
 
+    'testUpdateDraftInvoiceWithSameBillingAndShippingAddressIds' => [
+        'request'  => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'receipt'  => 'inv_receipt_0001',
+                'customer' => [
+                    'name'                => 'new customer',
+                    'email'               => 'new@razorpay.com',
+                    'billing_address_id'  => 'addr_1000000address',
+                    'shipping_address_id' => 'addr_1000000address',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'inv_1000000invoice',
+                'entity'           => 'invoice',
+                'receipt'          => 'inv_receipt_0001',
+                'customer_details' => [
+                    'name'             => 'new customer',
+                    'email'            => 'new@razorpay.com',
+                    'contact'          => '1234567890',
+                    'billing_address'  => [
+                        'id'      => 'addr_1000000address',
+                        'type'    => 'billing_address',
+                        'primary' => false,
+                        'line1'   => 'some line one',
+                        'line2'   => 'some line two',
+                        'zipcode' => '560078',
+                        'city'    => 'Bangalore',
+                        'state'   => 'Karnataka',
+                        'country' => 'in',
+                    ],
+                    'shipping_address' => [
+                        'id'      => 'addr_1000000address',
+                        'type'    => 'billing_address',
+                        'primary' => false,
+                        'line1'   => 'some line one',
+                        'line2'   => 'some line two',
+                        'zipcode' => '560078',
+                        'city'    => 'Bangalore',
+                        'state'   => 'Karnataka',
+                        'country' => 'in',
+                    ],
+                ],
+                'status'           => 'draft',
+            ],
+        ],
+    ],
+
     'testUpdateDraftInvoiceWithInvalidCustomerBillingAddressId' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
@@ -1637,11 +1794,37 @@ return [
                 'entity'           => 'invoice',
                 'customer_id'      => null,
                 'customer_details' => [
+                    'id'      => null,
                     'name'    => null,
                     'email'   => null,
                     'contact' => null,
                 ],
                 'status' => 'draft',
+            ],
+        ],
+    ],
+
+    'testUpdateDraftInvoiceUnsetCustomerWithNestedCustomerId' => [
+        'request'  => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'customer' => [
+                    'id' => null,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'inv_1000000invoice',
+                'entity'           => 'invoice',
+                'customer_id'      => null,
+                'customer_details' => [
+                    'name'    => null,
+                    'email'   => null,
+                    'contact' => null,
+                ],
+                'status'           => 'draft',
             ],
         ],
     ],
@@ -2859,14 +3042,17 @@ return [
                     [
                         'id'   => 'inv_1000003invoice',
                         'type' => 'ecod',
+                        'supply_state_code' => '29',
                     ],
                     [
                         'id'   => 'inv_1000002invoice',
                         'type' => 'ecod',
+                        'supply_state_code' => '29',
                     ],
                     [
                         'id'   => 'inv_1000001invoice',
                         'type' => 'link',
+                        'supply_state_code' => '29',
                     ],
                 ]
             ],
@@ -3398,8 +3584,8 @@ return [
                     'date'                  => null,
                     'terms'                 => null,
                     'partial_payment'       => false,
-                    'gross_amount'          => null,
-                    'tax_amount'            => null,
+                    'gross_amount'          => 100000,
+                    'tax_amount'            => 0,
                     'amount'                => 100000,
                     'amount_paid'           => 0,
                     'amount_due'            => 100000,
@@ -3460,8 +3646,8 @@ return [
                     'order_id'        => 'order_100000000order',
                     'status'          => 'partially_paid',
                     'partial_payment' => true,
-                    'gross_amount'    => null,
-                    'tax_amount'      => null,
+                    'gross_amount'    => 100000,
+                    'tax_amount'      => 0,
                     'amount'          => 100000,
                     'amount_paid'     => 60000,
                     'amount_due'      => 40000,
@@ -3510,8 +3696,8 @@ return [
                     'order_id'        => 'order_100000000order',
                     'status'          => 'partially_paid',
                     'partial_payment' => true,
-                    'gross_amount'    => null,
-                    'tax_amount'      => null,
+                    'gross_amount'    => 100000,
+                    'tax_amount'      => 0,
                     'amount'          => 100000,
                     'amount_paid'     => 60000,
                     'amount_due'      => 40000,
@@ -3594,8 +3780,8 @@ return [
                     'order_id'        => 'order_100000000order',
                     'status'          => 'paid',
                     'partial_payment' => true,
-                    'gross_amount'    => null,
-                    'tax_amount'      => null,
+                    'gross_amount'    => 100000,
+                    'tax_amount'      => 0,
                     'amount'          => 100000,
                     'amount_paid'     => 100000,
                     'amount_due'      => 0,
@@ -3678,8 +3864,8 @@ return [
                     'order_id'        => 'order_100000000order',
                     'status'          => 'paid',
                     'partial_payment' => false,
-                    'gross_amount'    => null,
-                    'tax_amount'      => null,
+                    'gross_amount'    => 100000,
+                    'tax_amount'      => 0,
                     'amount'          => 100000,
                     'amount_paid'     => 100000,
                     'amount_due'      => 0,

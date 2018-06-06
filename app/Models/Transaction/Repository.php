@@ -180,6 +180,33 @@ class Repository extends Base\Repository
         return $txns;
     }
 
+    public function fetchEntitiesForReconReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap = [])
+    {
+        $setls = (new Settlement\Repository)->fetchBetweenTimestamp($merchantId, $from, $to);
+
+        $setlIds = $setls->modelKeys();
+
+        $query = $this->newQuery();
+
+        $txns = $query->merchantId($merchantId)
+                      ->whereIn(Entity::SETTLEMENT_ID, $setlIds)
+                      ->take($count)
+                      ->skip($skip)
+                      ->latest()
+                      ->get();
+
+        $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source', $entityToRelationFetchMap);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            [
+                'method'    => __METHOD__,
+                'time'      => time(),
+            ]);
+
+        return $txns;
+    }
+
     public function fetchEntitiesForBrokerReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap)
     {
         $txns = $this->newQuery()
@@ -627,78 +654,34 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchFeesAndTaxForTransactionsByType(
+    /**
+     * calcualtes the sum of `fee` and `tax` of all the transaction created for a merchant in given time frame.
+     * Conciders only transactions whose type is not in `IGNORE_ENTITIES_FROM_MERCHANT_INVOICE`
+     *
+     * @param string $merchantId
+     * @param int    $start
+     * @param int    $end
+     *
+     * @return mixed
+     */
+    public function fetchFeesAndTaxForTransactions(
         string $merchantId,
         int $start,
-        int $end,
-        string $filterType,
-        bool $isCorrection = false)
+        int $end)
     {
-        $merchantIdCol = $this->dbColumn(Entity::MERCHANT_ID);
-
-        $amountCol = $this->dbColumn(Entity::AMOUNT);
-
-        $feeCol = $this->dbColumn(Entity::FEE);
-
-        $taxCol = $this->dbColumn(Entity::TAX);
-
-        $paymentIdCol = $this->repo->payment->dbColumn(Payment\Entity::ID);
-
-        $paymentCardIdCol = $this->repo->payment->dbColumn(Payment\Entity::CARD_ID);
-
-        $startOfMonth = Carbon::createFromTimestamp($start)->startOfMonth()
-                                                           ->getTimestamp();
-
-        $query = $this->newQuery()
-                      ->selectRaw(
-                          'SUM(' . $taxCol .') AS tax, SUM(' . $feeCol . ') AS fee')
-                      ->leftjoin(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdCol)
-                      ->where(function ($query) use ($start, $end, $isCorrection)
-                      {
-                          $capturedAt = $this->repo->payment->dbColumn(Payment\Entity::CAPTURED_AT);
-
-                          $query->where(Entity::TYPE, '=', Type::PAYMENT)
-                                ->whereBetween($capturedAt, [$start, $end]);
-
-                          if ($isCorrection === true)
-                          {
-                              $createdAt = $this->dbColumn(Entity::CREATED_AT);
-
-                              $query->whereBetween($createdAt, [$start, $end]);
-                          }
-                      })
-                      ->orWhere(function($query) use ($startOfMonth, $end)
-                      {
-                          $createdAt = $this->dbColumn(Entity::CREATED_AT);
-
-                          $query->where(Entity::TYPE, '<>', Type::PAYMENT)
-                                ->whereBetween($createdAt, [$startOfMonth, $end]);
-                      })
-                      ->merchantId($merchantId)
-                      ->whereNotIn(Entity::TYPE, Type::IGNORE_ENTITIES_FROM_MERCHANT_INVOICE)
-                      ->groupBy($merchantIdCol);
-
-        switch ($filterType)
-        {
-            case InvoiceType::OTHERS:
-                $query = $query->whereNull($paymentCardIdCol);
-                break;
-
-            case InvoiceType::CARD_LTE_2K:
-                $query = $query->whereNotNull($paymentCardIdCol)
-                               ->where($amountCol, '<=', FeeCalculator::CARD_TAX_CUT_OFF);
-                break;
-
-            case InvoiceType::CARD_GT_2K:
-                $query = $query->whereNotNull($paymentCardIdCol)
-                               ->where($amountCol, '>', FeeCalculator::CARD_TAX_CUT_OFF);
-                break;
-
-            default:
-                throw new Exception\LogicException('Invalid merchant invoice type: ', $filterType);
-        }
-
-        return $query->first();
+        //
+        // There is no variation based on transaction type here.
+        // All the transaction here will be part of `OTHERS` section
+        // Because this will look at only transaction which not in ignore list
+        // And Payment is part of ignore list and only payment has the type difference
+        //
+        return $this->newQuery()
+                    ->selectRaw(
+                        'SUM(' . Entity::TAX .') AS tax, SUM(' . Entity::FEE . ') AS fee')
+                    ->whereBetween(Entity::CREATED_AT, [$start, $end])
+                    ->merchantId($merchantId)
+                    ->whereNotIn(Entity::TYPE, Type::IGNORE_ENTITIES_FROM_MERCHANT_INVOICE)
+                    ->first();
     }
 
     /**
@@ -731,7 +714,7 @@ class Repository extends Base\Repository
      *  inner join `payments` on `entity_id` = `payments`.`id`
      *  inner join `terminals` on `terminal_id` = `terminals`.`id`
      *  where `payments`.`gateway` in (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) and
-     *  `transactions`.`created_at` between ? and ?
+     *  `transactions`.`created_at` between ? and ? and `transactions`.`amount` > 0
      *  group by `date`, `gateway` order by `date` desc
     */
     public function fetchPaymentReconStatusSummary(int $from, int $to, array $gateways): array
@@ -759,37 +742,40 @@ class Repository extends Base\Repository
     /**
      * Raw sql query :
      *
-        select STRAIGHT_JOIN FROM_UNIXTIME(transactions.created_at + 19800,'%D %M, %Y') AS date,
-        COUNT(transactions.entity_id) AS total_count,SUM(transactions.amount)/100 AS total_amount,
-        COUNT(CASE
-        WHEN transactions.reconciled_at is not null
-            THEN transactions.id
-            END) recon_count,
-        COUNT(CASE
-        WHEN transactions.reconciled_at is null
-            THEN transactions.id
-            END) unrecon_count,
-        SUM(CASE
-        WHEN transactions.reconciled_at is not null
-            THEN transactions.amount
-            ELSE 0
-            END)/100 recon_amount,
-        SUM(CASE
-        WHEN transactions.reconciled_at is null
-            THEN transactions.amount
-            ELSE 0
-            END)/100 unrecon_amount,
-        (Case
-        WHEN payments.method in ('card','emi')
-            THEN terminals.gateway_acquirer
-            ELSE payments.gateway
-            END) gateway
-        from `transactions` inner join `refunds` on `entity_id` = `refunds`.`id`
-        inner join `payments` on `payments`.`id` = `payment_id`
-        inner join `terminals` on `terminal_id` = `terminals`.`id`
-        where `payments`.`gateway` in (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        and `refunds`.`status` = ? and `transactions`.`created_at` between ? and ?
-        group by `date`, `gateway` order by `date` desc
+     *  select STRAIGHT_JOIN FROM_UNIXTIME(transactions.created_at + 19800,'%D %M, %Y') AS date,
+     *  COUNT(transactions.entity_id) AS total_count,SUM(transactions.amount)/100 AS total_amount,
+     *  COUNT(CASE
+     *  WHEN transactions.reconciled_at is not null
+     *      THEN transactions.id
+     *      END) recon_count,
+     *  COUNT(CASE
+     *  WHEN transactions.reconciled_at is null
+     *      THEN transactions.id
+     *      END) unrecon_count,
+     *  SUM(CASE
+     *  WHEN transactions.reconciled_at is not null
+     *      THEN transactions.amount
+     *      ELSE 0
+     *      END)/100 recon_amount,
+     *  SUM(CASE
+     *  WHEN transactions.reconciled_at is null
+     *      THEN transactions.amount
+     *      ELSE 0
+     *      END)/100 unrecon_amount,
+     *  (Case
+     *  WHEN payments.method in ('card','emi')
+     *      THEN terminals.gateway_acquirer
+     *      ELSE payments.gateway
+     *      END) gateway
+     *  from `transactions` inner join `refunds` on `entity_id` = `refunds`.`id`
+     *  inner join `payments` on `payments`.`id` = `payment_id`
+     *  inner join `terminals` on `terminal_id` = `terminals`.`id`
+     *  where `payments`.`gateway` in (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     *  and `refunds`.`status` = ? and `transactions`.`created_at` between ? and ? and `transactions`.`amount` > 0
+     *  group by `date`, `gateway` order by `date
+     *
+     *  Note :  Transaction amount should be greater than 0 to exclude e-mandate transactions of 0 amount.
+     *          Such transactions are not considered for reconciliation.
      */
 
     public function fetchRefundReconStatusSummary(int $from, int $to, array $gateways): array
@@ -878,6 +864,7 @@ class Repository extends Base\Repository
      * payments.status as payment_status,payments.disputed as payment_disputed,
      * payments.merchant_id as payment_merchant_id,
      * payments.terminal_id as payment_terminal_id,
+     * payments.reference2 as payment_reference2,
      * payments.captured_at as payment_captured_at,
      * payments.authorized_at as payment_authorized_at,
      * payments.amount_refunded as payment_amount_refunded,
@@ -885,7 +872,8 @@ class Repository extends Base\Repository
      *   WHEN payments.method in ('card','emi')
      *   THEN terminals.gateway_acquirer
      *   ELSE payments.gateway
-     * END) gateway
+     * END) gateway,
+     * terminals.gateway_terminal_id
      * from `transactions`
      * inner join `payments` on `entity_id` = `payments`.`id`
      * inner join `terminals` on `terminal_id` = `terminals`.`id`
@@ -901,6 +889,7 @@ class Repository extends Base\Repository
      * payments.disputed as payment_disputed,
      * payments.merchant_id as payment_merchant_id,
      * payments.terminal_id as payment_terminal_id,
+     * payments.reference2 as payment_reference2,
      * payments.captured_at as payment_captured_at,
      * payments.authorized_at as payment_authorized_at,
      * payments.amount_refunded as payment_amount_refunded,
@@ -908,17 +897,20 @@ class Repository extends Base\Repository
      *   WHEN payments.method in ('card','emi')
      *   THEN terminals.gateway_acquirer
      *   ELSE payments.gateway
-     * END) gateway
+     * END) gateway,
+     * terminals.gateway_terminal_id
      * from `transactions`
      * inner join `refunds` on `entity_id` = `refunds`.`id`
      * inner join `payments` on `payments`.`id` = `payment_id`
      * inner join `terminals` on `terminal_id` = `terminals`.`id`
      * where `refunds`.`status` = ? and `payments`.`gateway` = ? and
      * `reconciled_at` is null and
-     * `transactions`.`created_at` between ? and ?
+     * `transactions`.`created_at` between ? and ? and `transactions`.`amount` > 0
      * order by `transactions`.`created_at` asc limit 100
      *
      * Note : Using case query as requires gateway_acquirer only in case of card gateways.
+     *        Transaction amount should be greater than 0 to exclude e-mandate transactions of 0 amount.
+     *        Such transactions are not considered for reconciliation.
      */
     public function fetchUnreconciledEntitiesBetweenDates(
                                         int $from,
@@ -983,6 +975,8 @@ class Repository extends Base\Repository
 
         $terminalGateway = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY);
 
+        $gatewayTerminalId = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY_TERMINAL_ID);
+
         $terminalGatewayAcquirer = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY_ACQUIRER);
 
         $selectParams = 'STRAIGHT_JOIN ' . $transactionsCreatedAt . ',';
@@ -996,7 +990,7 @@ class Repository extends Base\Repository
                          . '(Case WHEN '. $paymentMethod .' in ( "'. Payment\Method::CARD . '","'. Payment\Method::EMI .'")'.'
                                 THEN '. $terminalGatewayAcquirer . '
                                 ELSE '. $terminalGateway . '
-                            END) gateway';
+                            END) gateway ,'. $gatewayTerminalId;
 
         $query = $this->newQuery()
                       ->selectRaw($selectParams);
@@ -1006,11 +1000,17 @@ class Repository extends Base\Repository
 
     protected function getQueryClausesForUnreconciledEntites($query, int $from, int $to, string $gateway, int $limit)
     {
+        $transactionAmount = $this->dbColumn(Entity::AMOUNT);
+
         $transactionsCreatedAt = $this->dbColumn(Entity::CREATED_AT);
 
         $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
 
         $query->where($paymentGateway, $gateway)
+
+              // To exclude e-mandate transactions
+              ->where($transactionAmount, '>', 0)
+
               ->whereNull(Transaction\Entity::RECONCILED_AT)
               ->betweenTime($from, $to)
               ->orderBy($transactionsCreatedAt)
@@ -1019,9 +1019,15 @@ class Repository extends Base\Repository
 
     protected function getQueryClausesForReconSummary($query, $from, $to, $gateways)
     {
+        $transactionAmount = $this->dbColumn(Entity::AMOUNT);
+
         $gateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
 
         $query->whereIn($gateway, $gateways)
+
+              // To exclude e-mandate transactions
+              ->where($transactionAmount, '>', 0)
+
               ->betweenTime($from, $to)
               ->groupBy('date', 'gateway')
               ->orderBy('date', 'desc');

@@ -4,17 +4,12 @@ namespace RZP\Jobs;
 
 use App;
 
-use RZP\Trace\TraceCode;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
-
-class Capture extends Job implements ShouldQueue
+class Capture extends Job
 {
-    use InteractsWithQueue;
-
     const MAX_JOB_ATTEMPTS = 10;
     const JOB_RELEASE_WAIT = 300;
 

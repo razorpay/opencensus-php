@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Base\PublicCollection;
@@ -56,6 +57,19 @@ class IcicFirstData extends Base
 
         foreach ($data as $index => $row)
         {
+            if (isset($row['gateway']) === false)
+            {
+                $this->trace->alert(
+                    TraceCode::GATEWAY_FILE_ERROR_GENERATING_DATA,
+                    [
+                        'message'       => 'Gateway entity not found',
+                        'payment_id'    => $row['payment']['id'],
+                        'refund_id'     => $row['refund']['id'],
+                    ]);
+
+                continue;
+            }
+
             $formattedData[] = [
                 self::SR_NO                   => $index + 1,
                 self::MERCHANT_TRANSACTION_ID => $row['refund']['id'],
@@ -84,16 +98,42 @@ class IcicFirstData extends Base
 
         $paymentIds = $refunds->pluck('payment_id')->toArray();
 
-        $gatewayEntities = $this->repo->$gateway->fetchByPaymentIdsAndAction(
-                               $paymentIds, Action::CAPTURE);
+        $gatewayEntitiesAll = $this->repo
+                                   ->$gateway
+                                   ->fetchByPaymentIdsAndActions($paymentIds,
+                                       [
+                                           Action::PURCHASE,
+                                           Action::AUTHORIZE,
+                                           Action::CAPTURE
+                                       ]);
 
-        $gatewayEntities = $gatewayEntities->keyBy('payment_id');
+        $gatewayEntities = [];
+
+        foreach ($gatewayEntitiesAll as $gatewayEntity)
+        {
+            $paymentId = $gatewayEntity['payment_id'];
+
+            // FirstData requires FT Number to process the refunds, Now for different transactions
+            // We get different FT Numbers as IpgTransactionId, thus if the payment has capture
+            // entity, We will only use that and override the authorize entity
+            if (isset($gatewayEntities[$paymentId]) === true)
+            {
+                if ($gatewayEntity['action'] === Action::CAPTURE)
+                {
+                    $gatewayEntities[$paymentId] = $gatewayEntity;
+                }
+            }
+            else
+            {
+                $gatewayEntities[$paymentId] = $gatewayEntity;
+            }
+        }
 
         $data = array_map(function($row) use ($gatewayEntities)
         {
             $paymentId = $row['payment']['id'];
 
-            if (isset($gatewayEntities[$paymentId]))
+            if (isset($gatewayEntities[$paymentId]) === true)
             {
                 $row['gateway'] = $gatewayEntities[$paymentId]->toArray();
             }

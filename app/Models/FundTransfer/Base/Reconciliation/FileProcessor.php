@@ -14,8 +14,8 @@ use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Settlement\SlackNotification;
-use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationEmail;
+use Symfony\Component\HttpKernel\Controller\TraceableArgumentResolver;
 
 abstract class FileProcessor extends Base\Core
 {
@@ -83,7 +83,7 @@ abstract class FileProcessor extends Base\Core
      *
      * @throws LogicException
      */
-    protected function getFileExtensionForParsing(string $filePath): string
+    protected function getFileExtensionForParsing(string $filePath)
     {
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 
@@ -100,11 +100,22 @@ abstract class FileProcessor extends Base\Core
             ]);
     }
 
-    protected function parseFile(string $filePath)
+    /**
+     * Gives list of extension which should be ignored while recon.
+     * - Example: HDFC may give a .clt file in reverse folder.
+     *            This file indicates that the file has been picked up for processing.
+     *            This file doesn't contain any information apart from what we sent
+     *
+     * @return array
+     */
+    protected function getIgnoreExtensions(): array
     {
-        $ext = $this->getFileExtensionForParsing($filePath);
+        return [];
+    }
 
-        switch ($ext)
+    protected function parseFile(string $filePath, string $extension)
+    {
+        switch ($extension)
         {
             case FileStore\Format::XLSX:
             case FileStore\Format::XLS:
@@ -138,7 +149,24 @@ abstract class FileProcessor extends Base\Core
             return [];
         }
 
-        $data = $this->parseFile($reconcileFile);
+        $extension = $this->getFileExtensionForParsing($reconcileFile);
+
+        // If file extension is a part of ignore list then file is ignored from parsing
+        $ignoreExtensions = $this->getIgnoreExtensions();
+
+        if (in_array($extension, $ignoreExtensions, true) === true)
+        {
+            $this->trace->info(
+                TraceCode::SETTLEMENT_REVERSE_FILE_SKIPPED,
+                [
+                    'channel'   => static::$channel,
+                    'extension' => $extension
+                ]);
+
+            return;
+        }
+
+        $data = $this->parseFile($reconcileFile, $extension);
 
         $this->storeReconciledFile($reconcileFile);
 
@@ -256,10 +284,13 @@ abstract class FileProcessor extends Base\Core
         #TODO:: What date to put here?
         $this->date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
-        $data['date'] = $this->date;
-        $data['body'] = $msg;
+        $data = [
+            'date'    => $this->date,
+            'body'    => $msg,
+            'channel' => static::$channel
+        ];
 
-        $email = new ReconciliationEmail($data, static::$channel);
+        $email = new ReconciliationEmail($data);
 
         Mail::queue($email);
     }

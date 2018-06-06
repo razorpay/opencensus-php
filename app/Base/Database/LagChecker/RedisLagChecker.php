@@ -35,11 +35,10 @@ class RedisLagChecker implements LagChecker
      * Queries the 'skip_slave' flag on redis. Establishes
      * the read connection only if the value is false.
      *
-     * @param  Closure $readPdo
-     *
-     * @return mixed|null
+     * @param  \PDO|Closure $readPdo
+     * @return \PDO|null
      */
-    public function useReadPdoIfApplicable(Closure $readPdo)
+    public function useReadPdoIfApplicable($readPdo)
     {
         $skipSlave = true;
 
@@ -55,6 +54,7 @@ class RedisLagChecker implements LagChecker
                 TraceCode::REDIS_LAG_CHECK_FAILED);
         }
 
-        return ($skipSlave === false) ? call_user_func($readPdo) : null;
+        // If should skip slave, return null so master connection is used, else resolve $readPdo and return
+        return $skipSlave === true ? null : ($readPdo instanceof Closure ? call_user_func($readPdo) : $readPdo);
     }
 }

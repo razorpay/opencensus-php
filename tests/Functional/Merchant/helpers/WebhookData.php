@@ -28,6 +28,29 @@ return [
         ]
     ],
 
+    'testCreateWebhookWithdisableWebhookFalse' => [
+        'request' => [
+            'url' => '/webhooks',
+            'content' => [
+                'url' => 'http://example.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+                'disable_on_failure' => '0',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'url' => 'http://example.com',
+                'events' => [
+                    'payment.authorized' => true,
+                ],
+                'active' => true,
+            ]
+        ]
+    ],
+
     'testCreateWebhookWhenAlreadyCreated' => [
         'request' => [
             'url' => '/webhooks',

@@ -2,19 +2,32 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
-use RZP\Models\Base\PublicCollection;
-use RZP\Models\Transaction;
-
 class Payment extends Base
 {
     use TransactionTrait;
 
+    protected $emandateRegistrationInitialPaymentDefaultAttributes = [
+        'amount'         => 0,
+        'method'         => 'emandate',
+        'customer_id'    => '100000customer',
+        'email'          => 'a@b.com',
+        'contact'        => '+919918899029',
+        'recurring_type' => 'initial',
+        'auth_type'      => 'netbanking',
+    ];
+
     public function createCaptured(array $attributes = array())
     {
-        if ((isset($attributes['method'])) and
-            ($attributes['method'] === 'netbanking'))
+        if (isset($attributes['method']))
         {
-            return $this->fixtures->create('payment:netbanking_captured');
+            switch ($attributes['method'])
+            {
+                case 'netbanking':
+                    return $this->fixtures->create('payment:netbanking_captured');
+
+                case 'upi':
+                    return $this->fixtures->create('payment:netbanking_captured');
+            }
         }
 
         return $this->fixtures->create('payment:card_captured', $attributes);
@@ -119,6 +132,50 @@ class Payment extends Base
             'status'         => 'authorized',
             'gateway'        => 'sharp',
             'method'         => 'netbanking',
+            'terminal_id'    => '1n25f6uN5S1Z5a',
+            'transaction_id' => null,
+            'created_at'     => time() - 10,
+            'updated_at'     => time() - 5
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $payment = $this->build('payment', $attributes);
+
+        $payment->saveOrFail();
+
+        list($txn, $feesSplit) = $this->createTransactionForPaymentAuthorized($payment);
+
+        $txn->saveOrFail();
+
+        $payment->saveOrFail();
+
+        return $payment;
+    }
+
+
+    public function createUpiCaptured(array $attributes = array())
+    {
+        $payment = $this->createUpiAuthorized($attributes);
+        $payment['authorized_at'] = $payment['created_at'];
+        $payment['captured_at'] = $payment['created_at'] + 10;
+
+        list($txn, $feesSplit) = $this->updateTransactionOnCapture($payment);
+
+        $txn->saveOrFail();
+
+        $payment->setStatus('captured');
+        $payment->saveOrFail();
+
+        return $payment;
+    }
+
+    public function createUpiAuthorized(array $attributes = array())
+    {
+        $defaultValues = [
+            'status'         => 'authorized',
+            'gateway'        => 'sharp',
+            'method'         => 'upi',
             'terminal_id'    => '1n25f6uN5S1Z5a',
             'transaction_id' => null,
             'created_at'     => time() - 10,
@@ -364,5 +421,47 @@ class Payment extends Base
     {
         $this->edit(
             $id, ['status' => 'failed', 'error_code' => 'BAD_REQUEST_PAYMENT_FAILED']);
+    }
+
+    public function createEmandateRegistrationInitial(array $attributes = [])
+    {
+        $defaults = array_merge(
+            $this->emandateRegistrationInitialPaymentDefaultAttributes,
+            ['status'         => 'authorized']
+        );
+
+        $attributes = array_merge($defaults, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createEmandateRegistrationConfirmed(array $attributes = [])
+    {
+        $defaults = array_merge(
+            $this->emandateRegistrationInitialPaymentDefaultAttributes,
+            ['status'         => 'captured']
+        );
+
+        $attributes = array_merge($defaults, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createEmandateDebit(array $attributes = [])
+    {
+        $defaults = [
+            'method'         => 'emandate',
+            'customer_id'    => '100000customer',
+            'auto_captured'  => false,
+            'email'          => 'a@b.com',
+            'contact'        => '+919918899029',
+            'recurring_type' => 'auto',
+            'auth_type'      => 'netbanking',
+            'recurring'      => 1,
+        ];
+
+        $attributes = array_merge($defaults, $attributes);
+
+        return $this->create($attributes);
     }
 }

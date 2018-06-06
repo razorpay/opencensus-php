@@ -2,8 +2,14 @@
 
 namespace RZP\Models\Merchant\AccessMap;
 
+use DB;
+
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Constants\Table;
+use RZP\Trace\TraceCode;
+use Razorpay\OAuth\Token;
+use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
 {
@@ -88,6 +94,117 @@ class Core extends Base\Core
         if (empty($mapping) === false)
         {
             return $this->repo->merchant_access_map->deleteOrFail($mapping);
+        }
+    }
+
+    /**
+     * Gets all active oauth tokens across merchants and updates the
+     * merchant_access_map accordingly. Needed for one time migrations
+     * in case there are anomalies due to bugs.
+     *
+     * @return array
+     */
+    public function updateMapFromTokens()
+    {
+        $batch = 500;
+
+        $skip = 0;
+
+        $count = 500;
+
+        $failed = 0;
+        $failedIds = [];
+        $succeeded = 0;
+        $processed = 0;
+
+        while ($batch === $count)
+        {
+            $mappings = (new Token\Repository)->fetchActiveTokensWithAppAndCreatedAt($batch, $skip);
+
+            $count = $mappings->count();
+
+            $skip += $count;
+
+            $mappings = $mappings->unique(function ($item) {
+                return $item->merchant_id.$item->application_id;
+            });
+
+            $mappings = $mappings->values()->all();
+
+            $this->trace->info(
+                TraceCode::ACCESS_MAP_UPDATE_REQUEST,
+                [
+                    'total_tokens' => count($mappings)
+                ]);
+
+            foreach ($mappings as $mapping)
+            {
+                $appId      = $mapping->application_id;
+                $merchantId = $mapping->merchant_id;
+                $createdAt  = $mapping->created_at;
+
+                $traceData = [
+                    Entity::APPLICATION_ID => $appId,
+                    Entity::MERCHANT_ID    => $merchantId,
+                ];
+
+                $this->trace->info(TraceCode::ACCESS_MAP_UPDATE_REQUEST, $traceData);
+
+                try
+                {
+                    $this->processMigration($appId, $merchantId, $createdAt);
+
+                    $succeeded++;
+                }
+                catch (\Exception $ex)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::ACCESS_MAP_UPDATE_ERROR,
+                        $traceData
+                    );
+
+                    $failed++;
+
+                    $failedIds[] = $merchantId . '.' . $appId;
+                }
+
+                $processed++;
+            }
+        }
+
+        return [
+            'success' => $succeeded,
+            'failure' => $failed,
+            'total'   => $processed,
+            'failed'  => $failedIds
+        ];
+    }
+
+    protected function processMigration(string $appId, string $merchantId, int $createdAt)
+    {
+        $mapping = DB::table(Table::MERCHANT_ACCESS_MAP)
+                       ->where(Entity::ENTITY_TYPE, Entity::APPLICATION)
+                       ->where(Entity::ENTITY_ID, $appId)
+                       ->where(Entity::MERCHANT_ID, $merchantId)
+                       ->whereNull(Entity::DELETED_AT)
+                       ->first();
+
+        if (empty($mapping) === true)
+        {
+            $id = (new Entity)->generateUniqueIdFromTimestamp($createdAt);
+
+            DB::table(Table::MERCHANT_ACCESS_MAP)->insert(
+                [
+                    Entity::ID          => $id,
+                    Entity::ENTITY_TYPE => Entity::APPLICATION,
+                    Entity::ENTITY_ID   => $appId,
+                    Entity::MERCHANT_ID => $merchantId,
+                    Entity::CREATED_AT  => $createdAt,
+                    Entity::UPDATED_AT  => $createdAt
+                ]
+            );
         }
     }
 }

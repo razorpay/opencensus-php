@@ -17,6 +17,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
 use RZP\Models\Payment\Status;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Constants\Entity as ConstantsEntity;
 
 class Gateway
@@ -1117,12 +1118,12 @@ class Gateway
 
     protected function isBharatQrPayment(): bool
     {
-        return (empty($this->input['bharat_qr']) === false);
-
+        return ((empty($this->input['payment'][Payment\Entity::RECEIVER_TYPE]) === false) and
+                ($this->input['payment'][Payment\Entity::RECEIVER_TYPE] === Receiver::QR_CODE));
     }
 
     /**
-     * Retuns the external mock url
+     * Returns the external mock url
      * Used for gateway testing using mock in func
      * Appends the gateway string and relative url for the external mock domain
      *

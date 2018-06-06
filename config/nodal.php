@@ -2,8 +2,10 @@
 
 return [
     'axis' => [
-        'secret'    => env('AXIS_NODAL_AES_SECRET'),
-        'iv'        => env('AXIS_NODAL_AES_IV'),
+        'secret'         => env('AXIS_NODAL_AES_SECRET'),
+        'iv'             => env('AXIS_NODAL_AES_IV'),
+        'account_number' => env('AXIS_NODAL_ACCOUNT_NUMBER'),
+        'ifsc_code'      => env('AXIS_NODAL_IFSC')
     ],
 
     'rbl' => [

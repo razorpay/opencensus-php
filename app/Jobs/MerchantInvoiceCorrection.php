@@ -2,22 +2,29 @@
 
 namespace RZP\Jobs;
 
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use App;
 
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Invoice\Correction;
 
-class MerchantInvoiceCorrection extends Job implements ShouldQueue
+class MerchantInvoiceCorrection extends Job
 {
-    use InteractsWithQueue;
+    const MUTEX_LOCK_TIMEOUT = 3600; // sec
 
     protected $merchantId;
 
     protected $month;
 
     protected $year;
+
+    protected $mutex;
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'merchant_invoice';
 
     public function __construct(
         string $merchantId,
@@ -47,21 +54,29 @@ class MerchantInvoiceCorrection extends Job implements ShouldQueue
 
         try
         {
-            $creator = new Correction($this->merchantId, $this->month, $this->year);
+            $this->mutex = App::getFacadeRoot()['api.mutex'];
 
-            $creator->calculateAndLogInvoiceCorrection();
+            $this->mutex->acquireAndRelease(
+                $this->merchantId,
+                function ()
+                {
+                    $creator = new Correction($this->merchantId, $this->month, $this->year);
+
+                    $creator->calculateAndLogInvoiceCorrection();
+                },
+                self::MUTEX_LOCK_TIMEOUT,
+                ErrorCode::MERCHANT_INVOICE_CORRECTION_IN_PROGRESS);
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException(
-                    $e,
-                    Trace::CRITICAL,
+            $this->trace->error(
                     TraceCode::MERCHANT_INVOICE_CORRECTION_FAILED,
                     [
                         'merchant_id'   => $this->merchantId,
                         'month'         => $this->month,
                         'year'          => $this->year,
                         'mode'          => $this->mode,
+                        'message'       => $e->getMessage(),
                     ]);
         }
     }

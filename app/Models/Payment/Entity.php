@@ -26,6 +26,7 @@ use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Netbanking;
 
 /**
@@ -93,13 +94,13 @@ class Entity extends Base\PublicEntity
     const GATEWAY               = 'gateway';
     const TERMINAL_ID           = 'terminal_id';
     const APPROVAL_CODE         = 'approval_code';
+    const BATCH_ID              = 'batch_id';
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
     const REFERENCE3            = 'reference3';
     const REFERENCE4            = 'reference4';
     const REFERENCE5            = 'reference5';
     const REFERENCE6            = 'reference6';
-    const REFERENCE7            = 'reference7';
     const REFERENCE9            = 'reference9';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
@@ -246,6 +247,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::TERMINAL_ID,
         self::APPROVAL_CODE,
+        self::BATCH_ID,
         self::REFERENCE1,
         self::REFERENCE2,
         self::ACQUIRER_DATA,
@@ -438,6 +440,7 @@ class Entity extends Base\PublicEntity
         self::LATE_AUTHORIZED      => 'bool',
         self::CONVERT_CURRENCY     => 'bool',
         self::DISPUTED             => 'bool',
+        self::VERIFY_BUCKET        => 'int',
     ];
 
     // window in secs, used to fetch payments with same checkout id
@@ -446,6 +449,8 @@ class Entity extends Base\PublicEntity
     const DUMMY_EMAIL = 'void@razorpay.com';
 
     const DUMMY_PHONE = '+919999999999';
+
+    const DUMMY_VPA = 'dummy@razorpay';
 
     // --------------------- Modifiers ---------------------------------------------
 
@@ -682,6 +687,11 @@ class Entity extends Base\PublicEntity
         $isInternational = $this->isMethodCardOrEmi() ? $this->card->isInternational() : false;
 
         $this->setAttribute(self::INTERNATIONAL, $isInternational);
+    }
+
+    public function setAmount(int $amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
     }
 
     public function setBaseAmount(int $amount)
@@ -933,7 +943,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONVERT_CURRENCY, $convert);
     }
 
-    public function setAuthType(string $authType)
+    public function setAuthType($authType)
     {
         $this->setAttribute(self::AUTH_TYPE, $authType);
     }
@@ -1033,6 +1043,20 @@ class Entity extends Base\PublicEntity
         $reason = mb_strtolower($reason);
 
         $this->attributes[self::CANCELLATION_REASON] = mb_substr($reason, 0, 255);
+    }
+
+    protected function setReference1Attribute($reference1)
+    {
+        $trimmedReference1 = (blank($reference1) === true) ? null : trim($reference1);
+
+        $this->attributes[self::REFERENCE1] =  $trimmedReference1;
+    }
+
+    protected function setReference2Attribute($reference2)
+    {
+        $trimmedReference2 = (blank($reference2) === true) ? null : trim($reference2);
+
+        $this->attributes[self::REFERENCE2] =  $trimmedReference2;
     }
 
 // ----------------------- Mutator Ends ----------------------------------------
@@ -1349,6 +1373,11 @@ class Entity extends Base\PublicEntity
     public function isBankTransfer()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::BANK_TRANSFER);
+    }
+
+    public function isBharatQr()
+    {
+        return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE);
     }
 
     public function isGateway($gateway)
@@ -2142,8 +2171,12 @@ class Entity extends Base\PublicEntity
 
     public function setPublicAcquirerDataAttribute(array & $array)
     {
-        // Adding test merchants PolicyBazaar, DSP Blackrock, Yatra merchant ID's
-        $merchantIds = ['10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f', '7thBRSDflu7NHL', '87qTXzFTBLFN7i'];
+        // Adding test merchants PolicyBazaar, DSP Blackrock, Yatra, Zomato merchant ID's
+        $merchantIds = [
+            '10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f',
+            '7thBRSDflu7NHL', '87qTXzFTBLFN7i', '9sOd4xwUKox63N',
+            '9fI2f7tNoAmVhu', '6H7N6hlcv29OMG', '8tiqrk8Qpc47l9'
+        ];
 
         $currentMerchantId = $this->getMerchantId();
 
@@ -2326,6 +2359,11 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Models\BankTransfer\Entity');
     }
 
+    public function batch()
+    {
+        return $this->belongsTo('RZP\Models\Batch\Entity');
+    }
+
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
@@ -2371,6 +2409,11 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
     }
 
+    public function enach()
+    {
+        return $this->hasOne('RZP\Gateway\Enach\Base\Entity');
+    }
+
     // using hasOne here as we need only the first billdesk entity, actual relation can be one-to-many
     public function billdesk()
     {
@@ -2385,6 +2428,11 @@ class Entity extends Base\PublicEntity
     public function disputes()
     {
         return $this->hasMany(\RZP\Models\Dispute\Entity::class);
+    }
+
+    public function discount()
+    {
+        return $this->hasOne('RZP\Models\Discount\Entity');
     }
 
 // --------------- Relation to other entity section ends -----------------------
@@ -2637,6 +2685,31 @@ class Entity extends Base\PublicEntity
     public function isAcknowledged(): bool
     {
         return $this->isAttributeNotNull(self::ACKNOWLEDGED_AT);
+    }
+
+    public function getDummyPaymentArray(string $method, string $network = null): array
+    {
+        $paymentArray =  [
+            self::CURRENCY    => Currency\Currency::INR,
+            self::METHOD      => $method,
+            self::AMOUNT      => 100,
+            self::DESCRIPTION => 'Dummy Payment',
+            self::CONTACT     => self::DUMMY_PHONE,
+            self::EMAIL       => self::DUMMY_EMAIL,
+        ];
+
+        switch ($method)
+        {
+            case Method::CARD:
+                $paymentArray[self::CARD] = (new Card\Entity)->getDummyCardArray($network);
+                break;
+
+            case Method::UPI:
+                $paymentArray[self::VPA] = self::DUMMY_VPA;
+
+        }
+
+        return $paymentArray;
     }
 
     // Query scopes
