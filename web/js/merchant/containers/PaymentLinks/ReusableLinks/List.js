@@ -1,66 +1,48 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { Field } from 'redux-form';
 import { NavLink } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import Pager from 'rzp/ui/Pager';
-import Alert from 'rzp/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
-import InvoicesList from 'merchant/components/Invoices/InvoicesList';
 import ListContainer from 'merchant/containers/ListContainer';
-import CreatePaymentLink from 'merchant/containers/Invoices/CreatePaymentLink';
-import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
-import * as InvoiceActions from 'merchant/modules/invoices/list';
-import * as ModalActions from 'rzp/modules/modals';
-import { luminateRow } from 'merchant/modules/app';
+import ListFilter from 'merchant/components/ListFilter';
+import { fetchReusableLinksList } from 'merchant/containers/PaymentLinks/ReusableLinks/model';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
+import Amount from 'rzp/ui/Amount';
+import TableBody from 'rzp/ui/TableBody';
+import { PaymentLinkStatusLabel } from 'merchant/components/StatusLabel';
+import Time from 'rzp/ui/Time';
+import CustomClipboard from 'rzp/ui/Clipboard/Custom';
+import { showNotification } from 'rzp/modules/notifications';
 
-@connect(state => ({ ...state.invoices, ...state.session }), {
-  ...InvoiceActions,
-  ...ModalActions,
-  luminateRow,
-})
+@connect(null, { showNotification })
 export default class PLResuableContianer extends ListContainer {
-  fetchEntityList(params) {
-    params.types = ['link', 'ecod'];
-    return this.props.fetchInvoices(params);
-  }
-
-  // Temporary fn. for handling code of merchant/models/Invoice.js for handling notes in deserialize fn.
-  deserializeNotes(value) {
-    let notes = [],
-      index = 0;
-
-    for (var key in value) {
-      if (value.hasOwnProperty(key)) {
-        notes[index] = { key: key, value: value[key] };
-
-        index++;
-      }
-    }
-
-    return notes;
-  }
-
-  showPaymentLinkModal = (invoice = null) => {
-    let item = null;
-    if (invoice) {
-      item = { ...invoice };
-      item.notes = this.deserializeNotes(item.notes);
-    }
-
-    this.props.openModal({
-      component: (
-        <CreatePaymentLink
-          invoice={item}
-          onSave={invoice => {
-            this.props.luminateRow(invoice.id);
-          }}
-          closeModal={this.props.closeModal}
-        />
-      ),
-    });
+  state = {
+    paymentLinks: [],
+    loading: true,
   };
+
+  fetchEntityList(params) {
+    return fetchReusableLinksList(params)
+      .then(response => {
+        if (response.data) {
+          this.setState({ paymentLinks: response.data.items });
+        }
+        this.setState({ loading: false });
+        return response;
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+
+        this.setState({ loading: false });
+      });
+  }
 
   onSearchAnalytics = params => {
     const label = getKeysSeparatedByPipe(params);
@@ -80,17 +62,16 @@ export default class PLResuableContianer extends ListContainer {
     });
   };
 
-  onCopy = ({ invoiceId, text }) => {
+  onCopy = ({ paymentLinkId }) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Payment Links',
       eventAction: 'Copy - Payment Link',
-      eventLabel: `payment_link_id=${invoiceId}`,
+      eventLabel: `payment_link_id=${paymentLinkId}`,
     });
   };
 
   render() {
-    let { loading, invoices, user } = this.props;
-    let status = this.state.status;
+    let { paymentLinks, loading } = this.state;
 
     return (
       <div class="content-wrapper">
@@ -107,29 +88,128 @@ export default class PLResuableContianer extends ListContainer {
           </ShowWhen>
         </HeaderAction>
 
-        <InvoiceListFilter
-          form="InvoiceListFilter"
-          type="link"
+        <ListFilter
+          form="ReusablePaymentLinkListFilter"
           count={this.state.count}
-          onSubmit={this.search}
           onSearchAnalytics={this.onSearchAnalytics}
           onClearAnalytics={this.onClearAnalytics}
-        />
+        >
+          <div class="form-group list-filter-item">
+            <label>Title</label>
+            <Field
+              name="title"
+              component="input"
+              class="form-control input-sm"
+            />
+          </div>
 
-        <Alert type={status.type} message={status.message} />
+          <div class="form-group list-filter-item">
+            <label>Receipt No.</label>
+            <Field
+              name="receipt"
+              component="input"
+              class="form-control input-sm"
+            />
+          </div>
 
-        <InvoicesList
-          invoices={invoices}
-          isLoading={loading}
-          type="link"
-          onEdit={this.showPaymentLinkModal}
-          onCopy={this.onCopy}
-        />
+          <div class="form-group list-filter-item">
+            <label>Status</label>
+            <Field
+              name="status"
+              component="select"
+              class="form-control input-sm"
+            >
+              <option value="">All</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </Field>
+          </div>
+
+          <div class="form-group list-filter-item">
+            <label>Notes</label>
+            <Field
+              name="notes"
+              component="input"
+              class="form-control input-sm"
+            />
+          </div>
+
+          <div class="form-group list-filter-item count">
+            <label>Count</label>
+            <Field
+              name="count"
+              component="input"
+              min={1}
+              max={100}
+              type="number"
+              class="form-control input-sm"
+            />
+          </div>
+        </ListFilter>
+
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th class="text-right">Amount</th>
+                <th>Times Payable</th>
+                <th>Link Url</th>
+                <th>Created At</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <TableBody
+              isLoading={loading}
+              colSpan={8}
+              rows={paymentLinks}
+              emptyTableMsg="No data found!"
+            >
+              {paymentLinks.map(paymentLink => (
+                <EntityItemRow id={paymentLink.id} key={paymentLink.id}>
+                  <td>
+                    <NavLink to={`/paymentlinks/reusable/${paymentLink.id}`}>
+                      <code>{paymentLink.title}</code>
+                    </NavLink>
+                  </td>
+                  <td class="text-right">
+                    <Amount
+                      value={paymentLink.amount}
+                      currency={paymentLink.currency}
+                    />
+                  </td>
+                  <td>{paymentLink.times_payable}</td>
+                  <td>
+                    {paymentLink.short_url && (
+                      <span class="CopyLink">
+                        <span>{paymentLink.short_url}</span>
+                        <CustomClipboard
+                          value={paymentLink.short_url}
+                          onCopy={this.onCopy({
+                            paymentLinkId: paymentLink.id,
+                          })}
+                        >
+                          <button class="btn btn-default btn-xs">copy</button>
+                        </CustomClipboard>
+                      </span>
+                    )}
+                  </td>
+                  <td>
+                    <Time value={paymentLink.created_at} />
+                  </td>
+                  <td>
+                    <PaymentLinkStatusLabel status={paymentLink.status} />
+                  </td>
+                </EntityItemRow>
+              ))}
+            </TableBody>
+          </table>
+        </div>
 
         <Pager
           count={this.state.count}
           skip={this.state.skip}
-          length={invoices.length}
+          length={paymentLinks.length}
           onClick={this.paginate}
         />
       </div>

@@ -4,7 +4,7 @@ import { Route, Switch, NavLink } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 import PaymentLinksList from 'merchant/containers/PaymentLinks/Links/List';
 import BatchUploadList from 'merchant/containers/PaymentLinks/BatchUpload/List';
-import PaymentLinksReusable from 'merchant/containers/PaymentLinks/ReusableLinks/List';
+import ReusableLinksList from 'merchant/containers/PaymentLinks/ReusableLinks/List';
 
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import Button from 'component/Button';
@@ -107,7 +107,7 @@ export default class PaymentLinksContainer extends Component {
 
             <Route
               path="/paymentlinks/reusable"
-              component={PaymentLinksReusable}
+              component={ReusableLinksList}
             />
             <Route path="/paymentlinks" component={PaymentLinksList} />
           </Switch>

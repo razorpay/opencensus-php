@@ -14,8 +14,8 @@ import { ModalAsideNav } from 'component/Wizard';
 import PLFormFields from './Links/Create';
 import RPLFormFields from './ReusableLinks/Create';
 
-import { PLCreate } from './Links/model';
-import { RPLCreate } from './ReusableLinks/model';
+import { createPaymentLink } from './Links/model';
+import { createReusableLink } from './ReusableLinks/model';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import { showNotification } from 'rzp/modules/notifications';
@@ -26,14 +26,14 @@ const FORM_TABS = [
     desc: 'The link gets expired automatically once its paid.',
     url: '/paymentlinks/new',
     content: [...PLFormFields],
-    onCreate: PLCreate,
+    onCreate: createPaymentLink,
   },
   {
     title: 'Reusable Link',
     desc: 'Accept payments multiple times on a single payment link.',
     url: '/paymentlinks/reusable/new',
     content: [...RPLFormFields],
-    onCreate: RPLCreate,
+    onCreate: createReusableLink,
   },
 ];
 

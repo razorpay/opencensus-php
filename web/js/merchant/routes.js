@@ -2,7 +2,7 @@ import { matchPath } from 'react-router-dom';
 
 import SettlementDetails from 'merchant/containers/Settlements/Details';
 import PaymentLinkEntity from 'merchant/containers/PaymentLinks/Links/Entity';
-import PaymentLinksReusable from 'merchant/containers/PaymentLinks/ReusableLinks/List';
+import ReusableLinksEntity from 'merchant/containers/PaymentLinks/ReusableLinks/Entity';
 import PaymentLinksCreate from 'merchant/containers/PaymentLinks/Create';
 import PaymentsDetails from 'merchant/containers/Payments/Details';
 import RefundDetails from 'merchant/containers/Refunds/Details';
@@ -31,7 +31,7 @@ const entityDetailsMap = {
   '/settlements/:id': SettlementDetails,
   '/paymentlinks/:id(inv_.+)': PaymentLinkEntity,
   '/paymentlinks/batchuploads/:id(batch_.+)': PaymentLinkBatchDetails,
-  '/paymentlinks/reusable/:id(inv_.+)': PaymentLinksReusable,
+  '/paymentlinks/reusable/:id(pl_.+)': ReusableLinksEntity,
   '/invoices/:id/details': PaymentLinkEntity,
 
   '/route/payments/:id': PaymentsDetails,

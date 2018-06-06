@@ -1,7 +1,7 @@
 import { merchantFetch } from 'rzp/utils/ajax';
 
 /* Specific Api Actions of Payment Links */
-export function PLCreate() {
+export function createPaymentLink() {
   const curDirtyForm = this.state.dirty[this.state.activeTab];
 
   const reqPayload = {
