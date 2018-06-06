@@ -174,6 +174,9 @@ class CreatePayments extends Migration
             $table->string(Payment::APPROVAL_CODE, 10)
                   ->nullable();
 
+            $table->string(Payment::BATCH_ID)
+                  ->nullable();
+
             $table->string(Payment::REFERENCE1)
                   ->nullable();
 
@@ -190,9 +193,6 @@ class CreatePayments extends Migration
                   ->nullable();
 
             $table->integer(Payment::REFERENCE6)
-                  ->nullable();
-
-            $table->string(Payment::REFERENCE7)
                   ->nullable();
 
             $table->bigInteger(Payment::REFERENCE9)
@@ -289,6 +289,7 @@ class CreatePayments extends Migration
             $table->index(Payment::MERCHANT_ID);
             $table->index([Payment::MERCHANT_ID, Payment::CREATED_AT]);
             $table->index([Payment::MERCHANT_ID, Payment::STATUS, Payment::CREATED_AT]);
+            $table->index([Payment::MERCHANT_ID, Payment::CAPTURED_AT]);
 
             $table->index(Payment::RECEIVER_ID);
 

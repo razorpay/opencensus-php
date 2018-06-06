@@ -28,19 +28,21 @@ class Report extends Base\Core
         'Merchant Email'
     ];
 
-    const LIMIT             = 2000;
+    const LIMIT = 2000;
 
-    protected $fileName     = null;
+    protected $fileName = null;
 
-    protected $fileHandler  = null;
+    protected $fileHandler = null;
 
-    protected $channel      = null;
+    protected $channel = null;
 
-    protected $count        = 0;
+    protected $count = 0;
 
-    protected $startTime    = null;
+    protected $startTime = null;
 
-    protected $endTime      = null;
+    protected $endTime = null;
+
+    protected $errorReporting = null;
 
     public function __construct()
     {
@@ -56,22 +58,22 @@ class Report extends Base\Core
     {
         $this->count = 0;
 
-        $this->fileName    = $this->getFileNameForReport();
+        $this->fileName = $this->getFileNameForReport();
 
         $this->fileHandler = $this->initiateFileHandler();
 
         $this->startTime = Carbon::today(Timezone::IST)->startOfDay()->getTimestamp();
 
-        $this->endTime   = Carbon::now(Timezone::IST)->subHour(3)->getTimestamp();
+        $this->endTime = Carbon::now(Timezone::IST)->subHour(3)->getTimestamp();
     }
 
-    public function sendNullUtrReport()
+    public function sendFTAReconReport()
     {
         $channels = Channel::getChannels();
 
         $this->init();
 
-        $this->trace->info(TraceCode::NULL_UTR_REPORT_INITIATED, [
+        $this->trace->info(TraceCode::FTA_RECON_REPORT_INITIATED, [
             'start_time'    => $this->startTime,
             'end_time'      => $this->endTime,
         ]);
@@ -81,18 +83,22 @@ class Report extends Base\Core
             $this->channel = $channel;
 
             $this->createReport();
+
+            $this->addCriticalErrorsToReport($channel);
         }
 
         fclose($this->fileHandler);
 
-        $this->trace->info(TraceCode::NULL_UTR_REPORT_FILE_CREATED, [
-            'record_count'  => $this->count,
-        ]);
+        $this->trace->info(TraceCode::FTA_RECON_REPORT_FILE_CREATED);
 
         $this->sendEmail();
+
+        return [
+            'count' => $this->count
+        ];
     }
 
-    protected function initiateFilehandler()
+    protected function initiateFileHandler()
     {
         $fileHandler = fopen($this->fileName, 'w');
 
@@ -101,9 +107,91 @@ class Report extends Base\Core
         return $fileHandler;
     }
 
+    protected function getStatusClass(string $channel)
+    {
+        return 'RZP\\Models\\FundTransfer\\'
+                . ucfirst($channel)
+                . '\\Reconciliation\\Status';
+    }
+
+    protected function addCriticalErrorsToReport(string $channel)
+    {
+        $statusClass = $this->getStatusClass($channel);
+
+        if (class_exists($statusClass) === false)
+        {
+            return;
+        }
+
+        $offset = 0;
+
+        do {
+            $records = $this->repo
+                            ->fund_transfer_attempt
+                            ->getFailedAttemptsInitiatedAtBetweenTime(
+                                $channel,
+                                $this->startTime,
+                                $this->endTime,
+                                self::LIMIT,
+                                $offset);
+
+            $filteredRecords = $this->filterRecordsForErrors(
+                                            $statusClass,
+                                            $records);
+
+            $offset += self::LIMIT;
+
+            $this->createOrUpdateFile($filteredRecords);
+
+            $count = count($records);
+
+            $this->count += count($filteredRecords);
+
+        } while ($count === self::LIMIT);
+    }
+
+    /**
+     * It will check for the type of error in remark field of given records
+     * If the given error type is not defined will return all the
+     * If the given error type is defined then records which match the errors will be returned
+     *
+     * @param string $statusClass
+     * @param $records
+     *
+     * @return array
+     */
+    protected function filterRecordsForErrors(string $statusClass, $records)
+    {
+        $filteredRecords = [];
+
+        $hasCriticalErrors = $statusClass::hasCriticalErrors();
+
+        if ($hasCriticalErrors === false)
+        {
+            return [];
+        }
+
+        foreach ($records as $record)
+        {
+            if ($record->source->getBatchFundTransferId() !== $record->getBatchFundTransferId())
+            {
+                continue;
+            }
+
+            $isCriticalError = $statusClass::isCriticalError($record);
+
+            if ($isCriticalError === true)
+            {
+                $filteredRecords[] = $record;
+            }
+        }
+
+        return $filteredRecords;
+    }
+
     protected function createReport()
     {
-        $offset    = 0;
+        $offset = 0;
 
         $recordCount = 0;
 
@@ -141,7 +229,7 @@ class Report extends Base\Core
         }
 
         (new SlackNotification)->success(
-            'null_utr_report',
+            'fta_recon_report',
             [
                 'channel' => $this->channel,
                 'count' => $count
@@ -162,6 +250,10 @@ class Report extends Base\Core
 
         $reportEmail = new ReportEmail($data);
 
+        //
+        // Do not change it to queue
+        // Reports are generated locally and deleted once the execution is complete
+        //
         Mail::send($reportEmail);
 
         return true;
@@ -173,7 +265,7 @@ class Report extends Base\Core
 
         $date = Carbon::today(Timezone::IST)->format('Y-M-d');
 
-        return $dir . DIRECTORY_SEPARATOR . 'null_utr_report_' . $date . '.csv';
+        return $dir . DIRECTORY_SEPARATOR . 'report_' . $date . '.csv';
     }
 
     protected function createOrUpdateFile($records)

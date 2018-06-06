@@ -35,7 +35,11 @@ class Validator extends Base\Validator
                                     . 'application/octet-stream,'
                                     . 'application/xml,'
                                     . 'text/csv,'
-                                    . 'text/plain'
+                                    . 'text/plain,'
+                                    . 'application/cdfv2-unknown,'
+                                    . 'application/vnd.ms-office,'
+                                    . 'application/excel,'
+                                    . 'application/msexcel'
                                 . '|mimes:'
                                     . 'zip,'
                                     . 'xlsx,'
@@ -67,6 +71,18 @@ class Validator extends Base\Validator
         Entity::CONFIG                  => 'filled|array',
     ];
 
+    protected static $directDebitCreateRules = [
+        Entity::TYPE            => 'required|in:direct_debit',
+        Entity::FILE            => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::NAME            => 'filled|string|max:255',
+        Entity::TOKEN           => 'required_without:file_id|max:255|alpha_num',
+        Entity::FILE_ID         => 'required_without:file|public_id',
+    ];
+
+    protected static $tokenRules = [
+        Entity::TOKEN           => 'required|max:255|alpha_num',
+    ];
+
     protected static $reconciliationCreateRules = [
         Entity::TYPE            => 'required|in:reconciliation',
         Entity::GATEWAY         => 'required|string|max:25',
@@ -84,6 +100,13 @@ class Validator extends Base\Validator
     protected static $virtualBankAccountCreateRules = [
         Entity::TYPE                 => 'required|in:virtual_bank_account',
         Entity::FILE                 => 'required|file' . self::DEFAULT_MIME_RULE,
+    ];
+
+    protected static $elfinCreateRules = [
+        Entity::TYPE   => 'required|custom',
+        Entity::NAME   => 'filled|string|max:255',
+        Entity::FILE   => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG => 'filled|array',
     ];
 
     /**
@@ -108,6 +131,13 @@ class Validator extends Base\Validator
         HdfcEMDebitHeadings::TRANSACTION_REF_NO     => 'Transaction Reference No. must be present',
         HdfcEMDebitHeadings::ACCOUNT_NO             => 'Account No must be present',
         HdfcEMDebitHeadings::STATUS                 => 'Status must be present',
+    ];
+
+    protected static $subMerchantCreateRules = [
+        Entity::TYPE                 => 'required|in:sub_merchant',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::APPLICATION_ID       => 'filled|string|size:14',
     ];
 
     protected function validateType($attribute, $value)
@@ -144,11 +174,9 @@ class Validator extends Base\Validator
      * @param array           $params
      * @param Merchant\Entity $merchant
      *
+     * @throws BadRequestException
      */
-    public function validateEntries(
-        array & $entries,
-        array $params,
-        Merchant\Entity $merchant)
+    public function validateEntries(array & $entries, array $params, Merchant\Entity $merchant)
     {
         $rules = $this->getRuleNames();
 
@@ -157,6 +185,17 @@ class Validator extends Base\Validator
 
         // Header validations
         Header::validate($rules['header_rule'], array_keys(current($entries)));
+
+        //
+        // Formatted notes can be present in entries. Addition to above validation (where existence of notes header is
+        // validated) per batch type, here we validate the keys count & their lengths to avoid multiple failure at later
+        // stage (consumption - entity building etc in respective processors).
+        //
+        $firstEntry = current($entries);
+        if (isset($firstEntry[Header::NOTES]) === true)
+        {
+            Header::validateNotesKeys(array_keys($firstEntry[Header::NOTES]));
+        }
 
         // Data validations
         $validatorMethodName = $rules['validator_method'];
@@ -275,24 +314,30 @@ class Validator extends Base\Validator
 
         foreach ($entries as $idx => $entry)
         {
-            $input = Helpers\PaymentLink::getEntityInput($entry, $params);
-
-            // Need to create dummy entity and associate merchant
-            // for the validation around max allowed payment to happen.
-
-            $rule = Invoice\Validator::CREATE_DRAFT;
-
-            if ($input[Invoice\Entity::DRAFT] === '0')
-            {
-                $rule = Invoice\Validator::CREATE_ISSUED;
-            }
-
-            $invoice = new Invoice\Entity;
-
-            $invoice->merchant()->associate($merchant);
-
+            //
+            // This whole block needs to be in try..catch as following line may
+            // also throw bad request exception per row while parsing human readable
+            // date time values as epoch.
+            //
             try
             {
+                $input = Helpers\PaymentLink::getEntityInput($entry, $params);
+
+                $rule = Invoice\Validator::CREATE_DRAFT;
+
+                if ($input[Invoice\Entity::DRAFT] === '0')
+                {
+                    $rule = Invoice\Validator::CREATE_ISSUED;
+                }
+
+                //
+                // Need to create dummy entity and associate merchant for
+                // the validation around max allowed payment to happen.
+                //
+                $invoice = new Invoice\Entity;
+
+                $invoice->merchant()->associate($merchant);
+
                 $invoice->getValidator()->validateInput($rule, $input);
 
                 $error = [
@@ -336,9 +381,23 @@ class Validator extends Base\Validator
         if ($merchant->isFeatureEnabled(Feature::VIRTUAL_ACCOUNTS) === false)
         {
             throw new BadRequestValidationFailureException(
-                'Virtual accounts is not enabled for merchant',
+                'Batch type is not enabled for merchant',
                 null,
                 [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+    }
+
+    protected function validateRecurringChargeEntries(array & $entries, array $params, Merchant\Entity $merchant)
+    {
+        if ($merchant->isFeatureEnabled(Feature::CHARGE_AT_WILL) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Batch type is not enabled for merchant',
+                null,
+                [
+                    Entity::ID          => $this->entity->getId(),
                     Entity::MERCHANT_ID => $merchant->getId(),
                 ]);
         }
@@ -349,7 +408,7 @@ class Validator extends Base\Validator
         if ($merchant->isFeatureEnabled(Feature::PAYOUT) === false)
         {
             throw new BadRequestValidationFailureException(
-                'Payout are not enabled for merchant',
+                'Batch type is not enabled for merchant',
                 null,
                 [
                     Entity::MERCHANT_ID => $merchant->getId(),
@@ -423,6 +482,17 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException(
                 'Sub-merchant creation not allowed for merchant',
                 null,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+
+        if ((isset($params[Entity::APPLICATION_ID]) === true) and
+            ($merchant->isFeatureEnabled(Feature::PARTNER) === false))
+        {
+            throw new BadRequestValidationFailureException(
+                'Application ID cannot be sent, and is not allowed',
+                Entity::APPLICATION_ID,
                 [
                     Entity::MERCHANT_ID => $merchant->getId(),
                 ]);

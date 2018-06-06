@@ -1,5 +1,6 @@
 pipeline:
   test:
+    group: A
     image: razorpay/containers:php7
     secrets: [docker_username, docker_password, git_token, rzp_api]
     environment:
@@ -28,6 +29,7 @@ pipeline:
         include: [push]
   build:
     image: plugins/docker
+    group: A
     repo: razorpay/api
     secrets: [docker_username, docker_password, git_token]
     build_args_from_env: [git_token]
@@ -63,7 +65,7 @@ pipeline:
         include: [push]
 services:
   livedb:
-    image: mysql
+    image: mysql:5.7
     environment:
       - MYSQL_DATABASE=api
       - MYSQL_ROOT_PASSWORD=root
@@ -72,7 +74,7 @@ services:
         exclude: [deployment, pull_request]
         include: [push]
   testdb:
-    image: mysql
+    image: mysql:5.7
     environment:
       - MYSQL_DATABASE=api_test
       - MYSQL_ROOT_PASSWORD=root
@@ -81,7 +83,7 @@ services:
         exclude: [deployment, pull_request]
         include: [push]
   authdb:
-    image: mysql
+    image: mysql:5.7
     environment:
       - MYSQL_DATABASE=auth
       - MYSQL_ROOT_PASSWORD=root

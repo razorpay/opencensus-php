@@ -10,9 +10,10 @@ class Repository extends Base\Repository
 {
     protected $entity = 'batch_fund_transfer';
 
-    protected static $appFetchParamRules = [
-        'date' => 'integer|digits:8',
-        'type' => 'string|max:10',
+    protected $appFetchParamRules = [
+        'date'          => 'integer|digits:8',
+        Entity::TYPE    => 'string|max:10',
+        Entity::CHANNEL => 'sometimes|string',
     ];
 
     protected static $fetchExtraParamRules = [

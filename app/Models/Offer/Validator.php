@@ -30,6 +30,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_METHOD_TYPE => 'filled|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'filled|alpha',
         Entity::ISSUER              => 'filled|alpha|custom',
+        Entity::INTERNATIONAL       => 'sometimes_if:payment_method,card|boolean',
         Entity::IINS                => 'filled|array',
         Entity::PERCENT_RATE        => 'filled|integer|min:0|max:10000',
         Entity::MAX_CASHBACK        => 'filled|integer|min:0',
@@ -53,6 +54,7 @@ class Validator extends Base\Validator
         Entity::MAX_PAYMENT_COUNT  => 'filled|integer|min:1',
         Entity::LINKED_OFFER_IDS   => 'filled|array',
         Entity::ACTIVE             => 'filled|in:0',
+        Entity::ENDS_AT            => 'filled|epoch',
         Entity::DISPLAY_TEXT       => 'filled|string|max:255',
         Entity::ERROR_MESSAGE      => 'filled|string|max:255',
         Entity::TERMS              => 'filled|string'
@@ -71,7 +73,7 @@ class Validator extends Base\Validator
     protected static $editValidators = [
         Entity::IINS,
         Entity::MAX_PAYMENT_COUNT,
-        Entity::LINKED_OFFER_IDS
+        Entity::LINKED_OFFER_IDS,
     ];
 
     protected function validatePaymentNetwork(array $input)

@@ -51,6 +51,7 @@ class Entity extends Base\PublicEntity
     const OUTPUT_FILE_PREFIX        = 'batch/download/';
     const VALIDATED_FILE_PREFIX     = 'batch/validated/';
     const CONFIG                    = 'config';
+    const APPLICATION_ID            = 'application_id';
 
     /**
      * Constants used for batch stats api
@@ -61,6 +62,8 @@ class Entity extends Base\PublicEntity
      * Constant used for batch multiple fetch api to include settings
      */
     const WITH_CONFIG               = 'with_config';
+
+    const TOKEN = 'token';
 
     protected static $sign = 'batch';
 
@@ -429,6 +432,17 @@ class Entity extends Base\PublicEntity
         Status::validateStatus($status);
 
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    /**
+     * At the time of retrying failed batch we temporarily set status to null so
+     * that processer code will continue and evaluate new status and set at the end.
+     * Note that null is not a valid status and if processor failed to evaluate &
+     * set new status entity save will fail (which is expected & good).
+     */
+    public function setStatusNull()
+    {
+        $this->setAttribute(self::STATUS, null);
     }
 
     public function setProcessing(bool $value)

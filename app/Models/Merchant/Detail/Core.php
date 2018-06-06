@@ -114,6 +114,24 @@ class Core extends Base\Core
     }
 
     /**
+     * This function is used to patch merchant details fields
+     * @param Entity $merchantDetails
+     * @param array $input
+     *
+     * @return Entity
+     */
+    public function patchMerchantDetails(Entity $merchantDetails, array $input): Entity
+    {
+        $merchantDetails->getValidator()->validateInput('patchMerchantDetails', $input);
+
+        $merchantDetails->edit($input);
+
+        $this->repo->saveOrFail($merchantDetails);
+
+        return $merchantDetails;
+    }
+
+    /**
      * This function is used to sync fields transaction_report_email and website
      * in both merchant and merchantDetail entities
      *
@@ -299,9 +317,7 @@ class Core extends Base\Core
         ];
 
         // Dispatching the job into the queue
-        $job = new RequestJob($request);
-
-        $this->dispatch($job);
+        RequestJob::dispatch($request);
     }
 
     protected function merchantNotifyActivationSubmission(Entity $merchantDetails, Merchant\Entity $merchant)
@@ -356,8 +372,14 @@ class Core extends Base\Core
     {
         $merchant = $merchantDetails->merchant;
 
-        if ((empty($merchantDetails->getWebsite()) === true) or
-            ($merchant->getHasKeyAccess() === true))
+        $this->trace->info(
+            TraceCode::MERCHANT_MARK_HAS_KEY_ACCESS,
+            [
+                'business_website' => $merchantDetails->getWebsite(),
+                'has_key_access'   => $merchant->getHasKeyAccess()
+            ]);
+
+        if (empty($merchantDetails->getWebsite()) === true)
         {
             return;
         }
@@ -640,6 +662,14 @@ class Core extends Base\Core
             $ngoValidationFields = ValidationFields::NGO_MERCHANT_FIELDS;
 
             $validationFields = array_merge($validationFields, $ngoValidationFields);
+        }
+
+        // Business Types which have limited fields
+        $limitedFieldTypes = [BusinessType::INDIVIDUAL, BusinessType::NOT_YET_REGISTERED];
+
+        if (in_array($merchantDetails->getBusinessType(), $limitedFieldTypes, true) === true)
+        {
+            $validationFields = ValidationFields::DASHBOARD_FIELDS_LIMITED;
         }
 
         $merchant = $merchantDetails->merchant;

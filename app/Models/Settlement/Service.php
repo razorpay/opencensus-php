@@ -10,6 +10,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Report\Types\BasicEntityReport;
+use RZP\Models\Report\Types\SettlementReconReport;
 use RZP\Models\FundTransfer\Base\Reconciliation\Mock;
 use RZP\Models\Settlement;
 
@@ -124,16 +125,63 @@ class Service extends Base\Service
         return $txns->toArrayPublic();
     }
 
-    public function reconcileSettlements($input, string $channel)
+    /**
+     * This method will only process push based settlement reconciliation
+     *
+     * @param        $input
+     * @param string $channel
+     * @return mixed
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function reconcileSettlementsThroughFile($input, string $channel)
     {
-        $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\Reconciliation\\FileProcessor';
+        $fileBasedChannels = Channel::getFileBasedChannels();
+
+        if (in_array($channel, $fileBasedChannels, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Channel Does not support File based approach',
+                null,
+                [
+                    'channel' => $channel
+                ]);
+        }
+
+        $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\Reconciliation\\Processor';
+
+        return (new $reconNamepsace)->process($input);
+    }
+
+    /**
+     * This method will only process pull based settlement reconciliation
+     *
+     * @param        $input
+     * @param string $channel
+     * @return mixed
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function settlementReconcileThroughApi($input, string $channel)
+    {
+        $apiBasedChannels = Channel::getApiBasedChannels();
+
+        if (in_array($channel, $apiBasedChannels, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Channel Does not support API based approach',
+                null,
+                [
+                    'channel' => $channel
+                ]);
+        }
+
+        $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel) . '\\Reconciliation\\Processor';
 
         return (new $reconNamepsace)->process($input);
     }
 
     public function reconcileH2HSettlements($input, string $channel)
     {
-        $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\Reconciliation\\FileProcessor';
+        $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\Reconciliation\\Processor';
 
         return (new $reconNamepsace)->process($input);
     }
@@ -153,7 +201,7 @@ class Service extends Base\Service
         return $result;
     }
 
-    public function generateSettlementReconciliation($input, string $channel)
+    public function generateSettlementReconciliationFile($input, string $channel)
     {
         (new Settlement\Validator)->validateInput('valid_channel', [
             'channel'   => $channel
@@ -181,6 +229,13 @@ class Service extends Base\Service
     public function getSettlementCombinedReport($input)
     {
         $report = new BasicEntityReport(E::TRANSACTION);
+
+        return $report->getReport($input);
+    }
+
+    public function getSettlementCombinedReconReport($input)
+    {
+        $report = new SettlementReconReport(E::TRANSACTION);
 
         return $report->getReport($input);
     }

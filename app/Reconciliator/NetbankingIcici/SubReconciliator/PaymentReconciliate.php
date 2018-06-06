@@ -14,9 +14,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected $netbankingRepo;
 
-    public function __construct()
+    public function __construct(string $gateway = null)
     {
-        parent::__construct();
+        parent::__construct($gateway);
 
         $this->netbankingRepo = $this->repo->netbanking;
     }
@@ -31,15 +31,15 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return null;
     }
 
-    // protected function getReferenceNumber($row)
-    // {
-    //     if (empty($row[self::COLUMN_BANK_PAYMENT_ID]) === false)
-    //     {
-    //         return $row[self::COLUMN_BANK_PAYMENT_ID];
-    //     }
-
-    //     return null;
-    // }
+//     protected function getReferenceNumber($row)
+//     {
+//         if (empty($row[self::COLUMN_BANK_PAYMENT_ID]) === false)
+//         {
+//             return $row[self::COLUMN_BANK_PAYMENT_ID];
+//         }
+//
+//         return null;
+//     }
 
     protected function getGatewayPayment($paymentId)
     {

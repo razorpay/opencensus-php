@@ -21,6 +21,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\VirtualAccount\Receiver;
 
 class Validator extends Base\Validator
 {
@@ -39,7 +40,7 @@ class Validator extends Base\Validator
         'bank'                          => 'required_if:method,netbanking,aeps,emandate|string|between:4,6',
         'wallet'                        => 'required_if:method,wallet|custom',
         'emi_duration'                  => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
-        'description'                   => 'sometimes|string|max:255|utf8',
+        'description'                   => 'sometimes|nullable|string|max:255|utf8',
         'email'                         => 'sometimes|nullable|email',
         'contact'                       => 'sometimes|nullable|contact_syntax',
         'signature'                     => 'sometimes|nullable|string',
@@ -49,9 +50,9 @@ class Validator extends Base\Validator
         'order_id'                      => 'sometimes|filled',
         'customer_id'                   => 'sometimes|public_id|filled',
         'subscription_id'               => 'sometimes|public_id',
-        'receiver'                      => 'sometimes_if:method,card,upi|associative_array|filled',
+        'receiver'                      => 'sometimes_if:method,card,upi,bank_transfer|associative_array|filled',
         'receiver.type'                 => 'required_with:receiver|filled|string|in:qr_code,bank_account',
-        'receiver.id'                   => 'required_with:receiver|filled|alpha_num|size:17|public_id',
+        'receiver.id'                   => 'required_with:receiver|filled|size:17|public_id',
         'app_token'                     => 'sometimes',
         'token'                         => 'sometimes',
         'save'                          => 'sometimes|in:0,1',
@@ -92,7 +93,18 @@ class Validator extends Base\Validator
     ];
 
     protected static $bulkCaptureRules = [
-        'payment_ids'                => 'required|array',
+        'payment_ids'                => 'required|sequential_array',
+        'payment_ids.*'              => 'required|public_id',
+    ];
+
+    protected static $verifyRules = [
+        'bucket'                     => 'sometimes|sequential_array',
+        'bucket.*'                   => 'sometimes|integer|max:7',
+        'gateway'                    => 'sometimes|string|max:50'
+    ];
+
+    protected static $bulkVerifyRules = [
+        'payment_ids'                => 'required|sequential_array',
         'payment_ids.*'              => 'required|public_id',
     ];
 
@@ -133,7 +145,6 @@ class Validator extends Base\Validator
         'customer_id',
         'test_success',
         'upi_expiry_time',
-        'upi_vpa',
         'recurring',
         // Ideally, we should be using custom. But
         // due to dot notation, we cannot use it.
@@ -250,20 +261,6 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateUpiVpa(array $input)
-    {
-        if ((isset($input['_']['flow']) === false) or
-            ($input['_']['flow'] !== 'intent'))
-        {
-            if (($input[Entity::METHOD] === Method::UPI) and
-                (empty($input[Entity::VPA]) === true))
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The vpa field is required when method is upi.');
-            }
-        }
-    }
-
     protected function validateOrderId(array $input)
     {
         $merchant = $this->entity->merchant;
@@ -280,10 +277,10 @@ class Validator extends Base\Validator
 
     protected function validateEmail(array $input)
     {
-        //
-        // TODO: To be changed after refactor. No validation required for Bharat qr
-        //
-        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
+        // The payments received on these receivers are push based. We can't really know the
+        // email of person making a payment
+        if ((isset($input[Entity::RECEIVER]) === true) and
+            (empty($input[Entity::RECEIVER]['type']) === false))
         {
             return;
         }
@@ -400,6 +397,13 @@ class Validator extends Base\Validator
 
         $method = $input['method'];
 
+        $receiverType = null;
+
+        if (isset($input[Entity::RECEIVER]) === true)
+        {
+            $receiverType = $input[Entity::RECEIVER]['type'];
+        }
+
         if ($method !== Payment\Method::EMANDATE)
         {
             if ($amount < 100)
@@ -426,8 +430,15 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        // No limit on amount for payments of method deinfed in Method::$methodsWithoutAmountValidation
+        // No limit on amount for payments of method defined in Method::$methodsWithoutAmountValidation
         if (in_array($method, Method::$methodsWithoutAmountValidation, true) === true)
+        {
+            return;
+        }
+
+        // The payments received on these receivers are push based. We can't really control after
+        // we already received a payments. So removing amount validation check on it
+        if (empty($receiverType) === false)
         {
             return;
         }
@@ -551,10 +562,10 @@ class Validator extends Base\Validator
 
     protected function validateContact($input)
     {
-        //
-        // TODO: To be changed after refactor. No validation required for Bharat qr
-        //
-        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
+        // The payments received on these receivers are push based. We can't really know the
+        // contact of person making a payment
+        if ((isset($input[Entity::RECEIVER]) === true) and
+            (empty($input[Entity::RECEIVER]['type']) === false))
         {
             return;
         }

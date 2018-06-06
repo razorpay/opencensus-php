@@ -16,6 +16,7 @@ use RZP\Constants\HashAlgo;
 use RZP\Constants\Timezone;
 use RZP\Models\Card\Network;
 use RZP\Gateway\Base\Verify;
+use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Base\UniqueIdEntity;
 
@@ -46,10 +47,11 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        if ((isset($input['qr_notification']) === true) and
-            ($input['qr_notification'] === true))
+        if ($this->isBharatQrPayment() === true)
         {
-            return $this->createGatewayPaymentEntityForQr($input);
+            $this->createGatewayPaymentEntityForQr($input);
+
+            return null;
         }
 
         if ($this->isSecondRecurringPaymentRequest($input) === true)
@@ -77,10 +79,12 @@ class Gateway extends Base\Gateway
 
         $authResponse = $this->callAuthenticationGateway($input);
 
-        $this->authorizeEnrolled($input, $authResponse);
+        $gatewayEntity = $this->authorizeEnrolled($input, $authResponse);
+
+        $acquirerData = $this->getAcquirerData($input, $gatewayEntity);
 
         // TODO: Add authenticate data for 2FA
-        return $this->getCallbackResponseData($input);
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function capture(array $input)
@@ -166,7 +170,7 @@ class Gateway extends Base\Gateway
 
             return [
                 'qr_data'           => $qrData,
-                'gateway_input'     => $input,
+                'callback_data'     => $input,
             ];
         }
 
@@ -201,12 +205,19 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]),
             BharatQr\GatewayResponseParams::CARD_FIRST6           => substr($input[ResponseFields::MASKED_CARD_NUMBER], 0, 6),
             BharatQr\GatewayResponseParams::CARD_LAST4            => substr($input[ResponseFields::MASKED_CARD_NUMBER], 12, 4),
+            BharatQr\GatewayResponseParams::SENDER_NAME           => $input[ResponseFields::SENDER_NAME],
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::CARD,
+            BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::MID],
             BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[ResponseFields::PURCHASE_ID],
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::AUTHORIZATION_ID],
         ];
 
         return $qrData;
+    }
+
+    protected function getIntegerFormattedAmount(string $amount)
+    {
+        return (int) number_format($amount, 0, '.', '');
     }
 
     protected function createGatewayPaymentEntityForQr($input)
@@ -274,9 +285,11 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getAttributesFromAuthResponse($response);
 
-        $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
+        $gatewayEntity = $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
 
         $this->checkErrorsAndThrowException($response);
+
+        return $gatewayEntity;
     }
 
     protected function sendPaymentVerifyRequest($verify)
@@ -532,6 +545,8 @@ class Gateway extends Base\Gateway
         $time = Carbon::now(Timezone::IST)->format(self::TIME_FORMAT);
         $date = Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
 
+        $currencyCode = Currency::getIsoCode($input['payment']['currency']);
+
         $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::AUTH,
             RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['payment']['amount']),
@@ -545,6 +560,7 @@ class Gateway extends Base\Gateway
             RequestFields::ALGORITHM           => '',
             RequestFields::CAVV2               => '',
             RequestFields::UCAF                => '',
+            RequestFields::CURRENCY_CODE       => $currencyCode,
         ];
 
         return $content;
@@ -731,12 +747,9 @@ class Gateway extends Base\Gateway
 
         $action = $action ?: $this->action;
 
-        if (empty($input['terminal']) === false)
-        {
-            $acquirer = $input['terminal']->getGatewayAcquirer();
+        $acquirer = $input['terminal']->getGatewayAcquirer();
 
-            $gatewayPayment->setAcquirer($acquirer);
-        }
+        $gatewayPayment->setAcquirer($acquirer);
 
         $gatewayPayment->setAction($action);
 
@@ -757,9 +770,12 @@ class Gateway extends Base\Gateway
     {
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
-        $acquirer = $input['terminal']->getGatewayAcquirer();
+        if (isset($input['terminal']) === true)
+        {
+            $acquirer = $input['terminal']->getGatewayAcquirer();
 
-        $gatewayPayment->setAcquirer($acquirer);
+            $gatewayPayment->setAcquirer($acquirer);
+        }
 
         $gatewayPayment->setAction($this->action);
 
@@ -884,11 +900,6 @@ class Gateway extends Base\Gateway
 
     protected function getTerminalId()
     {
-        if ($this->isBharatQrPayment() === true)
-        {
-            return $this->config['bharatqr_terminal_id'];
-        }
-
         $terminalId = $this->terminal['gateway_terminal_id'];
 
         if ($this->mode === Mode::TEST)

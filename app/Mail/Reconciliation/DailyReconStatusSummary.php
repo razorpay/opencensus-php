@@ -19,7 +19,7 @@ class DailyReconStatusSummary extends Mailable
 
     protected $gateways;
 
-    const RECIPIENT_EMAILS_MAP = ['pgrecon@razorpay.com', 'kajol.nigam@razorpay.com'];
+    const RECIPIENT_EMAILS_MAP = ['pgrecon.reports@razorpay.com'];
 
     public function __construct(array $emails, array $gateways, array $params, array $data)
     {

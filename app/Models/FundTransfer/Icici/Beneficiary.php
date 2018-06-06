@@ -66,7 +66,8 @@ class Beneficiary extends BaseBeneficiary
         {
             $address = $ba->source->merchantDetail->getBusinessRegisteredAddress();
 
-            $address = substr($address, 0, 30);
+            // Removes line break from the string
+            $address = $this->normalizeString($address, 30, '');
 
             $row = [
                 'A',
@@ -106,7 +107,7 @@ class Beneficiary extends BaseBeneficiary
         return $txt;
     }
 
-    protected function generateFile(string $txt): FileStore\Creator
+    protected function generateFile($txt): FileStore\Creator
     {
         $fileName = 'icici/outgoing/NRPSS_NRPSSBENEUPLD_' . $this->id;
 
@@ -134,23 +135,6 @@ class Beneficiary extends BaseBeneficiary
             'mtime' => Carbon::now()->getTimestamp(),
             'mode'  => '33188'
         ];
-    }
-
-    protected function makeResponse(FileStore\Creator $file, int $merchantCount)
-    {
-        $fileDetails = $file->get();
-
-        $signedFileUrl = $file->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
-
-        $data = [
-            'signed_url'      => $signedFileUrl,
-            'local_file_path' => $fileDetails['local_file_path'],
-            'file_name'       => basename($fileDetails['local_file_path']),
-            'merchants_count' => $merchantCount,
-            'channel'         => $this->channel,
-        ];
-
-        return $data;
     }
 
     protected function sendEmail(array $data)

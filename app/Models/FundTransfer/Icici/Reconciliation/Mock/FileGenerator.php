@@ -11,6 +11,7 @@ use RZP\Models\FundTransfer\Icici\NodalAccount;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\FundTransfer\Icici\Reconciliation\Mode;
 use RZP\Models\FundTransfer\Icici\Reconciliation\Status;
+use RZP\Models\FundTransfer\Icici\Reconciliation\Constants;
 use RZP\Models\FundTransfer\Base\Reconciliation\Mock\Generator;
 
 class FileGenerator extends Generator
@@ -18,8 +19,6 @@ class FileGenerator extends Generator
     use FileHandlerTrait;
 
     const CHANNEL   = Settlement\Channel::ICICI;
-
-    const INTERNAL_FAILURE_REMARK = 'Rejected by RTGS Gateway (Some string goes here)';
 
     protected static $fileToReadName = 'Icici_Settlement';
 
@@ -82,9 +81,6 @@ class FileGenerator extends Generator
 
     protected function generateReconciliationFields($row, array $params)
     {
-        $remark = $this->generateInternalFailure ?
-                    self::INTERNAL_FAILURE_REMARK : random_integer(7);
-
         $data = [
             Headings::FILE_REF_NO               => '000205025290',
             Headings::PAYMENT_MODE              => $this->getReconModeFromTransactionMode($row[Headings::PAYMENT_MODE]),
@@ -93,7 +89,7 @@ class FileGenerator extends Generator
             Headings::BENEFICIARY_IFSC          => $row[Headings::BENEFICIARY_IFSC],
             Headings::AMOUNT                    => $row[Headings::AMOUNT],
             Headings::PAYMENT_DATE              => $row[Headings::PAYMENT_DATE],
-            Headings::REMARKS                   => $remark,
+            Headings::REMARKS                   => random_integer(7),
             Headings::CMS_REF_NO                => 'CMS' . random_integer(9),
             Headings::PAYMENT_REF_NO            => $row[Headings::INSTRUMENT_REFERENCE],
             Headings::STATUS                    => Status::PAID,
@@ -106,6 +102,14 @@ class FileGenerator extends Generator
             $data[Headings::STATUS]  = Status::CANCELLED;
 
             unset($data[Headings::CREATE_DATE]);
+        }
+
+        if ($this->generateInternalFailure === true)
+        {
+            $errorMessages = Status::getCriticalErrorRemarks();
+
+            $data[Headings::REMARKS ] = array_random($errorMessages)
+                                        . rand(1, 999999);
         }
 
         return $data;

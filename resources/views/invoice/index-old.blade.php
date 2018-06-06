@@ -303,9 +303,9 @@
                       document.querySelector('#partial h3').innerHTML = 'Please wait...';
                       return location.reload();
                     }
-                    if (data.merchant && data.merchant.name) {
-                      document.querySelector('#success h3').innerHTML = 'Thank you for your payment on ' + data.merchant.name;
-                    }
+
+                    document.querySelector('#success h3').innerHTML = 'Thank you for your payment on ' + invoiceObj.merchant_label;
+
                     document.querySelector('#pay_id').innerHTML = response.razorpay_payment_id;
                     document.body.className = 'paid';
                   },
@@ -323,18 +323,16 @@
                   }
                 };
                 @if (isset($data['merchant']))
-                  @if ($data['merchant']['id'] === '6lGF5wNtCS8UA0')
-                    options.theme.branding = 'payzapp'
-                  @elseif (isset($data['merchant']['organization']))
+                  @if (isset($data['merchant']['organization']))
                     @if (isset($data['merchant']['organization']['invoice_logo_url']))
                       options.theme.branding = merchant.organization.invoice_logo_url;
                     @endif
                   @endif
                 @endif
+
+                options.name = invoiceObj.merchant_label;
+
                 if (merchant) {
-                  if (merchant.name) {
-                    options.name = merchant.name;
-                  }
                   if (merchant.brand_color) {
                     options.theme.color = merchant.brand_color;
                   }

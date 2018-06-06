@@ -8,11 +8,13 @@ use Carbon\Carbon;
 use RZP\Exception;
 use Lib\PhoneBook;
 use RZP\Gateway\Base;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Holidays;
 use RZP\Constants\Mode as BaseMode;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Gateway\Enach\Base\Entity;
 use RZP\Models\Bank\Name as BankName;
 
 class Gateway extends Base\Gateway
@@ -26,7 +28,7 @@ class Gateway extends Base\Gateway
         $request = $this->getMandateCreationRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
-
+        
         $this->trace->info(TraceCode::GATEWAY_MANDATE_RESPONSE, [
             'gateway' => 'digio',
             'payment_id' => $input['payment']['id'],
@@ -34,8 +36,12 @@ class Gateway extends Base\Gateway
 
         if ($response->status_code !== 200)
         {
-            throw new Exception\GatewayErrorException(
-                Error\ErrorCode::GATEWAY_ERROR_MANDATE_CREATION_FAILED);
+            $responseBody = json_decode($response->body, true);
+
+            throw new Exception\GatewayErrorException(Error\ErrorCode::GATEWAY_ERROR_MANDATE_CREATION_FAILED,
+                                                      $responseBody['code'],
+                                                      $responseBody['message'],
+                                                      $responseBody);
         }
 
         return $this->getRedirectRequestArray($input, $response);
@@ -108,6 +114,8 @@ class Gateway extends Base\Gateway
         ];
 
         $request['url'] = strtr($request['url'], $replacePairs);
+
+        $request['content']['reference_id'] = $mandateId;
 
         return $request;
     }
@@ -191,6 +199,14 @@ class Gateway extends Base\Gateway
             'first_collection_date'         => $nextWorkingDt->format('Y-m-d'),
             'final_collection_date'         => $finalCollection->format('Y-m-d'),
         ];
+
+        $paymentEmail = $input['payment'][Payment\Entity::EMAIL];
+
+        if ((empty($paymentEmail) === false) and
+            ($paymentEmail !== Payment\Entity::DUMMY_EMAIL))
+        {
+            $traceContent['customer_email'] = $content['customer_email'] = $paymentEmail;
+        }
 
         unset($traceContent['aadhaar'], $traceContent['customer_account_number']);
 

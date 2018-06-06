@@ -42,7 +42,6 @@ class Constants
     const HIDE_DOWNTIMES                = 'hide_downtimes';
     const OLD_CREDITS_FLOW              = 'old_credits_flow';
     const CHARGE_AT_WILL                = 'charge_at_will';
-    const E_MANDATE                     = 'e_mandate';
     const EMI_MERCHANT_SUBVENTION       = 'emi_merchant_subvention';
     const FSS_RISK_UDF                  = 'fss_risk_udf';
     const RULE_FILTER                   = 'rule_filter';
@@ -54,6 +53,7 @@ class Constants
     const BHARAT_QR                     = 'bharat_qr';
     const MOBIKWIK_OFFERS               = 'mobikwik_offers';
     const ALLOW_DC_RECURRING            = 'allow_dc_recurring';
+    const ALLOW_ALL_DC_RECURRING        = 'allow_all_dc_recurring';
     const SKIP_HOLD_FUNDS_ON_PAYOUT     = 'skip_hold_funds_on_payout';
     const REPORT_V2                     = 'report_v2';
     const CORPORATE_BANKS               = 'corporate_banks';
@@ -61,7 +61,14 @@ class Constants
     const NEW_ANALYTICS                 = 'new_analytics';
     const DAILY_SETTLEMENT              = 'daily_settlement';
     const DISABLE_UPI_INTENT            = 'disable_upi_intent';
+    const DIRECT_DEBIT                  = 'direct_debit';
     const ALLOW_S2S_APPS                = 'allow_s2s_apps';
+    const UPI_PLUS                      = 'upi_plus';
+    const FSS_IPAY                      = 'fss_ipay';
+    const EXPOSE_CARD_EXPIRY            = 'expose_card_expiry';
+    const EXPOSE_CARD_IIN               = 'expose_card_iin';
+    const S2S_OPTIONAL_DATA             = 's2s_optional_data';
+    const PARTNER                       = 'partner';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -70,6 +77,9 @@ class Constants
     // Payment authentication
     const ATM_PIN_AUTH                  = 'atm_pin_auth';
 
+    // Payment headless otp auth
+    const HEADLESS_OTP                  = 'headless_otp';
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
@@ -77,6 +87,11 @@ class Constants
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
+    ];
+
+    public static $debitRecurringFeatures = [
+        self::ALLOW_ALL_DC_RECURRING,
+        self::ALLOW_DC_RECURRING
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -124,7 +139,6 @@ class Constants
         self::HIDE_DOWNTIMES                => true,
         self::OLD_CREDITS_FLOW              => true,
         self::CHARGE_AT_WILL                => true,
-        self::E_MANDATE                     => true,
         self::EMI_MERCHANT_SUBVENTION       => true,
         self::FSS_RISK_UDF                  => true,
         self::RULE_FILTER                   => true,
@@ -136,6 +150,7 @@ class Constants
         self::BHARAT_QR                     => true,
         self::MOBIKWIK_OFFERS               => true,
         self::ALLOW_DC_RECURRING            => true,
+        self::ALLOW_ALL_DC_RECURRING        => true,
         self::SKIP_HOLD_FUNDS_ON_PAYOUT     => true,
         self::REPORT_V2                     => true,
         self::CORPORATE_BANKS               => true,
@@ -147,6 +162,14 @@ class Constants
         self::DISABLE_UPI_INTENT            => true,
         self::ATM_PIN_AUTH                  => true,
         self::ALLOW_S2S_APPS                => true,
+        self::UPI_PLUS                      => true,
+        self::FSS_IPAY                      => true,
+        self::DIRECT_DEBIT                  => true,
+        self::EXPOSE_CARD_EXPIRY            => true,
+        self::EXPOSE_CARD_IIN               => true,
+        self::S2S_OPTIONAL_DATA             => true,
+        self::PARTNER                       => true,
+        self::HEADLESS_OTP                  => true,
     ];
 
     // Entity type constants
@@ -217,11 +240,6 @@ class Constants
             'display_name'  => 'Report V2',
             'documentation' => ''
         ],
-        self::E_MANDATE => [
-            'feature'   => self::E_MANDATE,
-            'display_name'  => 'E-Mandate',
-            'documentation' => '',
-        ]
     ];
 
     /*

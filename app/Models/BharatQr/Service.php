@@ -45,7 +45,7 @@ class Service extends Base\Service
 
         try
         {
-            $callbackData = $gatewayClass->preProcessServerCallback($input, true);
+            $gatewayResponse = $gatewayClass->preProcessServerCallback($input, true);
         }
         catch (\Exception $ex)
         {
@@ -54,42 +54,21 @@ class Service extends Base\Service
             return $this->getResponse(false);
         }
 
-        $qrData = $callbackData['qr_data'];
-        $gatewayInput = $callbackData['gateway_input'];
+        $qrData = $gatewayResponse['qr_data'];
 
         (new Validator)->validateInput('gateway_response', $qrData);
 
         $qrCodeId = $qrData[GatewayResponseParams::MERCHANT_REFERENCE];
 
-        $this->determineAndSetModeForQr($qrCodeId);
+        $this->determineAndSetModeForQr($qrCodeId, $gateway);
 
-        $qrData[GatewayResponseParams::GATEWAY] = $gateway;
+        $gatewayResponse['qr_data'][GatewayResponseParams::GATEWAY] = $gateway;
 
-        list($valid, $bharatQr) = $this->core->processPayment($qrData);
-
-        //
-        // In case of duplicate notification
-        // we don't create new payment
-        //
-        if ($bharatQr !== null)
-        {
-            $gatewayInput['payment'] = $bharatQr->payment->toArray();
-
-            $this->callGatewayAuthorize($gateway, $gatewayInput);
-        }
+        $valid = $this->core->processPayment($gatewayResponse);
 
         $response = $this->getResponse($valid);
 
         return $response;
-    }
-
-    // This will be removed from here after terminal association with bharat qr
-    // payments
-    protected function callGatewayAuthorize(string $gateway, array $gatewayInput)
-    {
-        $gatewayInput['qr_notification'] = true;
-
-        return $this->app['gateway']->call($gateway, Action::AUTHORIZE, $gatewayInput, null);
     }
 
     protected function getResponse(bool $valid)
@@ -112,18 +91,22 @@ class Service extends Base\Service
         return $response;
     }
 
-    protected function determineAndSetModeForQr(string $merchantReference)
+    protected function determineAndSetModeForQr(string $merchantReference, string $gateway)
     {
         // We are not using verifyIdAndSilentlyStripSign here because in case
         // of unexpected payments reference id will be random and this will throw
         // exception.
         (new QrCode\Entity)->stripSignWithoutValidation($merchantReference);
 
-        $mode = $this->repo->determineLiveOrTestModeForEntity($merchantReference, Constants\Entity::QR_CODE);
-
-        if ($mode === null)
+        if ($gateway === Payment\Gateway::SHARP)
         {
-            $mode = Mode::LIVE;
+            $mode = Mode::TEST;
+        }
+        else
+        {
+            $mode = $this->repo->determineLiveOrTestModeForEntity($merchantReference, Constants\Entity::QR_CODE);
+
+            $mode = $mode ?? Mode::LIVE;
         }
 
         $this->app['basicauth']->setModeAndDbConnection($mode);

@@ -3,6 +3,7 @@
 namespace RZP\Models\Invoice;
 
 use App;
+use Lib\Gstin;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -14,8 +15,8 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Address;
 use RZP\Models\Customer;
-use RZP\Models\LineItem;
 use RZP\Models\FileStore;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Plan\Subscription;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -61,6 +62,19 @@ class Entity extends Base\PublicEntity
     const EMAIL_STATUS              = 'email_status';
     const SMS_STATUS                = 'sms_status';
     const DESCRIPTION               = 'description';
+    const MERCHANT_GSTIN            = 'merchant_gstin';
+    const MERCHANT_LABEL            = 'merchant_label';
+
+    /**
+     * Captures the Place of Supply GSTIN code for the invoice. (Ex: '05', '31', '35' etc.)
+     * Value of this field would be valid GSTIN (For India 2 digit numeric number). We can't use state code(such as. BR,
+     * KA etc) because those are not standard yet. For example for Bihar there is 2 state code used by different govt.
+     * departments but both of them point to same GSTIN number.
+     *
+     * Ref: Lib\GSTIN::$gstinToStateCodeMap
+     *
+     */
+    const SUPPLY_STATE_CODE         = 'supply_state_code';
     const TERMS                     = 'terms';
     const NOTES                     = 'notes';
     const COMMENT                   = 'comment';
@@ -136,6 +150,9 @@ class Entity extends Base\PublicEntity
     const SMS                      = 'sms';
     const ITEMS                    = 'items';
     const IS_PAID                  = 'is_paid';
+    const SUPPLY_STATE_NAME        = 'supply_state_name';
+    const BILLING_ADDRESS_TEXT     = 'billing_address_text';
+    const SHIPPING_ADDRESS_TEXT    = 'shipping_address_text';
 
     const DEFAULT_DUE_DAYS         = 60;
 
@@ -213,6 +230,9 @@ class Entity extends Base\PublicEntity
         self::EXPIRED_AT                => null,
         self::EXPIRE_BY                 => null,
         self::RECEIPT                   => null,
+        self::MERCHANT_GSTIN            => null,
+        self::MERCHANT_LABEL            => null,
+        self::SUPPLY_STATE_CODE         => null,
         self::DESCRIPTION               => null,
         self::NOTES                     => [],
         self::COMMENT                   => null,
@@ -266,6 +286,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_START,
         self::BILLING_END,
         self::EXPIRE_BY,
+        self::SUPPLY_STATE_CODE,
         self::CALLBACK_URL,
         self::CALLBACK_METHOD,
     ];
@@ -294,6 +315,9 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::MERCHANT_ID,
         self::DATE,
+        self::MERCHANT_GSTIN,
+        self::MERCHANT_LABEL,
+        self::SUPPLY_STATE_CODE,
         self::DESCRIPTION,
         self::TERMS,
         self::NOTES,
@@ -358,6 +382,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_END,
         self::TYPE,
         self::GROUP_TAXES_DISCOUNTS,
+        self::SUPPLY_STATE_CODE,
         self::SUBSCRIPTION_STATUS,
         self::USER_ID,
         self::USER,
@@ -398,6 +423,7 @@ class Entity extends Base\PublicEntity
         self::SHORT_URL,
         self::TYPE,
         self::GROUP_TAXES_DISCOUNTS,
+        self::SUPPLY_STATE_CODE,
         self::SUBSCRIPTION_STATUS,
         self::CREATED_AT,
     ];
@@ -418,10 +444,8 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::ORDER_ID,
         self::SUBSCRIPTION_ID,
-        // Later, we will come up with a proper structure to show
-        // fields based on proper auth structure.
-        // TODO: Remove this when the above is implemented
         self::SUBSCRIPTION_STATUS,
+        self::SUPPLY_STATE_CODE,
     ];
 
     protected $casts = [
@@ -517,6 +541,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SMS_STATUS);
     }
 
+    public function getCustomerId()
+    {
+        return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
+    public function getPublicCustomerId()
+    {
+        return Customer\Entity::getSignedIdOrNull($this->getCustomerId());
+    }
+
     public function getCustomerName()
     {
         return $this->getAttribute(self::CUSTOMER_NAME);
@@ -605,6 +639,28 @@ class Entity extends Base\PublicEntity
     public function getUserId()
     {
         return $this->getAttribute(self::USER_ID);
+    }
+
+    public function getMerchantGstin()
+    {
+        return $this->getAttribute(self::MERCHANT_GSTIN);
+    }
+
+    public function getMerchantLabel()
+    {
+        return $this->getAttribute(self::MERCHANT_LABEL);
+    }
+
+    public function getSupplyStateCode()
+    {
+        return $this->getAttribute(self::SUPPLY_STATE_CODE);
+    }
+
+    public function getSupplyStateName()
+    {
+        $code = $this->getSupplyStateCode();
+
+        return $code !== null ? Gstin::getStateNameByCode($code) : null;
     }
 
     public function getDescription()
@@ -956,6 +1012,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::USER_ID, $userId);
     }
 
+    public function setMerchantGstin(string $gstin = null)
+    {
+        $this->setAttribute(self::MERCHANT_GSTIN, $gstin);
+    }
+
+    public function setMerchantLabel(string $merchantLabel)
+    {
+        $this->setAttribute(self::MERCHANT_LABEL, $merchantLabel);
+    }
+
     /**
      * Sets all amounts field to null.
      * Used when all line items of draft invoice are removed.
@@ -998,12 +1064,14 @@ class Entity extends Base\PublicEntity
      */
     protected function getCustomerDetailsAttribute(): array
     {
+        $customerId      = $this->getPublicCustomerId();
         $customerName    = $this->getCustomerName();
         $customerEmail   = $this->getCustomerEmail();
         $customerContact = $this->getCustomerContact();
         $customerGstin   = $this->getCustomerGstin();
 
         $details = [
+            Customer\Entity::ID               => $customerId,
             Customer\Entity::NAME             => $customerName,
             Customer\Entity::EMAIL            => $customerEmail,
             Customer\Entity::CONTACT          => $customerContact,
@@ -1096,6 +1164,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECEIPT);
     }
 
+    public function getMerchantLabelAttribute($label)
+    {
+        return $label ?: $this->merchant->getLabelForInvoice();
+    }
+
     // -------------------------------------- End Accessors ----------
 
     // -------------------------------------- Public Setters ---------
@@ -1128,15 +1201,38 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    /**
+     * TODO: Move to entity serializer
+     * @param array $array
+     */
     public function setPublicSubscriptionStatusAttribute(array & $array)
     {
         $app = App::getFacadeRoot();
 
+        /** @var BasicAuth $basicAuth */
         $basicAuth = $app['basicauth'];
 
         if ($basicAuth->isProxyOrPrivilegeAuth() === false)
         {
             unset($array[self::SUBSCRIPTION_STATUS]);
+        }
+    }
+
+    /**
+     * TODO: Move to entity serializer
+     * @param array $array
+     */
+    public function setPublicSupplyStateCodeAttribute(array & $array)
+    {
+        $app = App::getFacadeRoot();
+
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = $app['basicauth'];
+
+        // Unset the attribute, only on strictly private auth
+        if ($basicAuth->isStrictPrivateAuth() === true)
+        {
+            unset($array[self::SUPPLY_STATE_CODE]);
         }
     }
 

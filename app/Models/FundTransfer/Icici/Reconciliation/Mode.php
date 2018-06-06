@@ -4,7 +4,7 @@ namespace RZP\Models\FundTransfer\Icici\Reconciliation;
 
 class Mode
 {
-    #TODO:: Find about IMPS
+    const IMPS = 'M';
     const RTGS = 'AUTORTGS';
     const NEFT = 'AUTONEFT';
     const IFT  = 'FUNDS_TRF';

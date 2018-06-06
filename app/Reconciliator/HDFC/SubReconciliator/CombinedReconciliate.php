@@ -6,38 +6,42 @@ use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class CombinedReconciliate  extends Base\CombinedReconciliate
+class CombinedReconciliate extends Base\CombinedReconciliate
 {
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_ENTITY_TYPE  = ['rec_fmt', 'REC FMT'];
+    const COLUMN_ENTITY_TYPE  = 'rec_fmt';
 
-    const UNKNOWN_COLUMN_ENTITY_TYPES = ['CDP', 'CBR', 'AMC', 'MCC'];
+    const UNKNOWN_COLUMN_ENTITY_TYPES = ['CDP', 'CBR', 'AMC', 'MCC', 'GFC'];
 
     protected function getReconciliationTypeForRow($row)
     {
         $entityType = null;
 
-        foreach (self::COLUMN_ENTITY_TYPE as $cet)
+        //
+        // Identifies if row type is payment or refund.
+        //
+        $reconType = null;
+
+        if (isset($row[self::COLUMN_ENTITY_TYPE]) === true)
         {
-            if (isset($row[$cet]) === true)
-            {
-                $entityType = $row[$cet];
+            $entityType = $row[self::COLUMN_ENTITY_TYPE];
 
-                $entityType = trim($entityType);
-
-                break;
-            }
+            $entityType = trim($entityType);
         }
 
-        if ($entityType === 'CVD')
+        if (blank($entityType) === true)
         {
-            return BaseReconciliate::REFUND;
+            $reconType = self::NA;
+        }
+        else if ($entityType === 'CVD')
+        {
+            $reconType = BaseReconciliate::REFUND;
         }
         else if ($entityType === 'BAT')
         {
-            return BaseReconciliate::PAYMENT;
+            $reconType = BaseReconciliate::PAYMENT;
         }
         else if (in_array($entityType, self::UNKNOWN_COLUMN_ENTITY_TYPES))
         {
@@ -47,18 +51,12 @@ class CombinedReconciliate  extends Base\CombinedReconciliate
                     'info_code'     => 'UNKNOWN_HDFC_ENTITY_TYPE',
                     'message'       => 'This payment has to be authorized and reconciled manually.',
                     'row_details'   => $row,
-                    'gateway'       => get_called_class()
+                    'gateway'       => $this->gateway
                 ]);
 
-            return self::NA;
+            $reconType = self::NA;
         }
-        else if (empty($entityType) === true)
-        {
-            return self::NA;
-        }
-        else
-        {
-            return null;
-        }
+
+        return $reconType;
     }
 }

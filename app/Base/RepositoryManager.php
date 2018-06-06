@@ -4,10 +4,12 @@ namespace RZP\Base;
 
 use Closure;
 use Illuminate;
+
+use RZP\Models;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Constants\Entity;
-use RZP\Models;
+use RZP\Base\Database\MySqlConnection;
 
 /**
  * @property Models\Plan\Subscription\Repository    $subscription
@@ -142,6 +144,16 @@ class RepositoryManager extends Illuminate\Support\Manager
             return Mode::TEST;
         }
 
+        //
+        // We need to set connection to null
+        // because it will be set to test if the
+        // id is not found in any of the database.
+        // So even if the db connection is later set
+        // to live, query connection will be set to
+        // test.
+        //
+        $repo->connection(null);
+
         return null;
     }
 
@@ -167,6 +179,22 @@ class RepositoryManager extends Illuminate\Support\Manager
     public function rollback()
     {
         $this->db->rollback();
+    }
+
+    public function beginTransactionAndRollback(Closure $callback)
+    {
+        try
+        {
+            $this->db->beginTransaction();
+
+            $result = $callback($this);
+        }
+        finally
+        {
+            $this->db->rollback();
+        }
+
+        return $result;
     }
 
     /**
@@ -243,6 +271,17 @@ class RepositoryManager extends Illuminate\Support\Manager
         return $result;
     }
 
+    public function useSlave(callable $callback)
+    {
+        $this->db->connection()->forceReadPdo(true);
+
+        $result = $callback($this);
+
+        $this->db->connection()->forceReadPdo(false);
+
+        return $result;
+    }
+
     protected function getDefaultDbConn()
     {
         return $this->app['config']->get('database.default');
@@ -268,5 +307,19 @@ class RepositoryManager extends Illuminate\Support\Manager
     public function assertTransactionActive()
     {
         assert ($this->isTransactionActive());
+    }
+
+    public function resetConnectionAttributes()
+    {
+        $dbConnection = $this->db->connection();
+
+        //
+        // Only if the connection being used is the overridden one
+        // we need to reset some connection attributes.
+        //
+        if ($dbConnection instanceof MySqlConnection)
+        {
+            $dbConnection->resetConnectionAttributes();
+        }
     }
 }

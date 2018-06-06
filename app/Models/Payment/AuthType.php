@@ -2,13 +2,14 @@
 
 namespace RZP\Models\Payment;
 
-use RZP\Exception;
 use RZP\Models\Feature;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class AuthType
 {
     const NETBANKING    = 'netbanking';
     const AADHAAR       = 'aadhaar';
+    const SKIP          = 'skip';
     const PIN           = 'pin';
     const _3DS          = '3ds';
 
@@ -19,7 +20,8 @@ class AuthType
         ],
         Method::CARD    => [
             self::PIN,
-            self::_3DS
+            self::_3DS,
+            self::SKIP,
         ],
         Method::EMI     => [
             self::PIN,
@@ -45,12 +47,12 @@ class AuthType
     {
         if (self::isAuthTypeValid($type, $method) === false)
         {
-            throw new Exception\InvalidArgumentException(
-                'Invalid auth type',
+            throw new BadRequestValidationFailureException(
+                'The selected auth_type is invalid',
+                Entity::AUTH_TYPE,
                 [
-                    'field'                 => Entity::AUTH_TYPE,
-                    'auth_type'             => $type,
-                    'method'                => $method,
+                    Entity::AUTH_TYPE => $type,
+                    Entity::METHOD    => $method,
                 ]);
         }
     }
@@ -66,8 +68,12 @@ class AuthType
         {
             if ($merchant->isFeatureEnabled(self::$featureToAuthMap[$type]) === false)
             {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The auth_type field is invalid');
+                throw new BadRequestValidationFailureException(
+                    'The selected auth_type is invalid',
+                    Entity::AUTH_TYPE,
+                    [
+                        Entity::AUTH_TYPE => $type,
+                    ]);
             }
         }
     }

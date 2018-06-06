@@ -2,36 +2,52 @@
 
 namespace RZP\Reconciliator\HDFC;
 
-use RZP\Exception\ReconciliationException;
-use RZP\Models\Base\UniqueIdEntity;
 use RZP\Trace\TraceCode;
-use RZP\Reconciliator\Base;
-use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 use RZP\Models\Bank\IFSC;
+use RZP\Reconciliator\Base;
 use RZP\Gateway\Cybersource;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Exception\ReconciliationException;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID         = ['merchant_trackid', 'MERCHANT_TRACKID'];
-    const COLUMN_CARD_TYPE          = ['debitcredit_type', 'DEBITCREDIT_TYPE'];
-    const COLUMN_SERVICE_TAX        = ['serv_tax', 'service_tax', 'st_sbces', 'SERV TAX'];
-    const COLUMN_SB_CESS            = ['sb_cess', 'SB Cess'];
-    const COLUMN_KK_CESS            = ['kk_cess', 'KK Cess'];
-    const COLUMN_FEE                = ['msf', 'MSF'];
-    const COLUMN_CARD_TRIVIA        = ['card_type', 'CARD TYPE'];
-    const COLUMN_ISSUER             = ['arn_no', 'ARN NO'];
-    const COLUMN_CGST               = ['cgst_amt', 'CGST AMT'];
-    const COLUMN_IGST               = ['igst_amt', 'IGST AMT'];
-    const COLUMN_SGST               = ['sgst_amt', 'SGST AMT'];
-    const COLUMN_UTGST              = ['utgst_amt', 'UTGST_AMT'];
-    const COLUMN_ARN                = ['arn_no', 'ARN NO'];
-    const COLUMN_AUTH_CODE          = ['approv_code', 'APPROV CODE'];
+    const COLUMN_PAYMENT_ID         = 'merchant_trackid';
+    const COLUMN_CARD_TYPE          = 'debitcredit_type';
+    const COLUMN_SERVICE_TAX        = ['serv_tax', 'service_tax', 'st_sbces'];
+    const COLUMN_SB_CESS            = 'sb_cess';
+    const COLUMN_KK_CESS            = 'kk_cess';
+    const COLUMN_FEE                = 'msf';
+    const COLUMN_CARD_TRIVIA        = 'card_type';
+    const COLUMN_ISSUER             = 'arn_no';
+    const COLUMN_CGST               = 'cgst_amt';
+    const COLUMN_IGST               = 'igst_amt';
+    const COLUMN_SGST               = 'sgst_amt';
+    const COLUMN_UTGST              = 'utgst_amt';
+    const COLUMN_ARN                = 'arn_no';
+    const COLUMN_AUTH_CODE          = 'approv_code';
 
-    const COLUMN_TERMINAL_NUMBER    = ['terminal_number', 'TERMINAL NUMBER'];
+    const COLUMN_TERMINAL_NUMBER    = 'terminal_number';
 
+    /**
+     * If we are not able to find payment id to reconcile,
+     * this ratio defines the minimum proportion of columns to be filled in a valid row.
+     * In HDFC MIS, many gst params and other params are always set to 0,
+     * therefore if less than 10% of data is present, we don't mark row as failure.
+     */
+    const MIN_ROW_FILLED_DATA_RATIO = 0.10;
+
+    /**
+     * In case payment id is not found, function will return null,
+     * row will be marked as failure in such case.
+     *
+     * @param array $row
+     *
+     * @return null|string
+     */
     protected function getPaymentId(array $row)
     {
         if ($this->isCybersource($row) === true)
@@ -41,6 +57,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         else
         {
             $paymentId = $this->getPaymentIdForFss($row);
+        }
+
+        if (empty($paymentId) === true)
+        {
+            $this->evaluateRowProcessedStatus($row);
         }
 
         return $paymentId;
@@ -89,6 +110,17 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             {
                 $paymentId = $gatewayPayment->getPaymentId();
             }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::RECON_MISMATCH,
+                    [
+                        'info_code' => 'PAYMENT_ABSENT',
+                        'message'   => 'Payment not found. Skipping',
+                        'row'       => $row,
+                        'gateway'   => $this->gateway
+                    ]);
+            }
         }
 
         return $paymentId;
@@ -98,18 +130,12 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $paymentId = null;
 
-        foreach (self::COLUMN_PAYMENT_ID as $cpi)
+        if (empty($row[self::COLUMN_PAYMENT_ID]) === false)
         {
-            if (empty($row[$cpi]) === false)
-            {
-                $paymentId = $row[$cpi];
+            $paymentId = $row[self::COLUMN_PAYMENT_ID];
 
-                $paymentId = trim(str_replace("'", '', $paymentId));
-
-                break;
-            }
+            $paymentId = trim(str_replace("'", '', $paymentId));
         }
-
         return $paymentId;
     }
 
@@ -137,7 +163,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'trace_code'      => TraceCode::RECON_FAILURE,
                     'message'         => 'Unable to get the service tax!',
                     'row'             => $row,
-                    'gateway'         => get_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             throw new ReconciliationException('Unable to get the service tax for HDFC from the recon file.');
@@ -168,17 +194,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $columnIgst = null;
 
-        foreach(self::COLUMN_IGST as $cigst)
+        //
+        // This should be isset only and not empty
+        // because igst can be 0 also.
+        //
+        if (isset($row[self::COLUMN_IGST]) === true)
         {
-            //
-            // This should be isset only and not empty
-            // because igst can be 0 also.
-            //
-            if (isset($row[$cigst]) === true)
-            {
-                $columnIgst = $row[$cigst];
-                break;
-            }
+            $columnIgst = $row[self::COLUMN_IGST];
         }
 
         $igst = floatval($columnIgst) * 100;
@@ -190,17 +212,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $columnCgst = null;
 
-        foreach(self::COLUMN_CGST as $ccgst)
+        //
+        // This should be isset only and not empty
+        // because cgst can be 0 also.
+        //
+        if (isset($row[self::COLUMN_CGST]) === true)
         {
-            //
-            // This should be isset only and not empty
-            // because cgst can be 0 also.
-            //
-            if (isset($row[$ccgst]) === true)
-            {
-                $columnCgst = $row[$ccgst];
-                break;
-            }
+            $columnCgst = $row[self::COLUMN_CGST];
         }
 
         $cgst = floatval($columnCgst) * 100;
@@ -211,18 +229,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function getSgst($row)
     {
         $columnSgst = null;
-
-        foreach(self::COLUMN_SGST as $csgst)
+        //
+        // This should be isset only and not empty
+        // because sgst can be 0 also.
+        //
+        if (isset($row[self::COLUMN_SGST]) === true)
         {
-            //
-            // This should be isset only and not empty
-            // because sgst can be 0 also.
-            //
-            if (isset($row[$csgst]) === true)
-            {
-                $columnSgst = $row[$csgst];
-                break;
-            }
+            $columnSgst = $row[self::COLUMN_SGST];
         }
 
         $sgst = floatval($columnSgst) * 100;
@@ -233,18 +246,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function getUtgst($row)
     {
         $columnUtgst = null;
-
-        foreach(self::COLUMN_UTGST as $cutgst)
+        
+        //
+        // This should be isset only and not empty
+        // because utgst can be 0 also.
+        //
+        if (isset($row[self::COLUMN_UTGST]) === true)
         {
-            //
-            // This should be isset only and not empty
-            // because utgst can be 0 also.
-            //
-            if (isset($row[$cutgst]) === true)
-            {
-                $columnUtgst = $row[$cutgst];
-                break;
-            }
+            $columnUtgst = $row[self::COLUMN_UTGST];
         }
 
         $utgst = floatval($columnUtgst) * 100;
@@ -256,17 +265,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $columnSbCess = null;
 
-        foreach(self::COLUMN_SB_CESS as $csc)
+        //
+        // This should be isset only and not empty
+        // because cess can be 0 also.
+        //
+        if (isset($row[self::COLUMN_SB_CESS]) === true)
         {
-            //
-            // This should be isset only and not empty
-            // because cess can be 0 also.
-            //
-            if (isset($row[$csc]) === true)
-            {
-                $columnSbCess = $row[$csc];
-                break;
-            }
+            $columnSbCess = $row[self::COLUMN_SB_CESS];
         }
 
         $sbCess = floatval($columnSbCess) * 100;
@@ -278,17 +283,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $columnKkCess = null;
 
-        foreach(self::COLUMN_KK_CESS as $ckc)
+        //
+        // This should be isset only and not empty
+        // because cess can be 0 also.
+        //
+        if (isset($row[self::COLUMN_KK_CESS]) === true)
         {
-            //
-            // This should be isset only and not empty
-            // because cess can be 0 also.
-            //
-            if (isset($row[$ckc]) === true)
-            {
-                $columnKkCess = $row[$ckc];
-                break;
-            }
+            $columnKkCess = $row[self::COLUMN_KK_CESS];
         }
 
         $kkCess = floatval($columnKkCess) * 100;
@@ -300,17 +301,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $columnFee = null;
 
-        foreach(self::COLUMN_FEE as $cf)
+        //
+        // This should be isset only and not empty
+        // because fee can be 0 also.
+        //
+        if (isset($row[self::COLUMN_FEE]) === true)
         {
-            //
-            // This should be isset only and not empty
-            // because fee can be 0 also.
-            //
-            if (isset($row[$cf]) === true)
-            {
-                $columnFee = $row[$cf];
-                break;
-            }
+            $columnFee = $row[self::COLUMN_FEE];
         }
 
         // Convert fee into basic unit of currency (ex: paise)
@@ -329,12 +326,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $cardType = null;
 
-        foreach (self::COLUMN_CARD_TYPE as $cct)
+        if (empty($row[self::COLUMN_CARD_TYPE]) === false)
         {
-            if (empty($row[$cct]) === false)
-            {
-                $cardType = $row[$cct];
-            }
+            $cardType = $row[self::COLUMN_CARD_TYPE];
         }
 
         //
@@ -365,14 +359,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $cardTrivia = null;
 
-        foreach (self::COLUMN_CARD_TRIVIA as $cct)
+        if (empty($row[self::COLUMN_CARD_TRIVIA]) === false)
         {
-            if (empty($row[$cct]) === false)
-            {
-                $cardTrivia = $row[$cct];
-
-                break;
-            }
+            $cardTrivia = $row[self::COLUMN_CARD_TRIVIA];
         }
 
         if (empty($cardTrivia) === true)
@@ -383,7 +372,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'message'           => 'Unable to get the card trivia. This is unexpected.',
                     'recon_card_trivia' => $cardTrivia,
                     'row'               => $row,
-                    'gateway'           => get_class()
+                    'gateway'           => $this->gateway
                 ]);
 
             $cardTrivia = null;
@@ -410,7 +399,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'message'         => 'Unable to figure out the card type.',
                     'recon_card_type' => $cardType,
                     'row'             => $row,
-                    'gateway'         => get_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             // It's as good as no card type present in the row.
@@ -438,7 +427,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'message'         => 'Unable to figure out the card locale (domestic/international).',
                     'recon_card_type' => $cardType,
                     'row'             => $row,
-                    'gateway'         => get_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             // It's as good as no card locale present in the row.
@@ -452,14 +441,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $columnIssuer = null;
 
-        foreach (self::COLUMN_ISSUER as $ci)
+        if (empty($row[self::COLUMN_ISSUER]) === false)
         {
-            if (empty($row[$ci]) === false)
-            {
-                $columnIssuer = $row[$ci];
-
-                break;
-            }
+            $columnIssuer = $row[self::COLUMN_ISSUER];
         }
 
         if (empty($columnIssuer) === true)
@@ -482,14 +466,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $columnArn = null;
 
-        foreach (self::COLUMN_ARN as $carn)
+        if (empty($row[self::COLUMN_ARN]) === false)
         {
-            if (empty($row[$carn]) === false)
-            {
-                $columnArn = $row[$carn];
-
-                break;
-            }
+            $columnArn = $row[self::COLUMN_ARN];
         }
 
         if ((empty($columnArn) === true) or
@@ -505,14 +484,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $columnAuthCode = null;
 
-        foreach (self::COLUMN_AUTH_CODE as $cac)
+        if (empty($row[self::COLUMN_AUTH_CODE]) === false)
         {
-            if (empty($row[$cac]) === false)
-            {
-                $columnAuthCode = $row[$cac];
-
-                break;
-            }
+            $columnAuthCode = $row[self::COLUMN_AUTH_CODE];
         }
 
         if ((empty($columnAuthCode) === true))
@@ -527,20 +501,35 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $terminalId = null;
 
-        foreach (self::COLUMN_TERMINAL_NUMBER as $ctn)
+        if (empty($row[self::COLUMN_TERMINAL_NUMBER]) === false)
         {
-            if (empty($row[$ctn]) === false)
-            {
-                $terminalId = $row[$ctn];
+            $terminalId = $row[self::COLUMN_TERMINAL_NUMBER];
 
-                $terminalId = trim(str_replace("'", '', $terminalId));
-
-                break;
-            }
+            $terminalId = trim(str_replace("'", '', $terminalId));
         }
 
         $isCybersource = (in_array($terminalId, Reconciliate::CYBERSOURCE_HDFC_TERMINAL_IDS, true) === true);
 
         return $isCybersource;
+    }
+
+    /**
+     * This function evaluate and marks the row processing as success or failure based on
+     * percentage of data available in a row.
+     *
+     * @param $row
+     */
+    protected function evaluateRowProcessedStatus(array $row)
+    {
+        $nonEmptyData = array_filter($row, function($value) {
+            return ((filled($value)) and ($value !== "' "));
+        });
+
+        $rowFilledRatio = count($nonEmptyData) / count($row);
+
+        if ($rowFilledRatio < self::MIN_ROW_FILLED_DATA_RATIO)
+        {
+            $this->setFailUnprocessedRow(false);
+        }
     }
 }

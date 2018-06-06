@@ -19,7 +19,6 @@ class FileGenerator extends Generator
 
     protected static $fileToWriteName = 'Hdfc_Settlement_Reconciliation';
 
-    # TODO:: Handle multiple FTAs for a settlement in one file later
     public function generateReconcileFile($input)
     {
         $setlFile = $this->getFile($input);
@@ -41,9 +40,12 @@ class FileGenerator extends Generator
             $reconData[] = $newRow;
         }
 
-        $txt = $this->generateText($reconData, ',');
+        list($extension, $delimiter) = ($this->generateInternalFailure === true) ?
+                                        ['.F001', PHP_EOL] : ['.R001', ','];
 
-        $filename = 'HDFC_Recon_' . str_random(10) . '.r01';
+        $txt = $this->generateText($reconData, $delimiter);
+
+        $filename = 'HDFC_Recon_' . str_random(10) . $extension;
 
         $file = $this->createTxtFile($filename, $txt);
 
@@ -57,30 +59,51 @@ class FileGenerator extends Generator
 
     protected function generateReconciliationFields($row)
     {
-        $data = [
-            Headings::TRANSACTION_TYPE          => $row[Headings::TRANSACTION_TYPE],
-            Headings::BENEFICIARY_CODE          => $row[Headings::BENEFICIARY_CODE],
-            Headings::BENEFICIARY_NAME          => $row[Headings::BENEFICIARY_NAME],
-            Headings::INSTRUMENT_AMOUNT         => $row[Headings::INSTRUMENT_AMOUNT],
-            Headings::CHEQUE_NUMBER             => $row[Headings::CHEQUE_NUMBER],
-            Headings::TRANSACTION_DATE          => $row[Headings::TRANSACTION_DATE],
-            Headings::CUSTOMER_REFERENCE_NUMBER => $row[Headings::CUSTOMER_REFERENCE_NUMBER],
-            Headings::PAYMENT_DETAILS_1         => $row[Headings::PAYMENT_DETAILS_1],
-            Headings::PAYMENT_DETAILS_2         => $row[Headings::PAYMENT_DETAILS_2],
-            Headings::BENEFICIARY_ACCOUNT_NUMBER => $row[Headings::BENEFICIARY_ACCOUNT_NUMBER   ],
-            Headings::BANK_REFERENCE_NO         => UniqueIdEntity::generateUniqueId(),
-            Headings::TRANSACTION_STATUS        => Status::SETTLED,
-            Headings::REJECT_REASON             => '',
-            Headings::IFC_CODE                  => $row[Headings::IFC_CODE],
-            Headings::MICR_NUMBER               => '',
-            Headings::UTR                       => UniqueIdEntity::generateUniqueId(),
-        ];
-
-        if ($this->generateFailedReconciliations === true)
+        if ($this->generateInternalFailure === true)
         {
-            $data[Headings::TRANSACTION_STATUS]  = Status::CANCELLED;
+            $data = $this->generateFailedReconFile($row);
+        }
+        else
+        {
+            $data = $this->generateSuccessfulReconFile($row);
+
+            if ($this->generateFailedReconciliations === true)
+            {
+                $data[Headings::TRANSACTION_STATUS]  = Status::CANCELLED;
+            }
         }
 
         return $data;
+    }
+
+    protected function generateSuccessfulReconFile(array $row)
+    {
+        return [
+            Headings::TRANSACTION_TYPE           => $row[Headings::TRANSACTION_TYPE],
+            Headings::BENEFICIARY_CODE           => $row[Headings::BENEFICIARY_CODE],
+            Headings::BENEFICIARY_NAME           => $row[Headings::BENEFICIARY_NAME],
+            Headings::INSTRUMENT_AMOUNT          => $row[Headings::INSTRUMENT_AMOUNT],
+            Headings::CHEQUE_NUMBER              => $row[Headings::CHEQUE_NUMBER],
+            Headings::TRANSACTION_DATE           => $row[Headings::TRANSACTION_DATE],
+            Headings::CUSTOMER_REFERENCE_NUMBER  => $row[Headings::CUSTOMER_REFERENCE_NUMBER],
+            Headings::PAYMENT_DETAILS_1          => $row[Headings::PAYMENT_DETAILS_1],
+            Headings::PAYMENT_DETAILS_2          => $row[Headings::PAYMENT_DETAILS_2],
+            Headings::BENEFICIARY_ACCOUNT_NUMBER => $row[Headings::BENEFICIARY_ACCOUNT_NUMBER],
+            Headings::BANK_REFERENCE_NO          => UniqueIdEntity::generateUniqueId(),
+            Headings::TRANSACTION_STATUS         => Status::SETTLED,
+            Headings::REJECT_REASON              => '',
+            Headings::IFC_CODE                   => $row[Headings::IFC_CODE],
+            Headings::MICR_NUMBER                => '',
+            Headings::UTR                        => UniqueIdEntity::generateUniqueId(),
+        ];
+    }
+
+    protected function generateFailedReconFile($row)
+    {
+        return [
+            '[' . implode(',' , $row) . '] ' . PHP_EOL
+            . 'error : Invalid IFSC code for IMPS(P2A) at line no3 ' . PHP_EOL
+            . 'error : Invalid Transaction Type at line no :3' . PHP_EOL
+        ];
     }
 }

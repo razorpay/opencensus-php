@@ -17,7 +17,11 @@ class Gateway extends Corporation\Gateway
                                 'mock_netbanking_payment',
                                 ['bank' => $this->bank]);
 
-        $request['url'] = $url;
+        $parts = parse_url($request['url']);
+
+        parse_str($parts['query'], $query);
+
+        $request['url'] = $url . '&' . http_build_query($query);
 
         return $request;
     }

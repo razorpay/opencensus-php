@@ -1,0 +1,4 @@
+# Configuration file for statsd_exporter agent running on each instance.
+# Mostly we will not use any sort of mapping but will point instance agent to pick configuration from this file. Just in
+# case we need to define any, this way it would not require instance bake.
+defaults:

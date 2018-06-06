@@ -128,7 +128,7 @@ class Service extends Base\Service
         $userMerchantMappingInputData = [
             'action'      => 'attach',
             'role'        => 'owner',
-            'merchant_id' => $subMerchant->id,
+            'merchant_id' => $subMerchant->getId(),
         ];
 
         (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
@@ -870,13 +870,14 @@ class Service extends Base\Service
     /**
      * Send beneficiary registration request for ALL activated merchants
      *
+     * @param array  $input
      * @param string $channel
      *
      * @return array
      */
-    public function getMerchantBeneficiaryFile(string $channel): array
+    public function getMerchantBeneficiaryFile(array $input, string $channel): array
     {
-        $response = (new BankAccount\BeneficiaryFile)->generate($channel);
+        $response = (new BankAccount\BeneficiaryFile)->generate($input, $channel);
 
         return $response;
     }
@@ -1802,7 +1803,7 @@ class Service extends Base\Service
         return $subMerchantUser;
     }
 
-    private function formatUserCreationData($input, $subMerchant)
+    public function formatUserCreationData(array $input, Merchant\Entity $subMerchant)
     {
         return [
             User\Entity::NAME                  => $subMerchant->getName(),

@@ -5,10 +5,11 @@ namespace RZP\Tests\Functional\Gateway\Wallet\Airtelmoney;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
-use RZP\Http\Route;
-use RZP\Gateway\Wallet\Airtelmoney\TestAmount;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Wallet\Base\Entity;
+use RZP\Gateway\Wallet\Airtelmoney\Status;
+use RZP\Gateway\Wallet\Airtelmoney\Mock\TestAmount;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class AirtelmoneyGatewayTest extends TestCase
 {
@@ -89,6 +90,8 @@ class AirtelmoneyGatewayTest extends TestCase
 
         $authPayment = $this->doAuthPayment($payment);
 
+        $this->mockSetVerifyTransactionId();
+
         $this->payment = $this->verifyPayment($authPayment['razorpay_payment_id']);
 
         $this->assertSame($this->payment['payment']['verified'], 1);
@@ -100,20 +103,20 @@ class AirtelmoneyGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $payment = $this->fixtures->create(
-            'payment:failed',
-            [
-                'email'         => 'a@b.com',
-                'amount'        => 50000,
-                'contact'       => '9918899029',
-                'method'        => 'wallet',
-                'wallet'        => 'airtelmoney',
-                'gateway'       => 'wallet_airtelmoney',
-                'card_id'       => null,
-                'terminal_id'   => $this->sharedTerminal->id
-            ]);
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
 
-        $id = $payment->getPublicId();
+        $authPayment = $this->doAuthPayment($payment);
+
+        $data1 = [
+            'status'             => 'failed',
+            'authorized_at'      =>  null,
+        ];
+
+        $this->fixtures->base->editEntity('payment', $authPayment['razorpay_payment_id'], $data1);
+
+        $this->mockSetVerifyTransactionId();
+
+        $id = $authPayment['razorpay_payment_id'];
 
         $this->runRequestResponseFlow($data, function() use ($id)
         {
@@ -123,6 +126,30 @@ class AirtelmoneyGatewayTest extends TestCase
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+    }
+
+    public function testFailedVerify()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+
+        $payment['amount'] = ((float) TestAmount::FAIL_VERIFY_AMOUNT) * 100;
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $this->fixtures->base->editEntity('payment', $authPayment['razorpay_payment_id'], ['status' => 'failed']);
+
+        $this->mockSetVerifyTransactionId();
+
+        $id = $authPayment['razorpay_payment_id'];
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($id)
+        {
+            $this->verifyPayment($id);
+        });
     }
 
     public function testVerifyLateAuthorizedPayment()
@@ -160,8 +187,6 @@ class AirtelmoneyGatewayTest extends TestCase
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertNotNull($wallet['gateway_payment_id']);
-
-        $this->assertNotNull($wallet['reference1']);
     }
 
     public function testRefundPayment()
@@ -195,13 +220,11 @@ class AirtelmoneyGatewayTest extends TestCase
     {
         $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
 
-        $payment['amount'] = ((float) TestAmount::FAIL_REFUND_AMOUNT) * 100;
+        $payment['amount'] = TestAmount::FAIL_REFUND_AMOUNT * 100;
 
         $capturePayment = $this->doAuthAndCapturePayment($payment);
 
         $capturePaymentId = $capturePayment['id'];
-
-        $data = $this->testData[__FUNCTION__];
 
         $this->refundPayment($capturePaymentId);
 
@@ -297,6 +320,19 @@ class AirtelmoneyGatewayTest extends TestCase
         }
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function mockSetVerifyTransactionId()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $gatewayPayment = $this->getLastEntity('wallet', true);
+
+            if (isset($content['txns'][0]['txnid']) === true)
+            {
+                $content['txns'][0]['txnid'] = $gatewayPayment['gateway_payment_id'];
+            }
+        });
     }
 
 }

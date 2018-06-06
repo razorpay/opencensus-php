@@ -443,3 +443,73 @@ if (! function_exists('get_key_from_subarray_match'))
         return null;
     }
 }
+
+if (! function_exists('format_epoch'))
+{
+    /**
+     * Formats given epoch to human readable string representation. Currently returns in one specific format only.
+     * @param  int    $epoch
+     * @return string
+     */
+    function format_epoch(int $epoch): string
+    {
+        return date('M d, Y (h:i A)', $epoch);
+    }
+}
+
+if (! function_exists('format_amount'))
+{
+    /**
+     * Formats given paisa amount into human readable format. E.g. 123456 -> 1,234.56
+     * @param  int    $amount
+     * @return string
+     */
+    function format_amount(int $amount): string
+    {
+        return number_format($amount/ 100, 2, '.', ',');
+    }
+}
+
+if (! function_exists('multidim_array_unique'))
+{
+    /**
+     * Removes the duplicate array values based on a column key
+     * @param  array    $input
+     * @param  string   $column
+     * @return array
+     */
+    function multidim_array_unique(array $input, string $column): array
+    {
+        $result = [];
+
+        foreach ($input as $v)
+        {
+            $colVal = $v[$column];
+
+            if (isset($result[$colVal]) === false)
+            {
+                $result[$colVal] = $v;
+            }
+        }
+
+        return array_values($result);
+    }
+
+    /**
+     * Sorts the given multi dimensional array based on a key
+     *
+     * @param array $array
+     * @param string $key
+     */
+    function sortMultiDimensionalArray(array & $array, string $key, int $sortOrder = SORT_DESC)
+    {
+        foreach ($array as & $item)
+        {
+            array_multisort(array_map(function ($element) use ($key)
+            {
+                return $element[$key];
+            }, $item), $sortOrder, $item);
+
+        }
+    }
+}

@@ -6,6 +6,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Gateway\Enach\Rbl\DebitFileHeadings as EnachRblDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
@@ -14,6 +15,11 @@ class Header
 {
     const INPUT             = 'input';
     const OUTPUT            = 'output';
+
+    // A header key which holds notes values(key value pairs)
+    const NOTES             = 'notes';
+    // In file, notes columns are expected to be in format: Notes[<key>] & while parsing the file, formatted as above
+    const NOTES_REGEX       = '/^Notes\[(.*)]$/';
 
     //
     // Refund Headers
@@ -33,6 +39,7 @@ class Header
     const CUSTOMER_NAME       = 'Customer Name';
     const CUSTOMER_EMAIL      = 'Customer Email';
     const CUSTOMER_CONTACT    = 'Customer Contact';
+    const AMOUNT_IN_PAISE     = 'Amount (In Paise)';
     const DESCRIPTION         = 'Description';
     const EXPIRE_BY           = 'Expire By';
     const PARTIAL_PAYMENT     = 'Partial Payment';
@@ -90,16 +97,7 @@ class Header
     const PROMOTER_PAN             = 'promoter_pan';
     const PROMOTER_PAN_NAME        = 'promoter_pan_name';
     const WEBSITE_URL              = 'website';
-    const WEBSITE_ABOUT            = 'website_about';
-    const WEBSITE_CONTACT          = 'website_contact';
-    const WEBSITE_PRICING          = 'website_pricing';
-    const WEBSITE_PRIVACY          = 'website_privacy';
-    const WEBSITE_REFUND           = 'website_refund';
-    const WEBSITE_TERMS            = 'wesbite_terms';
-    const BANK_ACCOUNT_ADDRESS_1   = 'bank_address_1';
-    const BANK_ACCOUNT_CITY        = 'bank_account_city';
-    const BANK_ACCOUNT_STATE       = 'bank_account_state';
-    const BANK_ACCOUNT_PINCODE     = 'bank_account_pincode';
+    const PARTNER_TOKEN            = 'Partner Token';
 
     //
     // Virtual Account Bulk Creation Headers
@@ -118,6 +116,54 @@ class Header
     const VA_BANK_ACCOUNT_IFSC   = 'bank_account_ifsc';
 
     //
+    // Bank Transfer Bulk Insertion
+    //
+    const PROVIDER       = 'provider';
+    const PAYER_NAME     = 'payer_name';
+    const PAYER_ACCOUNT  = 'payer_account';
+    const PAYER_IFSC     = 'payer_ifsc';
+    const PAYEE_ACCOUNT  = 'payee_account';
+    const PAYEE_IFSC     = 'payee_ifsc';
+    const MODE           = 'mode';
+    const UTR            = 'utr';
+    const TIME           = 'time';
+
+    //
+    // Batch recurring payments
+    //
+    const RECURRING_CHARGE_TOKEN       = 'token';
+    const RECURRING_CHARGE_CUSTOMER_ID = 'customer_id';
+    const RECURRING_CHARGE_AMOUNT      = 'amount';
+    const RECURRING_CHARGE_CURRENCY    = 'currency';
+    const RECURRING_CHARGE_RECEIPT     = 'receipt';
+    const RECURRING_CHARGE_DESCRIPTION = 'description';
+    const RECURRING_CHARGE_NOTES_1     = 'notes_1';
+    const RECURRING_CHARGE_NOTES_2     = 'notes_2';
+    const RECURRING_CHARGE_NOTES_3     = 'notes_3';
+    const RECURRING_CHARGE_NOTES_4     = 'notes_4';
+    const RECURRING_CHARGE_NOTES_5     = 'notes_5';
+    const RECURRING_CHARGE_PAYMENT_ID  = 'payment_id';
+    const RECURRING_CHARGE_ORDER_ID    = 'order_id';
+
+    //
+    // HDFC Emandate Register Response File Headers
+    //
+    const HDFC_EM_REGISTER_CLIENT_NAME                      = HdfcEMRegisterHeadings::CLIENT_NAME;
+    const HDFC_EM_REGISTER_CUSTOMER_NAME                    = HdfcEMRegisterHeadings::CUSTOMER_NAME;
+    const HDFC_EM_REGISTER_ACCOUNT_NUMBER                   = HdfcEMRegisterHeadings::CUSTOMER_ACCOUNT_NUMBER;
+    const HDFC_EM_REGISTER_AMOUNT                           = HdfcEMRegisterHeadings::AMOUNT;
+    const HDFC_EM_REGISTER_AMOUNT_TYPE                      = HdfcEMRegisterHeadings::AMOUNT_TYPE;
+    const HDFC_EM_REGISTER_START_DATE                       = HdfcEMRegisterHeadings::START_DATE;
+    const HDFC_EM_REGISTER_END_DATE                         = HdfcEMRegisterHeadings::END_DATE;
+    const HDFC_EM_REGISTER_FREQUENCY                        = HdfcEMRegisterHeadings::FREQUENCY;
+    const HDFC_EM_REGISTER_MANDATE_ID                       = HdfcEMRegisterHeadings::MANDATE_ID;
+    const HDFC_EM_REGISTER_MERCHANT_UNIQUE_REF_NO           = HdfcEMRegisterHeadings::MERCHANT_UNIQUE_REFERENCE_NO;
+    const HDFC_EM_REGISTER_MANDATE_SERIAL_NO                = HdfcEMRegisterHeadings::MANDATE_SERIAL_NUMBER;
+    const HDFC_EM_REGISTER_MERCHANT_REQUEST_NO              = HdfcEMRegisterHeadings::MERCHANT_REQUEST_NO;
+    const HDFC_EM_REGISTER_STATUS                           = HdfcEMRegisterHeadings::STATUS;
+    const HDFC_EM_REGISTER_REMARKS                          = HdfcEMRegisterHeadings::REMARKS;
+
+    //
     // HDFC Emandate Debit Response File Headers
     //
     const HDFC_EM_DEBIT_TRANSACTION_REF_NO  = HdfcEMDebitHeadings::TRANSACTION_REF_NO;
@@ -132,38 +178,7 @@ class Header
     const HDFC_EM_DEBIT_REJECTION_REMARKS   = HdfcEMDebitHeadings::REJECTION_REMARKS;
 
     //
-    // Bank Transfer Bulk Insertion
-    //
-    const PROVIDER       = 'provider';
-    const PAYER_NAME     = 'payer_name';
-    const PAYER_ACCOUNT  = 'payer_account';
-    const PAYER_IFSC     = 'payer_ifsc';
-    const PAYEE_ACCOUNT  = 'payee_account';
-    const PAYEE_IFSC     = 'payee_ifsc';
-    const MODE           = 'mode';
-    const UTR            = 'utr';
-    const TIME           = 'time';
-
-    //
-    // HDFC Emandate Register Response File Headers
-    //
-    const HDFC_EM_REGISTER_CLIENT_NAME                      = HdfcEMRegisterHeadings::CLIENT_NAME;
-    const HDFC_EM_REGISTER_MERCHANT_UNIQUE_REFERENCE_NO     = HdfcEMRegisterHeadings::MERCHANT_UNIQUE_REFERENCE_NO;
-    const HDFC_EM_REGISTER_CUSTOMER_NAME                    = HdfcEMRegisterHeadings::CUSTOMER_NAME;
-    const HDFC_EM_REGISTER_ACCOUNT_NUMBER                   = HdfcEMRegisterHeadings::CUSTOMER_ACCOUNT_NUMBER;
-    const HDFC_EM_REGISTER_AMOUNT                           = HdfcEMRegisterHeadings::AMOUNT;
-    const HDFC_EM_REGISTER_AMOUNT_TYPE                      = HdfcEMRegisterHeadings::AMOUNT_TYPE;
-    const HDFC_EM_REGISTER_START_DATE                       = HdfcEMRegisterHeadings::START_DATE;
-    const HDFC_EM_REGISTER_END_DATE                         = HdfcEMRegisterHeadings::END_DATE;
-    const HDFC_EM_REGISTER_FREQUENCY                        = HdfcEMRegisterHeadings::FREQUENCY;
-    const HDFC_EM_REGISTER_MANDATE_SERIAL_NUMBER            = HdfcEMRegisterHeadings::MANDATE_SERIAL_NUMBER;
-    const HDFC_EM_REGISTER_MERCHANT_REQUEST_NO              = HdfcEMRegisterHeadings::MERCHANT_REQUEST_NO;
-    const HDFC_EM_REGISTER_MANDATE_ID                       = HdfcEMRegisterHeadings::MANDATE_ID;
-    const HDFC_EM_REGISTER_STATUS                           = HdfcEMRegisterHeadings::STATUS;
-    const HDFC_EM_REGISTER_REMARK                           = HdfcEMRegisterHeadings::REMARK;
-
-    //
-    // eNach eMandate Register Response File Headers
+    // eNach Register Response File Headers
     //
     const ENACH_REGISTER_SRNO               = 'SRNO';
     const ENACH_REGISTER_MANDATE_DATE       = 'MANDATE_DATE';
@@ -234,6 +249,28 @@ class Header
     const PAYOUT_FEE                 = 'payout_fee';
     const PAYOUT_TAX                 = 'payout_tax';
 
+    const DIRECT_DEBIT_EMAIL           = 'email';
+    const DIRECT_DEBIT_CONTACT         = 'contact';
+    const DIRECT_DEBIT_CARD_NUMBER     = 'card_number';
+    const DIRECT_DEBIT_EXPIRY_MONTH    = 'expiry_month';
+    const DIRECT_DEBIT_EXPIRY_YEAR     = 'expiry_year';
+    const DIRECT_DEBIT_CARDHOLDER_NAME = 'cardholder_name';
+    const DIRECT_DEBIT_AMOUNT          = 'amount';
+    const DIRECT_DEBIT_CURRENCY        = 'currency';
+    const DIRECT_DEBIT_RECEIPT         = 'receipt';
+    const DIRECT_DEBIT_DESCRIPTION     = 'description';
+    const DIRECT_DEBIT_NOTES_1         = 'notes_1';
+    const DIRECT_DEBIT_NOTES_2         = 'notes_2';
+    const DIRECT_DEBIT_NOTES_3         = 'notes_3';
+    const DIRECT_DEBIT_NOTES_4         = 'notes_4';
+    const DIRECT_DEBIT_NOTES_5         = 'notes_5';
+    const DIRECT_DEBIT_ORDER_ID        = 'order_id';
+    const DIRECT_DEBIT_PAYMENT_ID      = 'payment_id';
+    const DIRECT_DEBIT_REMARKS         = 'remarks';
+
+    const ELFIN_LONG_URL             = 'Long Url';
+    const ELFIN_SHORT_URL            = 'Short Url';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -248,11 +285,13 @@ class Header
             self::INPUT => [
                 self::PAYMENT_ID,
                 self::AMOUNT,
+                self::NOTES,
             ],
 
             self::OUTPUT => [
                 self::PAYMENT_ID,
                 self::AMOUNT,
+                self::NOTES,
                 self::REFUND_ID,
                 self::REFUNDED_AMOUNT,
                 self::STATUS,
@@ -455,22 +494,53 @@ class Header
             ],
         ],
 
+        Type::RECURRING_CHARGE => [
+            self::INPUT => [
+                self::RECURRING_CHARGE_TOKEN,
+                self::RECURRING_CHARGE_CUSTOMER_ID,
+                self::RECURRING_CHARGE_AMOUNT,
+                self::RECURRING_CHARGE_CURRENCY,
+                self::RECURRING_CHARGE_RECEIPT,
+                self::RECURRING_CHARGE_DESCRIPTION,
+                self::RECURRING_CHARGE_NOTES_1,
+                self::RECURRING_CHARGE_NOTES_2,
+                self::RECURRING_CHARGE_NOTES_3,
+                self::RECURRING_CHARGE_NOTES_4,
+                self::RECURRING_CHARGE_NOTES_5,
+            ],
+            self::OUTPUT => [
+                self::RECURRING_CHARGE_TOKEN,
+                self::RECURRING_CHARGE_CUSTOMER_ID,
+                self::RECURRING_CHARGE_AMOUNT,
+                self::RECURRING_CHARGE_CURRENCY,
+                self::RECURRING_CHARGE_RECEIPT,
+                self::RECURRING_CHARGE_DESCRIPTION,
+                self::RECURRING_CHARGE_NOTES_1,
+                self::RECURRING_CHARGE_NOTES_2,
+                self::RECURRING_CHARGE_NOTES_3,
+                self::RECURRING_CHARGE_NOTES_4,
+                self::RECURRING_CHARGE_NOTES_5,
+                self::RECURRING_CHARGE_ORDER_ID,
+                self::RECURRING_CHARGE_PAYMENT_ID,
+            ],
+        ],
+
         'emandate_register_hdfc' => [
             self::INPUT => [
-                self::HDFC_EM_REGISTER_ACCOUNT_NUMBER,
-                self::HDFC_EM_REGISTER_MANDATE_ID,
-                self::HDFC_EM_REGISTER_STATUS,
-                self::HDFC_EM_REGISTER_REMARK,
                 self::HDFC_EM_REGISTER_CLIENT_NAME,
-                self::HDFC_EM_REGISTER_MERCHANT_UNIQUE_REFERENCE_NO,
                 self::HDFC_EM_REGISTER_CUSTOMER_NAME,
+                self::HDFC_EM_REGISTER_ACCOUNT_NUMBER,
                 self::HDFC_EM_REGISTER_AMOUNT,
                 self::HDFC_EM_REGISTER_AMOUNT_TYPE,
                 self::HDFC_EM_REGISTER_START_DATE,
                 self::HDFC_EM_REGISTER_END_DATE,
                 self::HDFC_EM_REGISTER_FREQUENCY,
-                self::HDFC_EM_REGISTER_MANDATE_SERIAL_NUMBER,
+                self::HDFC_EM_REGISTER_MANDATE_ID,
+                self::HDFC_EM_REGISTER_MERCHANT_UNIQUE_REF_NO,
+                self::HDFC_EM_REGISTER_MANDATE_SERIAL_NO,
                 self::HDFC_EM_REGISTER_MERCHANT_REQUEST_NO,
+                self::HDFC_EM_REGISTER_STATUS,
+                self::HDFC_EM_REGISTER_REMARKS,
             ],
         ],
 
@@ -572,31 +642,74 @@ class Header
                 self::OPERATIONAL_PINCODE,
                 self::DOE,
                 self::GSTIN,
-                self::EXPECTED_ANNUAL_VOLUME,
-                self::AVG_TRANSACTION_VALUE,
                 self::PROMOTER_PAN,
                 self::PROMOTER_PAN_NAME,
                 self::WEBSITE_URL,
-                self::WEBSITE_ABOUT,
-                self::WEBSITE_CONTACT,
-                self::WEBSITE_PRICING,
-                self::WEBSITE_PRIVACY,
-                self::WEBSITE_REFUND,
-                self::WEBSITE_TERMS,
                 self::BANK_ACCOUNT_NAME,
                 self::BANK_BRANCH_IFSC,
                 self::BANK_ACCOUNT_NUMBER,
-                self::BANK_ACCOUNT_TYPE,
-                self::BANK_ACCOUNT_ADDRESS_1,
-                self::BANK_ACCOUNT_CITY,
-                self::BANK_ACCOUNT_STATE,
-                self::BANK_ACCOUNT_PINCODE,
             ],
 
             self::OUTPUT => [
                 self::MERCHANT_NAME,
                 self::MERCHANT_EMAIL,
+                self::STATUS,
                 self::MERCHANT_ID,
+                self::PARTNER_TOKEN,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::DIRECT_DEBIT  => [
+            self::INPUT => [
+                self::DIRECT_DEBIT_EMAIL,
+                self::DIRECT_DEBIT_CONTACT,
+                self::DIRECT_DEBIT_CARD_NUMBER,
+                self::DIRECT_DEBIT_EXPIRY_MONTH,
+                self::DIRECT_DEBIT_EXPIRY_YEAR,
+                self::DIRECT_DEBIT_CARDHOLDER_NAME,
+                self::DIRECT_DEBIT_AMOUNT,
+                self::DIRECT_DEBIT_CURRENCY,
+                self::DIRECT_DEBIT_RECEIPT,
+                self::DIRECT_DEBIT_DESCRIPTION,
+                self::DIRECT_DEBIT_NOTES_1,
+                self::DIRECT_DEBIT_NOTES_2,
+                self::DIRECT_DEBIT_NOTES_3,
+                self::DIRECT_DEBIT_NOTES_4,
+                self::DIRECT_DEBIT_NOTES_5,
+            ],
+
+            self::OUTPUT    => [
+                self::DIRECT_DEBIT_EMAIL,
+                self::DIRECT_DEBIT_CONTACT,
+                self::DIRECT_DEBIT_CARD_NUMBER,
+                self::DIRECT_DEBIT_EXPIRY_MONTH,
+                self::DIRECT_DEBIT_EXPIRY_YEAR,
+                self::DIRECT_DEBIT_CARDHOLDER_NAME,
+                self::DIRECT_DEBIT_AMOUNT,
+                self::DIRECT_DEBIT_CURRENCY,
+                self::DIRECT_DEBIT_RECEIPT,
+                self::DIRECT_DEBIT_DESCRIPTION,
+                self::DIRECT_DEBIT_NOTES_1,
+                self::DIRECT_DEBIT_NOTES_2,
+                self::DIRECT_DEBIT_NOTES_3,
+                self::DIRECT_DEBIT_NOTES_4,
+                self::DIRECT_DEBIT_NOTES_5,
+                self::DIRECT_DEBIT_ORDER_ID,
+                self::DIRECT_DEBIT_PAYMENT_ID,
+            ],
+        ],
+
+        Type::ELFIN => [
+
+            self::INPUT => [
+                self::ELFIN_LONG_URL,
+            ],
+
+            self::OUTPUT => [
+                self::ELFIN_LONG_URL,
+                self::ELFIN_SHORT_URL,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
@@ -616,30 +729,72 @@ class Header
     /**
      * Validates headers of batch input file.
      *
-     * @param string $headerKey
-     * @param array  $keys
+     * @param string $type
+     * @param array  $actualHeaders
      *
      * @throws BadRequestException
      */
-    public static function validate(string $headerKey, array $keys)
+    public static function validate(string $type, array $actualHeaders)
     {
-        $expectedHeaders = self::HEADER_MAP[$headerKey][self::INPUT];
+        $expectedHeaders = self::HEADER_MAP[$type][self::INPUT];
 
-        $headersMissing = (bool) array_diff($expectedHeaders, $keys);
+        //
+        // Notes is optional header in file. Currently optional headers are not supported and so this quick workaround
+        // to get validation passing. Soon we will have support for optional headers.
+        //
+        if ((in_array(self::NOTES, $expectedHeaders, true) === true) and
+            (in_array(self::NOTES, $actualHeaders, true) === false))
+        {
+            $actualHeaders[] = self::NOTES;
+        }
 
-        $extraHeadersInInput = (count($expectedHeaders) !== count($keys));
+        $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
 
-        if (($headersMissing === true) or ($extraHeadersInInput === true))
+        // Todo: Fix this hack!
+        if (($valid === false) and ($type === Type::PAYMENT_LINK))
+        {
+            $expectedHeaders = array_replace($expectedHeaders, [4 => self::AMOUNT_IN_PAISE]);
+            $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
+        }
+
+        if ($valid === false)
         {
             throw new BadRequestException(
-                        ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
-                        null,
-                        [
-                            'expected_headers'  => $expectedHeaders,
-                            'input_headers'     => $keys,
-                            'headers_missing'   => $headersMissing,
-                            'extra_headers'     => $extraHeadersInInput,
-                        ]);
+                ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
+                null,
+                [
+                    'expected_headers'  => $expectedHeaders,
+                    'input_headers'     => $actualHeaders,
+                ]);
+        }
+    }
+
+    /**
+     * Validates notes keys:
+     * - No more than 15 keys,
+     * - Each key's length should be less than or equals to 256
+     *
+     * @param  array $notesKeys
+     * @throws BadRequestValidationFailureException
+     */
+    public static function validateNotesKeys(array $notesKeys)
+    {
+        if (count($notesKeys) > 15)
+        {
+            throw new BadRequestValidationFailureException(
+                'Number of headers for notes should not exceed 15',
+                null,
+                [self::NOTES => $notesKeys]);
+        }
+
+        $notesKeysTooLarge = array_filter($notesKeys, function (string $k) { return strlen($k) > 256; });
+
+        if (count($notesKeysTooLarge) > 0)
+        {
+            throw new BadRequestValidationFailureException(
+                'No notes headers should have keys with length exceeding 256 characters',
+                null,
+                [self::NOTES => $notesKeys]);
         }
     }
 
@@ -677,5 +832,11 @@ class Header
             default:
                 throw new LogicException("Invalid file type: $fileType");
         }
+    }
+
+    public static function areTwoHeadersSame(array $headings1, array $headings2): bool
+    {
+        return ((count($headings1) === count($headings2)) and
+                (array_diff($headings1, $headings2) === array_diff($headings2, $headings1)));
     }
 }

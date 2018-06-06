@@ -25,7 +25,7 @@ class Base extends BaseProcessor
 
         $end = $this->gatewayFile->getEnd();
 
-        $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
+        $refunds = $this->repo->refund->fetchRefundsForGatewaysBetweenTimestamps(
                         static::PAYMENT_TYPE_ATTRIBUTE,
                         static::GATEWAY_CODE,
                         $begin,
@@ -54,8 +54,6 @@ class Base extends BaseProcessor
      */
     public function generateData(PublicCollection $refunds)
     {
-        $gateway = static::GATEWAY;
-
         $data = [];
 
         foreach ($refunds as $refund)
@@ -78,24 +76,7 @@ class Base extends BaseProcessor
             $data[] = $col;
         }
 
-        $paymentIds = $refunds->pluck('payment_id')->toArray();
-
-        $gatewayEntities = $this->repo->$gateway->fetchByPaymentIdsAndAction(
-                            $paymentIds, Action::AUTHORIZE);
-
-        $gatewayEntities = $gatewayEntities->keyBy('payment_id');
-
-        $data = array_map(function($row) use ($gatewayEntities)
-        {
-            $paymentId = $row['payment']['id'];
-
-            if (isset($gatewayEntities[$paymentId]))
-            {
-                $row['gateway'] = $gatewayEntities[$paymentId]->toArray();
-            }
-
-            return $row;
-        }, $data);
+        $data = $this->addGatewayEntitiesToData($data, $refunds);
 
         return $data;
     }
@@ -181,6 +162,32 @@ class Base extends BaseProcessor
         return ($code === ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
     }
 
+    protected function addGatewayEntitiesToData(array $data, PublicCollection $refunds)
+    {
+        $gateway = static::GATEWAY;
+
+        $paymentIds = $refunds->pluck('payment_id')->toArray();
+
+        $gatewayEntities = $this->repo->$gateway->fetchByPaymentIdsAndAction(
+                               $paymentIds, Action::AUTHORIZE);
+
+        $gatewayEntities = $gatewayEntities->keyBy('payment_id');
+
+        $data = array_map(function($row) use ($gatewayEntities)
+        {
+            $paymentId = $row['payment']['id'];
+
+            if (isset($gatewayEntities[$paymentId]))
+            {
+                $row['gateway'] = $gatewayEntities[$paymentId]->toArray();
+            }
+
+            return $row;
+        }, $data);
+
+        return $data;
+    }
+
     /**
      * Checks if the given gateway file can be retried or not. Currently
      * we consider that if the refund gateway_file entity is in acknowledged state
@@ -190,8 +197,6 @@ class Base extends BaseProcessor
      *
      * @return bool Whether gateway_file entity can be processed again or not
      */
-
-
     protected function getFileToWriteNameWithoutExt()
     {
         $time = Carbon::now(Timezone::IST)->format('d-m-Y');

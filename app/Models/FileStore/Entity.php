@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FileStore;
 
+use Carbon\Carbon;
 use Crypt;
 use RZP\Constants;
 use RZP\Models\Base;
@@ -316,6 +317,11 @@ class Entity extends Base\PublicEntity
     protected function setMetadataAttribute(array $metadata = [])
     {
         $this->attributes[self::METADATA] = json_encode($metadata);
+    }
+
+    public function setDeletedAt()
+    {
+        $this->attributes[self::DELETED_AT] = Carbon::now()->timestamp;
     }
 
 }

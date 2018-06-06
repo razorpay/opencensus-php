@@ -13,6 +13,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
@@ -23,10 +24,11 @@ use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
  */
 class InvoiceTest extends TestCase
 {
-    use InvoiceTestTrait;
-    use CreatesInvoice;
     use PaymentTrait;
     use MocksDnsTrait;
+    use CreatesInvoice;
+    use InvoiceTestTrait;
+    use DbEntityFetchTrait;
 
     const TEST_INV_ID = 'inv_1000000invoice';
 
@@ -42,6 +44,7 @@ class InvoiceTest extends TestCase
             [
                 'merchant_id'                 => '10000000000000',
                 'business_registered_address' => '#1205, Rzp, Outer Ring Road, Bangalore',
+                'gstin'                       => '29kjsngjk213922',
             ]);
 
         $this->fixtures->create('user', ['id' => '1000000000user']);
@@ -73,6 +76,12 @@ class InvoiceTest extends TestCase
 
         // Asserts if have assigned default value to invoices.date
         $this->assertNotNull($response['date']);
+
+        // Asserts that proper value for merchant label & merchant gstin is set (not exposed in public response)
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $this->assertEquals('Test Merchant', $invoice->getMerchantLabel());
+        $this->assertEquals('29kjsngjk213922', $invoice->getMerchantGstin());
     }
 
     public function testCreateInvoiceWithExistingCustomer()
@@ -86,6 +95,43 @@ class InvoiceTest extends TestCase
 
     public function testCreateInvoiceWithCustomerIdAndDetails()
     {
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithDefinedDisplayName()
+    {
+        $merchanLabel = 'Awesome and Co';
+
+        $merchantAttrs = [
+            'name'                => 'ASD Enterprise',
+            'billing_label'       => $merchanLabel,
+            'invoice_label_field' => 'billing_label',
+        ];
+
+        $this->fixtures->merchant->edit('10000000000000', $merchantAttrs);
+
+        $response = $this->startTest();
+
+        // supply_state_code should not be in private auth response
+        $this->assertArrayNotHasKey('supply_state_code', $response);
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($merchanLabel, $invoice['merchant_label']);
+        $this->assertEquals('29', $invoice['supply_state_code']);
+    }
+
+    public function testCreateInvoiceWithNestedCustomerIdAndDetails()
+    {
+        $this->fixtures->create(
+            'customer',
+            [
+                'id'      => '100001customer',
+                'name'    => 'Test Old',
+                'email'   => 'testold@razorpay.com',
+                'contact' => '1234567890',
+            ]);
+
         $this->startTest();
     }
 
@@ -180,6 +226,7 @@ class InvoiceTest extends TestCase
                 'customer_email'   => null,
                 'customer_contact' => null,
                 'type'             => 'link',
+                'description'      => 'Sample description',
             ]);
 
         //
@@ -226,7 +273,7 @@ class InvoiceTest extends TestCase
 
     public function testCreateInvoiceWithMultipleLineItemsAndUsingExistingItem()
     {
-        $this->fixtures->create('item');
+        $this->fixtures->create('item', ['tax_rate' => 120]);
 
         $response = $this->startTest();
 
@@ -466,7 +513,7 @@ class InvoiceTest extends TestCase
 
     public function testUpdateDraftInvoiceWithAmount()
     {
-        $this->createDraftInvoice();
+        $this->createDraftInvoice(['supply_state_code' => '29']);
 
         $this->startTest();
     }
@@ -581,6 +628,13 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateDraftInvoiceWithNestedCustomerIdAndDetails()
+    {
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
     public function testUpdateDraftInvoiceWithCustomerBillingAddressId()
     {
         $this->fixtures->create(
@@ -612,6 +666,21 @@ class InvoiceTest extends TestCase
                 'id'      => '1000001address',
                 'type'    => 'shipping_address',
                 'zipcode' => '560080',
+                'primary' => false,
+            ]);
+
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testUpdateDraftInvoiceWithSameBillingAndShippingAddressIds()
+    {
+        $this->fixtures->create(
+            'address',
+            [
+                'id'      => '1000000address',
+                'type'    => 'billing_address',
                 'primary' => false,
             ]);
 
@@ -656,6 +725,13 @@ class InvoiceTest extends TestCase
         $this->startTest();
 
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
+    public function testUpdateDraftInvoiceUnsetCustomerWithNestedCustomerId()
+    {
+        $this->createDraftInvoice();
+
+        $this->startTest();
     }
 
     public function testUpdateIssuedInvoice()
@@ -1426,9 +1502,9 @@ class InvoiceTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->createDraftInvoice();
-        $this->createDraftInvoice(['id' => '1000001invoice', 'type' => 'link']);
-        $this->createDraftInvoice(['id' => '1000002invoice', 'type' => 'ecod']);
-        $this->createDraftInvoice(['id' => '1000003invoice', 'type' => 'ecod']);
+        $this->createDraftInvoice(['id' => '1000001invoice', 'type' => 'link', 'supply_state_code' => '29']);
+        $this->createDraftInvoice(['id' => '1000002invoice', 'type' => 'ecod', 'supply_state_code' => '29']);
+        $this->createDraftInvoice(['id' => '1000003invoice', 'type' => 'ecod', 'supply_state_code' => '29']);
 
         $this->startTest();
     }
@@ -1706,7 +1782,7 @@ class InvoiceTest extends TestCase
     {
         $this->createOrder();
 
-        $this->createIssuedInvoice(['type' => 'link']);
+        $this->createIssuedInvoice(['type' => 'link', 'description' => 'Sample description']);
 
         $this->callViewUrlAndMakeAssertions();
     }

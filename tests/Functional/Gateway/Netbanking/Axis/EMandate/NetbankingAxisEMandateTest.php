@@ -113,6 +113,10 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
 
+        $refund = $this->getLastEntity(Entity::REFUND, true);
+
+        $this->assertEquals('processed', $refund['status']);
+
         $this->assertEquals(0, $payment['amount_refunded']);
         $this->assertEquals('refunded', $payment['status']);
 
@@ -256,15 +260,15 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $payment[Payment\Entity::TOKEN] = $token['id'];
 
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => 200]);
-        $payment['amount'] = 200;
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 3000]);
+        $payment['amount'] = 3000;
         $payment['order_id'] = $order->getPublicId();
 
         $this->doS2SRecurringPayment($payment);
 
         $debitPayment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals(200, $debitPayment['amount']);
+        $this->assertEquals(3000, $debitPayment['amount']);
         $this->assertEquals('created', $debitPayment['status']);
     }
 
@@ -384,8 +388,8 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $payment[Payment\Entity::TOKEN] = $token['id'];
 
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => 200]);
-        $payment['amount'] = 200;
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 3000]);
+        $payment['amount'] = 3000;
         $payment['order_id'] = $order->getPublicId();
 
         $this->doS2SRecurringPayment($payment);

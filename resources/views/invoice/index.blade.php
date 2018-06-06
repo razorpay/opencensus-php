@@ -5,6 +5,13 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
+
+    @if (isset($data['invoice']) && $data['invoice']['type'] !== 'invoice')
+        <meta property="og:title" content="Payment of Rs. {{format_amount($data['invoice']['amount'])}} requested by {{$data['invoice']['merchant_label']}} for {{$data['invoice']['description']}}">
+        <meta property="og:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://razorpay.com/favicon.png'}}">
+        <meta property="og:description" content="Click on this link to pay to {{$data['invoice']['merchant_label']}}">
+    @endif
+
     <?php date_default_timezone_set('Asia/Kolkata') ?>
     <link href="https://fonts.googleapis.com/css?family=Lato:300,400,600" rel="stylesheet" type="text/css"></link>
     <link rel="icon" href="https://razorpay.com/favicon.png" type="image/x-icon" />
@@ -181,8 +188,15 @@
         background-color: rgba(0, 0, 0, 0.05);
         opacity: 0;
         z-index: 0;
-        transition: 0.5s all ease-in-out;
         pointer-events: none;
+        transition: 0.5s all ease-in-out;
+      }
+
+      #overlay.overlay-hist {
+        pointer-events: all;
+        background-color: rgba(0, 0, 0, 0.4);
+        transition: 0.24s all ease-in-out;
+        z-index: 1;
       }
 
       #payment-container iframe.razorpay-checkout-frame {
@@ -202,6 +216,7 @@
       .inv-details {
         padding: 30px 40px;
         background-color: #fff;
+        border-radius: 4px;
       }
 
       .inv-details .inv-for {
@@ -513,7 +528,6 @@
             position: relative;
         }
         .btn-link {
-          width: 95px;
           color: #528ff0;
           background: linear-gradient(transparent, rgba(255,255,255,0.8));
           border: 0;
@@ -521,76 +535,96 @@
           padding: 0;
           font-size: 14px;
           outline: none;
-          margin-left: -9px;
         }
 
-        #mobile-container .btn-link{
-          //right: 2px;
-          //bottom: 3px;
+        .showmore {
+            padding-left: 10px
+            margin-left: -9px;
         }
 
-        #desktop-container .btn-link {
-          //right: 85px;
-          //bottom: 3px;
+        #desktop-container .showhist {
+            margin-top: 16px;
+        }
+
+        #hist-modal {
+            position: fixed;
+            width: 92%;
+            max-width: 460px;
+            left: 50%;
+            top: 48%;
+            line-height: 24px;
+
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.4);
+            color: #909090;
+            max-height: 70vh;
+            overflow: scroll;
+            transition: .1s all ease-in;
+            transform: translate(-50%,-50%) scale(0.7);
+            opacity: 0;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        #hist-modal.show {
+          display: block;
+          transform: translate(-50%,-50%) scale(1);
+          opacity: 1;
+          pointer-events: all;
+        }
+
+        #hist-close {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            padding: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            color: #57666e;
+        }
+
+        .modal-title {
+            padding: 24px 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #2e3345;
+        }
+        .modal-desc {
+            font-size: 14px;
+            font-weight: 400;
+            color: #909090;
+        }
+
+        .modal-col {
+            padding: 24px 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .modal-col .row:nth-of-type(n+2) {
+            font-size: 13px;
+        }
+
+        .testmode-warning {
+            padding: 12px 24px;
+            background-color: #fcf8e3;
+            color: #8a6d3b;
+            font-size: 12px;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            position: relative;
+            display: block;
+        }
+
+        .testmode-warning + .inv-details {
+            border-radius: 0 !important;
+        }
+
+        #desktop-container .testmode-warning {
+            padding-left: 40px;
         }
 
     </style>
-    <script>
-      function checkIsDesktop() {
-          var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
-          return width > 853;
-      }
-
-      function cleanHTML() {
-          // Show content according to width
-          if (checkIsDesktop()) {
-              document.getElementById('desktop-container').style.display = 'block';
-              document.getElementById('invoice-status-container').removeChild(document.getElementById('mobile-container'));
-          } else {
-              document.getElementById('mobile-container').style.display = 'block';
-              document.getElementById('invoice-status-container').removeChild(document.getElementById('desktop-container'));
-          }
-      }
-
-      function toggleTrimDescription(toTrim) {
-        var data = window.RZP_DATA.data;
-        desc = data['invoice']['description'];
-        var charLimit, pseudoChar, button = '';
-
-        if (checkIsDesktop()) {
-            charLimit = 200;
-            pseudoChar = 45;
-
-        } else {
-            charLimit = 125;
-            pseudoChar = 35;
-        }
-
-        if (desc && (desc.length > charLimit)) {
-            if (toTrim) {
-              var newLines = 0;
-              newLines = (desc.match(new RegExp("\n", "g")) || []).length;
-
-              if (newLines) {
-                for(let i = 0; i < newLines; i++) {
-                    if ((charLimit - i * pseudoChar) < 0.6 * charLimit) {
-                        desc = desc.substr(0, charLimit - i*pseudoChar);
-                        break;
-                    }
-                }
-              } else {
-                desc = desc.substr(0,charLimit);
-              }
-              desc =  desc.trim();
-              desc += '...';
-              button = '<button class="btn-link" onclick="toggleTrimDescription(false)"> Show More </button'
-            }
-        }
-
-        document.getElementById('payment-for').innerHTML = desc + button;
-      }
-
-    </script>
   </head>
   <body>
 
@@ -717,6 +751,7 @@
     @else
       <div id="invoice-status-container" class={{$data['invoice']['status']}}>
           @if (isset($data['invoice']) && $data['invoice']['type'] !== 'invoice')
+            <!-- Desktop Container -->
             <div id="desktop-container">
                 <div>
                   <svg class="bg-svg" width="1665px" height="665px" viewBox="0 0 1665 665" preserveAspectRatio="none">
@@ -727,9 +762,14 @@
 
                       <div class="table-box" id="inv-info-par">
                           <div id="inv-info-box">
+                              @if($data['is_test_mode'] === true)
+                                  <span class="testmode-warning">
+                                    This payment link is created in <b>Test Mode</b>. Only test payments can be made for this.
+                                  </span>
+                              @endif
                               <div class="inv-details">
                                   <div class="inv-for">
-                                    Payment Request from {{$data['merchant']['name']}}
+                                    Payment Request from {{$data['invoice']['merchant_label']}}
                                   </div>
                                   <div id="inv-details-main">
                                       <div class="info" style="margin-top: 28px;">
@@ -740,29 +780,55 @@
                                       @if($data['invoice']['expire_by'] and $data['invoice']['status'] !== 'paid')
                                           <div class="info">
                                               {{$data['invoice']['status'] === 'expired' ? 'EXPIRED ON' : 'EXPIRES BY'}}
-                                              <div class="val">{{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}} </div>
+                                              <div class="val">
+                                              {{format_epoch($data['invoice']['expire_by'])}}
+                                              </div>
                                           </div>
                                       @endif
 
                                       <div class="info">
                                           <span id="pay-title">AMOUNT PAYABLE</span>
                                           <div class="val" id="display-pay-amt">
-                                          ₹{{number_format($data['invoice']['amount']/100, 2, '.', ',')}}
+                                          ₹{{format_amount($data['invoice']['amount'])}}
                                           </div>
 
                                           <div class="info" id="partial-payment-info">
                                               <div class="val">
-                                                  <b>₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}}</b>
+                                                  <b>₹{{format_amount($data['invoice']['amount_due'])}}</b>
                                                   <span class="light">Due</span>
                                               </div>
                                               <div class="val">
-                                                  <span> ₹{{number_format($data['invoice']['amount_paid']/ 100, 2, '.', ',')}}</span>
+                                                  <span> ₹{{format_amount($data['invoice']['amount_paid'])}}</span>
                                                   <span class="light">Paid</span>
                                               </div>
                                           </div>
                                           <div class="line-strike"></div>
 
                                       </div>
+                                      @if($data['invoice']['partial_payment'] && count($data['invoice']['payments']))
+                                        <button class="btn-link showhist" onclick="showPayHist()"> Show Payment History </button>
+                                        <div id="hist-modal">
+                                          <div id="hist-close" onclick="closePayHist()"><b>✕</b></div>
+
+                                          <div class="modal-title">
+                                            Successful Payments
+                                            <div class="modal-desc">
+                                            {{count($data['invoice']['payments'])}} Payment{{(count($data['invoice']['payments']) > 1) ? 's' : ''}} made for this request
+                                            </div>
+                                          </div>
+
+
+                                          @foreach ($data['invoice']['payments'] as $key => $item)
+                                              <div class="modal-col">
+                                                <div class="row"><b style="color: #2e3345">
+                                                    ₹{{format_amount($item['amount'])}} Paid </b>on {{format_epoch($item['created_at'])}}
+                                                </div>
+                                                <div class="row">Paid using <span style="text-transform: capitalize">{{$item['method']}}</span></div>
+                                                    <div class="row">Payment ID: {{$item['id']}}</div>
+                                              </div>
+                                          @endforeach
+                                        </div>
+                                      @endif
                                   </div>
                               </div>
                               <div class="footer">
@@ -785,7 +851,7 @@
                                 <div id="header-details">
                                     @if (isset($data['merchant']))
                                         <div id="merchant">
-                                            <div id="merchant-name">{{$data['merchant']['name']}}</div>
+                                            <div id="merchant-name">{{$data['invoice']['merchant_label']}}</div>
                                             <div id="merchant-desc">Invoice #{{$data['invoice']['id']}}</div>
                                         </div>
                                     @endif
@@ -801,18 +867,17 @@
                                 <div id="cancelled-invoice">
                                   <div class="title" style='color:#f54443; font-size: 18px;'>Payment Link Cancelled</div>
                                   <div class="desc">
-                                    Oops! This payment link was cancelled. Please contact {{$data['merchant']['name']}} support in case you have any queries.
+                                    Oops! This payment link was cancelled. Please contact {{$data['invoice']['merchant_label']}} support in case you have any queries.
                                   </div>
                                 </div>
                               @elseif($data['invoice']['status'] === 'expired')
                                 <div id="cancelled-invoice">
                                     <div class="title" style='color:#f54443; font-size:18px'>Payment Link Expired</div>
                                     <div class="desc">
-                                        Oops! This payment link expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
+                                        Oops! This payment link expired on {{format_epoch($data['invoice']['expire_by'])}}. Please contact {{$data['invoice']['merchant_label']}} support in case you have any queries.
                                     </div>
                                 </div>
                               @endif
-
                         </div>
                         </div>
                       </div>
@@ -823,13 +888,16 @@
                       </div>
                       <div>
                           Want to create payment links for your business? Visit
-                          <a href="razorpay.com/payment-links" target="_blank">razorpay.com/payment-links</a>
+                          <a href="https://www.razorpay.com/payment-links" target="_blank">razorpay.com/payment-links</a>
                           and get started instantly
                       </div>
                   </div>
                 </div>
               </div>
+
+            <!-- Mobile Container -->
             <div id="mobile-container">
+              <div id="overlay"></div>
               <div id="payment-container--mob">
                   <div id="chkout-header">
                     <div id="header-logo" class={{isset($data['merchant']['image']) ? 'visible' : ''}}>
@@ -840,13 +908,18 @@
                     <div id="header-details">
                         @if (isset($data['merchant']))
                             <div id="merchant">
-                                <div id="merchant-name">{{$data['merchant']['name']}}</div>
+                                <div id="merchant-name">{{$data['invoice']['merchant_label']}}</div>
                                 <div id="merchant-desc">Invoice #{{$data['invoice']['id']}}</div>
                             </div>
                         @endif
                     </div>
                   </div>
                   <div id="inv-info-container">
+                        @if($data['is_test_mode'] === true)
+                            <span class="testmode-warning">
+                              This payment link is created in <b>Test Mode</b>. Only test payments can be made for this.
+                            </span>
+                        @endif
                       <div class="inv-details">
                           <div id="inv-details-main">
                               <div class="info">
@@ -857,25 +930,31 @@
                               <div class="info">
                                   <span id="pay-title">AMOUNT PAYABLE</span>
                                   <div class="val" id="display-pay-amt">
-                                    ₹{{number_format($data['invoice']['amount']/100, 2, '.', ',')}}
+                                    ₹{{format_amount($data['invoice']['amount'])}}
                                   </div>
                                   <div class="info" id="partial-payment-info">
                                       <div class="val">
-                                          <b>₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}}</b>
+                                          <b>₹{{format_amount($data['invoice']['amount_due'])}}</b>
                                           <span class="light">Due</span>
                                       </div>
                                       <div class="val">
-                                          <span>₹{{number_format($data['invoice']['amount_paid']/ 100, 2, '.', ',')}}</span>
+                                          <span>₹{{format_amount($data['invoice']['amount_paid'])}}</span>
                                           <span class="light">Paid</span>
                                       </div>
                                   </div>
                                   <div class="line-strike"></div>
                               </div>
+                              @if($data['invoice']['status'] === 'paid' && !$data['invoice']['partial_payment'])
+                                  <div class="info">
+                                      PAYMENT ID
+                                      <div class="val" style="text-transform:unset">{{$data['invoice']['payment_id']}}</div>
+                                  </div>
+                              @endif
 
                               @if($data['invoice']['expire_by'] and $data['invoice']['status'] !== 'paid')
                                 <div class="info">
                                   {{$data['invoice']['status'] === 'expired' ? 'EXPIRED ON' : 'EXPIRES BY'}}
-                                  <div class="val">{{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}} </div>
+                                  <div class="val">{{format_epoch($data['invoice']['expire_by'])}} </div>
                                 </div>
                               @endif
                               @if($data['invoice']['customer_details']['customer_name'] or $data['invoice']['customer_details']['customer_email'])
@@ -889,20 +968,41 @@
                                   @endif
                                 </div>
                               @endif
+                            @if($data['invoice']['partial_payment'] && count($data['invoice']['payments']))
+                              <button class="btn-link showhist" onclick="showPayHist()"> Show Payment History </button>
+                              <div id="hist-modal">
+                                <div id="hist-close" onclick="closePayHist()"><b>✕</b></div>
+
+                                <div class="modal-title">
+                                  Successful Payments
+                                  <div class="modal-desc">{{$data['invoice']['partial_payment']}} Payment{{$data['invoice']['partial_payment'] > 1 ?: 's'}} made for this request</div>
+                                </div>
+
+                                  @foreach ($data['invoice']['payments'] as $key => $item)
+                                      <div class="modal-col">
+                                        <div class="row"><b style="color: #2e3345">
+                                            ₹{{format_amount($item['amount'])}} Paid </b>on {{format_epoch($item['created_at'])}}
+                                        </div>
+                                        <div class="row">Paid using <span style="text-transform: capitalize">{{$item['method']}}</span></div>
+                                        <div class="row">Payment ID: {{$item['id']}}</div>
+                                      </div>
+                                  @endforeach
+                              </div>
+                            @endif
                           </div>
                       </div>
                       @if($data['invoice']['status'] === 'cancelled')
                         <div id="cancelled-invoice">
                           <div class="title" style='color:#f54443; font-size:18px'>Payment Link Cancelled</div>
                           <div class="desc">
-                            Oops! This payment link was cancelled. Please contact {{$data['merchant']['name']}} support in case you have any queries.
+                            Oops! This payment link was cancelled. Please contact {{$data['invoice']['merchant_label']}} support in case you have any queries.
                           </div>
                         </div>
                       @elseif($data['invoice']['status'] === 'expired')
                         <div id="cancelled-invoice">
                           <div class="title" style='color:#f54443; font-size:18px'>Payment Link Expired</div>
                             <div class="desc">
-                              Oops! This payment link expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
+                              Oops! This payment link expired on {{format_epoch($data['invoice']['expire_by'])}}. Please contact {{$data['invoice']['merchant_label']}} support in case you have any queries.
                           </div>
                         </div>
                       @endif
@@ -912,7 +1012,7 @@
                       <img id="rzp-logo" src="https://cdn.razorpay.com/logo.svg" />
                       <div>
                           Want to create payment links for your business? Visit
-                          <a href="razorpay.com/payment-links" target="_blank">razorpay.com/payment-links</a>
+                          <a href="https://www.razorpay.com/payment-links" target="_blank">razorpay.com/payment-links</a>
                           and get started instantly
                       </div>
                       <img id="fin-logo" src="data:image/jpeg;base64,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" />
@@ -925,8 +1025,71 @@
           @endif
 
         @if ($data['invoice']['type'] !== 'invoice')
+          <script src="https://cdn.razorpay.com/static/analytics/bundle.js" onload="initAnalytics()" async></script>
+          <script>
+            function checkIsDesktop() {
+                var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+                return width > 853;
+            }
+
+            function cleanHTML() {
+                // Show content according to width
+                if (checkIsDesktop()) {
+                    document.getElementById('desktop-container').style.display = 'block';
+                    document.getElementById('invoice-status-container').removeChild(document.getElementById('mobile-container'));
+                } else {
+                    document.getElementById('mobile-container').style.display = 'block';
+                    document.getElementById('invoice-status-container').removeChild(document.getElementById('desktop-container'));
+                }
+            }
+
+            function toggleTrimDescription(toTrim) {
+              var data = window.RZP_DATA.data;
+              desc = data['invoice']['description'];
+              var charLimit, pseudoChar, button = '';
+
+              if (checkIsDesktop()) {
+                  charLimit = 200;
+                  pseudoChar = 45;
+              } else {
+                  charLimit = 125;
+                  pseudoChar = 35;
+              }
+
+              if (desc && (desc.length > charLimit)) {
+                  if (toTrim) {
+                    var newLines = 0;
+                    newLines = (desc.match(new RegExp("\n", "g")) || []).length;
+
+                    if (newLines) {
+                      for(let i = 0; i < newLines; i++) {
+                        if ((charLimit - i * pseudoChar) < 0.6 * charLimit) {
+                          desc = desc.substr(0, charLimit - i*pseudoChar);
+                          break;
+                        }
+                      }
+                    } else {
+                      desc = desc.substr(0,charLimit);
+                    }
+
+                    desc =  desc.trim();
+                    desc += '...';
+                    button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button'
+                  }
+                }
+
+              document.getElementById('payment-for').innerHTML = desc + button;
+            }
+          </script>
+
           <script>
               cleanHTML();
+              window.t0 = (new Date()).getTime(); // initial time stamp
+
+              function initAnalytics() {
+                analytics.init(['ga', 'hotjar'], window.location.hostname.indexOf('razorpay.com') < 0);
+                analytics.track('ga', 'pageview');
+              }
 
               var data = window.RZP_DATA.data;
               var color = data.merchant.brand_color || '#168AFA';
@@ -941,7 +1104,14 @@
 
                   if (checkIsDesktop()) {
                       document.getElementById('scs-box').style.display = 'block';
-                      document.getElementById('scs-msg').innerHTML = "You have successfully paid ₹ " +  (amount/100).toFixed(2);
+                      var successNote = "You have successfully paid ₹ " + (amount/100).toFixed(2);
+
+                      if (!data['invoice']['partial_payment']) {
+                        successNote += '<div> Payment ID: ' + data['invoice']['payment_id'] + ' </div>'
+                      }
+
+                      document.getElementById('scs-msg').innerHTML = successNote;
+
                       document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2);
                   } else {
                     document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2) + '<span id="paid-tag">PAID</span></span>';
@@ -968,7 +1138,42 @@
                 }
               }
           </script>
+          <script>
+            if(data.invoice['partial_payment']) {
+                function showOverlay(clsToAdd) {
+                  var overlay = document.getElementById('overlay');
+                  overlay.style.opacity = 1;
 
+                  if (clsToAdd && overlay.className.indexOf(clsToAdd) === -1) {
+                    overlay.className += " " + clsToAdd;
+                  }
+                }
+
+                function hideOverlay(clsToRemove) {
+                  var overlay = document.getElementById('overlay');
+                  overlay.style.opacity = 0;
+
+
+                  if (clsToRemove && overlay.className.indexOf(clsToRemove) > -1) {
+                    overlay.className = overlay.className.replace(clsToRemove, '');
+                  }
+                }
+
+                function showPayHist() {
+                    document.getElementById('hist-modal').className = 'show';
+                    showOverlay('overlay-hist');
+
+                    ga('send', 'event', 'PL Hosted Page', 'Click - Show Payment History', undefined, data.invoice.payments.length);
+                }
+
+                function closePayHist() {
+                    document.getElementById('hist-modal').className = '';
+                    hideOverlay('overlay-hist');
+
+                    ga('send', 'event', 'PL Hosted Page', 'Click - Close Payment History', undefined, data.invoice.payments.length);
+                }
+            }
+          </script>
           @if ($data['invoice']['status'] !== 'paid' and ($data['invoice']['status'] !== 'expired' and $data['invoice']['status'] !== 'cancelled'))
             @if (isset($data['error']))
               <div id="failure" class="card">
@@ -980,18 +1185,12 @@
             @endif
             <script>
               if (checkIsDesktop()) {
-                  function showOverlay() {
-                      document.getElementById('overlay').style.opacity = 1;
-                  }
-                  function hideOverlay() {
-                      document.getElementById('overlay').style.opacity = 0;
-                  }
-                  document.getElementById('chkout-box').addEventListener('mouseover', showOverlay);
-                  document.getElementById('chkout-box').addEventListener('mouseout', hideOverlay);
+                document.getElementById('chkout-box').addEventListener('mouseover', showOverlay);
+                document.getElementById('chkout-box').addEventListener('mouseout', hideOverlay);
               } else {
-                  var payBtn = document.getElementById('mob-payment-btn');
-                  payBtn.style['background-color'] = color;
-                  payBtn.style['display'] = 'block';
+                var payBtn = document.getElementById('mob-payment-btn');
+                payBtn.style['background-color'] = color;
+                payBtn.style['display'] = 'block';
               }
 
               (function (globalScope) {
@@ -1017,14 +1216,18 @@
                                                            );
                     }
 
-                    if (invoiceObj.partial_payment && invoiceObj.amount_due) {
-                      return location.reload();
+                    if (ga && ga.length) {
+                      var sessionTDiff = (new Date()).getTime() - window.t0;
+                      var paymentSuccessAction = data.invoice.partial_payment ? 'Payment Successful - Partial' : 'Payment Successful';
+
+                      ga('send', 'event', 'PL Hosted Page', paymentSuccessAction, 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
+                        hitCallback: function() {
+                          return location.reload(); // To display the latest payment id
+                        }
+                      });
+                    } else {
+                      return location.reload(); // To display the latest payment id
                     }
-                    var chkoutFrame = document.querySelector('#chkout-box iframe');
-                    if (chkoutFrame) {
-                      document.getElementById('chkout-box').removeChild(chkoutFrame);
-                    }
-                    fullPaid();
                   },
                   prefill: {
                     contact: invoiceObj.customer_details.customer_contact,
@@ -1040,11 +1243,9 @@
                   }
                 };
 
-                if (merchant) {
-                  if (merchant.name) {
-                        options.name = merchant.name;
-                  }
+                options.name = invoiceObj.merchant_label;
 
+                if (merchant) {
                   var color = merchant.brand_color || '#168AFA';
                   options.theme.color = color;
 

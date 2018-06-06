@@ -89,4 +89,9 @@ class IndianStates
 
         return null;
     }
+
+    public static function getStateNameByCode(string $code)
+    {
+        return array_flip(self::$stateCodeMap)[$code] ?? null;
+    }
 }

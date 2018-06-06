@@ -6,8 +6,6 @@ class RefundReconStatusSummary extends DailyReconStatusSummary
 {
     public function getReconStatusSummary(int $from, int $to): array
     {
-        $formattedSummary = [];
-
         $refundSummary = $this->repo
                               ->transaction
                               ->fetchRefundReconStatusSummary(
@@ -15,12 +13,7 @@ class RefundReconStatusSummary extends DailyReconStatusSummary
                                   $to,
                                   Constants::GATEWAYS);
 
-        foreach ($refundSummary as $entry)
-        {
-            Helpers::addExtraColumns($entry);
-
-            $formattedSummary[$entry['date']][] =  $entry;
-        }
+        $formattedSummary = Helpers::getFormattedSummary($refundSummary);
 
         return $formattedSummary;
     }

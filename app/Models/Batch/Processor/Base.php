@@ -5,19 +5,19 @@ namespace RZP\Models\Batch\Processor;
 use Mail;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
-use Symfony\Component\HttpFoundation\File\File;
 
 use RZP\Models\Batch;
 use RZP\Models\Invoice;
-use RZP\Models\Settings;
+use RZP\Encryption\Type;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Settings;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
-use RZP\Models\Batch\Constants;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
+use Symfony\Component\HttpFoundation\File\File;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -225,9 +225,9 @@ class Base extends BaseModel\Core
         $this->removeErrorColumnsFromEntries($previewData);
 
         $response = [
-            Constants::PROCESSABLE_COUNT     => count($correctEntries),
-            Constants::ERROR_COUNT           => count($entries) - count($correctEntries),
-            Constants::PARSED_ENTRIES        => $previewData,
+            Batch\Constants::PROCESSABLE_COUNT => count($correctEntries),
+            Batch\Constants::ERROR_COUNT       => count($entries) - count($correctEntries),
+            Batch\Constants::PARSED_ENTRIES    => $previewData,
         ];
 
         return $response;
@@ -341,7 +341,25 @@ class Base extends BaseModel\Core
 
         $this->batch->incrementAttempts();
 
+        $this->resetBatchAttributes();
+
         $this->downloadAndSetInputFile();
+    }
+
+    /**
+     * Resets batch attributes conditionally for processing to happen
+     */
+    protected function resetBatchAttributes()
+    {
+        //
+        // If in the previous run the batch has been failed, we reset the status and failure reason here.
+        // Status and reason will be set again in current run based on processing result.
+        //
+        if ($this->batch->isFailed() === true)
+        {
+            $this->batch->setStatusNull();
+            $this->batch->unsetFailureReason();
+        }
     }
 
     protected function parseAndProcessEntries()
@@ -367,7 +385,6 @@ class Base extends BaseModel\Core
             $tracePayload = [
                 Batch\Entity::ID          => $this->batch->getId(),
                 Batch\Entity::MERCHANT_ID => $this->batch->getMerchantId(),
-                'entry'                   => $entry,
             ];
 
             try
@@ -578,8 +595,9 @@ class Base extends BaseModel\Core
     }
 
     /**
-     * Constructs final input using updated $entries set. This things is used to create output file. Below we fill in
-     * the empty headers with null so we don't get errors during creation of files.
+     * Constructs final output associative array to be written to file:
+     * - Pads null value for headers with no value in entries, so we don't get errors during xlsx creation
+     * - Flatten notes fields
      *
      * @param  array  $entries
      * @return array
@@ -591,11 +609,35 @@ class Base extends BaseModel\Core
 
         foreach ($entries as $entry)
         {
-            $dict = array_combine($headers, array_fill(0, count($headers), null));
-
-            foreach ($entry as $key => $value)
+            // Prepares each entry rows
+            foreach ($headers as $header)
             {
-                $dict[$key] = $value;
+                // If given header doesn't exist in entry, put a null value
+                if (array_key_exists($header, $entry) === false)
+                {
+                    // Optional fields if not sent, shouldn't be in output file as well
+                    if ($header !== Batch\Header::NOTES)
+                    {
+                        $dict[$header] = null;
+                    }
+                }
+                else
+                {
+                    $value = $entry[$header];
+                    // If the header is notes, flatten notes key & value pair at current position
+                    if ($header === Batch\Header::NOTES)
+                    {
+                        foreach ($value as $k => $v)
+                        {
+                            $dict["Notes[{$k}]"] = $v;
+                        }
+                    }
+                    // Else just put the key value in dictionary
+                    else
+                    {
+                        $dict[$header] = $value;
+                    }
+                }
             }
 
             $formatted[] = $dict;
@@ -627,12 +669,12 @@ class Base extends BaseModel\Core
         switch ($ext)
         {
             case FileStore\Format::TXT:
-                $txt = $this->generateTextWithHeadings($entries, '|', false, $this->getOutputFileHeadings());
+                $txt = $this->generateTextWithHeadings($entries, '|', false, array_keys(current($entries)));
 
                 return $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);
 
             case FileStore\Format::CSV:
-                $txt = $this->generateTextWithHeadings($entries, ',', false, $this->getOutputFileHeadings());
+                $txt = $this->generateTextWithHeadings($entries, ',', false, array_keys(current($entries)));
 
                 return $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);
 
@@ -797,17 +839,30 @@ class Base extends BaseModel\Core
         // Excel: Removes empty trailing rows
         $entries = array_filter($entries, function ($v) { return (empty(array_filter($v)) === false); });
 
-        // Excel: Removes empty trailing columns(ONLY), not all additional columns.
+        //
+        // Excel: Removes empty(not all additional columns) trailing columns
+        // Notes: Input file can have 0 to max 15 notes columns in the format: notes[key_1], notes[key_2]
+        //        Puts formatted notes key value pair in entry for consumption by other components(in validation,
+        //        processors of specific type etc)
+        //
         foreach ($entries as & $entry)
         {
             $index = 0;
-            $entry = array_filter(
-                        $entry,
-                        function ($value, $key) use (& $index)
-                        {
-                            return ((($key === $index++) and ($value === null)) === false);
-                        },
-                        ARRAY_FILTER_USE_BOTH);
+
+            foreach ($entry as $key => $value)
+            {
+                // Excel: Empty trailing columns comes as sequentially indexed key and null values
+                if (($key === $index++) and ($value === null))
+                {
+                    unset($entry[$key]);
+                }
+                // If key is of notes pattern pushes the key value pair in a entry's notes & unset current key
+                else if (preg_match(Batch\Header::NOTES_REGEX, $key, $matches) === 1)
+                {
+                    unset($entry[$key]);
+                    $entry[Batch\Header::NOTES][$matches[1]] = $value;
+                }
+            }
         }
 
         return $entries;
@@ -847,6 +902,8 @@ class Base extends BaseModel\Core
         {
             $ext = $file->getClientOriginalExtension();
         }
+
+        $ext = strtolower($ext);
 
         $localDir  = $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE_PREFIX);
         $filename  = $this->batch->getFileKeyWithExt($ext);
@@ -896,6 +953,14 @@ class Base extends BaseModel\Core
         if ($associateBatch === true)
         {
             $ufh->entity($this->batch);
+        }
+
+        if ($this->shouldEncrypt() and ($type == FileStore\Type::BATCH_INPUT))
+        {
+            $ufh->encrypt(Type::AES_ENCRYPTION, [
+                    'mode'   =>   \phpseclib\Crypt\Base::MODE_CBC,
+                    'secret' =>  openssl_random_pseudo_bytes(256)
+                ]);
         }
 
         return $ufh->localFilePath($filePath)
@@ -957,6 +1022,29 @@ class Base extends BaseModel\Core
     public function getHeadings(): array
     {
         return Batch\Header::getHeadersForFileTypeAndBatchType($this->inputFileType, $this->batch->getType());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function parseFirstRowAndGetHeadings(array & $rows, string $delimiter)
+    {
+        $headings = $this->getHeadings();
+        $firstRow = explode($delimiter, current($rows));
+        $diff     = array_values(array_diff($headings, $firstRow));
+
+        //
+        // In case of notes, the diff would be just 'notes', as the actual row will have values like notes[<key>].
+        // TODO: This mess is because of allowing(early bad decision) optional header row in CSV.
+        //
+        if (($diff === []) or ($diff === [Batch\Header::NOTES]))
+        {
+            array_shift($rows);
+
+            $headings = $firstRow;
+        }
+
+        return $headings;
     }
 
     protected function parseTextRowWithHeadingMismatch($headings, $values, $ix)
@@ -1117,5 +1205,10 @@ class Base extends BaseModel\Core
     protected function increaseAllowedSystemLimits()
     {
         return;
+    }
+
+    protected function shouldEncrypt()
+    {
+        return false;
     }
 }

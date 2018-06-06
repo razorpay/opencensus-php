@@ -61,8 +61,6 @@ class Redis extends PrioritySet\Base
         try
         {
             $this->data = $this->redis->zrevrange($storeKey, ...$fetchOptions);
-
-            $this->trace->info(TraceCode::REDIS_DATA_FETCHED, $this->data);
         }
         catch (\Exception $e)
         {

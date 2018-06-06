@@ -76,9 +76,34 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($content);
 
+        $this->verifyCallback($input, $gatewayEntity);
+
         $acquirerData = $this->getAcquirerData($input, $gatewayEntity);
 
         return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    protected function verifyCallback(array $input, $gatewayPayment)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        //
+        // If verify returns false, we throw an error as
+        // authorize request / response has been tampered with
+        //
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
     }
 
     public function verify(array $input): array
@@ -124,20 +149,18 @@ class Gateway extends Base\Gateway
 
     public function verifyPayment(Verify $verify)
     {
-        $content = $verify->verifyResponseContent;
-
-        $verify->status = $this->getVerifyStatus($verify, $content);
+        $verify->status = $this->getVerifyStatus($verify);
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
         $verify->payment = $this->saveVerifyContent($verify);
     }
 
-    protected function getVerifyStatus(Verify $verify, array $response) :string
+    protected function getVerifyStatus(Verify $verify) :string
     {
         $this->checkApiSuccess($verify);
 
-        $this->checkGatewaySuccess($verify, $response);
+        $this->checkGatewaySuccess($verify);
 
         $status = VerifyResult::STATUS_MATCH;
 
@@ -149,9 +172,10 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
-    protected function checkGatewaySuccess(Verify $verify, array $response)
+    protected function checkGatewaySuccess(Verify $verify)
     {
         $verify->gatewaySuccess = false;
+        $response = $verify->verifyResponseContent;
 
         if ((isset($response[ResponseFields::VERIFICATION]) === true) and
             ($response[ResponseFields::VERIFICATION] === Constants::YES))

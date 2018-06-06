@@ -51,7 +51,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'trace_code'    => TraceCode::RECON_ALERT,
                     'message'       => 'UTR not present in recon file',
                     'row'           => $row,
-                    'gateway'       => get_called_class()
+                    'gateway'       => $this->gateway
                 ]);
 
             $this->setFailUnprocessedRow(true);
@@ -100,6 +100,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $this->trace->info(TraceCode::BANK_TRANSFER_UNEXPECTED, [
             'message'       => 'Unexpected bank transfer, alert skipped',
+            'info_code'     => 'PAYMENT_ABSENT',
             'utr'           => $row[self::COLUMN_UTR],
             'row'           => $row,
         ]);
@@ -164,7 +165,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
-                    'gateway'         => get_called_class(),
+                    'gateway'         => $this->gateway,
                 ]);
 
             return false;

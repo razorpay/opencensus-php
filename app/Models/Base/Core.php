@@ -3,10 +3,12 @@
 namespace RZP\Models\Base;
 
 use App;
-use Illuminate\Foundation\Application;
-use RZP\Base\RepositoryManager;
-use RZP\Constants\Mode;
 use Razorpay\Trace\Logger as Trace;
+use Illuminate\Foundation\Application;
+
+use RZP\Constants\Mode;
+use RZP\Models\Merchant;
+use RZP\Base\RepositoryManager;
 
 class Core
 {
@@ -43,6 +45,9 @@ class Core
      */
     protected $env;
 
+    /**
+     * @var Merchant\Entity
+     */
     protected $merchant;
 
     public function __construct()
@@ -120,6 +125,22 @@ class Core
     }
 
     /**
+     * Changes the mode and the database connection to the param passed
+     *
+     * @param string $mode
+     */
+    public function setModeAndDefaultConnection(string $mode = Mode::TEST)
+    {
+        //
+        // This function updates the mode and app['rzp.mode'] properties
+        // of the BasicAuth class that has been initialized.
+        //
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+
+        $this->mode = $mode;
+    }
+
+    /**
      * Provides a way to pass class private method with parameters
      * directly wherever closure is required.
      *
@@ -144,23 +165,5 @@ class Core
     protected function isLiveMode(): bool
     {
         return ($this->mode === Mode::LIVE);
-    }
-
-    /**
-     * Changes the mode to live mode
-     */
-    protected function setLiveMode()
-    {
-        $liveMode = Mode::LIVE;
-
-        //
-        // This function updates the mode and app['rzp.mode'] properties
-        // of the BasicAuth class that has been initialized.
-        //
-        $this->app['basicauth']->setModeAndDbConnection($liveMode);
-
-        $this->mode = $liveMode;
-
-        return;
     }
 }

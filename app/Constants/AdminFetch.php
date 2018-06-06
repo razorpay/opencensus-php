@@ -4,6 +4,7 @@ namespace RZP\Constants;
 
 use RZP\Base\Fetch;
 use RZP\Models\Dispute;
+use RZP\Models\Settlement\Channel;
 
 /**
  * Class AdminFetch
@@ -17,6 +18,27 @@ class AdminFetch
     public static function fields()
     {
         return Fetch::getCommonFields();
+    }
+
+    public static function externalEntities()
+    {
+        return [
+            Entity::REPORTING_LOGS => [
+                'merchant_id'       => Fetch::FIELD_MERCHANT_ID
+            ],
+            Entity::REPORTING_CONFIGS => [
+                'merchant_id'       => Fetch::FIELD_MERCHANT_ID
+            ],
+            Entity::REPORTING_SCHEDULES => [
+                'merchant_id'       => Fetch::FIELD_MERCHANT_ID
+            ],
+            Entity::SHIELD_RULES => [
+
+            ],
+            Entity::SHIELD_RULE_ANALYTICS => [
+
+            ]
+        ];
     }
 
     public static function entities()
@@ -210,6 +232,11 @@ class AdminFetch
                 'date' => [
                     Fetch::LABEL  => 'Date',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'channel' => [
+                       Fetch::LABEL  => 'Channel',
+                       Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                       Fetch::VALUES => Channel::getChannels()
                 ],
             ],
 
@@ -535,6 +562,11 @@ class AdminFetch
                 'utr' => [
                     Fetch::LABEL  => 'UTR',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'channel' => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => Channel::getChannels()
                 ],
             ],
 
@@ -969,6 +1001,13 @@ class AdminFetch
                 ],
             ],
 
+            Entity::NODAL_STATEMENT => [
+                'q'  => [
+                    Fetch::LABEL  => 'Search Query',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::OFFER => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
@@ -1254,6 +1293,7 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
                         'created',
+                        'initiated',
                         'failed',
                         'processed',
                     ],
@@ -1265,6 +1305,11 @@ class AdminFetch
                 'utr' => [
                     Fetch::LABEL  => 'UTR',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'channel' => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => Channel::getChannels()
                 ],
             ],
 

@@ -15,8 +15,8 @@ class Icici extends Base
     const EXTENSION              = FileStore\Format::XLSX;
     const FILE_TYPE              = FileStore\Type::ICICI_NETBANKING_REFUND;
     const GATEWAY                = Payment\Gateway::NETBANKING_ICICI;
-    const GATEWAY_CODE           = IFSC::ICIC;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
+    const GATEWAY_CODE           = [Payment\Processor\Netbanking::ICIC_C, IFSC::ICIC];
 
     protected function formatDataForFile(array $data)
     {

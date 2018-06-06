@@ -10,6 +10,8 @@ class Base extends Mailable
 {
     protected $data;
 
+    protected $channel;
+
     public function __construct(array $data)
     {
         parent::__construct();
@@ -37,19 +39,11 @@ class Base extends Mailable
         return $this;
     }
 
-    protected function addHtmlView()
+    protected function addCc()
     {
-        $this->view('emails.message');
+        $settlementsEmail =  Constants::MAIL_ADDRESSES[Constants::SETTLEMENTS];
 
-        return $this;
-    }
-
-    protected function addAttachments()
-    {
-        if (isset($this->data['file_data']) === true)
-        {
-            $this->attach($this->data['file_data']['signed_url'], ['as' => $this->data['file_data']['file_name']]);
-        }
+        $this->cc($settlementsEmail);
 
         return $this;
     }
@@ -69,6 +63,13 @@ class Base extends Mailable
 
             $headers->addTextHeader(MailTags::HEADER, $this->getMailTag());
         });
+
+        return $this;
+    }
+
+    protected function addHtmlView()
+    {
+        $this->view('emails.message');
 
         return $this;
     }

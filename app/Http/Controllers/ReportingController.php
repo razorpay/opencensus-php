@@ -51,6 +51,13 @@ class ReportingController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateLog(string $id)
+    {
+        $data = $this->reportingService()->editLog($id, $this->input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getLog(string $id)
     {
         $data = $this->reportingService()->fetchLogById($id);

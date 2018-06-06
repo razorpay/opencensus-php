@@ -42,7 +42,7 @@ class MethodsTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(61, $count);
+        $this->assertEquals(62, $count);
 
         $this->assertArrayNotHasKey('recurring', $content);
     }
@@ -68,7 +68,7 @@ class MethodsTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(61, $count);
+        $this->assertEquals(62, $count);
     }
 
     public function testBulkMethodUpdate()
@@ -125,6 +125,8 @@ class MethodsTest extends TestCase
     {
         $this->ba->publicTestAuth();
 
+        $this->fixtures->merchant->enableMobikwik('10000000000000');
+
         $this->fixtures->merchant->enableEmandate();
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::CHARGE_AT_WILL]);
@@ -141,6 +143,8 @@ class MethodsTest extends TestCase
         $this->fixtures->merchant->activate();
 
         $this->ba->publicLiveAuth();
+
+        $this->fixtures->merchant->enableMobikwik('10000000000000');
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::CHARGE_AT_WILL]);
 
@@ -183,8 +187,9 @@ class MethodsTest extends TestCase
         $this->ba->publicTestAuth();
 
         $this->fixtures->merchant->enableMobikwik('10000000000000');
+        $this->fixtures->merchant->enableEmandate('10000000000000');
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::SUBSCRIPTIONS, Feature\Constants::E_MANDATE]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::SUBSCRIPTIONS]);
 
         $testData = $this->testData['testRecurringCards'];
 

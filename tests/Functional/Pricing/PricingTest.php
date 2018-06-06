@@ -29,6 +29,15 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAddPricingPlanRuleWithReceiver()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
     public function testBulkPricingPlan()
     {
         $this->startTest();
@@ -56,6 +65,15 @@ class PricingTest extends TestCase
 
 
     public function testAddPricingPlanNBRule()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanNBRuleWithReceiver()
     {
         $content = $this->createPricingPlan();
 

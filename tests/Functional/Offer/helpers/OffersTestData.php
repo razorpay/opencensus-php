@@ -14,6 +14,7 @@ return [
                 'payment_method_type' => 'credit',
                 'payment_network'     => 'VISA',
                 'issuer'              => 'HDFC',
+                'international'       => true,
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
                 'starts_at'           => 1519457070,
@@ -32,6 +33,7 @@ return [
                 'payment_method_type' => 'credit',
                 'payment_network'     => 'VISA',
                 'issuer'              => 'HDFC',
+                'international'       => true,
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
                 'starts_at'           => 1519457070,
@@ -783,7 +785,8 @@ return [
             'url'      => '',
             'method'   => 'PATCH',
             'content'  => [
-                'name'  => 'Updated name'
+                'name'    => 'Updated name',
+                'ends_at' => 1550999999,
             ]
         ],
         'response' => [
@@ -799,7 +802,7 @@ return [
                 'processing_time'     => 86400,
                 'max_payment_count'   => 2,
                 'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'ends_at'             => 1550999999,
             ]
         ]
     ],

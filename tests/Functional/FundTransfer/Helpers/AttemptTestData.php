@@ -4,6 +4,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\Payout\Status as PayoutStatus;
 use RZP\Models\Settlement\Status as SettlementStatus;
 use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
+use RZP\Models\FundTransfer\Rbl\Reconciliation\Status as RblStatus;
 use RZP\Models\FundTransfer\Icici\Reconciliation\Status as IciciStatus;
 use RZP\Models\FundTransfer\Kotak\Reconciliation\Status as KotakStatus;
 use RZP\Models\FundTransfer\Hdfc\Reconciliation\Status as HdfcStatus;
@@ -57,6 +58,20 @@ return [
     'matchAttemptForReconSuccessAxis' => [
         'version'           => 'V3',
         'bank_status_code'  => 'Settled',
+        'status'            => AttemptStatus::INITIATED,
+        'failure_reason'    => null,
+    ],
+
+    'matchAttemptForReconSuccessRbl' => [
+        'version'           => 'V3',
+        'bank_status_code'  => 'SUCCESS',
+        'status'            => AttemptStatus::INITIATED,
+        'failure_reason'    => null,
+    ],
+
+    'matchAttemptForReconFailureRbl' => [
+        'version'           => 'V3',
+        'bank_status_code'  => 'Failure',
         'status'            => AttemptStatus::INITIATED,
         'failure_reason'    => null,
     ],
@@ -158,6 +173,14 @@ return [
         'channel'          => Channel::AXIS,
         'version'          => 'V3',
         'bank_status_code' => AxisStatus::REJECTED,
+        'status'           => AttemptStatus::FAILED,
+        'failure_reason'   => 'Reconciliation',
+    ],
+
+    'matchSettlementAttemptForReconFailureRbl' => [
+        'channel'          => Channel::RBL,
+        'version'          => 'V3',
+        'bank_status_code' => RblStatus::FAILURE,
         'status'           => AttemptStatus::FAILED,
         'failure_reason'   => 'Reconciliation',
     ],

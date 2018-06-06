@@ -64,6 +64,11 @@ class Validator extends Base\Validator
         'TR', 'UP', 'UT', 'WB'
     ];
 
+    protected static $merchantBeneficiaryRegisterRules = [
+        'merchant_ids'      => 'sometimes|array',
+        'merchant_ids.*'    => 'sometimes|string|size:14',
+    ];
+
     protected static $beneficiaryRegisterRules = [
         Entity::ON                      => 'sometimes|epoch',
         Entity::RECIPIENT_EMAILS        => 'sometimes|array',

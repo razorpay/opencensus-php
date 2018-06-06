@@ -129,6 +129,7 @@ final class FactoryData
             'refund_status' => null,
             'contact' => $faker->randomElement(['+918199078685', '+17813924010', '+33751253819', '+919416544332', '+447706696711', '67332323', '+9613688111']),
             'notes' => null,
+            'fee' => 0,
             'gateway' => 'hdfc',
             'email' => $faker->email,
             'auto_captured' => 0,
@@ -378,6 +379,8 @@ final class FactoryData
             'scheduled_at'             => $faker->timestamp,
             'expire_by'                => $faker->timestamp(2),
             'amount'                   => 100000,
+            'tax_amount'               => 0,
+            'gross_amount'             => 100000,
             'currency'                 => 'INR',
         ]);
 
@@ -878,6 +881,21 @@ final class FactoryData
             'id'         => $faker->uniqueid,
             'created_at' => $faker->timestamp,
             'updated_at' => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\VirtualAccount\Entity::class, [
+        ]);
+
+        $factory(\RZP\Models\QrCode\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+            'merchant_id' => '10000000000000',
+            'provider'    => 'bharat_qr',
+            'entity_id'   => $faker->uniqueid,
+            'entity_type' => 'virtual_account',
+            'short_url'   => 'abc.com',
+            'qr_string'   => 'kdsfjsfndsmndjksnfsdnsmdns',
         ]);
     }
 }

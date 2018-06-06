@@ -3,6 +3,7 @@
 namespace RZP\Models\QrCode;
 
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Models\VirtualAccount\Provider;
 
@@ -10,6 +11,7 @@ class Entity extends Base\PublicEntity
 {
     const ID                        = 'id';
     const MERCHANT_ID               = 'merchant_id';
+    const REFERENCE                 = 'reference';
     const PROVIDER                  = 'provider';
     const ENTITY_ID                 = 'entity_id';
     const ENTITY_TYPE               = 'entity_type';
@@ -21,6 +23,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'qr_code';
 
+    protected $generateIdOnCreate = true;
+
     protected $fillable = [
         self::AMOUNT,
         self::PROVIDER,
@@ -29,6 +33,7 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
+        self::REFERENCE,
         self::AMOUNT,
         self::PROVIDER,
         self::SHORT_URL,
@@ -38,6 +43,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::REFERENCE,
         self::SHORT_URL,
         self::CREATED_AT,
     ];
@@ -46,7 +52,10 @@ class Entity extends Base\PublicEntity
         self::AMOUNT => 'int',
     ];
 
-    protected $generateIdOnCreate = true;
+    protected static $generators = [
+        self::ID,
+        self::REFERENCE,
+    ];
 
     // --------------------- RELATIONS ---------------------
 
@@ -65,9 +74,34 @@ class Entity extends Base\PublicEntity
         return $this->morphMany(FileStore\Entity::class, 'entity');
     }
 
+    public function payments()
+    {
+        return $this->morphMany(Payment\Entity::class, 'source');
+    }
+
     // --------------------- END RELATIONS ---------------------
 
+    public function generateReference($input)
+    {
+        if (isset($input[self::REFERENCE]) === false)
+        {
+            $this->setReference($this->getId());
+        }
+    }
+
     // --------------------- GETTERS ---------------------
+
+    /**
+     * This function is used in case of polymorphic relations where we associate one entity
+     * with multiple other entities using (entity_type and entity_id). It determines the string that
+     * will be stored for entity_type when the association is with the QrCode entity.
+     *
+     * @return string
+     */
+    public function getMorphClass()
+    {
+        return $this->entity;
+    }
 
     /**
      * Gets the most recent qrcode file
@@ -84,6 +118,11 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getReference()
+    {
+        return $this->getAttribute(self::REFERENCE);
     }
 
     public function getQrString()
@@ -122,6 +161,11 @@ class Entity extends Base\PublicEntity
     // --------------------- END GETTERS ---------------------
 
     // --------------------- SETTERS ---------------------
+
+    public function setReference(string $reference)
+    {
+        $this->setAttribute(self::REFERENCE, $reference);
+    }
 
     public function setShortUrl(string $shortUrl)
     {

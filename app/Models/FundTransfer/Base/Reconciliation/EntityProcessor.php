@@ -310,4 +310,9 @@ abstract class EntityProcessor extends Base\Core
 
         return true;
     }
+
+    protected function getStatusClass(string $channel)
+    {
+        return 'RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\Status';
+    }
 }

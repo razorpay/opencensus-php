@@ -15,7 +15,6 @@ use RZP\Models\Merchant;
 use RZP\Models\LineItem;
 use RZP\Models\Settings;
 use RZP\Models\FileStore;
-use RZP\Jobs\DispatchRouter;
 use RZP\Models\Plan\Subscription;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
@@ -91,29 +90,13 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $job = new InvoiceJob($this->mode, InvoiceJob::ISSUED, $invoice->getId());
-
-            //
-            // In cases we push job over queue with delay factor of 2 seconds.
-            // This is done because some methods of this Core gets called internally
-            // by other products (eg. subscriptions) and in their core they finish few
-            // other stuffs as well before commiting DB transactions.
-            //
-            if ($subscription !== null)
-            {
-                $job->delay(self::QUEUE_JOB_DELAY);
-            }
-
-            (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+            InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
         }
 
         return $invoice;
     }
 
-    public function update(
-        Entity $invoice,
-        array $input,
-        Merchant\Entity $merchant): Entity
+    public function update(Entity $invoice, array $input, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(TraceCode::INVOICE_UPDATE_REQUEST,
             [
@@ -157,12 +140,7 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $job = new InvoiceJob(
-                        $this->mode,
-                        InvoiceJob::UPDATED,
-                        $invoice->getId());
-
-            (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+            InvoiceJob::dispatch($this->mode, InvoiceJob::UPDATED, $invoice->getId());
         }
 
         return $invoice;
@@ -187,12 +165,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $job = new InvoiceJob(
-                    $this->mode,
-                    InvoiceJob::ISSUED,
-                    $invoice->getId());
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+        InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
 
         return $invoice;
     }
@@ -448,14 +421,9 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $job = new InvoiceJob(
-                        $this->mode,
-                        InvoiceJob::EXPIRED,
-                        $invoice->getId());
+        InvoiceJob::dispatch($this->mode, InvoiceJob::EXPIRED, $invoice->getId());
 
         // Sends expiration mails to customer asynchronously
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
-
         $this->eventService->fire('api.invoice.expired', [$invoice]);
     }
 
@@ -710,9 +678,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        $job = new InvoiceBatchIssueJob($this->mode, $batch->getId(), $input);
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+        InvoiceBatchIssueJob::dispatch($this->mode, $batch->getId(), $input);
 
         return ['success' => true];
     }
@@ -736,9 +702,7 @@ class Core extends Base\Core
 
         $settingsAccessor->upsert($input)->save();
 
-        $job = new InvoiceBatchNotifyJob($this->mode, $batch->getId(), $input);
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+        InvoiceBatchNotifyJob::dispatch($this->mode, $batch->getId(), $input);
     }
 
     /**

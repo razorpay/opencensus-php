@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Base\Initiator;
 
 use App;
+use Request;
 use Requests;
 
 abstract class RequestProcessor extends NodalAccount
@@ -28,6 +29,8 @@ abstract class RequestProcessor extends NodalAccount
      */
     protected $headers = [];
 
+    protected $config;
+
     /**
      * Holds the request body
      *
@@ -41,6 +44,13 @@ abstract class RequestProcessor extends NodalAccount
      * @var array
      */
     protected $options = [];
+
+    /**
+     * Holds the response object
+     *
+     * @var \Requests_Response
+     */
+    protected $response = null;
 
     /**
      * Response trace will be recorded if this variable is set
@@ -57,8 +67,6 @@ abstract class RequestProcessor extends NodalAccount
      * @var null
      */
     protected $requestTraceCode = null;
-
-    protected $config;
 
     public function method(string $method): self
     {
@@ -109,22 +117,34 @@ abstract class RequestProcessor extends NodalAccount
         return $this;
     }
 
+    public function getResponse()
+    {
+        return $this->response;
+    }
+
     public function makeRequest(): array
     {
         $this->collectRequestData();
 
         $this->traceRequest();
 
-        $response = Requests::request(
-            $this->url,
-            $this->headers,
-            $this->body,
-            $this->method,
-            $this->options);
+        if ($this->config['mock'] === true)
+        {
+            $this->response = $this->sendMockRequest();
+        }
+        else
+        {
+            $this->response = Requests::request(
+                $this->url,
+                $this->headers,
+                $this->body,
+                $this->method,
+                $this->options);
+        }
 
-        $this->traceResponse($response);
+        $this->traceResponse($this->response);
 
-        return $this->processResponse($response);
+        return $this->processResponse($this->response);
     }
 
     /**
@@ -156,6 +176,7 @@ abstract class RequestProcessor extends NodalAccount
         $this->trace->info(
             $this->responseTraceCode,
             [
+                'channel'       => $this->channel,
                 'response_body' => $response->body,
             ]);
     }
@@ -174,9 +195,32 @@ abstract class RequestProcessor extends NodalAccount
         $this->trace->info(
             $this->requestTraceCode,
             [
+                'channel' => $this->channel,
                 'method'  => $this->method,
                 'request' => $this->body,
             ]);
+    }
+
+    /**
+     * Creates dummy response from the array received from `responseGenerator`
+     *
+     * @return \Requests_Response
+     */
+    private function sendMockRequest(): \Requests_Response
+    {
+        $input = Request::all();
+
+        $content = $this->mockresponseGenerator($input);
+
+        $response = new \Requests_Response();
+
+        $response->body = json_encode($content);
+
+        $response->status_code = 200;
+
+        $response->url = $this->url;
+
+        return $response;
     }
 
     /**
@@ -214,6 +258,15 @@ abstract class RequestProcessor extends NodalAccount
      * @return array
      */
     public abstract function requestOptions(): array;
+
+    /**
+     * Generate the mock response for the given class.
+     *
+     * @param array $input config params
+     *
+     * @return array
+     */
+    protected abstract function mockResponseGenerator(array $input): array;
 
     /**
      * Should be implemented in the clild class to process the response of current request
