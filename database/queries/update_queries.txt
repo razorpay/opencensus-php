@@ -1737,7 +1737,11 @@ UPDATE action_state
     FROM action_state
     WHERE action_state.name = "under_review" AND entity_type = "merchant_request"
     GROUP BY action_state.entity_id
-  ) as ac_min ON (ac_min.created_at = action_state.created_at AND ac_min.merchant_request_id = action_state.entity_id)
+  ) as ac_min ON (
+    ac_min.created_at = action_state.created_at
+    AND ac_min.merchant_request_id = action_state.entity_id
+    AND action_state.entity_type = "merchant_request"
+    AND action_state.name = "under_review")
   JOIN (
     SELECT SUBSTRING_INDEX(`key`, ".", 1) AS product, entity_id as merchant_id, MIN(created_at) as created_at
     FROM settings
