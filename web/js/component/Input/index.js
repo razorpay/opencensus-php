@@ -55,6 +55,7 @@ export function separateDomProps(props) {
     addonBefore,
     addonAfter,
     validator,
+    checkboxMaskLabel,
     info,
     autoRender,
     allowToday,
@@ -76,6 +77,7 @@ export function separateDomProps(props) {
     defaultValue,
     addonBefore,
     addonAfter,
+    checkboxMaskLabel,
     info,
     autoRender,
     allowToday,
@@ -377,7 +379,13 @@ class Check extends Field {
               onChange={this.toggle}
               disabled={this.props.disabled}
             />
-            <div className="Input-checkbox" />
+            {this.props.checkboxMaskLabel ? (
+              <span class="Input-checkbox--label btn-link no-padding">
+                {this.props.checkboxMaskLabel[+this.checked]}
+              </span>
+            ) : (
+              <div className="Input-checkbox" />
+            )}
             <Label class="Input-inlineLabel" text={fieldLabel} />
           </label>
           <Description text={description} />
@@ -531,11 +539,15 @@ Field.Select = ({ options, ...props }) => (
 );
 
 /* Fields to be shown visually closer than other fields in form*/
-Field.Group = ({ label, className, children }) => {
-  let classes = typeof className === 'string' && className.split(' ');
-
+Field.Group = ({ label, className, children, ...otherProps }) => {
   return (
-    <div class={classList('InputGroup', classes)}>
+    <div
+      class={classList(
+        'InputGroup',
+        className,
+        inputClass({ props: otherProps })
+      )}
+    >
       <Label text={label} />
       {children}
     </div>

@@ -86,8 +86,7 @@ function WizardFields(field) {
 
   if (rest.name) {
     key = rest.name;
-    defaultValue =
-      this.state.dirty[activeTabIndx] && this.state.dirty[activeTabIndx][key]; // Form state is stored in dirty
+    defaultValue = this.state.dirty[activeTabIndx][key]; // Form state is stored in dirty
 
     key === 'expire_by' && defaultValue;
   } else if (_name) {
@@ -143,7 +142,10 @@ export default class CreateNewContainer extends React.Component {
 
     this.state = {
       activeTab: intent,
-      dirty: {}, // Initialize with no edits in dirty. Object is maintained to keep dirty data of each tab separately.
+      dirty: {
+        [PAYMENT_LINK]: {},
+        [REUSABLE_PAYMENT_LINK]: {},
+      }, // Initialize with no edits in dirty. Object is maintained to keep dirty data of each tab separately.
       _name: {
         // Object, cuz dirty is also object
         [PAYMENT_LINK]: {
@@ -298,29 +300,33 @@ export default class CreateNewContainer extends React.Component {
   };
 
   changeTab = ({ target }) => {
-    const tabId = parseInt(target.getAttribute('data-index'));
+    const activeTabIndx = parseInt(target.getAttribute('data-index'));
 
     this.setState({
-      activeTab: tabId,
+      activeTab: activeTabIndx,
     });
 
-    this.props.history.replace(FORM_TABS[tabId].url);
+    this.props.history.replace(FORM_TABS[activeTabIndx].url);
   };
 
   onCreate = () => {
-    const tabId = this.state.activeTab;
+    const activeTabIndx = String(this.state.activeTab);
 
-    const promise = FORM_TABS[tabId].onCreate();
+    this.setState({
+      parentFormLock: true,
+    });
 
-    if (tabId == PAYMENT_LINK) {
+    const promise = FORM_TABS[activeTabIndx].onCreate();
+
+    if (activeTabIndx == PAYMENT_LINK) {
       let notificationMSG = 'Payment link created successfully.',
         notifyMedium = [];
 
-      if (this.state.dirty[tabId].sms_notify) {
+      if (this.state.dirty[activeTabIndx].sms_notify) {
         notifyMedium.push('SMS');
       }
 
-      if (this.state.dirty[tabId].email_notify) {
+      if (this.state.dirty[activeTabIndx].email_notify) {
         notifyMedium.push('Email');
       }
 
@@ -336,23 +342,31 @@ export default class CreateNewContainer extends React.Component {
               message: notificationMSG,
             });
 
-            this.setState({
-              parentFormLock: true,
-            });
-
             this.props.history.push('/paymentlinks/' + resp.data.id);
           }
+
+          this.setState({
+            parentFormLock: false,
+          });
         })
         .catch(err => {
           this.props.showNotification({
             type: 'error',
             message: err.errors,
           });
+
+          this.setState({
+            parentFormLock: false,
+          });
         });
     }
 
     // In case of other tabs, simply return promise;
-    return promise;
+    return promise.then(resp => {
+      this.setState({
+        parentFormLock: false,
+      });
+    });
   };
 
   getFormFields() {
@@ -360,7 +374,11 @@ export default class CreateNewContainer extends React.Component {
 
     return fields.map((f, i) => {
       if (Array.isArray(f)) {
-        return <Input.Group key={i}>{f.map(WizardFields, this)}</Input.Group>;
+        return (
+          <Input.Group key={i} disabled={this.state.parentFormLock}>
+            {f.map(WizardFields, this)}
+          </Input.Group>
+        );
       } else if (
         f.hasOwnProperty('inlineFields') &&
         Array.isArray(f.inlineFields)
@@ -370,6 +388,7 @@ export default class CreateNewContainer extends React.Component {
             key={i}
             class={classList('InputGroup--inline', f.className)}
             label={f.label}
+            disabled={this.state.parentFormLock}
           >
             <div class="Input-content">
               {f.inlineFields.map(WizardFields, this)}

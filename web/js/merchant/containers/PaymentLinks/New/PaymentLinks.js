@@ -12,7 +12,6 @@ export function PLCreate() {
   };
 
   reqPayload.amount *= 100;
-  reqPayload.amount *= 100;
   reqPayload.expire_by = Math.round(reqPayload.expire_by / 1000);
 
   /* Customer details */
@@ -66,6 +65,7 @@ export default [
         </b>
       ),
       _cmp: Input.Check,
+      _autoRenderImpure: true,
       _featureEnabled: 'Invoice_Partial_Payments',
     },
   ],
@@ -103,6 +103,7 @@ export default [
         fieldLabel: 'via SMS',
         size: 'half_small',
         _cmp: Input.Check,
+        _autoRenderImpure: true,
         onChange: e => {
           if (e.target.value == '1') {
             document.getElementsByName('contact')[0].focus();
@@ -114,6 +115,7 @@ export default [
         fieldLabel: 'via Email',
         size: 'half_big',
         _cmp: Input.Check,
+        _autoRenderImpure: true,
         onChange: e => {
           if (e.target.value == '1') {
             document.getElementsByName('email')[0].focus();
@@ -131,6 +133,7 @@ export default [
     label: 'Expiry',
     fieldLabel: 'No Expiry',
     _cmp: Input.Check,
+    _autoRenderImpure: true,
     className: 'Input--vTop',
     onChange: e => {
       if (e.target.value == '0') {

@@ -28,11 +28,16 @@ export default [
       placeholder: 'Provide additional description',
       description: 'This will be visible to the customer',
       _cmp: Input.Textarea,
-      _when: form => form.state._name[form.state.activeTab].withDesc == '1',
+      _when: form => form.state._name[form.state.activeTab].addDesc == '1',
     },
     {
-      _name: 'withDesc',
+      _name: 'addDesc',
       _cmp: Input.Check,
+      checkboxMaskLabel: [
+        '+ Add detailed description',
+        '- Remove detailed description',
+      ],
+      _autoRenderImpure: true,
     },
   ],
   {
@@ -40,6 +45,7 @@ export default [
     label: 'Expiry',
     fieldLabel: 'No Expiry',
     _cmp: Input.Check,
+    _autoRenderImpure: true,
     className: 'Input--vTop',
     onChange: e => {
       if (e.target.value == '0') {
@@ -89,6 +95,7 @@ export default [
       label: 'Times Payable',
       fieldLabel: 'No Limit',
       _cmp: Input.Check,
+      _autoRenderImpure: true,
       className: 'Input--vTop',
       onChange: e => {
         if (e.target.value == '0') {
@@ -103,6 +110,7 @@ export default [
       name: 'times_payable',
       type: 'number',
       size: 'half',
+      _autoRenderImpure: true,
       description:
         'Upon reaching limit, link will close. Limit can be modified anytime.',
       _disabledWhen: form =>
