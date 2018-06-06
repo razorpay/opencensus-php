@@ -4,6 +4,9 @@
   margin: 24px 0 8px
   position: relative
 
+  .Input-content
+    position: relative
+
   .Input-addons
     position: absolute
     top: 1px
@@ -59,22 +62,13 @@
     .Input-elWrapper, .Input--checkbox // Half of normal size
       width: 170px
 
-    + .Input .Input-content
-      margin-left: 0
-
   &.Input--half_small // Smaller than half size
     .Input-elWrapper, .Input--checkbox
       width: 148px
 
-    + .Input .Input-content
-      margin-left: 0
-
   &.Input--half_big // Bigger than half size
     .Input-elWrapper, .Input--checkbox
       width: 192px
-
-    + .Input .Input-content
-      margin-left: 0
 
   &.Input--small .Input-elWrapper
     width: 260px
@@ -96,9 +90,11 @@
 
   label
     cursor: unset !important
+    pointer-events: none
 
   input, select, .Input-checkbox, .Input-checkbox + .Input-inlineLabel, .Input-radio, textarea
     cursor: unset
+    pointer-events: none
 
   input:checked + .Input-radio
     border-color: #fafafa
@@ -238,6 +234,7 @@ textarea.Input-el
   border: 1px solid #ccc
 
   & + .Input-inlineLabel
+    font-size: 14px
     cursor: pointer
 
   &:after
@@ -335,3 +332,11 @@ textarea.Input-el
     .Input-content .Input-content
       margin-left: 0
       margin-right: 20px
+
+
+.Input--Calendar-content.rc-calendar
+  margin-top: 42px
+
+.Input--TimePicker .rdt
+  font-size: 14px
+

@@ -54,6 +54,10 @@ function defaultFieldProps(f) {
   if (f.name === 'notes') {
     f.onChange = self.onChangeNotes;
   }
+
+  if (f._name === 'expire_by_date') {
+    f.onChange = self.onDateChange.bind(self);
+  }
 }
 
 function WizardFields(field) {
@@ -72,15 +76,17 @@ function WizardFields(field) {
   }
 
   let defaultValue, key;
+  const activeTabIndx = String(this.state.activeTab);
+
   if (rest.name) {
     key = rest.name;
     defaultValue =
-      this.state.dirty[this.state.activeTab] &&
-      this.state.dirty[this.state.activeTab][key]; // Form state is stored in dirty
+      this.state.dirty[activeTabIndx] && this.state.dirty[activeTabIndx][key]; // Form state is stored in dirty
+
+    key === 'expire_by' && defaultValue;
   } else if (_name) {
     defaultValue =
-      this.state._name[this.state.activeTab] &&
-      this.state._name[this.state.activeTab][_name];
+      this.state._name[activeTabIndx] && this.state._name[activeTabIndx][_name];
     key = _name;
   }
 
@@ -217,6 +223,54 @@ export default class CreateNewContainer extends React.Component {
     }
   };
 
+  onDateChange(date) {
+    if (date.target) {
+      // Check if date is not of event type
+      return;
+    }
+
+    const activeTabIndx = String(this.state.activeTab);
+    const newDirty = { ...this.state.dirty };
+
+    let expiryTime =
+      newDirty[activeTabIndx] && newDirty[activeTabIndx].expire_by; // If expiry_by already set by user
+
+    if (date) {
+      if (expiryTime) {
+        const offsetExpiryTime =
+          expiryTime -
+          moment(expiryTime)
+            .startOf('day')
+            .valueOf();
+        expiryTime = date.valueOf() + offsetExpiryTime;
+      } else {
+        expiryTime = date.endOf('day').valueOf();
+      }
+    } else {
+      // Remove time field when date field is unset
+      expiryTime = date.endOf('day');
+    }
+    newDirty[activeTabIndx] = {
+      ...newDirty[activeTabIndx],
+      expire_by: expiryTime,
+    };
+
+    const _newName = { ...this.state._name };
+
+    _newName[activeTabIndx]['expire_by_date'] = date;
+    this.setState({
+      dirty: newDirty,
+      _name: _newName,
+    });
+
+    if (expiryTime) {
+      setTimeout(() => {
+        // document.getElementsByName('expire_by')[0].value = expiryTime;
+        document.getElementsByName('expire_by')[0].focus();
+      }, 100);
+    }
+  }
+
   onChangeNotes = pairs => {
     const newDirty = { ...this.state.dirty };
     const activeTabIndx = String(this.state.activeTab);
@@ -224,7 +278,6 @@ export default class CreateNewContainer extends React.Component {
     const notes = {};
 
     pairs.forEach(p => {
-      console.log('O..', p);
       if (p.key || p.value) {
         notes[p.key] = p.value;
       }

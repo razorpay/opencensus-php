@@ -114,10 +114,10 @@ export default [
     className: 'Input--vTop',
     onChange: e => {
       if (e.target.value == '0') {
-        setTimeout(
-          () => document.querySelector('[data-name="expire_by_date"]').focus(),
-          10
-        );
+        setTimeout(() => {
+          document.querySelector('[data-name="expire_by_date"]').focus();
+          document.querySelector('[data-name="expire_by_date"]').click();
+        }, 10);
       }
     },
   },
@@ -131,15 +131,22 @@ export default [
         _disabledWhen: form =>
           form.state._name[form.state.activeTab].expiry === '1',
         addonAfter: <i class="i i-date-range" />,
+
+        _cmp: Input.ToCalendar,
+        allowToday: true,
+        disablePastDates: true,
       },
       {
         name: 'expire_by',
-        placeholder: '12:00AM',
+        placeholder: '11:59PM',
         size: 'half',
+        _when: form => !!form.state._name[form.state.activeTab].expire_by_date,
         _disabledWhen: form =>
           form.state._name[form.state.activeTab].expiry === '1',
         addonAfter: <i class="i i-time" />,
-        _when: form => !!form.state._name[form.state.activeTab].expire_by_date,
+
+        // defaultValue: moment().startOf().unix(), // Epoch of timestamp today start. Don't set. Has to be in sync with Date(expiry_by_date).
+        _cmp: Input.TimePicker,
       },
     ],
   },
