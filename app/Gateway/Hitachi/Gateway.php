@@ -79,10 +79,12 @@ class Gateway extends Base\Gateway
 
         $authResponse = $this->callAuthenticationGateway($input);
 
-        $this->authorizeEnrolled($input, $authResponse);
+        $gatewayEntity = $this->authorizeEnrolled($input, $authResponse);
+
+        $acquirerData = $this->getAcquirerData($input, $gatewayEntity);
 
         // TODO: Add authenticate data for 2FA
-        return $this->getCallbackResponseData($input);
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function capture(array $input)
@@ -283,9 +285,11 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getAttributesFromAuthResponse($response);
 
-        $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
+        $gatewayEntity = $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
 
         $this->checkErrorsAndThrowException($response);
+
+        return $gatewayEntity;
     }
 
     protected function sendPaymentVerifyRequest($verify)
