@@ -156,6 +156,11 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD_UNTIL,
     ];
 
+    protected $ignoreRelations = [
+        'source',
+        'to',
+    ];
+
     // -------------------- Relations ---------------------------
 
     public function transaction()
