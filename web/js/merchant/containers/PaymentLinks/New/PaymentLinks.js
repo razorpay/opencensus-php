@@ -114,6 +114,7 @@ export default [
     className: 'Input--vTop',
     onChange: e => {
       if (e.target.value == '0') {
+        // 0 => unselected
         setTimeout(() => {
           document.querySelector('[data-name="expire_by_date"]').focus();
           document.querySelector('[data-name="expire_by_date"]').click();

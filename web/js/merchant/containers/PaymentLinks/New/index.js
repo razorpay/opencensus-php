@@ -141,11 +141,11 @@ export default class CreateNewContainer extends React.Component {
       _name: {
         // Object, cuz dirty is also object
         '0': {
-          expiry: '1', // 1 is selected
+          expiry: '1', // 1 => selected
         },
         '1': {
-          noLimit: '1', // 1 is selected
-          expiry: '1', // 1 is selected
+          noLimit: '1', // 1 => selected
+          expiry: '1', // 1 => selected
         },
       },
     };
