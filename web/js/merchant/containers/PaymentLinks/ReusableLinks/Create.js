@@ -34,6 +34,10 @@ export default [
     },
   ],
   {
+    name: 'receipt',
+    label: 'Receipt No.',
+  },
+  {
     _name: 'expiry',
     label: 'Expiry',
     fieldLabel: 'No Expiry',

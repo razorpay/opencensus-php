@@ -140,7 +140,6 @@ export default class CreateNewContainer extends React.Component {
       }
 
       defaultFieldProps.call(this, TAB.content); // Set the default props for fields of all tabs in Wizard
-      TAB.onCreate = TAB.onCreate.bind(self);
     });
 
     this.state = {
@@ -181,7 +180,6 @@ export default class CreateNewContainer extends React.Component {
 
     let sideEffectFieldsToUpdate = {};
 
-    const activeTab = this.state.activeTab;
     const activeTabIndx = String(this.state.activeTab);
     const curDirty = this.state.dirty[activeTabIndx];
 
@@ -319,12 +317,10 @@ export default class CreateNewContainer extends React.Component {
       parentFormLock: true,
     });
 
-    const promise = FORM_TABS[activeTabIndx].onCreate();
+    let notificationMSG = 'Payment link created successfully.',
+      notifyMedium = [];
 
     if (activeTabIndx == PAYMENT_LINK) {
-      let notificationMSG = 'Payment link created successfully.',
-        notifyMedium = [];
-
       if (this.state.dirty[activeTabIndx].sms_notify) {
         notifyMedium.push('SMS');
       }
@@ -336,40 +332,41 @@ export default class CreateNewContainer extends React.Component {
       if (notifyMedium.length > 0) {
         notificationMSG += ' Sending via ' + notifyMedium.join(' and ');
       }
-
-      return promise
-        .then(resp => {
-          if (resp.data) {
-            this.props.showNotification({
-              type: 'success',
-              message: notificationMSG,
-            });
-
-            this.props.history.push('/paymentlinks/' + resp.data.id);
-          }
-
-          this.setState({
-            parentFormLock: false,
-          });
-        })
-        .catch(err => {
-          this.props.showNotification({
-            type: 'error',
-            message: err.errors,
-          });
-
-          this.setState({
-            parentFormLock: false,
-          });
-        });
+    } else if (activeTabIndx == REUSABLE_PAYMENT_LINK) {
+      notificationMSG = 'Reusable link created successfully.';
+      // TODO: To show popup here instead of notification
     }
 
-    // In case of other tabs, simply return promise;
-    return promise.then(resp => {
-      this.setState({
-        parentFormLock: false,
+    return FORM_TABS[activeTabIndx]
+      .onCreate(this.state.dirty[activeTabIndx])
+      .then(resp => {
+        this.setState({
+          parentFormLock: false,
+        });
+
+        if (resp.data) {
+          this.props.showNotification({
+            type: 'success',
+            message: notificationMSG,
+          });
+
+          if (activeTabIndx == PAYMENT_LINK) {
+            this.props.history.push('/paymentlinks/' + resp.data.id);
+          }
+        } else {
+          throw new Error(resp.errors);
+        }
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+
+        this.setState({
+          parentFormLock: false,
+        });
       });
-    });
   };
 
   getFormFields() {
