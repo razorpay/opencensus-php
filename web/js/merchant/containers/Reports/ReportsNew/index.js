@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
@@ -12,6 +12,7 @@ import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import AccountsList from 'rzp/ui/AccountsList/index.js';
 import { openModal, closeModal } from 'rzp/modules/modals';
+import debounce from 'rzp/utils/debounce';
 import store from 'merchant/store';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
@@ -161,7 +162,7 @@ export default class ReportsContainer extends Component {
 
     this.onConfigChange = ::this.onConfigChange;
     this.onAccountChange = ::this.onAccountChange;
-    this.generateReport = ::this.generateReport;
+    this.generateReport = debounce(::this.generateReport, 500);
     this.validateInvoiceMonthYear = ::this.validateInvoiceMonthYear;
 
     store.subscribe(() => {
@@ -704,22 +705,16 @@ export default class ReportsContainer extends Component {
             </div>
 
             <div class="form-element">
-              {!isCurrentConfigSelected ? (
-                <Fragment>
-                  <button class="btn btn-primary" onClick={this.generateReport}>
-                    Download Report
-                  </button>
-                  {selectedConfig.type !== 'custom' && (
-                    <button
-                      class="btn btn-default m-l"
-                      onClick={this.openEmailReportModal}
-                    >
-                      Email Report
-                    </button>
-                  )}
-                </Fragment>
-              ) : (
-                <small class="help-block">This report is being generated</small>
+              <button class="btn btn-primary" onClick={this.generateReport}>
+                Download Report
+              </button>
+              {selectedConfig.type !== 'custom' && (
+                <button
+                  class="btn btn-default m-l"
+                  onClick={this.openEmailReportModal}
+                >
+                  Email Report
+                </button>
               )}
               <ReportLoader
                 reportList={currentReportList}
