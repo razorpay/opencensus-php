@@ -1831,7 +1831,8 @@ class DatabaseSeeder extends Seeder
                 'merchant_id'               => Account::TEST_ACCOUNT,
                 'gateway'                   => Gateway::WALLET_AMAZONPAY,
                 'gateway_merchant_id'       => 'gateway_merchant_id',
-                'gateway_secure_secret'     => Crypt::encrypt('amazonpay_secure_secret'),
+                'gateway_terminal_password' => Crypt::encrypt('amazonpay_secure_secret'),
+                'gateway_access_code'       => 'gateway_access_key',
                 'created_at'                => time(),
                 'updated_at'                => time(),
             )

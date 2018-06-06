@@ -511,8 +511,9 @@ class Terminal extends Base
             'id'                        => $termId,
             'merchant_id'               => Account::TEST_ACCOUNT,
             'gateway'                   => Gateway::WALLET_AMAZONPAY,
+            'gateway_access_code'       => 'gateway_access_key',
             'gateway_merchant_id'       => 'amazonpay_merchant',
-            'gateway_secure_secret'     => 'amazonpay_secure_secret',
+            'gateway_terminal_password' => 'amazonpay_secure_secret',
         ];
 
         return parent::create($attributes);

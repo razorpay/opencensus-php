@@ -809,6 +809,16 @@ class Gateway extends Base\Gateway
         return $accessCode;
     }
 
+    public function getSecret()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->getTestSecret();
+        }
+
+        return $this->input['terminal']['gateway_terminal_password'];
+    }
+
     protected function isSandbox(): bool
     {
         return ($this->mode === Mode::TEST);
