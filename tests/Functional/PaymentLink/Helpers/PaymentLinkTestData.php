@@ -55,7 +55,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'expire_by should be at least 15 minutes after the current time.',
+                    'description' => 'expire_by should be at least 15 min ahead of the current time.',
                 ],
             ],
             'status_code' => 400,
@@ -153,7 +153,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'expire_by should be at least 15 minutes after the current time.',
+                    'description' => 'expire_by should be at least 15 min ahead of the current time.',
                 ],
             ],
             'status_code' => 400,
@@ -319,18 +319,17 @@ return [
             ],
         ],
         'response' => [
-            'response' => [
-                'content' => [
-                    'error' => [
-                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                        'description' => 'Times payable cannot be less than the number of payments processed',
-                    ],
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Times payable cannot be less than the number of payments processed',
                 ],
-                'status_code' => 400,
             ],
-            'exception' => [
-                'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -345,7 +344,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'expire_by should be at least 15 minutes after ahead of the current time.',
+                    'description' => 'expire_by should be at least 15 min ahead of the current time.',
                 ],
             ],
             'status_code' => 400,

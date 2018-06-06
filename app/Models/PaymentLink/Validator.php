@@ -67,7 +67,7 @@ class Validator extends Base\Validator
         if ($value < $minExpireBy->getTimestamp())
         {
             throw new BadRequestValidationFailureException('expire_by should be at least ' .
-                $minExpireBy->diffForHumans($now) . ' ahead of the current time.');
+                '15 min ahead of the current time.');
         }
     }
 
