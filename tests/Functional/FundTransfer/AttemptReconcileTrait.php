@@ -40,6 +40,22 @@ trait AttemptReconcileTrait
         return $content['setlReconciliationFile'];
     }
 
+    protected function reconcileOnlineSettlements(string $channel, bool $failureTest)
+    {
+        $request = [
+            'url'       => '/settlements/reconcile/api/' . $channel,
+            'content'   => [
+                'failed_response' => (int) $failureTest
+            ]
+        ];
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function reconcileSettlements($setlReconciliationFile, string $channel)
     {
         $uploadedFile = $this->createUploadedFile($setlReconciliationFile);
@@ -108,6 +124,40 @@ trait AttemptReconcileTrait
         $this->assertNotNull($source['utr']);
 
         Mail::assertQueued(ReconciliationMail::class);
+    }
+
+    protected function assertReconProcessSuccessForChannel(string $channel, string $sourceType, bool $failureTest)
+    {
+        $data = $this->reconcileOnlineSettlements($channel, $failureTest);
+
+        // Validate settlement attempt entity
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        if ($failureTest === false)
+        {
+            $dataKey = 'matchAttemptForReconSuccess' . ucfirst($channel);
+        }
+        else
+        {
+            $dataKey = 'matchAttemptForReconFailure' . ucfirst($channel);
+        }
+
+        $this->assertTestResponse($attempt, $dataKey);
+
+        $this->assertEquals($channel, $attempt[Attempt\Entity::CHANNEL]);
+
+        $source = $this->getLastEntity($sourceType, true);
+
+        if ($failureTest === true)
+        {
+            $this->assertNull($attempt['utr']);
+            $this->assertNull($source['utr']);
+        }
+        else
+        {
+            $this->assertNotNull($attempt['utr']);
+            $this->assertNotNull($source['utr']);
+        }
     }
 
 

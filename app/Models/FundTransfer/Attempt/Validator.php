@@ -16,7 +16,9 @@ class Validator extends Base\Validator
 
     protected static $initiateFundTransferRules = [
         Entity::PURPOSE         => 'required|filled|string|max:30|in:refund,settlement',
-        Entity::SOURCE_TYPE     => 'sometimes|filled|string|max:32|in:refund,payout'
+        Entity::SOURCE_TYPE     => 'sometimes|filled|string|max:32|in:refund,payout',
+        // This will be used while generating response while mock. Only used in api based settlements
+        'failed_response'       => 'sometimes|int'
     ];
 
     protected static $bulkReconcileRules = [

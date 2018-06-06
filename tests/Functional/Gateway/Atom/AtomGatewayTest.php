@@ -44,6 +44,21 @@ class AtomGatewayTest extends TestCase
         $this->assertTestResponse($payment);
     }
 
+    public function testSbiAssociatedNetbankingPaymentCapture()
+    {
+        $this->payment = $this->getDefaultNetbankingPaymentArray('SBBJ');
+
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $gatewayPayment = $this->getLastEntity('atom', true);
+
+        $this->assertEquals($payment['id'], 'pay_' . $gatewayPayment['payment_id']);
+
+        $this->assertEquals('atom', $payment['gateway']);
+    }
+
     public function testAtomVerifyPayment()
     {
         $this->setMockGatewayTrue();
