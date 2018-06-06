@@ -362,6 +362,14 @@ const ActionsList = ({ model, merchantId, actions }) => {
     });
   }
 
+  // method to unmark a mercant as partner
+  function unMarkPartner() {
+    return merchantAction(
+      'un_mark_partner',
+      'Merchant successfully un-marked as partner'
+    );
+  }
+
   return (
     <aside class="">
       <div class="heading">Actions</div>
@@ -690,6 +698,15 @@ const ActionsList = ({ model, merchantId, actions }) => {
         </ShowWhen>
         <ShowWhen>
           <div onClick={actions.MarkAsPartner}>Mark As Partner</div>
+        </ShowWhen>
+        <ShowWhen>
+          <AsyncButton
+            onClick={unMarkPartner}
+            pendingClass="btn-pending"
+            confirm="Are you sure, you want to unmark merchant as partner?"
+          >
+            Unmark As Parnter
+          </AsyncButton>
         </ShowWhen>
         <ShowWhen permission="edit_merchant_screenshot">
           <div onClick={actions.UploadScreenshots}>
