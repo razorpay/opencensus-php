@@ -7,7 +7,7 @@ export function createPaymentLink() {
   const reqPayload = {
     ...curDirtyForm,
     type: 'link',
-    currency: 'INR', // Get is dynamically
+    currency: 'INR', // TODO: Get is dynamically
   };
 
   reqPayload.amount *= 100;

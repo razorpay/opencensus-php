@@ -13,26 +13,28 @@ import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Amount from 'rzp/ui/Amount';
 import TableBody from 'rzp/ui/TableBody';
-import { PaymentLinkStatusLabel } from 'merchant/components/StatusLabel';
+import { ReusableLinksStatusLabel } from 'merchant/components/StatusLabel';
 import Time from 'rzp/ui/Time';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { showNotification } from 'rzp/modules/notifications';
 
 @connect(null, { showNotification })
-export default class PLResuableContianer extends ListContainer {
+export default class ReusableLinksContianer extends ListContainer {
   state = {
-    paymentLinks: [],
+    paymentLinksList: [],
     loading: true,
   };
 
   fetchEntityList(params) {
     return fetchReusableLinksList(params)
-      .then(response => {
-        if (response.data) {
-          this.setState({ paymentLinks: response.data.items });
+      .then(resp => {
+        if (resp.data) {
+          this.setState({ paymentLinksList: resp.data.items });
         }
+
         this.setState({ loading: false });
-        return response;
+
+        return resp;
       })
       .catch(err => {
         this.props.showNotification({
@@ -48,8 +50,8 @@ export default class PLResuableContianer extends ListContainer {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
       window.rzpAnalytics({
-        eventCategory: 'Dashboard - Payment Links',
-        eventAction: 'Search - Payment Links',
+        eventCategory: 'Dashboard - Reusable Payment Links',
+        eventAction: 'Search - Reusable Payment Links',
         eventLabel: label,
       });
     }
@@ -57,21 +59,21 @@ export default class PLResuableContianer extends ListContainer {
 
   onClearAnalytics = () => {
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Payment Links',
-      eventAction: 'Clear Search Params - Payment Links',
+      eventCategory: 'Dashboard - Reusable Payment Links',
+      eventAction: 'Clear Search Params - Reusable Payment Links',
     });
   };
 
   onCopy = ({ paymentLinkId }) => {
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Payment Links',
-      eventAction: 'Copy - Payment Link',
+      eventCategory: 'Dashboard - Reusable Payment Links',
+      eventAction: 'Copy - Reusable Payment Link',
       eventLabel: `payment_link_id=${paymentLinkId}`,
     });
   };
 
   render() {
-    let { paymentLinks, loading } = this.state;
+    let { paymentLinksList, loading } = this.state;
 
     return (
       <div class="content-wrapper">
@@ -162,31 +164,28 @@ export default class PLResuableContianer extends ListContainer {
             <TableBody
               isLoading={loading}
               colSpan={8}
-              rows={paymentLinks}
+              rows={paymentLinksList}
               emptyTableMsg="No data found!"
             >
-              {paymentLinks.map(paymentLink => (
-                <EntityItemRow id={paymentLink.id} key={paymentLink.id}>
+              {paymentLinksList.map(item => (
+                <EntityItemRow id={item.id} key={item.id}>
                   <td>
-                    <NavLink to={`/paymentlinks/reusable/${paymentLink.id}`}>
-                      <code>{paymentLink.title}</code>
+                    <NavLink to={`/paymentlinks/reusable/${item.id}`}>
+                      <code>{item.title}</code>
                     </NavLink>
                   </td>
                   <td class="text-right">
-                    <Amount
-                      value={paymentLink.amount}
-                      currency={paymentLink.currency}
-                    />
+                    <Amount value={item.amount} currency={item.currency} />
                   </td>
-                  <td>{paymentLink.times_payable}</td>
+                  <td>{item.times_payable}</td>
                   <td>
-                    {paymentLink.short_url && (
+                    {item.short_url && (
                       <span class="CopyLink">
-                        <span>{paymentLink.short_url}</span>
+                        <span>{item.short_url}</span>
                         <CustomClipboard
-                          value={paymentLink.short_url}
+                          value={item.short_url}
                           onCopy={this.onCopy({
-                            paymentLinkId: paymentLink.id,
+                            itemId: item.id,
                           })}
                         >
                           <button class="btn btn-default btn-xs">copy</button>
@@ -195,10 +194,10 @@ export default class PLResuableContianer extends ListContainer {
                     )}
                   </td>
                   <td>
-                    <Time value={paymentLink.created_at} />
+                    <Time value={item.created_at} />
                   </td>
                   <td>
-                    <PaymentLinkStatusLabel status={paymentLink.status} />
+                    <ReusableLinksStatusLabel status={item.status} />
                   </td>
                 </EntityItemRow>
               ))}
@@ -209,7 +208,7 @@ export default class PLResuableContianer extends ListContainer {
         <Pager
           count={this.state.count}
           skip={this.state.skip}
-          length={paymentLinks.length}
+          length={paymentLinksList.length}
           onClick={this.paginate}
         />
       </div>

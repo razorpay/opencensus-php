@@ -11,8 +11,8 @@ import Button, { AsyncBtn } from 'component/Button';
 import Alert from 'component/Alert';
 import { Modal, ModalContent } from 'component/Modal';
 import { ModalAsideNav } from 'component/Wizard';
-import PLFormFields from './Links/Create';
-import RPLFormFields from './ReusableLinks/Create';
+import PaymentLinksFormFields from './Links/Create';
+import ReusableLinksFormFields from './ReusableLinks/Create';
 
 import { createPaymentLink } from './Links/model';
 import { createReusableLink } from './ReusableLinks/model';
@@ -25,14 +25,14 @@ const FORM_TABS = [
     title: 'Payment Link',
     desc: 'The link gets expired automatically once its paid.',
     url: '/paymentlinks/new',
-    content: [...PLFormFields],
+    content: [...PaymentLinksFormFields],
     onCreate: createPaymentLink,
   },
   {
     title: 'Reusable Link',
     desc: 'Accept payments multiple times on a single payment link.',
     url: '/paymentlinks/reusable/new',
-    content: [...RPLFormFields],
+    content: [...ReusableLinksFormFields],
     onCreate: createReusableLink,
   },
 ];

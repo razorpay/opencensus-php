@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { fetchReusableLinksEntity } from './model';
-import { PaymentLinkStatusLabel } from 'merchant/components/StatusLabel';
+import { ReusableLinksStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import Spinner from 'rzp/ui/Spinner';
@@ -11,9 +11,9 @@ import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { showNotification } from 'rzp/modules/notifications';
 
 @connect(null, { showNotification })
-export default class ReusableLinkEntity extends Component {
+export default class ReusableLinksEntity extends Component {
   state = {
-    paymentLink: {},
+    reusableLink: {},
     loading: true,
   };
 
@@ -29,12 +29,14 @@ export default class ReusableLinkEntity extends Component {
 
   fetchEntity(id) {
     return fetchReusableLinksEntity(id)
-      .then(response => {
-        if (response) {
-          this.setState({ paymentLink: response.data });
+      .then(resp => {
+        if (resp) {
+          this.setState({ reusableLink: resp.data });
         }
+
         this.setState({ loading: false });
-        return response;
+
+        return resp;
       })
       .catch(err => {
         this.props.showNotification({
@@ -46,17 +48,17 @@ export default class ReusableLinkEntity extends Component {
       });
   }
 
-  onCopy = ({ paymentLinkId }) => {
+  onCopy = ({ reusableLinkId }) => {
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Payment Links',
-      eventAction: 'Copy - Payment Link',
-      eventLabel: `payment_link_id=${paymentLinkId}`,
+      eventCategory: 'Dashboard - Reusable Payment Links',
+      eventAction: 'Copy - Reusable Payment Link',
+      eventLabel: `payment_link_id=${reusableLinkId}`,
     });
   };
 
   render() {
-    let { paymentLink, loading } = this.state;
-    let isExpired = paymentLink.status_reason === 'expired';
+    let { reusableLink, loading } = this.state;
+    let isExpired = reusableLink.status_reason === 'expired';
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -68,7 +70,7 @@ export default class ReusableLinkEntity extends Component {
           <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
               <i class="i i-link text-primary icon--formal" />{' '}
-              <strong>{paymentLink.id}</strong>
+              <strong>{reusableLink.id}</strong>
             </div>
 
             <div class="SliderPanel__Body">
@@ -78,8 +80,8 @@ export default class ReusableLinkEntity extends Component {
                     label="Amount"
                     value={() => (
                       <Amount
-                        value={paymentLink.amount}
-                        currency={paymentLink.currency}
+                        value={reusableLink.amount}
+                        currency={reusableLink.currency}
                       />
                     )}
                   />
@@ -87,11 +89,11 @@ export default class ReusableLinkEntity extends Component {
                     label="Link URL"
                     value={() => (
                       <span class="CopyLink">
-                        <span>{paymentLink.short_url}</span>
+                        <span>{reusableLink.short_url}</span>
                         <CustomClipboard
-                          value={paymentLink.short_url}
+                          value={reusableLink.short_url}
                           onCopy={this.onCopy({
-                            paymentLinkId: paymentLink.id,
+                            reusableLinkId: reusableLink.id,
                           })}
                         >
                           <button class="btn btn-default btn-xs">copy</button>
@@ -102,34 +104,34 @@ export default class ReusableLinkEntity extends Component {
                   <EntityDetailRow
                     label="Status"
                     value={() => (
-                      <PaymentLinkStatusLabel status={paymentLink.status} />
+                      <ReusableLinksStatusLabel status={reusableLink.status} />
                     )}
                   />
                   <EntityDetailRow
                     label="Description"
                     pairClass="description"
-                    value={paymentLink.description || '--'}
+                    value={reusableLink.description || '--'}
                   />
                   <EntityDetailRow
                     label="Created At"
-                    value={() => <Time value={paymentLink.date} />}
+                    value={() => <Time value={reusableLink.date} />}
                   />
                   <EntityDetailRow
                     label={isExpired ? 'Expired on' : 'Expires on'}
                     value={() => (
                       <Time
-                        value={paymentLink.expire_by}
+                        value={reusableLink.expire_by}
                         format="DD MMM YYYY, hh:mm a"
                       />
                     )}
                   />
                   <EntityDetailRow
                     label="Times Payable"
-                    value={paymentLink.times_payable}
+                    value={reusableLink.times_payable}
                   />
                   <NestedEntityDetailRow
                     label="Notes"
-                    value={paymentLink.notes}
+                    value={reusableLink.notes}
                   />
                 </div>
               </div>
