@@ -1,44 +1,5 @@
 import Input from 'component/Input';
-import { merchantFetch } from 'rzp/utils/ajax';
-
-/* Specific Api Actions of Payment Links */
-export function PLCreate() {
-  const curDirtyForm = this.state.dirty[this.state.activeTab];
-
-  const reqPayload = {
-    ...curDirtyForm,
-    type: 'link',
-    currency: 'INR', // Get is dynamically
-  };
-
-  reqPayload.amount *= 100;
-  reqPayload.expire_by = Math.round(reqPayload.expire_by / 1000);
-
-  /* Customer details */
-  const customer = {};
-  if (reqPayload.contact) {
-    customer.contact = reqPayload.contact;
-    delete reqPayload.contact;
-  }
-
-  if (reqPayload.email) {
-    customer.email = reqPayload.email;
-    delete reqPayload.email;
-  }
-
-  if (Object.keys(customer).length) {
-    reqPayload.customer = customer;
-  }
-
-  return merchantFetch({
-    url: 'invoices',
-    // mode: this.props.mode,
-    method: 'post',
-    data: reqPayload,
-  }).then(resp => {
-    return resp;
-  });
-}
+import { trackHelpClick } from './ga';
 
 /* Form fields of Payment Links */
 export default [
@@ -59,6 +20,7 @@ export default [
             class="btn-link m-l"
             href="https://razorpay.com/docs/private/partial-payments/"
             target="_blank"
+            onClick={trackHelpClick}
           >
             What's this?
           </a>

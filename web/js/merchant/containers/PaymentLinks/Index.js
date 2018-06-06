@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
-import LinkList from 'merchant/containers/PaymentLinks/List';
-import BatchListNew from 'merchant/containers/PaymentLinks/BatchListNew';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
-import PaymentLinksReusable from 'merchant/containers/PaymentLinks/Reusable/List';
+import PaymentLinksList from 'merchant/containers/PaymentLinks/Links/List';
+import BatchUploadList from 'merchant/containers/PaymentLinks/BatchUpload/List';
+import PaymentLinksReusable from 'merchant/containers/PaymentLinks/ReusableLinks/List';
 
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 import Button from 'component/Button';
 
 import LocalStorageService from 'rzp/utils/localStorage';
@@ -100,13 +100,16 @@ export default class PaymentLinksContainer extends Component {
 
         <content>
           <Switch>
-            <Route path="/paymentlinks/batchuploads" component={BatchListNew} />
+            <Route
+              path="/paymentlinks/batchuploads"
+              component={BatchUploadList}
+            />
 
             <Route
               path="/paymentlinks/reusable"
               component={PaymentLinksReusable}
             />
-            <Route path="/paymentlinks" component={LinkList} />
+            <Route path="/paymentlinks" component={PaymentLinksList} />
           </Switch>
         </content>
       </tabbed-container>

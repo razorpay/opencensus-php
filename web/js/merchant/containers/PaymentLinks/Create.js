@@ -11,9 +11,12 @@ import Button, { AsyncBtn } from 'component/Button';
 import Alert from 'component/Alert';
 import { Modal, ModalContent } from 'component/Modal';
 import { ModalAsideNav } from 'component/Wizard';
-import PLFormFields, { PLCreate } from './PaymentLinks';
-import RPLFormFields, { RPLCreate } from './ReusableLinks';
-import ShowWhen from '../../../components/ShowWhen';
+import PLFormFields from './Links/Create';
+import RPLFormFields from './ReusableLinks/Create';
+
+import { PLCreate } from './Links/model';
+import { RPLCreate } from './ReusableLinks/model';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import { showNotification } from 'rzp/modules/notifications';
 
