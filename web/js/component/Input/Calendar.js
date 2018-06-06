@@ -86,9 +86,14 @@ class CalendarWrapper extends React.Component {
     return isBefore2015 || isPast; // can not select past dates
   };
 
+  onToggle = open => {
+    open ? this.props.onFocus() : this.props.onBlur();
+  };
+
   render() {
     const state = this.state;
     const allProps = separateDomProps(this.props);
+    const { onFocus, onBlur, ...restDOMProps } = allProps.props; // onFocus and onBlur are not to be controllled by <input> here
 
     let calendar;
 
@@ -133,6 +138,7 @@ class CalendarWrapper extends React.Component {
       <DatePicker
         animation="slide-up"
         disabled={this.props.disabled}
+        onOpenChange={this.onToggle}
         calendar={calendar}
         value={state.value}
         showClear={true}
@@ -167,7 +173,7 @@ class CalendarWrapper extends React.Component {
                   'ant-calendar-picker-input ant-input Input-el',
                   this.props.addonAfter && 'Input-el--after'
                 )}
-                {...allProps.props}
+                {...restDOMProps}
               />
               {this.props.addonAfter && (
                 <span class="Input-addons  Input-addons--after">
@@ -184,13 +190,26 @@ class CalendarWrapper extends React.Component {
 
 export default class CalendarPicker extends React.Component {
   className = 'Input--Calendar';
+  state = {};
+
+  focus = e => {
+    this.setState({ focus: true });
+  };
+
+  blur = e => {
+    this.setState({ focus: false });
+  };
 
   render() {
     return (
       <div class={inputClass(this)}>
         <Label text={this.props.label} />
         <div class="Input-content">
-          <CalendarWrapper {...this.props} />
+          <CalendarWrapper
+            {...this.props}
+            onFocus={this.focus}
+            onBlur={this.blur}
+          />
         </div>
       </div>
     );
@@ -204,6 +223,14 @@ export class TimePicker extends React.Component {
       this.props.defaultValue && moment(this.props.defaultValue).format('LT'), // defaultValue is unix time stamp in ms -> Formatted to : 5:38 AM (() => {
   };
 
+  focus = e => {
+    this.setState({ focus: true });
+  };
+
+  blur = e => {
+    this.setState({ focus: false });
+  };
+
   onChange = value => {
     this.setState({ value });
 
@@ -212,6 +239,7 @@ export class TimePicker extends React.Component {
 
   render() {
     const allProps = separateDomProps(this.props);
+    const { onFocus, onBlur, ...restDOMProps } = allProps.props; // onFocus and onBlur are not to be controllled by <input> here
 
     return (
       <div class={inputClass(this)}>
@@ -223,7 +251,7 @@ export class TimePicker extends React.Component {
               value={this.state.value}
               onChange={this.onChange}
               inputProps={{
-                ...allProps.props,
+                ...restDOMProps,
                 className: classList(
                   'Input-el',
                   this.props.addonAfter && 'Input-el--after'
@@ -231,6 +259,8 @@ export class TimePicker extends React.Component {
               }}
               dateFormat={false}
               timeFormat={true}
+              onFocus={this.focus}
+              onBlur={this.blur}
             />
           </div>
           {this.props.addonAfter && (
