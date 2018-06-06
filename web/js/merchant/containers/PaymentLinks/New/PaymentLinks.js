@@ -11,6 +11,26 @@ export function PLCreate() {
     currency: 'INR', // Get is dynamically
   };
 
+  reqPayload.amount *= 100;
+  reqPayload.amount *= 100;
+  reqPayload.expire_by = Math.round(reqPayload.expire_by / 1000);
+
+  /* Customer details */
+  const customer = {};
+  if (reqPayload.contact) {
+    customer.contact = reqPayload.contact;
+    delete reqPayload.contact;
+  }
+
+  if (reqPayload.email) {
+    customer.email = reqPayload.email;
+    delete reqPayload.email;
+  }
+
+  if (Object.keys(customer).length) {
+    reqPayload.customer = customer;
+  }
+
   return merchantFetch({
     url: 'invoices',
     // mode: this.props.mode,
@@ -61,13 +81,13 @@ export default [
     label: 'Customer Details',
     inlineFields: [
       {
-        name: 'contact_mobile',
+        name: 'contact',
         type: 'tel',
         placeholder: 'Mobile (10 digits)',
         size: 'half_small',
       },
       {
-        name: 'contact_email',
+        name: 'email',
         type: 'email',
         placeholder: 'Email',
         size: 'half_big',
@@ -85,7 +105,7 @@ export default [
         _cmp: Input.Check,
         onChange: e => {
           if (e.target.value == '1') {
-            document.getElementsByName('contact_mobile')[0].focus();
+            document.getElementsByName('contact')[0].focus();
           }
         },
       },
@@ -96,7 +116,7 @@ export default [
         _cmp: Input.Check,
         onChange: e => {
           if (e.target.value == '1') {
-            document.getElementsByName('contact_email')[0].focus();
+            document.getElementsByName('email')[0].focus();
           }
         },
       },

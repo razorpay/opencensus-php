@@ -11,12 +11,11 @@ import Button, { AsyncBtn } from 'component/Button';
 import Alert from 'component/Alert';
 import { Modal, ModalContent } from 'component/Modal';
 import { ModalAsideNav } from 'component/Wizard';
-
-import { updateSession } from 'merchant/modules/session';
-
 import PLFormFields, { PLCreate } from './PaymentLinks';
 import RPLFormFields, { RPLCreate } from './ReusableLinks';
 import ShowWhen from '../../../components/ShowWhen';
+
+import { showNotification } from 'rzp/modules/notifications';
 
 const FORM_TABS = [
   {
@@ -34,6 +33,10 @@ const FORM_TABS = [
     onCreate: RPLCreate,
   },
 ];
+
+/* Order as per FORM_TABS */
+const PAYMENT_LINK = 0;
+const REUSABLE_PAYMENT_LINK = 1;
 
 function defaultFieldProps(f) {
   const self = this;
@@ -56,6 +59,9 @@ function defaultFieldProps(f) {
   }
 
   if (f._name === 'expire_by_date') {
+    f.onChange = self.onDateChange.bind(self);
+  }
+  if (f.name === 'expire_by') {
     f.onChange = self.onDateChange.bind(self);
   }
 }
@@ -91,7 +97,7 @@ function WizardFields(field) {
   }
 
   let isComponentDisabled;
-  if (_disabledWhen && _disabledWhen(this)) {
+  if (this.state.parentFormLock || (_disabledWhen && _disabledWhen(this))) {
     isComponentDisabled = true;
   }
 
@@ -118,12 +124,12 @@ function WizardFields(field) {
 }
 
 @withRouter
-@connect(state => state.session)
+@connect(state => state.session, { showNotification })
 export default class CreateNewContainer extends React.Component {
   constructor(props) {
     super(props);
 
-    let intent = 0; // intent = 0 => Payment Link (Order as per FORM_TABS)
+    let intent = PAYMENT_LINK;
     const self = this;
 
     FORM_TABS.forEach((TAB, indx) => {
@@ -140,17 +146,15 @@ export default class CreateNewContainer extends React.Component {
       dirty: {}, // Initialize with no edits in dirty. Object is maintained to keep dirty data of each tab separately.
       _name: {
         // Object, cuz dirty is also object
-        '0': {
+        [PAYMENT_LINK]: {
           expiry: '1', // 1 => selected
         },
-        '1': {
+        [REUSABLE_PAYMENT_LINK]: {
           noLimit: '1', // 1 => selected
           expiry: '1', // 1 => selected
         },
       },
     };
-
-    this.onCreate = FORM_TABS[intent].onCreate;
   }
 
   saveDirtyState = e => {
@@ -177,12 +181,12 @@ export default class CreateNewContainer extends React.Component {
     const curDirty = this.state.dirty[activeTabIndx];
 
     /* Step 1: */
-    if (fieldName === 'contact_mobile') {
+    if (fieldName === 'contact') {
       const isChecked = !!fieldValue;
 
       sideEffectFieldsToUpdate['sms_notify'] = isChecked ? '1' : '0';
       document.getElementsByName('sms_notify')[0].checked = isChecked;
-    } else if (fieldName === 'contact_email') {
+    } else if (fieldName === 'email') {
       const isChecked = !!fieldValue;
 
       sideEffectFieldsToUpdate['email_notify'] = isChecked ? '1' : '0';
@@ -300,9 +304,55 @@ export default class CreateNewContainer extends React.Component {
       activeTab: tabId,
     });
 
-    this.onCreate = FORM_TABS[tabId].onCreate;
-
     this.props.history.replace(FORM_TABS[tabId].url);
+  };
+
+  onCreate = () => {
+    const tabId = this.state.activeTab;
+
+    const promise = FORM_TABS[tabId].onCreate();
+
+    if (tabId == PAYMENT_LINK) {
+      let notificationMSG = 'Payment link created successfully.',
+        notifyMedium = [];
+
+      if (this.state.dirty[tabId].sms_notify) {
+        notifyMedium.push('SMS');
+      }
+
+      if (this.state.dirty[tabId].email_notify) {
+        notifyMedium.push('Email');
+      }
+
+      if (notifyMedium.length > 0) {
+        notificationMSG += ' Sending via ' + notifyMedium.join(' and ');
+      }
+
+      return promise
+        .then(resp => {
+          if (resp.data) {
+            this.props.showNotification({
+              type: 'success',
+              message: notificationMSG,
+            });
+
+            this.setState({
+              parentFormLock: true,
+            });
+
+            this.props.history.push('/paymentlinks/' + resp.data.id);
+          }
+        })
+        .catch(err => {
+          this.props.showNotification({
+            type: 'error',
+            message: err.errors,
+          });
+        });
+    }
+
+    // In case of other tabs, simply return promise;
+    return promise;
   };
 
   getFormFields() {
