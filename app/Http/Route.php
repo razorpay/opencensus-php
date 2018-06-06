@@ -2425,6 +2425,16 @@ final class Route
                    ]);
     }
 
+    public function defineStatusApiRoute()
+    {
+        $this->router
+            ->get('/v1/healthcheck',
+                [
+                    'as' => 'api_status',
+                    'uses' => '\RZP\Http\Controllers\PublicController@getStatus'
+                ]);
+    }
+
     public function getApiRouteInCategory($category)
     {
         return array_intersect_key(self::$apiRoutes, array_flip(self::$$category));

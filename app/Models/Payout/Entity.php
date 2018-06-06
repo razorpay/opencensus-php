@@ -150,6 +150,10 @@ class Entity extends Base\PublicEntity
         self::SETTLED_ON,
     ];
 
+    protected $ignoredRelations = [
+        'destination',
+    ];
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');

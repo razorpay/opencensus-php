@@ -155,9 +155,9 @@ class Base extends BaseModel\Core
 
         $this->repo->transaction(function () use ($ufhFile, $input)
         {
-            $this->repo->saveOrFail($ufhFile);
-
             $this->repo->saveOrFail($this->batch);
+
+            $this->repo->saveOrFail($ufhFile);
 
             $this->saveSettings($input);
         });
@@ -816,7 +816,7 @@ class Base extends BaseModel\Core
     protected function cleanParsedEntries(array $entries): array
     {
         // CSV: Removes first dictionary if it's the header itself
-        if ((empty($entries) === false) && (array_keys($entries[0]) === array_values($entries[0])))
+        if ((empty($entries) === false) and (array_keys($entries[0]) === array_values($entries[0])))
         {
             array_shift($entries);
         }
@@ -837,7 +837,10 @@ class Base extends BaseModel\Core
         }
 
         // Excel: Removes empty trailing rows
-        $entries = array_filter($entries, function ($v) { return (empty(array_filter($v)) === false); });
+        $entries = array_filter($entries, function ($v)
+        {
+            return (empty(array_filter($v)) === false);
+        });
 
         //
         // Excel: Removes empty(not all additional columns) trailing columns
@@ -955,11 +958,11 @@ class Base extends BaseModel\Core
             $ufh->entity($this->batch);
         }
 
-        if ($this->shouldEncrypt() and ($type == FileStore\Type::BATCH_INPUT))
+        if ($this->shouldEncrypt() and ($type === FileStore\Type::BATCH_INPUT))
         {
             $ufh->encrypt(Type::AES_ENCRYPTION, [
-                    'mode'   =>   \phpseclib\Crypt\Base::MODE_CBC,
-                    'secret' =>  openssl_random_pseudo_bytes(256)
+                    'mode'   => \phpseclib\Crypt\Base::MODE_CBC,
+                    'secret' => openssl_random_pseudo_bytes(256)
                 ]);
         }
 

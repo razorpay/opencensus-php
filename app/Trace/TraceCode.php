@@ -1069,6 +1069,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LAMBDA_BATCH_FAILURE                          = 'LAMBDA_BATCH_FAILURE';
 
     const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
+    const DB_DATA_INTEGRITY_ERROR                       = 'DB_DATA_INTEGRITY_ERROR';
     const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
 
     const AWS_CREDS_CACHE_SET                           = 'AWS_CREDS_CACHE_SET';
