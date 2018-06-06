@@ -57,6 +57,10 @@ class Entity extends Base\PublicEntity
         self::REFERENCE,
     ];
 
+    protected $ignoredRelations = [
+        'source'
+    ];
+
     // --------------------- RELATIONS ---------------------
 
     public function source()
