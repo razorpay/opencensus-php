@@ -352,14 +352,25 @@ export default class Field extends React.Component {
 class Check extends Field {
   className = 'Input--checkbox';
 
+  state = {
+    value: this.props.defaultValue,
+  };
+
   toggle = e => {
     e.target.value = e.target.checked ? 1 : 0;
+
+    this.setState({
+      value: e.target.value,
+    });
+
     if (this.props.onChange) {
       this.props.onChange(e);
     }
   };
 
-  checked = Boolean(Number(this.props.defaultValue));
+  get checked() {
+    return Boolean(Number(this.state.value));
+  }
 
   render() {
     let { label, fieldLabel, description, info, props } = separateDomProps(
