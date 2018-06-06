@@ -56,7 +56,7 @@ class Fields
 
         $accountNumber = $token->getAccountNumber();
 
-        $merchantName = $token->merchant->getBillingLabel();
+        $merchantName = $token->merchant->getFilteredDba();
 
         $customerName = $token->customer->getName();
 
