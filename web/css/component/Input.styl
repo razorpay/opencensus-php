@@ -76,6 +76,28 @@
   &.Input--large .Input-elWrapper
     width: 320px
 
+.Input--pair
+  .Input-content--hierarchy
+    border-left: 3px solid #f3f3f3
+    padding-left: 20px
+
+  .Input-pair
+    position: relative
+    border: 1px solid #e2e2e2
+    border-radius: 2px
+    margin-bottom: 20px
+    background: #fff
+
+    input, textarea
+      border: none
+
+    &.is-focused
+      border-color: #528ff0
+
+  .Input-pair-separator
+    margin: 0 12px
+    border-bottom: 1px dashed #e9eced
+
 .Input--required
   .Input-label::after
       content: '*'

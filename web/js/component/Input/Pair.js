@@ -1,9 +1,11 @@
+import Field, { Label, inputClass } from './index';
 import debounce from 'rzp/utils/debounce';
-import { Label, inputClass } from './index';
+import { classList } from 'common/util';
 
 /* Pair is key-value pair*/
-export default class Pair extends React.PureComponent {
-  className = 'InputGroup';
+export default class Pairs extends React.PureComponent {
+  className = 'Input--pair';
+
   state = {
     maxAllowedPairs: this.props.maxAllowedPairs || 10,
     pairs: this.props.defaultValue || [],
@@ -25,7 +27,9 @@ export default class Pair extends React.PureComponent {
     setTimeout(
       () =>
         document
-          .getElementsByName(`notes[${freshPairs.length - 1}][key]`)[0]
+          .getElementsByName(
+            `${this.props.name}[${freshPairs.length - 1}][key]`
+          )[0]
           .focus(),
       10
     );
@@ -69,52 +73,26 @@ export default class Pair extends React.PureComponent {
   };
 
   render() {
-    const { label } = this.props;
-
-    const tempStyle = !!this.state.pairs.length
-      ? { borderLeft: '3px solid #f4f4f4', paddingLeft: 20 }
-      : {};
-
     return (
-      <div class={inputClass({ props: this.props })}>
-        <Label text={label} />
-        <div class="Input-content Input--Pair" style={tempStyle}>
+      <div class={inputClass(this)}>
+        <Label text={this.props.label} />
+        <div
+          class={classList(
+            'Input-content',
+            !!this.state.pairs.length && 'Input-content--hierarchy'
+          )}
+        >
           {!!this.state.pairs.length &&
             this.state.pairs.map((pair, idx) => (
-              <div class="InputGroup" key={idx}>
-                <div class="Input">
-                  <div class="Input-elWrapper">
-                    <input
-                      class="Input-el Input-el--after"
-                      name={`${this.props.name}[${idx}][key]`}
-                      placeholder="Title (key)"
-                      data-id={idx}
-                      onChange={this.updateKey}
-                      value={this.state.pairs[idx].key}
-                    />
-                    <span
-                      class="Input-addons Input-addons--after Input-addons--clickable"
-                      data-id={idx}
-                      onClick={this.removePair}
-                    >
-                      <i class="i i-close text-danger" />
-                    </span>
-                  </div>
-                </div>
-
-                <div class="Input">
-                  <div class="Input-elWrapper">
-                    <textarea
-                      class="Input-el"
-                      name={`notes[${idx}][value]`}
-                      placeholder="Description (value)"
-                      data-id={idx}
-                      onChange={this.updateValue}
-                      value={this.state.pairs[idx].value}
-                    />
-                  </div>
-                </div>
-              </div>
+              <Pair
+                key={idx}
+                name={this.props.name}
+                idx={idx}
+                removePair={this.removePair}
+                pair={this.state.pairs[idx]}
+                updateKey={this.updateKey}
+                updateValue={this.updateValue}
+              />
             ))}
 
           {this.state.pairs.length < this.state.maxAllowedPairs ? (
@@ -126,6 +104,81 @@ export default class Pair extends React.PureComponent {
               + Add New
             </button>
           ) : null}
+        </div>
+      </div>
+    );
+  }
+}
+
+class Pair extends React.Component {
+  state = {};
+
+  onFocusTitle = e => {
+    this.setState({
+      focusTitle: true,
+    });
+  };
+
+  onBlurTitle = e => {
+    this.setState({
+      focusTitle: false,
+    });
+  };
+
+  onFocusDesc = e => {
+    this.setState({
+      focusDesc: true,
+    });
+  };
+
+  onBlurDesc = e => {
+    this.setState({
+      focusDesc: false,
+    });
+  };
+
+  render() {
+    const { name, idx, pair, updateKey, updateValue } = this.props;
+
+    return (
+      <div
+        class={classList(
+          'Input-pair',
+          (this.state.focusDesc || this.state.focusTitle) && 'is-focused'
+        )}
+      >
+        <div class="Input-elWrapper">
+          <input
+            class="Input-el Input-el--after"
+            name={`${name}[${idx}][key]`}
+            placeholder="Title (key)"
+            data-id={idx}
+            onChange={updateKey}
+            value={pair.key}
+            onBlur={this.onBlurTitle}
+            onFocus={this.onFocusTitle}
+          />
+          <span
+            class="Input-addons Input-addons--after Input-addons--clickable"
+            data-id={idx}
+            onClick={this.props.removePair}
+          >
+            <i class="i i-close text-danger" />
+          </span>
+        </div>
+
+        <div class="Input-pair-separator" />
+        <div class="Input-elWrapper">
+          <textarea
+            class="Input-el"
+            name={`${name}[${idx}][value]`}
+            placeholder="Description (value)"
+            data-id={idx}
+            onChange={updateValue}
+            value={pair.value}
+            onBlur={this.onBlurDesc}
+            onFocus={this.onFocusDesc}
+          />
         </div>
       </div>
     );

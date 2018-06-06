@@ -6,7 +6,7 @@ import MonthCalendar from 'rc-calendar/lib/MonthCalendar';
 import enUS from 'rc-calendar/lib/locale/en_US';
 import { classList } from 'common/util';
 
-import Field, { Label, inputClass, separateDomProps } from './index';
+import { Label, inputClass, separateDomProps } from './index';
 
 class CalendarWrapper extends React.Component {
   state = {
