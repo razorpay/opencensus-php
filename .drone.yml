@@ -139,7 +139,7 @@ pipeline:
         exclude: [push]
         include: [deployment]
   deploy-stage-echo:
-    image: razorpay/drone-kubernetes
+    image: razorpay/drone-kubernetes:daemonsets
     pull: true
     secrets:
       - docker_username
@@ -151,20 +151,10 @@ pipeline:
     user: drone
     cluster: stage
     auth_mode: client-cert
-    deployment:
+    kind:
+      - daemonset
+    daemonset:
       - api-web
-      - api-sqs-batch
-      - api-sqs-emails
-      - api-sqs-es-sync
-      - api-sqs-gen-live
-      - api-sqs-gen-test
-      - api-sqs-invoice-email
-      - api-sqs-invoice-reports
-      - api-sqs-main
-      - api-sqs-subscription-charge
-      - api-sqs-webhooks-failure
-      - api-sqs-webhooks-live
-      - api-sqs-webhooks-test
     repo: razorpay/api
     namespace: echo
     tag:
