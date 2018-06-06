@@ -323,7 +323,7 @@ trait Refund
         });
     }
 
-    public function refundPaymentViaBatchEntry(Payment\Entity $payment, Batch\Entity $batch, $amount)
+    public function refundPaymentViaBatchEntry(Payment\Entity $payment, Batch\Entity $batch, array $input)
     {
         //
         // Check if a refund already exists.
@@ -335,8 +335,6 @@ trait Refund
         {
             return $refund;
         }
-
-        $input = ['amount' => (string) $amount];
 
         // No refund existed so fire a new one.
         return $this->refundCapturedPayment($payment, $input, $batch);

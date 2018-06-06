@@ -3,37 +3,45 @@
 namespace RZP\Gateway\Wallet\Airtelmoney\Mock;
 
 use RZP\Base;
-use RZP\Gateway\Wallet\Airtelmoney\DateFormat;
-use RZP\Gateway\Wallet\Airtelmoney\RequestFields;
+use RZP\Gateway\Wallet\Airtelmoney\AuthFields;
+use RZP\Gateway\Wallet\Airtelmoney\VerifyFields;
+use RZP\Gateway\Wallet\Airtelmoney\RefundFields;
 
 class Validator extends Base\Validator
 {
-    protected static $authorizeRules = array(
-        RequestFields::MID         => 'required|string',
-        RequestFields::SU          => 'required|url',
-        RequestFields::FU          => 'required|url',
-        RequestFields::TXN_REF_NO  => 'required|string',
-        RequestFields::AMT         => 'required|numeric',
-        RequestFields::DATE        => 'required|date_format:'.DateFormat::REQUEST_DATE_FORMAT,
-        RequestFields::HASH        => 'required|regex:"^[a-f0-9]+$"',
-        RequestFields::CUR         => 'required|in:INR',
-        RequestFields::CUST_EMAIL  => 'sometimes|email',
-        RequestFields::CUST_MOBILE => 'sometimes|regex:"^[0-9]{10}"',
-        RequestFields::END_MID     => 'sometimes|string',
-    );
+    protected static $authorizeRules = [
+        AuthFields::MERCHANT_ID               => 'required|string',
+        AuthFields::TRANSACTION_REFERENCE_NO  => 'required|alpha_num|size:14',
+        AuthFields::SUCCESS_URL               => 'required|url',
+        AuthFields::FAILURE_URL               => 'required|url',
+        AuthFields::AMOUNT                    => 'required|numeric',
+        AuthFields::DATE                      => 'required|date_format:'.Constants::TIME_FORMAT,
+        AuthFields::MERCHANT_SERVICE_CODE     => 'sometimes',
+        AuthFields::CURRENCY                  => 'required|in:INR',
+        AuthFields::END_MERCHANT_ID           => 'sometimes',
+        AuthFields::SERVICE                   => 'required|size:2',
+        AuthFields::HASH                      => 'required',
+        AuthFields::END_MERCHANT_ID           => 'required',
+        AuthFields::CUSTOMER_MOBILE           => 'sometimes'
+    ];
 
-    protected static $refundRules = array(
-        RequestFields::MID     => 'required|string',
-        RequestFields::AMT     => 'required|numeric',
-        RequestFields::TXN_ID  => 'required|string',
-        RequestFields::DATE    => 'required|date_format:'.DateFormat::REQUEST_DATE_FORMAT,
-        RequestFields::REMARKS => 'required|string',
-    );
+    protected static $verifyRules = [
+        VerifyFields::SESSION_ID                => 'required|alpha_num',
+        VerifyFields::TRANSACTION_REFERENCE_NO  => 'required|alpha_num|size:14',
+        VerifyFields::TRANSACTION_DATE          => 'required|date_format:'.Constants::TIME_FORMAT,
+        VerifyFields::REQUEST                   => 'required|in:ECOMM_INQ',
+        VerifyFields::MERCHANT_ID               => 'required|string',
+        VerifyFields::HASH                      => 'required',
+        VerifyFields::AMOUNT                    => 'required|string',
+    ];
 
-    protected static $verifyRules = array(
-        RequestFields::MID        => 'required|string',
-        RequestFields::TXN_REF_NO => 'required|string',
-        RequestFields::DATE       => 'required|date_format:'.DateFormat::REQUEST_DATE_FORMAT,
-        'amount'                  => 'required|numeric',
-    );
+    protected static $refundRules = [
+        RefundFields::SESSION_ID                => 'required|alpha_num',
+        RefundFields::TRANSACTION_ID            => 'required|alpha_num',
+        RefundFields::TRANSACTION_DATE          => 'required|date_format:'.Constants::TIME_FORMAT,
+        RefundFields::REQUEST                   => 'required',
+        RefundFields::MERCHANT_ID               => 'required|string',
+        RefundFields::HASH                      => 'required',
+        RefundFields::AMOUNT                    => 'required',
+    ];
 }

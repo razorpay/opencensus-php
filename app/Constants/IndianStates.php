@@ -90,8 +90,8 @@ class IndianStates
         return null;
     }
 
-    public static function getStateNameByCode(string $code): string
+    public static function getStateNameByCode(string $code)
     {
-        return array_flip(self::$stateCodeMap)[$code];
+        return array_flip(self::$stateCodeMap)[$code] ?? null;
     }
 }

@@ -36,9 +36,10 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::EMAIL              => 'sometimes|email',
         Entity::ORDER_ID           => 'sometimes|string|size:20',
+        Entity::INVOICE_ID         => 'sometimes|public_id|size:18',
         Entity::TRANSFERRED        => 'sometimes|boolean|in:0,1',
-        self::EXPAND . '.*'        => 'filled|string|in:card',
         Entity::CUSTOMER_ID        => 'sometimes|size:19|custom',
+        self::EXPAND . '.*'        => 'filled|string|in:card',
     ];
 
     // These are proxy allowed params to search on.
@@ -46,7 +47,6 @@ class Repository extends Base\Repository
         Entity::EMAIL           => 'sometimes',
         Entity::STATUS          => 'sometimes|string',
         Entity::NOTES           => 'sometimes|string|max:500',
-        Entity::INVOICE_ID      => 'sometimes|string|min:14|max:18',
         Entity::SUBSCRIPTION_ID => 'sometimes|string|min:14|max:18',
         Entity::BANK_REFERENCE  => 'sometimes|alpha_num|max:22',
         self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes',

@@ -75,6 +75,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddBharatQrTerminalWithExpected()
+    {
+        $request = $this->testData['testAddBharatQrTerminal'];
+
+        $request['request']['content']['expected'] = true;
+
+        $this->startTest($request);
+    }
+
     public function testReassignBharatQrTerminal()
     {
         $this->fixtures->create('terminal:bharat_qr_terminal');
@@ -114,6 +123,15 @@ class TerminalTest extends TestCase
     }
 
     public function testCreateTerminalWithInvalidNetworkCategory()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateHitachiDebitRecurringTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';
 
@@ -211,6 +229,34 @@ class TerminalTest extends TestCase
         {
             $this->copyTerminal($tid, $mid, $input);
         });
+    }
+
+    public function testEditHitachiDebitRecurringTerminal()
+    {
+        $attributes = [
+            'used' => true,
+            'type' => [
+                'recurring_non_3ds' => '1',
+                'recurring_3ds'     => '1',
+            ],
+        ];
+        $terminal   = $this->fixtures->create(
+            'terminal:hitachi_recurring_terminal_with_both_recurring_types', $attributes);
+
+        $tid = $terminal['id'];
+
+        $data = [
+            'gateway' => 'hitachi',
+            'type'    => [
+                'recurring_non_3ds' => '1',
+                'recurring_3ds'     => '1',
+                'debit_recurring'   => '1',
+            ],
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals($content['type'], ['recurring_3ds', 'recurring_non_3ds', 'debit_recurring']);
     }
 
     public function testEditAxisMigsTerminal()

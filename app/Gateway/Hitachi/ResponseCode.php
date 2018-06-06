@@ -84,6 +84,7 @@ class ResponseCode
         'XA' => 'Forward to issuer',
         'XD' => 'Forward to issuer',
         'Z3' => 'Unable to go online',
+        'IC' => 'Invalid currency code',
     ];
 
     protected static $responseCodeToErrorCodeMap = [
@@ -156,6 +157,7 @@ class ResponseCode
         'XA' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK,
         'XD' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK,
         'Z3' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        'IC' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY,
     ];
 
     public static function getErrorCode(string $code)

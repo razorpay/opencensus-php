@@ -182,6 +182,7 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $entities[] = $this->createRegistrationInitiatedEntities();
         $entities[1]['status_in_file'] = 'reject';
+        $entities[1]['remark_in_file'] = 'Some reject reason';
 
         $file = $this->generateEmandateRegisterReconFile($entities);
 
@@ -296,7 +297,7 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $entities = [];
         $entities[] = $this->createDebitInitiatedEntities($registrationEntities);
-        $entities[0]['status_in_file'] = 'Process';
+        $entities[0]['status_in_file'] = 'Processed';
 
         $entities[] = $this->createDebitInitiatedEntities($registrationEntities);
         $entities[1]['status_in_file'] = 'Reject';
@@ -325,7 +326,7 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $netbanking = $this->getDbEntityById('netbanking', $entities[0]['netbanking']['id'])->toArray();
 
-        $this->assertEquals('process', $netbanking[Netbanking::STATUS]);
+        $this->assertEquals('processed', $netbanking[Netbanking::STATUS]);
 
         // Validate registration failure entities
         $payment = $this->getDbEntityById('payment', $entities[1]['payment']['id'])->toArray();

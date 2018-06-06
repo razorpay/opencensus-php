@@ -141,15 +141,14 @@ class Entity extends Base\PublicEntity
     {
         $code = $this->getAttribute(self::COUNTRY);
 
-        if ($code !== null)
-        {
-            return Constants\Country::getCountryNameByCode($code);
-        }
+        return $code !== null ? Constants\Country::getCountryNameByCode($code) : null;
     }
 
     public function getCountryNameFormatted()
     {
-        return ucwords($this->getCountryName());
+        $name = $this->getCountryName();
+
+        return $name !== null ? ucwords($name) : null;
     }
 
     // ----------------------------------- END GETTERS -----------------------------------
