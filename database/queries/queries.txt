@@ -3601,3 +3601,6 @@ ALTER TABLE payouts
 # Amazon Pay is added as wallet
 ALTER TABLE merchant_banks
     ADD COLUMN amazonpay TINYINT(1) NOT NULL DEFAULT 0 AFTER airtelmoney;
+
+ALTER TABLE batches
+    ADD COLUMN processed_count INTEGER UNSIGNED DEFAULT NULL AFTER total_count;

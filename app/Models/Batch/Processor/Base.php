@@ -430,6 +430,12 @@ class Base extends BaseModel\Core
                 $entry[Batch\Header::STATUS]     = Batch\Status::FAILURE;
                 $entry[Batch\Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
             }
+            finally
+            {
+                $this->batch->incrementProcessedCount();
+
+                $this->repo->saveOrFail($this->batch);
+            }
         }
     }
 

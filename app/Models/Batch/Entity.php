@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
     const STATUS                    = 'status';
     const PROCESSING                = 'processing';
     const TOTAL_COUNT               = 'total_count';
+    const PROCESSED_COUNT           = 'processed_count';
     const SUCCESS_COUNT             = 'success_count';
     const FAILURE_COUNT             = 'failure_count';
     const ATTEMPTS                  = 'attempts';
@@ -118,6 +119,7 @@ class Entity extends Base\PublicEntity
         self::STATUS              => Status::CREATED,
         self::PROCESSING          => 0,
         self::TOTAL_COUNT         => 0,
+        self::PROCESSED_COUNT     => 0,
         self::SUCCESS_COUNT       => 0,
         self::FAILURE_COUNT       => 0,
         self::AMOUNT              => null,
@@ -132,6 +134,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::TOTAL_COUNT      => 'int',
+        self::PROCESSED_COUNT  => 'int',
         self::SUCCESS_COUNT    => 'int',
         self::FAILURE_COUNT    => 'int',
         self::AMOUNT           => 'int',
@@ -473,6 +476,11 @@ class Entity extends Base\PublicEntity
     public function incrementAttempts()
     {
         $this->increment(self::ATTEMPTS);
+    }
+
+    public function incrementProcessedCount()
+    {
+        $this->increment(self::PROCESSED_COUNT);
     }
 
     public function setFailureReason(string $failureReason)
