@@ -9,6 +9,8 @@ class Bank
 {
     const ATOM = '2001';
 
+    // For SBI associated bank,
+    // We are using the same bank code as SBIN
     protected static $map = [
         IFSC::ANDB         => 1058,     // Andhra bank
         IFSC::BKID         => 1012,     // Bank of India
@@ -48,6 +50,11 @@ class Bank
         Netbanking::BARB_C => 1045,     // Bank of Baroda Corporate
         Netbanking::BARB_R => 1046,     // Bank of Baroda Retail
         IFSC::CNRB         => 1030,     // Canara Bank
+        IFSC::SBBJ         => 1014,
+        IFSC::SBHY         => 1014,
+        IFSC::SBMY         => 1014,
+        IFSC::STBP         => 1014,
+        IFSC::SBTR         => 1014,
     ];
 
     public static function getCode(string $ifsc)
