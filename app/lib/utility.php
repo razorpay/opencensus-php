@@ -494,4 +494,22 @@ if (! function_exists('multidim_array_unique'))
 
         return array_values($result);
     }
+
+    /**
+     * Sorts the given multi dimensional array based on a key
+     *
+     * @param array $array
+     * @param string $key
+     */
+    function sortMultiDimensionalArray(array & $array, string $key, int $sortOrder = SORT_DESC)
+    {
+        foreach ($array as & $item)
+        {
+            array_multisort(array_map(function ($element) use ($key)
+            {
+                return $element[$key];
+            }, $item), $sortOrder, $item);
+
+        }
+    }
 }

@@ -129,6 +129,43 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals('hdfcbank', $upi['provider']);
     }
 
+    public function testIntentAuthorizeFailed()
+    {
+        $this->fixtures->create('terminal:shared_upi_mindgate_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNull($payment['vpa']);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['payer_va'] = 'random@rzp';
+            }
+        });
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('random@rzp', $payment['vpa']);
+    }
+
     public function testUpiAmountCap()
     {
         $this->payment['vpa'] = 'vishnu@upi';
