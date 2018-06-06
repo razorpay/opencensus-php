@@ -97,6 +97,8 @@ class Core extends Base\Core
 
         foreach ($roles as $role)
         {
+            $this->repo->permission->validateExists($diffPerms);
+
             $this->repo->detach($role, 'permissions', $diffPerms);
         }
     }
@@ -167,6 +169,8 @@ class Core extends Base\Core
     {
         if (isset($input[Entity::PERMISSIONS]) === true)
         {
+            $this->repo->permission->validateExists($input[Entity::PERMISSIONS]);
+
             $this->repo->sync(
                 $org, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
         }

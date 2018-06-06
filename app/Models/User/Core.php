@@ -185,6 +185,8 @@ class Core extends Base\Core
      */
     protected function detach(Entity $user, array $input)
     {
+        $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
+
         $this->repo->detach($user, Entity::MERCHANTS, $input[Entity::MERCHANT_ID]);
 
         return $user->toArrayPublic();
@@ -210,6 +212,8 @@ class Core extends Base\Core
         ];
 
         $merchantId = $input[Entity::MERCHANT_ID];
+
+        $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
 
         $this->repo->sync($user, 'merchants', [$merchantId => $mappingParams], false);
 
