@@ -72,13 +72,14 @@ export default class EmailReport extends Component {
   };
 
   handleSend = () => {
+    const emailTypeHeirarchy = ['contact', 'transaction', 'account'];
     const { selectedEmails } = this.state;
     const { emailsMap } = this.props;
 
     let trackLabel = [];
 
     Object.keys(emailsMap).map(email => {
-      trackLabel.push(emailsMap[email]);
+      trackLabel.push(emailTypeHeirarchy[emailsMap[email] - 1]);
     });
 
     trackLabel = Array.from(new Set(trackLabel)).join(' | ');

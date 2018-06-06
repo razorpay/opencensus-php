@@ -78,6 +78,7 @@ const requestFailedFunc = () => {
       type: selector(state, 'type'),
       date: selector(state, 'date'),
       invoiceDate: selector(state, 'invoiceDate'),
+      config: state.config,
     };
   },
   {
@@ -438,6 +439,7 @@ export default class ReportsContainer extends Component {
   }
 
   openEmailReportModal = e => {
+    const { config } = this.props.config;
     const { user, type, date } = this.props;
     const { accounts, selectedAccount, selectedConfig } = this.state;
     const reportId = e.target.dataset.reportid;
@@ -445,17 +447,13 @@ export default class ReportsContainer extends Component {
     let emailsMap = {};
 
     // save email priority based on following precedence
-    // contact_email > transaction_report_email > accounts
+    // contact_email > transaction_report_email > account
 
-    // if (accounts) {
-    //   accounts.map(acc => (emailsMap[acc.email] = 3));
-    // }
+    emailsMap[user.user.email] = 3; //email of logged in user
+    emailsMap[user.email] = 3; //email of merchant (can be different when merchant is sub-merchant)
 
-    emailsMap[user.user.email] = 1; //email of logged in user
-    emailsMap[user.email] = 1; //email of merchant (can be different when merchant is sub-merchant)
-
-    if (user.transaction_report_email) {
-      user.transaction_report_email.split(',').map(email => {
+    if (config.transaction_report_email) {
+      config.transaction_report_email.split(',').map(email => {
         emailsMap[email] = 2;
       });
     }
