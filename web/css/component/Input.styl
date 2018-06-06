@@ -120,6 +120,7 @@
 .Input-elWrapper
   position: relative
   font-size: 0
+  vertical-align: top
 
   &.Select-elWrapper
     &::before
@@ -223,7 +224,7 @@ textarea.Input-el
 
 .Input-checkbox
   width: 16px
-  margin-top: 3px
+  margin-top: 2px
   margin-right: 8px
   height: 16px
   background: #fff
@@ -334,9 +335,45 @@ textarea.Input-el
       margin-right: 20px
 
 
-.Input--Calendar-content.rc-calendar
-  margin-top: 42px
+.Input--Calendar-content
+  &.rc-calendar-picker
+    z-index: 9999
 
-.Input--TimePicker .rdt
-  font-size: 14px
+  .rc-calendar
+    margin-top: 42px
 
+  &--top
+    .rc-calendar
+      margin-bottom: 42px
+      margin-top: 0
+
+      &::before
+        bottom: -11px
+        top: unset
+        border-top: 11px solid #ccc
+        border-bottom: unset
+
+      &::after
+        bottom: -9px
+        top: unset
+        border-top: 10px solid #fff
+        border-bottom: unset
+
+.Input--TimePicker
+  .rdtPicker td
+    font-size: 0 // To remove unwanted spacing
+
+  .rdtCounters
+    font-size: 14px
+    height: 84px
+
+  .rdtPicker
+    width: 100%
+
+  .rdtCounterSeparator
+    line-height: 84px
+
+  .rdtCounter
+    .rdtBtn, .rdtCount
+      line-height: 25px
+      height: 28px

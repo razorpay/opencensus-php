@@ -135,6 +135,8 @@ export default [
         _cmp: Input.ToCalendar,
         allowToday: true,
         disablePastDates: true,
+        placement: 'topLeft',
+        readOnly: true,
       },
       {
         name: 'expire_by',
@@ -147,6 +149,7 @@ export default [
 
         // defaultValue: moment().startOf().unix(), // Epoch of timestamp today start. Don't set. Has to be in sync with Date(expiry_by_date).
         _cmp: Input.TimePicker,
+        readOnly: true,
       },
     ],
   },

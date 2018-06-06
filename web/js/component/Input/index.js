@@ -63,6 +63,7 @@ export function separateDomProps(props) {
     isOutsideRange,
     showClearDate,
     startOfDayTimeStamp,
+    placement,
     ...rest
   } = props;
 
@@ -83,6 +84,7 @@ export function separateDomProps(props) {
     isOutsideRange,
     showClearDate,
     startOfDayTimeStamp,
+    placement,
     props: rest,
   };
 }

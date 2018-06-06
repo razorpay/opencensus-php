@@ -224,7 +224,7 @@ export default class CreateNewContainer extends React.Component {
   };
 
   onDateChange(date) {
-    if (date.target) {
+    if (date && date.target) {
       // Check if date is not of event type
       return;
     }
@@ -248,7 +248,7 @@ export default class CreateNewContainer extends React.Component {
       }
     } else {
       // Remove time field when date field is unset
-      expiryTime = date.endOf('day');
+      expiryTime = null;
     }
     newDirty[activeTabIndx] = {
       ...newDirty[activeTabIndx],

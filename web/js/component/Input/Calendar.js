@@ -100,7 +100,6 @@ class CalendarWrapper extends React.Component {
     if (this.props.type === 'month') {
       calendar = (
         <MonthCalendar
-          className="Input--Calendar-content"
           locale={enUS}
           style={{ zIndex: 1000 }}
           disabledDate={
@@ -115,7 +114,6 @@ class CalendarWrapper extends React.Component {
     } else {
       calendar = (
         <Calendar
-          className="Input--Calendar-content"
           locale={enUS}
           style={{ zIndex: 1000 }}
           disabledTime={null}
@@ -136,6 +134,12 @@ class CalendarWrapper extends React.Component {
     }
     return (
       <DatePicker
+        placement={this.props.placement || 'bottomLeft'}
+        dropdownClassName={classList(
+          'Input--Calendar-content',
+          this.props.placement.indexOf('top') > -1 &&
+            'Input--Calendar-content--top'
+        )}
         animation="slide-up"
         disabled={this.props.disabled}
         onOpenChange={this.onToggle}
@@ -150,19 +154,7 @@ class CalendarWrapper extends React.Component {
 
           let inpEle = document.getElementById(uniqName + '-date-input');
           if (inpEle) {
-            if (value) {
-              if (typeof value === 'object') {
-                inpEle.value = value.format(this.getFormat());
-              } else {
-                inpEle.value = value;
-                if (value.toString().length == 10) {
-                  this.props.onChange &&
-                    this.props.onChange(moment(value * 1000)); // Manual input
-                }
-              }
-            } else {
-              inpEle.value = '';
-            }
+            inpEle.value = value ? value.format(this.getFormat()) : '';
           }
 
           return (
