@@ -121,6 +121,10 @@ return [
             'content' => [
                 'user_id' => '1000InviteUser',
             ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '1000InviteUser',
+                'HTTP_X-Dashboard-User-Email' => 'testteaminvite@razorpay.com',
+            ],
         ],
         'response' => [
             'content' => [
@@ -138,6 +142,10 @@ return [
             'method'  => 'POST',
             'content' => [
                 'user_id' => '1000InviteUser',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '1000InviteUser',
+                'HTTP_X-Dashboard-User-Email' => 'testteaminvite@razorpay.com',
             ],
         ],
         'response' => [
@@ -157,6 +165,10 @@ return [
             'content' => [
                 'user_id' => '1000InviteUser',
             ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '1000InviteUser',
+                'HTTP_X-Dashboard-User-Email' => 'testteaminvite@razorpay.com',
+            ],
         ],
         'response' => [
             'content' => [
@@ -170,6 +182,32 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAcceptRandomValidInvitation' => [
+        'request' => [
+            'method'  => 'POST',
+            'content' => [
+                'user_id' => '1000InviteUser',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '1000InviteUser',
+                'HTTP_X-Dashboard-User-Email' => 'testteaminvite@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'No db records found.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
         ],
     ],
 
@@ -314,6 +352,9 @@ return [
     'testGetInvitationsReceivedBeforeSignup' => [
         'request' => [
             'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Email' => 'old@razorpay.com',
+            ],
         ],
         'response' => [
             'content'     => [
@@ -326,6 +367,9 @@ return [
     'testGetInvitationsReceivedPostSignup' => [
         'request' => [
             'method'  => 'GET',
+        ],
+        'server'  => [
+            'HTTP_X-Dashboard-User-Email' => 'old@razorpay.com',
         ],
         'response' => [
             'content'     => [

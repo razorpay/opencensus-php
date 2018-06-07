@@ -2,7 +2,10 @@
 
 namespace RZP\Http\Controllers;
 
+use RZP\Services\EsClient;
 use View, Request, ApiResponse;
+use Illuminate\Support\Facades\DB;
+
 use RZP\Exception;
 use RZP\Base\JitValidator;
 
@@ -13,6 +16,43 @@ class PublicController extends Controller
         $response['message'] = "Welcome to Razorpay API.";
 
         return ApiResponse::json($response);
+    }
+
+    public function getStatus()
+    {
+        $statusCode = 200;
+
+        $okStatusRequired = [
+            'd',
+            'dr',
+            'c'
+        ];
+
+        $status = [
+            'commit' => env('GIT_COMMIT_HASH') ?? 'Commit hash is not available',
+            // Database
+            'd'      => $this->getDbStatus(),
+            // Database read replica
+            'dr'     => $this->getDbStatus('read'),
+            // Redis
+            'c'      => $this->getCacheStatus(),
+            // sec redis
+            'sc'     => $this->getCacheStatus('secure'),
+            // Elastic search
+            's'      => $this->getEsStatus(),
+        ];
+
+        foreach ($okStatusRequired as $field)
+        {
+            if (($status[$field] !== 'ok'))
+            {
+                $statusCode = 503;
+
+                break;
+            }
+        }
+
+        return ApiResponse::json($status, $statusCode);
     }
 
     public function getCatchAllRoute(string $uri = null)
@@ -133,5 +173,58 @@ class PublicController extends Controller
         ];
 
         (new JitValidator)->rules($rules)->input($params)->validate();
+    }
+
+    protected function getDbStatus($replica = null)
+    {
+        $method = 'get' . ucfirst($replica) . 'Pdo';
+        try
+        {
+            if (DB::connection()->{$method}()) {
+                return 'ok';
+            }
+        }
+        catch (\Throwable $e)
+        {
+            return 'error';
+        }
+    }
+
+    protected function getCacheStatus($connection = null)
+    {
+        try
+        {
+            if ($this->app['redis']->connection($connection)->info('Keyspace'))
+            {
+                return 'ok';
+            }
+        }
+        catch (\Throwable $e)
+        {
+            return 'error';
+        }
+    }
+
+    /**
+     * Makes call to get category count. ES state is connected if the result is not empty
+     *
+     * @return mixed
+     */
+    protected function getEsStatus()
+    {
+        try
+        {
+            $es = (new EsClient($this->app));
+
+            $es->setEsClient([]);
+
+            $count = $es->catCount();
+
+            return $count ? 'ok' : 'error';
+        }
+        catch (\Throwable $e)
+        {
+            return 'error';
+        }
     }
 }

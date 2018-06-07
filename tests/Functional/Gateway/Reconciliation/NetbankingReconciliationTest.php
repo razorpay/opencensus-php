@@ -82,7 +82,7 @@ class NetbankingReconciliationTest extends TestCase
             $data,
             function() use ($uploadedFile)
             {
-                 $this->reconcile('NetbankingRbl', $uploadedFile);
+                $this->reconcile('NetbankingRbl', $uploadedFile);
             }
         );
     }
