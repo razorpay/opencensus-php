@@ -191,8 +191,8 @@ class Validator extends Base\Validator
         //
         if ($app['basicauth']->isProxyAuth() === false)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+            throw new Exception\BadRequestValidationFailureException(
+                'disable on failure is/are not required and should not be sent');
         }
     }
 }

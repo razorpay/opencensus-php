@@ -193,9 +193,9 @@ class VirtualAccountTest extends TestCase
             'content' => $input,
         ];
 
-        $this->expectException(\Rzp\Exception\BadRequestException::class);
+        $this->expectException(\Rzp\Exception\BadRequestValidationFailureException::class);
 
-        $this->expectExceptionMessage('The requested URL was not found on the server.');
+        $this->expectExceptionMessage('reference is/are not required and should not be sent');
 
         $this->makeRequestAndGetContent($request);
     }

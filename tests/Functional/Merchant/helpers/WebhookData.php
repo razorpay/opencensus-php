@@ -44,14 +44,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND,
+                    'description' => 'disable on failure is/are not required and should not be sent',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_URL_NOT_FOUND,
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

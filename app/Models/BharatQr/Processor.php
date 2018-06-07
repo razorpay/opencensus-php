@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Currency\Currency;
 use RZP\Models\QrCode\Entity as QrCode;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
@@ -124,6 +125,16 @@ class Processor extends VirtualAccount\Processor
             }
             else
             {
+                $terminalMerchant = $this->terminal->merchant;
+
+                if ($terminalMerchant->getId() === Account::SHARED_ACCOUNT)
+                {
+                    throw new Exception\LogicException(
+                        'Terminal merchant should not be shared merchant',
+                        null,
+                        ['terminal_id' => $terminalMerchant->getId()]);
+                }
+
                 //
                 // Here if there is no va but we received a payment and terminal
                 // expected is set to true, we need to create a virtual account and
@@ -140,7 +151,7 @@ class Processor extends VirtualAccount\Processor
                     ],
                 ];
 
-                $this->virtualAccount = (new VirtualAccount\Core)->create($input, $this->terminal->merchant);
+                $this->virtualAccount = (new VirtualAccount\Core)->create($input, $terminalMerchant);
 
                 return true;
             }
@@ -151,6 +162,12 @@ class Processor extends VirtualAccount\Processor
 
     protected function getTerminal()
     {
+        //
+        // This won't be null in case while
+        // setting the virtual account it was
+        // null and we created a new one using
+        // the terminal from gateway
+        //
         if ($this->terminal !== null)
         {
             return $this->terminal;

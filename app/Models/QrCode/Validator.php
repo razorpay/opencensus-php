@@ -6,7 +6,6 @@ use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -33,8 +32,8 @@ class Validator extends Base\Validator
         if (($mode === Mode::LIVE) and
             ($app['basicauth']->isPrivateAuth() === true))
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+            throw new Exception\BadRequestValidationFailureException(
+                'reference is/are not required and should not be sent');
         }
     }
 }
