@@ -204,7 +204,7 @@ class EloquentEx extends \Razorpay\Spine\Entity
      */
     protected function performDeleteOnModel()
     {
-        throw new Exception\LogicException('Should not have reached here', null, [
+        throw new Exception\LogicException('Delete not supported, Use either HardDeletes or SoftDeletes trait', null, [
             'entity' => $this->entity
         ]);
     }
