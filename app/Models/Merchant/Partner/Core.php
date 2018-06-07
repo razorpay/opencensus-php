@@ -14,18 +14,4 @@ class Core extends Merchant\Core
 
         $this->repo->saveOrFail($merchant);
     }
-
-    /**
-     * Sets the Partner type attribute as null
-     *
-     * @param string $merchantId
-     */
-    public function unmarkAsPartner(string $merchantId)
-    {
-        $merchant =  $this->repo->merchant->findOrFail($merchantId);
-
-        $merchant->setPartnerType(null);
-
-        $this->repo->saveOrFail($merchant);
-    }
 }
