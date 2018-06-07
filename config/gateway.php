@@ -51,6 +51,7 @@ return [
         'wallet_payzapp',
         'wallet_payumoney',
         'wallet_airtelmoney',
+        'wallet_amazonpay',
         'wallet_freecharge',
         'wallet_jiomoney',
         'wallet_sbibuddy',
@@ -91,6 +92,7 @@ return [
     'mock_wallet_payzapp'         => env('PAYZAPP_MOCK'),
     'mock_wallet_payumoney'       => env('PAYUMONEY_MOCK'),
     'mock_wallet_airtelmoney'     => env('AIRTELMONEY_MOCK'),
+    'mock_wallet_amazonpay'       => env('AMAZONPAY_MOCK'),
     'mock_wallet_jiomoney'        => env('JIOMONEY_MOCK'),
     'mock_wallet_sbibuddy'        => env('SBIBUDDY_MOCK'),
     'mock_upi_mindgate'           => env('UPI_MINDGATE_MOCK'),
@@ -335,6 +337,13 @@ return [
         'test_end_merchant_id'   => env('AIRTELMONEY_WALLET_TEST_END_MERCHANT_ID'),
         'live_merchant_id'       => env('AIRTELMONEY_WALLET_LIVE_MERCHANT_ID'),
         'live_hash_secret'       => env('AIRTELMONEY_WALLET_LIVE_HASH_SECRET'),
+    ],
+
+    'wallet_amazonpay' => [
+        // Test config
+        'test_hash_secret' => env('AMAZONPAY_WALLET_TEST_HASH_SECRET'),
+        'test_merchant_id' => env('AMAZONPAY_WALLET_TEST_MERCHANT_ID'),
+        'test_access_code' => env('AMAZONPAY_WALLET_TEST_ACCESS_CODE'),
     ],
 
     'wallet_freecharge' => [
