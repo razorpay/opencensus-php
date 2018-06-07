@@ -136,6 +136,24 @@ class Validator extends Base\Validator
     }
 
     /**
+     * Handle the validations before creating a new merchant request
+     *
+     * @param array $input
+     */
+    public function validateCreateMerchantRequests(array $input)
+    {
+        $submissions = $input[Constants::SUBMISSIONS] ?? [];
+
+        unset($input[Constants::SUBMISSIONS]);
+
+        $this->validateInput('create', $input);
+
+        $this->validateSubmissions($input, $submissions);
+
+        $this->validateTypeAndProduct($input[Entity::TYPE], $input[Entity::NAME]);
+    }
+
+    /**
      * Validate the name of feature being a product feature, if request type is Product
      *
      * @param $type
@@ -167,18 +185,19 @@ class Validator extends Base\Validator
     }
 
     /**
-     * Validates submissions
+     * Validates submissions based on the merchant request type
      *
      * @param array  $input
+     * @param array  $submissions
      *
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function validateSubmissions(array $input)
+    public function validateSubmissions(array $input, array $submissions)
     {
         switch ($input[Entity::TYPE])
         {
             case Type::PRODUCT:
-                if (isset($input[Constants::SUBMISSIONS]) === false)
+                if (isset($submissions) === false)
                 {
                     throw new Exception\BadRequestValidationFailureException(self::MISSING_SUBMISSIONS);
                 }

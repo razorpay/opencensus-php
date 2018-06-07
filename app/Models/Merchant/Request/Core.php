@@ -284,13 +284,13 @@ class Core extends Base\Core
     /**
      * Create a merchant request for a given type, name if not already present
      *
-     * @param Merchant\Entity $merchant
-     * @param array           $input
+     * @param string    $merchantId
+     * @param array     $input
      *
      * @return Entity
      */
     public function findOrCreateMerchantRequest(
-        Merchant\Entity $merchant,
+        string $merchantId,
         array $input)
     {
         $fetchInput = [
@@ -300,12 +300,12 @@ class Core extends Base\Core
 
         $request = $this->repo
                         ->merchant_request
-                        ->fetch($fetchInput, $merchant->getId())
+                        ->fetch($fetchInput, $merchantId)
                         ->first();
 
         if (empty($request) === true)
         {
-            $input[Entity::MERCHANT_ID] = $merchant->getId();
+            $input[Entity::MERCHANT_ID] = $merchantId;
 
             $input[Entity::STATUS]      = Status::UNDER_REVIEW;
 
@@ -356,7 +356,12 @@ class Core extends Base\Core
         string $type,
         string $requestStatus)
     {
-        $request = $this->findOrCreateMerchantRequest($merchant, [Entity::NAME => $feature, Entity::TYPE => $type]);
+        $request = $this->findOrCreateMerchantRequest(
+                        $merchant->getId(),
+                        [
+                            Entity::NAME => $feature,
+                            Entity::TYPE => $type
+                        ]);
 
         if ($request->getStatus() !== $requestStatus)
         {
@@ -526,40 +531,32 @@ class Core extends Base\Core
      */
     public function createMerchantRequest(array $input): Entity
     {
-        $validator = new Validator;
-
-        $validator->validateSubmissions($input);
-
-        $validator->validateTypeAndProduct($input[Entity::TYPE], $input[Entity::NAME]);
+        (new Validator)->validateCreateMerchantRequests($input);
 
         //
         // @todo: Once the product activation requests are migrated to the merchant requests table,
         // remove the flow with findOrCreateMerchantRequest function. Create a new request every time.
         //
-        if ($input[Entity::TYPE] === Type::PARTNER)
+        if ($input[Entity::TYPE] === Type::PRODUCT)
         {
-            //
-            // Product onboarding submissions and partner activation requests must only be inserted in the live db.
-            // Force set the database connection and mode to live.
-            //
-            if (($input[Entity::TYPE] === Type::PRODUCT) or ($input[Entity::TYPE] === Type::PARTNER))
-            {
-                $liveMode = $this->app['basicauth']->getLiveConnection();
+            $request = $this->findOrCreateMerchantRequest($this->merchant->getId(), $input);
 
-                // Sets the mode for the request, and database connection
-                $this->setModeAndDefaultConnection($liveMode);
-            }
-
-            $input[Entity::MERCHANT_ID] = $this->merchant->getId();
-
-            $input[Entity::STATUS]      = Status::UNDER_REVIEW;
-
-            $request = $this->create($input);
+            return $request;
         }
-        else
+
+        //
+        // Product onboarding submissions and partner activation requests must only be inserted in the live db.
+        // Force set the database connection and mode to live.
+        //
+        if (($input[Entity::TYPE] === Type::PRODUCT) or ($input[Entity::TYPE] === Type::PARTNER))
         {
-            $request = $this->findOrCreateMerchantRequest($this->merchant, $input);
+            $liveMode = $this->app['basicauth']->getLiveConnection();
+
+            // Sets the mode for the request, and database connection
+            $this->setModeAndDefaultConnection($liveMode);
         }
+
+        $request = $this->create($input);
 
         return $request;
     }
