@@ -80,14 +80,6 @@ class EloquentEx extends \Razorpay\Spine\Entity
         throw new Exception\DbQueryException($e);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function deleteOrFail(array $options = [])
-    {
-       parent::deleteOrFail($options);
-    }
-
     public static function findOrFailPublic($id, $columns = array('*'))
     {
         if ( ! is_null($model = static::find($id, $columns))) return $model;
