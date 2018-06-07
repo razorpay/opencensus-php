@@ -58,6 +58,7 @@ class Table
     const FILE_STORE            = 'files';
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlements';
+    const ENTITY_OFFER          = 'entity_offer';
     const FEE_BREAKUP           = 'fees_breakup';
     const TRANSACTION           = 'transactions';
     const APP_TOKEN             = 'customer_apps';

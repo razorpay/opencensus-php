@@ -33,6 +33,10 @@ class CreateOrders extends Migration
             $table->tinyInteger(Order::DISCOUNT)
                   ->default(false);
 
+            $table->tinyInteger(Order::FORCE_OFFER)
+                  ->nullable()
+                  ->default(false);
+
             $table->tinyInteger(Order::PARTIAL_PAYMENT)
                   ->default(false);
 

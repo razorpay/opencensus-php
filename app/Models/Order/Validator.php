@@ -22,7 +22,9 @@ class Validator extends Base\Validator
         Entity::BANK            => 'sometimes|filled',
         Entity::ACCOUNT_NUMBER  => 'sometimes|filled|string|max:50|min:5',
         Entity::DISCOUNT        => 'sometimes|boolean',
-        Entity::OFFER_ID        => 'sometimes|string|size:20',
+        Entity::OFFERS          => 'sometimes|array',
+        Entity::OFFERS . '*'    => 'sometimes|string|public_id|size:20',
+        Entity::FORCE_OFFER     => 'sometimes|boolean',
     );
 
     protected static $createValidators = [

@@ -3,7 +3,9 @@
 namespace RZP\Models\Order;
 
 use RZP\Models\Base;
+use RZP\Models\Offer;
 use RZP\Models\Payment;
+use RZP\Models\Offer\EntityOffer;
 
 class Repository extends Base\Repository
 {
@@ -54,5 +56,12 @@ class Repository extends Base\Repository
                        ->get();
 
         return $orders;
+    }
+
+    public function attachOfferToOrder(Entity $order, Offer\Entity $offer)
+    {
+        $order->offers()->attach($offer->getId(), [
+            EntityOffer\Entity::ENTITY_TYPE => $this->entity,
+        ]);
     }
 }

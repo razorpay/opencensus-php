@@ -12,9 +12,59 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
+        $this->modifyOfferRequestFromOldFormat($input);
+
         $order = (new Core)->create($input, $merchant);
 
         return $order->toArrayPublic();
+    }
+
+    /**
+     * Old format:
+     * {
+     *   "offer_id": "offer_AJDTUWZjgei84L"
+     * }
+     *
+     * New format:
+     * {
+     *   "offers": [
+     *     "offer_AJDTUWZjgei84L"
+     *   ]
+     * }
+     *
+     * Both formats are to be concurrently supported.
+     * Here, we convert the old format to the new one, and force_offer explicitly,
+     * so that the old format continues to work the way it did.
+     *
+     * @param  array $input
+     */
+    protected function modifyOfferRequestFromOldFormat(array & $input)
+    {
+        if ($this->isOldFormat($input) === false)
+        {
+            return;
+        }
+
+        $additionalInput = [
+            Entity::FORCE_OFFER => true,
+            Entity::OFFERS      => [
+                $input[Entity::OFFER_ID],
+            ],
+        ];
+
+        $input = array_merge($input, $additionalInput);
+
+        unset($input[Entity::OFFER_ID]);
+    }
+
+    protected function isOldFormat(array $input): bool
+    {
+        if (isset($input[Entity::OFFER_ID]) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function fetch($id)

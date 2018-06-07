@@ -3,9 +3,10 @@
 namespace RZP\Models\Order;
 
 use RZP\Models\Base;
-use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
+use RZP\Constants\Table;
+use RZP\Models\Base\Traits\NotesTrait;
 
 /**
  * @property Offer\Entity $offer
@@ -77,6 +78,16 @@ class Entity extends Base\PublicEntity
      */
     const PAYMENT_CAPTURE = 'payment_capture';
 
+    /**
+     * Used in creation request to link multiple offers
+     */
+    const OFFERS          = 'offers';
+
+    /**
+     * Enforce usage of an offer for payment of this order
+     */
+    const FORCE_OFFER     = 'force_offer';
+
     protected $fillable = [
         self::DISCOUNT,
         self::AMOUNT,
@@ -87,6 +98,7 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::ACCOUNT_NUMBER,
         self::BANK,
+        self::FORCE_OFFER,
     ];
 
     protected $generateIdOnCreate = true;
@@ -104,6 +116,7 @@ class Entity extends Base\PublicEntity
         self::METHOD          => null,
         self::ACCOUNT_NUMBER  => null,
         self::BANK            => null,
+        self::FORCE_OFFER     => false,
     ];
 
     protected $public = [
@@ -119,6 +132,7 @@ class Entity extends Base\PublicEntity
         // See setPublicDiscountAttribute
         // self::DISCOUNT,
         self::OFFER_ID,
+        // self::OFFERS,
         self::STATUS,
         self::ATTEMPTS,
         self::NOTES,
@@ -184,6 +198,17 @@ class Entity extends Base\PublicEntity
     public function offer()
     {
         return $this->belongsTo('RZP\Models\Offer\Entity');
+    }
+
+
+    public function offers()
+    {
+        return $this->belongsToMany(
+                        'RZP\Models\Offer\Entity',
+                        Table::ENTITY_OFFER,
+                        Offer\EntityOffer\Entity::ENTITY_ID,
+                        Offer\EntityOffer\Entity::OFFER_ID)
+                    ->withTimestamps();
     }
 
     /** End Related Models */
