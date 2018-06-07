@@ -1,29 +1,41 @@
 import React, { Component } from 'react';
+import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { fetchReusableLinksEntity } from './model';
+import {
+  fetchReusableLinksEntity,
+  fetchReusableLinkPaymentsList,
+} from './model';
 import { ReusableLinksStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
+import DataTable from 'rzp/ui/Table/DataTable';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { showNotification } from 'rzp/modules/notifications';
+import { classList } from 'common/util';
+
+import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 
 @connect(null, { showNotification })
 export default class ReusableLinksEntity extends Component {
   state = {
     reusableLink: {},
     loading: true,
+    reusableLinkPayments: [],
+    paymentsListLoading: true,
   };
 
   componentWillMount() {
     this.fetchEntity(this.props.id);
+    this.fetchEntityPayments(this.props.id);
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.fetchEntity(nextProps.id);
+      this.fetchEntityPayments(this.props.id);
     }
   }
 
@@ -48,6 +60,27 @@ export default class ReusableLinksEntity extends Component {
       });
   }
 
+  fetchEntityPayments(id) {
+    return fetchReusableLinkPaymentsList(id)
+      .then(resp => {
+        if (resp) {
+          this.setState({ reusableLinkPayments: resp.data.items });
+        }
+
+        this.setState({ paymentsListLoading: false });
+
+        return resp;
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+
+        this.setState({ paymentsListLoading: false });
+      });
+  }
+
   onCopy = ({ reusableLinkId }) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Reusable Payment Links',
@@ -57,7 +90,12 @@ export default class ReusableLinksEntity extends Component {
   };
 
   render() {
-    let { reusableLink, loading } = this.state;
+    let {
+      reusableLink,
+      loading,
+      reusableLinkPayments,
+      paymentsListLoading,
+    } = this.state;
     let isExpired = reusableLink.status_reason === 'expired';
 
     return (
@@ -110,7 +148,16 @@ export default class ReusableLinksEntity extends Component {
                   <EntityDetailRow
                     label="Description"
                     pairClass="description"
-                    value={reusableLink.description || '--'}
+                    value={() => (
+                      <div>
+                        {reusableLink.title}
+                        {reusableLink.description && (
+                          <div class="label--secondary">
+                            reusableLink.description
+                          </div>
+                        )}
+                      </div>
+                    )}
                   />
                   <EntityDetailRow
                     label="Created At"
@@ -133,6 +180,14 @@ export default class ReusableLinksEntity extends Component {
                     label="Notes"
                     value={reusableLink.notes}
                   />
+
+                  <PaymentDetailsTable
+                    title="Successful Payments"
+                    subTitle={`${reusableLink.total_amount_paid} total sales`}
+                    class="reusable-link-payments-table"
+                    items={reusableLinkPayments}
+                    loading={paymentsListLoading}
+                  />
                 </div>
               </div>
             </div>
@@ -142,3 +197,78 @@ export default class ReusableLinksEntity extends Component {
     );
   }
 }
+
+const PaymentDetailsTable = ({
+  title,
+  subTitle,
+  className,
+  loading,
+  items,
+}) => {
+  return (
+    <div class={classList('entity-detail-list', className)}>
+      <div class="list-heading">
+        <span class="label--primary">
+          <b>{title}</b>
+        </span>
+        <span class="label--secondary">{subTitle}</span>
+      </div>
+      {items.map((rowData, idx) => (
+        <PaymentDetailsRow key={idx} rowData={rowData} loading={loading} />
+      ))}
+    </div>
+  );
+};
+
+const PaymentDetailsRow = ({ loading, rowData }) => {
+  return (
+    <div class="entity-detail-row">
+      <div class="row-item content">
+        <div class="detail-row">
+          <div class="row-element left">
+            {loading ? (
+              <PlaceholderLoader style={{ width: '70%' }} />
+            ) : (
+              <span class="label--primary">{rowData.contact}</span>
+            )}
+          </div>
+          <div class="row-element right">
+            {loading ? (
+              <PlaceholderLoader style={{ width: '45%' }} />
+            ) : (
+              <NavLink
+                class="btn-link no-padding"
+                to={`/payments/${rowData.id}`}
+                target="_blank"
+              >
+                {rowData.id}
+              </NavLink>
+            )}
+          </div>
+        </div>
+
+        <div class="detail-row">
+          <div class="row-element left">
+            {loading ? (
+              <PlaceholderLoader style={{ width: '60%', height: '10px' }} />
+            ) : (
+              <span class="label--secondary">{rowData.email}</span>
+            )}
+          </div>
+          <div class="row-element right">
+            {loading ? (
+              <PlaceholderLoader style={{ width: '30%' }} />
+            ) : (
+              <span class="label--secondary">
+                <Time
+                  value={rowData.created_at}
+                  format="DD MMM YYYY, hh:mm:ss a"
+                />
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

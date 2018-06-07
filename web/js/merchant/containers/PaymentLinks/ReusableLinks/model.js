@@ -25,3 +25,13 @@ export const fetchReusableLinksList = data =>
     url: 'payment_links',
     data,
   });
+
+export const fetchReusableLinkPaymentsList = id => {
+  return merchantFetch({
+    url: 'payments',
+    params: {
+      pl_id: id,
+      count: 5,
+    },
+  });
+};

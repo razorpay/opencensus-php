@@ -155,7 +155,9 @@ export default class ReusableLinksContianer extends ListContainer {
               <tr>
                 <th>Title</th>
                 <th class="text-right">Amount</th>
+                <th>Payments Made</th>
                 <th>Times Payable</th>
+                <th>Total Sales</th>
                 <th>Link Url</th>
                 <th>Created At</th>
                 <th>Status</th>
@@ -177,7 +179,9 @@ export default class ReusableLinksContianer extends ListContainer {
                   <td class="text-right">
                     <Amount value={item.amount} currency={item.currency} />
                   </td>
+                  <td>{item.times_paid}</td>
                   <td>{item.times_payable}</td>
+                  <td>{item.total_amount_paid}</td>
                   <td>
                     {item.short_url && (
                       <span class="CopyLink">
