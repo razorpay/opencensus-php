@@ -143,6 +143,7 @@ class Table
     const FIRST_DATA            = 'first_data';
     const CYBERSOURCE           = 'cybersource';
     const CARD_FSS              = 'card_fss';
+    const ISG                   = 'isg';
 
     // Sessions table
     const SESSION               = 'sessions';

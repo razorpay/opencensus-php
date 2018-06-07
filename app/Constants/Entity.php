@@ -135,6 +135,7 @@ class Entity
     const ENACH                  = 'enach';
     const HDFC                   = 'hdfc';
     const HITACHI                = 'hitachi';
+    const ISG                    = 'isg';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const WALLET                 = 'wallet';
@@ -289,6 +290,7 @@ class Entity
         self::AMEX                   => \RZP\Gateway\Amex::class,
         self::HDFC                   => \RZP\Gateway\Hdfc::class,
         self::HITACHI                => \RZP\Gateway\Hitachi::class,
+	    self::ISG                    => \RZP\Gateway\Isg::class,
         self::PAYTM                  => \RZP\Gateway\Paytm::class,
         self::SHARP                  => \RZP\Gateway\Sharp::class,
         self::WALLET                 => \RZP\Gateway\Wallet\Base::class,

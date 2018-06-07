@@ -43,7 +43,28 @@ class Terminal extends Base
         $this->createSharedEmandateAxisTerminal();
     }
 
-    public function createBharatQrTerminal()
+	public function createBharatQrIsgTerminal()
+	{
+		$attributes = [
+			'merchant_id'               => '10000000000000',
+			'gateway'                   => 'isg',
+			'gateway_merchant_id'       => '12345',
+			'gateway_terminal_id'       => 'abcde',
+			'gateway_acquirer'          => 'hdfc',
+			'card'                      => 1,
+			'mc_mpan'                   => '4287346823986423',
+			'visa_mpan'                 => '5287346823986423',
+			'rupay_mpan'                => '6287346823986423',
+			'type'                      => [
+				Type::NON_RECURRING => '1',
+				Type::BHARAT_QR => '1',
+			],
+		];
+
+		return parent::create($attributes);
+	}
+
+	public function createBharatQrTerminal()
     {
         $attributes = [
             'merchant_id'               => '10000000000000',

@@ -50,6 +50,7 @@ class Gateway
     const UPI_ICICI              = 'upi_icici';
     const UPI_HULK               = 'upi_hulk';
     const AEPS_ICICI             = 'aeps_icici';
+    const ISG                    = 'isg';
 
     const CARD_FSS               = 'card_fss';
 
@@ -439,6 +440,10 @@ class Gateway
             Network::MC,
             Network::RUPAY,
         ],
+	    self::ISG => [
+		    Network::VISA,
+		    Network::MC,
+		    Network::RUPAY,
     ];
 
     public static $cardNetworkRecurringMap = [
@@ -614,6 +619,7 @@ class Gateway
         self::UPI_ICICI,
         self::HITACHI,
         self::SHARP,
+	    self::ISG,
     ];
 
     public static $authTypeToEmandateGatewayMap = [

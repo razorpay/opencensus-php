@@ -24,6 +24,7 @@ return [
         'first_data',
         'hdfc',
         'hitachi',
+	    'isg',
         'kotak',
         'mobikwik',
         'netbanking_hdfc',
@@ -102,6 +103,7 @@ return [
     'mock_wallet_freecharge'      => env('FREECHARGE_MOCK'),
     'mock_wallet_mpesa'           => env('MPESA_MOCK'),
     'mock_card_fss'               => env('FSS_MOCK'),
+	`mock_isg`                    => env('ISG_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
@@ -127,6 +129,9 @@ return [
         'test_hash_secret2'    => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
         'bharatqr_salt'        => env('HITACHI_GATEWAY_BHARAT_QR_SALT'),
     ],
+	'isg' => [
+		'bharatqr_secret'        => env('ISG_GATEWAY_BHARAT_QR_SECRET'),
+	],
 
     'first_data' => [
         // Test credentials
