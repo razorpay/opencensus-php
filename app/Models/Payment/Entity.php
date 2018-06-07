@@ -305,7 +305,6 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::ORDER_ID,
         self::INVOICE_ID,
-        self::PAYMENT_LINK_ID,
         self::INTERNATIONAL,
         self::METHOD,
         self::AMOUNT_REFUNDED,
@@ -2434,7 +2433,7 @@ class Entity extends Base\PublicEntity
 
     public function paymentLink()
     {
-        return $this->belongsTo('RZP\Models\PaymentLink\Entity');
+        return $this->belongsTo(PaymentLink\Entity::class);
     }
 
     public function receiver()

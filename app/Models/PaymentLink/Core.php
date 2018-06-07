@@ -8,7 +8,7 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Jobs\PaymentLinkRefund as PaymentLinkRefundJob;
+use RZP\Jobs\PaymentLink\RefundPayment as RefundPaymentJob;
 
 class Core extends Base\Core
 {
@@ -136,7 +136,9 @@ class Core extends Base\Core
     {
         $paymentLink = $payment->paymentLink;
 
-        if ($this->isPayable($paymentLink) === true)
+        $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
+
+        if ($paymentLink->isPayable() === true)
         {
             $this->updateFromCapturedPayment($payment, $paymentLink);
         }
@@ -158,20 +160,21 @@ class Core extends Base\Core
 
         $paymentLink->incrementTotalAmountPaidBy($payment->getAmount());
 
-        if (($paymentLink->getTimesPayable() !== null) and
-            ($paymentLink->getTimesPayable() === $paymentLink->getTimesPaid()))
+        if ($paymentLink->isCompleted() === true)
         {
-            $paymentLink->setStatus(Status::INACTIVE);
-            $paymentLink->setStatusReason(StatusReason::COMPLETED);
-
             $this->trace->debug(
                 TraceCode::PAYMENT_LINK_STATUS_CHANGE,
                 [
                     'payment_id'        => $payment->getId(),
                     'payment_link_id'   => $paymentLink->getId(),
+                    'from_status'       => $paymentLink->getStatus(),
+                    'from_status_reason'=> $paymentLink->getStatusReason(),
                     'to_status'         => Status::INACTIVE,
                     'to_status_reason'  => StatusReason::COMPLETED,
                 ]);
+
+            $paymentLink->setStatus(Status::INACTIVE);
+            $paymentLink->setStatusReason(StatusReason::COMPLETED);
         }
 
         $this->repo->payment_link->saveOrFail($paymentLink);
@@ -192,15 +195,9 @@ class Core extends Base\Core
         }
     }
 
-    public function isPayable(Entity $paymentLink): bool
-    {
-        return (($paymentLink->isActive() === true) and
-                ($paymentLink->isExpired() === false));
-    }
-
     public function validateIsPaymentInitiatable(Entity $paymentLink)
     {
-        if (($this->isPayable($paymentLink) === false) or
+        if (($paymentLink->isPayable() === false) or
             ($this->hasPaymentSlots($paymentLink) === false))
         {
             throw new Exception\BadRequestException(
@@ -303,25 +300,26 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($paymentLink);
             });
     }
-||||||| merged common ancestors
-=======
 
     /**
-     * Dispatches new job onto queue for asynchronous processing of it
+     * Dispatches new job onto queue for asynchronous processing of it.
+     *
+     * This is an edge case, and is expected to be used seldomly after
+     * initial release.  Further releases should purge the requirement
+     * for refund using soft reservation. As for now, we do a simple
+     * refund without retry.
      *
      * @param Payment\Entity $payment
      */
     protected function refundPaymentForLink(Payment\Entity $payment)
     {
         $this->trace->info(
-            TraceCode::PAYMENT_LINK_PAYMENT_REFUND_REQUESTED,
+            TraceCode::PAYMENT_LINK_PAYMENT_ASYNC_REFUND_REQUEST,
             [
-                'id'    => $payment->getPublicId(),
-                'status'=> $payment->getStatus(),
-                'pl_id' => $payment->paymentLink->getPublicId(),
+                'payment'       => $payment->toArrayPublic(),
+                'payment_link'  => $payment->paymentLink->toArrayPublic(),
             ]);
 
-        PaymentLinkRefundJob::dispatch($this->mode, $payment->getId(), []);
+        RefundPaymentJob::dispatch($this->mode, $payment->getId(), []);
     }
->>>>>>> [PaymentLink] payment link core logic
 }

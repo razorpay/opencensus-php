@@ -3,6 +3,7 @@
 namespace RZP\Models\PaymentLink;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
@@ -214,7 +215,7 @@ class Entity extends Base\PublicEntity
             return true;
         }
 
-        $currentTime = Carbon::now()->timestamp;
+        $currentTime = Carbon::now(Timezone::IST)->timestamp;
 
         return (($this->getExpireBy() !== null) and
             ($this->getExpireBy() <= $currentTime));
@@ -222,8 +223,14 @@ class Entity extends Base\PublicEntity
 
     public function isCompleted(): bool
     {
-        return (($this->getStatus() === Status::INACTIVE) and
-            ($this->getStatusReason() === StatusReason::COMPLETED));
+        if (($this->getStatus() === Status::INACTIVE) and
+            ($this->getStatusReason() === StatusReason::COMPLETED))
+        {
+            return true;
+        }
+
+        return (($this->getTimesPayable() !== null) and
+        ($this->getTimesPayable() === $this->getTimesPaid()));
     }
 
     public function isDeactivated(): bool
@@ -281,4 +288,9 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------------------------- End Setters -----------------------------
+
+    public function isPayable(): bool
+    {
+        return (($this->isActive() === true) and ($this->isExpired() === false));
+    }
 }
