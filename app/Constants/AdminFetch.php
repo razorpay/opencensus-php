@@ -85,6 +85,23 @@ class AdminFetch
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
+            Entity::ATOM => [
+                'payment_id'         => Fetch::FIELD_PAYMENT_ID,
+                'refund_id'          => Fetch::FIELD_REFUND_ID,
+                'bank_payment_id'    => [
+                    Fetch::LABEL => 'Bank Payment Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'gateway_payment_id' => [
+                    Fetch::LABEL => 'Gateway Payment Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'received'           => [
+                    Fetch::LABEL => 'Received',
+                    Fetch::TYPE  => Fetch::TYPE_BOOLEAN
+                ],
+            ],
+
             Entity::AXIS_GENIUS => [
                 'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'received' => [
