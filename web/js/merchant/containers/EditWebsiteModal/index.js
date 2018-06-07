@@ -2,64 +2,36 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
+import User from 'merchant/models/User';
+import { updateSession } from 'merchant/modules/session';
 import { merchantFetch } from 'rzp/utils/ajax';
 import ModalHeader from 'rzp/ui/ModalHeader';
-
 import { Modal, ModalContent } from 'component/Modal';
 
-const EditModalContent = ({
-  onSubmit,
-  onCancel,
-  websiteUrl,
-  onWebsiteChange,
-}) => (
-  <form
-    className={`edit-website-details-form${
-      onCancel ? ' has-cancel-button' : ''
-    }`}
-    onSubmit={onSubmit}
-  >
-    <div className="form-group">
-      <small>Your website/app should contain these pages: </small>
-      About Us, Contact Us, Privacy Policy, Terms & Conditions, Refund Policy &
-      Pricing.
-    </div>
-    <div className="form-group">
-      <label>Website/App Link</label>
-      <input
-        className="form-control"
-        type="url"
-        value={websiteUrl}
-        onKeyup={onWebsiteChange}
-        placeholder="ex: http://www.xyz.com"
-      />
-    </div>
-    <div className="form-group">
-      <button type="button" className="btn btn-default" onClick={onCancel}>
-        Cancel
-      </button>
-      <button className="btn btn-primary">Add Details</button>
-    </div>
-  </form>
-);
+import EditModalContent, {
+  SuccessModalContent,
+} from 'merchant/components/EditWebsiteModal/ModalContent';
 
 @withRouter
-@connect(state => ({
-  business_website: state.session.user.business_website,
-  has_key_access: state.session.user.has_key_access,
-}))
+@connect(
+  state => ({
+    user: state.session.user,
+  }),
+  {
+    updateSession,
+  }
+)
 class EditWebsiteModal extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
-      websiteUrl: props.business_website,
+      websiteUrl: props.user.business_website,
       loading: false,
     };
 
     // if someone directly visits the URL from browser history,
     // we should not render anything
-    this.shouldRender = !this.props.has_key_access;
+    this.shouldRender = !this.props.user.has_key_access;
 
     if (!this.shouldRender) {
       return this.props.history.push('/');
@@ -71,23 +43,36 @@ class EditWebsiteModal extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.business_website !== this.props.business_website) {
+    if (nextProps.user.business_website !== this.props.user.business_website) {
       this.setState({
-        websiteUrl: nextProps.business_website,
+        websiteUrl: nextProps.user.business_website,
       });
     }
   }
 
   onSubmit(e) {
     e.preventDefault();
-
+    const { user } = this.props;
     const { websiteUrl } = this.state;
 
     merchantFetch({
       url: 'merchant/activation/update_website_details',
       mode: 'live',
-      method: 'post',
+      method: 'put',
       data: { business_website: websiteUrl },
+    }).then(response => {
+      if (response.success) {
+        //update user session details
+        const newUser = new User({
+          ...user,
+          business_website: response.data.business_website,
+        });
+
+        this.props.updateSession({
+          user: newUser,
+          mode: 'test',
+        });
+      }
     });
   }
 
@@ -106,15 +91,21 @@ class EditWebsiteModal extends Component {
       return null;
     }
 
+    const { business_website } = this.props.user;
+
     return (
-      <Modal onClose={this.onClose}>
+      <Modal onClose={this.onClose} className="edit-website-modal">
         <ModalContent header="Add Website/App Details">
-          <EditModalContent
-            onSubmit={this.onSubmit}
-            onCancel={this.onClose}
-            websiteUrl={this.state.websiteUrl}
-            onWebsiteChange={this.onWebsiteChange}
-          />
+          {business_website ? (
+            <SuccessModalContent onClose={this.onClose} />
+          ) : (
+            <EditModalContent
+              onSubmit={this.onSubmit}
+              onCancel={this.onClose}
+              websiteUrl={this.state.websiteUrl}
+              onWebsiteChange={this.onWebsiteChange}
+            />
+          )}
         </ModalContent>
       </Modal>
     );
