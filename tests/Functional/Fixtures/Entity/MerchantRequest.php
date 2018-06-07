@@ -6,10 +6,12 @@ use RZP\Models\Merchant\Request;
 
 class MerchantRequest extends Base
 {
-    const DEFAULT_MERCHANT_REQUEST_ID   = 'mrId1000000000';
-    const DEFAULT_MERCHANT_REQUEST_NAME = 'subscriptions';
-    const DEFAULT_MERCHANT_REQUEST_TYPE = Request\Type::PRODUCT;
-    const DEFAULT_MERCHANT_ID           = '10000000000000';
+    const DEFAULT_MERCHANT_REQUEST_NAME   = 'subscriptions';
+    const DEFAULT_MERCHANT_ID             = '10000000000000';
+    const DEFAULT_MERCHANT_REQUEST_ID     = 'mrId1000000000';
+    const MERCHANT_REQUEST                = 'merchant_request';
+    const DEFAULT_MERCHANT_REQUEST_TYPE   = Request\Type::PRODUCT;
+    const DEFAULT_MERCHANT_REQUEST_STATUS = Request\Status::UNDER_REVIEW;
 
     public function setUp()
     {
@@ -22,21 +24,27 @@ class MerchantRequest extends Base
         ]);
     }
 
-    public function createDefaultMerchantRequest()
+    public function createDefaultMerchantRequest(array $attributes = [])
     {
-        $merchantRequest = $this->fixtures->create('merchant_request', [
+        $defaultValues = [
             'id'          => self::DEFAULT_MERCHANT_REQUEST_ID,
             'merchant_id' => self::DEFAULT_MERCHANT_ID,
             'name'        => self::DEFAULT_MERCHANT_REQUEST_NAME,
-            'status'      => Request\Status::UNDER_REVIEW,
+            'status'      => self::DEFAULT_MERCHANT_REQUEST_STATUS,
             'type'        => self::DEFAULT_MERCHANT_REQUEST_TYPE,
-        ]);
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $merchantRequest = $this->fixtures->create('merchant_request', $attributes);
 
         $this->fixtures->create('state', [
             'entity_id'   => $merchantRequest->getId(),
-            'entity_type' => 'merchant_request',
-            'name'        => Request\Status::UNDER_REVIEW,
+            'entity_type' => self::MERCHANT_REQUEST,
+            'name'        => self::DEFAULT_MERCHANT_REQUEST_STATUS,
             'merchant_id' => self::DEFAULT_MERCHANT_ID,
         ]);
+
+        return $merchantRequest;
     }
 }
