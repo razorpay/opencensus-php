@@ -869,7 +869,7 @@ body.analytics-v2-active .onboarding-card-wrapper {
     }
 
     > div.media-body {
- 
+
       width: 100%;
     }
 
@@ -1127,7 +1127,7 @@ body.analytics-v2-active .onboarding-card-wrapper {
     width: 100%;
     margin-bottom: 4px;
 
-    // Style for 3rd row
+  // Style for 3rd row
     &:nth-of-type(3) {
       font-size: 13px;
     }
@@ -1196,14 +1196,19 @@ div.data-table.has-panel {
   .table
     border: 1px solid $stats-border
     margin-bottom: 0px
-    .td-info::after
+    table-layout: fixed
+
+    .td-info
+      position: relative
+
+    .td-info:not(:first-child)::before
       content: '';
       height: 20px;
       background: $stats-border;
       width: 1px;
       position: absolute;
-      margin-top: -30px;
-      margin-left: -9px;
+      top: 18px;
+      bottom: 18px;
     .td-heading
       display: block
       color: rgba(0,0,0,0.54)
@@ -1347,7 +1352,7 @@ div.feature-activation-banner {
     cursor: pointer;
 
     &:hover {
-        background-color: #F0F1F6;
+      background-color: #F0F1F6;
     }
   }
 }
