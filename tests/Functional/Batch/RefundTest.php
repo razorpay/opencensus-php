@@ -40,6 +40,7 @@ class RefundTest extends TestCase
 
         // This attribute(derived) is only exposed in admin auth at the moment
         $this->assertArrayNotHasKey('processed_percentage', $response);
+        $this->assertArrayNotHasKey('processed_count', $response);
 
         $batch = $this->getDbLastEntity('batch');
 
@@ -256,6 +257,7 @@ class RefundTest extends TestCase
         $this->assertEquals(3, $batch->getAttempts());
         $this->assertEquals('processed', $batch->getStatus());
         $this->assertEquals(1, $batch->getProcessedCount());
+        $this->assertEquals(100, $batch->getProcessedPercentage());
     }
 
     public function testProcessRefundWithThreeAttemptSuccess()
@@ -279,6 +281,7 @@ class RefundTest extends TestCase
         $this->assertEquals(3, $batch->getAttempts());
         $this->assertEquals('processed', $batch->getStatus());
         $this->assertEquals(1, $batch->getProcessedCount());
+        $this->assertEquals(100, $batch->getProcessedPercentage());
     }
 
     protected function getDefaultRefundFileEntries(bool $withNotes = true)

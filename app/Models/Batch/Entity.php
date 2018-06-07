@@ -110,9 +110,10 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::STATUS,
         self::TOTAL_COUNT,
-        self::PROCESSED_PERCENTAGE,
         self::SUCCESS_COUNT,
         self::FAILURE_COUNT,
+        self::PROCESSED_COUNT,
+        self::PROCESSED_PERCENTAGE,
         self::ATTEMPTS,
         self::AMOUNT,
         self::PROCESSED_AMOUNT,
@@ -156,6 +157,7 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
+        self::PROCESSED_COUNT,
         self::PROCESSED_PERCENTAGE,
     ];
 
@@ -358,6 +360,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PROCESSED_COUNT);
     }
 
+    public function getProcessedPercentage(): int
+    {
+        return $this->getAttribute(self::PROCESSED_PERCENTAGE);
+    }
+
     public function isPaymentLinkType(): bool
     {
         return ($this->getType() === Type::PAYMENT_LINK);
@@ -557,6 +564,14 @@ class Entity extends Base\PublicEntity
     // ----------------------- End Appends ---------------------------
 
     // ----------------------- Public Setters ------------------------
+
+    public function setPublicProcessedCountAttribute(array & $output)
+    {
+        if (app('basicauth')->isAdminAuth() === false)
+        {
+            unset($output[self::PROCESSED_COUNT]);
+        }
+    }
 
     public function setPublicProcessedPercentageAttribute(array & $output)
     {

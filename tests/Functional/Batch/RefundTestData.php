@@ -283,6 +283,7 @@ return [
                 // Additionally, it's value in this case should be 100 %, but that is asserted in code because
                 // it's queue stuff.
                 //
+                'processed_count'      => 0,
                 'processed_percentage' => 0,
                 'attempts'             => 2,
             ],
