@@ -11,7 +11,6 @@ import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
-import DataTable from 'rzp/ui/Table/DataTable';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { showNotification } from 'rzp/modules/notifications';
 import { classList } from 'common/util';
@@ -65,7 +64,15 @@ export default class ReusableLinksEntity extends Component {
     return [
       [
         { title: 'Payments Made', value: reusableLink.times_paid },
-        { title: 'Total Sales', value: reusableLink.total_amount_paid },
+        {
+          title: 'Total Sales',
+          value: (
+            <Amount
+              value={reusableLink.total_amount_paid}
+              currency={reusableLink.currency}
+            />
+          ),
+        },
       ],
     ];
   }
@@ -109,7 +116,7 @@ export default class ReusableLinksEntity extends Component {
     let isExpired = reusableLink.status_reason === 'expired';
 
     return (
-      <div class="content-wrapper content-sm txn-details">
+      <div class="content-wrapper content-sm txn-details Entity--reusable">
         {loading ? (
           <div class="page-spinner-container">
             <Spinner />
