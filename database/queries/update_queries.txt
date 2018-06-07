@@ -1752,3 +1752,8 @@ UPDATE action_state
       merchant_requests.created_at = products.created_at,
       action_state.created_at = products.created_at
   WHERE merchant_requests.type = "product"
+
+# Updates values for old batches.processed_count
+UPDATE batches
+    SET processed_count = success_count + failure_count
+    WHERE processed_count IS NULL AND processing = 0;
