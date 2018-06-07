@@ -110,21 +110,16 @@ class Core extends Base\Core
                 TraceCode::PAYMENT_LINK_DEACTIVATE_REQUEST,
                 ['id' => $paymentLink->getPublicId()]);
 
-            $paymentLink->setStatus(Status::INACTIVE);
-            $paymentLink->setStatusReason(StatusReason::DEACTIVATED);
+            $this->changeStatus(
+                $paymentLink,
+                null,
+                Status::INACTIVE,
+                StatusReason::DEACTIVATED);
 
             $this->repo->saveOrFail($paymentLink);
 
             return $paymentLink;
         });
-
-        $this->trace->debug(
-            TraceCode::PAYMENT_LINK_STATUS_CHANGE,
-            [
-                'payment_link_id'   => $paymentLink->getId(),
-                'to_status'         => Status::INACTIVE,
-                'to_status_reason'  => StatusReason::DEACTIVATED,
-            ]);
 
         $this->trace->info(TraceCode::PAYMENT_LINK_DEACTIVATED, $paymentLink->toArray());
 
@@ -153,14 +148,6 @@ class Core extends Base\Core
 
             return $paymentLink;
         });
-
-        $this->trace->debug(
-            TraceCode::PAYMENT_LINK_STATUS_CHANGE,
-            [
-                'payment_link_id'   => $paymentLink->getId(),
-                'to_status'         => Status::ACTIVE,
-                'to_status_reason'  => null,
-            ]);
 
         $this->trace->info(TraceCode::PAYMENT_LINK_ACTIVATED, $paymentLink->toArray());
 
@@ -304,8 +291,11 @@ class Core extends Base\Core
 
         $paymentLink->edit($input);
 
-        $paymentLink->setStatus(Status::ACTIVE);
-        $paymentLink->setStatusReason(null);
+        $this->changeStatus(
+            $paymentLink,
+            null,
+            Status::ACTIVE,
+            null);
 
         return $paymentLink;
     }
@@ -335,16 +325,11 @@ class Core extends Base\Core
 
         if ($paymentLink->getTimesPayable() === $paymentLink->getTimesPaid())
         {
-            $paymentLink->setStatus(Status::INACTIVE);
-            $paymentLink->setStatusReason(StatusReason::COMPLETED);
-
-            $this->trace->debug(
-                TraceCode::PAYMENT_LINK_STATUS_CHANGE,
-                [
-                    'payment_link_id'   => $paymentLink->getId(),
-                    'to_status'         => Status::INACTIVE,
-                    'to_status_reason'  => StatusReason::COMPLETED,
-                ]);
+            $this->changeStatus(
+                $paymentLink,
+                null,
+                Status::INACTIVE,
+                StatusReason::COMPLETED);
         }
 
         return $paymentLink;
