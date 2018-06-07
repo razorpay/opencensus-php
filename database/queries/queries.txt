@@ -3593,3 +3593,7 @@ ALTER TABLE orders
     ADD COLUMN reference8 VARCHAR(14) DEFAULT NULL AFTER reference7,
     ADD COLUMN reference9 VARCHAR(255) DEFAULT NULL AFTER reference8,
     ADD COLUMN reference10 VARCHAR(255) DEFAULT NULL AFTER reference9;
+
+# Add attempts to payouts
+ALTER TABLE payouts
+    ADD COLUMN attempts integer default 1 not null after channel;
