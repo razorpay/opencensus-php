@@ -5,15 +5,17 @@ namespace RZP\Tests\Functional\Batch;
 use Mail;
 use Illuminate\Support\Facades\Queue;
 
+use RZP\Models\FileStore;
 use RZP\Models\Batch\Header;
+use RZP\Jobs\Batch as BatchJob;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Batch\Refund as BatchRefundFileMail;
-use RZP\Models\FileStore;
-use RZP\Jobs\Batch as BatchJob;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class RefundTest extends TestCase
 {
     use BatchTestTrait;
+    use DbEntityFetchTrait;
 
     protected $payment = null;
 
@@ -36,9 +38,9 @@ class RefundTest extends TestCase
 
         $this->startTest();
 
-        $batch = $this->getLastEntity('batch', true);
+        $batch = $this->getDbLastEntity('batch');
 
-        $this->assertEquals(0, $batch['processed_count']);
+        $this->assertEquals(0, $batch->getProcessedCount());
 
         Queue::assertNotPushed(BatchJob::class);
     }
@@ -105,9 +107,9 @@ class RefundTest extends TestCase
 
         $this->startTest();
 
-        $batch = $this->getLastEntity('batch', true);
+        $batch = $this->getDbLastEntity('batch');
 
-        $this->assertEquals(2, $batch['processed_count']);
+        $this->assertEquals(2, $batch->getProcessedCount());
 
         // Assert that the processed file exist
 

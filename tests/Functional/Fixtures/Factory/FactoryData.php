@@ -471,14 +471,17 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Batch\Entity::class, [
-            'id'          => $faker->uniqueid,
-            'merchant_id' => '10000000000000',
-            'status'      => 'created',
-            'processing'  => 0,
-            'total_count' => 0,
-            'attempts'    => 0,
-            'created_at'  => $faker->timestamp,
-            'updated_at'  => $faker->timestamp,
+            'id'              => $faker->uniqueid,
+            'merchant_id'     => '10000000000000',
+            'status'          => 'created',
+            'processing'      => 0,
+            'total_count'     => 0,
+            'processed_count' => 0,
+            'success_count'   => 0,
+            'failure_count'   => 0,
+            'attempts'        => 0,
+            'created_at'      => $faker->timestamp,
+            'updated_at'      => $faker->timestamp,
         ]);
 
         $factory(\RZP\Gateway\Wallet\Base\Entity::class, [

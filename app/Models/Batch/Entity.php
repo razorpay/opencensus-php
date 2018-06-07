@@ -37,6 +37,11 @@ class Entity extends Base\PublicEntity
     const FAILURE_REASON            = 'failure_reason';
 
     /**
+     * Derived attribute: holds percentage of rows processed
+     */
+    const PROCESSED_PERCENTAGE      = 'processed_percentage';
+
+    /**
      * Constants used in migration file.
      */
     const STATUS_LENGTH             = 20;
@@ -105,6 +110,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::STATUS,
         self::TOTAL_COUNT,
+        self::PROCESSED_PERCENTAGE,
         self::SUCCESS_COUNT,
         self::FAILURE_COUNT,
         self::ATTEMPTS,
@@ -141,6 +147,16 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AMOUNT => 'int',
         self::ATTEMPTS         => 'int',
         self::PROCESSING       => 'bool',
+    ];
+
+    protected $appends = [
+        self::PROCESSED_PERCENTAGE,
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::PROCESSED_PERCENTAGE,
     ];
 
     /**
@@ -332,6 +348,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TOTAL_COUNT);
     }
 
+    public function getProcessedCount(): int
+    {
+        return $this->getAttribute(self::PROCESSED_COUNT);
+    }
+
     public function isPaymentLinkType(): bool
     {
         return ($this->getType() === Type::PAYMENT_LINK);
@@ -504,4 +525,32 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------- End Setters ---------------------------
+
+    // ----------------------- Appends -------------------------------
+
+    /**
+     * Gets derived attribute, currently only exposed on admin auth (via corresponding public setter method)
+     * @return int
+     */
+    public function getProcessedPercentageAttribute(): int
+    {
+        $processedCount = $this->getProcessedCount();
+        $totalCount     = $this->getTotalCount();
+
+        return $totalCount !== 0 ? (($processedCount / $totalCount) * 100) : 0;
+    }
+
+    // ----------------------- End Appends ---------------------------
+
+    // ----------------------- Public Setters ------------------------
+
+    public function setPublicProcessedPercentageAttribute(array & $output)
+    {
+        if (app('basicauth')->isPrivilegeAuth() === false)
+        {
+            unset($output[self::PROCESSED_PERCENTAGE]);
+        }
+    }
+
+    // ----------------------- End Public Setters --------------------
 }

@@ -433,8 +433,6 @@ class Base extends BaseModel\Core
             finally
             {
                 $this->batch->incrementProcessedCount();
-
-                $this->repo->saveOrFail($this->batch);
             }
         }
     }
