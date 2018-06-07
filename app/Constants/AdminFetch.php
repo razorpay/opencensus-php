@@ -33,10 +33,66 @@ class AdminFetch
                 'merchant_id'       => Fetch::FIELD_MERCHANT_ID
             ],
             Entity::SHIELD_RULES => [
-
+                'is_active'         => [
+                    Fetch::LABEL        => 'active',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        '0',
+                        '1',
+                    ],
+                ],
+                'action'            => [
+                    Fetch::LABEL        => 'action',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'block',
+                        'review',
+                        'allow'
+                    ]
+                ]
             ],
             Entity::SHIELD_RULE_ANALYTICS => [
-
+                'entity_id'         => [
+                    Fetch::LABEL        => 'entity_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'email'             => [
+                    Fetch::LABEL        => 'email',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'contact'           => [
+                    Fetch::LABEL        => 'contact',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'card_iin'          => [
+                    Fetch::LABEL        => 'card_iin',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'merchant_id'       => [
+                    Fetch::LABEL        => 'merchant_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'action'            => [
+                    Fetch::LABEL        => 'action',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'block',
+                        'review',
+                        'allow'
+                    ]
+                ],
+                'ruleset'           => [
+                    Fetch::LABEL        => 'ruleset',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'ip'                => [
+                    Fetch::LABEL        => 'ip',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'card_hash'         => [
+                    Fetch::LABEL        => 'card_hash',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
             ]
         ];
     }
