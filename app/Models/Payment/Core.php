@@ -5,6 +5,7 @@ namespace RZP\Models\Payment;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\VirtualAccount\Receiver;
 
 class Core extends Base\Core
 {
@@ -53,7 +54,7 @@ class Core extends Base\Core
             {
                 $payment->setReceiverId($payment['bank_account_id']);
 
-                $payment->setReceiverType('bank_account');
+                $payment->setReceiverType(Receiver::BANK_ACCOUNT);
 
                 $this->repo->saveOrFail($payment);
 

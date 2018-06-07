@@ -1402,13 +1402,13 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @return mixed
-     *
      * select `payments`.*, `bank_accounts`.`id` as `bank_account_id` from `payments` inner join
      * `bank_transfers` on `bank_transfers`.`payment_id` = `payments`.`id` inner join `virtual_accounts`
      * on `bank_transfers`.`virtual_account_id` = `virtual_accounts`.`id` inner join `bank_accounts` on
-     * `bank_accounts`.`id` = `virtual_accounts`.`bank_account_id` where `method` = ? and `receiver_id`
-     * is null limit 1000
+     * `bank_accounts`.`id` = `virtual_accounts`.`bank_account_id` where `method` = 'bank_transfer' and
+     * `receiver_id` is null limit 1000
+     *
+     *  * @return collection
      */
     public function fetchBankTransferPaymentWithoutReceiver()
     {
