@@ -251,10 +251,11 @@ class RefundTest extends TestCase
 
         $this->startTest();
 
-        $batch = $this->getLastEntity('batch', true);
+        $batch = $this->getDbLastEntity('batch');
 
-        $this->assertEquals($batch['attempts'], 3);
-        $this->assertEquals($batch['status'], 'processed');
+        $this->assertEquals(3, $batch->getAttempts());
+        $this->assertEquals('processed', $batch->getStatus());
+        $this->assertEquals(1, $batch->getProcessedCount());
     }
 
     public function testProcessRefundWithThreeAttemptSuccess()
@@ -273,10 +274,11 @@ class RefundTest extends TestCase
 
         $this->startTest();
 
-        $batch = $this->getLastEntity('batch', true);
+        $batch = $this->getDbLastEntity('batch');
 
-        $this->assertEquals($batch['attempts'], 3);
-        $this->assertEquals($batch['status'], 'processed');
+        $this->assertEquals(3, $batch->getAttempts());
+        $this->assertEquals('processed', $batch->getStatus());
+        $this->assertEquals(1, $batch->getProcessedCount());
     }
 
     protected function getDefaultRefundFileEntries(bool $withNotes = true)

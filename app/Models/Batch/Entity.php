@@ -348,6 +348,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TOTAL_COUNT);
     }
 
+    public function getAttempts(): int
+    {
+        return $this->getAttribute(self::ATTEMPTS);
+    }
+
     public function getProcessedCount(): int
     {
         return $this->getAttribute(self::PROCESSED_COUNT);
@@ -555,7 +560,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicProcessedPercentageAttribute(array & $output)
     {
-        if (app('basicauth')->isPrivilegeAuth() === false)
+        if (app('basicauth')->isAdminAuth() === false)
         {
             unset($output[self::PROCESSED_PERCENTAGE]);
         }
