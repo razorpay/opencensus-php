@@ -22,9 +22,9 @@ const sources = {
 
 export const idItem = id => <code>{id}</code>;
 
-export const idLink = id => {
+export const idLink = (id, label) => {
   var url = baseUrl[id.split('_')[0]];
-  var item = idItem(id);
+  var item = label || idItem(id);
   if (url) {
     url += id;
     return <Link to={url}>{item}</Link>;
@@ -32,7 +32,8 @@ export const idLink = id => {
   return item;
 };
 
-const makePropLink = prop => item => idLink(item[prop]);
+const makePropLink = (linkProp, displayProp) => item =>
+  idLink(item[linkProp], item[displayProp]);
 
 export const makeIdLink = type => item => {
   return idLink(item[(item.entity === type ? '' : `${type}_`) + 'id']);
