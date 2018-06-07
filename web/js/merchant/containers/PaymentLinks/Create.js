@@ -20,6 +20,9 @@ import ShowWhen from 'merchant/components/ShowWhen';
 
 import { showNotification } from 'rzp/modules/notifications';
 
+import { updatePaymentLinksList } from 'merchant/modules/invoices/list';
+import { luminateRow } from 'merchant/modules/app';
+
 const FORM_TABS = [
   {
     title: 'Payment Link',
@@ -126,7 +129,11 @@ function WizardFields(field) {
 }
 
 @withRouter
-@connect(state => state.session, { showNotification })
+@connect(state => state.session, {
+  showNotification,
+  updatePaymentLinksList,
+  luminateRow,
+})
 export default class CreateNewContainer extends React.Component {
   constructor(props) {
     super(props);
@@ -312,6 +319,7 @@ export default class CreateNewContainer extends React.Component {
 
   onCreate = () => {
     const activeTabIndx = String(this.state.activeTab);
+    const IS_MODAL_VIEW = this.props.onClose;
 
     this.setState({
       parentFormLock: true,
@@ -350,8 +358,17 @@ export default class CreateNewContainer extends React.Component {
             message: notificationMSG,
           });
 
+          const invoiceId = resp.data.id;
+
           if (activeTabIndx == PAYMENT_LINK) {
-            this.props.history.push('/paymentlinks/' + resp.data.id);
+            if (IS_MODAL_VIEW) {
+              this.props.updatePaymentLinksList(resp);
+              this.props.luminateRow(invoiceId); // Make it promise based
+
+              setTimeout(this.props.onClose, 50);
+            } else {
+              this.props.history.push('/paymentlinks/' + invoiceId);
+            }
           }
         } else {
           throw new Error(resp.errors);
@@ -403,7 +420,7 @@ export default class CreateNewContainer extends React.Component {
 
   render() {
     // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
-    const IS_MODAL = this.props.onClose;
+    const IS_MODAL_VIEW = this.props.onClose;
     const { activeTab } = this.state;
 
     const formFields = this.getFormFields();
@@ -422,7 +439,7 @@ export default class CreateNewContainer extends React.Component {
       />
     );
 
-    return IS_MODAL ? (
+    return IS_MODAL_VIEW ? (
       <Modal
         class={classList('PaymentLinks', content && 'animate-down')}
         onClose={this.props.onClose}

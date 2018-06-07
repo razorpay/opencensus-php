@@ -22,6 +22,14 @@ export const saveInvoice = params => {
   };
 };
 
+/* Hook to update invoice list from invoice data fetched separately */
+export const updatePaymentLinksList = newInvoice => {
+  return {
+    type: `${INVOICE_CREATE}::SUCCESS`,
+    payload: new Invoice(newInvoice.data),
+  };
+};
+
 export const deleteInvoice = params => {
   let invoice = new Invoice(params);
   return {
