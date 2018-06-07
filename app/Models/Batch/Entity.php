@@ -355,7 +355,8 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ATTEMPTS);
     }
 
-    public function getProcessedCount(): int
+    // TODO: Add type hint after deployed
+    public function getProcessedCount()
     {
         return $this->getAttribute(self::PROCESSED_COUNT);
     }
