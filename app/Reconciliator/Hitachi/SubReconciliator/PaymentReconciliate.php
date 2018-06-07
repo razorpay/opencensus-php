@@ -281,7 +281,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function validatePaymentCurrencyCodeEqualsReconCurrencyCode(array $row)
     {
-        $expectedCurrency = Currency::getIsoCode($this->payment->getCurrency());
+        $convertCurrency = $this->payment->getConvertCurrency();
+
+        $expectedCurrency = ($convertCurrency === true) ? '356' : Currency::getIsoCode($this->payment->getCurrency());
 
         $reconCurrency = $this->getReconCurrencyCode($row);
 

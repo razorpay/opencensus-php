@@ -162,7 +162,9 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function validateRefundCurrencyCodeEqualsReconCurrencyCode(array $row)
     {
-        $expectedCurrency = Currency::getIsoCode($this->refund->getCurrency());
+        $convertCurrency = $this->payment->getConvertCurrency();
+
+        $expectedCurrency = ($convertCurrency === true) ? '356' : Currency::getIsoCode($this->payment->getCurrency());
 
         $reconCurrency = $this->getReconCurrencyCode($row);
 
