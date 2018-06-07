@@ -103,7 +103,7 @@ return [
     'mock_wallet_freecharge'      => env('FREECHARGE_MOCK'),
     'mock_wallet_mpesa'           => env('MPESA_MOCK'),
     'mock_card_fss'               => env('FSS_MOCK'),
-	`mock_isg`                    => env('ISG_MOCK'),
+	'mock_isg'                    => env('ISG_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
