@@ -205,17 +205,17 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\FundTransfer\Batch\Entity::class, [
-            'id' => $faker->uniqueid,
-            'date' => Carbon::today(Timezone::IST)->timestamp,
-            'channel' => Channel::AXIS,
-            'amount' => $faker->randomNumber(4),
+            'id'               => $faker->uniqueid,
+            'date'             => Carbon::today(Timezone::IST)->timestamp,
+            'channel'          => Channel::AXIS,
+            'amount'           => $faker->randomNumber(4),
             'processed_amount' => 0,
-            'processed_count' => 0,
-            'fees' => $faker->randomNumber(2),
-            'api_fee' => $faker->randomNumber(2),
-            'gateway_fee' => $faker->randomNumber(2),
-            'urls' => $faker->sentence,
-            'initiated_at' => Carbon::today(Timezone::IST)->timestamp + 10,
+            'processed_count'  => 0,
+            'fees'             => $faker->randomNumber(2),
+            'api_fee'          => $faker->randomNumber(2),
+            'gateway_fee'      => $faker->randomNumber(2),
+            'urls'             => $faker->sentence,
+            'initiated_at'     => Carbon::today(Timezone::IST)->timestamp + 10,
         ]);
 
         $factory(\RZP\Models\Adjustment\Entity::class, [

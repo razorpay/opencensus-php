@@ -36,6 +36,10 @@ class RefundTest extends TestCase
 
         $this->startTest();
 
+        $batch = $this->getLastEntity('batch', true);
+
+        $this->assertEquals(0, $batch['processed_count']);
+
         Queue::assertNotPushed(BatchJob::class);
     }
 
@@ -100,6 +104,10 @@ class RefundTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+
+        $batch = $this->getLastEntity('batch', true);
+
+        $this->assertEquals(2, $batch['processed_count']);
 
         // Assert that the processed file exist
 
