@@ -343,6 +343,8 @@ class Base extends BaseModel\Core
 
         $this->resetBatchAttributes();
 
+        $this->repo->saveOrFail($this->batch);
+
         $this->downloadAndSetInputFile();
     }
 
@@ -359,6 +361,9 @@ class Base extends BaseModel\Core
         {
             $this->batch->setStatusNull();
             $this->batch->unsetFailureReason();
+            $this->batch->unsetProcessedCount();
+            $this->batch->setSuccessCount(0);
+            $this->batch->setFailureCount(0);
         }
     }
 
@@ -433,6 +438,8 @@ class Base extends BaseModel\Core
             finally
             {
                 $this->batch->incrementProcessedCount();
+
+                $this->repo->saveOrFail($this->batch);
             }
         }
     }

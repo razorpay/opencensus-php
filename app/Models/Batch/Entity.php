@@ -496,12 +496,21 @@ class Entity extends Base\PublicEntity
 
     public function incrementAttempts()
     {
-        $this->increment(self::ATTEMPTS);
+        $attempts = $this->getAttribute(self::ATTEMPTS);
+
+        $this->setAttribute(self::ATTEMPTS, $attempts + 1);
     }
 
     public function incrementProcessedCount()
     {
-        $this->increment(self::PROCESSED_COUNT);
+        $attempts = $this->getAttribute(self::PROCESSED_COUNT);
+
+        $this->setAttribute(self::PROCESSED_COUNT, $attempts + 1);
+    }
+
+    public function unsetProcessedCount()
+    {
+        $this->setAttribute(self::PROCESSED_COUNT, 0);
     }
 
     public function setFailureReason(string $failureReason)
@@ -537,7 +546,7 @@ class Entity extends Base\PublicEntity
         $processedCount = $this->getProcessedCount();
         $totalCount     = $this->getTotalCount();
 
-        return $totalCount !== 0 ? (($processedCount / $totalCount) * 100) : 0;
+        return ($totalCount !== 0) ? (($processedCount / $totalCount) * 100) : 0;
     }
 
     // ----------------------- End Appends ---------------------------

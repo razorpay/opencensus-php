@@ -36,7 +36,10 @@ class RefundTest extends TestCase
 
         $this->ba->proxyAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        // This attribute(derived) is only exposed in admin auth at the moment
+        $this->assertArrayNotHasKey('processed_percentage', $response);
 
         $batch = $this->getDbLastEntity('batch');
 
