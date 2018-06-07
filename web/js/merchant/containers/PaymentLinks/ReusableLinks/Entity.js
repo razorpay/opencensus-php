@@ -15,6 +15,7 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { showNotification } from 'rzp/modules/notifications';
 import { classList } from 'common/util';
+import StatsInfo from 'ui/StatsTable';
 
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 
@@ -58,6 +59,15 @@ export default class ReusableLinksEntity extends Component {
 
         this.setState({ loading: false });
       });
+  }
+
+  getStatsTable(reusableLink) {
+    return [
+      [
+        { title: 'Payments Made', value: reusableLink.times_paid },
+        { title: 'Total Sales', value: reusableLink.total_amount_paid },
+      ],
+    ];
   }
 
   fetchEntityPayments(id) {
@@ -114,6 +124,7 @@ export default class ReusableLinksEntity extends Component {
             <div class="SliderPanel__Body">
               <div class="panel-body">
                 <div class="list-group details-row-container">
+                  <StatsInfo stats={this.getStatsTable(reusableLink)} />
                   <EntityDetailRow
                     label="Amount"
                     value={() => (
