@@ -174,7 +174,7 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------------- Getters ------------------------------
 
-    public function getAmount()
+    public function getAmount(): int
     {
         return $this->getAttribute(self::AMOUNT);
     }

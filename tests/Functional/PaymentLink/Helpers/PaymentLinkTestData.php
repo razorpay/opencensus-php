@@ -55,7 +55,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'expire_by should be at least 15 min ahead of the current time.',
+                    'description' => 'expire_by should be at least 15 minutes after current time.',
                 ],
             ],
             'status_code' => 400,
@@ -153,7 +153,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'expire_by should be at least 15 min ahead of the current time.',
+                    'description' => 'expire_by should be at least 15 minutes after current time.',
                 ],
             ],
             'status_code' => 400,
@@ -322,7 +322,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Times payable cannot be less than the number of payments processed',
+                    'description' => 'Times payable cannot be less than the number of payments already made',
                 ],
             ],
             'status_code' => 400,
@@ -344,7 +344,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'expire_by should be at least 15 min ahead of the current time.',
+                    'description' => 'expire_by should be at least 15 minutes after current time.',
                 ],
             ],
             'status_code' => 400,

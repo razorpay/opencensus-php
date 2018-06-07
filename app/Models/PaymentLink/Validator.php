@@ -10,8 +10,6 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
-    const OPERATION_ACTIVATE = 'activate';
-
     /**
      * expiry_by has to be atleast 15 mins from current timestamp
      */
@@ -37,15 +35,6 @@ class Validator extends Base\Validator
         Entity::NOTES         => 'sometimes|notes',
     ];
 
-    protected static $activateRules = [
-        Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
-        Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
-        Entity::RECEIPT       => 'sometimes|string|min:1|max:40',
-        Entity::TITLE         => 'sometimes|string|max:255',
-        Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
-        Entity::NOTES         => 'sometimes|notes',
-    ];
-
     protected static $sendNotificationRules = [
         'emails'     => 'required_without:contacts|filled|array|size:1',
         'emails.*'   => 'required|email|max:255',
@@ -55,11 +44,6 @@ class Validator extends Base\Validator
 
     public function validateExpireBy($attribute, $value)
     {
-        if ($value === null)
-        {
-            return;
-        }
-
         $now = Carbon::now(Timezone::IST);
 
         $minExpireBy = $now->copy()->addSeconds(Entity::MIN_EXPIRY_SECS);
@@ -67,21 +51,16 @@ class Validator extends Base\Validator
         if ($value < $minExpireBy->getTimestamp())
         {
             throw new BadRequestValidationFailureException('expire_by should be at least ' .
-                '15 min ahead of the current time.');
+                $minExpireBy->diffForHumans($now) . ' current time.');
         }
     }
 
     public function validateTimesPayable($attribute, $value)
     {
-        if ($value === null)
-        {
-            return;
-        }
-
         if (($value < $this->entity->getTimesPaid()) === true)
         {
             throw new BadRequestValidationFailureException(
-                'Times payable cannot be less than the number of payments processed',
+                'Times payable cannot be less than the number of payments already made',
                 Entity::TIMES_PAYABLE,
                 ['times_payable' => $value]);
         }

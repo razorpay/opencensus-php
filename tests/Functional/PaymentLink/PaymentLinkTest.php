@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\Queue;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\PaymentLink;
-use RZP\Jobs\PaymentLinkRefund;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink as PaymentLinkModel;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Jobs\PaymentLink\RefundPayment as RefundPaymentJob;
 
 class PaymentLinkTest extends TestCase
 {
@@ -319,7 +319,7 @@ class PaymentLinkTest extends TestCase
 
         $this->doAutoCapture();
 
-        Queue::assertPushed(PaymentLinkRefund::class, function($job) use ($paymentAuth)
+        Queue::assertPushed(RefundPayment::class, function($job) use ($paymentAuth)
         {
             $this->assertEquals($paymentAuth['id'], $job->getPaymentId());
 
