@@ -162,19 +162,11 @@ class Core extends Base\Core
 
         if ($paymentLink->isCompleted() === true)
         {
-            $this->trace->debug(
-                TraceCode::PAYMENT_LINK_STATUS_CHANGE,
-                [
-                    'payment_id'        => $payment->getId(),
-                    'payment_link_id'   => $paymentLink->getId(),
-                    'from_status'       => $paymentLink->getStatus(),
-                    'from_status_reason'=> $paymentLink->getStatusReason(),
-                    'to_status'         => Status::INACTIVE,
-                    'to_status_reason'  => StatusReason::COMPLETED,
-                ]);
-
-            $paymentLink->setStatus(Status::INACTIVE);
-            $paymentLink->setStatusReason(StatusReason::COMPLETED);
+            $this->changeStatus(
+                $paymentLink,
+                $payment->getId(),
+                Status::INACTIVE,
+                StatusReason::COMPLETED);
         }
 
         $this->repo->payment_link->saveOrFail($paymentLink);
@@ -299,6 +291,38 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($paymentLink);
             });
+    }
+
+    /**
+     * Logs status change
+     *
+     * @param Entity $paymentLink
+     * @param string|null $paymentId
+     * @param string $status
+     * @param string|null $statusReason
+     */
+    protected function changeStatus(
+        Entity $paymentLink,
+        string $paymentId = null,
+        string $status,
+        string $statusReason = null)
+    {
+        $oldStatus = $paymentLink->getStatus();
+        $oldStatusReason = $paymentLink->getStatusReason();
+
+        $paymentLink->setStatus($status);
+        $paymentLink->setStatusReason($statusReason);
+
+        $this->trace->debug(
+            TraceCode::PAYMENT_LINK_STATUS_CHANGE,
+            [
+                'payment_id'        => $paymentId,
+                'payment_link_id'   => $paymentLink->getId(),
+                'from_status'       => $oldStatus,
+                'from_status_reason'=> $oldStatusReason,
+                'to_status'         => $status,
+                'to_status_reason'  => $statusReason,
+            ]);
     }
 
     /**
