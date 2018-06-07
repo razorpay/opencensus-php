@@ -5,6 +5,8 @@ namespace RZP\Models\Merchant\Request;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Feature;
+use RZP\Models\Merchant\Partner;
+use RZP\Error\PublicErrorDescription;
 
 class Validator extends Base\Validator
 {
@@ -150,6 +152,17 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 "Invalid product: $name for request type : $type");
+        }
+
+        if (($type === Type::PARTNER) and
+            in_array($name, Partner\Constants::$partnerTypes, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_TYPE,
+                Partner\Entity::PARTNER_TYPE,
+                [
+                    $type
+                ]);
         }
     }
 

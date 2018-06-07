@@ -202,7 +202,7 @@ class Core extends Base\Core
                     {
                         $this->addFeatureIfNotEnabled($request);
                     }
-                    else if ($request->isProductRequest() === true)
+                    else if ($request->isPartnerRequest() === true)
                     {
                         (new Partner\Core)->markAsPartner($request->getMerchantId(), $request->getName());
                     }
