@@ -4,6 +4,7 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 import DetailRow from '../DetailRow';
 import CheckIcon from 'rzp/ui/CheckIcon';
 import ProgressBar from 'rzp/ui/ProgressBar';
+import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
 
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 
@@ -73,6 +74,30 @@ export default ({ user }) => {
             </div>
           )
         }
+      />
+      <DetailRow
+        label="Account Access"
+        value={() => (
+          <div class="account-access" style={{ textAlign: 'right' }}>
+            {user.has_key_access ? 'Complete' : 'Limited'}
+            <small className="help-content">
+              <i class="i i-help" />
+              <Popover align="right" theme="dark">
+                <PopoverBody>
+                  <div style={{ textAlign: 'center' }}>
+                    {user.has_key_access
+                      ? 'You have access to all products and API keys. Integrate using our robust APIs or request access to products such as Subscriptions,  Route,  and Smart Collect.'
+                      : 'You can only access Payment Links and Invoices. Please provide website/app link to get access to our API’s and other products such as Route, Subscriptions, etc.'}
+                  </div>
+                </PopoverBody>
+              </Popover>
+            </small>
+            <br />
+            {!user.has_key_access && (
+              <Link to="/website_details">Get Complete Access</Link>
+            )}
+          </div>
+        )}
       />
     </div>
   );
