@@ -1787,6 +1787,8 @@ class Service extends Base\Service
 
         $input['merchant_id'] = $this->merchant->getId();
 
+        $this->validateAggregatorSubMerchantRelation($subMerchant, $input['merchant_id']);
+
         (new Merchant\Validator)->validateInput('createSubMerchantUser', $input);
 
         unset($input['merchant_id']);
@@ -1828,5 +1830,16 @@ class Service extends Base\Service
         $variant = $this->app->razorx->getTreatment($this->merchant->getId(), 'dummy', $this->mode);
 
         return ['variant' => $variant];
+    }
+
+    protected function validateAggregatorSubMerchantRelation($subMerchant, $aggregatorMerchantId)
+    {
+        $referrer = $subMerchant->getReferrer();
+
+        if ((empty($referrer) === true) or ($referrer !== $aggregatorMerchantId))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
     }
 }

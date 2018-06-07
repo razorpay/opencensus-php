@@ -22,7 +22,7 @@ class Service extends Base\Service
     /**
      * Fetch Invitation by Token
      *
-     * @param  array  $input
+     * @param  string  $token
      * @return array
      */
     public function fetchByToken(string $token): array
@@ -99,7 +99,9 @@ class Service extends Base\Service
      */
     public function action(string $inviteId, array $input): array
     {
-        $invitation = $this->repo->invitation->findOrFailPublic($inviteId);
+        $user = $this->app['basicauth']->getUser();
+
+        $invitation = $this->repo->invitation->findByIdAndEmail($inviteId, $user->getEmail());
 
         $this->core()->action($invitation, $input);
 

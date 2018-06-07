@@ -62,6 +62,7 @@ class Base extends Core
     const UPI_ICICI              = 'UpiIcici';
     const ADMIN                  = 'admin';
     const HITACHI                = 'Hitachi';
+    const ATOM                   = 'Atom';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -96,6 +97,7 @@ class Base extends Core
         self::UPI_SBI             => [],
         self::PAYUMONEY           => [],
         self::HITACHI             => ['reportsmailer@hitachi-payments.com'],
+        self::ATOM                => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN               => ['saurav.chowdhury@razorpay.com']

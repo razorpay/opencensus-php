@@ -2,9 +2,8 @@
 
 namespace RZP\Models\FundTransfer\Attempt;
 
-use RZP\Constants\Entity as E;
 use RZP\Models\Base;
-use RZP\Models\BankAccount;
+use RZP\Constants\Entity as E;
 use RZP\Models\Settlement\Channel;
 
 class Entity extends Base\PublicEntity
@@ -83,6 +82,10 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::SOURCE,
+    ];
+
+    protected $ignoredRelations = [
+        'source',
     ];
 
     /**
@@ -203,9 +206,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MODE);
     }
 
+    public function getCmsRefNo()
+    {
+        return $this->getAttribute(self::CMS_REF_NO);
+    }
+
     public function isRefund()
     {
         return ($this->getAttribute(self::PURPOSE) === Purpose::REFUND);
+    }
+
+    public function getDateTime()
+    {
+        return $this->getAttribute(self::DATE_TIME);
     }
 
     // ------------------------------- setters ---------------------------------

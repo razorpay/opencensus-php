@@ -76,6 +76,11 @@ class EsClient
         return [$res];
     }
 
+    public function catCount()
+    {
+        return $this->client->cat()->count();
+    }
+
     public function explain(array $params)
     {
         return $this->client->explain($params);

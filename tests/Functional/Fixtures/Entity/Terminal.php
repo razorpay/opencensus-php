@@ -1700,6 +1700,7 @@ class Terminal extends Base
             'id'                        => $termId,
             'merchant_id'               => Account::SHARED_ACCOUNT,
             'gateway'                   => Gateway::UPI_SBI,
+            'gateway_merchant_id'       => 'upi_sbi_merchant_id',
             'gateway_merchant_id2'      => 'razorpay@sbibank',
             'upi'                       => 1,
             'gateway_acquirer'          => Upi::SBIN,

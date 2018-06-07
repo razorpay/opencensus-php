@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Sbi;
 
 use App;
+use RZP\Constants\Mode;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -496,7 +497,14 @@ class Gateway extends Base\Gateway
      */
     public function getMerchantId(): string
     {
-        return $this->config['merchant_id'];
+        $merchantId = $this->getLiveMerchantId();
+
+        if ($this->mode === Mode::TEST)
+        {
+            $merchantId = $this->getTestMerchantId();
+        }
+
+        return $merchantId;
     }
 
     /**

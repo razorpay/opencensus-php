@@ -3,14 +3,49 @@
 namespace RZP\Base;
 
 use Carbon\Carbon;
+use Razorpay\Trace\Facades\Trace;
+use Illuminate\Database\Eloquent\Model;
+
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
 use RZP\Base\Database\QueryBuilder;
 
 class EloquentEx extends \Razorpay\Spine\Entity
 {
     public $incrementing = false;
+
+    /**
+     * Parent relations which are specified here will be ignored while
+     * checking existence of associated entities while saving current entity.
+     *
+     * @var array
+     */
+    protected $ignoredRelations = [];
+
+    public function save(array $options = [])
+    {
+        //
+        // Check that all associated parent entities of current entity, exist in
+        // the database before saving. This excludes relations which are present in
+        // the ignoredRelations array.
+        //
+        $nonExistentRelations = array_filter($this->relations, function ($model, $relation)
+        {
+            return ($this->assertRelationExistence($relation, $model) === false);
+        }, ARRAY_FILTER_USE_BOTH);
+
+        if (count($nonExistentRelations) > 0)
+        {
+            Trace::critical(TraceCode::DB_DATA_INTEGRITY_ERROR, [
+                'entity'                 => $this->entity,
+                'non_existent_relations' => array_keys($nonExistentRelations),
+            ]);
+        }
+
+        return parent::save($options);
+    }
 
     /**
      * Create a new Eloquent query builder for the model.
@@ -149,5 +184,12 @@ class EloquentEx extends \Razorpay\Spine\Entity
     public function hasRelation($relation)
     {
         return (empty($this->relations[$relation]) === false);
+    }
+
+    protected function assertRelationExistence(string $relation, $model): bool
+    {
+        return (in_array($relation, $this->ignoredRelations, true) === true) ?
+                true :
+                (($model instanceof Model) ? $model->exists : true);
     }
 }
