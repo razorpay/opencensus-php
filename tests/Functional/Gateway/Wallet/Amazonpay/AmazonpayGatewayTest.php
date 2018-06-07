@@ -439,18 +439,25 @@ class AmazonpayGatewayTest extends TestCase
 
         $this->assertEquals($refund1->getAmount(), $wallet1[WalletEntity::AMOUNT]);
 
+        $gatewayHit = false;
+
         $this->mockServerRequestFunction(
-            function($request, $action = null)
+            function($request, $action = null) use (& $gatewayHit)
             {
                 $this->assertSame('RefundPayment', $request['Action']);
-                $this->assertSame('RefundAmount_Amount', $request['200.00']);
+                $this->assertSame('200.00', $request['RefundAmount_Amount']);
+
+                $gatewayHit = true;
             });
 
         // Refund the payment again with different amount
         $this->refundPayment($payment->getPublicId(), 20000);
 
+        $this->assertTrue($gatewayHit);
+
         $payment->reload();
         $refund2 = $this->getDbLastRefund();
+        $this->assertSame(Refund\Status::PROCESSED, $refund2->getStatus());
 
         $this->assertSame(30000, $payment->getAmountRefunded());
         $this->assertNotEquals($refund1->getId(), $refund2->getId());

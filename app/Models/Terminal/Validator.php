@@ -511,13 +511,6 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
     ];
 
-    protected static $editWalletAmazonpayTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:wallet_amazonpay',
-        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
-        Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
-    ];
-
     protected function validateGateway($input)
     {
         Payment\Gateway::validateGateway($input['gateway']);
