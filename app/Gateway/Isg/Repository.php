@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Isg;
 
 use RZP\Gateway\Base;
-use RZP\Models\Terminal\Entity as Terminal;
+use RZP\Models\Terminal\Repository as Terminal;
 
 class Repository extends Base\Repository
 {
@@ -11,16 +11,6 @@ class Repository extends Base\Repository
 
 	public function findTeminalByGatewayMpan(string $mpan, string $gateway)
 	{
-		$this->entity = 'terminal';
-
-		return $this->newQuery()
-			->where(Terminal::GATEWAY, '=', $gateway)
-			->where(function ($query) use ($mpan)
-			{
-				$query->where(Terminal::VISA_MPAN, '=', $mpan)
-					->orWhere(Terminal::MC_MPAN, '=', $mpan)
-					->orWhere(Terminal::RUPAY_MPAN, '=', $mpan);
-			})
-			->first();
+		return (new Terminal())->findByGatewayMpan($mpan, $gateway);
 	}
 }

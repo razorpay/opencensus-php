@@ -2,7 +2,8 @@
 
 namespace RZP\Gateway\Isg;
 
-use RZP\Constants\Mode;
+use RZP\Base\RepositoryManager;
+use RZP\Constants;
 use RZP\Gateway\Base;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -16,6 +17,8 @@ use RZP\Constants\Entity as BaseEntity;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Models\QrCode;
+use RZP\Constants\Mode;
 
 class Gateway extends Base\Gateway
 {

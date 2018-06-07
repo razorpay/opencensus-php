@@ -78,7 +78,6 @@ class BharatQrIsgPaymentTest extends TestCase
 		$this->assertEquals($bharatQr['payment_id'], $payment['id']);
 
 		$this->assertEquals($bharatQr['expected'], true);
-
 	}
 
 	protected function parseResponseXml(string $response): array
