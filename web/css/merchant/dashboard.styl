@@ -1190,6 +1190,30 @@ div.data-table.has-panel {
   border-bottom: 1px solid #C6CFD9;
 }
 
+// Stats Info
+.stats-info
+  width: 100%
+  .table
+    border: 1px solid $stats-border
+    margin-bottom: 0px
+    .td-info::after
+      content: '';
+      height: 20px;
+      background: $stats-border;
+      width: 1px;
+      position: absolute;
+      margin-top: -30px;
+      margin-left: -9px;
+    .td-heading
+      display: block
+      color: rgba(0,0,0,0.54)
+      text-align: center
+      font-size: 13px
+    .td-value
+      display: block
+      text-align: center
+      font-size: 16px
+
 // Entity Detail List
 .entity-detail-list {
   margin: 16px 0;
