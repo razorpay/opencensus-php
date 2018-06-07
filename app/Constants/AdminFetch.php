@@ -72,6 +72,19 @@ class AdminFetch
                     Fetch::LABEL        => 'merchant_id',
                     Fetch::TYPE         => Fetch::TYPE_STRING
                 ],
+                'action'            => [
+                    Fetch::LABEL        => 'action',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'block',
+                        'review',
+                        'allow'
+                    ]
+                ],
+                'ruleset'           => [
+                    Fetch::LABEL        => 'ruleset',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
                 'ip'                => [
                     Fetch::LABEL        => 'ip',
                     Fetch::TYPE         => Fetch::TYPE_STRING
