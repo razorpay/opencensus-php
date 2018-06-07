@@ -194,31 +194,19 @@ class AmazonpayGatewayTest extends TestCase
 
     public function testPaymentSuccessVerifyInvalidParams()
     {
-        $this->makeRequestAndCatchException(
-            function()
-            {
-                $this->runVerifyFailureFlow(
-                    'testPaymentSuccessVerifyInvalidParams',
-                    GatewayErrorException::class);
-            });
+        $this->runVerifyFailureFlow(__FUNCTION__);
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
         $this->assertTestResponse($wallet, 'testPayment');
 
         // We store the verify response request id in reference2
-        $this->assertNull($wallet[WalletEntity::REFERENCE2]);
+        $this->assertNotNull($wallet[WalletEntity::REFERENCE2]);
     }
 
     public function testPaymentSuccessVerifyEmptyString()
     {
-        $this->makeRequestAndCatchException(
-            function()
-            {
-                $this->runVerifyFailureFlow(
-                    'testPaymentSuccessVerifyEmptyString',
-                    GatewayErrorException::class);
-            });
+        $this->runVerifyFailureFlow(__FUNCTION__);
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
@@ -230,13 +218,7 @@ class AmazonpayGatewayTest extends TestCase
 
     public function testPaymentSuccessVerifyRandomString()
     {
-        $this->makeRequestAndCatchException(
-            function()
-            {
-                $this->runVerifyFailureFlow(
-                    'testPaymentSuccessVerifyRandomString',
-                    GatewayErrorException::class);
-            });
+        $this->runVerifyFailureFlow(__FUNCTION__);
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
@@ -268,13 +250,7 @@ class AmazonpayGatewayTest extends TestCase
     public function testPaymentVerifyIncompleteResponse()
     {
         // Incomplete response causes gatewaySuccess = false
-        $this->makeRequestAndCatchException(
-            function()
-            {
-                $this->runVerifyFailureFlow(
-                    'testPaymentVerifyIncompleteResponse',
-                    GatewayErrorException::class);
-            });
+        $this->runVerifyFailureFlow(__FUNCTION__);
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
