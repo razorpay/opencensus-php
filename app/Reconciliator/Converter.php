@@ -17,28 +17,13 @@ class Converter extends Base\Core
 {
     const DEFAULT_DELIMITER = ',';
 
-    const MAPPINGS = [
-        'no'   => 'number',
-        'num'  => 'number',
-        'mer'  => 'merchant',
-        'comm' => 'commission',
-        'ac'   => 'account',
-        'acc'  => 'account',
-        'amt'  => 'amount',
-        'txn'  => 'transaction',
-        'tran' => 'transaction',
-        'msg'  => 'message',
-        'c'    => 'credit',
-        'd'    => 'debit',
-        'ref'  => 'reference',
-    ];
-
     const NORMALIZED_HEADER_GATEWAYS = [
         RequestProcessor\Base::BILLDESK,
         RequestProcessor\Base::FREECHARGE,
         RequestProcessor\Base::HDFC,
         RequestProcessor\Base::MOBIKWIK,
-        RequestProcessor\Base::PAYZAPP
+        RequestProcessor\Base::PAYZAPP,
+        RequestProcessor\Base::ATOM
     ];
 
     const MAX_SHEETS_ALLOWED = 3;

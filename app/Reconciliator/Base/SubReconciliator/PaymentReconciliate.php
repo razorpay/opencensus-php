@@ -192,6 +192,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         //
         $this->persistReferenceNumber($rowDetails);
 
+        $this->persistGatewayTransactionId($rowDetails);
+
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
     }
 
@@ -565,6 +567,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $fee = $this->getGatewayFee($row);
 
+        $gatewayTransactionId = $this->getGatewayTransactionId($row);
+
         $gatewaySettledAt = $this->getGatewaySettledAt($row);
 
         $customerDetails = $this->getCustomerDetails($row);
@@ -576,14 +580,15 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $arn = $this->getArn($row);
 
         $rowDetails = [
-            BaseReconciliate::PAYMENT_ID           => $paymentId,
-            BaseReconciliate::GATEWAY_SERVICE_TAX  => $serviceTax,
-            BaseReconciliate::GATEWAY_FEE          => $fee,
-            BaseReconciliate::GATEWAY_SETTLED_AT   => $gatewaySettledAt,
-            BaseReconciliate::REFERENCE_NUMBER     => $referenceNumber,
-            BaseReconciliate::GATEWAY_PAYMENT_DATE => $gatewayPaymentDate,
-            BaseReconciliate::AUTH_CODE            => trim($authCode),
-            BaseReconciliate::ARN                  => trim($arn),
+            BaseReconciliate::PAYMENT_ID             => $paymentId,
+            BaseReconciliate::GATEWAY_SERVICE_TAX    => $serviceTax,
+            BaseReconciliate::GATEWAY_FEE            => $fee,
+            BaseReconciliate::GATEWAY_SETTLED_AT     => $gatewaySettledAt,
+            BaseReconciliate::GATEWAY_TRANSACTION_ID => $gatewayTransactionId,
+            BaseReconciliate::REFERENCE_NUMBER       => trim($referenceNumber),
+            BaseReconciliate::GATEWAY_PAYMENT_DATE   => trim($gatewayPaymentDate),
+            BaseReconciliate::AUTH_CODE              => trim($authCode),
+            BaseReconciliate::ARN                    => trim($arn),
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.
@@ -779,11 +784,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         // Calling this again because payment status can change after verify.
         // Gateway payment can be in failed state earlier and hence reference number won't be set
         // in preReconciledAtCheckRecon method. After verification, it may have changed to success
-        // and now we can set reference number.
-        //
+        // and now we can set reference number. For the same reason we are calling persistGatewayTransactionId
+        // also twice
         $this->persistReferenceNumber($rowDetails);
 
         $this->persistAccountDetails($rowDetails, $gatewayPayment);
+
+        $this->persistGatewayTransactionId($rowDetails);
 
         $this->persistGatewayPaymentDate($rowDetails, $gatewayPayment);
 
@@ -807,8 +814,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     /**
      * Saving the Bank Payment Id from reconciliator file
      *
-     * @param array        $rowDetails
-     * @param PublicEntity $gatewayPayment
+     * @param array $rowDetails
      */
     protected function persistReferenceNumber(array $rowDetails)
     {
@@ -828,6 +834,32 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->setReferenceNumberInGateway($referenceNumber, $gatewayPayment);
     }
+
+    /**
+     * Saving the gateway transaction id from reconciliator file
+     * Replacing existing value or adding it to the DB
+     *
+     * @param array $rowDetails
+     */
+    protected function persistGatewayTransactionId(array $rowDetails)
+    {
+        $gatewayPayment = $this->updateAndFetchGatewayPayment();
+
+        if ($gatewayPayment === null)
+        {
+            return;
+        }
+
+        if (empty($rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID]) === true)
+        {
+            return;
+        }
+
+        $gatewayTransactionId = $rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID];
+
+        $this->setGatewayTransactionId($gatewayTransactionId, $gatewayPayment);
+    }
+
 
     /**
      * Updates the gateway payment entity with payment date from recon file
@@ -1613,6 +1645,19 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     /**
      * If this is being implemented in the child class, ensure that
+     * the setter for storing the gateway transaction id is present
+     * in the gateway entity.
+     *
+     * @param $row
+     * @return null
+     */
+    protected function getGatewayTransactionId(array $row)
+    {
+        return null;
+    }
+
+    /**
+     * If this is being implemented in the child class, ensure that
      * the setter for storing the gateway payment date is present
      * in the gateway entity.
      * @param $row
@@ -1789,6 +1834,40 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
 
         $gatewayPayment->setBankPaymentId($referenceNumber);
+    }
+
+    /**
+     * The reason that it is implemented this way is because different
+     * gateway entities may have different attribute names to store the
+     * gateway Transaction ID.
+     * So, other gateways can implement this function with the
+     * appropriate setter.
+     *
+     * @param string       $gatewayTransactionId
+     * @param PublicEntity $gatewayPayment
+     */
+    protected function setGatewayTransactionId(string $gatewayTransactionId, PublicEntity $gatewayPayment)
+    {
+        $dbGatewayTransactionId = $gatewayPayment->getGatewayTransactionId();
+
+        if ((empty($dbGatewayTransactionId) === false) and
+            ($dbGatewayTransactionId !== $gatewayTransactionId))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'                => TraceCode::RECON_MISMATCH,
+                    'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'message'                   => 'Reference number in db is not same as in recon',
+                    'payment_id'                => $this->payment->getId(),
+                    'db_reference_number'       => $dbGatewayTransactionId,
+                    'recon_reference_number'    => $gatewayTransactionId,
+                    'gateway'                   => $this->gateway
+                ]);
+
+            return;
+        }
+
+        $gatewayPayment->setGatewayTransactionId($gatewayTransactionId);
     }
 
     /**

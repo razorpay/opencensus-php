@@ -194,13 +194,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const DASHBOARD_JOB_ERROR                           = 'DASHBOARD_JOB_ERROR';
 
-    const RBL_NODAL_BEN_ADD_REQUEST                     = 'RBL_NODAL_BEN_ADD_REQUEST';
-    const RBL_NODAL_TRANSFER_REQUEST                    = 'RBL_NODAL_TRANSFER_REQUEST';
-    const RBL_NODAL_TRANSFER_RESPONSE                   = 'RBL_NODAL_TRANSFER_RESPONSE';
-    const RBL_NODAL_FAILURE_RESPONSE                    = 'RBL_NODAL_FAILURE_RESPONSE';
-    const RBL_NODAL_BEN_ADD_RESPONSE                    = 'RBL_NODAL_BEN_ADD_RESPONSE';
-    const RBL_NODAL_FAILED_RESPONSE                     = 'RBL_NODAL_FAILED_RESPONSE';
-    const RBL_NODAL_TRANSFER_REQUEST_FAILED             = 'RBL_NODAL_TRANSFER_REQUEST_FAILED';
+    const NODAL_BEN_ADD_REQUEST                         = 'NODAL_BEN_ADD_REQUEST';
+    const NODAL_TRANSFER_REQUEST                        = 'NODAL_TRANSFER_REQUEST';
+    const NODAL_TRANSFER_RESPONSE                       = 'NODAL_TRANSFER_RESPONSE';
+    const NODAL_FAILURE_RESPONSE                        = 'NODAL_FAILURE_RESPONSE';
+    const NODAL_BEN_ADD_RESPONSE                        = 'NODAL_BEN_ADD_RESPONSE';
+    const NODAL_FAILED_RESPONSE                         = 'NODAL_FAILED_RESPONSE';
+    const NODAL_TRANSFER_REQUEST_FAILED                 = 'NODAL_TRANSFER_REQUEST_FAILED';
+    const NODAL_PAYMENT_STATUS_REQUEST                  = 'NODAL_PAYMENT_STATUS_REQUEST';
+    const NODAL_PAYMENT_STATUS_RESPONSE                 = 'NODAL_PAYMENT_STATUS_RESPONSE';
 
     const KOTAK_NODAL_BALANCE_REQUEST                   = 'KOTAK_NODAL_BALANCE_REQUEST';
     const KOTAK_NODAL_BALANCE_RESPONSE                  = 'KOTAK_NODAL_BALANCE_RESPONSE';
@@ -1067,6 +1069,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LAMBDA_BATCH_FAILURE                          = 'LAMBDA_BATCH_FAILURE';
 
     const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
+    const DB_DATA_INTEGRITY_ERROR                       = 'DB_DATA_INTEGRITY_ERROR';
     const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
 
     const AWS_CREDS_CACHE_SET                           = 'AWS_CREDS_CACHE_SET';

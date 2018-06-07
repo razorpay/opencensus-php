@@ -301,8 +301,8 @@ return [
     ],
 
     'upi_sbi' => [
-        'merchant_id'       => env('UPI_MINDGATE_SBI_MERCHANT_ID'),
-        'hash_secret'       => env('UPI_MINDGATE_SBI_HASH_SECRET'),
+        'test_merchant_id' => env('UPI_MINDGATE_SBI_MERCHANT_ID'),
+        'hash_secret'      => env('UPI_MINDGATE_SBI_HASH_SECRET'),
     ],
 
     'wallet_payzapp' => [
