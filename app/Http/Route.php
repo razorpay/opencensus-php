@@ -185,13 +185,8 @@ final class Route
         'credits_edit'                             => ['put',      'merchants/{mid}/credits/{id}',                   'MerchantController@putCreditsLog'                                  ],
         'credits_fetch_by_id'                      => ['get',      'credits/{id}',                                   'MerchantController@getCreditsLog'                                  ],
         'credits_fetch_multiple'                   => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
-
-        // @todo Remove the next 2 routes once the dashboard switches to the new routes
-        'merchant_get_features'                    => ['get',      'merchants/{id}/features',                        'MerchantController@getMerchantFeatures'                            ],
-        'merchant_update_features'                 => ['post',     'merchants/{id}/features',                        'MerchantController@updateMerchantFeatures'                         ],
         'merchant_features_fetch'                  => ['get',      'merchants/me/features',                          'MerchantController@getMerchantFeatures'                            ],
         'merchant_features_update'                 => ['post',     'merchants/me/features',                          'MerchantController@updateMerchantFeatures'                         ],
-
         'merchants_update_bulk'                    => ['put',      'merchants/bulk',                                 'MerchantController@updateMerchantsBulk'                            ],
         'merchants_update_channel'                 => ['put',      'merchants/channel/bulk',                         'MerchantController@updateChannelForMultipleMerchants'              ],
         'merchants_update_bank_account'            => ['put',      'merchants/bank_account/bulk',                    'MerchantController@updateBankAccountForMultipleMerchants'          ],
@@ -290,10 +285,11 @@ final class Route
         'setl_initiate_daily'                      => ['post',     'settlements/initiate_daily',                     'SettlementController@processDailySettlements'                      ],
         'setl_retry'                               => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
         'setl_file_generate'                       => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
-        'setl_reconcile_generate'                  => ['post',     'settlements/reconcile/generate/{channel}',       'SettlementController@postSettlementReconcileGenerate'              ],
+        'setl_reconcile_generate'                  => ['post',     'settlements/reconcile/generate/{channel}',       'SettlementController@postSettlementReconcileFileGenerate'              ],
         'setl_reconcile_test'                      => ['post',     'settlements/reconcile/test/all',                 'SettlementController@postReconcileInTestMode'                      ],
-        'setl_reconcile'                           => ['post',     'settlements/reconcile/{channel}',                'SettlementController@postSettlementReconcile'                      ],
+        'setl_reconcile'                           => ['post',     'settlements/reconcile/{channel}',                'SettlementController@postSettlementReconcileThroughFile'                      ],
         'setl_reconcile_h2h'                       => ['post',     'settlements/h2hreconcile/{channel}',             'SettlementController@postH2HSettlementReconcile'                   ],
+        'setl_reconcile_pull'                      => ['post',     'settlements/reconcile/api/{channel}',            'SettlementController@postSettlementReconcileThroughApi'               ],
         'setl_calc_previous_fees'                  => ['post',     'settlements/fees/previous',                      'SettlementController@postSettlementCalculateFees',                 ],
         'setl_get_details'                         => ['get',      'settlements/{id}/details',                       'SettlementController@getSettlementDetails',                        ],
         'setl_post_details_old'                    => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
@@ -351,6 +347,7 @@ final class Route
         'gateway_payment_callback_kotak'           => ['get',      'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotak'                                   ],
         'gateway_payment_callback_kotak_cancel'    => ['post',     'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotakCancel'                             ],
         'gateway_payment_callback_corporation'     => ['post',     'gateway/netbanking_corporation/callback',        'GatewayController@callbackCorporation'                             ],
+        'gateway_payment_callback_amazonpay'       => ['get',      'gateway/wallet_amazonpay/callback',              'GatewayController@callbackAmazonpay'                               ],
 
         'geoip_update'                             => ['post',     'geoip/update',                                   'AdminController@updateGeoIps'                                      ],
 
@@ -1075,6 +1072,7 @@ final class Route
         'schedule_process_tasks',
         'scorecard',
         'setl_initiate',
+        'setl_reconcile_pull',
         'setl_initiate_daily',
         'setl_post_details_old',
         'setl_reconcile_generate',
@@ -1171,8 +1169,6 @@ final class Route
         'subscription_test_charge',
         'subscription_fetch_due_addons',
         'merchant_details_patch',
-        'merchant_get_features',
-        'merchant_update_features',
         'merchant_features_fetch',
         'merchant_features_update',
         'merchant_create_key',
@@ -1870,6 +1866,7 @@ final class Route
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
         'gateway_payment_callback_corporation',
+        'gateway_payment_callback_amazonpay',
         'mailgun_webhook',
         'gateway_downtime_source_webhook',
         'checkout_onyx',
@@ -1953,6 +1950,7 @@ final class Route
             'setl_initiate_daily',
             'setl_reconcile_generate',
             'setl_reconcile_test',
+            'setl_reconcile_pull',
             'nodal_initiate_transfer',
             'payment_auth_notify',
             'payment_timeout',
@@ -2430,6 +2428,16 @@ final class Route
                        'as' => 'api_root',
                        'uses' => '\RZP\Http\Controllers\PublicController@getRoot'
                    ]);
+    }
+
+    public function defineStatusApiRoute()
+    {
+        $this->router
+            ->get('/v1/healthcheck',
+                [
+                    'as' => 'api_status',
+                    'uses' => '\RZP\Http\Controllers\PublicController@getStatus'
+                ]);
     }
 
     public function getApiRouteInCategory($category)

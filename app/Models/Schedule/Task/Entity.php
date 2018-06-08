@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Schedule\Task;
 
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Models\Schedule;
@@ -90,6 +90,10 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::NEXT_RUN_AT => 'int',
+    ];
+
+    protected $ignoredRelations = [
+        'entity',
     ];
 
     // ----------------------- Associations ------------------------------------

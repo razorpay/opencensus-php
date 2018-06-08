@@ -344,10 +344,16 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $arn = $this->getArn($row);
 
+        $gatewayTransactionId = $this->getGatewayTransactionId($row);
+
+        $referenceNumber = $this->getReferenceNumber($row);
+
         $rowDetails = [
-            BaseReconciliate::REFUND_ID             => $refundId,
-            BaseReconciliate::GATEWAY_SETTLED_AT    => $gatewaySettledAt,
-            BaseReconciliate::ARN                   => trim($arn),
+            BaseReconciliate::REFUND_ID              => $refundId,
+            BaseReconciliate::GATEWAY_SETTLED_AT     => $gatewaySettledAt,
+            BaseReconciliate::ARN                    => trim($arn),
+            BaseReconciliate::REFERENCE_NUMBER       => trim($referenceNumber),
+            BaseReconciliate::GATEWAY_TRANSACTION_ID => trim($gatewayTransactionId),
         ];
 
         return $rowDetails;
@@ -501,6 +507,33 @@ class RefundReconciliate extends Foundation\SubReconciliate
     }
 
     /**
+     * If this is being implemented in the child class,
+     * the setter for storing the arn should be present
+     * in the gateway entity.
+     *
+     * @param $row array
+     * @return null
+     */
+    protected function getGatewayTransactionId(array $row)
+    {
+        return null;
+    }
+
+    /**
+     * If this is being implemented in the child class,
+     * the setter for storing the payment reference_number
+     * should be present in the gateway entity.
+     *
+     * @param $row array
+     *
+     * @return null
+     */
+    protected function getReferenceNumber(array $row)
+    {
+        return null;
+    }
+
+    /**
      * Saves the Arn number, if present in the refund entity
      *
      * @param $rowDetails array
@@ -579,7 +612,30 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $this->persistGatewayArn($rowDetails, $gatewayRefund);
 
+        $this->persistReferenceNumber($rowDetails, $gatewayRefund);
+
+        $this->persistGatewayTransactionId($rowDetails, $gatewayRefund);
+
         $this->repo->saveOrFail($gatewayRefund);
+    }
+
+    /**
+     * Saving the Bank Payment Id from reconciliator file
+     * Replacing existing value or adding it to the DB
+     *
+     * @param array        $rowDetails
+     * @param PublicEntity $gatewayRefund
+     */
+    protected function persistReferenceNumber(array $rowDetails, PublicEntity $gatewayRefund)
+    {
+        if (empty($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === true)
+        {
+            return;
+        }
+
+        $referenceNumber = $rowDetails[BaseReconciliate::REFERENCE_NUMBER];
+
+        $this->setReferenceNumberInGateway($referenceNumber, $gatewayRefund);
     }
 
     /**
@@ -614,6 +670,24 @@ class RefundReconciliate extends Foundation\SubReconciliate
     }
 
     /**
+     * Sets the arn number in the corresponding gateway
+     *
+     * @param $rowDetails array
+     * @param $gatewayRefund PublicEntity
+     */
+    protected function persistGatewayTransactionId(array $rowDetails, PublicEntity $gatewayRefund)
+    {
+        if (empty($rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID]) === true)
+        {
+            return;
+        }
+
+        $gatewayTransactionId = $rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID];
+
+        $this->setGatewayTransactionId($gatewayTransactionId, $gatewayRefund);
+    }
+
+    /**
      * This function is implemented in the child class
      * Every gateway has a different name mapped for "arn"
      * e.g. : hdfc calls it 'arn_no'
@@ -627,5 +701,73 @@ class RefundReconciliate extends Foundation\SubReconciliate
     protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)
     {
         return;
+    }
+
+    /**
+     * The reason that it is implemented this way is because different
+     * gateway entities may have different attribute names to store the
+     * gateway Transaction ID.
+     * So, other gateways can implement this function with the
+     * appropriate setter.
+     *
+     * @param string       $gatewayTransactionId
+     * @param PublicEntity $gatewayRefund
+     */
+    protected function setGatewayTransactionId(string $gatewayTransactionId, PublicEntity $gatewayRefund)
+    {
+        $dbGatewayTransactionId = $gatewayRefund->getGatewayTransactionId();
+
+        if ((empty($dbGatewayTransactionId) === false) and
+            ($dbGatewayTransactionId !== $gatewayTransactionId))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'                => TraceCode::RECON_MISMATCH,
+                    'info_code'                 => 'DATA_MISMATCH',
+                    'message'                   => 'Reference number in db is not same as in recon',
+                    'payment_id'                => $this->payment->getId(),
+                    'db_reference_number'       => $dbGatewayTransactionId,
+                    'recon_reference_number'    => $gatewayTransactionId,
+                    'gateway'                   => $this->gateway
+                ]);
+
+            return;
+        }
+
+        $gatewayRefund->setGatewayTransactionId($gatewayTransactionId);
+    }
+
+    /**
+     * The reason that it is implemented this way is because different
+     * gateway entities may have different attribute names to store the
+     * reference number.
+     * So, other gateways can implement this function with the
+     * appropriate setter.
+     *
+     * @param string       $referenceNumber
+     * @param PublicEntity $gatewayRefund
+     */
+    protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayRefund)
+    {
+        $dbReferenceNumber = $gatewayRefund->getBankPaymentId();
+
+        if ((empty($dbReferenceNumber) === false) and
+            ($dbReferenceNumber !== $referenceNumber))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'                => TraceCode::RECON_MISMATCH,
+                    'info_code'                 => 'DATA_MISMATCH',
+                    'message'                   => 'Reference number in db is not same as in recon',
+                    'payment_id'                => $this->payment->getId(),
+                    'db_reference_number'       => $dbReferenceNumber,
+                    'recon_reference_number'    => $referenceNumber,
+                    'gateway'                   => $this->gateway
+                ]);
+
+            return;
+        }
+
+        $gatewayRefund->setBankPaymentId($referenceNumber);
     }
 }

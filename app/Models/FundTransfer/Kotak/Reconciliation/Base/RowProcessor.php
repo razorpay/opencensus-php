@@ -7,7 +7,7 @@ use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor
 
 abstract class RowProcessor extends BaseRowProcessor
 {
-    protected function parseRow()
+    protected function processRow()
     {
         $this->parsedData = [
             'payment_ref_no'    => $this->getNullOnEmpty(Headings::PAYMENT_REF_NO),

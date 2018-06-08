@@ -374,8 +374,10 @@ class Entity extends Base\PublicEntity
         // 'Goomo', 'Goomo', 'IRCTC Services'
         // 'Irctc Web', 'IRCTC Mob', 'IRCTC ecatering'
         // 'epaylater', 'Udacity', 'Accelerator',
-        // 'IRCTC FTR', 'KartRocket', '1mg', 'Ixigo',
-        // 'Akbar Travels', 'Royal Bison'
+        // 'IRCTC FTR', 'KartRocket', '1mg',
+        // 'Ixigo', 'Akbar Travels', 'Akbar Travels',
+        // 'Royal Bison', 'Pizza Hut', 'Pizza Hut',
+        // 'Pizza Hut'
 
         $merchantIds = [
             '10000000000000', '6gn7Xc2gqK40c9', '4uObL8AHBqFNnP',
@@ -389,7 +391,8 @@ class Entity extends Base\PublicEntity
             '6uli25q6xe9PPv', '4sW8jQ22JR4Bfi', '5wv2qnnBum6eXo',
             '9m4CChGex4ENkR', '9pWQLj3B705mYh', '6e9vU1F6c16Wgy',
             '8RerE9oY0d7rbC', '6o1ohA0HNz3B2S', '62UtF084z3H6RT',
-            'A85zyC8z78QJnt',
+            'A85zyC8z78QJnt', '9Am5NzeJvtuBFy', '97hA1mKLFFI4Bi',
+            '9GhIX26dnSuWKM',
         ];
 
         $currentMerchantId = $this->getMerchantId();

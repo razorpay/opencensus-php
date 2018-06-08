@@ -79,7 +79,7 @@ class RefundFile extends Base\RefundFile
         foreach ($input['data'] as $row)
         {
             $data[] = [
-                self::PG_MERCHANT_ID  => $this->getMerchantId(),
+                self::PG_MERCHANT_ID  => $row[self::GATEWAY][Upi\Entity::GATEWAY_MERCHANT_ID],
                 self::REFUND_REQ_NO   => $row[Constants\Entity::REFUND][Refund\Entity::ID],
                 self::TRANS_REF_NO    => $row[self::GATEWAY][Upi\Entity::NPCI_REFERENCE_ID],
                 self::CUSTOMER_REF_NO => $row[self::GATEWAY][Upi\Entity::GATEWAY_PAYMENT_ID],
@@ -94,25 +94,9 @@ class RefundFile extends Base\RefundFile
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now(Timezone::IST);
+        $dt = Carbon::now(Timezone::IST);
 
-        $fileArray = [
-            $this->getMerchantId(),
-            $time->format('dmY'),
-            $time->format('Hi')
-        ];
-
-        return implode('_', $fileArray);
-    }
-
-    protected function getMerchantId()
-    {
-        return $this->getGatewayClass()->getMerchantId();
-    }
-
-    protected function getGatewayClass()
-    {
-        return new Gateway();
+        return 'SBI_UPI_ ' . $dt->format('dmY_Hi');
     }
 
     protected function getH2HMetadata()

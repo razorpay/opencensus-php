@@ -70,6 +70,16 @@ class AttemptReconcileTest extends TestCase
         $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
     }
 
+    protected function verifySettlementReconProcessForRbl($failureTest = false)
+    {
+        $channel = Channel::RBL;
+
+        $this->createDataAndAssertInitiateOnlineTransferSuccess(
+            $channel, 1, Attempt\Type::SETTLEMENT, $failureTest);
+
+        $this->assertReconProcessSuccessForChannel($channel, Attempt\Type::SETTLEMENT, $failureTest);
+    }
+
     protected function verifySettlementReconFileProcessFailureKotak()
     {
         $channel = Channel::KOTAK;
@@ -179,6 +189,24 @@ class AttemptReconcileTest extends TestCase
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
     }
 
+    public function testSettlementReconcileEntitiesSuccessForRbl()
+    {
+        $this->verifySettlementReconProcessForRbl();
+
+        $this->reconcileEntitiesForChannel(Channel::RBL);
+
+        $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
+    }
+
+    public function testSettlementReconcileEntitiesFailureForRbl()
+    {
+        $this->verifySettlementReconProcessForRbl(true);
+
+        $content = $this->reconcileEntitiesForChannel(Channel::RBL);
+
+        $this->assertOnlineReconcileEntitiesFailure($content, Channel::RBL);
+    }
+
     public function testPayoutReconcileEntitiesForKotak()
     {
         $this->verifyPayoutReconFileProcessForKotak();
@@ -257,6 +285,39 @@ class AttemptReconcileTest extends TestCase
             $this->assertEquals('settlement', $setlTxn['type']);
             $this->assertNotNull($setlTxn['reconciled_at']);
 //        }
+    }
+
+    protected function assertOnlineReconcileEntitiesFailure(array $content, string $channel)
+    {
+        $this->assertTestResponse($content, 'matchSummaryForReconFailure');
+
+        // Validate batch fund transfer entity
+        $batch = $this->getLastEntity('batch_fund_transfer', true);
+        $this->assertEquals(0, $batch['processed_count']);
+        $this->assertEquals(0, $batch['processed_amount']);
+
+        //Validate settlement entities
+        $settlement = $this->getLastEntity('settlement', true);
+
+        $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconFailure');
+        $this->assertEquals(
+            $batch['id'], $settlement[Settlement\Entity::BATCH_FUND_TRANSFER_ID]);
+
+        $this->assertNull($settlement[Settlement\Entity::UTR]);
+
+        // Validate settlement attempt entities
+        $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $testKey = 'matchSettlementAttemptForReconFailure' . ucfirst($channel);
+
+        $this->assertTestResponse($settlementAttempt, $testKey);
+        $this->assertNull($settlementAttempt['utr']);
+
+        // Validate settlement-transaction entity
+        $setlTxn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('settlement', $setlTxn['type']);
+        $this->assertNotNull($setlTxn['reconciled_at']);
     }
 
     protected function assertReconcileEntitiesSuccessForSource(string $sourceType)

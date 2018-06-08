@@ -77,11 +77,18 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postSettlementReconcile(string $channel)
+    public function postSettlementReconcileThroughFile(string $channel)
     {
         $input = Request::all();
 
-        $data = $this->service()->reconcileSettlements($input, $channel);
+        $data = $this->service()->reconcileSettlementsThroughFile($input, $channel);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postSettlementReconcileThroughApi(string $channel)
+    {
+        $data = $this->service()->settlementReconcileThroughApi($this->input, $channel);
 
         return ApiResponse::json($data);
     }
@@ -95,11 +102,11 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postSettlementReconcileGenerate(string $channel)
+    public function postSettlementReconcileFileGenerate(string $channel)
     {
         $input = Request::all();
 
-        $data = $this->service()->generateSettlementReconciliation($input, $channel);
+        $data = $this->service()->generateSettlementReconciliationFile($input, $channel);
 
         return ApiResponse::json($data);
     }

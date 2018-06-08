@@ -3,12 +3,14 @@
 namespace RZP\Models\Admin\Org\FieldMap;
 
 use App;
-use RZP\Constants\Table;
+
 use RZP\Models\Base;
-use RZP\Models\Admin\Admin;
+use RZP\Models\Base\Traits\HardDeletes;
 
 class Entity extends Base\PublicEntity
 {
+    use HardDeletes;
+
     const ID          = 'id';
     const ORG_ID      = 'org_id';
     const ENTITY_NAME = 'entity_name';

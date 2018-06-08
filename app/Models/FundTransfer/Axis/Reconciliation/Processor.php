@@ -7,7 +7,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Axis\Headings;
 use RZP\Models\FundTransfer\Base\Reconciliation\FileProcessor as BaseProcessor;
 
-class FileProcessor extends BaseProcessor
+class Processor extends BaseProcessor
 {
     protected static $fileToReadName = 'Axis_Settlement_Reconciliation';
 
