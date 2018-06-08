@@ -576,18 +576,14 @@ const uploadFields = [
   {
     name: 'form_12a_url',
     label: 'Form 12A Allotment Letter',
-    _when: activation =>
-      activation.props.data.business_type &&
-      ORG_BusinessTypes.indexOf(Number(activation.props.data.business_type)) !==
-        -1,
+    required: requiredForNGO,
+    _when: showForOrgs,
   },
   {
     name: 'form_80g_url',
     label: 'Form 80G Allotment Letter',
-    _when: activation =>
-      activation.props.data.business_type &&
-      ORG_BusinessTypes.indexOf(Number(activation.props.data.business_type)) !==
-        -1,
+    required: requiredForNGO,
+    _when: showForOrgs,
   },
 ];
 
@@ -603,6 +599,23 @@ function excludeFor_Indiv_NotReg(activation) {
 
   return (
     [NOT_REGISTERED, INDIVIDUAL].indexOf(Number(currentBusinessType)) === -1
+  );
+}
+
+function requiredForNGO(activation) {
+  const selectedBusinessType =
+    activation.state.dirty.business_type || activation.props.data.business_type;
+
+  return selectedBusinessType == NGO;
+}
+
+function showForOrgs(activation) {
+  const selectedBusinessType =
+    activation.state.dirty.business_type || activation.props.data.business_type;
+
+  return (
+    selectedBusinessType &&
+    ORG_BusinessTypes.indexOf(Number(selectedBusinessType)) !== -1
   );
 }
 
