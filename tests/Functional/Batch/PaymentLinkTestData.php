@@ -296,7 +296,8 @@ return [
                 'type'  => 'payment_link',
                 'stats' => [
                     'batch_total'   => 4,
-                    'issued_count'  => 1,
+                    'issued_count'  => 4,
+                    'created_count' => 4,
                     'paid_count'    => 2,
                     'expired_count' => 1,
                 ],

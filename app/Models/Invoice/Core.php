@@ -760,9 +760,24 @@ class Core extends Base\Core
     {
         $stats = $this->repo->invoice->getInvoiceStatsForBatch($batch);
 
+        //
+        // created_count is the number of links that were in `issued` state
+        // at some point of their lifetime.
+        // Invoice can be cancelled from both `draft` and `issued` state.
+        // However, for batch payment links, all links are created in `issued` state only.
+        // So any link in `cancelled` state can be safely assumed to have
+        // reached from `issued` state only.
+        //
+        $createdCount = ((int) ($stats[Status::ISSUED] ?? 0) +
+                         (int) ($stats[Status::PARTIALLY_PAID] ?? 0) +
+                         (int) ($stats[Status::PAID] ?? 0) +
+                         (int) ($stats[Status::EXPIRED] ?? 0) +
+                         (int) ($stats[Status::CANCELLED] ?? 0));
+
         return [
             Entity::TOTAL_COUNT   => $batch->getTotalCount(),
-            Entity::ISSUED_COUNT  => (int) ($stats[Status::ISSUED] ?? 0),
+            Entity::ISSUED_COUNT  => $createdCount,
+            Entity::CREATED_COUNT => $createdCount,
             Entity::PAID_COUNT    => (int) ($stats[Status::PAID] ?? 0),
             Entity::EXPIRED_COUNT => (int) ($stats[Status::EXPIRED] ?? 0),
         ];
