@@ -47,6 +47,13 @@ export const isPhone = phone => {
   return phoneRegExp.test(phone);
 };
 
+export const isInteger = value => {
+  value = value || '';
+  let integerRegExp = new RegExp(/^[0-9]+$/);
+
+  return integerRegExp.test(value);
+};
+
 export const isIpAddress = ipAddress => {
   const ipRegExp = new RegExp(
     /\b(?:(?:2(?:[0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9])\.){3}(?:(?:2([0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9]))\b/

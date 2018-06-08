@@ -101,6 +101,10 @@ function WizardFields(field) {
     key = _name;
   }
 
+  if (rest.description && typeof rest.description === 'function') {
+    rest.description = rest.description(this);
+  }
+
   let isComponentDisabled;
   if (this.state.parentFormLock || (_disabledWhen && _disabledWhen(this))) {
     isComponentDisabled = true;
@@ -163,6 +167,7 @@ export default class CreateNewContainer extends React.Component {
         [REUSABLE_PAYMENT_LINK]: {
           noLimit: '1', // 1 => selected
           expiry: '1', // 1 => selected
+          addDesc: '0', // 0 => not-selected
         },
       },
     };

@@ -58,6 +58,11 @@
       @media (max-width: 1024px)
         transform: none
 
+  &.is-mature:not(.is-focused)
+    .is-invalid, &.is-invalid
+      .Input-addons
+        background-color: rgba(167, 4, 5, 0.17);
+
   &.Input--half
     .Input-elWrapper, .Input--checkbox // Half of normal size
       width: 170px

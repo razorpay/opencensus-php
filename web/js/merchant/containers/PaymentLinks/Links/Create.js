@@ -1,5 +1,6 @@
 import Input from 'component/Input';
 import { trackHelpClick } from './ga';
+import { isAmount, isEmail, isPhone } from 'rzp/utils/validators';
 
 /* Form fields of Payment Links */
 export default [
@@ -7,9 +8,21 @@ export default [
     {
       name: 'amount',
       label: 'Amount',
+      type: 'tel',
       placeholder: '0.00',
       required: true,
       addonBefore: '₹',
+      validator: val => {
+        if (!isAmount(val)) {
+          const decimal = val && val.split('.');
+
+          if (decimal.length == 2 && decimal[1].length > 2) {
+            return 'Enter upto 2 decimals';
+          } else {
+            return 'Invalid Amount';
+          }
+        }
+      },
     },
     {
       name: 'partial_payment',
@@ -47,12 +60,22 @@ export default [
         type: 'tel',
         placeholder: 'Mobile (10 digits)',
         size: 'half_small',
+        validator: val => {
+          if (!isPhone(val)) {
+            return 'Invalid phone';
+          }
+        },
       },
       {
         name: 'email',
         type: 'email',
         placeholder: 'Email',
         size: 'half_big',
+        validator: val => {
+          if (!isEmail(val)) {
+            return 'Invalid email';
+          }
+        },
       },
     ],
   },

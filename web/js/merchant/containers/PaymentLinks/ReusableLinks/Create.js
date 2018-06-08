@@ -1,4 +1,5 @@
 import Input from 'component/Input';
+import { isAmount, isInteger } from 'rzp/utils/validators';
 
 /* Form fields of Reusable Payment Links */
 export default [
@@ -8,28 +9,45 @@ export default [
     placeholder: '0.00',
     required: true,
     addonBefore: '₹',
+    validator: val => {
+      if (!isAmount(val)) {
+        const decimal = val && val.split('.');
+
+        if (decimal.length == 2 && decimal[1].length > 2) {
+          return 'Enter upto 2 decimals';
+        } else {
+          return 'Invalid Amount';
+        }
+      }
+    },
   },
   [
     {
       name: 'title',
       label: 'Payment For',
       placeholder: 'Payment Title',
+      description: form => {
+        if (form.state._name[form.state.activeTab].addDesc == '0') {
+          return 'This will be visible to the customer';
+        }
+      },
       required: true,
     },
     {
       name: 'description',
       placeholder: 'Provide additional description',
-      description: 'This will be visible to the customer',
       _cmp: Input.Textarea,
+      description: form => {
+        if (form.state._name[form.state.activeTab].addDesc == '1') {
+          return 'This will be visible to the customer';
+        }
+      },
       _when: form => form.state._name[form.state.activeTab].addDesc == '1',
     },
     {
       _name: 'addDesc',
       _cmp: Input.Check,
-      checkboxMaskLabel: [
-        '+ Add detailed description',
-        '- Remove detailed description',
-      ],
+      checkboxMaskLabel: ['+ Add description', '- Remove description'],
       _autoRenderImpure: true,
     },
   ],
@@ -90,6 +108,7 @@ export default [
     {
       _name: 'noLimit',
       label: 'Times Payable',
+      required: true,
       fieldLabel: 'No Limit',
       _cmp: Input.Check,
       _autoRenderImpure: true,
@@ -105,13 +124,23 @@ export default [
     },
     {
       name: 'times_payable',
-      type: 'number',
+      type: 'tel',
+      required: true,
       size: 'half',
+      defaultValue: 0,
+      onFocus: e => {
+        e.target.select();
+      },
       _autoRenderImpure: true,
       description:
         'Upon reaching limit, link will close. Limit can be modified anytime.',
       _disabledWhen: form =>
         form.state._name[form.state.activeTab].noLimit === '1',
+      validator: val => {
+        if (!isInteger(val)) {
+          return 'Enter valid number';
+        }
+      },
     },
   ],
   {
