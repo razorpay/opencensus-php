@@ -4,6 +4,7 @@ namespace RZP\Http;
 
 use ApiResponse;
 use Razorpay\OAuth\OAuthServer;
+use Illuminate\Support\Facades\App;
 use Razorpay\OAuth\Token\Entity as OAuthToken;
 
 use RZP\Exception;
@@ -12,7 +13,6 @@ use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Http\BasicAuth\BasicAuth;
 use Razorpay\Trace\Logger as Trace;
-use Illuminate\Support\Facades\App;
 
 class OAuth
 {
@@ -85,8 +85,7 @@ class OAuth
         // If the request was authenticated with key_id sent in the request params
         // we remove the key_id attribute before proceeding
         //
-        $this->request->query->remove('key_id');
-        $this->request->request->remove('key_id');
+        $this->ba->removeRequestKey('key_id');
 
         //
         // Set the public_key on BasicAuth
