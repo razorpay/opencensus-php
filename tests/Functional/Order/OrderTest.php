@@ -478,7 +478,13 @@ class OrderTest extends TestCase
 
         $this->testData[__FUNCTION__]['response']['content']['offer_id'] = $offer->getPublicId();
 
-        $this->startTest();
+        $order = $this->startTest();
+
+        // Pivot table entry also got created
+        $entityOffer = $this->getLastEntity('entity_offer', true);
+        $this->assertEquals($offer->getId(), $entityOffer['offer_id']);
+        $this->assertEquals($order['id'], 'order_' . $entityOffer['entity_id']);
+        $this->assertEquals($order['entity'], $entityOffer['entity_type']);
     }
 
     public function testCreateOrderWithOfferAndDiscounting()
@@ -489,7 +495,13 @@ class OrderTest extends TestCase
 
         $this->testData[__FUNCTION__]['response']['content']['offer_id'] = $offer->getPublicId();
 
-        $this->startTest();
+        $order = $this->startTest();
+
+        // Pivot table entry also got created
+        $entityOffer = $this->getLastEntity('entity_offer', true);
+        $this->assertEquals($offer->getId(), $entityOffer['offer_id']);
+        $this->assertEquals($order['id'], 'order_' . $entityOffer['entity_id']);
+        $this->assertEquals($order['entity'], $entityOffer['entity_type']);
     }
 
     public function testCreateOrderWithNotApplicableOffer()
@@ -501,6 +513,10 @@ class OrderTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
 
         $this->startTest();
+
+        // Pivot table entry did not get created
+        $entityOffer = $this->getLastEntity('entity_offer', true);
+        $this->assertNull($entityOffer);
     }
 
     public function testCreateOrderWithExpiredOffer()
@@ -510,6 +526,10 @@ class OrderTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
 
         $this->startTest();
+
+        // Pivot table entry did not get created
+        $entityOffer = $this->getLastEntity('entity_offer', true);
+        $this->assertNull($entityOffer);
     }
 
     public function testPaymentWithOfferAppliedOnOrder()
