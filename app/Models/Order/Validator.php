@@ -33,7 +33,7 @@ class Validator extends Base\Validator
         Entity::BANK,
         'method_fee_bearer',
         Entity::CURRENCY,
-        'offer',
+        Entity::DISCOUNT,
     ];
 
     protected function validateAmount($input)
@@ -413,18 +413,18 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateOffer($input)
+    protected function validateDiscount($input)
     {
         if (isset($input[Entity::DISCOUNT]) === false)
         {
             return;
         }
 
-        if (($input[Entity::DISCOUNT] === true) and
-            (isset($input[Entity::OFFER_ID]) === false))
+        if ((boolval($input[Entity::DISCOUNT]) === true) and
+            (empty($input[Entity::OFFERS]) === true))
         {
             throw new Exception\BadRequestValidationFailureException(
-                    'Discount without offer_id is not supported');
+                    'Discount without offers is not supported');
         }
     }
 }
