@@ -10,6 +10,8 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { Link } from 'react-router-dom';
 import { AsyncBtn } from 'component/Button';
+import DataTable from 'rzp/ui/Table/DataTable';
+import { paymentId, amount, paidOn } from 'rzp/ui/item/pair';
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -244,6 +246,18 @@ export default props => {
                     'API'
                   )}
                 </EntityDetailRow>
+
+                <ShowWhen featureEnabled="Invoice_Partial_Payments">
+                  {invoice.partial_payment && invoice.payments ? (
+                    <DataTable
+                      title="Payments"
+                      progressLoader={true}
+                      columns={[paymentId, paidOn, amount]}
+                      items={invoice && invoice.payments.items}
+                      noStripe={true}
+                    />
+                  ) : null}
+                </ShowWhen>
               </div>
             </div>
           </div>
