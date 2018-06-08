@@ -371,4 +371,11 @@ class PaymentController extends Controller
 
         return ApiResponse::json([], 204);
     }
+
+    public function updateReceiverData()
+    {
+        $data = $this->service()->updateReceiverData();
+
+        return ApiResponse::json($data);
+    }
 }
