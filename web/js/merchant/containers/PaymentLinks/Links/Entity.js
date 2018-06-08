@@ -6,11 +6,14 @@ import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail';
 import IssueConfirmModal from 'merchant/containers/Invoices/IssueConfirmModal';
+import { editPaymentLink } from 'merchant/containers/PaymentLinks/Links/model';
+import { updatePaymentLinksList } from 'merchant/modules/invoices/list';
 
 @connect(state => state.invoice, {
   ...InvoiceActions,
   ...ModalActions,
   ...NotificationsActions,
+  updatePaymentLinksList,
 })
 export default class InvoiceDetailContainer extends Component {
   static contextTypes = {
@@ -164,6 +167,28 @@ export default class InvoiceDetailContainer extends Component {
     });
   };
 
+  editPaymentLink = data => {
+    return editPaymentLink(this.props.invoice.id, data)
+      .then(resp => {
+        if (resp.data) {
+          this.props.updatePaymentLinksList(resp);
+
+          this.props.showNotification({
+            type: 'success',
+            message: `${this.props.invoice.id} successfully Updated`,
+          });
+        } else {
+          throw new Error();
+        }
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors || `${this.props.invoice.id} failed to update`,
+        });
+      });
+  };
+
   render() {
     let { loading, invoice } = this.props;
     let statusMsg = this.state.statusMsg;
@@ -175,6 +200,7 @@ export default class InvoiceDetailContainer extends Component {
         statusMsg={statusMsg}
         onIssue={this.showIssueConfirmModal}
         onCancel={this.cancelInvoice}
+        editPaymentLink={this.editPaymentLink}
       />
     );
   }

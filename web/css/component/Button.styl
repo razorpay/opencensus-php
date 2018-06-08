@@ -22,18 +22,27 @@
     opacity: 0.5
 
 .Button--transparent
-  background-color: transparent
-  color: inherit
+  background: transparent
+  color: $primary-color
   border: 0
-  padding: 4px 8px
+  padding: 0
   margin: 0
   line-height: inherit
 
   &:hover
-    background-color: transparent
-    color: inherit
+    background: transparent
+    color: $primary-color-hover
     opacity: 0.85
 
+  &.Button--Link
+    &:active, &:focus
+      background: transparent
+      color: #135fd9
+      box-shadow: none
+      text-decoration: none
+
+    &:hover
+      text-decoration: underline
 
 .Button--primary
   background-color: $primary-color
@@ -42,7 +51,7 @@
 
   &:hover
     color: #fff
-    background-color: #2371ec
+    background-color: $primary-color-hover
     border-color: #135fd9
 
   &:active

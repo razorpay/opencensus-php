@@ -9,6 +9,7 @@ import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { Link } from 'react-router-dom';
+import { AsyncBtn } from 'component/Button';
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -49,14 +50,17 @@ const getCustomerDetail = invoice => (
 );
 
 export default props => {
-  let { invoice, isLoading, statusMsg } = props;
+  let { invoice, isLoading, statusMsg, editPaymentLink } = props;
 
   let status = invoice.status;
-  let isDraft = status === 'draft';
-  let isIssued = status === 'issued';
-  let isPaid = status === 'paid';
-  let isCancelled = status === 'cancelled';
-  let isExpired = status === 'expired';
+  const isDraft = status === 'draft';
+  const isIssued = status === 'issued';
+  const isPaid = status === 'paid';
+  const isCancelled = status === 'cancelled';
+  const isExpired = status === 'expired';
+
+  const isFormEditable = true; // To be linked with RazorX as per experiment
+
   let isSmsOrEmailSent =
     invoice.sms_status === 'sent' || invoice.email_status === 'sent';
 
@@ -111,6 +115,11 @@ export default props => {
                   value={invoice.description || '--'}
                 />
                 <EntityDetailRow
+                  label="Status"
+                  value={() => <InvoiceStatusLabel status={invoice.status} />}
+                />
+
+                <EntityDetailRow
                   label="Amount"
                   value={() => (
                     <Amount
@@ -119,33 +128,52 @@ export default props => {
                     />
                   )}
                 />
-                <EntityDetailRow
-                  label="Amount Paid"
-                  value={() => (
-                    <Amount
-                      value={invoice.amount_paid}
-                      currency={invoice.currency}
-                    />
-                  )}
-                />
                 <ShowWhen featureEnabled="Invoice_Partial_Payments">
-                  <EntityDetailRow
-                    label="Partial Payment"
-                    value={() => (
-                      <i
-                        class={
-                          invoice.partial_payment
-                            ? 'i i-check text-success'
-                            : 'i i-close text-danger'
-                        }
-                      />
-                    )}
-                  />
+                  <React.Fragment>
+                    {do {
+                      const isPartialPayment = invoice.partial_payment;
+
+                      <EntityDetailRow
+                        label="Partial Payment"
+                        value={() => (
+                          <div
+                            class={
+                              isPartialPayment ? 'text-success' : 'text-danger'
+                            }
+                          >
+                            {isPartialPayment ? 'Enabled' : 'Disabled'}
+                            {isFormEditable &&
+                              isIssued && (
+                                <AsyncBtn.Transparent
+                                  onClick={() =>
+                                    editPaymentLink({
+                                      partial_payment: +!isPartialPayment,
+                                    })
+                                  }
+                                  class="Button--Link"
+                                  style={{ marginLeft: 12 }}
+                                  pendingState={
+                                    isPartialPayment ? 'Disabling' : 'Enabling'
+                                  }
+                                >
+                                  {isPartialPayment ? 'Disable' : 'Enable'}
+                                </AsyncBtn.Transparent>
+                              )}
+                          </div>
+                        )}
+                      />;
+                    }}
+                    <EntityDetailRow
+                      label="Amount Paid"
+                      value={() => (
+                        <Amount
+                          value={invoice.amount_paid}
+                          currency={invoice.currency}
+                        />
+                      )}
+                    />
+                  </React.Fragment>
                 </ShowWhen>
-                <EntityDetailRow
-                  label="Status"
-                  value={() => <InvoiceStatusLabel status={invoice.status} />}
-                />
                 <EntityDetailRow
                   label="Payment Id"
                   value={() => {

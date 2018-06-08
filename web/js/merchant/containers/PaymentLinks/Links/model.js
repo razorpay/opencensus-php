@@ -1,6 +1,11 @@
 import { merchantFetch } from 'rzp/utils/ajax';
 
-/* Specific Api Actions of Payment Links */
+/*
+*
+* Specific Api Actions of Payment Links
+*
+* */
+
 export function createPaymentLink(data) {
   const reqPayload = {
     ...data,
@@ -35,5 +40,13 @@ export function createPaymentLink(data) {
     data: reqPayload,
   }).then(resp => {
     return resp;
+  });
+}
+
+export function editPaymentLink(id, data) {
+  return merchantFetch({
+    url: `invoices/${id}`,
+    method: 'patch',
+    data: data,
   });
 }
