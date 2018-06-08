@@ -1408,7 +1408,7 @@ class Repository extends Base\Repository
      * `bank_accounts`.`id` = `virtual_accounts`.`bank_account_id` where `method` = 'bank_transfer' and
      * `receiver_id` is null limit 1000
      *
-     *  * @return collection
+     *  @return collection
      */
     public function fetchBankTransferPaymentWithoutReceiver()
     {

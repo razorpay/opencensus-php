@@ -1471,6 +1471,8 @@ class BankTransferTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
+        $receiverId = $payment['receiver_id'];
+
         $this->fixtures->payment->edit($payment['id'], ['receiver_id' => null, 'receiver_type' => null]);
 
         $this->ba->appAuth();
@@ -1484,6 +1486,8 @@ class BankTransferTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertNotNull($payment['receiver_id']);
+        $this->assertEquals($payment['receiver_id'], $receiverId);
+
+        $this->assertEquals($payment['receiver_type'], 'bank_account');
     }
 }

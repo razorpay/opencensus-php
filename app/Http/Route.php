@@ -2003,10 +2003,10 @@ final class Route
             'admin_lock_old_accounts',
             'fund_transfer_attempt_process',
             'daily_reconciliation_summary_fetch',
+            'bank_transfer_payment_receiver_backfill',
             // Not actually a cron, but added in this list
             // so the cron app has access to the route.
             'setcronjob_webhook',
-            'bank_transfer_payment_receiver_backfill',
         ],
 
         'kotak' => [
