@@ -277,7 +277,10 @@ class Repository extends Base\Repository
 
         if ($count === 0)
         {
-            $entity->forceDelete();
+            $this->transaction(function () use ($entity)
+            {
+                $entity->forceDelete();
+            });
 
             return null;
         }
