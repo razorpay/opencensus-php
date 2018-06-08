@@ -248,7 +248,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         if ($expectedCount !== $actualCount)
         {
-            throw new Exception\RuntimeException('All entities must exist',[
+            throw new Exception\RuntimeException('All entities must exist', [
                 'expected_count' => $expectedCount,
                 'actual_count'   => $actualCount,
                 'ids'            => $parsedIds

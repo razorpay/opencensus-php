@@ -82,7 +82,7 @@ class Core extends Base\Core
         return $admin;
     }
 
-    public function associateRelevantEntitiesToAdmin(Entity $admin, array $input)
+    private function associateRelevantEntitiesToAdmin(Entity $admin, array $input)
     {
         if (isset($input[Entity::ROLES]) === true)
         {
