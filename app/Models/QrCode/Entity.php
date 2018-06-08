@@ -43,6 +43,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::REFERENCE,
         self::SHORT_URL,
         self::CREATED_AT,
