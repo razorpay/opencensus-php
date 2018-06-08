@@ -9,7 +9,7 @@ const baseUrl = {
   sub: '/subscriptions/',
   trf: '/route/transfers/',
   disp: '/disputes/',
-  // acc: '/route/accounts/',
+  acc: '/submerchants/',
   // rvrsl: '/route/reversals/',
 };
 
@@ -57,7 +57,7 @@ export const dispute = makeIdLink('dispute');
 
 export const transfer = makeIdLink('transfer');
 export const source = item => idLink(item[sources[item.entity]]);
-export const recipient = makePropLink('recipient');
+export const recipient = item => idItem(item.recipient);
 export const reversal = makeIdLink('reversal');
 
 export const batchLink = item => {
@@ -68,3 +68,5 @@ export const batchLink = item => {
     idItem(item.id)
   );
 };
+export const submerchant = makePropLink('id', 'name');
+export const submerchantId = item => idItem(item.id);
