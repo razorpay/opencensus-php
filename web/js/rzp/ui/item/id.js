@@ -22,6 +22,7 @@ const sources = {
 
 export const idItem = id => <code>{id}</code>;
 
+/* if label not present id will be used as label */
 export const idLink = (id, label) => {
   var url = baseUrl[id.split('_')[0]];
   var item = label || idItem(id);
@@ -32,8 +33,12 @@ export const idLink = (id, label) => {
   return item;
 };
 
-const makePropLink = (linkProp, displayProp) => item =>
-  idLink(item[linkProp], item[displayProp]);
+/* 
+  idKey: value of this key in item object will be appened to url
+  labeKey: value of this key in item object will be displayed as label in link
+*/
+const makePropLink = (idKey, labelKey) => item =>
+  idLink(item[idKey], item[labelKey]);
 
 export const makeIdLink = type => item => {
   return idLink(item[(item.entity === type ? '' : `${type}_`) + 'id']);
