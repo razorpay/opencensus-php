@@ -186,7 +186,7 @@ class Core extends Base\Core
             switch ($status)
             {
                 case Status::REJECTED:
-
+                {
                     if (empty($rejectionReason) === false)
                     {
                         (new Reason\Core)->addRejectionReasons([$rejectionReason], $stateEntity);
@@ -195,28 +195,46 @@ class Core extends Base\Core
                     }
 
                     break;
+                }
 
                 case Status::ACTIVATED:
+                {
+                    switch (true)
+                    {
+                        case $request->isProductRequest():
+                        {
+                            $this->addFeatureIfNotEnabled($request);
 
-                    if ($request->isProductRequest() === true)
-                    {
-                        $this->addFeatureIfNotEnabled($request);
-                    }
-                    else if ($request->isPartnerRequest() === true)
-                    {
-                        (new Partner\Core)->markAsPartner($request->getMerchantId(), $request->getName());
+                            break;
+                        }
+
+                        case $request->isPartnerActivationRequest():
+                        {
+                            (new Partner\Core)->markAsPartner($request->getMerchantId(), $request->getName());
+
+                            break;
+                        }
+
+                        case $request->isPartnerDeactivationRequest():
+                        {
+                            (new Partner\Core)->unmarkAsPartner($request->getMerchantId());
+
+                            break;
+                        }
                     }
 
                     break;
+                }
 
                 case Status::NEEDS_CLARIFICATION:
-
+                {
                     if (empty($needsClarificationText) === false)
                     {
                         $this->sendNeedsClarificationEmail($request, $needsClarificationText);
                     }
 
                     break;
+                }
             }
         });
 
@@ -548,7 +566,8 @@ class Core extends Base\Core
         // Product onboarding submissions and partner activation requests must only be inserted in the live db.
         // Force set the database connection and mode to live.
         //
-        if (($input[Entity::TYPE] === Type::PRODUCT) or ($input[Entity::TYPE] === Type::PARTNER))
+        if (in_array($input[Entity::TYPE],
+                [Type::PRODUCT, Type::PARTNER_ACTIVATION, Type::PARTNER_DEACTIVATION], true) === true)
         {
             $liveMode = $this->app['basicauth']->getLiveConnection();
 

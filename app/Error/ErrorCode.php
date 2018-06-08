@@ -782,5 +782,5 @@ class ErrorCode
     const BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT                           = 'BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT';
 
     // Partners
-    const BAD_REQUEST_INVALID_PARTNER_TYPE                                          = 'BAD_REQUEST_INVALID_PARTNER_TYPE';
+    const BAD_REQUEST_INVALID_PARTNER_NAME                                          = 'BAD_REQUEST_INVALID_PARTNER_NAME';
 }

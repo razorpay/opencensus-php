@@ -172,14 +172,15 @@ class Validator extends Base\Validator
                 "Invalid product: $name for request type : $type");
         }
 
-        if (($type === Type::PARTNER) and
-            in_array($name, Partner\Constants::$partnerTypes, true) === false)
+        if ((($type === Type::PARTNER_ACTIVATION) or ($type === Type::PARTNER_DEACTIVATION))
+            and (in_array($name, Partner\Constants::$partnerTypes, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
-                PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_TYPE,
-                Partner\Entity::PARTNER_TYPE,
+                PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_NAME,
+                Partner\Entity::NAME,
                 [
-                    $type
+                    Partner\Entity::NAME         => $name,
+                    Partner\Entity::PARTNER_TYPE => $type,
                 ]);
         }
     }
