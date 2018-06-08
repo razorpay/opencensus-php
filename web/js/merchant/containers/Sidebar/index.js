@@ -195,6 +195,12 @@ export default class Sidebar extends Component {
                   notMyRole="sellerapp support"
                 />
                 <MainNavLink
+                  label="Partner Dashboard"
+                  icon="i i-chart text-info"
+                  to="/submerchants"
+                  exact
+                />
+                <MainNavLink
                   label="Transactions"
                   icon="i i-repeat text-primary"
                   to={routes.transactions}
