@@ -441,6 +441,7 @@ export default class CreateNewContainer extends React.Component {
         changeTab={this.changeTab}
         onChange={this.onChange}
         onCreate={this.onCreate}
+        onClose={this.props.onClose}
       />
     );
 
@@ -459,6 +460,10 @@ export default class CreateNewContainer extends React.Component {
 }
 
 class CreateWizard extends React.Component {
+  closeModal = e => {
+    this.props.onClose();
+  };
+
   render() {
     const { activeTab } = this.props;
 
