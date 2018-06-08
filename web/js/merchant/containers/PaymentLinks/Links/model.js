@@ -10,7 +10,7 @@ export function createPaymentLink(data) {
 
   reqPayload.amount *= 100;
   reqPayload.expire_by &&
-    (reqPayload.expire_by = Math.round(reqPayload.expire_by / 1000));
+    (reqPayload.expire_by = Math.floor(reqPayload.expire_by / 1000));
 
   /* Customer details */
   const customer = {};

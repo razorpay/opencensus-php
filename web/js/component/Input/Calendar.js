@@ -211,8 +211,7 @@ export default class CalendarPicker extends React.Component {
 export class TimePicker extends React.Component {
   className = 'Input--TimePicker';
   state = {
-    value:
-      this.props.defaultValue && moment(this.props.defaultValue).format('LT'), // defaultValue is unix time stamp in ms -> Formatted to : 5:38 AM (() => {
+    value: this.props.defaultValue, // Moment object
   };
 
   focus = e => {
@@ -250,7 +249,7 @@ export class TimePicker extends React.Component {
                 ),
               }}
               dateFormat={false}
-              timeFormat={true}
+              timeFormat="h:mm a"
               onFocus={this.focus}
               onBlur={this.blur}
             />

@@ -98,7 +98,7 @@ export default [
           form.state._name[form.state.activeTab].expiry === '1',
         addonAfter: <i class="i i-time" />,
 
-        // defaultValue: moment().startOf().unix(), // Epoch of timestamp today start. Don't set. Has to be in sync with Date(expiry_by_date).
+        // defaultValue: moment().startOf().unix(), // Epoch of timestamp today start. Don't set. Has to be in sync with Date(expire_by_date).
         _cmp: Input.TimePicker,
         readOnly: true,
       },

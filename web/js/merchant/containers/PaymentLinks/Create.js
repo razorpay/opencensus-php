@@ -22,6 +22,7 @@ import { showNotification } from 'rzp/modules/notifications';
 
 import { updatePaymentLinksList } from 'merchant/modules/invoices/list';
 import { luminateRow } from 'merchant/modules/app';
+import moment from 'moment';
 
 const FORM_TABS = [
   {
@@ -68,7 +69,7 @@ function defaultFieldProps(f) {
     f.onChange = self.onDateChange.bind(self);
   }
   if (f.name === 'expire_by') {
-    f.onChange = self.onDateChange.bind(self);
+    f.onChange = self.onTimeChange.bind(self);
   }
 }
 
@@ -246,6 +247,26 @@ export default class CreateNewContainer extends React.Component {
     }
   };
 
+  /* Handle change of time from time picker */
+  onTimeChange(date) {
+    if (date && date.target) {
+      // Check if date is not of event type
+      return;
+    }
+
+    const selectedTime = date.valueOf();
+    const dayStartTime = date.startOf('day').valueOf();
+
+    const offsetTime = selectedTime - dayStartTime; // Offset since start of day
+
+    const activeTabIndx = String(this.state.activeTab);
+    const curDate = this.state._name[activeTabIndx].expire_by_date;
+
+    const expiryByTime = curDate.startOf('day').valueOf() + offsetTime;
+    this.updateDate(expiryByTime);
+  }
+
+  /* Handle change of time from time picker */
   onDateChange(date) {
     if (date && date.target) {
       // Check if date is not of event type
@@ -253,47 +274,58 @@ export default class CreateNewContainer extends React.Component {
     }
 
     const activeTabIndx = String(this.state.activeTab);
-    const newDirty = { ...this.state.dirty };
+    const curExpiryByTime = this.state.dirty[activeTabIndx].expire_by;
 
-    let expiryTime =
-      newDirty[activeTabIndx] && newDirty[activeTabIndx].expire_by; // If expiry_by already set by user
+    let newExpiryTime;
 
     if (date) {
-      if (expiryTime) {
-        const offsetExpiryTime =
-          expiryTime -
-          moment(expiryTime)
-            .startOf('day')
-            .valueOf();
-        expiryTime = date.valueOf() + offsetExpiryTime;
-      } else {
-        expiryTime = date.endOf('day').valueOf();
+      let offsetTime = 0;
+
+      if (curExpiryByTime) {
+        offsetTime =
+          curExpiryByTime.valueOf() - curExpiryByTime.startOf('day').valueOf(); // Offset since start of day
       }
+
+      newExpiryTime = date.startOf('day').valueOf() + offsetTime;
     } else {
-      // Remove time field when date field is unset
-      expiryTime = null;
+      newExpiryTime = null;
     }
-    newDirty[activeTabIndx] = {
-      ...newDirty[activeTabIndx],
-      expire_by: expiryTime,
-    };
 
-    const _newName = { ...this.state._name };
-
-    _newName[activeTabIndx]['expire_by_date'] = date;
-    this.setState({
-      dirty: newDirty,
-      _name: _newName,
-    });
-
-    if (expiryTime) {
+    if (!curExpiryByTime && newExpiryTime) {
       setTimeout(() => {
         // document.getElementsByName('expire_by')[0].value = expiryTime;
         document.getElementsByName('expire_by')[0].focus();
       }, 100);
     }
+
+    this.updateDate(newExpiryTime);
   }
 
+  /* Handle change of date from calendar */
+  updateDate(timestamp) {
+    const newDate = moment(timestamp);
+
+    const activeTabIndx = String(this.state.activeTab);
+
+    /* Update expire_by */
+    const newDirty = { ...this.state.dirty };
+
+    newDirty[activeTabIndx] = {
+      ...newDirty[activeTabIndx],
+      expire_by: newDate,
+    };
+
+    /* Update expire_by_date */
+    const _newName = { ...this.state._name };
+    _newName[activeTabIndx].expire_by_date = newDate;
+
+    this.setState({
+      dirty: newDirty,
+      _name: _newName,
+    });
+  }
+
+  /* Handle change of notes */
   onChangeNotes = pairs => {
     const newDirty = { ...this.state.dirty };
     const activeTabIndx = String(this.state.activeTab);
