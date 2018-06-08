@@ -5,7 +5,7 @@ namespace RZP\Models\Merchant\Request;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Feature;
-use RZP\Models\Merchant\Partner;
+use RZP\Models\Merchant;
 use RZP\Error\PublicErrorDescription;
 
 class Validator extends Base\Validator
@@ -173,14 +173,14 @@ class Validator extends Base\Validator
         }
 
         if ((($type === Type::PARTNER_ACTIVATION) or ($type === Type::PARTNER_DEACTIVATION))
-            and (in_array($name, Partner\Constants::$partnerTypes, true) === false))
+            and (in_array($name, Merchant\Constants::$partnerTypes, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_NAME,
-                Partner\Entity::NAME,
+                Merchant\Entity::NAME,
                 [
-                    Partner\Entity::NAME         => $name,
-                    Partner\Entity::PARTNER_TYPE => $type,
+                    Merchant\Entity::NAME         => $name,
+                    Merchant\Entity::PARTNER_TYPE => $type,
                 ]);
         }
     }

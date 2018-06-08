@@ -210,14 +210,14 @@ class Core extends Base\Core
 
                         case $request->isPartnerActivationRequest():
                         {
-                            (new Partner\Core)->markAsPartner($request->getMerchantId(), $request->getName());
+                            (new Merchant\Core)->markAsPartner($request->getMerchantId(), $request->getName());
 
                             break;
                         }
 
                         case $request->isPartnerDeactivationRequest():
                         {
-                            (new Partner\Core)->unmarkAsPartner($request->getMerchantId());
+                            (new Merchant\Core)->unmarkAsPartner($request->getMerchantId());
 
                             break;
                         }

@@ -754,4 +754,27 @@ class Core extends Base\Core
 
         return $emails;
     }
+
+    public function markAsPartner(string $merchantId, string $partnerType)
+    {
+        $merchant =  $this->repo->merchant->findOrFail($merchantId);
+
+        $merchant->setPartnerType($partnerType);
+
+        $this->repo->saveOrFail($merchant);
+    }
+
+    /**
+     * Sets the Partner type attribute as null
+     *
+     * @param string $merchantId
+     */
+    public function unmarkAsPartner(string $merchantId)
+    {
+        $merchant =  $this->repo->merchant->findOrFail($merchantId);
+
+        $merchant->setPartnerType(null);
+
+        $this->repo->saveOrFail($merchant);
+    }
 }
