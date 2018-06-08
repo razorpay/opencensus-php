@@ -336,22 +336,22 @@ class Core extends Base\Core
     /**
      * Get the relevant status of merchant request from onboarding submission and then upsert it.
      *
-     * @param Merchant\Entity $merchant
-     * @param string          $feature
-     * @param string          $type
-     * @param string          $onboardingStatus
+     * @param string    $merchantId
+     * @param string    $feature
+     * @param string    $type
+     * @param string    $onboardingStatus
      *
      * @return Entity
      */
     public function syncOnboardingSubmissionToMerchantRequest(
-        Merchant\Entity $merchant,
+        string $merchantId,
         string $feature,
         string $type,
         string $onboardingStatus)
     {
         $requestStatus = Constants::getRequestStatusForOnboardingStatus($onboardingStatus);
 
-        $response = $this->forceUpsertMerchantRequest($merchant, $feature, $type, $requestStatus);
+        $response = $this->forceUpsertMerchantRequest($merchantId, $feature, $type, $requestStatus);
 
         return $response;
     }
@@ -361,21 +361,21 @@ class Core extends Base\Core
      * till the time the old code isnt deprecated. Hence first either the merchant request is created or found,
      * and then the respective status is marked if needed.
      *
-     * @param Merchant\Entity $merchant
-     * @param string          $feature
-     * @param string          $type
-     * @param string          $requestStatus
+     * @param string    $merchantId
+     * @param string    $feature
+     * @param string    $type
+     * @param string    $requestStatus
      *
      * @return Entity
      */
     public function forceUpsertMerchantRequest(
-        Merchant\Entity $merchant,
+        string $merchantId,
         string $feature,
         string $type,
         string $requestStatus)
     {
         $request = $this->findOrCreateMerchantRequest(
-                        $merchant->getId(),
+                        $merchantId,
                         [
                             Entity::NAME => $feature,
                             Entity::TYPE => $type
@@ -608,7 +608,7 @@ class Core extends Base\Core
                     }
 
                     $response = $this->forceUpsertMerchantRequest(
-                        $merchant,
+                        $merchant->getId(),
                         $request[Entity::NAME],
                         $request[Entity::TYPE],
                         $request[Entity::STATUS]

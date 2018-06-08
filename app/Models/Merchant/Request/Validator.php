@@ -18,7 +18,7 @@ class Validator extends Base\Validator
     const INVALID_STATUS_CHANGE_MESSAGE = 'Invalid status change';
 
     protected static $createRules = [
-        Entity::NAME        => 'required|string|max:40|custom',
+        Entity::NAME        => 'required|string|max:40',
         Entity::TYPE        => 'required|string|max:25|custom',
         Entity::STATUS      => 'required|max:30',
         Entity::MERCHANT_ID => 'required|string|size:14',
@@ -59,19 +59,6 @@ class Validator extends Base\Validator
                 self::INVALID_STATUS_MESSAGE,
                 Entity::STATUS,
                 $traceData);
-        }
-    }
-
-    public function validateName($attribute, $value)
-    {
-        if (in_array($value, Constants::$names, true) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                self::INVALID_NAME,
-                Entity::NAME,
-                [
-                    Entity::NAME => $value
-                ]);
         }
     }
 
@@ -150,18 +137,18 @@ class Validator extends Base\Validator
 
         $this->validateSubmissions($input, $submissions);
 
-        $this->validateTypeAndProduct($input[Entity::TYPE], $input[Entity::NAME]);
+        $this->validateName($input[Entity::TYPE], $input[Entity::NAME]);
     }
 
     /**
-     * Validate the name of feature being a product feature, if request type is Product
+     * Validate the name based on the type attribute
      *
      * @param $type
      * @param $name
      *
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function validateTypeAndProduct($type, $name)
+    public function validateName($type, $name)
     {
         $productFeatures = Feature\Constants::PRODUCT_FEATURES;
 
