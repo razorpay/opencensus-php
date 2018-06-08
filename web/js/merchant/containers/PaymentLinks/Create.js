@@ -173,6 +173,10 @@ export default class CreateNewContainer extends React.Component {
     };
   }
 
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
   saveDirtyState = e => {
     console.log(
       'Some changes are unsaved. Check ref.state for content.',
@@ -423,6 +427,42 @@ export default class CreateNewContainer extends React.Component {
     });
   }
 
+  onFormAbruptClose = e => {
+    const curDirty = this.state.dirty;
+    const formTabs = Object.keys(curDirty);
+
+    let formUnsaved = false;
+
+    if (formTabs.length) {
+      formTabs.forEach(tabId => {
+        const tab = this.state.dirty[tabId];
+
+        /*
+        * If >2 fields are touched in any one form, close-confirmation is asked before closing
+        * */
+        if (Object.keys(tab).length > 2) {
+          formUnsaved = true;
+
+          return false;
+        }
+      });
+    }
+
+    if (formUnsaved) {
+      this.context
+        .confirm({
+          header: 'Do you want to close this form?',
+          message: 'Changes that you made will be discarded.',
+          affirmativeLabel: 'Leave',
+          abortLabel: 'Stay',
+          action: () => this.props.onClose(),
+        })
+        .catch(() => {});
+    } else {
+      this.props.onClose();
+    }
+  };
+
   render() {
     // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
     const IS_MODAL_VIEW = this.props.onClose;
@@ -441,15 +481,15 @@ export default class CreateNewContainer extends React.Component {
         changeTab={this.changeTab}
         onChange={this.onChange}
         onCreate={this.onCreate}
-        onClose={this.props.onClose}
+        isModalView={IS_MODAL_VIEW}
+        onFormAbruptClose={this.onFormAbruptClose}
       />
     );
 
     return IS_MODAL_VIEW ? (
       <Modal
         class={classList('PaymentLinks', content && 'animate-down')}
-        onClose={this.props.onClose}
-        onCloseCB={this.saveDirtyState}
+        onClose={this.onFormAbruptClose}
       >
         <ModalContent>{content}</ModalContent>
       </Modal>
@@ -503,7 +543,9 @@ class CreateWizard extends React.Component {
         {/* FORM FOOTER */}
         <footer>
           {/* Action Button 1 */}
-          <Button onClick={this.closeModal}>Cancel</Button>
+          {this.props.isModalView && (
+            <Button onClick={this.props.onFormAbruptClose}>Cancel</Button>
+          )}
 
           {/* Action Button 2 */}
           <AsyncBtn.Primary
