@@ -30,6 +30,13 @@ class PartnerTest extends TestCase
         $this->startTest();
     }
 
+    public function testUnmarkingMerchantAsPartner()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testMarkingMerchantAsPartnerInvalidType()
     {
         $this->ba->proxyAuth();
@@ -42,7 +49,7 @@ class PartnerTest extends TestCase
         $merchantRequest = $this->fixtures->create(
             'merchant_request:default_merchant_request',
             [
-                Request\Entity::TYPE => 'partner',
+                Request\Entity::TYPE => 'partner_activation',
                 Request\Entity::NAME => 'reseller',
             ]);
 
@@ -63,5 +70,38 @@ class PartnerTest extends TestCase
         $merchant = $this->getDbEntityById('merchant', $merchantId, $liveMode);
 
         $this->assertTrue($merchant->isPartner());
+    }
+
+    public function testApprovingUnmarkAsPartnerMerchantRequest()
+    {
+        $merchantId = '10000000000000';
+
+        $merchantRequest = $this->fixtures->create(
+            'merchant_request:default_merchant_request',
+            [
+                Request\Entity::MERCHANT_ID => $merchantId,
+                Request\Entity::TYPE        => 'partner_deactivation',
+                Request\Entity::NAME        => 'reseller',
+            ]);
+
+        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
+
+        $merchantRequestId = $merchantRequest->getPublicId();
+
+        $merchantId = $merchantRequest->getMerchantId();
+
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->ba->adminAuth($liveMode);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/merchant/requests/' . $merchantRequestId;
+
+        $this->startTest($testData);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId, $liveMode);
+
+        $this->assertFalse($merchant->isPartner());
     }
 }

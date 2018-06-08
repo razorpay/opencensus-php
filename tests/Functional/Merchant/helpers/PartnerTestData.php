@@ -14,7 +14,7 @@ return [
             'method'  => 'POST',
             'content' => [
                 'name' => 'reseller',
-                'type' => 'partner',
+                'type' => 'partner_activation',
             ],
         ],
         'response' => [
@@ -43,14 +43,14 @@ return [
             'content' => [
                 // name = marketplace because it's a valid merchant request name but an invalid partner type
                 'name' => 'marketplace',
-                'type' => 'partner',
+                'type' => 'partner_activation',
             ],
         ],
         'response'  => [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_TYPE,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_NAME,
                 ],
             ],
             'status_code' => 400,
@@ -72,6 +72,49 @@ return [
         'response'   => [
             'content' => [
                 'status' => 'activated',
+            ],
+        ],
+    ],
+
+    'testApprovingUnmarkAsPartnerMerchantRequest' => [
+        'request'   => [
+            'url'     => '/merchant/requests/100000RandomId',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+        'response'   => [
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+    ],
+
+    'testUnmarkingMerchantAsPartner' => [
+        'request'   => [
+            'url'     => '/merchant/requests',
+            'method'  => 'POST',
+            'content' => [
+                'name' => 'reseller',
+                'type' => 'partner_deactivation',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'      => 'under_review',
+                'name'        => 'reseller',
+                'merchant'    => [
+                    'id' => '10000000000000',
+                ],
+                'states'      => [
+                    'entity' => 'collection',
+                    'items'  => [
+                        [
+                            'name' => 'under_review',
+                        ],
+                    ],
+                ],
             ],
         ],
     ],
