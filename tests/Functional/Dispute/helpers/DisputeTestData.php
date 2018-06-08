@@ -113,6 +113,7 @@ return [
                 'entity' => [
                     'entity'             => 'dispute',
                     'amount'             => 50000,
+                    'amount_deducted'    => 0,
                     'currency'           => 'INR',
                     'gateway_dispute_id' => '4342frf34r',
                     'respond_by'         => 946684801,
