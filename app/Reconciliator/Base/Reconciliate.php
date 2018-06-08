@@ -36,29 +36,30 @@ class Reconciliate extends Base\Core
      * Internal Header Names
      *************************/
 
-    const PAYMENT_ID            = 'payment_id';
-    const REFUND_ID             = 'refund_id';
-    const CARD_TYPE             = 'card_type';
-    const CARD_LOCALE           = 'card_locale';
-    const CARD_TRIVIA           = 'card_trivia';
-    const CARD_DETAILS          = 'card_details';
-    const GATEWAY_SERVICE_TAX   = 'gateway_service_tax';
-    const GATEWAY_FEE           = 'gateway_fee';
-    const GATEWAY_SETTLED_AT    = 'gateway_settled_at';
-    const ISSUER                = 'issuer';
-    const REFERENCE_NUMBER      = 'reference_number';
-    const CUSTOMER_DETAILS      = 'customer_details';
-    const CUSTOMER_ID           = 'customer_id';
-    const CUSTOMER_NAME         = 'customer_name';
-    const GATEWAY_PAYMENT_DATE  = 'gateway_payment_date';
-    const ARN                   = 'arn';
-    const ACCOUNT_DETAILS       = 'account_details';
-    const ACCOUNT_NUMBER        = 'account_number';
-    const ACCOUNT_TYPE          = 'account_type';
-    const ACCOUNT_SUBTYPE       = 'account_subtype';
-    const ACCOUNT_BRANCHCODE    = 'account_branchcode';
-    const CREDIT_ACCOUNT_NUMBER = 'credit_account_number';
-    const AUTH_CODE             = 'auth_code';
+    const PAYMENT_ID             = 'payment_id';
+    const REFUND_ID              = 'refund_id';
+    const CARD_TYPE              = 'card_type';
+    const CARD_LOCALE            = 'card_locale';
+    const CARD_TRIVIA            = 'card_trivia';
+    const CARD_DETAILS           = 'card_details';
+    const GATEWAY_SERVICE_TAX    = 'gateway_service_tax';
+    const GATEWAY_FEE            = 'gateway_fee';
+    const GATEWAY_SETTLED_AT     = 'gateway_settled_at';
+    const ISSUER                 = 'issuer';
+    const REFERENCE_NUMBER       = 'reference_number';
+    const CUSTOMER_DETAILS       = 'customer_details';
+    const CUSTOMER_ID            = 'customer_id';
+    const CUSTOMER_NAME          = 'customer_name';
+    const GATEWAY_PAYMENT_DATE   = 'gateway_payment_date';
+    const ARN                    = 'arn';
+    const ACCOUNT_DETAILS        = 'account_details';
+    const ACCOUNT_NUMBER         = 'account_number';
+    const ACCOUNT_TYPE           = 'account_type';
+    const ACCOUNT_SUBTYPE        = 'account_subtype';
+    const ACCOUNT_BRANCHCODE     = 'account_branchcode';
+    const CREDIT_ACCOUNT_NUMBER  = 'credit_account_number';
+    const AUTH_CODE              = 'auth_code';
+    const GATEWAY_TRANSACTION_ID = 'gateway_transaction_id';
 
     /*************************
      * Card types

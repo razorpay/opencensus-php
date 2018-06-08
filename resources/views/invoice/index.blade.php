@@ -5,6 +5,13 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
+
+    @if (isset($data['invoice']) && $data['invoice']['type'] !== 'invoice')
+        <meta property="og:title" content="Payment of Rs. {{format_amount($data['invoice']['amount'])}} requested by {{$data['invoice']['merchant_label']}} for {{$data['invoice']['description']}}">
+        <meta property="og:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://razorpay.com/favicon.png'}}">
+        <meta property="og:description" content="Click on this link to pay to {{$data['invoice']['merchant_label']}}">
+    @endif
+
     <?php date_default_timezone_set('Asia/Kolkata') ?>
     <link href="https://fonts.googleapis.com/css?family=Lato:300,400,600" rel="stylesheet" type="text/css"></link>
     <link rel="icon" href="https://razorpay.com/favicon.png" type="image/x-icon" />
@@ -598,6 +605,25 @@
             font-size: 13px;
         }
 
+        .testmode-warning {
+            padding: 12px 24px;
+            background-color: #fcf8e3;
+            color: #8a6d3b;
+            font-size: 12px;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            position: relative;
+            display: block;
+        }
+
+        .testmode-warning + .inv-details {
+            border-radius: 0 !important;
+        }
+
+        #desktop-container .testmode-warning {
+            padding-left: 40px;
+        }
+
     </style>
   </head>
   <body>
@@ -736,6 +762,11 @@
 
                       <div class="table-box" id="inv-info-par">
                           <div id="inv-info-box">
+                              @if($data['is_test_mode'] === true)
+                                  <span class="testmode-warning">
+                                    This payment link is created in <b>Test Mode</b>. Only test payments can be made for this.
+                                  </span>
+                              @endif
                               <div class="inv-details">
                                   <div class="inv-for">
                                     Payment Request from {{$data['invoice']['merchant_label']}}
@@ -780,7 +811,7 @@
                                           <div id="hist-close" onclick="closePayHist()"><b>✕</b></div>
 
                                           <div class="modal-title">
-                                            Payment History
+                                            Successful Payments
                                             <div class="modal-desc">
                                             {{count($data['invoice']['payments'])}} Payment{{(count($data['invoice']['payments']) > 1) ? 's' : ''}} made for this request
                                             </div>
@@ -884,6 +915,11 @@
                     </div>
                   </div>
                   <div id="inv-info-container">
+                        @if($data['is_test_mode'] === true)
+                            <span class="testmode-warning">
+                              This payment link is created in <b>Test Mode</b>. Only test payments can be made for this.
+                            </span>
+                        @endif
                       <div class="inv-details">
                           <div id="inv-details-main">
                               <div class="info">
@@ -938,7 +974,7 @@
                                 <div id="hist-close" onclick="closePayHist()"><b>✕</b></div>
 
                                 <div class="modal-title">
-                                  Payment History
+                                  Successful Payments
                                   <div class="modal-desc">{{$data['invoice']['partial_payment']}} Payment{{$data['invoice']['partial_payment'] > 1 ?: 's'}} made for this request</div>
                                 </div>
 

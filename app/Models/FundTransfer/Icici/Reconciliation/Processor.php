@@ -11,7 +11,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Icici\Headings;
 use RZP\Models\FundTransfer\Base\Reconciliation\FileProcessor as BaseProcessor;
 
-class FileProcessor extends BaseProcessor
+class Processor extends BaseProcessor
 {
     protected static $fileToReadName  = 'Icici_Settlement_Reconciliation';
 

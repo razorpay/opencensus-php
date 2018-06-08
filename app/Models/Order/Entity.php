@@ -56,6 +56,17 @@ class Entity extends Base\PublicEntity
      */
     const AUTHORIZED      = 'authorized';
 
+    const REFERENCE1      = 'reference1';
+    const REFERENCE2      = 'reference2';
+    const REFERENCE3      = 'reference3';
+    const REFERENCE4      = 'reference4';
+    const REFERENCE5      = 'reference5';
+    const REFERENCE6      = 'reference6';
+    const REFERENCE7      = 'reference7';
+    const REFERENCE8      = 'reference8';
+    const REFERENCE9      = 'reference9';
+    const REFERENCE10     = 'reference10';
+
     const METHOD          = 'method';
     const BANK            = 'bank';
     const ACCOUNT_NUMBER  = 'account_number';

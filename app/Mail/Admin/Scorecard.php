@@ -76,6 +76,8 @@ class Scorecard extends Mailable
 
     protected function getTabularFormattedMerchantVolumeScorecard($volumeData)
     {
+        setlocale(LC_MONETARY, 'hi_IN.ISCII-DEV');
+
         //
         // TODO: Refactor this to move to a blade template
         //
@@ -97,6 +99,11 @@ class Scorecard extends Mailable
 
             foreach ($attributes as $key => $value)
             {
+                if ($key === 'volume')
+                {
+                    $value = money_format('%!i', $value);
+                }
+
                 $message .= '<td>' . $value . '</td>';
             }
 

@@ -162,6 +162,10 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_SETTLED_AT  => 'int',
     ];
 
+    protected $ignoredRelations = [
+        'source',
+    ];
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');

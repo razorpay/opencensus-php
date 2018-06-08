@@ -136,7 +136,7 @@ class Processor extends Base\Core
                 TraceCode::SETTLEMENT_ATTEMPT_ENTITIES_CREATED,
                 $response);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException(
                 $e,
@@ -165,7 +165,7 @@ class Processor extends Base\Core
 
             $response = $this->retrySettlements($setlIds);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->settlementFailure(null, $e, TraceCode::SETTLEMENT_RETRY_FAILED);
         }
@@ -279,7 +279,7 @@ class Processor extends Base\Core
                 $response[$channel]['txnCount'] += $setlResponse['txn_count'];
             }
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException(
                 $e,

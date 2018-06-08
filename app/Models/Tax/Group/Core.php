@@ -3,8 +3,8 @@
 namespace RZP\Models\Tax\Group;
 
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Models\Tax;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -54,7 +54,14 @@ class Core extends Base\Core
                 'id' => $group->getId(),
             ]);
 
-        return $this->repo->tax_group->deleteOrFail($group);
+        //
+        // This should be inside a transaction, as we are also modifying
+        // child entities here. Keeping it inside a transaction makes it atomic.
+        //
+        return $this->repo->transaction(function () use ($group)
+        {
+            return $this->repo->tax_group->deleteOrFail($group);
+        });
     }
 
     /**

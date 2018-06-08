@@ -66,6 +66,15 @@ class ViewDataSerializerTest extends TestCase
     {
         $invoice  = $this->createInvoiceWithPayment();
 
+        // Having a failed payment for this same invoice, to assert that the same doesn't get sent in hosted view data
+        $this->fixtures
+             ->create(
+                'payment:failed',
+                [
+                    'invoice_id' => '1000000invoice',
+                    'order_id'   => '100000000order',
+                ]);
+
         $expected = $this->getExpectedSerializedInvoiceDataWithPayments();
         $actual   = (new Invoice\ViewDataSerializer($invoice))->serializeForHosted();
 
@@ -123,6 +132,7 @@ class ViewDataSerializerTest extends TestCase
         $invoice  = $this->createInvoice(
             [
                 Invoice\Entity::SUPPLY_STATE_CODE => 10,
+                Invoice\Entity::MERCHANT_GSTIN    => '29kjsngjk213922',
             ]);
 
         // Adds customer billing & shipping addresses & associates with the invoice

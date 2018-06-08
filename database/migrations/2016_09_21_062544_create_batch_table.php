@@ -49,6 +49,9 @@ class CreateBatchTable extends Migration
 
             $table->integer(Batch::TOTAL_COUNT);
 
+            $table->integer(Batch::PROCESSED_COUNT)
+                  ->nullable();
+
             $table->integer(Batch::SUCCESS_COUNT)
                   ->nullable();
 
