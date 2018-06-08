@@ -768,18 +768,14 @@ class Core extends Base\Core
         // So any link in `cancelled` state can be safely assumed to have
         // reached from `issued` state only.
         //
-        $createdCount = ((int) ($stats[Status::ISSUED] ?? 0) +
-                         (int) ($stats[Status::PARTIALLY_PAID] ?? 0) +
-                         (int) ($stats[Status::PAID] ?? 0) +
-                         (int) ($stats[Status::EXPIRED] ?? 0) +
-                         (int) ($stats[Status::CANCELLED] ?? 0));
+        $createdCount = array_sum(array_except($stats, [Status::DRAFT]));
 
         return [
             Entity::TOTAL_COUNT   => $batch->getTotalCount(),
             Entity::ISSUED_COUNT  => $createdCount,
             Entity::CREATED_COUNT => $createdCount,
-            Entity::PAID_COUNT    => (int) ($stats[Status::PAID] ?? 0),
-            Entity::EXPIRED_COUNT => (int) ($stats[Status::EXPIRED] ?? 0),
+            Entity::PAID_COUNT    => $stats[Status::PAID] ?? 0,
+            Entity::EXPIRED_COUNT => $stats[Status::EXPIRED] ?? 0,
         ];
     }
 
