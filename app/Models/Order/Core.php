@@ -49,9 +49,14 @@ class Core extends Base\Core
 
         $order->getValidator()->validateMerchantSpecificData();
 
-        $this->associateOffers($order, $input);
+        $order = $this->repo->transaction(function() use ($order, $input)
+        {
+            $this->associateOffers($order, $input);
 
-        $this->repo->saveOrFail($order);
+            $this->repo->saveOrFail($order);
+
+            return $order;
+        });
 
         $this->trace->info(
             TraceCode::ORDER_CREATED,
@@ -72,7 +77,7 @@ class Core extends Base\Core
         // TODO: Remove this later
         if (count($input[Entity::OFFERS]) > 1)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null, [
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_MULTIPLE_OFFERS, null, [
                 'order_id' => $order->getId(),
                 'offers'   => $input[Entity::OFFERS],
             ]);
@@ -86,18 +91,7 @@ class Core extends Base\Core
 
     protected function validateAndAssociateOffer(Entity $order, string $offerId)
     {
-        $offer = $this->repo->offer->findByPublicIdAndMerchant($offerId, $this->merchant);
-
-        $offerChecker = new Offer\Checker($offer, true);
-
-        if ($offerChecker->checkOfferApplicableOnOrder($order) === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
-            [
-                'offer_id' => $offerId,
-                'order_id' => $order->getId()
-            ]);
-        }
+        $offer = (new Offer\Core)->fetchAndValidateOfferForOrder($offerId, $order);
 
         // Fills offer_id FK in orders
         // TODO: Remove this when FK is deprecated

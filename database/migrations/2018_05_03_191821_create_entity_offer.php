@@ -47,7 +47,7 @@ class CreateEntityOffer extends Migration
         Schema::table(Table::ENTITY_OFFER, function($table)
         {
             $table->dropForeign(
-                Table::ENTITY_OFFER.'_'.EntityOffer::OFFER_ID.'_foreign');
+                Table::ENTITY_OFFER . '_' . EntityOffer::OFFER_ID . '_foreign');
         });
 
         Schema::drop(Table::ENTITY_OFFER);

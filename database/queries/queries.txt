@@ -3607,4 +3607,4 @@ ALTER TABLE batches
 
 # Renames the reference1 column and adds a default value
 ALTER TABLE orders
-    CHANGE reference1 force_offer TINYINT(1) DEFAULT 0;
+    CHANGE reference1 force_offer TINYINT(1);

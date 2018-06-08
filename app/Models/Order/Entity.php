@@ -116,7 +116,7 @@ class Entity extends Base\PublicEntity
         self::METHOD          => null,
         self::ACCOUNT_NUMBER  => null,
         self::BANK            => null,
-        self::FORCE_OFFER     => false,
+        self::FORCE_OFFER     => null,
     ];
 
     protected $public = [
@@ -204,7 +204,7 @@ class Entity extends Base\PublicEntity
     public function offers()
     {
         return $this->belongsToMany(
-                        'RZP\Models\Offer\Entity',
+                        Offer\Entity::class,
                         Table::ENTITY_OFFER,
                         Offer\EntityOffer\Entity::ENTITY_ID,
                         Offer\EntityOffer\Entity::OFFER_ID)
