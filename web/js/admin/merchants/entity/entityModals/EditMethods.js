@@ -27,11 +27,13 @@ export default ({ props, merchantId }) => {
     const fields = [];
     const methods = {};
 
-    Object.keys(props.merchant.details.methods).map(method => {
-      if (exclusionFields.indexOf(method) < 0) {
-        methods[method] = props.merchant.details.methods[method] | 0;
-      }
-    });
+    Object.keys(props.merchant.details.methods)
+      .sort()
+      .forEach(method => {
+        if (exclusionFields.indexOf(method) < 0) {
+          methods[method] = props.merchant.details.methods[method] | 0;
+        }
+      });
     defaultMethods = { ...methods };
 
     for (let method in methods) {
