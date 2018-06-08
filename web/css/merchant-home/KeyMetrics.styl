@@ -65,6 +65,12 @@ placeholder () {
         margin: 0;
         color: inherit;
 
+        @media (min-width: 1020px) and (max-width: 1030px) {
+          div.card > span {
+            letter-spacing: -0.2px;
+          }
+        }
+
         small.help-content {
 
           display: inline-block;
@@ -297,6 +303,16 @@ placeholder () {
 
     padding-top: 8px;
   } 
+
+  &.keymetrics--mobile {
+
+    .card {
+
+      margin-bottom: 12px;
+      background-color: white;
+      padding: 12px 24px;
+    }
+  }
 }
 
 #chartjs-tooltip {

@@ -29,6 +29,10 @@ import {
   trackNoData,
 } from 'merchant/containers/Home/ga';
 
+import Mobile from 'merchant/containers/Home/Traffic/Mobile';
+
+const aggTypes = groupValues.map(value => groupMeta[value]);
+
 const chartOptions = {
     tooltips: {
       enabled: false,
@@ -69,7 +73,7 @@ class Traffic extends Component {
 
     this.onGroupChange = ::this.onGroupChange;
     this.handleImageExportClick = ::this.handleImageExportClick;
-    this.handleResize = ::this.handleResize;
+    this.handleResize = debounce(::this.handleResize, 250);
 
     this.data = null;
   }
@@ -260,9 +264,21 @@ class Traffic extends Component {
   }
 
   componentDidMount() {
+    if (this.props.isMobile) {
+      return;
+    }
+
     this.setChartSize();
 
-    window.addEventListener('resize', debounce(this.handleResize, 250));
+    window.addEventListener('resize', this.handleResize);
+  }
+
+  componentWillUnmount() {
+    if (this.props.isMobile) {
+      return;
+    }
+
+    window.removeEventListener('resize', this.handleResize);
   }
 
   render() {
@@ -271,7 +287,21 @@ class Traffic extends Component {
       { isCurrency } = groupMeta[selectedGrouping.value],
       { chartData, legendData } = groupState,
       hasNoData = !chartData || chartData.labels.length === 0,
-      { sectionTitle, startDate, endDate } = this.props;
+      { sectionTitle, startDate, endDate, isMobile } = this.props;
+
+    if (isMobile) {
+      const mobileProps = {
+        isLoading: loading || groupState.loading,
+        hasNoData,
+        error: groupState.error,
+        data: legendData,
+        aggTypes,
+        onAggChange: this.onGroupChange,
+        selectedAgg: selectedGrouping,
+        isCurrency,
+      };
+      return <Mobile {...mobileProps} />;
+    }
 
     return (
       <GenericPanel
@@ -285,7 +315,7 @@ class Traffic extends Component {
           <div className="panel-actions pull-right">
             <div className="panel-action-item">
               <GroupingDropdown
-                grouping={groupValues.map(value => groupMeta[value])}
+                grouping={aggTypes}
                 selectedGrouping={selectedGrouping}
                 onGroupChange={this.onGroupChange}
                 displayTextKey="title"

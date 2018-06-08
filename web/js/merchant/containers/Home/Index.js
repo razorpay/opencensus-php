@@ -1,19 +1,9 @@
 import React, { Component } from 'react';
-import Header from 'rzp/ui/Header';
-import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import * as HomeActions from 'merchant/modules/home';
 import moment from 'moment';
-import { Redirect } from 'react-router-dom';
 
-import Amount from 'rzp/ui/Amount';
-import Banner from 'rzp/ui/Banner';
-import Sticky from 'rzp/ui/Sticky';
-import Group, { GroupItem } from 'rzp/ui/Group';
-import LocalStorageService from 'rzp/utils/localStorage';
 import { showNotification } from 'rzp/modules/notifications';
-import DateRangePicker, { customRangeText } from 'rzp/ui/DateRangePicker';
-import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
+import { customRangeText } from 'rzp/ui/DateRangePicker';
 import {
   oldestTransactionQuery,
   getDefaultPaymentFilter,
@@ -21,31 +11,21 @@ import {
   groupByPlatform,
   OTHERS,
 } from 'rzp/utils/pokedex';
+import LocalStorageService from 'rzp/utils/localStorage';
+import debounce from 'rzp/utils/debounce';
 
+import * as HomeActions from 'merchant/modules/home';
 import { fetch } from 'merchant/modules/pokedex';
 import { fetchPayments } from 'rzp/modules/collection';
-import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
-import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
-import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
-import Traffic from 'merchant/containers/Home/Traffic';
-import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import {
   API_ERROR,
   API_INVALID_RESP,
   isMobileDevice,
 } from 'merchant/components/Home/data';
-import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
-import { showOrHideTour } from 'merchant/modules/session';
 
-import {
-  trackError,
-  trackDatesChange,
-  trackPresetChange,
-  trackSettlementsClick,
-  trackPlatformAnalyticsHidden,
-  trackForceOldDashboard,
-  trackViewTour,
-} from './ga';
+import { trackError, trackDatesChange } from './ga';
+import Desktop from './Desktop';
+import Mobile from './Mobile';
 
 const dateRangePresets = [
     ['Past 7 Days', -7, 'days'],
@@ -87,7 +67,6 @@ const keymetricsSectionTitle = 'Transactions Overview',
   {
     ...HomeActions,
     showNotification,
-    showOrHideTour,
     fetchPayments,
   }
 )
@@ -155,14 +134,10 @@ export default class HomeContainer extends Component {
         error: '',
         ...getPreviousDates({ startDate, endDate }),
       },
+      isMobile: isMobileDevice(),
       dateRangePresets,
       showGroupingByPtfm: false,
       scrollAmountToStickHeader: 0,
-      hasNewAnalyticsTour:
-        !isAdmin &&
-        mode === 'live' &&
-        !LocalStorageService.getItem('hide_new_analytics_banner'),
-      dismissNewAnalyticsBanner: false, // used for transition
       expandOnboardingBanner: showOnboardingBanner, // used for transition
       showOnboardingBanner,
       showOnboardingBannerFirstStep,
@@ -206,14 +181,18 @@ export default class HomeContainer extends Component {
 
     this.oldestTxnReqId = 0;
     this.onDatesChange = this.onDatesChange.bind(this);
-    this.onShowTour = this.onShowTour.bind(this);
     this.onFetchPayments = this.onFetchPayments.bind(this);
     this.setScrollAmountToStickHeader = this.setScrollAmountToStickHeader.bind(
       this
     );
     this.onHideOnboardingBanner = this.onHideOnboardingBanner.bind(this);
-    this.onHideNewAnalyticsBanner = this.onHideNewAnalyticsBanner.bind(this);
     this.onFirstStepClose = this.onFirstStepClose.bind(this);
+    this.onExtraContentMount = this.onExtraContentMount.bind(this);
+    this.onResize = debounce(this.onResize.bind(this), 500);
+  }
+
+  onExtraContentMount(node) {
+    this.extraContent = node;
   }
 
   fetchTxnsGroupedByPlatform() {
@@ -428,6 +407,7 @@ export default class HomeContainer extends Component {
 
   componentWillUnmount() {
     document.body.className = document.body.className.replace(bodyClass, '');
+    window.removeEventListener('resize', this.onResize);
   }
 
   setScrollAmountToStickHeader() {
@@ -438,8 +418,16 @@ export default class HomeContainer extends Component {
     this.setState({ scrollAmountToStickHeader });
   }
 
+  onResize() {
+    this.setState({
+      isMobile: isMobileDevice(),
+    });
+  }
+
   componentDidMount() {
     this.setScrollAmountToStickHeader();
+
+    window.addEventListener('resize', this.onResize);
   }
 
   onFirstStepClose() {
@@ -515,7 +503,6 @@ export default class HomeContainer extends Component {
      * When fetched payments in live mode, using recent activity component
      * we use it to show the banner , if there are no trasaction
      */
-
     if (user.isActivated && mode === 'live') {
       // show hotjar if number of payments is greater than 50
       if (items.length > 50) {
@@ -532,44 +519,14 @@ export default class HomeContainer extends Component {
     }
   }
 
-  onShowTour() {
-    this.onHideNewAnalyticsBanner(() => {
-      this.props.showOrHideTour(true);
-    });
-
-    trackViewTour();
-  }
-
-  onHideNewAnalyticsBanner(cb) {
-    LocalStorageService.setItem('hide_new_analytics_banner', true);
-
-    this.setState(
-      {
-        dismissNewAnalyticsBanner: true,
-      },
-      () => {
-        window.setTimeout(() => {
-          this.setState(
-            {
-              dismissNewAnalyticsBanner: false,
-              hasNewAnalyticsTour: false,
-            },
-            () => {
-              this.setScrollAmountToStickHeader();
-              typeof cb === 'function' && cb();
-            }
-          );
-        }, 500); // let the trasition to hide banner complete
-      }
-    );
-  }
-
   render() {
     let {
       mode,
-      user,
       current_balance,
       tabsMeta,
+
+      // following three props will be sent by admin analytics
+      // - web/pokedex.js
       isAdmin,
       analyticsFetch,
       onFilterChange,
@@ -581,213 +538,59 @@ export default class HomeContainer extends Component {
       oldestTransactionDate,
       dateRangePresets,
       showGroupingByPtfm,
-      hasNewAnalyticsTour,
       scrollAmountToStickHeader,
-      dismissNewAnalyticsBanner,
       showOnboardingBanner,
       expandOnboardingBanner,
+      payments,
+      showOnboardingBannerFirstStep,
+      isMobile,
     } = this.state;
+
+    const {
+      onHideOnboardingBanner,
+      onFirstStepClose,
+      onDatesChange,
+      onFetchPayments,
+      onExtraContentMount,
+      setScrollAmountToStickHeader,
+    } = this;
+
+    const commonProps = {
+      mode,
+      current_balance,
+      tabsMeta,
+      isAdmin,
+      analyticsFetch,
+      onFilterChange,
+      startDate,
+      endDate,
+      oldestTransactionDate,
+      dateRangePresets,
+      showGroupingByPtfm,
+      scrollAmountToStickHeader,
+      showOnboardingBannerFirstStep,
+      expandOnboardingBanner,
+      payments,
+      showOnboardingBanner,
+      isMobile,
+
+      onHideOnboardingBanner,
+      onFirstStepClose,
+      onDatesChange,
+      onFetchPayments,
+      onExtraContentMount,
+      setScrollAmountToStickHeader,
+
+      defaultPreset,
+      keymetricsSectionTitle,
+      paymentInsightsTitle,
+      recentActivityTitle,
+      trafficSectionTitle,
+    };
 
     return (
       <div class="react-root dashboard-home">
-        <div ref={node => (this.extraContent = node)} className="extra-content">
-          {!isAdmin && (
-            <div>
-              {hasNewAnalyticsTour && (
-                <div
-                  className={`v2-tour-banner${
-                    dismissNewAnalyticsBanner ? ' dismiss' : ''
-                  }`}
-                >
-                  <div className="banner-icon">
-                    <i className="i i-loudspeaker" />
-                  </div>
-                  <div className="banner-content">
-                    <Banner cta="View Tour" ctaOnClick={this.onShowTour}>
-                      <span>
-                        Take a quick tour to learn how to use dashboard
-                        analytics effectively.
-                      </span>
-                    </Banner>
-                  </div>
-                  <div className="banner-close">
-                    <a
-                      className="banner-close-icon"
-                      onClick={this.onHideNewAnalyticsBanner}
-                    >
-                      <i className="i i-close" />
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-          <div
-            className={`v2-onboarding-card${
-              expandOnboardingBanner ? ' expand' : ''
-            }`}
-          >
-            {showOnboardingBanner && (
-              <NewUserOnboardingCard
-                payments={this.state.payments}
-                onClose={this.onHideOnboardingBanner}
-                onFirstStepClose={this.onFirstStepClose}
-                isFirstStep={this.state.showOnboardingBannerFirstStep}
-              />
-            )}
-          </div>
-        </div>
-        <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}>
-          <Header className="clearfix" title="" showMode={false}>
-            <div
-              id="analytics-daterange-picker"
-              className="pull-left date-range-container"
-            >
-              <DateRangePicker
-                presets={dateRangePresets}
-                onDatesChange={this.onDatesChange}
-                defaultPreset={defaultPreset}
-                onSelectPreset={trackPresetChange}
-              />
-            </div>
-            <div className="pull-right">
-              <Group>
-                <GroupItem>
-                  <span className="balance-amount">
-                    Current Balance:{' '}
-                    {!current_balance.loading && (
-                      <Amount value={current_balance.data.balance} />
-                    )}
-                  </span>
-                </GroupItem>
-                <GroupItem>
-                  <Link className="pull-right" to="/settlements">
-                    <span
-                      className="text-no-wrap"
-                      onClick={trackSettlementsClick}
-                    >
-                      View Settlements
-                    </span>
-                  </Link>
-                </GroupItem>
-              </Group>
-            </div>
-          </Header>
-        </Sticky>
-
-        <div className="dashboard">
-          <div className="row">
-            <div className="col-md-12">
-              <KeyMetrics
-                startDate={startDate}
-                endDate={endDate}
-                oldestTransactionDate={oldestTransactionDate}
-                mode={mode}
-                showGroupingByPtfm={showGroupingByPtfm}
-                sectionTitle={keymetricsSectionTitle}
-                tabsMeta={tabsMeta}
-                isAdmin={isAdmin}
-                analyticsFetch={analyticsFetch}
-                onFilterChange={onFilterChange}
-              />
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="section-title payment-insights-title">
-                {paymentInsightsTitle}&nbsp;
-                <small>
-                  <i class="i i-help" />
-                  <Popover align="top">
-                    <PopoverBody>
-                      <p>
-                        This graph helps you gain insights into your overall
-                        payments by seeing how different payment methods stack
-                        up against each other in your revenue pool.
-                      </p>
-                      <div>
-                        <span className="popover-highlight">Click tiles</span>{' '}
-                        to drill-down into the hierarchy.
-                      </div>
-                      <div>
-                        <span className="popover-highlight">Hover</span> to view
-                        information for smaller tiles.
-                      </div>
-                    </PopoverBody>
-                  </Popover>
-                </small>
-              </div>
-            </div>
-            <div className="col-md-12">
-              <PaymentMethods
-                startDate={startDate}
-                endDate={endDate}
-                mode={mode}
-                analyticsFetch={analyticsFetch}
-                sectionTitle={paymentInsightsTitle}
-              />
-            </div>
-          </div>
-
-          <div className="row">
-            <div
-              className={`col-md-12 traffic-activity-row clearfix${
-                showGroupingByPtfm ? '' : ' traffic-hidden'
-              }`}
-            >
-              {showGroupingByPtfm && (
-                <div className="traffic-container">
-                  <p className="content-title section-title">
-                    {trafficSectionTitle}
-                  </p>
-                  <div className="content">
-                    <Traffic
-                      startDate={startDate}
-                      endDate={endDate}
-                      mode={mode}
-                      analyticsFetch={analyticsFetch}
-                      sectionTitle={trafficSectionTitle}
-                    />
-                  </div>
-                </div>
-              )}
-              {!isAdmin && (
-                <div className="activity-container">
-                  <p className="content-title section-title">
-                    {recentActivityTitle}
-                  </p>
-                  <div className="content">
-                    <RecentActivity
-                      sectionTitle={recentActivityTitle}
-                      onFetchPayments={this.onFetchPayments}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="row home-credits-section">
-            <div className="col-md-12">
-              <GenericPanel>
-                <PanelBody>
-                  <div className="text-center">
-                    <small>
-                      <i class="icon icon-info-circle" /> Please share your
-                      feedback/suggestions by clicking the Feedback button on
-                      the right edge of your screen. You could also write to us
-                      at{' '}
-                      <a target="_blank" href="mailto:support@razorpay.com">
-                        support@razorpay.com
-                      </a>.
-                    </small>
-                  </div>
-                </PanelBody>
-              </GenericPanel>
-            </div>
-          </div>
-        </div>
+        {isMobile ? <Mobile {...commonProps} /> : <Desktop {...commonProps} />}
       </div>
     );
   }

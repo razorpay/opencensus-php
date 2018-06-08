@@ -58,6 +58,7 @@ import {
 } from './ga';
 import Panel from './Panel';
 import MiniChart from './TinyAreaChart';
+import Mobile from './Mobile';
 
 const csvDateFormat = 'DD-MM-YYYY';
 
@@ -252,6 +253,7 @@ class KeyMetricsContainer extends Component {
     this.handleTabChange = ::this.handleTabChange;
     this.onScreenshot = ::this.onScreenshot;
     this.setTabWidth = ::this.setTabWidth;
+    this.getVisibleTabs = ::this.getVisibleTabs;
   }
 
   setTabWidth() {
@@ -412,7 +414,7 @@ class KeyMetricsContainer extends Component {
         selectedGrouping,
         selectedBreakdown,
       } = this.state.tabsState[tabName],
-      { startDate, endDate } = this.props;
+      { startDate, endDate, isMobile } = this.props;
 
     let filterBy = null;
 
@@ -431,7 +433,7 @@ class KeyMetricsContainer extends Component {
       endTime: endDate.unix(),
       groupBy: !!selectedGrouping && selectedGrouping.value,
       filterBy,
-      includeHistogramForTab: !!fetchAllCounts && tabName,
+      includeHistogramForTab: !!fetchAllCounts && !isMobile && tabName,
     });
   }
 
@@ -627,13 +629,15 @@ class KeyMetricsContainer extends Component {
           this.state.loading = false;
         }
 
-        this.setState(this.state, () => {
-          this.setTabWidth();
+        if (!this.props.isMobile) {
+          this.setState(this.state, () => {
+            this.setTabWidth();
 
-          if (fetchAllCounts) {
-            this.fetchOtherTabsHistogram(fetchAllCounts);
-          }
-        });
+            if (fetchAllCounts) {
+              this.fetchOtherTabsHistogram(fetchAllCounts);
+            }
+          });
+        }
 
         return resp;
       })
@@ -825,7 +829,7 @@ class KeyMetricsContainer extends Component {
     const fetchAllReq = (this.fetchAllReq = this.fetchData(true));
 
     if (this.props.oldestTransactionDate.value) {
-      this.fetchPrevData(fetchReq);
+      this.fetchPrevData(fetchAllReq);
     }
   }
 
@@ -967,8 +971,27 @@ class KeyMetricsContainer extends Component {
 
   render() {
     const { tabsState, loading, tabWidth, selectedTab } = this.state,
-      { startDate, endDate, showGroupingByPtfm, sectionTitle } = this.props,
+      {
+        startDate,
+        endDate,
+        showGroupingByPtfm,
+        sectionTitle,
+        isMobile,
+      } = this.props,
       visibleTabs = this.getVisibleTabs();
+
+    if (this.props.isMobile) {
+      return (
+        <Mobile
+          tabsState={tabsState}
+          getVisibleTabs={this.getVisibleTabs}
+          startDate={startDate}
+          endDate={endDate}
+          loading={loading}
+          sectionTitle={sectionTitle}
+        />
+      );
+    }
 
     return (
       <div
