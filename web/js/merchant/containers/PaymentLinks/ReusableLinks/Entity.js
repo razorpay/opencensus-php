@@ -12,11 +12,10 @@ import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
-import { showNotification } from 'rzp/modules/notifications';
-import { classList } from 'common/util';
 import StatsInfo from 'ui/StatsTable';
+import GroupDetailsTable from 'rzp/ui/GroupDetailsTable';
 
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import { showNotification } from 'rzp/modules/notifications';
 
 @connect(null, { showNotification })
 export default class ReusableLinksEntity extends Component {
@@ -199,12 +198,45 @@ export default class ReusableLinksEntity extends Component {
                     value={reusableLink.notes}
                   />
 
-                  <PaymentDetailsTable
+                  <GroupDetailsTable
                     title="Successful Payments"
                     subTitle={`${reusableLink.total_amount_paid} total sales`}
                     class="reusable-link-payments-table"
-                    items={reusableLinkPayments}
                     loading={paymentsListLoading}
+                    items={reusableLinkPayments}
+                    rowConfig={[
+                      [
+                        data => (
+                          <span class="label--primary">{data.contact}</span>
+                        ),
+                        data => (
+                          <NavLink
+                            class="btn-link no-padding"
+                            to={`/payments/${data.id}`}
+                            target="_blank"
+                          >
+                            {data.id}
+                          </NavLink>
+                        ),
+                      ],
+                      [
+                        data => (
+                          <span class="label--secondary">{data.email}</span>
+                        ),
+                        data => (
+                          <span class="label--secondary">
+                            <Time
+                              value={data.created_at}
+                              format="DD MMM YYYY, hh:mm:ss a"
+                            />
+                          </span>
+                        ),
+                      ],
+                    ]}
+                    loaderConfig={[
+                      [{ width: '70%' }, { width: '45%' }],
+                      [{ width: '60%', height: '10px' }, { width: '30%' }],
+                    ]}
                   />
                 </div>
               </div>
@@ -215,78 +247,3 @@ export default class ReusableLinksEntity extends Component {
     );
   }
 }
-
-const PaymentDetailsTable = ({
-  title,
-  subTitle,
-  className,
-  loading,
-  items,
-}) => {
-  return (
-    <div class={classList('entity-detail-list', className)}>
-      <div class="list-heading">
-        <span class="label--primary">
-          <b>{title}</b>
-        </span>
-        <span class="label--secondary">{subTitle}</span>
-      </div>
-      {items.map((rowData, idx) => (
-        <PaymentDetailsRow key={idx} rowData={rowData} loading={loading} />
-      ))}
-    </div>
-  );
-};
-
-const PaymentDetailsRow = ({ loading, rowData }) => {
-  return (
-    <div class="entity-detail-row">
-      <div class="row-item content">
-        <div class="detail-row">
-          <div class="row-element left">
-            {loading ? (
-              <PlaceholderLoader style={{ width: '70%' }} />
-            ) : (
-              <span class="label--primary">{rowData.contact}</span>
-            )}
-          </div>
-          <div class="row-element right">
-            {loading ? (
-              <PlaceholderLoader style={{ width: '45%' }} />
-            ) : (
-              <NavLink
-                class="btn-link no-padding"
-                to={`/payments/${rowData.id}`}
-                target="_blank"
-              >
-                {rowData.id}
-              </NavLink>
-            )}
-          </div>
-        </div>
-
-        <div class="detail-row">
-          <div class="row-element left">
-            {loading ? (
-              <PlaceholderLoader style={{ width: '60%', height: '10px' }} />
-            ) : (
-              <span class="label--secondary">{rowData.email}</span>
-            )}
-          </div>
-          <div class="row-element right">
-            {loading ? (
-              <PlaceholderLoader style={{ width: '30%' }} />
-            ) : (
-              <span class="label--secondary">
-                <Time
-                  value={rowData.created_at}
-                  format="DD MMM YYYY, hh:mm:ss a"
-                />
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
