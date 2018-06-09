@@ -9,10 +9,11 @@ import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { Link } from 'react-router-dom';
-import { AsyncBtn } from 'component/Button';
 import DataTable from 'rzp/ui/Table/DataTable';
 import { paymentId, amount, paidOn } from 'rzp/ui/item/pair';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
+import Button, { AsyncBtn } from 'component/Button';
+import Input from 'component/Input';
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -99,7 +100,7 @@ export default props => {
   const isCancelled = status === 'cancelled';
   const isExpired = status === 'expired';
 
-  const isFormEditable = true; // To be linked with RazorX as per experiment
+  const isRazorXExperiment = true; // To be linked with RazorX as per experiment
 
   let isSmsOrEmailSent =
     invoice.sms_status === 'sent' || invoice.email_status === 'sent';
@@ -182,12 +183,19 @@ export default props => {
                             }
                           >
                             {isPartialPayment ? 'Enabled' : 'Disabled'}
-                            {isFormEditable &&
+                            {isRazorXExperiment &&
                               isIssued && (
                                 <AsyncBtn.Transparent
                                   onClick={() =>
                                     editPaymentLink({
                                       partial_payment: +!isPartialPayment,
+                                    }).catch(({ errors }) => {
+                                      props.showNotification({
+                                        type: 'error',
+                                        message:
+                                          errors ||
+                                          'Some Network error occured',
+                                      });
                                     })
                                   }
                                   class="Button--Link"
@@ -227,7 +235,20 @@ export default props => {
                     />
                   )}
                 />
-                <EntityDetailRow label="Receipt" value={invoice.receipt} />
+                <EntityDetailRow
+                  label="Receipt"
+                  value={
+                    isRazorXExperiment && isIssued
+                      ? () => (
+                          <ReceiptField
+                            value={invoice.receipt}
+                            editPaymentLink={editPaymentLink}
+                          />
+                        )
+                      : invoice.receipt || '--'
+                  }
+                />
+
                 <EntityDetailRow label="Customer Details">
                   {getCustomerDetail(invoice)}
                 </EntityDetailRow>
@@ -265,3 +286,83 @@ export default props => {
     </div>
   );
 };
+
+class ReceiptField extends React.Component {
+  state = {
+    isEditableMode: false,
+    receipt: this.props.value || '',
+  };
+
+  makeEditable = () => {
+    this.setState({
+      isEditableMode: true,
+    });
+    setTimeout(() => document.getElementsByName('receipt_no')[0].focus(), 10);
+  };
+
+  render() {
+    let content = (
+      <React.Fragment>
+        {this.state.receipt || '--'}
+        <Button.Transparent
+          onClick={this.makeEditable}
+          class="Button--Link"
+          style={{ marginLeft: 12 }}
+        >
+          Change
+        </Button.Transparent>
+      </React.Fragment>
+    );
+
+    if (this.state.isEditableMode) {
+      content = (
+        <React.Fragment>
+          <Input
+            name="receipt_no"
+            propagatedError={this.state.propagatedError}
+            placeholder="Receipt No."
+            class="Input--half_big Input--inline"
+            required={true}
+            value={this.state.receipt}
+            onChange={e => {
+              this.setState({
+                receipt: e.target.value,
+                propagatedError: '',
+              });
+            }}
+          />
+          <AsyncBtn.Transparent
+            disabled={!this.state.receipt}
+            onClick={() =>
+              this.props
+                .editPaymentLink({
+                  receipt: this.state.receipt,
+                })
+                .then(resp => {
+                  if (resp.data) {
+                    this.setState({
+                      isEditableMode: false,
+                    });
+                  }
+                })
+                .catch(({ errors }) => {
+                  this.setState({
+                    propagatedError: Array.isArray(errors)
+                      ? errors[0]
+                      : errors || 'Some Network error occured',
+                  });
+                })
+            }
+            class="Button--Link"
+            style={{ position: 'absolute', top: 8, left: 208 }}
+            pendingState="Saving"
+          >
+            Save
+          </AsyncBtn.Transparent>
+        </React.Fragment>
+      );
+    }
+
+    return content;
+  }
+}

@@ -21,8 +21,8 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { showNotification } from 'rzp/modules/notifications';
 
 import {
-  updatePaymentLinksList,
-  updateRPLReduxList,
+  savePLInReduxList,
+  saveRPLInReduxList,
 } from 'merchant/modules/invoices/list';
 import { luminateRow } from 'merchant/modules/app';
 import moment from 'moment';
@@ -139,8 +139,8 @@ function WizardFields(field) {
 @withRouter
 @connect(state => state.session, {
   showNotification,
-  updatePaymentLinksList,
-  updateRPLReduxList,
+  savePLInReduxList,
+  saveRPLInReduxList,
   luminateRow,
 })
 export default class CreateNewContainer extends React.Component {
@@ -424,9 +424,9 @@ export default class CreateNewContainer extends React.Component {
 
           if (IS_MODAL_VIEW) {
             if (activeTabIndx == PAYMENT_LINK) {
-              this.props.updatePaymentLinksList(resp);
+              this.props.savePLInReduxList(resp);
             } else if (activeTabIndx == REUSABLE_PAYMENT_LINK) {
-              this.props.updateRPLReduxList(resp.data);
+              this.props.saveRPLInReduxList(resp.data);
             }
 
             this.props.luminateRow(entityId); // Make it promise based

@@ -22,23 +22,31 @@ export const saveInvoice = params => {
   };
 };
 
-/* Hook to update invoice list from invoice data fetched separately */
-export const updatePaymentLinksList = newInvoice => {
+/* Hook to update newly created payment link in redux list*/
+export const savePLInReduxList = newInvoice => {
   return {
     type: `${INVOICE_CREATE}::SUCCESS`,
     payload: new Invoice(newInvoice.data),
   };
 };
 
-/* Hook to update invoice list from invoice list fetched separately */
-export const updateRPLReduxList = newLink => {
+/* Hook to update edited invoice in redux list */
+export const editPLInReduxList = invoice => {
+  return {
+    type: `${INVOICE_EDIT}::SUCCESS`,
+    payload: new Invoice(invoice.data),
+  };
+};
+
+/* Hook to update newly created reusable link in redux list */
+export const saveRPLInReduxList = newLink => {
   return {
     type: 'RPL_CREATE',
     payload: newLink,
   };
 };
 
-/* Hook to populate invoice list from invoice list fetched separately */
+/* Hook to populate reusable links list fetched separately from api */
 export const populateRPLReduxList = newLinksList => {
   return {
     type: 'RPL_FETCH',

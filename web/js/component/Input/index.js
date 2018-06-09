@@ -36,7 +36,11 @@ export function inputClass({ props, state, className }) {
       wrapperClass += ' is-mature';
     }
 
-    if (state.error) {
+    /*
+    * 'propagatedError' is used to show api related errors.
+    * It's developer's repsonsibility to flush 'propagatedError' -> on onChange, or as per requirement, else it'll always remain visible.
+    * */
+    if (state.error || props.propagatedError) {
       wrapperClass += ' is-invalid';
     }
   }
@@ -65,6 +69,7 @@ export function separateDomProps(props) {
     showClearDate,
     startOfDayTimeStamp,
     placement,
+    propagatedError,
     ...rest
   } = props;
 
@@ -87,6 +92,7 @@ export function separateDomProps(props) {
     showClearDate,
     startOfDayTimeStamp,
     placement,
+    propagatedError,
     props: rest,
   };
 }
@@ -341,7 +347,7 @@ export default class Field extends React.Component {
             )}
             <Info text={infoEle} />
           </div>
-          <Error text={this.state.error} />
+          <Error text={this.state.error || this.props.propagatedError} />
           <Description text={descriptionEle} />
         </div>
       </div>
