@@ -10,12 +10,12 @@
   transition: 0.15s, 0.3s border
   &:active
     color: #58666e
-    background-color: #cfcfcf
+    background: #cfcfcf
     border-color: #94abb1
     box-shadow: inset 0 3px 5px rgba(0,0,0,0.125)
 
   &:hover:not(:disabled)
-    background-color: #f2f2f2
+    background: #f2f2f2
 
   &:disabled
     cursor: not-allowed !important
@@ -29,7 +29,7 @@
   margin: 0
   line-height: inherit
 
-  &:hover
+  &:hover:not(:disabled)
     background: transparent
     color: $primary-color-hover
     opacity: 0.85
@@ -45,18 +45,18 @@
       text-decoration: underline
 
 .Button--primary
-  background-color: $primary-color
+  background: $primary-color
   color: #fff
   border: darken($primary-color, 10%)
 
   &:hover:not(:disabled)
     color: #fff
-    background-color: $primary-color-hover
+    background: $primary-color-hover
     border-color: #135fd9
 
   &:active
     color: #fff
-    background-color: #135fd9
+    background: #135fd9
     border-color: #0e449c
 
 .Button-icon
