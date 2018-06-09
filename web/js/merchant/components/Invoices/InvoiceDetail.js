@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { AsyncBtn } from 'component/Button';
 import DataTable from 'rzp/ui/Table/DataTable';
 import { paymentId, amount, paidOn } from 'rzp/ui/item/pair';
+import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -168,28 +169,30 @@ export default props => {
                     <EntityDetailRow
                       label="Amount Paid"
                       value={() => (
-                        <Amount
-                          value={invoice.amount_paid}
-                          currency={invoice.currency}
-                        />
+                        <React.Fragment>
+                          <Amount
+                            value={invoice.amount_paid}
+                            currency={invoice.currency}
+                          />
+                          <ContentToggler>
+                            <span>View Payment Details</span>
+                            <div className="full-width-item sub-entity-list">
+                              {invoice.partial_payment && invoice.payments ? (
+                                <DataTable
+                                  title="Payments"
+                                  progressLoader={true}
+                                  columns={[paymentId, paidOn, amount]}
+                                  items={invoice && invoice.payments.items}
+                                  noStripe={true}
+                                />
+                              ) : null}
+                            </div>
+                          </ContentToggler>
+                        </React.Fragment>
                       )}
                     />
                   </React.Fragment>
                 </ShowWhen>
-                <EntityDetailRow
-                  label="Payment Id"
-                  value={() => {
-                    if (!invoice.payment_id) {
-                      return '--';
-                    }
-                    return (
-                      <Link to={`/payments/${invoice.payment_id}`}>
-                        <code>{invoice.payment_id}</code>
-                      </Link>
-                    );
-                  }}
-                />
-
                 <EntityDetailRow
                   label="Payment Link"
                   value={() => (
@@ -246,18 +249,6 @@ export default props => {
                     'API'
                   )}
                 </EntityDetailRow>
-
-                <ShowWhen featureEnabled="Invoice_Partial_Payments">
-                  {invoice.partial_payment && invoice.payments ? (
-                    <DataTable
-                      title="Payments"
-                      progressLoader={true}
-                      columns={[paymentId, paidOn, amount]}
-                      items={invoice && invoice.payments.items}
-                      noStripe={true}
-                    />
-                  ) : null}
-                </ShowWhen>
               </div>
             </div>
           </div>
