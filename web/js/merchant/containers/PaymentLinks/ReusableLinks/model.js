@@ -17,8 +17,14 @@ export function createReusableLink(data) {
   });
 }
 
-export const fetchReusableLinksEntity = id =>
-  merchantFetch(`payment_links/${id}`);
+export const fetchReusableLinksEntity = id => {
+  return merchantFetch({
+    url: `payment_links/${id}`,
+    params: {
+      expand: ['user'],
+    },
+  });
+};
 
 export const fetchReusableLinksList = data =>
   merchantFetch({

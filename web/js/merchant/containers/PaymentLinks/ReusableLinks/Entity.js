@@ -163,7 +163,7 @@ export default class ReusableLinksEntity extends Component {
                     )}
                   />
                   <EntityDetailRow
-                    label="Description"
+                    label="Payment For"
                     pairClass="description"
                     value={() => (
                       <div>
@@ -176,6 +176,17 @@ export default class ReusableLinksEntity extends Component {
                       </div>
                     )}
                   />
+                  <EntityDetailRow label="Created by">
+                    {!!reusableLink.user ? (
+                      <Definition>
+                        {reusableLink.user.name}
+                        {reusableLink.user.email}
+                      </Definition>
+                    ) : (
+                      'API'
+                    )}
+                  </EntityDetailRow>
+
                   <EntityDetailRow
                     label="Created At"
                     value={() => <Time value={reusableLink.date} />}
@@ -200,7 +211,15 @@ export default class ReusableLinksEntity extends Component {
 
                   <GroupDetailsTable
                     title="Successful Payments"
-                    subTitle={`${reusableLink.total_amount_paid} total sales`}
+                    subTitle={
+                      <React.Fragment>
+                        <Amount
+                          value={reusableLink.total_amount_paid}
+                          currency={reusableLink.currency}
+                        />{' '}
+                        total sales
+                      </React.Fragment>
+                    }
                     class="reusable-link-payments-table"
                     loading={paymentsListLoading}
                     items={reusableLinkPayments}

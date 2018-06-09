@@ -151,11 +151,11 @@ export default class ReusableLinksContianer extends ListContainer {
 
         {loading || paymentLinksList.length ? (
           <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table table-hover table-striped">
               <thead>
                 <tr>
                   <th>Title</th>
-                  <th class="text-right">Amount</th>
+                  <th>Amount</th>
                   <th>Payments Made</th>
                   <th>Times Payable</th>
                   <th>Total Sales</th>
@@ -177,12 +177,17 @@ export default class ReusableLinksContianer extends ListContainer {
                         <code>{item.title}</code>
                       </NavLink>
                     </td>
-                    <td class="text-right">
+                    <td>
                       <Amount value={item.amount} currency={item.currency} />
                     </td>
                     <td>{item.times_paid}</td>
-                    <td>{item.times_payable}</td>
-                    <td>{item.total_amount_paid}</td>
+                    <td>{item.times_payable || '--'}</td>
+                    <td>
+                      <Amount
+                        value={item.total_amount_paid}
+                        currency={item.currency}
+                      />
+                    </td>
                     <td>
                       {item.short_url && (
                         <span class="CopyLink">
