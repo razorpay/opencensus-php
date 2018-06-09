@@ -18,10 +18,14 @@ import Time from 'rzp/ui/Time';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { showNotification } from 'rzp/modules/notifications';
 
-@connect(null, { showNotification })
-export default class ReusableLinksContianer extends ListContainer {
+import { populateRPLReduxList } from 'merchant/modules/invoices/list';
+
+@connect(state => ({ ...state.invoices, ...state.session }), {
+  showNotification,
+  populateRPLReduxList,
+})
+export default class ReusableLinksContainer extends ListContainer {
   state = {
-    paymentLinksList: [],
     loading: true,
   };
 
@@ -29,7 +33,7 @@ export default class ReusableLinksContianer extends ListContainer {
     return fetchReusableLinksList(params)
       .then(resp => {
         if (resp.data) {
-          this.setState({ paymentLinksList: resp.data.items });
+          this.props.populateRPLReduxList(resp);
         }
 
         this.setState({ loading: false });
@@ -73,7 +77,8 @@ export default class ReusableLinksContianer extends ListContainer {
   };
 
   render() {
-    let { paymentLinksList, loading } = this.state;
+    const { loading } = this.state;
+    const { reusableLinks } = this.props;
 
     return (
       <div class="content-wrapper">
@@ -149,7 +154,7 @@ export default class ReusableLinksContianer extends ListContainer {
           </div>
         </ListFilter>
 
-        {loading || paymentLinksList.length ? (
+        {loading || reusableLinks.length ? (
           <div class="table-responsive">
             <table class="table table-hover table-striped">
               <thead>
@@ -167,10 +172,10 @@ export default class ReusableLinksContianer extends ListContainer {
               <TableBody
                 isLoading={loading}
                 colSpan={8}
-                rows={paymentLinksList}
+                rows={reusableLinks}
                 emptyTableMsg="No data found!"
               >
-                {paymentLinksList.map(item => (
+                {reusableLinks.map(item => (
                   <EntityItemRow id={item.id} key={item.id}>
                     <td>
                       <NavLink to={`/paymentlinks/reusable/${item.id}`}>
@@ -234,11 +239,11 @@ export default class ReusableLinksContianer extends ListContainer {
         )}
 
         {!loading &&
-          paymentLinksList.length && (
+          reusableLinks.length && (
             <Pager
               count={this.state.count}
               skip={this.state.skip}
-              length={paymentLinksList.length}
+              length={reusableLinks.length}
               onClick={this.paginate}
             />
           )}

@@ -30,6 +30,22 @@ export const updatePaymentLinksList = newInvoice => {
   };
 };
 
+/* Hook to update invoice list from invoice list fetched separately */
+export const updateRPLReduxList = newLink => {
+  return {
+    type: 'RPL_CREATE',
+    payload: newLink,
+  };
+};
+
+/* Hook to populate invoice list from invoice list fetched separately */
+export const populateRPLReduxList = newLinksList => {
+  return {
+    type: 'RPL_FETCH',
+    payload: newLinksList,
+  };
+};
+
 export const deleteInvoice = params => {
   let invoice = new Invoice(params);
   return {
@@ -41,6 +57,7 @@ export const deleteInvoice = params => {
 let initialState = {
   loading: true,
   invoices: [],
+  reusableLinks: [],
   count: 0,
 };
 
@@ -64,6 +81,18 @@ export default function(state = initialState, action) {
 
     case `${INVOICE_CREATE}::SUCCESS`:
       return set(state, 'invoices', unshift(state.invoices, action.payload));
+
+    case 'RPL_CREATE':
+      return set(
+        state,
+        'reusableLinks',
+        unshift(state.reusableLinks, action.payload)
+      );
+
+    case 'RPL_FETCH':
+      return merge(state, {
+        reusableLinks: action.payload.data.items,
+      });
 
     case `${INVOICE_EDIT}::SUCCESS`:
       let invoiceIndex = state.invoices.findIndex(

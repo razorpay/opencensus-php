@@ -20,7 +20,10 @@ import ShowWhen from 'merchant/components/ShowWhen';
 
 import { showNotification } from 'rzp/modules/notifications';
 
-import { updatePaymentLinksList } from 'merchant/modules/invoices/list';
+import {
+  updatePaymentLinksList,
+  updateRPLReduxList,
+} from 'merchant/modules/invoices/list';
 import { luminateRow } from 'merchant/modules/app';
 import moment from 'moment';
 
@@ -137,6 +140,7 @@ function WizardFields(field) {
 @connect(state => state.session, {
   showNotification,
   updatePaymentLinksList,
+  updateRPLReduxList,
   luminateRow,
 })
 export default class CreateNewContainer extends React.Component {
@@ -416,17 +420,28 @@ export default class CreateNewContainer extends React.Component {
             message: notificationMSG,
           });
 
-          const invoiceId = resp.data.id;
+          const entityId = resp.data.id;
 
-          if (activeTabIndx == PAYMENT_LINK) {
-            if (IS_MODAL_VIEW) {
+          if (IS_MODAL_VIEW) {
+            if (activeTabIndx == PAYMENT_LINK) {
               this.props.updatePaymentLinksList(resp);
-              this.props.luminateRow(invoiceId); // Make it promise based
-
-              setTimeout(this.props.onClose, 50);
-            } else {
-              this.props.history.push('/paymentlinks/' + invoiceId);
+            } else if (activeTabIndx == REUSABLE_PAYMENT_LINK) {
+              this.props.updateRPLReduxList(resp.data);
             }
+
+            this.props.luminateRow(entityId); // Make it promise based
+
+            setTimeout(this.props.onClose, 50);
+          } else {
+            let redirectUrl;
+
+            if (activeTabIndx == PAYMENT_LINK) {
+              redirectUrl = '/paymentlinks/' + entityId;
+            } else if (activeTabIndx == REUSABLE_PAYMENT_LINK) {
+              redirectUrl = '/paymentlinks/reusable/' + entityId;
+            }
+
+            this.props.history.push(redirectUrl);
           }
         } else {
           throw new Error(resp.errors);
