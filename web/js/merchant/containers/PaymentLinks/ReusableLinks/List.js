@@ -84,7 +84,7 @@ export default class ReusableLinksContianer extends ListContainer {
             <div class="btn-toolbar pull-right">
               <NavLink class="btn btn-primary" to="/paymentlinks/reusable/new">
                 <i class="i i-plus" />
-                <span>Create Payment Link</span>
+                <span>Create Reusable Link</span>
               </NavLink>
             </div>
           </ShowWhen>
@@ -149,72 +149,94 @@ export default class ReusableLinksContianer extends ListContainer {
           </div>
         </ListFilter>
 
-        <div class="table-responsive">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th class="text-right">Amount</th>
-                <th>Payments Made</th>
-                <th>Times Payable</th>
-                <th>Total Sales</th>
-                <th>Link Url</th>
-                <th>Created At</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <TableBody
-              isLoading={loading}
-              colSpan={8}
-              rows={paymentLinksList}
-              emptyTableMsg="No data found!"
+        {loading || paymentLinksList.length ? (
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th class="text-right">Amount</th>
+                  <th>Payments Made</th>
+                  <th>Times Payable</th>
+                  <th>Total Sales</th>
+                  <th>Link Url</th>
+                  <th>Created At</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <TableBody
+                isLoading={loading}
+                colSpan={8}
+                rows={paymentLinksList}
+                emptyTableMsg="No data found!"
+              >
+                {paymentLinksList.map(item => (
+                  <EntityItemRow id={item.id} key={item.id}>
+                    <td>
+                      <NavLink to={`/paymentlinks/reusable/${item.id}`}>
+                        <code>{item.title}</code>
+                      </NavLink>
+                    </td>
+                    <td class="text-right">
+                      <Amount value={item.amount} currency={item.currency} />
+                    </td>
+                    <td>{item.times_paid}</td>
+                    <td>{item.times_payable}</td>
+                    <td>{item.total_amount_paid}</td>
+                    <td>
+                      {item.short_url && (
+                        <span class="CopyLink">
+                          <span>{item.short_url}</span>
+                          <CustomClipboard
+                            value={item.short_url}
+                            onCopy={this.onCopy({
+                              itemId: item.id,
+                            })}
+                          >
+                            <button class="btn btn-default btn-xs">copy</button>
+                          </CustomClipboard>
+                        </span>
+                      )}
+                    </td>
+                    <td>
+                      <Time value={item.created_at} />
+                    </td>
+                    <td>
+                      <ReusableLinksStatusLabel status={item.status} />
+                    </td>
+                  </EntityItemRow>
+                ))}
+              </TableBody>
+            </table>
+          </div>
+        ) : (
+          <div class="Onboarding Onboarding--ReusableLinks">
+            <div class="illustration" />
+            You haven't created any reusable links yet.{' '}
+            <a
+              class="btn-link"
+              href="https://razorpay.com/docs/private/partial-payments/"
+              target="_blank"
             >
-              {paymentLinksList.map(item => (
-                <EntityItemRow id={item.id} key={item.id}>
-                  <td>
-                    <NavLink to={`/paymentlinks/reusable/${item.id}`}>
-                      <code>{item.title}</code>
-                    </NavLink>
-                  </td>
-                  <td class="text-right">
-                    <Amount value={item.amount} currency={item.currency} />
-                  </td>
-                  <td>{item.times_paid}</td>
-                  <td>{item.times_payable}</td>
-                  <td>{item.total_amount_paid}</td>
-                  <td>
-                    {item.short_url && (
-                      <span class="CopyLink">
-                        <span>{item.short_url}</span>
-                        <CustomClipboard
-                          value={item.short_url}
-                          onCopy={this.onCopy({
-                            itemId: item.id,
-                          })}
-                        >
-                          <button class="btn btn-default btn-xs">copy</button>
-                        </CustomClipboard>
-                      </span>
-                    )}
-                  </td>
-                  <td>
-                    <Time value={item.created_at} />
-                  </td>
-                  <td>
-                    <ReusableLinksStatusLabel status={item.status} />
-                  </td>
-                </EntityItemRow>
-              ))}
-            </TableBody>
-          </table>
-        </div>
+              Learn more
+            </a>
+            <br />
+            <NavLink class="btn btn-primary" to="/paymentlinks/reusable/new">
+              <i class="i i-plus" />
+              <span>Create your first Reusable Link</span>
+            </NavLink>
+          </div>
+        )}
 
-        <Pager
-          count={this.state.count}
-          skip={this.state.skip}
-          length={paymentLinksList.length}
-          onClick={this.paginate}
-        />
+        {!loading &&
+          paymentLinksList.length && (
+            <Pager
+              count={this.state.count}
+              skip={this.state.skip}
+              length={paymentLinksList.length}
+              onClick={this.paginate}
+            />
+          )}
       </div>
     );
   }
