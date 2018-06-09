@@ -140,6 +140,10 @@ function WizardFields(field) {
   luminateRow,
 })
 export default class CreateNewContainer extends React.Component {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
   constructor(props) {
     super(props);
 
@@ -174,16 +178,29 @@ export default class CreateNewContainer extends React.Component {
     };
   }
 
-  static contextTypes = {
-    confirm: PropTypes.func,
-  };
+  componentDidMount() {
+    this.toggleDisableState();
+  }
 
-  saveDirtyState = e => {
-    console.log(
-      'Some changes are unsaved. Check ref.state for content.',
-      this.wizardContent && this.wizardContent.state
+  componentDidUpdate() {
+    this.toggleDisableState();
+  }
+
+  toggleDisableState() {
+    /*
+    * Fields like: 'Time Payable' is required on checkbox. So, if value not selected, html marks it as ':invalid' which is tehnically valid in our case.
+    * Hence, relying on is-invalid.
+    * */
+    // const invalidFields = document.querySelectorAll('.PaymentLinks--Create-Form :invalid');
+    const invalidFields = document.querySelectorAll(
+      '.PaymentLinks--Create-Form .Input.is-invalid'
     );
-  };
+    const disableSubmit = invalidFields.length;
+
+    if (this.state.disableSubmit !== disableSubmit) {
+      this.setState({ disableSubmit });
+    }
+  }
 
   onChange = ({ target }) => {
     let stateName = target.getAttribute('data-name');
@@ -515,6 +532,7 @@ export default class CreateNewContainer extends React.Component {
         onCreate={this.onCreate}
         isModalView={IS_MODAL_VIEW}
         onFormAbruptClose={this.onFormAbruptClose}
+        disableSubmit={this.state.disableSubmit}
       />
     );
 
@@ -537,7 +555,7 @@ class CreateWizard extends React.Component {
   };
 
   render() {
-    const { activeTab } = this.props;
+    const { activeTab, disableSubmit } = this.props;
 
     return (
       <div class="PaymentLinks--Create Wizard">
@@ -564,6 +582,7 @@ class CreateWizard extends React.Component {
 
           {/* FORM */}
           <Form
+            class="PaymentLinks--Create-Form"
             onChange={this.props.onChange}
             layout="tabular"
             key={FORM_TABS[activeTab].title}
@@ -583,6 +602,7 @@ class CreateWizard extends React.Component {
           <AsyncBtn.Primary
             onClick={this.props.onCreate}
             pendingState={'Creating...'}
+            disabled={disableSubmit}
           >
             Create {FORM_TABS[activeTab].title}
           </AsyncBtn.Primary>

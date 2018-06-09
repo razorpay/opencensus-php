@@ -1047,7 +1047,7 @@ export default class ActivationWizard extends React.Component {
                 {isLastTab &&
                   !isFormSubmitted && (
                     <Button.Primary
-                      class={classList(!this.isAllTabsValid() && 'disabled')}
+                      disabled={!this.isAllTabsValid()}
                       onClick={this.toggleSubmitLayer}
                     >
                       Submit Form
@@ -1316,7 +1316,7 @@ class SubmitForm extends React.Component {
 
           {/* Action button */}
           <AsyncBtn.Primary
-            class={this.state.allowSubmit ? '' : 'disabled'}
+            disabled={!this.state.allowSubmit}
             onClick={this.submit}
             pendingState={'Submitting...'}
           >
