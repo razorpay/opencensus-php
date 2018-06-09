@@ -26,6 +26,7 @@ import {
 } from 'merchant/modules/invoices/list';
 import { luminateRow } from 'merchant/modules/app';
 import moment from 'moment';
+import { dateCalculator, timeCalculator } from 'component/Input/Calendar';
 
 const FORM_TABS = [
   {
@@ -171,12 +172,12 @@ export default class CreateNewContainer extends React.Component {
       _name: {
         // Object, cuz dirty is also object
         [PAYMENT_LINK]: {
-          expiry: '1', // 1 => selected
+          hasNoExpiry: '1', // 1 => selected
         },
         [REUSABLE_PAYMENT_LINK]: {
-          noLimit: '1', // 1 => selected
-          expiry: '1', // 1 => selected
-          addDesc: '0', // 0 => not-selected
+          hasNoLimit: '1', // 1 => selected
+          hasNoExpiry: '1', // 1 => selected
+          hasDesc: '0', // 0 => not-selected
         },
       },
     };
@@ -270,61 +271,23 @@ export default class CreateNewContainer extends React.Component {
 
   /* Handle change of time from time picker */
   onTimeChange(date) {
-    if (date && date.target) {
-      // Check if date is not of event type
-      return;
-    }
-
-    const selectedTime = date.valueOf();
-    const dayStartTime = date.startOf('day').valueOf();
-
-    const offsetTime = selectedTime - dayStartTime; // Offset since start of day
-
     const activeTabIndx = String(this.state.activeTab);
     const curDate = this.state._name[activeTabIndx].expire_by_date;
 
-    const expiryByTime = curDate.startOf('day').valueOf() + offsetTime;
-    this.updateDate(expiryByTime);
+    timeCalculator(date, curDate, this.updateDate);
   }
 
   /* Handle change of time from time picker */
   onDateChange(date) {
-    if (date && date.target) {
-      // Check if date is not of event type
-      return;
-    }
-
     const activeTabIndx = String(this.state.activeTab);
     const curExpiryByTime = this.state.dirty[activeTabIndx].expire_by;
 
-    let newExpiryTime;
-
-    if (date) {
-      let offsetTime = 0;
-
-      if (curExpiryByTime) {
-        offsetTime =
-          curExpiryByTime.valueOf() - curExpiryByTime.startOf('day').valueOf(); // Offset since start of day
-      }
-
-      newExpiryTime = date.startOf('day').valueOf() + offsetTime;
-    } else {
-      newExpiryTime = null;
-    }
-
-    if (!curExpiryByTime && newExpiryTime) {
-      setTimeout(() => {
-        // document.getElementsByName('expire_by')[0].value = expiryTime;
-        document.getElementsByName('expire_by')[0].focus();
-      }, 100);
-    }
-
-    this.updateDate(newExpiryTime);
+    dateCalculator(date, curExpiryByTime, this.updateDate);
   }
 
   /* Handle change of date from calendar */
-  updateDate(timestamp) {
-    const newDate = moment(timestamp);
+  updateDate = ts => {
+    const newDate = moment(ts);
 
     const activeTabIndx = String(this.state.activeTab);
 
@@ -344,7 +307,7 @@ export default class CreateNewContainer extends React.Component {
       dirty: newDirty,
       _name: _newName,
     });
-  }
+  };
 
   /* Handle change of notes */
   onChangeNotes = pairs => {
@@ -407,8 +370,13 @@ export default class CreateNewContainer extends React.Component {
       // TODO: To show popup here instead of notification
     }
 
+    const reqPayload = { ...this.state.dirty[activeTabIndx] };
+    if (this.state._name[activeTabIndx].hasNoExpiry == '1') {
+      delete reqPayload.expire_by;
+    }
+
     return FORM_TABS[activeTabIndx]
-      .onCreate(this.state.dirty[activeTabIndx])
+      .onCreate(reqPayload)
       .then(resp => {
         this.setState({
           parentFormLock: false,

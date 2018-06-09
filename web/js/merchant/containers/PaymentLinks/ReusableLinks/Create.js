@@ -27,7 +27,7 @@ export default [
       label: 'Payment For',
       placeholder: 'Payment Title',
       description: form => {
-        if (form.state._name[form.state.activeTab].addDesc == '0') {
+        if (form.state._name[form.state.activeTab].hasDesc == '0') {
           return 'This will be visible to the customer';
         }
       },
@@ -38,14 +38,14 @@ export default [
       placeholder: 'Provide additional description',
       _cmp: Input.Textarea,
       description: form => {
-        if (form.state._name[form.state.activeTab].addDesc == '1') {
+        if (form.state._name[form.state.activeTab].hasDesc == '1') {
           return 'This will be visible to the customer';
         }
       },
-      _when: form => form.state._name[form.state.activeTab].addDesc == '1',
+      _when: form => form.state._name[form.state.activeTab].hasDesc == '1',
     },
     {
-      _name: 'addDesc',
+      _name: 'hasDesc',
       _cmp: Input.Check,
       checkboxMaskLabel: ['+ Add description', '- Remove description'],
       _autoRenderImpure: true,
@@ -56,8 +56,8 @@ export default [
     label: 'Receipt No.',
   },
   {
-    _name: 'expiry',
-    label: 'Expiry',
+    _name: 'hasNoExpiry',
+    label: 'Expire On',
     fieldLabel: 'No Expiry',
     _cmp: Input.Check,
     _autoRenderImpure: true,
@@ -80,7 +80,7 @@ export default [
         placeholder: '15-04-2018',
         size: 'half',
         _disabledWhen: form =>
-          form.state._name[form.state.activeTab].expiry === '1',
+          form.state._name[form.state.activeTab].hasNoExpiry === '1',
         addonAfter: <i class="i i-date-range" />,
 
         _cmp: Input.ToCalendar,
@@ -95,7 +95,7 @@ export default [
         _when: form => !!form.state._name[form.state.activeTab].expire_by_date,
         size: 'half',
         _disabledWhen: form =>
-          form.state._name[form.state.activeTab].expiry === '1',
+          form.state._name[form.state.activeTab].hasNoExpiry === '1',
         addonAfter: <i class="i i-time" />,
 
         // defaultValue: moment().startOf().unix(), // Epoch of timestamp today start. Don't set. Has to be in sync with Date(expire_by_date).
@@ -106,7 +106,7 @@ export default [
   },
   [
     {
-      _name: 'noLimit',
+      _name: 'hasNoLimit',
       label: 'Times Payable',
       required: true,
       fieldLabel: 'No Limit',

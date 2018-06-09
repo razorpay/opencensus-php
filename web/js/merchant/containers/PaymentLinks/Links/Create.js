@@ -114,8 +114,8 @@ export default [
     label: 'Receipt No.',
   },
   {
-    _name: 'expiry',
-    label: 'Expiry',
+    _name: 'hasNoExpiry',
+    label: 'Expire On',
     fieldLabel: 'No Expiry',
     _cmp: Input.Check,
     _autoRenderImpure: true,
@@ -138,7 +138,7 @@ export default [
         placeholder: '15-04-2018',
         size: 'half',
         _disabledWhen: form =>
-          form.state._name[form.state.activeTab].expiry === '1',
+          form.state._name[form.state.activeTab].hasNoExpiry === '1',
         addonAfter: <i class="i i-date-range" />,
 
         _cmp: Input.ToCalendar,
@@ -153,7 +153,7 @@ export default [
         size: 'half',
         _when: form => !!form.state._name[form.state.activeTab].expire_by_date,
         _disabledWhen: form =>
-          form.state._name[form.state.activeTab].expiry === '1',
+          form.state._name[form.state.activeTab].hasNoExpiry === '1',
         addonAfter: <i class="i i-time" />,
 
         // defaultValue: moment().startOf().unix(), // Epoch of timestamp today start. Don't set. Has to be in sync with Date(expire_by_date).

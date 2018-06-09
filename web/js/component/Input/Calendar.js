@@ -118,7 +118,7 @@ class CalendarWrapper extends React.Component {
           style={{ zIndex: 1000 }}
           disabledTime={null}
           timePicker={null}
-          defaultValue={this.props.defaultCalendarValue}
+          defaultValue={this.state.value}
           showDateInput={true}
           showToday={false}
           showClear={true}
@@ -152,15 +152,13 @@ class CalendarWrapper extends React.Component {
         {({ value }) => {
           let uniqName = this.props.name || this.props['data-name'];
 
-          let inpEle = document.getElementById(uniqName + '-date-input');
-          if (inpEle) {
-            inpEle.value = value ? value.format(this.getFormat()) : '';
-          }
+          const inputVal = value ? value.format(this.getFormat()) : '';
 
           return (
             <div class="Input-elWrapper" tabIndex="0">
               <input
                 id={uniqName + '-date-input'}
+                value={inputVal}
                 class={classList(
                   'ant-calendar-picker-input ant-input Input-el',
                   this.props.addonAfter && 'Input-el--after'
@@ -263,4 +261,56 @@ export class TimePicker extends React.Component {
       </div>
     );
   }
+}
+
+/*
+ * Helper fn. to be for onChange for Input.CalendarPicker
+ * */
+export function dateCalculator(date, curSelectedTS, onCalculation) {
+  if (date && date.target) {
+    // Check if date is not of event type
+    return;
+  }
+
+  let newSelectedTS;
+
+  if (date) {
+    let offsetTime = 0;
+
+    if (curSelectedTS) {
+      offsetTime =
+        curSelectedTS.valueOf() - curSelectedTS.startOf('day').valueOf(); // Offset since start of day
+    }
+
+    newSelectedTS = date.startOf('day').valueOf() + offsetTime;
+  } else {
+    newSelectedTS = null;
+  }
+
+  if (!curSelectedTS && newSelectedTS) {
+    setTimeout(() => {
+      const ele = document.getElementsByName('expire_by')[0];
+      ele && ele.focus();
+    }, 100);
+  }
+
+  onCalculation(newSelectedTS);
+}
+
+/*
+ * Helper fn. to be for onChange for Input.TimePicker
+ * */
+export function timeCalculator(date, curSelectedTS, onCalculation) {
+  if (date && date.target) {
+    // Check if date is not of event type
+    return;
+  }
+
+  const selectedTime = date.valueOf();
+  const dayStartTime = date.startOf('day').valueOf();
+
+  const offsetTime = selectedTime - dayStartTime; // Offset since start of day
+
+  const newSelectedTime = curSelectedTS.startOf('day').valueOf() + offsetTime;
+  onCalculation(newSelectedTime);
 }

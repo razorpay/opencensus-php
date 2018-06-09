@@ -1,10 +1,7 @@
 import { merchantFetch } from 'rzp/utils/ajax';
 
-export function createReusableLink(data) {
-  const reqPayload = {
-    ...data,
-    currency: 'INR', // TODO: Get is dynamically
-  };
+export function createReusableLink(reqPayload) {
+  reqPayload.currency = 'INR'; // TODO: Get is dynamically
 
   reqPayload.amount *= 100;
   reqPayload.expire_by &&
