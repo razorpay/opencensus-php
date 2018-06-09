@@ -15,6 +15,9 @@ import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 import Button, { AsyncBtn } from 'component/Button';
 import Input from 'component/Input';
 
+import moment from 'moment';
+import { dateCalculator, timeCalculator } from 'component/Input/Calendar';
+
 const notificationClassMap = {
   sent: 'text-success',
   pending: 'text-warning',
@@ -99,6 +102,7 @@ export default props => {
   const isDraft = status === 'draft';
   const isIssued = status === 'issued';
   const isPaid = status === 'paid';
+  const isPartiallyPaid = status === 'partially_paid';
   const isCancelled = status === 'cancelled';
   const isExpired = status === 'expired';
 
@@ -261,12 +265,21 @@ export default props => {
                 />
                 <EntityDetailRow
                   label={isExpired ? 'Expired On' : 'Expires On'}
-                  value={() => (
-                    <Time
-                      value={invoice.expire_by}
-                      format="DD MMM YYYY, hh:mm a"
-                    />
-                  )}
+                  value={
+                    isRazorXExperiment && (isIssued || isPartiallyPaid)
+                      ? () => (
+                          <ExpiresOnField
+                            value={invoice.expire_by}
+                            editPaymentLink={editPaymentLink}
+                          />
+                        )
+                      : () => (
+                          <Time
+                            value={invoice.expire_by}
+                            format="DD MMM YYYY, hh:mm a"
+                          />
+                        )
+                  }
                 />
 
                 <NestedEntityDetailRow label="Notes" value={invoice.notes} />
@@ -362,6 +375,152 @@ class ReceiptField extends React.Component {
           >
             Save
           </AsyncBtn.Transparent>
+        </React.Fragment>
+      );
+    }
+
+    return content;
+  }
+}
+
+class ExpiresOnField extends React.Component {
+  state = this.resetState();
+
+  resetState() {
+    return {
+      isEditableMode: false,
+      expire_by: this.props.value ? moment(this.props.value * 1000) : undefined,
+      hasNoExpiry: this.props.value ? '0' : '1',
+    };
+  }
+
+  makeEditable = () => {
+    this.setState({
+      isEditableMode: true,
+    });
+  };
+
+  onDateChange = date => {
+    const curExpiryByTime = this.state.expire_by;
+
+    dateCalculator(date, curExpiryByTime, this.updateDate);
+  };
+
+  onTimeChange = date => {
+    const curDate = this.state.expire_by;
+
+    timeCalculator(date, curDate, this.updateDate);
+  };
+
+  updateDate = ts => {
+    const newDate = moment(ts);
+
+    this.setState({
+      expire_by: newDate,
+    });
+  };
+
+  render() {
+    let content = (
+      <React.Fragment>
+        <Time value={this.props.value} format="DD MMM YYYY, hh:mm a" />
+        <Button.Transparent
+          onClick={this.makeEditable}
+          class="Button--Link"
+          style={{ marginLeft: 12 }}
+        >
+          Change
+        </Button.Transparent>
+      </React.Fragment>
+    );
+
+    if (this.state.isEditableMode) {
+      content = (
+        <React.Fragment>
+          <Input.Check
+            fieldLabel="No Expiry"
+            defaultValue={this.props.value ? '0' : '1'}
+            value={this.state.hasNoExpiry}
+            onChange={e => {
+              if (e.target.value == '0') {
+                // 0 => unselected
+                setTimeout(() => {
+                  document
+                    .querySelector('[data-name="expire_by_date"]')
+                    .focus();
+                  document
+                    .querySelector('[data-name="expire_by_date"]')
+                    .click();
+                }, 10);
+              }
+              this.setState({
+                hasNoExpiry: e.target.value,
+              });
+            }}
+          />
+          <Input.Group class="InputGroup--inline InputGroup--near">
+            <div class="Input-content">
+              <Input.ToCalendar
+                data-name="expire_by_date"
+                placeholder="15-04-2018"
+                defaultValue={this.state.expire_by}
+                disabled={this.state.hasNoExpiry === '1'}
+                readOnly={true}
+                onChange={this.onDateChange}
+                size="half"
+                addonAfter={<i class="i i-date-range" />}
+                placement="topLeft"
+                allowToday={true}
+                disablePastDates={true}
+              />
+              {!!this.state.expire_by && (
+                <Input.TimePicker
+                  placeholder="11:59PM"
+                  defaultValue={this.state.expire_by}
+                  disabled={this.state.hasNoExpiry === '1'}
+                  readOnly={true}
+                  onChange={this.onTimeChange}
+                  size="half"
+                  addonAfter={<i class="i i-time" />}
+                />
+              )}
+            </div>
+          </Input.Group>
+          <div>
+            <Button
+              onClick={() => {
+                this.setState({ isEditableMode: false });
+              }}
+            >
+              Discard
+            </Button>
+            <AsyncBtn.Primary
+              onClick={() =>
+                this.props
+                  .editPaymentLink({
+                    expire_by:
+                      this.state.hasNoExpiry == '1'
+                        ? null
+                        : Math.floor(this.state.expire_by / 1000),
+                  })
+                  .then(resp => {
+                    if (resp.data) {
+                      this.setState(this.resetState());
+                    }
+                  })
+                  .catch(({ errors }) => {
+                    this.setState({
+                      propagatedError: Array.isArray(errors)
+                        ? errors[0]
+                        : errors || 'Some Network error occured',
+                    });
+                  })
+              }
+              pendingState="Saving"
+            >
+              Save
+            </AsyncBtn.Primary>
+          </div>
         </React.Fragment>
       );
     }
