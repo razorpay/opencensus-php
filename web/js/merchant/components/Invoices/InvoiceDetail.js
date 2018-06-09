@@ -56,7 +56,9 @@ const getCustomerDetail = invoice => (
 const getPaymentDetail = invoice => (
   <Definition placeholder="--">
     <Amount value={invoice.amount_paid} currency={invoice.currency} />
-    {invoice.partial_payment && invoice.payments.items.length ? (
+    {invoice.partial_payment &&
+    invoice.payments &&
+    invoice.payments.items.length ? (
       <ContentToggler>
         <span>View Payment Details</span>
         <div
@@ -213,11 +215,6 @@ export default props => {
                     }}
                   </React.Fragment>
                 </ShowWhen>
-                <ShowWhen featureEnabled="Invoice_Partial_Payments">
-                  <EntityDetailRow label="Amount Paid">
-                    {getPaymentDetail(invoice)}
-                  </EntityDetailRow>
-                </ShowWhen>
                 <EntityDetailRow
                   label="Payment Link"
                   value={() => (
@@ -235,6 +232,10 @@ export default props => {
                     />
                   )}
                 />
+                <EntityDetailRow label="Customer Details">
+                  {getCustomerDetail(invoice)}
+                </EntityDetailRow>
+
                 <EntityDetailRow
                   label="Receipt"
                   value={
@@ -248,16 +249,18 @@ export default props => {
                       : invoice.receipt || '--'
                   }
                 />
+                <ShowWhen featureEnabled="Invoice_Partial_Payments">
+                  <EntityDetailRow label="Amount Paid">
+                    {getPaymentDetail(invoice)}
+                  </EntityDetailRow>
+                </ShowWhen>
 
-                <EntityDetailRow label="Customer Details">
-                  {getCustomerDetail(invoice)}
-                </EntityDetailRow>
                 <EntityDetailRow
                   label="Created At"
                   value={() => <Time value={invoice.date} />}
                 />
                 <EntityDetailRow
-                  label={isExpired ? 'Expired on' : 'Expires on'}
+                  label={isExpired ? 'Expired On' : 'Expires On'}
                   value={() => (
                     <Time
                       value={invoice.expire_by}
