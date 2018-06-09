@@ -52,6 +52,43 @@ const getCustomerDetail = invoice => (
   </Definition>
 );
 
+const getPaymentDetail = invoice => (
+  <Definition placeholder="--">
+    <Amount value={invoice.amount_paid} currency={invoice.currency} />
+    {invoice.partial_payment && invoice.payments.items.length ? (
+      <ContentToggler>
+        <span>View Payment Details</span>
+        <div
+          className="full-width-item sub-entity-list"
+          style={{ fontSize: 14 }}
+        >
+          <DataTable
+            title="Payments"
+            progressLoader={true}
+            columns={[paymentId, paidOn, amount]}
+            items={invoice.payments.items}
+            noStripe={true}
+          />
+        </div>
+      </ContentToggler>
+    ) : (
+      <React.Fragment>
+        {invoice.payment_id && (
+          <Link to={`/payments/${invoice.payment_id}`}>
+            <code>{invoice.payment_id}</code>
+          </Link>
+        )}
+        {invoice.paid_at && (
+          <div>
+            Paid on{' '}
+            <Time value={invoice.paid_at} format="DD MMM YYYY, hh:mm a" />
+          </div>
+        )}
+      </React.Fragment>
+    )}
+  </Definition>
+);
+
 export default props => {
   let { invoice, isLoading, statusMsg, editPaymentLink } = props;
 
@@ -166,32 +203,12 @@ export default props => {
                         )}
                       />;
                     }}
-                    <EntityDetailRow
-                      label="Amount Paid"
-                      value={() => (
-                        <React.Fragment>
-                          <Amount
-                            value={invoice.amount_paid}
-                            currency={invoice.currency}
-                          />
-                          <ContentToggler>
-                            <span>View Payment Details</span>
-                            <div className="full-width-item sub-entity-list">
-                              {invoice.partial_payment && invoice.payments ? (
-                                <DataTable
-                                  title="Payments"
-                                  progressLoader={true}
-                                  columns={[paymentId, paidOn, amount]}
-                                  items={invoice && invoice.payments.items}
-                                  noStripe={true}
-                                />
-                              ) : null}
-                            </div>
-                          </ContentToggler>
-                        </React.Fragment>
-                      )}
-                    />
                   </React.Fragment>
+                </ShowWhen>
+                <ShowWhen featureEnabled="Invoice_Partial_Payments">
+                  <EntityDetailRow label="Amount Paid">
+                    {getPaymentDetail(invoice)}
+                  </EntityDetailRow>
                 </ShowWhen>
                 <EntityDetailRow
                   label="Payment Link"
@@ -217,15 +234,6 @@ export default props => {
                 <EntityDetailRow
                   label="Created At"
                   value={() => <Time value={invoice.date} />}
-                />
-                <EntityDetailRow
-                  label="Paid At"
-                  value={() => (
-                    <Time
-                      value={invoice.paid_at}
-                      format="DD MMM YYYY, hh:mm a"
-                    />
-                  )}
                 />
                 <EntityDetailRow
                   label={isExpired ? 'Expired on' : 'Expires on'}
