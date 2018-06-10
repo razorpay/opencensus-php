@@ -1,9 +1,7 @@
 import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
 
 import DataTable from 'rzp/ui/Table/DataTable';
-import { Link } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
 import { EmptyComponent } from 'merchant/components/BatchNew/ListAddons';

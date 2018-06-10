@@ -1,15 +1,13 @@
 import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
 
 import BatchDetails from 'merchant/containers/BatchNew/Details';
 import { fetchPaymentLinkBatchesDetails as fetchBatchDetails } from 'merchant/modules/batches';
 import { pluralize } from 'rzp/utils/rzp-utils';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
-import BatchStats from 'merchant/components/BatchNew/Stats';
+import BatchStats from 'ui/StatsTable';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import EmptyTableRow from 'rzp/ui/EmptyTableRow';
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListToggler from 'rzp/ui/Toggler/ListToggler';
 import Time from 'rzp/ui/Time';
