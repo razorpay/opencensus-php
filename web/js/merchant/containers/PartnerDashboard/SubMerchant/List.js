@@ -1,8 +1,6 @@
 import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 
-import ListContainer from 'merchant/containers/ListContainer';
-
 import DataTable from 'rzp/ui/Table/DataTable';
 import { getTime } from 'rzp/ui/item';
 import {
@@ -10,6 +8,8 @@ import {
   submerchantId as id,
   email as emailColumn,
 } from 'rzp/ui/item/pair';
+
+import ListFilter from './ListFilter';
 
 const email = {
   title: 'Registered Email',
@@ -38,9 +38,17 @@ const switchMerchant = {
 @connect(null, { fetchAll })
 export default class SubMerchantsList extends Component {
   state = {};
+
+  search = () => {};
   render() {
     return (
       <div class="content-wrapper">
+        <ListFilter
+          form="SubmerchantListFilter"
+          type="link"
+          count={this.state.count}
+          onSubmit={this.search}
+        />
         <DataTable
           title="Sub Merchants"
           count={this.state.count}
