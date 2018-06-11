@@ -163,13 +163,11 @@ class Validator extends Base\Validator
 
         if ((($type === Type::PARTNER_ACTIVATION) or ($type === Type::PARTNER_DEACTIVATION)))
         {
-            $app = App::getFacadeRoot();
-
             //
             // Do not allow the merchants to raise requests for marking and unmarking themselves as partners
             // The same route can be used to submit the product activation requests
             //
-            if ($app['basicauth']->isAdminAuth() === false)
+            if (app('basicauth')->isAdminAuth() === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     PublicErrorDescription::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED,
