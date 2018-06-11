@@ -366,6 +366,11 @@ const registrationDetails = [
       className: 'Input-vTop',
       _cmp: Input.Radio,
       _when: excludeFor_Indiv_NotReg,
+      description: function() {
+        if (this.state.has_gstin == '1') {
+          return 'You can add your GST details later once you are registered';
+        }
+      },
       onChange: e => {
         if (e.target.value == '0') {
           // setTimeout to skip render cycle when GSTIN is being rendered in DOM
