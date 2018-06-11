@@ -346,7 +346,7 @@ class PaymentLinkTest extends TestCase
             [
                 'id'          => '00000000000001',
                 'type'        => 'payment_link',
-                'total_count' => 4,
+                'total_count' => 6,
             ]);
 
         $attributes = $this->testData[__FUNCTION__ . 'InputData']['attributes'];
