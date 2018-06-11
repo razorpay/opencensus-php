@@ -278,6 +278,39 @@ return [
         ],
     ],
 
+    'testGetItemWithExpandTax' => [
+        'request' => [
+            'url'     => '/items/item_1000000000item',
+            'method'  => 'get',
+            'content' => [
+                'expand' => [
+                    'tax',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'active'        => true,
+                'id'            => 'item_1000000000item',
+                'name'          => 'Some item name',
+                'description'   => 'Some item description',
+                'amount'        => 100000,
+                'currency'      => 'INR',
+                'unit'          => null,
+                'tax_inclusive' => false,
+                'tax_id'        => 'tax_00000000000001',
+                'tax'           => [
+                    'id'        => 'tax_00000000000001',
+                    'entity'    => 'tax',
+                    'name'      => 'Tax #1',
+                    'rate_type' => 'percentage',
+                    'rate'      => 1000,
+                ],
+                'tax_group_id'  => null,
+            ],
+        ],
+    ],
+
     'testGetMultipleItems' => [
         'request' => [
             'url'     => '/items',
