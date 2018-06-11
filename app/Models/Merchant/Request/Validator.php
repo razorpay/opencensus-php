@@ -185,7 +185,7 @@ class Validator extends Base\Validator
         switch ($input[Entity::TYPE])
         {
             case Type::PRODUCT:
-                if (isset($submissions) === false)
+                if (empty($submissions) === true)
                 {
                     throw new Exception\BadRequestValidationFailureException(self::MISSING_SUBMISSIONS);
                 }

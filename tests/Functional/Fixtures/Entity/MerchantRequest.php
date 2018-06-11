@@ -24,7 +24,7 @@ class MerchantRequest extends Base
         ]);
     }
 
-    public function createDefaultMerchantRequest(array $attributes = [])
+    public function createDefaultMerchantRequest(array $attributes = []): Request\Entity
     {
         $defaultValues = [
             'id'          => self::DEFAULT_MERCHANT_REQUEST_ID,

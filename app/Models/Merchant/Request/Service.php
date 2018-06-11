@@ -81,7 +81,6 @@ class Service extends Base\Service
     {
         $core = new Core;
 
-        // Validator will throw an error if the merchant_id is set to empty string
         $input[Entity::MERCHANT_ID] = $this->merchant->getId();
 
         $input[Entity::STATUS] = Status::UNDER_REVIEW;

@@ -52,7 +52,13 @@ class PartnerTest extends TestCase
 
     public function testMarkingMerchantAsPartnerInvalidType()
     {
-        $this->ba->proxyAuth();
+        $this->ba->adminProxyAuth();
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach($merchant);
 
         $this->startTest();
     }
@@ -60,11 +66,11 @@ class PartnerTest extends TestCase
     public function testApprovingMarkAsPartnerMerchantRequest()
     {
         $merchantRequest = $this->fixtures->create(
-            'merchant_request:default_merchant_request',
-            [
-                Request\Entity::TYPE => 'partner_activation',
-                Request\Entity::NAME => 'reseller',
-            ]);
+                                'merchant_request:default_merchant_request',
+                                [
+                                    Request\Entity::TYPE => 'partner_activation',
+                                    Request\Entity::NAME => 'reseller',
+                                ]);
 
         $merchantRequestId = $merchantRequest->getPublicId();
 
@@ -90,12 +96,12 @@ class PartnerTest extends TestCase
         $merchantId = '10000000000000';
 
         $merchantRequest = $this->fixtures->create(
-            'merchant_request:default_merchant_request',
-            [
-                Request\Entity::MERCHANT_ID => $merchantId,
-                Request\Entity::TYPE        => 'partner_deactivation',
-                Request\Entity::NAME        => 'reseller',
-            ]);
+                                'merchant_request:default_merchant_request',
+                                [
+                                    Request\Entity::MERCHANT_ID => $merchantId,
+                                    Request\Entity::TYPE        => 'partner_deactivation',
+                                    Request\Entity::NAME        => 'reseller',
+                                ]);
 
         $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
 

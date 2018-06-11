@@ -572,11 +572,13 @@ class Core extends Base\Core
     {
         (new Validator)->validateCreateMerchantRequests($input);
 
+        $type = $input[Entity::TYPE];
+
         //
         // @todo: Once the product activation requests are migrated to the merchant requests table,
         // remove the flow with findOrCreateMerchantRequest function. Create a new request every time.
         //
-        if ($input[Entity::TYPE] === Type::PRODUCT)
+        if ($type === Type::PRODUCT)
         {
             $request = $this->findOrCreateMerchantRequest($this->merchant, $input);
 
@@ -587,8 +589,6 @@ class Core extends Base\Core
         // Product onboarding submissions and partner activation requests must only be inserted in the live db.
         // Force set the database connection and mode to live.
         //
-        $type = $input[Entity::TYPE];
-
         $liveModeRequestTypes = [
             Type::PRODUCT,
             Type::PARTNER_ACTIVATION,
