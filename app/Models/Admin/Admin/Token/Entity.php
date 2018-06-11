@@ -22,7 +22,6 @@ class Entity extends Base\Entity
     protected $generateIdOnCreate = false;
 
     protected $fillable = [
-        self::ADMIN_ID,
         self::TOKEN,
         self::EXPIRES_AT
     ];

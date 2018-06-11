@@ -21,7 +21,6 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'ofm';
 
     protected $fillable = [
-        self::ORG_ID,
         self::ENTITY_NAME,
         self::FIELDS,
     ];
@@ -42,7 +41,7 @@ class Entity extends Base\PublicEntity
 
     public function org()
     {
-        return $this->belongsTo('RZP\Models\Org\Entity');
+        return $this->belongsTo('RZP\Models\Admin\Org\Entity');
     }
 
     public function setFieldsAttribute(array $fields)
