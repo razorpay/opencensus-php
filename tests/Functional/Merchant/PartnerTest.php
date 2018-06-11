@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant\Partner;
 
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\Request;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -25,14 +26,26 @@ class PartnerTest extends TestCase
 
     public function testMarkingMerchantAsPartner()
     {
-        $this->ba->proxyAuth();
+        $this->ba->adminProxyAuth();
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach($merchant);
 
         $this->startTest();
     }
 
     public function testUnmarkingMerchantAsPartner()
     {
-        $this->ba->proxyAuth();
+        $this->ba->adminProxyAuth();
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach($merchant);
 
         $this->startTest();
     }
