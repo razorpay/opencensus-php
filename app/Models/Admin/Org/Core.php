@@ -97,8 +97,6 @@ class Core extends Base\Core
 
         foreach ($roles as $role)
         {
-            $this->repo->permission->validateExists($diffPerms);
-
             $this->repo->detach($role, 'permissions', $diffPerms);
         }
     }

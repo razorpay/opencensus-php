@@ -236,7 +236,7 @@ class Repository extends \Razorpay\Spine\Repository
     /**
      * Checks whether the given ids for the entity exist in the database.
      *
-     * @param  mixed $ids
+     * @param  mixed $ids array of unsigned ids | entity collection | entity
      */
     public function validateExists($ids)
     {
@@ -244,11 +244,15 @@ class Repository extends \Razorpay\Spine\Repository
 
         $expectedCount = count($parsedIds);
 
-        $actualCount = $this->newQuery()->whereIn(UniqueIdEntity::ID, $parsedIds)->count();
+        $actualCount = $this->newQuery()
+                            ->whereIn(
+                                $this->getEntityObject()->getKeyName(),
+                                $parsedIds)
+                            ->count();
 
         if ($expectedCount !== $actualCount)
         {
-            throw new Exception\RuntimeException('All entities must exist', [
+            $this->trace->critical(TraceCode::DB_PIVOT_TABLE_ASSOCIATION_ERROR, [
                 'expected_count' => $expectedCount,
                 'actual_count'   => $actualCount,
                 'ids'            => $parsedIds
