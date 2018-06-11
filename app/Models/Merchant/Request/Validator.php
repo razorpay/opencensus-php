@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Request;
 
+use App;
+
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Feature;
@@ -159,17 +161,37 @@ class Validator extends Base\Validator
                 "Invalid product: $name for request type : $type");
         }
 
-        if ((($type === Type::PARTNER_ACTIVATION) or ($type === Type::PARTNER_DEACTIVATION))
-            and (in_array($name, Merchant\Constants::$partnerTypes, true) === false))
+        if ((($type === Type::PARTNER_ACTIVATION) or ($type === Type::PARTNER_DEACTIVATION)))
         {
-            throw new Exception\BadRequestValidationFailureException(
-                PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_NAME,
-                Merchant\Entity::NAME,
-                [
-                    Merchant\Entity::NAME         => $name,
-                    Merchant\Entity::PARTNER_TYPE => $type,
-                ]);
+            $app = App::getFacadeRoot();
+
+            //
+            // Do not allow the merchants to raise requests for marking and unmarking themselves as partners
+            // The same route can be used to submit the product activation requests
+            //
+            if ($app['basicauth']->isAdminAuth() === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    PublicErrorDescription::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED,
+                    null,
+                    [
+                        Entity::NAME                  => $name,
+                        Merchant\Entity::PARTNER_TYPE => $type,
+                    ]);
+            }
+
+            if (in_array($name, Merchant\Constants::$partnerTypes, true) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_NAME,
+                    Entity::NAME,
+                    [
+                        Entity::NAME                  => $name,
+                        Merchant\Entity::PARTNER_TYPE => $type,
+                    ]);
+            }
         }
+
     }
 
     /**

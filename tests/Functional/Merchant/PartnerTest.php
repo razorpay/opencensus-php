@@ -63,6 +63,20 @@ class PartnerTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantMarksSelfAsPartner()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantUnmarksSelfAsPartner()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testApprovingMarkAsPartnerMerchantRequest()
     {
         $merchantRequest = $this->fixtures->create(
