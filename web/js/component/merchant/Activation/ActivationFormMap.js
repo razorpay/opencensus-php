@@ -75,6 +75,7 @@ const businessModel = [
     name: 'business_type',
     _cmp: Input.Select,
     options: [
+      { label: '--Select--', name: '' },
       { label: 'Private Limited', name: PRIVATE },
       { label: 'Proprietorship', name: PROPRIETORSHIP },
       { label: 'Partnership', name: PARTNERSHIP },
