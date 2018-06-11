@@ -23,7 +23,6 @@ class Entity extends Base\Entity
     protected $revisionCreationsEnabled = true;
 
     protected $fillable = [
-        self::ORG_ID,
         self::HOSTNAME,
     ];
 
