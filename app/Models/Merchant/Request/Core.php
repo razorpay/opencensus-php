@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Models\State\Reason;
 use RZP\Models\Merchant\Partner;
 use RZP\Models\Base\PublicEntity;
@@ -199,29 +200,7 @@ class Core extends Base\Core
 
                 case Status::ACTIVATED:
                 {
-                    switch (true)
-                    {
-                        case $request->isProductRequest():
-                        {
-                            $this->addFeatureIfNotEnabled($request);
-
-                            break;
-                        }
-
-                        case $request->isPartnerActivationRequest():
-                        {
-                            (new Merchant\Core)->markAsPartner($request->getMerchantId(), $request->getName());
-
-                            break;
-                        }
-
-                        case $request->isPartnerDeactivationRequest():
-                        {
-                            (new Merchant\Core)->unmarkAsPartner($request->getMerchantId());
-
-                            break;
-                        }
-                    }
+                    $this->activated($request);
 
                     break;
                 }
@@ -239,6 +218,51 @@ class Core extends Base\Core
         });
 
         return $request;
+    }
+
+    /**
+     * Handles request activation flow
+     *
+     * @param Entity $request
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function activated(Entity $request)
+    {
+        switch (true)
+        {
+            case $request->isProductRequest():
+            {
+                $this->addFeatureIfNotEnabled($request);
+
+                break;
+            }
+
+            case $request->isPartnerActivationRequest():
+            {
+                (new Merchant\Core)->markAsPartner($request->getMerchantId(), $request->getName());
+
+                break;
+            }
+
+            case $request->isPartnerDeactivationRequest():
+            {
+                (new Merchant\Core)->unmarkAsPartner($request->getMerchantId());
+
+                break;
+            }
+
+            default:
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_PARTNER_NAME,
+                    Entiy::NAME,
+                    [
+                        Entity::NAME => $request->getName(),
+                        Entity::ID => $request->getId()
+                    ]);
+            }
+        }
     }
 
     /**
