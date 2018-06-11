@@ -27,6 +27,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     const BHARAT_QR_TERMINAL            = '38R00450';
 
+    const DEFAULT_CURRENCY_CODE         = '356';
+
     protected function getPaymentId(array $row)
     {
         // Unsettled rows should be skipped while processing.
@@ -241,7 +243,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $paymentAmount = Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT]);
 
-        return abs($paymentAmount);
+        return $paymentAmount;
     }
 
     protected function getReconCurrencyCode($row)
@@ -279,11 +281,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return true;
     }
 
-    protected function validatePaymentCurrencyCodeEqualsReconCurrencyCode(array $row)
+    protected function validatePaymentCurrencyEqualsReconCurrency(array $row) : bool
     {
         $convertCurrency = $this->payment->getConvertCurrency();
 
-        $expectedCurrency = ($convertCurrency === true) ? '356' : Currency::getIsoCode($this->payment->getCurrency());
+        $expectedCurrency = ($convertCurrency === true) ? self::DEFAULT_CURRENCY_CODE : Currency::getIsoCode($this->payment->getCurrency());
 
         $reconCurrency = $this->getReconCurrencyCode($row);
 

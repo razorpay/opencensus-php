@@ -203,9 +203,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $validPaymentAmount = $this->validatePaymentAmountEqualsReconAmount($row);
 
-        $validCurrencyCode  = $this->validatePaymentCurrencyCodeEqualsReconCurrencyCode($row);
+        $validCurrencyCode  = $this->validatePaymentCurrencyEqualsReconCurrency($row);
 
-        $validPaymentDetails = ($validPaymentStatus and $validPaymentAmount and $validCurrencyCode);
+        $validPaymentDetails = (($validPaymentStatus === true) and
+                                ($validPaymentAmount === true) and
+                                ($validCurrencyCode === true));
 
         return $validPaymentDetails;
     }
@@ -1797,7 +1799,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      *
      * @return bool
      */
-    protected function validatePaymentCurrencyCodeEqualsReconCurrencyCode(array $row)
+    protected function validatePaymentCurrencyEqualsReconCurrency(array $row) : bool
     {
         return true;
     }

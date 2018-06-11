@@ -20,6 +20,7 @@ class RefundReconciliate extends Base\RefundReconciliate
     const COLUMN_CURRENCY_CODE          = 'tran_currency_code';
 
     const REFUND_RECON_SKIP_TIMESTAMP   = '2018-03-05 23:48:09';
+    const DEFAULT_CURRENCY_CODE         = '356';
 
     protected function getRefundId(array $row)
     {
@@ -160,11 +161,11 @@ class RefundReconciliate extends Base\RefundReconciliate
         return $row[self::COLUMN_CURRENCY_CODE];
     }
 
-    protected function validateRefundCurrencyCodeEqualsReconCurrencyCode(array $row)
+    protected function validateRefundCurrencyEqualsReconCurrency(array $row) : bool
     {
         $convertCurrency = $this->payment->getConvertCurrency();
 
-        $expectedCurrency = ($convertCurrency === true) ? '356' : Currency::getIsoCode($this->payment->getCurrency());
+        $expectedCurrency = ($convertCurrency === true) ? self::DEFAULT_CURRENCY_CODE : Currency::getIsoCode($this->payment->getCurrency());
 
         $reconCurrency = $this->getReconCurrencyCode($row);
 
