@@ -240,14 +240,14 @@ class Core extends Base\Core
 
             case $request->isPartnerActivationRequest():
             {
-                (new Merchant\Core)->markAsPartner($request->getMerchantId(), $request->getName());
+                (new Merchant\Core)->markAsPartner($request->merchant, $request->getName());
 
                 break;
             }
 
             case $request->isPartnerDeactivationRequest():
             {
-                (new Merchant\Core)->unmarkAsPartner($request->getMerchantId());
+                (new Merchant\Core)->unmarkAsPartner($request->merchant);
 
                 break;
             }
@@ -256,10 +256,10 @@ class Core extends Base\Core
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_PARTNER_NAME,
-                    Entiy::NAME,
+                    Entity::NAME,
                     [
+                        Entity::ID   => $request->getId(),
                         Entity::NAME => $request->getName(),
-                        Entity::ID => $request->getId()
                     ]);
             }
         }
@@ -326,19 +326,21 @@ class Core extends Base\Core
     /**
      * Create a merchant request for a given type, name if not already present
      *
-     * @param string    $merchantId
-     * @param array     $input
+     * @param Merchant\Entity $merchant
+     * @param array           $input
      *
      * @return Entity
      */
     public function findOrCreateMerchantRequest(
-        string $merchantId,
+        Merchant\Entity $merchant,
         array $input)
     {
         $fetchInput = [
             Entity::NAME => $input[Entity::NAME],
             Entity::TYPE => $input[Entity::TYPE]
         ];
+
+        $merchantId = $merchant->getId();
 
         $request = $this->repo
                         ->merchant_request
@@ -398,12 +400,7 @@ class Core extends Base\Core
         string $type,
         string $requestStatus)
     {
-        $request = $this->findOrCreateMerchantRequest(
-                        $merchant->getId(),
-                        [
-                            Entity::NAME => $feature,
-                            Entity::TYPE => $type
-                        ]);
+        $request = $this->findOrCreateMerchantRequest($merchant, [Entity::NAME => $feature, Entity::TYPE => $type]);
 
         if ($request->getStatus() !== $requestStatus)
         {
@@ -581,7 +578,7 @@ class Core extends Base\Core
         //
         if ($input[Entity::TYPE] === Type::PRODUCT)
         {
-            $request = $this->findOrCreateMerchantRequest($this->merchant->getId(), $input);
+            $request = $this->findOrCreateMerchantRequest($this->merchant, $input);
 
             return $request;
         }
@@ -590,8 +587,15 @@ class Core extends Base\Core
         // Product onboarding submissions and partner activation requests must only be inserted in the live db.
         // Force set the database connection and mode to live.
         //
-        if (in_array($input[Entity::TYPE],
-                [Type::PRODUCT, Type::PARTNER_ACTIVATION, Type::PARTNER_DEACTIVATION], true) === true)
+        $type = $input[Entity::TYPE];
+
+        $liveModeRequestTypes = [
+            Type::PRODUCT,
+            Type::PARTNER_ACTIVATION,
+            Type::PARTNER_DEACTIVATION,
+        ];
+
+        if (in_array($type, $liveModeRequestTypes, true) === true)
         {
             $liveMode = $this->app['basicauth']->getLiveConnection();
 

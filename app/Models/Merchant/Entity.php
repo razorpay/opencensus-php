@@ -1493,7 +1493,7 @@ class Entity extends Base\PublicEntity
         return $merchantAttributes;
     }
 
-    public function setPartnerType($partnerType)
+    public function setPartnerType(string $partnerType = null)
     {
         $this->setAttribute(self::PARTNER_TYPE, $partnerType);
     }

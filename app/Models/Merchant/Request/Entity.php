@@ -94,17 +94,17 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::TYPE) === Type::PRODUCT);
     }
 
-    public function isPartnerRequest()
+    public function isPartnerRequest(): bool
     {
-        return ($this->isPartnerActivationRequest() or $this->isPartnerDeactivationRequest());
+        return (($this->isPartnerActivationRequest() === true) or ($this->isPartnerDeactivationRequest() === true));
     }
 
-    public function isPartnerActivationRequest()
+    public function isPartnerActivationRequest(): bool
     {
         return ($this->getAttribute(self::TYPE) === Type::PARTNER_ACTIVATION);
     }
 
-    public function isPartnerDeactivationRequest()
+    public function isPartnerDeactivationRequest(): bool
     {
         return ($this->getAttribute(self::TYPE) === Type::PARTNER_DEACTIVATION);
     }
