@@ -93,6 +93,10 @@ class AdminFetch
                     Fetch::LABEL        => 'card_hash',
                     Fetch::TYPE         => Fetch::TYPE_STRING
                 ],
+                'triggered_count'   => [
+                    Fetch::LABEL        => 'triggered_count',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ]
             ]
         ];
     }
