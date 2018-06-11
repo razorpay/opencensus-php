@@ -546,6 +546,22 @@ class Entity extends Base\PublicEntity
 
     public function isGlobal()
     {
+        //
+        // In case subscription is local merchant
+        // always has to send customer id while creating
+        // subscription so customer will never be null in
+        // case of local flow
+        //
+        // In case of global flow initially the customer
+        // will be null, but after a payment happens we
+        // create a local customer which has global customer
+        // associated with it.
+        //
+        if ($this->customer === null)
+        {
+            return true;
+        }
+
         return $this->customer->hasGlobalCustomer();
     }
 
