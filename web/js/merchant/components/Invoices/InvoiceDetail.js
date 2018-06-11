@@ -576,24 +576,27 @@ class InternalNotesField extends React.Component {
           onChange={this.onChangeNotes}
           defaultValue={this.state.notes}
         />
-        <AsyncBtn.Primary
-          onClick={() =>
-            this.props
-              .editPaymentLink({
-                notes: this.state.notes,
-              })
-              .catch(({ errors }) => {
-                this.setState({
-                  propagatedError: Array.isArray(errors)
-                    ? errors[0]
-                    : errors || 'Some Network error occured',
-                });
-              })
-          }
-          pendingState="Saving"
-        >
-          Save
-        </AsyncBtn.Primary>
+        {this.state.notes &&
+          !!Object.keys(this.state.notes).length && (
+            <AsyncBtn.Primary
+              onClick={() =>
+                this.props
+                  .editPaymentLink({
+                    notes: this.state.notes,
+                  })
+                  .catch(({ errors }) => {
+                    this.setState({
+                      propagatedError: Array.isArray(errors)
+                        ? errors[0]
+                        : errors || 'Some Network error occured',
+                    });
+                  })
+              }
+              pendingState="Saving"
+            >
+              Save
+            </AsyncBtn.Primary>
+          )}
       </React.Fragment>
     );
   }
