@@ -13,7 +13,7 @@ import { classList } from 'common/util';
 *   - (Array of Arrays), rowConfig: Each of the row(sub-rows) to have resolution to their respective values.
 *   - (Array of Arrays), loaderConfig: All the rows above, can have their respective progress-loader size, which is shown while data is loading
 * */
-export default function GroupedDetailsTable({
+export default function GroupDetailsTable({
   title,
   subTitle,
   className,
@@ -22,6 +22,10 @@ export default function GroupedDetailsTable({
   rowConfig,
   loaderConfig,
 }) {
+  if (loading) {
+    items = [1, 2]; // Dummy entries to show 2 loaders
+  }
+
   return (
     <div class={classList('entity-detail-list', className)}>
       <div class="list-heading">
@@ -39,6 +43,10 @@ export default function GroupedDetailsTable({
           loading={loading}
         />
       ))}
+      {!loading &&
+        !items.length && (
+          <h4 class="empty-table-message">{`No ${title} Found!`}</h4>
+        )}
     </div>
   );
 }

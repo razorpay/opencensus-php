@@ -33,7 +33,7 @@ export const fetchReusableLinkPaymentsList = id => {
   return merchantFetch({
     url: 'payments',
     params: {
-      pl_id: id,
+      payment_link_id: id,
       count: 5,
     },
   });
