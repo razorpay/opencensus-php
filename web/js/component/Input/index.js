@@ -341,7 +341,7 @@ export default class Field extends React.Component {
             )}
             {InputComponent}
             {allProps.addonAfter && (
-              <span class="Input-addons  Input-addons--after">
+              <span class="Input-addons Input-addons--after">
                 {allProps.addonAfter}
               </span>
             )}

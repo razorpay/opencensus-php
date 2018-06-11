@@ -8,8 +8,8 @@
 .rdtPicker {
 	display: none;
 	position: absolute;
-	width: 250px;
-	padding: 4px;
+	width: 296px;
+	padding: 18px 20px;
 	margin-top: 1px;
 	z-index: 99999 !important;
 	background: #fff;
@@ -59,7 +59,7 @@
 	content: '';
 	display: inline-block;
 	border-left: 7px solid transparent;
-	border-bottom: 7px solid #6a5ace;
+	border-bottom: 7px solid #528ff0;
 	border-top-color: rgba(0, 0, 0, 0.2);
 	position: absolute;
 	bottom: 4px;
@@ -67,7 +67,7 @@
 }
 .rdtPicker td.rdtActive,
 .rdtPicker td.rdtActive:hover {
-	background-color: #6a5ace;
+	background-color: #528ff0;
 	color: #fff;
 	text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
@@ -90,8 +90,8 @@
 	color: #d6d6d6;
 	cursor: not-allowed;
 }
-.rdtPicker th {
-	border-bottom: 1px solid #f9f9f9;
+.rdtMonths table + table{
+	margin-top: 20px;
 }
 .rdtPicker .dow {
 	width: 14.2857%;
@@ -115,6 +115,12 @@
 	-moz-user-select: none;      /* Firefox */
 	-ms-user-select: none;       /* Internet Explorer/Edge */
 	user-select: none;
+
+	padding: 0px 3px 4px;
+	border: 1px solid #e4e4e4;
+	line-height: 27px;
+	border-radius: 2px;
+	margin: 0 4px;
 }
 
 .rdtPicker th.rdtDisabled,
@@ -127,7 +133,7 @@
 	cursor: pointer;
 }
 .rdtPicker thead tr:first-child th:hover {
-	background: #eeeeee;
+	color: #528ff0;
 }
 
 .rdtPicker tfoot {
@@ -153,7 +159,16 @@ td.rdtYear {
 	height: 50px;
 	width: 25%;
 	cursor: pointer;
+	border: 1px solid #e4e7e7;
 }
+
+.rdtPrev span, .rdtNext span {
+}
+
+.rdtPicker thead tr:first-child th:hover {
+	color: #528ff0;
+}
+
 td.rdtMonth:hover,
 td.rdtYear:hover {
 	background: #eee;
