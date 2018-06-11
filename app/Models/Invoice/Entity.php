@@ -142,6 +142,8 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_DETAILS         = 'customer_details';
     const PAYMENT_ID               = 'payment_id';
     const URL                      = 'url';
+    // Boolean holding 'has address or supply state name' value to be used in view
+    const HAS_ADDRESS_OR_POS       = 'has_address_or_pos';
 
     // ------------------------ Output Keys End ----------------------
 
