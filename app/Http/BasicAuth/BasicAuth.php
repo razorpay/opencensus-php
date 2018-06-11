@@ -1269,11 +1269,6 @@ class BasicAuth
         return ($this->type === Type::PUBLIC_AUTH);
     }
 
-    public function isDirectAuth()
-    {
-        return ($this->type === Type::DIRECT_AUTH);
-    }
-
     public function isKeylessPublicAuth()
     {
         return (($this->isPublicAuth() === true) and ($this->keylessPublicAuth === true));

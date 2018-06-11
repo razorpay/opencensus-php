@@ -235,11 +235,12 @@ class Checkout
         try
         {
             //
-            // For the second 2FA in global flow also, we will have the app_token. Hence,
-            // in this usage (preferences) of getCustomerAndApp, we don't need to have
-            // the global_customer_id in the input.
+            // For the second 2FA in global flow also, we will have the
+            // app_token. Hence, in this usage (preferences) of getCustomerAndApp,
+            // we don't need to have the global_customer_id in the input.
             //
-            list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp($input, $merchant);
+            // TODO: FIX THIS!
+            list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp($input, $merchant, true);
 
             if ($customer === null)
             {
@@ -276,7 +277,6 @@ class Checkout
             //
             if ($customer->isLocal() === true)
             {
-                // TODO: Figure out a way to tell the checkout whether it's local/global flow.
                 $custData[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
             }
         }

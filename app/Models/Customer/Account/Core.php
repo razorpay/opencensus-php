@@ -357,7 +357,33 @@ class Core extends Base\Core
         return $customer;
     }
 
-    public function getCustomerAndApp(array $input, Merchant\Entity $merchant)
+    /**
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     * @param bool            $followGlobal
+     *
+     * We follow global customer flow only for subscriptions currently.
+     * We need to do this because of the following case:
+     * - A merchant creates a subscription with a global flow.
+     * - RZP creates a global customer (since global fow), and ALSO
+     *   creates a local customer so that the customer object can be
+     *   exposed to the merchant.
+     * - Since the local customer object is exposed to the merchant,
+     *   he can now use this local customer for something else, like
+     *   SmartCollect.
+     * - Now, while fetching the customer for SmartCollect flow, we
+     *   actually check if the customer has a global customer associated
+     *   with it. If it does, we fetch the global customer. This is wrong
+     *   because when the merchant used this customer object for SmartCollect,
+     *   he meant it to be used as local customer only.
+     * - For the above reason, we are adding a hack that only if it's
+     *   subscription flow, we check if the customer has an associated
+     *   global customer and only then fetch the global customer.
+     *   Otherwise, we use the passed local customer only.
+     *
+     * @return array
+     */
+    public function getCustomerAndApp(array $input, Merchant\Entity $merchant, bool $followGlobal = false)
     {
         $customerId = null;
         $customer = null;
@@ -395,7 +421,8 @@ class Core extends Base\Core
         {
             $customer = $this->repo->customer->findByIdAndMerchant($customerId, $merchant);
 
-            if ($customer->hasGlobalCustomer() === true)
+            if (($customer->hasGlobalCustomer() === true) and
+                ($followGlobal === true))
             {
                 list($customer, $appToken) = $this->getCustomerAndAppForGlobal($customer, $merchant, $input);
             }
@@ -408,7 +435,7 @@ class Core extends Base\Core
                 'app_token'   => $appToken,
             ]);
 
-        return array($customer, $appToken);
+        return [$customer, $appToken];
     }
 
     protected function getCustomerAndAppForGlobal(Customer\Entity $customer, Merchant\Entity $merchant, array $input)
@@ -439,8 +466,7 @@ class Core extends Base\Core
         // Direct auth is used in case of bharat qr
         // payments. Token won't be available in that case.
         //
-        if (($ba->isProxyOrPrivilegeAuth() === true) or
-            ($ba->isDirectAuth() === true))
+        if ($ba->isProxyOrPrivilegeAuth() === true)
         {
             return [$customer, null];
         }
