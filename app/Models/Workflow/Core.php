@@ -34,6 +34,8 @@ class Core extends Base\Core
         {
             $this->repo->saveOrFail($workflow);
 
+            $this->repo->permission->validateExists($input[Entity::PERMISSIONS]);
+
             $this->repo->sync($workflow, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
 
             // Create the workflow steps
@@ -104,6 +106,8 @@ class Core extends Base\Core
         $this->repo->transactionOnLiveAndTest(function() use ($workflow, $input)
         {
             $this->repo->saveOrFail($workflow);
+
+            $this->repo->permission->validateExists($input[Entity::PERMISSIONS]);
 
             $this->repo->sync($workflow, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
 
