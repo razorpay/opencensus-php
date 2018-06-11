@@ -463,8 +463,6 @@ class Core extends Base\Core
         // which is hit from the dashboard. We do not expect to
         // have app_token here just like how we don't expect in
         // privilege (cron) auth.
-        // Direct auth is used in case of bharat qr
-        // payments. Token won't be available in that case.
         //
         if ($ba->isProxyOrPrivilegeAuth() === true)
         {

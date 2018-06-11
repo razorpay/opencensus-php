@@ -1979,7 +1979,7 @@ trait Authorize
         // have an app_token. In all other cases, we should have
         // an app_token when we are processing 2FA.
         //
-        if (($this->ba->isProxyOrPrivilegeAuth() === false)
+        if (($this->ba->isProxyOrPrivilegeAuth() === false) and
             ($customerApp === null))
         {
             throw new Exception\LogicException(

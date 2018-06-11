@@ -228,7 +228,7 @@ class Checkout
             ]);
     }
 
-    protected function fetchCustomerData(array $input, Entity $merchant)
+    protected function fetchCustomerData(array $input, Entity $merchant, $isGlobal)
     {
         $custData = null;
 
@@ -240,7 +240,7 @@ class Checkout
             // we don't need to have the global_customer_id in the input.
             //
             // TODO: FIX THIS!
-            list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp($input, $merchant, true);
+            list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp($input, $merchant, $isGlobal);
 
             if ($customer === null)
             {
@@ -355,7 +355,7 @@ class Checkout
             if ((isset($input[Payment\Entity::CUSTOMER_ID])) or
                 (isset($input[Payment\Entity::APP_TOKEN])))
             {
-                $custData = $this->fetchCustomerData($input, $merchant);
+                $custData = $this->fetchCustomerData($input, $merchant, $data['global']);
 
                 if ($custData !== null)
                 {
