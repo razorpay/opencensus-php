@@ -23,7 +23,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER  => 'filled|string|max:50|min:5',
         Entity::DISCOUNT        => 'sometimes|boolean',
         Entity::OFFERS          => 'sometimes|array',
-        Entity::OFFERS . '*'    => 'sometimes|public_id|size:20',
+        Entity::OFFERS . '*'    => 'filled|public_id|size:20',
         Entity::FORCE_OFFER     => 'sometimes|boolean',
     );
 

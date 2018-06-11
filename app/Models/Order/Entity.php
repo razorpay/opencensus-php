@@ -203,8 +203,9 @@ class Entity extends Base\PublicEntity
 
     public function offers()
     {
-        return $this->belongsToMany(
+        return $this->morphToMany(
                         Offer\Entity::class,
+                        'entity',
                         Table::ENTITY_OFFER,
                         Offer\EntityOffer\Entity::ENTITY_ID,
                         Offer\EntityOffer\Entity::OFFER_ID)
