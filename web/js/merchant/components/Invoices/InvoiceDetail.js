@@ -17,6 +17,7 @@ import Input from 'component/Input';
 
 import moment from 'moment';
 import { dateCalculator, timeCalculator } from 'component/Input/Calendar';
+import { onChangeNotes } from 'component/Input/Pair';
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -282,7 +283,19 @@ export default props => {
                   }
                 />
 
-                <NestedEntityDetailRow label="Notes" value={invoice.notes} />
+                {isRazorXExperiment && isIssued ? (
+                  <EntityDetailRow
+                    label="Notes"
+                    value={() => (
+                      <InternalNotesField
+                        value={invoice.notes}
+                        editPaymentLink={editPaymentLink}
+                      />
+                    )}
+                  />
+                ) : (
+                  <NestedEntityDetailRow label="Notes" value={invoice.notes} />
+                )}
 
                 <EntityDetailRow label="Created By">
                   {!!invoice.user ? (
@@ -458,7 +471,7 @@ class ExpiresOnField extends React.Component {
               });
             }}
           />
-          <Input.Group class="InputGroup--inline InputGroup--near">
+          <Input.Group class="InputGroup--inline InputGroup--near Input--inline">
             <div class="Input-content">
               <Input.ToCalendar
                 data-name="expire_by_date"
@@ -526,5 +539,62 @@ class ExpiresOnField extends React.Component {
     }
 
     return content;
+  }
+}
+
+class InternalNotesField extends React.Component {
+  state = this.initializeState();
+
+  initializeState() {
+    const notes = Object.keys(this.props.value).map(k => ({
+      key: k,
+      value: this.props.value[k],
+    }));
+
+    return {
+      notes,
+    };
+  }
+
+  /* Handle change of notes */
+  onChangeNotes = pairs => {
+    const notes = onChangeNotes(pairs);
+
+    if (!Object.keys(notes).length) {
+      return;
+    }
+
+    this.setState({
+      notes,
+    });
+  };
+
+  render() {
+    return (
+      <React.Fragment>
+        <Input.Pair
+          onChange={this.onChangeNotes}
+          defaultValue={this.state.notes}
+        />
+        <AsyncBtn.Primary
+          onClick={() =>
+            this.props
+              .editPaymentLink({
+                notes: this.state.notes,
+              })
+              .catch(({ errors }) => {
+                this.setState({
+                  propagatedError: Array.isArray(errors)
+                    ? errors[0]
+                    : errors || 'Some Network error occured',
+                });
+              })
+          }
+          pendingState="Saving"
+        >
+          Save
+        </AsyncBtn.Primary>
+      </React.Fragment>
+    );
   }
 }

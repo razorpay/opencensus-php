@@ -78,7 +78,6 @@
       width: 192px
 
   &--inline
-    margin: 0
     display: inline-block
 
   &.Input--small .Input-elWrapper
@@ -251,6 +250,7 @@
 
 textarea.Input-el
   min-height: 36px
+  max-height: 90px
   height: 60px
   line-height: 20px
   resize: vertical
@@ -373,6 +373,7 @@ textarea.Input-el
       margin-right: 20px
 
 
+/* Calendar picker styles */
 .Input--Calendar-content
   &.rc-calendar-picker
     z-index: 9999
@@ -391,6 +392,7 @@ textarea.Input-el
       &::after
         content: none
 
+/* Time picker styles */
 .Input--TimePicker
   .rdtPicker td
     font-size: 0 // To remove unwanted spacing

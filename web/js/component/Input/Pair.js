@@ -1,6 +1,7 @@
-import Field, { Label, inputClass } from './index';
+import { Label, inputClass } from './index';
 import debounce from 'rzp/utils/debounce';
 import { classList } from 'common/util';
+import { separateDomProps } from './index';
 
 /* Pair is key-value pair*/
 export default class Pairs extends React.PureComponent {
@@ -11,7 +12,7 @@ export default class Pairs extends React.PureComponent {
     pairs: this.props.defaultValue || [],
   };
 
-  onChange = debounce(this.props.onChange, 250);
+  onChange = debounce(this.props.onChange, 250); // Optimization to avoid parent re-render on every key press
 
   onAddNew = e => {
     const freshPairs = [...this.state.pairs];
@@ -74,7 +75,12 @@ export default class Pairs extends React.PureComponent {
 
   render() {
     return (
-      <div class={inputClass(this)}>
+      <div
+        class={classList(
+          inputClass(this),
+          !!this.state.pairs.length && 'isExpanded'
+        )}
+      >
         <Label text={this.props.label} />
         <div
           class={classList(
@@ -183,4 +189,17 @@ class Pair extends React.Component {
       </div>
     );
   }
+}
+
+/* Helper method to return array as per internal notes structure */
+export function onChangeNotes(pairs) {
+  const notes = {};
+
+  pairs.forEach(p => {
+    if (p.key || p.value) {
+      notes[p.key] = p.value;
+    }
+  });
+
+  return notes;
 }

@@ -348,7 +348,29 @@ body {
   padding: 24px;
   position: relative;
 
-  @media (max-width $screen-sm-min) {
+
+  /* General Input styles (new UI Component) */
+  .Input {
+    margin-top: 0
+  }
+
+  /* Input pairs inside details view (new UI Component) */
+  .Input--pair {
+    .Input-elWrapper {
+      font-size: inherit
+    }
+
+    textarea.Input-el {
+      height: 36px
+    }
+
+    &.isExpanded {
+      left: -20px
+      margin-top: 0
+    }
+  }
+
+    @media (max-width $screen-sm-min) {
     padding: 20px;
   }
 }

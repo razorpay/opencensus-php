@@ -27,6 +27,7 @@ import {
 import { luminateRow } from 'merchant/modules/app';
 import moment from 'moment';
 import { dateCalculator, timeCalculator } from 'component/Input/Calendar';
+import { onChangeNotes } from 'component/Input/Pair';
 
 const FORM_TABS = [
   {
@@ -314,13 +315,11 @@ export default class CreateNewContainer extends React.Component {
     const newDirty = { ...this.state.dirty };
     const activeTabIndx = String(this.state.activeTab);
 
-    const notes = {};
+    const notes = onChangeNotes(pairs);
 
-    pairs.forEach(p => {
-      if (p.key || p.value) {
-        notes[p.key] = p.value;
-      }
-    });
+    if (!Object.keys(notes).length) {
+      return;
+    }
 
     newDirty[activeTabIndx] = {
       ...newDirty[activeTabIndx],
