@@ -28,6 +28,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Models\Schedule\Task as ScheduleTask;
+
 class Core extends Base\Core
 {
     use Notify;
@@ -56,6 +57,10 @@ class Core extends Base\Core
         $merchant->getValidator()->validateInput('unique_email', $email);
 
         $merchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
+
+        $org = $this->repo->org->findOrFailPublic($input[Entity::ORG_ID]);
+
+        $merchant->org()->associate($org);
 
         $this->repo->saveOrFail($merchant);
 
@@ -166,11 +171,15 @@ class Core extends Base\Core
     {
         if (isset($input[Entity::GROUPS]) === true)
         {
+            $this->repo->group->validateExists($input[Entity::GROUPS]);
+
             $this->repo->sync($merchant, Entity::GROUPS, $input[Entity::GROUPS]);
         }
 
         if (isset($input[Entity::ADMINS]) === true)
         {
+            $this->repo->admin->validateExists($input[Entity::ADMINS]);
+
             $this->repo->sync($merchant, Entity::ADMINS, $input[Entity::ADMINS]);
 
             if ($create === true)

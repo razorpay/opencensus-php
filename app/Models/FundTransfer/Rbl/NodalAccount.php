@@ -5,13 +5,13 @@ namespace RZP\Models\FundTransfer\Rbl;
 use App;
 use Config;
 
-use RZP\Models\FundTransfer\Rbl\Request\Beneficiary;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Rbl\Request\Transfer;
+use RZP\Models\FundTransfer\Rbl\Request\Beneficiary;
 use RZP\Models\FundTransfer\Rbl\Reconciliation\Status;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
-use RZP\Models\FundTransfer\Rbl\Reconciliation\ResponseProcessor;
+use RZP\Models\FundTransfer\Rbl\Reconciliation\StatusProcessor;
 
 class NodalAccount extends NodalBase\NodalAccount
 {
@@ -44,14 +44,15 @@ class NodalAccount extends NodalBase\NodalAccount
     {
         $transfer   = new Transfer();
 
-        $reconciler = new ResponseProcessor();
-
         $this->updateAttemptStatus($attempts);
 
         foreach($attempts as $entity)
         {
-            try {
-                $response = $transfer->setEntity($entity)
+            try
+            {
+                // Calling init will reset all the data of previous request
+                $response = $transfer->init()
+                                     ->setEntity($entity)
                                      ->makeRequest();
 
                 $this->repo->saveOrFail($entity);
@@ -61,33 +62,20 @@ class NodalAccount extends NodalBase\NodalAccount
             catch (\Throwable $e)
             {
                 $this->trace->info(
-                    TraceCode::RBL_NODAL_TRANSFER_REQUEST_FAILED,
+                    TraceCode::NODAL_TRANSFER_REQUEST_FAILED,
                     [
+                        'channel'    => $this->channel,
                         'entity_id'  => $entity->getId()
                     ]);
 
                 continue;
             }
 
-            try
-            {
-                $reconciler->reconcile($response, $transfer->getMode());
+            (new StatusProcessor($response))->updateTransferStatus();
 
-                $status = $this->isValidSuccessResponse($response);
+            $status = $transfer->isValidSuccessResponse();
 
-                $this->updateTransferStatus($status);
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->info(
-                    TraceCode::RBL_NODAL_FAILURE_RESPONSE,
-                    [
-                        'entity_id'  => $entity->getId(),
-                        'response'   => $response
-                    ]);
-
-                continue;
-            }
+            $this->updateTransferStatus($status);
         }
 
         return $this->transferStatus;
@@ -106,27 +94,5 @@ class NodalAccount extends NodalBase\NodalAccount
         $key = strtolower(($status === true) ? Status::SUCCESS : Status::FAILURE);
 
         $this->transferStatus[$key]++;
-    }
-
-    /**
-     * Validates if the current request was executed successfully or not
-     *
-     * @param array $response
-     *
-     * @return bool
-     */
-    protected function isValidSuccessResponse(array $response): bool
-    {
-        $responseBody = $response['Single_Payment_Corp_Resp'];
-
-        if ((isset($responseBody['Header']['Status']) === false) or
-            ($responseBody['Header']['Status'] === Status::FAILURE))
-        {
-            $this->trace->error(TraceCode::RBL_NODAL_FAILURE_RESPONSE, $response);
-
-            return false;
-        }
-
-        return true;
     }
 }

@@ -998,6 +998,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACKNOWLEDGED_AT, $timestamp);
     }
 
+    public function setReceiverId(string $receiverId)
+    {
+        $this->setAttribute(self::RECEIVER_ID, $receiverId);
+    }
+
+    public function setReceiverType(string $receiverType)
+    {
+        $this->setAttribute(self::RECEIVER_TYPE, $receiverType);
+    }
+
     // ----------------------- Setters Ends-----------------------------------------
 
     // ----------------------- Mutator ---------------------------------------------

@@ -295,8 +295,9 @@ return [
             'content' => [
                 'type'  => 'payment_link',
                 'stats' => [
-                    'batch_total'   => 4,
-                    'issued_count'  => 1,
+                    'batch_total'   => 6,
+                    'issued_count'  => 5,
+                    'created_count' => 5,
                     'paid_count'    => 2,
                     'expired_count' => 1,
                 ],
@@ -348,6 +349,30 @@ return [
                 ],
                 'orderAttributes'   => [
                     'id'                    => '100000004order'
+                ],
+            ],
+            [
+                'invoiceAttributes' => [
+                    'id'                    => '1000005invoice',
+                    'batch_id'              => '00000000000001',
+                    'order_id'              => '100000005order',
+                    'status'                => 'partially_paid',
+                ],
+                'orderAttributes'   => [
+                    'id'                    => '100000005order'
+                ],
+            ],
+            // Payment links created via batch won't be in draft
+            // state. This is however, added for test purpose only
+            [
+                'invoiceAttributes' => [
+                    'id'                    => '1000006invoice',
+                    'batch_id'              => '00000000000001',
+                    'order_id'              => '100000006order',
+                    'status'                => 'draft',
+                ],
+                'orderAttributes'   => [
+                    'id'                    => '100000006order'
                 ],
             ],
         ],

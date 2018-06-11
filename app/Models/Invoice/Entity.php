@@ -172,6 +172,7 @@ class Entity extends Base\PublicEntity
 
     const TOTAL_COUNT              = 'batch_total';
     const ISSUED_COUNT             = 'issued_count';
+    const CREATED_COUNT            = 'created_count';
     const PAID_COUNT               = 'paid_count';
     const EXPIRED_COUNT            = 'expired_count';
 

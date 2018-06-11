@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Artisan;
 
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Methods\Entity as MerchantMethodEntity;
 
@@ -20,6 +21,26 @@ class Merchant extends Base
         $this->fixtures->create('merchant:api_fee_account');
 
         $this->setUpHiemdallHierarcyForRazorpayOrg();
+    }
+
+    public function create(array $attributes = [])
+    {
+        $merchant = parent::create($attributes);
+
+        if (isset($attributes[MerchantEntity::ORG_ID]) === true)
+        {
+            $org = OrgEntity::find($attributes[MerchantEntity::ORG_ID]);
+        }
+        else
+        {
+            $org = OrgEntity::find('100000razorpay');
+        }
+
+        $merchant->org()->associate($org);
+
+        $merchant->saveOrFail();
+
+        return $merchant;
     }
 
     public function createDefaultTestMerchant()

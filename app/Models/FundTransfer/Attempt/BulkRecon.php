@@ -75,7 +75,7 @@ class BulkRecon extends Base\Core
 
         $ftaIds = $this->repo
                        ->fund_transfer_attempt
-                       ->getAttemptsBetweenTimestampsWithStatus($from, $to, Status::INITIATED, $this->channel)
+                       ->getAttemptsBetweenTimestampsWithStatus($this->channel, Status::INITIATED, $from, $to)
                              ->pluck(FundTransferAttempt\Entity::ID)
                              ->toArray();
 

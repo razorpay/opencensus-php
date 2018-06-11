@@ -504,6 +504,13 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     ];
 
+    protected static $walletAmazonpayTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:wallet_amazonpay',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
+    ];
+
     protected function validateGateway($input)
     {
         Payment\Gateway::validateGateway($input['gateway']);
