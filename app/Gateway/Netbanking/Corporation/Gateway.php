@@ -255,6 +255,8 @@ class Gateway extends Base\Gateway
     {
         $verify = new Verify($this->gateway, $input);
 
+        $this->getPaymentToVerify($verify);
+
         $this->sendPaymentVerifyRequest($verify);
 
         $this->checkGatewaySuccess($verify);
@@ -288,7 +290,7 @@ class Gateway extends Base\Gateway
 
         if ($this->action === Action::VERIFY)
         {
-            $gatewayPayment = $this->getPaymentToVerify($verify);
+            $gatewayPayment = $verify->payment;
 
             $bankRefNumber = $gatewayPayment['bank_payment_id'];
         }
