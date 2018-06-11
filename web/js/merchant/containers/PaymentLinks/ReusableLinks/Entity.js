@@ -170,7 +170,7 @@ export default class ReusableLinksEntity extends Component {
                         {reusableLink.title}
                         {reusableLink.description && (
                           <div class="label--secondary">
-                            reusableLink.description
+                            {reusableLink.description}
                           </div>
                         )}
                       </div>
@@ -189,7 +189,7 @@ export default class ReusableLinksEntity extends Component {
 
                   <EntityDetailRow
                     label="Created At"
-                    value={() => <Time value={reusableLink.date} />}
+                    value={() => <Time value={reusableLink.created_at} />}
                   />
                   <EntityDetailRow
                     label={isExpired ? 'Expired on' : 'Expires on'}
