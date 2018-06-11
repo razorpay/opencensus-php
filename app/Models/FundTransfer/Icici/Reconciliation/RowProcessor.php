@@ -16,7 +16,7 @@ class RowProcessor extends BaseRowProcessor
     const PAYMENT_DATE      = 'payment_date';
     const CMS_REF_NO        = 'cms_ref_no';
 
-    protected function parseRow()
+    protected function processRow()
     {
         $bankStatus = $this->getNullOnEmpty(Headings::STATUS);
 

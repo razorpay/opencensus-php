@@ -71,6 +71,21 @@ class Entity extends Base\PublicEntity
 
     public $incrementing = true;
 
+    public function getBankPaymentId()
+    {
+        return $this->getAttribute(self::BANK_PAYMENT_ID);
+    }
+
+    public function getGatewayPaymentId()
+    {
+        return $this->getAttribute(self::GATEWAY_PAYMENT_ID);
+    }
+
+    public function getPaymentId()
+    {
+        return $this->getAttribute(self::PAYMENT_ID);
+    }
+
     public function setAction(string $action)
     {
         $this->setAttribute(self::ACTION, $action);
@@ -96,8 +111,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
     }
 
-    public function getBankPaymentId()
+    public function setGatewayPaymentId($gatewayPaymentId)
     {
-        return $this->getAttribute(Entity::BANK_PAYMENT_ID);
+        $this->setAttribute(self::GATEWAY_PAYMENT_ID, $gatewayPaymentId);
+    }
+
+    public function setBankPaymentId($bankPaymentId)
+    {
+        $this->setAttribute(self::BANK_PAYMENT_ID, $bankPaymentId);
     }
 }

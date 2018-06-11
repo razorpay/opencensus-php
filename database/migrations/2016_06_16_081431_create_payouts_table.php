@@ -71,6 +71,9 @@ class CreatePayoutsTable extends Migration
 
             $table->string(Payout::CHANNEL, 8);
 
+            $table->integer(Payout::ATTEMPTS)
+                  ->default(1);
+
             $table->string(Payout::UTR)
                   ->nullable()
                   ->unique();

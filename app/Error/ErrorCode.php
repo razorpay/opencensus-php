@@ -561,6 +561,7 @@ class ErrorCode
     const BAD_REQUEST_REPORTING_INTEGRATION                                         = 'BAD_REQUEST_REPORTING_INTEGRATION';
 
     const SERVER_ERROR_GATEWAY_NOT_SET                                              = 'SERVER_ERROR_GATEWAY_NOT_SET';
+    const SERVER_ERROR_GATEWAY_FIELD_MISMATCH                                       = 'SERVER_ERROR_GATEWAY_FIELD_MISMATCH';
     const SERVER_ERROR_INVALID_ARGUMENT                                             = 'SERVER_ERROR_INVALID_ARGUMENT';
     const SERVER_ERROR_DB_QUERY_FAILED                                              = 'SERVER_ERROR_DB_QUERY_FAILED';
     const SERVER_ERROR_LOGICAL_ERROR                                                = 'SERVER_ERROR_LOGICAL_ERROR';
@@ -657,6 +658,8 @@ class ErrorCode
     const BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS                      = 'BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS';
     const BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS                         = 'BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS';
 
+    const BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS                          = 'BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS';
+
     const BAD_REQUEST_INVALID_MERCHANT_INVOICE_NUMBER                               = 'BAD_REQUEST_INVALID_MERCHANT_INVOICE_NUMBER';
 
     const MERCHANT_INVOICE_CORRECTION_IN_PROGRESS                                   = 'MERCHANT_INVOICE_CORRECTION_IN_PROGRESS';
@@ -673,7 +676,6 @@ class ErrorCode
 
     const BAD_REQUEST_ITEM_INACTIVE                                                 = 'BAD_REQUEST_ITEM_INACTIVE';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                         = 'BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED';
-    const BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE                                        = 'BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE';
     const BAD_REQUEST_INVALID_ITEM_TAX_DETAILS                                      = 'BAD_REQUEST_INVALID_ITEM_TAX_DETAILS';
     const BAD_REQUEST_LINK_TYPE_HAS_NO_TAXATION                                     = 'BAD_REQUEST_LINK_TYPE_HAS_NO_TAXATION';
 

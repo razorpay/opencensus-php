@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
 {
     const ID                        = 'id';
     const MERCHANT_ID               = 'merchant_id';
+    const REFERENCE                 = 'reference';
     const PROVIDER                  = 'provider';
     const ENTITY_ID                 = 'entity_id';
     const ENTITY_TYPE               = 'entity_type';
@@ -32,6 +33,7 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
+        self::REFERENCE,
         self::AMOUNT,
         self::PROVIDER,
         self::SHORT_URL,
@@ -41,12 +43,23 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
+        self::REFERENCE,
         self::SHORT_URL,
         self::CREATED_AT,
     ];
 
     protected $casts = [
         self::AMOUNT => 'int',
+    ];
+
+    protected static $generators = [
+        self::ID,
+        self::REFERENCE,
+    ];
+
+    protected $ignoredRelations = [
+        'source'
     ];
 
     // --------------------- RELATIONS ---------------------
@@ -72,6 +85,14 @@ class Entity extends Base\PublicEntity
     }
 
     // --------------------- END RELATIONS ---------------------
+
+    public function generateReference($input)
+    {
+        if (isset($input[self::REFERENCE]) === false)
+        {
+            $this->setReference($this->getId());
+        }
+    }
 
     // --------------------- GETTERS ---------------------
 
@@ -102,6 +123,11 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getReference()
+    {
+        return $this->getAttribute(self::REFERENCE);
     }
 
     public function getQrString()
@@ -140,6 +166,11 @@ class Entity extends Base\PublicEntity
     // --------------------- END GETTERS ---------------------
 
     // --------------------- SETTERS ---------------------
+
+    public function setReference(string $reference)
+    {
+        $this->setAttribute(self::REFERENCE, $reference);
+    }
 
     public function setShortUrl(string $shortUrl)
     {

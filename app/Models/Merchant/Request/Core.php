@@ -75,14 +75,20 @@ class Core extends Base\Core
      * @param string       $state
      * @param Entity       $request
      * @param PublicEntity $maker
+     * @param int          $statusDate
      *
      * @return State\Entity
      */
-    protected function createState(string $state, Entity $request, PublicEntity $maker)
+    protected function createState(string $state, Entity $request, PublicEntity $maker, int $statusDate = null)
     {
         $params = [
             State\Entity::NAME => $state,
         ];
+
+        if ($statusDate !== null)
+        {
+            $params[State\Entity::CREATED_AT] = $statusDate;
+        }
 
         $stateObj = (new State\Core)->createForMakerAndEntity($params, $maker, $request);
 
@@ -110,6 +116,14 @@ class Core extends Base\Core
         {
             $useWorkflow = false;
         }
+
+        $statusDate = $input[State\Entity::CREATED_AT] ?? null;
+
+        //
+        // Unset this because state's created at is not a part of the merchant request entity
+        // @todo: Remove the flow where the created_at is taken from the input - Bulk update merchant requests flow
+        //
+        unset($input[State\Entity::CREATED_AT]);
 
         $request->getValidator()->validateInput('change_status', $input);
 
@@ -144,7 +158,8 @@ class Core extends Base\Core
             $status,
             $rejectionReason,
             $useWorkflow,
-            $needsClarificationText)
+            $needsClarificationText,
+            $statusDate)
         {
             if ($useWorkflow === true)
             {
@@ -159,7 +174,7 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($request);
 
-            $stateEntity = $this->createState($status, $request, $admin);
+            $stateEntity = $this->createState($status, $request, $admin, $statusDate);
 
             //
             // `addFeatureIfNotEnabled` involves saving on both live and test, and the functions called above act
@@ -344,6 +359,7 @@ class Core extends Base\Core
      * @param string          $feature
      * @param string          $type
      * @param string          $requestStatus
+     * @param int             $statusDate
      *
      * @return Entity
      */
@@ -351,13 +367,34 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         string $feature,
         string $type,
-        string $requestStatus)
+        string $requestStatus,
+        int $statusDate = null)
     {
         $request = $this->findOrCreateMerchantRequest($merchant, [Entity::NAME => $feature, Entity::TYPE => $type]);
 
         if ($request->getStatus() !== $requestStatus)
         {
-            $request = $this->changeStatus($request, [Entity::STATUS => $requestStatus], false, false);
+            $request = $this->changeStatus(
+                            $request,
+                            [
+                                Entity::STATUS     => $requestStatus,
+                                Entity::CREATED_AT => $statusDate,
+                            ],
+                            false,
+                            false);
+        }
+        else if ($statusDate !== null)
+        {
+            //
+            // If the status is changed the date is handled in the above code block under the if condition
+            // If only the created_at date has to be updated (status unchanged), it is handled here.
+            //
+
+            $stateEntity = $this->repo->state->findLastMerchantRequestState($request);
+
+            $stateEntity->setCreatedAt($statusDate);
+
+            $this->repo->saveOrFail($stateEntity);
         }
 
         return $request;
@@ -556,6 +593,20 @@ class Core extends Base\Core
             {
                 try
                 {
+                    // The timestamp when the request status was updated
+                    $statusDate = (int) ($request[State\Entity::CREATED_AT] ?? null);
+
+                    if ((isset($request[State\Entity::CREATED_AT]) === true) and ($statusDate <= 0))
+                    {
+                        throw new Exception\LogicException(
+                            'The timestamp must be a valid epoch',
+                            null,
+                            [
+                                Entity::MERCHANT_ID      => $merchantId,
+                                State\Entity::CREATED_AT => $statusDate,
+                            ]);
+                    }
+
                     if (empty($merchant) === true)
                     {
                         throw new Exception\LogicException('Unknown Merchant, hence feature not updated');
@@ -565,7 +616,8 @@ class Core extends Base\Core
                         $merchant,
                         $request[Entity::NAME],
                         $request[Entity::TYPE],
-                        $request[Entity::STATUS]
+                        $request[Entity::STATUS],
+                        $statusDate
                     );
 
                     if (empty($response) === true)

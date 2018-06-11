@@ -194,13 +194,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const DASHBOARD_JOB_ERROR                           = 'DASHBOARD_JOB_ERROR';
 
-    const RBL_NODAL_BEN_ADD_REQUEST                     = 'RBL_NODAL_BEN_ADD_REQUEST';
-    const RBL_NODAL_TRANSFER_REQUEST                    = 'RBL_NODAL_TRANSFER_REQUEST';
-    const RBL_NODAL_TRANSFER_RESPONSE                   = 'RBL_NODAL_TRANSFER_RESPONSE';
-    const RBL_NODAL_FAILURE_RESPONSE                    = 'RBL_NODAL_FAILURE_RESPONSE';
-    const RBL_NODAL_BEN_ADD_RESPONSE                    = 'RBL_NODAL_BEN_ADD_RESPONSE';
-    const RBL_NODAL_FAILED_RESPONSE                     = 'RBL_NODAL_FAILED_RESPONSE';
-    const RBL_NODAL_TRANSFER_REQUEST_FAILED             = 'RBL_NODAL_TRANSFER_REQUEST_FAILED';
+    const NODAL_BEN_ADD_REQUEST                         = 'NODAL_BEN_ADD_REQUEST';
+    const NODAL_TRANSFER_REQUEST                        = 'NODAL_TRANSFER_REQUEST';
+    const NODAL_TRANSFER_RESPONSE                       = 'NODAL_TRANSFER_RESPONSE';
+    const NODAL_FAILURE_RESPONSE                        = 'NODAL_FAILURE_RESPONSE';
+    const NODAL_BEN_ADD_RESPONSE                        = 'NODAL_BEN_ADD_RESPONSE';
+    const NODAL_FAILED_RESPONSE                         = 'NODAL_FAILED_RESPONSE';
+    const NODAL_TRANSFER_REQUEST_FAILED                 = 'NODAL_TRANSFER_REQUEST_FAILED';
+    const NODAL_PAYMENT_STATUS_REQUEST                  = 'NODAL_PAYMENT_STATUS_REQUEST';
+    const NODAL_PAYMENT_STATUS_RESPONSE                 = 'NODAL_PAYMENT_STATUS_RESPONSE';
 
     const KOTAK_NODAL_BALANCE_REQUEST                   = 'KOTAK_NODAL_BALANCE_REQUEST';
     const KOTAK_NODAL_BALANCE_RESPONSE                  = 'KOTAK_NODAL_BALANCE_RESPONSE';
@@ -640,6 +642,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BHARAT_QR_UNEXPECTED_PAYMENT              = 'BHARAT_QR_UNEXPECTED_PAYMENT';
 
     const PAYMENT_RECEIVED_VIA_RECEIVER             = 'PAYMENT_RECEIVED_VIA_RECEIVER';
+    const PAYMENT_RECEIVER_UPDATE_FAILURE           = 'PAYMENT_RECEIVER_UPDATE_FAILURE';
+    const PAYMENT_RECEIVER_UPDATED                  = 'PAYMENT_RECEIVER_UPDATED';
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
     const MERCHANT_REPORT_GENERATION                = 'MERCHANT_REPORT_GENERATION';
@@ -665,6 +669,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_LIVE_DISABLE_REQUEST             = 'MERCHANT_LIVE_DISABLE_REQUEST';
     const MERCHANT_PAYOUT_NOTIFICATION_REQUEST      = 'MERCHANT_PAYOUT_NOTIFICATION_REQUEST';
     const MERCHANT_PAYOUT_NOTIFICATION_RESPONSE     = 'MERCHANT_PAYOUT_NOTIFICATION_RESPONSE';
+    const MERCHANT_PAYOUT_RETRY_REQUEST             = 'MERCHANT_PAYOUT_RETRY_REQUEST';
+    const MERCHANT_PAYOUT_RETRY_FAILED              = 'MERCHANT_PAYOUT_RETRY_FAILED';
+    const MERCHANT_PAYOUT_RETRIED_IDS               = 'MERCHANT_PAYOUT_RETRIED_IDS';
 
     const MERCHANT_BALANCE_DEBIT_FAILURE            = 'MERCHANT_BALANCE_DEBIT_FAILURE';
 
@@ -921,6 +928,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFER_CARD_TYPE_CHECK                         = 'OFFER_CARD_TYPE_CHECK';
     const OFFER_CARD_NETWORK_CHECK                      = 'OFFER_CARD_NETWORK_CHECK';
     const OFFER_CARD_ISSUER_CHECK                       = 'OFFER_CARD_ISSUER_CHECK';
+    const OFFER_CARD_INTERNATIONAL_CHECK                = 'OFFER_CARD_INTERNATIONAL_CHECK';
     const OFFER_CARD_USAGE_CHECK                        = 'OFFER_CARD_USAGE_CHECK';
 
     // Trace codes for Gateway Priorities
@@ -1063,9 +1071,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LAMBDA_BATCH_FAILURE                          = 'LAMBDA_BATCH_FAILURE';
 
     const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
+    const DB_DATA_INTEGRITY_ERROR                       = 'DB_DATA_INTEGRITY_ERROR';
     const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
 
-    const INSTANCE_PROFILE_PROVIDER_CACHE_MISS          = 'INSTANCE_PROFILE_PROVIDER_CACHE_MISS';
+    const AWS_CREDS_CACHE_SET                           = 'AWS_CREDS_CACHE_SET';
 
     const SERVER_ERROR_LOG_RISK                         = 'SERVER_ERROR_LOG_RISK';
 
