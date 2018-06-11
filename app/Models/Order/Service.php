@@ -59,12 +59,7 @@ class Service extends Base\Service
 
     protected function isOldFormat(array $input): bool
     {
-        if (isset($input[Entity::OFFER_ID]) === true)
-        {
-            return true;
-        }
-
-        return false;
+        return isset($input[Entity::OFFER_ID]) ? true : false;
     }
 
     public function fetch($id)

@@ -16,14 +16,14 @@ class Validator extends Base\Validator
         Entity::CURRENCY        => 'required|size:3|in:INR,USD',
         Entity::RECEIPT         => 'sometimes|nullable|string|max:40',
         Entity::PAYMENT_CAPTURE => 'filled|boolean',
-        Entity::CUSTOMER_ID     => 'sometimes|filled',
+        Entity::CUSTOMER_ID     => 'filled',
         Entity::NOTES           => 'sometimes|notes',
         Entity::METHOD          => 'sometimes|in:netbanking,emandate,upi',
-        Entity::BANK            => 'sometimes|filled',
-        Entity::ACCOUNT_NUMBER  => 'sometimes|filled|string|max:50|min:5',
+        Entity::BANK            => 'filled',
+        Entity::ACCOUNT_NUMBER  => 'filled|string|max:50|min:5',
         Entity::DISCOUNT        => 'sometimes|boolean',
         Entity::OFFERS          => 'sometimes|array',
-        Entity::OFFERS . '*'    => 'sometimes|string|public_id|size:20',
+        Entity::OFFERS . '*'    => 'sometimes|public_id|size:20',
         Entity::FORCE_OFFER     => 'sometimes|boolean',
     );
 

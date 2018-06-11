@@ -46,7 +46,7 @@ class Checker extends Base\Core
         $this->verbose = $verbose;
     }
 
-    public function checkOfferApplicableOnOrder(Order\Entity $order): bool
+    public function checkApplicableOnOrder(Order\Entity $order): bool
     {
         $this->order = $order;
 
