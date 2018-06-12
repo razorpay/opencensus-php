@@ -49,6 +49,10 @@ class AdminFetch
                         'review',
                         'allow'
                     ]
+                ],
+                'ruleset'           => [
+                    Fetch::LABEL        => 'ruleset',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
                 ]
             ],
             Entity::SHIELD_RULE_ANALYTICS => [
