@@ -395,6 +395,36 @@ return [
         ]
     ],
 
+    'testCreateHitachiDebitRecurringTerminal' => [
+        'request'  => [
+            'content' => [
+                'gateway'             => 'hitachi',
+                'gateway_acquirer'    => 'ratn',
+                'card'                => 1,
+                'type'                => [
+                    'recurring_non_3ds' => '1',
+                    'recurring_3ds'     => '1',
+                    'debit_recurring'   => '1',
+                ],
+                'gateway_merchant_id' => 'random',
+                'gateway_terminal_id' => '12345678',
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway' => 'hitachi',
+                'card'    => true,
+                'type'    => [
+                    'recurring_3ds',
+                    'recurring_non_3ds',
+                    'debit_recurring',
+                ],
+                'enabled' => true,
+            ],
+        ],
+    ],
+
     'testCreateTpvTerminalWithInvalidMethod' => [
         'request' => [
             'content' => [
@@ -765,5 +795,25 @@ return [
             'class' => 'RZP\Exception\ExtraFieldsException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED ,
         ],
+    ],
+
+    'testAddAmazonPayTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'wallet_amazonpay',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_password' => '12345678',
+                'gateway_access_code'       => '1234567880123456',
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway'                   => 'wallet_amazonpay',
+                'gateway_merchant_id'       => '12345',
+                'enabled'                   => true
+            ]
+        ]
     ],
 ];

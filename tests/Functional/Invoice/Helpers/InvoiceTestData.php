@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Invoice;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Exception\BadRequestValidationFailureException;
 
 return [
 
@@ -593,14 +594,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Can only reuse an item of the same item type',
+                    'description' => 'invoice can only use item of one of following types: invoice',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE,
+            'class'               => BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -1526,24 +1527,26 @@ return [
                 'receipt'      => 'inv_receipt_0001',
                 'customer'  => [
                     'name'  => 'new customer',
-                    'email' => 'new@razorpay.com',
+                    'email' => null,
                     'gstin' => '29CFZPR4093Q1ZA',
                 ],
             ],
         ],
         'response' => [
             'content' => [
-                'id'                   => 'inv_1000000invoice',
-                'entity'               => 'invoice',
-                'receipt'              => 'inv_receipt_0001',
-                'customer_details'     => [
+                'id'               => 'inv_1000000invoice',
+                'entity'           => 'invoice',
+                'receipt'          => 'inv_receipt_0001',
+                'status'           => 'draft',
+                // On update of basic attributes, customer reference will be intact, only local copy gets updated
+                'customer_id'      => 'cust_100000customer',
+                'customer_details' => [
                     'name'            => 'new customer',
-                    'email'           => 'new@razorpay.com',
+                    'email'           => null,
                     'contact'         => '1234567890',
                     'gstin'           => '29CFZPR4093Q1ZA',
                     'billing_address' => null,
                 ],
-                'status'               => 'draft',
             ],
         ],
     ],
@@ -1689,6 +1692,57 @@ return [
                         'line1'   => 'some line one',
                         'line2'   => 'some line two',
                         'zipcode' => '560080',
+                        'city'    => 'Bangalore',
+                        'state'   => 'Karnataka',
+                        'country' => 'in',
+                    ],
+                ],
+                'status'           => 'draft',
+            ],
+        ],
+    ],
+
+    'testUpdateDraftInvoiceWithSameBillingAndShippingAddressIds' => [
+        'request'  => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'receipt'  => 'inv_receipt_0001',
+                'customer' => [
+                    'name'                => 'new customer',
+                    'email'               => 'new@razorpay.com',
+                    'billing_address_id'  => 'addr_1000000address',
+                    'shipping_address_id' => 'addr_1000000address',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'inv_1000000invoice',
+                'entity'           => 'invoice',
+                'receipt'          => 'inv_receipt_0001',
+                'customer_details' => [
+                    'name'             => 'new customer',
+                    'email'            => 'new@razorpay.com',
+                    'contact'          => '1234567890',
+                    'billing_address'  => [
+                        'id'      => 'addr_1000000address',
+                        'type'    => 'billing_address',
+                        'primary' => false,
+                        'line1'   => 'some line one',
+                        'line2'   => 'some line two',
+                        'zipcode' => '560078',
+                        'city'    => 'Bangalore',
+                        'state'   => 'Karnataka',
+                        'country' => 'in',
+                    ],
+                    'shipping_address' => [
+                        'id'      => 'addr_1000000address',
+                        'type'    => 'billing_address',
+                        'primary' => false,
+                        'line1'   => 'some line one',
+                        'line2'   => 'some line two',
+                        'zipcode' => '560078',
                         'city'    => 'Bangalore',
                         'state'   => 'Karnataka',
                         'country' => 'in',
@@ -3531,8 +3585,8 @@ return [
                     'date'                  => null,
                     'terms'                 => null,
                     'partial_payment'       => false,
-                    'gross_amount'          => null,
-                    'tax_amount'            => null,
+                    'gross_amount'          => 100000,
+                    'tax_amount'            => 0,
                     'amount'                => 100000,
                     'amount_paid'           => 0,
                     'amount_due'            => 100000,
@@ -3593,8 +3647,8 @@ return [
                     'order_id'        => 'order_100000000order',
                     'status'          => 'partially_paid',
                     'partial_payment' => true,
-                    'gross_amount'    => null,
-                    'tax_amount'      => null,
+                    'gross_amount'    => 100000,
+                    'tax_amount'      => 0,
                     'amount'          => 100000,
                     'amount_paid'     => 60000,
                     'amount_due'      => 40000,
@@ -3643,8 +3697,8 @@ return [
                     'order_id'        => 'order_100000000order',
                     'status'          => 'partially_paid',
                     'partial_payment' => true,
-                    'gross_amount'    => null,
-                    'tax_amount'      => null,
+                    'gross_amount'    => 100000,
+                    'tax_amount'      => 0,
                     'amount'          => 100000,
                     'amount_paid'     => 60000,
                     'amount_due'      => 40000,
@@ -3727,8 +3781,8 @@ return [
                     'order_id'        => 'order_100000000order',
                     'status'          => 'paid',
                     'partial_payment' => true,
-                    'gross_amount'    => null,
-                    'tax_amount'      => null,
+                    'gross_amount'    => 100000,
+                    'tax_amount'      => 0,
                     'amount'          => 100000,
                     'amount_paid'     => 100000,
                     'amount_due'      => 0,
@@ -3811,8 +3865,8 @@ return [
                     'order_id'        => 'order_100000000order',
                     'status'          => 'paid',
                     'partial_payment' => false,
-                    'gross_amount'    => null,
-                    'tax_amount'      => null,
+                    'gross_amount'    => 100000,
+                    'tax_amount'      => 0,
                     'amount'          => 100000,
                     'amount_paid'     => 100000,
                     'amount_due'      => 0,

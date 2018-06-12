@@ -45,7 +45,7 @@ return [
         ],
         'exception' => [
             'class'               => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL
         ],
     ],
 
@@ -55,7 +55,7 @@ return [
         'wallet'                => 'airtelmoney',
         'received'              => true,
         'email'                 => 'a@b.com',
-        'contact'               => '9918899029',
+        'contact'               => '+919918899029',
         'gateway_merchant_id'   => 'random_id',
         'status_code'           => 'SUC',
         'refund_id'             => null,
@@ -66,11 +66,10 @@ return [
         'action'                => 'authorize',
         'amount'                => '1999',
         'wallet'                => 'airtelmoney',
-        'received'              => false,
+        'received'              => true,
         'email'                 => 'a@b.com',
-        'contact'               => '9918899029',
+        'contact'               => '+919918899029',
         'gateway_merchant_id'   => 'random_id',
-        'response_description'  => 'Invalid MID',
         'status_code'           => 'FAL',
         'refund_id'             => null,
         'entity'                => 'wallet',
@@ -113,9 +112,8 @@ return [
         'wallet'                => 'airtelmoney',
         'email'                 => 'a@b.com',
         'amount'                => '50000',
-        'contact'               => '9918899029',
+        'contact'               => '+919918899029',
         'gateway_merchant_id'   => 'random_id',
-        'response_description'  => 'SUCCESS',
         'status_code'           => 'SUC',
         'entity'                => 'wallet',
     ],
@@ -125,9 +123,8 @@ return [
         'wallet'                => 'airtelmoney',
         'email'                 => 'a@b.com',
         'amount'                => '25000',
-        'contact'               => '9918899029',
+        'contact'               => '+919918899029',
         'gateway_merchant_id'   => 'random_id',
-        'response_description'  => 'SUCCESS',
         'status_code'           => 'SUC',
         'entity'                => 'wallet',
     ],
@@ -137,9 +134,8 @@ return [
         'wallet'                => 'airtelmoney',
         'email'                 => 'a@b.com',
         'amount'                => '2999',
-        'contact'               => '9918899029',
+        'contact'               => '+919918899029',
         'gateway_merchant_id'   => 'random_id',
-        'response_description'  => 'Reversal amount is greater than the amount that can be reversed',
         'status_code'           => 'FAL',
         'entity'                => 'wallet',
     ],
@@ -159,4 +155,21 @@ return [
             'internal_error_code'   => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
         ],
     ],
+
+    'testFailedVerify' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ID ,
+        ],
+    ]
+
 ];

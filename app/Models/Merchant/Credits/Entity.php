@@ -193,7 +193,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-     public function promotion()
+    public function promotion()
     {
         return $this->belongsTo('RZP\Models\Promotion\Entity');
     }

@@ -161,19 +161,18 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateItemIsOfType(string $type)
+    public function validateItemIsOfType(string $expectedType)
     {
-        $item = $this->entity;
+        $item       = $this->entity;
+        $id         = $item->getId();
+        $actualType = $item->getType();
 
-        if ($item->isNotOfType($type) === true)
+        if ($item->isNotOfType($expectedType) === true)
         {
-            $traceData = [
-                Entity::ENTITY => $item->getEntity(),
-                Entity::ID     => $item->getId(),
-                Entity::TYPE   => $item->getType(),
-            ];
-
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE, null, $traceData);
+            throw new BadRequestValidationFailureException(
+                "item must be of type: {$actualType}",
+                Entity::TYPE,
+                compact('id', 'expectedType', 'actualType'));
         }
     }
 }

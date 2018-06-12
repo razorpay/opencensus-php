@@ -24,9 +24,9 @@ class BharatQrPaymentTest extends TestCase
 
         $this->fixtures->merchant->activate();
 
-        $this->fixtures->create('terminal:bharat_qr_terminal');
+        $this->t1 = $this->fixtures->create('terminal:bharat_qr_terminal');
 
-        $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+        $this->t2 = $this->fixtures->create('terminal:bharat_qr_terminal_upi');
 
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
 
@@ -79,6 +79,54 @@ class BharatQrPaymentTest extends TestCase
 
         $this->assertEquals('Random Name', $card['name']);
     }
+
+    public function testMakeTestPayments()
+    {
+        $this->fixtures->terminal->disableTerminal($this->t1['id']);
+
+        $this->fixtures->terminal->disableTerminal($this->t2['id']);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->proxyAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $content = [
+            'reference' => $qrCodeId,
+            'method'    => 'card',
+            'amount'    => '100',
+        ];
+
+        $request['content'] = $content;
+
+        $request['method'] = 'post';
+
+        $request['url'] = '/bharatqr/pay/test';
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        //Created Qr Entity As Expected
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('card', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(100, $payment['amount']);
+        $this->assertEquals('sharp', $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+        $this->assertEquals($bharatQr['expected'], true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('Razorpay', $card['name']);
+    }
+
 
     public function testHitachiVerifyAndRefund()
     {

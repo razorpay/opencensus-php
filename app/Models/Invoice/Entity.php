@@ -3,6 +3,7 @@
 namespace RZP\Models\Invoice;
 
 use App;
+use Lib\Gstin;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -61,6 +62,7 @@ class Entity extends Base\PublicEntity
     const EMAIL_STATUS              = 'email_status';
     const SMS_STATUS                = 'sms_status';
     const DESCRIPTION               = 'description';
+    const MERCHANT_GSTIN            = 'merchant_gstin';
     const MERCHANT_LABEL            = 'merchant_label';
 
     /**
@@ -140,6 +142,8 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_DETAILS         = 'customer_details';
     const PAYMENT_ID               = 'payment_id';
     const URL                      = 'url';
+    // Boolean holding 'has address or supply state name' value to be used in view
+    const HAS_ADDRESS_OR_POS       = 'has_address_or_pos';
 
     // ------------------------ Output Keys End ----------------------
 
@@ -148,6 +152,9 @@ class Entity extends Base\PublicEntity
     const SMS                      = 'sms';
     const ITEMS                    = 'items';
     const IS_PAID                  = 'is_paid';
+    const SUPPLY_STATE_NAME        = 'supply_state_name';
+    const BILLING_ADDRESS_TEXT     = 'billing_address_text';
+    const SHIPPING_ADDRESS_TEXT    = 'shipping_address_text';
 
     const DEFAULT_DUE_DAYS         = 60;
 
@@ -167,6 +174,7 @@ class Entity extends Base\PublicEntity
 
     const TOTAL_COUNT              = 'batch_total';
     const ISSUED_COUNT             = 'issued_count';
+    const CREATED_COUNT            = 'created_count';
     const PAID_COUNT               = 'paid_count';
     const EXPIRED_COUNT            = 'expired_count';
 
@@ -225,6 +233,7 @@ class Entity extends Base\PublicEntity
         self::EXPIRED_AT                => null,
         self::EXPIRE_BY                 => null,
         self::RECEIPT                   => null,
+        self::MERCHANT_GSTIN            => null,
         self::MERCHANT_LABEL            => null,
         self::SUPPLY_STATE_CODE         => null,
         self::DESCRIPTION               => null,
@@ -309,6 +318,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::MERCHANT_ID,
         self::DATE,
+        self::MERCHANT_GSTIN,
         self::MERCHANT_LABEL,
         self::SUPPLY_STATE_CODE,
         self::DESCRIPTION,
@@ -634,9 +644,26 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::USER_ID);
     }
 
+    public function getMerchantGstin()
+    {
+        return $this->getAttribute(self::MERCHANT_GSTIN);
+    }
+
     public function getMerchantLabel()
     {
         return $this->getAttribute(self::MERCHANT_LABEL);
+    }
+
+    public function getSupplyStateCode()
+    {
+        return $this->getAttribute(self::SUPPLY_STATE_CODE);
+    }
+
+    public function getSupplyStateName()
+    {
+        $code = $this->getSupplyStateCode();
+
+        return $code !== null ? Gstin::getStateNameByCode($code) : null;
     }
 
     public function getDescription()
@@ -986,6 +1013,11 @@ class Entity extends Base\PublicEntity
     public function setUserId(string $userId)
     {
         $this->setAttribute(self::USER_ID, $userId);
+    }
+
+    public function setMerchantGstin(string $gstin = null)
+    {
+        $this->setAttribute(self::MERCHANT_GSTIN, $gstin);
     }
 
     public function setMerchantLabel(string $merchantLabel)

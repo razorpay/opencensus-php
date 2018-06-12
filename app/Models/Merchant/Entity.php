@@ -169,7 +169,6 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::EMAIL,
         self::SCOPE,
-        self::ORG_ID,
         self::WEBSITE,
         self::CHANNEL,
         self::CATEGORY,
@@ -1210,6 +1209,16 @@ class Entity extends Base\PublicEntity
         }
 
         return $this->merchantDetail->getGstin() ?: $this->merchantDetail->getPGstin();
+    }
+
+    public function getCompanyCin()
+    {
+        return optional($this->merchantDetail)->getCompanyCin();
+    }
+
+    public function getBusinessRegisteredAddressAsText(string $delimiter = PHP_EOL)
+    {
+        return optional($this->merchantDetail)->getBusinessRegisteredAddressAsText($delimiter);
     }
 
     public function getBusinessRegisteredState()

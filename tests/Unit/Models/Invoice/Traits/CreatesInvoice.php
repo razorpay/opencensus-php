@@ -23,8 +23,10 @@ trait CreatesInvoice
         $order = $this->fixtures->create('order', $orderAttributes);
 
         $defaultInvoiceAttributes = [
-            'issued_at' => time(),
-            'date'      => time(),
+            'issued_at'    => time(),
+            'date'         => time(),
+            'tax_amount'   => 0,
+            'gross_amount' => 0,
         ];
         $invoiceAttributes = array_merge($defaultInvoiceAttributes, $invoiceAttributes);
 
@@ -50,7 +52,7 @@ trait CreatesInvoice
             'order_id'   => '100000000order',
         ];
 
-        $this->fixtures->create('payment', $paymentAttributes);
+        $this->fixtures->create('payment:captured', $paymentAttributes);
 
         return $invoice;
     }

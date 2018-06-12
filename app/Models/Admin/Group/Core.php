@@ -56,6 +56,8 @@ class Core extends Base\Core
         {
             Entity::verifyIdAndStripSignMultiple($input['parents']);
 
+            $this->repo->group->validateExists($input['parents']);
+
             $this->repo->sync($group, 'parents', $input['parents']);
         }
         else

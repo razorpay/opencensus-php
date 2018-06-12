@@ -54,6 +54,7 @@ class Entity extends Base\PublicEntity
     // Output attributes
     const FILES                   = 'files';
     const RESPOND_BY              = 'respond_by';
+    const NET_AMOUNT_DEDUCTED     = 'net_amount_deducted';
 
     // For expands
     const PAYMENT                 = 'payment';
@@ -98,6 +99,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::AMOUNT_DEDUCTED,
         self::AMOUNT_REVERSED,
+        self::NET_AMOUNT_DEDUCTED,
         self::DEDUCT_AT_ONSET,
         self::GATEWAY_DISPUTE_ID,
         self::GATEWAY_DISPUTE_STATUS,
@@ -118,6 +120,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::AMOUNT,
         self::CURRENCY,
+        self::NET_AMOUNT_DEDUCTED,
         self::GATEWAY_DISPUTE_ID,
         self::REASON_CODE,
         self::REASON_DESCRIPTION,
@@ -133,15 +136,17 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::PAYMENT_ID,
+        self::NET_AMOUNT_DEDUCTED,
         self::RESPOND_BY,
         self::REASON_DESCRIPTION,
     ];
 
     protected $casts = [
-        self::AMOUNT          => 'int',
-        self::AMOUNT_DEDUCTED => 'int',
-        self::AMOUNT_REVERSED => 'int',
-        self::DEDUCT_AT_ONSET => 'bool',
+        self::AMOUNT              => 'int',
+        self::AMOUNT_DEDUCTED     => 'int',
+        self::AMOUNT_REVERSED     => 'int',
+        self::NET_AMOUNT_DEDUCTED => 'int',
+        self::DEDUCT_AT_ONSET     => 'bool',
     ];
 
     protected $guarded = [self::ID];
@@ -166,6 +171,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::AMOUNT_REVERSED,
         self::AMOUNT_DEDUCTED,
+        self::NET_AMOUNT_DEDUCTED,
     ];
 
     protected $with = [
@@ -213,6 +219,13 @@ class Entity extends Base\PublicEntity
     {
         $attributes[self::PAYMENT_ID] =
             Payment\Entity::getSignedId($this->getAttribute(self::PAYMENT_ID));
+    }
+
+    public function setPublicNetAmountDeductedAttribute(array & $attributes)
+    {
+        $netAmount = abs($this->getAmountDeducted() - $this->getAmountReversed());
+
+        $attributes[self::NET_AMOUNT_DEDUCTED] = $netAmount;
     }
 
     public function setPublicRespondByAttribute(array & $attributes)

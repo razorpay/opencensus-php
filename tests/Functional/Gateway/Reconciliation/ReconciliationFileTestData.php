@@ -148,12 +148,27 @@ return [
             'curr_exp'             => '2',
             'arn'                  => '75105177297000905183277',
         ],
-        
 
         'billdesk' => [
-            'Refund ID'                 => 'uibpgthqndxmwcf',
-            'Ref. 1'                    => '9LRjiRNokiZ3Ww',
-            'Refund Amount (Rs. Ps.)'   => 500
+            'refund_id'                 => 'uibpgthqndxmwcf',
+            'ref_1'                     => '9LRjiRNokiZ3Ww',
+            'refund_amount_rs_ps'       => 500
+        ],
+
+        'atom' => [
+            'Merchant Name'         => 'RAZORPAY SOFTWARE PVT LTD',
+            'Merchant ID'           => '58809',
+            'Txn State'             => 'Sale',
+            'Client Code'           => '007',
+            'Product'               => 'Razorpay',
+            'Discriminator'         => 'NB',
+            'Payment Status'        => 'Payment Given',
+            'Refund Status'         => '',
+            'SB Cess'               => 0,
+            'Krishi Kalyan Cess'    => 0,
+            'Txn Charges'           => 0,
+            'GST (18%)'             => 0,
+            'Net Amount to be Paid' => 0,
         ],
 
         'hitachi' => [

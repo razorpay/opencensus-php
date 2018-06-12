@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Base\PublicCollection;
@@ -56,6 +57,19 @@ class IcicFirstData extends Base
 
         foreach ($data as $index => $row)
         {
+            if (isset($row['gateway']) === false)
+            {
+                $this->trace->alert(
+                    TraceCode::GATEWAY_FILE_ERROR_GENERATING_DATA,
+                    [
+                        'message'       => 'Gateway entity not found',
+                        'payment_id'    => $row['payment']['id'],
+                        'refund_id'     => $row['refund']['id'],
+                    ]);
+
+                continue;
+            }
+
             $formattedData[] = [
                 self::SR_NO                   => $index + 1,
                 self::MERCHANT_TRANSACTION_ID => $row['refund']['id'],
@@ -86,7 +100,12 @@ class IcicFirstData extends Base
 
         $gatewayEntitiesAll = $this->repo
                                    ->$gateway
-                                   ->fetchByPaymentIdsAndActions($paymentIds, [Action::AUTHORIZE, Action::CAPTURE]);
+                                   ->fetchByPaymentIdsAndActions($paymentIds,
+                                       [
+                                           Action::PURCHASE,
+                                           Action::AUTHORIZE,
+                                           Action::CAPTURE
+                                       ]);
 
         $gatewayEntities = [];
 

@@ -82,15 +82,19 @@ class Core extends Base\Core
         return $admin;
     }
 
-    public function associateRelevantEntitiesToAdmin(Entity $admin, array $input)
+    private function associateRelevantEntitiesToAdmin(Entity $admin, array $input)
     {
         if (isset($input[Entity::ROLES]) === true)
         {
-            $this->repo->sync($admin, Entity::ROLES,  $input[Entity::ROLES]);
+            $this->repo->role->validateExists($input[Entity::ROLES]);
+
+            $this->repo->sync($admin, Entity::ROLES, $input[Entity::ROLES]);
         }
 
         if (isset($input[Entity::GROUPS]) === true)
         {
+            $this->repo->group->validateExists($input[Entity::GROUPS]);
+
             $this->repo->sync($admin, Entity::GROUPS, $input[Entity::GROUPS]);
         }
     }

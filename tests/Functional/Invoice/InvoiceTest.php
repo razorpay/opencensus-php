@@ -13,6 +13,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
@@ -23,10 +24,11 @@ use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
  */
 class InvoiceTest extends TestCase
 {
-    use InvoiceTestTrait;
-    use CreatesInvoice;
     use PaymentTrait;
     use MocksDnsTrait;
+    use CreatesInvoice;
+    use InvoiceTestTrait;
+    use DbEntityFetchTrait;
 
     const TEST_INV_ID = 'inv_1000000invoice';
 
@@ -42,6 +44,7 @@ class InvoiceTest extends TestCase
             [
                 'merchant_id'                 => '10000000000000',
                 'business_registered_address' => '#1205, Rzp, Outer Ring Road, Bangalore',
+                'gstin'                       => '29kjsngjk213922',
             ]);
 
         $this->fixtures->create('user', ['id' => '1000000000user']);
@@ -73,6 +76,12 @@ class InvoiceTest extends TestCase
 
         // Asserts if have assigned default value to invoices.date
         $this->assertNotNull($response['date']);
+
+        // Asserts that proper value for merchant label & merchant gstin is set (not exposed in public response)
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $this->assertEquals('Test Merchant', $invoice->getMerchantLabel());
+        $this->assertEquals('29kjsngjk213922', $invoice->getMerchantGstin());
     }
 
     public function testCreateInvoiceWithExistingCustomer()
@@ -657,6 +666,21 @@ class InvoiceTest extends TestCase
                 'id'      => '1000001address',
                 'type'    => 'shipping_address',
                 'zipcode' => '560080',
+                'primary' => false,
+            ]);
+
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testUpdateDraftInvoiceWithSameBillingAndShippingAddressIds()
+    {
+        $this->fixtures->create(
+            'address',
+            [
+                'id'      => '1000000address',
+                'type'    => 'billing_address',
                 'primary' => false,
             ]);
 
@@ -1775,14 +1799,21 @@ class InvoiceTest extends TestCase
 
     public function testGetLinkViewCancelled()
     {
-        $this->createOrder();
+        $order = $this->createOrder();
 
-        $this->createDraftInvoice(['type' => 'link', 'status' => 'cancelled']);
+        $this->createDraftInvoice(
+            [
+                'type'         => 'link',
+                'order_id'     => $order->getId(),
+                'status'       => 'cancelled',
+                'amount'       => 100000,
+                'cancelled_at' => Carbon::now(Timezone::IST)->getTimestamp(),
+            ]);
 
         $this->callViewUrlAndMakeAssertions(
                 self::TEST_INV_ID,
                 200,
-                'Payment Link with id inv_1000000invoice is cancelled');
+                'Payment Link Cancelled');
     }
 
     public function testGetLinkViewExpired()
@@ -1794,7 +1825,7 @@ class InvoiceTest extends TestCase
         $this->callViewUrlAndMakeAssertions(
                 self::TEST_INV_ID,
                 200,
-                'Payment Link with id inv_1000000invoice is expired');
+                'Payment Link Expired');
     }
 
     public function testGetInvoiceView()

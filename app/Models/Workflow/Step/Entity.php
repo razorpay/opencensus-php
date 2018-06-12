@@ -30,9 +30,7 @@ class Entity extends Base\Entity
     protected $generateIdOnCreate = false;
 
     protected $fillable = [
-        self::WORKFLOW_ID,
         self::LEVEL,
-        self::ROLE_ID,
         self::REVIEWER_COUNT,
         self::OP_TYPE,
     ];

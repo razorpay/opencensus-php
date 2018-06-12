@@ -83,6 +83,7 @@ function disableEmptyInputs(form) {
                 <option value="wallet">Wallet</option>
                 <option value="emi">Emi</option>
                 <option value="upi">UPI</option>
+                <option value="emandate">E-Mandate</option>
             </select>
         </td>
     </tr>
@@ -120,10 +121,11 @@ function disableEmptyInputs(form) {
         <td colspan="40">Select Wallet </td>
         <td>
             <select name="wallet">
+                <option value="amazonpay" selected>Amazon Pay</option>
                 <option value="paytm">Paytm</option>
                 <option value="mobikwik">Mobikwik</option>
                 <option value="payzapp">Payzapp</option>
-                <option value="payumoney" selected>Payumoney</option>
+                <option value="payumoney">Payumoney</option>
                 <option value="olamoney">Olamoney</option>
                 <option value="airtelmoney">Airtelmoney</option>
                 <option value="freecharge">Freecharge</option>
@@ -146,11 +148,16 @@ function disableEmptyInputs(form) {
         </td>
     </tr>
     <tr>
+        <td colspan="40">Razorpay Key:</td>
+        <td>
+            <input type="text" value="<?=$key_id?>" name="key_id">
+        </td>
+    </tr>
+    <tr>
         <td colspan='40'>Card Holder Name:</td>
         <td><input type="text" name="card[name]" size="25" value="shashank"></td>
         <!-- <td><input type="text" name="callback_url" value="<?= $callback_url ?>"></td> -->
         <td><input type="hidden" value="INR" name="currency"></td>
-        <td><input type="hidden" value="<?=$key_id?>" name="key_id"></td>
     </tr>
     <tr>
         <td colspan="40"><b>Card No: </b> </td>
