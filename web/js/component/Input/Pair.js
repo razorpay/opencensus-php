@@ -82,12 +82,7 @@ export default class Pairs extends React.PureComponent {
         )}
       >
         <Label text={this.props.label} />
-        <div
-          class={classList(
-            'Input-content',
-            !!this.state.pairs.length && 'Input-content--hierarchy'
-          )}
-        >
+        <div class="Input-content">
           {!!this.state.pairs.length &&
             this.state.pairs.map((pair, idx) => (
               <Pair
@@ -169,7 +164,7 @@ class Pair extends React.Component {
             data-id={idx}
             onClick={this.props.removePair}
           >
-            <i class="i i-close text-danger" />
+            <i class="i i-close" />
           </span>
         </div>
 
