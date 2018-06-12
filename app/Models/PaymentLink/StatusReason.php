@@ -17,12 +17,6 @@ class StatusReason
     const DEACTIVATED = 'deactivated';
     const COMPLETED   = 'completed';
 
-    public static $statusReasons = [
-        self::EXPIRED,
-        self::DEACTIVATED,
-        self::COMPLETED,
-    ];
-
     public static function isValid(string $statusReason): bool
     {
         if ($statusReason === null)

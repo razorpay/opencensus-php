@@ -15,7 +15,6 @@ class Entity extends Base\PublicEntity
     use NotesTrait;
     use SoftDeletes;
 
-    const RECEIPT           = 'receipt';
     const MERCHANT_ID       = 'merchant_id';
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
@@ -27,6 +26,7 @@ class Entity extends Base\PublicEntity
     const STATUS_REASON     = 'status_reason';
     const SHORT_URL         = 'short_url';
     const USER_ID           = 'user_id';
+    const RECEIPT           = 'receipt';
     const TITLE             = 'title';
     const DESCRIPTION       = 'description';
     const NOTES             = 'notes';
@@ -36,11 +36,11 @@ class Entity extends Base\PublicEntity
     protected $entity = 'payment_link';
 
     protected $fillable = [
-        self::RECEIPT,
         self::AMOUNT,
         self::CURRENCY,
         self::EXPIRE_BY,
         self::TIMES_PAYABLE,
+        self::RECEIPT,
         self::TITLE,
         self::DESCRIPTION,
         self::NOTES,
@@ -48,7 +48,6 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
-        self::RECEIPT,
         self::MERCHANT_ID,
         self::AMOUNT,
         self::CURRENCY,
@@ -60,6 +59,7 @@ class Entity extends Base\PublicEntity
         self::STATUS_REASON,
         self::SHORT_URL,
         self::USER_ID,
+        self::RECEIPT,
         self::TITLE,
         self::DESCRIPTION,
         self::NOTES,
@@ -70,7 +70,6 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
-        self::RECEIPT,
         self::AMOUNT,
         self::CURRENCY,
         self::EXPIRE_BY,
@@ -81,6 +80,7 @@ class Entity extends Base\PublicEntity
         self::STATUS_REASON,
         self::SHORT_URL,
         self::USER_ID,
+        self::RECEIPT,
         self::TITLE,
         self::DESCRIPTION,
         self::CREATED_AT,
@@ -91,8 +91,10 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::AMOUNT,
         self::CURRENCY,
+        self::EXPIRE_BY,
         self::STATUS,
         self::SHORT_URL,
+        self::RECEIPT,
         self::TITLE,
         self::DESCRIPTION,
     ];

@@ -44,9 +44,9 @@ class CreatePaymentLinks extends Migration
             $table->bigInteger(Entity::TOTAL_AMOUNT_PAID)
                   ->default(0);
 
-            $table->string(Entity::STATUS, 255);
+            $table->string(Entity::STATUS, 40);
 
-            $table->string(Entity::STATUS_REASON, 255)
+            $table->string(Entity::STATUS_REASON, 40)
                   ->nullable();
 
             $table->string(Entity::SHORT_URL, 255)
@@ -83,7 +83,6 @@ class CreatePaymentLinks extends Migration
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
-
         });
     }
 
