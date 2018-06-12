@@ -89,7 +89,7 @@ class CreateMerchants extends Migration
             $table->tinyInteger(Merchant::HAS_KEY_ACCESS)
                   ->default(0);
 
-            $table->string(Merchant::PARTNER_TYPE, 40)
+            $table->string(Merchant::PARTNER_TYPE, 255)
                   ->nullable();
 
             $table->char(Merchant::BRAND_COLOR, 6)

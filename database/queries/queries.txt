@@ -3562,4 +3562,4 @@ ALTER TABLE line_items
     ADD COLUMN tax_rate INTEGER UNSIGNED DEFAULT NULL AFTER sac_code;
 
 ALTER TABLE merchants
-    ADD COLUMN partner_type VARCHAR(40) DEFAULT NULL AFTER has_key_access;
+    ADD COLUMN partner_type VARCHAR(255) DEFAULT NULL AFTER has_key_access;
