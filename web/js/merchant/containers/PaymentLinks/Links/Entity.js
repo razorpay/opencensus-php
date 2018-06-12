@@ -184,12 +184,23 @@ export default class InvoiceDetailContainer extends Component {
         }
       })
       .catch(({ errors }) => {
-        let err = errors || `Some Network error occured`;
+        let err = errors;
 
         if (Array.isArray(err)) {
-          err = err.map(e => {
-            return e.toLowerCase().indexOf('status code') > -1 ? false : e;
-          });
+          err = [];
+
+          errors.length &&
+            errors.forEach(e => {
+              if (e && e.toLowerCase().indexOf('status code') === -1) {
+                err.push(e);
+              }
+            });
+
+          err = err.length ? err : null;
+        }
+
+        if (!err) {
+          err = `Some Network error occured`;
         }
 
         this.props.showNotification({

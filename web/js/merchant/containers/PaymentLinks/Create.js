@@ -414,10 +414,29 @@ export default class CreateNewContainer extends React.Component {
           throw new Error(resp.errors);
         }
       })
-      .catch(err => {
+      .catch(({ errors }) => {
+        let err = errors;
+
+        if (Array.isArray(err)) {
+          err = [];
+
+          errors.length &&
+            errors.forEach(e => {
+              if (e && e.toLowerCase().indexOf('status code') === -1) {
+                err.push(e);
+              }
+            });
+
+          err = err.length ? err : null;
+        }
+
+        if (!err) {
+          err = `Some Network error occured`;
+        }
+
         this.props.showNotification({
           type: 'error',
-          message: err.errors,
+          message: err,
         });
 
         this.setState({
