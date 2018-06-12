@@ -3609,3 +3609,6 @@ ALTER TABLE batches
 ALTER TABLE orders
     CHANGE reference1 force_offer TINYINT(1),
     ALGORITHM=INPLACE, LOCK=NONE;
+
+ALTER TABLE merchants
+    ADD COLUMN partner_type VARCHAR(255) DEFAULT NULL AFTER has_key_access;
