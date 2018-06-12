@@ -109,6 +109,18 @@ export default class User {
     return true;
   }
 
+  // RPL will exist and RPL will be shown as Early Access
+  // TODO: Harcoding to true for development testing
+  get isPaymentLinksV2Enabled() {
+    return true;
+
+    if (this.tags) {
+      return this.tags.indexOf('paymentlinks_v2') !== -1;
+    } else {
+      return false; // Back up as always false, because RPL is dependent upon this
+    }
+  }
+
   get enabledFeatures() {
     let pluckKey = 'feature';
 

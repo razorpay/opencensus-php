@@ -20,6 +20,8 @@ import { showNotification } from 'rzp/modules/notifications';
 
 import { populateRPLReduxList } from 'merchant/modules/invoices/list';
 
+import EarlyAccessRPL from './EarlyAccess';
+
 @connect(state => ({ ...state.invoices, ...state.session }), {
   showNotification,
   populateRPLReduxList,
@@ -79,6 +81,16 @@ export default class ReusableLinksContainer extends ListContainer {
   render() {
     const { loading } = this.state;
     const { reusableLinks } = this.props;
+
+    const showEarlyAccessForm = this.props.user.isPaymentLinksV2Enabled;
+
+    if (showEarlyAccessForm) {
+      return (
+        <div class="content-wrapper">
+          <EarlyAccessRPL />
+        </div>
+      );
+    }
 
     return (
       <div class="content-wrapper">
@@ -239,7 +251,7 @@ export default class ReusableLinksContainer extends ListContainer {
         )}
 
         {!loading &&
-          reusableLinks.length && (
+          !!reusableLinks.length && (
             <Pager
               count={this.state.count}
               skip={this.state.skip}

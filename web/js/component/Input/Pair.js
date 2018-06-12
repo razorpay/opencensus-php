@@ -1,7 +1,7 @@
 import { Label, inputClass } from './index';
 import debounce from 'rzp/utils/debounce';
 import { classList } from 'common/util';
-import { separateDomProps } from './index';
+import Button from 'component/Button';
 
 /* Pair is key-value pair*/
 export default class Pairs extends React.PureComponent {
@@ -97,13 +97,13 @@ export default class Pairs extends React.PureComponent {
             ))}
 
           {this.state.pairs.length < this.state.maxAllowedPairs ? (
-            <button
+            <Button.Transparent
               type="button"
-              class="btn-link no-padding"
+              class="Btn--Link"
               onClick={this.onAddNew}
             >
               + Add New
-            </button>
+            </Button.Transparent>
           ) : null}
         </div>
       </div>

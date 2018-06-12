@@ -8,7 +8,14 @@ $max-width = 820px
   .spinner-container
     height: 300px
 
+/* PaymentLinks wizard screen */
 .PaymentLinks--Create
+  max-width: $max-width
+  height: 80vh
+  min-height: 560px
+  max-height: 640px
+  background: #fafafa
+  position: relative
 
   .form-container
     padding: 30px 40px 30px 24px
@@ -19,14 +26,6 @@ $max-width = 820px
     .Input-label
       width: 136px
 
-/* Activation wizard screen */
-.PaymentLinks--Create
-  max-width: $max-width
-  height: 80vh
-  min-height: 560px
-  max-height: 640px
-  background: #fafafa
-  position: relative
 
   $side-width = 240px
 
@@ -38,6 +37,9 @@ $max-width = 820px
     bottom: 80px
     top: 0
     overflow: auto
+
+    &.main--full
+      bottom: 0
 
   footer
     left: 0

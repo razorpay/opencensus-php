@@ -2,7 +2,6 @@ import { connect } from 'react-redux';
 import { merchantFetch } from 'rzp/utils/ajax';
 import { withRouter } from 'react-router-dom';
 import { classList } from 'common/util';
-import { activationDuration } from 'common/data';
 
 import Form from 'component/Form';
 import Input from 'component/Input';
@@ -28,6 +27,8 @@ import { luminateRow } from 'merchant/modules/app';
 import moment from 'moment';
 import { dateCalculator, timeCalculator } from 'component/Input/Calendar';
 import { onChangeNotes } from 'component/Input/Pair';
+
+import EarlyAccessRPL from './ReusableLinks/EarlyAccess';
 
 const FORM_TABS = [
   {
@@ -518,7 +519,17 @@ export default class CreateNewContainer extends React.Component {
     const IS_MODAL_VIEW = this.props.onClose;
     const { activeTab } = this.state;
 
-    const formFields = this.getFormFields();
+    let formFields;
+
+    const showEarlyAccessForm =
+      this.props.user.isPaymentLinksV2Enabled &&
+      activeTab == REUSABLE_PAYMENT_LINK;
+
+    if (showEarlyAccessForm) {
+      formFields = <EarlyAccessRPL />;
+    } else {
+      formFields = this.getFormFields();
+    }
 
     const content = (
       <CreateWizard
@@ -534,6 +545,7 @@ export default class CreateNewContainer extends React.Component {
         isModalView={IS_MODAL_VIEW}
         onFormAbruptClose={this.onFormAbruptClose}
         disableSubmit={this.state.disableSubmit}
+        showEarlyAccessForm={showEarlyAccessForm}
       />
     );
 
@@ -556,7 +568,7 @@ class CreateWizard extends React.Component {
   };
 
   render() {
-    const { activeTab, disableSubmit } = this.props;
+    const { activeTab, disableSubmit, mode, showEarlyAccessForm } = this.props;
 
     return (
       <div class="PaymentLinks--Create Wizard">
@@ -567,47 +579,59 @@ class CreateWizard extends React.Component {
           activeTab={activeTab}
         />
 
-        <main class="form-container">
+        <main
+          class={classList(
+            'form-container',
+            showEarlyAccessForm && 'main--full'
+          )}
+        >
           {/* ACTIVE TAB TITLE */}
           <main-title class="main-title">
             {FORM_TABS[activeTab].title}
           </main-title>
 
           {/* ALERTS */}
-          {this.props.mode === 'test' && (
-            <Alert.Warning>
-              You are creating the link in <b>Test Mode</b>. So, only test
-              payments can be made for this link.
-            </Alert.Warning>
-          )}
+          {!showEarlyAccessForm &&
+            mode === 'test' && (
+              <Alert.Warning>
+                You are creating the link in <b>Test Mode</b>. So, only test
+                payments can be made for this link.
+              </Alert.Warning>
+            )}
 
           {/* FORM */}
-          <Form
-            class="PaymentLinks--Create-Form"
-            onChange={this.props.onChange}
-            layout="tabular"
-            key={FORM_TABS[activeTab].title}
-          >
-            {this.props.content}
-          </Form>
+          {showEarlyAccessForm ? (
+            this.props.content
+          ) : (
+            <Form
+              class="PaymentLinks--Create-Form"
+              onChange={this.props.onChange}
+              layout="tabular"
+              key={FORM_TABS[activeTab].title}
+            >
+              {this.props.content}
+            </Form>
+          )}
         </main>
 
         {/* FORM FOOTER */}
-        <footer>
-          {/* Action Button 1 */}
-          {this.props.isModalView && (
-            <Button onClick={this.props.onFormAbruptClose}>Cancel</Button>
-          )}
+        {!showEarlyAccessForm && (
+          <footer>
+            {/* Action Button 1 */}
+            {this.props.isModalView && (
+              <Button onClick={this.props.onFormAbruptClose}>Cancel</Button>
+            )}
 
-          {/* Action Button 2 */}
-          <AsyncBtn.Primary
-            onClick={this.props.onCreate}
-            pendingState={'Creating...'}
-            disabled={disableSubmit}
-          >
-            Create {FORM_TABS[activeTab].title}
-          </AsyncBtn.Primary>
-        </footer>
+            {/* Action Button 2 */}
+            <AsyncBtn.Primary
+              onClick={this.props.onCreate}
+              pendingState={'Creating...'}
+              disabled={disableSubmit}
+            >
+              Create {FORM_TABS[activeTab].title}
+            </AsyncBtn.Primary>
+          </footer>
+        )}
       </div>
     );
   }
