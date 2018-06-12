@@ -6,10 +6,12 @@ use Mockery;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class NetbankingReconciliationTest extends TestCase
 {
+    use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
     const ACCOUNT_NUMBER = '309002069863';
@@ -304,6 +306,31 @@ class NetbankingReconciliationTest extends TestCase
         $transactionEntity = $this->getLastEntity('transaction', true);
 
         $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+    }
+
+    public function testIciciFailedPaymentReconciliation()
+    {
+        $this->gateway = 'netbanking_icici';
+
+        $this->setMockGatewayTrue();
+
+        $payment = $this->createFailedPayment($this->gateway);
+
+        $this->createNetbanking($payment['id'], 'ICIC', 'N');
+
+        $fileContents = $this->generateFile('icici', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingIcici', $uploadedFile);
+
+        $paymentEntity = $this->getDbLastEntity('payment');
+
+        $this->assertEquals($paymentEntity['status'], 'authorized');
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
     }
 
     protected function reconcile($gateway, $uploadedFile)

@@ -277,7 +277,10 @@ class Repository extends Base\Repository
 
         if ($count === 0)
         {
-            $entity->forceDelete();
+            $this->transaction(function () use ($entity)
+            {
+                $entity->forceDelete();
+            });
 
             return null;
         }
@@ -304,13 +307,13 @@ class Repository extends Base\Repository
             $terminal->getAttributes());
     }
 
-    public function addMerchantToTerminal(Entity $terminal, string $merchantId)
+    public function addMerchantToTerminal(Entity $terminal, Merchant\Entity $merchant)
     {
-        $terminal->merchants()->attach($merchantId);
+        $terminal->merchants()->attach($merchant);
     }
 
-    public function removeMerchantFromTerminal(Entity $terminal, string $merchantId)
+    public function removeMerchantFromTerminal(Entity $terminal, Merchant\Entity $merchant)
     {
-        $terminal->merchants()->detach($merchantId);
+        $terminal->merchants()->detach($merchant);
     }
 }

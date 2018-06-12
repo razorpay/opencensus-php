@@ -472,4 +472,9 @@ class TerminalTest extends TestCase
 
         $this->assertFalse($terminal->reload()->isEnabled());
     }
+
+    public function testAddAmazonPayTerminal()
+    {
+        $this->startTest();
+    }
 }

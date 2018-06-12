@@ -2,16 +2,18 @@
 
 namespace RZP\Base;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use RZP\Constants\Es;
-use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
-use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Base\EsRepository;
-use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\PublicCollection;
+use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
+use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  * Trait RepositoryFetch
@@ -328,8 +330,6 @@ trait RepositoryFetch
 
         $this->addQueryOrder($query);
 
-        // $this->addForceIndexForNestaway($query);
-
         $this->buildFetchQueryAdditional($params, $query);
 
         return $query;
@@ -578,7 +578,7 @@ trait RepositoryFetch
 
     protected function validateAdditional(array $params)
     {
-        ;
+        return;
     }
 
     public function setMerchantIdRequiredForMultipleFetch($required)
@@ -798,11 +798,6 @@ trait RepositoryFetch
               ->orderBy(Common::ID, 'desc');
     }
 
-    protected function addForceIndexForNestaway($query)
-    {
-        ;
-    }
-
     protected function addQueryParamCount($query, $params)
     {
         $query->take($params['count']);
@@ -828,8 +823,8 @@ trait RepositoryFetch
         $entity = $this->getEntityClass();
 
         return in_array(
-            \Illuminate\Database\Eloquent\SoftDeletes::class,
-            class_uses($entity),
+            SoftDeletes::class,
+            class_uses_recursive($entity),
             true);
     }
     /**

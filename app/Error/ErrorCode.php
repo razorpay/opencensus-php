@@ -676,7 +676,6 @@ class ErrorCode
 
     const BAD_REQUEST_ITEM_INACTIVE                                                 = 'BAD_REQUEST_ITEM_INACTIVE';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                         = 'BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED';
-    const BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE                                        = 'BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE';
     const BAD_REQUEST_INVALID_ITEM_TAX_DETAILS                                      = 'BAD_REQUEST_INVALID_ITEM_TAX_DETAILS';
     const BAD_REQUEST_LINK_TYPE_HAS_NO_TAXATION                                     = 'BAD_REQUEST_LINK_TYPE_HAS_NO_TAXATION';
 

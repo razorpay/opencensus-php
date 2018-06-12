@@ -129,7 +129,7 @@ class Gateway extends Base\Gateway
     {
         return [
             'acquirer' => [
-                Payment\Entity::REFERENCE1 => $gatewayPayment->getBankReferenceNo()
+                Payment\Entity::REFERENCE1 => $gatewayPayment->getBankPaymentId()
             ]
         ];
     }

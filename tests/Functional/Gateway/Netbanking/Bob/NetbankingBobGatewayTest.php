@@ -130,9 +130,15 @@ class NetbankingBobGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
+        $this->assertNull($payment['reference1']);
+
         $this->authorizeFailedPayment($payment['id']);
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNotNull($payment['reference1']);
 
         $this->assertTestResponse($gatewayPayment, 'testAuthFailedEntity');
     }

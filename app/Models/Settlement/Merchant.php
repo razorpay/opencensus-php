@@ -94,6 +94,8 @@ class Merchant
 
         $this->resetPayoutEntity();
 
+        $this->payout->incrementAttempts();
+
         $this->repo->saveOrFail($this->payout);
 
         $this->createPayoutAttemptEntity();

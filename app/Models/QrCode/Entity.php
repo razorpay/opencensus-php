@@ -11,6 +11,19 @@ class Entity extends Base\PublicEntity
 {
     const ID                        = 'id';
     const MERCHANT_ID               = 'merchant_id';
+    //
+    // Reference will always be equal to id in case
+    // qr code is generated before payment happens.
+    // If qr code is generated after payment is done
+    // we set the reference equal to the reference sent
+    // by bank.
+    //
+    // There is no unique db constraint on reference.
+    // This is so because if a virtual account associated
+    // with a qr code is closed and we again get payment
+    // notification on same reference we will generate qr code
+    // again with same reference.
+    //
     const REFERENCE                 = 'reference';
     const PROVIDER                  = 'provider';
     const ENTITY_ID                 = 'entity_id';
@@ -28,6 +41,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::AMOUNT,
         self::PROVIDER,
+        self::REFERENCE,
         self::QR_STRING,
     ];
 
@@ -43,6 +57,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::REFERENCE,
         self::SHORT_URL,
         self::CREATED_AT,
@@ -55,6 +70,10 @@ class Entity extends Base\PublicEntity
     protected static $generators = [
         self::ID,
         self::REFERENCE,
+    ];
+
+    protected $ignoredRelations = [
+        'source'
     ];
 
     // --------------------- RELATIONS ---------------------
@@ -156,6 +175,11 @@ class Entity extends Base\PublicEntity
     public function getQrCodeFilename(): string
     {
         return 'qrcodes/'. $this->getId();
+    }
+
+    public function isGeneratedByMerchant()
+    {
+        return ($this->getReference() !== $this->getId());
     }
 
     // --------------------- END GETTERS ---------------------

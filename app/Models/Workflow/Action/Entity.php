@@ -4,6 +4,7 @@ namespace RZP\Models\Workflow\Action;
 
 use RZP\Models\State;
 use RZP\Models\Comment;
+use RZP\Models\Admin\Org;
 use RZP\Models\Workflow\Base;
 
 
@@ -50,11 +51,6 @@ class Entity extends Base\Entity
         self::TITLE,
         self::DESCRIPTION,
         self::APPROVED,
-        self::ORG_ID,
-        self::MAKER_ID,
-        self::MAKER_TYPE,
-        self::WORKFLOW_ID,
-        self::PERMISSION_ID,
         self::STATE,
         self::STATE_CHANGER_ID,
         self::STATE_CHANGER_ROLE_ID
@@ -131,6 +127,11 @@ class Entity extends Base\Entity
         self::APPROVED      => 'boolean',
         self::CURRENT_LEVEL => 'integer',
     ];
+
+    public function org()
+    {
+        return $this->belongsTo(Org\Entity::class);
+    }
 
     public function workflow()
     {

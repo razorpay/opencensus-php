@@ -13,7 +13,7 @@ class RowProcessor extends BaseRowProcessor
     const REMARKS               = 'remarks';
     const SETTLEMENT_DATE       = 'settlement_date';
 
-    protected function parseRow()
+    protected function processRow()
     {
         $attemptRef = $this->getAttemptReference();
 

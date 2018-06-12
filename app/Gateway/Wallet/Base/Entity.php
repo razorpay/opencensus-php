@@ -110,6 +110,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::GATEWAY_PAYMENT_ID2);
     }
 
+    public function getGatewayRefundId()
+    {
+        return $this->getAttribute(self::GATEWAY_REFUND_ID);
+    }
+
     public function getDate()
     {
         return $this->getAttribute(self::DATE);
@@ -123,5 +128,26 @@ class Entity extends Base\Entity
     public function setDate(string $date)
     {
         $this->setAttribute(self::DATE, $date);
+    }
+
+	  public function getErrorMessage()
+	  {
+		  return $this->getAttribute(self::ERROR_MESSAGE);
+	  }
+
+	  protected function setErrorMessageAttribute($message)
+	  {
+		  //to reduce the length of error message in case it extends database column field size.
+		  $this->attributes[self::ERROR_MESSAGE] = substr($message, 0, 255);
+	  }
+
+    public function setEmail(string $email)
+    {
+        $this->setAttribute(self::EMAIL, $email);
+    }
+
+    public function setContact(string $contact)
+    {
+        $this->setAttribute(self::CONTACT, $contact);
     }
 }

@@ -1604,8 +1604,10 @@ trait Authorize
 
     /**
      * @param Payment\Entity $payment
-     * @param array $input Input data received from checkout/merchant.
-     * @param array $gatewayInput Data that is required by gateway for the payment to be processed.
+     * @param array          $input        Input data received from checkout/merchant.
+     * @param array          $gatewayInput Data that is required by gateway for the payment to be processed.
+     *
+     * @throws Exception\BadRequestValidationFailureException
      */
     protected function runPaymentMethodRelatedPreProcessing(Payment\Entity $payment, & $input, array & $gatewayInput)
     {
@@ -1625,13 +1627,21 @@ trait Authorize
         {
             $this->associateSubscriptionToPayment($payment, $input);
 
-            $this->addCustomerIdToSubscriptionInput($payment->subscription, $input);
+            $subscription = $payment->subscription;
+
+            $this->addCustomerIdToSubscriptionInput($subscription, $input);
 
             $this->addTestSuccessFlagToGatewayInput($input, $gatewayInput);
+
+            if ($subscription->isGlobal() === true)
+            {
+                $followGlobal = true;
+            }
         }
 
         // First fetch the relevant customer (global or local)
-        list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $this->merchant);
+        list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
+                                                                $input, $this->merchant, $followGlobal ?? false);
 
         if ($customer === null)
         {
@@ -1844,7 +1854,7 @@ trait Authorize
             // second 2FA (change card). In the subsequent charges flow,
             // app_token won't be present anyway, since it's internal.
             //
-            if($subscription->isGlobal() === true)
+            if ($subscription->isGlobal() === true)
             {
                 $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
 
