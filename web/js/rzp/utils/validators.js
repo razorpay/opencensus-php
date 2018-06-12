@@ -127,6 +127,14 @@ export const length = (length, message = '') => {
   };
 };
 
+export const maxLength = (length, message = '') => {
+  message = message || `Enter upto ${length} characters`;
+
+  return (value = '') => {
+    return value.trim().length > length ? message : '';
+  };
+};
+
 const makeValidator = (truthyFn, defaultMessage) => (
   message = defaultMessage
 ) => value => (truthyFn(value) ? undefined : message);

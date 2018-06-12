@@ -1,6 +1,6 @@
 import Input from 'component/Input';
 import { trackHelpClick } from './ga';
-import { isAmount, isEmail, isPhone } from 'rzp/utils/validators';
+import { isAmount, isEmail, isPhone, maxLength } from 'rzp/utils/validators';
 
 /* Form fields of Payment Links */
 export default [
@@ -112,6 +112,7 @@ export default [
   {
     name: 'receipt',
     label: 'Receipt No.',
+    validator: maxLength(40),
   },
   {
     _name: 'hasNoExpiry',

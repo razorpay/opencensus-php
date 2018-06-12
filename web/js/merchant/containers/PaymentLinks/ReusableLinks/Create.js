@@ -1,5 +1,5 @@
 import Input from 'component/Input';
-import { isAmount, isInteger } from 'rzp/utils/validators';
+import { isAmount, isInteger, maxLength } from 'rzp/utils/validators';
 
 /* Form fields of Reusable Payment Links */
 export default [
@@ -54,6 +54,7 @@ export default [
   {
     name: 'receipt',
     label: 'Receipt No.',
+    validator: maxLength(40),
   },
   {
     _name: 'hasNoExpiry',

@@ -18,6 +18,7 @@ import Input from 'component/Input';
 import moment from 'moment';
 import { dateCalculator, timeCalculator } from 'component/Input/Calendar';
 import { onChangeNotes } from 'component/Input/Pair';
+import { maxLength } from 'rzp/utils/validators';
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -246,7 +247,7 @@ export default props => {
                   value={
                     isRazorXExperiment && isIssued
                       ? () => (
-                          <ReceiptField
+                          <EditReceiptField
                             value={invoice.receipt}
                             editPaymentLink={editPaymentLink}
                           />
@@ -269,7 +270,7 @@ export default props => {
                   value={
                     isRazorXExperiment && (isIssued || isPartiallyPaid)
                       ? () => (
-                          <ExpiresOnField
+                          <EditExpiryField
                             value={invoice.expire_by}
                             editPaymentLink={editPaymentLink}
                           />
@@ -287,7 +288,7 @@ export default props => {
                   <EntityDetailRow
                     label="Notes"
                     value={() => (
-                      <InternalNotesField
+                      <EditNotesField
                         value={invoice.notes}
                         editPaymentLink={editPaymentLink}
                       />
@@ -316,11 +317,15 @@ export default props => {
   );
 };
 
-class ReceiptField extends React.Component {
-  state = {
-    isEditableMode: false,
-    receipt: this.props.value || '',
-  };
+class EditReceiptField extends React.Component {
+  state = this.resetState();
+
+  resetState() {
+    return {
+      isEditableMode: false,
+      receipt: this.props.value || '',
+    };
+  }
 
   makeEditable = () => {
     this.setState({
@@ -350,9 +355,10 @@ class ReceiptField extends React.Component {
             name="receipt_no"
             propagatedError={this.state.propagatedError}
             placeholder="Receipt No."
-            class="Input--half_big Input--inline"
+            class="Input--small Input--inline"
             required={true}
             value={this.state.receipt}
+            validator={maxLength(40)}
             onChange={e => {
               this.setState({
                 receipt: e.target.value,
@@ -360,34 +366,42 @@ class ReceiptField extends React.Component {
               });
             }}
           />
-          <AsyncBtn.Transparent
-            disabled={!this.state.receipt}
-            onClick={() =>
-              this.props
-                .editPaymentLink({
-                  receipt: this.state.receipt,
-                })
-                .then(resp => {
-                  if (resp.data) {
+          <div>
+            <AsyncBtn.Primary
+              class="Button--small"
+              disabled={!this.state.receipt}
+              onClick={() =>
+                this.props
+                  .editPaymentLink({
+                    receipt: this.state.receipt,
+                  })
+                  .then(resp => {
+                    if (resp.data) {
+                      this.setState({
+                        isEditableMode: false,
+                      });
+                    }
+                  })
+                  .catch(({ errors }) => {
                     this.setState({
-                      isEditableMode: false,
+                      propagatedError: Array.isArray(errors)
+                        ? errors[0]
+                        : errors || 'Some Network error occured',
                     });
-                  }
-                })
-                .catch(({ errors }) => {
-                  this.setState({
-                    propagatedError: Array.isArray(errors)
-                      ? errors[0]
-                      : errors || 'Some Network error occured',
-                  });
-                })
-            }
-            class="Button--Link"
-            style={{ position: 'absolute', top: 8, left: 208 }}
-            pendingState="Saving"
-          >
-            Save
-          </AsyncBtn.Transparent>
+                  })
+              }
+              pendingState="Saving"
+            >
+              Save
+            </AsyncBtn.Primary>
+
+            <Button.Transparent
+              class="Button--Link Button--small"
+              onClick={() => this.setState(this.resetState())}
+            >
+              Discard
+            </Button.Transparent>
+          </div>
         </React.Fragment>
       );
     }
@@ -396,7 +410,7 @@ class ReceiptField extends React.Component {
   }
 }
 
-class ExpiresOnField extends React.Component {
+class EditExpiryField extends React.Component {
   state = this.resetState();
 
   resetState() {
@@ -543,10 +557,10 @@ class ExpiresOnField extends React.Component {
   }
 }
 
-class InternalNotesField extends React.Component {
-  state = this.initializeState();
+class EditNotesField extends React.Component {
+  state = this.resetState();
 
-  initializeState() {
+  resetState() {
     const notes = Object.keys(this.props.value).map(k => ({
       key: k,
       value: this.props.value[k],
