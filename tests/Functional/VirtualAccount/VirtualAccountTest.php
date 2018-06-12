@@ -172,6 +172,34 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals('428734', $masterCardAcquirerCode);
     }
 
+    public function testCreateVirtualAccountWithReference()
+    {
+        $this->ba->proxyAuthLive();
+
+        $this->fixtures->merchant->activate();
+
+        $input = [
+            'receivers'  => [
+                'types' => ['qr_code'],
+                'qr_code'       => [
+                    'reference' => 'abc'
+                ]
+            ]
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts',
+            'content' => $input,
+        ];
+
+        $this->expectException(\Rzp\Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('reference is/are not required and should not be sent');
+
+        $this->makeRequestAndGetContent($request);
+    }
+
     public function testCreateVirtualAccountWithBharatQrWithNoTerminal()
     {
         $this->fixtures->terminal->disableTerminal($this->t1['id']);

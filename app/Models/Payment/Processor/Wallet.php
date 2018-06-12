@@ -60,5 +60,4 @@ class Wallet
     {
         return self::$fullName[$wallet];
     }
-
 }
