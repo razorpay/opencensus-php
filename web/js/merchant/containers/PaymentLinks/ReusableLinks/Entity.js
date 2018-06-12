@@ -176,6 +176,10 @@ export default class ReusableLinksEntity extends Component {
                       </div>
                     )}
                   />
+                  <EntityDetailRow
+                    label="Receipt"
+                    value={reusableLink.receipt}
+                  />
                   <EntityDetailRow label="Created by">
                     {!!reusableLink.user ? (
                       <Definition>
