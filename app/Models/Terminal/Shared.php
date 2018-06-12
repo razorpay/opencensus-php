@@ -63,6 +63,7 @@ class Shared
     const UPI_ICICI_INTENT_TERMINAL          = '1UpiIntICICTml';
     const AEPS_ICICI_RAZORPAY_TERMINAL       = '1000AepsShared';
     const AIRTELMONEY_RAZORPAY_TERMINAL      = '100ArtlMnyTmnl';
+    const AMAZONPAY_RAZORPAY_TERMINAL        = '100AmznpayTmnl';
     const JIOMONEY_RAZORPAY_TERMINAL         = '1000JioMnyTmnl';
     const SBIBUDDY_RAZORPAY_TERMINAL         = '1000SbibdyTmnl';
     const OPENWALLET_RAZORPAY_TERMINAL       = '100OpenwalltTl';
@@ -107,6 +108,7 @@ class Shared
         self::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL,
         self::AEPS_ICICI_RAZORPAY_TERMINAL,
         self::AIRTELMONEY_RAZORPAY_TERMINAL,
+        self::AMAZONPAY_RAZORPAY_TERMINAL,
         self::JIOMONEY_RAZORPAY_TERMINAL,
         self::SBIBUDDY_RAZORPAY_TERMINAL,
         self::OPENWALLET_RAZORPAY_TERMINAL,
@@ -144,6 +146,7 @@ class Shared
         self::PAYZAPP_RAZORPAY_TERMINAL          => Gateway::WALLET_PAYZAPP,
         self::PAYUMONEY_RAZORPAY_TERMINAL        => Gateway::WALLET_PAYUMONEY,
         self::AIRTELMONEY_RAZORPAY_TERMINAL      => Gateway::WALLET_AIRTELMONEY,
+        self::AMAZONPAY_RAZORPAY_TERMINAL        => Gateway::WALLET_AMAZONPAY,
         self::FREECHARGE_RAZORPAY_TERMINAL       => Gateway::WALLET_FREECHARGE,
         self::JIOMONEY_RAZORPAY_TERMINAL         => Gateway::WALLET_JIOMONEY,
         self::SBIBUDDY_RAZORPAY_TERMINAL         => Gateway::WALLET_SBIBUDDY,

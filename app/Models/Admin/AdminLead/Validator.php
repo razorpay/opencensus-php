@@ -9,8 +9,6 @@ class Validator extends Base\Validator
     public static $createRules = [
         Entity::TOKEN     => 'required|string|max:40',
         Entity::EMAIL     => 'required|email',
-        Entity::ORG_ID    => 'required|string|max:14',
-        Entity::ADMIN_ID  => 'required|string|max:14',
         Entity::FORM_DATA => 'required|array',
     ];
 

@@ -13,7 +13,7 @@ use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\FundTransfer\Base\Reconciliation\FileProcessor as BaseProcessor;
 
-class FileProcessor extends BaseProcessor
+class Processor extends BaseProcessor
 {
     protected static $fileToReadName = 'Kotak_Settlement_Reconciliation';
 

@@ -60,6 +60,7 @@ class ViewDataSerializerTest extends TestCase
 
         // Asserts that invoice's description contains line item's name (as line item's description is null)
         $this->assertEquals('Some item name', $actual['invoice']['description']);
+        $this->assertEquals(false, $actual['invoice']['has_address_or_pos']);
     }
 
     public function testGetInvoiceWithPayments()

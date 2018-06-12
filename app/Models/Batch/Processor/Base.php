@@ -155,9 +155,9 @@ class Base extends BaseModel\Core
 
         $this->repo->transaction(function () use ($ufhFile, $input)
         {
-            $this->repo->saveOrFail($ufhFile);
-
             $this->repo->saveOrFail($this->batch);
+
+            $this->repo->saveOrFail($ufhFile);
 
             $this->saveSettings($input);
         });
@@ -341,6 +341,15 @@ class Base extends BaseModel\Core
 
         $this->batch->incrementAttempts();
 
+        $this->repo->saveOrFail($this->batch);
+
+        //
+        // Note:
+        // We are not saving batch entity's status after resetting. It is a temporary reset and after current
+        // processing the actual values would be saved. Additionally, notice that in below method we set status to null,
+        // which is not allowed at database layer and so even if we attempt saving it'll fail or else need to figure
+        // out what the temporary status should be.
+        //
         $this->resetBatchAttributes();
 
         $this->downloadAndSetInputFile();
@@ -359,6 +368,9 @@ class Base extends BaseModel\Core
         {
             $this->batch->setStatusNull();
             $this->batch->unsetFailureReason();
+            $this->batch->unsetProcessedCount();
+            $this->batch->setSuccessCount(0);
+            $this->batch->setFailureCount(0);
         }
     }
 
@@ -429,6 +441,12 @@ class Base extends BaseModel\Core
 
                 $entry[Batch\Header::STATUS]     = Batch\Status::FAILURE;
                 $entry[Batch\Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+            }
+            finally
+            {
+                $this->batch->incrementProcessedCount();
+
+                $this->repo->saveOrFail($this->batch);
             }
         }
     }
@@ -816,7 +834,7 @@ class Base extends BaseModel\Core
     protected function cleanParsedEntries(array $entries): array
     {
         // CSV: Removes first dictionary if it's the header itself
-        if ((empty($entries) === false) && (array_keys($entries[0]) === array_values($entries[0])))
+        if ((empty($entries) === false) and (array_keys($entries[0]) === array_values($entries[0])))
         {
             array_shift($entries);
         }
@@ -837,7 +855,10 @@ class Base extends BaseModel\Core
         }
 
         // Excel: Removes empty trailing rows
-        $entries = array_filter($entries, function ($v) { return (empty(array_filter($v)) === false); });
+        $entries = array_filter($entries, function ($v)
+        {
+            return (empty(array_filter($v)) === false);
+        });
 
         //
         // Excel: Removes empty(not all additional columns) trailing columns
@@ -955,11 +976,11 @@ class Base extends BaseModel\Core
             $ufh->entity($this->batch);
         }
 
-        if ($this->shouldEncrypt() and ($type == FileStore\Type::BATCH_INPUT))
+        if ($this->shouldEncrypt() and ($type === FileStore\Type::BATCH_INPUT))
         {
             $ufh->encrypt(Type::AES_ENCRYPTION, [
-                    'mode'   =>   \phpseclib\Crypt\Base::MODE_CBC,
-                    'secret' =>  openssl_random_pseudo_bytes(256)
+                    'mode'   => \phpseclib\Crypt\Base::MODE_CBC,
+                    'secret' => openssl_random_pseudo_bytes(256)
                 ]);
         }
 

@@ -78,6 +78,10 @@ class Entity extends Base\PublicEntity
         self::GROUP_ID,
     ];
 
+    protected $ignoredRelations = [
+        'lineItem',
+    ];
+
     // Getters
 
     public function getTaxAmount()

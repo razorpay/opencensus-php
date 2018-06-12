@@ -6,8 +6,6 @@ class PaymentReconStatusSummary extends DailyReconStatusSummary
 {
     public function getReconStatusSummary(int $from, int $to): array
     {
-        $formattedSummary = [];
-
         $paymentSummary = $this->repo
                                ->transaction
                                ->fetchPaymentReconStatusSummary(
@@ -16,12 +14,7 @@ class PaymentReconStatusSummary extends DailyReconStatusSummary
                                    Constants::GATEWAYS
                                );
 
-        foreach ($paymentSummary as $entry)
-        {
-            Helpers::addExtraColumns($entry);
-
-            $formattedSummary[$entry['date']][] =  $entry;
-        }
+        $formattedSummary = Helpers::getFormattedSummary($paymentSummary);
 
         return $formattedSummary;
     }

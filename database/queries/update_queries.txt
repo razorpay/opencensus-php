@@ -1696,9 +1696,64 @@ WHERE `gateway_payment_id` LIKE 'p2p_%'
 # Instance killed while recon batch processing. Slack thread : https://razorpay.slack.com/archives/C6QPQKVLZ/p1527592257000322
 UPDATE batches SET processing=0 WHERE id='AGr4YbJLIM86ff';
 
+# In case of retry failed batch, old success count and failure count was not reset.
+UPDATE batches SET success_count = 19709 WHERE id = 'ABUmkq0y7qz2iB';
+
+UPDATE batches SET success_count = 19822, failure_count = 0, status = 'processed',
+failure_reason = NULL WHERE id='AH7zn9nf1rqrtR';
+
 # Set BQR Details in Sharp Terminal
 Update terminals
     SET upi = 1, mc_mpan = '1234560000000000', visa_mpan = '1234560000000001', rupay_mpan = '1234560000000002',
      vpa = 'random@razorpay' where id = '1000SharpTrmnl';
 
 update qr_code set reference = id;
+
+# Udaan data corrections, necessitated by duplicate virtual bank account numbers
+# 1. Close the undesired VA, and move the bank_transfers to the desired one
+UPDATE
+  virtual_accounts INNER JOIN bank_transfers
+  ON
+    virtual_accounts.id=bank_transfers.virtual_account_id
+  SET
+    bank_transfers.virtual_account_id='A8xTrQAiKHV3BO',
+    virtual_accounts.amount_paid=0,
+    virtual_accounts.amount_received=0,
+    virtual_accounts.status='closed'
+  WHERE bank_transfers.virtual_account_id='A8xTrPsTWeNBzx';
+# 2. Update amount fields in the desired VA
+UPDATE
+  virtual_accounts
+  SET
+    amount_paid=621400,
+    amount_received=621400
+  WHERE id='A8xTrQAiKHV3BO';
+
+# Updates created_at for merchant_requests and action_state
+UPDATE action_state
+  JOIN merchant_requests ON merchant_requests.id = action_state.entity_id
+  JOIN (
+    SELECT MIN(action_state.created_at) as created_at, action_state.entity_id as merchant_request_id
+    FROM action_state
+    WHERE action_state.name = "under_review" AND entity_type = "merchant_request"
+    GROUP BY action_state.entity_id
+  ) as ac_min ON (
+    ac_min.created_at = action_state.created_at
+    AND ac_min.merchant_request_id = action_state.entity_id
+    AND action_state.entity_type = "merchant_request"
+    AND action_state.name = "under_review")
+  JOIN (
+    SELECT SUBSTRING_INDEX(`key`, ".", 1) AS product, entity_id as merchant_id, MIN(created_at) as created_at
+    FROM settings
+    WHERE module = 'onboarding'
+    GROUP BY product, entity_id
+  ) as products ON (merchant_requests.merchant_id = products.merchant_id AND merchant_requests.name = products.product)
+  SET
+      merchant_requests.created_at = products.created_at,
+      action_state.created_at = products.created_at
+  WHERE merchant_requests.type = "product"
+
+# Updates values for old batches.processed_count
+UPDATE batches
+    SET processed_count = success_count + failure_count
+    WHERE processed_count IS NULL AND processing = 0;
