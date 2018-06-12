@@ -787,3 +787,34 @@ dl.rzp-definition {
   100%  { transform: rotate(360deg); }
 }
 
+/* Component: rzp/ui/Accordian */
+
+.Accordian {
+  .Accordian-item {
+    margin: 15px 0;
+    .Accordian-content {
+      padding: 10px;
+      display: none
+      &.open {
+        display: block;
+      }
+    }
+    header {
+      background: #F6F6F6;
+      padding: 10px;
+      cursor: pointer;
+      &::after {
+        content: '\2228';
+        float: right;
+        font-weight: bold;
+      }
+      &.open {
+        &::after {
+          content: '\2227';
+        }
+      }
+    }
+  }
+}
+
+/* End Component */
