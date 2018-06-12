@@ -28,7 +28,7 @@ class BharatQrPaymentTest extends TestCase
 
         $this->t2 = $this->fixtures->create('terminal:bharat_qr_terminal_upi');
 
-        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
+        $this->t3 = $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
 
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal_upi');
 
@@ -232,6 +232,79 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals('10000000000000', $virtualAccount['merchant_id']);
         $this->assertEquals('ShrdVirtualAcc', $virtualAccount['id']);
         $this->assertEquals('active', $virtualAccount['status']);
+    }
+
+    public function testUnexpectedPaymentWithTerminalUnexpected()
+    {
+        $request = $this->testData['testQrPaymentProcess'];
+
+        $this->fixtures->edit(
+            'merchant',
+            '10000000000000',
+            [
+                'pricing_plan_id' => '1hDYlICobzOCYt',
+            ]);
+
+        $this->fixtures->on('live')->edit(
+            'terminal',
+            $this->t3['id'],
+            [
+                'expected' => true
+            ]);
+
+        $this->ba->directAuth();
+
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback('tobefilled');
+
+        $request['content'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        // Live because by default mode is live
+        // if entity id is not given
+        $bharatQr = $this->getDbLastEntity('bharat_qr', 'live');
+
+        $payment =  $this->getDbLastEntity('payment', 'live');
+
+        $this->assertEquals('card', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+
+        $this->assertEquals($bharatQr['expected'], true);
+
+        $virtualAccount =  $this->getDbLastEntity('virtual_account', 'live');
+
+        $this->assertEquals('10000000000000', $virtualAccount['merchant_id']);
+        $this->assertNotEquals('ShrdVirtualAcc', $virtualAccount['id']);
+        $this->assertEquals('active', $virtualAccount['status']);
+
+        $qrCode = $this->getDbLastEntity('qr_code','live');
+
+
+        $vid = $virtualAccount['id'];
+
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback('tobefilled', 'abc');
+
+        $request['content'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $virtualAccount =  $this->getDbLastEntity('virtual_account', 'live');
+
+        $bharatQr = $this->getDbLastEntity('bharat_qr', 'live');
+
+        $this->assertEquals($bharatQr['expected'], true);
+
+        $this->assertEquals($vid, $virtualAccount['id']);
+
+        $this->assertEquals(400, $virtualAccount['amount_paid']);
+
     }
 
     public function testUpiQrPaymentProcess()
