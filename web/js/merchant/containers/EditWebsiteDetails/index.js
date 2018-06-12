@@ -18,7 +18,7 @@ import EditWebsite, {
     updateSession,
   }
 )
-class EditWebsiteModal extends Component {
+class EditWebsiteDetails extends Component {
   onSubmit = form => {
     const { user } = this.props;
 
@@ -67,4 +67,4 @@ class EditWebsiteModal extends Component {
   }
 }
 
-export default EditWebsiteModal;
+export default EditWebsiteDetails;

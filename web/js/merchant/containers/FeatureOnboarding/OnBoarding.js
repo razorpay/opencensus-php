@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
@@ -18,6 +18,7 @@ import {
   getOnboardingResponse,
 } from 'merchant/modules/onboarding';
 
+import OnBoardingForm from './OnBoardingForm';
 import FORM_TYPE from './Forms';
 
 @connect(state => state.session, {
@@ -129,7 +130,6 @@ export default class OnBoarding extends Component {
     } = this.props;
 
     const currentForm = FORM_TYPE[formType];
-    const WizardForm = currentForm.formComponent;
 
     return (
       <div class="onboarding-page-container">
@@ -196,14 +196,10 @@ export default class OnBoarding extends Component {
                 </div>
               ) : !this.state.submitted ? (
                 <div>
-                  <WizardForm handleChange={this.handleChange} />
-                  <AsyncButton
-                    type="button"
-                    class="btn btn-primary pull-left"
-                    style={{ marginTop: '16px' }}
-                    text="Apply Now"
-                    pendingText="Applying..."
-                    onClick={handleSubmit(this.onSubmitClick)}
+                  <OnBoardingForm
+                    handleChange={this.handleChange}
+                    formType={formType}
+                    onSave={handleSubmit(this.onSubmitClick)}
                     disabled={
                       invalid ||
                       (formType === 'marketplace' && !this.state.uploadedFile)
