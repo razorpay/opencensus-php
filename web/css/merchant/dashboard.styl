@@ -1,3 +1,5 @@
+$sidebar-bg-color = #2E3345;
+
 .Dashboard {
   .h1, h4 {
     margin: 0;
@@ -1361,23 +1363,76 @@ div.feature-activation-banner {
   display: none;
 }
 
-.navbar-default .navbar-toggle .i-bar {
-  background-color: #888;
+.layout.rzp {
+
+  > .navbar.navbar-fixed-top {
+
+    .navbar-toggle-container {
+
+      color: white;
+
+      button.navbar-toggle {
+
+        display: inline-block !important;
+        padding-left: 0;
+        padding-right: 0;
+        margin-left: 10px;
+        float: none;
+        border: none;
+        vertical-align: middle;
+
+        &:hover, &:focus {
+
+          background-color: transparent;
+        }
+
+        .i-bar {
+
+          background-color: currentColor;
+        }
+      }
+    }
+  }
 }
 
+@media (min-width: 0px) {
 
-.navbar-inverse .navbar-toggle .i-bar {
-  background-color: #fff;
+  // Do not collapse navbar even in mobile
+  .layout.rzp ul.navbar-nav.navbar-right {
+
+    float: right;
+    margin: 0 -15px 0 0;
+
+    &> li {
+
+      float: left;
+    }
+  }
 }
 
-.navbar-default .navbar-toggle {
-  border-color: #ddd;
-}
-.navbar-default .navbar-toggle:hover {
-  background-color: #ddd;
-}
-.navbar-default .navbar-toggle .i-bar {
-  background-color: #888;
+@media (max-width: $screen-sm-min) {
+
+  .layout.rzp {
+
+    > .navbar.navbar-fixed-top {
+
+      background-color: $sidebar-bg-color;
+
+      ul.navbar-nav.navbar-right {
+
+        > li > div.dropdown > a {
+
+          color: white;
+        }
+
+        .dropdown-menu.ProfileDropdown {
+
+          left: auto;
+          right: 0;
+        }
+      }
+    }
+  }
 }
 
 // Bars

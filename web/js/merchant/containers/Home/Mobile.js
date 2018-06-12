@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import Header from 'rzp/ui/Header';
@@ -14,6 +15,9 @@ import Traffic from 'merchant/containers/Home/Traffic';
 
 import { trackPresetChange, trackSettlementsClick } from './ga';
 
+@connect(state => ({
+  windowWidth: state.app.windowWidth,
+}))
 class AnalyticsMobile extends Component {
   constructor(props) {
     super(props);
@@ -47,6 +51,7 @@ class AnalyticsMobile extends Component {
       paymentInsightsTitle,
       recentActivityTitle,
       trafficSectionTitle,
+      windowWidth,
     } = this.props;
 
     return (
@@ -79,7 +84,7 @@ class AnalyticsMobile extends Component {
             <div className="pull-right">
               <Link className="pull-right" to="/settlements">
                 <span className="text-no-wrap" onClick={trackSettlementsClick}>
-                  View Settlements
+                  View Settlements &gt;
                 </span>
               </Link>
             </div>
@@ -105,6 +110,13 @@ class AnalyticsMobile extends Component {
                 onDatesChange={onDatesChange}
                 defaultPreset={defaultPreset}
                 onSelectPreset={trackPresetChange}
+                numberOfMonths={1}
+                horizontalMargin={
+                  // adjusting the right position of datepicker so that
+                  // it does not overflow, for screen resolution <= 424
+                  // presets are hidden , so not adjusting the DRP
+                  windowWidth < 530 && windowWidth > 424 ? 530 - windowWidth : 0
+                }
               />
             </div>
           </Header>

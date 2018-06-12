@@ -56,17 +56,18 @@ class MobilePaymentMethods extends Component {
           />
         </PanelTopbar>
         <PanelBody>
-          {!isLoading && (
-            <StackedBars
-              data={data}
-              textKey={aggKey}
-              getColor={getPaymentMethodColor}
-              formatText={formatText}
-              formatValue={
-                (isCurrency && getFormattedAmountNew) || getFormattedNumber
-              }
-            />
-          )}
+          {!isLoading &&
+            !hasNoData && (
+              <StackedBars
+                data={data}
+                textKey={aggKey}
+                getColor={getPaymentMethodColor}
+                formatText={formatText}
+                formatValue={
+                  (isCurrency && getFormattedAmountNew) || getFormattedNumber
+                }
+              />
+            )}
         </PanelBody>
       </GenericPanel>
     );

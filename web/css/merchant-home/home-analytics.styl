@@ -182,12 +182,90 @@ body.show-hotjar-poll #_hj_poll_container {
       }
     }
   }
+
+  .home-analytics-mobile {
+
+    .extra-content {
+
+      .section-title {
+
+        margin-left: 16px;
+      }
+
+      .panel.card {
+
+        margin-bottom: 0;
+      }
+
+      padding-bottom: 24px;
+    }
+
+    .section-title {
+
+      padding-top: 24px;
+    }
+
+    .header {
+
+      padding: 16px;
+    }
+
+    .card {
+
+      padding: 16px;
+    }
+
+    div.panel {
+
+      div.panel-topbar {
+
+        div.grouping-dropdown {
+
+          width: 100%;
+          margin: 0 auto;
+        }
+      }
+
+      &.recent-activity-cont {
+
+        padding-top: 56px;
+        padding-left: 0;
+        padding-right: 0;
+
+        div.panel-body {
+
+          height: 260px;
+        }
+      }
+    }
+
+    @media(max-width: 424px) {
+
+      .date-range-container {
+
+        .icon-container {
+
+          padding-right: 9px;
+        }
+
+        .presets-container {
+
+          display: none;
+        }
+      }
+    }
+  }
 }
 
 .dashboard {
 
   padding: 24px;
   background-color: transparent;;
+
+  @media(max-width: $screen-md-min) {
+
+    padding: 16px;
+  }
 
   .panel.dasboard-home-panel {
 

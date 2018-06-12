@@ -72,17 +72,17 @@ const Tab = ({
         <div>{title}</div>
       </div>
       <div className="pull-right">
-        <div>
-          <Change value={trendValue}>
-            {trend.loading ? (
-              <PlaceholderLoader />
-            ) : (
+        <div className="text-right">
+          {!trend.loading ? (
+            <Change value={trendValue}>
               <span>
                 {trendText}
                 <Tooltip value={trendAbsValue} isCurrency={isCurrency} />
               </span>
-            )}
-          </Change>
+            </Change>
+          ) : (
+            <PlaceholderLoader />
+          )}
         </div>
         <div>
           <Link

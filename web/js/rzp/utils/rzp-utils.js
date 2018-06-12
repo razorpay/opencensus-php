@@ -10,6 +10,10 @@ moment.updateLocale('en', {
   },
 });
 
+export function isMobileResolution() {
+  return window.outerWidth <= 768;
+}
+
 export function isFunction(value) {
   return typeof value === 'function';
 }

@@ -163,7 +163,7 @@ export default class RecentActivity extends Component {
             <div className="row">
               {tabs.map((tabName, index) => {
                 const className =
-                  (tabName === selectedTab ? 'active ' : '') + 'col-sm-4';
+                  (tabName === selectedTab ? 'active ' : '') + 'col-xs-4';
 
                 return (
                   <a

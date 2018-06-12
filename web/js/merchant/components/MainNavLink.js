@@ -3,13 +3,26 @@ import { connect } from 'react-redux';
 import { NavLink, withRouter } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import { setActivePageName, toggleMobileMenu } from 'merchant/modules/app';
 
-@connect(state => {
-  return {
-    baseLocation: state.app.baseLocation,
-  };
-}, {})
+@connect(
+  state => {
+    return {
+      baseLocation: state.app.baseLocation,
+      isMobileResolution: state.app.isMobileResolution,
+    };
+  },
+  { setActivePageName, toggleMobileMenu }
+)
+@withRouter
 export default class MainNavLink extends Component {
+  constructor(props) {
+    super(props);
+
+    this.setActivePageName = this.setActivePageName.bind(this);
+    this.handleClick = this.handleClick.bind(this);
+  }
+
   /**
    * Method that sends analytics regarding navigation.
    */
@@ -20,6 +33,36 @@ export default class MainNavLink extends Component {
         eventAction: `Go To - ${this.props.label}`,
       });
   };
+
+  handleClick() {
+    this.sendAnalytics();
+    this.props.setActivePageName(this.props.label);
+
+    return this.props.isMobileResolution && this.props.toggleMobileMenu();
+  }
+
+  isActivePath(location = this.props.location, currentLink = this.props.to) {
+    return location.pathname === currentLink;
+  }
+
+  setActivePageName(match, location) {
+    return this.isActivePath(location);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (
+      nextProps.baseLocation &&
+      this.isActivePath(nextProps.baseLocation, nextProps.to)
+    ) {
+      this.props.setActivePageName(nextProps.label);
+    }
+  }
+
+  componentWillMount() {
+    if (this.isActivePath()) {
+      this.props.setActivePageName(this.props.label);
+    }
+  }
 
   render() {
     let {
@@ -33,6 +76,10 @@ export default class MainNavLink extends Component {
       isBeta = false,
       isPending,
       baseLocation,
+      setActivePageName,
+      staticContext,
+      isMobileResolution,
+      toggleMobileMenu,
       ...linkProps
     } = this.props;
 
@@ -59,16 +106,8 @@ export default class MainNavLink extends Component {
       >
         <NavLink
           {...linkProps}
-          isActive={(match, location) => {
-            let currentLink = linkProps.to;
-
-            if (!isMobileDevice && currentLink === '/dashboard') {
-              currentLink = '/dashboard_v2';
-            }
-
-            return (baseLocation || location).pathname === currentLink;
-          }}
-          onClick={this.sendAnalytics}
+          isActive={this.setActivePageName}
+          onClick={this.handleClick}
         >
           <i class={icon} />
           {label}
