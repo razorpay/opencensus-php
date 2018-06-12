@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 
 class BharatQrController extends Controller
@@ -35,5 +36,12 @@ class BharatQrController extends Controller
         $response = $this->service()->processPayment($input, $gateway);
 
         return ApiResponse::json($response);
+    }
+
+    public function processBharatQrTestPayment()
+    {
+        $gateway = Payment\Gateway::SHARP;
+
+        return $this->processBharatQrPayment($gateway);
     }
 }

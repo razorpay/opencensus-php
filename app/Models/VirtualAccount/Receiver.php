@@ -3,6 +3,7 @@
 namespace RZP\Models\VirtualAccount;
 
 use App;
+
 use RZP\Exception;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
@@ -48,6 +49,8 @@ class Receiver extends Base\Core
     const ACCOUNT_NUMBER_NUM_CHAR_SPACE      = '0123456789';
     const MAX_ACCOUNT_GENERATION_ATTEMPTS    = 10;
 
+    const VA_BANK_ACCOUNT_GENERATION = 'va_bank_account_generation';
+
     protected $app;
     protected $merchant;
     protected $descriptor;
@@ -55,6 +58,7 @@ class Receiver extends Base\Core
     protected $repo;
     protected $mode;
     protected $numeric;
+    protected $provider;
 
     public function __construct(Entity $virtualAccount)
     {
@@ -63,6 +67,8 @@ class Receiver extends Base\Core
         $this->merchant = $virtualAccount->merchant;
 
         $this->virtualAccount = $virtualAccount;
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     public static function areTypesValid(array $receiverTypes): bool
@@ -74,31 +80,116 @@ class Receiver extends Base\Core
 
     public function buildBankAccount(Entity $virtualAccount, array $options): BankAccount
     {
-        $bankAccount = new BankAccount;
+        $attempts = 0;
 
-        $bankAccountInput = $this->generateBankAccountInput($options);
+        $this->setBankAccountOptions($options);
 
-        $bankAccount = $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
+        $provider = $this->getProvider();
 
-        $bankAccount->merchant()->associate($this->merchant);
+        while ($attempts <= self::MAX_ACCOUNT_GENERATION_ATTEMPTS)
+        {
+            $accountNumber = $this->generateNewAccountNumberForProvider($provider);
 
-        $bankAccount->associateVirtualAccount($virtualAccount);
+            $bankAccount = $this->lockAndSaveBankAccount($accountNumber, $virtualAccount);
 
-        $this->repo->saveOrFail($bankAccount);
+            if ($bankAccount !== null)
+            {
+                return $bankAccount;
+            }
+
+            $attempts++;
+        }
+
+        // This should never happen
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE);
+    }
+
+    /**
+     * Grabs a lock on the account number, then checks if it is a
+     * valid one, and if so, saves it to DB in the bank accounts table.
+     *
+     * This function is called in a loop, and is expected to return a bank
+     * account entity. If an entity is not returned, and null is returned
+     * instead, the calling function assumes that bank account was not created
+     * for some reason (usually because the lock on that account number was
+     * already taken by a different process), and creates a new account number
+     * for the next attempt.
+     *
+     * This allows us to 'fail' an attempt at account generation by simply returning null.
+     *
+     * @param  string      $accountNumber  Newly generated account number to lock and save
+     * @param  Entity      $virtualAccount VA entity to associate with the bank account.
+     * @return BankAccount|null            Saved bank account, or null if no account was saved.
+     */
+    protected function lockAndSaveBankAccount(
+        string $accountNumber,
+        Entity $virtualAccount)
+    {
+        $bankAccount = $this->mutex->acquireAndRelease(
+            self::VA_BANK_ACCOUNT_GENERATION . $accountNumber,
+            function() use ($virtualAccount, $accountNumber)
+            {
+                $provider = $this->getProvider();
+
+                $bankCode = Provider::getBankCode($provider);
+
+                $existingAccount = $this->repo->bank_account
+                                        ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode);
+
+                if ($existingAccount !== null)
+                {
+                    // Account with this number already exists, fail this attempt
+                    return;
+                }
+
+                $bankAccount = new BankAccount;
+
+                $bankAccountInput = $this->getBankAccountInput($accountNumber);
+
+                $bankAccount = $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
+
+                $bankAccount->merchant()->associate($this->merchant);
+
+                $bankAccount->associateVirtualAccount($virtualAccount);
+
+                $this->repo->saveOrFail($bankAccount);
+
+                return $bankAccount;
+            },
+            60,
+            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
+            self::MAX_ACCOUNT_GENERATION_ATTEMPTS,
+            300,
+            600);
 
         return $bankAccount;
     }
 
-    public function buildQrCode(Entity $virtualAccount): QrCode\Entity
+    protected function getBankAccountInput(string $accountNumber)
     {
-        $input = $this->getQrCodeEntityParams($virtualAccount);
+        $provider = $this->getProvider();
+
+        $bankAccountInput = Provider::DEFAULT_DETAILS[$provider];
+
+        $merchantDetails = [
+            BankAccount::ACCOUNT_NUMBER     => $accountNumber,
+            BankAccount::BENEFICIARY_NAME   => $this->virtualAccount->getName(),
+        ];
+
+        return array_merge($bankAccountInput, $merchantDetails);
+    }
+
+    public function buildQrCode(Entity $virtualAccount, array $options): QrCode\Entity
+    {
+        $input = $this->getQrCodeEntityParams($virtualAccount, $options);
 
         $qrCode = (new QrCode\Generator($this->merchant))->generate($input, $virtualAccount);
 
         return $qrCode;
     }
 
-    protected function getQrCodeEntityParams(Entity $virtualAccount): array
+    protected function getQrCodeEntityParams(Entity $virtualAccount, array $options): array
     {
         $input = [
             // For now it is set bharat qr as default
@@ -106,25 +197,12 @@ class Receiver extends Base\Core
             QrCode\Entity::AMOUNT    => $virtualAccount->getAmountExpected(),
         ];
 
+        if (isset($options[QrCode\Entity::REFERENCE])  === true)
+        {
+            $input[QrCode\Entity::REFERENCE] = $options[QrCode\Entity::REFERENCE];
+        }
+
         return $input;
-    }
-
-    protected function generateBankAccountInput(array $options): array
-    {
-        $this->setBankAccountOptions($options);
-
-        $provider = $this->selectProvider();
-
-        $details = Provider::DEFAULT_DETAILS[$provider];
-
-        $accountNumber = $this->generateAccountNumberForProvider($provider);
-
-        $merchantDetails = [
-            BankAccount::ACCOUNT_NUMBER     => $accountNumber,
-            BankAccount::BENEFICIARY_NAME   => $this->virtualAccount->getName(),
-        ];
-
-        return array_merge($details, $merchantDetails);
     }
 
     /**
@@ -186,9 +264,14 @@ class Receiver extends Base\Core
         }
     }
 
-    protected function selectProvider(): string
+    protected function getProvider(): string
     {
-        $provider = Provider::KOTAK;
+        if ($this->provider !== null)
+        {
+            return $this->provider;
+        }
+
+        $provider = Provider::YESBANK;
 
         // The objective is to shift all new VAs to YesBank, but
         // YesBank hasn't given us an alphanumeric prefix yet, so
@@ -203,33 +286,9 @@ class Receiver extends Base\Core
             $provider = Provider::DASHBOARD;
         }
 
+        $this->provider = $provider;
+
         return $provider;
-    }
-
-    protected function generateAccountNumberForProvider(string $provider)
-    {
-        $bankCode = Provider::getBankCode($provider);
-
-        $attempts = 0;
-
-        while ($attempts <= self::MAX_ACCOUNT_GENERATION_ATTEMPTS)
-        {
-            $accountNumber = $this->generateNewAccountNumberForProvider($provider);
-
-            $existingAccount = $this->repo->bank_account
-                                    ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode);
-
-            if ($existingAccount === null)
-            {
-                return $accountNumber;
-            }
-
-            $attempts++;
-        }
-
-        // This should never happen
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE);
     }
 
     /**

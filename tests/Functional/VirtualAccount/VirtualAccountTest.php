@@ -147,6 +147,8 @@ class VirtualAccountTest extends TestCase
 
         $qrCode = $this->getLastEntity('qr_code', true);
 
+        $this->assertEquals($qrCode['id'], 'qr_' . $qrCode['reference']);
+
         $qrString = $qrCode['qr_string'];
 
         $this->assertRegExp('^http://dwarf.razorpay.in/^', $qrCode['short_url']);
@@ -168,6 +170,34 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals('528734', $visaAcquirerCode);
 
         $this->assertEquals('428734', $masterCardAcquirerCode);
+    }
+
+    public function testCreateVirtualAccountWithReference()
+    {
+        $this->ba->proxyAuthLive();
+
+        $this->fixtures->merchant->activate();
+
+        $input = [
+            'receivers'  => [
+                'types' => ['qr_code'],
+                'qr_code'       => [
+                    'reference' => 'abc'
+                ]
+            ]
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts',
+            'content' => $input,
+        ];
+
+        $this->expectException(\Rzp\Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('reference is/are not required and should not be sent');
+
+        $this->makeRequestAndGetContent($request);
     }
 
     public function testCreateVirtualAccountWithBharatQrWithNoTerminal()

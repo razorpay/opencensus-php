@@ -445,12 +445,12 @@ class Gateway extends Base\Gateway
 
         $processedRefunds = $this->getProcessedRefunds();
 
-        if (in_array($input[[Entity::REFUND]][Refund\Entity::ID], $processedRefunds, true) === true)
+        if (in_array($input[Entity::REFUND][Refund\Entity::ID], $processedRefunds, true) === true)
         {
             return true;
         }
 
-        if (in_array($input[[Entity::REFUND]][Refund\Entity::ID], $unprocessedRefunds, true) === true)
+        if (in_array($input[Entity::REFUND][Refund\Entity::ID], $unprocessedRefunds, true) === true)
         {
             return false;
         }

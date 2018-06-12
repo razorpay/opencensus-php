@@ -2,17 +2,24 @@
 
 namespace RZP\Models\Workflow\Step;
 
+use RZP\Models\Workflow;
 use RZP\Models\Workflow\Base;
 
 class Core extends Base\Core
 {
-    public function create(array $input)
+    public function create(array $input, Workflow\Entity $workflow)
     {
         $step = new Entity;
 
         $step->generateId();
 
         $step->build($input);
+
+        $role = $this->repo->role->findOrFailPublic($input[Entity::ROLE_ID]);
+
+        $step->workflow()->associate($workflow);
+
+        $step->role()->associate($role);
 
         $workflow = $this->repo->workflow->fetchWorkflow($step);
 

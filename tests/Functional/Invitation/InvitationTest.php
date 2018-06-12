@@ -102,7 +102,7 @@ class InvitationTest extends TestCase
                                     'email' => 'testteaminvite@razorpay.com'
                                 ]);
 
-        $invitation = $this->fixtures->create('invitation');
+        $invitation = $this->fixtures->create('invitation', ['email' => 'testteaminvite@razorpay.com']);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -137,10 +137,10 @@ class InvitationTest extends TestCase
                                 ]);
 
         $invitation = $this->fixtures->create('invitation',
-                                [
-                                    'user_id'     => '1000InviteUser',
-                                    'email'       => 'reject@razorpay.com'
-                                ]);
+                                                [
+                                                    'user_id'     => '1000InviteUser',
+                                                    'email'       => 'reject@razorpay.com'
+                                                ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -167,11 +167,39 @@ class InvitationTest extends TestCase
 
     public function testInvalidResponseToInvitation()
     {
-        $invitation = $this->fixtures->create('invitation', [ 'email' => 'asd']);
+        $this->fixtures->create('user',
+                                [
+                                    'id'    => '1000InviteUser',
+                                    'email' => 'reject@razorpay.com'
+                                ]);
+
+        $invitation = $this->fixtures->create('invitation',
+                                                [ 'user_id'     => '1000InviteUser',
+                                                  'email'       => 'reject@razorpay.com'
+                                                ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/hello';
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testAcceptRandomValidInvitation()
+    {
+        $this->fixtures->create('user',
+            [
+                'id'    => '1000InviteUser',
+                'email' => 'testteaminvite@razorpay.com'
+            ]);
+
+        $invitation = $this->fixtures->create('invitation', [ 'email' => 'other@razorpay.com']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/accept';
 
         $this->ba->appAuth();
 
@@ -296,6 +324,8 @@ class InvitationTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
+
         $this->ba->appAuth();
 
         $testData['request']['url'] = '/users/' . $user['id'];
@@ -320,6 +350,8 @@ class InvitationTest extends TestCase
             ]);
 
         $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
 
         $this->ba->appAuth();
 

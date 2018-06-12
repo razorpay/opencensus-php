@@ -8,11 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
-use RZP\Models\Card\Network;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Currency\Currency;
-use RZP\Models\Terminal\TpvType;
 use RZP\Models\Emi\Subvention as EmiSubvention;
 
 class Entity extends Base\PublicEntity
@@ -63,6 +61,20 @@ class Entity extends Base\PublicEntity
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
 
+    //
+    // Currenly being used to handle 'unexpected' BharatQR payments.
+    //
+    // BharatQR payments generally require QR code. This QR code can be created
+    // via Razorpay, or by the merchant himself. For the latter case, when we are
+    // notified regarding payments made to this kind of QR code, our default
+    // behaviour is to treat them as unexpected, and attempt to refund them.
+    //
+    // This flag in terminal serves to inform us that some merchants are permitted
+    // to receive such payments (made to merchant-generated QR codes), and so
+    // those payments should be treated as 'expected' ones.
+    //
+    const EXPECTED                      = 'expected';
+
     const DELETED                       = 'deleted';
     const DELETED_AT                    = 'deleted_at';
 
@@ -96,6 +108,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::MODE,
         self::CORPORATE,
+        self::EXPECTED,
         self::CURRENCY,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
@@ -145,6 +158,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::MODE,
         self::CORPORATE,
+        self::EXPECTED,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -193,6 +207,7 @@ class Entity extends Base\PublicEntity
         ],
         self::MODE                      => Mode::DUAL,
         self::CORPORATE                 => 0,
+        self::EXPECTED                  => 0,
         self::CURRENCY                  => self::DEFAULT_CURRENCY,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
@@ -216,6 +231,7 @@ class Entity extends Base\PublicEntity
         self::MODE                      => 'int',
         self::CATEGORY                  => 'int',
         self::CORPORATE                 => 'boolean',
+        self::EXPECTED                  => 'boolean',
         self::USED                      => 'boolean',
     ];
 
@@ -227,6 +243,19 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($terminal)
+        {
+            if ($terminal->isForceDeleting() === true)
+            {
+                $terminal->merchants()->detach();
+            }
+        });
+    }
 
     // ---------------------- GETTERS ----------------------
 
@@ -408,6 +437,11 @@ class Entity extends Base\PublicEntity
     public function isCorporate()
     {
         return $this->getAttribute(self::CORPORATE);
+    }
+
+    public function isExpected()
+    {
+        return $this->getAttribute(self::EXPECTED);
     }
 
     // ---------------------- SETTERS ----------------------

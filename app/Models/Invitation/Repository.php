@@ -11,7 +11,15 @@ class Repository extends Base\Repository
     public function fetchByToken($token)
     {
     	return $this->newQuery()
-                    ->where(Entity::TOKEN, '=', $token)
+                    ->where(Entity::TOKEN, $token)
+                    ->firstOrFailPublic();
+    }
+
+    public function findByIdAndEmail(string $id, string $email)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ID, $id)
+                    ->where(Entity::EMAIL, $email)
                     ->firstOrFailPublic();
     }
 }

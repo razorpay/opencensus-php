@@ -66,8 +66,8 @@ return [
                         'status'        => 'created',
                         'amount'        => 4000,
                         'total_count'   => 1,
-                        'success_count' => null,
-                        'failure_count' => null,
+                        'success_count' => 0,
+                        'failure_count' => 0,
                     ],
                 ],
             ],
@@ -91,8 +91,8 @@ return [
                 'status'        => 'created',
                 'amount'        => 4000,
                 'total_count'   => 1,
-                'success_count' => null,
-                'failure_count' => null,
+                'success_count' => 0,
+                'failure_count' => 0,
                 'attempts'      => 0,
             ],
         ],
@@ -116,6 +116,7 @@ return [
                         'status'           => 'processed',
                         'amount'           => 4200,
                         'processed_amount' => 4200,
+                        'total_count'      => 2,
                         'success_count'    => 2,
                         'failure_count'    => 0,
                         'attempts'         => 1,
@@ -271,13 +272,20 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity'           => 'batch',
-                'status'           => 'partially_processed',
-                'amount'           => 4000,
-                'processed_amount' => 0,
-                'success_count'    => 0,
-                'failure_count'    => 1,
-                'attempts'         => 2,
+                'entity'               => 'batch',
+                'status'               => 'partially_processed',
+                'amount'               => 4000,
+                'processed_amount'     => 0,
+                'success_count'        => 0,
+                'failure_count'        => 1,
+                //
+                // Assertion: Following attribute (processed_percentage) only comes in admin auth at the moment.
+                // Additionally, it's value in this case should be 100 %, but that is asserted in code because
+                // it's queue stuff.
+                //
+                'processed_count'      => 0,
+                'processed_percentage' => 0,
+                'attempts'             => 2,
             ],
         ],
     ],

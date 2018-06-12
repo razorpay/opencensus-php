@@ -142,15 +142,18 @@ class ViewDataSerializer extends Base\Core
                                    ->get()
                                    ->toArrayHosted();
 
-        $serialized[Entity::IS_PAID]           = $this->invoice->isPaid();
-        $serialized[Entity::PAYMENTS]          = $serializedPayments;
-        $serialized[Entity::CALLBACK_URL]      = $this->invoice->getCallbackUrl();
-        $serialized[Entity::CALLBACK_METHOD]   = $this->invoice->getCallbackMethod();
-        $serialized[Entity::MERCHANT_GSTIN]    = $this->invoice->getMerchantGstin();
-        $serialized[Entity::MERCHANT_LABEL]    = $this->invoice->getMerchantLabel();
-        $serialized[Entity::SUPPLY_STATE_NAME] = $this->invoice->getSupplyStateName();
+        $serialized[Entity::IS_PAID]            = $this->invoice->isPaid();
+        $serialized[Entity::PAYMENTS]           = $serializedPayments;
+        $serialized[Entity::CALLBACK_URL]       = $this->invoice->getCallbackUrl();
+        $serialized[Entity::CALLBACK_METHOD]    = $this->invoice->getCallbackMethod();
+        $serialized[Entity::MERCHANT_GSTIN]     = $this->invoice->getMerchantGstin();
+        $serialized[Entity::MERCHANT_LABEL]     = $this->invoice->getMerchantLabel();
+        $serialized[Entity::SUPPLY_STATE_NAME]  = $this->invoice->getSupplyStateName();
+        $serialized[Entity::HAS_ADDRESS_OR_POS] = (($this->invoice->hasCustomerBillingAddress() === true) or
+                                                   ($this->invoice->hasCustomerShippingAddress() === true) or
+                                                   ($this->invoice->getSupplyStateCode() !== null));
 
-        $serialized[Entity::CUSTOMER_DETAILS]  += [
+        $serialized[Entity::CUSTOMER_DETAILS] += [
             Entity::BILLING_ADDRESS_TEXT  => optional($this->invoice->customerBillingAddress)->formatAsText(),
             Entity::SHIPPING_ADDRESS_TEXT => optional($this->invoice->customerShippingAddress)->formatAsText(),
         ];
