@@ -130,9 +130,9 @@ class Processor extends VirtualAccount\Processor
                 if ($terminalMerchant->getId() === Account::SHARED_ACCOUNT)
                 {
                     throw new Exception\LogicException(
-                        'Terminal merchant should not be shared merchant',
+                        'Bharat Qr terminal merchant with expected true can not be shared',
                         null,
-                        ['terminal_id' => $terminalMerchant->getId()]);
+                        ['terminal_id' => $this->terminal->getId()]);
                 }
 
                 //
@@ -163,10 +163,11 @@ class Processor extends VirtualAccount\Processor
     protected function getTerminal()
     {
         //
-        // This won't be null in case while
-        // setting the virtual account it was
-        // null and we created a new one using
-        // the terminal from gateway
+        // This won't be null in case it is
+        // unexpected payment initially. We
+        // need the terminal to check if the param
+        // is true or false. Based on this value
+        // payment is set to expected or unexpected
         //
         if ($this->terminal !== null)
         {
