@@ -6,7 +6,6 @@ use Config;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
-use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Admin\Org\Entity as OrgEntity;

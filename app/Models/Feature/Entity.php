@@ -94,8 +94,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_TYPE);
     }
 
-<<<<<<< HEAD
-=======
     public function setEntityId(string $entityId)
     {
         $this->setAttribute(self::ENTITY_ID, $entityId);
@@ -106,7 +104,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ENTITY_TYPE, $entityType);
     }
 
->>>>>>> removes various association keys from fillables
     public function entity()
     {
         return $this->morphTo();
