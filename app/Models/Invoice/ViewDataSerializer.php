@@ -176,7 +176,7 @@ class ViewDataSerializer extends Base\Core
         // Adds formatted invoice's amount attributes
         foreach (self::$amounts as $key)
         {
-            $serialized[$key . '_formatted'] = self::formatNumber($serialized[$key]);
+            $serialized[$key . '_formatted'] = amount_format_IN($serialized[$key]);
         }
 
         // Adds formatted invoice's line item's & their tax's amount attributes
@@ -185,8 +185,8 @@ class ViewDataSerializer extends Base\Core
             function (& $lineItem, $idx)
             {
                 $lineItem += [
-                    'amount_formatted'       => self::formatNumber($lineItem[LineItem\Entity::AMOUNT]),
-                    'total_amount_formatted' => self::formatNumber($lineItem[LineItem\Entity::GROSS_AMOUNT]),
+                    'amount_formatted'       => amount_format_IN($lineItem[LineItem\Entity::AMOUNT]),
+                    'total_amount_formatted' => amount_format_IN($lineItem[LineItem\Entity::GROSS_AMOUNT]),
                     'has_taxes'              => (bool) $lineItem[LineItem\Entity::TAXES],
                 ];
 
@@ -195,7 +195,7 @@ class ViewDataSerializer extends Base\Core
                     function (& $tax, $idx)
                     {
                         $tax += [
-                            'tax_amount_formatted'  => self::formatNumber($tax[LineItem\Tax\Entity::TAX_AMOUNT]),
+                            'tax_amount_formatted'  => amount_format_IN($tax[LineItem\Tax\Entity::TAX_AMOUNT]),
                         ];
                     });
             });
@@ -240,17 +240,5 @@ class ViewDataSerializer extends Base\Core
         $serialized[E::MERCHANT] += [
             'business_registered_address' => optional($this->merchant->merchantDetail)->getBusinessRegisteredAddress(),
         ];
-    }
-
-    // Static helper methods
-
-    /**
-     * Formats given number to string representation like 1,234.56, for null value returns 0.00
-     * @param  int|null $v
-     * @return string
-     */
-    public static function formatNumber($v): string
-    {
-        return number_format($v / 100, 2);
     }
 }
