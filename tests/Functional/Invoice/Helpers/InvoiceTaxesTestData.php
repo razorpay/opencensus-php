@@ -344,7 +344,7 @@ return [
                     ],
                 ],
                 'gross_amount'          => 950,
-                'tax_amount'            => 150,
+                'tax_amount'            => 149,
                 'amount'                => 950,
                 'currency'              => 'INR',
                 'description'           => null,
