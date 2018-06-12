@@ -239,7 +239,6 @@ class Checkout
             // app_token. Hence, in this usage (preferences) of getCustomerAndApp,
             // we don't need to have the global_customer_id in the input.
             //
-            // TODO: FIX THIS!
             list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp($input, $merchant, $isGlobal);
 
             if ($customer === null)

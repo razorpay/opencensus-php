@@ -547,7 +547,7 @@ class Entity extends Base\PublicEntity
     public function isGlobal()
     {
         //
-        // In case subscription is local merchant
+        // In case subscription is local, merchant
         // always has to send customer id while creating
         // subscription so customer will never be null in
         // case of local flow
