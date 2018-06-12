@@ -51,6 +51,18 @@ class PartnerTest extends TestCase
         $this->startTest();
     }
 
+    public function testMarkingMerchantAsPartnerMissingType()
+    {
+        $this->ba->adminProxyAuth();
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach($merchant);
+
+        $this->startTest();
+    }
     public function testMarkingMerchantAsPartnerInvalidType()
     {
         $this->ba->adminProxyAuth();
@@ -95,7 +107,7 @@ class PartnerTest extends TestCase
     {
         $merchantId = '10000000000000';
 
-        $merchantRequest = $this->createMerchantRequestAndSubmission('activation');
+        $merchantRequest = $this->createMerchantRequest('activation', true);
 
         $merchantRequestId = $merchantRequest->getPublicId();
 
@@ -116,11 +128,28 @@ class PartnerTest extends TestCase
         $this->assertEquals($merchant->getPartnerType(), 'reseller');
     }
 
+    public function testMarkAsPartnerWithMissingSubmission()
+    {
+        $merchantRequest = $this->createMerchantRequest('activation', false);
+
+        $merchantRequestId = $merchantRequest->getPublicId();
+
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->ba->adminAuth($liveMode);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/merchant/requests/' . $merchantRequestId;
+
+        $this->startTest($testData);
+    }
+
     public function testApprovingUnmarkAsPartnerMerchantRequest()
     {
         $merchantId = '10000000000000';
 
-        $merchantRequest = $this->createMerchantRequestAndSubmission('deactivation');
+        $merchantRequest = $this->createMerchantRequest('deactivation', true);
 
         $merchantRequestId = $merchantRequest->getPublicId();
 
@@ -139,7 +168,7 @@ class PartnerTest extends TestCase
         $this->assertFalse($merchant->isPartner());
     }
 
-    protected function createMerchantRequestAndSubmission(string $merchantRequestName)
+    protected function createMerchantRequest(string $merchantRequestName, bool $createSubmission)
     {
         $merchantId = '10000000000000';
 
@@ -150,11 +179,15 @@ class PartnerTest extends TestCase
                 Request\Entity::TYPE        => 'partner',
                 Request\Entity::NAME        => $merchantRequestName,
             ]);
-        $data            = [
-            'partner_type' => 'reseller'
+
+        $data = [
+            'partner_type' => 'reseller',
         ];
 
-        Accessor::for ($merchantRequest, 'partner')->upsert($data)->save();
+        if ($createSubmission === true)
+        {
+            Accessor::for ($merchantRequest, 'partner')->upsert($data)->save();
+        }
 
         return $merchantRequest;
     }

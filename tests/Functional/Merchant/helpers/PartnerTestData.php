@@ -43,6 +43,33 @@ return [
         ],
     ],
 
+    'testMarkingMerchantAsPartnerMissingType' => [
+        'request'   => [
+            'url'     => '/merchant/requests',
+            'method'  => 'POST',
+            'content' => [
+                'type' => 'partner',
+                'name' => 'activation',
+                'submissions' => [
+                    'random_key' => 'random_value',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testMarkingMerchantAsPartnerInvalidType' => [
         'request'   => [
             'url'     => '/merchant/requests',
@@ -132,9 +159,6 @@ return [
             'content' => [
                 'type' => 'partner',
                 'name' => 'deactivation',
-                'submissions' => [
-                    'partner_type' => 'reseller',
-                ],
             ],
         ],
         'response'  => [
@@ -167,6 +191,29 @@ return [
         ],
     ],
 
+    'testMarkAsPartnerWithMissingSubmission' => [
+        'request'   => [
+            'url'     => '/merchant/requests/100000RandomId',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+        'response'   => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\LogicException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
+        ],
+    ],
+
     'testApprovingUnmarkAsPartnerMerchantRequest' => [
         'request'   => [
             'url'     => '/merchant/requests/100000RandomId',
@@ -189,9 +236,6 @@ return [
             'content' => [
                 'type' => 'partner',
                 'name' => 'deactivation',
-                'submissions' => [
-                    'partner_type' => 'reseller',
-                ],
             ],
         ],
         'response' => [
@@ -208,9 +252,6 @@ return [
                             'name' => 'under_review',
                         ],
                     ],
-                ],
-                'submissions' => [
-                    'partner_type' => 'reseller',
                 ],
             ],
         ],
