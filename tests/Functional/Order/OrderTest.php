@@ -478,7 +478,10 @@ class OrderTest extends TestCase
 
         $this->testData[__FUNCTION__]['response']['content']['offer_id'] = $offer->getPublicId();
 
-        $order = $this->startTest();
+        $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(true, $order['force_offer']);
 
         // Pivot table entry also got created
         $entityOffer = $this->getLastEntity('entity_offer', true);
@@ -495,7 +498,10 @@ class OrderTest extends TestCase
 
         $this->testData[__FUNCTION__]['response']['content']['offer_id'] = $offer->getPublicId();
 
-        $order = $this->startTest();
+        $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(false, $order['force_offer']);
 
         // Pivot table entry also got created
         $entityOffer = $this->getLastEntity('entity_offer', true);

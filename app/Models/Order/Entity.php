@@ -148,6 +148,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_CAPTURE => 'bool',
         self::AUTHORIZED      => 'bool',
         self::ATTEMPTS        => 'int',
+        self::FORCE_OFFER     => 'bool',
     ];
 
     protected $amounts = [
@@ -158,6 +159,10 @@ class Entity extends Base\PublicEntity
 
     protected $appends = [
         self::AMOUNT_DUE,
+    ];
+
+    protected static $generators = [
+        self::FORCE_OFFER,
     ];
 
     protected $publicSetters = [
@@ -220,6 +225,28 @@ class Entity extends Base\PublicEntity
     }
 
     /** End Appends */
+
+    /** Generators */
+
+    /**
+     * Enforces a default value for offer-related orders.
+     *
+     * If offers are being used, and no value is set for
+     * force_offer, force_offer is set to false by default.
+     *
+     * @param  array $input
+     * @return null
+     */
+    protected function generateForceOffer($input)
+    {
+        if ((isset($input[Entity::OFFERS]) === true) and
+            (isset($input[Entity::FORCE_OFFER]) === false))
+        {
+            $this->setAttribute(self::FORCE_OFFER, false);
+        }
+    }
+
+    /** End Generators */
 
     /** Setters And Getters */
 
