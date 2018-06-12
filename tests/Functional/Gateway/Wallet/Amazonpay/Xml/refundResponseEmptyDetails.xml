@@ -1,0 +1,7 @@
+<RefundPaymentResponse xmlns="http://mws.amazonservices.com/schema/OffAmazonPayments/2013-01-01">
+    <RefundPaymentResult>
+    </RefundPaymentResult>
+    <ResponseMetadata>
+        <RequestId>ebe60e12-a824-4002-bfe4-1c783bd95c12</RequestId>
+    </ResponseMetadata>
+</RefundPaymentResponse>

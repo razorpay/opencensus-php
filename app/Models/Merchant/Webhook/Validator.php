@@ -5,18 +5,18 @@ namespace RZP\Models\Merchant\Webhook;
 use App;
 use RZP\Base;
 use RZP\Exception;
-use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::URL         => 'required|string|url|max:255|min:3',
-        Entity::EVENTS      => 'required|array',
-        Entity::SECRET      => 'sometimes|string|max:255',
-        Entity::ENTITY_TYPE => 'sometimes|string|max:100|in:application',
-        Entity::ENTITY_ID   => 'required_if:entity_type,application|
-                                    string|size:14|unique:webhooks,entity_id',
+        Entity::URL                => 'required|string|url|max:255|min:3',
+        Entity::EVENTS             => 'required|array',
+        Entity::SECRET             => 'sometimes|string|max:255',
+        Entity::ENTITY_TYPE        => 'sometimes|string|max:100|in:application',
+        Entity::ENTITY_ID          => 'required_if:entity_type,application|
+                                        string|size:14|unique:webhooks,entity_id',
     ];
 
     protected static $createValidators = [
@@ -25,10 +25,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::URL     => 'sometimes|filled|string|url|max:255|min:3',
-        Entity::EVENTS  => 'sometimes|array',
-        Entity::ACTIVE  => 'sometimes|in:0,1',
-        Entity::SECRET  => 'sometimes|string|max:255',
+        Entity::URL                => 'sometimes|filled|string|url|max:255|min:3',
+        Entity::EVENTS             => 'sometimes|array',
+        Entity::ACTIVE             => 'sometimes|in:0,1',
+        Entity::SECRET             => 'sometimes|string|max:255',
+        Entity::DISABLE_ON_FAILURE => 'sometimes|boolean|custom',
     ];
 
     protected static $editValidators = [
@@ -178,6 +179,20 @@ class Validator extends Base\Validator
                     'Not a valid event value',
                     Entity::EVENTS);
             }
+        }
+    }
+
+    protected function validateDisableOnFailure($attribute, $value)
+    {
+        $app = App::getFacadeRoot();
+
+        //
+        // This can only be edited by an admin
+        //
+        if ($app['basicauth']->isProxyAuth() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'disable on failure is/are not required and should not be sent');
         }
     }
 }

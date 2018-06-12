@@ -16,7 +16,7 @@ class SuccessRowProcessor extends BaseRowProcessor
     const FAILURE_REASON    = 'failure_reason';
     const REMARK            = 'remark';
 
-    protected function parseRow()
+    protected function processRow()
     {
         $this->parsedData = [
             self::PAYMENT_REF_NO    => $this->getNullOnEmpty(Headings::CUSTOMER_REFERENCE_NUMBER),

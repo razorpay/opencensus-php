@@ -62,6 +62,10 @@ class Core extends Base\Core
 
         $merchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
 
+        $org = $this->repo->org->findOrFailPublic($input[Entity::ORG_ID]);
+
+        $merchant->org()->associate($org);
+
         $this->repo->saveOrFail($merchant);
 
         $this->addMerchantSupportingEntities($merchant);
@@ -171,11 +175,15 @@ class Core extends Base\Core
     {
         if (isset($input[Entity::GROUPS]) === true)
         {
+            $this->repo->group->validateExists($input[Entity::GROUPS]);
+
             $this->repo->sync($merchant, Entity::GROUPS, $input[Entity::GROUPS]);
         }
 
         if (isset($input[Entity::ADMINS]) === true)
         {
+            $this->repo->admin->validateExists($input[Entity::ADMINS]);
+
             $this->repo->sync($merchant, Entity::ADMINS, $input[Entity::ADMINS]);
 
             if ($create === true)

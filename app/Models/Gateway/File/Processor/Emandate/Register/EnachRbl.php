@@ -29,18 +29,15 @@ class EnachRbl extends Base
     const INDIVIDUAL_EXTENSION  = FileStore\Format::XML;
     const FILE_TYPE             = FileStore\Type::RBL_ENACH_REGISTER;
     const FILE_METADATA         = [
-                                    'gid'   => '10000',
-                                    'uid'   => '10006',
-                                    'mode'  => '33188'
-                                  ];
+        'gid'   => '10000',
+        'uid'   => '10006',
+        'mode'  => '33188'
+    ];
 
     const NUM_SECS_IN_ONE_DAY = 86400;
 
     public function fetchEntities(): PublicCollection
     {
-        $begin = $this->gatewayFile->getBegin();
-        $end = $this->gatewayFile->getEnd();
-
         //
         // We add one day to this because in case of enach, we fetch the
         // entities from enach entity. In enach entity, we store the date
@@ -52,15 +49,9 @@ class EnachRbl extends Base
         // gateway file's begin and end are always automatically set to the
         // previous day's begin and end. So, on day T, gateway file's
         // begin and end will be set to that of day T-1.
-        // The above happens only for cron. Hence, the check against cron app.
-        // For manual run, the expectation is that the caller understands how
-        // enach gateway files work and would send begin and end of day T only.
         //
-        if ($this->app['basicauth']->isCron() === true)
-        {
-            $begin += self::NUM_SECS_IN_ONE_DAY;
-            $end += self::NUM_SECS_IN_ONE_DAY;
-        }
+        $begin = $this->gatewayFile->getBegin() + self::NUM_SECS_IN_ONE_DAY;
+        $end = $this->gatewayFile->getEnd() + self::NUM_SECS_IN_ONE_DAY;
 
         $payments = $this->repo->payment->fetchPendingEmandateRegistrationForEnach($begin, $end);
 
@@ -183,7 +174,9 @@ class EnachRbl extends Base
 
     protected function getZipFileToWriteName($withFullFilePath = true)
     {
-        $date = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)->format('dmY');
+        $begin = $this->gatewayFile->getBegin() + self::NUM_SECS_IN_ONE_DAY;
+
+        $date = Carbon::createFromTimestamp($begin, Timezone::IST)->format('dmY');
 
         $fileName = strtr(static::FILE_NAME, ['{$date}' => $date]);
 
@@ -202,7 +195,9 @@ class EnachRbl extends Base
 
     protected function getIndividualFileToWriteNameWithExt($index)
     {
-        $date = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)->format('dmY');
+        $begin = $this->gatewayFile->getBegin() + self::NUM_SECS_IN_ONE_DAY;
+
+        $date = Carbon::createFromTimestamp($begin, Timezone::IST)->format('dmY');
 
         $sequence = str_pad($index, 6, '0', STR_PAD_LEFT);
 

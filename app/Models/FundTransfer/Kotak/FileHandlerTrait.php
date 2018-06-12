@@ -684,21 +684,32 @@ trait FileHandlerTrait
         $rows = $this->getFileLines($file);
         $data = [];
 
+        $headings = $this->parseFirstRowAndGetHeadings($rows, $delimiter);
+
         foreach ($rows as $ix => $row)
         {
             // Ending row may be just empty.
             if (blank($row) === false)
             {
-                $data[] = $this->parseTextRow($row, $ix, $delimiter);
+                $data[] = $this->parseTextRow($row, $ix, $delimiter, $headings);
             }
         }
 
         return $data;
     }
 
-    protected function parseTextRow(string $row, int $ix, string $delimiter)
+    /**
+     * Reads first row and if it's the header row, pulls it from rows and usage this as heading for doing array_combine
+     * in further flows (e.g. parseTextRow).
+     * @return array|null
+     */
+    protected function parseFirstRowAndGetHeadings(array & $rows, string $delimiter)
     {
-        $headings = $this->getHeadings();
+    }
+
+    protected function parseTextRow(string $row, int $ix, string $delimiter, array $headings = null)
+    {
+        $headings = $headings ?: $this->getHeadings();
 
         $values = explode($delimiter, $row);
 
@@ -736,8 +747,20 @@ trait FileHandlerTrait
 
     protected function parseExcelSheets($filePath)
     {
+        $app = App::getFacadeRoot();
+
         Config::set('excel.import.force_sheets_collection', true);
         Config::set('excel.import.heading', 'original');
+
+        //
+        // Calling LaravelExcelReader's setSelectedSheets() and setSelectedSheetIndices() to
+        // reset selected sheet names and indices here, as its not happening in LaravelExcelReader.
+        // If previous run has set some sheet name in selectSheets(), its retaining that sheet name
+        // until it is replaced with new sheet name.
+        //
+        $app['excel.reader']->setSelectedSheets([]);
+
+        $app['excel.reader']->setSelectedSheetIndices([]);
 
         $sheets = $this->parseExcelFile($filePath);
 

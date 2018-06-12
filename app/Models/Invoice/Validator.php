@@ -193,8 +193,8 @@ class Validator extends Base\Validator
      */
     protected static $editCustomerDetailsRules = [
         Customer\Entity::NAME                => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:50|nullable',
-        Customer\Entity::EMAIL               => 'sometimes|email',
-        Customer\Entity::CONTACT             => 'sometimes|contact_syntax',
+        Customer\Entity::EMAIL               => 'sometimes|nullable|email',
+        Customer\Entity::CONTACT             => 'sometimes|nullable|contact_syntax',
         Customer\Entity::GSTIN               => 'sometimes|nullable|gstin',
         Customer\Entity::BILLING_ADDRESS_ID  => 'sometimes|public_id|size:19|nullable',
         Customer\Entity::SHIPPING_ADDRESS_ID => 'sometimes|public_id|size:19|nullable',
@@ -590,27 +590,26 @@ class Validator extends Base\Validator
     public function validateInvoiceViewable()
     {
         $invoice = $this->entity;
+        $id      = $invoice->getPublicId();
+        $label   = $invoice->getTypeLabel();
 
-        $id    = $invoice->getPublicId();
-        $label = $invoice->getTypeLabel();
+        //
+        // We have two views - invoice.js and api's blade for invoices & payment links respectively. Unfortunately,
+        // in cases of non-issued status invoice they expect either an exception(rendered as standard minimal error
+        // view) or full entity(rendered as designed torn page with partial entity details) and hence following logic.
+        //
 
-        $newViewEnabled          = (in_array('Hostedplv2', $invoice->merchant->liveTagNames(), true) === true);
-        $isLinkAndNewViewEnabled = (($invoice->isTypeLink() === true) and ($newViewEnabled === true));
-
+        // Draft: All views expect exception
         if ($invoice->isDraft() === true)
         {
             throw new BadRequestValidationFailureException("$label with id $id is not issued yet");
         }
-        else if (($invoice->isCancelled() === true) and ($isLinkAndNewViewEnabled === false))
+        // Canceled: Link view shows torn page with details & invoice view expects exception
+        else if (($invoice->isCancelled() === true) and ($invoice->isTypeInvoice() === true))
         {
             throw new BadRequestValidationFailureException("$label with id $id is cancelled");
         }
-        else if (($invoice->isExpired() === true) and
-                 ($invoice->isTypeInvoice() === false) and
-                 ($isLinkAndNewViewEnabled === false))
-        {
-            throw new BadRequestValidationFailureException("$label with id $id is expired");
-        }
+        // Expired: All views show custom torn or some kind of page and need data
     }
 
     public function validateMaxAllowedLineItems()

@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::NAME,
+        self::CREATED_AT,
     ];
 
     protected $visible = [
@@ -103,5 +104,10 @@ class Entity extends Base\PublicEntity
 
             $array[self::ACTION_ID] = Action\Entity::getSignedIdOrNull($entityId);
         }
+    }
+
+    public function setCreatedAt($createdAt)
+    {
+        $this->setAttribute(self::CREATED_AT, $createdAt);
     }
 }

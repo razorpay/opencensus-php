@@ -1,0 +1,25 @@
+<RefundPaymentResponse xmlns="http://mws.amazonservices.com/schema/OffAmazonPayments/2013-01-01">
+    <RefundPaymentResult>
+        <RefundDetails>
+            <RefundDetail>
+                <RefundReferenceId>random_reference_id</RefundReferenceId>
+                <RefundType>SellerInitiated</RefundType>
+                <SellerRefundNote>Random refund</SellerRefundNote>
+                <CreationTimestamp>2017-04-17T06:54:47.837Z</CreationTimestamp>
+                <SoftDescriptor>AMZ*Test</SoftDescriptor>
+                <FeeRefunded>
+                    <CurrencyCode>INR</CurrencyCode>
+                    <Amount>refund_amount</Amount>
+                </FeeRefunded>
+                <AmazonRefundId>S04-2665653-4222901-R066827</AmazonRefundId>
+                <RefundAmount>
+                    <CurrencyCode>INR</CurrencyCode>
+                    <Amount>refund_amount</Amount>
+                </RefundAmount>
+            </RefundDetail>
+        </RefundDetails>
+    </RefundPaymentResult>
+    <ResponseMetadata>
+        <RequestId>ebe60e12-a824-4002-bfe4-1c783bd95c12</RequestId>
+    </ResponseMetadata>
+</RefundPaymentResponse>

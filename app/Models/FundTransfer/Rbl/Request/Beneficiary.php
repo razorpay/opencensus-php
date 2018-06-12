@@ -2,18 +2,21 @@
 
 namespace RZP\Models\FundTransfer\Rbl\Request;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Rbl\RequestConstants;
 
+// Unused
 class Beneficiary extends Base
 {
     protected $input = [];
 
     protected $urlIdentifier;
 
-    protected $requestTraceCode  = TraceCode::RBL_NODAL_BEN_ADD_REQUEST;
+    protected $requestTraceCode  = TraceCode::NODAL_BEN_ADD_REQUEST;
 
-    protected $responseTraceCode = TraceCode::RBL_NODAL_BEN_ADD_RESPONSE;
+    protected $responseTraceCode = TraceCode::NODAL_BEN_ADD_RESPONSE;
 
     public function __construct()
     {
@@ -35,7 +38,7 @@ class Beneficiary extends Base
             'Beneficiary_Nodal_Account_Registration_Req' => [
                 'Header' => [
                     'TranID'      => (string) rand(10000, 99999),
-                    'Corp_ID'     => self::CORP_ID,
+                    'Corp_ID'     => $this->corpId,
                     'Maker_ID'    => self::MAKER_ID,
                     'Checker_ID'  => self::CHECKER_ID,
                     'Approver_ID' => self::APPROVER_ID,
@@ -122,5 +125,93 @@ class Beneficiary extends Base
                 ]
             ]
         ]);
+    }
+
+    protected function responseGenerator(): array
+    {
+        return [];
+    }
+
+    /**
+     * Extracts data from response when response received is a valid success response.
+     * For success response `Body` attribute will be present and header.status wont we a failure status
+     *
+     * @param array $response
+     *
+     * @return array
+     *
+     * sample response :
+     * [
+     *  'payment_ref_no'   => 'some reference',
+     *  'bank_status_code' => 'bank status code',
+     *  'payment_date'     => null,
+     *  'reference_number' => null,
+     *  'utr'              => null,
+     *  'remark'           => 'failure reason'
+     * ]
+     */
+    protected function extractSuccessfulData(array $response): array
+    {
+        // TODO: Implement extractSuccessfulData() method.
+    }
+
+    /**
+     *
+     * Extracts data from response when response received is a failure response.
+     * Failure response are response without `Body` attribute and header.status will be any of failure status
+     *
+     * @param array $response
+     *
+     * @return array
+     *
+     * sample response :
+     * [
+     *  'payment_ref_no'   => 'some reference',
+     *  'bank_status_code' => 'bank status code',
+     *  'payment_date'     => null,
+     *  'reference_number' => null,
+     *  'utr'              => null,
+     *  'remark'           => 'failure reason'
+     * ]
+     */
+    protected function extractFailedData(array $response): array
+    {
+        // TODO: Implement extractFailedData() method.
+        return [];
+    }
+
+    /**
+     * Sets the entity for which the request has to be made
+     *
+     * @param Attempt\Entity $entity
+     *
+     * @return mixed
+     */
+    public function setEntity(Attempt\Entity $entity)
+    {
+        // TODO: Implement setEntity() method.
+        return $this;
+    }
+
+    /**
+     * Generates successful response for given request
+     *
+     * @return array
+     */
+    protected function mockGenerateFailedResponse(): array
+    {
+        // TODO: Implement mockGenerateFailedResponse() method.
+        return [];
+    }
+
+    /**
+     * Generates failed response for given request
+     *
+     * @return array
+     */
+    protected function mockGenerateSuccessResponse(): array
+    {
+        // TODO: Implement mockGenerateSuccessResponse() method.
+        return [];
     }
 }

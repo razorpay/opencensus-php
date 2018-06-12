@@ -2,12 +2,11 @@
 
 namespace RZP\Gateway\Wallet\Airtelmoney;
 
-class URL
-{
-    const LIVE_DOMAIN = 'https://ecom.airtelmoney.in/oneClick/';
-    const TEST_DOMAIN = 'https://sit.airtelmoney.in/oneClick/';
+use RZP\Gateway\Netbanking\Airtel;
 
-    const AUTHORIZE = 'signIn?REQUEST=ECOMM_SIGNON';
-    const REFUND = 'ECommRequest.action?REQUEST=ECOMM_REVERSAL';
-    const VERIFY = 'ECommRequest.action?REQUEST=ECOMM_INQ';
+// Domain for test/live and routes for authorize, verify and refund are same as Netbanking/Airtel
+// So extending Netbanking/Airtel/Url class
+class Url extends Airtel\Url
+{
+
 }

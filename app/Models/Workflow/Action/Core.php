@@ -177,6 +177,20 @@ class Core extends Base\Core
 
             $action->build($params);
 
+            $workflow = $this->repo->workflow->findOrFailPublic($params[Entity::WORKFLOW_ID]);
+
+            $permission = $this->repo->permission->findOrFailPublic($params[Entity::PERMISSION_ID]);
+
+            $org = $this->repo->org->findOrFailPublic($params[Entity::ORG_ID]);
+
+            $action->maker()->associate($maker);
+
+            $action->workflow()->associate($workflow);
+
+            $action->permission()->associate($permission);
+
+            $action->org()->associate($org);
+
             $this->repo->saveOrFail($action);
 
             $this->createInitialStateForAction($action, $maker);
@@ -449,6 +463,20 @@ class Core extends Base\Core
         $action->getValidator()->validateActionIsOpen($action);
 
         $action->edit($input);
+
+        if (isset($input[Entity::STATE_CHANGER_ID]) === true)
+        {
+            $stateChanger = $this->repo->admin->findOrFailPublic($input[Entity::STATE_CHANGER_ID]);
+
+            $action->stateChanger()->associate($stateChanger);
+        }
+
+        if (isset($input[Entity::STATE_CHANGER_ROLE_ID]) === true)
+        {
+            $stateChangerRole = $this->repo->role->findOrFailPublic($input[Entity::STATE_CHANGER_ROLE_ID]);
+
+            $action->stateChangerRole()->associate($stateChangerRole);
+        }
 
         $this->repo->saveOrFail($action);
 

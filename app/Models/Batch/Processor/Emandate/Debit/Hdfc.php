@@ -11,7 +11,7 @@ use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as Headings;
 
 class Hdfc extends Base
 {
-    const PROCESS = 'process';
+    const PROCESSED = 'processed';
     const REJECT  = 'reject';
 
     protected $gateway = Gateway::NETBANKING_HDFC;
@@ -21,23 +21,27 @@ class Hdfc extends Base
         $row = array_map('trim', $row);
 
         return [
-            'payment_id'        => $row[Headings::TRANSACTION_REF_NO],
-            'token_id'          => $row[Headings::MANDATE_ID],
-            'account_number'    => $row[Headings::ACCOUNT_NO],
-            'error_message'     => $row[Headings::REJECTION_REMARKS],
-            'status'            => $row[Headings::STATUS],
-            'amount'            => $row[Headings::AMOUNT],
+            self::PAYMENT_ID            => $row[ Headings::TRANSACTION_REF_NO ],
+            self::ACCOUNT_NUMBER        => $row[ Headings::ACCOUNT_NO ],
+            self::GATEWAY_ERROR_MESSAGE => $row[ Headings::REJECTION_REMARKS ],
+            self::GATEWAY_RESPONSE_CODE => $row[ Headings::STATUS ],
+            self::AMOUNT                => $row[ Headings::AMOUNT],
         ];
     }
 
+    /**
+     * @param array $content
+     * @return array
+     * @throws Exception\GatewayErrorException
+     */
     protected function getGatewayAttributes(array $content): array
     {
-        $gatewayStatus = strtolower($content['status']);
+        $gatewayStatus = strtolower($content[self::GATEWAY_RESPONSE_CODE]);
 
-        if (in_array($gatewayStatus, [self::PROCESS, self::REJECT], true) === false)
+        if (in_array($gatewayStatus, [self::PROCESSED, self::REJECT], true) === false)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_INVALID_STATUS,
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
                 '',
                 '',
                 $content);
@@ -45,23 +49,20 @@ class Hdfc extends Base
 
         return [
             NetbankingBase\Entity::RECEIVED       => true,
-            NetbankingBase\Entity::ERROR_MESSAGE  => $content['error_message'],
+            NetbankingBase\Entity::ERROR_MESSAGE  => $content[self::GATEWAY_ERROR_MESSAGE],
             NetbankingBase\Entity::STATUS         => $gatewayStatus,
         ];
     }
 
     protected function isAuthorized(array $content): bool
     {
-        return Netbanking\Hdfc\Status::isDebitSuccess($content['status']);
+        return Netbanking\Hdfc\Status::isDebitSuccess($content[self::GATEWAY_RESPONSE_CODE]);
     }
 
-    protected function getErrorDescription(array $content)
+    protected function getApiErrorCode(array $content): string
     {
-        return $content['error_message'];
-    }
+        $errorDescription = $content[self::GATEWAY_ERROR_MESSAGE];
 
-    protected function getApiErrorCode(string $errorDescription): string
-    {
         return Netbanking\Hdfc\ErrorCode::getApiErrorCode($errorDescription);
     }
 }

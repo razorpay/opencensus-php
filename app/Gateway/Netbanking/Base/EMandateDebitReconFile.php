@@ -63,6 +63,7 @@ class EMandateDebitReconFile extends Base\Core
         switch ($ext)
         {
             case FileStore\Format::XLSX:
+            case FileStore\Format::XLS:
                 return $this->parseExcelSheets($file);
 
             case FileStore\Format::TXT:

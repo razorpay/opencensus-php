@@ -3,22 +3,22 @@
 namespace RZP\Models\Batch\Processor\Emandate\Register;
 
 use Config;
-use RZP\Error;
-use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
 use RZP\Gateway\Enach\Rbl;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
-use RZP\Gateway\Base\Entity as GatewayEntity;
+use RZP\Gateway\Enach\Base\Entity;
 
 class EnachRbl extends Base
 {
     const GATEWAY = Gateway::ENACH_RBL;
 
-    const REGISTRATION_STATUS = 'registration_status';
-    const ERROR_CODE          = 'error_code';
+    protected $gatewayPaymentMapping = [
+        self::GATEWAY_REGISTRATION_STATUS => Entity::REGISTRATION_STATUS,
+        self::GATEWAY_ERROR_CODE          => Entity::ERROR_CODE,
+        self::GATEWAY_ERROR_DESCRIPTION   => Entity::ERROR_MESSAGE,
+    ];
 
     protected function getDataFromRow(array $entry): array
     {
@@ -31,12 +31,13 @@ class EnachRbl extends Base
         return [
             self::GATEWAY_TOKEN       => $gatewayToken,
             self::TOKEN_STATUS        => $status,
-            self::ERROR_MESSAGE       => $this->getTokenErrorMessage($gatewayTokenStatus, $entry),
+            self::TOKEN_ERROR_CODE    => $this->getTokenErrorMessage($gatewayTokenStatus, $entry),
             self::PAYMENT_ID          => $entry[Batch\Header::ENACH_REGISTER_REF_1],
             // We are getting registration_status and error_code because we want to store
             // the actual registration status received in the file, in the gateway entity
-            self::REGISTRATION_STATUS => $gatewayTokenStatus,
-            self::ERROR_CODE          => $entry[Batch\Header::ENACH_REGISTER_RETURN_CODE],
+            self::GATEWAY_REGISTRATION_STATUS => $gatewayTokenStatus,
+            self::GATEWAY_ERROR_CODE          => $entry[Batch\Header::ENACH_REGISTER_RETURN_CODE],
+            self::GATEWAY_ERROR_DESCRIPTION   => $entry[Batch\Header::ENACH_REGISTER_CODE_DESC],
         ];
     }
 
@@ -58,7 +59,7 @@ class EnachRbl extends Base
         }
         else
         {
-            return $entry[Batch\Header::ENACH_REGISTER_CODE_DESC] ?? 'FAILED';
+            return Rbl\ErrorCodes::getRegistrationPublicErrorCode($entry[Batch\Header::ENACH_REGISTER_RETURN_CODE]);
         }
     }
 

@@ -3561,5 +3561,49 @@ DROP INDEX `card_fss_status_index` on `card_fss`; CREATE INDEX `card_fss_status_
 ALTER TABLE line_items
     ADD COLUMN tax_rate INTEGER UNSIGNED DEFAULT NULL AFTER sac_code;
 
+Alter table terminals
+    Modify column type integer default '1';
+
+ALTER TABLE invoices
+    ADD COLUMN merchant_gstin VARCHAR(20) DEFAULT NULL AFTER customer_gstin;
+
+ALTER TABLE webhooks
+    ADD COLUMN disable_on_failure TINYINT(1) NOT NULL DEFAULT 1 AFTER active;
+
+ALTER TABLE offers
+    ADD COLUMN international TINYINT(1) DEFAULT NULL AFTER issuer;
+
+ALTER TABLE terminals
+    ADD COLUMN expected BOOLEAN DEFAULT 0 NOT NULL after corporate;
+
+ALTER TABLE qr_code
+    ADD COLUMN reference varchar(255) DEFAULT NULL after merchant_id,
+    ADD INDEX `qr_code_reference_index` (reference),
+    MODIFY COLUMN qr_string TEXT DEFAULT NULL,
+    MODIFY COLUMN short_url varchar(255) DEFAULT NULL;
+
+ALTER TABLE orders
+    ADD COLUMN reference1 TINYINT(1) NULL AFTER authorized,
+    ADD COLUMN reference2 TINYINT(1) NULL AFTER reference1,
+    ADD COLUMN reference3 TINYINT(4) NULL AFTER reference2,
+    ADD COLUMN reference4 INT(11) UNSIGNED DEFAULT NULL AFTER reference3,
+    ADD COLUMN reference5 BIGINT UNSIGNED DEFAULT NULL AFTER reference4,
+    ADD COLUMN reference6 BIGINT UNSIGNED DEFAULT NULL AFTER reference5,
+    ADD COLUMN reference7 VARCHAR(14) DEFAULT NULL AFTER reference6,
+    ADD COLUMN reference8 VARCHAR(14) DEFAULT NULL AFTER reference7,
+    ADD COLUMN reference9 VARCHAR(255) DEFAULT NULL AFTER reference8,
+    ADD COLUMN reference10 VARCHAR(255) DEFAULT NULL AFTER reference9;
+
+# Add attempts to payouts
+ALTER TABLE payouts
+    ADD COLUMN attempts integer default 1 not null after channel;
+
+# Amazon Pay is added as wallet
+ALTER TABLE merchant_banks
+    ADD COLUMN amazonpay TINYINT(1) NOT NULL DEFAULT 0 AFTER airtelmoney;
+
+ALTER TABLE batches
+    ADD COLUMN processed_count INTEGER UNSIGNED DEFAULT NULL AFTER total_count;
+
 ALTER TABLE merchants
-    ADD COLUMN partner_type VARCHAR(40) DEFAULT NULL AFTER has_key_access;
+    ADD COLUMN partner_type VARCHAR(255) DEFAULT NULL AFTER has_key_access;

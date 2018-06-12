@@ -76,6 +76,8 @@ class Authorization
 
     public function appAuth($user = 'rzp_test', $pwd = '', $hostName = null)
     {
+        $this->proxyHeaders = [];
+
         if ($pwd === '')
         {
             $dashboardConfig = \Config::get('applications.dashboard');

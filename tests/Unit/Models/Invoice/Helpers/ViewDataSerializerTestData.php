@@ -33,7 +33,6 @@ return [
             ],
             'order_id'              => 'order_100000000order',
             'line_items'            => [],
-            'payment_id'            => null,
             'status'                => 'issued',
             'expired_at'            => null,
             'amount'                => 100000,
@@ -54,6 +53,8 @@ return [
             // 'expire_by_formatted'   => '6 Dec 2017',
             'expired_at_formatted'  => null,
             'supply_state_name'     => null,
+            'merchant_gstin'        => null,
+            'merchant_label'        => 'Test Merchant',
         ],
     ],
 
@@ -78,7 +79,9 @@ return [
                 'billing_address_text' => "billing address line 1\nsome line two\nBangalore, Karnataka, India - 560078",
                 'shipping_address_text' => "some line one\nsome line two\nBangalore, Karnataka, India - 560078",
             ],
-            'supply_state_name' => 'Bihar',
+            'supply_state_name'  => 'Bihar',
+            'merchant_gstin'     => '29kjsngjk213922',
+            'has_address_or_pos' => true,
         ],
     ],
 
@@ -93,7 +96,7 @@ return [
             'payments'              => [
                 [
                     'amount'               => 1000000,
-                    'status'               => 'created',
+                    'status'               => 'captured',
                     'method'               => 'card',
                     'formatted_amount'     => '₹ 10000',
                     // 'formatted_created_at' => '5 Dec 2017',

@@ -180,7 +180,7 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
     }
 
-    public function testVerifyDisabledForCorporatePayments()
+    public function testVerifyForCorporatePayments()
     {
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_axis_corp_terminal');
         $this->fixtures->merchant->addFeatures('corporate_banks');
@@ -189,18 +189,11 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($payment)
-            {
-                $this->verifyPayment($payment['id']);
-            });
+        $this->verifyPayment($payment['id']);
 
         $payment = $this->getLastEntity('payment', true);
 
-        assert($payment['verified'] === null);
+        assert($payment['verified'] === 1);
     }
 
     public function testTpvVerifyPayment()

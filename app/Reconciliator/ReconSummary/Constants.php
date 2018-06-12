@@ -7,6 +7,15 @@ use RZP\Models\Payment\Refund;
 
 class Constants
 {
+    const TOTAL_COUNT               = 'total_count';
+    const TOTAL_AMOUNT              = 'total_amount';
+    const RECON_COUNT               = 'recon_count';
+    const RECON_AMOUNT              = 'recon_amount';
+    const UNRECON_COUNT             = 'unrecon_count';
+    const UNRECON_AMOUNT            = 'unrecon_amount';
+    const RECON_COUNT_PERCENTAGE    = 'recon_count_percentage';
+    const RECON_AMOUNT_PERCENTAGE   = 'recon_amount_percentage';
+
     // List of gateways included in recon summary mail generation
     const GATEWAYS = [
         'ebs',
@@ -48,6 +57,7 @@ class Constants
         Payment\Entity::AMOUNT,
         Payment\Entity::STATUS,
         Payment\Entity::DISPUTED,
+        Payment\Entity::REFERENCE2,
         Payment\Entity::MERCHANT_ID,
         Payment\Entity::TERMINAL_ID,
         Payment\Entity::CAPTURED_AT,
@@ -64,14 +74,14 @@ class Constants
 
     // Aggregate params calculated per day per gateway
     const AGGREGATE_PARAMS = [
-        'total_count',
-        'total_amount',
-        'recon_count',
-        'unrecon_count',
-        'recon_amount',
-        'unrecon_amount',
-        'recon_count_percentage',
-        'recon_amount_percentage'
+        self::TOTAL_COUNT,
+        self::TOTAL_AMOUNT,
+        self::RECON_COUNT,
+        self::UNRECON_COUNT,
+        self::RECON_AMOUNT,
+        self::UNRECON_AMOUNT,
+        self::RECON_COUNT_PERCENTAGE,
+        self::RECON_AMOUNT_PERCENTAGE
     ];
 
     // Number of unreconciled entities to be sent in attachment
@@ -84,4 +94,7 @@ class Constants
 
     // Default time duration is 5 days. Summary of last 5 days will be sent in email
     const DURATION = 5;
+
+    // Default key on which result set is sorted
+    const RESULT_SORT_KEY = self::TOTAL_AMOUNT;
 }
