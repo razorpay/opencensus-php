@@ -168,15 +168,6 @@ export default props => {
                   value={() => <InvoiceStatusLabel status={invoice.status} />}
                 />
 
-                <EntityDetailRow
-                  label="Amount"
-                  value={() => (
-                    <Amount
-                      value={invoice.amount}
-                      currency={invoice.currency}
-                    />
-                  )}
-                />
                 <ShowWhen featureEnabled="Invoice_Partial_Payments">
                   <React.Fragment>
                     {do {
@@ -214,8 +205,24 @@ export default props => {
                     }}
                   </React.Fragment>
                 </ShowWhen>
+
                 <EntityDetailRow
-                  label="Payment Link"
+                  label="Amount"
+                  value={() => (
+                    <Amount
+                      value={invoice.amount}
+                      currency={invoice.currency}
+                    />
+                  )}
+                />
+                <ShowWhen featureEnabled="Invoice_Partial_Payments">
+                  <EntityDetailRow label="Amount Paid">
+                    {getPaymentDetail(invoice)}
+                  </EntityDetailRow>
+                </ShowWhen>
+
+                <EntityDetailRow
+                  label="Link Url"
                   value={() => (
                     <CopyLink
                       url={invoice.short_url}
@@ -248,11 +255,6 @@ export default props => {
                       : invoice.receipt || '--'
                   }
                 />
-                <ShowWhen featureEnabled="Invoice_Partial_Payments">
-                  <EntityDetailRow label="Amount Paid">
-                    {getPaymentDetail(invoice)}
-                  </EntityDetailRow>
-                </ShowWhen>
 
                 <EntityDetailRow
                   label="Created At"

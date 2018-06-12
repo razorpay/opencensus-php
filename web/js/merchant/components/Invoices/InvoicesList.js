@@ -14,19 +14,17 @@ const InvoiceListItem = props => {
   return (
     <EntityItemRow id={invoice.id}>
       <td>
-        {
-          do {
-            if (['link', 'ecod'].indexOf(invoice.type) !== -1) {
-              <NavLink to={`/paymentlinks/${invoice.id}`}>
-                <code>{invoice.id}</code>
-              </NavLink>;
-            } else {
-              <NavLink to={`/invoices/${invoice.id}`}>
-                <code>{invoice.id}</code>
-              </NavLink>;
-            }
+        {do {
+          if (['link', 'ecod'].indexOf(invoice.type) !== -1) {
+            <NavLink to={`/paymentlinks/${invoice.id}`}>
+              <code>{invoice.id}</code>
+            </NavLink>;
+          } else {
+            <NavLink to={`/invoices/${invoice.id}`}>
+              <code>{invoice.id}</code>
+            </NavLink>;
           }
-        }
+        }}
       </td>
       <td>
         <Time value={invoice.date} />
@@ -89,7 +87,7 @@ export default props => {
         <thead>
           <tr>
             <th>{label} Id</th>
-            <th>{label} Date</th>
+            <th>Created Date</th>
             <th class="text-right">Amount</th>
             <th>Receipt No.</th>
             <th>Customer</th>

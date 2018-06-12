@@ -136,7 +136,7 @@ export default [
       description:
         'Upon reaching limit, link will close. Limit can be modified anytime.',
       _disabledWhen: form =>
-        form.state._name[form.state.activeTab].noLimit === '1',
+        form.state._name[form.state.activeTab].hasNoLimit === '1',
       validator: val => {
         if (!isInteger(val)) {
           return 'Enter valid number';
