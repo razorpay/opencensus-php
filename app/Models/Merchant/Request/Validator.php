@@ -132,9 +132,15 @@ class Validator extends Base\Validator
 
         $this->validateInput('create', $input);
 
-        $this->validateSubmissions($input, $submissions);
+        $type = $input[Entity::TYPE];
 
-        $this->validateName($input[Entity::TYPE], $input[Entity::NAME]);
+        $name = $input[Entity::NAME];
+
+        $this->validateName($type, $name);
+
+        $this->blockMerchantAccessIfPartnerRequest($type, $name);
+
+        $this->validateSubmissions($input, $submissions);
     }
 
     /**
@@ -145,7 +151,7 @@ class Validator extends Base\Validator
      *
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function validateName($type, $name)
+    public function validateName(string $type, string $name)
     {
         if (in_array($name, Constants::$typeNamesMap[$type], true) === false)
         {
@@ -157,13 +163,21 @@ class Validator extends Base\Validator
                     Merchant\Entity::PARTNER_TYPE => $type,
                 ]);
         }
+    }
 
+    /**
+     * Do not allow the merchants to raise requests for marking and unmarking themselves as partners.
+     * The same route can be used to submit the product activation requests.
+     *
+     * @param string $type
+     * @param string $name
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function blockMerchantAccessIfPartnerRequest(string $type, string $name)
+    {
         $isAdminAuth = app('basicauth')->isAdminAuth();
 
-        //
-        // Do not allow the merchants to raise requests for marking and unmarking themselves as partners
-        // The same route can be used to submit the product activation requests
-        //
         if (($type === Type::PARTNER) and ($isAdminAuth === false))
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -186,9 +200,13 @@ class Validator extends Base\Validator
      */
     public function validateSubmissions(array $input, array $submissions)
     {
-        switch ($input[Entity::TYPE])
+        $type = $input[Entity::TYPE];
+
+        $name = $input[Entity::NAME];
+
+        switch (true)
         {
-            case Type::PRODUCT:
+            case ($type === Type::PRODUCT):
             {
                 if (empty($submissions) === true)
                 {
@@ -197,7 +215,9 @@ class Validator extends Base\Validator
 
                 break;
             }
-            case Type::PARTNER:
+
+            // Submissions are not required for partner deactivation requests
+            case (($type === Type::PARTNER) and ($name === Constants::ACTIVATION)):
             {
                 if (empty($submissions) === true)
                 {
@@ -214,21 +234,22 @@ class Validator extends Base\Validator
                         ]);
                 }
 
-                $type = $submissions[Merchant\Entity::PARTNER_TYPE];
+                $partnerType = $submissions[Merchant\Entity::PARTNER_TYPE];
 
-                if (in_array($type, Merchant\Constants::$partnerTypes, true) === false)
+                if (in_array($partnerType, Merchant\Constants::$partnerTypes, true) === false)
                 {
                     throw new Exception\BadRequestValidationFailureException(
                         PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_INVALID,
                         Merchant\Entity::PARTNER_TYPE,
                         [
                             Constants::SUBMISSIONS        => $submissions,
-                            Merchant\Entity::PARTNER_TYPE => $type,
+                            Merchant\Entity::PARTNER_TYPE => $partnerType,
                         ]);
                 }
 
                 break;
             }
+
             default:
             {
                 break;

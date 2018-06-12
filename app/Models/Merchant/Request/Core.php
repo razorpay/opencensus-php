@@ -11,10 +11,8 @@ use RZP\Models\State;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\State\Reason;
 use RZP\Models\Merchant\Partner;
-use RZP\Models\Settings\Accessor;
 use RZP\Models\Base\PublicEntity;
 use RZP\Mail\Merchant\RequestRejection;
 use RZP\Mail\Merchant\RequestNeedsClarification;
@@ -49,20 +47,7 @@ class Core extends Base\Core
 
             $this->createState(Status::UNDER_REVIEW, $request, $request->merchant);
 
-            if (empty($submissions) === true)
-            {
-                return; // return from the closure function, back to the create function
-            }
-
-            if ($request->isProductRequest() === true)
-            {
-                (new Feature\Core)->postOnboardingSubmissions($request->merchant, $submissions, $input[Entity::NAME]);
-            }
-            else if ($request->isPartnerRequest() === true)
-            {
-                (new Merchant\Core)->postPartnerSubmissions($request, $submissions);
-            }
-
+            $this->postSubmissions($request, $input, $submissions);
         });
 
         return $request;
@@ -771,5 +756,31 @@ class Core extends Base\Core
         $requestNeedsClarificationEmail = new RequestNeedsClarification($data);
 
         Mail::queue($requestNeedsClarificationEmail);
+    }
+
+    protected function postSubmissions(Entity $request, array $input, array $submissions)
+    {
+        if (empty($submissions) === true)
+        {
+            return;
+        }
+
+        switch (true)
+        {
+            case $request->isProductRequest():
+            {
+                (new Feature\Core)->postOnboardingSubmissions($request->merchant, $submissions, $input[Entity::NAME]);
+
+                break;
+            }
+
+            // Partner deactivation requests do not have any submissions to store
+            case $request->isPartnerActivationRequest():
+            {
+                (new Merchant\Core)->postPartnerSubmissions($request, $submissions);
+
+                break;
+            }
+        }
     }
 }
