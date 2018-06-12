@@ -30,9 +30,7 @@ class CreateEntityOffer extends Migration
             $table->foreign(EntityOffer::OFFER_ID)
                   ->references(Offer::ID)
                   ->on(Table::OFFER)
-                  ->onDelete('cascade');
-
-            $table->index(EntityOffer::ENTITY_ID);
+                  ->onDelete('restrict');
 
             $table->unique([EntityOffer::ENTITY_ID, EntityOffer::ENTITY_TYPE]);
 
