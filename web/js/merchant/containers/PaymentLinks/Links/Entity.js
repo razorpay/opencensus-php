@@ -184,14 +184,18 @@ export default class InvoiceDetailContainer extends Component {
         }
       })
       .catch(({ errors }) => {
-        let err = errors || `Some network issue occured`;
+        let err = errors || `Some Network error occured`;
+
         if (Array.isArray(err)) {
           err = err.map(e => {
             return e.toLowerCase().indexOf('status code') > -1 ? false : e;
           });
         }
 
-        throw { errors: err };
+        this.props.showNotification({
+          type: 'error',
+          message: err,
+        });
       });
   };
 
@@ -207,7 +211,6 @@ export default class InvoiceDetailContainer extends Component {
         onIssue={this.showIssueConfirmModal}
         onCancel={this.cancelInvoice}
         editPaymentLink={this.editPaymentLink}
-        showNotification={this.props.showNotification}
       />
     );
   }

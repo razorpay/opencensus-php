@@ -356,7 +356,7 @@ export default class TransferDetails extends Component {
                           className="btn btn-default btn-half"
                           onClick={this.onDismiss}
                         >
-                          Discard
+                          Cancel
                         </button>
                         <AsyncButton
                           type="submit"

@@ -197,13 +197,6 @@ export default props => {
                                   onClick={() =>
                                     editPaymentLink({
                                       partial_payment: +!isPartialPayment,
-                                    }).catch(({ errors }) => {
-                                      props.showNotification({
-                                        type: 'error',
-                                        message:
-                                          errors ||
-                                          'Some Network error occured',
-                                      });
                                     })
                                   }
                                   class="Button--Link"
@@ -366,9 +359,17 @@ class EditReceiptField extends React.Component {
               });
             }}
           />
-          <div>
+          <div style={{ textAlign: 'right', marginBottom: 12, width: 260 }}>
+            <Button.Transparent
+              class="Button--Link"
+              onClick={() => this.setState(this.resetState())}
+            >
+              Cancel
+            </Button.Transparent>
+
             <AsyncBtn.Primary
               class="Button--small"
+              style={{ marginRight: 0, marginLeft: 16 }}
               disabled={!this.state.receipt}
               onClick={() =>
                 this.props
@@ -377,30 +378,14 @@ class EditReceiptField extends React.Component {
                   })
                   .then(resp => {
                     if (resp.data) {
-                      this.setState({
-                        isEditableMode: false,
-                      });
+                      this.setState(this.resetState());
                     }
-                  })
-                  .catch(({ errors }) => {
-                    this.setState({
-                      propagatedError: Array.isArray(errors)
-                        ? errors[0]
-                        : errors || 'Some Network error occured',
-                    });
                   })
               }
               pendingState="Saving"
             >
               Save
             </AsyncBtn.Primary>
-
-            <Button.Transparent
-              class="Button--Link Button--small"
-              onClick={() => this.setState(this.resetState())}
-            >
-              Discard
-            </Button.Transparent>
           </div>
         </React.Fragment>
       );
@@ -485,7 +470,7 @@ class EditExpiryField extends React.Component {
               });
             }}
           />
-          <Input.Group class="InputGroup--inline InputGroup--near Input--inline">
+          <Input.Group class="InputGroup--near Input--inline Input--half_big">
             <div class="Input-content">
               <Input.ToCalendar
                 data-name="expire_by_date"
@@ -514,15 +499,17 @@ class EditExpiryField extends React.Component {
               )}
             </div>
           </Input.Group>
-          <div>
-            <Button
-              onClick={() => {
-                this.setState({ isEditableMode: false });
-              }}
+          <div style={{ textAlign: 'right', marginBottom: 12, width: 192 }}>
+            <Button.Transparent
+              class="Button--Link"
+              onClick={() => this.setState(this.resetState())}
             >
-              Discard
-            </Button>
+              Cancel
+            </Button.Transparent>
+
             <AsyncBtn.Primary
+              class="Button--small"
+              style={{ marginRight: 0, marginLeft: 16 }}
               onClick={() =>
                 this.props
                   .editPaymentLink({
@@ -535,13 +522,6 @@ class EditExpiryField extends React.Component {
                     if (resp.data) {
                       this.setState(this.resetState());
                     }
-                  })
-                  .catch(({ errors }) => {
-                    this.setState({
-                      propagatedError: Array.isArray(errors)
-                        ? errors[0]
-                        : errors || 'Some Network error occured',
-                    });
                   })
               }
               pendingState="Saving"
@@ -595,17 +575,9 @@ class EditNotesField extends React.Component {
           !!Object.keys(this.state.notes).length && (
             <AsyncBtn.Primary
               onClick={() =>
-                this.props
-                  .editPaymentLink({
-                    notes: this.state.notes,
-                  })
-                  .catch(({ errors }) => {
-                    this.setState({
-                      propagatedError: Array.isArray(errors)
-                        ? errors[0]
-                        : errors || 'Some Network error occured',
-                    });
-                  })
+                this.props.editPaymentLink({
+                  notes: this.state.notes,
+                })
               }
               pendingState="Saving"
             >
