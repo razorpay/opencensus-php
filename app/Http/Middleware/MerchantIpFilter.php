@@ -55,7 +55,6 @@ class MerchantIpFilter
         $merchant = $this->ba->getMerchant();
 
         $mode = $this->ba->getMode();
-        sd($merchant);
 
         if ($mode === MODE::LIVE)
         {

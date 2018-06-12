@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Razorpay\OAuth\Token as OAuthToken;
 use Razorpay\OAuth\Client as OAuthClient;
+use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Exception;
 use RZP\Http\Route;
@@ -150,6 +151,12 @@ class BasicAuth
     private $partnerClient = null;
 
     /**
+     * Used to identify partner flows
+     * @var bool
+     */
+    private $isPartnerAuth = false;
+
+    /**
      * Merchant who is being authenticated
      * either by himself or by an internal
      * application
@@ -271,7 +278,7 @@ class BasicAuth
      * @var array
      */
     public static $validKeyLengths = [
-        8, 14, 23, 33
+        8, 14, 23, 31, 33
     ];
 
     protected $adminOrgId  = null;
@@ -446,7 +453,7 @@ class BasicAuth
             return null;
         }
 
-        if (OAuthToken\Entity::isPartnerToken($token) === false)
+        if ($this->verifyAccountId($token) === false)
         {
             return $this->invalidPartnerToken($token);
         }
@@ -533,7 +540,12 @@ class BasicAuth
             return $error;
         };
 
-        $this->checkAndSetPartnerMerchantScope();
+        $error = $this->checkAndSetPartnerMerchantScope();
+
+        if ($error !== null)
+        {
+            return $error;
+        };
     }
 
 // --------------------- Basic Auths -------------------------------------------
@@ -674,9 +686,22 @@ class BasicAuth
             return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE);
         }
 
-        $this->fetchMerchantOfKey($this->key);
+        if (empty($this->key) === false)
+        {
+            $this->fetchMerchantOfKey($this->keyEntity);
+        }
 
-        return $this->checkAndSetPartnerMerchantScope();
+        if (empty($this->partnerClient) === false)
+        {
+            $this->fetchMerchantOfClient($this->partnerClient);
+        }
+
+        $error = $this->checkAndSetPartnerMerchantScope();
+
+        if ($error !== null)
+        {
+            return $error;
+        };
     }
 
     public function directAuth()
@@ -1006,6 +1031,7 @@ class BasicAuth
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
         }
 
+        // The following cases should never both be true
         if (empty($keyEntity) === false)
         {
             return $this->verifyKeySecretAndFetchMerchant($keyEntity, $secret);
@@ -1051,7 +1077,7 @@ class BasicAuth
 
     protected function verifyKeyNotExpired()
     {
-        if ($this->key->isExpired() === false)
+        if ((empty($this->key) === false) and ($this->key->isExpired() === false))
         {
             return true;
         }
@@ -1585,12 +1611,14 @@ class BasicAuth
         if (empty($this->key) === true)
         {
             // This could be a partner call and hence we check for client credentials
-            if ($this->getPartnerToken() !== null)
+            if (empty($this->getPartnerToken()) === false)
             {
                 $this->partnerClient = (new OAuthClient\Repository)->getClientByIdAndEnv(
                     $keyId,
                     self::$clientModes[$this->getMode()]
                 );
+
+                $this->isPartnerAuth = true;
 
                 return $this->partnerClient;
             }
@@ -1670,9 +1698,17 @@ class BasicAuth
      */
     protected function checkAndSetPartnerMerchantScope()
     {
+        if ($this->isPartnerAuth === false)
+        {
+            return;
+        }
         if ($this->isPartnerTokenAuthAllowed() === false)
         {
-            return null;
+            $this->trace->info(
+                TraceCode::BAD_REQUEST_PARTNER_AUTH_NOT_ALLOWED, ['partner_id' => $this->getMerchantId()]);
+
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_PARTNER_AUTH_NOT_ALLOWED);
         }
 
         $this->setPartnerMerchantId($this->merchant->getId());
@@ -1687,9 +1723,38 @@ class BasicAuth
 
         // We use the account id as the token as of now. Later we might
         // move to scope based tokens like in OAuth public tokens
-        $merchant = $this->repo->merchant->findOrFail($token);
+        $merchant = $this->repo->merchant->find($strippedToken);
+
+        if (empty($merchant) === true)
+        {
+            return $this->invalidPartnerToken($this->getPartnerToken());
+        }
 
         $this->setAndCheckMerchantActivatedForLive($merchant);
+
+        if ($this->isPartnerMerchantMapped($this->merchant->getId(), $this->getPartnerMerchantId()) === false)
+        {
+            $traceData = [
+                'partner_id'  => $this->getPartnerMerchantId(),
+                'merchant_id' => $this->getMerchantId()
+            ];
+
+            $this->trace->info(
+                TraceCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER, $traceData);
+
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);
+        }
+    }
+
+    protected function isPartnerMerchantMapped(string $merchantId, string $partnerId)
+    {
+        $app = (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($partnerId);
+
+        $mapping = (new Merchant\AccessMap\Repository)
+                        ->findMerchantAccessMapOnEntityId($merchantId, $app->getId(), 'application');
+
+        return (empty($mapping) === false);
     }
 
     protected function isPartnerTokenAuthAllowed(): bool
@@ -1701,6 +1766,7 @@ class BasicAuth
         // TODO: Replace the second check with $this->merchant->isPartner once that\
         // function is merged to base from other PR
         if ((empty($this->merchant) === true) or
+            // ($this->merchant->isPartner() === false)) TODO: Enable this and remove below line
             ($this->merchant->isFeatureEnabled(Feature::PARTNER) === false))
         {
             return false;
