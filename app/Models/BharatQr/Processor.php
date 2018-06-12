@@ -165,7 +165,7 @@ class Processor extends VirtualAccount\Processor
         //
         // This won't be null in case it is
         // unexpected payment initially. We
-        // need the terminal to check if the param
+        // need the terminal to check if the expected
         // is true or false. Based on this value
         // payment is set to expected or unexpected
         //

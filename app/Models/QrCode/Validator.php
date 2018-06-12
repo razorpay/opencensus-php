@@ -24,7 +24,7 @@ class Validator extends Base\Validator
         //
         // reference should not be sent when merchant is
         // creating virtual account. In that case it will be
-        // always set to id. In case of bharat qr make payment
+        // always be equal to id. In case of bharat qr make payment
         // if we are creating a virtual account , reference is set
         // equal to reference received from bank. That route is direct
         // in live while it is private in test mode.
