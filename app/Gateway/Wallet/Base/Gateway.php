@@ -28,6 +28,10 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->setWallet($this->input['payment']['wallet']);
 
+        $gatewayPayment->setEmail($this->input['payment']['email']);
+
+        $gatewayPayment->setContact($this->input['payment']['contact']);
+
         $gatewayPayment->fill($attr);
 
         $this->repo->saveOrFail($gatewayPayment);

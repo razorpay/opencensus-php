@@ -23,6 +23,7 @@ class Validator extends Base\Validator
         RequestFields::ALGORITHM           => 'sometimes|numeric',
         RequestFields::CAVV2               => 'sometimes|string',
         RequestFields::UCAF                => 'sometimes|string',
+        RequestFields::CURRENCY_CODE       => 'sometimes|string',
     ];
 
     protected static $verifyRules = [

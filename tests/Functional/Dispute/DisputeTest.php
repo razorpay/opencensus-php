@@ -276,7 +276,13 @@ class DisputeTest extends TestCase
 
     public function testDisputeEditWon()
     {
+        $this->createWebhook(['events' => ['payment.dispute.won' => '1', 'payment.dispute.lost' => '1']]);
+
         $data = $this->updateEditTestData();
+
+        $eventTestDataKey = 'testDisputeWonEventData';
+
+        $this->setInfernoExpectations([$eventTestDataKey]);
 
         $this->runRequestResponseFlow($data);
 
@@ -287,7 +293,13 @@ class DisputeTest extends TestCase
 
     public function testDisputeEditClose()
     {
+        $this->createWebhook(['events' => ['payment.dispute.won' => '1', 'payment.dispute.closed' => '1']]);
+
         $data = $this->updateEditTestData();
+
+        $eventTestDataKey = 'testDisputeClosedEventData';
+
+        $this->setInfernoExpectations([$eventTestDataKey]);
 
         $this->runRequestResponseFlow($data);
 
@@ -306,6 +318,8 @@ class DisputeTest extends TestCase
 
     public function testDisputeEditDeductOnLost()
     {
+        $this->createWebhook(['events' => ['payment.dispute.created' => '1', 'payment.dispute.lost' => '1']]);
+
         $data = $this->updateEditTestData();
 
         $txn = $this->getLastEntity('transaction', true);
@@ -313,6 +327,10 @@ class DisputeTest extends TestCase
         $this->assertEquals('payment', $txn['type']);
 
         $this->ba->adminProxyAuth();
+
+        $eventTestDataKey = 'testDisputeLostEventData';
+
+        $this->setInfernoExpectations([$eventTestDataKey]);
 
         $this->runRequestResponseFlow($data);
 

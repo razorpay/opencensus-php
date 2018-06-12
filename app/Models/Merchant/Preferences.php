@@ -34,6 +34,33 @@ class Preferences
         'A5MmRVEM3qf6QJ', 'A5OZ1qi9tgwnZB', 'A5OeZOCaeyQQ8Q',
     ];
 
+    //Allowing intent on following mindgate and hulk terminals
+    //A3TQCfNLIQQ3bA
+    //ABhzFzt7QtANx1
+    //9q750D1dN5sa3X
+    //ADnrGoH9h6COgJ
+    const MID_INTENT_WHITELIST = ['9aHC1hl4PNU3sn', '6ZJzxyLFWrGs74', 'A3KnXGBotPXCYC', '2aTeFCKTYWwfrF',
+                                  '8fgkljXsVg4lSh', '9ac01GMEGfyU2o', '9ac01tGbLrFpSV', '9ac02H8xqcdFQh',
+                                  '9ac02hmncjWTgM', '9ac0379Ep1r0J3', '9ac03W9VWLetCt', '9ac03yT0APTh1z',
+                                  '9ac04NsWxC3tRt', '9ac04oe4MKbOXV', '9ac05IfbWfIGJo', '9ac05lO6vSzhor',
+                                  '9ac06DbLwe9v4u', '9ac06hnFv0HRGG', '9ac07EP4SuA1KO', '9ac07oOsTamskQ',
+                                  '9ac08GZgcokhYc', '9ac08i6gJgDVq2', '9ac0976yFgKTzq', '9ac09UxoDTe1dC',
+                                  '9ac09ucR1vEvph', '9ac0AMR1H3n18A', '9ac0ApXdgwOurS', '9ac0BFkiA29q8o',
+                                  '9ac0Bihc4F9qnW', '9ac0CBXZ5Oszgy', '9ac0CbzTsptnFU', '9ac0D4UcMgbTZV',
+                                  '9ac0DT7Epk7Dre', '9ac0DtwA1clRpg', '9ac0EIkPFZHWYR', '9ac0EnB7f5eyU7',
+                                  '9ac0FFIRLXx83B', '9ac0FcOUFdiZWP', '9ac0FzCLhwFBx4', '9ac0GVIQRhPapZ',
+                                  '9ac0Gy7qAbaXk3', '9ac0HPqkLkY6tR', '9ac0HotNhSMJzK', '9ac0INQnpskegm',
+                                  '9ac0Imf8IB87Fh', '9ac0JErnD2Ro2U', '9ac0JlJ59uylbj', '9ac0KBJpur4TWH',
+                                  '9ac0KYoafmULYX', '9ac0KxjsLehKbe', '9ac0LNVeQv3hwO', '9ac0LnF27xkXSy',
+                                  '9ac0MGfpVXM1rX', '9ac0MhpX7a0s80', '9ac0NHWnXaAQzB', '9ac0NmLhDuYhiw',
+                                  '9ac0OJXuuHPLFr', '9ac0OjIAZ8F5Er', '9ac0P8x82pOwdA', '9ac0PY46Hi7cA0',
+                                  '9ac0Pw41WpACh6', '9ac0QKavrGzQnG', '9ac0QisoFm888E', '9ac0R6snbutUvv',
+                                  '9ac0RZym55VGsd', '9ac0S0RCy2Zy6T', '41Bvcs1BYUHRzJ', '4uBYoaxgEV9Vpq',
+                                  '5DT4a51hWyB2S2', '5yvFZKqbBjEBsr', '67a0aqRNfZCdrS', '6LCgLZgRjTI8ws',
+                                  '6e9vU1F6c16Wgy', '6q0BL9DgjgHdIv', '6tRJ7zRKzY3hU9', '7ovwlfjBfzv8jT',
+                                  '7yoaGgYGbq6GoN', '8JMwdqJg5w84ES', '8JPzPesuDW7HQX', '8Ph17vkslEBeIu',
+                                  '9Am5NzeJvtuBFy', '9cVCrt48C7hz4A', 'A3KnXGBotPXCYC',];
+
     /**
      * This needs to go in DB, for hotfix we are keeping it here
      * Maintains lists of gateways excluded for a merchant

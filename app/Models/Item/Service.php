@@ -15,16 +15,16 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function create($input)
+    public function create(array $input)
     {
         $item = $this->core->create($input, $this->merchant);
 
         return $item->toArrayPublic();
     }
 
-    public function fetch($id)
+    public function fetch(string $id, array $input)
     {
-        $item = $this->repo->item->findByPublicIdAndMerchant($id, $this->merchant);
+        $item = $this->repo->item->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
         return $item->toArrayPublic();
     }

@@ -5,9 +5,12 @@ namespace RZP\Models\Feature;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
+use RZP\Models\Base\Traits\HardDeletes;
 
 class Entity extends Base\PublicEntity
 {
+    use HardDeletes;
+
     const NAME        = 'name';
     const ENTITY_ID   = 'entity_id';
     const ENTITY_TYPE = 'entity_type';
@@ -92,7 +95,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::ENTITY_TYPE);
     }
-    
+
     public function entity()
     {
         return $this->morphTo();

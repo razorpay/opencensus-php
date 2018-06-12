@@ -62,6 +62,7 @@ class Entity extends Base\PublicEntity
     const EMAIL_STATUS              = 'email_status';
     const SMS_STATUS                = 'sms_status';
     const DESCRIPTION               = 'description';
+    const MERCHANT_GSTIN            = 'merchant_gstin';
     const MERCHANT_LABEL            = 'merchant_label';
 
     /**
@@ -141,6 +142,8 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_DETAILS         = 'customer_details';
     const PAYMENT_ID               = 'payment_id';
     const URL                      = 'url';
+    // Boolean holding 'has address or supply state name' value to be used in view
+    const HAS_ADDRESS_OR_POS       = 'has_address_or_pos';
 
     // ------------------------ Output Keys End ----------------------
 
@@ -171,6 +174,7 @@ class Entity extends Base\PublicEntity
 
     const TOTAL_COUNT              = 'batch_total';
     const ISSUED_COUNT             = 'issued_count';
+    const CREATED_COUNT            = 'created_count';
     const PAID_COUNT               = 'paid_count';
     const EXPIRED_COUNT            = 'expired_count';
 
@@ -229,6 +233,7 @@ class Entity extends Base\PublicEntity
         self::EXPIRED_AT                => null,
         self::EXPIRE_BY                 => null,
         self::RECEIPT                   => null,
+        self::MERCHANT_GSTIN            => null,
         self::MERCHANT_LABEL            => null,
         self::SUPPLY_STATE_CODE         => null,
         self::DESCRIPTION               => null,
@@ -313,6 +318,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::MERCHANT_ID,
         self::DATE,
+        self::MERCHANT_GSTIN,
         self::MERCHANT_LABEL,
         self::SUPPLY_STATE_CODE,
         self::DESCRIPTION,
@@ -636,6 +642,11 @@ class Entity extends Base\PublicEntity
     public function getUserId()
     {
         return $this->getAttribute(self::USER_ID);
+    }
+
+    public function getMerchantGstin()
+    {
+        return $this->getAttribute(self::MERCHANT_GSTIN);
     }
 
     public function getMerchantLabel()
@@ -1002,6 +1013,11 @@ class Entity extends Base\PublicEntity
     public function setUserId(string $userId)
     {
         $this->setAttribute(self::USER_ID, $userId);
+    }
+
+    public function setMerchantGstin(string $gstin = null)
+    {
+        $this->setAttribute(self::MERCHANT_GSTIN, $gstin);
     }
 
     public function setMerchantLabel(string $merchantLabel)

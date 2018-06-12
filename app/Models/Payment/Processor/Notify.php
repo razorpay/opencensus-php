@@ -246,7 +246,7 @@ class Notify
 
             $this->notifyViaMail($event);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException(
                 $e,

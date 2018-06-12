@@ -3,12 +3,14 @@
 namespace RZP\Models\Admin\Permission;
 
 use RZP\Constants\Table;
-use RZP\Models\Base\Traits\RevisionableTrait;
-use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Base;
+use RZP\Models\Base\Traits\HardDeletes;
+use RZP\Models\Base\Traits\RevisionableTrait;
 
 class Entity extends Base\Entity
 {
+    use HardDeletes;
     use RevisionableTrait;
 
     const NAME              = 'name';
@@ -86,6 +88,7 @@ class Entity extends Base\Entity
         {
             $permission->roles()->detach();
             $permission->orgs()->detach();
+            $permission->workflows()->detach();
         });
     }
 
@@ -113,7 +116,7 @@ class Entity extends Base\Entity
 
     public function workflows()
     {
-        return $this->belongsToMany('RZP\Models\Workflow\Entity', Table::WORKFLOW_PERMISSIONS);
+        return $this->belongsToMany('RZP\Models\Workflow\Entity', Table::WORKFLOW_PERMISSION);
     }
 
     public function getRelationsForDiffer() : array

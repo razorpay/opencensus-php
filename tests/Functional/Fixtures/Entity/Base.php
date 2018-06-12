@@ -63,6 +63,7 @@ class Base
 
         'atom'              => \RZP\Gateway\Atom\Entity::class,
         'hdfc'              => \RZP\Gateway\Hdfc\Entity::class,
+        'enach'             => \RZP\Gateway\Enach\Base\Entity::class,
         'wallet'            => \RZP\Gateway\Wallet\Base\Entity::class,
         'axis_migs'         => \RZP\Gateway\AxisMigs\Entity::class,
         'billdesk'          => \RZP\Gateway\Billdesk\Entity::class,
@@ -79,7 +80,7 @@ class Base
         'user',
     ];
 
-    public function create(array $attributes = array())
+    public function create(array $attributes = [])
     {
         $entity = snake_case(explode('\\', get_class($this))[5]);
 

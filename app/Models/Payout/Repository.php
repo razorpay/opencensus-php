@@ -77,4 +77,12 @@ class Repository extends Base\Repository
 
         $query->where(Entity::DESTINATION_ID, $destinationId);
     }
+
+    public function fetchFailedPayouts(array $ids)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $ids)
+                    ->where(Entity::STATUS, Status::FAILED)
+                    ->get();
+    }
 }

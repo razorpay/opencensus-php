@@ -182,9 +182,15 @@ class NetbankingObcGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
+        $this->assertNull($payment['reference1']);
+
+        $this->mockVerifyResponse();
+
         $this->authorizeFailedPayment($payment['id']);
 
         $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNotNull($payment['reference1']);
 
         $this->assertEquals('authorized', $payment['status']);
     }
@@ -205,6 +211,15 @@ class NetbankingObcGatewayTest extends TestCase
             });
 
         return $this->getLastEntity(ConstantsEntity::PAYMENT, true);
+    }
+
+    protected function mockVerifyResponse()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                $content[Obc\ResponseFields::BANK_PAYMENT_ID] = 9999999999;
+            });
     }
 
     protected function mockPaymentFailed()

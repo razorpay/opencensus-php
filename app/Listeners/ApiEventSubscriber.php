@@ -191,6 +191,27 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onPaymentDisputeLost($payment)
+    {
+        $payload = $this->getPaymentPayloadWithDispute($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPaymentDisputeWon($payment)
+    {
+        $payload = $this->getPaymentPayloadWithDispute($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPaymentDisputeClosed($payment)
+    {
+        $payload = $this->getPaymentPayloadWithDispute($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onOrderPaid($payment)
     {
         $payload = $this->getOrderPayload($payment);
@@ -427,16 +448,29 @@ class ApiEventSubscriber extends Base\Core
 
     protected function getVirtualAccountPaymentPayload(Payment\Entity $payment)
     {
-        $bankTransfer = $payment->bankTransfer;
+        $receiver = $payment->receiver;
 
-        $virtualAccount = $bankTransfer->virtualAccount;
+        $virtualAccount = $receiver->source;
 
         $partialPayload[Constants\Entity::PAYMENT] = [
             'entity' => $payment->toArrayPublic()
         ];
 
+        $virtualAccountArray = $virtualAccount->toArrayPublic();
+
+        //
+        // The virtual account array received here will contain
+        // all the receivers but we only want that receiver on
+        // which the payment is received
+        //
+        unset($virtualAccountArray[VirtualAccount\Entity::RECEIVERS]);
+
+        $virtualAccountArray[VirtualAccount\Entity::RECEIVERS] = [
+            $receiver->toArrayPublic()
+        ];
+
         $partialPayload[Constants\Entity::VIRTUAL_ACCOUNT] = [
-            'entity' => $virtualAccount->toArrayPublic()
+            'entity' => $virtualAccountArray,
         ];
 
         return $partialPayload;

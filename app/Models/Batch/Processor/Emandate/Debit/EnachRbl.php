@@ -3,32 +3,36 @@
 namespace RZP\Models\Batch\Processor\Emandate\Debit;
 
 use Config;
+use RZP\Gateway\Enach\Rbl;
+use RZP\Gateway\Enach\Base\Entity;
 use RZP\Models\Payment\Gateway;
-use RZP\Gateway\Enach\Rbl\Status;
 use RZP\Gateway\Enach\Rbl\DebitFileHeadings as Headings;
 
 class EnachRbl extends Base
 {
     protected $gateway = Gateway::ENACH_RBL;
 
+    const UMRN = 'umrn';
+
     protected function getDataFromRow(array & $row): array
     {
         $row = array_map('trim', $row);
 
         return [
-            'payment_id'    => $row[Headings::REFNO],
-            'amount'        => $row[Headings::AMOUNT],
-            'umrn'          => $row[Headings::UMRN],
-            'status'        => $row[Headings::STATUS],
-            'error_message' => $row[Headings::REASON_DESCRIPTION],
+            self::PAYMENT_ID            => $row[Headings::REFNO],
+            self::AMOUNT                => $row[Headings::AMOUNT],
+            self::GATEWAY_RESPONSE_CODE => $row[Headings::STATUS],
+            self::GATEWAY_ERROR_CODE    => $row[Headings::REASON_CODE] ?? null,
+            self::GATEWAY_ERROR_MESSAGE => $row[Headings::REASON_DESCRIPTION] ?? null,
+            self::UMRN                  => $row[Headings::UMRN],
         ];
     }
 
     protected function getPayment(array $content)
     {
-        $paymentId = $content['payment_id'];
+        $paymentId = $content[self::PAYMENT_ID];
 
-        $umrn = $content['umrn'];
+        $umrn = $content[self::UMRN];
 
         $payment = $this->repo->payment->fetchDebitEnachPaymentPendingAuth(
                                                                 $this->gateway,
@@ -38,23 +42,29 @@ class EnachRbl extends Base
         return $payment;
     }
 
-    protected function updateGatewayPayment(array $content)
+    protected function getGatewayPayment(string $paymentId)
     {
-        return;
+        return $this->repo
+                    ->enach
+                    ->findAuthorizedPaymentByPaymentId($paymentId);
     }
 
     protected function getGatewayAttributes(array $parsedData): array
     {
-        return [];
+        return [
+            Entity::STATUS        => $parsedData[self::GATEWAY_RESPONSE_CODE],
+            Entity::ERROR_CODE    => $parsedData[self::GATEWAY_ERROR_CODE],
+            Entity::ERROR_MESSAGE => $parsedData[self::GATEWAY_ERROR_MESSAGE],
+        ];
     }
 
     protected function isAuthorized(array $content): bool
     {
-        return Status::isDebitSuccess($content['status']);
+        return Rbl\Status::isDebitSuccess($content[self::GATEWAY_RESPONSE_CODE]);
     }
 
-    protected function getErrorDescription(array $content)
+    protected function getApiErrorCode(array $content): string
     {
-        return $content['error_message'];
+        return Rbl\ErrorCodes::getDebitPublicErrorCode($content[self::GATEWAY_ERROR_CODE]);
     }
 }

@@ -75,7 +75,14 @@ class Core extends Base\Core
     {
         $permission->setAuditAction(Action::DELETE_PERMISSION);
 
-        $this->repo->deleteOrFail($permission);
+        //
+        // This needs to be inside a transaction, since we are also deleting
+        // entries from many intermediary pivot tables.
+        //
+        $this->repo->transaction(function () use ($permission)
+        {
+            $this->repo->deleteOrFail($permission);
+        });
 
         return $permission;
     }

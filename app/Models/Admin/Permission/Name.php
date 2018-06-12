@@ -73,6 +73,7 @@ class Name
     const CREATE_SETTLEMENTS_RECONCILE        = 'create_settlements_reconcile';
     const RETRY_SETTLEMENT                    = 'retry_settlement';
     const SETTLEMENT_BULK_UPDATE              = 'settlement_bulk_update';
+    const CREATE_NODAL_ACCOUNT_TRANSFER       = 'create_nodal_account_transfer';
     const MERCHANT_INVOICE_EDIT               = 'merchant_invoice_edit';
     const CREATE_RECONCILIATE                 = 'create_reconciliate';
     const VIEW_ACTIVATION_FORM                = 'view_activation_form';

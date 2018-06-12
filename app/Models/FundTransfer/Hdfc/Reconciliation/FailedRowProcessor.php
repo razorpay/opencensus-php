@@ -20,7 +20,7 @@ class FailedRowProcessor extends BaseRowProcessor
     const FAILURE_REASON    = 'failure_reason';
     const BANK_STATUS_CODE  = 'bank_status_code';
 
-    protected function parseRow()
+    protected function processRow()
     {
         $error = substr($this->row[Headings::ERRORS], 0, 255);
 

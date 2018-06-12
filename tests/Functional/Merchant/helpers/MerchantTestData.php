@@ -1753,7 +1753,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 20,
+                'count' => 15,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1809,41 +1809,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'NKGS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBBJ',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBHY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBMY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'STBP',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBTR',
                         ],
                     ],
                     [
@@ -1908,7 +1873,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 21,
+                'count' => 16,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1971,41 +1936,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'NKGS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBBJ',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBHY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBMY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'STBP',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBTR',
                         ],
                     ],
                     [
@@ -2258,11 +2188,6 @@ return [
                                 'IDFB',
                                 'JSBP',
                                 'NKGS',
-                                'SBBJ',
-                                'SBHY',
-                                'SBMY',
-                                'STBP',
-                                'SBTR',
                                 'SCBL',
                                 'SVCB',
                                 'SYNB',
