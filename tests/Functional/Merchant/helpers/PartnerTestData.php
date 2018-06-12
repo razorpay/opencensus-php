@@ -9,18 +9,22 @@ use RZP\Error\PublicErrorDescription;
 return [
 
     'testMarkingMerchantAsPartner' => [
-        'request'   => [
+        'request'  => [
             'url'     => '/merchant/requests',
             'method'  => 'POST',
             'content' => [
-                'name' => 'reseller',
-                'type' => 'partner_activation',
+                'type'        => 'partner',
+                'name'        => 'activation',
+                'submissions' => [
+                    'partner_type' => 'reseller',
+                ],
             ],
         ],
         'response' => [
             'content' => [
                 'status'      => 'under_review',
-                'name'        => 'reseller',
+                'type'        => 'partner',
+                'name'        => 'activation',
                 'merchant'    => [
                     'id' => '10000000000000',
                 ],
@@ -32,6 +36,9 @@ return [
                         ],
                     ],
                 ],
+                'submissions' => [
+                    'partner_type' => 'reseller',
+                ],
             ],
         ],
     ],
@@ -41,16 +48,46 @@ return [
             'url'     => '/merchant/requests',
             'method'  => 'POST',
             'content' => [
-                // name = marketplace because it's a valid merchant request name but an invalid partner type
-                'name' => 'marketplace',
-                'type' => 'partner_activation',
+                'type' => 'partner',
+                'name' => 'activation',
+                'submissions' => [
+                    'partner_type' => 'invalid_partner_type',
+                ],
             ],
         ],
         'response'  => [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_NAME,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_INVALID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMarkingMerchantAsPartnerInvalidNameToType' => [
+        'request'   => [
+            'url'     => '/merchant/requests',
+            'method'  => 'POST',
+            'content' => [
+                // name = activation should only be valid when type = partner
+                'type' => 'product',
+                'name' => 'activation',
+                'submissions' => [
+                    'partner_type' => 'reseller',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_MERCHANT_REQUEST_NAME,
                 ],
             ],
             'status_code' => 400,
@@ -66,8 +103,11 @@ return [
             'url'     => '/merchant/requests',
             'method'  => 'POST',
             'content' => [
-                'name' => 'reseller',
-                'type' => 'partner_activation',
+                'type' => 'partner',
+                'name' => 'activation',
+                'submissions' => [
+                    'partner_type' => 'reseller',
+                ],
             ],
         ],
         'response'  => [
@@ -90,8 +130,11 @@ return [
             'url'     => '/merchant/requests',
             'method'  => 'POST',
             'content' => [
-                'name' => 'reseller',
-                'type' => 'partner_activation',
+                'type' => 'partner',
+                'name' => 'deactivation',
+                'submissions' => [
+                    'partner_type' => 'reseller',
+                ],
             ],
         ],
         'response'  => [
@@ -144,14 +187,17 @@ return [
             'url'     => '/merchant/requests',
             'method'  => 'POST',
             'content' => [
-                'name' => 'reseller',
-                'type' => 'partner_deactivation',
+                'type' => 'partner',
+                'name' => 'deactivation',
+                'submissions' => [
+                    'partner_type' => 'reseller',
+                ],
             ],
         ],
         'response' => [
             'content' => [
                 'status'      => 'under_review',
-                'name'        => 'reseller',
+                'name'        => 'deactivation',
                 'merchant'    => [
                     'id' => '10000000000000',
                 ],
@@ -162,6 +208,9 @@ return [
                             'name' => 'under_review',
                         ],
                     ],
+                ],
+                'submissions' => [
+                    'partner_type' => 'reseller',
                 ],
             ],
         ],
