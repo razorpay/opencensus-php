@@ -163,7 +163,11 @@ class Core extends Base\Core
     {
         $offer = $this->repo->offer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        if ((new Checker($offer, true))->checkApplicableOnOrder($order) === false)
+        $verbose = true;
+
+        $checker = new Checker($offer, $verbose);
+
+        if ($checker->checkApplicabilityOnOrder($order) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
             [

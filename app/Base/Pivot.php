@@ -19,17 +19,17 @@ class Pivot extends Relations\Pivot
     // Eg. in fixtures for tests, or for admin fetch routes
     //
 
-    public function getTable()
+    public function getTable(): string
     {
         return $this->table;
     }
 
-    public function newCollection(array $models = [])
+    public function newCollection(array $models = []): PublicCollection
     {
         return new PublicCollection($models);
     }
 
-    public function toArrayAdmin()
+    public function toArrayAdmin(): array
     {
         return $this->toArray();
     }

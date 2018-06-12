@@ -487,6 +487,23 @@ class OrderTest extends TestCase
         $this->assertEquals($order['entity'], $entityOffer['entity_type']);
     }
 
+    public function testCreateOrderWithOfferUpdatedFormat()
+    {
+        $offer = $this->fixtures->create('offer:live_card', ['iins' => ["401200"]]);
+
+        $this->testData[__FUNCTION__]['request']['content']['offers'][] = $offer->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['content']['offer_id'] = $offer->getPublicId();
+
+        $order = $this->startTest();
+
+        // Pivot table entry also got created
+        $entityOffer = $this->getLastEntity('entity_offer', true);
+        $this->assertEquals($offer->getId(), $entityOffer['offer_id']);
+        $this->assertEquals($order['id'], 'order_' . $entityOffer['entity_id']);
+        $this->assertEquals($order['entity'], $entityOffer['entity_type']);
+    }
+
     public function testCreateOrderWithOfferAndDiscounting()
     {
         $offer = $this->fixtures->create('offer:live_card', ['iins' => ["401200"]]);

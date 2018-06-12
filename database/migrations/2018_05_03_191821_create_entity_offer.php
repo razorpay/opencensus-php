@@ -32,6 +32,10 @@ class CreateEntityOffer extends Migration
                   ->on(Table::OFFER)
                   ->onDelete('cascade');
 
+            $table->index(EntityOffer::ENTITY_ID);
+
+            $table->unique([EntityOffer::ENTITY_ID, EntityOffer::ENTITY_TYPE]);
+
             $table->integer(EntityOffer::CREATED_AT);
             $table->integer(EntityOffer::UPDATED_AT);
         });

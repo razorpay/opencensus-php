@@ -206,9 +206,7 @@ class Entity extends Base\PublicEntity
         return $this->morphToMany(
                         Offer\Entity::class,
                         'entity',
-                        Table::ENTITY_OFFER,
-                        Offer\EntityOffer\Entity::ENTITY_ID,
-                        Offer\EntityOffer\Entity::OFFER_ID)
+                        Table::ENTITY_OFFER)
                     ->withTimestamps();
     }
 

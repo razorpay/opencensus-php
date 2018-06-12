@@ -16,7 +16,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY        => 'required|size:3|in:INR,USD',
         Entity::RECEIPT         => 'sometimes|nullable|string|max:40',
         Entity::PAYMENT_CAPTURE => 'filled|boolean',
-        Entity::CUSTOMER_ID     => 'filled',
+        Entity::CUSTOMER_ID     => 'filled|public_id|size:19',
         Entity::NOTES           => 'sometimes|notes',
         Entity::METHOD          => 'sometimes|in:netbanking,emandate,upi',
         Entity::BANK            => 'filled',
@@ -24,7 +24,7 @@ class Validator extends Base\Validator
         Entity::DISCOUNT        => 'sometimes|boolean',
         Entity::OFFERS          => 'sometimes|array',
         Entity::OFFERS . '*'    => 'filled|public_id|size:20',
-        Entity::FORCE_OFFER     => 'sometimes|boolean',
+        Entity::FORCE_OFFER     => 'filled|boolean',
     );
 
     protected static $createValidators = [

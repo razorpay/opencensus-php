@@ -60,8 +60,6 @@ class Repository extends Base\Repository
 
     public function attachOfferToOrder(Entity $order, Offer\Entity $offer)
     {
-        $order->offers()->attach($offer->getId(), [
-            EntityOffer\Entity::ENTITY_TYPE => $this->entity,
-        ]);
+        $order->offers()->attach($offer->getId());
     }
 }
