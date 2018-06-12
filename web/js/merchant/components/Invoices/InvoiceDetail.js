@@ -488,6 +488,7 @@ class ExpiresOnField extends React.Component {
               />
               {!!this.state.expire_by && (
                 <Input.TimePicker
+                  name="expire_by"
                   placeholder="11:59PM"
                   defaultValue={this.state.expire_by}
                   disabled={this.state.hasNoExpiry === '1'}
