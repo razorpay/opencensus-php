@@ -781,6 +781,9 @@ class ErrorCode
 
     const BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT                           = 'BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT';
 
+    // Merchant requests
+    const BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING                          = 'BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING';
+
     // Partners
     const BAD_REQUEST_INVALID_PARTNER_NAME                                          = 'BAD_REQUEST_INVALID_PARTNER_NAME';
 }

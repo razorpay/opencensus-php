@@ -11,8 +11,10 @@ use RZP\Models\State;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\State\Reason;
 use RZP\Models\Merchant\Partner;
+use RZP\Models\Settings\Accessor;
 use RZP\Models\Base\PublicEntity;
 use RZP\Mail\Merchant\RequestRejection;
 use RZP\Mail\Merchant\RequestNeedsClarification;
@@ -47,11 +49,20 @@ class Core extends Base\Core
 
             $this->createState(Status::UNDER_REVIEW, $request, $request->merchant);
 
-            if (($request->isProductRequest() === true) and
-                (empty($submissions) === false))
+            if (empty($submissions) === true)
+            {
+                return; // return from the closure function, back to the create function
+            }
+
+            if ($request->isProductRequest() === true)
             {
                 (new Feature\Core)->postOnboardingSubmissions($request->merchant, $submissions, $input[Entity::NAME]);
             }
+            else if ($request->isPartnerRequest() === true)
+            {
+                (new Merchant\Core)->postPartnerSubmissions($request, $submissions);
+            }
+
         });
 
         return $request;
@@ -240,7 +251,7 @@ class Core extends Base\Core
 
             case $request->isPartnerActivationRequest():
             {
-                (new Merchant\Core)->markAsPartner($request->merchant, $request->getName());
+                (new Merchant\Core)->markAsPartner($request);
 
                 break;
             }
@@ -502,6 +513,13 @@ class Core extends Base\Core
                 [$merchantRequest->getName()]);
         }
 
+        if ($merchantRequest->isPartnerRequest() === true)
+        {
+            $merchantCore = new Merchant\Core;
+
+            $returnData[Constants::SUBMISSIONS] = $merchantCore->getPartnerSubmissions($merchantRequest);
+        }
+
         return $returnData;
     }
 
@@ -591,8 +609,7 @@ class Core extends Base\Core
         //
         $liveModeRequestTypes = [
             Type::PRODUCT,
-            Type::PARTNER_ACTIVATION,
-            Type::PARTNER_DEACTIVATION,
+            Type::PARTNER,
         ];
 
         if (in_array($type, $liveModeRequestTypes, true) === true)

@@ -7,8 +7,7 @@ class Type
     /*
      * Enum values used for request type
      */
-    const PRODUCT              = 'product';
-    const INTERNAL             = 'internal';
-    const PARTNER_ACTIVATION   = 'partner_activation';
-    const PARTNER_DEACTIVATION = 'partner_deactivation';
+    const PRODUCT  = 'product';
+    const INTERNAL = 'internal';
+    const PARTNER  = 'partner';
 }

@@ -24,10 +24,15 @@ use RZP\Models\Admin\Action;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
+use RZP\Exception\LogicException;
+use RZP\Models\Settings\Accessor;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Merchant\Request as MerchantRequest;
+
 class Core extends Base\Core
 {
     use Notify;
@@ -756,13 +761,64 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Entity $merchant
-     * @param string $partnerType
+     * Saves data from partner activation/deactivation requests into the settings table.
+     *
+     * @param Request\Entity $request
+     * @param array          $submissions
+     */
+    public function postPartnerSubmissions(MerchantRequest\Entity $request, array $submissions)
+    {
+        $parterType = $submissions[Entity::PARTNER_TYPE];
+
+        $data[Entity::PARTNER_TYPE] = $parterType;
+
+        $this->trace->info(
+            TraceCode::PARTNER_REQUEST_SUBMITTED,
+            [
+                Entity::PARTNER_TYPE       => $parterType,
+                MerchantRequest\Entity::ID => $request->getId(),
+            ]);
+
+        Accessor::for ($request, Constants::PARTNER)
+            ->upsert($data)
+            ->save();
+    }
+
+    /**
+     * @param Request\Entity $merchantRequest
+     *
+     * @return array
+     */
+    public function getPartnerSubmissions(MerchantRequest\Entity $merchantRequest): array
+    {
+        $settings = Accessor::for($merchantRequest, Constants::PARTNER)->all();
+
+        $response = $settings->toArray();
+
+        return $response;
+    }
+
+    /**
+     * @param Request\Entity $merchantRequest
      *
      * @return Entity
+     * @throws LogicException
      */
-    public function markAsPartner(Entity $merchant, string $partnerType): Entity
+    public function markAsPartner(MerchantRequest\Entity $merchantRequest): Entity
     {
+        $submissions = $this->getPartnerSubmissions($merchantRequest);
+
+        if (isset($submissions[Entity::PARTNER_TYPE]) === false)
+        {
+            throw new LogicException(PublicErrorDescription::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
+                ErrorCode::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
+                $submissions);
+        }
+
+        $partnerType = $submissions[Entity::PARTNER_TYPE];
+
+        $merchant = $merchantRequest->merchant;
+
         $merchant->setPartnerType($partnerType);
 
         $this->repo->saveOrFail($merchant);

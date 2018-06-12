@@ -96,17 +96,19 @@ class Entity extends Base\PublicEntity
 
     public function isPartnerRequest(): bool
     {
-        return (($this->isPartnerActivationRequest() === true) or ($this->isPartnerDeactivationRequest() === true));
+        return ($this->getAttribute(self::TYPE) === Type::PARTNER);
     }
 
     public function isPartnerActivationRequest(): bool
     {
-        return ($this->getAttribute(self::TYPE) === Type::PARTNER_ACTIVATION);
+        return (($this->isPartnerRequest() === true) and
+                    ($this->getAttribute(self::NAME) === Constants::ACTIVATION));
     }
 
     public function isPartnerDeactivationRequest(): bool
     {
-        return ($this->getAttribute(self::TYPE) === Type::PARTNER_DEACTIVATION);
+        return (($this->isPartnerRequest() === true) and
+            ($this->getAttribute(self::NAME) === Constants::DEACTIVATION));
     }
 
     public function setPublicMerchantIdAttribute(array &$attributes)

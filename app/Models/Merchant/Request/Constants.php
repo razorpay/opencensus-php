@@ -15,6 +15,10 @@ class Constants
     const REJECTION_REASON         = 'rejection_reason';
     const NEEDS_CLARIFICATION_TEXT = 'needs_clarification_text';
 
+    // Partners
+    const ACTIVATION               = 'activation';
+    const DEACTIVATION             = 'deactivation';
+
     /*
      * Need this map to map onboarding statuses to merchant request statuses to
      * ensure backward compatability with existing code till it isn't deprecated
@@ -25,18 +29,18 @@ class Constants
         MerchantDetail\Entity::REJECTED => Status::REJECTED,
     ];
 
-    public static $names = [
-        // Product activation requests
-        Feature\Constants::MARKETPLACE,
-        Feature\Constants::VIRTUAL_ACCOUNTS,
-        Feature\Constants::SUBSCRIPTIONS,
+    public static $typeNamesMap = [
 
-        // Partner activation requests
-        Merchant\Constants::BANK,
-        Merchant\Constants::RESELLER,
-        Merchant\Constants::AGGREGATOR,
-        Merchant\Constants::FULLY_MANAGED,
-        Merchant\Constants::PURE_PLATFORM,
+        Type::PRODUCT => [
+            Feature\Constants::MARKETPLACE,
+            Feature\Constants::VIRTUAL_ACCOUNTS,
+            Feature\Constants::SUBSCRIPTIONS,
+        ],
+
+        Type::PARTNER => [
+            self::ACTIVATION,
+            self::DEACTIVATION,
+        ],
     ];
 
     public static function getRequestStatusForOnboardingStatus(string $onboardingStatus)

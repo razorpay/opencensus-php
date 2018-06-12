@@ -109,11 +109,6 @@ class Validator extends Base\Validator
      */
     public function validateType($attribute, $value)
     {
-        if (empty($value) === true)
-        {
-            return;
-        }
-
         if (defined(Type::class . '::' . strtoupper($value)) === false)
         {
             $traceData = [
@@ -152,44 +147,33 @@ class Validator extends Base\Validator
      */
     public function validateName($type, $name)
     {
-        $productFeatures = Feature\Constants::PRODUCT_FEATURES;
-
-        if (($type === Type::PRODUCT) and
-            (in_array($name, $productFeatures, true) === false))
+        if (in_array($name, Constants::$typeNamesMap[$type], true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                "Invalid product: $name for request type : $type");
+                PublicErrorDescription::BAD_REQUEST_INVALID_MERCHANT_REQUEST_NAME,
+                Entity::NAME,
+                [
+                    Entity::NAME                  => $name,
+                    Merchant\Entity::PARTNER_TYPE => $type,
+                ]);
         }
 
-        if ((($type === Type::PARTNER_ACTIVATION) or ($type === Type::PARTNER_DEACTIVATION)))
+        $isAdminAuth = app('basicauth')->isAdminAuth();
+
+        //
+        // Do not allow the merchants to raise requests for marking and unmarking themselves as partners
+        // The same route can be used to submit the product activation requests
+        //
+        if (($type === Type::PARTNER) and ($isAdminAuth === false))
         {
-            //
-            // Do not allow the merchants to raise requests for marking and unmarking themselves as partners
-            // The same route can be used to submit the product activation requests
-            //
-            if (app('basicauth')->isAdminAuth() === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    PublicErrorDescription::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED,
-                    null,
-                    [
-                        Entity::NAME                  => $name,
-                        Merchant\Entity::PARTNER_TYPE => $type,
-                    ]);
-            }
-
-            if (in_array($name, Merchant\Constants::$partnerTypes, true) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_NAME,
-                    Entity::NAME,
-                    [
-                        Entity::NAME                  => $name,
-                        Merchant\Entity::PARTNER_TYPE => $type,
-                    ]);
-            }
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED,
+                null,
+                [
+                    Entity::NAME                  => $name,
+                    Merchant\Entity::PARTNER_TYPE => $type,
+                ]);
         }
-
     }
 
     /**
@@ -205,14 +189,50 @@ class Validator extends Base\Validator
         switch ($input[Entity::TYPE])
         {
             case Type::PRODUCT:
+            {
                 if (empty($submissions) === true)
                 {
                     throw new Exception\BadRequestValidationFailureException(self::MISSING_SUBMISSIONS);
                 }
-                break;
 
-            default:
                 break;
+            }
+            case Type::PARTNER:
+            {
+                if (empty($submissions) === true)
+                {
+                    throw new Exception\BadRequestValidationFailureException(self::MISSING_SUBMISSIONS);
+                }
+
+                if (empty($submissions[Merchant\Entity::PARTNER_TYPE]) === true)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_REQUIRED,
+                        Merchant\Entity::PARTNER_TYPE,
+                        [
+                            Constants::SUBMISSIONS => $submissions,
+                        ]);
+                }
+
+                $type = $submissions[Merchant\Entity::PARTNER_TYPE];
+
+                if (in_array($type, Merchant\Constants::$partnerTypes, true) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_INVALID,
+                        Merchant\Entity::PARTNER_TYPE,
+                        [
+                            Constants::SUBMISSIONS        => $submissions,
+                            Merchant\Entity::PARTNER_TYPE => $type,
+                        ]);
+                }
+
+                break;
+            }
+            default:
+            {
+                break;
+            }
         }
     }
 
