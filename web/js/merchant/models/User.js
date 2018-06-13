@@ -121,6 +121,10 @@ export default class User {
     }
   }
 
+  get isReusableLinksShown() {
+    return false;
+  }
+
   get enabledFeatures() {
     let pluckKey = 'feature';
 

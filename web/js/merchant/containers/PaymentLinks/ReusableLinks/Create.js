@@ -92,14 +92,14 @@ export default [
       },
       {
         name: 'expire_by',
-        placeholder: '12:00AM',
+        placeholder: '11:59PM',
         _when: form => !!form.state._name[form.state.activeTab].expire_by_date,
         size: 'half',
         _disabledWhen: form =>
           form.state._name[form.state.activeTab].hasNoExpiry === '1',
         addonAfter: <i class="i i-time" />,
 
-        // defaultValue: moment().startOf().unix(), // Epoch of timestamp today start. Don't set. Has to be in sync with Date(expire_by_date).
+        // defaultValue: moment().endOf().unix(), // Epoch of timestamp today end. Don't set. Has to be in sync with Date(expire_by_date).
         _cmp: Input.TimePicker,
         readOnly: true,
       },

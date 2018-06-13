@@ -282,7 +282,8 @@ export function dateCalculator(date, curSelectedTS, onCalculation) {
         curSelectedTS.valueOf() - curSelectedTS.startOf('day').valueOf(); // Offset since start of day
     }
 
-    newSelectedTS = date.startOf('day').valueOf() + offsetTime;
+    // TODO: Currently, it's calculating 'endOf'. For ToCalendar, it must be startOf. Make configurable.
+    newSelectedTS = date.endOf('day').valueOf() + offsetTime;
   } else {
     newSelectedTS = null;
   }

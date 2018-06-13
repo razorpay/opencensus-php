@@ -58,8 +58,8 @@ export default [
       {
         name: 'contact',
         type: 'tel',
-        placeholder: 'Mobile (10 digits)',
-        size: 'half_small',
+        placeholder: 'Mobile',
+        size: 'half_big',
         validator: val => {
           if (!isPhone(val)) {
             return 'Invalid phone';
@@ -86,7 +86,7 @@ export default [
       {
         name: 'sms_notify',
         fieldLabel: 'via SMS',
-        size: 'half_small',
+        size: 'half_big',
         _cmp: Input.Check,
         _autoRenderImpure: true,
         onChange: e => {
@@ -113,6 +113,7 @@ export default [
     name: 'receipt',
     label: 'Receipt No.',
     validator: maxLength(40),
+    size: 'half_big',
   },
   {
     _name: 'hasNoExpiry',
@@ -137,7 +138,7 @@ export default [
       {
         _name: 'expire_by_date',
         placeholder: '15-04-2018',
-        size: 'half',
+        size: 'half_big',
         _disabledWhen: form =>
           form.state._name[form.state.activeTab].hasNoExpiry === '1',
         addonAfter: <i class="i i-date-range" />,
@@ -151,13 +152,13 @@ export default [
       {
         name: 'expire_by',
         placeholder: '11:59PM',
-        size: 'half',
+        size: 'half_big',
         _when: form => !!form.state._name[form.state.activeTab].expire_by_date,
         _disabledWhen: form =>
           form.state._name[form.state.activeTab].hasNoExpiry === '1',
         addonAfter: <i class="i i-time" />,
 
-        // defaultValue: moment().startOf().unix(), // Epoch of timestamp today start. Don't set. Has to be in sync with Date(expire_by_date).
+        // defaultValue: moment().endOf().unix(), // Epoch of timestamp today end. Don't set. Has to be in sync with Date(expire_by_date).
         _cmp: Input.TimePicker,
         readOnly: true,
       },

@@ -52,7 +52,7 @@ export default class PaymentLinksContainer extends Component {
   render() {
     const { user } = this.props;
 
-    const showPaymentLinksV2 = this.props.user.isPaymentLinksV2Enabled;
+    const isReusableLinksShown = this.props.user.isReusableLinksShown;
 
     return (
       <tabbed-container>
@@ -80,7 +80,7 @@ export default class PaymentLinksContainer extends Component {
           <NavLink exact to="/paymentlinks">
             Payment Links
           </NavLink>
-          {showPaymentLinksV2 && (
+          {isReusableLinksShown && (
             <NavLink exact to="/paymentlinks/reusable">
               Reusable Links
             </NavLink>
@@ -109,7 +109,7 @@ export default class PaymentLinksContainer extends Component {
               component={BatchUploadList}
             />
 
-            {showPaymentLinksV2 && (
+            {isReusableLinksShown && (
               <Route
                 path="/paymentlinks/reusable"
                 component={ReusableLinksList}

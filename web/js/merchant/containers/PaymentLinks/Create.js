@@ -38,6 +38,7 @@ const FORM_TABS = [
     content: [...PaymentLinksFormFields],
     onCreate: createPaymentLink,
   },
+  /*
   {
     title: 'Reusable Link',
     desc: 'Accept payments multiple times on a single payment link.',
@@ -45,6 +46,7 @@ const FORM_TABS = [
     content: [...ReusableLinksFormFields],
     onCreate: createReusableLink,
   },
+*/
 ];
 
 /* Order as per FORM_TABS */
@@ -525,10 +527,10 @@ export default class CreateNewContainer extends React.Component {
       this.props.user.isPaymentLinksV2Enabled &&
       activeTab == REUSABLE_PAYMENT_LINK;
 
-    if (showEarlyAccessForm) {
-      formFields = <EarlyAccessRPL />;
-    } else {
+    if (activeTab == PAYMENT_LINK) {
       formFields = this.getFormFields();
+    } else if (showEarlyAccessForm) {
+      formFields = <EarlyAccessRPL />;
     }
 
     const content = (
@@ -572,12 +574,14 @@ class CreateWizard extends React.Component {
 
     return (
       <div class="PaymentLinks--Create Wizard">
-        <ModalAsideNav
-          title="Create Link"
-          tabs={FORM_TABS}
-          tabClickHandler={this.props.changeTab}
-          activeTab={activeTab}
-        />
+        {false && (
+          <ModalAsideNav
+            title="Create Link"
+            tabs={FORM_TABS}
+            tabClickHandler={this.props.changeTab}
+            activeTab={activeTab}
+          />
+        )}
 
         <main
           class={classList(
@@ -587,7 +591,7 @@ class CreateWizard extends React.Component {
         >
           {/* ACTIVE TAB TITLE */}
           <main-title class="main-title">
-            {FORM_TABS[activeTab].title}
+            CREATE {FORM_TABS[activeTab].title}
           </main-title>
 
           {/* ALERTS */}

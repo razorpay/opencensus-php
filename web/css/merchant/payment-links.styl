@@ -1,4 +1,4 @@
-$max-width = 820px
+$max-width = 640px
 
 .StandAloneContainer
   position: relative
@@ -11,7 +11,7 @@ $max-width = 820px
 /* PaymentLinks wizard screen */
 .PaymentLinks--Create
   max-width: $max-width
-  height: 80vh
+  height: 85vh
   min-height: 560px
   max-height: 640px
   background: #fafafa
@@ -89,7 +89,10 @@ $max-width = 820px
     max-width: $max-width
     min-height: 560px
     max-height: 640px
-    height: 80vh
+    height: 90vh
+
+    .PaymentLinks--Create
+      height: 90vh
 
 // For linked-account activation form
 .Modal-mask--Account-Activation
@@ -99,14 +102,18 @@ $max-width = 820px
     max-height: 480px
 
 
-/* Small screens for Activation wizard */
+/* Small screens for Payment Links Modal */
 @media (max-width: 972px)
+  .PaymentLinks--Create
+    .Input-elWrapper
+      width: 300px !important
+
   .StandAloneContainer .PaymentLinks--Create
     .Input-content
-      margin: 0 0 16px
+      margin: 0
 
     .Input-label
-      margin-bottom: 8px
+      margin-bottom: 12px
       text-align: left
       float: unset
 
@@ -131,9 +138,10 @@ $max-width = 820px
       margin: 0 0 16px
 
     .Input-label
-      margin-bottom: 8px
+      margin-bottom: 12px
       text-align: left
       float: unset
+
 
 /*
 TODO: Style written in consideration that instead of modal, standalone page would open for activation wizard on small screen
