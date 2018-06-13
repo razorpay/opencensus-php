@@ -33,7 +33,7 @@ const options = {
 };
 
 export default class BatchUpload extends Component {
-  // static permission = 'admin_batch_create';
+  static permission = 'admin_batch_create';
   static title = 'Batch Upload';
 
   //populate emandate details first
