@@ -98,7 +98,8 @@ class Service extends Base\Service
         {
             $invitationAcceptInput = [
                 'user_id' => $user['id'],
-                'action' => 'accept'
+                'action' => 'accept',
+                'email'  => $user['email'],
             ];
 
             (new Invitation\Service)->action($invitation['id'], $invitationAcceptInput);

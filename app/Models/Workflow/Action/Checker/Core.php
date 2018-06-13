@@ -148,6 +148,12 @@ class Core extends Base\Core
 
         $checker->build($input);
 
+        $checker->admin()->associate($admin);
+
+        $checker->action()->associate($action);
+
+        $checker->step()->associate($step);
+
         $this->repo->transactionOnLiveAndTest(function() use ($action, $checker, $admin, $step)
         {
             $this->repo->saveOrFail($checker);

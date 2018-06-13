@@ -1460,4 +1460,34 @@ class BankTransferTest extends TestCase
         $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
     }
+
+    public function testUpdateReceiverData()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $receiverId = $payment['receiver_id'];
+
+        $this->fixtures->payment->edit($payment['id'], ['receiver_id' => null, 'receiver_type' => null]);
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent(
+            [
+                'url'    => '/payment/bank_transfer_backfill',
+                'method' => 'post',
+            ]
+        );
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['receiver_id'], $receiverId);
+
+        $this->assertEquals($payment['receiver_type'], 'bank_account');
+    }
 }

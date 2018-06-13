@@ -74,6 +74,7 @@ class Entity
     const FILE_HANDLER          = 'file_handler';
     const DISPUTE_FILE          = 'dispute_file';
     const SUBSCRIPTION          = 'subscription';
+    const ENTITY_OFFER          = 'entity_offer';
     const GATEWAY_TOKEN         = 'gateway_token';
     const BANK_TRANSFER         = 'bank_transfer';
     const SCHEDULE_TASK         = 'schedule_task';
@@ -176,6 +177,7 @@ class Entity
     const WALLET_OPENWALLET      = 'wallet_openwallet';
     const WALLET_AIRTELMONEY     = 'wallet_airtelmoney';
     const WALLET_MPESA           = 'wallet_mpesa';
+    const WALLET_AMAZONPAY       = 'wallet_amazonpay';
 
     // Tax and Tax Groups
     const TAX                   = 'tax';
@@ -256,6 +258,7 @@ class Entity
         self::INVITATION            => \RZP\Models\Invitation::class,
         self::FILE_STORE            => \RZP\Models\FileStore::class,
         self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
+        self::ENTITY_OFFER          => \RZP\Models\Offer\EntityOffer::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::SUBSCRIPTION          => \RZP\Models\Plan\Subscription::class,
         self::DISPUTE_FILE          => \RZP\Models\Dispute\File::class,
@@ -332,6 +335,7 @@ class Entity
         self::WALLET_FREECHARGE      => \RZP\Gateway\Wallet\Freecharge::class,
         self::WALLET_AIRTELMONEY     => \RZP\Gateway\Wallet\Airtelmoney::class,
         self::WALLET_MPESA           => \RZP\Gateway\Wallet\Mpesa::class,
+        self::WALLET_AMAZONPAY       => \RZP\Gateway\Wallet\Amazonpay::class,
 
         // heimdall
         self::ORG                   => \RZP\Models\Admin\Org::class,
@@ -388,8 +392,9 @@ class Entity
         self::WALLET_OLAMONEY        => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_AMAZONPAY       => \RZP\Gateway\Wallet\Base::class,
 
-        self::NODAL_STATEMENT       => \RZP\Models\Nodal\Statement::class,
+        self::NODAL_STATEMENT        => \RZP\Models\Nodal\Statement::class,
     ];
 
     protected static $externalServiceClass = [
