@@ -1757,3 +1757,20 @@ UPDATE action_state
 UPDATE batches
     SET processed_count = success_count + failure_count
     WHERE processed_count IS NULL AND processing = 0;
+
+# Fills entity_offer (pivot table for order-offer relations) with data from existing orders
+INSERT INTO `entity_offer`
+    (`entity_id`,`entity_type`,`offer_id`,`created_at`,`updated_at`)
+    VALUES
+    ('7bQiSMEa4V9cqK','order','7b3KwTbcVZhfxt',1491466676,1491466676),
+    ...
+    ('AKRam7TzPy5Z3A','order','9okQnoDyccqfut',1528369240,1528369240);
+
+# All existing offers are chosen by merchant, and forced to be applied on payment
+UPDATE orders
+  SET force_offer=1
+  WHERE id in (
+    '7bQiSMEa4V9cqK',
+    ...
+    'AKRam7TzPy5Z3A'
+  );

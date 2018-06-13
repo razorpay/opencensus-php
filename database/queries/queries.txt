@@ -3622,3 +3622,8 @@ ALTER TABLE orders
 
 ALTER TABLE merchants
     ADD COLUMN partner_type VARCHAR(255) DEFAULT NULL AFTER has_key_access;
+
+# Corrects unique index on entity_offer
+ALTER TABLE entity_offer
+  DROP INDEX entity_offer_entity_id_entity_type_unique,
+  ADD UNIQUE INDEX entity_offer_entity_id_entity_type_offer_id_unique (entity_id, entity_type, offer_id);
