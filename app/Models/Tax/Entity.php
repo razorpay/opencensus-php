@@ -87,7 +87,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NAME);
     }
 
-    public function getRateType(): string
+    public function getRateType()
     {
         return $this->getAttribute(self::RATE_TYPE);
     }
