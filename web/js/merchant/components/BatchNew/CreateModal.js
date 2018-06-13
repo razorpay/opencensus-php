@@ -34,7 +34,7 @@ export default class BatchCreateModal extends Component {
 
     return (
       <div class="modal-body">
-        <div id="ansh" onClick={this.props.trackSampleInterpretation}>
+        <div onClick={this.props.trackSampleInterpretation}>
           <p>This is how we are interpreting your data.</p>
           <TableSlider
             title="Batch Entries"
