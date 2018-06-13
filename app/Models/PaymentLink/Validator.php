@@ -39,7 +39,7 @@ class Validator extends Base\Validator
         'emails'     => 'required_without:contacts|filled|array|size:1',
         'emails.*'   => 'required|email|max:255',
         'contacts'   => 'required_without:emails|filled|array|size:1',
-        'contacts.*' => 'required|numeric|digits_between:8,11',
+        'contacts.*' => 'required|contact_syntax|digits_between:8,11',
     ];
 
     public function validateExpireBy($attribute, $value)

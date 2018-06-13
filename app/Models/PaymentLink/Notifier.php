@@ -18,8 +18,6 @@ class Notifier extends Base\Core
     {
         parent::__construct();
 
-        $this->mode  = $this->app['rzp.mode'];
-
         $this->raven = $this->app['raven'];
     }
 
@@ -71,7 +69,7 @@ class Notifier extends Base\Core
         {
             $this->trace->traceException(
                 $ex,
-                Logger::INFO,
+                null,
                 TraceCode::PAYMENT_LINK_NOTIFY_BY_EMAIL_FAILURE,
                 [
                     'id'    => $paymentLink->getId(),
@@ -95,7 +93,7 @@ class Notifier extends Base\Core
         {
             $response = $this->raven->sendSms($request, false);
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $this->trace->traceException(
                 $ex,
@@ -129,13 +127,6 @@ class Notifier extends Base\Core
                 'amount'           => $paymentLink->getAmount() / 100,
             ]
         ];
-
-        $this->trace->info(
-            TraceCode::PAYMENT_LINK_RAVEN_REQUEST,
-            [
-                'id'      => $paymentLink->getId(),
-                'request' => $request,
-            ]);
 
         return $request;
     }
