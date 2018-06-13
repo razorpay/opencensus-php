@@ -26,6 +26,12 @@ trait BharatQrTrait
         {
             $this->alertUnexpectedBharatQrPayment($bankReference, $row);
 
+            //
+            // We don't want to fail entire reconciliation for
+            // bharat qr payments. There can be missed notification
+            //
+            $this->setFailUnprocessedRow(false);
+
             return null;
         }
 
