@@ -38,16 +38,6 @@
 @else
   <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
   <script async="true" src="https://static.helpninja.com/helpninja.js" id="oc_script" convid="-Kvx6dgy972KCFPlQR0s"></script>
-  <script type="text/javascript">
-    _linkedin_data_partner_id = "155571";
-  </script>
-  <script type="text/javascript">
-    (function(){var s = document.getElementsByTagName("script")[0];
-      var b = document.createElement("script");
-      b.type = "text/javascript";b.async = true;
-      b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
-      s.parentNode.insertBefore(b, s);})();
-  </script>
 @endif
 
 @include('partials/footer')
