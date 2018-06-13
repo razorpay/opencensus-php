@@ -2,12 +2,14 @@ import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 
 import DataTable from 'rzp/ui/Table/DataTable';
+import StatsCard from 'rzp/ui/StatsCard';
 import { getTime } from 'rzp/ui/item';
 import {
   submerchant as name,
   submerchantId as id,
   email as emailColumn,
 } from 'rzp/ui/item/pair';
+import { humanReadableIndianCurrency } from 'rzp/utils/numerals';
 
 import ListFilter from './ListFilter';
 
@@ -42,21 +44,44 @@ export default class SubMerchantsList extends Component {
   search = () => {};
   render() {
     return (
-      <div class="content-wrapper">
-        <ListFilter
-          form="SubmerchantListFilter"
-          type="link"
-          count={this.state.count}
-          onSubmit={this.search}
-        />
-        <DataTable
-          title="Sub Merchants"
-          count={this.state.count}
-          skip={this.state.skip}
-          paginate={this.paginate}
-          items={sampleResponse}
-          columns={[name, id, email, addedOn, activationStatus, switchMerchant]}
-        />
+      <div class="sub-merchants-list">
+        <div class="content-wrapper sub-merchants-list--stats">
+          <StatsCard
+            title="Total transaction volume"
+            value={humanReadableIndianCurrency(603000000)}
+          />
+          <StatsCard
+            title="Number of Payments"
+            value={humanReadableIndianCurrency(20630)}
+          />
+          <StatsCard
+            title="My Earnings"
+            value={humanReadableIndianCurrency(560000)}
+          />
+        </div>
+        <div class="content-wrapper">
+          <ListFilter
+            form="SubmerchantListFilter"
+            type="link"
+            count={this.state.count}
+            onSubmit={this.search}
+          />
+          <DataTable
+            title="Sub Merchants"
+            count={this.state.count}
+            skip={this.state.skip}
+            paginate={this.paginate}
+            items={sampleResponse}
+            columns={[
+              name,
+              id,
+              email,
+              addedOn,
+              activationStatus,
+              switchMerchant,
+            ]}
+          />
+        </div>
       </div>
     );
   }
