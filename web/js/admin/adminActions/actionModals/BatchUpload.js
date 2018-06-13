@@ -28,20 +28,8 @@ const options = {
   },
 };
 
-//TODO: add options for other types
-const extraRequestOptions = {
-  payment_link: {
-    draft: 0,
-    sms_notify: 1,
-    email_notify: 1,
-    'config[sms_notify]': 1,
-    'config[email_notify]': 1,
-  },
-};
-
 export default class BatchUpload extends Component {
-  //TODO: resolve permission issue first
-  // static permission = '';
+  static permission = 'admin_batch_create';
   static title = 'Batch Upload';
 
   //populate emandate details first
@@ -61,18 +49,14 @@ export default class BatchUpload extends Component {
     const merchantId = body.merchant_id;
     let form = {
       file: document.querySelector('[name=file]').files[0],
-      //conditionally add extra options
-      ...(extraRequestOptions[body.type] && extraRequestOptions[body.type]),
     };
 
     if (!merchantId) {
-      notifyError('Please enter the merchant id');
-      return;
+      return notifyError('Please enter the merchant id');
     }
 
     if (!form.file) {
-      notifyError('Please select a file');
-      return;
+      return notifyError('Please select a file');
     }
 
     delete body.merchant_id;
@@ -121,6 +105,8 @@ export default class BatchUpload extends Component {
           </SelectField>
         )}
 
+        {/* conditionally load extra fields according to batch types */}
+
         {['reconciliation', 'emandate', 'virtual_bank_account'].indexOf(type) <
         0 ? (
           <Field label="File Name" name="name" />
@@ -130,7 +116,7 @@ export default class BatchUpload extends Component {
           <Field label="Gateway" name="gateway" />
         ) : null}
 
-        {['reconciliation'].indexOf(type) > -1 ? (
+        {['reconciliation', 'payment_link'].indexOf(type) > -1 ? (
           <TextAreaField label="Config" name="config" />
         ) : null}
 
