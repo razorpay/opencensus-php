@@ -3627,3 +3627,17 @@ ALTER TABLE merchants
 ALTER TABLE entity_offer
   DROP INDEX entity_offer_entity_id_entity_type_unique,
   ADD UNIQUE INDEX entity_offer_entity_id_entity_type_offer_id_unique (entity_id, entity_type, offer_id);
+
+# Adds payment_link_id column and few more blank columns of various types for future usage
+# Creates index on payment_link_id
+ALTER TABLE payments
+    ADD COLUMN payment_link_id CHAR(14) DEFAULT NULL AFTER transfer_id,
+    ADD COLUMN reference10 INT(10) UNSIGNED DEFAULT NULL AFTER acknowledged_at,
+    ADD COLUMN reference11 INT(10) UNSIGNED DEFAULT NULL AFTER reference10,
+    ADD COLUMN reference12 BIGINT(20) UNSIGNED DEFAULT NULL AFTER reference11,
+    ADD COLUMN reference13 CHAR(14) DEFAULT NULL AFTER reference12,
+    ADD COLUMN reference14 CHAR(14) DEFAULT NULL AFTER reference13,
+    ADD COLUMN reference15 VARCHAR(255) DEFAULT NULL AFTER reference14,
+    ADD COLUMN reference16 VARCHAR(255) DEFAULT NULL AFTER reference15,
+    ADD COLUMN reference17 TEXT AFTER reference16,
+    ADD INDEX payments_payment_link_id_index (payment_link_id);
