@@ -6,12 +6,13 @@ use Mail;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger;
-use RZP\Mail\PaymentLink\Notify as NotifyMail;
+use RZP\Mail\PaymentLink\PaymentRequest;
 
 class Notifier extends Base\Core
 {
-    protected $mode;
+    /**
+     * @var \RZP\Services\Raven
+     */
     protected $raven;
 
     public function __construct()
@@ -28,9 +29,8 @@ class Notifier extends Base\Core
      */
     public function notifyByEmailAndSms(Entity $paymentLink, array $input)
     {
-        $emails = $input['emails'] ?? [];
-
-        $contacts = $input['contacts'] ?? [];
+        $emails   = $input[Entity::EMAILS] ?? [];
+        $contacts = $input[Entity::CONTACTS] ?? [];
 
         foreach ($emails as $email)
         {
@@ -53,17 +53,16 @@ class Notifier extends Base\Core
         $this->trace->info(
             TraceCode::PAYMENT_LINK_EMAIL_REQUEST,
             [
-                'id'    => $paymentLink->getId(),
-                'email' => $email,
+                Entity::ID    => $paymentLink->getId(),
+                Entity::EMAIL => $email,
             ]);
 
-        $data = $paymentLink->toArrayPublic();
-
-        $notifyMail = new NotifyMail($data, $email);
+        $paymentLinkSerialized = $paymentLink->toArrayPublic();
+        $paymentRequestMail    = new PaymentRequest($paymentLinkSerialized, $email);
 
         try
         {
-            Mail::send($notifyMail);
+            Mail::send($paymentRequestMail);
         }
         catch (\Throwable $ex)
         {
@@ -72,16 +71,16 @@ class Notifier extends Base\Core
                 null,
                 TraceCode::PAYMENT_LINK_NOTIFY_BY_EMAIL_FAILURE,
                 [
-                    'id'    => $paymentLink->getId(),
-                    'email' => $email,
+                    Entity::ID    => $paymentLink->getId(),
+                    Entity::EMAIL => $email,
                 ]);
         }
     }
 
     /**
      * Sends sms notification to a customer with a payment link
-     * @param Entity $paymentLink
-     * @param string $contact
+     * @param  Entity $paymentLink
+     * @param  string $contact
      *
      * @return bool
      */
@@ -91,7 +90,7 @@ class Notifier extends Base\Core
 
         try
         {
-            $response = $this->raven->sendSms($request, false);
+            $this->raven->sendSms($request, false);
         }
         catch (\Throwable $ex)
         {
@@ -100,16 +99,16 @@ class Notifier extends Base\Core
                 null,
                 null,
                 [
-                    'contact' => $contact,
-                    'id'      => $paymentLink->getId(),
+                    Entity::ID      => $paymentLink->getId(),
+                    Entity::CONTACT => $contact,
                 ]);
         }
     }
 
     /**
      * Prepares raven request input
-     * @param Entity $paymentLink
-     * @param string $contact
+     * @param  Entity $paymentLink
+     * @param  string $contact
      *
      * @return array
      */
@@ -117,7 +116,7 @@ class Notifier extends Base\Core
     {
         $merchant = $paymentLink->merchant;
 
-        $request = [
+        return [
             'receiver' => $contact,
             'source'   => "api.{$this->mode}.payment_link",
             'template' => 'sms.payment_link',
@@ -127,7 +126,5 @@ class Notifier extends Base\Core
                 'amount'           => $paymentLink->getAmount() / 100,
             ]
         ];
-
-        return $request;
     }
 }

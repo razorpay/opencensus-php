@@ -13,6 +13,6 @@ class PaymentLinkController extends Controller
     {
         $this->service()->sendNotification($id, $this->input);
 
-        return ApiResponse::json(['success' => true]);
+        return ApiResponse::json([]);
     }
 }

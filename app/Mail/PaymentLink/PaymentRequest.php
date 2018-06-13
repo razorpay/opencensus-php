@@ -2,22 +2,25 @@
 
 namespace RZP\Mail\PaymentLink;
 
+use RZP\Constants\Entity;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
 
-class Notify extends Mailable
+/**
+ * Payment request mail for given payment link to be sent to customer/client
+ */
+class PaymentRequest extends Mailable
 {
-    protected $data;
+    protected $paymentLink;
     protected $toEmail;
-    protected $toName;
 
-    public function __construct(array $data, string $toEmail)
+    public function __construct(array $paymentLink, string $toEmail)
     {
         parent::__construct();
 
-        $this->data    = $data;
-        $this->toEmail = $toEmail;
+        $this->paymentLink = $paymentLink;
+        $this->toEmail     = $toEmail;
     }
 
     protected function addRecipients()
@@ -29,7 +32,7 @@ class Notify extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.paymentlink.notify');
+        $this->view('emails.payment_link.payment_request');
 
         return $this;
     }
@@ -37,8 +40,7 @@ class Notify extends Mailable
     protected function addSender()
     {
         $fromEmail = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
-
-        $fromName = Constants::HEADERS[Constants::NOREPLY];
+        $fromName  = Constants::HEADERS[Constants::NOREPLY];
 
         $this->from($fromEmail, $fromName);
 
@@ -57,7 +59,7 @@ class Notify extends Mailable
     protected function addMailData()
     {
         $mailData = [
-            'payment_link' => $this->data
+            Entity::PAYMENT_LINK => $this->paymentLink,
         ];
 
         $this->with($mailData);
@@ -71,7 +73,7 @@ class Notify extends Mailable
         {
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader(MailTags::HEADER, MailTags::PAYMENT_LINK_NOTIFY);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::PAYMENT_LINK_PAYMENT_REQUEST);
         });
 
         return $this;

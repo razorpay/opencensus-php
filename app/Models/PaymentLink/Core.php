@@ -95,8 +95,9 @@ class Core extends Base\Core
 
     /**
      * Sends email/sms notifications to a customer with a payment link
-     * @param Entity $paymentLink
-     * @param array  $input
+     *
+     * @param  Entity $paymentLink
+     * @param  array  $input
      *
      * @return array
      */
@@ -105,8 +106,8 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::PAYMENT_LINK_SEND_NOTIFICATION,
             [
-                'payment_link_id' => $paymentLink->getId(),
-                'input'           => $input,
+                Entity::ID    => $paymentLink->getId(),
+                Entity::INPUT => $input,
             ]);
 
         $paymentLink->getValidator()->validateSendNotification($input);

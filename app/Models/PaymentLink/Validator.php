@@ -61,11 +61,9 @@ class Validator extends Base\Validator
 
     public function validateSendNotification(array $input)
     {
-        if ($this->entity->isInActive() === true)
+        if ($this->entity->isInactive() === true)
         {
-            $message = 'Payment link is not active.';
-
-            throw new BadRequestValidationFailureException($message);
+            throw new BadRequestValidationFailureException('Payment link is not active.');
         }
 
         $this->validateInput('sendNotification', $input);
