@@ -129,8 +129,6 @@ class GatewayCombinedFileTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray('RATN');
 
-        $payment['amount'] = 10000012;
-
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $transaction = $this->getLastEntity('transaction', true);

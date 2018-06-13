@@ -137,14 +137,6 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
-
-        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-
-        // Amount received in verifyCallback is already formatted with , & . like 1,391.80
-        $paymentAmount = (float) str_replace(',', '', $verify->verifyResponseContent[ResponseFields::AMOUNT]);
-        $actualAmount = number_format($paymentAmount, 2, '.', '');
-
-        $this->assertAmount($expectedAmount, $actualAmount);
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)
