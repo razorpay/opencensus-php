@@ -210,8 +210,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'total_payment_links_count' => 2,
-                'failed_payment_link_ids'   => [],
+                'total_count' => 2,
+                'failed_ids'  => [],
             ],
         ],
     ],

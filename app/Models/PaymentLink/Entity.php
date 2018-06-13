@@ -164,7 +164,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EXPIRE_BY);
     }
 
-    public function getStatus()
+    public function getStatus(): string
     {
         return $this->getAttribute(self::STATUS);
     }
