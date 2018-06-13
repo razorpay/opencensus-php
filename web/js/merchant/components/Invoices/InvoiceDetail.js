@@ -577,6 +577,7 @@ class EditNotesField extends React.Component {
     return (
       <React.Fragment>
         <Input.EditablePairsList
+          name="notes"
           saveAndUpdate={this.saveAndUpdate}
           defaultValue={this.state.notes}
         />

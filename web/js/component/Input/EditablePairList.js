@@ -13,20 +13,34 @@ export default class EditablePairsList extends React.PureComponent {
     confirm: PropTypes.func,
   };
 
-  state = {
-    maxAllowedPairs: this.props.maxAllowedPairs || 10,
-    pairs: this.props.defaultValue || [],
-  };
+  state = this.initializeState();
+
+  initializeState() {
+    const initialPairs = this.props.defaultValue || [];
+
+    const dummyTS = new Date().getTime();
+
+    const initialKeys = initialPairs.map(p => {
+      return dummyTS + 1;
+    });
+
+    return {
+      maxAllowedPairs: this.props.maxAllowedPairs || 10,
+      pairs: initialPairs,
+      keys: initialKeys,
+    };
+  }
 
   onAddNew = e => {
     const freshPairs = [...this.state.pairs];
-    freshPairs.push({
-      key: '',
-      value: '',
-    });
+    const freshKeys = [...this.state.keys];
+
+    freshPairs.push({});
+    freshKeys.push(freshKeys[freshKeys.length - 1] + 1);
 
     this.setState({
       pairs: freshPairs,
+      keys: freshKeys,
     });
 
     setTimeout(
@@ -40,36 +54,40 @@ export default class EditablePairsList extends React.PureComponent {
     );
   };
 
-  removePair = pairId => {
+  removePair = pairIdx => {
     let freshPairs = [...this.state.pairs];
-    freshPairs.splice(pairId, 1);
+    let freshKeys = [...this.state.keys];
+
+    freshPairs.splice(pairIdx, 1);
+    freshKeys.splice(pairIdx, 1);
 
     this.setState({
       pairs: freshPairs,
+      keys: freshKeys,
     });
 
     return freshPairs;
   };
 
   /* Handle click on Delete */
-  deletePair = pairId => {
+  deletePair = pairIdx => {
     this.context.confirm({
       header: 'Delete Note?',
       message: 'Are you sure you want to delete this note?',
       affirmativeLabel: 'Delete',
       affirmativePendingLabel: 'Deleting',
       action: () => {
-        const freshPairs = this.removePair(pairId);
+        const freshPairs = this.removePair(pairIdx);
 
         return this.props.saveAndUpdate(freshPairs);
       },
     });
   };
 
-  handleSave = (pairId, pair) => {
+  handleSave = (pairIdx, pair) => {
     // Expects parent is saving pairs in same form as this.state.pairs, unlike in 'isBunchSave = true' mode.
     const freshPairs = [...this.state.pairs];
-    freshPairs[pairId] = pair;
+    freshPairs[pairIdx] = pair;
 
     return this.props.saveAndUpdate(freshPairs).then(resp => {
       if (resp.data) {
@@ -96,7 +114,7 @@ export default class EditablePairsList extends React.PureComponent {
             {!!this.state.pairs.length &&
               this.state.pairs.map((pair, idx) => (
                 <PairDecider
-                  key={idx}
+                  key={this.state.keys[idx]}
                   name={this.props.name}
                   idx={idx}
                   defaultValue={this.state.pairs[idx]}
@@ -142,79 +160,31 @@ export default class EditablePairsList extends React.PureComponent {
 class PairDecider extends React.Component {
   // If Pair defaultValue, then show as PairView
   state = {
-    pair: this.props.defaultValue,
     isPairInputEditable: !(
       this.props.defaultValue['key'] || this.props.defaultValue['value']
     ),
   };
 
-  /*
-   * Clicked on Cancel Pair
-   * Set state.notes[idx] if props.notes[idx] exists, otherwise simple delete
-   * */
   toggleEditMode = e => {
     const isPairInputEditable = !this.state.isPairInputEditable;
 
     this.setState({
       isPairInputEditable,
     });
-
-    const pairId = this.props.idx;
-
-    if (!isPairInputEditable) {
-      const defaultValue = this.props.defaultValue;
-
-      if (!defaultValue.keys || !defaultValue.value) {
-        this.props.removePair(pairId);
-      } else {
-        this.setState({
-          pair: { ...this.props.originalValue },
-        });
-      }
-    }
   };
 
-  deletePair = e => {
-    const pairId = pairId;
-    this.props.deletePair(pairId);
-  };
-
-  handleSave = e => {
-    const pairId = this.props.idx;
-    const promise = this.props.handleSave(pairId, this.state.pair);
+  handleSave = pair => {
+    const promise = this.props.handleSave(this.props.idx, pair);
 
     if (promise) {
       promise.then(resp => {
         if (resp.data) {
-          this.setState({
-            isPairInputEditable: false,
-          });
+          this.toggleEditMode();
         }
       });
     }
 
     return promise;
-  };
-
-  updatePair = (e, field) => {
-    const pairId = e.currentTarget.dataset.id;
-
-    if (pairId > -1) {
-      const pair = { ...this.state.pair };
-
-      pair[field] = e.target.value;
-
-      this.setState({
-        pair,
-      });
-    }
-  };
-
-  updateKey = e => {
-    this.updatePair(e, 'key');
-  };
-  updateValue = e => {
-    this.updatePair(e, 'value');
   };
 
   render() {
@@ -224,25 +194,28 @@ class PairDecider extends React.Component {
       <InputEditablePair
         name={name}
         idx={idx}
-        pair={this.state.pair}
+        defaultValue={this.props.defaultValue}
         updateKey={this.updateKey}
         updateValue={this.updateValue}
-        cancelEditMode={this.toggleEditMode}
+        toggleEditMode={this.toggleEditMode}
+        removePair={this.props.removePair}
         handleSave={this.handleSave}
       />
     ) : (
       <PairView
         idx={idx}
-        pair={this.state.pair}
-        deletePair={this.deletePair}
-        makeEditMode={this.toggleEditMode}
+        pair={this.props.defaultValue}
+        deletePair={this.props.deletePair}
+        makeEditable={this.toggleEditMode}
       />
     );
   }
 }
 
 class InputEditablePair extends React.Component {
-  state = {};
+  state = {
+    pair: this.props.defaultValue,
+  };
 
   onFocusTitle = e => {
     this.setState({
@@ -268,8 +241,41 @@ class InputEditablePair extends React.Component {
     });
   };
 
+  handleCancelClick = e => {
+    const defaultValue = this.props.defaultValue;
+
+    if (defaultValue.key || defaultValue.value) {
+      this.setState({
+        pair: defaultValue, // Setting to initial default value
+      });
+
+      this.props.toggleEditMode();
+    } else {
+      this.props.removePair(this.props.idx);
+      // No need to toggle in this case, because it won't be rendered in next cycle as it's getting removed
+    }
+  };
+
+  updatePair = (e, field) => {
+    const freshPair = { ...this.state.pair };
+
+    freshPair[field] = e.target.value;
+
+    this.setState({
+      pair: freshPair,
+    });
+  };
+
+  updateKey = e => {
+    this.updatePair(e, 'key');
+  };
+
+  updateValue = e => {
+    this.updatePair(e, 'value');
+  };
+
   render() {
-    const { name, idx, pair, updateKey, updateValue, handleSave } = this.props;
+    const { name, idx, handleSave } = this.props;
 
     return (
       <div class="pair--editable">
@@ -285,20 +291,11 @@ class InputEditablePair extends React.Component {
               name={`${name}[${idx}][key]`}
               placeholder="Title (key)"
               data-id={idx}
-              onChange={updateKey}
-              value={pair.key}
+              onChange={this.updateKey}
+              value={this.state.pair.key}
               onBlur={this.onBlurTitle}
               onFocus={this.onFocusTitle}
             />
-            {!handleSave && (
-              <span
-                class="Input-addons Input-addons--after Input-addons--clickable"
-                data-id={idx}
-                onClick={this.props.removePair}
-              >
-                <i class="i i-close" />
-              </span>
-            )}
           </div>
 
           <div class="Input-pair-separator" />
@@ -308,8 +305,8 @@ class InputEditablePair extends React.Component {
               name={`${name}[${idx}][value]`}
               placeholder="Description (value)"
               data-id={idx}
-              onChange={updateValue}
-              value={pair.value}
+              onChange={this.updateValue}
+              value={this.state.pair.value}
               onBlur={this.onBlurDesc}
               onFocus={this.onFocusDesc}
             />
@@ -318,17 +315,17 @@ class InputEditablePair extends React.Component {
         <div style={{ textAlign: 'right', marginBottom: 12 }}>
           <Button.Transparent
             class="Button--Link"
-            onClick={this.props.cancelEditMode}
+            onClick={this.handleCancelClick}
           >
             Cancel
           </Button.Transparent>
 
           <AsyncBtn.Primary
             class="Button--small"
-            disabled={!pair['key'] && !pair['value']}
+            disabled={!this.state.pair['key'] && !this.state.pair['value']}
             data-id={idx}
             style={{ marginRight: 0, marginLeft: 16 }}
-            onClick={handleSave}
+            onClick={() => handleSave(this.state.pair)}
             pendingState="Saving"
           >
             Save
@@ -343,18 +340,18 @@ class PairView extends React.Component {
   state = {};
 
   render() {
-    const { name, idx, pair, makeEditMode, deletePair } = this.props;
+    const { name, idx, pair, makeEditable, deletePair } = this.props;
 
     return (
       <div class="pair--view">
         <div class="title">{pair.key}</div>
         <div class="description">{pair.value}</div>
 
-        {makeEditMode && (
+        {makeEditable && (
           <Button.Transparent
             type="button"
             class="Btn--Link"
-            onClick={makeEditMode}
+            onClick={makeEditable}
           >
             Edit
           </Button.Transparent>
@@ -363,7 +360,7 @@ class PairView extends React.Component {
           <Button.Transparent
             type="button"
             class="Btn--Link Button--danger"
-            onClick={deletePair}
+            onClick={() => deletePair(idx)}
           >
             Delete
           </Button.Transparent>
