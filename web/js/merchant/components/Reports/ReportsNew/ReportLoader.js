@@ -52,7 +52,7 @@ const ReportProgress = ({
 }) => {
   return (
     <div class={`report-progress ${isSelected ? 'current' : ''}`}>
-      Generating {name} for {timePeriod} ...
+      Generating {name} for {timePeriod}
       <div>
         <div class={`bar-loader ${status}`} />
         <span class="report-close" onClick={() => cancelDownload(id)}>
