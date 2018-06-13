@@ -32,12 +32,12 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION       = 'description';
     const NOTES             = 'notes';
 
-    const SHORT_MODE_LIVE = 'l';
-    const SHORT_MODE_TEST = 't';
+    // Additional input keys (TODO: Move this to Base\Entity if possible)
+    const INPUT             = 'input';
 
-    protected static $sign = 'pl';
+    protected static $sign        = 'pl';
 
-    protected $entity = 'payment_link';
+    protected $entity             = 'payment_link';
 
     protected $generateIdOnCreate = true;
 
@@ -162,26 +162,15 @@ class Entity extends Base\PublicEntity
     // -------------------------------------- End Relations ---------------------------
 
     /**
-     * Payment link long url is of the following format:
-     * <base payment link url>/(t|l)/<Payment link public id>
-     * Here t or l is short form for test or live mode.
+     * Payment link's hosted view long url is of the following format -
+     * https://api.razorpay.com/v1/payment_links/v1/:id/view
      *
-     * @param string $paymentLinkBaseUrl
-     * @param string $mode
+     * @param  string $plHostedBaseUrl
      *
-     * @return string $paymentLinkLongUrl
+     * @return string
      */
-    public function getLongUrl(string $paymentLinkBaseUrl, string $mode): string
+    public function getHostedViewUrl(string $plHostedBaseUrl): string
     {
-        $shortMode = self::SHORT_MODE_TEST;
-
-        if ($mode === Mode::LIVE)
-        {
-            $shortMode = self::SHORT_MODE_LIVE;
-        }
-
-        $paymentLinkLongUrl = $paymentLinkBaseUrl . '/' . $shortMode . '/' . $this->getPublicId();
-
-        return $paymentLinkLongUrl;
+        return $plHostedBaseUrl . '/v1/payment_links/' . $this->getPublicId();
     }
 }
