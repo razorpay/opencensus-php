@@ -75,6 +75,7 @@ class Entity
     const FILE_HANDLER          = 'file_handler';
     const DISPUTE_FILE          = 'dispute_file';
     const SUBSCRIPTION          = 'subscription';
+    const ENTITY_OFFER          = 'entity_offer';
     const GATEWAY_TOKEN         = 'gateway_token';
     const BANK_TRANSFER         = 'bank_transfer';
     const SCHEDULE_TASK         = 'schedule_task';
@@ -258,6 +259,7 @@ class Entity
         self::INVITATION            => \RZP\Models\Invitation::class,
         self::FILE_STORE            => \RZP\Models\FileStore::class,
         self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
+        self::ENTITY_OFFER          => \RZP\Models\Offer\EntityOffer::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::SUBSCRIPTION          => \RZP\Models\Plan\Subscription::class,
         self::DISPUTE_FILE          => \RZP\Models\Dispute\File::class,
