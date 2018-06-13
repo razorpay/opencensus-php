@@ -36,6 +36,7 @@ import {
   paymentLinkBatchesReducer,
   PaymentBatchIdsReducer,
   paymentBatchesReducer,
+  batchDetailsReducer,
 } from 'merchant/modules/batches';
 
 import {
@@ -70,6 +71,7 @@ export default combineReducers({
   paymentlinkbatches: paymentLinkBatchesReducer,
   paymentBatchIds: PaymentBatchIdsReducer,
   refundbatches: refundBatchesReducer,
+  batchDetails: batchDetailsReducer,
   subscriptions: subscriptionsReducer,
   subscription: subscriptionReducer,
   plans: plansReducer,

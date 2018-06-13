@@ -10,7 +10,7 @@ import PlanDetails from 'merchant/containers/Plans/Details';
 import SubscriptionDetails from 'merchant/containers/Subscriptions/Details';
 import TransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
 import DisputeDetails from 'merchant/containers/Disputes/Details';
-import BatchDetails from 'merchant/containers/BatchNew/Details';
+import PaymentLinkBatchDetails from 'merchant/containers/PaymentLinks/BatchDetails';
 
 import PlanNew from 'merchant/containers/Plans/New';
 import ActivationContainer from 'merchant/containers/Activation/new';
@@ -28,7 +28,7 @@ const entityDetailsMap = {
   '/orders/:id': OrderDetails,
   '/settlements/:id': SettlementDetails,
   '/paymentlinks/:id(inv_.+)': PaymentLinkDetails,
-  '/paymentlinks/batchuploads/:id(batch_.+)': BatchDetails,
+  '/paymentlinks/batchuploads/:id(batch_.+)': PaymentLinkBatchDetails,
   '/invoices/:id/details': PaymentLinkDetails,
 
   '/route/payments/:id': PaymentsDetails,

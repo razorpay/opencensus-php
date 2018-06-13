@@ -20,6 +20,10 @@ const sources = {
   reversal: 'transfer_id',
 };
 
+const batchBaseUrls = {
+  payment_link: 'paymentlinks',
+};
+
 export const idItem = id => <code>{id}</code>;
 
 /* if label not present id will be used as label */
@@ -55,3 +59,12 @@ export const transfer = makeIdLink('transfer');
 export const source = item => idLink(item[sources[item.entity]]);
 export const recipient = makePropLink('recipient');
 export const reversal = makeIdLink('reversal');
+
+export const batchLink = item => {
+  const url = batchBaseUrls[item.type];
+  return !!url ? (
+    <Link to={`/${url}/batchuploads/${item.id}`}>{idItem(item.id)}</Link>
+  ) : (
+    idItem(item.id)
+  );
+};

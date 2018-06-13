@@ -5,6 +5,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 
 import LinkList from 'merchant/containers/PaymentLinks/List';
 import BatchListNew from 'merchant/containers/PaymentLinks/BatchListNew';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 import Button from 'component/Button';
 
@@ -91,6 +92,8 @@ export default class PaymentLinksContainer extends Component {
             </NavLink>
           </ShowWhen>
         </header>
+
+        <TestModeBanner />
 
         <content>
           <Switch>
