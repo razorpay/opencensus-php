@@ -23,15 +23,15 @@ class Entity extends Base\PublicEntity
 
     protected $revisionCreationsEnabled = true;
 
-    protected $fillable = array(
+    protected $fillable = [
         self::ID,
         self::EXPIRED_AT,
         self::CAMPAIGN,
         self::VALUE,
         self::TYPE,
-    );
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::ID,
         self::ENTITY,
         self::CAMPAIGN,
@@ -42,9 +42,9 @@ class Entity extends Base\PublicEntity
         self::USED,
         self::EXPIRED_AT,
         self::CREATED_AT
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::CAMPAIGN,
@@ -53,15 +53,15 @@ class Entity extends Base\PublicEntity
         self::USED,
         self::EXPIRED_AT,
         self::CREATED_AT
-    );
+    ];
 
-    protected $defaults = array(
+    protected $defaults = [
         self::VALUE             => 0,
         self::CAMPAIGN          => null,
         self::TYPE              => Type::AMOUNT,
         self::USED              => 0,
         self::EXPIRED_AT        => null,
-    );
+    ];
 
     // Casts the attributes to native types
     protected $casts = [
