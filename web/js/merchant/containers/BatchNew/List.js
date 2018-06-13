@@ -18,9 +18,7 @@ const batchStatus = {
   value: item => (
     <Fragment>
       {status.value(item)}
-      {item.status === 'created' && (
-        <i class="i i-refresh spin refetch-batch-btn" />
-      )}
+      {item.status === 'created' && <i class="i i-refresh refresh-batch-btn" />}
     </Fragment>
   ),
 };
