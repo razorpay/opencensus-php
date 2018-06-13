@@ -2,7 +2,8 @@ import FileUpload from 'merchant/components/File/Upload';
 import { classList } from 'common/util';
 
 import CalendarPicker, { TimePicker } from './Calendar';
-import Pair from './Pair';
+import PairList from './PairList';
+import EditablePairsList from './EditablePairList';
 
 export function inputClass({ props, state, className }) {
   let wrapperClass = 'Input';
@@ -573,7 +574,8 @@ Field.Group = ({ label, className, children, ...otherProps }) => {
   );
 };
 
-Field.Pair = Pair;
+Field.PairList = PairList;
+Field.EditablePairsList = EditablePairsList;
 
 const ToCalendar = _ => (
   <CalendarPicker postSelectionValue={val => val.endOf('day')} {..._} />

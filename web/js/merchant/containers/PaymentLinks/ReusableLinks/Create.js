@@ -148,6 +148,6 @@ export default [
     name: 'notes',
     label: 'Internal Notes',
     className: 'Input--vTop',
-    _cmp: Input.Pair,
+    _cmp: Input.PairList,
   },
 ];

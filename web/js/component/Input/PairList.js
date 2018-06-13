@@ -4,7 +4,7 @@ import { classList } from 'common/util';
 import Button from 'component/Button';
 
 /* Pair is key-value pair*/
-export default class Pairs extends React.PureComponent {
+export default class PairList extends React.PureComponent {
   className = 'Input--pair';
 
   state = {

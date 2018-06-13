@@ -26,7 +26,7 @@ import {
 import { luminateRow } from 'merchant/modules/app';
 import moment from 'moment';
 import { dateCalculator, timeCalculator } from 'component/Input/Calendar';
-import { onChangeNotes } from 'component/Input/Pair';
+import { onChangeNotes } from 'component/Input/PairList';
 
 import EarlyAccessRPL from './ReusableLinks/EarlyAccess';
 

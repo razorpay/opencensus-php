@@ -17,7 +17,7 @@ import Input from 'component/Input';
 
 import moment from 'moment';
 import { dateCalculator, timeCalculator } from 'component/Input/Calendar';
-import { onChangeNotes } from 'component/Input/Pair';
+import { onChangeNotes } from 'component/Input/PairList';
 import { maxLength } from 'rzp/utils/validators';
 
 const notificationClassMap = {
@@ -256,6 +256,17 @@ export default props => {
                   }
                 />
 
+                <EntityDetailRow label="Created By">
+                  {!!invoice.user ? (
+                    <Definition>
+                      {invoice.user.name}
+                      {invoice.user.email}
+                    </Definition>
+                  ) : (
+                    'API'
+                  )}
+                </EntityDetailRow>
+
                 <EntityDetailRow
                   label="Created At"
                   value={() => <Time value={invoice.date} />}
@@ -292,17 +303,6 @@ export default props => {
                 ) : (
                   <NestedEntityDetailRow label="Notes" value={invoice.notes} />
                 )}
-
-                <EntityDetailRow label="Created By">
-                  {!!invoice.user ? (
-                    <Definition>
-                      {invoice.user.name}
-                      {invoice.user.email}
-                    </Definition>
-                  ) : (
-                    'API'
-                  )}
-                </EntityDetailRow>
               </div>
             </div>
           </div>
@@ -553,39 +553,33 @@ class EditNotesField extends React.Component {
     };
   }
 
-  /* Handle change of notes */
-  onChangeNotes = pairs => {
-    const notes = onChangeNotes(pairs);
+  /* Handle save of new note */
+  saveAndUpdate = pairs => {
+    const notes = { ...pairs };
 
-    if (!Object.keys(notes).length) {
-      return;
-    }
+    return this.props
+      .editPaymentLink({
+        notes: onChangeNotes(pairs),
+      })
+      .then(resp => {
+        if (resp.data) {
+          // Handle failed case..
+          this.setState({
+            notes,
+          });
+        }
 
-    this.setState({
-      notes,
-    });
+        return resp;
+      });
   };
 
   render() {
     return (
       <React.Fragment>
-        <Input.Pair
-          onChange={this.onChangeNotes}
+        <Input.EditablePairsList
+          saveAndUpdate={this.saveAndUpdate}
           defaultValue={this.state.notes}
         />
-        {this.state.notes &&
-          !!Object.keys(this.state.notes).length && (
-            <AsyncBtn.Primary
-              onClick={() =>
-                this.props.editPaymentLink({
-                  notes: this.state.notes,
-                })
-              }
-              pendingState="Saving"
-            >
-              Save
-            </AsyncBtn.Primary>
-          )}
       </React.Fragment>
     );
   }
