@@ -3412,7 +3412,7 @@ trait Authorize
         // enach rbl again. This will ensure idempotency is maintained.
         //
         if (($oldRecurringStatus !== $currentRecurringStatus) and
-            (in_array($currentRecurringStatus, Token\RecurringStatus::$webhookStatuses, true) === true))
+            (Token\RecurringStatus::isWebhookStatus($currentRecurringStatus) === true))
         {
             $event = 'api.token.' . $currentRecurringStatus;
 

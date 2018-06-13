@@ -3605,6 +3605,16 @@ ALTER TABLE merchant_banks
 ALTER TABLE batches
     ADD COLUMN processed_count INTEGER UNSIGNED DEFAULT NULL AFTER total_count;
 
+ALTER TABLE tokens
+    ADD COLUMN confirmed_at INTEGER UNSIGNED DEFAULT NULL AFTER recurring_failure_reason,
+    ADD COLUMN rejected_at INTEGER UNSIGNED DEFAULT NULL AFTER confirmed_at,
+    ADD COLUMN initiated_at INTEGER UNSIGNED DEFAULT NULL AFTER rejected_at,
+    ADD COLUMN acknowledged_at INTEGER UNSIGNED DEFAULT NULL AFTER initiated_at,
+    ADD INDEX `tokens_confirmed_at_index` (confirmed_at);
+    ADD INDEX `tokens_rejected_at_index` (rejected_at);
+    ADD INDEX `tokens_initiated_at_index` (initiated_at);
+    ADD INDEX `tokens_acknowledged_at_index` (acknowledged_at);
+
 # Renames the reference1 column and adds a default value
 ALTER TABLE orders
     CHANGE reference1 force_offer TINYINT(1),
