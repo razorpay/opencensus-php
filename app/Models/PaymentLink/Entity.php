@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use RZP\Models\Currency;
 use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
@@ -31,6 +31,9 @@ class Entity extends Base\PublicEntity
     const TITLE             = 'title';
     const DESCRIPTION       = 'description';
     const NOTES             = 'notes';
+
+    const SHORT_MODE_LIVE = 'l';
+    const SHORT_MODE_TEST = 't';
 
     protected static $sign = 'pl';
 
@@ -157,4 +160,28 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------------------------- End Relations ---------------------------
+
+    /**
+     * Payment link long url is of the following format:
+     * <base payment link url>/(t|l)/<Payment link public id>
+     * Here t or l is short form for test or live mode.
+     *
+     * @param string $paymentLinkBaseUrl
+     * @param string $mode
+     *
+     * @return string $paymentLinkLongUrl
+     */
+    public function getLongUrl(string $paymentLinkBaseUrl, string $mode): string
+    {
+        $shortMode = self::SHORT_MODE_TEST;
+
+        if ($mode === Mode::LIVE)
+        {
+            $shortMode = self::SHORT_MODE_LIVE;
+        }
+
+        $paymentLinkLongUrl = $paymentLinkBaseUrl . '/' . $shortMode . '/' . $this->getPublicId();
+
+        return $paymentLinkLongUrl;
+    }
 }

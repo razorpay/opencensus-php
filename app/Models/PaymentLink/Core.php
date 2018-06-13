@@ -3,7 +3,6 @@
 namespace RZP\Models\PaymentLink;
 
 use RZP\Models\Base;
-use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 
@@ -23,18 +22,15 @@ class Core extends Base\Core
      * Base payment link url from which payment link is generated.
      * @var string
      */
-    protected $payment_link_base_url;
-
-    const SHORT_MODE_LIVE = 'l';
-    const SHORT_MODE_TEST = 't';
+    protected $paymentLinkBaseUrl;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->mutex                 = $this->app['api.mutex'];
-        $this->elfin                 = $this->app['elfin'];
-        $this->payment_link_base_url = $this->app['config']->get('app.payment_link');
+        $this->mutex                = $this->app['api.mutex'];
+        $this->elfin                = $this->app['elfin'];
+        $this->paymentLinkBaseUrl   = $this->app['config']->get('app.payment_link_base_url');
     }
 
     /**
@@ -55,7 +51,7 @@ class Core extends Base\Core
 
         $paymentLink->generateId();
 
-        $this->setShortUrl($paymentLink);
+        $this->setPaymentLinkShortUrl($paymentLink);
 
         $this->repo->saveOrFail($paymentLink);
 
@@ -79,6 +75,7 @@ class Core extends Base\Core
             'input' => $input,
         ]);
 
+        // TODO : TO change to lockforupdate
         return $this->mutex->acquireAndRelease(
             $paymentLink->getId(),
             function() use ($paymentLink, $input)
@@ -100,34 +97,12 @@ class Core extends Base\Core
      * This method sets the short_url of a paymentLink
      * @param Entity $paymentLink
      */
-    protected function setShortUrl(Entity $paymentLink)
+    protected function setPaymentLinkShortUrl(Entity $paymentLink)
     {
-        $longUrl = $this->getPaymentLinkLongUrl($paymentLink);
+        $longUrl = $paymentLink->getLongUrl($this->paymentLinkBaseUrl, $this->mode);
 
         $shortenedUrl = $this->elfin->shorten($longUrl);
 
         $paymentLink->setShortUrl($shortenedUrl);
-    }
-
-    /**
-     * Payment link long url is of the following format:
-     * <base payment link url>/(t|l)/<Payment link public id>
-     * Here t or l is short form for test or live mode.
-     * @param Entity $paymentLink
-     *
-     * @return string $paymentLinkLongUrl
-     */
-    protected function getPaymentLinkLongUrl(Entity $paymentLink): string
-    {
-        $shortMode = self::SHORT_MODE_TEST;
-
-        if ($this->mode === Mode::LIVE)
-        {
-            $shortMode = self::SHORT_MODE_LIVE;
-        }
-
-        $paymentLinkLongUrl = $this->payment_link_base_url . '/' . $shortMode . '/' . $paymentLink->getPublicId();
-
-        return $paymentLinkLongUrl;
     }
 }

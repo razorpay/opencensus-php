@@ -2,7 +2,6 @@
 
 namespace RZP\Tests\Functional\PaymentLink;
 
-use RZP\Models\Payment;
 use RZP\Models\PaymentLink;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
