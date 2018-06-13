@@ -26,6 +26,8 @@ class NetbankingRblGatewayTest extends TestCase
 
         $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
 
+        $this->payment['amount'] = 10000012;
+
         $this->setMockGatewayTrue();
 
         $this->fixtures->create('terminal:shared_netbanking_rbl_terminal');
@@ -112,6 +114,30 @@ class NetbankingRblGatewayTest extends TestCase
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
         $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
+    }
+
+    public function testVerifyAmountMismatch()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content = simplexml_load_string($content);
+
+                $content->RetrieveTransactionStatus->RetrieveTransactionStatus_REC->ENTRY_AMOUNT_ARRAY = '5,00,000.00';
+
+                $content = $content->asXml();
+            }
+        });
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthAndCapturePayment($this->payment);
+            });
     }
 
     public function testAuthFailedVerifySuccess()
