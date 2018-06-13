@@ -8,41 +8,43 @@ import { notifySuccess, notifyError, closeModal } from 'common/modal';
 import { snakeToTitleCase } from 'common/util';
 
 const options = {
-  types: [
-    'emandate',
-    'payment_link',
-    'refund',
-    'irctc_refund',
-    'irctc_settlement',
-    'linked_account',
-    'virtual_bank_account',
-    'bank_transfer',
-    'recurring_charge',
-    'reconciliation',
-    'payout',
-    'sub_merchant',
-    'direct_debit',
-  ],
-  subTypes: {
-    emandate: ['register', 'debit', 'acknowledge'],
+  emandate: {
+    subTypes: ['register', 'debit', 'acknowledge'],
+    extraFields: ['name', 'gateway'],
   },
+  payment_link: {
+    extraFields: ['config'],
+  },
+  reconciliation: {
+    extraFields: ['name', 'config', 'gateway'],
+  },
+  virtual_bank_account: {
+    extraFields: ['name'],
+  },
+  refund: {},
+  irctc_refund: {},
+  irctc_settlement: {},
+  linked_account: {},
+  bank_transfer: {},
+  recurring_charge: {},
+  payout: {},
+  sub_merchant: {},
+  direct_debit: {},
 };
 
 export default class BatchUpload extends Component {
-  static permission = 'admin_batch_create';
+  // static permission = 'admin_batch_create';
   static title = 'Batch Upload';
 
   //populate emandate details first
   state = {
-    type: options.types[0],
-    subTypes: options.subTypes.emandate,
+    selectedType: 'emandate',
   };
 
   handleTypeChange = e => {
-    const type = e.target.value;
-    let subTypes = options['subTypes'][type] || null;
+    const selectedType = e.target.value;
 
-    this.setState({ subTypes, type });
+    this.setState({ selectedType });
   };
 
   handleSave = body => {
@@ -76,7 +78,8 @@ export default class BatchUpload extends Component {
   };
 
   render() {
-    const { type, subTypes } = this.state;
+    const { selectedType } = this.state;
+    const extraFields = options[selectedType].extraFields || [];
 
     return (
       <Form class="full-span full-elements" style={{ width: '650px' }}>
@@ -86,18 +89,18 @@ export default class BatchUpload extends Component {
           label="Type"
           name="type"
           onChange={this.handleTypeChange}
-          valud={type}
+          value={selectedType}
         >
-          {options.types.map(type => (
+          {Object.keys(options).map(type => (
             <option value={type} key={type}>
-              {snakeToTitleCase(type)}
+              {options[type]['label'] || snakeToTitleCase(type)}
             </option>
           ))}
         </SelectField>
 
-        {subTypes && (
+        {options[selectedType].subTypes && (
           <SelectField label="Sub Type" name="sub_type">
-            {subTypes.map(subType => (
+            {options[selectedType].subTypes.map(subType => (
               <option value={subType} key={subType}>
                 {snakeToTitleCase(subType)}
               </option>
@@ -106,19 +109,17 @@ export default class BatchUpload extends Component {
         )}
 
         {/* conditionally load extra fields according to batch types */}
-
-        {['reconciliation', 'emandate', 'virtual_bank_account'].indexOf(type) <
-        0 ? (
+        {extraFields.indexOf('name') > -1 && (
           <Field label="File Name" name="name" />
-        ) : null}
+        )}
 
-        {['reconciliation', 'emandate'].indexOf(type) > -1 ? (
+        {extraFields.indexOf('gateway') > -1 && (
           <Field label="Gateway" name="gateway" />
-        ) : null}
+        )}
 
-        {['reconciliation', 'payment_link'].indexOf(type) > -1 ? (
+        {extraFields.indexOf('config') > -1 && (
           <TextAreaField label="Config" name="config" />
-        ) : null}
+        )}
 
         <AsyncButton
           text="Upload"
