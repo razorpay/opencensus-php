@@ -11,6 +11,7 @@ const StackedBars = ({
   colorKey = 'color',
   getColor,
   data = [],
+  orderBy = null,
 }) => {
   const totalSum = data.reduce((sum, item) => {
     const value = (item.hasOwnProperty(valueKey) && +item[valueKey]) || 0,
@@ -28,6 +29,12 @@ const StackedBars = ({
     return sum + value;
   }, 0);
 
+  if (isFunction(orderBy)) {
+    data = data.slice();
+
+    data.sort(orderBy);
+  }
+
   return (
     <div className="rzp-stacked-bars">
       {data.map((item, index) => {
@@ -40,7 +47,8 @@ const StackedBars = ({
                 {item.__formattedText}
               </div>
               <div className="rzp-stacked-bar-value pull-right">
-                {item.__formattedValue + `(${percentage}%)`}
+                {item.__formattedValue + `  `}
+                <span className="text-fade">{`(${percentage}%)`}</span>
               </div>
             </div>
             <div className="rzp-stacked-bar-body">

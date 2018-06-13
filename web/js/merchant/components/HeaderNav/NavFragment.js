@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { PowerSelect } from 'react-power-select';
 
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
@@ -9,34 +8,7 @@ import storage from 'rzp/utils/localStorage';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import ModesDropdown from './SwitchMode';
-
-const SwitchMerchant = ({ user, onSwitchMerchant }) => {
-  let merchants = user.merchants;
-  merchants = Object.keys(merchants).map(merchantId => merchants[merchantId]);
-  return (
-    <PowerSelect
-      options={merchants}
-      placeholder="Switch Merchant"
-      searchIndices={['name']}
-      showClear={false}
-      optionComponent={({ option }) => {
-        return (
-          <a class="SwitchMerchantDropdown__option">
-            {option.id === user.current ? (
-              <i class="i i-check text-success pull-right" />
-            ) : null}
-            <span>{option.name}</span>
-          </a>
-        );
-      }}
-      onChange={({ option, select }) => {
-        if (option) {
-          onSwitchMerchant(option);
-        }
-      }}
-    />
-  );
-};
+import SwitchMerchant from './SwitchMerchant';
 
 class NavFragment extends Component {
   constructor(props) {

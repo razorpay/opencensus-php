@@ -6,6 +6,7 @@ import Header from 'rzp/ui/Header';
 import Amount from 'rzp/ui/Amount';
 import Sticky from 'rzp/ui/Sticky';
 import DateRangePicker from 'rzp/ui/DateRangePicker';
+import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
@@ -74,17 +75,18 @@ class AnalyticsMobile extends Component {
 
           <Header className="clearfix" title="" showMode={false}>
             <div className="pull-left">
-              Current Balance:{' '}
-              {!current_balance.loading && (
-                <b>
-                  <Amount value={current_balance.data.balance} />
-                </b>
-              )}
+              Balance:{' '}
+              <b>
+                {!current_balance.loading &&
+                  typeof current_balance.data.balance === 'number' && (
+                    <Amount value={current_balance.data.balance} />
+                  )}
+              </b>
             </div>
             <div className="pull-right">
               <Link className="pull-right" to="/settlements">
                 <span className="text-no-wrap" onClick={trackSettlementsClick}>
-                  View Settlements &gt;
+                  View Settlements <i className="i i-chevron-right" />
                 </span>
               </Link>
             </div>
@@ -95,6 +97,7 @@ class AnalyticsMobile extends Component {
               <RecentActivity
                 sectionTitle={recentActivityTitle}
                 onFetchPayments={onFetchPayments}
+                isTabletResolution={true}
               />
             </div>
           )}
@@ -115,7 +118,11 @@ class AnalyticsMobile extends Component {
                   // adjusting the right position of datepicker so that
                   // it does not overflow, for screen resolution <= 424
                   // presets are hidden , so not adjusting the DRP
-                  windowWidth < 530 && windowWidth > 424 ? 530 - windowWidth : 0
+                  windowWidth < 530
+                    ? windowWidth > 424
+                      ? 530 - windowWidth
+                      : windowWidth > 360 ? 40 : 57
+                    : 0
                 }
               />
             </div>
@@ -144,15 +151,19 @@ class AnalyticsMobile extends Component {
             sectionTitle={paymentInsightsTitle}
             isMobile={true}
           />
-          <p className="section-title">{trafficSectionTitle}</p>
-          <Traffic
-            startDate={startDate}
-            endDate={endDate}
-            mode={mode}
-            analyticsFetch={analyticsFetch}
-            sectionTitle={''}
-            isMobile={true}
-          />
+          {showGroupingByPtfm && (
+            <React.Fragment>
+              <p className="section-title">{trafficSectionTitle}</p>
+              <Traffic
+                startDate={startDate}
+                endDate={endDate}
+                mode={mode}
+                analyticsFetch={analyticsFetch}
+                sectionTitle={''}
+                isMobile={true}
+              />
+            </React.Fragment>
+          )}
         </div>
       </div>
     );

@@ -237,7 +237,7 @@ class KeyMetricsContainer extends Component {
           error: '',
         },
 
-        showTab: true || props.isAdmin || tabName !== SAVED_CARDS,
+        showTab: props.isAdmin || tabName !== SAVED_CARDS,
 
         error: '',
       };
@@ -546,7 +546,15 @@ class KeyMetricsContainer extends Component {
 
     const query = this.makeQueryForTab(selectedTab, fetchAllCounts);
 
-    tabState.data.loading = true;
+    if (this.props.isMobile && fetchAllCounts) {
+      tabsOrder.forEach(tabName => {
+        const tabState = tabsState[tabName];
+        tabState.data.loading = true;
+      });
+    } else {
+      tabState.data.loading = true;
+    }
+
     tabState.data.error = '';
 
     this.setState({ tabsState });

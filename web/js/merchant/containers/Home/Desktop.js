@@ -286,6 +286,7 @@ class AnalyticsDesktop extends Component {
                     <RecentActivity
                       sectionTitle={recentActivityTitle}
                       onFetchPayments={onFetchPayments}
+                      isTabletResolution={!showGroupingByPtfm}
                     />
                   </div>
                 </div>

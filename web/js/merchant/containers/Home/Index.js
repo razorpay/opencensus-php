@@ -23,7 +23,11 @@ import {
   isMobileDevice,
 } from 'merchant/components/Home/data';
 
-import { trackError, trackDatesChange } from './ga';
+import {
+  trackError,
+  trackDatesChange,
+  trackPlatformAnalyticsHidden,
+} from './ga';
 import Desktop from './Desktop';
 import Mobile from './Mobile';
 
@@ -278,7 +282,7 @@ export default class HomeContainer extends Component {
 
           // if `Others` platform count is greater than 30%
           // do not show grouping
-          if (false && ratio > 0.3) {
+          if (ratio > 0.3) {
             trackPlatformAnalyticsHidden(ratio * 100);
             return;
           }
@@ -422,6 +426,8 @@ export default class HomeContainer extends Component {
     this.setState({
       isMobile: isMobileDevice(),
     });
+
+    this.setScrollAmountToStickHeader();
   }
 
   componentDidMount() {

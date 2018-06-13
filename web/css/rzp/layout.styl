@@ -91,6 +91,8 @@ body {
   @media (max-width: $screen-sm-min) {
 
     transform: translate(-100%, 0);
+    transition: transform 150ms ease-in;
+    will-change: transform;
 
     &.show-mobile-menu {
 
@@ -234,11 +236,6 @@ body {
             }
           }
         }
-      }
-
-      @media (max-width $screen-sm-min) {
-
-        display: none;
       }
     }
   }

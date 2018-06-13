@@ -842,7 +842,7 @@ body.analytics-v2-active .onboarding-card-wrapper {
 
   position: relative;
   /* 9999px box-shadow spread radius does not work in safari, max is 1016 */
-  box-shadow: 0 0 0 1000px rgba(0,0,0,.25), 0 0 15px rgba(0,0,0,.25);
+  box-shadow: 0 0 0 1000px rgba(0,0,0,.85), 0 0 15px rgba(0,0,0,.25);
   z-index: 9999;
   border-radius: 2px;
 
@@ -1429,6 +1429,105 @@ div.feature-activation-banner {
 
           left: auto;
           right: 0;
+        }
+      }
+    }
+  }
+}
+
+#profile-dropdown {
+
+  .merchant-logo-preview{
+
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+    overflow: hidden;
+
+    .rzp-image > img {
+
+      border-radius: 50%;
+    }
+  }
+
+  a {
+    color: inherit;
+  }
+
+  .rzp-image.invalid-src {
+
+    color: #949494;
+  }
+
+  .loggedin-as {
+
+    background-color: #F5F7F8;
+
+    .account-details {
+
+      padding: 12px 0;
+      font-size: 16px;
+      line-height: 19px;
+      max-width: 250px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      
+      i.i-account {
+
+        font-size: 24px;
+        vertical-align: middle;
+        color: #BDC3C6;
+        display: inline-block;
+        height: 24px;
+        line-height: 1em;
+      }
+    }
+
+    .logout-btn {
+
+      display: block;
+      width: 100%;
+    }
+  }
+}
+
+.switch-merchant-modal-content {
+
+  div.modal-body {
+
+    max-height: 90vh;
+    overflow: auto;
+
+    ul.merchants-list {
+
+      > li {
+
+        border: 1px solid rgba(0,0,0,0.05);
+        border-top: none;
+
+        &.active {
+
+          background-color: $primary-color;
+          color: white;
+
+          > a .i.i-check {
+
+            display: inline;
+          }
+        }
+
+        > a {
+
+          color: inherit;
+          cursor: pointer;
+          
+          .i.i-check {
+
+            display: none;
+          }
         }
       }
     }

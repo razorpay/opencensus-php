@@ -581,3 +581,19 @@ export const subString = (str, length) => {
     return str;
   }
 };
+
+// efficient sorting of any collection based on order
+export const getArraySorterFromArray = (
+  order = [],
+  getValue = item => item
+) => {
+  const orderMap = order.reduce((map, item, index) => {
+    map[item] = index;
+
+    return map;
+  }, {});
+
+  return (item1, item2) => {
+    return orderMap[getValue(item1)] - orderMap[getValue(item2)];
+  };
+};

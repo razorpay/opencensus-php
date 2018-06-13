@@ -5,6 +5,7 @@ import {
   getFormattedAmountNew,
   getFormattedNumber,
   titleCase,
+  getArraySorterFromArray,
 } from 'rzp/utils/rzp-utils';
 
 import GenericPanel, {
@@ -26,6 +27,10 @@ const formatText = text => {
 class MobilePaymentMethods extends Component {
   constructor(props) {
     super(props);
+
+    this.sorter = getArraySorterFromArray(paymentMethodsOrder, item =>
+      item[this.props.aggKey].replace('_', ' ')
+    );
   }
 
   render() {
@@ -63,6 +68,7 @@ class MobilePaymentMethods extends Component {
                 textKey={aggKey}
                 getColor={getPaymentMethodColor}
                 formatText={formatText}
+                orderBy={this.sorter}
                 formatValue={
                   (isCurrency && getFormattedAmountNew) || getFormattedNumber
                 }

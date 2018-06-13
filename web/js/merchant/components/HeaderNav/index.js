@@ -62,10 +62,10 @@ export default class HeaderNav extends Component {
         activePageName,
       } = this.props,
       fragmentSpecificProps = {
-        user,
         mode,
       },
       commonProps = {
+        user,
         showGSTModal,
         modeFormatted,
         onSwitchMode,
@@ -107,7 +107,11 @@ export default class HeaderNav extends Component {
                 </li>
               )}
               <li id="profile-dropdown">
-                <ProfileDropdown analytics={analytics} {...commonProps} />
+                <ProfileDropdown
+                  analytics={analytics}
+                  showMobileNav={showMobileNav}
+                  {...commonProps}
+                />
               </li>
             </ul>
           </div>

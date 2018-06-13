@@ -41,9 +41,17 @@ $height = 40px;
       }
     }
 
-    &.daterange-container i.i-date-range {
+    &.daterange-container {
 
-      display: none;
+      i.i-date-range {
+
+        display: none;
+      }
+
+      .DateRangePicker_picker {
+
+        z-index: 2;
+      }
     }
 
     .caret {
@@ -63,6 +71,16 @@ $height = 40px;
       .DateInput {
 
         width: 97px;
+
+        .DateInput_input {
+
+          font-weight: 800;
+        }
+      }
+
+      .DateInput_input__focused {
+
+        border-bottom: 2px solid transparent;
       }
 
       .DateRangePickerInput__arrow {

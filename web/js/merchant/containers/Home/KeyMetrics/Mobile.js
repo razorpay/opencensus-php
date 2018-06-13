@@ -5,8 +5,10 @@ import Amount from 'rzp/ui/Amount';
 import Change from 'rzp/ui/Change';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import {
+  isDefined,
   getFormattedNumber,
   getFormattedAmountNew,
+  getFixedNumber,
   getPercentage,
   paiseToRupees,
   titleCase,
@@ -39,6 +41,16 @@ const Tab = ({
     trendText = '',
     trendAbsValue = 0;
 
+  let formattedValue = value;
+
+  if (!isDefined(percent)) {
+    formattedValue = isCurrency
+      ? getFormattedAmountNew(value, true)
+      : getFormattedNumber(value);
+  } else {
+    formattedValue = getFixedNumber(percent) + '%';
+  }
+
   if (trend.show && !trend.loading) {
     const currentCount = trend.currentCount;
 
@@ -58,32 +70,31 @@ const Tab = ({
   }
 
   return (
-    <div className="card clearfix">
+    <div
+      className={`card clearfix${
+        !trend.show || trend.error ? ' no-trend' : ''
+      }`}
+    >
       <div className="pull-left">
-        <div>
-          {isLoading ? (
-            <PlaceholderLoader />
-          ) : (
-            <b>
-              {(isCurrency ? getFormattedAmountNew : getFormattedNumber)(value)}
-            </b>
-          )}
-        </div>
+        <div>{isLoading ? <PlaceholderLoader /> : <b>{formattedValue}</b>}</div>
         <div>{title}</div>
       </div>
-      <div className="pull-right">
-        <div className="text-right">
-          {!trend.loading ? (
-            <Change value={trendValue}>
-              <span>
-                {trendText}
-                <Tooltip value={trendAbsValue} isCurrency={isCurrency} />
-              </span>
-            </Change>
-          ) : (
-            <PlaceholderLoader />
+      <div className="pull-right text-right">
+        {trend.show &&
+          !trend.error && (
+            <div>
+              {trend.loading ? (
+                <PlaceholderLoader />
+              ) : (
+                <Change value={trendValue}>
+                  <span>
+                    {trendText}
+                    <Tooltip value={trendAbsValue} isCurrency={isCurrency} />
+                  </span>
+                </Change>
+              )}
+            </div>
           )}
-        </div>
         <div>
           <Link
             target="_blank"
@@ -92,7 +103,10 @@ const Tab = ({
               trackGoToLinks(titleCase(index), sectionTitle + ' | ' + title)
             }
           >
-            {`View all ${index} >`}
+            <span>
+              {`View ${index}`}
+              <i className="i i-chevron-right" />
+            </span>
           </Link>
         </div>
       </div>
@@ -122,7 +136,7 @@ class MobileKeyMetrics extends Component {
               helpText={helpText}
               isCurrency={isCurrency}
               title={title}
-              isLoading={loading}
+              isLoading={loading || tabData.loading}
               error={tabData.error}
               percent={tabData.percent}
               trend={tabData.trend}

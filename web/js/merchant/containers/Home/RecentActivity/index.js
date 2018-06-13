@@ -19,7 +19,18 @@ import PaymentsList from 'merchant/components/Payments/PaymentsList';
 
 import { trackTabClick, trackEntityClick, trackGoToLinks } from './ga';
 
-const shouldDisplayCompact = () => window.outerWidth < 1186;
+const shouldDisplayCompact = (
+  isMobileResolution,
+  isTabletResolution,
+  windowWidth
+) => {
+  if (!isMobileResolution && !isTabletResolution) {
+    console.log(windowWidth);
+    return windowWidth < 1186;
+  }
+
+  return windowWidth < 480;
+};
 
 const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
   const tabMeta = tabsMeta[tabName];
@@ -61,6 +72,8 @@ const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
       payments: state.payments,
       refunds: state.refunds,
       settlements: state.settlements,
+      isMobileResolution: state.app.isMobileResolution,
+      windowWidth: state.app.windowWidth,
     };
   },
   {
@@ -75,11 +88,14 @@ export default class RecentActivity extends Component {
 
     this.state = {
       selectedTab: tabs[0],
-      displayCompact: shouldDisplayCompact(),
+      displayCompact: shouldDisplayCompact(
+        props.isMobileResolution,
+        props.isTabletResolution,
+        props.windowWidth
+      ),
     };
 
     this.handleTabClick = ::this.handleTabClick;
-    this.handleResize = ::this.handleResize;
   }
 
   handleTabClick(e) {
@@ -91,9 +107,13 @@ export default class RecentActivity extends Component {
     trackTabClick(titleCase(tabName), this.props.sectionTitle);
   }
 
-  handleResize() {
+  handleResize(props = this.props) {
     this.setState({
-      displayCompact: shouldDisplayCompact(),
+      displayCompact: shouldDisplayCompact(
+        props.isMobileResolution,
+        props.isTabletResolution,
+        props.windowWidth
+      ),
     });
   }
 
@@ -112,12 +132,14 @@ export default class RecentActivity extends Component {
     this.fetchData({ count: 5 });
   }
 
-  componentDidMount() {
-    window.addEventListener('resize', this.handleResize);
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('resize', this.handleResize);
+  componentWillReceiveProps(nextProps) {
+    if (
+      this.props.windowWidth !== nextProps.windowWidth ||
+      this.props.isTabletResolution !== nextProps.isTabletResolution ||
+      this.props.isMobileResolution !== nextProps.isMobileResolution
+    ) {
+      this.handleResize(nextProps);
+    }
   }
 
   render() {
@@ -155,7 +177,7 @@ export default class RecentActivity extends Component {
 
     return (
       <GenericPanel
-        className="recent-activity-cont"
+        className={`recent-activity-cont${displayCompact ? ' compact' : ''}`}
         isLoading={selectedTabData.loading}
       >
         <PanelTopbar>
