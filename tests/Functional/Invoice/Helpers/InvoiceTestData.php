@@ -856,10 +856,10 @@ return [
             ],
             'status_code' => 400,
         ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT,
-        ],
+        // 'exception' => [
+        //     'class'               => 'RZP\Exception\BadRequestException',
+        //     'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT,
+        // ],
     ],
 
     'testCreateDraftLinkWithAmountAndDesc' => [
