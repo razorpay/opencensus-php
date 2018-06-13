@@ -295,10 +295,7 @@ class Core extends Base\Core
             $appMerchant = $merchant;
         }
 
-        $custAppInput = [
-            AppToken\Entity::CUSTOMER_ID => $customer->getId(),
-            AppToken\Entity::MERCHANT_ID => $appMerchant->getId(),
-        ];
+        $custAppInput = [];
 
         if (isset($input[AppToken\Entity::DEVICE_TOKEN]))
         {

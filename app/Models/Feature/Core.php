@@ -41,12 +41,20 @@ class Core extends Base\Core
 
         $entityId = $input[Entity::ENTITY_ID];
 
-        if ($entityType === Constants::MERCHANT)
+        //
+        // These entity types are owned by api, hence we validate their existence
+        // here before associating.
+        //
+        if (in_array($entityType, [Constants::MERCHANT, Constants::ACCOUNT], true) === true)
         {
             $entity = $this->repo->merchant->findOrFailPublic($entityId);
 
             $feature->entity()->associate($entity);
         }
+        //
+        // Features for other entity types which are external to api, aren't checked
+        // for existence.
+        //
         else
         {
             $feature->setEntityId($entityId);

@@ -730,10 +730,9 @@ class FeeCalculator
     protected function createFeeBreakup($name, $percent, $amount, $pricingRule = null)
     {
         $params = [
-            Transaction\FeeBreakup\Entity::NAME                 => $name,
-            Transaction\FeeBreakup\Entity::PERCENTAGE           => $percent,
-            Transaction\FeeBreakup\Entity::AMOUNT               => $amount,
-            Transaction\FeeBreakup\Entity::PRICING_RULE_ID      => optional($pricingRule)->getId(),
+            Transaction\FeeBreakup\Entity::NAME       => $name,
+            Transaction\FeeBreakup\Entity::PERCENTAGE => $percent,
+            Transaction\FeeBreakup\Entity::AMOUNT     => $amount,
         ];
 
         $feeBreakup = (new Transaction\FeeBreakup\Entity)->build($params);
