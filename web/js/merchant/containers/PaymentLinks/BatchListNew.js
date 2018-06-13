@@ -98,6 +98,8 @@ export default class BatchListContainer extends ListContainer {
         gaEvents={gaEvents}
         createBatch={this.props.createBatch}
         validateBatch={this.props.validateBatch}
+        docUrl="https://razorpay.com/docs/private/payment-links-batch-uploads/"
+        sampleUrl="/files/sample_batch_payment_links_v2.xlsx"
         renderBatchCreationForm={() => (
           <PaymentLinksForm
             batchType={this.props.batchType}

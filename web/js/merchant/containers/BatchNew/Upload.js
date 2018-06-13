@@ -80,6 +80,8 @@ export default class BatchUpload extends Component {
                   trackSampleInterpretation={
                     this.props.gaEvents.trackSampleInterpretation
                   }
+                  docUrl={this.props.docUrl}
+                  sampleUrl={this.props.sampleUrl}
                 />
               );
             case 'success':
