@@ -1,11 +1,70 @@
 import { Component } from 'react';
+import { connect } from 'react-redux';
+import { reduxForm } from 'redux-form';
 import { Field } from 'redux-form';
-import InputField from 'rzp/ui/Forms/InputField';
+
 import { required } from 'rzp/utils/validators';
 import { lenientUrl } from 'rzp/utils/validators';
+import { updateSession } from 'merchant/modules/session';
+import { merchantFetch } from 'rzp/utils/ajax';
+import { showNotification } from 'rzp/modules/notifications';
 
+import InputField from 'rzp/ui/Forms/InputField';
+import AsyncButton from 'react-async-button';
+import User from 'merchant/models/User';
+
+@connect(
+  state => ({
+    user: state.session.user,
+    initialValues: {
+      business_website: state.session.user.business_website,
+    },
+  }),
+  {
+    updateSession,
+    showNotification,
+  }
+)
+@reduxForm({
+  form: 'editWebsiteDetails_subscription',
+  enableReinitialize: true,
+})
 export default class SubscriptionsPreStep extends Component {
-  static title = 'Website/App details';
+  handleSave = form => {
+    const { user } = this.props;
+
+    return merchantFetch({
+      url: 'merchant/activation/update_website_details',
+      mode: 'live',
+      method: 'put',
+      data: { business_website: form.business_website },
+    })
+      .then(response => {
+        if (response.success) {
+          //update user session details
+          const newUser = new User({
+            ...user,
+            business_website: response.data.business_website,
+          });
+
+          this.props.updateSession({
+            user: newUser,
+            mode: 'test',
+          });
+          this.props.showNotification({
+            type: 'success',
+            message: 'Website details update successfully.',
+          });
+        }
+      })
+      .catch(err => {
+        console.log(err);
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      });
+  };
 
   render() {
     return (
@@ -20,7 +79,7 @@ export default class SubscriptionsPreStep extends Component {
             rows="3"
             class="form-control"
             placeholder="https://razorpay.com"
-            validate={[required(), lenientUrl]}
+            validate={[required()]}
           />
           <small class="help-block">
             <span className="text-muted">
@@ -53,6 +112,15 @@ export default class SubscriptionsPreStep extends Component {
               </strong>.
             </span>
           </small>
+        </div>
+        <div class="form-group">
+          <AsyncButton
+            type="button"
+            class="btn btn-primary"
+            text="Next Step"
+            pendingText="Saving..."
+            onClick={this.props.handleSubmit(this.handleSave)}
+          />
         </div>
       </div>
     );
