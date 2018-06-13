@@ -32,7 +32,7 @@ export default function UploadSettlementReconciliation() {
           let channel = data.channel || '';
 
           if (channel === '') {
-            notifyError('Please selec a channel.');
+            notifyError('Please select a channel.');
             return;
           }
 
