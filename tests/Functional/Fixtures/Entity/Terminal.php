@@ -503,6 +503,22 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createSharedAmazonpayTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::AMAZONPAY_RAZORPAY_TERMINAL;
+
+        $attributes = [
+            'id'                        => $termId,
+            'merchant_id'               => Account::TEST_ACCOUNT,
+            'gateway'                   => Gateway::WALLET_AMAZONPAY,
+            'gateway_access_code'       => 'gateway_access_key',
+            'gateway_merchant_id'       => 'amazonpay_merchant',
+            'gateway_terminal_password' => 'amazonpay_secure_secret',
+        ];
+
+        return parent::create($attributes);
+    }
+
     public function createSharedJiomoneyTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::JIOMONEY_RAZORPAY_TERMINAL;
@@ -1700,6 +1716,7 @@ class Terminal extends Base
             'id'                        => $termId,
             'merchant_id'               => Account::SHARED_ACCOUNT,
             'gateway'                   => Gateway::UPI_SBI,
+            'gateway_merchant_id'       => 'upi_sbi_merchant_id',
             'gateway_merchant_id2'      => 'razorpay@sbibank',
             'upi'                       => 1,
             'gateway_acquirer'          => Upi::SBIN,

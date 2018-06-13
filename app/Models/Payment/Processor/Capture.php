@@ -622,7 +622,8 @@ trait Capture
     {
         $payment = $this->payment;
 
-        if ($payment->isBankTransfer() === false)
+        if (($payment->isBankTransfer() === false) and
+            ($payment->isBharatQr() === false))
         {
             return;
         }

@@ -288,6 +288,22 @@ return [
         ],
     ],
 
+    'testCreateVirtualAccountDescriptorInvalidLength' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid length for descriptor.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH,
+        ],
+    ],
+
     'testCreateVirtualAccountWithIdenticalDescriptor' => [
         'response' => [
             'content' => [

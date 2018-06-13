@@ -147,6 +147,8 @@ class VirtualAccountTest extends TestCase
 
         $qrCode = $this->getLastEntity('qr_code', true);
 
+        $this->assertEquals($qrCode['id'], 'qr_' . $qrCode['reference']);
+
         $qrString = $qrCode['qr_string'];
 
         $this->assertRegExp('^http://dwarf.razorpay.in/^', $qrCode['short_url']);
@@ -168,6 +170,34 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals('528734', $visaAcquirerCode);
 
         $this->assertEquals('428734', $masterCardAcquirerCode);
+    }
+
+    public function testCreateVirtualAccountWithReference()
+    {
+        $this->ba->proxyAuthLive();
+
+        $this->fixtures->merchant->activate();
+
+        $input = [
+            'receivers'  => [
+                'types' => ['qr_code'],
+                'qr_code'       => [
+                    'reference' => 'abc'
+                ]
+            ]
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts',
+            'content' => $input,
+        ];
+
+        $this->expectException(\Rzp\Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('reference is/are not required and should not be sent');
+
+        $this->makeRequestAndGetContent($request);
     }
 
     public function testCreateVirtualAccountWithBharatQrWithNoTerminal()
@@ -344,7 +374,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is unset so default root is used with default handle
-        $this->assertRegexp("/11122200[0-9]{9}$/", $vba['account_number']);
+        $this->assertRegexp("/11122200[0-9]{8}$/", $vba['account_number']);
 
         $this->fixtures->merchant->setHandle('hand');
 
@@ -358,7 +388,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is set, but numeric accounts can still be created
-        $this->assertRegexp("/11122200[0-9]{9}$/", $vba['account_number']);
+        $this->assertRegexp("/11122200[0-9]{8}$/", $vba['account_number']);
     }
 
     public function testCreateVirtualAccountOldFormat()
@@ -443,6 +473,10 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualAccountDescriptorLengths()
     {
+        // Descriptor lengths are only relevant
+        // (i.e. configurable) for alphanumeric accounts
+        $this->markTestSkipped('Alphanumeric account are no longer supported');
+
         $this->fixtures->merchant->setHandle('hand');
 
         $this->createVirtualAccount([], false, '9chardesc');
@@ -465,13 +499,24 @@ class VirtualAccountTest extends TestCase
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is set so standard root is used with given handle
         $this->assertEquals("RAZRHAN10CHARDESC", $vba['account_number']);
+    }
 
-        // 10 char descriptors are also allowed with numeric
-        $response = $this->createVirtualAccount([], true, '0123456789');
+    public function testCreateVirtualAccountDescriptorInvalidLength()
+    {
+        // Shortening handle to 3 characters
+        $this->fixtures->merchant->setHandle('han');
 
-        $vba = $this->getLastEntity('bank_account', true);
-        // Shorter handle is set so special root is used with given descriptor
-        $this->assertEquals("11122290123456789", $vba['account_number']);
+        //
+        // 10 char descriptors were previously allowed
+        // with numeric VAs for 3char handle merchants.
+        //
+        // These are now completely blocked.
+        //
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() {
+            $response = $this->createVirtualAccount([], true, '0123456789');
+        });
     }
 
     public function testCreateVirtualAccountWithIdenticalDescriptor()

@@ -75,6 +75,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddBharatQrTerminalWithExpected()
+    {
+        $request = $this->testData['testAddBharatQrTerminal'];
+
+        $request['request']['content']['expected'] = true;
+
+        $this->startTest($request);
+    }
+
     public function testReassignBharatQrTerminal()
     {
         $this->fixtures->create('terminal:bharat_qr_terminal');
@@ -462,5 +471,10 @@ class TerminalTest extends TestCase
         });
 
         $this->assertFalse($terminal->reload()->isEnabled());
+    }
+
+    public function testAddAmazonPayTerminal()
+    {
+        $this->startTest();
     }
 }

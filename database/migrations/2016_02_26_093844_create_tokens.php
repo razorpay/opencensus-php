@@ -82,6 +82,18 @@ class CreateTokens extends Migration
             $table->text(Token::RECURRING_FAILURE_REASON)
                   ->nullable();
 
+            $table->integer(Token::CONFIRMED_AT)
+                  ->nullable();
+
+            $table->integer(Token::REJECTED_AT)
+                  ->nullable();
+
+            $table->integer(Token::INITIATED_AT)
+                  ->nullable();
+
+            $table->integer(Token::ACKNOWLEDGED_AT)
+                  ->nullable();
+
             $table->integer(Token::USED_COUNT)
                   ->default(0);
 
@@ -103,6 +115,14 @@ class CreateTokens extends Migration
             $table->index(Token::ACCOUNT_NUMBER);
 
             $table->index(Token::RECURRING_STATUS);
+
+            $table->index(Token::CONFIRMED_AT);
+
+            $table->index(Token::REJECTED_AT);
+
+            $table->index(Token::ACKNOWLEDGED_AT);
+
+            $table->index(Token::INITIATED_AT);
 
             $table->foreign(Token::CUSTOMER_ID)
                   ->references(Customer::ID)
