@@ -17,6 +17,10 @@ class Core extends Base\Core
 
         $rule = (new Entity)->build($input);
 
+        $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
+
+        $rule->merchant()->associate($merchant);
+
         $validatorMethod = $this->getValidatorMethod($rule);
 
         $matchingRules = $this->getRulesWithMatchingRuleCriteria($rule);

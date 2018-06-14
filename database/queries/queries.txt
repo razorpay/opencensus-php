@@ -3605,6 +3605,16 @@ ALTER TABLE merchant_banks
 ALTER TABLE batches
     ADD COLUMN processed_count INTEGER UNSIGNED DEFAULT NULL AFTER total_count;
 
+ALTER TABLE tokens
+    ADD COLUMN confirmed_at INTEGER UNSIGNED DEFAULT NULL AFTER recurring_failure_reason,
+    ADD COLUMN rejected_at INTEGER UNSIGNED DEFAULT NULL AFTER confirmed_at,
+    ADD COLUMN initiated_at INTEGER UNSIGNED DEFAULT NULL AFTER rejected_at,
+    ADD COLUMN acknowledged_at INTEGER UNSIGNED DEFAULT NULL AFTER initiated_at,
+    ADD INDEX `tokens_confirmed_at_index` (confirmed_at);
+    ADD INDEX `tokens_rejected_at_index` (rejected_at);
+    ADD INDEX `tokens_initiated_at_index` (initiated_at);
+    ADD INDEX `tokens_acknowledged_at_index` (acknowledged_at);
+
 # Renames the reference1 column and adds a default value
 ALTER TABLE orders
     CHANGE reference1 force_offer TINYINT(1),
@@ -3612,3 +3622,22 @@ ALTER TABLE orders
 
 ALTER TABLE merchants
     ADD COLUMN partner_type VARCHAR(255) DEFAULT NULL AFTER has_key_access;
+
+# Corrects unique index on entity_offer
+ALTER TABLE entity_offer
+  DROP INDEX entity_offer_entity_id_entity_type_unique,
+  ADD UNIQUE INDEX entity_offer_entity_id_entity_type_offer_id_unique (entity_id, entity_type, offer_id);
+
+# Adds payment_link_id column and few more blank columns of various types for future usage
+# Creates index on payment_link_id
+ALTER TABLE payments
+    ADD COLUMN payment_link_id CHAR(14) DEFAULT NULL AFTER transfer_id,
+    ADD COLUMN reference10 INT(10) UNSIGNED DEFAULT NULL AFTER acknowledged_at,
+    ADD COLUMN reference11 INT(10) UNSIGNED DEFAULT NULL AFTER reference10,
+    ADD COLUMN reference12 BIGINT(20) UNSIGNED DEFAULT NULL AFTER reference11,
+    ADD COLUMN reference13 CHAR(14) DEFAULT NULL AFTER reference12,
+    ADD COLUMN reference14 CHAR(14) DEFAULT NULL AFTER reference13,
+    ADD COLUMN reference15 VARCHAR(255) DEFAULT NULL AFTER reference14,
+    ADD COLUMN reference16 VARCHAR(255) DEFAULT NULL AFTER reference15,
+    ADD COLUMN reference17 TEXT AFTER reference16,
+    ADD INDEX payments_payment_link_id_index (payment_link_id);

@@ -288,23 +288,21 @@ class Core extends Base\Core
     protected function createCustomerAppToken($customer, $input, $merchant)
     {
         // Currently all app_tokens will be generated for common rzp merchant
-        $appMerchant = $customer->merchant->getId();
+        $appMerchant = $customer->merchant;
 
         if (Base\Utility::isUpdatedAndroidSdk($input))
         {
-            $appMerchant = $merchant->getId();
+            $appMerchant = $merchant;
         }
 
-        $custAppInput = array(
-            AppToken\Entity::CUSTOMER_ID => $customer->getId(),
-            AppToken\Entity::MERCHANT_ID => $appMerchant);
+        $custAppInput = [];
 
         if (isset($input[AppToken\Entity::DEVICE_TOKEN]))
         {
             $custAppInput[AppToken\Entity::DEVICE_TOKEN] = $input[AppToken\Entity::DEVICE_TOKEN];
         }
 
-        $app = (new AppToken\Core)->create($custAppInput);
+        $app = (new AppToken\Core)->create($custAppInput, $customer, $appMerchant);
 
         return $app;
     }
