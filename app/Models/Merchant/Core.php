@@ -6,6 +6,7 @@ use Mail;
 use Config;
 use ApiResponse;
 use Carbon\Carbon;
+use Razorpay\OAuth\Application;
 
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -827,9 +828,14 @@ class Core extends Base\Core
 
         $merchant = $merchantRequest->merchant;
 
-        $merchant->setPartnerType($partnerType);
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $partnerType)
+        {
+            $merchant->setPartnerType($partnerType);
 
-        $this->repo->saveOrFail($merchant);
+            $this->repo->saveOrFail($merchant);
+
+            $this->createPartnerApp($merchant);
+        });
 
         return $merchant;
     }
@@ -843,10 +849,37 @@ class Core extends Base\Core
      */
     public function unmarkAsPartner(Entity $merchant): Entity
     {
-        $merchant->setPartnerType(null);
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $merchant->setPartnerType(null);
 
-        $this->repo->saveOrFail($merchant);
+            $this->repo->saveOrFail($merchant);
+
+            $this->deletePartnerApp($merchant);
+        });
 
         return $merchant;
+    }
+
+    public function createPartnerApp(Entity $merchant): array
+    {
+        $appInput = [
+            'name'     => 'Internal',
+            'website'  => 'https://www.razorpay.com',
+            'logo_url' => '/logo/app_logo.png',
+        ];
+
+        $app = app('authservice')->createApplication($appInput, $merchant->getId(), Application\Type::PARTNER);
+
+        return $app;
+    }
+
+    public function deletePartnerApp(Entity $merchant): array
+    {
+        $app = $merchant->getPartnerApp();
+
+        $app = app('authservice')->deleteApplication($app->getId(), $merchant->getId());
+
+        return $app;
     }
 }
