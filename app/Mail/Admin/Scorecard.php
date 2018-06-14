@@ -101,6 +101,10 @@ class Scorecard extends Mailable
             {
                 if ($key === 'volume')
                 {
+                    //
+                    // TODO: Confirm with sunny & if needed use money_format_IN() method because following doesn't work.
+                    // Also remove above setlocale() line.
+                    //
                     $value = money_format('%!i', $value);
                 }
 

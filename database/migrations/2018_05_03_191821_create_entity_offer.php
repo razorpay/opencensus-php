@@ -32,7 +32,7 @@ class CreateEntityOffer extends Migration
                   ->on(Table::OFFER)
                   ->onDelete('restrict');
 
-            $table->unique([EntityOffer::ENTITY_ID, EntityOffer::ENTITY_TYPE]);
+            $table->unique([EntityOffer::ENTITY_ID, EntityOffer::ENTITY_TYPE, EntityOffer::OFFER_ID]);
 
             $table->integer(EntityOffer::CREATED_AT);
             $table->integer(EntityOffer::UPDATED_AT);

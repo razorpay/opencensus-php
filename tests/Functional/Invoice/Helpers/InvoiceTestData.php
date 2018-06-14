@@ -3460,7 +3460,7 @@ return [
         ],
     ],
 
-    'testCancelPaidInvocie' => [
+    'testCancelPaidInvoice' => [
         'request' => [
             'url' => '/invoices/inv_1000000invoice/cancel',
             'method' => 'post',
@@ -3502,6 +3502,27 @@ return [
                 'email_status' => 'sent',
                 'view_less'    => true,
             ],
+        ],
+    ],
+
+    'testUpdateExpiredInvoiceNotes' => [
+        'request'  => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'notes' => [
+                    'key2' => 'value2'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'     => 'inv_1000000invoice',
+                'status' => 'expired',
+                'notes'  => [
+                    'key2' => 'value2'
+                ],
+            ]
         ],
     ],
 

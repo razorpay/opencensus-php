@@ -1,9 +1,10 @@
-<?php 
+<?php
 
 namespace RZP\Reconciliator\Hitachi;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
@@ -22,8 +23,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_CARD_COUNTRY           = 'cardcountry';
     const COLUMN_CARD_INTERCHANGE_TYPE  = 'interchange_type';
     const COLUMN_ISSETTLED              = 'issettled';
+    const COLUMN_CURRENCY_CODE          = 'tran_currency_code';
 
     const BHARAT_QR_TERMINAL            = '38R00450';
+
+    const DEFAULT_CURRENCY_CODE         = '356';
 
     protected function getPaymentId(array $row)
     {
@@ -37,9 +41,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'row'       => $row,
                     'gateway'   => $this->gateway
                 ]);
-            
+
             $this->setFailUnprocessedRow(false);
-            
+
             return null;
         }
 
@@ -109,7 +113,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             BaseReconciliate::CARD_TRIVIA => $cardTrivia,
         ];
     }
-    
+
     protected function getColumnCardLocale($row)
     {
         if (empty($row[self::COLUMN_CARD_COUNTRY]) === true)
@@ -119,7 +123,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         return strtolower($row[self::COLUMN_CARD_COUNTRY]);
     }
-    
+
     protected function getColumnCardTrivia($row)
     {
         if (empty($row[self::COLUMN_CARD_INTERCHANGE_TYPE]) === true)
@@ -230,4 +234,76 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $row[self::COLUMN_AUTH_CODE];
     }
 
+    protected function getReconPaymentAmount(array $row)
+    {
+        if (isset($row[static::COLUMN_PAYMENT_AMOUNT]) === false)
+        {
+            return null;
+        }
+
+        $paymentAmount = Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT]);
+
+        return $paymentAmount;
+    }
+
+    protected function getReconCurrencyCode($row)
+    {
+        if (empty($row[self::COLUMN_CURRENCY_CODE]) === true)
+        {
+            $this->reportMissingColumn($row, self::COLUMN_CURRENCY_CODE);
+
+            return null;
+        }
+
+        return $row[self::COLUMN_CURRENCY_CODE];
+    }
+
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        $convertCurrency = $this->payment->getConvertCurrency();
+
+        $paymentAmount = ($convertCurrency === true) ? $this->payment->getBaseAmount() : $this->payment->getAmount();
+
+        if ($paymentAmount !== $this->getReconPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'message'           => 'Payment amount mismatch',
+                    'expected_amount'   => $paymentAmount,
+                    'currency'          => $this->payment->getCurrency(),
+                    'row'               => $row,
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+        return true;
+    }
+
+    protected function validatePaymentCurrencyEqualsReconCurrency(array $row) : bool
+    {
+        $convertCurrency = $this->payment->getConvertCurrency();
+
+        $expectedCurrency = ($convertCurrency === true) ? self::DEFAULT_CURRENCY_CODE : Currency::getIsoCode($this->payment->getCurrency());
+
+        $reconCurrency = $this->getReconCurrencyCode($row);
+
+        if ($expectedCurrency !== $reconCurrency)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'message'           => 'Payment currency mismatch',
+                    'expected_currency' => $expectedCurrency,
+                    'recon_currency'    => $reconCurrency,
+                    'row'               => $row,
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
 }
