@@ -304,7 +304,7 @@ class AdminFetch
                         'recurring_charge',
                         'payout',
                         'sub_merchant',
-                        'direct_debit'
+                        'direct_debit',
                     ],
                 ],
                 'sub_type' => [
@@ -315,7 +315,7 @@ class AdminFetch
                         'register',
                         'debit',
                         'payment',
-                        'combined'
+                        'combined',
                     ],
                 ],
                 'gateway' => [
@@ -697,7 +697,7 @@ class AdminFetch
                         'refund',
                         'combined',
                         'emandate_debit',
-                        'emandate_register'
+                        'emandate_register',
                     ],
                 ],
                 'status' => [
