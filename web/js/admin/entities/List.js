@@ -7,13 +7,7 @@ import { adminFetch } from 'common/fetch';
 import { formatDate } from 'common/util';
 
 import Form, { serialize } from 'ui/Form';
-import Field, {
-  FromField,
-  ToField,
-  SelectField,
-  SwitchField,
-  SelectMode,
-} from 'ui/Field';
+import Field, { FromField, ToField, SelectField, SelectMode } from 'ui/Field';
 import { PageTable } from 'ui/Table';
 import Collection, { defaultFilters } from 'model/collection';
 import { statusPill } from 'common/data';
@@ -240,6 +234,36 @@ export default class EntityList extends Component {
           return <pre class="duplex-json">{JSON.stringify(value)}</pre>;
         } else if (typeof value === 'boolean') {
           value = JSON.stringify(value);
+        } else if (this.selectedEntity === 'shield.rule_analytics') {
+          if (key === 'entity_id') {
+            return (
+              <Link
+                class="link"
+                target="_blank"
+                to={`/entity/payment/${
+                  this.collection.extraFields.mode
+                }/pay_${value}`}
+              >
+                {value}
+              </Link>
+            );
+          } else if (key === 'rule_ids') {
+            return (
+              <span>
+                {value.split(' ').map(val => (
+                  <Link
+                    class="link"
+                    target="_blank"
+                    to={`/entity/shield.rules/${
+                      this.collection.extraFields.mode
+                    }/${val}`}
+                  >
+                    {val}
+                  </Link>
+                ))}
+              </span>
+            );
+          }
         }
         return value;
       },
