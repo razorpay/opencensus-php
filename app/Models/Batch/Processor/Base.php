@@ -341,6 +341,15 @@ class Base extends BaseModel\Core
 
         $this->batch->incrementAttempts();
 
+        $this->repo->saveOrFail($this->batch);
+
+        //
+        // Note:
+        // We are not saving batch entity's status after resetting. It is a temporary reset and after current
+        // processing the actual values would be saved. Additionally, notice that in below method we set status to null,
+        // which is not allowed at database layer and so even if we attempt saving it'll fail or else need to figure
+        // out what the temporary status should be.
+        //
         $this->resetBatchAttributes();
 
         $this->downloadAndSetInputFile();
@@ -359,6 +368,9 @@ class Base extends BaseModel\Core
         {
             $this->batch->setStatusNull();
             $this->batch->unsetFailureReason();
+            $this->batch->unsetProcessedCount();
+            $this->batch->setSuccessCount(0);
+            $this->batch->setFailureCount(0);
         }
     }
 
@@ -429,6 +441,12 @@ class Base extends BaseModel\Core
 
                 $entry[Batch\Header::STATUS]     = Batch\Status::FAILURE;
                 $entry[Batch\Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+            }
+            finally
+            {
+                $this->batch->incrementProcessedCount();
+
+                $this->repo->saveOrFail($this->batch);
             }
         }
     }

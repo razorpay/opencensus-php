@@ -61,6 +61,7 @@ class Entity extends Base\PublicEntity
     const REFUND_SOURCE            = 'refund_source';
     const LINKED_ACCOUNT_KYC       = 'linked_account_kyc';
     const HAS_KEY_ACCESS           = 'has_key_access';
+    const PARTNER_TYPE             = 'partner_type';
     const BRAND_COLOR              = 'brand_color';
     const HANDLE                   = 'handle';
     const RISK_RATING              = 'risk_rating';
@@ -169,7 +170,6 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::EMAIL,
         self::SCOPE,
-        self::ORG_ID,
         self::WEBSITE,
         self::CHANNEL,
         self::CATEGORY,
@@ -181,6 +181,7 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS,
         self::RISK_RATING,
         self::RISK_THRESHOLD,
+        self::PARTNER_TYPE,
         self::BRAND_COLOR,
         self::HANDLE,
         self::INTERNATIONAL,
@@ -265,6 +266,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED  => true,
         self::HOLD_FUNDS             => false,
         self::FEE_BEARER             => FeeBearer::PLATFORM,
+        self::PARTNER_TYPE           => null,
         self::BRAND_COLOR            => null,
         self::HANDLE                 => null,
         self::RISK_RATING            => 3,
@@ -1019,6 +1021,16 @@ class Entity extends Base\PublicEntity
 
         // Just so there is no whitespace before or after the email
         return array_filter(array_map('trim', $emails));
+    }
+
+    public function getPartnerType()
+    {
+        return $this->getAttribute(self::PARTNER_TYPE);
+    }
+
+    public function isPartner(): bool
+    {
+        return $this->isAttributeNotNull(self::PARTNER_TYPE);
     }
 
     protected function setEmailAttribute($email)

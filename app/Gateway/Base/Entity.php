@@ -4,9 +4,12 @@ namespace RZP\Gateway\Base;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Base\Traits\HardDeletes;
 
 class Entity extends Base\PublicEntity
 {
+    use HardDeletes;
+
     const PAYMENT_ID    = 'payment_id';
     const REFUND_ID     = 'refund_id';
     const ACTION        = 'action';

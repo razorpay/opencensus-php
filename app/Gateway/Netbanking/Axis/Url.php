@@ -10,7 +10,11 @@ class Url
 
         const CORPORATE_AUTHORIZE_DOMAIN = 'https://corporate.axisbank.co.in/';
 
+        const CORPORATE_VERIFY_DOMAIN    = 'https://www.axisbiconnect.co.in/';
+
         const AUTHORIZE_CORPORATE        = 'wps/portal/cBanking/AxisSMCorporateLogin/axissmcorppage?AuthenticationFG.MENU_ID=CIMSHP&AuthenticationFG.CALL_MODE=2&CATEGORY_ID=IRCSM';
+
+        const VERIFY_CORPORATE           = 'AXISPaymentsVerification/Web/Applications/CorpQuery.aspx';
 
         const EMANDATE_TEST_DOMAIN       = 'https://uat-etendering.axisbank.co.in/easypay2.0/frontend/api';
         // const EMANDATE_TEST_DOMAIN       = 'https://uat-etendering.axisbank.co.in/index.php/api';

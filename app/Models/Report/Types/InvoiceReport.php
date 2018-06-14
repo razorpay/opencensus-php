@@ -120,9 +120,9 @@ class InvoiceReport extends BaseReport
 
         $this->invoiceNo = $this->invoiceBreakup[0]->getInvoiceNumber();
 
-        $this->invoiceDate = Carbon::createFromDate($this->year, $this->month, 1, Timezone::IST)
-                                    ->addMonth()
-                                    ->startOfMonth()
+        $createdTimestamp = $this->invoiceBreakup[0]->getCreatedAt();
+
+        $this->invoiceDate = Carbon::createFromTimestamp($createdTimestamp, Timezone::IST)
                                     ->format('d/m/Y');
 
         $this->gstin = $this->invoiceBreakup[0]->getGstin();

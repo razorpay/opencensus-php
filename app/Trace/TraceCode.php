@@ -642,6 +642,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BHARAT_QR_UNEXPECTED_PAYMENT              = 'BHARAT_QR_UNEXPECTED_PAYMENT';
 
     const PAYMENT_RECEIVED_VIA_RECEIVER             = 'PAYMENT_RECEIVED_VIA_RECEIVER';
+    const PAYMENT_RECEIVER_UPDATE_FAILURE           = 'PAYMENT_RECEIVER_UPDATE_FAILURE';
+    const PAYMENT_RECEIVER_UPDATED                  = 'PAYMENT_RECEIVER_UPDATED';
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
     const MERCHANT_REPORT_GENERATION                = 'MERCHANT_REPORT_GENERATION';
@@ -1070,6 +1072,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
     const DB_DATA_INTEGRITY_ERROR                       = 'DB_DATA_INTEGRITY_ERROR';
+    const DB_PIVOT_TABLE_ASSOCIATION_ERROR              = 'DB_PIVOT_TABLE_ASSOCIATION_ERROR';
     const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
 
     const AWS_CREDS_CACHE_SET                           = 'AWS_CREDS_CACHE_SET';

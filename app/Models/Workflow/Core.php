@@ -24,11 +24,17 @@ class Core extends Base\Core
         $workflow->getValidator()->validatePermissionHasOneWorkflow(
             $input[Entity::ORG_ID], $input[Entity::PERMISSIONS]);
 
+        $org = $this->repo->org->findOrFailPublic($input[Entity::ORG_ID]);
+
+        $workflow->org()->associate($org);
+
         $workflow->build($input);
 
         $this->repo->transactionOnLiveAndTest(function() use ($workflow, $input)
         {
             $this->repo->saveOrFail($workflow);
+
+            $this->repo->permission->validateExists($input[Entity::PERMISSIONS]);
 
             $this->repo->sync($workflow, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
 
@@ -65,7 +71,7 @@ class Core extends Base\Core
 
             Role\Entity::verifyIdAndSilentlyStripSign($step[Step\Entity::ROLE_ID]);
 
-            (new Step\Core)->create($step);
+            (new Step\Core)->create($step, $workflow);
         }
     }
 
@@ -90,9 +96,18 @@ class Core extends Base\Core
 
         $workflow->edit($input);
 
+        if (empty($input[Entity::ORG_ID]) === false)
+        {
+            $org = $this->repo->org->findOrFailPublic($input[Entity::ORG_ID]);
+
+            $workflow->org()->associate($org);
+        }
+
         $this->repo->transactionOnLiveAndTest(function() use ($workflow, $input)
         {
             $this->repo->saveOrFail($workflow);
+
+            $this->repo->permission->validateExists($input[Entity::PERMISSIONS]);
 
             $this->repo->sync($workflow, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
 
@@ -108,7 +123,7 @@ class Core extends Base\Core
                 //
                 // If yes, then soft delete all steps
                 // If no, then force delete all steps
-                
+
                 $checkerCount = 0;
 
                 foreach ($currentWorkflowSteps as $step)
@@ -120,7 +135,7 @@ class Core extends Base\Core
                         break;
                     }
                 }
-                
+
                 if ($checkerCount > 0)
                 {
                     // Soft delete

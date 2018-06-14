@@ -446,9 +446,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return false;
     }
 
-    protected function shouldAttemptForceAuthorizeFailed()
+    protected function setAllowForceAuthorization()
     {
-        return true;
+        $this->allowForceAuthorization = true;
     }
 
     /**

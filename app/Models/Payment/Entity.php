@@ -178,7 +178,6 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::ID,
-        self::MERCHANT_ID,
         self::AMOUNT,
         self::METHOD,
         self::EMI_PLAN_ID,
@@ -996,6 +995,16 @@ class Entity extends Base\PublicEntity
     public function setAcknowledgedAt(int $timestamp)
     {
         $this->setAttribute(self::ACKNOWLEDGED_AT, $timestamp);
+    }
+
+    public function setReceiverId(string $receiverId)
+    {
+        $this->setAttribute(self::RECEIVER_ID, $receiverId);
+    }
+
+    public function setReceiverType(string $receiverType)
+    {
+        $this->setAttribute(self::RECEIVER_TYPE, $receiverType);
     }
 
     // ----------------------- Setters Ends-----------------------------------------
