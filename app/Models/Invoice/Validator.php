@@ -186,6 +186,7 @@ class Validator extends Base\Validator
 
     protected static $editPartiallyPaidRules = [
         Entity::NOTES               => 'sometimes|notes',
+        Entity::EXPIRE_BY           => 'sometimes|epoch|nullable|custom',
     ];
 
     protected static $editExpiredRules = [
@@ -384,6 +385,20 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateExpireBy(string $attribute, int $expireBy)
+    {
+        $now = Carbon::now(Timezone::IST);
+
+        $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
+
+        if ($expireBy < $minExpireBy->getTimestamp())
+        {
+            $message = 'expire_by should be at least ' . $minExpireBy->diffForHumans($now) . ' current time';
+
+            throw new BadRequestValidationFailureException($message);
+        }
+    }
+
     /**
      * Does few validations around merchant data to decide if invoice should
      * allowed to be created or not.
@@ -569,21 +584,9 @@ class Validator extends Base\Validator
     {
         $invoice = $this->entity;
 
-        // If expired_by is not set at all, nothing to validate.
-        if ($invoice->getExpireBy() === null)
+        if ($invoice->getExpireBy() !== null)
         {
-            return;
-        }
-
-        $now = Carbon::now(Timezone::IST);
-        $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
-
-        if ($invoice->getExpireBy() < $minExpireBy->getTimestamp())
-        {
-            $message = 'expire_by should be at least ' .
-                        $minExpireBy->diffForHumans($now) . ' the time of issue.';
-
-            throw new BadRequestValidationFailureException($message);
+            $this->validateExpireBy(Entity::EXPIRE_BY, $invoice->getExpireBy());
         }
     }
 

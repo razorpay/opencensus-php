@@ -1175,7 +1175,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'expire_by should be at least 15 minutes after the time of issue.',
+                    'description' => 'expire_by should be at least 15 minutes after current time',
                 ],
             ],
             'status_code' => 400,
@@ -1750,6 +1750,46 @@ return [
                 ],
                 'status'           => 'draft',
             ],
+        ],
+    ],
+
+    'testUpdatePartiallyPaidInvoiceExpireBy' => [
+        'request'  => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'expire_by' => 1518220800,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'        => 'inv_1000000invoice',
+                'status'    => 'partially_paid',
+                'expire_by' => 1518220800,
+            ]
+        ],
+    ],
+
+    'testUpdatePartiallyPaidInvoiceInvalidExpireBy' => [
+        'request'   => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'expire_by' => 1517443199,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'expire_by should be at least 15 minutes after current time',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

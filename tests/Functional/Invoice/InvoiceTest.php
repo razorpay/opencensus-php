@@ -689,6 +689,28 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdatePartiallyPaidInvoiceExpireBy()
+    {
+        $past = Carbon::create(2018, 2, 1, 12, null, null, Timezone::IST);
+
+        Carbon::setTestNow($past);
+
+        $this->createInvoice(['status' => 'partially_paid']);
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartiallyPaidInvoiceInvalidExpireBy()
+    {
+        $past = Carbon::create(2018, 2, 1, 12, null, null, Timezone::IST);
+
+        Carbon::setTestNow($past);
+
+        $this->createInvoice(['status' => 'partially_paid']);
+
+        $this->startTest();
+    }
+
     public function testUpdateDraftInvoiceWithInvalidCustomerBillingAddressId()
     {
         //
