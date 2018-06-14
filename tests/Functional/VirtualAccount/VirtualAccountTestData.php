@@ -183,6 +183,30 @@ return [
         ],
     ],
 
+    'testFetchPaymentsForVirtualAccountForQrCode' => [
+        'entity' => 'collection',
+        'count'  => 1,
+        'items'  => [
+            [
+                'entity'            => 'payment',
+                'amount'            => 200,
+                'currency'          => 'INR',
+                'status'            => 'captured',
+                'order_id'          => null,
+                'invoice_id'        => null,
+                'method'            => 'card',
+                'amount_refunded'   => 0,
+                'refund_status'     => null,
+                'captured'          => true,
+                'description'       => 'Bharat Qr Payment',
+                'email'             => null,
+                'contact'           => null,
+                'error_code'        => null,
+                'error_description' => null,
+            ]
+        ],
+    ],
+
     'testCreateVirtualAccountWithDescriptor' => [
         'response' => [
             'content' => [
