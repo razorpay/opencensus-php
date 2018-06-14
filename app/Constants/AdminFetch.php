@@ -291,31 +291,18 @@ class AdminFetch
                     Fetch::LABEL  => 'Type',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
-                        'all',
                         'payment_link',
                         'refund',
                         'emandate',
-                        'reconciliation'
+                        'reconciliation',
                         'irctc_refund',
                         'irctc_settlement',
                         'linked_account',
-                        'bank_transfer',
                         'virtual_bank_account',
                         'recurring_charge',
                         'payout',
                         'sub_merchant',
                         'direct_debit',
-                    ],
-                ],
-                'sub_type' => [
-                    Fetch::LABEL  => 'Sub Type',
-                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES => [
-                        'all',
-                        'register',
-                        'debit',
-                        'payment',
-                        'combined',
                     ],
                 ],
                 'gateway' => [
@@ -712,7 +699,7 @@ class AdminFetch
                     ],
                 ],
                 'target' => [
-                    Fetch::LABEL  => 'Type',
+                    Fetch::LABEL  => 'Target',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
                         'rbl',
