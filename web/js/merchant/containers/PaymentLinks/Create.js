@@ -29,6 +29,7 @@ import { dateCalculator, timeCalculator } from 'component/Input/Calendar';
 import { onChangeNotes } from 'component/Input/PairList';
 
 import EarlyAccessRPL from './ReusableLinks/EarlyAccess';
+import { trackOpenCreateForm } from './Links/ga';
 
 const FORM_TABS = [
   {
@@ -191,6 +192,8 @@ export default class CreateNewContainer extends React.Component {
       window.hj('trigger', 'payment_links_v2_form_open');
       window.hj('tagRecording', ['payment_links_v2_form_open']);
     }
+
+    trackOpenCreateForm();
   }
 
   componentDidMount() {

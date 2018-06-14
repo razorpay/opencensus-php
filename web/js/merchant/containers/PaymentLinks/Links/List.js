@@ -14,8 +14,6 @@ import * as ModalActions from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
-import { trackOpenCreateForm } from './ga';
-
 @connect(state => ({ ...state.invoices, ...state.session }), {
   ...InvoiceActions,
   ...ModalActions,
@@ -100,11 +98,7 @@ export default class PaymentLinksContainer extends ListContainer {
         <ShowWhen notMyRole="support">
           <div class="btn-toolbar pull-right header-btns">
             {isPaymentLinksV2Enabled ? (
-              <NavLink
-                class="btn btn-primary"
-                to="/paymentlinks/new"
-                onClick={trackOpenCreateForm}
-              >
+              <NavLink class="btn btn-primary" to="/paymentlinks/new">
                 <i class="i i-plus" />
                 <span>Create Payment Link</span>
               </NavLink>
@@ -119,8 +113,6 @@ export default class PaymentLinksContainer extends ListContainer {
             )}
           </div>
         </ShowWhen>
-
-        <TestModeBanner />
 
         <InvoiceListFilter
           form="InvoiceListFilter"
