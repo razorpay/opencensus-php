@@ -291,5 +291,40 @@ return [
             ],
         ],
     ],
+
+    'testAddReferralToPartnerWithoutMerchantId' => [
+        'request'   => [
+            'url'     => '/partners/10000000000000/referrals',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_ID_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddReferralToPartner' => [
+        'request'   => [
+            'url'     => '/partners/10000000000000/referrals',
+            'method'  => 'POST',
+            'content' => [
+//                'merchant_id' => 'acc_10000000000011',
+                'merchant_id' => '10000000000011',
+            ],
+        ],
+        'response'  => [
+            'hello'
+        ],
+    ],
 ];
 

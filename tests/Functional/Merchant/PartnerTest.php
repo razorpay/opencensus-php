@@ -219,6 +219,35 @@ class PartnerTest extends OAuthTestCase
         return $merchantRequest;
     }
 
+    public function testAddReferralToPartnerWithoutMerchantId()
+    {
+        $merchantId = '10000000000000';
+
+        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
+
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->ba->adminAuth($liveMode);
+
+        $this->startTest();
+    }
+
+    public function testAddReferralToPartner()
+    {
+        $merchantId = '10000000000000';
+
+        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
+
+        $this->ba->adminAuth();
+
+        ////        $merchant = $this->getDbEntities('merchant');
+        //                $merchant = $this->getDbEntityById('merchant', '10000000000011', 'live');
+        ////
+        //        s($merchant);
+
+        $this->startTest();
+    }
+
     protected function getDummyPartnerAttributes(array $attributes = []): array
     {
         $defaults = [
