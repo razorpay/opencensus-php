@@ -2064,7 +2064,7 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testCancelPaidInvocie()
+    public function testCancelPaidInvoice()
     {
         $this->createOrder();
 
@@ -2089,6 +2089,26 @@ class InvoiceTest extends TestCase
                 'invoice_id' => '1000000invoice',
                 'card_id'    => null,
             ]);
+
+        $this->startTest();
+    }
+
+    public function testUpdateExpiredInvoiceNotes()
+    {
+        $this->createOrder();
+
+        $attributes = [
+            'notes'  => [
+                'key1' => 'value1'
+            ],
+            'status' => 'expired',
+        ];
+
+        $this->fixtures->create('invoice', $attributes);
+
+        $invoice = $this->getLastEntity('invoice');
+
+        $this->assertArraySelectiveEquals(['key1' => 'value1'], $invoice['notes']);
 
         $this->startTest();
     }

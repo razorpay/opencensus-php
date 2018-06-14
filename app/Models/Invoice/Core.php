@@ -118,8 +118,6 @@ class Core extends Base\Core
         // This was done to maintain flow clean. Because if not now, there are chances
         // we want to handle different things in different case.
         //
-        // This is neat base code for that.
-        //
 
         $operation = 'edit' . studly_case($status);
 
@@ -129,7 +127,18 @@ class Core extends Base\Core
 
             $updateFunction = 'update' . studly_case($status) . 'Invoice';
 
-            $this->$updateFunction($merchant, $invoice, $input);
+            //
+            // If a custom function exists to handle update for a status, call it.
+            // Else, handle save here and proceed
+            //
+            if (method_exists($this, $updateFunction) === true)
+            {
+                $this->$updateFunction($merchant, $invoice, $input);
+            }
+            else
+            {
+                $this->repo->saveOrFail($invoice);
+            }
         }
         catch (\Exception $e)
         {
@@ -138,7 +147,7 @@ class Core extends Base\Core
 
         $this->repo->loadRelations($invoice);
 
-        if ($invoice->isIssued())
+        if ($invoice->isIssued() === true)
         {
             InvoiceJob::dispatch($this->mode, InvoiceJob::UPDATED, $invoice->getId());
         }

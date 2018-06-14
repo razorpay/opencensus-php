@@ -180,6 +180,22 @@ class Validator extends Base\Validator
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|sometimes|string|in:get|nullable',
     ];
 
+    protected static $editPaidRules = [
+        Entity::NOTES               => 'sometimes|notes',
+    ];
+
+    protected static $editPartiallyPaidRules = [
+        Entity::NOTES               => 'sometimes|notes',
+    ];
+
+    protected static $editExpiredRules = [
+        Entity::NOTES               => 'sometimes|notes',
+    ];
+
+    protected static $editCancelledRules = [
+        Entity::NOTES               => 'sometimes|notes',
+    ];
+
     protected static $notifyInvoicesOfBatchRules = [
         Entity::SMS_NOTIFY          => 'required|boolean',
         Entity::EMAIL_NOTIFY        => 'required|boolean',
@@ -456,6 +472,17 @@ class Validator extends Base\Validator
         switch ($operation)
         {
             case 'update':
+                $allowedStatuses = [
+                    Status::DRAFT,
+                    Status::ISSUED,
+                    Status::PAID,
+                    Status::PARTIALLY_PAID,
+                    Status::EXPIRED,
+                    Status::CANCELLED,
+                ];
+
+                break;
+
             case 'cancelInvoice':
                 $allowedStatuses = [
                     Status::DRAFT,
