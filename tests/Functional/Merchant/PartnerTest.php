@@ -221,7 +221,7 @@ class PartnerTest extends OAuthTestCase
 
     public function testAddReferralToPartnerWithoutMerchantId()
     {
-        $merchantId = '10000000000000';
+        $merchantId = self::DEFAULT_MERCHANT_ID;
 
         $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
 
@@ -234,9 +234,14 @@ class PartnerTest extends OAuthTestCase
 
     public function testAddReferralToPartner()
     {
-        $merchantId = '10000000000000';
+        $merchantId = self::DEFAULT_MERCHANT_ID;
 
         $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
+
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $this->createOAuthApplication($partnerData);
 
         $this->ba->adminAuth();
 

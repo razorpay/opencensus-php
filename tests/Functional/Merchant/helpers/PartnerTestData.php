@@ -72,7 +72,7 @@ return [
                     ],
                 ],
                 'submissions' => [
-                    'partner_type' => 'reseller',
+                    'partner_type' => 'aggregator',
                 ],
             ],
         ],
@@ -318,12 +318,14 @@ return [
             'url'     => '/partners/10000000000000/referrals',
             'method'  => 'POST',
             'content' => [
-//                'merchant_id' => 'acc_10000000000011',
                 'merchant_id' => '10000000000011',
             ],
         ],
         'response'  => [
-            'hello'
+            'content' => [
+                'merchant_id' => '10000000000011',
+                'entity_type' => 'application',
+            ],
         ],
     ],
 ];
