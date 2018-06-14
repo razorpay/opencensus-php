@@ -1858,10 +1858,6 @@ class Service extends Base\Service
         // Expecting signed account id - Eg: acc_100DemoAccount
         $referralId = $input[Entity::MERCHANT_ID];
 
-        //
-        // The partner id should be without the sign.
-        // @todo: If Partner entity is created, expect a sign and change the function invoked below to findOrFailPublic.
-        //
         $partner = $this->repo->merchant->findOrFail($partnerId);
 
         $referral = $this->repo->merchant->findOrFail($referralId);
@@ -1869,5 +1865,16 @@ class Service extends Base\Service
         $accessMap = $this->core()->createPartnerReferral($partner, $referral);
 
         return $accessMap;
+    }
+
+    public function deletePartnerReferral(string $partnerId, string $referralId): array
+    {
+        $partner = $this->repo->merchant->findOrFail($partnerId);
+
+        $referral = $this->repo->merchant->findOrFail($referralId);
+
+        $response = $this->core()->deletePartnerReferral($partner, $referral);
+
+        return $response;
     }
 }

@@ -19,4 +19,11 @@ class PartnerController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function deleteReferral(string $partnerId, string $referralId)
+    {
+        $response = $this->service()->deletePartnerReferral($partnerId, $referralId);
+
+        return ApiResponse::json($response);
+    }
 }

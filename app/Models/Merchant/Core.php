@@ -871,6 +871,16 @@ class Core extends Base\Core
 
         $partnerApp = $partner->getPartnerApp();
 
+        if ($partnerApp === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
+                null,
+                [
+                    Entity::MERCHANT_ID => $partner->getId(),
+                ]);
+        }
+
         $referralId = $referral->getId();
 
         $partnerAppId = $partnerApp->getId();
@@ -901,6 +911,48 @@ class Core extends Base\Core
             ]);
 
         return $accessMap;
+    }
+
+    public function deletePartnerReferral(Entity $partner, Entity $referral)
+    {
+        $referralId = $referral->getId();
+
+        $partnerApp = $partner->getPartnerApp();
+
+        if ($partnerApp === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
+                null,
+                [
+                    Entity::MERCHANT_ID => $partner->getId(),
+                ]);
+        }
+
+        $partnerAppId = $partnerApp->getId();
+
+        $params = [
+            AccessMap\Entity::ENTITY_TYPE => AccessMap\Entity::APPLICATION,
+            AccessMap\Entity::ENTITY_ID   => $partnerAppId,
+        ];
+
+        $accessMap = $this->repo->merchant_access_map->fetch($params, $referralId);
+
+        if ($accessMap->isEmpty() === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PARTNER_REFERRAL_NOT_FOUND,
+                null,
+                [
+                    Entity::MERCHANT_ID           => $referralId,
+                    AccessMap\Entity::ENTITY_ID   => $partnerAppId,
+                    AccessMap\Entity::ENTITY_TYPE => AccessMap\Entity::APPLICATION,
+                ]);
+        }
+
+        $response = (new AccessMap\Service)->deleteMapOAuthApplication($referralId,$partnerAppId);
+
+        return $response;
     }
 
     public function createPartnerApp(Entity $merchant): array

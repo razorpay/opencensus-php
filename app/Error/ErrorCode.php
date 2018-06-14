@@ -799,7 +799,9 @@ class ErrorCode
 
     // Partners error codes
     const BAD_REQUEST_INVALID_PARTNER_NAME                                          = 'BAD_REQUEST_INVALID_PARTNER_NAME';
+    const BAD_REQUEST_PARTNER_APP_NOT_FOUND                                         = 'BAD_REQUEST_PARTNER_APP_NOT_FOUND';
     const BAD_REQUEST_INVALID_PARTNER_ACTION                                        = 'BAD_REQUEST_INVALID_PARTNER_ACTION';
+    const BAD_REQUEST_PARTNER_REFERRAL_NOT_FOUND                                    = 'BAD_REQUEST_PARTNER_REFERRAL_NOT_FOUND';
     const BAD_REQUEST_PARTNER_REFERRAL_ALREADY_EXISTS                               = 'BAD_REQUEST_PARTNER_REFERRAL_ALREADY_EXISTS';
     const BAD_REQUEST_REFERRAL_MERCHANT_CANNOT_BE_PARTNER                           = 'BAD_REQUEST_REFERRAL_MERCHANT_CANNOT_BE_PARTNER';
 }

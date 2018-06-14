@@ -803,7 +803,8 @@ final class Route
         'lambda_post_h2h'                          => ['post',     'lambda/{type}',                                  'LambdaController@processLambda'                                    ],
 
         // Partner routes
-        'partners_create_referral'                 => ['post',     'partners/{id}/referrals',                        'PartnerController@createReferral'                                  ],
+        'partners_referral_create'                 => ['post',     'partners/{id}/referrals',                        'PartnerController@createReferral'                                  ],
+        'partners_referral_delete'                 => ['delete',   'partners/{id}/referrals/{referralId}',           'PartnerController@deleteReferral'                                  ],
     ];
 
     public static $public = [
@@ -1527,7 +1528,8 @@ final class Route
         'merchant_activation_reviewers',
 
         // Partners
-        'partners_create_referral',
+        'partners_referral_create',
+        'partners_referral_delete',
     ];
 
     public static $routePermission = [
@@ -1841,8 +1843,10 @@ final class Route
         'merchant_activation_bulk_assign_reviewer' => Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER,
         'db_meta_query'                            => Permission::DB_META_QUERY,
         'oauth_sync_merchant_map'                  => Permission::OAUTH_SYNC_MERCHANT_MAP,
-//        'partners_create_referral'                 => Permission::EDIT_PARTNERS,
-        'partners_create_referral'                 => '*',
+//        'partners_referral_create'                 => Permission::EDIT_PARTNERS,
+//        'partners_referral_delete'                 => Permission::EDIT_PARTNERS,
+        'partners_referral_create'                 => '*',
+        'partners_referral_delete'                 => '*',
     ];
 
     public static $direct = [

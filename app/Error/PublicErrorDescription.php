@@ -627,5 +627,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PARTNER_TYPE_INVALID                                      = 'Partner type is invalid';
     const BAD_REQUEST_MERCHANT_ID_REQUIRED                                      = 'Merchant id is required';
     const BAD_REQUEST_PARTNER_TYPE_REQUIRED                                     = 'Partner type is required';
+    const BAD_REQUEST_PARTNER_APP_NOT_FOUND                                     = 'Partner app could not be found';
     const BAD_REQUEST_PARTNER_REFERRAL_ALREADY_EXISTS                           = 'Partner referral already exists';
+    const BAD_REQUEST_PARTNER_REFERRAL_NOT_FOUND                                = 'Partner referral could not be found';
 }
