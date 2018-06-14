@@ -88,15 +88,13 @@ export default class ReportLoader extends Component {
   getReportPeriod = report => {
     let { start_time, end_time } = report;
 
-    start_time *= 1000;
-    end_time *= 1000;
+    start_time = moment.unix(start_time);
+    end_time = moment.unix(end_time);
 
-    //will return 1 for day & more than 1 for month
-    let timeDiff = Math.round(
-      (new Date(end_time) - new Date(start_time)) / 86400000
-    );
+    //will return 0 for day & more than 1 for month
+    let timeDiff = end_time.diff(start_time, 'days');
 
-    if (timeDiff === 1) {
+    if (timeDiff <= 1) {
       return moment(start_time).format("Do MMM'YY");
     } else {
       return moment(start_time).format("MMM'YY");

@@ -14,6 +14,8 @@ import {
   trackReportGenericActions,
 } from 'merchant/containers/Reports/ReportsNew/ga';
 
+import moment from 'moment';
+
 @connect(
   state => {
     return {
@@ -41,16 +43,15 @@ export default class EmailReport extends Component {
     if (reportId) {
       const report = this.reportList[reportId];
       const timeLapse = new Date().getTime() - report['created_at'] * 1000;
-      const timePeriod = Math.round(
-        (new Date(report['end_time'] * 1000) -
-          new Date(report['start_time'] * 1000)) /
-          86400000
-      );
+      const endTime = moment.unix(report.end_time),
+        startTime = moment.unix(report.start_time);
+
+      const timePeriod = endTime.diff(startTime, 'days');
 
       trackTimeLapse(
         'Click - Download to Email Time',
         timeLapse,
-        `${timePeriod === 1 ? 'daily' : 'monthly'} | ${
+        `${timePeriod <= 1 ? 'daily' : 'monthly'} | ${
           configsLableMap[report.config_id]
         }`
       );
