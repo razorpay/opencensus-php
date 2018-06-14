@@ -30,6 +30,8 @@ import User from 'merchant/models/User';
   enableReinitialize: true,
 })
 export default class SubscriptionsPreStep extends Component {
+  static title = 'Website/App details';
+
   handleSave = form => {
     const { user } = this.props;
 
@@ -58,7 +60,6 @@ export default class SubscriptionsPreStep extends Component {
         }
       })
       .catch(err => {
-        console.log(err);
         this.props.showNotification({
           type: 'error',
           message: err.errors,

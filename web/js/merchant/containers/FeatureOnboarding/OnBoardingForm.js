@@ -1,6 +1,10 @@
 import { Component, Fragment } from 'react';
 
-import Accordian from 'rzp/ui/Accordian';
+import Accordian, {
+  AccordianItem,
+  AccordianItemTitle,
+  AccordianItemContent,
+} from 'rzp/ui/Accordian';
 import AsyncButton from 'react-async-button';
 
 import FORM_TYPE from './Forms';
@@ -32,16 +36,32 @@ export default class OnBoardingForm extends Component {
     const { formType } = this.props;
 
     const currentForm = FORM_TYPE[formType];
-    const WizardForm = currentForm.formComponent;
-    const WizardFormPreStep = currentForm.preStepFormComponent || null;
+    const WizardFormPreStep = currentForm.preStep.component || null;
 
     return (
       <Fragment>
-        <Accordian>
-          {WizardFormPreStep
-            ? [<WizardFormPreStep key="step" />, this.getWizardForm()]
-            : this.getWizardForm()}
-        </Accordian>
+        {WizardFormPreStep ? (
+          <Accordian>
+            <AccordianItem>
+              <AccordianItemTitle>
+                Step 1: {currentForm.preStep.title}
+              </AccordianItemTitle>
+              <AccordianItemContent>
+                <WizardFormPreStep />
+              </AccordianItemContent>
+            </AccordianItem>
+            <AccordianItem>
+              <AccordianItemTitle>
+                Step 2: {currentForm.title}
+              </AccordianItemTitle>
+              <AccordianItemContent>
+                {this.getWizardForm()}
+              </AccordianItemContent>
+            </AccordianItem>
+          </Accordian>
+        ) : (
+          this.getWizardForm()
+        )}
       </Fragment>
     );
   }

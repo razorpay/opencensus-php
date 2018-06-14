@@ -17,7 +17,11 @@ const FORM_TYPE = {
 
   subscriptions: {
     formComponent: SubscriptionsForm,
-    preStepFormComponent: SubscriptionsPreStep,
+    title: 'Business Model, Plans',
+    preStep: {
+      component: SubscriptionsPreStep,
+      title: 'Website/App Link',
+    },
     links: {
       docs: 'https://razorpay.com/docs/subscriptions',
       knowMore: 'https://razorpay.com/subscriptions',
