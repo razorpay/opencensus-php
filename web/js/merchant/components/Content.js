@@ -209,6 +209,7 @@ export default class Content extends Component {
   }
 
   closeModalView = e => {
+    document.body.classList.remove('noscroll');
     this.props.history.replace(this.baseLocation.pathname);
   };
 

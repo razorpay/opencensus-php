@@ -82,23 +82,29 @@ export default class ListContainer extends Component {
     if (!this.props.fetchAll && this.fetchList) {
       this.fetchList(params);
     } else if (this.props.fetchAll || this.fetchEntityList) {
-      return this.fetchEntityList(params)
-        .then(() => {
-          this.setState({
-            status: {
-              type: 'success',
-              message: null,
-            },
+      const promise = this.fetchEntityList(params);
+
+      if (promise.then) {
+        promise
+          .then(() => {
+            this.setState({
+              status: {
+                type: 'success',
+                message: null,
+              },
+            });
+          })
+          .catch(err => {
+            this.setState({
+              status: {
+                type: 'error',
+                message: err.errors || err,
+              },
+            });
           });
-        })
-        .catch(err => {
-          this.setState({
-            status: {
-              type: 'error',
-              message: err.errors || err,
-            },
-          });
-        });
+      }
+
+      return promise;
     }
   };
 

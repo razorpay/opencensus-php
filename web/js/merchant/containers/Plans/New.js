@@ -248,7 +248,7 @@ export default class AddPlan extends Component {
                       .catch(() => {});
                   }}
                 >
-                  Discard
+                  Cancel
                 </button>
               </div>
             </form>

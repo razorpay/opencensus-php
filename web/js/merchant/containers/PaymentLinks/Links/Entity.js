@@ -6,11 +6,14 @@ import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail';
 import IssueConfirmModal from 'merchant/containers/Invoices/IssueConfirmModal';
+import { editPaymentLink } from 'merchant/containers/PaymentLinks/Links/model';
+import { editPLInReduxList } from 'merchant/modules/invoices/list';
 
-@connect(state => state.invoice, {
+@connect(state => ({ ...state.invoice, ...state.session }), {
   ...InvoiceActions,
   ...ModalActions,
   ...NotificationsActions,
+  editPLInReduxList,
 })
 export default class InvoiceDetailContainer extends Component {
   static contextTypes = {
@@ -164,6 +167,49 @@ export default class InvoiceDetailContainer extends Component {
     });
   };
 
+  editPaymentLink = data => {
+    return editPaymentLink(this.props.invoice.id, data)
+      .then(resp => {
+        if (resp.data) {
+          this.props.editPLInReduxList(resp);
+
+          this.props.showNotification({
+            type: 'success',
+            message: `${this.props.invoice.id} successfully Updated`,
+          });
+
+          return resp;
+        } else {
+          throw 'Some network issue occured';
+        }
+      })
+      .catch(({ errors }) => {
+        let err = errors;
+
+        if (Array.isArray(err)) {
+          err = [];
+
+          errors.length &&
+            errors.forEach(e => {
+              if (e && e.toLowerCase().indexOf('status code') === -1) {
+                err.push(e);
+              }
+            });
+
+          err = err.length ? err : null;
+        }
+
+        if (!err) {
+          err = `Some Network error occured`;
+        }
+
+        this.props.showNotification({
+          type: 'error',
+          message: err,
+        });
+      });
+  };
+
   render() {
     let { loading, invoice } = this.props;
     let statusMsg = this.state.statusMsg;
@@ -175,6 +221,8 @@ export default class InvoiceDetailContainer extends Component {
         statusMsg={statusMsg}
         onIssue={this.showIssueConfirmModal}
         onCancel={this.cancelInvoice}
+        editPaymentLink={this.editPaymentLink}
+        isPaymentLinksV2Enabled={this.props.user.isPaymentLinksV2Enabled}
       />
     );
   }

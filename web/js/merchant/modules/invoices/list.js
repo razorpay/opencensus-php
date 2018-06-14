@@ -22,6 +22,38 @@ export const saveInvoice = params => {
   };
 };
 
+/* Hook to update newly created payment link in redux list*/
+export const savePLInReduxList = newInvoice => {
+  return {
+    type: `${INVOICE_CREATE}::SUCCESS`,
+    payload: new Invoice(newInvoice.data),
+  };
+};
+
+/* Hook to update edited invoice in redux list */
+export const editPLInReduxList = invoice => {
+  return {
+    type: `${INVOICE_EDIT}::SUCCESS`,
+    payload: new Invoice(invoice.data),
+  };
+};
+
+/* Hook to update newly created reusable link in redux list */
+export const saveRPLInReduxList = newLink => {
+  return {
+    type: 'RPL_CREATE',
+    payload: newLink,
+  };
+};
+
+/* Hook to populate reusable links list fetched separately from api */
+export const populateRPLReduxList = newLinksList => {
+  return {
+    type: 'RPL_FETCH',
+    payload: newLinksList,
+  };
+};
+
 export const deleteInvoice = params => {
   let invoice = new Invoice(params);
   return {
@@ -33,6 +65,7 @@ export const deleteInvoice = params => {
 let initialState = {
   loading: true,
   invoices: [],
+  reusableLinks: [],
   count: 0,
 };
 
@@ -56,6 +89,18 @@ export default function(state = initialState, action) {
 
     case `${INVOICE_CREATE}::SUCCESS`:
       return set(state, 'invoices', unshift(state.invoices, action.payload));
+
+    case 'RPL_CREATE':
+      return set(
+        state,
+        'reusableLinks',
+        unshift(state.reusableLinks, action.payload)
+      );
+
+    case 'RPL_FETCH':
+      return merge(state, {
+        reusableLinks: action.payload.data.items,
+      });
 
     case `${INVOICE_EDIT}::SUCCESS`:
       let invoiceIndex = state.invoices.findIndex(
