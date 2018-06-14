@@ -15,6 +15,8 @@ class GatewayRequestException extends GatewayErrorException
 
         $this->error = new Error($code);
 
+        $this->code = $code;
+
         $this->message = 'Gateway request failed with error';
 
         $this->data['message'] = $curlErrorMessage;

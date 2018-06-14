@@ -22,22 +22,21 @@ class Entity extends Base\PublicEntity
 
     const UPDATED_AT                    = 'updated_at';
 
-    const ACTION_STATES = array('ACTIVATED','SUSPENDED','PRIORITY_CHANGE');
+    const ACTION_STATES = ['ACTIVATED','SUSPENDED','PRIORITY_CHANGE'];
 
-    protected $fillable = array(
-        self::TERMINAL_ID,
+    protected $fillable = [
         self::ACTION,
         self::CREATED_AT,
         self::UPDATED_AT
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::TERMINAL_ID,
         self::ACTION,
         self::CREATED_AT,
         self::UPDATED_AT
-    );
+    ];
 
     protected $entity = 'terminal_action';
 

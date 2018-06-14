@@ -21,6 +21,7 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Batch\Repository                $batch
  * @property Models\BankAccount\Repository          $bank_account
  * @property Models\Merchant\Account\Repository     $account
+ * @property Models\PaymentLink\Repository          $payment_link
  */
 class RepositoryManager extends Illuminate\Support\Manager
 {

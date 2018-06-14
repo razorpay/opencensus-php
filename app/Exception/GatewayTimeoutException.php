@@ -13,12 +13,12 @@ class GatewayTimeoutException extends GatewayRequestException
 
         $this->error = new Error($code);
 
+        $this->code = $code;
+
         $this->message = 'Gateway request timed out';
 
         $this->data['message'] = $curlErrorMessage;
 
         $this->safeRetry = $safeRetry;
-
-        // parent::__construct($curlErrorMessage, $code, $previous);
     }
 }

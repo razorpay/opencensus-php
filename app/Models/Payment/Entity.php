@@ -102,6 +102,15 @@ class Entity extends Base\PublicEntity
     const REFERENCE5            = 'reference5';
     const REFERENCE6            = 'reference6';
     const REFERENCE9            = 'reference9';
+    // From 10 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
+    const REFERENCE10           = 'reference10';
+    const REFERENCE11           = 'reference11';
+    const REFERENCE12           = 'reference12';
+    const REFERENCE13           = 'reference13';
+    const REFERENCE14           = 'reference14';
+    const REFERENCE15           = 'reference15';
+    const REFERENCE16           = 'reference16';
+    const REFERENCE17           = 'reference17';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
     const GATEWAY_CAPTURED      = 'gateway_captured';
@@ -178,7 +187,6 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::ID,
-        self::MERCHANT_ID,
         self::AMOUNT,
         self::METHOD,
         self::EMI_PLAN_ID,
