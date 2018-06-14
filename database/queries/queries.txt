@@ -3641,3 +3641,6 @@ ALTER TABLE payments
     ADD COLUMN reference16 VARCHAR(255) DEFAULT NULL AFTER reference15,
     ADD COLUMN reference17 TEXT AFTER reference16,
     ADD INDEX payments_payment_link_id_index (payment_link_id);
+
+ALTER TABLE virtual_accounts
+    ADD INDEX virtual_accounts_qr_code_id_index (qr_code_id);
