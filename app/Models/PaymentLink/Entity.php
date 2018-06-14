@@ -215,32 +215,16 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::INACTIVE);
     }
 
-    // TODO: To check & fix inconsistency in following 2 methods (Ref. Github comment)
-
     public function isExpired(): bool
     {
-        if (($this->getStatus() === Status::INACTIVE) and
-            ($this->getStatusReason() === StatusReason::EXPIRED))
-        {
-            return true;
-        }
-
-        $now = Carbon::now(Timezone::IST)->timestamp;
-
-        return (($this->getExpireBy() !== null) and
-                ($this->getExpireBy() <= $now));
+        return (($this->getStatus() === Status::INACTIVE) and
+                ($this->getStatusReason() === StatusReason::EXPIRED));
     }
 
     public function isCompleted(): bool
     {
-        if (($this->getStatus() === Status::INACTIVE) and
-            ($this->getStatusReason() === StatusReason::COMPLETED))
-        {
-            return true;
-        }
-
-        return (($this->getTimesPayable() !== null) and
-                ($this->getTimesPayable() === $this->getTimesPaid()));
+        return (($this->getStatus() === Status::INACTIVE) and
+                ($this->getStatusReason() === StatusReason::COMPLETED));
     }
 
     public function isDeactivated(): bool
@@ -249,13 +233,29 @@ class Entity extends Base\PublicEntity
                 ($this->getStatusReason() === StatusReason::DEACTIVATED));
     }
 
+    public function isPastExpireBy(): bool
+    {
+        $now = Carbon::now(Timezone::IST)->timestamp;
+
+        return (($this->getExpireBy() !== null) and
+                ($now >= $this->getExpireBy()));
+    }
+
+    public function isTimesPayableExhausted(): bool
+    {
+        return (($this->getTimesPayable() !== null) and
+                ($this->getTimesPayable() === $this->getTimesPaid()));
+    }
+
     /**
-     * Checks if link in it's current state is payable or not
+     * Checks if link in it's current state is payable or not.
      * @return boolean
      */
     public function isPayable(): bool
     {
-        return (($this->isActive() === true) and ($this->isExpired() === false));
+        // Must not be expired or expire_by is past present time (and CRON is yet to mark it as expired)
+        return (($this->isExpired() === false) and
+                ($this->isPastExpireBy() === false));
     }
 
     /**

@@ -158,7 +158,7 @@ class Core extends Base\Core
         $paymentLink->incrementTimesPaid();
         $paymentLink->incrementTotalAmountPaidBy($payment->getAmount());
 
-        if ($paymentLink->isCompleted() === true)
+        if ($paymentLink->isTimesPayableExhausted() === true)
         {
             $this->changeStatus($paymentLink, Status::INACTIVE, StatusReason::COMPLETED);
         }
