@@ -7,6 +7,7 @@ use RZP\Base\Luhn;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
@@ -111,62 +112,78 @@ class Processor extends VirtualAccount\Processor
 
         if ($this->virtualAccount === null)
         {
-            if ($this->getTerminal()->isExpected() === false)
-            {
-                $this->trace->info(
-                    TraceCode::VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT,
-                    [
-                        'entity' => $entity->toArray(),
-                    ]);
-
-                $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
-
-                return false;
-            }
-            else
-            {
-                $gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
-
-                if ($gateway === Payment\Gateway::SHARP)
-                {
-                    $terminalMerchant = $this->merchant;
-                }
-                else
-                {
-                    $terminalMerchant = $this->terminal->merchant;
-                }
-
-                if ($terminalMerchant->getId() === Account::SHARED_ACCOUNT)
-                {
-                    throw new Exception\LogicException(
-                        'Bharat Qr terminal merchant with expected true can not be shared',
-                        null,
-                        ['terminal_id' => $this->terminal->getId()]);
-                }
-
-                //
-                // Here if there is no va but we received a payment and terminal
-                // expected is set to true, we need to create a virtual account and
-                // receiver with the reference received from bank.
-                //
-                $input = [
-                    VirtualAccount\Entity::RECEIVERS => [
-                        VirtualAccount\Entity::TYPES => [
-                            VirtualAccount\Receiver::QR_CODE,
-                        ],
-                        VirtualAccount\Receiver::QR_CODE => [
-                            QrCode::REFERENCE => $this->gatewayInput[GatewayResponseParams::MERCHANT_REFERENCE]
-                        ]
-                    ],
-                ];
-
-                $this->virtualAccount = (new VirtualAccount\Core)->create($input, $terminalMerchant);
-
-                return true;
-            }
+            return $this->handleUnknownBankReference($entity);
         }
 
         return true;
+    }
+
+    protected function handleUnknownBankReference(Entity $bharatQr)
+    {
+        if ($this->getTerminal()->isExpected() === false)
+        {
+            $this->trace->info(
+                TraceCode::VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT,
+                [
+                    'entity' => $bharatQr->toArray(),
+                ]);
+
+            $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
+
+            return false;
+        }
+        else
+        {
+            $gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
+
+            //
+            // In case of sharp gateway merchant is not
+            // taken from terminal but from the auth itself
+            // as the test payments are made on private auth
+            //
+            if ($gateway === Payment\Gateway::SHARP)
+            {
+                $terminalMerchant = $this->merchant;
+            }
+            else
+            {
+                $terminalMerchant = $this->terminal->merchant;
+            }
+
+            if ($terminalMerchant->getId() === Account::SHARED_ACCOUNT)
+            {
+                throw new Exception\LogicException(
+                    'Bharat Qr terminal merchant with expected true can not be shared',
+                    null,
+                    ['terminal_id' => $this->terminal->getId()]);
+            }
+
+            //
+            // Here if there is no va but we received a payment and terminal
+            // expected is set to true, we need to create a virtual account and
+            // receiver with the reference received from bank.
+            //
+            $this->createAndSetVirtualAccount($terminalMerchant);
+
+            return true;
+        }
+
+    }
+
+    protected function createAndSetVirtualAccount(Merchant\Entity $merchant)
+    {
+        $input = [
+            VirtualAccount\Entity::RECEIVERS => [
+                VirtualAccount\Entity::TYPES => [
+                    VirtualAccount\Receiver::QR_CODE,
+                ],
+                VirtualAccount\Receiver::QR_CODE => [
+                    QrCode::REFERENCE => $this->gatewayInput[GatewayResponseParams::MERCHANT_REFERENCE]
+                ]
+            ],
+        ];
+
+        $this->virtualAccount = (new VirtualAccount\Core)->create($input, $merchant);
     }
 
     protected function getTerminal()

@@ -33,16 +33,6 @@ class Service extends Base\Service
 
         $this->validateGateway($gateway);
 
-        if (Payment\Gateway::isValidBharatQrGateway($gateway) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Gateway is invalid',
-                'gateway',
-                [
-                    'gateway' => $gateway
-                ]);
-        }
-
         $gatewayClass = $this->app['gateway']->gateway($gateway);
 
         try
