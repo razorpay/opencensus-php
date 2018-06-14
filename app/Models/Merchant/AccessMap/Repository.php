@@ -20,10 +20,7 @@ class Repository extends Base\Repository
         Entity::ENTITY_ID   => 'sometimes|string|size:14'
     ];
 
-    public function findMerchantAccessMapOnEntityId(
-        string $merchantId,
-        string $entityId,
-        string $entityType)
+    public function findMerchantAccessMapOnEntityId(string $merchantId, string $entityId, string $entityType)
     {
         return $this->newQuery()
                     ->merchantId($merchantId)
@@ -32,20 +29,15 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findMerchantAccessMapOnEntityType(
-        string $merchantId,
-        string $entityType)
+    public function findMerchantAccessMapOnEntityType(string $merchantId, string $entityType)
     {
         return $this->newQuery()
                     ->merchantId($merchantId)
                     ->where(Entity::ENTITY_TYPE, $entityType)
-                    ->whereNotNull(Entity::DELETED_AT)
                     ->first();
     }
 
-    public function fetchMerchantAccessMapsOnEntity(
-        string $merchantId,
-        string $entityType): Base\PublicCollection
+    public function fetchMerchantAccessMapsOnEntity(string $merchantId, string $entityType): Base\PublicCollection
     {
         return $this->newQuery()
                     ->merchantId($merchantId)

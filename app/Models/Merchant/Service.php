@@ -2,38 +2,39 @@
 
 namespace RZP\Models\Merchant;
 
-use Carbon\Carbon;
-use Config;
 use DB;
 use Mail;
+use Config;
 use Request;
-use Razorpay\OAuth\Application as OAuthApplication;
-use Razorpay\OAuth\Client as OAuthClient;
+use Carbon\Carbon;
 use Razorpay\OAuth\Token as OAuthToken;
-use RZP\Base\RuntimeManager;
-use RZP\Constants\Mode;
-use RZP\Constants\Timezone;
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorDescription;
+use Razorpay\OAuth\Client as OAuthClient;
+use Razorpay\OAuth\Application as OAuthApplication;
+
 use RZP\Exception;
-use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
-use RZP\Models\Admin\Admin;
-use RZP\Models\Admin\Group;
-use RZP\Models\Admin\Org;
-use RZP\Models\BankAccount;
 use RZP\Models\Base;
+use RZP\Models\User;
+use RZP\Models\Offer;
 use RZP\Models\Coupon;
+use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Models\Schedule;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Org;
+use RZP\Constants\Timezone;
+use RZP\Models\Admin\Admin;
+use RZP\Models\Admin\Group;
+use RZP\Models\BankAccount;
+use RZP\Models\Transaction;
+use RZP\Base\RuntimeManager;
+use RZP\Models\Merchant\Webhook;
+use RZP\Error\PublicErrorDescription;
+use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\SlackActions as SlackActions;
-use RZP\Models\Merchant\Webhook;
-use RZP\Models\Offer;
-use RZP\Models\Schedule;
-use RZP\Models\Schedule\Task as ScheduleTask;
-use RZP\Models\User;
-use RZP\Trace\TraceCode;
-use RZP\Models\Transaction;
+use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 
 class Service extends Base\Service
 {
@@ -1854,7 +1855,7 @@ class Service extends Base\Service
                 $input);
         }
 
-        // Expecting signed merchant id - Eg: acc_100DemoAccount
+        // Expecting signed account id - Eg: acc_100DemoAccount
         $referralId = $input[Entity::MERCHANT_ID];
 
         //
@@ -1864,11 +1865,8 @@ class Service extends Base\Service
         $partner = $this->repo->merchant->findOrFail($partnerId);
 
         $referral = $this->repo->account->findOrFail($referralId);
-//        $referral = $this->repo->account->findOrFailPublic($referralId);
 
         $accessMap = $this->core()->createPartnerReferral($partner, $referral);
-
-        s($accessMap);
 
         return $accessMap;
     }

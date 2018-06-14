@@ -379,7 +379,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateIsNotPartner(Entity $merchant)
+    public function validateReferralIsNotPartner(Entity $merchant)
     {
         // Block non-partner merchants and pure platforms
         if (($merchant->isPartner() === true))

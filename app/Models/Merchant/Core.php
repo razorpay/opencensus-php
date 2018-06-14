@@ -867,31 +867,29 @@ class Core extends Base\Core
 
         $validator->validateIsPurePartner($partner);
 
-        $validator->validateIsNotPartner($referral);
-
-//        $partnerApp = $partner->getPartnerApp();
-
-//        if ($partnerApp === null)
-//        {
-//            $partnerApp = $this->createPartnerApp($partner);
-//        }
+        $validator->validateReferralIsNotPartner($referral);
 
         $partnerApp = $partner->getPartnerApp();
 
         $accessMap = $this->repo
                           ->merchant_access_map
-                          ->findMerchantAccessMapOnEntityType($partner->getId(), AccessMap\Entity::APPLICATION);
+                          ->findMerchantAccessMapOnEntityType($partnerApp->getId(), AccessMap\Entity::APPLICATION);
 
-        if ($accessMap === null)
+        if ($accessMap !== null)
         {
-            $partnerApp = $this->createPartnerApp($partner);
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PARTNER_REFERRAL_ALREADY_EXISTS,
+                null,
+                [
+                    'id' => $accessMap->getId(),
+                ]);
         }
 
         $accessMap = (new AccessMap\Service)->mapOAuthApplication(
-                        $referral->getId(),
-                        [
-                            AccessMap\Entity::APPLICATION_ID => $partnerApp->getId()
-                        ]);
+            $referral->getId(),
+            [
+                AccessMap\Entity::APPLICATION_ID => $partnerApp->getId()
+            ]);
 
         return $accessMap;
     }
