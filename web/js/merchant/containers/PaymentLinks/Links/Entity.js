@@ -9,7 +9,7 @@ import IssueConfirmModal from 'merchant/containers/Invoices/IssueConfirmModal';
 import { editPaymentLink } from 'merchant/containers/PaymentLinks/Links/model';
 import { editPLInReduxList } from 'merchant/modules/invoices/list';
 
-@connect(state => state.invoice, {
+@connect(state => ({ ...state.invoice, ...state.session }), {
   ...InvoiceActions,
   ...ModalActions,
   ...NotificationsActions,
@@ -222,6 +222,7 @@ export default class InvoiceDetailContainer extends Component {
         onIssue={this.showIssueConfirmModal}
         onCancel={this.cancelInvoice}
         editPaymentLink={this.editPaymentLink}
+        isPaymentLinksV2Enabled={this.props.user.isPaymentLinksV2Enabled}
       />
     );
   }

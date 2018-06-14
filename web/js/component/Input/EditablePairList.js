@@ -36,7 +36,9 @@ export default class EditablePairsList extends React.PureComponent {
     const freshKeys = [...this.state.keys];
 
     freshPairs.push({});
-    freshKeys.push(freshKeys[freshKeys.length - 1] + 1);
+
+    const dummyTS = freshKeys[freshKeys.length - 1] || new Date().getTime();
+    freshKeys.push(dummyTS + 1);
 
     this.setState({
       pairs: freshPairs,

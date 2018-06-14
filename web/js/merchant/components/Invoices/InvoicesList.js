@@ -58,7 +58,7 @@ const InvoiceListItem = props => {
       <td>
         <InvoiceStatusLabel status={invoice.status} />
       </td>
-      {(!isPaymentLinksType || !isPaymentLinksV2Enabled) && (
+      {!isPaymentLinksType || !isPaymentLinksV2Enabled ? (
         <td>
           <div class="row-action">
             <div class="btn-group">
@@ -76,7 +76,7 @@ const InvoiceListItem = props => {
             </div>
           </div>
         </td>
-      )}
+      ) : null}
     </EntityItemRow>
   );
 };
@@ -122,6 +122,7 @@ export default props => {
               onEditClick={() => props.onEdit(invoice)}
               onDeleteClick={() => props.onDelete(invoice)}
               onCopy={onCopy}
+              type={type}
               isPaymentLinksV2Enabled={isPaymentLinksV2Enabled}
             />
           ))}

@@ -98,7 +98,13 @@ const getPaymentDetail = invoice => (
 );
 
 export default props => {
-  let { invoice, isLoading, statusMsg, editPaymentLink } = props;
+  let {
+    invoice,
+    isLoading,
+    statusMsg,
+    editPaymentLink,
+    isPaymentLinksV2Enabled,
+  } = props;
 
   let status = invoice.status;
   const isDraft = status === 'draft';
@@ -107,8 +113,6 @@ export default props => {
   const isPartiallyPaid = status === 'partially_paid';
   const isCancelled = status === 'cancelled';
   const isExpired = status === 'expired';
-
-  const isRazorXExperiment = true; // To be linked with RazorX as per experiment
 
   let isSmsOrEmailSent =
     invoice.sms_status === 'sent' || invoice.email_status === 'sent';
@@ -126,23 +130,25 @@ export default props => {
             <strong>{invoice.id}</strong>
             <ShowWhen notMyRole="support finance">
               <div class="btn-toolbar pull-right">
-                {(isDraft || isIssued) && (
-                  <button
-                    class="btn btn-primary btn-sm"
-                    onClick={props.onIssue}
-                  >
-                    {isSmsOrEmailSent ? 'Send Again' : 'Send Link'}
-                  </button>
-                )}
+                {invoice.customer_id &&
+                  (isDraft || isIssued || isPartiallyPaid) && (
+                    <button
+                      class="btn btn-primary btn-sm"
+                      onClick={props.onIssue}
+                    >
+                      {isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}
+                    </button>
+                  )}
 
-                {isIssued && (
-                  <button
-                    class="btn btn-default btn-sm"
-                    onClick={props.onCancel}
-                  >
-                    Cancel Link
-                  </button>
-                )}
+                {!isPaymentLinksV2Enabled &&
+                  isIssued && (
+                    <button
+                      class="btn btn-default btn-sm"
+                      onClick={props.onCancel}
+                    >
+                      Cancel Link
+                    </button>
+                  )}
               </div>
             </ShowWhen>
           </div>
@@ -165,7 +171,23 @@ export default props => {
                 />
                 <EntityDetailRow
                   label="Status"
-                  value={() => <InvoiceStatusLabel status={invoice.status} />}
+                  value={() => (
+                    <div>
+                      <InvoiceStatusLabel status={invoice.status} />
+                      <ShowWhen notMyRole="support finance">
+                        {isPaymentLinksV2Enabled &&
+                          isIssued && (
+                            <Button.Transparent
+                              class="Button--Link"
+                              style={{ marginLeft: 12 }}
+                              onClick={props.onCancel}
+                            >
+                              Cancel
+                            </Button.Transparent>
+                          )}
+                      </ShowWhen>
+                    </div>
+                  )}
                 />
 
                 <ShowWhen featureEnabled="Invoice_Partial_Payments">
@@ -182,7 +204,7 @@ export default props => {
                             }
                           >
                             {isPartialPayment ? 'Enabled' : 'Disabled'}
-                            {isRazorXExperiment &&
+                            {isPaymentLinksV2Enabled &&
                               isIssued && (
                                 <AsyncBtn.Transparent
                                   onClick={() =>
@@ -245,7 +267,7 @@ export default props => {
                 <EntityDetailRow
                   label="Receipt"
                   value={
-                    isRazorXExperiment && isIssued
+                    isPaymentLinksV2Enabled && isIssued
                       ? () => (
                           <EditReceiptField
                             value={invoice.receipt}
@@ -274,7 +296,7 @@ export default props => {
                 <EntityDetailRow
                   label={isExpired ? 'Expired On' : 'Expires On'}
                   value={
-                    isRazorXExperiment && (isIssued || isPartiallyPaid)
+                    isPaymentLinksV2Enabled && (isIssued || isPartiallyPaid)
                       ? () => (
                           <EditExpiryField
                             value={invoice.expire_by}
@@ -290,7 +312,7 @@ export default props => {
                   }
                 />
 
-                {isRazorXExperiment && isIssued ? (
+                {isPaymentLinksV2Enabled ? (
                   <EntityDetailRow
                     label="Notes"
                     value={() => (
