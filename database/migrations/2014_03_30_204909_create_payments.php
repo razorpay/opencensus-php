@@ -257,6 +257,33 @@ class CreatePayments extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->integer(Payment::REFERENCE10)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->integer(Payment::REFERENCE11)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->bigInteger(Payment::REFERENCE12)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->char(Payment::REFERENCE13, Payment::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Payment::REFERENCE14, Payment::ID_LENGTH)
+                  ->nullable();
+
+            $table->string(Payment::REFERENCE15, 255)
+                  ->nullable();
+
+            $table->string(Payment::REFERENCE16, 255)
+                  ->nullable();
+
+            $table->text(Payment::REFERENCE17)
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Payment::CREATED_AT);
             $table->integer(Payment::UPDATED_AT);
