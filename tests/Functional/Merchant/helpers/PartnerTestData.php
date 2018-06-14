@@ -43,6 +43,41 @@ return [
         ],
     ],
 
+    'testMarkingMerchantAsPartnerAgain' => [
+        'request'  => [
+            'url'     => '/merchant/requests',
+            'method'  => 'POST',
+            'content' => [
+                'type'        => 'partner',
+                'name'        => 'activation',
+                'submissions' => [
+                    'partner_type' => 'reseller',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'      => 'under_review',
+                'type'        => 'partner',
+                'name'        => 'activation',
+                'merchant'    => [
+                    'id' => '10000000000000',
+                ],
+                'states'      => [
+                    'entity' => 'collection',
+                    'items'  => [
+                        [
+                            'name' => 'under_review',
+                        ],
+                    ],
+                ],
+                'submissions' => [
+                    'partner_type' => 'reseller',
+                ],
+            ],
+        ],
+    ],
+
     'testMarkingMerchantAsPartnerMissingType' => [
         'request'   => [
             'url'     => '/merchant/requests',

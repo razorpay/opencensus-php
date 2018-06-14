@@ -123,17 +123,19 @@ trait OAuthTrait
      * @param string     $route
      * @param string     $method
      * @param array|null $requestParams
+     * @param array      $response
      */
     protected function setAuthServiceMockDetail(
         string $route,
         string $method,
-        array $requestParams = null)
+        array $requestParams = null,
+        array $response = [])
     {
         $this->authServiceMock
              ->expects($this->once())
              ->method('sendRequest')
              ->with($route, $method, $requestParams)
-             ->willReturn([]);
+             ->willReturn($response);
     }
 
     protected function getDefaultParamsForAuthServiceRequest()

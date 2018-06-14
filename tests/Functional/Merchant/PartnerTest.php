@@ -2,17 +2,23 @@
 
 namespace RZP\Tests\Functional\Merchant\Partner;
 
+use Mockery;
+
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Request;
 use RZP\Models\Settings\Accessor;
-use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
-class PartnerTest extends TestCase
+class PartnerTest extends OAuthTestCase
 {
+    use OAuthTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
+
+    const DEFAULT_MERCHANT_ID = '10000000000000';
 
     public function setUp()
     {
@@ -22,6 +28,10 @@ class PartnerTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
+        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
+
+        $this->allowAdminToAccessMerchant();
+
         $this->ba->privateAuth();
     }
 
@@ -29,11 +39,24 @@ class PartnerTest extends TestCase
     {
         $this->ba->adminProxyAuth();
 
-        $merchant = Merchant\Entity::find('10000000000000');
+        $this->startTest();
+    }
 
-        $admin = $this->ba->getAdmin();
+    /**
+     * Tests marking a merchant as a partner after the merchant has been marked and unmarked as a partner before
+     */
+    public function testMarkingMerchantAsPartnerAgain()
+    {
+        $this->createMerchantRequest('activation', true);
 
-        $admin->merchants()->attach($merchant);
+        $this->createMerchantRequest(
+            'deactivation',
+            false,
+            [
+                'id' => 'mrId1000000001',
+            ]);
+
+        $this->ba->adminProxyAuth();
 
         $this->startTest();
     }
@@ -42,12 +65,6 @@ class PartnerTest extends TestCase
     {
         $this->ba->adminProxyAuth();
 
-        $merchant = Merchant\Entity::find('10000000000000');
-
-        $admin = $this->ba->getAdmin();
-
-        $admin->merchants()->attach($merchant);
-
         $this->startTest();
     }
 
@@ -55,23 +72,11 @@ class PartnerTest extends TestCase
     {
         $this->ba->adminProxyAuth();
 
-        $merchant = Merchant\Entity::find('10000000000000');
-
-        $admin = $this->ba->getAdmin();
-
-        $admin->merchants()->attach($merchant);
-
         $this->startTest();
     }
     public function testMarkingMerchantAsPartnerInvalidType()
     {
         $this->ba->adminProxyAuth();
-
-        $merchant = Merchant\Entity::find('10000000000000');
-
-        $admin = $this->ba->getAdmin();
-
-        $admin->merchants()->attach($merchant);
 
         $this->startTest();
     }
@@ -79,12 +84,6 @@ class PartnerTest extends TestCase
     public function testMarkingMerchantAsPartnerInvalidNameToType()
     {
         $this->ba->adminProxyAuth();
-
-        $merchant = Merchant\Entity::find('10000000000000');
-
-        $admin = $this->ba->getAdmin();
-
-        $admin->merchants()->attach($merchant);
 
         $this->startTest();
     }
@@ -101,31 +100,6 @@ class PartnerTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
-    }
-
-    public function testApprovingMarkAsPartnerMerchantRequest()
-    {
-        $merchantId = '10000000000000';
-
-        $merchantRequest = $this->createMerchantRequest('activation', true);
-
-        $merchantRequestId = $merchantRequest->getPublicId();
-
-        $liveMode = $this->app['basicauth']->getLiveConnection();
-
-        $this->ba->adminAuth($liveMode);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['url'] = '/merchant/requests/' . $merchantRequestId;
-
-        $this->startTest($testData);
-
-        $merchant = $this->getDbEntityById('merchant', $merchantId, $liveMode);
-
-        $this->assertTrue($merchant->isPartner());
-
-        $this->assertEquals($merchant->getPartnerType(), 'reseller');
     }
 
     public function testMarkAsPartnerWithMissingSubmission()
@@ -145,50 +119,134 @@ class PartnerTest extends TestCase
         $this->startTest($testData);
     }
 
-    public function testApprovingUnmarkAsPartnerMerchantRequest()
+    public function testApprovingMarkAsPartnerMerchantRequest()
     {
-        $merchantId = '10000000000000';
+        // Create a merchant request
+        $merchantRequest = $this->createMerchantRequest('activation', true);
 
-        $merchantRequest = $this->createMerchantRequest('deactivation', true);
+        // Mock create application call to auth service
+        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
 
-        $merchantRequestId = $merchantRequest->getPublicId();
+        $createParams = [
+            'name'     => 'Internal',
+            'website'  => 'https://www.razorpay.com',
+            'logo_url' => '/logo/app_logo.png',
+            'type'     => 'partner',
+        ];
 
+        $requestParams = array_merge($requestParams, $createParams);
+
+        $this->setAuthServiceMockDetail('applications', 'POST', $requestParams);
+
+        // Set the admin auth
         $liveMode = $this->app['basicauth']->getLiveConnection();
 
         $this->ba->adminAuth($liveMode);
 
         $testData = $this->testData[__FUNCTION__];
 
+        $merchantRequestId = $merchantRequest->getPublicId();
+
         $testData['request']['url'] = '/merchant/requests/' . $merchantRequestId;
 
         $this->startTest($testData);
 
-        $merchant = $this->getDbEntityById('merchant', $merchantId, $liveMode);
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, $liveMode);
+
+        $this->assertTrue($merchant->isPartner());
+
+        $this->assertEquals($merchant->getPartnerType(), 'reseller');
+    }
+
+    public function testApprovingUnmarkAsPartnerMerchantRequest()
+    {
+        // Create a merchant request
+        $merchantRequest = $this->createMerchantRequest('deactivation');
+
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $this->createOAuthApplication($partnerData);
+
+        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
+
+        $this->setAuthServiceMockDetail('applications/8ckeirnw84ifke', 'PUT', $requestParams);
+
+        // Set the admin auth
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->ba->adminAuth($liveMode);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $merchantRequestId = $merchantRequest->getPublicId();
+
+        $testData['request']['url'] = '/merchant/requests/' . $merchantRequestId;
+
+        $this->startTest($testData);
+
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, $liveMode);
 
         $this->assertFalse($merchant->isPartner());
     }
 
-    protected function createMerchantRequest(string $merchantRequestName, bool $createSubmission)
+    protected function createMerchantRequest(
+        string $merchantRequestName,
+        bool $createSubmission = false,
+        array $attributes = [])
     {
-        $merchantId = '10000000000000';
-
-        $merchantRequest = $this->fixtures->create(
-            'merchant_request:default_merchant_request',
-            [
-                Request\Entity::MERCHANT_ID => $merchantId,
-                Request\Entity::TYPE        => 'partner',
-                Request\Entity::NAME        => $merchantRequestName,
-            ]);
-
-        $data = [
-            'partner_type' => 'reseller',
+        $defaults = [
+            Request\Entity::MERCHANT_ID => self::DEFAULT_MERCHANT_ID,
+            Request\Entity::TYPE        => 'partner',
+            Request\Entity::NAME        => $merchantRequestName,
         ];
 
-        if ($createSubmission === true)
+        $attributes = array_merge($attributes, $defaults);
+
+        $merchantRequest = $this->fixtures->create('merchant_request:default_merchant_request', $attributes);
+
+        if (($merchantRequestName === 'activation') and ($createSubmission === true))
         {
+            $data = [
+                'partner_type' => 'reseller',
+            ];
+
             Accessor::for ($merchantRequest, 'partner')->upsert($data)->save();
         }
 
         return $merchantRequest;
+    }
+
+    protected function getMerchantEntityMock(): Mockery\MockInterface
+    {
+        $class = Merchant\Entity::class;
+
+        return Mockery::mock($class, [])->makePartial();
+    }
+
+    protected function getDummyPartnerAttributes(array $attributes = []): array
+    {
+        $defaults = [
+            'id'          => '8ckeirnw84ifke',
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'name'        => 'Internal',
+            'website'     => 'https://www.razorpay.com',
+            'logo_url'    => '/logo/app_logo.png',
+            'category'    => null,
+            'type'        => 'partner',
+        ];
+
+        $attributes = array_merge($defaults, $attributes);
+
+        return $attributes;
+    }
+
+    protected function allowAdminToAccessMerchant()
+    {
+        $merchant = Merchant\Entity::find(self::DEFAULT_MERCHANT_ID);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach($merchant);
     }
 }
