@@ -29,7 +29,7 @@ import { dateCalculator, timeCalculator } from 'component/Input/Calendar';
 import { onChangeNotes } from 'component/Input/PairList';
 
 import EarlyAccessRPL from './ReusableLinks/EarlyAccess';
-import { trackOpenCreateForm } from './Links/ga';
+import { trackOpenCreateForm, closePaymentLinkForm } from './Links/ga';
 
 const FORM_TABS = [
   {
@@ -193,7 +193,7 @@ export default class CreateNewContainer extends React.Component {
       window.hj('tagRecording', ['payment_links_v2_form_open']);
     }
 
-    trackOpenCreateForm();
+    trackOpenCreateForm(); // Refactor this on basis of condition if more tabs are there in the view
   }
 
   componentDidMount() {
@@ -517,7 +517,10 @@ export default class CreateNewContainer extends React.Component {
           message: 'Changes that you made will be discarded.',
           affirmativeLabel: 'Leave',
           abortLabel: 'Stay',
-          action: () => this.props.onClose(),
+          action: () => {
+            this.props.onClose();
+            closePaymentLinkForm('Confirmed');
+          },
         })
         .catch(() => {});
     } else {
@@ -554,7 +557,10 @@ export default class CreateNewContainer extends React.Component {
         onChange={this.onChange}
         onCreate={this.onCreate}
         isModalView={IS_MODAL_VIEW}
-        onFormAbruptClose={this.onFormAbruptClose}
+        onFormAbruptClose={e => {
+          this.onFormAbruptClose(e);
+          closePaymentLinkForm('Cancel');
+        }}
         disableSubmit={this.state.disableSubmit}
         showEarlyAccessForm={showEarlyAccessForm}
       />
@@ -563,7 +569,10 @@ export default class CreateNewContainer extends React.Component {
     return IS_MODAL_VIEW ? (
       <Modal
         class={classList('PaymentLinks', content && 'animate-down')}
-        onClose={this.onFormAbruptClose}
+        onClose={e => {
+          this.onFormAbruptClose(e);
+          closePaymentLinkForm('Cross');
+        }}
       >
         <ModalContent>{content}</ModalContent>
       </Modal>

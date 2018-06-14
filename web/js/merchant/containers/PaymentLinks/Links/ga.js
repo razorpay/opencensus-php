@@ -13,7 +13,7 @@ export const track = setTrackData({
 export function trackDetailViewEdits(paymentLinkId, action) {
   track({
     eventAction: `PL Details View - ${action}`,
-    eventLabel: `payment_link_id=${paymentLinkId}`,
+    eventLabel: 'Payment Links V2',
   });
 }
 
@@ -24,7 +24,7 @@ export function trackDetailViewEdits(paymentLinkId, action) {
 export function trackTogglePartialPayment(paymentLinkId, action, value) {
   track({
     eventAction: `PL Details View - ${action}`,
-    eventLabel: `payment_link_id=${paymentLinkId}`,
+    eventLabel: 'Payment Links V2',
     eventValue: value,
   });
 }
@@ -34,7 +34,8 @@ export function trackTogglePartialPayment(paymentLinkId, action, value) {
 * */
 export function trackOpenCreateForm(e) {
   track({
-    eventAction: 'Open Form - New Payment Link V2',
+    eventAction: 'Open Form - New Payment Link',
+    eventLabel: 'Payment Links V2',
   });
 }
 
@@ -45,5 +46,27 @@ export function trackHelpClick(e) {
   track({
     eventAction: "Click - Create Payment Link - What's This",
     eventLabel: 'From PLV2 Create Modal',
+  });
+}
+
+/*
+* Track click on submit form
+* @params {String} data
+* */
+export function trackFormSubmit(data) {
+  track({
+    eventAction: 'Submit Form - New Payment Link',
+    eventLabel: data,
+  });
+}
+
+/*
+* Track click on submit form
+* @params {String} data
+* */
+export function closePaymentLinkForm(text) {
+  track({
+    eventAction: 'Close Form - New Payment Link',
+    eventLabel: text + ' | Payment Links V2',
   });
 }

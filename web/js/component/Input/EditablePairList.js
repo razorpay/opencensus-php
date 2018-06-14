@@ -84,7 +84,7 @@ export default class EditablePairsList extends React.PureComponent {
       affirmativePendingLabel: 'Deleting',
       action: () => {
         const freshPairs = this.removePair(pairIdx);
-        this.props.trackerFn('Delete Notes(Confirmed)');
+        this.props.trackerFn('Delete Notes Confirmed');
 
         return this.props.saveAndUpdate(freshPairs);
       },

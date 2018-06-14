@@ -1,4 +1,5 @@
 import { merchantFetch } from 'rzp/utils/ajax';
+import { trackFormSubmit } from './ga';
 
 /*
 *
@@ -18,17 +19,26 @@ export function createPaymentLink(reqPayload) {
   const customer = {};
   if (reqPayload.contact) {
     customer.contact = reqPayload.contact;
-    delete reqPayload.contact;
   }
+
+  delete reqPayload.contact;
 
   if (reqPayload.email) {
     customer.email = reqPayload.email;
-    delete reqPayload.email;
   }
+
+  delete reqPayload.email;
 
   if (Object.keys(customer).length) {
     reqPayload.customer = customer;
   }
+
+  const reqPayloadToTrack = {
+    ...reqPayload,
+    notes: reqPayload.notes && Object.keys(reqPayload.notes).length,
+    version: 'Payment Links V2',
+  };
+  trackFormSubmit(JSON.stringify(reqPayloadToTrack));
 
   return merchantFetch({
     url: 'invoices',
