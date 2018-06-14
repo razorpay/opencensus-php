@@ -3644,3 +3644,9 @@ ALTER TABLE payments
 
 ALTER TABLE virtual_accounts
     ADD INDEX virtual_accounts_qr_code_id_index (qr_code_id);
+
+# Removes database unique constraints for merchant_id and receipt uniqueness
+# Adds index on merchant_id, receipt for fast lookup
+ALTER TABLE invoices
+    DROP INDEX invoices_merchant_id_receipt_unique,
+    ADD INDEX invoices_merchant_id_receipt_index (merchant_id, receipt);

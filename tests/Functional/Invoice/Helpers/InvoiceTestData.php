@@ -824,41 +824,60 @@ return [
         ]
     ],
 
-    'testCreateInvoiceWithDuplicateMerchantRefId' => [
+    'testCreateInvoiceWithDuplicateReceiptFails' => [
         'request' => [
-            'url' => '/invoices',
-            'method' => 'post',
+            'url'     => '/invoices',
+            'method'  => 'post',
             'content' => [
-                'customer_id'     => 'cust_100000customer',
-                'receipt'         => '00000000000001',
-                'line_items'    => [
+                'customer_id' => 'cust_100000customer',
+                'receipt'     => '00000000000001',
+                'currency'    => 'INR',
+                'line_items'  => [
                     [
-                        'name'          => 'Some item name',
-                        'description'   => 'Some item description',
-                        'amount'        => 100000,
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
                     ],
-                    [
-                        'name'          => 'Another item',
-                        'description'   => 'Another description',
-                        'amount'        => 200000,
-                        'quantity'      => 2,
-                    ]
                 ],
-                'currency' => 'INR',
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Duplicate value for receipt in invoice',
+                    'description' => 'receipt must be unique for each item : 00000000000001',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT,
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateInvoiceWithDuplicateReceiptSucceeds' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'receipt'     => '00000000000001',
+                'currency'    => 'INR',
+                'line_items'  => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'invoice',
+                'receipt' => '00000000000001',
+            ],
         ],
     ],
 

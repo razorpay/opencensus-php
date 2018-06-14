@@ -121,28 +121,18 @@ class Core extends Base\Core
 
         $operation = 'edit' . studly_case($status);
 
-        try
+        $invoice->edit($input, $operation);
+
+        $updateFunction = 'update' . studly_case($status) . 'Invoice';
+
+        // If a custom function exists to handle update for a status, call it. Else, handle save here and proceed
+        if (method_exists($this, $updateFunction) === true)
         {
-            $invoice->edit($input, $operation);
-
-            $updateFunction = 'update' . studly_case($status) . 'Invoice';
-
-            //
-            // If a custom function exists to handle update for a status, call it.
-            // Else, handle save here and proceed
-            //
-            if (method_exists($this, $updateFunction) === true)
-            {
-                $this->$updateFunction($merchant, $invoice, $input);
-            }
-            else
-            {
-                $this->repo->saveOrFail($invoice);
-            }
+            $this->$updateFunction($merchant, $invoice, $input);
         }
-        catch (\Exception $e)
+        else
         {
-            ExceptionHandler::handleMySqlUniqueError($e, $invoice, $input);
+            $this->repo->saveOrFail($invoice);
         }
 
         $this->repo->loadRelations($invoice);
