@@ -57,7 +57,7 @@ class Payment extends Validator
 
         if ($isValid === false)
         {
-            throw new Exception\ValidationFailureException('The selected method is invalid.');
+            throw new Exception\BadRequestValidationFailureException('The selected method is invalid.');
         }
     }
 }
