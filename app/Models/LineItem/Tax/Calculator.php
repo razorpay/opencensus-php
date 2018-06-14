@@ -14,19 +14,14 @@ use RZP\Error\ErrorCode;
 class Calculator
 {
     /**
-     * Give a line item and set of taxes to be applied on it, it returns
-     * the taxable amount of line item.
-     * It also handles whether line item amount is tax inclusive or exclusive.
-     *
+     * Give a line item and set of taxes to be applied on it, it returns the taxable amount of line item. It also
+     * handles whether line item amount is tax inclusive or exclusive.
      * @param  LineItem\Entity       $lineItem
      * @param  Base\PublicCollection $taxes
-     *
      * @return int
      * @throws BadRequestException
      */
-    public static function getTaxableAmountOfLineItem(
-        LineItem\Entity $lineItem,
-        Base\PublicCollection $taxes): int
+    public static function getTaxableAmountOfLineItem(LineItem\Entity $lineItem, Base\PublicCollection $taxes): int
     {
         $totalAmount = $lineItem->getAmount() * $lineItem->getQuantity();
 
@@ -36,16 +31,19 @@ class Calculator
             return $totalAmount;
         }
 
+        //
         // If line item is tax inclusive, calculate the taxable amount (the amount)
         // on which all the tax was applied.
         // Formula:
-        // 
+        //
         // Taxable Amount = (Total Amount - Accumulative flat taxes)/(1 + Accumulative percent taxes)
-
+        //
         $flatTaxAmount = $percentageTaxAmounts = 0;
 
         foreach ($taxes as $tax)
         {
+            self::assertTaxEntityIsValid($tax);
+
             if ($tax->getRateType() === TaxModel\RateType::PERCENTAGE)
             {
                 $percentageTaxAmounts += $tax->getRatePercentValue();
@@ -58,10 +56,10 @@ class Calculator
 
         $taxableAmount = ($totalAmount - $flatTaxAmount) / ($percentageTaxAmounts + 1);
 
-        // In case of tax inclusive line item amounts and flat taxes,
-        // there is a chance taxable amount would come as negative which
-        // is a validation error.
-
+        //
+        // In case of tax inclusive line item amounts and flat taxes, there is a chance taxable amount would come as
+        // negative which is a validation error.
+        //
         if ($taxableAmount <= 0)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ITEM_TAX_DETAILS);
@@ -70,27 +68,22 @@ class Calculator
         return (int) round($taxableAmount);
     }
 
-    /**
-     * Get tax amount against a given tax and amount.
-     *
-     * @param LineItem\Entity $lineItem
-     * @param int             $taxableAmount
-     * @param TaxModel\Entity $tax
-     *
-     * @return int
-     */
-    public static function getTaxAmount(
-        LineItem\Entity $lineItem,
-        int $taxableAmount,
-        TaxModel\Entity $tax): int
+    public static function getTaxAmount(LineItem\Entity $lineItem, int $taxableAmount, $tax): float
     {
+        self::assertTaxEntityIsValid($tax);
+
         if ($tax->getRateType() === TaxModel\RateType::PERCENTAGE)
         {
-            return (int) (round($taxableAmount * $tax->getRatePercentValue()));
+            return $taxableAmount * $tax->getRatePercentValue();
         }
         else
         {
-            return $tax->getRate() * $lineItem->getQuantity();
+            return $lineItem->getQuantity() * $tax->getRate();
         }
+    }
+
+    public static function assertTaxEntityIsValid($tax)
+    {
+        assertTrue(($tax instanceof TaxModel\Entity) or ($tax instanceof Entity));
     }
 }

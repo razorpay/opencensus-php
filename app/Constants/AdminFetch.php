@@ -1233,6 +1233,10 @@ class AdminFetch
                     ],
                 ],
                 'wallet' => Fetch::FIELD_WALLET,
+                'vpa' => [
+                    Fetch::LABEL  => 'VPA',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
             ],
 
             Entity::PAYOUT => [
