@@ -861,6 +861,41 @@ class Core extends Base\Core
         return $merchant;
     }
 
+    public function createPartnerReferral(Entity $partner, Entity $referral)
+    {
+        $validator = new Validator;
+
+        $validator->validateIsPurePartner($partner);
+
+        $validator->validateIsNotPartner($referral);
+
+//        $partnerApp = $partner->getPartnerApp();
+
+//        if ($partnerApp === null)
+//        {
+//            $partnerApp = $this->createPartnerApp($partner);
+//        }
+
+        $partnerApp = $partner->getPartnerApp();
+
+        $accessMap = $this->repo
+                          ->merchant_access_map
+                          ->findMerchantAccessMapOnEntityType($partner->getId(), AccessMap\Entity::APPLICATION);
+
+        if ($accessMap === null)
+        {
+            $partnerApp = $this->createPartnerApp($partner);
+        }
+
+        $accessMap = (new AccessMap\Service)->mapOAuthApplication(
+                        $referral->getId(),
+                        [
+                            AccessMap\Entity::APPLICATION_ID => $partnerApp->getId()
+                        ]);
+
+        return $accessMap;
+    }
+
     public function createPartnerApp(Entity $merchant): array
     {
         $appInput = [

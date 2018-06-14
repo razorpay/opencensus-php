@@ -364,6 +364,43 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateIsPurePartner(Entity $merchant)
+    {
+        // Block non-partner merchants and pure platforms
+        if (($merchant->isPartner() === false) or ($merchant->isPurePlatformTypePartner() === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PARTNER_ID,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::ID           => $merchant->getId(),
+                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                ]);
+        }
+    }
+
+    public function validateIsNotPartner(Entity $merchant)
+    {
+        // Block non-partner merchants and pure platforms
+        if (($merchant->isPartner() === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REFERRAL_MERCHANT_CANNOT_BE_PARTNER,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::ID           => $merchant->getId(),
+                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                ]);
+        }
+    }
+
+    public function partnerHasApplication(Entity $merchant)
+    {
+
+    }
+
+
+
     protected function validateCsvEmail($input)
     {
         if (empty($input[Entity::TRANSACTION_REPORT_EMAIL]) === true)

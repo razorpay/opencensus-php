@@ -802,6 +802,8 @@ final class Route
         // Generic Lambda handler
         'lambda_post_h2h'                          => ['post',     'lambda/{type}',                                  'LambdaController@processLambda'                                    ],
 
+        // Partner routes
+        'partners_create_referral'                 => ['post',     'partners/{id}/referrals',                        'PartnerController@createReferral'                                  ],
     ];
 
     public static $public = [
@@ -1523,6 +1525,9 @@ final class Route
         'merchant_requests_bulk_update',
         'merchant_activation_bulk_assign_reviewer',
         'merchant_activation_reviewers',
+
+        // Partners
+        'partners_create_referral',
     ];
 
     public static $routePermission = [
@@ -1836,6 +1841,8 @@ final class Route
         'merchant_activation_bulk_assign_reviewer' => Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER,
         'db_meta_query'                            => Permission::DB_META_QUERY,
         'oauth_sync_merchant_map'                  => Permission::OAUTH_SYNC_MERCHANT_MAP,
+//        'partners_create_referral'                 => Permission::EDIT_PARTNERS,
+        'partners_create_referral'                 => '*',
     ];
 
     public static $direct = [

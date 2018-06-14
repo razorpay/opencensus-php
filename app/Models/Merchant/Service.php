@@ -14,6 +14,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Models\Admin\Admin;
@@ -1841,5 +1842,34 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_FORBIDDEN);
         }
+    }
+
+    public function createPartnerReferral(string $partnerId, array $input): array
+    {
+        if (empty($input[Entity::MERCHANT_ID]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_ID_REQUIRED,
+                Entity::MERCHANT_ID,
+                $input);
+        }
+
+        // Expecting signed merchant id - Eg: acc_100DemoAccount
+        $referralId = $input[Entity::MERCHANT_ID];
+
+        //
+        // The partner id should be without the sign.
+        // @todo: If Partner entity is created, expect a sign and change the function invoked below to findOrFailPublic.
+        //
+        $partner = $this->repo->merchant->findOrFail($partnerId);
+
+        $referral = $this->repo->account->findOrFail($referralId);
+//        $referral = $this->repo->account->findOrFailPublic($referralId);
+
+        $accessMap = $this->core()->createPartnerReferral($partner, $referral);
+
+        s($accessMap);
+
+        return $accessMap;
     }
 }

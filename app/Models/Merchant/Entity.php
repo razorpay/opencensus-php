@@ -1511,4 +1511,9 @@ class Entity extends Base\PublicEntity
     {
         return (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($this->getId());
     }
+
+    public function isPurePlatformTypePartner(): bool
+    {
+        return ($this->getPartnerType() === 'pure_platform');
+    }
 }

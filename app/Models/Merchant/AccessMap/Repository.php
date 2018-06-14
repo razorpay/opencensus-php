@@ -32,6 +32,17 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findMerchantAccessMapOnEntityType(
+        string $merchantId,
+        string $entityType)
+    {
+        return $this->newQuery()
+                    ->merchantId($merchantId)
+                    ->where(Entity::ENTITY_TYPE, $entityType)
+                    ->whereNotNull(Entity::DELETED_AT)
+                    ->first();
+    }
+
     public function fetchMerchantAccessMapsOnEntity(
         string $merchantId,
         string $entityType): Base\PublicCollection

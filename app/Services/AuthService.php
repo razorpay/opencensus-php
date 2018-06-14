@@ -145,6 +145,9 @@ class AuthService
     {
         $code = $res->status_code;
 
+        s($code);
+        s($res);
+
         //
         // If returned status code is 2XX, everything is fine
         // and just return the decoded JSON body.

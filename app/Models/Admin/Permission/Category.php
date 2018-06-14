@@ -25,4 +25,5 @@ class Category
     const BATCH            = 'batch';
     const SHIELD           = 'shield';
     const SETTLEMENT       = 'settlement';
+    const PARTNER          = 'partner';
 }

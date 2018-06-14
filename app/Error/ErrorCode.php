@@ -797,6 +797,9 @@ class ErrorCode
     // Merchant requests
     const BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING                          = 'BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING';
 
-    // Partners
+    // Partners error codes
+    const BAD_REQUEST_INVALID_PARTNER_ID                                            = 'BAD_REQUEST_INVALID_PARTNERID';
     const BAD_REQUEST_INVALID_PARTNER_NAME                                          = 'BAD_REQUEST_INVALID_PARTNER_NAME';
+    const BAD_REQUEST_MERCHANT_ID_REQUIRED                                          = 'BAD_REQUEST_MERCHANT_ID_REQUIRED';
+    const BAD_REQUEST_REFERRAL_MERCHANT_CANNOT_BE_PARTNER                           = 'BAD_REQUEST_REFERRAL_MERCHANT_CANNOT_BE_PARTNER';
 }
