@@ -121,7 +121,7 @@ class CalendarWrapper extends React.Component {
           defaultValue={this.state.value}
           showDateInput={true}
           showToday={false}
-          showClear={true}
+          showClear={false}
           disabledDate={
             this.props.allowAllDates
               ? this.disabledInvalidDates
@@ -145,7 +145,7 @@ class CalendarWrapper extends React.Component {
         onOpenChange={this.onToggle}
         calendar={calendar}
         value={state.value}
-        showClear={true}
+        showClear={false}
         onChange={this.onChange}
         onClear={this.onChange}
       >
