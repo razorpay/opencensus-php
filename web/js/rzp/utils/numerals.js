@@ -1,9 +1,8 @@
+import { getFormattedNumber } from 'rzp/utils/rzp-utils';
 const suffixes = ['k', 'L', 'Cr'];
 
 export const formatNumberWithCommas = value =>
-  Number(value).toLocaleString('en-IN', {
-    currency: 'INR',
-  });
+  getFormattedNumber(Number(value));
 
 const HundredCr = 1000000000;
 const ThousandCr = HundredCr * 10;

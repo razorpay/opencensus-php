@@ -163,7 +163,10 @@ export default class ActivationWizard extends React.Component {
         a._accept = ['pdf', 'image'];
         a._showAcceptInfo = false;
         a._showStagedFileStatus = false;
-        a.required = true;
+
+        if (!a.hasOwnProperty('required')) {
+          a.required = true;
+        }
       });
 
     // Adding onChange listener to all document upload fields
@@ -1124,6 +1127,7 @@ function ActivationField(field) {
     _optionsFn,
     _autoRenderImpure,
     _disabledWhen,
+    required,
     ...rest
   } = field;
 
@@ -1189,6 +1193,7 @@ function ActivationField(field) {
       defaultValue={defaultValue}
       disabled={isComponentDisabled}
       autoRender={_autoRenderImpure}
+      required={typeof required === 'function' ? required(this) : required}
       {...rest}
     />
   );
@@ -1208,7 +1213,13 @@ function isFieldValid(field, activation) {
   }
 
   let value = data[field.name];
-  if (field.required && !value) {
+  let isFieldRequired = field.required;
+
+  if (typeof isFieldRequired === 'function') {
+    isFieldRequired = isFieldRequired(activation);
+  }
+
+  if (isFieldRequired && !value) {
     field.autoFocus = true; // To autofocus first unfilled required field
 
     // value missing in required field

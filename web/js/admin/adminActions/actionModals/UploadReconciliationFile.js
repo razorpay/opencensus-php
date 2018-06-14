@@ -37,6 +37,7 @@ const gateWayOptions = [
   'Netbanking Pnb',
   'Netbanking Obc',
   'Netbanking Csb',
+  'Atom',
 ];
 
 const optionValueMap = {

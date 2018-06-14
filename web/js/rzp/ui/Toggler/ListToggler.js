@@ -9,20 +9,27 @@ import { NavLink } from 'react-router-dom';
 
 export default class ListToggler extends Component {
   render() {
-    let { loading, limit, totalItems, label, subLabel, limitUrl } = this.props;
+    let {
+      loading,
+      limit,
+      totalItems,
+      label,
+      subLabel,
+      limitUrl,
+      onViewAllClick = () => {},
+    } = this.props;
 
     return (
       <div class="list-table">
         <span class="list-label">
           <b>{label}</b> {subLabel}
         </span>
-        {!loading && limit && limit < totalItems && <span> • </span>}
 
-        <span class="primary-link">
+        <span class="primary-link pull-right">
           {!loading &&
             limit &&
             limit < totalItems && (
-              <NavLink to={limitUrl}>
+              <NavLink to={limitUrl} onClick={onViewAllClick}>
                 View all <b>{totalItems} &gt;</b>
               </NavLink>
             )}

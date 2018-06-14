@@ -14,7 +14,7 @@ export const fetchConfigAjax = () => {
 
 export const fetchFeaturesAjax = (currentUserId, mode) => {
   let params = {
-    url: `merchants/${currentUserId}/features`,
+    url: `merchants/me/features`,
   };
 
   if (mode) {
@@ -44,7 +44,7 @@ export const updateFeatures = (data, currentUserId) => {
   return {
     type: FEATURES_SAVE,
     payload: merchantFetch({
-      url: `merchants/${currentUserId}/features`,
+      url: `merchants/me/features`,
       method: 'post',
       data: data,
     }),

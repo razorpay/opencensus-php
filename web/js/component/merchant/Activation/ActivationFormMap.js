@@ -75,6 +75,7 @@ const businessModel = [
     name: 'business_type',
     _cmp: Input.Select,
     options: [
+      { label: '--Select--', name: '' },
       { label: 'Private Limited', name: PRIVATE },
       { label: 'Proprietorship', name: PROPRIETORSHIP },
       { label: 'Partnership', name: PARTNERSHIP },
@@ -366,6 +367,11 @@ const registrationDetails = [
       className: 'Input-vTop',
       _cmp: Input.Radio,
       _when: excludeFor_Indiv_NotReg,
+      description: function() {
+        if (this.state.has_gstin == '1') {
+          return 'You can add your GST details later once you are registered';
+        }
+      },
       onChange: e => {
         if (e.target.value == '0') {
           // setTimeout to skip render cycle when GSTIN is being rendered in DOM
@@ -576,18 +582,14 @@ const uploadFields = [
   {
     name: 'form_12a_url',
     label: 'Form 12A Allotment Letter',
-    _when: activation =>
-      activation.props.data.business_type &&
-      ORG_BusinessTypes.indexOf(Number(activation.props.data.business_type)) !==
-        -1,
+    required: requiredForNGO,
+    _when: showForOrgs,
   },
   {
     name: 'form_80g_url',
     label: 'Form 80G Allotment Letter',
-    _when: activation =>
-      activation.props.data.business_type &&
-      ORG_BusinessTypes.indexOf(Number(activation.props.data.business_type)) !==
-        -1,
+    required: requiredForNGO,
+    _when: showForOrgs,
   },
 ];
 
@@ -603,6 +605,23 @@ function excludeFor_Indiv_NotReg(activation) {
 
   return (
     [NOT_REGISTERED, INDIVIDUAL].indexOf(Number(currentBusinessType)) === -1
+  );
+}
+
+function requiredForNGO(activation) {
+  const selectedBusinessType =
+    activation.state.dirty.business_type || activation.props.data.business_type;
+
+  return selectedBusinessType == NGO;
+}
+
+function showForOrgs(activation) {
+  const selectedBusinessType =
+    activation.state.dirty.business_type || activation.props.data.business_type;
+
+  return (
+    selectedBusinessType &&
+    ORG_BusinessTypes.indexOf(Number(selectedBusinessType)) !== -1
   );
 }
 
