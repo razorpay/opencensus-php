@@ -249,10 +249,7 @@ class Entity extends Base\PublicEntity
 
         static::deleting(function ($terminal)
         {
-            if ($terminal->isForceDeleting() === true)
-            {
-                $terminal->merchants()->detach();
-            }
+            $terminal->merchants()->detach();
         });
     }
 

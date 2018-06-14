@@ -1774,3 +1774,6 @@ UPDATE orders
     ...
     'AKRam7TzPy5Z3A'
   );
+
+#Deleting from merchant_terminal mapping table where terminal has been soft deleted
+DELETE FROM merchant_terminal WHERE terminal_id = '9pzyO7B1uNjuXH';
