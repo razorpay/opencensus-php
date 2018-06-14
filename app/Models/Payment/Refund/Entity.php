@@ -58,8 +58,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
-        self::MERCHANT_ID,
-        self::PAYMENT_ID,
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,

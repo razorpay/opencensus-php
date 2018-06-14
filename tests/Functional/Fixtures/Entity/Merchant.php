@@ -229,6 +229,12 @@ class Merchant extends Base
 
         $merchant = $this->fixtures->create('merchant', $attributes);
 
+        $org = OrgEntity::find($orgId);
+
+        $merchant->org()->associate($org);
+
+        $merchant->saveOrFail();
+
         $this->fixtures->create('merchant_detail:sane', $detailsAttributes);
 
         return $merchant;

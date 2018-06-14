@@ -42,7 +42,7 @@ class Entity extends Base\PublicEntity
 
     protected static $delimiter = '';
 
-    protected $fillable = array(
+    protected $fillable = [
         self::TYPE,
         self::CHANNEL,
         self::AMOUNT,
@@ -58,9 +58,9 @@ class Entity extends Base\PublicEntity
         self::URLS,
         self::TXT_FILE_ID,
         self::EXCEL_FILE_ID,
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::TYPE,
@@ -83,7 +83,7 @@ class Entity extends Base\PublicEntity
         self::RETURNED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
-    );
+    ];
 
     protected $publicSetters = [
         self::ID,
