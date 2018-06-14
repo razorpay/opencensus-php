@@ -232,7 +232,7 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testAddReferralToPartner()
+    public function testAddPartnerReferral()
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;
 
@@ -248,7 +248,7 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testAddReferralToPartnerAgain()
+    public function testAddPartnerReferralAgain()
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;
 
@@ -266,6 +266,41 @@ class PartnerTest extends OAuthTestCase
                 'entity_id'   => $app->getId(),
                 'merchant_id' => '10000000000011',
             ]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testRemovePartnerReferral()
+    {
+        $merchantId = self::DEFAULT_MERCHANT_ID;
+
+        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
+
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $app = $this->createOAuthApplication($partnerData);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => '10000000000011',
+            ]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testRemovePartnerReferralAgain()
+    {
+        $merchantId = self::DEFAULT_MERCHANT_ID;
+
+        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
 
         $this->ba->adminAuth();
 

@@ -313,7 +313,7 @@ return [
         ],
     ],
 
-    'testAddReferralToPartner' => [
+    'testAddPartnerReferral' => [
         'request'   => [
             'url'     => '/partners/10000000000000/referrals',
             'method'  => 'POST',
@@ -329,7 +329,7 @@ return [
         ],
     ],
 
-    'testAddReferralToPartnerAgain' => [
+    'testAddPartnerReferralAgain' => [
         'request'   => [
             'url'     => '/partners/10000000000000/referrals',
             'method'  => 'POST',
@@ -349,6 +349,40 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_REFERRAL_ALREADY_EXISTS,
+        ],
+    ],
+
+    'testRemovePartnerReferral' => [
+        'request'   => [
+            'url'     => '/partners/10000000000000/referrals/10000000000011',
+            'method'  => 'DELETE',
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
+    'testRemovePartnerReferralAgain' => [
+        'request'   => [
+            'url'     => '/partners/10000000000000/referrals/10000000000011',
+            'method'  => 'DELETE',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
         ],
     ],
 ];
