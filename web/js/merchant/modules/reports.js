@@ -91,7 +91,6 @@ export const generateReportV2 = (
         return downloadReportErrorMsg;
       }
 
-      //
       onProgress(resp.data, true);
 
       const logId = resp.data.id;
