@@ -297,7 +297,14 @@ class AdminFetch
                         'emandate',
                         'reconciliation'
                         'irctc_refund',
-                        'irctc_settlement'  
+                        'irctc_settlement',
+                        'linked_account',
+                        'bank_transfer',
+                        'virtual_bank_account',
+                        'recurring_charge',
+                        'payout',
+                        'sub_merchant',
+                        'direct_debit'
                     ],
                 ],
                 'sub_type' => [
