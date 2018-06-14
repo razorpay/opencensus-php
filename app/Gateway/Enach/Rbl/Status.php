@@ -5,7 +5,7 @@ namespace RZP\Gateway\Enach\Rbl;
 class Status
 {
     const DEBIT_SUCCESS = 'paid';
-    const DEBIT_REJECT  = 'reject';
+    const DEBIT_REJECT  = 'bounce';
 
     const ACKNOWLEDGE_SUCCESS = 'true';
     const ACKNOWLEDGE_FAILURE = 'false';
