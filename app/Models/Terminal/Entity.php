@@ -962,6 +962,11 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::BHARAT_QR) === true);
     }
 
+    public function isMoto()
+    {
+        return ($this->isTypeApplicable(Type::MOTO) === true);
+    }
+
     public function isInternational()
     {
         return $this->getAttribute(self::INTERNATIONAL);
