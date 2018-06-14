@@ -787,6 +787,74 @@ return [
         ],
     ],
 
+    'testCreateInvoiceWithCgstAndSgstTaxes' => [
+        'request' => [
+            'url'    => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'type'       => 'invoice',
+                'draft'      => '1',
+                'line_items' => [
+                    [
+                        'name'     => 'Sample item #1',
+                        'amount'   => 100,
+                        'quantity' => 5,
+                        'tax_ids'  => [
+                            T::getIdPrefix() . GstTaxIdMap::CGST_250,
+                            T::getIdPrefix() . GstTaxIdMap::SGST_250
+                        ],
+                        'tax_inclusive' => false,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'line_items' => [
+                    [
+                        'name'          => 'Sample item #1',
+                        'amount'        => 100,
+                        'unit_amount'   => 100,
+                        'gross_amount'  => 500,
+                        'tax_amount'    => 25,
+                        'net_amount'    => 525,
+                        'currency'      => 'INR',
+                        'type'          => 'invoice',
+                        'tax_inclusive' => false,
+                        'quantity'      => 5,
+                        'taxes'         => [
+                            [
+                                'tax_id'     => 'tax_9nDpYhZ0d60X7V',
+                                'name'       => 'CGST 2.5%',
+                                'rate'       => 250,
+                                'rate_type'  => 'percentage',
+                                'group_id'   => null,
+                                'group_name' => null,
+                                'tax_amount' => 13,
+                            ],
+                            [
+                                'tax_id'     => 'tax_9nDpYoeYBsXRvC',
+                                'name'       => 'SGST 2.5%',
+                                'rate'       => 250,
+                                'rate_type'  => 'percentage',
+                                'group_id'   => null,
+                                'group_name' => null,
+                                'tax_amount' => 13,
+                            ],
+                        ],
+                    ],
+                ],
+                'status'       => 'draft',
+                'gross_amount' => 500,
+                'tax_amount'   => 25,
+                'amount'       => 525,
+                'amount_paid'  => null,
+                'amount_due'   => null,
+                'currency'     => 'INR',
+            ],
+        ],
+    ],
+
     'testUpdateInvoiceWithTaxes' => [
         'request' => [
             'url'    => '/invoices/inv_1000000invoice',
