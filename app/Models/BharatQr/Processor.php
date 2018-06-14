@@ -125,7 +125,16 @@ class Processor extends VirtualAccount\Processor
             }
             else
             {
-                $terminalMerchant = $this->terminal->merchant;
+                $gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
+
+                if ($gateway === Payment\Gateway::SHARP)
+                {
+                    $terminalMerchant = $this->merchant;
+                }
+                else
+                {
+                    $terminalMerchant = $this->terminal->merchant;
+                }
 
                 if ($terminalMerchant->getId() === Account::SHARED_ACCOUNT)
                 {
