@@ -2,8 +2,8 @@
 
 namespace RZP\Tests\Functional\Assertion\Validator;
 
-use RZP\Models\Payment\Entity;
 use RZP\Exception;
+use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Method;
 
 class Payment extends Validator
@@ -57,8 +57,7 @@ class Payment extends Validator
 
         if ($isValid === false)
         {
-            throw new Exception\InvalidArgumentException(
-                'The selected method is invalid.');
+            throw new Exception\ValidationFailureException('The selected method is invalid.');
         }
     }
 }
