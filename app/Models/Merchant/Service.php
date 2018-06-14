@@ -1864,7 +1864,7 @@ class Service extends Base\Service
         //
         $partner = $this->repo->merchant->findOrFail($partnerId);
 
-        $referral = $this->repo->account->findOrFail($referralId);
+        $referral = $this->repo->merchant->findOrFail($referralId);
 
         $accessMap = $this->core()->createPartnerReferral($partner, $referral);
 

@@ -370,7 +370,7 @@ class Validator extends Base\Validator
         if (($merchant->isPartner() === false) or ($merchant->isPurePlatformTypePartner() === true))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_PARTNER_ID,
+                ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
                 Entity::PARTNER_TYPE,
                 [
                     Entity::ID           => $merchant->getId(),

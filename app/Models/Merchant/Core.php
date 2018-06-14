@@ -871,24 +871,33 @@ class Core extends Base\Core
 
         $partnerApp = $partner->getPartnerApp();
 
-        $accessMap = $this->repo
-                          ->merchant_access_map
-                          ->findMerchantAccessMapOnEntityType($partnerApp->getId(), AccessMap\Entity::APPLICATION);
+        $referralId = $referral->getId();
 
-        if ($accessMap !== null)
+        $partnerAppId = $partnerApp->getId();
+
+        $params = [
+            AccessMap\Entity::ENTITY_TYPE => AccessMap\Entity::APPLICATION,
+            AccessMap\Entity::ENTITY_ID   => $partnerAppId,
+        ];
+
+        $accessMap = $this->repo->merchant_access_map->fetch($params, $referralId);
+
+        if ($accessMap->isEmpty() === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PARTNER_REFERRAL_ALREADY_EXISTS,
                 null,
                 [
-                    'id' => $accessMap->getId(),
+                    Entity::MERCHANT_ID           => $referralId,
+                    AccessMap\Entity::ENTITY_ID   => $partnerAppId,
+                    AccessMap\Entity::ENTITY_TYPE => AccessMap\Entity::APPLICATION,
                 ]);
         }
 
         $accessMap = (new AccessMap\Service)->mapOAuthApplication(
-            $referral->getId(),
+            $referralId,
             [
-                AccessMap\Entity::APPLICATION_ID => $partnerApp->getId()
+                AccessMap\Entity::APPLICATION_ID => $partnerAppId,
             ]);
 
         return $accessMap;
