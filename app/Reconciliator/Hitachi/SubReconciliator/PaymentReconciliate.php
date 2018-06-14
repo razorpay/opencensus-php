@@ -24,6 +24,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_CARD_INTERCHANGE_TYPE  = 'interchange_type';
     const COLUMN_ISSETTLED              = 'issettled';
     const PURCHADE_ID                   = 'purchaseid';
+    const COLUMN_RRN                    = 'retr_ref_nr';
 
     const BHARAT_QR_TERMINAL            = '38R00450';
 
@@ -58,9 +59,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getPaymentIdUsingTerminalFilter(array $row)
     {
-        if ($row['terminal_id'] === self::BHARAT_QR_TERMINAL)
+        if ($row[self::COLUMN_TERMINAL_NUMBER] === self::BHARAT_QR_TERMINAL)
         {
-            $paymentId =  $this->getPaymentIdFromBharatQr($row[self::PURCHADE_ID], $row);
+            $paymentId =  $this->getPaymentIdFromBharatQr($row[self::COLUMN_RRN], $row);
         }
         else
         {

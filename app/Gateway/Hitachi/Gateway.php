@@ -209,7 +209,7 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::CARD,
             BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::MID],
             BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[ResponseFields::PURCHASE_ID],
-            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::AUTHORIZATION_ID],
+            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::RRN],
         ];
 
         return $qrData;
@@ -676,7 +676,7 @@ class Gateway extends Base\Gateway
             Entity::CARD_NETWORK       => $response[ResponseFields::CARD_NETWORK],
             Entity::AMOUNT             => $this->getIntegerFormattedAmount($response[ResponseFields::AMOUNT]),
             Entity::RRN                => $response[ResponseFields::RRN],
-            Entity::REQUEST_ID         => $response[ResponseFields::AUTHORIZATION_ID],
+            Entity::AUTH_ID            => $response[ResponseFields::AUTHORIZATION_ID],
             Entity::STATUS             => $response[ResponseFields::STATUS_CODE],
             Entity::MERCHANT_REFERENCE => $response[ResponseFields::PURCHASE_ID],
         ];

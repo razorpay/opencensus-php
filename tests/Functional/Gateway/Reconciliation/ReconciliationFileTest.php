@@ -717,6 +717,46 @@ class ReconciliationFileTest extends TestCase
         $this->assertTrue($updatedPayment1['gateway_captured']);
     }
 
+    public function testHitachiBharatQrRecon()
+    {
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->create('terminal:bharat_qr_terminal');
+
+        $this->createVirtualAccount([], true, null, true);
+
+        $qrCode = $this->getDbLastEntity('qr_code');
+
+        $this->payViaBharatQr($qrCode['id'], 'hitachi');
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(null, $transaction['reconciled_at']);
+
+        $entries[] = $this->testData['facades']['hitachi'];
+
+        $entries[0][HitachiPaymentRecon::COLUMN_TERMINAL_NUMBER] = '38R00450';
+
+        $entries[0][HitachiPaymentRecon::PURCHADE_ID] = $qrCode['id'];
+
+        $entries[0][HitachiPaymentRecon::COLUMN_PAYMENT_AMOUNT] = $payment['amount']/100;
+
+        $entries[0][HitachiPaymentRecon::COLUMN_RRN] = '123456789012';
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+
+        $this->runForFiles([$file], 'Hitachi');
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+    }
+
     public function testHitachiReconRefundFile()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');

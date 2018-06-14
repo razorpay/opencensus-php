@@ -182,6 +182,7 @@ return [
             'cardcountry'           => 'IN',
             'arn'                   => 74110757361008597807228,
             'issettled'             => 'S',
+            'purchaseid'            => '',
             'message_type'          => '0200',
             'datetime'              => '2018-03-05 23:50:00'
         ]
