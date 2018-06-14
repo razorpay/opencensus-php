@@ -16,7 +16,6 @@ class Method
     const AEPS          = 'aeps';
     const EMANDATE      = 'emandate';
 
-
     protected static $methods = [
         self::CARD          => 'Card',
         self::NETBANKING    => 'Net Banking',

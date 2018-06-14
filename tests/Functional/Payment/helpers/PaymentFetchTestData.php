@@ -25,7 +25,7 @@ return [
             'url'     => '/admin/payment',
             'method'  => 'get',
             'content' => [
-                'vpa' => 'success@razorpay',
+                'vpa' => 'success1@razorpay',
             ],
         ],
         'response' => [
@@ -34,7 +34,7 @@ return [
                 'count'  => 1,
                 'items'  => [
                     [
-                        'vpa' => 'success@razorpay',
+                        'vpa' => 'success1@razorpay',
                     ]
                 ],
             ],

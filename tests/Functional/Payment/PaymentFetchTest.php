@@ -37,13 +37,18 @@ class PaymentFetchTest extends TestCase
 
         $this->fixtures->create('payment', [
             'method' => 'upi',
-            'vpa'    => 'success@razorpay',
+            'vpa'    => 'success1@razorpay',
+        ]);
+
+        $this->fixtures->create('payment', [
+            'method' => 'upi',
+            'vpa'    => 'success2@razorpay',
         ]);
 
         $this->startTest();
     }
 
-        public function testFetchCardQueryParams()
+    public function testFetchCardQueryParams()
     {
         $this->ba->adminAuth();
 
@@ -51,8 +56,7 @@ class PaymentFetchTest extends TestCase
             'card_id' => '100000001lcard'
         ]);
 
-        $response = $this->startTest();
-        s($response);
+        $this->startTest();
     }
 
     public function testFetchRulesForPrivateWithExtraFieldsError()
