@@ -20,6 +20,28 @@ return [
         ],
     ],
 
+    'testFetchRuleVPAFilterForAdminAuth' => [
+        'request' => [
+            'url'     => '/admin/payment',
+            'method'  => 'get',
+            'content' => [
+                'vpa' => 'success@razorpay',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'method' => 'method',
+                        'vpa' => 'success@razorpay',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testFetchCardQueryParams' => [
         'request' => [
             'url'     => '/admin/payment',

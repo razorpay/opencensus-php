@@ -80,6 +80,7 @@ class Repository extends Base\Repository
         Entity::AMOUNT                  => 'sometimes|integer',
         Entity::TERMINAL_ID             => 'sometimes|alpha_num|size:14',
         Token\Entity::RECURRING_STATUS  => 'sometimes|string|max:15',
+        Entity::VPA                     => 'sometimes|string|max:35',
     ];
 
     protected $signedIds = [
