@@ -328,5 +328,28 @@ return [
             ],
         ],
     ],
+
+    'testAddReferralToPartnerAgain' => [
+        'request'   => [
+            'url'     => '/partners/10000000000000/referrals',
+            'method'  => 'POST',
+            'content' => [
+                'merchant_id' => '10000000000011',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_REFERRAL_ALREADY_EXISTS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_REFERRAL_ALREADY_EXISTS,
+        ],
+    ],
 ];
 

@@ -245,10 +245,29 @@ class PartnerTest extends OAuthTestCase
 
         $this->ba->adminAuth();
 
-        ////        $merchant = $this->getDbEntities('merchant');
-        //                $merchant = $this->getDbEntityById('merchant', '10000000000011', 'live');
-        ////
-        //        s($merchant);
+        $this->startTest();
+    }
+
+    public function testAddReferralToPartnerAgain()
+    {
+        $merchantId = self::DEFAULT_MERCHANT_ID;
+
+        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
+
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $app = $this->createOAuthApplication($partnerData);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => '10000000000011',
+            ]);
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
