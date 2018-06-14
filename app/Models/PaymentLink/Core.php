@@ -14,11 +14,6 @@ use RZP\Exception\BadRequestException;
 class Core extends Base\Core
 {
     /**
-     * @var Mutex
-     */
-    protected $mutex;
-
-    /**
      * Elfin: Url shortener service
      */
     protected $elfin;
@@ -33,7 +28,6 @@ class Core extends Base\Core
     {
         parent::__construct();
 
-        $this->mutex           = $this->app['api.mutex'];
         $this->elfin           = $this->app['elfin'];
         $this->plHostedBaseUrl = $this->app['config']->get('app.payment_link_hosted_base_url');
     }
@@ -84,7 +78,7 @@ class Core extends Base\Core
 
             $paymentLink->edit($input);
 
-            $paymentLink = $this->updateStatusForEdit($paymentLink, $input);
+            $this->changeStatusAfterUpdateIfApplicable($paymentLink);
 
             $this->repo->saveOrFail($paymentLink);
         });
@@ -96,60 +90,53 @@ class Core extends Base\Core
 
     public function deactivate(Entity $paymentLink): Entity
     {
-        $paymentLink = $this->repo->transaction(function() use ($paymentLink)
+        $this->trace->info(
+            TraceCode::PAYMENT_LINK_DEACTIVATE_REQUEST,
+            [
+                Entity::ID => $paymentLink->getPublicId(),
+            ]);
+
+        $this->repo->transaction(function() use ($paymentLink)
         {
             $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
 
-            if ($paymentLink->isInActive() === true)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_LINK_ALREADY_INACTIVE);
-            }
+            $paymentLink->getValidator()->validateDeactivateOperation();
 
-            $this->trace->info(
-                TraceCode::PAYMENT_LINK_DEACTIVATE_REQUEST,
-                ['id' => $paymentLink->getPublicId()]);
-
-            $this->changeStatus(
-                $paymentLink,
-                null,
-                Status::INACTIVE,
-                StatusReason::DEACTIVATED);
+            $this->changeStatus($paymentLink, Status::INACTIVE, StatusReason::DEACTIVATED);
 
             $this->repo->saveOrFail($paymentLink);
-
-            return $paymentLink;
         });
 
-        $this->trace->info(TraceCode::PAYMENT_LINK_DEACTIVATED, $paymentLink->toArray());
+        $this->trace->info(TraceCode::PAYMENT_LINK_DEACTIVATED, $paymentLink->toArrayPublic());
 
         return $paymentLink;
     }
 
     public function activate(Entity $paymentLink, array $input): Entity
     {
-        $paymentLink = $this->repo->transaction(function() use ($paymentLink, $input)
+        $this->trace->info(
+            TraceCode::PAYMENT_LINK_ACTIVATE_REQUEST,
+            [
+                Entity::ID    => $paymentLink->getPublicId(),
+                Entity::INPUT => $input,
+            ]);
+
+        $this->repo->transaction(function() use ($paymentLink, $input)
         {
             $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
 
-            if ($paymentLink->isActive() === true)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_LINK_ALREADY_ACTIVE);
-            }
+            $paymentLink->getValidator()->validateActivateOperation();
 
-            $this->trace->info(
-                TraceCode::PAYMENT_LINK_ACTIVATE_REQUEST,
-                ['id' => $paymentLink->getPublicId()]);
+            $paymentLink->edit($input);
 
-            $paymentLink = $this->updateToActivate($paymentLink, $input);
+            $paymentLink->getValidator()->validateShouldActivationBeAllowed();
+
+            $this->changeStatus($paymentLink, Status::ACTIVE, null);
 
             $this->repo->saveOrFail($paymentLink);
-
-            return $paymentLink;
         });
 
-        $this->trace->info(TraceCode::PAYMENT_LINK_ACTIVATED, $paymentLink->toArray());
+        $this->trace->info(TraceCode::PAYMENT_LINK_ACTIVATED, $paymentLink->toArrayPublic());
 
         return $paymentLink;
     }
@@ -281,58 +268,26 @@ class Core extends Base\Core
             ]);
     }
 
-    protected function updateToActivate(Entity $paymentLink, array $input): Entity
-    {
-        $validator = $paymentLink->getValidator();
-
-        $validator->validateInput('edit', $input);
-
-        $validator->validatePaymentForActivate($paymentLink, $input);
-
-        $paymentLink->edit($input);
-
-        $this->changeStatus(
-            $paymentLink,
-            null,
-            Status::ACTIVE,
-            null);
-
-        return $paymentLink;
-    }
-
     /**
-     * This is called after edit operation as we want to
-     * do the basic validation of editable fields
-     * before checking corresponding payments.
+     * This is called after edit/update operation. Post building the entity with request input we check if payment
+     * link's status needs changing.
      *
-     * This updates the status of the link:
-     * - Will be marked complete if edited times_payable
-     * - Cannot get expired as there is validation on
-     * edit value of expires_by.
+     * Payment link's status:
+     * - will be marked complete if times_payable post update is equal to times_paid
+     *
+     * Currently there is no other cases. Expire by edits will not affect this because that must already by at least
+     * 15 mins in future (validated via Validator method during build).
      *
      * @param Entity $paymentLink
-     * @param array $input
-     * @return Entity
      */
-    protected function updateStatusForEdit(Entity $paymentLink, array $input): Entity
+    protected function changeStatusAfterUpdateIfApplicable(Entity $paymentLink)
     {
-        if (isset($input[Entity::TIMES_PAYABLE]) === false)
-        {
-            return $paymentLink;
-        }
-
-        // Update status according to new value of time_payable
+        $this->repo->assertTransactionActive();
 
         if ($paymentLink->getTimesPayable() === $paymentLink->getTimesPaid())
         {
-            $this->changeStatus(
-                $paymentLink,
-                null,
-                Status::INACTIVE,
-                StatusReason::COMPLETED);
+            $this->changeStatus($paymentLink, Status::INACTIVE, StatusReason::COMPLETED);
         }
-
-        return $paymentLink;
     }
 
     /**

@@ -244,9 +244,9 @@ return [
 
     'testDeactivatePaymentLink' => [
         'request' => [
-            'url'     => '/payment_links/pl_100000000000pl/deactivate',
-            'method'  => 'patch',
-            ],
+            'url'    => '/payment_links/pl_100000000000pl/deactivate',
+            'method' => 'patch',
+        ],
         'response' => [
             'content' => [
                 'id'            => 'pl_100000000000pl',
@@ -258,8 +258,8 @@ return [
 
     'testDeactivateAlreadyDeactivatedPaymentLink' => [
         'request' => [
-            'url'     => '/payment_links/pl_100000000000pl/deactivate',
-            'method'  => 'patch',
+            'url'    => '/payment_links/pl_100000000000pl/deactivate',
+            'method' => 'patch',
         ],
         'response' => [
             'content' => [
@@ -271,15 +271,15 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_LINK_ALREADY_INACTIVE,
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
     'testActivatePaymentLink' => [
         'request' => [
-            'url'     => '/payment_links/pl_100000000000pl/activate',
-            'method'  => 'patch',
+            'url'    => '/payment_links/pl_100000000000pl/activate',
+            'method' => 'patch',
         ],
         'response' => [
             'content' => [
@@ -292,8 +292,8 @@ return [
 
     'testActivateLinkAlreadyActivated' => [
         'request' => [
-            'url'     => '/payment_links/pl_100000000000pl/activate',
-            'method'  => 'patch',
+            'url'    => '/payment_links/pl_100000000000pl/activate',
+            'method' => 'patch',
         ],
         'response' => [
             'content' => [
@@ -305,8 +305,8 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_LINK_ALREADY_ACTIVE,
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -355,7 +355,7 @@ return [
         ],
     ],
 
-    'testEditPaymentLinkToComplete' => [
+    'testEditPaymentLinkToCompleteAndExcessPaymentRefunded' => [
         'request' => [
             'url'     => '/payment_links/pl_100000000000pl',
             'method'  => 'patch',

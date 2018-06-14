@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Queue;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\PaymentLink;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
@@ -196,9 +197,7 @@ class PaymentLinkTest extends TestCase
 
     public function testDeactivatePaymentLink()
     {
-        $this->fixtures->create('payment_link', ['id' => '100000000000pl']);
-
-        $this->ba->proxyAuth();
+        $this->createPaymentLink();
 
         $this->startTest();
     }
@@ -206,14 +205,11 @@ class PaymentLinkTest extends TestCase
     public function testDeactivateAlreadyDeactivatedPaymentLink()
     {
         $attributes = [
-            'id'            => '100000000000pl',
-            'status'        => 'inactive',
-            'status_reason' => 'deactivated',
+            PaymentLinkModel\Entity::STATUS        => PaymentLinkModel\Status::INACTIVE,
+            PaymentLinkModel\Entity::STATUS_REASON => PaymentLinkModel\StatusReason::DEACTIVATED,
         ];
 
-        $this->fixtures->create('payment_link', $attributes);
-
-        $this->ba->proxyAuth();
+        $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
 
         $this->startTest();
     }
@@ -221,14 +217,11 @@ class PaymentLinkTest extends TestCase
     public function testActivatePaymentLink()
     {
         $attributes = [
-            'id'            => '100000000000pl',
-            'status'        => 'inactive',
-            'status_reason' => 'deactivated',
+            PaymentLinkModel\Entity::STATUS        => PaymentLinkModel\Status::INACTIVE,
+            PaymentLinkModel\Entity::STATUS_REASON => PaymentLinkModel\StatusReason::DEACTIVATED,
         ];
 
-        $this->fixtures->create('payment_link', $attributes);
-
-        $this->ba->proxyAuth();
+        $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
 
         $this->startTest();
     }
@@ -236,14 +229,11 @@ class PaymentLinkTest extends TestCase
     public function testActivateLinkAlreadyActivated()
     {
         $attributes = [
-            'id'            => '100000000000pl',
-            'status'        => 'active',
-            'status_reason' => null,
+            PaymentLinkModel\Entity::STATUS        => PaymentLinkModel\Status::ACTIVE,
+            PaymentLinkModel\Entity::STATUS_REASON => null,
         ];
 
-        $this->fixtures->create('payment_link', $attributes);
-
-        $this->ba->proxyAuth();
+        $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
 
         $this->startTest();
     }
@@ -251,65 +241,52 @@ class PaymentLinkTest extends TestCase
     public function testActivateWithTimesPayableLessThanTimesPaid()
     {
         $attributes = [
-            'id'                => '100000000000pl',
-            'status'            => 'inactive',
-            'status_reason'     => 'completed',
-            'times_paid'        => 2,
-            'times_payable'     => 2,
-            'amount'            => 100,
-            'total_amount_paid' => 200,
+            PaymentLinkModel\Entity::STATUS            => PaymentLinkModel\Status::INACTIVE,
+            PaymentLinkModel\Entity::STATUS_REASON     => PaymentLinkModel\StatusReason::COMPLETED,
+            PaymentLinkModel\Entity::TIMES_PAID        => 2,
+            PaymentLinkModel\Entity::TIMES_PAYABLE     => 2,
+            PaymentLinkModel\Entity::AMOUNT            => 100,
+            PaymentLinkModel\Entity::TOTAL_AMOUNT_PAID => 200,
         ];
 
-        $this->fixtures->create('payment_link', $attributes);
-
-        $this->ba->proxyAuth();
+        $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
 
         $this->startTest();
     }
 
     public function testMinExpiryTimeForActivation()
     {
-        $now = Carbon::now(Timezone::IST);
-
-        $expireBy = $now->copy()->addSeconds(120)->getTimestamp();
-
         $attributes = [
-            'id'                => '100000000000pl',
-            'status'            => 'inactive',
-            'status_reason'     => 'expired',
+            PaymentLinkModel\Entity::STATUS        => PaymentLinkModel\Status::INACTIVE,
+            PaymentLinkModel\Entity::STATUS_REASON => PaymentLinkModel\StatusReason::EXPIRED,
         ];
 
-        $this->fixtures->create('payment_link', $attributes);
+        $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
 
-        $this->ba->proxyAuth();
+        $expireBy = Carbon::now(Timezone::IST)->addSeconds(120)->getTimestamp();
 
         $this->testData[__FUNCTION__]['request']['content']['expire_by'] = $expireBy;
 
         $this->startTest();
     }
 
-    public function testEditPaymentLinkToComplete()
+    public function testEditPaymentLinkToCompleteAndExcessPaymentRefunded()
     {
         Queue::fake();
 
         $attributes = [
-            'id'                => '100000000000pl',
-            'times_payable'     => 2,
+            PaymentLinkModel\Entity::TIMES_PAYABLE => 2,
         ];
 
-        $paymentLink = $this->fixtures->create('payment_link', $attributes);
+        $paymentLink = $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
 
-        $this->makePaymentForPaymentLinkAndAssert($paymentLink->toArray());
+        $this->makePaymentForPaymentLinkAndAssert($paymentLink);
+
+        Carbon::setTestNow(Carbon::now()->subHours(25));
 
         $paymentAttributes = [
-            'payment_link_id' => $paymentLink['id'],
+            Payment\Entity::PAYMENT_LINK_ID => $paymentLink->getId(),
         ];
-
-        //
-        // This is not a mandatory condition, but we added this to
-        // recreate the condition for which the test is required
-        //
-        $paymentAttributes['created_at'] = time() - ((24+1) * 60 * 60);;
 
         $paymentAuth = $this->fixtures->create('payment:authorized', $paymentAttributes);
 
@@ -319,7 +296,7 @@ class PaymentLinkTest extends TestCase
 
         $this->doAutoCapture();
 
-        Queue::assertPushed(RefundPayment::class, function($job) use ($paymentAuth)
+        Queue::assertPushed(RefundPaymentJob::class, function($job) use ($paymentAuth)
         {
             $this->assertEquals($paymentAuth['id'], $job->getPaymentId());
 
@@ -329,11 +306,13 @@ class PaymentLinkTest extends TestCase
 
     // -------------------- Protected methods --------------------
 
-    protected function createPaymentLink(string $id = self::DEFAULT_PAYMENT_LINK_ID, array $attributes = [])
+    protected function createPaymentLink(
+        string $id = self::DEFAULT_PAYMENT_LINK_ID,
+        array $attributes = []): PaymentLinkModel\Entity
     {
         $attributes[PaymentLinkModel\Entity::ID] = $id;
 
-        $this->fixtures->create('payment_link', $attributes);
+        return $this->fixtures->create('payment_link', $attributes);
     }
 
     /**
