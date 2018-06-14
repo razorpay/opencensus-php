@@ -33,8 +33,6 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::NAME,
-        self::ENTITY_ID,
-        self::ENTITY_TYPE
     ];
 
     protected $public = [
@@ -94,6 +92,16 @@ class Entity extends Base\PublicEntity
     public function getEntityType()
     {
         return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
+    public function setEntityId(string $entityId)
+    {
+        $this->setAttribute(self::ENTITY_ID, $entityId);
+    }
+
+    public function setEntityType(string $entityType)
+    {
+        $this->setAttribute(self::ENTITY_TYPE, $entityType);
     }
 
     public function entity()

@@ -92,7 +92,6 @@ class Entity extends Base\PublicEntity
     //const PRIORITY                      = 'priority';
 
     protected $fillable = [
-        self::MERCHANT_ID,
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
@@ -252,10 +251,7 @@ class Entity extends Base\PublicEntity
 
         static::deleting(function ($terminal)
         {
-            if ($terminal->isForceDeleting() === true)
-            {
-                $terminal->merchants()->detach();
-            }
+            $terminal->merchants()->detach();
         });
     }
 

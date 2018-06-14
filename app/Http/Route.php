@@ -434,6 +434,10 @@ final class Route
         'item_fetch_multiple'                      => ['get',      'items',                                          'ItemController@getItems'                                           ],
         'item_update'                              => ['patch',    'items/{id}',                                     'ItemController@updateItem'                                         ],
         'item_delete'                              => ['delete',   'items/{id}',                                     'ItemController@deleteItem'                                         ],
+        'payment_link_get'                         => ['get',      'payment_links/{id}',                             'PaymentLinkController@get'                                         ],
+        'payment_link_list'                        => ['get',      'payment_links',                                  'PaymentLinkController@list'                                        ],
+        'payment_link_create'                      => ['post',     'payment_links',                                  'PaymentLinkController@create'                                      ],
+        'payment_link_update'                      => ['patch',    'payment_links/{id}',                             'PaymentLinkController@update'                                      ],
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
         'app_fetch_payments'                       => ['get',      'apps/payments',                                  'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
@@ -1250,6 +1254,10 @@ final class Route
         'tax_get_meta_states',
         'tax_get_meta_gst_taxes',
         'bharat_qr_pay_test',
+        'payment_link_get',
+        'payment_link_list',
+        'payment_link_create',
+        'payment_link_update',
     ];
 
     // These will run on internal auth with the assurance
