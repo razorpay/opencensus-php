@@ -258,8 +258,8 @@ class Entity extends Base\PublicEntity
      */
     public function isPayable(): bool
     {
-        // Must not be expired or expire_by is past present time (and CRON is yet to mark it as expired)
-        return (($this->isExpired() === false) and
+        // Must be 'active' and expire_by must not be past now(CRON might yet to be mark it as expired, in that case)
+        return (($this->isActive() === true) and
                 ($this->isPastExpireBy() === false));
     }
 

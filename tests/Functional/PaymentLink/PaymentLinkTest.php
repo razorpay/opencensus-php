@@ -79,9 +79,9 @@ class PaymentLinkTest extends TestCase
     public function testInactivePaymentLinkSendNotification()
     {
         $attributes = [
-            PaymentLink\Entity::STATUS        => PaymentLink\Status::INACTIVE,
-            PaymentLink\Entity::STATUS_REASON => PaymentLink\StatusReason::EXPIRED,
-            PaymentLink\Entity::EXPIRE_BY     => 1400000000,
+            PaymentLinkModel\Entity::STATUS        => PaymentLinkModel\Status::INACTIVE,
+            PaymentLinkModel\Entity::STATUS_REASON => PaymentLinkModel\StatusReason::EXPIRED,
+            PaymentLinkModel\Entity::EXPIRE_BY     => 1400000000,
         ];
 
         $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
