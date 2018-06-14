@@ -1,4 +1,5 @@
 import { setTrackData } from 'rzp/utils/googleAnalytics';
+import moment from 'moment';
 
 const pageTitle = 'Dashboard - Reports',
   pageTitle_v2 = 'Dashboard - Reports V2',
@@ -19,11 +20,19 @@ export const trackReportTabsClick = reportName => {
   });
 };
 
-export const trackReportActions = (action, period, timeVal, reportName) => {
+export const trackReportActions = (
+  action,
+  period,
+  selectedDate,
+  reportName
+) => {
+  const currDate = moment(new Date());
+  const diffType = period === 'daily' ? 'days' : 'months';
+
   return track_v2({
     eventAction: `Click - ${action}`,
     eventLabel: `${period} | ${reportName}`,
-    eventValue: `${timeVal}`,
+    eventValue: `${currDate.diff(selectedDate, diffType)}`,
   });
 };
 
@@ -39,11 +48,11 @@ export const trackReportGenericActions = (
   });
 };
 
-export const trackTimeLapse = (action, timeLapse) => {
-  const secondsLapse = (timeLapse / 1000).toFixed(2);
-
+export const trackTimeLapse = (action, timeLapse, label) => {
+  let secondsLapse = Math.round(timeLapse / 1000);
   return track_v2({
     eventAction: action,
     eventValue: secondsLapse,
+    ...(label && { eventLabel: label }),
   });
 };

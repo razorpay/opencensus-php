@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
+import moment from 'moment';
+
 import { arrayToSentence } from 'rzp/utils/rzp-utils';
 
 const ReportHelperText = ({ report, status, openEmailReportModal }) => {
   const isNoDataFound = report['status'] === 'processed' && !report['file_id'];
 
-  const successMsg = 'Report downloaded successfully.',
+  const successMsg = 'Report will download shortly.',
     failureMsg = isNoDataFound
       ? 'No data found!'
       : 'There was an error while generating this report.';
@@ -44,12 +46,13 @@ const ReportProgress = ({
   name,
   status,
   children,
+  timePeriod,
   isSelected,
   cancelDownload,
 }) => {
   return (
     <div class={`report-progress ${isSelected ? 'current' : ''}`}>
-      Generating {name} ...
+      Generating {name} for {timePeriod}
       <div>
         <div class={`bar-loader ${status}`} />
         <span class="report-close" onClick={() => cancelDownload(id)}>
@@ -82,6 +85,22 @@ export default class ReportLoader extends Component {
     return 'failed';
   };
 
+  getReportPeriod = report => {
+    let { start_time, end_time } = report;
+
+    start_time = moment.unix(start_time);
+    end_time = moment.unix(end_time);
+
+    //will return 0 for day & more than 1 for month
+    let timeDiff = end_time.diff(start_time, 'days');
+
+    if (timeDiff <= 1) {
+      return moment(start_time).format("Do MMM'YY");
+    } else {
+      return moment(start_time).format("MMM'YY");
+    }
+  };
+
   //- return selected config's reports first
   sortReportLoaderList = reportsKeysList => {
     const { selectedConfigId, reportList } = this.props;
@@ -112,6 +131,7 @@ export default class ReportLoader extends Component {
             id={reportId}
             key={reportId}
             status={this.getReportStatus(reportId)}
+            timePeriod={this.getReportPeriod(reportList[reportId])}
             isSelected={selectedConfigId === reportList[reportId]['config_id']}
             name={this.getReportText(
               configsLableMap[reportList[reportId]['config_id']]

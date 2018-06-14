@@ -14,6 +14,8 @@ import {
   trackReportGenericActions,
 } from 'merchant/containers/Reports/ReportsNew/ga';
 
+import moment from 'moment';
+
 @connect(
   state => {
     return {
@@ -34,6 +36,28 @@ export default class EmailReport extends Component {
   //used for ga tracking
   reportList = this.props.currentReportList || {};
 
+  componentWillMount() {
+    const { reportId, configsLableMap } = this.props;
+
+    //track timelapse between download to email report click
+    if (reportId) {
+      const report = this.reportList[reportId];
+      const timeLapse = new Date().getTime() - report['created_at'] * 1000;
+      const endTime = moment.unix(report.end_time),
+        startTime = moment.unix(report.start_time);
+
+      const timePeriod = endTime.diff(startTime, 'days');
+
+      trackTimeLapse(
+        'Click - Download to Email Time',
+        timeLapse,
+        `${timePeriod <= 1 ? 'daily' : 'monthly'} | ${
+          configsLableMap[report.config_id]
+        }`
+      );
+    }
+  }
+
   handleChange = email => {
     let selectedEmails = [...this.state.selectedEmails];
 
@@ -49,13 +73,14 @@ export default class EmailReport extends Component {
   };
 
   handleSend = () => {
+    const emailTypeHeirarchy = ['contact', 'transaction', 'account'];
     const { selectedEmails } = this.state;
     const { emailsMap } = this.props;
 
     let trackLabel = [];
 
     Object.keys(emailsMap).map(email => {
-      trackLabel.push(emailsMap[email]);
+      trackLabel.push(emailTypeHeirarchy[emailsMap[email] - 1]);
     });
 
     trackLabel = Array.from(new Set(trackLabel)).join(' | ');
@@ -96,9 +121,6 @@ export default class EmailReport extends Component {
 
     const isMerchantAccount = selectedAccountId === user.current;
 
-    const timeInterval =
-      selectedType === 'daily' ? selectedDate.date() : selectedDate.month() + 1;
-
     if (reportId) {
       const timeLapse =
         new Date().getTime() - this.reportList[reportId]['created_at'] * 1000;
@@ -106,11 +128,10 @@ export default class EmailReport extends Component {
       reqData = { emails: selectedEmails, id: reportId };
       shouldUpdate = true;
 
-      trackTimeLapse('Click - Download to Email Time', timeLapse);
       trackReportActions(
-        'Click - Email Report (while downloading)',
+        'Email Report (while downloading)',
         selectedType,
-        timeInterval,
+        selectedDate.toDate(),
         selectedConfig.label
       );
     } else {
@@ -133,9 +154,9 @@ export default class EmailReport extends Component {
       };
 
       trackReportActions(
-        'Click - Email Report',
+        'Email Report',
         selectedType,
-        timeInterval,
+        selectedDate.toDate(),
         selectedConfig.label
       );
     }
