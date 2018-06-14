@@ -18,8 +18,7 @@ class Status
     {
         if (self::isValid($status) === false)
         {
-            throw new BadRequestValidationFailureException(
-                'Not a valid status: ' . $status);
+            throw new BadRequestValidationFailureException('Not a valid status: ' . $status);
         }
     }
 }

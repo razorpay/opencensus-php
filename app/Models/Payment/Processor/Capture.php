@@ -119,7 +119,7 @@ trait Capture
         }
         finally
         {
-            $this->invokedOnPaymentCaptureAttempted($payment);
+            $this->postAutoCaptureAttemptProcessing($payment);
         }
     }
 
@@ -577,11 +577,14 @@ trait Capture
         (new Notify($this->payment))->trigger($event);
     }
 
-    protected function invokedOnPaymentCaptureAttempted(Payment\Entity $payment)
+    /**
+     * @param Payment\Entity $payment
+     */
+    protected function postAutoCaptureAttemptProcessing(Payment\Entity $payment)
     {
         if ($payment->hasPaymentLink() === true)
         {
-            (new PaymentLink\Core)->validatePaymentAfterCaptureAttempt($payment);
+            (new PaymentLink\Core)->intiateRefundForPaymentIfNotCaptured($payment);
         }
     }
 
@@ -790,12 +793,10 @@ trait Capture
 
     protected function updatePaymentLinkAfterCapture(Payment\Entity $payment)
     {
-        if ($payment->hasPaymentLink() === false)
+        if ($payment->hasPaymentLink() === true)
         {
-            return;
+            (new PaymentLink\Core)->updatePaymentLinkAfterPaymentCaptureIfApplicable($payment);
         }
-
-        (new PaymentLink\Core)->updatePaymentLinkAfterCapture($payment);
     }
 
     /**

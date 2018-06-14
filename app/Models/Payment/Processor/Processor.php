@@ -1481,13 +1481,13 @@ class Processor
 
     protected function validateAndSetPaymentLinkIfApplicable(Payment\Entity $payment, array $input)
     {
-        if (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === true)
+        if (array_key_exists(Payment\Entity::PAYMENT_LINK_ID, $input) === false)
         {
             return;
         }
 
-        $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant(
-            $input[Payment\Entity::PAYMENT_LINK_ID], $this->merchant);
+        $paymentLinkId = $input[Payment\Entity::PAYMENT_LINK_ID];
+        $paymentLink   = $this->repo->payment_link->findByPublicIdAndMerchant($paymentLinkId, $this->merchant);
 
         (new PaymentLink\Core)->validateIsPaymentInitiatable($paymentLink);
 
@@ -1691,9 +1691,6 @@ class Processor
             return false;
         }
 
-        //
-        // We do an auto capture only if payment is associated with a payment link.
-        //
         if ($payment->hasPaymentLink() === true)
         {
             return true;

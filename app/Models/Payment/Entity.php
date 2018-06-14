@@ -1296,7 +1296,7 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::TRANSFER_ID));
     }
 
-    public function hasPaymentLink()
+    public function hasPaymentLink(): bool
     {
         return ($this->isAttributeNotNull(self::PAYMENT_LINK_ID));
     }

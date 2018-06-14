@@ -44,6 +44,14 @@ class Entity extends Base\PublicEntity
     const CONTACT           = 'contact';
     const EMAIL             = 'email';
 
+    // Additional general usage input/output constants for the module
+    const PAYMENT_ID         = 'payment_id';
+    const FROM_STATUS        = 'from_status';
+    const FROM_STATUS_REASON = 'from_status_reason';
+    const TO_STATUS          = 'to_status';
+    const TO_STATUS_REASON   = 'to_status_reason';
+
+
     protected static $sign        = 'pl';
 
     protected $entity             = 'payment_link';
@@ -207,6 +215,8 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::INACTIVE);
     }
 
+    // TODO: To check & fix inconsistency in following 2 methods (Ref. Github comment)
+
     public function isExpired(): bool
     {
         if (($this->getStatus() === Status::INACTIVE) and
@@ -215,10 +225,10 @@ class Entity extends Base\PublicEntity
             return true;
         }
 
-        $currentTime = Carbon::now(Timezone::IST)->timestamp;
+        $now = Carbon::now(Timezone::IST)->timestamp;
 
         return (($this->getExpireBy() !== null) and
-            ($this->getExpireBy() <= $currentTime));
+                ($this->getExpireBy() <= $now));
     }
 
     public function isCompleted(): bool
@@ -230,13 +240,22 @@ class Entity extends Base\PublicEntity
         }
 
         return (($this->getTimesPayable() !== null) and
-        ($this->getTimesPayable() === $this->getTimesPaid()));
+                ($this->getTimesPayable() === $this->getTimesPaid()));
     }
 
     public function isDeactivated(): bool
     {
         return (($this->getStatus() === Status::INACTIVE) and
-            ($this->getStatusReason() === StatusReason::DEACTIVATED));
+                ($this->getStatusReason() === StatusReason::DEACTIVATED));
+    }
+
+    /**
+     * Checks if link in it's current state is payable or not
+     * @return boolean
+     */
+    public function isPayable(): bool
+    {
+        return (($this->isActive() === true) and ($this->isExpired() === false));
     }
 
     /**
@@ -288,9 +307,4 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------------------------- End Setters -----------------------------
-
-    public function isPayable(): bool
-    {
-        return (($this->isActive() === true) and ($this->isExpired() === false));
-    }
 }
