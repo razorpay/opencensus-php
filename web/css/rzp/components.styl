@@ -1,3 +1,5 @@
+@import './animations';
+
 // i-switch checkbox
 
 .i-switch {
@@ -790,28 +792,61 @@ dl.rzp-definition {
 /* Component: rzp/ui/Accordian */
 
 .Accordian {
-  .Accordian-item {
+  .Accordian__item {
     margin: 15px 0;
-    .Accordian-content {
+    .Accordian__content {
       padding: 10px;
-      display: none
-      &.open {
-        display: block;
-      }
+      display: none;
     }
-    header {
+    .Accordian__title {
       background: #F6F6F6;
       padding: 10px;
       cursor: pointer;
-      &::after {
-        content: '\2228';
-        float: right;
-        font-weight: bold;
+      position: relative;
+      font-weight: bold;
+      &:hover {
+        background: #dadada;
       }
-      &.open {
-        &::after {
-          content: '\2227';
+      .accordian__arrow {
+        display: inline-block;
+        position: absolute;
+        width: 24px;
+        height: 12px;
+        top: 50%;
+        right: 5px;
+        margin-top: -7px;
+        &::after,&::before {
+            display: block;
+            position: absolute;
+            top: 50%;
+            width: 10px;
+            height: 2px;
+            background-color: #58666e;
+            content: '';
+            transition: transform 0.25s ease;
         }
+        &::before {
+          left: 4px;
+          transform: rotate(45deg);
+        }
+        &::after {
+          right: 4px;
+          transform: rotate(-45deg);
+        }
+      }
+    }
+    
+    &.open {
+      .Accordian__title > .accordian__arrow::before {
+        transform: rotate(-45deg);
+      }
+
+      .Accordian__title > .accordian__arrow::after {
+        transform: rotate(45deg);
+      }
+      .Accordian__content {
+        display: block;
+        animation: fadein 0.25s ease-in;
       }
     }
   }
