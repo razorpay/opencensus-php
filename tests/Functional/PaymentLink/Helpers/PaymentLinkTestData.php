@@ -217,7 +217,8 @@ return [
     ],
 
     'testPaymentLinkMakePayment' => [
-        'state' => [
+        // Used to assert payment link's attributes after payment in test
+        'payment_link' => [
             'times_paid'        => 1,
             'total_amount_paid' => 10100,
             'status'            => 'active',
@@ -226,7 +227,14 @@ return [
     ],
 
     'testPaymentLinkCompletePayments' => [
-        'state' => [
+        // Used to assert payment link's attributes after payment in test
+        'payment_link_after_payment_1' => [
+            'times_paid'        => 1,
+            'total_amount_paid' => 10100,
+            'status'            => 'active',
+            'status_reason'     => null,
+        ],
+        'payment_link_after_payment_2' => [
             'times_paid'        => 2,
             'total_amount_paid' => 20200,
             'status'            => 'inactive',

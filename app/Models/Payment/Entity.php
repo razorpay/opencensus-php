@@ -1301,6 +1301,11 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::PAYMENT_LINK_ID));
     }
 
+    public function getPaymentLinkId()
+    {
+        return $this->getAttribute(self::PAYMENT_LINK_ID);
+    }
+
     public function hasMetadata($key = null)
     {
         if ($key === null)
