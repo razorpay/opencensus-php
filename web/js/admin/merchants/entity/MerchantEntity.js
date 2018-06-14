@@ -364,10 +364,19 @@ const ActionsList = ({ model, merchantId, actions }) => {
 
   // method to unmark a mercant as partner
   function unMarkPartner() {
-    return merchantAction(
-      'un_mark_partner',
-      'Merchant successfully un-marked as partner'
-    );
+    return adminPost({
+      url: `live_${merchantId}/merchant/requests`,
+      data: {
+        name: 'deactivation',
+        type: 'partner',
+        submissions: { partner_type: '' },
+      },
+    }).then(response => {
+      if (response) {
+        notifySuccess('Merchant unmarked as partner');
+        model.updateDetails(response.merchant);
+      }
+    });
   }
 
   return (
@@ -696,18 +705,24 @@ const ActionsList = ({ model, merchantId, actions }) => {
             {isDetailsLoading && <div class="dot-loader">.</div>}
           </div>
         </ShowWhen>
-        <ShowWhen>
-          <div onClick={actions.MarkAsPartner}>Mark As Partner</div>
-        </ShowWhen>
-        <ShowWhen>
-          <AsyncButton
-            onClick={unMarkPartner}
-            pendingClass="btn-pending"
-            confirm="Are you sure, you want to unmark merchant as partner?"
-          >
-            Unmark As Parnter
-          </AsyncButton>
-        </ShowWhen>
+
+        {/* partner actions */}
+        {merchant.details.partner_type ? (
+          <ShowWhen>
+            <AsyncButton
+              onClick={unMarkPartner}
+              pendingClass="btn-pending"
+              confirm="Are you sure, you want to unmark merchant as partner?"
+            >
+              Unmark As Partner
+            </AsyncButton>
+          </ShowWhen>
+        ) : (
+          <ShowWhen>
+            <div onClick={actions.MarkAsPartner}>Mark As Partner</div>
+          </ShowWhen>
+        )}
+
         <ShowWhen permission="edit_merchant_screenshot">
           <div onClick={actions.UploadScreenshots}>
             Upload screenshots
