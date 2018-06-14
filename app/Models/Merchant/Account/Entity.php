@@ -25,7 +25,6 @@ class Entity extends Merchant\Entity
     const LANDLINE                 = 'landline';
     const SCHEDULE                 = 'schedule';
     const IFSC_CODE                = 'ifsc_code';
-    const ACCOUNT_ID               = 'account_id';
     const CAN_SUBMIT               = 'can_submit';
     const DESTINATION              = 'destination';
     const KYC_DETAILS              = 'kyc_details';

@@ -1845,6 +1845,13 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * @param string $partnerId
+     * @param array  $input
+     *
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public function createPartnerReferral(string $partnerId, array $input): array
     {
         if (empty($input[Entity::MERCHANT_ID]) === true)
@@ -1867,6 +1874,12 @@ class Service extends Base\Service
         return $accessMap;
     }
 
+    /**
+     * @param string $partnerId
+     * @param string $referralId
+     *
+     * @return array
+     */
     public function deletePartnerReferral(string $partnerId, string $referralId): array
     {
         $partner = $this->repo->merchant->findOrFail($partnerId);

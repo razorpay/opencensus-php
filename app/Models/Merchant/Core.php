@@ -861,6 +861,13 @@ class Core extends Base\Core
         return $merchant;
     }
 
+    /**
+     * @param Entity $partner
+     * @param Entity $referral
+     *
+     * @return array
+     * @throws BadRequestException
+     */
     public function createPartnerReferral(Entity $partner, Entity $referral)
     {
         $validator = new Validator;
@@ -913,6 +920,13 @@ class Core extends Base\Core
         return $accessMap;
     }
 
+    /**
+     * @param Entity $partner
+     * @param Entity $referral
+     *
+     * @return array
+     * @throws BadRequestException
+     */
     public function deletePartnerReferral(Entity $partner, Entity $referral)
     {
         $referralId = $referral->getId();

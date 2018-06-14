@@ -18,7 +18,6 @@ final class Constants
     const BANK                                    = 'bank';
     const PARTNER                                 = 'partner';
     const RESELLER                                = 'reseller';
-    const ACCOUNT_ID                              = 'account_id';
     const AGGREGATOR                              = 'aggregator';
     const FULLY_MANAGED                           = 'fully_managed';
     const PURE_PLATFORM                           = 'pure_platform';

@@ -60,7 +60,7 @@ return [
                 'assignable'  => true,
             ],
             Permission::EDIT_PARTNERS => [
-                'description' => 'Edit partners',
+                'description' => 'Edit partner details',
                 'assignable'  => true,
             ],
         ],

@@ -364,6 +364,11 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
     public function validateIsPurePartner(Entity $merchant)
     {
         // Block non-partner merchants and pure platforms
@@ -379,6 +384,11 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
     public function validateReferralIsNotPartner(Entity $merchant)
     {
         // Block non-partner merchants and pure platforms
@@ -393,13 +403,6 @@ class Validator extends Base\Validator
                 ]);
         }
     }
-
-    public function partnerHasApplication(Entity $merchant)
-    {
-
-    }
-
-
 
     protected function validateCsvEmail($input)
     {
