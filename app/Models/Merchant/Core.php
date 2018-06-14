@@ -816,9 +816,10 @@ class Core extends Base\Core
     {
         $submissions = $this->getPartnerSubmissions($merchantRequest);
 
-        if (isset($submissions[Entity::PARTNER_TYPE]) === false)
+        if (empty($submissions[Entity::PARTNER_TYPE]) === true)
         {
-            throw new LogicException(PublicErrorDescription::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
+            throw new LogicException(
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
                 ErrorCode::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
                 $submissions);
         }
