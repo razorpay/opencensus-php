@@ -1,0 +1,8 @@
+<ListOrderReferenceResponse xmlns="http://mws.amazonservices.com/schema/OffAmazonPayments/2013-01-01">
+    <Error>
+        <Type>Sender</Type>
+        <Code>InvalidParameterValue</Code>
+        <Message>1 validation error detected: Value null at 'queryIdType' failed to satisfy constraint: Member must not be null</Message>
+    </Error>
+    <RequestId>277ddfc4-b648-48e0-9f93-4a4fa25c2b80</RequestId>
+</ListOrderReferenceResponse>

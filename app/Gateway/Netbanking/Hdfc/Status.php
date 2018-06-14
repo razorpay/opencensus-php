@@ -4,7 +4,7 @@ namespace RZP\Gateway\Netbanking\Hdfc;
 
 class Status
 {
-    const DEBIT_SUCCESS = 'process';
+    const DEBIT_SUCCESS = 'processed';
     const DEBIT_REJECT  = 'reject';
 
     const REGISTRATION_SUCCESS = 'success';

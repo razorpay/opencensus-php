@@ -3560,10 +3560,84 @@ DROP INDEX `card_fss_status_index` on `card_fss`; CREATE INDEX `card_fss_status_
 
 ALTER TABLE line_items
     ADD COLUMN tax_rate INTEGER UNSIGNED DEFAULT NULL AFTER sac_code;
-    
+
 Alter table terminals
-    Modify column type integer default '1'; 
-    
+    Modify column type integer default '1';
+
 ALTER TABLE invoices
     ADD COLUMN merchant_gstin VARCHAR(20) DEFAULT NULL AFTER customer_gstin;
 
+ALTER TABLE webhooks
+    ADD COLUMN disable_on_failure TINYINT(1) NOT NULL DEFAULT 1 AFTER active;
+
+ALTER TABLE offers
+    ADD COLUMN international TINYINT(1) DEFAULT NULL AFTER issuer;
+
+ALTER TABLE terminals
+    ADD COLUMN expected BOOLEAN DEFAULT 0 NOT NULL after corporate;
+
+ALTER TABLE qr_code
+    ADD COLUMN reference varchar(255) DEFAULT NULL after merchant_id,
+    ADD INDEX `qr_code_reference_index` (reference),
+    MODIFY COLUMN qr_string TEXT DEFAULT NULL,
+    MODIFY COLUMN short_url varchar(255) DEFAULT NULL;
+
+ALTER TABLE orders
+    ADD COLUMN reference1 TINYINT(1) NULL AFTER authorized,
+    ADD COLUMN reference2 TINYINT(1) NULL AFTER reference1,
+    ADD COLUMN reference3 TINYINT(4) NULL AFTER reference2,
+    ADD COLUMN reference4 INT(11) UNSIGNED DEFAULT NULL AFTER reference3,
+    ADD COLUMN reference5 BIGINT UNSIGNED DEFAULT NULL AFTER reference4,
+    ADD COLUMN reference6 BIGINT UNSIGNED DEFAULT NULL AFTER reference5,
+    ADD COLUMN reference7 VARCHAR(14) DEFAULT NULL AFTER reference6,
+    ADD COLUMN reference8 VARCHAR(14) DEFAULT NULL AFTER reference7,
+    ADD COLUMN reference9 VARCHAR(255) DEFAULT NULL AFTER reference8,
+    ADD COLUMN reference10 VARCHAR(255) DEFAULT NULL AFTER reference9;
+
+# Add attempts to payouts
+ALTER TABLE payouts
+    ADD COLUMN attempts integer default 1 not null after channel;
+
+# Amazon Pay is added as wallet
+ALTER TABLE merchant_banks
+    ADD COLUMN amazonpay TINYINT(1) NOT NULL DEFAULT 0 AFTER airtelmoney;
+
+ALTER TABLE batches
+    ADD COLUMN processed_count INTEGER UNSIGNED DEFAULT NULL AFTER total_count;
+
+ALTER TABLE tokens
+    ADD COLUMN confirmed_at INTEGER UNSIGNED DEFAULT NULL AFTER recurring_failure_reason,
+    ADD COLUMN rejected_at INTEGER UNSIGNED DEFAULT NULL AFTER confirmed_at,
+    ADD COLUMN initiated_at INTEGER UNSIGNED DEFAULT NULL AFTER rejected_at,
+    ADD COLUMN acknowledged_at INTEGER UNSIGNED DEFAULT NULL AFTER initiated_at,
+    ADD INDEX `tokens_confirmed_at_index` (confirmed_at);
+    ADD INDEX `tokens_rejected_at_index` (rejected_at);
+    ADD INDEX `tokens_initiated_at_index` (initiated_at);
+    ADD INDEX `tokens_acknowledged_at_index` (acknowledged_at);
+
+# Renames the reference1 column and adds a default value
+ALTER TABLE orders
+    CHANGE reference1 force_offer TINYINT(1),
+    ALGORITHM=INPLACE, LOCK=NONE;
+
+ALTER TABLE merchants
+    ADD COLUMN partner_type VARCHAR(255) DEFAULT NULL AFTER has_key_access;
+
+# Corrects unique index on entity_offer
+ALTER TABLE entity_offer
+  DROP INDEX entity_offer_entity_id_entity_type_unique,
+  ADD UNIQUE INDEX entity_offer_entity_id_entity_type_offer_id_unique (entity_id, entity_type, offer_id);
+
+# Adds payment_link_id column and few more blank columns of various types for future usage
+# Creates index on payment_link_id
+ALTER TABLE payments
+    ADD COLUMN payment_link_id CHAR(14) DEFAULT NULL AFTER transfer_id,
+    ADD COLUMN reference10 INT(10) UNSIGNED DEFAULT NULL AFTER acknowledged_at,
+    ADD COLUMN reference11 INT(10) UNSIGNED DEFAULT NULL AFTER reference10,
+    ADD COLUMN reference12 BIGINT(20) UNSIGNED DEFAULT NULL AFTER reference11,
+    ADD COLUMN reference13 CHAR(14) DEFAULT NULL AFTER reference12,
+    ADD COLUMN reference14 CHAR(14) DEFAULT NULL AFTER reference13,
+    ADD COLUMN reference15 VARCHAR(255) DEFAULT NULL AFTER reference14,
+    ADD COLUMN reference16 VARCHAR(255) DEFAULT NULL AFTER reference15,
+    ADD COLUMN reference17 TEXT AFTER reference16,
+    ADD INDEX payments_payment_link_id_index (payment_link_id);

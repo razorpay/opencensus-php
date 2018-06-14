@@ -80,7 +80,7 @@ class Base
         'user',
     ];
 
-    public function create(array $attributes = array())
+    public function create(array $attributes = [])
     {
         $entity = snake_case(explode('\\', get_class($this))[5]);
 

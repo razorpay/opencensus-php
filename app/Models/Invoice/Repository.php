@@ -402,7 +402,7 @@ class Repository extends Base\Repository
                            ->groupBy(Entity::STATUS)
                            ->pluck('count', Entity::STATUS);
 
-        return $collection->all();
+        return array_map('intval', $collection->all());
     }
 
     protected function addQueryParamPaymentId(BuilderEx $query, array $params)

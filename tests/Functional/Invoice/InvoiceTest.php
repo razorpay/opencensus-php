@@ -1799,14 +1799,21 @@ class InvoiceTest extends TestCase
 
     public function testGetLinkViewCancelled()
     {
-        $this->createOrder();
+        $order = $this->createOrder();
 
-        $this->createDraftInvoice(['type' => 'link', 'status' => 'cancelled']);
+        $this->createDraftInvoice(
+            [
+                'type'         => 'link',
+                'order_id'     => $order->getId(),
+                'status'       => 'cancelled',
+                'amount'       => 100000,
+                'cancelled_at' => Carbon::now(Timezone::IST)->getTimestamp(),
+            ]);
 
         $this->callViewUrlAndMakeAssertions(
                 self::TEST_INV_ID,
                 200,
-                'Payment Link with id inv_1000000invoice is cancelled');
+                'Payment Link Cancelled');
     }
 
     public function testGetLinkViewExpired()
@@ -1818,7 +1825,7 @@ class InvoiceTest extends TestCase
         $this->callViewUrlAndMakeAssertions(
                 self::TEST_INV_ID,
                 200,
-                'Payment Link with id inv_1000000invoice is expired');
+                'Payment Link Expired');
     }
 
     public function testGetInvoiceView()
@@ -2057,7 +2064,7 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testCancelPaidInvocie()
+    public function testCancelPaidInvoice()
     {
         $this->createOrder();
 
@@ -2082,6 +2089,26 @@ class InvoiceTest extends TestCase
                 'invoice_id' => '1000000invoice',
                 'card_id'    => null,
             ]);
+
+        $this->startTest();
+    }
+
+    public function testUpdateExpiredInvoiceNotes()
+    {
+        $this->createOrder();
+
+        $attributes = [
+            'notes'  => [
+                'key1' => 'value1'
+            ],
+            'status' => 'expired',
+        ];
+
+        $this->fixtures->create('invoice', $attributes);
+
+        $invoice = $this->getLastEntity('invoice');
+
+        $this->assertArraySelectiveEquals(['key1' => 'value1'], $invoice['notes']);
 
         $this->startTest();
     }

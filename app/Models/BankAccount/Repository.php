@@ -82,7 +82,6 @@ class Repository extends Base\Repository
     public function findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode = null)
     {
         $virtualAccountId     = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::ID);
-        $virtualAccountStatus = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::STATUS);
 
         $bankAccountEntityId = $this->dbColumn(Entity::ENTITY_ID);
         $bankAccountData     = $this->dbColumn('*');
@@ -91,8 +90,7 @@ class Repository extends Base\Repository
                       ->select($bankAccountData)
                       ->join(Table::VIRTUAL_ACCOUNT, $bankAccountEntityId, '=', $virtualAccountId)
                       ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
-                      ->where(Entity::TYPE, '=', Type::VIRTUAL_ACCOUNT)
-                      ->where($virtualAccountStatus, '=', VirtualAccount\Status::ACTIVE);
+                      ->where(Entity::TYPE, '=', Type::VIRTUAL_ACCOUNT);
 
         if ($bankCode !== null)
         {

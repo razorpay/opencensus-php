@@ -30,6 +30,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_METHOD_TYPE => 'filled|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'filled|alpha',
         Entity::ISSUER              => 'filled|alpha|custom',
+        Entity::INTERNATIONAL       => 'sometimes_if:payment_method,card|boolean',
         Entity::IINS                => 'filled|array',
         Entity::PERCENT_RATE        => 'filled|integer|min:0|max:10000',
         Entity::MAX_CASHBACK        => 'filled|integer|min:0',

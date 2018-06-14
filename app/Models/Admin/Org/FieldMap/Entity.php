@@ -3,12 +3,15 @@
 namespace RZP\Models\Admin\Org\FieldMap;
 
 use App;
-use RZP\Constants\Table;
+
 use RZP\Models\Base;
-use RZP\Models\Admin\Admin;
+use RZP\Models\Admin\Org;
+use RZP\Models\Base\Traits\HardDeletes;
 
 class Entity extends Base\PublicEntity
 {
+    use HardDeletes;
+
     const ID          = 'id';
     const ORG_ID      = 'org_id';
     const ENTITY_NAME = 'entity_name';
@@ -19,7 +22,6 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'ofm';
 
     protected $fillable = [
-        self::ORG_ID,
         self::ENTITY_NAME,
         self::FIELDS,
     ];
@@ -40,7 +42,7 @@ class Entity extends Base\PublicEntity
 
     public function org()
     {
-        return $this->belongsTo('RZP\Models\Org\Entity');
+        return $this->belongsTo(Org\Entity::class);
     }
 
     public function setFieldsAttribute(array $fields)

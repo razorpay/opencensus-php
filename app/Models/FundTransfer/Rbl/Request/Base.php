@@ -5,16 +5,15 @@ namespace RZP\Models\FundTransfer\Rbl\Request;
 use Config;
 use Requests_Hooks;
 
-use RZP\Trace\TraceCode;
-use RZP\Exception\RuntimeException;
+use RZP\Exception\LogicException;
+use RZP\Models\Settlement\Channel;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Base\Initiator\RequestProcessor;
 use RZP\Models\FundTransfer\Rbl\Reconciliation\Status;
 
 abstract class Base extends RequestProcessor
 {
     const TIMEOUT           = '240';
-
-    const CORP_ID           = 'RZPAYP';
 
     const MAKER_ID          = 'M001';
 
@@ -24,7 +23,18 @@ abstract class Base extends RequestProcessor
 
     const ACCOUNT_NAME      = 'RAZORPAY SOFTWARE PRIVATE LIMITED';
 
+    // Identifiers used store the response data
+    const PAYMENT_REF_NO    = 'payment_ref_no';
+    const UTR               = 'utr';
+    const BANK_STATUS_CODE  = 'bank_status_code';
+    const PAYMENT_DATE      = 'payment_date';
+    const RRN               = 'rrn';
+    const REFERENCE_NUMBER  = 'reference_number';
+    const REMARK            = 'remark';
+
     protected $baseUrl;
+
+    protected $corpId;
 
     protected $channel;
 
@@ -38,17 +48,21 @@ abstract class Base extends RequestProcessor
 
     protected $urlIdentifier;
 
-    protected $headers      = [];
+    protected $responseIdentifier;
 
-    protected $options      = [];
+    protected $headers = [];
 
-    protected $url          = '';
+    protected $options = [];
 
-    protected $method       = 'POST';
+    protected $url = '';
+
+    protected $method = 'POST';
 
     public function __construct()
     {
         parent::__construct();
+
+        $this->channel = Channel::RBL;
 
         $this->config = Config::get('nodal.rbl');
 
@@ -57,28 +71,43 @@ abstract class Base extends RequestProcessor
 
     protected function init()
     {
+        $this->response = null;
+
+        $this->corpId = $this->config['username'];
+
         $this->accountNumber = $this->config['account_number'];
 
-        $this->baseUrl       = $this->config['url'];
+        $this->baseUrl = $this->config['url'];
 
-        $clientCredArray     = [
+        $clientCredArray = [
             'client_id'     => $this->config['client_id'],
             'client_secret' => $this->config['client_password'],
         ];
 
-        $this->clientCreds   = http_build_query($clientCredArray);
+        $this->clientCreds = http_build_query($clientCredArray);
+
+        return $this;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function requestUrl(): string
     {
         return $this->baseUrl . $this->urlIdentifier . $this->clientCreds;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function requestMethod(): string
     {
         return $this->method;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function requestHeaders(): array
     {
         return [
@@ -86,6 +115,9 @@ abstract class Base extends RequestProcessor
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function requestOptions(): array
     {
         $hooks = new Requests_Hooks();
@@ -166,32 +198,155 @@ abstract class Base extends RequestProcessor
     }
 
     /**
-     * Parses the response of current request and checks if the response of valid
+     * {@inheritdoc}
      *
-     * @param \Requests_Response $response
-     *
-     * @return array
-     *
-     * @throws RuntimeException
+     * @throws LogicException
      */
     public function processResponse(\Requests_Response $response): array
     {
         $responseBody = json_decode($response->body, true);
 
         if (($response->status_code !== 200) or
-            (isset($responseBody['Single_Payment_Corp_Resp']) === false))
+            (isset($responseBody[$this->responseIdentifier]) === false))
         {
-            throw new RuntimeException('Invalid response from api', $response);
+            throw new LogicException('Invalid response from api', null, $response);
         }
 
-        $responseContent = $responseBody['Single_Payment_Corp_Resp'];
+        $responseContent = $responseBody[$this->responseIdentifier];
 
-        if ((empty($responseContent['Header']['Status']) === false) and
-            ($responseContent['Header']['Status'] === Status::FAILURE))
+        // Check if response has valid data keys which is required for the processing
+        if (isset($responseContent['Header']) !== true)
         {
-            $this->trace->error(TraceCode::RBL_NODAL_FAILED_RESPONSE, $response);
+            throw new LogicException('Invalid response from api', null, $response);
         }
 
-        return $responseBody;
+        $isSuccessResponse = $this->isValidSuccessResponse();
+
+        //
+        // For failed response there wont be body defined.
+        // Checking for existence of `Body` because in case bank introduces new status code
+        //
+        if (($isSuccessResponse === true) and
+            (isset($responseContent['Body']) === true))
+        {
+            return $this->extractSuccessfulData($responseContent);
+        }
+        else
+        {
+            return $this->extractFailedData($responseContent);
+        }
     }
+
+    /**
+     * Validates if the current request was executed successfully or not
+     *
+     * @return bool
+     */
+    public function isValidSuccessResponse(): bool
+    {
+        $response = json_decode($this->response->body, true);
+
+        $responseBody = $response[$this->responseIdentifier];
+
+        $failedStatus = Status::getFailureStatus();
+
+        if ((isset($responseBody['Header']['Status']) === false) or
+            (in_array($responseBody['Header']['Status'], $failedStatus, true) === true))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Return null when the value is empry
+     *
+     * @param $value
+     *
+     * @return null
+     */
+    protected function getNullOnEmpty($value)
+    {
+        return (empty($value) === true) ? null : $value;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function mockResponseGenerator(array $input): array
+    {
+        // Currently code wont go in this block.
+        if ((isset($input['failed_response']) === true) and
+            ($input['failed_response'] === '1'))
+        {
+            return $this->mockGenerateFailedResponse();
+        }
+
+        return $this->mockGenerateSuccessResponse();
+    }
+
+    /**
+     * Extracts data from response when response received is a valid success response.
+     * For success response `Body` attribute will be present and header.status wont we a failure status
+     *
+     * @param array $response
+     *
+     * @return array
+     *
+     * sample response :
+     * [
+     *  'payment_ref_no'   => 'some reference',
+     *  'bank_status_code' => 'bank status code',
+     *  'payment_date'     => null,
+     *  'reference_number' => null,
+     *  'utr'              => null,
+     *  'remark'           => 'failure reason'
+     * ]
+     */
+    protected abstract function extractSuccessfulData(array $response): array;
+
+    /**
+     *
+     * Extracts data from response when response received is a failure response.
+     * Failure response are response without `Body` attribute and header.status will be any of failure status
+     *
+     * @param array $response
+     *
+     * @return array
+     *
+     * sample response :
+     * [
+     *  'payment_ref_no'   => 'some reference',
+     *  'bank_status_code' => 'bank status code',
+     *  'payment_date'     => null,
+     *  'reference_number' => null,
+     *  'utr'              => null,
+     *  'remark'           => 'failure reason'
+     * ]
+     */
+    protected abstract function extractFailedData(array $response): array;
+
+    /**
+     * Sets the entity for which the request has to be made
+     *
+     * @param Attempt\Entity $entity
+     *
+     * @return mixed
+     */
+    public abstract function setEntity(Attempt\Entity $entity);
+
+    /**
+     * Generates successful response for given request
+     *
+     * @return array
+     */
+    protected abstract function mockGenerateFailedResponse(): array;
+
+    /**
+     * Generates failed response for given request
+     *
+     * @return array
+     */
+    protected abstract function mockGenerateSuccessResponse(): array;
 }

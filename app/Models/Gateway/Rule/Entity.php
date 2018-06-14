@@ -165,7 +165,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
-        self::MERCHANT_ID,
         self::GATEWAY,
         self::TYPE,
         self::GROUP,
@@ -234,6 +233,11 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::MIN_AMOUNT => 0,
     ];
+
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
 
     // ---------------------Overridden--------------------------
 

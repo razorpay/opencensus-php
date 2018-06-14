@@ -33,6 +33,9 @@ class CreateOrders extends Migration
             $table->tinyInteger(Order::DISCOUNT)
                   ->default(false);
 
+            $table->tinyInteger(Order::FORCE_OFFER)
+                  ->nullable();
+
             $table->tinyInteger(Order::PARTIAL_PAYMENT)
                   ->default(false);
 
@@ -72,6 +75,43 @@ class CreateOrders extends Migration
 
             $table->char(Order::CUSTOMER_ID, Order::ID_LENGTH)
                   ->nullable();
+
+            $table->tinyInteger(Order::REFERENCE2)
+                  ->nullable();
+
+            $table->tinyInteger(Order::REFERENCE3)
+                  ->nullable();
+
+            $table->integer(Order::REFERENCE4)
+                  ->unsigned()
+                  ->nullable()
+                  ->default(null);
+
+            $table->bigInteger(Order::REFERENCE5)
+                  ->unsigned()
+                  ->nullable()
+                  ->default(null);
+
+            $table->bigInteger(Order::REFERENCE6)
+                  ->unsigned()
+                  ->nullable()
+                  ->default(null);
+
+            $table->char(Order::REFERENCE7, Order::ID_LENGTH)
+                  ->nullable()
+                  ->default(null);
+
+            $table->char(Order::REFERENCE8, Order::ID_LENGTH)
+                  ->nullable()
+                  ->default(null);
+
+            $table->string(Order::REFERENCE9)
+                  ->nullable()
+                  ->default(null);
+
+            $table->string(Order::REFERENCE10)
+                  ->nullable()
+                  ->default(null);
 
             // Adds created_at and updated_at columns to the table
             $table->integer(Order::CREATED_AT);

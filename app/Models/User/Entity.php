@@ -138,6 +138,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONFIRM_TOKEN, null);
     }
 
+    public function getEmail()
+    {
+        return $this->getAttribute(self::EMAIL);
+    }
+
     public function getPassword()
     {
         return $this->getAttribute(self::PASSWORD);

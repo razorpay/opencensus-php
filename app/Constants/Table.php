@@ -38,6 +38,7 @@ class Table
     const ADDRESS               = 'addresses';
     const DISCOUNT              = 'discounts';
     const MERCHANT              = 'merchants';
+    const PAYMENT_LINK          = 'payment_links';
 
     // Account entity is currently pointing to the 'merchants' table.
     // It will be used for basic CRUD operations over regular merchants,
@@ -58,6 +59,7 @@ class Table
     const FILE_STORE            = 'files';
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlements';
+    const ENTITY_OFFER          = 'entity_offer';
     const FEE_BREAKUP           = 'fees_breakup';
     const TRANSACTION           = 'transactions';
     const APP_TOKEN             = 'customer_apps';

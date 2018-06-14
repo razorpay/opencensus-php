@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Invoice;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Exception\BadRequestValidationFailureException;
 
 return [
 
@@ -593,14 +594,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Can only reuse an item of the same item type',
+                    'description' => 'invoice can only use item of one of following types: invoice',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE,
+            'class'               => BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -3459,7 +3460,7 @@ return [
         ],
     ],
 
-    'testCancelPaidInvocie' => [
+    'testCancelPaidInvoice' => [
         'request' => [
             'url' => '/invoices/inv_1000000invoice/cancel',
             'method' => 'post',
@@ -3501,6 +3502,27 @@ return [
                 'email_status' => 'sent',
                 'view_less'    => true,
             ],
+        ],
+    ],
+
+    'testUpdateExpiredInvoiceNotes' => [
+        'request'  => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'notes' => [
+                    'key2' => 'value2'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'     => 'inv_1000000invoice',
+                'status' => 'expired',
+                'notes'  => [
+                    'key2' => 'value2'
+                ],
+            ]
         ],
     ],
 
