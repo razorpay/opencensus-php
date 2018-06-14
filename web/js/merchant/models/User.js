@@ -113,7 +113,7 @@ export default class User {
   // TODO: Harcoding to true for development testing
   get isPaymentLinksV2Enabled() {
     if (this.tags) {
-      return this.tags.indexOf('paymentlinks_v2') !== -1;
+      return this.findTag('paymentlinks_v2');
     } else {
       return false; // Back up as always false, because RPL is dependent upon this
     }
@@ -129,5 +129,10 @@ export default class User {
     return (this.features || []).map(object => {
       return object[pluckKey];
     });
+  }
+
+  /* Check if the tag exists */
+  findTag(tag) {
+    return !!this.tags.find(t => t.toLowerCase() === tag.toLowerCase());
   }
 }
