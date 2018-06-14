@@ -139,6 +139,11 @@ class InvoiceTaxesTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceWithCgstAndSgstTaxes()
+    {
+        $this->startTest();
+    }
+
     /**
      * Tests invoice update, includes removal/addition/updates
      * of line items and taxes.

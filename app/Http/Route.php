@@ -1007,6 +1007,7 @@ final class Route
         'account_features_add',
         'account_features_get',
         'payment_acknowledge',
+        'bharat_qr_pay_test',
     ];
 
     // Only routes defined in internalApps go here
@@ -1253,7 +1254,6 @@ final class Route
         'tax_group_delete',
         'tax_get_meta_states',
         'tax_get_meta_gst_taxes',
-        'bharat_qr_pay_test',
         'payment_link_get',
         'payment_link_list',
         'payment_link_create',

@@ -3479,7 +3479,7 @@ trait Authorize
                 $log[TerminalAnalytics\Entity::TERMINAL_STATUS_MSG] = $e->getError()->getDescription();
             }
 
-            (new TerminalAnalytics\Core)->create($log);
+            (new TerminalAnalytics\Core)->create($log, $payment);
 
             $tStatus = $log[TerminalAnalytics\Entity::TERMINAL_STATUS];
 

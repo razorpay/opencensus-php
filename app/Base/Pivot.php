@@ -33,4 +33,14 @@ class Pivot extends Relations\Pivot
     {
         return $this->toArray();
     }
+
+    public function getCreatedAtAttribute()
+    {
+        return (int) $this->attributes[self::CREATED_AT];
+    }
+
+    public function getUpdatedAtAttribute()
+    {
+        return (int) $this->attributes[self::UPDATED_AT];
+    }
 }
