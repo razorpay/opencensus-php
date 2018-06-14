@@ -1077,7 +1077,6 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
-
     public function createSharedHdfcEmiTerminal()
     {
         $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
