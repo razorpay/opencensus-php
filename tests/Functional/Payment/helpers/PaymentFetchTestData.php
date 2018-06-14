@@ -34,7 +34,6 @@ return [
                 'count'  => 1,
                 'items'  => [
                     [
-                        'method' => 'method',
                         'vpa' => 'success@razorpay',
                     ]
                 ],
