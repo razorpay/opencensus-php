@@ -329,7 +329,7 @@ class BasicAuthTest extends TestCase
 
         $newMerchant = $this->fixtures->create('merchant');
 
-        $testData = ['request' => ['server' => ['HTTP_X-Razorpay-Partner-Token' => 'acc_' . $newMerchant['id']]]];
+        $testData = ['request' => ['server' => ['HTTP_X-Razorpay-Account' => 'acc_' . $newMerchant['id']]]];
 
         $this->fixtures->create('emi_plan');
 
@@ -431,13 +431,6 @@ class BasicAuthTest extends TestCase
         $client = $this->setUpPartnerMerchantAppAndGetClient('dev');
 
         $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
-
-        $this->startTest();
-    }
-
-    public function testRequestWithAccountAndPartnerHeaders()
-    {
-        $this->ba->privateAuth();
 
         $this->startTest();
     }

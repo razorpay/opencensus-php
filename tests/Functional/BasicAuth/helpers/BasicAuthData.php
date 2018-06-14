@@ -401,7 +401,7 @@ return [
             'method'  => 'get',
             'content' => [],
             'server'  => [
-                'HTTP_X-Razorpay-Partner-Token' => 'acc_100000Razorpay',
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
             ],
         ],
         'response' => [
@@ -423,14 +423,14 @@ return [
             'method'  => 'get',
             'content' => [],
             'server'  => [
-                'HTTP_X-Razorpay-Partner-Token' => 'acc_100000Razorpay',
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED,
                 ]
             ],
             'status_code' => 401,
@@ -442,9 +442,6 @@ return [
             'url'     => '/emi',
             'method'  => 'get',
             'content' => [],
-            'server'  => [
-                'HTTP_X-Razorpay-Partner-Token' => 'acc_100000Razorpay',
-            ],
         ],
         'response' => [
             'content' => [
@@ -480,7 +477,7 @@ return [
             'method'  => 'get',
             'content' => [],
             'server'  => [
-                'HTTP_X-Razorpay-Partner-Token' => 'acc_100000Razorpay',
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
             ],
         ],
         'response' => [
@@ -495,7 +492,7 @@ return [
             'method'  => 'get',
             'content' => [],
             'server'  => [
-                'HTTP_X-Razorpay-Partner-Token' => 'acc_100000Razorpay',
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
             ],
         ],
         'response' => [
@@ -515,14 +512,14 @@ return [
             'method'  => 'get',
             'content' => [],
             'server'  => [
-                'HTTP_X-Razorpay-Partner-Token' => 'acc_100000Razorpay',
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED,
                 ]
             ],
             'status_code' => 401,
@@ -535,7 +532,7 @@ return [
             'method'  => 'get',
             'content' => [],
             'server'  => [
-                'HTTP_X-Razorpay-Partner-Token' => 'acc_100000Razorpay',
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
             ],
         ],
         'response' => [
@@ -555,7 +552,7 @@ return [
             'method'  => 'get',
             'content' => [],
             'server'  => [
-                'HTTP_X-Razorpay-Partner-Token' => 'acc_100000Razorpay',
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
             ],
         ],
         'response' => [
@@ -579,7 +576,7 @@ return [
             'method'  => 'get',
             'content' => [],
             'server'  => [
-                'HTTP_X-Razorpay-Partner-Token' => 'acc_100000Razorpay',
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
             ],
         ],
         'response' => [
@@ -599,7 +596,7 @@ return [
             'method'  => 'get',
             'content' => [],
             'server'  => [
-                'HTTP_X-Razorpay-Partner-Token' => 'acc_100000Razorpay',
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
             ],
         ],
         'response' => [
@@ -610,31 +607,6 @@ return [
                 ]
             ],
             'status_code' => 400,
-        ],
-    ],
-
-    'testRequestWithAccountAndPartnerHeaders' => [
-        'request'   => [
-            'url'     => '/customers',
-            'method'  => 'get',
-            'content' => [],
-            'server'  => [
-                'HTTP_X-Razorpay-Account'       => 'random',
-                'HTTP_X-Razorpay-Partner-Token' => 'random',
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Both X-Razorpay-Account and Partner token cannot be sent',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];
