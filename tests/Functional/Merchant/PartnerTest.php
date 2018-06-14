@@ -2,8 +2,6 @@
 
 namespace RZP\Tests\Functional\Merchant\Partner;
 
-use Mockery;
-
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Request;
 use RZP\Models\Settings\Accessor;
@@ -18,7 +16,10 @@ class PartnerTest extends OAuthTestCase
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
-    const DEFAULT_MERCHANT_ID = '10000000000000';
+    const PARTNER               = 'partner';
+    const ACTIVATION            = 'activation';
+    const DEACTIVATION          = 'deactivation';
+    const DEFAULT_MERCHANT_ID   = '10000000000000';
 
     public function setUp()
     {
@@ -47,10 +48,11 @@ class PartnerTest extends OAuthTestCase
      */
     public function testMarkingMerchantAsPartnerAgain()
     {
-        $this->createMerchantRequest('activation', true);
+        $this->createMerchantRequest(self::ACTIVATION, true);
 
+        // Using a different the merchant request id here
         $this->createMerchantRequest(
-            'deactivation',
+            self::DEACTIVATION,
             false,
             [
                 'id' => 'mrId1000000001',
@@ -104,7 +106,7 @@ class PartnerTest extends OAuthTestCase
 
     public function testMarkAsPartnerWithMissingSubmission()
     {
-        $merchantRequest = $this->createMerchantRequest('activation', false);
+        $merchantRequest = $this->createMerchantRequest(self::ACTIVATION, false);
 
         $merchantRequestId = $merchantRequest->getPublicId();
 
@@ -122,7 +124,7 @@ class PartnerTest extends OAuthTestCase
     public function testApprovingMarkAsPartnerMerchantRequest()
     {
         // Create a merchant request
-        $merchantRequest = $this->createMerchantRequest('activation', true);
+        $merchantRequest = $this->createMerchantRequest(self::ACTIVATION, true);
 
         // Mock create application call to auth service
         $requestParams = $this->getDefaultParamsForAuthServiceRequest();
@@ -131,7 +133,7 @@ class PartnerTest extends OAuthTestCase
             'name'     => 'Internal',
             'website'  => 'https://www.razorpay.com',
             'logo_url' => '/logo/app_logo.png',
-            'type'     => 'partner',
+            'type'     => self::PARTNER,
         ];
 
         $requestParams = array_merge($requestParams, $createParams);
@@ -161,7 +163,7 @@ class PartnerTest extends OAuthTestCase
     public function testApprovingUnmarkAsPartnerMerchantRequest()
     {
         // Create a merchant request
-        $merchantRequest = $this->createMerchantRequest('deactivation');
+        $merchantRequest = $this->createMerchantRequest(self::DEACTIVATION);
 
         $partnerData = $this->getDummyPartnerAttributes();
 
@@ -197,7 +199,7 @@ class PartnerTest extends OAuthTestCase
     {
         $defaults = [
             Request\Entity::MERCHANT_ID => self::DEFAULT_MERCHANT_ID,
-            Request\Entity::TYPE        => 'partner',
+            Request\Entity::TYPE        => self::PARTNER,
             Request\Entity::NAME        => $merchantRequestName,
         ];
 
@@ -205,23 +207,16 @@ class PartnerTest extends OAuthTestCase
 
         $merchantRequest = $this->fixtures->create('merchant_request:default_merchant_request', $attributes);
 
-        if (($merchantRequestName === 'activation') and ($createSubmission === true))
+        if (($merchantRequestName === self::ACTIVATION) and ($createSubmission === true))
         {
             $data = [
                 'partner_type' => 'reseller',
             ];
 
-            Accessor::for ($merchantRequest, 'partner')->upsert($data)->save();
+            Accessor::for ($merchantRequest, self::PARTNER)->upsert($data)->save();
         }
 
         return $merchantRequest;
-    }
-
-    protected function getMerchantEntityMock(): Mockery\MockInterface
-    {
-        $class = Merchant\Entity::class;
-
-        return Mockery::mock($class, [])->makePartial();
     }
 
     protected function getDummyPartnerAttributes(array $attributes = []): array
@@ -233,7 +228,7 @@ class PartnerTest extends OAuthTestCase
             'website'     => 'https://www.razorpay.com',
             'logo_url'    => '/logo/app_logo.png',
             'category'    => null,
-            'type'        => 'partner',
+            'type'        => self::PARTNER,
         ];
 
         $attributes = array_merge($defaults, $attributes);

@@ -51,7 +51,7 @@ return [
                 'type'        => 'partner',
                 'name'        => 'activation',
                 'submissions' => [
-                    'partner_type' => 'reseller',
+                    'partner_type' => 'aggregator',
                 ],
             ],
         ],
