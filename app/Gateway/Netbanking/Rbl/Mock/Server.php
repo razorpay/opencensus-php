@@ -70,6 +70,7 @@ class Server extends Base\Mock\Server
             ResponseFields::CURRENCY     => Currency::INR,
             ResponseFields::ENTRY_STATUS => Status::SUCCESS,
             ResponseFields::REFERENCE_ID => 99999999,
+            ResponseFields::AMOUNT       => 'INR|1,00,000.12',
         ];
 
         $content = array_flip($content);
