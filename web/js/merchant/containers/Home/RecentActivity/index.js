@@ -25,7 +25,6 @@ const shouldDisplayCompact = (
   windowWidth
 ) => {
   if (!isMobileResolution && !isTabletResolution) {
-    console.log(windowWidth);
     return windowWidth < 1186;
   }
 

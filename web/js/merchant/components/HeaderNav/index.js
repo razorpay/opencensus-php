@@ -33,20 +33,6 @@ export default class HeaderNav extends Component {
 
   onToggleAppMenu() {
     this.props.toggleMobileMenu();
-    /*
-    const body = document.body;
-
-    let className = body.className,
-      hasShowMenuClass = className.indexOf(showSidebarClass) >= 0;
-
-    if (hasShowMenuClass) {
-      className = className.replace(showSidebarClass, '');
-    } else {
-      className += showSidebarClass;
-    }
-
-    body.className = className;
-	*/
   }
 
   render() {

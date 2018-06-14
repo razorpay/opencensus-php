@@ -240,6 +240,10 @@ class Traffic extends Component {
   }
 
   setChartSize() {
+    if (!this.chartContent) {
+      return;
+    }
+
     const { width, height } = this.chartContent.getBoundingClientRect();
 
     // fixing with and height of chart container so that
@@ -253,6 +257,10 @@ class Traffic extends Component {
         hideChart: true,
       },
       () => {
+        if (!this.chartContent) {
+          return;
+        }
+
         this.chartContent.style.width = '100%';
 
         window.setTimeout(() => {
