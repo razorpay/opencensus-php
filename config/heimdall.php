@@ -54,6 +54,17 @@ return [
             ],
         ],
 
+        PermissionCategory::PARTNER => [
+            Permission::VIEW_PARTNERS => [
+                'description' => 'View partner details',
+                'assignable'  => true,
+            ],
+            Permission::EDIT_PARTNERS => [
+                'description' => 'Edit partners',
+                'assignable'  => true,
+            ],
+        ],
+
         PermissionCategory::MERCHANT_DETAIL => [
             Permission::VIEW_MERCHANT_BALANCE => [
                 'description' => 'View merchant balance in merchant details',
