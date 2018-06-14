@@ -294,8 +294,29 @@ class AdminFetch
                         'all',
                         'payment_link',
                         'refund',
+                        'emandate',
+                        'reconciliation'
                         'irctc_refund',
-                        'irctc_settlement'
+                        'irctc_settlement'  
+                    ],
+                ],
+                'sub_type' => [
+                    Fetch::LABEL  => 'Sub Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'all',
+                        'register',
+                        'debit',
+                        'payment',
+                        'combined'
+                    ],
+                ],
+                'gateway' => [
+                    Fetch::LABEL  => 'Gateway',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'enach_rbl',
+                        'hdfc'
                     ],
                 ],
             ],
@@ -668,6 +689,8 @@ class AdminFetch
                         'emi',
                         'refund',
                         'combined',
+                        'emandate_debit',
+                        'emandate_register'
                     ],
                 ],
                 'status' => [
