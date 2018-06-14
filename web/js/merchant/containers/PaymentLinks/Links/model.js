@@ -45,5 +45,8 @@ export function editPaymentLink(id, data) {
     url: `invoices/${id}`,
     method: 'patch',
     data: data,
+    headers: {
+      'content-type': 'application/json',
+    },
   });
 }
