@@ -861,6 +861,11 @@ class Core extends Base\Core
         return $merchant;
     }
 
+    /**
+     * @param Entity $merchant
+     *
+     * @return array
+     */
     public function createPartnerApp(Entity $merchant): array
     {
         $appInput = [
@@ -874,6 +879,11 @@ class Core extends Base\Core
         return $app;
     }
 
+    /**
+     * @param Entity $merchant
+     *
+     * @return array
+     */
     public function deletePartnerApp(Entity $merchant): array
     {
         $app = $merchant->getPartnerApp();
