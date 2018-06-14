@@ -34,7 +34,7 @@ export const savePLInReduxList = newInvoice => {
 export const editPLInReduxList = invoice => {
   return {
     type: `${INVOICE_EDIT}::SUCCESS`,
-    payload: new Invoice(invoice.data),
+    payload: new Invoice(invoice.data).deserialize(),
   };
 };
 
