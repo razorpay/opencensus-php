@@ -185,6 +185,12 @@ export default class CreateNewContainer extends React.Component {
         },
       },
     };
+
+    // recording new payments links creation UI form in hotjar
+    if (typeof window.hj === 'function') {
+      window.hj('trigger', 'payment_links_v2_form_open');
+      window.hj('tagRecording', ['payment_links_v2_form_open']);
+    }
   }
 
   componentDidMount() {

@@ -78,7 +78,7 @@ export default [
     inlineFields: [
       {
         _name: 'expire_by_date',
-        placeholder: '15-04-2018',
+        placeholder: 'DD-MM-YYYY',
         size: 'half',
         _disabledWhen: form =>
           form.state._name[form.state.activeTab].hasNoExpiry === '1',

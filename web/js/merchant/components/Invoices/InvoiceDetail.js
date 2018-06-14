@@ -20,6 +20,11 @@ import { dateCalculator, timeCalculator } from 'component/Input/Calendar';
 import { onChangeNotes } from 'component/Input/PairList';
 import { maxLength } from 'rzp/utils/validators';
 
+import {
+  trackDetailViewEdits,
+  trackTogglePartialPayment,
+} from 'merchant/containers/PaymentLinks/Links/ga';
+
 const notificationClassMap = {
   sent: 'text-success',
   pending: 'text-warning',
@@ -207,11 +212,18 @@ export default props => {
                             {isPaymentLinksV2Enabled &&
                               isIssued && (
                                 <AsyncBtn.Transparent
-                                  onClick={() =>
+                                  onClick={() => {
+                                    const toEnablePartialPayment = +!isPartialPayment;
                                     editPaymentLink({
-                                      partial_payment: +!isPartialPayment,
-                                    })
-                                  }
+                                      partial_payment: toEnablePartialPayment,
+                                    });
+
+                                    trackTogglePartialPayment(
+                                      invoice.id,
+                                      'Toggle Partial Payment',
+                                      toEnablePartialPayment
+                                    );
+                                  }}
                                   class="Button--Link"
                                   style={{ marginLeft: 12 }}
                                   pendingState={
@@ -271,6 +283,7 @@ export default props => {
                       ? () => (
                           <EditReceiptField
                             value={invoice.receipt}
+                            paymentLinkId={invoice.id}
                             editPaymentLink={editPaymentLink}
                           />
                         )
@@ -301,6 +314,7 @@ export default props => {
                           <EditExpiryField
                             value={invoice.expire_by}
                             editPaymentLink={editPaymentLink}
+                            paymentLinkId={invoice.id}
                           />
                         )
                       : () => (
@@ -319,6 +333,7 @@ export default props => {
                       <EditNotesField
                         value={invoice.notes}
                         editPaymentLink={editPaymentLink}
+                        paymentLinkId={invoice.id}
                       />
                     )}
                   />
@@ -349,6 +364,7 @@ class EditReceiptField extends React.Component {
       isEditableMode: true,
     });
     setTimeout(() => document.getElementsByName('receipt_no')[0].focus(), 10);
+    trackDetailViewEdits(this.props.paymentLinkId, 'Edit Receipt');
   };
 
   render() {
@@ -370,7 +386,6 @@ class EditReceiptField extends React.Component {
         <React.Fragment>
           <Input
             name="receipt_no"
-            propagatedError={this.state.propagatedError}
             placeholder="Receipt No."
             class="Input--small Input--inline"
             required={true}
@@ -379,14 +394,19 @@ class EditReceiptField extends React.Component {
             onChange={e => {
               this.setState({
                 receipt: e.target.value,
-                propagatedError: '',
               });
             }}
           />
           <div style={{ textAlign: 'right', marginBottom: 12, width: 260 }}>
             <Button.Transparent
               class="Button--Link"
-              onClick={() => this.setState(this.resetState())}
+              onClick={() => {
+                this.setState(this.resetState());
+                trackDetailViewEdits(
+                  this.props.paymentLinkId,
+                  'Cancel Receipt'
+                );
+              }}
             >
               Cancel
             </Button.Transparent>
@@ -395,7 +415,9 @@ class EditReceiptField extends React.Component {
               class="Button--small"
               style={{ marginRight: 0, marginLeft: 16 }}
               disabled={!this.state.receipt}
-              onClick={() =>
+              onClick={() => {
+                trackDetailViewEdits(this.props.paymentLinkId, 'Save Receipt');
+
                 this.props
                   .editPaymentLink({
                     receipt: this.state.receipt,
@@ -404,8 +426,8 @@ class EditReceiptField extends React.Component {
                     if (resp.data) {
                       this.setState(this.resetState());
                     }
-                  })
-              }
+                  });
+              }}
               pendingState="Saving"
             >
               Save
@@ -434,6 +456,8 @@ class EditExpiryField extends React.Component {
     this.setState({
       isEditableMode: true,
     });
+
+    trackDetailViewEdits(this.props.paymentLinkId, 'Edit Expiry');
   };
 
   onDateChange = date => {
@@ -526,7 +550,10 @@ class EditExpiryField extends React.Component {
           <div style={{ textAlign: 'right', marginBottom: 12, width: 192 }}>
             <Button.Transparent
               class="Button--Link"
-              onClick={() => this.setState(this.resetState())}
+              onClick={() => {
+                this.setState(this.resetState());
+                trackDetailViewEdits(this.props.paymentLinkId, 'Cancel Expiry');
+              }}
             >
               Cancel
             </Button.Transparent>
@@ -534,7 +561,7 @@ class EditExpiryField extends React.Component {
             <AsyncBtn.Primary
               class="Button--small"
               style={{ marginRight: 0, marginLeft: 16 }}
-              onClick={() =>
+              onClick={() => {
                 this.props
                   .editPaymentLink({
                     expire_by:
@@ -546,8 +573,10 @@ class EditExpiryField extends React.Component {
                     if (resp.data) {
                       this.setState(this.resetState());
                     }
-                  })
-              }
+                  });
+
+                trackDetailViewEdits(this.props.paymentLinkId, 'Save Expiry');
+              }}
               pendingState="Saving"
             >
               Save
@@ -602,6 +631,7 @@ class EditNotesField extends React.Component {
           name="notes"
           saveAndUpdate={this.saveAndUpdate}
           defaultValue={this.state.notes}
+          trackerFn={trackDetailViewEdits.bind(null, this.props.paymentLinkId)}
         />
       </React.Fragment>
     );

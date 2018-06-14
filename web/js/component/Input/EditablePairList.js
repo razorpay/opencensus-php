@@ -32,6 +32,8 @@ export default class EditablePairsList extends React.PureComponent {
   }
 
   onAddNew = e => {
+    this.props.trackerFn('Add New Notes');
+
     const freshPairs = [...this.state.pairs];
     const freshKeys = [...this.state.keys];
 
@@ -73,6 +75,8 @@ export default class EditablePairsList extends React.PureComponent {
 
   /* Handle click on Delete */
   deletePair = pairIdx => {
+    this.props.trackerFn('Delete Notes');
+
     this.context.confirm({
       header: 'Delete Note?',
       message: 'Are you sure you want to delete this note?',
@@ -80,6 +84,7 @@ export default class EditablePairsList extends React.PureComponent {
       affirmativePendingLabel: 'Deleting',
       action: () => {
         const freshPairs = this.removePair(pairIdx);
+        this.props.trackerFn('Delete Notes(Confirmed)');
 
         return this.props.saveAndUpdate(freshPairs);
       },
@@ -90,6 +95,8 @@ export default class EditablePairsList extends React.PureComponent {
     // Expects parent is saving pairs in same form as this.state.pairs, unlike in 'isBunchSave = true' mode.
     const freshPairs = [...this.state.pairs];
     freshPairs[pairIdx] = pair;
+
+    this.props.trackerFn('Save Notes');
 
     return this.props.saveAndUpdate(freshPairs).then(resp => {
       if (resp.data) {
@@ -123,6 +130,7 @@ export default class EditablePairsList extends React.PureComponent {
                   deletePair={this.deletePair}
                   handleSave={this.handleSave}
                   removePair={this.removePair}
+                  trackerFn={this.props.trackerFn}
                 />
               ))}
 
@@ -209,6 +217,7 @@ class PairDecider extends React.Component {
         pair={this.props.defaultValue}
         deletePair={this.props.deletePair}
         makeEditable={this.toggleEditMode}
+        trackerFn={this.props.trackerFn}
       />
     );
   }
@@ -353,7 +362,10 @@ class PairView extends React.Component {
           <Button.Transparent
             type="button"
             class="Btn--Link"
-            onClick={makeEditable}
+            onClick={() => {
+              makeEditable();
+              this.props.trackerFn('Edit Notes');
+            }}
           >
             Edit
           </Button.Transparent>
