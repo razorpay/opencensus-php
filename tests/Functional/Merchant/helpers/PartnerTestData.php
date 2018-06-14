@@ -72,7 +72,7 @@ return [
                     ],
                 ],
                 'submissions' => [
-                    'partner_type' => 'reseller',
+                    'partner_type' => 'aggregator',
                 ],
             ],
         ],
