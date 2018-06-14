@@ -1050,6 +1050,34 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createSharedHitachiMotoTerminal()
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+        $defaultValues = [
+            'id'                        => "ShrdHitaMotTrm",
+            'merchant_id'               => $sharedMerchantAccount,
+            'gateway'                   => 'sharp',
+            'gateway_merchant_id'       => 'test_merchant_sharp',
+            'gateway_terminal_id'       => 'abcde',
+            'gateway_terminal_password' => 'abcdef',
+            'card'                      => 1,
+            'emi'                       => 0,
+            'mc_mpan'                   => '1234560000000000',
+            'visa_mpan'                 => '1234560000000001',
+            'rupay_mpan'                => '1234560000000002',
+            'vpa'                       => 'random@razorpay',
+        ];
+        $attributes['type'] = [
+            Type::NON_RECURRING => '1',
+            Type::RECURRING_3DS => '1',
+            Type::RECURRING_NON_3DS => '1',
+            Type::MOTO => '1'
+        ];
+        $attributes = array_merge($defaultValues, $attributes);
+        return parent::create($attributes);
+    }
+
+
     public function createSharedHdfcEmiTerminal()
     {
         $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
