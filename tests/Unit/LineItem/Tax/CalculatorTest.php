@@ -51,26 +51,22 @@ class CalculatorTest extends TestCase
                 $taxes->push((new Tax\Entity)->build($taxData['attributes']));
             }
 
-            $actualTaxableAmount = Calculator::getTaxableAmountOfLineItem(
-                                                    $lineItem,
-                                                    $taxes);
+            $actualTaxableAmount = Calculator::getTaxableAmountOfLineItem($lineItem, $taxes);
 
-            $this->assertEquals(
+            $this->assertSame(
                 $testData['line_item']['taxable_amount'],
                 $actualTaxableAmount,
                 "Taxable amount for {$i}th line item does not match");
 
             foreach ($taxes as $j => $tax)
             {
-                $actualTaxAmount = Calculator::getTaxAmount(
-                                                    $lineItem,
-                                                    $actualTaxableAmount,
-                                                    $tax);
+                $actualTaxAmount = Calculator::getTaxAmount($lineItem, $actualTaxableAmount, $tax);
 
                 $this->assertEquals(
                     $testData['taxes'][$j]['tax_amount'],
                     $actualTaxAmount,
-                    "Tax amount for {$i}th line item's {$j}th tax doesn't match");
+                    "Tax amount for {$i}th line item's {$j}th tax doesn't match",
+                    0.0001);
             }
         }
     }
