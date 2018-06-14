@@ -46,7 +46,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             return null;
         }
 
-        return $this->getPaymentIdUsingTerminalFilter($row);
+        return $this->getPaymentIdByTerminal($row);
     }
 
     /**
@@ -57,7 +57,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * @param array $row
      * @return mixed|null
      */
-    protected function getPaymentIdUsingTerminalFilter(array $row)
+    protected function getPaymentIdByTerminal(array $row)
     {
         if ($row[self::COLUMN_TERMINAL_NUMBER] === self::BHARAT_QR_TERMINAL)
         {
