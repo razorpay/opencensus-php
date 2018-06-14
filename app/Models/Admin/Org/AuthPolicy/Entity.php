@@ -45,7 +45,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
-        self::ORG_ID,
         self::TYPE,
         self::NAME,
         self::SECOND_FACTOR,

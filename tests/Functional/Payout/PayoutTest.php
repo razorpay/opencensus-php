@@ -65,6 +65,8 @@ class PayoutTest extends TestCase
         $this->assertNotEquals($payoutAttempt['status'], Attempt\Status::FAILED);
 
         // Verify attempt entity
+        $this->assertEquals($payout['attempts'], 1);
+        $this->assertEquals($payoutAfterRetry['attempts'], 1);
         $this->assertEquals($payoutAfterRetry['id'], $payoutAttempt['source']);
         $this->assertEquals($payoutAfterRetry['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals($payoutAfterRetry['destination'], 'ba_' . $payoutAttempt['bank_account_id']);
@@ -103,6 +105,7 @@ class PayoutTest extends TestCase
         $this->assertEquals($payoutAttempt['status'], Attempt\Status::CREATED);
 
         // Verify attempt entity
+        $this->assertEquals($payout['attempts'], 2);
         $this->assertEquals($payout['id'], $payoutAttempt['source']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals($payout['destination'], 'ba_' . $payoutAttempt['bank_account_id']);

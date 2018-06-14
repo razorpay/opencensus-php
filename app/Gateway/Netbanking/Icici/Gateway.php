@@ -970,4 +970,28 @@ class Gateway extends Base\Gateway
 
         return $recurringData;
     }
+
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+                                            $input['payment']['id'],
+                                            Payment\Action::AUTHORIZE);
+
+        // If it's already authorized on gateway side, We just return.
+        if (($gatewayPayment->getReceived() === true) and
+            ($gatewayPayment->getStatus() === Confirmation::YES))
+        {
+            return true;
+        }
+
+        $attrs = [
+            Base\Entity::STATUS  => Confirmation::YES,
+        ];
+
+        $gatewayPayment->fill($attrs);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
+    }
 }

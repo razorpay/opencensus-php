@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Pricing;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -1008,6 +1009,10 @@ class MerchantFeeTest extends TestCase
 
             $payment->setAttribute(Payment\Entity::INTERNATIONAL, false);
 
+            $merchant = Merchant\Entity::find('10000000000000');
+
+            $payment->merchant()->associate($merchant);
+
             $payment->card = (new Card\Entity)->build($this->card);
 
             $payment->card->setNetwork('Visa');
@@ -1127,6 +1132,10 @@ class MerchantFeeTest extends TestCase
 
         $payment->setBaseAmount($amount);
 
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+
         return $payment;
     }
 
@@ -1143,6 +1152,10 @@ class MerchantFeeTest extends TestCase
         $payment = new Payment\Entity($paymentArray);
 
         $payment->setBaseAmount($amount);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
 
         list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
@@ -1162,6 +1175,10 @@ class MerchantFeeTest extends TestCase
         $paymentArray[Payment\Entity::METHOD] = Payment\Method::WALLET;
 
         $payment = new Payment\Entity($paymentArray);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
 
         $payment->setBaseAmount($amount);
 
@@ -1184,6 +1201,10 @@ class MerchantFeeTest extends TestCase
         $payment = new Payment\Entity($paymentArray);
 
         $payment->setBaseAmount($amount);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
 
         if ($receiver == Receiver::QR_CODE)
         {
@@ -1210,6 +1231,10 @@ class MerchantFeeTest extends TestCase
 
         $payment = new Payment\Entity($paymentArray);
 
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+
         $payment->card = (new Card\Entity)->build($this->card);
 
         $payment->card->setNetwork($network);
@@ -1230,6 +1255,10 @@ class MerchantFeeTest extends TestCase
         $paymentArray[Payment\Entity::EMI_PLAN_ID] = '10101010101010';
 
         $payment = new Payment\Entity($paymentArray);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
 
         $payment->card = (new Card\Entity)->build($this->card);
 

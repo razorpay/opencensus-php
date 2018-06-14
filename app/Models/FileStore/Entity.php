@@ -47,10 +47,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
-        self::MERCHANT_ID,
         self::TYPE,
-        self::ENTITY_ID,
-        self::ENTITY_TYPE,
         self::COMMENTS,
         self::EXTENSION,
         self::MIME,

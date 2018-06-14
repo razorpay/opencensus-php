@@ -121,10 +121,11 @@ function disableEmptyInputs(form) {
         <td colspan="40">Select Wallet </td>
         <td>
             <select name="wallet">
+                <option value="amazonpay" selected>Amazon Pay</option>
                 <option value="paytm">Paytm</option>
                 <option value="mobikwik">Mobikwik</option>
                 <option value="payzapp">Payzapp</option>
-                <option value="payumoney" selected>Payumoney</option>
+                <option value="payumoney">Payumoney</option>
                 <option value="olamoney">Olamoney</option>
                 <option value="airtelmoney">Airtelmoney</option>
                 <option value="freecharge">Freecharge</option>

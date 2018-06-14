@@ -71,6 +71,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected $messenger;
 
+    /**
+     * It tells whether we should attempt force authorize for failed payments on the gateway.
+     * If force authorize is enabled, we do not make gateway call and mark payments as authorized.
+     */
+    protected $allowForceAuthorization = false;
+
     public function __construct(string $gateway = null)
     {
         parent::__construct($gateway);
@@ -203,7 +209,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $validPaymentAmount = $this->validatePaymentAmountEqualsReconAmount($row);
 
-        $validPaymentDetails = ($validPaymentStatus and $validPaymentAmount);
+        $validCurrencyCode  = $this->validatePaymentCurrencyEqualsReconCurrency($row);
+
+        $validPaymentDetails = (($validPaymentStatus === true) and
+                                ($validPaymentAmount === true) and
+                                ($validCurrencyCode === true));
 
         return $validPaymentDetails;
     }
@@ -293,7 +303,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         // always use that, instead of verify. There's no
         // need for running verify if force authorization is present.
         //
-        if ($this->shouldAttemptForceAuthorizeFailed() === true)
+        if ($this->allowForceAuthorization === true)
         {
             return $this->handleForceAuthorization($row);
         }
@@ -558,6 +568,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $gatewayPaymentDate = $this->getGatewayPaymentDate($row);
 
         $this->setPaymentAndTransaction($row, $paymentId);
+
+        //
+        // Setting allowForceAuthorization after setting payment instance
+        // because this attribute can be dependent on payment instance's attributes. For eg. payment's created_at
+        //
+        $this->setAllowForceAuthorization();
 
         $cardDetails = $this->getCardDetails($row);
 
@@ -1753,13 +1769,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     /**
      * This function should be implemented in the child class
      * It tells whether we should attempt force authorize on
-     * the gateway.
-     *
-     * @return bool
+     * the gateway. Default is false.
      */
-    protected function shouldAttemptForceAuthorizeFailed()
+    protected function setAllowForceAuthorization()
     {
-        return false;
+        $this->allowForceAuthorization = false;
     }
 
     /**
@@ -1783,6 +1797,19 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * @return bool
      */
     protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        return true;
+    }
+
+    /**
+     * Checks if currency code in recon file matches the actual currency in payment entity
+     * Implementation to be provided by child classes
+     *
+     * @param  array $row Row data
+     *
+     * @return bool
+     */
+    protected function validatePaymentCurrencyEqualsReconCurrency(array $row) : bool
     {
         return true;
     }

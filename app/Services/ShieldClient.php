@@ -145,6 +145,7 @@ class ShieldClient implements ExternalService
             Payment\Entity::EMAIL         => $payment->getEmail(),
             Payment\Entity::CREATED_AT    => $payment->getCreatedAt(),
             Payment\Entity::METHOD        => $payment->getMethod(),
+            'website'                     => $payment->merchant->merchantDetail->getWebsite()
         ];
 
         $methodParams = $this->fillMethodSpecificDetails($payment);
@@ -189,14 +190,16 @@ class ShieldClient implements ExternalService
             case Method::EMI:
                 $card = $payment->card;
 
-                $methodParams['card_iin']      = $card->getIin();
-                $methodParams['card_network']  = $card->getNetwork();
-                $methodParams['card_type']     = $card->getType();
-                $methodParams['card_country']  = $card->getCountry();
-                $methodParams['card_issuer']   = $card->getIssuer();
-                $methodParams['card_name']     = $card->getName();
-                $methodParams['card_last4']    = $card->getLast4();
-                $methodParams['card_length']   = $card->getLength();
+                $methodParams['card_iin']          = $card->getIin();
+                $methodParams['card_network']      = $card->getNetwork();
+                $methodParams['card_type']         = $card->getType();
+                $methodParams['card_country']      = $card->getCountry();
+                $methodParams['card_issuer']       = $card->getIssuer();
+                $methodParams['card_name']         = $card->getName();
+                $methodParams['card_last4']        = $card->getLast4();
+                $methodParams['card_length']       = $card->getLength();
+                $methodParams['card_expiry_month'] = $card->getExpiryMonth();
+                $methodParams['card_expiry_year']  = $card->getExpiryYear();
                 break;
 
         }

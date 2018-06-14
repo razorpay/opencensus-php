@@ -633,6 +633,7 @@ class ReconciliationFileTest extends TestCase
         $facade[HitachiPaymentRecon::COLUMN_PAYMENT_AMOUNT] = intval($payment['amount'] / 100);
         $facade[HitachiPaymentRecon::COLUMN_AUTH_CODE]      = $payment['pAuthID'];
         $facade[HitachiPaymentRecon::COLUMN_ARN]            = str_random(24);
+        $facade[HitachiPaymentRecon::COLUMN_CURRENCY_CODE]  = '356';
 
         return array_merge($facade, $forceOverride);
     }

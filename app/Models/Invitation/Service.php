@@ -101,7 +101,11 @@ class Service extends Base\Service
     {
         $user = $this->app['basicauth']->getUser();
 
-        $invitation = $this->repo->invitation->findByIdAndEmail($inviteId, $user->getEmail());
+        $userEmail = $user ? $user->getEmail() : $input['email'];
+
+        unset($input['email']);
+
+        $invitation = $this->repo->invitation->findByIdAndEmail($inviteId, $userEmail);
 
         $this->core()->action($invitation, $input);
 

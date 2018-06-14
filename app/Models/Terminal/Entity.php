@@ -8,11 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
-use RZP\Models\Card\Network;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Currency\Currency;
-use RZP\Models\Terminal\TpvType;
 use RZP\Models\Emi\Subvention as EmiSubvention;
 
 class Entity extends Base\PublicEntity
@@ -93,7 +91,6 @@ class Entity extends Base\PublicEntity
     //const PRIORITY                      = 'priority';
 
     protected $fillable = [
-        self::MERCHANT_ID,
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
@@ -245,6 +242,16 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($terminal)
+        {
+            $terminal->merchants()->detach();
+        });
+    }
 
     // ---------------------- GETTERS ----------------------
 
