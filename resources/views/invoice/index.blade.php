@@ -1024,8 +1024,14 @@
           </div>
           @endif
 
+        <script type="text/javascript">
+            function initAnalytics() {
+                analytics.init(['ga', 'hotjar'], window.location.hostname.indexOf('razorpay.com') < 0);
+                analytics.track('ga', 'pageview');
+            }
+        </script>
+        <script src="https://cdn.razorpay.com/static/analytics/bundle.js" onload="initAnalytics()" async></script>
         @if ($data['invoice']['type'] !== 'invoice')
-          <script src="https://cdn.razorpay.com/static/analytics/bundle.js" onload="initAnalytics()" async></script>
           <script>
             function checkIsDesktop() {
                 var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
@@ -1085,11 +1091,6 @@
           <script>
               cleanHTML();
               window.t0 = (new Date()).getTime(); // initial time stamp
-
-              function initAnalytics() {
-                analytics.init(['ga', 'hotjar'], window.location.hostname.indexOf('razorpay.com') < 0);
-                analytics.track('ga', 'pageview');
-              }
 
               var data = window.RZP_DATA.data;
               var color = data.merchant.brand_color || '#168AFA';
