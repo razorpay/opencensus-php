@@ -138,8 +138,6 @@ trait PaymentTrait
             $payment = $this->getDefaultPaymentArray();
         }
 
-        $payment['view'] = 'json';
-
         $content = $this->getFeesForPayment($payment);
 
         return $content;
