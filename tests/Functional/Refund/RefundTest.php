@@ -167,7 +167,7 @@ class RefundTest extends TestCase
         $this->assertEquals('initiated', $refund['status']);
     }
 
-    public function testRefundEditStatusFailtoProcessedFromFailed()
+    public function testRefundEditStatustoProcessedFromFailed()
     {
          $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
@@ -188,7 +188,8 @@ class RefundTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('abcdProcessed',$refund['reference1']);
+        $this->assertEquals('processed', $refund['status']);
     }
 
     public function testRefundEditStatusFailed()

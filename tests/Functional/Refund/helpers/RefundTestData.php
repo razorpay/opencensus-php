@@ -65,27 +65,19 @@ return [
         ],
     ],
 
-    'testRefundEditStatusFailtoProcessedFromFailed' => [
+    'testRefundEditStatustoProcessedFromFailed' => [
         'request'  => [
             'content' => [
                 'status'    => 'processed',
-                'reference1' => 'abcd'
+                'reference1' => 'abcdProcessed'
 
             ],
             'method'  => 'PUT',
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The selected status is invalid.',
-                ],
+                'status' => 'processed',
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

@@ -22,7 +22,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editStatusRules = [
-        Entity::STATUS          => 'required|string|in:initiated,failed|custom',
+        Entity::STATUS          => 'required|string|in:initiated,failed,processed|custom',
         Entity::REFERENCE1      => 'required|string',
     ];
 
