@@ -360,16 +360,16 @@ class BasicAuth
 
         $keyError = $this->checkAndSetKeyId($key);
 
-        $this->authCreds->creds[self::SECRET] = $secret;
-
-        $this->authCreds->creds[self::PUBLIC_KEY] = $key;
-
         if ($keyError !== null)
         {
             return $keyError;
         }
 
-        return $this->setExtraCredentialsIfSent();
+        $this->authCreds->creds[self::SECRET] = $secret;
+
+        $this->authCreds->creds[self::PUBLIC_KEY] = $key;
+
+        return $this->checkAndSetAccountId();
     }
 
     public function checkAndSetKeyId($key)
@@ -412,13 +412,6 @@ class BasicAuth
         $this->authCreds = new AuthCreds($this->app, $keyType, $key);
     }
 
-    protected function setExtraCredentialsIfSent()
-    {
-        $accountId = $this->request->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
-
-        return $this->checkAndSetAccountId($accountId);
-    }
-
     /**
      * If Account ID was sent, verify and set its value in $this->creds[]
      *
@@ -427,6 +420,8 @@ class BasicAuth
      */
     protected function checkAndSetAccountId(string $accountId = null)
     {
+        $accountId = $this->request->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
+
         if ($accountId === null)
         {
             return null;
@@ -525,7 +520,7 @@ class BasicAuth
             return $this->invalidApiKey();
         }
 
-        $response = $this->verifyKeyExistence();
+        $response = $this->authCreds->verifyKeyExistenceAndNotExpired();
 
         if ($response !== true)
         {
@@ -847,7 +842,7 @@ class BasicAuth
             return $res;
         }
 
-        $response = $this->verifyKeyExistence();
+        $response = $this->authCreds->verifyKeyExistenceAndNotExpired();
 
         if ($response !== true)
         {
@@ -893,7 +888,7 @@ class BasicAuth
             return $this->invalidApiKey();
         }
 
-        if ($this->verifyKeyExistence() !== true)
+        if ($this->authCreds->verifyKeyExistenceAndNotExpired() !== true)
         {
             return $this->invalidApiKey();
         }
@@ -977,34 +972,34 @@ class BasicAuth
      * Verify key exists by fetching it
      * @return boolean
      */
-    protected function verifyKeyExistence()
-    {
-        if ($this->isKeyExisting() === false)
-        {
-            return $this->invalidApiKey();
-        }
+    //protected function verifyKeyExistence()
+    //{
+    //    if ($this->isKeyExisting() === false)
+    //    {
+    //        return $this->invalidApiKey();
+    //    }
+    //
+    //    return $this->verifyKeyNotExpired();
+    //}
 
-        return $this->verifyKeyNotExpired();
-    }
-
-    protected function isKeyExisting()
-    {
-        $keyId = $this->getKey();
-
-        if ($keyId === '')
-        {
-            return false;
-        }
-
-        //
-        // For keys sent by merchants, make sure they exist in db.
-        // In case of partner, this will return partnerClient which
-        // has partner id + secret that serve as credentials
-        //
-        $keyOrPartnerClient = $this->fetchKeyOrPartnerClient($keyId);
-
-        return ($keyOrPartnerClient !== null);
-    }
+    //protected function isKeyExisting()
+    //{
+    //    $keyId = $this->getKey();
+    //
+    //    if ($keyId === '')
+    //    {
+    //        return false;
+    //    }
+    //
+    //    //
+    //    // For keys sent by merchants, make sure they exist in db.
+    //    // In case of partner, this will return partnerClient which
+    //    // has partner id + secret that serve as credentials
+    //    //
+    //    $keyOrPartnerClient = $this->fetchKeyOrPartnerClient($keyId);
+    //
+    //    return ($keyOrPartnerClient !== null);
+    //}
 
     /**
      * Used for private/secret authentication.
@@ -1347,21 +1342,24 @@ class BasicAuth
 
     public function getMerchant()
     {
-        if (empty($this->authCreds) === false)
+        $authCreds = $this->getAuthCreds();
+
+        if ((empty($authCreds) === false))
         {
-            $this-> merchant = $this->authCreds->getMerchant();
+            $this->merchant = $authCreds->getMerchant();
         }
         return $this->merchant;
     }
 
     public function getMerchantId()
     {
-        $merchant = $this->getAuthCreds()->getMerchant();
+        $merchant = $this->getMerchant();
 
         if (empty($merchant) === true)
         {
             return null;
         }
+
         return $merchant->getId();
     }
 
@@ -1620,7 +1618,7 @@ class BasicAuth
         $this->authCreds->creds[self::SECRET] = null;
         $this->authCreds->creds[self::PUBLIC_KEY] = $key;
 
-        return $this->setExtraCredentialsIfSent();
+        return $this->checkAndSetAccountId();
     }
 
     protected function fetchKeyOrPartnerClient($keyId)
@@ -1702,7 +1700,7 @@ class BasicAuth
             return $this->invalidAccountId($this->getAccountId());
         }
 
-        $this->setMerchant($account);
+        $this->authCreds->setMerchant($account);
     }
 
     /**
