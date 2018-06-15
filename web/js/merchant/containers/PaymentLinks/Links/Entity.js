@@ -20,16 +20,18 @@ export default class InvoiceDetailContainer extends Component {
     confirm: PropTypes.func,
   };
 
-  constructor() {
+  constructor(props) {
     super(...arguments);
     this.state = {
       statusMsg: {},
     };
 
-    // recording new payments links creation UI form in hotjar
-    if (typeof window.hj === 'function') {
-      window.hj('trigger', 'payment_links_v2_details_open');
-      window.hj('tagRecording', ['payment_links_v2_details_open']);
+    if (props.user.isPaymentLinksV2Enabled) {
+      // recording new payments links creation UI form in hotjar
+      if (typeof window.hj === 'function') {
+        window.hj('trigger', 'payment_links_v2_details_open');
+        window.hj('tagRecording', ['payment_links_v2_details_open']);
+      }
     }
   }
 

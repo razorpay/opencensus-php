@@ -372,7 +372,7 @@ class PairView extends React.Component {
         {deletePair && (
           <Button.Transparent
             type="button"
-            class="Btn--Link Button--danger"
+            class="Btn--Link"
             onClick={() => deletePair(idx)}
           >
             Delete
