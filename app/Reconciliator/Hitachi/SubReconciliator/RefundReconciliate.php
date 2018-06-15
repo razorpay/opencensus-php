@@ -2,8 +2,9 @@
 
 namespace RZP\Reconciliator\Hitachi;
 
-use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
+use RZP\Reconciliator\Base;
+use RZP\Models\Currency\Currency;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
