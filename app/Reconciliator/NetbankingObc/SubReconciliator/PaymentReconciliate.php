@@ -63,10 +63,12 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     );
     }
 
-    //We are force authorizing this because their verify API depends on bank reference number
-    protected function shouldAttemptForceAuthorizeFailed()
+    /**
+     * We are force authorizing this because their verify API depends on bank reference number.
+     */
+    protected function setAllowForceAuthorization()
     {
-        return true;
+        $this->allowForceAuthorization = true;
     }
 
     protected function getInputForForceAuthorize($row)

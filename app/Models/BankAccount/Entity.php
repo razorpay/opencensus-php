@@ -4,10 +4,10 @@ namespace RZP\Models\BankAccount;
 
 use App;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Razorpay\IFSC\IFSC;
+
 use RZP\Models\Base;
 use RZP\Models\VirtualAccount;
-use Razorpay\IFSC\IFSC;
-use RZP\Exception;
 
 class Entity extends Base\PublicEntity
 {
@@ -59,9 +59,6 @@ class Entity extends Base\PublicEntity
     protected $entity = 'bank_account';
 
     protected $fillable = [
-        self::MERCHANT_ID,
-        self::ENTITY_ID,
-        self::TYPE,
         self::IFSC_CODE,
         self::MOBILE_BANKING_ENABLED,
         self::BENEFICIARY_NAME,
@@ -130,6 +127,10 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::MOBILE_BANKING_ENABLED => 'bool',
+    ];
+
+    protected $ignoredRelations = [
+        'source',
     ];
 
     protected $generateIdOnCreate = true;

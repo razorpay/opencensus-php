@@ -41,7 +41,7 @@ class Validator
                                                         "/^MIS file for (0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}, "
                                                         . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/"
                                                      ],
-        RequestProcessor\Base::NETBANKING_BOB     => ["/^Razorpay_Scroll_ of /"],
+        RequestProcessor\Base::NETBANKING_BOB     => ["/^(RE: )?Razorpay_Scroll_ of /"],
         RequestProcessor\Base::NETBANKING_CSB     => ["/^RAZORPAY_Recon File/"],
         RequestProcessor\Base::NETBANKING_ICICI   => ["/^Payment Through Internet Banking Center Razorpay/"],
         RequestProcessor\Base::NETBANKING_FEDERAL => [
@@ -61,7 +61,7 @@ class Validator
                                                          "/Eazypay app\s*sales summary-[0-9]{2}-"
                                                          . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
                                                          "/Refund MIS for 116798_RAZORPAY_[0-9]{2}-[0-9]{2}-20[0-9]{2}/"
-                                                     ]
+                                                     ],
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -89,7 +89,7 @@ class Validator
                                                         "/Please find attached the UPI Transaction Report MIS as on"
                                                         ."\s*[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
                                                          "/Please find attached the Refund Report as on\s*[0-9]{2}_[0-9]{2}_20[0-9]{2}/"
-                                                     ]
+                                                     ],
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [

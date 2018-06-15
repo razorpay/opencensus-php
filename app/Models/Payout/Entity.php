@@ -33,6 +33,7 @@ class Entity extends Base\PublicEntity
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const STATUS                 = 'status';
     const CHANNEL                = 'channel';
+    const ATTEMPTS               = 'attempts';
     const UTR                    = 'utr';
     const FAILURE_REASON         = 'failure_reason';
     const RETURN_UTR             = 'return_utr';
@@ -91,6 +92,7 @@ class Entity extends Base\PublicEntity
         self::BATCH_FUND_TRANSFER_ID,
         self::STATUS,
         self::CHANNEL,
+        self::ATTEMPTS,
         self::UTR,
         self::FAILURE_REASON,
         self::REMARKS,
@@ -129,6 +131,7 @@ class Entity extends Base\PublicEntity
         self::STATUS            => Status::CREATED,
         self::PURPOSE           => Purpose::REFUND,
         self::NOTES             => [],
+        self::ATTEMPTS          => 1
     ];
 
     protected $amounts = [
@@ -148,6 +151,10 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::PROCESSED_AT,
         self::SETTLED_ON,
+    ];
+
+    protected $ignoredRelations = [
+        'destination',
     ];
 
     public function merchant()
@@ -329,6 +336,11 @@ class Entity extends Base\PublicEntity
     public function setSettledOn($date)
     {
         $this->setAttribute(self::SETTLED_ON, $date);
+    }
+
+    public function incrementAttempts()
+    {
+        $this->increment(self::ATTEMPTS);
     }
 
     protected function getSettledOnAttribute()

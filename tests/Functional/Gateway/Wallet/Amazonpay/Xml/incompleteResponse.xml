@@ -1,0 +1,7 @@
+<ListOrderReferenceResponse xmlns="http://mws.amazonservices.com/schema/OffAmazonPayments/2013-01-01">
+    <ListOrderReferenceResult>
+    </ListOrderReferenceResult>
+    <ResponseMetadata>
+        <RequestId>ae31bae0-718a-4b48-a0fb-afb6ba12f678</RequestId>
+    </ResponseMetadata>
+</ListOrderReferenceResponse>

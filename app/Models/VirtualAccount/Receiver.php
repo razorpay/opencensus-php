@@ -30,7 +30,7 @@ class Receiver extends Base\Core
     const STANDARD_HANDLE_LENGTH       = 4;
     const DESCRIPTOR_LENGTH            = 9;
     const PRIVILEGED_DESCRIPTOR_LENGTH = 10;
-    const ACCOUNT_NUMBER_LENGTH        = 17;
+    const ACCOUNT_NUMBER_LENGTH        = 16;
 
     const DEFAULT_BANK_ACCOUNT_OPTIONS = [
         self::DESCRIPTOR => null,
@@ -180,22 +180,27 @@ class Receiver extends Base\Core
         return array_merge($bankAccountInput, $merchantDetails);
     }
 
-    public function buildQrCode(Entity $virtualAccount): QrCode\Entity
+    public function buildQrCode(Entity $virtualAccount, array $options): QrCode\Entity
     {
-        $input = $this->getQrCodeEntityParams($virtualAccount);
+        $input = $this->getQrCodeEntityParams($virtualAccount, $options);
 
         $qrCode = (new QrCode\Generator($this->merchant))->generate($input, $virtualAccount);
 
         return $qrCode;
     }
 
-    protected function getQrCodeEntityParams(Entity $virtualAccount): array
+    protected function getQrCodeEntityParams(Entity $virtualAccount, array $options): array
     {
         $input = [
             // For now it is set bharat qr as default
             QrCode\Entity::PROVIDER  => Provider::BHARAT_QR,
             QrCode\Entity::AMOUNT    => $virtualAccount->getAmountExpected(),
         ];
+
+        if (isset($options[QrCode\Entity::REFERENCE])  === true)
+        {
+            $input[QrCode\Entity::REFERENCE] = $options[QrCode\Entity::REFERENCE];
+        }
 
         return $input;
     }

@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Subscription;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Exception\BadRequestValidationFailureException;
 
 return [
     'testCreatePlanWithItemId' => [
@@ -48,14 +49,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Can only reuse an item of the same item type',
+                    'description' => 'item must be of type: invoice',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE,
+            'class'               => BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
