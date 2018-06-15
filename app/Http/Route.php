@@ -2140,6 +2140,7 @@ final class Route
         'merchant_invoice_update_gstin',
         'setl_retry',
         'merchant_invoice_add_bulk',
+        'customer_create_token_public',
     ];
 
     const RAZORPAYJS_ROUTES = [
