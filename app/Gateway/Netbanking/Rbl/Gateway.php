@@ -137,6 +137,17 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
+
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+
+        // Amount received in verifyCallback is formatted like INR|1,391.80
+        $receivedAmount = explode('|', $verify->verifyResponseContent[ResponseFields::AMOUNT]);
+
+        $paymentAmount  = (float) str_replace(',', '', last($receivedAmount));
+
+        $actualAmount   = number_format($paymentAmount, 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)
@@ -186,6 +197,16 @@ class Gateway extends Base\Gateway
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
 
         $verify->payment = $this->saveVerifyContent($verify);
+
+        $expectedAmount = number_format($verify->input['payment']['amount'] / 100, 2, '.', '');
+
+        $receivedAmount = explode('|', $verify->verifyResponseContent[ResponseFields::AMOUNT]);
+
+        $paymentAmount = (float) str_replace(',', '', last($receivedAmount));
+
+        $actualAmount = number_format($paymentAmount, 2, '.', '');
+
+        $verify->amountMismatch = ($expectedAmount !== $actualAmount);
     }
 
     protected function getVerifyMatchStatus(Verify $verify): string

@@ -405,6 +405,22 @@ class Repository extends Base\Repository
         return array_map('intval', $collection->all());
     }
 
+    /**
+     * Returns true if given receipt is in use by the merchant for one of the non-cancelled or non-expired invoices
+     * @param  Entity  $invoice
+     * @param  string  $receipt
+     * @return boolean
+     */
+    public function isDuplicateReceipt(Entity $invoice, string $receipt): bool
+    {
+        return $this->newQuery()
+                    ->merchantId($invoice->getMerchantId())
+                    ->where(Entity::RECEIPT, $receipt)
+                    ->whereNotIn(Entity::STATUS, [Status::CANCELLED, Status::EXPIRED])
+                    ->where(Entity::ID, '!=', $invoice->getId())
+                    ->count() > 0;
+    }
+
     protected function addQueryParamPaymentId(BuilderEx $query, array $params)
     {
         $this->joinQueryPayment($query);

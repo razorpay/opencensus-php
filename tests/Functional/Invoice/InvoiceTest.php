@@ -398,11 +398,70 @@ class InvoiceTest extends TestCase
         $this->makePaymentForInvoiceAndAssert($response);
     }
 
-    public function testCreateInvoiceWithDuplicateMerchantRefId()
+    public function testCreateInvoiceWithDuplicateReceiptFails()
     {
-        $this->createOrder();
+        // Case 1: Issued invoice with same receipt already exists
+        $attributes = [
+            'receipt'  => '00000000000001',
+            'order_id' => $this->fixtures->create('order')->getId(),
+        ];
+        $this->fixtures->create('invoice', $attributes);
 
-        $this->fixtures->create('invoice', ['receipt' => '00000000000001']);
+        $this->startTest();
+
+        // Case 2: Paid invoice with same receipt already exists
+        $attributes = ['status' => 'paid', 'paid_at' => Carbon::now(Timezone::IST)->getTimestamp()];
+        $this->fixtures->invoice->edit('1000000invoice', $attributes);
+
+        $this->startTest();
+
+        // Case 3: Partially paid invoice with same receipt already exists
+        $attributes = ['status' => 'partially_paid', 'paid_at' => Carbon::now(Timezone::IST)->getTimestamp()];
+        $this->fixtures->invoice->edit('1000000invoice', $attributes);
+
+        $this->startTest();
+
+        // Case 4: Draft invoice with same receipt already exists
+        $attributes = ['status' => 'draft', 'issued_at' => null];
+        $this->fixtures->invoice->edit('1000000invoice', $attributes);
+
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithDuplicateReceiptSucceeds()
+    {
+        // Case 1: Issued invoice with same receipt doesn't exists
+        $this->startTest();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        // Case 2: Cancelled invoice with same receipt already exists
+        $attributes = [
+            'id'           => '1000001invoice',
+            'receipt'      => '00000000000002',
+            'status'       => 'cancelled',
+            'cancelled_at' => Carbon::now(Timezone::IST)->getTimestamp(),
+            'order_id'     => $this->fixtures->create('order')->getId(),
+        ];
+        $this->fixtures->create('invoice', $attributes);
+
+        $testData['request']['content']['receipt']  = '00000000000002';
+        $testData['response']['content']['receipt'] = '00000000000002';
+
+        $this->startTest();
+
+        // Case 3: Expired invoice with same receipt already exists
+        $attributes = [
+            'id'         => '1000002invoice',
+            'receipt'    => '00000000000003',
+            'status'     => 'expired',
+            'expired_at' => Carbon::now(Timezone::IST)->getTimestamp(),
+            'order_id'   => $this->fixtures->create('order')->getId(),
+        ];
+        $this->fixtures->create('invoice', $attributes);
+
+        $testData['request']['content']['receipt']  = '00000000000003';
+        $testData['response']['content']['receipt'] = '00000000000003';
 
         $this->startTest();
     }
@@ -685,6 +744,28 @@ class InvoiceTest extends TestCase
             ]);
 
         $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartiallyPaidInvoiceExpireBy()
+    {
+        $past = Carbon::create(2018, 2, 1, 12, null, null, Timezone::IST);
+
+        Carbon::setTestNow($past);
+
+        $this->createInvoice(['status' => 'partially_paid']);
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartiallyPaidInvoiceInvalidExpireBy()
+    {
+        $past = Carbon::create(2018, 2, 1, 12, null, null, Timezone::IST);
+
+        Carbon::setTestNow($past);
+
+        $this->createInvoice(['status' => 'partially_paid']);
 
         $this->startTest();
     }

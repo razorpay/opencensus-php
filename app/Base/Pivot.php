@@ -4,6 +4,7 @@ namespace RZP\Base;
 
 use Illuminate\Database\Eloquent\Relations;
 
+use Carbon\Carbon;
 use RZP\Models\Base\PublicCollection;
 
 class Pivot extends Relations\Pivot
@@ -18,6 +19,23 @@ class Pivot extends Relations\Pivot
     // needed when we want to treat it like an entity anyway
     // Eg. in fixtures for tests, or for admin fetch routes
     //
+
+    /**
+     * Used in HasTimestamps for updateTimestamps
+     */
+    public function freshTimestamp()
+    {
+        return Carbon::now()->getTimestamp();
+    }
+
+    /**
+     * Used in freshTimestampString, in turn used in BelongsToMany for touch
+     */
+    public function fromDateTime($value)
+    {
+        return $value;
+    }
+
 
     public function getTable(): string
     {

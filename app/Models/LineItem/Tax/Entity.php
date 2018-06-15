@@ -84,9 +84,24 @@ class Entity extends Base\PublicEntity
 
     // Getters
 
-    public function getTaxAmount()
+    public function getTaxAmount(): int
     {
         return $this->getAttribute(self::TAX_AMOUNT);
+    }
+
+    public function getRateType(): string
+    {
+        return $this->getAttribute(self::RATE_TYPE);
+    }
+
+    public function getRate(): int
+    {
+        return $this->getAttribute(self::RATE);
+    }
+
+    public function getRatePercentValue(): float
+    {
+        return $this->getRate() * TaxModel\Entity::PERCENT_MULTIPLIER;
     }
 
     // Public setters

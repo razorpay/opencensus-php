@@ -69,6 +69,7 @@ class OrgTest extends TestCase
         $permissions = $this->getPermissionsByIds('assignable');
 
         $newPermissions = array_slice($permissions, 0, 3);
+        $newPermissions = array_unique(array_merge($newPermissions, $newWorkflowPerms));
 
         $this->testData[__FUNCTION__]['request']['content']['permissions'] = $newPermissions;
 
@@ -76,15 +77,15 @@ class OrgTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals(3, count($result['permissions']));
+        $this->assertEquals(count($newPermissions), count($result['permissions']));
 
         $role = $this->ba->getAdmin()->roles()->get()[0];
 
         $rolePermissions = $role->permissions()->allRelatedIds()->toArray();
 
-        $this->assertEquals(2, count($result['workflow_permissions']));
+        $this->assertEquals(count($newWorkflowPerms), count($result['workflow_permissions']));
 
-        $this->assertEquals(3, count($rolePermissions));
+        $this->assertEquals(count($newPermissions), count($rolePermissions));
     }
 
     public function testEditOtherOrg()

@@ -13,7 +13,7 @@ class SettlementFailureException extends ServerErrorException
         $channel,
         $message = null,
         $data = null,
-        \Exception $previous = null)
+        \Throwable $previous = null)
     {
         $code = ErrorCode::SERVER_ERROR_SETTLEMENTS_FAILED;
         $message = $message ?: 'Critical error: Settlements failed';

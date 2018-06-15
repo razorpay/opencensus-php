@@ -824,41 +824,60 @@ return [
         ]
     ],
 
-    'testCreateInvoiceWithDuplicateMerchantRefId' => [
+    'testCreateInvoiceWithDuplicateReceiptFails' => [
         'request' => [
-            'url' => '/invoices',
-            'method' => 'post',
+            'url'     => '/invoices',
+            'method'  => 'post',
             'content' => [
-                'customer_id'     => 'cust_100000customer',
-                'receipt'         => '00000000000001',
-                'line_items'    => [
+                'customer_id' => 'cust_100000customer',
+                'receipt'     => '00000000000001',
+                'currency'    => 'INR',
+                'line_items'  => [
                     [
-                        'name'          => 'Some item name',
-                        'description'   => 'Some item description',
-                        'amount'        => 100000,
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
                     ],
-                    [
-                        'name'          => 'Another item',
-                        'description'   => 'Another description',
-                        'amount'        => 200000,
-                        'quantity'      => 2,
-                    ]
                 ],
-                'currency' => 'INR',
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Duplicate value for receipt in invoice',
+                    'description' => 'receipt must be unique for each item : 00000000000001',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT,
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateInvoiceWithDuplicateReceiptSucceeds' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'receipt'     => '00000000000001',
+                'currency'    => 'INR',
+                'line_items'  => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'invoice',
+                'receipt' => '00000000000001',
+            ],
         ],
     ],
 
@@ -1175,7 +1194,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'expire_by should be at least 15 minutes after the time of issue.',
+                    'description' => 'expire_by should be at least 15 minutes after current time',
                 ],
             ],
             'status_code' => 400,
@@ -1750,6 +1769,46 @@ return [
                 ],
                 'status'           => 'draft',
             ],
+        ],
+    ],
+
+    'testUpdatePartiallyPaidInvoiceExpireBy' => [
+        'request'  => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'expire_by' => 1518220800,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'        => 'inv_1000000invoice',
+                'status'    => 'partially_paid',
+                'expire_by' => 1518220800,
+            ]
+        ],
+    ],
+
+    'testUpdatePartiallyPaidInvoiceInvalidExpireBy' => [
+        'request'   => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'expire_by' => 1517443199,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'expire_by should be at least 15 minutes after current time',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

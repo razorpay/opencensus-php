@@ -60,6 +60,7 @@ final class Route
         'payment_payout'                           => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
         'payment_bank_transfer_fetch'              => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'batch_create'                             => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
+        'batch_create_admin'                       => ['post',     'admin/batches',                                  'AdminController@createAdminBatch'                                  ],
         'batch_validate_file'                      => ['post',     'batches/validate',                               'BatchController@validateFile'                                      ],
         'batch_upload_form_get'                    => ['get',      'batches/upload',                                 'BatchController@renderBatchUploadForm'                             ],
         'batch_upload_form_validate_file'          => ['post',     'batches/upload/validate',                        'BatchController@validateBatchFile'                                 ],
@@ -1007,6 +1008,7 @@ final class Route
         'account_features_add',
         'account_features_get',
         'payment_acknowledge',
+        'bharat_qr_pay_test',
     ];
 
     // Only routes defined in internalApps go here
@@ -1253,7 +1255,6 @@ final class Route
         'tax_group_delete',
         'tax_get_meta_states',
         'tax_get_meta_gst_taxes',
-        'bharat_qr_pay_test',
         'payment_link_get',
         'payment_link_list',
         'payment_link_create',
@@ -1317,6 +1318,7 @@ final class Route
         'feature_delete',
         'feature_delete_entity',
         'feature_get',
+        'batch_create_admin',
         'admin_dummy_account_test',
         'admin_get_file',
         // workflows
@@ -1818,6 +1820,7 @@ final class Route
         'user_fetch_admin'                         => '*',
         'refund_edit_status'                       => '*',
         'batch_create'                             => '*',
+        'batch_create_admin'                       => Permission::ADMIN_BATCH_CREATE,
         'reporting_config_get'                     => '*',
         'reporting_config_list'                    => '*',
         'reporting_config_create'                  => '*',

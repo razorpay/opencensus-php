@@ -2,7 +2,9 @@
 
 namespace RZP\Tests\Functional\Assertion\Validator;
 
+use RZP\Exception;
 use RZP\Models\Payment\Entity;
+use RZP\Models\Payment\Method;
 
 class Payment extends Validator
 {
@@ -14,7 +16,7 @@ class Payment extends Validator
         Entity::BASE_AMOUNT         => 'sometimes|integer',
         Entity::STATUS              => 'required|in:created,authorized,captured,failed,refunded',
         Entity::TWO_FACTOR_AUTH     => 'sometimes|nullable|in:passed,skipped,unknown,failed,not_applicable,unavailable',
-        Entity::METHOD              => 'required|in:card,netbanking,wallet,emi,transfer,bank_transfer,aeps,emandate',
+        Entity::METHOD              => 'required|custom',
         Entity::CAPTURED            => 'required|boolean',
         Entity::AMOUNT_REFUNDED     => 'sometimes',
         Entity::AMOUNT_TRANSFERRED  => 'sometimes',
@@ -48,4 +50,14 @@ class Payment extends Validator
         Entity::EMI_PLAN            => 'sometimes',
         Entity::DISPUTES            => 'sometimes',
     );
+
+    protected function validateMethod($attribute, $value)
+    {
+        $isValid = Method::isValid($value);
+
+        if ($isValid === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('The selected method is invalid.');
+        }
+    }
 }
