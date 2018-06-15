@@ -41,7 +41,7 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
         if (count($nonExistentRelations) > 0)
         {
-            Trace::critical(TraceCode::DB_DATA_INTEGRITY_ERROR, [
+            throw new Exception\RuntimeException('All parent entities must exist before save', [
                 'entity'                 => $this->entity,
                 'non_existent_relations' => array_keys($nonExistentRelations),
             ]);
