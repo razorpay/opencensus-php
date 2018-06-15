@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Order;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
@@ -404,16 +405,45 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::OFFER_ID);
     }
 
-    public function hasOffer()
+    public function hasOffers(): bool
     {
-        return $this->isAttributeNotNull(self::OFFER_ID);
+        return ($this->offers->isNotEmpty() === true);
+    }
+
+    /**
+     * Temporary. Serves to fetch the only offer available via pivot table.
+     * Includes validations to ensure there isn't more than one.
+     * TODO: Remove this when multiple offers are expected.
+     *
+     * @return Offer\Entity
+     */
+    public function getOffer()
+    {
+        $offers = $this->offers;
+
+        // Multiple offers not permitted yet
+        if ($offers->count() > 1)
+        {
+            throw new Exception\LogicException('Multiple offers not supported');
+        }
+
+        return $offers->first();
     }
 
     protected function setPublicOfferIdAttribute(array & $array)
     {
-        $offerId = $this->getAttribute(self::OFFER_ID);
-
-        $array[self::OFFER_ID] = Offer\Entity::getSignedIdOrNull($offerId);
+        if ($this->hasOffers() === true)
+        {
+            $array[self::OFFER_ID] = $this->getOffer()->getPublicId();
+        }
+        else
+        {
+            //
+            // We are already sending offer_id=null for all order responses
+            // (even when no offer is associated), so this cannot be removed for now.
+            //
+            $array[self::OFFER_ID] = null;
+        }
     }
 
     protected function setPublicDiscountAttribute(array & $array)

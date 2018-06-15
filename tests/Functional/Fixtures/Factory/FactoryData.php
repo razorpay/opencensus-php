@@ -604,6 +604,9 @@ final class FactoryData
             'terms'     => 'Terms and Condition'
         ]);
 
+        $factory(\RZP\Models\Offer\EntityOffer\Entity::class, [
+        ]);
+
         $factory(\RZP\Models\Plan\Entity::class, [
             'id'                => '1000000000plan',
             'merchant_id'       => '10000000000000',
