@@ -60,6 +60,7 @@ final class Route
         'payment_payout'                           => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
         'payment_bank_transfer_fetch'              => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'batch_create'                             => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
+        'batch_create_admin'                       => ['post',     'admin/batches',                                  'AdminController@createAdminBatch'                                  ],
         'batch_validate_file'                      => ['post',     'batches/validate',                               'BatchController@validateFile'                                      ],
         'batch_upload_form_get'                    => ['get',      'batches/upload',                                 'BatchController@renderBatchUploadForm'                             ],
         'batch_upload_form_validate_file'          => ['post',     'batches/upload/validate',                        'BatchController@validateBatchFile'                                 ],
@@ -1317,6 +1318,7 @@ final class Route
         'feature_delete',
         'feature_delete_entity',
         'feature_get',
+        'batch_create_admin',
         'admin_dummy_account_test',
         'admin_get_file',
         // workflows
@@ -1818,6 +1820,7 @@ final class Route
         'user_fetch_admin'                         => '*',
         'refund_edit_status'                       => '*',
         'batch_create'                             => '*',
+        'batch_create_admin'                       => Permission::ADMIN_BATCH_CREATE,
         'reporting_config_get'                     => '*',
         'reporting_config_list'                    => '*',
         'reporting_config_create'                  => '*',

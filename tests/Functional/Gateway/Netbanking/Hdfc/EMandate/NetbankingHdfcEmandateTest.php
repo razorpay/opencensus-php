@@ -672,7 +672,7 @@ class NetbankingHdfcEmandateTest extends TestCase
     protected function makeBatchRequest($content, $file)
     {
         $request = [
-            'url' => '/batches',
+            'url' => '/admin/batches',
             'method' => 'POST',
             'content' => $content,
             'files' => [
@@ -680,7 +680,7 @@ class NetbankingHdfcEmandateTest extends TestCase
             ]
         ];
 
-        $this->ba->proxyAuth('rzp_test_100000Razorpay');
+        $this->ba->adminAuth();
 
         return $this->makeRequestAndGetContent($request);
     }
