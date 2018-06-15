@@ -252,7 +252,7 @@ export default class EntityList extends Component {
               <span>
                 {value.split(' ').map(val => (
                   <Link
-                    class="link"
+                    class="link shield-rules"
                     target="_blank"
                     to={`/entity/shield.rules/${
                       this.collection.extraFields.mode
@@ -284,7 +284,7 @@ export default class EntityList extends Component {
     }
 
     return (
-      <div class="list-container">
+      <div class="list-container entities-list">
         <div class="box entity-container">
           <header>Entities</header>
           <Form
