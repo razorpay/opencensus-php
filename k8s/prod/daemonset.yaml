@@ -74,7 +74,7 @@ spec:
       imagePullSecrets:
       - name: registry
       nodeSelector:
-        node-role.kubernetes.io/node-api: ""
+        node-role.kubernetes.io/kluster-api-worker-node: ""
       restartPolicy: Always
       volumes:
       - name: trace
