@@ -2743,4 +2743,12 @@ class Entity extends Base\PublicEntity
         $query->where(Entity::RECEIVER_ID, '=', $entity->getId())
               ->where(Entity::RECEIVER_TYPE, '=', $entity->getEntity());
     }
+
+    public function isCorporateNetbanking()
+    {
+        return (
+            ($this->isNetbanking() === true) and
+            (Netbanking::isCorporateBank($this->getBank()) === true)
+        );
+    }
 }

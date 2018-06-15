@@ -1487,7 +1487,8 @@ class Terminal extends Base
             'gateway'                   => 'netbanking_bob',
             'gateway_merchant_id'       => 'netbanking_bob_merchant_id',
             'netbanking'                => 1,
-            'shared'                    => 1
+            'shared'                    => 1,
+            'corporate'                 => 2,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
