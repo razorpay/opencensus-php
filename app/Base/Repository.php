@@ -252,7 +252,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         if ($expectedCount !== $actualCount)
         {
-            $this->trace->critical(TraceCode::DB_PIVOT_TABLE_ASSOCIATION_ERROR, [
+            throw new Exception\RuntimeException('entity ids being attached do not exist', [
                 'expected_count' => $expectedCount,
                 'actual_count'   => $actualCount,
                 'ids'            => $parsedIds
