@@ -179,6 +179,7 @@ class Name
     const ASSIGN_MERCHANT_ACTIVATION_REVIEWER = 'assign_merchant_activation_reviewer';
     const DB_META_QUERY                       = 'db_meta_query';
     const OAUTH_SYNC_MERCHANT_MAP             = 'oauth_sync_merchant_map';
+    const ADMIN_BATCH_CREATE                  = 'admin_batch_create';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,
