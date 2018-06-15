@@ -141,7 +141,7 @@ pipeline:
         exclude: [push]
         include: [deployment]
   deploy-stage-echo:
-    image: razorpay/drone-kubernetes:daemonsets
+    image: razorpay/drone-kubernetes
     pull: true
     secrets:
       - docker_username
