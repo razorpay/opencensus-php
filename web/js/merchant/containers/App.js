@@ -33,7 +33,7 @@ import { resizeWindow } from 'merchant/modules/app';
   state => ({
     ...state.session,
     config: state.config,
-    isMobileResolution: state.app.isMobileResolution,
+    windowWidth: state.app.windowWidth,
   }),
   {
     ...ModalActions,
@@ -356,7 +356,7 @@ export default class App extends Component {
           showGSTModal={this.showGSTModal}
           onSwitchMode={this.switchMode}
           onSwitchMerchant={this.switchMerchant}
-          showMobileNav={this.props.isMobileResolution}
+          showMobileNav={this.props.windowWidth < 950}
         />
         <Sidebar
           user={user}

@@ -26,6 +26,7 @@ const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 @connect(
   state => ({
     showMobileMenu: state.app.showMobileMenu,
+    currentReportList: state.reports.currentReportList,
   }),
   { toggleMobileMenu }
 )
@@ -35,17 +36,8 @@ export default class Sidebar extends Component {
 
     //reference store data to update UI of sidebar navs
     this.state = {
-      isReportsPending: false,
+      isReportsPending: areReportsStillDownloading(props.currentReportList),
     };
-
-    store.subscribe(() => {
-      //update state when report list store changes
-      const reportList = store.getState().reports.currentReportList;
-
-      this.setState({
-        isReportsPending: areReportsStillDownloading(reportList),
-      });
-    });
 
     this.onSidebarBannerClick = this.onSidebarBannerClick.bind(this);
     this.hideSidebar = this.hideSidebar.bind(this);
@@ -65,6 +57,14 @@ export default class Sidebar extends Component {
 
   componentWillReceiveProps(nextProps) {
     this.initializeRoutes(nextProps.location);
+
+    if (this.props.currentReportList !== nextProps.currentReportList) {
+      this.setState({
+        isReportsPending: areReportsStillDownloading(
+          nextProps.currentReportList
+        ),
+      });
+    }
   }
 
   initializeRoutes(location) {
@@ -201,37 +201,37 @@ export default class Sidebar extends Component {
 
                   <div class="divider" />
 
-                <MainNavLink
-                  label="Invoices"
-                  icon="i i-notes text-warning"
-                  to={routes.invoices}
-                  featureEnabled="Invoice"
-                  apiFeatureEnabled="subscriptions"
-                  notMyRole="sellerapp"
-                />
-                <MainNavLink
-                  label="Payment Links"
-                  icon="i i-link text-primary"
-                  to={routes.paymentlinks}
-                />
-                <MainNavLink
-                  label="Route"
-                  icon="i i-store text-success"
-                  to={routes.marketplace}
-                  notMyRole="sellerapp support"
-                />
-                <MainNavLink
-                  label="Subscriptions"
-                  icon="i i-refresh text-info"
-                  notMyRole="sellerapp support"
-                  to={routes.subscriptions}
-                />
-                <MainNavLink
-                  label="Smart Collect"
-                  icon="i i-account-balance text-danger"
-                  to="/virtualaccounts"
-                  notMyRole="sellerapp support"
-                />
+                  <MainNavLink
+                    label="Invoices"
+                    icon="i i-notes text-warning"
+                    to={routes.invoices}
+                    featureEnabled="Invoice"
+                    apiFeatureEnabled="subscriptions"
+                    notMyRole="sellerapp"
+                  />
+                  <MainNavLink
+                    label="Payment Links"
+                    icon="i i-link text-primary"
+                    to={routes.paymentlinks}
+                  />
+                  <MainNavLink
+                    label="Route"
+                    icon="i i-store text-success"
+                    to={routes.marketplace}
+                    notMyRole="sellerapp support"
+                  />
+                  <MainNavLink
+                    label="Subscriptions"
+                    icon="i i-refresh text-info"
+                    notMyRole="sellerapp support"
+                    to={routes.subscriptions}
+                  />
+                  <MainNavLink
+                    label="Smart Collect"
+                    icon="i i-account-balance text-danger"
+                    to="/virtualaccounts"
+                    notMyRole="sellerapp support"
+                  />
 
                   <MainNavLink
                     label="Customers"

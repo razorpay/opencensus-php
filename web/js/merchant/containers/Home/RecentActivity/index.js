@@ -19,15 +19,7 @@ import PaymentsList from 'merchant/components/Payments/PaymentsList';
 
 import { trackTabClick, trackEntityClick, trackGoToLinks } from './ga';
 
-const shouldDisplayCompact = (
-  isMobileResolution,
-  isTabletResolution,
-  windowWidth
-) => {
-  if (!isMobileResolution && !isTabletResolution) {
-    return windowWidth < 1186;
-  }
-
+const shouldDisplayCompact = windowWidth => {
   return windowWidth < 480;
 };
 
@@ -71,7 +63,6 @@ const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
       payments: state.payments,
       refunds: state.refunds,
       settlements: state.settlements,
-      isMobileResolution: state.app.isMobileResolution,
       windowWidth: state.app.windowWidth,
     };
   },
@@ -87,11 +78,7 @@ export default class RecentActivity extends Component {
 
     this.state = {
       selectedTab: tabs[0],
-      displayCompact: shouldDisplayCompact(
-        props.isMobileResolution,
-        props.isTabletResolution,
-        props.windowWidth
-      ),
+      displayCompact: shouldDisplayCompact(props.windowWidth),
     };
 
     this.handleTabClick = ::this.handleTabClick;
@@ -108,11 +95,7 @@ export default class RecentActivity extends Component {
 
   handleResize(props = this.props) {
     this.setState({
-      displayCompact: shouldDisplayCompact(
-        props.isMobileResolution,
-        props.isTabletResolution,
-        props.windowWidth
-      ),
+      displayCompact: shouldDisplayCompact(props.windowWidth),
     });
   }
 
@@ -132,11 +115,7 @@ export default class RecentActivity extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (
-      this.props.windowWidth !== nextProps.windowWidth ||
-      this.props.isTabletResolution !== nextProps.isTabletResolution ||
-      this.props.isMobileResolution !== nextProps.isMobileResolution
-    ) {
+    if (this.props.windowWidth !== nextProps.windowWidth) {
       this.handleResize(nextProps);
     }
   }
