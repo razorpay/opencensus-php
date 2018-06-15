@@ -19,7 +19,6 @@ use RZP\Reconciliator\FirstData\PaymentReconciliate as FDPaymentRecon;
 use RZP\Reconciliator\Hitachi\RefundReconciliate as HitachiRefundRecon;
 use RZP\Reconciliator\BillDesk\RefundReconciliate as BilldeskRefundRecon;
 use RZP\Reconciliator\Hitachi\PaymentReconciliate as HitachiPaymentRecon;
-
 use RZP\Reconciliator\VirtualAccYesBank\PaymentReconciliate as VirtualAccYesBank;
 
 class ReconciliationFileTest extends TestCase
@@ -716,6 +715,8 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
 
         $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testHitachiReconRefundFile()
@@ -740,6 +741,8 @@ class ReconciliationFileTest extends TestCase
         $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
 
         $this->assertEquals($entries[0][HitachiRefundRecon::COLUMN_ARN], $updatedRefund1['arn']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testHdfcFssOnusTransactionRecon()
