@@ -388,26 +388,28 @@ class Check extends Field {
       <div class={inputClass(this)}>
         {label && <Label text={label} />}
         <div class="Input-content">
-          <label class="Input-elWrapper">
-            <input
-              {...props}
-              defaultChecked={this.checked}
-              class="Input-el"
-              type="checkbox"
-              onChange={this.toggle}
-              disabled={this.props.disabled}
-            />
-            {this.props.checkboxMaskLabel ? (
-              <span class="Input-checkbox--label btn-link no-padding">
-                {this.props.checkboxMaskLabel[+this.checked]}
-              </span>
-            ) : (
-              <React.Fragment>
-                <div className="Input-checkbox" />
-                <Label class="Input-inlineLabel" text={fieldLabel} />
-              </React.Fragment>
-            )}
-          </label>
+          <div class="Input-elWrapper">
+            <label>
+              <input
+                {...props}
+                defaultChecked={this.checked}
+                class="Input-el"
+                type="checkbox"
+                onChange={this.toggle}
+                disabled={this.props.disabled}
+              />
+              {this.props.checkboxMaskLabel ? (
+                <span class="Input-checkbox--label btn-link no-padding">
+                  {this.props.checkboxMaskLabel[+this.checked]}
+                </span>
+              ) : (
+                <React.Fragment>
+                  <div className="Input-checkbox" />
+                  <Label class="Input-inlineLabel" text={fieldLabel} />
+                </React.Fragment>
+              )}
+            </label>
+          </div>
           <Description text={description} />
         </div>
       </div>

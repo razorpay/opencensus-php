@@ -54,7 +54,7 @@ export default ({ user }) => {
       )}
 
       <DetailRow
-        label="Activation Status"
+        label="Activation Form Status"
         value={() =>
           user.activation_status ? (
             <ActivationStatusLabel status={user.activation_status} />
