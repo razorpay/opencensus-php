@@ -16,8 +16,6 @@ const analytics = action => {
   });
 };
 
-// const showSidebarClass = ' show-mobile-menu';
-
 @connect(
   state => ({
     activePageName: state.app.activePageName,
