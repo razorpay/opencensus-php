@@ -20,7 +20,9 @@ return [
     'testRefundEditStatus' => [
         'request'  => [
             'content' => [
-                'status' => 'initiated',
+                'status'    => 'initiated',
+                'reference1' => 'abcd'
+
             ],
             'method'  => 'PUT',
         ],
@@ -28,6 +30,62 @@ return [
             'content' => [
                 'status' => 'initiated',
             ],
+        ],
+    ],
+
+    'testRefundEditStatustoFailedFromInitiated' => [
+        'request'  => [
+            'content' => [
+                'status'    => 'failed',
+                'reference1' => 'abcdFailed'
+
+            ],
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'failed',
+            ],
+        ],
+    ],
+
+    'testRefundEditStatustoInitiatedFromFailed' => [
+        'request'  => [
+            'content' => [
+                'status'    => 'initiated',
+                'reference1' => 'abcdInitiated'
+
+            ],
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'initiated',
+            ],
+        ],
+    ],
+
+    'testRefundEditStatusFailtoProcessedFromFailed' => [
+        'request'  => [
+            'content' => [
+                'status'    => 'processed',
+                'reference1' => 'abcd'
+
+            ],
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected status is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
