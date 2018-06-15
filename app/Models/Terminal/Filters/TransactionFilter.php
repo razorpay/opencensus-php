@@ -336,14 +336,14 @@ class TransactionFilter extends Terminal\Filter
         {
             // If terminal supports both corporate and retail,
             // we can directly pass this filter
-            if ($terminal->isBankingTypeBoth())
+            if ($terminal->isBankingTypeBoth() === true)
             {
                 return true;
             }
 
             $bank = $payment->getBank();
 
-            $terminalBankingTypes = $terminal->banking_types;
+            $terminalBankingTypes = $terminal->getBankingTypes();
 
             // For corporate bank, the terminal should support corporate type
             if ((Netbanking::isCorporateBank($bank) === true) and

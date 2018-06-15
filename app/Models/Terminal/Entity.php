@@ -344,6 +344,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MODE);
     }
 
+    public function getBankingTypes()
+    {
+        return $this->getAttribute(self::BANKING_TYPES);
+    }
+
     // ---------------------- END GETTERS ----------------------
 
     public function isEnabled()
