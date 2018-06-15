@@ -1028,6 +1028,16 @@
             function initAnalytics() {
                 analytics.init(['ga', 'hotjar'], window.location.hostname.indexOf('razorpay.com') < 0);
                 analytics.track('ga', 'pageview');
+
+                setTimeout(function () {
+                    if (typeof window.hj === 'function') {
+                        @if ($data['invoice']['type'] !== 'invoice')
+                            window.hj('tagRecording', ['pl_hosted']);
+                        @else
+                            window.hj('tagRecording', ['invoice_hosted']);
+                        @endif
+                    }
+                }, 100);
             }
         </script>
         <script src="https://cdn.razorpay.com/static/analytics/bundle.js" onload="initAnalytics()" async></script>
