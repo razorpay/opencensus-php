@@ -25,6 +25,8 @@ class Core extends Base\Core
 
         $terminal = (new Entity)->build($input);
 
+        $terminal->merchant()->associate($merchant);
+
         $this->validateExistingTerminal($terminal);
 
         $this->repo->saveOrFail($terminal);

@@ -335,6 +335,7 @@ class ErrorCode
     const BAD_REQUEST_ORDER_EXISTS                                                  = 'BAD_REQUEST_ORDER_EXISTS';
     const BAD_REQUEST_ORDER_DOES_NOT_EXIST                                          = 'BAD_REQUEST_ORDER_DOES_NOT_EXIST';
     const BAD_REQUEST_ORDER_INVALID_OFFER                                           = 'BAD_REQUEST_ORDER_INVALID_OFFER';
+    const BAD_REQUEST_ORDER_MULTIPLE_OFFERS                                         = 'BAD_REQUEST_ORDER_MULTIPLE_OFFERS';
     const BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH                                 = 'BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH';
     const BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE                     = 'BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE';
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                               = 'BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH';
@@ -669,7 +670,6 @@ class ErrorCode
     const BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE                                  = 'BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE';
     const BAD_REQUEST_INVALID_MAILGUN_SIGNATURE                                     = 'BAD_REQUEST_INVALID_MAILGUN_SIGNATURE';
 
-    const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                     = 'BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT';
     const BAD_REQUEST_INVOICE_EXPIRE_FAILED                                         = 'BAD_REQUEST_INVOICE_EXPIRE_FAILED';
     const BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER                                   = 'BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER';
     const BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY                             = 'BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY';

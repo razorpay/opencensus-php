@@ -29,7 +29,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function create(array $input)
+    public function create(array $input, Merchant\Entity $merchant)
     {
         $submissions = $input[Constants::SUBMISSIONS] ?? [];
 
@@ -40,6 +40,8 @@ class Core extends Base\Core
         $request->generateId();
 
         $request->build($input);
+
+        $request->merchant()->associate($merchant);
 
         $this->repo->transactionOnLiveAndTest(function() use($request, $input, $submissions)
         {
@@ -364,7 +366,7 @@ class Core extends Base\Core
 
             $input[Entity::STATUS]      = Status::UNDER_REVIEW;
 
-            $request = $this->create($input);
+            $request = $this->create($input, $merchant);
         }
 
         return $request;

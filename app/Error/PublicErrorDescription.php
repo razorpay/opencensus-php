@@ -321,6 +321,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ORDER_DOES_NOT_EXIST                                      = 'Order does not exist.';
     const BAD_REQUEST_ORDER_EXISTS                                              = 'This order already exists in the gateway database.';
     const BAD_REQUEST_ORDER_INVALID_OFFER                                       = 'Offer applied not valid for order';
+    const BAD_REQUEST_ORDER_MULTIPLE_OFFERS                                     = 'Multiple offers cannot be applied on a single order.';
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                 = 'Error occurred because of invalid data';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                 = 'Hash Data is invalid.';
     const BAD_REQUEST_BATCH_UPLOAD_INVALID_TOKEN                                = 'Token expired or invalid';
@@ -476,7 +477,6 @@ class PublicErrorDescription
     const BAD_REQUEST_BANK_REQUIRED_WITH_ACCOUNT_NUMBER                         = 'Bank code should be provided in input if account number is sent';
 
     const BAD_REQUEST_PASSWORD_EXPIRED                                          = 'Account password has expired. Please contact administrator';
-    const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                 = 'Duplicate value for receipt in invoice';
     const BAD_REQUEST_INVOICE_EXPIRE_FAILED                                     = 'Invoice expiry failed as payment exists or is in progress for this invoice.';
     const BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER                               = 'Invoices disabled because fee bearer is customer';
     const BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY                         = 'Some/all payment links of given batch has been issued already';

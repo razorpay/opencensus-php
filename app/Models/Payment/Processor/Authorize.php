@@ -73,8 +73,6 @@ trait Authorize
 
         $this->runPaymentInputValidations($payment, $input);
 
-        $this->validateOfferIfApplicable($payment);
-
         $ret = $this->hitGatewayIfRequired($payment, $input, $gatewayInput);
 
         if ($ret !== null)
@@ -559,6 +557,8 @@ trait Authorize
         // otherwise can cause issues with international pricing rule being not available when
         // international is not enabled.
         $this->verifyFeesLessThanAmount($payment);
+
+        $this->validateOfferIfApplicable($payment);
     }
 
     protected function validateSubscriptionInputIfPresent(Payment\Entity $payment, $input)
@@ -2807,7 +2807,7 @@ trait Authorize
             return;
         }
 
-        $appliedOffer = $order->offer;
+        $appliedOffer = $order->getOffer();
 
         $discountInput = [
             Discount\Entity::AMOUNT => $appliedOffer->getDiscount($order->getAmount()),
@@ -3412,7 +3412,7 @@ trait Authorize
         // enach rbl again. This will ensure idempotency is maintained.
         //
         if (($oldRecurringStatus !== $currentRecurringStatus) and
-            (in_array($currentRecurringStatus, Token\RecurringStatus::$webhookStatuses, true) === true))
+            (Token\RecurringStatus::isWebhookStatus($currentRecurringStatus) === true))
         {
             $event = 'api.token.' . $currentRecurringStatus;
 
@@ -3479,7 +3479,7 @@ trait Authorize
                 $log[TerminalAnalytics\Entity::TERMINAL_STATUS_MSG] = $e->getError()->getDescription();
             }
 
-            (new TerminalAnalytics\Core)->create($log);
+            (new TerminalAnalytics\Core)->create($log, $payment);
 
             $tStatus = $log[TerminalAnalytics\Entity::TERMINAL_STATUS];
 
