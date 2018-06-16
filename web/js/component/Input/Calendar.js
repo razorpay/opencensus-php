@@ -251,12 +251,12 @@ export class TimePicker extends React.Component {
               onFocus={this.focus}
               onBlur={this.blur}
             />
+            {this.props.addonAfter && (
+              <span class="Input-addons  Input-addons--after">
+                {this.props.addonAfter}
+              </span>
+            )}
           </div>
-          {this.props.addonAfter && (
-            <span class="Input-addons  Input-addons--after">
-              {this.props.addonAfter}
-            </span>
-          )}
         </div>
       </div>
     );
