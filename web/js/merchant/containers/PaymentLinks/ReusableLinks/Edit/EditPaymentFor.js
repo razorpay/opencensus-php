@@ -88,7 +88,7 @@ export default class EditDescription extends React.Component {
               onClick={() => {
                 this.props.trackerFn(this.props.entityId, 'Save PaymentFor');
 
-                this.props
+                return this.props
                   .editFn({
                     title: this.state.title,
                     description: this.state.description,
@@ -99,7 +99,8 @@ export default class EditDescription extends React.Component {
                     }
                   });
               }}
-              pendingState="Saving"
+              showLoader={false}
+              pendingState="Saving..."
             >
               Save
             </AsyncBtn.Primary>

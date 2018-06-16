@@ -101,7 +101,7 @@ export default class EditTimesPayable extends React.Component {
               onClick={() => {
                 this.props.trackerFn(this.props.entityId, 'Save TimesPayable');
 
-                this.props
+                return this.props
                   .editFn({
                     times_payable:
                       this.state.hasNoLimit == '1'
@@ -114,7 +114,8 @@ export default class EditTimesPayable extends React.Component {
                     }
                   });
               }}
-              pendingState="Saving"
+              showLoader={false}
+              pendingState="Saving..."
             >
               Save
             </AsyncBtn.Primary>

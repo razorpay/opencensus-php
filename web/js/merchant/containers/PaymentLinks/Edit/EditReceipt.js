@@ -66,7 +66,7 @@ export default class EditReceipt extends React.Component {
               onClick={() => {
                 this.props.trackerFn(this.props.entityId, 'Save Receipt');
 
-                this.props
+                return this.props
                   .editFn({
                     receipt: this.state.receipt,
                   })
@@ -76,7 +76,8 @@ export default class EditReceipt extends React.Component {
                     }
                   });
               }}
-              pendingState="Saving"
+              showLoader={false}
+              pendingState="Saving..."
             >
               Save
             </AsyncBtn.Primary>

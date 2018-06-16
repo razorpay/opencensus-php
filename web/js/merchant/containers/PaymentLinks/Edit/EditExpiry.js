@@ -124,7 +124,7 @@ export default class EditExpiry extends React.Component {
               class="Button--small"
               style={{ marginRight: 0, marginLeft: 16 }}
               onClick={() => {
-                this.props
+                return this.props
                   .editFn({
                     expire_by:
                       this.state.hasNoExpiry == '1'
@@ -139,7 +139,8 @@ export default class EditExpiry extends React.Component {
 
                 this.props.trackerFn(this.props.entityId, 'Save Expiry');
               }}
-              pendingState="Saving"
+              showLoader={false}
+              pendingState="Saving..."
             >
               Save
             </AsyncBtn.Primary>

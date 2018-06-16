@@ -78,7 +78,7 @@ export default class EditDescription extends React.Component {
                   'Save Description'
                 );
 
-                this.props
+                return this.props
                   .editFn({
                     description: this.state.description,
                   })
@@ -88,7 +88,8 @@ export default class EditDescription extends React.Component {
                     }
                   });
               }}
-              pendingState="Saving"
+              showLoader={false}
+              pendingState="Saving..."
             >
               Save
             </AsyncBtn.Primary>
