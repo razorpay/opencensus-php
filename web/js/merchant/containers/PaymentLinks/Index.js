@@ -22,19 +22,15 @@ export default class PaymentLinksContainer extends Component {
   render() {
     const { user } = this.props;
 
-    const isReusableLinksShown = this.props.user.isReusableLinksShown;
-
     return (
       <tabbed-container>
         <header id="link-header">
           <NavLink exact to="/paymentlinks">
             Payment Links
           </NavLink>
-          {isReusableLinksShown && (
-            <NavLink exact to="/paymentlinks/reusable">
-              Reusable Links
-            </NavLink>
-          )}
+          <NavLink exact to="/paymentlinks/reusable">
+            Reusable Links
+          </NavLink>
           <ShowWhen myRole="owner manager operations admin">
             <NavLink exact to="/paymentlinks/batchuploads">
               Batch Uploads
@@ -51,12 +47,10 @@ export default class PaymentLinksContainer extends Component {
               component={BatchUploadList}
             />
 
-            {isReusableLinksShown && (
-              <Route
-                path="/paymentlinks/reusable"
-                component={ReusableLinksList}
-              />
-            )}
+            <Route
+              path="/paymentlinks/reusable"
+              component={ReusableLinksList}
+            />
             <Route path="/paymentlinks" component={PaymentLinksList} />
           </Switch>
         </content>

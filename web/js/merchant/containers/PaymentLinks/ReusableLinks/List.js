@@ -8,7 +8,6 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import ListContainer from 'merchant/containers/ListContainer';
 import ListFilter from 'merchant/components/ListFilter';
 import { fetchReusableLinksList } from 'merchant/containers/PaymentLinks/ReusableLinks/model';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Amount from 'rzp/ui/Amount';
@@ -82,9 +81,7 @@ export default class ReusableLinksContainer extends ListContainer {
     const { loading } = this.state;
     const { reusableLinks } = this.props;
 
-    const showEarlyAccessForm = this.props.user.isPaymentLinksV2Enabled;
-
-    if (showEarlyAccessForm) {
+    if (false) {
       return (
         <div class="content-wrapper">
           <EarlyAccessRPL />
@@ -94,8 +91,6 @@ export default class ReusableLinksContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
-        <TestModeBanner />
-
         <HeaderAction>
           <ShowWhen notMyRole="support">
             <div class="btn-toolbar pull-right">
