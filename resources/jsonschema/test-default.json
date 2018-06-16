@@ -12,10 +12,10 @@
   ],
   "properties": {
     "customer_id": {
-      "type": "number",
+      "type": "integer",
       "title": "Customer Code/ID",
-      "minLength": 7,
-      "maxLength": 9
+      "minimum": 1000000,
+      "maximum": 999999999
     },
     "invoice_number": {
       "type": "string",
