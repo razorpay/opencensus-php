@@ -24,26 +24,20 @@ export const saveInvoice = (params, headers = {}) => {
   };
 };
 
-/* Hook to update newly created payment link in redux list*/
-export const savePLInReduxList = newInvoice => {
-  return {
-    type: `${INVOICE_CREATE}::SUCCESS`,
-    payload: new Invoice(newInvoice.data),
-  };
-};
+/* Hook to update newly-created/edited payment link in redux list*/
+export const updatePLInReduxList = (newInvoice, isNew) => {
+  const invoice = new Invoice(newInvoice.data).deserialize();
 
-/* Hook to update edited invoice in redux list */
-export const editPLInReduxList = invoice => {
   return {
-    type: `${INVOICE_EDIT}::SUCCESS`,
-    payload: new Invoice(invoice.data).deserialize(),
+    type: isNew ? `${INVOICE_CREATE}::SUCCESS` : `${INVOICE_EDIT}::SUCCESS`,
+    payload: invoice,
   };
 };
 
 /* Hook to update newly created reusable link in redux list */
-export const saveRPLInReduxList = newLink => {
+export const updateRPLInReduxList = (newLink, isNew) => {
   return {
-    type: 'RPL_CREATE',
+    type: isNew ? 'RPL_CREATE' : 'RPL_EDIT',
     payload: newLink,
   };
 };
@@ -98,6 +92,12 @@ export default function(state = initialState, action) {
         'reusableLinks',
         unshift(state.reusableLinks, action.payload)
       );
+
+    case 'RPL_EDIT':
+      let entityIndex = state.reusableLinks.findIndex(
+        entity => entity.id === action.payload.id
+      );
+      return set(state, `reusableLinks.${entityIndex}`, action.payload);
 
     case 'RPL_FETCH':
       return merge(state, {

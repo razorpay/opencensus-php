@@ -7,13 +7,13 @@ import * as NotificationsActions from 'rzp/modules/notifications';
 import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail';
 import IssueConfirmModal from 'merchant/containers/Invoices/IssueConfirmModal';
 import { editPaymentLink } from 'merchant/containers/PaymentLinks/Links/model';
-import { editPLInReduxList } from 'merchant/modules/invoices/list';
+import { updatePLInReduxList } from 'merchant/modules/invoices/list';
 
 @connect(state => ({ ...state.invoice, ...state.session }), {
   ...InvoiceActions,
   ...ModalActions,
   ...NotificationsActions,
-  editPLInReduxList,
+  updatePLInReduxList,
 })
 export default class InvoiceDetailContainer extends Component {
   static contextTypes = {
@@ -179,7 +179,7 @@ export default class InvoiceDetailContainer extends Component {
     return editPaymentLink(this.props.invoice.id, data)
       .then(resp => {
         if (resp.data) {
-          this.props.editPLInReduxList(resp);
+          this.props.updatePLInReduxList(resp, false);
 
           this.props.showNotification({
             type: 'success',

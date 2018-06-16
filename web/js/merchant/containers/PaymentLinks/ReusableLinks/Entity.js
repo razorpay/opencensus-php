@@ -1,13 +1,15 @@
-import React, { Component } from 'react';
 import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
+
+import { updateRPLInReduxList } from 'merchant/modules/invoices/list';
+
 import {
+  editReusableLink,
   fetchReusableLinksEntity,
   fetchReusableLinkPaymentsList,
 } from './model';
 import { ReusableLinksStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
@@ -17,11 +19,17 @@ import GroupDetailsTable from 'rzp/ui/GroupDetailsTable';
 
 import { showNotification } from 'rzp/modules/notifications';
 
-@connect(null, { showNotification })
-export default class ReusableLinksEntity extends Component {
+import { trackDetailViewEdits } from '../Links/ga';
+
+import EditPaymentFor from './Edit/EditPaymentFor';
+import EditTimesPayable from './Edit/EditTimesPayable';
+
+import { EditExpiry, EditNotes, EditReceipt } from '../Edit/index';
+
+@connect(null, { updateRPLInReduxList, showNotification })
+export default class ReusableLinksEntity extends React.Component {
   state = {
     reusableLink: {},
-    loading: true,
     reusableLinkPayments: [],
     paymentsListLoading: true,
   };
@@ -39,6 +47,8 @@ export default class ReusableLinksEntity extends Component {
   }
 
   fetchEntity(id) {
+    this.setState({ loading: true });
+
     return fetchReusableLinksEntity(id)
       .then(resp => {
         if (resp) {
@@ -105,6 +115,57 @@ export default class ReusableLinksEntity extends Component {
     });
   };
 
+  editReusableLink = () => {
+    const self = this;
+
+    return function(data) {
+      return editReusableLink(self.state.reusableLink.id, data)
+        .then(resp => {
+          if (resp.data) {
+            self.props.updateRPLInReduxList(resp.data, false);
+
+            self.props.showNotification({
+              type: 'success',
+              message: `${self.state.reusableLink.id} successfully Updated`,
+            });
+
+            self.setState({
+              reusableLink: resp.data,
+            });
+
+            return resp;
+          } else {
+            throw 'Some network issue occured';
+          }
+        })
+        .catch(({ errors }) => {
+          let err = errors;
+
+          if (Array.isArray(err)) {
+            err = [];
+
+            errors.length &&
+              errors.forEach(e => {
+                if (e && e.toLowerCase().indexOf('status code') === -1) {
+                  err.push(e);
+                }
+              });
+
+            err = err.length ? err : null;
+          }
+
+          if (!err) {
+            err = `Some Network error occured`;
+          }
+
+          self.props.showNotification({
+            type: 'error',
+            message: err,
+          });
+        });
+    };
+  };
+
   render() {
     let {
       reusableLink,
@@ -112,7 +173,10 @@ export default class ReusableLinksEntity extends Component {
       reusableLinkPayments,
       paymentsListLoading,
     } = this.state;
-    let isExpired = reusableLink.status_reason === 'expired';
+
+    let status = reusableLink.status;
+    const isActive = status === 'active';
+    const isExpired = status === 'expired';
 
     return (
       <div class="content-wrapper content-sm txn-details Entity--reusable">
@@ -165,21 +229,51 @@ export default class ReusableLinksEntity extends Component {
                   <EntityDetailRow
                     label="Payment For"
                     pairClass="description"
-                    value={() => (
-                      <div>
-                        {reusableLink.title}
-                        {reusableLink.description && (
-                          <div class="label--secondary">
-                            {reusableLink.description}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    value={
+                      isActive
+                        ? () => (
+                            <EditPaymentFor
+                              value={{
+                                title: reusableLink.title,
+                                description: reusableLink.description,
+                              }}
+                              entityId={reusableLink.id}
+                              editFn={this.editReusableLink()}
+                              trackerFn={trackDetailViewEdits}
+                            />
+                          )
+                        : () => (
+                            <div>
+                              {reusableLink.title}
+                              {reusableLink.description && (
+                                <div
+                                  class="label--secondary"
+                                  style={{ whiteSpace: 'pre' }}
+                                >
+                                  {reusableLink.description}
+                                </div>
+                              )}
+                            </div>
+                          )
+                    }
                   />
+
                   <EntityDetailRow
                     label="Receipt"
-                    value={reusableLink.receipt}
+                    value={
+                      isActive
+                        ? () => (
+                            <EditReceipt
+                              value={reusableLink.receipt}
+                              entityId={reusableLink.id}
+                              editFn={this.editReusableLink()}
+                              trackerFn={trackDetailViewEdits}
+                            />
+                          )
+                        : reusableLink.receipt || '--'
+                    }
                   />
+
                   <EntityDetailRow label="Created by">
                     {!!reusableLink.user ? (
                       <Definition>
@@ -195,22 +289,58 @@ export default class ReusableLinksEntity extends Component {
                     label="Created At"
                     value={() => <Time value={reusableLink.created_at} />}
                   />
+
                   <EntityDetailRow
-                    label={isExpired ? 'Expired on' : 'Expires on'}
-                    value={() => (
-                      <Time
-                        value={reusableLink.expire_by}
-                        format="DD MMM YYYY, hh:mm a"
-                      />
-                    )}
+                    label={isExpired ? 'Expired On' : 'Expires On'}
+                    value={
+                      !isExpired
+                        ? () => (
+                            <EditExpiry
+                              value={reusableLink.expire_by}
+                              editFn={this.editReusableLink()}
+                              entityId={reusableLink.id}
+                              trackerFn={trackDetailViewEdits}
+                            />
+                          )
+                        : () => (
+                            <Time
+                              value={reusableLink.expire_by}
+                              format="DD MMM YYYY, hh:mm a"
+                            />
+                          )
+                    }
                   />
+
                   <EntityDetailRow
                     label="Times Payable"
-                    value={reusableLink.times_payable}
+                    value={
+                      isActive
+                        ? () => (
+                            <EditTimesPayable
+                              value={reusableLink.times_payable}
+                              editFn={this.editReusableLink()}
+                              entityId={reusableLink.id}
+                              trackerFn={trackDetailViewEdits}
+                            />
+                          )
+                        : () => (
+                            <div
+                              value={reusableLink.times_payable || 'No Limit'}
+                            />
+                          )
+                    }
                   />
-                  <NestedEntityDetailRow
+
+                  <EntityDetailRow
                     label="Notes"
-                    value={reusableLink.notes}
+                    value={() => (
+                      <EditNotes
+                        value={reusableLink.notes}
+                        editFn={this.editReusableLink()}
+                        entityId={reusableLink.id}
+                        trackerFn={trackDetailViewEdits}
+                      />
+                    )}
                   />
 
                   <GroupDetailsTable

@@ -21,7 +21,7 @@ export default class EditNotes extends React.Component {
     const notes = { ...pairs };
 
     return this.props
-      .editPaymentLink({
+      .editFn({
         notes: onChangeNotes(pairs),
       })
       .then(resp => {
@@ -43,7 +43,7 @@ export default class EditNotes extends React.Component {
           name="notes"
           saveAndUpdate={this.saveAndUpdate}
           defaultValue={this.state.notes}
-          trackerFn={this.props.trackerFn.bind(null, this.props.paymentLinkId)}
+          trackerFn={this.props.trackerFn.bind(null, this.props.entityId)}
         />
       </React.Fragment>
     );

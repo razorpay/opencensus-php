@@ -28,14 +28,20 @@ export default class PaymentLinksContainer extends Component {
           <NavLink exact to="/paymentlinks">
             Payment Links
           </NavLink>
-          <NavLink exact to="/paymentlinks/reusable">
-            Reusable Links
-          </NavLink>
           <ShowWhen myRole="owner manager operations admin">
             <NavLink exact to="/paymentlinks/batchuploads">
               Batch Uploads
             </NavLink>
           </ShowWhen>
+          <NavLink exact to="/paymentlinks/reusable">
+            Reusable Links
+            <span
+              class="badge bg-success hidden-xs"
+              style={{ marginLeft: '5px' }}
+            >
+              new
+            </span>
+          </NavLink>
         </header>
 
         <TestModeBanner />

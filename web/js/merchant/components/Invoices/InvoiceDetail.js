@@ -14,7 +14,7 @@ import { paymentId, amount, paidOn } from 'rzp/ui/item/pair';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 import Button, { AsyncBtn } from 'component/Button';
 
-import EditDescription from 'merchant/containers/PaymentLinks/Links/Edit/EditDescription';
+import EditPaymentFor from 'merchant/containers/PaymentLinks/Links/Edit/EditPaymentFor';
 import {
   EditExpiry,
   EditNotes,
@@ -176,10 +176,10 @@ export default props => {
                   value={
                     isPaymentLinksV2Enabled && isIssued
                       ? () => (
-                          <EditDescription
+                          <EditPaymentFor
                             value={invoice.description}
-                            paymentLinkId={invoice.id}
-                            editPaymentLink={editPaymentLink}
+                            entityId={invoice.id}
+                            editFn={editPaymentLink}
                             trackerFn={trackDetailViewEdits}
                           />
                         )
@@ -296,8 +296,8 @@ export default props => {
                       ? () => (
                           <EditReceipt
                             value={invoice.receipt}
-                            paymentLinkId={invoice.id}
-                            editPaymentLink={editPaymentLink}
+                            entityId={invoice.id}
+                            editFn={editPaymentLink}
                             trackerFn={trackDetailViewEdits}
                           />
                         )
@@ -327,8 +327,8 @@ export default props => {
                       ? () => (
                           <EditExpiry
                             value={invoice.expire_by}
-                            editPaymentLink={editPaymentLink}
-                            paymentLinkId={invoice.id}
+                            editFn={editPaymentLink}
+                            entityId={invoice.id}
                             trackerFn={trackDetailViewEdits}
                           />
                         )
@@ -347,8 +347,8 @@ export default props => {
                     value={() => (
                       <EditNotes
                         value={invoice.notes}
-                        editPaymentLink={editPaymentLink}
-                        paymentLinkId={invoice.id}
+                        editFn={editPaymentLink}
+                        entityId={invoice.id}
                         trackerFn={trackDetailViewEdits}
                       />
                     )}

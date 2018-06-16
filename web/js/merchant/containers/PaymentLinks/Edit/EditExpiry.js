@@ -20,7 +20,7 @@ export default class EditExpiry extends React.Component {
       isEditableMode: true,
     });
 
-    this.props.trackerFn(this.props.paymentLinkId, 'Edit Expiry');
+    this.props.trackerFn(this.props.entityId, 'Edit Expiry');
   };
 
   onDateChange = date => {
@@ -81,7 +81,7 @@ export default class EditExpiry extends React.Component {
               });
             }}
           />
-          <Input.Group class="InputGroup--near Input--inline Input--half_big">
+          <Input.Group class="InputGroup--near Input--half_big">
             <div class="Input-content">
               <Input.ToCalendar
                 data-name="expire_by_date"
@@ -114,7 +114,7 @@ export default class EditExpiry extends React.Component {
               class="Button--Link"
               onClick={() => {
                 this.setState(this.resetState());
-                this.props.trackerFn(this.props.paymentLinkId, 'Cancel Expiry');
+                this.props.trackerFn(this.props.entityId, 'Cancel Expiry');
               }}
             >
               Cancel
@@ -125,7 +125,7 @@ export default class EditExpiry extends React.Component {
               style={{ marginRight: 0, marginLeft: 16 }}
               onClick={() => {
                 this.props
-                  .editPaymentLink({
+                  .editFn({
                     expire_by:
                       this.state.hasNoExpiry == '1'
                         ? null
@@ -137,7 +137,7 @@ export default class EditExpiry extends React.Component {
                     }
                   });
 
-                this.props.trackerFn(this.props.paymentLinkId, 'Save Expiry');
+                this.props.trackerFn(this.props.entityId, 'Save Expiry');
               }}
               pendingState="Saving"
             >

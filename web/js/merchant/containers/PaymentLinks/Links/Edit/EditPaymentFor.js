@@ -1,14 +1,13 @@
-import { maxLength } from 'rzp/utils/validators';
 import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 
-export default class EditReceipt extends React.Component {
+export default class EditDescription extends React.Component {
   state = this.resetState();
 
   resetState() {
     return {
       isEditableMode: false,
-      receipt: this.props.value || '',
+      description: this.props.value || '',
     };
   }
 
@@ -16,14 +15,14 @@ export default class EditReceipt extends React.Component {
     this.setState({
       isEditableMode: true,
     });
-    setTimeout(() => document.getElementsByName('receipt_no')[0].focus(), 10);
-    this.props.trackerFn(this.props.entityId, 'Edit Receipt');
+    setTimeout(() => document.getElementsByName('description')[0].focus(), 10);
+    this.props.trackerFn(this.props.entityId, 'Edit Description');
   };
 
   render() {
     let content = (
       <React.Fragment>
-        {this.state.receipt || '--'}
+        {this.state.description || '--'}
         <Button.Transparent
           onClick={this.makeEditable}
           class="Button--Link"
@@ -37,24 +36,33 @@ export default class EditReceipt extends React.Component {
     if (this.state.isEditableMode) {
       content = (
         <React.Fragment>
-          <Input
-            name="receipt_no"
-            placeholder="Receipt No."
+          <Input.Textarea
+            name="description"
+            placeholder="Payment Description"
             class="Input--small"
-            value={this.state.receipt}
-            validator={maxLength(40)}
+            value={this.state.description}
             onChange={e => {
               this.setState({
-                receipt: e.target.value,
+                description: e.target.value,
               });
             }}
           />
-          <div style={{ textAlign: 'right', marginBottom: 12, width: 260 }}>
+          <div
+            style={{
+              textAlign: 'right',
+              marginBottom: 12,
+              width: 260,
+              marginTop: -8,
+            }}
+          >
             <Button.Transparent
               class="Button--Link"
               onClick={() => {
                 this.setState(this.resetState());
-                this.props.trackerFn(this.props.entityId, 'Cancel Receipt');
+                this.props.trackerFn(
+                  this.props.paymentLinkId,
+                  'Cancel Description'
+                );
               }}
             >
               Cancel
@@ -63,12 +71,16 @@ export default class EditReceipt extends React.Component {
             <AsyncBtn.Primary
               class="Button--small"
               style={{ marginRight: 0, marginLeft: 16 }}
+              disabled={!this.state.description}
               onClick={() => {
-                this.props.trackerFn(this.props.entityId, 'Save Receipt');
+                this.props.trackerFn(
+                  this.props.paymentLinkId,
+                  'Save Description'
+                );
 
                 this.props
                   .editFn({
-                    receipt: this.state.receipt,
+                    description: this.state.description,
                   })
                   .then(resp => {
                     if (resp.data) {

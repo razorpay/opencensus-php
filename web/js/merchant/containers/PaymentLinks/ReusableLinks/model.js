@@ -14,6 +14,17 @@ export function createReusableLink(reqPayload) {
   });
 }
 
+export function editReusableLink(id, data) {
+  return merchantFetch({
+    url: `payment_links/${id}`,
+    method: 'patch',
+    data: data,
+    headers: {
+      'content-type': 'application/json',
+    },
+  });
+}
+
 export const fetchReusableLinksEntity = id => {
   return merchantFetch({
     url: `payment_links/${id}`,
