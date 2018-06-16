@@ -121,6 +121,10 @@ class Processor
      * @var Order\Entity
      */
     protected $order;
+    /**
+     * @var Offer\Entity
+     */
+    protected $offer;
 
     protected $receiver;
     protected $segment;
@@ -174,6 +178,7 @@ class Processor
     public function flushPaymentObjects()
     {
         $this->order   = null;
+        $this->offer   = null;
         $this->payment = null;
         $this->refund  = null;
         $this->type    = null;
@@ -565,12 +570,14 @@ class Processor
 
         $order = $this->fetchOrderFromInput($input);
 
-        if (($order !== null) and
+        $offer = $this->getOfferForPayment($payment, $input);
+
+        if (($offer !== null) and
             ($order->isDiscountApplicable() === true))
         {
             $orderAmount = $order->getAmount();
 
-            $discountedAmount = $order->getOffer()->getDiscountedAmount($orderAmount);
+            $discountedAmount = $offer->getDiscountedAmount($orderAmount);
 
             $payment->setAmount($discountedAmount);
         }

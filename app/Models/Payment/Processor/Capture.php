@@ -384,7 +384,14 @@ trait Capture
             return;
         }
 
-        $captureAmount = $order->getOffer()->getDiscountedAmount($order->getAmount());
+        $discount = $payment->discount;
+
+        if ($payment->discount === null)
+        {
+            return;
+        }
+
+        $captureAmount = $discount->offer->getDiscountedAmount($order->getAmount());
     }
 
     /**

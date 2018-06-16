@@ -77,37 +77,22 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function validateOfferApplicableOnPayment(Payment\Entity $payment)
+    public function validateOfferApplicableOnPayment(Payment\Entity $payment, Entity $offer)
     {
-        if ($payment->getApiOrderId() === null)
-        {
-            return;
-        }
+        $checker = new Checker($offer, true);
 
-        $order = $this->repo->order->fetchForPayment($payment);
-
-        if (($order === null) or
-            ($order->hasOffers() === false))
-        {
-            return;
-        }
-
-        $appliedOffer = $order->getOffer();
-
-        $offerChecker = new Checker($appliedOffer, true);
-
-        if ($offerChecker->checkOfferApplicableOnPayment($payment) === false)
+        if ($checker->checkOfferApplicableOnPayment($payment) === false)
         {
             $this->trace->info(
                 TraceCode::OFFER_NOT_APPLIED_ON_PAYMENT,
                 [
                     'payment_id' => $payment->getId(),
-                    'offer_id'   => $appliedOffer->getId()
+                    'offer_id'   => $offer->getId()
                 ]);
 
-            if ($appliedOffer->shouldBlockPayment() === true)
+            if ($offer->shouldBlockPayment() === true)
             {
-                $errorMessage = $appliedOffer->getErrorMessage();
+                $errorMessage = $offer->getErrorMessage();
 
                 throw new Exception\BadRequestValidationFailureException($errorMessage);
             }
@@ -117,7 +102,7 @@ class Core extends Base\Core
             TraceCode::OFFER_APPLIED_ON_PAYMENT,
             [
                 'payment_id' => $payment->getId(),
-                'offer_id'   => $appliedOffer->getId()
+                'offer_id'   => $offer->getId()
             ]);
     }
 

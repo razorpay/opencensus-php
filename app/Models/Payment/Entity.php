@@ -163,6 +163,8 @@ class Entity extends Base\PublicEntity
     const IFSC                  = 'ifsc';
     const ACCOUNT_NUMBER        = 'account_number';
 
+    const OFFER_ID              = 'offer_id';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;

@@ -17,6 +17,7 @@ use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Risk;
 use RZP\Models\Card;
+use RZP\Models\Order;
 use RZP\Models\Offer;
 use RZP\Constants\TLD;
 use RZP\Http\BasicAuth;
@@ -558,7 +559,7 @@ trait Authorize
         // international is not enabled.
         $this->verifyFeesLessThanAmount($payment);
 
-        $this->validateOfferIfApplicable($payment);
+        $this->validateOfferIfApplicable($payment, $input);
     }
 
     protected function validateSubscriptionInputIfPresent(Payment\Entity $payment, $input)
@@ -1238,9 +1239,109 @@ trait Authorize
         }
     }
 
-    protected function validateOfferIfApplicable(Payment\Entity $payment)
+    protected function validateOfferIfApplicable(Payment\Entity $payment, array $input)
     {
-        (new Offer\Core)->validateOfferApplicableOnPayment($payment);
+        $offer = $this->getOfferForPayment($payment, $input);
+
+        if ($offer !== null)
+        {
+            (new Offer\Core)->validateOfferApplicableOnPayment($payment, $offer);
+        }
+    }
+
+    protected function getOfferForPayment(Payment\Entity $payment, array $input)
+    {
+        //
+        // In case offer has already been set by a previous flow
+        //
+        if ($this->offer !== null)
+        {
+            return $this->offer;
+        }
+
+        //
+        // Need orders API to use offers
+        //
+        if ($payment->hasOrder() === false)
+        {
+            return;
+        }
+
+        $order = $payment->order;
+
+        if ($order->hasOffers() === false)
+        {
+            return;
+        }
+
+        // When offer is forced, we do not expect offer_id in the payment input.
+        // Instead we retrieve the offer to be applied (we can figure
+        // this out ourselves from the payment) and validate it.
+        if ($order->isOfferForced() === true)
+        {
+            return $this->selectForcedOffer($order);
+        }
+
+        // If offer is not forced, we expect it in the payment input. If it is
+        // not present there, we assume the customer is opting to not use an offer.
+        if (isset($input[Payment\Entity::OFFER_ID]) === false)
+        {
+            return;
+        }
+
+        $this->offer = $this->validateAndFetchOffer($payment, $input);
+
+        return $this->offer;
+    }
+
+    /**
+     * A forced offer is when merchant has decided that an offer is to be used
+     * for a payment, and the customer does not have a choice to opt out of it.
+     *
+     * - In its simplest form, an offer is associated
+     *   with the order, and we use it for the payment.
+     * - Merchant can also associated multiple offers with a payment, wherein
+     *   only one would be applicable for the payment itself (eg. one offer for each method).
+     *   TODO: Implement auto selection of offer from order->offers, based on payment
+     *
+     * @param  Order\Entity $order
+     * @return Offer\Entity
+     */
+    protected function selectForcedOffer(Order\Entity $order): Offer\Entity
+    {
+        $offers = $order->offers;
+
+        if ($offers->count() === 1)
+        {
+            $this->offer = $offers->first();
+
+            return $this->offer;
+        }
+        else
+        {
+            new Exception\LogicException('Auto selection of offer is not implemented yet.');
+        }
+    }
+
+    protected function validateAndFetchOffer(Payment\Entity $payment, array $input): Offer\Entity
+    {
+        $offerId = $input[Payment\Entity::OFFER_ID];
+
+        Offer\Entity::verifyIdAndStripSign($offerId);
+
+        // If offer is present in the payment request, we need to validate it against the order.
+        if ($payment->order->offers->contains($offerId) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
+            [
+                'offer_id' => $offer->getPublicId(),
+                'order_id' => $order->getPublicId(),
+            ]);
+        }
+
+        $offer = $this->repo->offer->findByIdAndMerchant($offerId, $this->merchant);
+
+        return $offer;
     }
 
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
@@ -2807,13 +2908,16 @@ trait Authorize
             return;
         }
 
-        $appliedOffer = $order->getOffer();
+        if ($this->offer === null)
+        {
+            return;
+        }
 
         $discountInput = [
-            Discount\Entity::AMOUNT => $appliedOffer->getDiscount($order->getAmount()),
+            Discount\Entity::AMOUNT => $this->offer->getDiscount($order->getAmount()),
         ];
 
-        (new Discount\Service)->create($discountInput, $payment, $appliedOffer);
+        (new Discount\Service)->create($discountInput, $payment, $this->offer);
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)
