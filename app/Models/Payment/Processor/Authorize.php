@@ -3309,7 +3309,9 @@ trait Authorize
     protected function fillReturnDataWithSignatureIfApplicable(array & $data)
     {
         // If the accessed via keyless flow(public auth routes) and key doesn't exists, skips calculating signatures.
-        if (($this->ba->isPublicAuth() === true) and ($this->ba->getKeyEntity() === null))
+        if (($this->ba->isPublicAuth() === true) and
+            ($this->ba->getKeyEntity() === null) and
+            ($this->ba->getOAuthClientId() === null))
         {
             return;
         }

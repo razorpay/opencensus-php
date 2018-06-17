@@ -204,7 +204,7 @@ class OAuth
         //
         $publicKey = 'rzp_' . $mode . '_oauth_' . $response[OAuthToken::PUBLIC_TOKEN];
 
-        $this->ba->setPublicKey($publicKey);
+        $this->ba->oauthPublicTokenAuth($publicKey);
 
         try
         {

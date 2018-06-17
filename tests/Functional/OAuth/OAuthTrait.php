@@ -104,10 +104,11 @@ trait OAuthTrait
     protected function getDefaultAccessTokenValues(Client\Entity $client): array
     {
         return [
-            'client_id'  => $client->getId(),
-            'expires_at' => Carbon::today(Timezone::IST)->addDays(30)->timestamp,
-            'scopes'     => ['read_only'],
-            'type'       => 'access_token'
+            'client_id'    => $client->getId(),
+            'expires_at'   => Carbon::today(Timezone::IST)->addDays(30)->timestamp,
+            'scopes'       => ['read_only'],
+            'type'         => 'access_token',
+            'public_token' => 'TheTestAuthKey',
         ];
     }
 

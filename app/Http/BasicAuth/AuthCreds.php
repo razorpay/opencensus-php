@@ -86,6 +86,7 @@ class AuthCreds
      */
     public $creds = [
         self::KEY           => '',
+        self::KEY_ID        => '',
         self::PUBLIC_KEY    => '',
         self::SECRET        => '',
         self::ACCOUNT_ID    => '',
@@ -336,7 +337,7 @@ class AuthCreds
 
     public function getKeyEntity()
     {
-        return $this->creds[self::KEY_ID];
+        return $this->key;
     }
 
     public function setPublicKey(string $publicKey)

@@ -623,6 +623,13 @@ class BasicAuth
         }
     }
 
+    public function oauthPublicTokenAuth(string $token = null)
+    {
+        $this->setType(Type::PUBLIC_AUTH);
+
+        $this->authCreds->setPublicKey($token);
+    }
+
     /**
      * Handles keyless auth on public routes. Ref; KeylessPublicAuth.php
      *
@@ -1625,28 +1632,28 @@ class BasicAuth
         return $this->checkAndSetAccountId();
     }
 
-    protected function fetchKeyOrPartnerClient($keyId)
-    {
-        $this->key = $this->repo->key->find($keyId);
-
-        if (empty($this->key) === true)
-        {
-            // This could be a partner call and hence we check for client credentials
-            if (empty($this->getPartnerToken()) === false)
-            {
-                $this->partnerClient = (new OAuthClient\Repository)->getClientByIdAndEnv(
-                    $keyId,
-                    self::$clientModes[$this->getMode()]
-                );
-
-                $this->isPartnerAuth = true;
-
-                return $this->partnerClient;
-            }
-        }
-
-        return $this->key;
-    }
+    //protected function fetchKeyOrPartnerClient($keyId)
+    //{
+    //    $this->key = $this->repo->key->find($keyId);
+    //
+    //    if (empty($this->key) === true)
+    //    {
+    //        // This could be a partner call and hence we check for client credentials
+    //        if (empty($this->getPartnerToken()) === false)
+    //        {
+    //            $this->partnerClient = (new OAuthClient\Repository)->getClientByIdAndEnv(
+    //                $keyId,
+    //                self::$clientModes[$this->getMode()]
+    //            );
+    //
+    //            $this->isPartnerAuth = true;
+    //
+    //            return $this->partnerClient;
+    //        }
+    //    }
+    //
+    //    return $this->key;
+    //}
 
     //protected function fetchMerchantOfKey($key)
     //{
@@ -1858,12 +1865,23 @@ class BasicAuth
 
     public function sign($str)
     {
-        if ($this->key === null)
+        $key = $this->getKeyEntity();
+
+        if (($key === null) and ($this->oauthClientId === null))
         {
             throw new Exception\LogicException('Key cannot be null here');
         }
 
-        $secret = Crypt::decrypt($this->key->getSecret());
+        if (($this->oauthClientId === null) === false)
+        {
+            $client = (new OAuthClient\Repository)->findOrFail($this->oauthClientId);
+
+            $secret = $client->getSecret();
+        }
+        else
+        {
+            $secret = Crypt::decrypt($key->getSecret());
+        }
 
         return hash_hmac(self::HMAC_ALGO, $str, $secret);
     }
