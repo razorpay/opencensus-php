@@ -517,7 +517,7 @@ class BasicAuth
 
         if ($this->checkAndSetKeyId($key) !== null)
         {
-            return $this->invalidApiKey();
+            return $this->authCreds->invalidApiKey();
         }
 
         $response = $this->authCreds->verifyKeyExistenceAndNotExpired();
@@ -598,7 +598,7 @@ class BasicAuth
             return $this->checkAndSetAccountScope();
         }
 
-        return $this->invalidApiKey();
+        return $this->authCreds->invalidApiKey();
     }
 
     /**
@@ -724,8 +724,7 @@ class BasicAuth
         }
 
         // Check key is blank and it's an internal app
-        if (($this->isKeyBlank()) and
-            ($this->verifyInternalApp()))
+        if (($this->isKeyBlank()) and ($this->verifyInternalApp()))
         {
             // It's an internal auth. We check whether dashboard
             // merchant header is set. In that case, it's coming
@@ -817,7 +816,7 @@ class BasicAuth
                 return;
             }
 
-            return $this->invalidApiKey();
+            return $this->authCreds->invalidApiKey();
         }
 
         // `Route::$admin` contains routes that should strictly
@@ -827,7 +826,7 @@ class BasicAuth
 
         if (in_array($currentRoute, Route::$admin, true) === true)
         {
-            return $this->invalidApiKey();
+            return $this->authCreds->invalidApiKey();
         }
     }
 
@@ -879,29 +878,28 @@ class BasicAuth
                 return $res;
         }
 
-        $this->creds[self::SECRET] = null;
-        $this->creds[self::PUBLIC_KEY] = $key;
+        $this->authCreds->creds[self::SECRET] = null;
+        $this->authCreds->creds[self::PUBLIC_KEY] = $key;
 
         // If key is wrong in formatting or something, send error back
         if ($this->checkAndSetKeyId($key) !== null)
         {
-            return $this->invalidApiKey();
+            return $this->authCreds->invalidApiKey();
         }
 
         if ($this->authCreds->verifyKeyExistenceAndNotExpired() !== true)
         {
-            return $this->invalidApiKey();
+            return $this->authCreds->invalidApiKey();
         }
 
-        $response = $this->verifyKeyNotExpired();
+        $response = $this->authCreds->verifyKeyNotExpired();
 
         if ($response !== true)
         {
             return $response;
         }
 
-        if (($this->getSecret() !== '') and
-            ($this->getSecret() !== null))
+        if (($this->getSecret() !== '') and ($this->getSecret() !== null))
         {
             return ApiResponse::generateErrorResponse(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE);
@@ -1155,7 +1153,7 @@ class BasicAuth
         }
 
         // The key in case of app proxy will be the merchant id
-        $merchantId = $this->getAuthCreds()->getKey();
+        $merchantId = $this->authCreds->getKey();
 
         $merchant = $this->repo->merchant->find($merchantId);
 
@@ -1342,7 +1340,7 @@ class BasicAuth
 
     public function getMerchant()
     {
-        $authCreds = $this->getAuthCreds();
+        $authCreds = $this->authCreds;
 
         if ((empty($authCreds) === false))
         {
@@ -1425,6 +1423,12 @@ class BasicAuth
 
     public function getPublicKey()
     {
+        $authCreds = $this->authCreds;
+
+        if ((empty($authCreds) === false))
+        {
+            $this->creds[self::PUBLIC_KEY] = $authCreds->creds[AuthCreds::PUBLIC_KEY];
+        }
         return $this->creds[self::PUBLIC_KEY];
     }
 

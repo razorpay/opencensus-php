@@ -268,8 +268,10 @@ class AuthCreds
         {
             $this->setAndCheckMerchantActivatedForLive($merchant);
         }
-
-        $this->setMerchant($merchant);
+        else
+        {
+            $this->setMerchant($merchant);
+        }
 
         return $this->merchant;
     }
@@ -354,7 +356,7 @@ class AuthCreds
         $this->mode = $mode;
     }
 
-    protected function invalidApiKey()
+    public function invalidApiKey()
     {
         $this->trace->info(
             TraceCode::BAD_REQUEST_INVALID_API_KEY, [self::KEY_ID => $this->getKey()]);
