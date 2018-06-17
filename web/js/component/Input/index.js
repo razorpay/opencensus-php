@@ -70,6 +70,7 @@ export function separateDomProps(props) {
     showClearDate,
     startOfDayTimeStamp,
     placement,
+    mature,
     propagatedError,
     ...rest
   } = props;
@@ -93,6 +94,7 @@ export function separateDomProps(props) {
     showClearDate,
     startOfDayTimeStamp,
     placement,
+    mature,
     propagatedError,
     props: rest,
   };
@@ -152,7 +154,7 @@ export class Label extends React.Component {
   }
 }
 
-class Error extends React.Component {
+export class Error extends React.Component {
   render() {
     if (this.props.text) {
       return <div class="Input-error">{this.props.text}</div>;
@@ -196,7 +198,7 @@ export default class Field extends React.Component {
   }
 
   componentDidMount() {
-    // On change of every tab, FE error will be shown right in front if the value is filled but not valid
+    // On render, FE error will be shown upfront if value filled is not value.
     if (this.el && this.el.value) {
       this.setState({
         mature: true,
