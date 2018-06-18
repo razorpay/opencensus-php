@@ -80,6 +80,7 @@ class UserRolesScope
             'payment_link_list'       => Role::WRITER_ROLES,
             'payment_link_create'     => Role::WRITER_ROLES,
             'payment_link_update'     => Role::WRITER_ROLES,
+            'payment_link_notify'     => Role::WRITER_ROLES,
             'payment_link_deactivate' => Role::WRITER_ROLES,
             'payment_link_activate'   => Role::WRITER_ROLES,
 

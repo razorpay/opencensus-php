@@ -2,6 +2,8 @@
 
 namespace RZP\Models\PaymentLink;
 
+use RZP\Exception\BadRequestValidationFailureException;
+
 /**
  * Status of a payment link is active or inactive. Additionally we have status reason accompanying the status.
  * - For active link, status_reason is null.

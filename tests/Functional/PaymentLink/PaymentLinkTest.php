@@ -86,7 +86,7 @@ class PaymentLinkTest extends TestCase
             PaymentLinkModel\Entity::EXPIRE_BY     => 1400000000,
         ];
 
-        $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
+        $this->createPaymentLink(self::TEST_PL_ID, $attributes);
 
         $this->startTest();
     }

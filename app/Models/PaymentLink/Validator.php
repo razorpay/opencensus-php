@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         Entity::RECEIPT       => 'sometimes|string|min:1|max:40|nullable',
         Entity::TITLE         => 'required|filled|string|max:255',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
-        Entity::NOTES         => 'filled|notes',
+        Entity::NOTES         => 'sometimes|notes',
     ];
 
     protected static $editRules = [
@@ -30,7 +30,7 @@ class Validator extends Base\Validator
         Entity::RECEIPT       => 'sometimes|string|min:1|max:40|nullable',
         Entity::TITLE         => 'filled|string|max:255',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
-        Entity::NOTES         => 'filled|notes',
+        Entity::NOTES         => 'sometimes|notes',
     ];
 
     protected static $sendNotificationRules = [
@@ -141,7 +141,7 @@ class Validator extends Base\Validator
      */
     public function validatePaymentAmount(Payment\Entity $payment)
     {
-        $paymentAmount = $payment->getAmount();
+        $paymentAmount     = $payment->getAmount();
         $paymentLinkAmount = $this->entity->getAmount();
 
         if (($paymentLinkAmount !== null) and ($paymentLinkAmount !== $paymentAmount))
