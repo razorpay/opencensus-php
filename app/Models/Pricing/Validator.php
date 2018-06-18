@@ -80,7 +80,6 @@ class Validator extends Base\Validator
         'addPlanRuleMinAndMaxFee'
     ];
 
-
     protected static $createPlanRules = [
         Entity::PLAN_NAME   => 'required|alpha_num|max:20'
     ];
