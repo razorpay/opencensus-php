@@ -80,7 +80,20 @@ return [
             ],
         ],
     ],
+    'testRefundEditStatusWithoutReference' => [
+        'request'  => [
+            'content' => [
+                'status'    => 'initiated'
 
+            ],
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'initiated',
+            ],
+        ],
+    ],
     'testRefundEditInvalidStatus' => [
         'request'  => [
             'content' => [
