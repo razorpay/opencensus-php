@@ -167,12 +167,19 @@ class Core extends Base\Core
     }
 
     /**
-     * Validates if new payment initiation should be allowed or not
-     * @param  Entity $paymentLink
-     * @throws BadRequestException
+     * Validates if new payment initiation should be allowed or not.
+     * Note: This is intentionally not in Validator class, because there is much logic(probably more very soon) and it
+     * accesses repository as well.
+     *
+     * @param Entity         $paymentLink
+     * @param Payment\Entity $payment
      */
-    public function validateIsPaymentInitiable(Entity $paymentLink)
+    public function validateIsPaymentInitiatable(Entity $paymentLink, Payment\Entity $payment)
     {
+        // 1. Validates amount if applicable
+        $paymentLink->getValidator()->validatePaymentAmount($payment);
+
+        // 2. Validates payment link is active and has payment slots available
         if (($paymentLink->isPayable() === false) or
             ($this->hasPaymentSlots($paymentLink) === false))
         {

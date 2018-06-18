@@ -118,6 +118,21 @@ class PaymentLinkTest extends TestCase
         $this->getLastPaymentLinkEntityAndAssert($this->testData[__FUNCTION__]['payment_link']);
     }
 
+    public function testPaymentLinkMakePaymentWithInvalidAmount()
+    {
+        $paymentLink = $this->createPaymentLink();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment[Payment\Entity::AMOUNT] = 5000; // Different amount value
+        $payment[Payment\Entity::PAYMENT_LINK_ID] = $paymentLink->getPublicId();
+
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_PAYMENT_LINK_PAYMENT_AMOUNT_MISMATCH);
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_PAYMENT_LINK_PAYMENT_AMOUNT_MISMATCH);
+
+        $this->doAuthAndGetPayment($payment);
+    }
+
     public function testPaymentLinkCompletePayments()
     {
         $attributes = [
