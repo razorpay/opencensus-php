@@ -630,4 +630,5 @@ class PublicErrorDescription
     const BAD_REQUEST_PARTNER_APP_NOT_FOUND                                     = 'Partner app could not be found';
     const BAD_REQUEST_PARTNER_REFERRAL_ALREADY_EXISTS                           = 'Partner referral already exists';
     const BAD_REQUEST_PARTNER_REFERRAL_NOT_FOUND                                = 'Partner referral could not be found';
+    const BAD_REQUEST_REFERRAL_MERCHANT_CANNOT_BE_PARTNER                       = 'Partner referral should not be a partner';
 }

@@ -248,6 +248,55 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    /**
+     * Tests adding a partner as a referral to some other partner
+     */
+    public function testAddPartnerAsReferralToPartner()
+    {
+        $merchantId = self::DEFAULT_MERCHANT_ID;
+
+        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant->edit('10000000000011', ['partner_type' => 'reseller']);
+
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $this->createOAuthApplication($partnerData);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testAddReferralToPurePlatform()
+    {
+        $merchantId = self::DEFAULT_MERCHANT_ID;
+
+        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'pure_platform']);
+
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $this->createOAuthApplication($partnerData);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testAddReferralToNonPartner()
+    {
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $this->createOAuthApplication($partnerData);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testAddPartnerReferralAgain()
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;
@@ -290,6 +339,22 @@ class PartnerTest extends OAuthTestCase
                 'entity_id'   => $app->getId(),
                 'merchant_id' => '10000000000011',
             ]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testRemoveNonExistingPartnerReferral()
+    {
+        $merchantId = self::DEFAULT_MERCHANT_ID;
+
+        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
+
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $this->createOAuthApplication($partnerData);
 
         $this->ba->adminAuth();
 

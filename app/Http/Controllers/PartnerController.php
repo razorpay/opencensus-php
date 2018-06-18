@@ -11,6 +11,11 @@ class PartnerController extends Controller
 {
     protected $service = Merchant\Service::class;
 
+    /**
+     * @param string $partnerId
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function createReferral(string $partnerId)
     {
         $input = $this->input;
@@ -20,6 +25,12 @@ class PartnerController extends Controller
         return ApiResponse::json($response);
     }
 
+    /**
+     * @param string $partnerId
+     * @param string $referralId
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function deleteReferral(string $partnerId, string $referralId)
     {
         $response = $this->service()->deletePartnerReferral($partnerId, $referralId);

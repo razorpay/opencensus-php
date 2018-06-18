@@ -329,6 +329,75 @@ return [
         ],
     ],
 
+    'testAddReferralToPurePlatform' => [
+        'request'   => [
+            'url'     => '/partners/10000000000000/referrals',
+            'method'  => 'POST',
+            'content' => [
+                'merchant_id' => '10000000000011',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testAddPartnerAsReferralToPartner' => [
+        'request'   => [
+            'url'     => '/partners/10000000000000/referrals',
+            'method'  => 'POST',
+            'content' => [
+                'merchant_id' => '10000000000011',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_REFERRAL_MERCHANT_CANNOT_BE_PARTNER,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REFERRAL_MERCHANT_CANNOT_BE_PARTNER,
+        ],
+    ],
+
+    'testAddReferralToNonPartner' => [
+        'request'   => [
+            'url'     => '/partners/10000000000000/referrals',
+            'method'  => 'POST',
+            'content' => [
+                'merchant_id' => '10000000000011',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
     'testAddPartnerReferralAgain' => [
         'request'   => [
             'url'     => '/partners/10000000000000/referrals',
@@ -362,6 +431,27 @@ return [
             'content' => [
                 'success' => true,
             ],
+        ],
+    ],
+
+    'testRemoveNonExistingPartnerReferral' => [
+        'request'   => [
+            'url'     => '/partners/10000000000000/referrals/10000000000011',
+            'method'  => 'DELETE',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_REFERRAL_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_REFERRAL_NOT_FOUND,
         ],
     ],
 
