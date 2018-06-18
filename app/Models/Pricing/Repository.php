@@ -118,9 +118,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getPricingPlanRule($id)
+    public function getPricingPlanRule($planId, $ruleId)
     {
-        return $this->newQuery()->findOrFailPublic($id);
+        return $this->newQuery()
+                     ->planId($planId)
+                     ->where(Entity::ID, '=', $ruleId)
+                     ->firstOrFailPublic();
     }
 
     public function deletePlanRule($planId, $ruleId)
