@@ -7,10 +7,10 @@ use RZP\Error\PublicErrorDescription;
 return [
     'testPayment' => [
         'merchant_id'       => '10000000000000',
-        'amount'            => 50000,
+        'amount'            => 10000012,
         'method'            => 'netbanking',
         'status'            => 'captured',
-        'amount_authorized' => 50000,
+        'amount_authorized' => 10000012,
         'amount_refunded'   => 0,
         'refund_status'     => null,
         'currency'          => 'INR',
@@ -35,7 +35,7 @@ return [
     'testTpvPayment' => [
         'request' => [
             'content' => [
-                'amount'         => 50000,
+                'amount'         => 10000012,
                 'currency'       => 'INR',
                 'receipt'        => 'rcptid42',
                 'method'         => 'netbanking',
@@ -47,7 +47,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'amount'         => 50000,
+                'amount'         => 10000012,
                 'currency'       => 'INR',
                 'receipt'        => 'rcptid42',
             ],
@@ -123,6 +123,22 @@ return [
         'exception' => [
             'class'                 => 'RZP\Exception\PaymentVerificationException',
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ],
+    ],
+
+    'testVerifyAmountMismatch' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::SERVER_ERROR,
+                    'description'   => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\LogicException',
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
         ],
     ],
 ];

@@ -44,7 +44,6 @@ class Entity extends Base\PublicEntity
     protected $revisionCreationsEnabled = true;
 
     protected $fillable = [
-        self::MERCHANT_ID,
         self::AMEX,
         self::DISABLED_BANKS,
         self::PAYTM,

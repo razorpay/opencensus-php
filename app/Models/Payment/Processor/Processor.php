@@ -570,7 +570,7 @@ class Processor
         {
             $orderAmount = $order->getAmount();
 
-            $discountedAmount = $order->offer->getDiscountedAmount($orderAmount);
+            $discountedAmount = $order->getOffer()->getDiscountedAmount($orderAmount);
 
             $payment->setAmount($discountedAmount);
         }

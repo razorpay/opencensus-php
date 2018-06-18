@@ -22,6 +22,38 @@ return [
         ],
     ],
 
+    'testRegistrationReconWithTestMerchantProxyAuth' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Invalid type passed for batch creation'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+
+    'testRegistrationReconWithSharedMerchantProxyAuth' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Invalid type passed for batch creation'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+
     'testDebitFileGeneration' => [
         'request' => [
             'content' => [

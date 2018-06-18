@@ -30,8 +30,8 @@ class OffersPaymentTest extends TestCase
     {
         $offer = $this->fixtures->create('offer');
 
-        $order = $this->fixtures->create('order:with_offer_applied', [
-            'offer_id' => $offer->getId()
+        $order = $this->fixtures->order->createWithOffers([
+            $offer,
         ]);
 
         $payment = $this->getOfferPaymentArray($order);

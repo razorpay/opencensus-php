@@ -5,6 +5,7 @@ namespace RZP\Models\Admin\Org\FieldMap;
 use App;
 
 use RZP\Models\Base;
+use RZP\Models\Admin\Org;
 use RZP\Models\Base\Traits\HardDeletes;
 
 class Entity extends Base\PublicEntity
@@ -41,7 +42,7 @@ class Entity extends Base\PublicEntity
 
     public function org()
     {
-        return $this->belongsTo('RZP\Models\Admin\Org\Entity');
+        return $this->belongsTo(Org\Entity::class);
     }
 
     public function setFieldsAttribute(array $fields)

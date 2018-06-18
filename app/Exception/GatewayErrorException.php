@@ -23,6 +23,8 @@ class GatewayErrorException extends RecoverableException
         $data = [],
         \Exception $previous = null)
     {
+        parent::__construct('', $code, $previous);
+
         $this->initError($code);
 
         $this->setData($data);

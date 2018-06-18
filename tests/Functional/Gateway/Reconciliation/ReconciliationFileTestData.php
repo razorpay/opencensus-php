@@ -184,7 +184,8 @@ return [
             'issettled'             => 'S',
             'purchaseid'            => '',
             'message_type'          => '0200',
-            'datetime'              => '2018-03-05 23:50:00'
+            'datetime'              => '2018-03-05 23:50:00',
+            'retr_ref_nr'           => '123456789012',
         ]
     ],
 

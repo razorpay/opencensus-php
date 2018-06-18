@@ -106,27 +106,20 @@ class Generator extends Base\Core
     {
         $this->generateInvoiceSkeleton($input);
 
-        try
-        {
-            $this->repo->transaction(
-                function() use ($input)
+        $this->repo->transaction(
+            function() use ($input)
+            {
+                $this->preProcessGeneration($input);
+
+                (new Core)->calculateAndSetAmountsOfInvoice($this->invoice);
+
+                if ($this->invoice->getStatus() === Status::ISSUED)
                 {
-                    $this->preProcessGeneration($input);
+                    $this->issueInvoice();
+                }
 
-                    (new Core)->calculateAndSetAmountsOfInvoice($this->invoice);
-
-                    if ($this->invoice->getStatus() === Status::ISSUED)
-                    {
-                        $this->issueInvoice();
-                    }
-
-                    $this->repo->saveOrFail($this->invoice);
-                });
-        }
-        catch (\Exception $e)
-        {
-            ExceptionHandler::handleMySqlUniqueError($e, $this->invoice, $input);
-        }
+                $this->repo->saveOrFail($this->invoice);
+            });
 
         return $this->invoice;
     }

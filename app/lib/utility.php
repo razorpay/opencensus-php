@@ -444,29 +444,16 @@ if (! function_exists('get_key_from_subarray_match'))
     }
 }
 
-if (! function_exists('format_epoch'))
+if (! function_exists('epoch_format'))
 {
     /**
      * Formats given epoch to human readable string representation. Currently returns in one specific format only.
      * @param  int    $epoch
      * @return string
      */
-    function format_epoch(int $epoch): string
+    function epoch_format(int $epoch): string
     {
         return date('M d, Y (h:i A)', $epoch);
-    }
-}
-
-if (! function_exists('format_amount'))
-{
-    /**
-     * Formats given paisa amount into human readable format. E.g. 123456 -> 1,234.56
-     * @param  int    $amount
-     * @return string
-     */
-    function format_amount(int $amount): string
-    {
-        return number_format($amount/ 100, 2, '.', ',');
     }
 }
 
@@ -511,5 +498,35 @@ if (! function_exists('multidim_array_unique'))
             }, $item), $sortOrder, $item);
 
         }
+    }
+}
+
+if (! function_exists('money_format_IN'))
+{
+    /**
+     * Formats a number as a Indian currency string.
+     * Refs:
+     * - http://php.net/manual/en/function.money-format.php (Locales files/settings not available on production!)
+     * - https://blog.revathskumar.com/2014/11/regex-comma-seperated-indian-currency-format.html
+     * @param  string $number - Must be string representation of number, e.g. '-123.45'/'123'/'123.00' etc.
+     * @return string
+     */
+    function money_format_IN(string $number): string
+    {
+        return preg_replace('/(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?/', '\\1,', $number);
+    }
+}
+
+if (! function_exists('amount_format_IN'))
+{
+    /**
+     * Formats paise amount as a Indian currency string.
+     *
+     * @param  int|null $amount
+     * @return string
+     */
+    function amount_format_IN(int $amount = null): string
+    {
+        return money_format_IN(number_format($amount / 100, 2, '.', ''));
     }
 }

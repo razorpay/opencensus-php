@@ -7,7 +7,6 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
-use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Verify;
@@ -42,7 +41,7 @@ class Gateway extends Base\Gateway
     {
         parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->setBankingTypeAndDomainType($terminal);
+        $this->setBankingTypeAndDomainType($input);
     }
 
     public function authorize(array $input)
@@ -290,18 +289,19 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    protected function setBankingTypeAndDomainType($terminal)
+    protected function setBankingTypeAndDomainType($input)
     {
         // Default banking type is retail
-        if ((isset($terminal) === true) and
-            ($terminal->isCorporate() === true))
+        if (isset($input['payment']) === true)
         {
-            $this->setBankingType(BankingType::CORPORATE);
-        }
-        else if ((isset($terminal) === true) and
-                 ($terminal->isRecurring() === true))
-        {
-            $this->setBankingType(BankingType::RECURRING);
+            if ($input['payment']['bank'] === Payment\Processor\Netbanking::ICIC_C)
+            {
+                $this->setBankingType(BankingType::CORPORATE);
+            }
+            else if ($input['payment']['recurring'] === true)
+            {
+                $this->setBankingType(BankingType::RECURRING);
+            }
         }
 
         $this->setDomainType();
