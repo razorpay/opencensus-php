@@ -19,6 +19,7 @@ use RZP\Models\Customer;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Offer;
 use RZP\Models\Payment;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Methods;
@@ -570,17 +571,67 @@ class Processor
 
         $order = $this->fetchOrderFromInput($input);
 
-        $offer = $this->getOfferForPayment($payment, $input);
+        $this->setOfferForPaymentFromOrderOrInput($payment, $input);
 
-        if (($offer !== null) and
+        if (($this->offer !== null) and
             ($order->isDiscountApplicable() === true))
         {
             $orderAmount = $order->getAmount();
 
-            $discountedAmount = $offer->getDiscountedAmount($orderAmount);
+            $discountedAmount = $this->offer->getDiscountedAmount($orderAmount);
 
             $payment->setAmount($discountedAmount);
         }
+    }
+
+    protected function setOfferForPaymentFromOrderOrInput(Payment\Entity $payment, array $input)
+    {
+        $order = $payment->order;
+
+        $offer = null;
+
+        // When offer is forced, we do not expect offer_id in the payment input.
+        // Instead we retrieve the offer to be applied (we can figure
+        // this out ourselves from the payment) and validate it.
+        if (($order->hasOffers() === true) and
+            ($order->isOfferForced() === true))
+        {
+            $offer =  $this->selectForcedOfferForPayment($order);
+        }
+        // If offer is not forced, we expect it in the payment input. If it is
+        // not present there, we assume the customer is opting to not use an offer.
+        else if (isset($input[Payment\Entity::OFFER_ID]) === true)
+        {
+            $offer = $this->validateAndFetchOffer($payment, $input);
+        }
+
+
+        $this->offer = $offer;
+    }
+
+    /**
+     * A forced offer is when merchant has decided that an offer is to be used
+     * for a payment, and the customer does not have a choice to opt out of it.
+     *
+     * - In its simplest form, an offer is associated
+     *   with the order, and we use it for the payment.
+     * - Merchant can also associated multiple offers with a payment, wherein
+     *   only one would be applicable for the payment itself (eg. one offer for each method).
+     *   TODO: Implement auto selection of offer from order->offers, based on payment
+     *
+     * @param  Order\Entity $order
+     * @return Offer\Entity
+     */
+    protected function selectForcedOfferForPayment(Order\Entity $order): Offer\Entity
+    {
+        $offers = $order->offers;
+
+        if ($offers->count() === 1)
+        {
+            return $offers->first();
+        }
+
+        new Exception\LogicException('Auto selection of offer is not implemented yet.');
     }
 
     protected function checkSignature($input, $payment)

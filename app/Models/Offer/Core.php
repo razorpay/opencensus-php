@@ -77,11 +77,13 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function validateOfferApplicableOnPayment(Payment\Entity $payment, Entity $offer)
+    public function validateOfferApplicableOnPayment(Entity $offer, Payment\Entity $payment)
     {
-        $checker = new Checker($offer, true);
+        $verbose = true;
 
-        if ($checker->checkOfferApplicableOnPayment($payment) === false)
+        $checker = new Checker($offer, $verbose);
+
+        if ($checker->checkApplicabilityForPayment($payment) === false)
         {
             $this->trace->info(
                 TraceCode::OFFER_NOT_APPLIED_ON_PAYMENT,
