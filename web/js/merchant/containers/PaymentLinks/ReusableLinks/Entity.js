@@ -25,9 +25,16 @@ import EditPaymentFor from './Edit/EditPaymentFor';
 import EditTimesPayable from './Edit/EditTimesPayable';
 
 import { EditExpiry, EditNotes, EditReceipt } from '../Edit/index';
-import ActivateAgainModal from './ActivateAgainModal';
+import ActivateAgainModal from './Modals/ActivateAgain';
 
 import Button from 'component/Button';
+
+/* Human readable reason to be displayed */
+const inActiveStatusReasonMap = {
+  completed: 'Max Times payable limit is completed',
+  expired: 'The link is expired',
+  cancelled: 'You closed the link',
+};
 
 @connect(null, {
   updateRPLInReduxList,
@@ -129,11 +136,15 @@ export default class ReusableLinksEntity extends React.Component {
 
   reActivateLink = () => {
     let statusReason = this.state.reusableLink.status_reason;
-    statusReason = 'expired';
 
     const isExpired = statusReason.toLowerCase() === 'expired';
     const isCompleted = statusReason.toLowerCase() === 'completed';
-    const isCancelled = statusReason.toLowerCase() === 'cancelled'; // TODO: API to activate manually closed link?
+    const isCancelled = statusReason.toLowerCase() === 'cancelled';
+
+    if (isCancelled) {
+      this.toggleManualActivation();
+      return;
+    }
 
     const currentTimeStamp = moment().unix();
     // Ideally, it should consider 2 min window, because it would take time for merchant to update.
@@ -143,7 +154,7 @@ export default class ReusableLinksEntity extends React.Component {
     this.props.openModal({
       size: 'medium',
       component: (
-        <ActivateAgainModal
+        <ActivateAgain
           expireBy={
             isExpired || hasExpiredInCompletedState
               ? this.state.reusableLink.expire_by
@@ -159,38 +170,90 @@ export default class ReusableLinksEntity extends React.Component {
     });
   };
 
-  deactivateLink = () => {
-    const newStatus = 'closed';
+  /*
+    * 1) Direct manual Activation can be done only when it was manually closed
+    * 2) Direct manual deactivation can be done any time user wants while in Active State;
+    **/
+  toggleManualActivation = () => {
+    const newStatus = 'active';
+
+    const status = this.state.reusableLink.status;
+    const statusReason = this.state.reusableLink.status_reason;
+
+    const isActive = status === 'active';
+    const isCancelled =
+      statusReason && statusReason.toLowerCase() === 'cancelled';
+
+    let header, message, affirmativeLabel, affirmativePendingLabel, successMsg;
+
+    if (isActive) {
+      /* Wants manual deactivation */
+
+      header = 'Deactivate Link?';
+      message =
+        'Once you deactivate the link, you will not be able to accept payments till you activate it again.';
+      affirmativeLabel = 'Yes, deactivate';
+      affirmativePendingLabel = 'Deactivating..';
+      successMsg = `${this.state.reusableLink.id} link is now inactive`;
+    } else if (isCancelled) {
+      /* Wants activation for manual deactivation for cancelled status */
+
+      header = 'Activate Link?';
+      message =
+        'Once you activate the link, you will be able to accept payments.';
+      affirmativeLabel = 'Yes, activate';
+      affirmativePendingLabel = 'Activating..';
+      successMsg = `${this.state.reusableLink.id} link is now active`;
+    }
 
     this.context.confirm({
-      header: 'Deactivate Link?',
+      header,
       message: () => (
         <div class="text-semi-muted">
-          <p>
-            Are you sure you want to deactivate the link?
-            <br />
-            Payments will no longer be accepted for this link.
-          </p>
+          <p>{message}</p>
         </div>
       ),
-      affirmativeLabel: 'Yes, proceed',
-      affirmativePendingLabel: 'Deactivating..',
+      affirmativeLabel,
+      affirmativePendingLabel,
       abortLabel: "No, don't!",
       action: () => {
-        // TODO: Where is api to manually deactivate?
+        // TODO: Where is api to manually activate/deactivate?
         return editReusableLink(this.state.reusableLink.id, {
           status: newStatus,
         })
-          .then(() => {
+          .then(resp => {
             this.props.showNotification({
               type: 'success',
-              message: `${this.props.reusableLink.id} link is now inactive`,
+              message: successMsg,
             });
+
+            this.props.closeModal();
+
+            return resp;
           })
           .catch(({ errors }) => {
+            let err = errors;
+
+            if (Array.isArray(err)) {
+              err = [];
+
+              errors.length &&
+                errors.forEach(e => {
+                  if (e && e.toLowerCase().indexOf('status code') === -1) {
+                    err.push(e);
+                  }
+                });
+
+              err = err.length ? err : null;
+            }
+
+            if (!err) {
+              err = `Some Network error occured`;
+            }
+
             this.props.showNotification({
               type: 'error',
-              message: errors,
+              message: err,
             });
           });
       },
@@ -263,6 +326,9 @@ export default class ReusableLinksEntity extends React.Component {
     const isExpired =
       !loading && !isActive && statusReason.toLowerCase() === 'expired';
 
+    const isCompleted =
+      !loading && !isActive && statusReason.toLowerCase() === 'completed';
+
     return (
       <div class="content-wrapper content-sm txn-details Entity--reusable">
         {loading ? (
@@ -314,12 +380,16 @@ export default class ReusableLinksEntity extends React.Component {
                           class="Button--Link"
                           style={{ marginLeft: 12 }}
                           onClick={
-                            isActive ? this.deactivateLink : this.reActivateLink
+                            isActive
+                              ? this.toggleManualActivation
+                              : this.reActivateLink
                           }
                         >
                           {isActive ? 'Deactivate Link' : 'Activate Link'}
                         </Button.Transparent>
-                        <div class="text-danger">{statusReason}</div>
+                        <div class="text-danger" style={{ marginTop: 4 }}>
+                          {inActiveStatusReasonMap[statusReason]}
+                        </div>
                       </div>
                     )}
                   />
@@ -327,7 +397,7 @@ export default class ReusableLinksEntity extends React.Component {
                     label="Payment For"
                     pairClass="description"
                     value={
-                      isActive
+                      isActive || isCompleted
                         ? () => (
                             <EditPaymentFor
                               value={{
@@ -358,7 +428,7 @@ export default class ReusableLinksEntity extends React.Component {
                   <EntityDetailRow
                     label="Receipt"
                     value={
-                      isActive
+                      isActive || isCompleted
                         ? () => (
                             <EditReceipt
                               value={reusableLink.receipt}
@@ -390,7 +460,7 @@ export default class ReusableLinksEntity extends React.Component {
                   <EntityDetailRow
                     label={isExpired ? 'Expired On' : 'Expires On'}
                     value={
-                      isActive
+                      isActive || isCompleted
                         ? () => (
                             <EditExpiry
                               value={reusableLink.expire_by}
@@ -411,7 +481,7 @@ export default class ReusableLinksEntity extends React.Component {
                   <EntityDetailRow
                     label="Times Payable"
                     value={
-                      isActive
+                      isActive || isCompleted
                         ? () => (
                             <EditTimesPayable
                               value={reusableLink.times_payable}
