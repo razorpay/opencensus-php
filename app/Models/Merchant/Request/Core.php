@@ -639,7 +639,7 @@ class Core extends Base\Core
             $this->setModeAndDefaultConnection($liveMode);
         }
 
-        $request = $this->create($input);
+        $request = $this->create($input, $this->merchant);
 
         return $request;
     }

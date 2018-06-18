@@ -844,7 +844,7 @@ class Core extends Base\Core
      */
     public function unmarkAsPartner(Entity $merchant): Entity
     {
-        $merchant->setPartnerType(null);
+        $merchant->setPartnerType();
 
         $this->repo->saveOrFail($merchant);
 
