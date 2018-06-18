@@ -66,6 +66,7 @@ export const wallets = {
   mpesa: 'Mpesa',
   paytm: 'Paytm',
   sbibuddy: 'SBI Buddy',
+  amazonpay: 'Amazon Pay',
 };
 
 export const networks = {
