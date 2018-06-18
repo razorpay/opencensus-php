@@ -82,6 +82,7 @@ class RefundTest extends TestCase
         $this->fixtures->base->editEntity('refund', $refund['id'], ['gateway_refunded' => false, 'status' => 'created']);
 
         $refund = $this->getLastEntity('refund', true);
+
         $this->testData[__FUNCTION__]['request']['url'] = '/refunds/' . $refund['id'] . '/status';
 
         $this->ba->adminAuth('test');
@@ -108,6 +109,7 @@ class RefundTest extends TestCase
         $this->fixtures->base->editEntity('refund', $refund['id'], ['gateway_refunded' => false, 'status' => 'created']);
 
         $refund = $this->getLastEntity('refund', true);
+
         $this->testData[__FUNCTION__]['request']['url'] = '/refunds/' . $refund['id'] . '/status';
 
         $this->ba->adminAuth('test');
@@ -130,6 +132,7 @@ class RefundTest extends TestCase
         $this->fixtures->base->editEntity('refund', $refund['id'], ['gateway_refunded' => false, 'status' => 'initiated']);
 
         $refund = $this->getLastEntity('refund', true);
+
         $this->testData[__FUNCTION__]['request']['url'] = '/refunds/' . $refund['id'] . '/status';
 
         $this->ba->adminAuth('test');
@@ -143,7 +146,7 @@ class RefundTest extends TestCase
 
     public function testRefundEditStatustoInitiatedFromFailed()
     {
-         $payment = $this->defaultAuthPayment();
+        $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
         $refund = $this->refund(
@@ -156,6 +159,7 @@ class RefundTest extends TestCase
         $this->fixtures->base->editEntity('refund', $refund['id'], ['gateway_refunded' => false, 'status' => 'failed']);
 
         $refund = $this->getLastEntity('refund', true);
+
         $this->testData[__FUNCTION__]['request']['url'] = '/refunds/' . $refund['id'] . '/status';
 
         $this->ba->adminAuth('test');
@@ -181,6 +185,7 @@ class RefundTest extends TestCase
         $this->fixtures->base->editEntity('refund', $refund['id'], ['gateway_refunded' => false, 'status' => 'failed']);
 
         $refund = $this->getLastEntity('refund', true);
+
         $this->testData[__FUNCTION__]['request']['url'] = '/refunds/' . $refund['id'] . '/status';
 
         $this->ba->adminAuth('test');
@@ -207,6 +212,7 @@ class RefundTest extends TestCase
         $this->fixtures->base->editEntity('refund', $refund['id'], ['gateway_refunded' => false, 'status' => 'created']);
 
         $refund = $this->getLastEntity('refund', true);
+
         $this->testData[__FUNCTION__]['request']['url'] = '/refunds/' . $refund['id'] . '/status';
 
         $this->ba->adminAuth('test');

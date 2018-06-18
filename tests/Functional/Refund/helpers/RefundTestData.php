@@ -22,7 +22,6 @@ return [
             'content' => [
                 'status'    => 'initiated',
                 'reference1' => 'abcd'
-
             ],
             'method'  => 'PUT',
         ],
@@ -38,7 +37,6 @@ return [
             'content' => [
                 'status'    => 'failed',
                 'reference1' => 'abcdFailed'
-
             ],
             'method'  => 'PUT',
         ],
@@ -54,7 +52,6 @@ return [
             'content' => [
                 'status'    => 'initiated',
                 'reference1' => 'abcdInitiated'
-
             ],
             'method'  => 'PUT',
         ],
@@ -70,7 +67,6 @@ return [
             'content' => [
                 'status'    => 'processed',
                 'reference1' => 'abcdProcessed'
-
             ],
             'method'  => 'PUT',
         ],
@@ -84,7 +80,6 @@ return [
         'request'  => [
             'content' => [
                 'status'    => 'initiated'
-
             ],
             'method'  => 'PUT',
         ],
