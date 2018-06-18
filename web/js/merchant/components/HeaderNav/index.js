@@ -30,6 +30,7 @@ export default class HeaderNav extends Component {
   }
 
   onToggleAppMenu() {
+    analytics('Click - Sidebar Toggle');
     this.props.toggleMobileMenu();
   }
 
