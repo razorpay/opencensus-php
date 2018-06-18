@@ -754,9 +754,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertNotNull($transaction['reconciled_at']);
 
-        $batch = $this->getDbLastEntity('batch');
-
-        $this->assertEquals('processed', $batch['status']);
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testHitachiReconRefundFile()

@@ -45,7 +45,7 @@ trait BharatQrTrait
         $this->messenger->raiseReconAlert(
             [
                 'trace_code'     => TraceCode::BHARAT_QR_UNEXPECTED_PAYMENT,
-                'info_code'      => 'PAYMENT_ABSENT',
+                'info_code'      => InfoCode::PAYMENT_ABSENT,
                 'message'        => 'Unexpected Bharat Qr Payment',
                 'bank_reference' => $merchantReference,
                 'row'            => $row,
