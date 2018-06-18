@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import { Label, inputClass } from './index';
-import debounce from 'rzp/utils/debounce';
 import { classList } from 'common/util';
 import Button, { AsyncBtn } from 'component/Button';
 import ErrorBoundary from 'common/ErrorBoundary';
@@ -18,10 +17,10 @@ export default class EditablePairsList extends React.PureComponent {
   initializeState() {
     const initialPairs = this.props.defaultValue || [];
 
-    const dummyTS = new Date().getTime();
+    let dummyTS = new Date().getTime();
 
     const initialKeys = initialPairs.map(p => {
-      return dummyTS + 1;
+      return dummyTS++;
     });
 
     return {
@@ -303,7 +302,7 @@ class InputEditablePair extends React.Component {
               placeholder="Title (key)"
               data-id={idx}
               onChange={this.updateKey}
-              value={this.state.pair.key}
+              value={this.state.pair.key || ''}
               onBlur={this.onBlurTitle}
               onFocus={this.onFocusTitle}
             />
@@ -317,7 +316,7 @@ class InputEditablePair extends React.Component {
               placeholder="Description (value)"
               data-id={idx}
               onChange={this.updateValue}
-              value={this.state.pair.value}
+              value={this.state.pair.value || ''}
               onBlur={this.onBlurDesc}
               onFocus={this.onFocusDesc}
             />
