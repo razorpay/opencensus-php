@@ -868,10 +868,17 @@ class Core extends Base\Core
      */
     public function createPartnerApp(Entity $merchant): array
     {
+        $name = $merchant->getName();
+
+        // Default value is required because website is a required field to create oauth applications
+        $website = $merchant->getWebsite() ?? 'https://www.razorpay.com';
+
+        $logoUrl = $merchant->getLogoUrl();
+
         $appInput = [
-            'name'     => 'Internal',
-            'website'  => 'https://www.razorpay.com',
-            'logo_url' => '/logo/app_logo.png',
+            'name'     => $name,
+            'website'  => $website,
+            'logo_url' => $logoUrl,
         ];
 
         $app = app('authservice')->createApplication($appInput, $merchant->getId(), Application\Type::PARTNER);

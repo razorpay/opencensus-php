@@ -126,13 +126,15 @@ class PartnerTest extends OAuthTestCase
         // Create a merchant request
         $merchantRequest = $this->createMerchantRequest(self::ACTIVATION, true);
 
+        $merchant = $merchantRequest->merchant;
+
         // Mock create application call to auth service
         $requestParams = $this->getDefaultParamsForAuthServiceRequest();
 
         $createParams = [
-            'name'     => 'Internal',
-            'website'  => 'https://www.razorpay.com',
-            'logo_url' => '/logo/app_logo.png',
+            'name'     => $merchant->getName(),
+            'website'  => $merchant->getWebsite(),
+            'logo_url' => null,
             'type'     => self::PARTNER,
         ];
 
