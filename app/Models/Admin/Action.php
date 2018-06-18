@@ -251,7 +251,6 @@ class Action
         'action' => AC::ACTION_DELETE
     ];
 
-
     const CREATE_UPDATE_PRICING_PLAN_RULE = [
         'category' => AC::CATEGORY_MERCHANT,
         'label' => AC::LABEL_PRICING_PLAN_RULE,
