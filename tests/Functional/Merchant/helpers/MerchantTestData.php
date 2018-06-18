@@ -702,7 +702,7 @@ return [
             'content' => [
                 'brand_color'         => '00bcd4',
                 'handle'              => 'LOLO',
-                'invoice_label_field' => 'name',
+                'invoice_label_field' => 'business_name',
             ],
             'url'     => '/account/config',
             'method'  => 'put',
@@ -716,7 +716,7 @@ return [
                 'id'                  => '10000000000000',
                 'brand_color'         => '#00BCD4',
                 'handle'              => 'LOLO',
-                'invoice_label_field' => 'name',
+                'invoice_label_field' => 'business_name',
             ]
         ]
     ],

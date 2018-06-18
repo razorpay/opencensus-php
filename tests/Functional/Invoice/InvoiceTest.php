@@ -100,12 +100,12 @@ class InvoiceTest extends TestCase
 
     public function testCreateInvoiceWithDefinedDisplayName()
     {
-        $merchanLabel = 'Awesome and Co';
+        $merchantLabel = 'Awesome and Co';
 
         $merchantAttrs = [
             'name'                => 'ASD Enterprise',
-            'billing_label'       => $merchanLabel,
-            'invoice_label_field' => 'billing_label',
+            'business_dba'       => $merchantLabel,
+            'invoice_label_field' => 'business_dba',
         ];
 
         $this->fixtures->merchant->edit('10000000000000', $merchantAttrs);
@@ -117,7 +117,7 @@ class InvoiceTest extends TestCase
 
         $invoice = $this->getLastEntity('invoice', true);
 
-        $this->assertEquals($merchanLabel, $invoice['merchant_label']);
+        $this->assertEquals($merchantLabel, $invoice['merchant_label']);
         $this->assertEquals('29', $invoice['supply_state_code']);
     }
 
