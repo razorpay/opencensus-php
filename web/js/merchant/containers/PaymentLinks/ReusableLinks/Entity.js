@@ -7,6 +7,8 @@ import {
   fetchReusableLinksEntity,
   fetchReusableLinkPaymentsList,
   editReusableLink,
+  activateReusableLink,
+  deactivateReusableLink,
   sendLink,
 } from './model';
 import { ReusableLinksStatusLabel } from 'merchant/components/StatusLabel';
@@ -34,9 +36,9 @@ import Button from 'component/Button';
 
 /* Human readable reason to be displayed */
 const inActiveStatusReasonMap = {
-  completed: 'Max Times payable limit is completed',
+  completed: 'Total payments made reached Times payable limit',
   expired: 'The link is expired',
-  cancelled: 'You closed the link',
+  deactivated: 'You manually deactivated the link',
 };
 
 @connect(null, {
@@ -157,9 +159,9 @@ export default class ReusableLinksEntity extends React.Component {
 
     const isExpired = statusReason.toLowerCase() === 'expired';
     const isCompleted = statusReason.toLowerCase() === 'completed';
-    const isCancelled = statusReason.toLowerCase() === 'cancelled';
+    const isDeactivated = statusReason.toLowerCase() === 'deactivated';
 
-    if (isCancelled) {
+    if (isDeactivated) {
       this.toggleManualActivation();
       return;
     }
@@ -182,7 +184,20 @@ export default class ReusableLinksEntity extends React.Component {
             isCompleted ? this.state.reusableLink.times_payable : undefined
           }
           handleClose={this.props.closeModal}
-          handleClick={this.editReusableLink()}
+          handleClick={data => {
+            return activateReusableLink(this.state.reusableLink.id, data).then(
+              resp => {
+                if (resp.data) {
+                  updateRPLInReduxList(resp.data, false);
+                  this.setState({
+                    reusableLink: resp.data,
+                  });
+                }
+
+                return resp;
+              }
+            );
+          }}
         />
       ),
     });
@@ -199,29 +214,35 @@ export default class ReusableLinksEntity extends React.Component {
     const statusReason = this.state.reusableLink.status_reason;
 
     const isActive = status === 'active';
-    const isCancelled =
-      statusReason && statusReason.toLowerCase() === 'cancelled';
+    const isDeactivated =
+      statusReason && statusReason.toLowerCase() === 'deactivated';
 
-    let header, message, affirmativeLabel, affirmativePendingLabel, successMsg;
+    let apiAction,
+      header,
+      message,
+      affirmativeLabel,
+      affirmativePendingLabel,
+      successMsg;
 
     if (isActive) {
       /* Wants manual deactivation */
-
+      apiAction = deactivateReusableLink;
       header = 'Deactivate Link?';
       message =
         'Once you deactivate the link, you will not be able to accept payments till you activate it again.';
       affirmativeLabel = 'Yes, deactivate';
       affirmativePendingLabel = 'Deactivating..';
-      successMsg = `${this.state.reusableLink.id} link is now inactive`;
-    } else if (isCancelled) {
+      successMsg = `${this.state.reusableLink.id} link is now Inactive`;
+    } else if (isDeactivated) {
       /* Wants activation for manual deactivation for cancelled status */
 
+      apiAction = activateReusableLink;
       header = 'Activate Link?';
       message =
         'Once you activate the link, you will be able to accept payments.';
       affirmativeLabel = 'Yes, activate';
       affirmativePendingLabel = 'Activating..';
-      successMsg = `${this.state.reusableLink.id} link is now active`;
+      successMsg = `${this.state.reusableLink.id} link is now Active`;
     }
 
     this.context.confirm({
@@ -235,18 +256,22 @@ export default class ReusableLinksEntity extends React.Component {
       affirmativePendingLabel,
       abortLabel: "No, don't!",
       action: () => {
-        // TODO: Where is api to manually activate/deactivate?
-        return editReusableLink(this.state.reusableLink.id, {
-          status: newStatus,
-        })
+        return apiAction(this.state.reusableLink.id)
           .then(resp => {
-            this.props.showNotification({
-              type: 'success',
-              message: successMsg,
-            });
+            if (resp.data) {
+              this.props.showNotification({
+                type: 'success',
+                message: successMsg,
+              });
 
-            this.props.closeModal();
+              this.props.closeModal();
 
+              updateRPLInReduxList(resp.data, false);
+
+              this.setState({
+                reusableLink: resp.data,
+              });
+            }
             return resp;
           })
           .catch(({ errors }) => {
@@ -521,11 +546,10 @@ export default class ReusableLinksEntity extends React.Component {
                               trackerFn={trackDetailViewEdits}
                             />
                           )
-                        : () => (
-                            <div
-                              value={reusableLink.times_payable || 'No Limit'}
-                            />
-                          )
+                        : () =>
+                            reusableLink.times_payable || (
+                              <div class="text-danger">No Limit</div>
+                            )
                     }
                   />
 

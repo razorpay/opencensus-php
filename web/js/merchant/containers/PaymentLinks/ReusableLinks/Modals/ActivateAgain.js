@@ -249,13 +249,13 @@ export default class ActivateAgainModal extends React.Component {
                         : this.state.timesPayable;
                   }
 
-                  this.props.handleClick(reqPayload).then(resp => {
+                  return this.props.handleClick(reqPayload).then(resp => {
                     if (resp.data) {
                       this.props.handleClose();
                     }
                   });
                 }}
-                pendingState="Saving"
+                pendingState="Activating.."
               >
                 Yes, activate
               </AsyncBtn.Primary>

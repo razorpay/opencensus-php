@@ -25,22 +25,23 @@ export function editReusableLink(id, data) {
   });
 }
 
-export const fetchReusableLinksEntity = id => {
+export function fetchReusableLinksEntity(id) {
   return merchantFetch({
     url: `payment_links/${id}`,
     params: {
       expand: ['user'],
     },
   });
-};
+}
 
-export const fetchReusableLinksList = data =>
-  merchantFetch({
+export function fetchReusableLinksList(data) {
+  return merchantFetch({
     url: 'payment_links',
     data,
   });
+}
 
-export const fetchReusableLinkPaymentsList = id => {
+export function fetchReusableLinkPaymentsList(id) {
   return merchantFetch({
     url: 'payments',
     params: {
@@ -48,9 +49,24 @@ export const fetchReusableLinkPaymentsList = id => {
       count: 5,
     },
   });
-};
+}
 
-export const sendLink = (id, data) => {
+export function deactivateReusableLink(id) {
+  return merchantFetch({
+    url: `payment_links/${id}/deactivate`,
+    method: 'patch',
+  });
+}
+
+export function activateReusableLink(id, data) {
+  return merchantFetch({
+    url: `payment_links/${id}/activate`,
+    method: 'patch',
+    data,
+  });
+}
+
+export function sendLink(id, data) {
   const reqPayload = {};
 
   data.email && (reqPayload.emails = [data.email]);
@@ -61,4 +77,4 @@ export const sendLink = (id, data) => {
     method: 'post',
     data: reqPayload,
   });
-};
+}
