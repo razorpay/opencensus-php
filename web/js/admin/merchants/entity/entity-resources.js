@@ -301,6 +301,7 @@ const _getMethods = {
   emi: 'EMI',
   emandate: 'e-Mandate',
   mpesa: 'Mpesa',
+  amazonpay: 'Amazon Pay',
 };
 
 /*---------------------------------------- Render UI resource --------------------------------------------*/
