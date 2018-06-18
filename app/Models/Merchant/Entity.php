@@ -846,9 +846,9 @@ class Entity extends Base\PublicEntity
      */
     public function getLabelForInvoice()
     {
-        $field = $this->getInvoiceLabelField() ?: self::BILLING_LABEL;
+        $field = $this->getInvoiceLabelField() ?: Detail\Entity::BUSINESS_NAME;
 
-        return $this->getAttribute($field);
+        return $this->merchantDetail->getAttribute($field);
     }
 
     public function getAutoCaptureLateAuth()
