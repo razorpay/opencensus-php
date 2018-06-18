@@ -21,7 +21,12 @@ const aggTypes = [
   },
 ];
 
-const getQuery = ({ startTime, endTime, aggType = aggTypes[0].value }) => ({
+const getQuery = ({
+  startTime,
+  endTime,
+  aggType = aggTypes[0].value,
+  groupBy = paymentMethodsColumns,
+}) => ({
   filters: {
     default: [getDefaultPaymentFilter(startTime, endTime)],
   },
@@ -31,7 +36,7 @@ const getQuery = ({ startTime, endTime, aggType = aggTypes[0].value }) => ({
       details: {
         index: 'payments',
         column: 'base_amount',
-        group_by: paymentMethodsColumns,
+        group_by: groupBy,
       },
     },
   },

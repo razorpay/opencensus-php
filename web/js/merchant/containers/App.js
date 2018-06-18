@@ -7,6 +7,7 @@ import ModalDialog from 'rzp/ui/ModalDialog';
 import Notifications from 'rzp/ui/Notifications';
 import ReactIdle from 'rzp/ui/ReactIdle';
 import LocalStorageService from 'rzp/utils/localStorage';
+import debounce from 'rzp/utils/debounce';
 import Sidebar from 'merchant/containers/Sidebar';
 import HeaderNav from 'merchant/components/HeaderNav';
 import Content from 'merchant/components/Content';
@@ -25,15 +26,24 @@ import { fetchFeaturesAjax } from 'merchant/modules/config';
 import AddGST from 'merchant/containers/Profile/AddGST';
 import { fetchGST } from 'merchant/modules/profile';
 import { fetchConfig } from 'merchant/modules/config';
+import { resizeWindow } from 'merchant/modules/app';
 
 @withRouter
-@connect(state => ({ ...state.session, config: state.config }), {
-  ...ModalActions,
-  ...SessionActions,
-  ...ConfigActions,
-  ...NotificationActions,
-  fetchGST,
-})
+@connect(
+  state => ({
+    ...state.session,
+    config: state.config,
+    windowWidth: state.app.windowWidth,
+  }),
+  {
+    ...ModalActions,
+    ...SessionActions,
+    ...ConfigActions,
+    ...NotificationActions,
+    fetchGST,
+    resizeWindow,
+  }
+)
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -62,8 +72,9 @@ export default class App extends Component {
 
     this.state = {
       isLoading: true,
-      showMobileNav: false,
     };
+
+    this.handleResize = debounce(this.handleResize.bind(this), 200);
   }
 
   componentWillMount() {
@@ -140,11 +151,19 @@ export default class App extends Component {
     });
   }
 
+  componentDidMount() {
+    window.addEventListener('resize', this.handleResize);
+  }
+
   componentWillReceiveProps({ user, history }) {
     if (user.isAuthenticated) {
       let role = user.userRole;
       this.redirectToRoute(role);
     }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handleResize);
   }
 
   fetchUser() {
@@ -310,10 +329,8 @@ export default class App extends Component {
     });
   };
 
-  toggleMobileNav = () => {
-    this.setState({
-      showMobileNav: !this.state.showMobileNav,
-    });
+  handleResize = () => {
+    this.props.resizeWindow();
   };
 
   showGSTModal = () => {
@@ -339,8 +356,7 @@ export default class App extends Component {
           showGSTModal={this.showGSTModal}
           onSwitchMode={this.switchMode}
           onSwitchMerchant={this.switchMerchant}
-          toggleMobileNav={this.toggleMobileNav}
-          showMobileNav={this.state.showMobileNav}
+          showMobileNav={this.props.windowWidth < 950}
         />
         <Sidebar
           user={user}

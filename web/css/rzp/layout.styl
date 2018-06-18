@@ -44,7 +44,7 @@ body {
   margin-left: 200px;
   margin-top: 51px;
   @media (max-width $screen-sm-min) {
-    margin-left: 45px;
+    margin-left: 0;
   }
 
   .rzp-error-boundary {
@@ -67,15 +67,36 @@ body {
   font-weight: 300;
 }
 
+.sidebar-bg-overlay {
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 1110;
+  cursor: pointer;
+  background-color: rgba(46, 51, 68, 0.5);
+}
+
 .sidebar {
   position: fixed;
   top: 0;
   bottom: 0;
-  background-color: #2E3345;
+  background-color: $sidebar-bg-color;
   width: 200px;
   z-index: 1111;
-  @media (max-width $screen-sm-min) {
-    width: 45px;
+
+  @media (max-width: $screen-sm-min) {
+
+    transform: translate(-100%, 0);
+    transition: transform 150ms ease-in;
+    will-change: transform;
+
+    &.show-mobile-menu {
+
+      transform: translate(0);
+    }
   }
 
   .brand-logo {
@@ -215,11 +236,6 @@ body {
           }
         }
       }
-
-      @media (max-width $screen-sm-min) {
-
-        display: none;
-      }
     }
   }
 
@@ -271,9 +287,9 @@ body {
   margin-bottom: 0;
   border-bottom: 0;
   background-color: #fff;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(0, 0, 0, 0.05);
+  box-shadow:0px 2px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(0, 0, 0, 0.05);
   @media (max-width $screen-sm-min) {
-    margin-left: 45px;
+    margin-left: 0;
   }
 }
 
@@ -298,7 +314,7 @@ body {
   color: #8F96B3;
   margin-left: 200px;
   @media (max-width $screen-sm-min) {
-    margin-left: 45px;
+    margin-left: 0;
   }
 
   a {
@@ -974,9 +990,29 @@ tr:hover .row-action.btn-group {
   padding: 0;
   line-height: 1.8;
 
+  .merchant-details-container {
+
+    .rzp-group {
+
+      width: 100%;
+
+      .rzp-group-item {
+
+        width: auto;
+        padding: 0;
+        border: none;
+
+        &:last-child {
+
+          text-align: right;
+        }
+      }
+    }
+  }
+
   .media {
     margin-top: 0;
-    padding: 10px 12px;
+    padding: 12px;
 
     + .media {
       border-top: 1px solid #eee;
@@ -1015,6 +1051,29 @@ tr:hover .row-action.btn-group {
   .i-tour,
   .i-undo {
     font-size: 20px;
+  }
+}
+
+ul.switch-modes-menu.nav.nav-stacked {
+
+  padding: 0;
+
+  > li {
+
+    margin: 0;
+
+    > a {
+
+      border-top: 1px solid #eee;
+    }
+
+    &:first-child {
+
+      > a {
+
+        border-top: none;
+      }
+    }
   }
 }
 

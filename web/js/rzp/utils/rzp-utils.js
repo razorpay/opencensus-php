@@ -10,6 +10,10 @@ moment.updateLocale('en', {
   },
 });
 
+export function isMobileResolution() {
+  return window.outerWidth <= 768;
+}
+
 export function isFunction(value) {
   return typeof value === 'function';
 }
@@ -576,4 +580,20 @@ export const subString = (str, length) => {
   } else {
     return str;
   }
+};
+
+// efficient sorting of any collection based on order
+export const getArraySorterFromArray = (
+  order = [],
+  getValue = item => item
+) => {
+  const orderMap = order.reduce((map, item, index) => {
+    map[item] = index;
+
+    return map;
+  }, {});
+
+  return (item1, item2) => {
+    return orderMap[getValue(item1)] - orderMap[getValue(item2)];
+  };
 };

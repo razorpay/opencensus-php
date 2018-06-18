@@ -5,11 +5,13 @@ export const DESKTOP = 'Desktop';
 export const MOBILE = 'Mobile';
 export const ANDROID = 'Android';
 export const IOS = 'iOS';
+export const EMANDATE = 'e-Mandate';
 
 export const globalGroupTitleMap = {
   upi: 'UPI',
   emi: 'EMI',
   ios: IOS,
+  emandate: EMANDATE,
 };
 
 const platformsMap = {

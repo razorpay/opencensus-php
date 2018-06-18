@@ -40,6 +40,11 @@ body.show-hotjar-poll #_hj_poll_container {
     box-shadow: 0 1px 4px 0 rgba(0,0,0,0.1);
   }
 
+  .rzp-sticky.sticky > .sticky-content {
+
+    z-index: 2;
+  }
+
   .v2-tour-banner {
 
     width: 100%;
@@ -151,12 +156,6 @@ body.show-hotjar-poll #_hj_poll_container {
       }
     }
   }
-}
-
-.dashboard {
-
-  padding: 24px;
-  background-color: transparent;;
 
   .section-title {
 
@@ -187,6 +186,91 @@ body.show-hotjar-poll #_hj_poll_container {
         color: $text-color;
       }
     }
+  }
+
+  .home-analytics-mobile {
+
+    .extra-content {
+
+      .section-title {
+
+        margin-left: 16px;
+      }
+
+      .panel.card {
+
+        margin-bottom: 0;
+      }
+
+      padding-bottom: 24px;
+    }
+
+    .section-title {
+
+      padding-top: 24px;
+    }
+
+    .header, .card {
+
+      padding: 16px;
+    }
+
+    div.panel {
+
+      div.panel-topbar {
+
+        div.grouping-dropdown {
+
+          width: 100%;
+          margin: 0 auto;
+        }
+      }
+
+      div.panel-body {
+
+        display: table;
+        width: 100%;
+      }
+
+      &.recent-activity-cont {
+
+        padding-top: 56px;
+        padding-left: 0;
+        padding-right: 0;
+
+        div.panel-body {
+
+          height: 260px;
+        }
+      }
+    }
+
+    @media(max-width: 424px) {
+
+      .date-range-container {
+
+        .icon-container {
+
+          padding-right: 9px;
+        }
+
+        .presets-container {
+
+          display: none;
+        }
+      }
+    }
+  }
+}
+
+.dashboard {
+
+  padding: 24px;
+  background-color: transparent;;
+
+  @media(max-width: $screen-md-min) {
+
+    padding: 16px;
   }
 
   .panel.dasboard-home-panel {
@@ -271,7 +355,7 @@ body.show-hotjar-poll #_hj_poll_container {
       }
     }
 
-    @media (max-width: 1024px) {
+    &.traffic-hidden {
 
       > div {
 
@@ -279,7 +363,7 @@ body.show-hotjar-poll #_hj_poll_container {
       }
     }
 
-    &.traffic-hidden {
+    @media(max-width: 1185px) {
 
       > div {
 
@@ -367,7 +451,7 @@ body.analytics-v2-active {
 
           &.PowerSelect__Option--highlighted {
 
-            background-color: #8991AE;
+            background-color: #9eb1c7;
             color: #FFFFFF;
           }
         }
