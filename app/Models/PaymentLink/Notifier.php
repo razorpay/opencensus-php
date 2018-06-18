@@ -119,7 +119,7 @@ class Notifier extends Base\Core
         return [
             'receiver' => $contact,
             'source'   => "api.{$this->mode}.payment_link",
-            'template' => 'sms.payment_link',
+            'template' => 'sms.payment_link_v1',
             'params'   => [
                 'merchant_name'    => $merchant->getBillingLabel(),
                 'payment_link_url' => $paymentLink->getShortUrl(),
