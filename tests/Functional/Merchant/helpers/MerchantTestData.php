@@ -1446,6 +1446,34 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithMultipleOrderOffers' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'order_id' => null
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'offers' => [
+                    [
+                        'name' => 'Test Offer',
+                        'payment_method' => 'card',
+                        'payment_network' => 'VISA',
+                        'issuer' => 'HDFC',
+                    ],
+                    [
+                        'name' => 'Test Offer',
+                        'payment_method' => 'card',
+                        'payment_network' => 'VISA',
+                        'issuer' => 'HDFC',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithOrderRelatedUndiscountedOffer' => [
         'request' => [
             'url'    => null,
