@@ -3,6 +3,7 @@
 namespace RZP\Models\PaymentLink;
 
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -35,16 +36,18 @@ class Core extends Base\Core
     /**
      * @param  array           $input
      * @param  Merchant\Entity $merchant
+     * @param  User\Entity     $user
      *
      * @return Entity
      */
-    public function create(array $input, Merchant\Entity $merchant): Entity
+    public function create(array $input, Merchant\Entity $merchant, User\Entity $user = null): Entity
     {
         $this->trace->info(TraceCode::PAYMENT_LINK_CREATE_REQUEST, $input);
 
         $paymentLink = (new Entity)->build($input);
 
         $paymentLink->merchant()->associate($merchant);
+        $paymentLink->user()->associate($user);
 
         $paymentLink->generateId();
 

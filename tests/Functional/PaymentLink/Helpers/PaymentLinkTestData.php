@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\PaymentLink;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Tests\Functional\Fixtures\Entity\User;
 
 return [
     'testCreatePaymentLink' => [
@@ -23,6 +24,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'user_id'       => User::MERCHANT_USER_ID,
                 'receipt'       => '00000000000001',
                 'amount'        => 100000,
                 'currency'      => 'INR',
@@ -75,6 +77,7 @@ return [
         'response' => [
             'content' => [
                 'id'            => 'pl_100000000000pl',
+                'user_id'       => User::MERCHANT_USER_ID,
                 'receipt'       => '00000000000001',
                 'amount'        => 100000,
                 'currency'      => 'INR',
@@ -97,6 +100,7 @@ return [
                 'items' => [
                     [
                         'id'            => 'pl_100000000000pl',
+                        'user_id'       => User::MERCHANT_USER_ID,
                         'receipt'       => '00000000000001',
                         'amount'        => 100000,
                         'currency'      => 'INR',

@@ -21,6 +21,13 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->payment_link;
     }
 
+    public function create(array $input): array
+    {
+        $entity = $this->core->create($input, $this->merchant, $this->user);
+
+        return $entity->toArrayPublic();
+    }
+
     public function sendNotification(string $id, array $input)
     {
         $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
@@ -53,7 +60,6 @@ class Service extends Base\Service
 
     public function getHostedViewPaylaod(string $id): array
     {
-        // sd($id);
         $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
 
         $paymentLink->getValidator()->validateIsViewable();

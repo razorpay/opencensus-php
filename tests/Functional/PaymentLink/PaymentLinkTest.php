@@ -12,6 +12,7 @@ use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
+use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Models\PaymentLink as PaymentLinkModel;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -321,6 +322,7 @@ class PaymentLinkTest extends TestCase
     protected function createPaymentLink(string $id = self::TEST_PL_ID, array $attributes = []): PaymentLinkModel\Entity
     {
         $attributes[PaymentLinkModel\Entity::ID] = $id;
+        $attributes[PaymentLinkModel\Entity::USER_ID] = User::MERCHANT_USER_ID;
 
         return $this->fixtures->create('payment_link', $attributes);
     }
