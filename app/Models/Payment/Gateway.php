@@ -176,6 +176,8 @@ class Gateway
         Payment\Gateway::WALLET_AMAZONPAY,
         Payment\Gateway::UPI_MINDGATE,
         Payment\Gateway::HITACHI,
+        Payment\Gateway::UPI_HULK,
+        Payment\Gateway::NETBANKING_AIRTEL,
     ];
 
     public static $channels = [

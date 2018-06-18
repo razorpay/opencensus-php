@@ -97,6 +97,26 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function verifyRefund(array $input)
+    {
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
+
+        $processedRefunds = $this->getProcessedRefunds();
+
+        if (in_array($input['refund']['id'], $processedRefunds, true) === true)
+        {
+            return true;
+        }
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds, true) === true)
+        {
+            return false;
+        }
+
+        throw new Exception\LogicException(
+            'Airtel NB verify refund not implemented.');
+    }
+
     public function getMerchantId2()
     {
         if ($this->mode === Mode::TEST)
