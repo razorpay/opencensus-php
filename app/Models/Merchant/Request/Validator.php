@@ -156,7 +156,7 @@ class Validator extends Base\Validator
         if (in_array($name, Constants::$typeNamesMap[$type], true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                PublicErrorDescription::BAD_REQUEST_INVALID_MERCHANT_REQUEST_NAME,
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_REQUEST_INVALID_NAME,
                 Entity::NAME,
                 [
                     Entity::NAME                  => $name,
