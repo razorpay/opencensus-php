@@ -29,8 +29,8 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
-        Entity::RECEIPT       => 'sometimes|string|min:1|max:40',
-        Entity::TITLE         => 'sometimes|string|max:255',
+        Entity::RECEIPT       => 'sometimes|string|min:1|max:40|nullable',
+        Entity::TITLE         => 'sometimes|string|max:255|nullable',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
     ];

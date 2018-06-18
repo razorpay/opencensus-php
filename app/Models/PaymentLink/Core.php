@@ -99,8 +99,7 @@ class Core extends Base\Core
      */
     protected function setShortUrl(Entity $paymentLink)
     {
-        $url = $paymentLink->getHostedViewUrl($this->plHostedBaseUrl, $this->mode);
-
+        $url = $paymentLink->getHostedViewUrl($this->plHostedBaseUrl);
         $shortUrl = $this->elfin->shorten($url);
 
         $paymentLink->setShortUrl($shortUrl);

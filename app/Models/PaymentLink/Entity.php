@@ -171,6 +171,6 @@ class Entity extends Base\PublicEntity
      */
     public function getHostedViewUrl(string $plHostedBaseUrl): string
     {
-        return $plHostedBaseUrl . '/v1/payment_links/' . $this->getPublicId();
+        return $plHostedBaseUrl . '/v1/payment_links/' . $this->getPublicId() . '/view';
     }
 }
