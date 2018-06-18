@@ -134,6 +134,9 @@ class Holidays
             3 => [
                 30 => 'Good Friday',
             ],
+            6 => [
+                16 => 'Id-Ul-Fitr',
+            ],
             8 => [
                 15 => 'Independece Day',
                 22 => 'Bakri ID (ld- UI-Zuha)',

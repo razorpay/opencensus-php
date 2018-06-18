@@ -334,11 +334,31 @@ class TransactionFilter extends Terminal\Filter
 
         if ($payment->isNetbanking() === true)
         {
+            // If terminal supports both corporate and retail,
+            // we can directly pass this filter
+            if ($terminal->isBankingTypeBoth() === true)
+            {
+                return true;
+            }
+
             $bank = $payment->getBank();
 
-            // If a bank does not require a corporate terminal
-            // a corporate terminal should not allow the payment.
-            return (Netbanking::isCorporateTerminalRequired($bank) === $terminal->isCorporate());
+            $terminalBankingTypes = $terminal->getBankingTypes();
+
+            // For corporate bank, the terminal should support corporate type
+            if ((Netbanking::isCorporateBank($bank) === true) and
+                (in_array(Terminal\BankingType::CORPORATE, $terminalBankingTypes) === true))
+            {
+                return true;
+            }
+            else if ((Netbanking::isCorporateBank($bank) === false) and
+                     (in_array(Terminal\BankingType::RETAIL, $terminalBankingTypes) === true))
+            {
+                return true;
+            }
+
+            // If the banking type in payment and terminal does not match
+            return false;
         }
 
         return true;

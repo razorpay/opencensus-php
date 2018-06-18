@@ -3,6 +3,7 @@ namespace RZP\Tests\Functional\Gateway\Reconciliation;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Exception\GatewayRequestException;
 use RZP\Models\Batch\Status;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
@@ -19,7 +20,6 @@ use RZP\Reconciliator\FirstData\PaymentReconciliate as FDPaymentRecon;
 use RZP\Reconciliator\Hitachi\RefundReconciliate as HitachiRefundRecon;
 use RZP\Reconciliator\BillDesk\RefundReconciliate as BilldeskRefundRecon;
 use RZP\Reconciliator\Hitachi\PaymentReconciliate as HitachiPaymentRecon;
-
 use RZP\Reconciliator\VirtualAccYesBank\PaymentReconciliate as VirtualAccYesBank;
 
 class ReconciliationFileTest extends TestCase
@@ -145,7 +145,7 @@ class ReconciliationFileTest extends TestCase
         {
             if ($action === 'capture')
             {
-                throw new Exception\GatewayRequestException('Timed out');
+                throw new GatewayRequestException('Timed out');
             }
 
             return $content;
@@ -287,7 +287,7 @@ class ReconciliationFileTest extends TestCase
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
         // Recurring authorised payment
-        $refund1 = $this->getNewRefundEntity(true, false);
+        $refund1 = $this->getNewRefundEntity(true);
         $gatewayPayment1 = $this->getDbLastEntityToArray('hdfc');
 
         $this->assertNull($refund1['arn']);
@@ -347,7 +347,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
-  
+
     //For success case of Bill desk reconciliation
     public function testBillDeskReconRefundFileFailure()
     {
@@ -519,7 +519,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->refundPayment($payment['id']);
 
-        return $this->getDbLastRefund('refund')->toArrayAdmin();
+        return $this->getDbLastRefund()->toArrayAdmin();
     }
 
     private function overrideFirstDataPayment(array $payment, array $forceOverride = [])
@@ -716,6 +716,8 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
 
         $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testHitachiReconRefundFile()
@@ -726,7 +728,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
 
-        $refund1 = $this->getNewRefundEntity(true, false);
+        $refund1 = $this->getNewRefundEntity(true);
 
         $gatewayPayment1 = $this->getDbLastEntityToArray('hitachi');
 
@@ -740,6 +742,8 @@ class ReconciliationFileTest extends TestCase
         $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
 
         $this->assertEquals($entries[0][HitachiRefundRecon::COLUMN_ARN], $updatedRefund1['arn']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testHdfcFssOnusTransactionRecon()
@@ -747,7 +751,7 @@ class ReconciliationFileTest extends TestCase
         $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
-        $refund1 = $this->getNewRefundEntity(true, false);
+        $refund1 = $this->getNewRefundEntity(true);
         $gatewayPayment1 = $this->getDbLastEntityToArray('hdfc');
 
         $this->assertNull($refund1['arn']);

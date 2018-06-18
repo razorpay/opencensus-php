@@ -87,12 +87,12 @@ class Core extends Base\Core
         $order = $this->repo->order->fetchForPayment($payment);
 
         if (($order === null) or
-            ($order->hasOffer() === false))
+            ($order->hasOffers() === false))
         {
             return;
         }
 
-        $appliedOffer = $order->offer;
+        $appliedOffer = $order->getOffer();
 
         $offerChecker = new Checker($appliedOffer, true);
 

@@ -49,6 +49,28 @@ class RefundTest extends TestCase
         Queue::assertNotPushed(BatchJob::class);
     }
 
+    public function testRefundBatchWithAdminAuth()
+    {
+        $entries = $this->getDefaultRefundFileEntries();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testRefundBatchWithSharedMerchantProxyAuth()
+    {
+        $entries = $this->getDefaultRefundFileEntries();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->ba->proxyAuth('rzp_test_100000Razorpay');
+
+        $this->startTest();
+    }
+
     public function testUploadRefundFileException()
     {
         $entries = $this->getDefaultRefundFileEntries();
