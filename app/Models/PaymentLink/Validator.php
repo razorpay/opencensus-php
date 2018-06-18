@@ -18,19 +18,19 @@ class Validator extends Base\Validator
         Entity::CURRENCY      => 'filled|in:INR',
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable',
-        Entity::RECEIPT       => 'required|string|min:1|max:40',
-        Entity::TITLE         => 'required|string|max:255|min:1',
-        Entity::DESCRIPTION   => 'sometimes|string|max:2048|min:1|nullable',
-        Entity::NOTES         => 'sometimes|notes',
+        Entity::RECEIPT       => 'sometimes|string|min:1|max:40|nullable',
+        Entity::TITLE         => 'required|filled|string|max:255',
+        Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
+        Entity::NOTES         => 'filled|notes',
     ];
 
     protected static $editRules = [
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
         Entity::RECEIPT       => 'sometimes|string|min:1|max:40|nullable',
-        Entity::TITLE         => 'sometimes|string|max:255',
+        Entity::TITLE         => 'filled|string|max:255',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
-        Entity::NOTES         => 'sometimes|notes',
+        Entity::NOTES         => 'filled|notes',
     ];
 
     protected static $sendNotificationRules = [
