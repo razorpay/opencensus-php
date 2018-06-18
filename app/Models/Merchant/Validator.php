@@ -646,4 +646,36 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_INTERNATIONAL_ALREADY_DISABLED);
         }
     }
+
+    /**
+     * Throw an error if the merchant is already a partner
+     *
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIfAlreadyPartner(Entity $merchant)
+    {
+        if ($merchant->isPartner() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER);
+        }
+    }
+
+    /**
+     * Throw an error if the merchant is not a partner
+     *
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIfNotAPartner(Entity $merchant)
+    {
+        if ($merchant->isPartner() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER);
+        }
+    }
 }

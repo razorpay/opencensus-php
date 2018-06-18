@@ -800,4 +800,6 @@ class ErrorCode
 
     // Partners
     const BAD_REQUEST_INVALID_PARTNER_NAME                                          = 'BAD_REQUEST_INVALID_PARTNER_NAME';
+    const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                       = 'BAD_REQUEST_MERCHANT_IS_NOT_PARTNER';
+    const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                                   = 'BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER';
 }

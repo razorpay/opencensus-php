@@ -128,6 +128,30 @@ class PartnerTest extends TestCase
         $this->assertEquals($merchant->getPartnerType(), 'reseller');
     }
 
+    /**
+     * Test approving the partner activation merchant request for a merchant who is already a partner.
+     */
+    public function testMarkPartnerAsPartner()
+    {
+        $merchantId = '10000000000000';
+
+        $merchantRequest = $this->createMerchantRequest('activation', true);
+
+        $merchantRequestId = $merchantRequest->getPublicId();
+
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->markMerchantAsReseller($merchantId);
+
+        $this->ba->adminAuth($liveMode);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/merchant/requests/' . $merchantRequestId;
+
+        $this->startTest($testData);
+    }
+
     public function testMarkAsPartnerWithMissingSubmission()
     {
         $merchantRequest = $this->createMerchantRequest('activation', false);
@@ -146,6 +170,35 @@ class PartnerTest extends TestCase
     }
 
     public function testApprovingUnmarkAsPartnerMerchantRequest()
+    {
+        $merchantId = '10000000000000';
+
+        $merchantRequest = $this->createMerchantRequest('deactivation', true);
+
+        $merchantRequestId = $merchantRequest->getPublicId();
+
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->markMerchantAsReseller($merchantId);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId, $liveMode);
+
+        $this->assertTrue($merchant->isPartner());
+
+        $this->ba->adminAuth($liveMode);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/merchant/requests/' . $merchantRequestId;
+
+        $this->startTest($testData);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId, $liveMode);
+
+        $this->assertFalse($merchant->isPartner());
+    }
+
+    public function testUnmarkNonPartnerMerchantAsPartner()
     {
         $merchantId = '10000000000000';
 
@@ -190,5 +243,10 @@ class PartnerTest extends TestCase
         }
 
         return $merchantRequest;
+    }
+
+    protected function markMerchantAsReseller(string $merchantId)
+    {
+        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
     }
 }

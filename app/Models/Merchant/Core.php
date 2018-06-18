@@ -828,6 +828,8 @@ class Core extends Base\Core
 
         $merchant = $merchantRequest->merchant;
 
+        (new Validator)->validateIfAlreadyPartner($merchant);
+
         $merchant->setPartnerType($partnerType);
 
         $this->repo->saveOrFail($merchant);
@@ -844,6 +846,8 @@ class Core extends Base\Core
      */
     public function unmarkAsPartner(Entity $merchant): Entity
     {
+        (new Validator)->validateIfNotAPartner($merchant);
+
         $merchant->setPartnerType();
 
         $this->repo->saveOrFail($merchant);
