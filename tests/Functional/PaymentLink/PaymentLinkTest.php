@@ -21,7 +21,7 @@ class PaymentLinkTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
 
-    const DEFAULT_PAYMENT_LINK_ID = '100000000000pl';
+    const TEST_PL_ID = '100000000000pl';
 
     public function setUp()
     {
@@ -208,7 +208,7 @@ class PaymentLinkTest extends TestCase
             PaymentLinkModel\Entity::STATUS_REASON => PaymentLinkModel\StatusReason::DEACTIVATED,
         ];
 
-        $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
+        $this->createPaymentLink(self::TEST_PL_ID, $attributes);
 
         $this->startTest();
     }
@@ -220,7 +220,7 @@ class PaymentLinkTest extends TestCase
             PaymentLinkModel\Entity::STATUS_REASON => PaymentLinkModel\StatusReason::DEACTIVATED,
         ];
 
-        $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
+        $this->createPaymentLink(self::TEST_PL_ID, $attributes);
 
         $this->startTest();
     }
@@ -232,7 +232,7 @@ class PaymentLinkTest extends TestCase
             PaymentLinkModel\Entity::STATUS_REASON => null,
         ];
 
-        $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
+        $this->createPaymentLink(self::TEST_PL_ID, $attributes);
 
         $this->startTest();
     }
@@ -248,7 +248,7 @@ class PaymentLinkTest extends TestCase
             PaymentLinkModel\Entity::TOTAL_AMOUNT_PAID => 200,
         ];
 
-        $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
+        $this->createPaymentLink(self::TEST_PL_ID, $attributes);
 
         $this->startTest();
     }
@@ -260,7 +260,7 @@ class PaymentLinkTest extends TestCase
             PaymentLinkModel\Entity::STATUS_REASON => PaymentLinkModel\StatusReason::EXPIRED,
         ];
 
-        $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
+        $this->createPaymentLink(self::TEST_PL_ID, $attributes);
 
         $expireBy = Carbon::now(Timezone::IST)->addSeconds(120)->getTimestamp();
 
@@ -275,7 +275,7 @@ class PaymentLinkTest extends TestCase
             PaymentLinkModel\Entity::TIMES_PAYABLE => 2,
         ];
 
-        $paymentLink = $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
+        $paymentLink = $this->createPaymentLink(self::TEST_PL_ID, $attributes);
 
         $this->makePaymentForPaymentLinkAndAssert($paymentLink);
 
@@ -296,11 +296,29 @@ class PaymentLinkTest extends TestCase
         $this->doAutoCapture();
     }
 
+    public function testGetPaymentLinkView()
+    {
+        $this->createPaymentLink();
+
+        $this->callViewUrlAndMakeAssertions();
+    }
+
+    public function testGetInactivePaymentLinkView()
+    {
+        $attributes = [
+            PaymentLinkModel\Entity::STATUS        => PaymentLinkModel\Status::INACTIVE,
+            PaymentLinkModel\Entity::STATUS_REASON => PaymentLinkModel\StatusReason::DEACTIVATED,
+        ];
+
+        $this->createPaymentLink(self::TEST_PL_ID, $attributes);
+
+        // TODO: Have this & assert error message once view has been implemented
+        // $this->callViewUrlAndMakeAssertions();
+    }
+
     // -------------------- Protected methods --------------------
 
-    protected function createPaymentLink(
-        string $id = self::DEFAULT_PAYMENT_LINK_ID,
-        array $attributes = []): PaymentLinkModel\Entity
+    protected function createPaymentLink(string $id = self::TEST_PL_ID, array $attributes = []): PaymentLinkModel\Entity
     {
         $attributes[PaymentLinkModel\Entity::ID] = $id;
 
@@ -333,5 +351,18 @@ class PaymentLinkTest extends TestCase
         $paymentLink = $this->getDbLastEntity('payment_link');
 
         $this->assertArraySelectiveEquals($expected, $paymentLink->toArray());
+    }
+
+    protected function callViewUrlAndMakeAssertions(string $id = self::TEST_PL_ID, int $code = 200, string $error = null)
+    {
+        $response = $this->call('GET', "/v1/payment_links/pl_{$id}/view");
+
+        $response->assertStatus($code);
+
+        // If there is an error message expected assert that
+        if (empty($error) === false)
+        {
+            $this->assertContains($error, $response->getContent());
+        }
     }
 }
