@@ -6,6 +6,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import debounce from 'rzp/utils/debounce';
+
 const DEFAULT_OFFSET = 10,
   TOOLTIP_DELAY = 200;
 
@@ -24,6 +26,7 @@ class Tooltip extends Component {
     this.handleMouseEnter = this.handleMouseEnter.bind(this);
     this.handleMouseLeave = this.handleMouseLeave.bind(this);
     this.handleMouseMove = this.handleMouseMove.bind(this);
+    this.handleScroll = debounce(this.handleMouseLeave, 100);
   }
 
   getDimensions(data) {
@@ -236,6 +239,10 @@ class Tooltip extends Component {
   }
 
   hideTooltip() {
+    if (!this.state.show) {
+      return;
+    }
+
     this.setState({
       show: false,
     });
@@ -281,12 +288,18 @@ class Tooltip extends Component {
       parent = this.node.parentElement;
 
     if (!followPointer) {
-      parent.addEventListener('mouseenter', this.handleMouseEnter);
+      parent.addEventListener('mouseenter', this.handleMouseEnter, {
+        passive: true,
+      });
     } else {
-      parent.addEventListener('mousemove', this.handleMouseMove);
+      parent.addEventListener('mousemove', this.handleMouseMove, {
+        passive: true,
+      });
     }
-    parent.addEventListener('mouseleave', this.handleMouseLeave);
-    window.addEventListener('scroll', this.handleMouseLeave);
+    parent.addEventListener('mouseleave', this.handleMouseLeave, {
+      passive: true,
+    });
+    window.addEventListener('scroll', this.handleScroll, { passive: true });
 
     this.eventsBounded = true;
   }
@@ -305,7 +318,7 @@ class Tooltip extends Component {
       parent.removeEventListener('mousemove', this.handleMouseMove);
     }
     parent.removeEventListener('mouseleave', this.handleMouseLeave);
-    window.removeEventListener('scroll', this.handleMouseLeave);
+    window.removeEventListener('scroll', this.handleScroll);
 
     this.eventsBounded = false;
   }

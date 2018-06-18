@@ -5,6 +5,7 @@
  */
 
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
 import { isChildSameType, checkChildrenType } from 'rzp/utils/rzp-react-utils';
 import Overlay from 'rzp/ui/Overlay';
@@ -59,6 +60,9 @@ class PanelTopbar extends Component {
  * The body of the panel, where actual content
  * goes
  */
+@connect(state => ({
+  windowWidth: state.app.windowWidth,
+}))
 class PanelBody extends Component {
   constructor(props) {
     super(props);
@@ -70,7 +74,9 @@ class PanelBody extends Component {
       className,
       isLoading,
       hasNoData,
+      windowWidth,
       error,
+      dispatch,
       ...otherProps
     } = this.props;
 
@@ -95,7 +101,7 @@ class PanelBody extends Component {
     return (
       <div {...otherProps}>
         {(isLoading || noDataMsg) && (
-          <Overlay>
+          <Overlay windowWidth={windowWidth}>
             {isLoading ? <Spinner /> : <span>{noDataMsg}</span>}
           </Overlay>
         )}

@@ -10,7 +10,7 @@ class Sticky extends Component {
       isSticky: false,
     };
 
-    this.handleScroll = debounce(this.handleScroll.bind(this));
+    const handleScroll = debounce(this.handleScroll.bind(this), 100);
   }
 
   layout(props = this.props) {
@@ -56,13 +56,15 @@ class Sticky extends Component {
   }
 
   handleScroll() {
-    return this.toggleSticky(window.scrollY);
+    window.setTimeout(() => {
+      return this.toggleSticky(window.scrollY);
+    });
   }
 
   componentDidMount() {
     const container = this.props.container;
 
-    window.addEventListener('scroll', this.handleScroll);
+    window.addEventListener('scroll', this.handleScroll, { passive: true });
     return this.toggleSticky(container.scrollTop);
   }
 

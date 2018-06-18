@@ -284,6 +284,7 @@ export default class HomeContainer extends Component {
           // do not show grouping
           if (ratio > 0.3) {
             trackPlatformAnalyticsHidden(ratio * 100);
+            return;
           }
         }
 
