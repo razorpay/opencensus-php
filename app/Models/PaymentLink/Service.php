@@ -27,4 +27,9 @@ class Service extends Base\Service
 
         $this->core->sendNotification($paymentLink, $input);
     }
+
+    public function expirePaymentLinks(): array
+    {
+        return $this->core->expirePaymentLinks();
+    }
 }

@@ -149,11 +149,6 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::INACTIVE);
     }
 
-    public function getStatus(): string
-    {
-        return $this->getAttribute(self::STATUS);
-    }
-
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -167,6 +162,26 @@ class Entity extends Base\PublicEntity
     public function getExpireBy()
     {
         return $this->getAttribute(self::EXPIRE_BY);
+    }
+
+    public function getStatus(): string
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getStatusReason()
+    {
+        return $this->getAttribute(self::STATUS_REASON);
+    }
+
+    public function setStatus(string $status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setStatusReason(string $statusReason)
+    {
+        $this->setAttribute(self::STATUS_REASON, $statusReason);
     }
 
     public function setShortUrl(string $shortUrl)

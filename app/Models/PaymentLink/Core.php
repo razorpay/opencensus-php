@@ -126,4 +126,72 @@ class Core extends Base\Core
 
         $paymentLink->setShortUrl($shortUrl);
     }
+
+    /**
+     * Called from CRON.
+     * Updates status to INACTIVE, status_reason to EXPIRED of all payment links which are active and past expire_by.
+     *
+     * @return array
+     */
+    public function expirePaymentLinks(): array
+    {
+        $timeStarted = microtime(true);
+
+        $paymentLinks = $this->repo->payment_link->getActiveAndPastExpireByPaymentLinks();
+
+        $summary = [
+            'total_count' => $paymentLinks->count(),
+            'failed_ids'  => [],
+        ];
+
+        foreach ($paymentLinks as $paymentLink)
+        {
+            try
+            {
+                $this->expirePaymentLink($paymentLink);
+            }
+            catch (\Throwable $e)
+            {
+                $summary['failed_ids'][] = $paymentLink->getId();
+
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::PAYMENT_LINK_EXPIRE_ERROR,
+                    [
+                        Entity::ID => $paymentLink->getId(),
+                    ]);
+            }
+        }
+
+        $summary['time_taken'] = (microtime(true) - $timeStarted) / 1000;
+
+        $this->trace->debug(TraceCode::PAYMENT_LINK_EXPIRE_CRON_SUMMARY, $summary);
+
+        return $summary;
+    }
+
+    /**
+     * Updates the status to INACTIVE, status_reason to EXPIRED of an individual expired payment link by locking it.
+     * @param Entity $paymentLink
+     */
+    protected function expirePaymentLink(Entity $paymentLink)
+    {
+        $this->repo->transaction(
+            function () use ($paymentLink)
+            {
+                $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
+
+                if ($paymentLink->isActive() === true)
+                {
+                    return;
+                }
+
+                // TODO: Use Core's method to do status change. That method is being added in another PR.
+                $paymentLink->setStatus(Status::INACTIVE);
+                $paymentLink->setStatusReason(StatusReason::EXPIRED);
+
+                $this->repo->saveOrFail($paymentLink);
+            });
+    }
 }
