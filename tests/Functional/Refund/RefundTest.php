@@ -89,7 +89,7 @@ class RefundTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('abcd',$refund['reference1']);
+        $this->assertEquals('abcd', $refund['reference1']);
         $this->assertEquals('initiated', $refund['status']);
     }
 
@@ -137,7 +137,7 @@ class RefundTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('abcdFailed',$refund['reference1']);
+        $this->assertEquals('abcdFailed', $refund['reference1']);
         $this->assertEquals('failed', $refund['status']);
     }
 
@@ -163,7 +163,7 @@ class RefundTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('abcdInitiated',$refund['reference1']);
+        $this->assertEquals('abcdInitiated', $refund['reference1']);
         $this->assertEquals('initiated', $refund['status']);
     }
 
@@ -188,7 +188,7 @@ class RefundTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('abcdProcessed',$refund['reference1']);
+        $this->assertEquals('abcdProcessed', $refund['reference1']);
         $this->assertEquals('processed', $refund['status']);
     }
 
@@ -214,7 +214,7 @@ class RefundTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals(null,$refund['reference1']);
+        $this->assertEquals(null, $refund['reference1']);
         $this->assertEquals('initiated', $refund['status']);
     }
 
