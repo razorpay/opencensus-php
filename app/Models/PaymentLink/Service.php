@@ -50,4 +50,14 @@ class Service extends Base\Service
 
         return $paymentLink->toArrayPublic();
     }
+
+    public function getHostedViewPaylaod(string $id): array
+    {
+        // sd($id);
+        $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $paymentLink->getValidator()->validateIsViewable();
+
+        return (new ViewSerializer($paymentLink))->serializeForHosted();
+    }
 }

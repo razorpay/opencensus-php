@@ -50,6 +50,8 @@ class Entity extends Base\PublicEntity
     const FROM_STATUS_REASON = 'from_status_reason';
     const TO_STATUS          = 'to_status';
     const TO_STATUS_REASON   = 'to_status_reason';
+    const ERROR              = 'error';
+    const REQUEST_PARAMS     = 'request_params';
 
     /**
      * expiry_by has to be atleast 15 mins from current timestamp

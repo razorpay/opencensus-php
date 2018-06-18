@@ -222,6 +222,7 @@ class Entity
         self::PAYMENT,
         self::CUSTOMER,
         self::SUBSCRIPTION,
+        self::PAYMENT_LINK,
     ];
 
     public static $namespace = [

@@ -2,7 +2,12 @@
 
 namespace RZP\Http\Controllers;
 
+use View;
+use Request;
 use ApiResponse;
+
+use RZP\Exception\BaseException;
+use RZP\Models\PaymentLink\Entity;
 use RZP\Http\Controllers\Traits\HasCrudMethods;
 
 class PaymentLinkController extends Controller
@@ -35,5 +40,31 @@ class PaymentLinkController extends Controller
         $response = $this->service()->activate($id, $this->input);
 
         return ApiResponse::json($response);
+    }
+
+    /**
+     * Renders hosted view for payment link with given id
+     * @param string $id
+     */
+    public function view(string $id)
+    {
+        try
+        {
+            $viewPayload = $this->service()->getHostedViewPaylaod($id);
+
+            // If request had an error string, append that separately too for view to consume
+            if (empty($error = Request::get(Entity::ERROR)) === false)
+            {
+                $viewPayload[Entity::ERROR] = $error;
+            }
+            // Additionally, appends all request parameters too for view to consume
+            $viewPayload[Entity::REQUEST_PARAMS] = Request::all();
+        }
+        catch (BaseException $e)
+        {
+            $viewPayload = $e->getError()->toPublicArray();
+        }
+
+        return View::make('payment_link.hosted', $viewPayload);
     }
 }

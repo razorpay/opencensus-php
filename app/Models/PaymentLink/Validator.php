@@ -119,4 +119,15 @@ class Validator extends Base\Validator
 
         $this->validateInput('sendNotification', $input);
     }
+
+    public function validateIsViewable()
+    {
+        $paymentLink = $this->entity;
+        $publicId    = $paymentLink->getPublicId();
+
+        if ($paymentLink->isInactive() === true)
+        {
+            throw new BadRequestValidationFailureException("payment link with id: {$publicId} is inactive");
+        }
+    }
 }
