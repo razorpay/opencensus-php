@@ -10,7 +10,7 @@ class Sticky extends Component {
       isSticky: false,
     };
 
-    const handleScroll = debounce(this.handleScroll.bind(this), 100);
+    this.handleScroll = debounce(this.handleScroll.bind(this), 100);
   }
 
   layout(props = this.props) {
