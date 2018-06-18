@@ -14,7 +14,7 @@ export default class ActivationContainer extends Component {
     let { loading, data } = this.props;
 
     return (
-      <div class="content-wrapper">
+      <div style={{ background: '#fff' }}>
         {loading ? (
           <div class="page-spinner-container">
             <Spinner />

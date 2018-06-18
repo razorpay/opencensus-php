@@ -3,17 +3,17 @@ import { connect } from 'react-redux';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { closeModal, openModal } from 'rzp/modules/modals';
+import { luminateRow } from 'merchant/modules/app';
 
 import BatchValidate from './Validate';
 import BatchCreate from './Create';
 import SuccessModal from 'merchant/components/BatchNew/SuccessModal';
-import { trackUploadBatch } from './ga';
 
 /**
  * Container:  Switches between validation or creation of batch.
  */
 
-@connect(null, { closeModal, openModal })
+@connect(null, { closeModal, openModal, luminateRow })
 export default class BatchUpload extends Component {
   state = {
     batchName: '',
@@ -34,15 +34,15 @@ export default class BatchUpload extends Component {
       batch: { ...this.state.batch, ...batch },
       currentStatus: 'success',
     });
-    this.props.onSave(batch);
+    this.props.luminateRow(batch.id);
   };
 
   componentDidMount() {
-    trackUploadBatch('Open');
+    this.props.gaEvents.trackUploadBatch('Open');
   }
 
   onModalClose = () => {
-    trackUploadBatch('Close');
+    this.props.gaEvents.trackUploadBatch('Close');
     this.props.closeModal();
   };
   render() {
@@ -61,6 +61,8 @@ export default class BatchUpload extends Component {
                   batchType={this.props.batchType}
                   sampleUrl={this.props.sampleUrl}
                   docUrl={this.props.docUrl}
+                  gaEvents={this.props.gaEvents}
+                  validateBatch={this.props.validateBatch}
                 />
               );
             case 'create':
@@ -70,6 +72,16 @@ export default class BatchUpload extends Component {
                   batchName={this.state.batchName}
                   batch={this.state.batch}
                   batchType={this.props.batchType}
+                  maxRows={this.props.maxRows}
+                  batchFormInitialValues={this.props.batchFormInitialValues}
+                  renderBatchCreationForm={this.props.renderBatchCreationForm}
+                  createBatch={this.props.createBatch}
+                  trackUploadBatch={this.props.gaEvents.trackUploadBatch}
+                  trackSampleInterpretation={
+                    this.props.gaEvents.trackSampleInterpretation
+                  }
+                  docUrl={this.props.docUrl}
+                  sampleUrl={this.props.sampleUrl}
                 />
               );
             case 'success':

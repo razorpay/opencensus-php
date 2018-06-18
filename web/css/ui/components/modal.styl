@@ -30,7 +30,7 @@
   .box
     margin: 0
 
-#modal-container
+.Modal-mask
   background: rgba(0,0,0,.5)
   position: fixed
   top: 0
@@ -48,12 +48,11 @@
     .modal
       transform: translateX(-50%);
 
-.modal
+.Modal-container.Modal-container--admin
   max-width: 96%
-  position: absolute
   top: 5%
   left: 50%
-  transform: translateX(-50%)
+  transform: translate(-50%, 0)
   max-height: 90%
   overflow: auto
   background: #fff
@@ -61,7 +60,6 @@
   box-shadow: 0 2px 8px 2px rgba(0,0,0,.1)
   transition: .3s
   opacity: 0.4;
-  pointer-events: none;
   transform-origin: 0 0
   header
     border-bottom: 2px solid #eee
@@ -105,6 +103,8 @@
   top: 20px
   display: flex
   flex-direction: column
+  z-index: 9999
+
 
 .toast
   white-space: pre

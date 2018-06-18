@@ -14,6 +14,7 @@ import Footer from 'merchant/components/Footer';
 import MerchantTour from 'merchant/containers/MerchantTour';
 import ActivationRequired from 'merchant/components/ActivationRequired';
 import IdleWarningDialog from 'merchant/components/IdleWarningDialog';
+import LogoutDialog from 'merchant/components/LogoutDialog';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
@@ -57,6 +58,8 @@ export default class App extends Component {
 
     this.modeToken = `${oldModeToken}--${window.rzp_user.current}`;
 
+    this.logoutPopupShown = false;
+
     this.state = {
       isLoading: true,
       showMobileNav: false,
@@ -64,6 +67,29 @@ export default class App extends Component {
   }
 
   componentWillMount() {
+    /*
+    * Event Based Redirection
+    *
+    window.addEventListener('NOT_AUTHENTICATED', () => {
+      if (this.logoutPopupShown) {
+        return;
+      }
+
+      let email = this.props.user.user.email;
+
+      this.props.closeModal();
+      this.props.openModal({
+        size: 'small',
+        component: <LogoutDialog email={email} />,
+      });
+      this.logoutPopupShown = true;
+    });
+
+    window.addEventListener('UNAUTHORIZED', () => {
+      this.props.history.push('/');
+    });
+    */
+
     let currentMode = LocalStorageService.getItem(this.modeToken);
 
     this.props.fetchGST();
@@ -260,9 +286,20 @@ export default class App extends Component {
 
   lock = () => {
     let email = this.props.user.user.email;
+
+    if (window.Raven && window.Raven.captureMessage) {
+      window.Raven.captureMessage('Dashboard Locked', {
+        level: 'info',
+      });
+    }
+
     return this.props.logout().then(() => {
-      location.hash = `/access/lockme/${email}`;
-      location.reload();
+      // waiting for 100ms more hoping raven call
+      // would be resolved by then
+      window.setTimeout(() => {
+        location.hash = `/access/lockme/${email}`;
+        location.reload();
+      }, 100);
     });
   };
 

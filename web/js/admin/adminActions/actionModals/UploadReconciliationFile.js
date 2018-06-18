@@ -23,8 +23,8 @@ const gateWayOptions = [
   'SBI Buddy',
   'UpiSbi',
   'UpiIcici',
-  'Netbanking AXIS',
-  'Netbanking ICICI',
+  'Netbanking Axis',
+  'Netbanking Icici',
   'Netbanking Corporation',
   'Netbanking Federal',
   'Netbanking Rbl',
@@ -37,6 +37,7 @@ const gateWayOptions = [
   'Netbanking Pnb',
   'Netbanking Obc',
   'Netbanking Csb',
+  'Atom',
 ];
 
 const optionValueMap = {

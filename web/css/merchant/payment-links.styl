@@ -1,0 +1,203 @@
+$max-width = 640px
+
+.StandAloneContainer
+  position: relative
+  width: 92%
+  margin: 80px auto
+
+  .spinner-container
+    height: 300px
+
+/* PaymentLinks wizard screen */
+.PaymentLinks--Create
+  max-width: $max-width
+  height: 85vh
+  min-height: 560px
+  max-height: 690px
+  background: #fafafa
+  position: relative
+
+  .form-container
+    padding: 30px 40px
+
+  .Form--tabular
+    .Input-content
+      margin-left: 156px
+    .Input-label
+      width: 136px
+
+
+  $side-width = 240px
+
+  main
+    left: 0
+    right: 0
+    padding: 30px
+    position: absolute
+    bottom: 80px
+    top: 0
+    overflow: auto
+
+    &.main--full
+      bottom: 0
+
+    &::-webkit-scrollbar
+      display: none;
+
+  footer
+    left: 0
+    padding: 20px
+    height: 80px
+    right: 0
+    background: #F6F6F6
+    border-top: 1px solid #e0e0e0
+    bottom: 0
+    position: absolute
+    text-align: right
+
+    button
+      vertical-align: top
+
+    .Loader
+      float: left
+      opacity: 0
+      transition: 1s opacity
+      margin-top: 4px
+      line-height: 27px
+
+      i, .spin-btn
+        margin-right: 8px
+        vertical-align: middle
+
+      .spin-btn
+        opacity: 1
+
+      &--visible
+        opacity: 1
+
+  main-title
+    text-transform: uppercase
+    display: block
+    font-weight: 600
+    margin-bottom: 20px
+    font-size: 14px !important
+
+  .Form
+    margin-top: 36px
+
+/* Modal-container size */
+.Modal-container
+  &--PaymentLinks
+    width: 90%
+    max-width: $max-width
+    min-height: 560px
+    max-height: 690px
+    height: 90vh
+
+    .PaymentLinks--Create
+      height: 90vh
+
+// For linked-account activation form
+.Modal-mask--Account-Activation
+  .Modal-container--PaymentLinks, .PaymentLinks--Create
+    min-height: 400px
+    height: 70vh
+    max-height: 480px
+
+
+/* Small screens for Payment Links Modal */
+@media (max-width: 972px)
+  .PaymentLinks--Create
+    .Input-elWrapper
+      width: 300px !important
+
+    .Input-pair
+      width: 302px
+
+    .form-container
+      padding: 30px
+
+    .InputGroup
+      &--inline
+        .Input-label
+          position: relative !important
+
+        .Input
+          display: block
+
+        .Input .Input-content
+          margin: 4px 0
+
+      &--near .Input
+        margin-top: 0
+
+
+  .StandAloneContainer .PaymentLinks--Create
+    .Input-content
+      margin: 0
+
+    .Input-label
+      margin-bottom: 12px
+      text-align: left
+      float: unset
+
+
+@media (max-width: 820px)
+  .Modal-container .PaymentLinks--Create
+    .Input-content
+      margin: 0 0 16px
+
+    .Input-label
+      margin-bottom: 12px
+      text-align: left
+      float: unset
+
+
+/*
+TODO: Style written in consideration that instead of modal, standalone page would open for activation wizard on small screen
+TODO: Display aside on top of form as expandable slider OR else show PREV button
+*/
+@media (max-width: 610px)
+  .StandAloneContainer
+    margin: 80px auto 40px
+
+  .PaymentLinks--Create
+    overflow: hidden
+
+    main-title
+      position: relative
+      padding: 20px
+      text-align: center
+      top: -30px
+      margin-left: -24px
+      margin-right: -40px
+      background: white
+      font-size: 14px
+
+    .Form
+      margin-top: 0
+
+    .Input-el
+      width: 100%
+
+    .Select-elWrapper::before
+      left: unset !important
+      right: 4px
+
+    aside
+      display: none
+
+    main, footer
+      left: 0 !important
+
+
+.Entity--reusable
+  .stats-info
+    margin-bottom: 24px
+
+  .reusable-link-payments-table
+    .detail-row
+      padding-left: 0
+    .row-item.content
+      width: 100%
+

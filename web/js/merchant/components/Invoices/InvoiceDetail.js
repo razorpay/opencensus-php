@@ -9,6 +9,21 @@ import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { Link } from 'react-router-dom';
+import DataTable from 'rzp/ui/Table/DataTable';
+import { paymentId, amount, paidOn } from 'rzp/ui/item/pair';
+import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
+import Button, { AsyncBtn } from 'component/Button';
+import Input from 'component/Input';
+
+import moment from 'moment';
+import { dateCalculator, timeCalculator } from 'component/Input/Calendar';
+import { onChangeNotes } from 'component/Input/PairList';
+import { maxLength } from 'rzp/utils/validators';
+
+import {
+  trackDetailViewEdits,
+  trackTogglePartialPayment,
+} from 'merchant/containers/PaymentLinks/Links/ga';
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -48,15 +63,62 @@ const getCustomerDetail = invoice => (
   </Definition>
 );
 
+const getPaymentDetail = invoice => (
+  <Definition placeholder="--">
+    <Amount value={invoice.amount_paid} currency={invoice.currency} />
+    {invoice.partial_payment &&
+    invoice.payments &&
+    invoice.payments.items.length ? (
+      <ContentToggler>
+        <span>View Payment Details</span>
+        <div
+          className="full-width-item sub-entity-list"
+          style={{ fontSize: 14 }}
+        >
+          <DataTable
+            title="Payments"
+            progressLoader={true}
+            columns={[paymentId, paidOn, amount]}
+            items={invoice.payments.items}
+            noStripe={true}
+          />
+        </div>
+      </ContentToggler>
+    ) : (
+      <React.Fragment>
+        {invoice.payment_id && (
+          <Link to={`/payments/${invoice.payment_id}`}>
+            <code>{invoice.payment_id}</code>
+          </Link>
+        )}
+        {invoice.paid_at && (
+          <div>
+            Paid on{' '}
+            <Time value={invoice.paid_at} format="DD MMM YYYY, hh:mm a" />
+          </div>
+        )}
+      </React.Fragment>
+    )}
+  </Definition>
+);
+
 export default props => {
-  let { invoice, isLoading, statusMsg } = props;
+  let {
+    invoice,
+    isLoading,
+    statusMsg,
+    editPaymentLink,
+    isPaymentLinksV2Enabled,
+  } = props;
 
   let status = invoice.status;
-  let isDraft = status === 'draft';
-  let isIssued = status === 'issued';
-  let isPaid = status === 'paid';
-  let isCancelled = status === 'cancelled';
-  let isExpired = status === 'expired';
+  const isDraft = status === 'draft';
+  const isIssued = status === 'issued';
+  const isPaid = status === 'paid';
+  const isPartiallyPaid = status === 'partially_paid';
+  const isCancelled = status === 'cancelled';
+  const isExpired = status === 'expired';
+
   let isSmsOrEmailSent =
     invoice.sms_status === 'sent' || invoice.email_status === 'sent';
 
@@ -73,23 +135,25 @@ export default props => {
             <strong>{invoice.id}</strong>
             <ShowWhen notMyRole="support finance">
               <div class="btn-toolbar pull-right">
-                {(isDraft || isIssued) && (
-                  <button
-                    class="btn btn-primary btn-sm"
-                    onClick={props.onIssue}
-                  >
-                    {isSmsOrEmailSent ? 'Send Again' : 'Send Link'}
-                  </button>
-                )}
+                {invoice.customer_id &&
+                  (isDraft || isIssued || isPartiallyPaid) && (
+                    <button
+                      class="btn btn-primary btn-sm"
+                      onClick={props.onIssue}
+                    >
+                      {isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}
+                    </button>
+                  )}
 
-                {isIssued && (
-                  <button
-                    class="btn btn-default btn-sm"
-                    onClick={props.onCancel}
-                  >
-                    Cancel Link
-                  </button>
-                )}
+                {!isPaymentLinksV2Enabled &&
+                  isIssued && (
+                    <button
+                      class="btn btn-default btn-sm"
+                      onClick={props.onCancel}
+                    >
+                      Cancel Link
+                    </button>
+                  )}
               </div>
             </ShowWhen>
           </div>
@@ -111,6 +175,72 @@ export default props => {
                   value={invoice.description || '--'}
                 />
                 <EntityDetailRow
+                  label="Status"
+                  value={() => (
+                    <div>
+                      <InvoiceStatusLabel status={invoice.status} />
+                      <ShowWhen notMyRole="support finance">
+                        {isPaymentLinksV2Enabled &&
+                          isIssued && (
+                            <Button.Transparent
+                              class="Button--Link"
+                              style={{ marginLeft: 12 }}
+                              onClick={props.onCancel}
+                            >
+                              Cancel
+                            </Button.Transparent>
+                          )}
+                      </ShowWhen>
+                    </div>
+                  )}
+                />
+
+                <ShowWhen featureEnabled="Invoice_Partial_Payments">
+                  <React.Fragment>
+                    {do {
+                      const isPartialPayment = invoice.partial_payment;
+
+                      <EntityDetailRow
+                        label="Partial Payment"
+                        value={() => (
+                          <div
+                            class={
+                              isPartialPayment ? 'text-success' : 'text-danger'
+                            }
+                          >
+                            {isPartialPayment ? 'Enabled' : 'Disabled'}
+                            {isPaymentLinksV2Enabled &&
+                              isIssued && (
+                                <AsyncBtn.Transparent
+                                  onClick={() => {
+                                    const toEnablePartialPayment = +!isPartialPayment;
+                                    editPaymentLink({
+                                      partial_payment: toEnablePartialPayment,
+                                    });
+
+                                    trackTogglePartialPayment(
+                                      invoice.id,
+                                      'Toggle Partial Payment',
+                                      toEnablePartialPayment
+                                    );
+                                  }}
+                                  class="Button--Link"
+                                  style={{ marginLeft: 12 }}
+                                  pendingState={
+                                    isPartialPayment ? 'Disabling' : 'Enabling'
+                                  }
+                                >
+                                  {isPartialPayment ? 'Disable' : 'Enable'}
+                                </AsyncBtn.Transparent>
+                              )}
+                          </div>
+                        )}
+                      />;
+                    }}
+                  </React.Fragment>
+                </ShowWhen>
+
+                <EntityDetailRow
                   label="Amount"
                   value={() => (
                     <Amount
@@ -119,49 +249,14 @@ export default props => {
                     />
                   )}
                 />
-                <EntityDetailRow
-                  label="Amount Paid"
-                  value={() => (
-                    <Amount
-                      value={invoice.amount_paid}
-                      currency={invoice.currency}
-                    />
-                  )}
-                />
                 <ShowWhen featureEnabled="Invoice_Partial_Payments">
-                  <EntityDetailRow
-                    label="Partial Payment"
-                    value={() => (
-                      <i
-                        class={
-                          invoice.partial_payment
-                            ? 'i i-check text-success'
-                            : 'i i-close text-danger'
-                        }
-                      />
-                    )}
-                  />
+                  <EntityDetailRow label="Amount Paid">
+                    {getPaymentDetail(invoice)}
+                  </EntityDetailRow>
                 </ShowWhen>
-                <EntityDetailRow
-                  label="Status"
-                  value={() => <InvoiceStatusLabel status={invoice.status} />}
-                />
-                <EntityDetailRow
-                  label="Payment Id"
-                  value={() => {
-                    if (!invoice.payment_id) {
-                      return '--';
-                    }
-                    return (
-                      <Link to={`/payments/${invoice.payment_id}`}>
-                        <code>{invoice.payment_id}</code>
-                      </Link>
-                    );
-                  }}
-                />
 
                 <EntityDetailRow
-                  label="Payment Link"
+                  label="Link Url"
                   value={() => (
                     <CopyLink
                       url={invoice.short_url}
@@ -177,34 +272,24 @@ export default props => {
                     />
                   )}
                 />
-                <EntityDetailRow label="Receipt" value={invoice.receipt} />
                 <EntityDetailRow label="Customer Details">
                   {getCustomerDetail(invoice)}
                 </EntityDetailRow>
-                <EntityDetailRow
-                  label="Created At"
-                  value={() => <Time value={invoice.date} />}
-                />
-                <EntityDetailRow
-                  label="Paid At"
-                  value={() => (
-                    <Time
-                      value={invoice.paid_at}
-                      format="DD MMM YYYY, hh:mm a"
-                    />
-                  )}
-                />
-                <EntityDetailRow
-                  label={isExpired ? 'Expired on' : 'Expires on'}
-                  value={() => (
-                    <Time
-                      value={invoice.expire_by}
-                      format="DD MMM YYYY, hh:mm a"
-                    />
-                  )}
-                />
 
-                <NestedEntityDetailRow label="Notes" value={invoice.notes} />
+                <EntityDetailRow
+                  label="Receipt"
+                  value={
+                    isPaymentLinksV2Enabled && isIssued
+                      ? () => (
+                          <EditReceiptField
+                            value={invoice.receipt}
+                            paymentLinkId={invoice.id}
+                            editPaymentLink={editPaymentLink}
+                          />
+                        )
+                      : invoice.receipt || '--'
+                  }
+                />
 
                 <EntityDetailRow label="Created By">
                   {!!invoice.user ? (
@@ -216,6 +301,45 @@ export default props => {
                     'API'
                   )}
                 </EntityDetailRow>
+
+                <EntityDetailRow
+                  label="Created At"
+                  value={() => <Time value={invoice.date} />}
+                />
+                <EntityDetailRow
+                  label={isExpired ? 'Expired On' : 'Expires On'}
+                  value={
+                    isPaymentLinksV2Enabled && isIssued
+                      ? () => (
+                          <EditExpiryField
+                            value={invoice.expire_by}
+                            editPaymentLink={editPaymentLink}
+                            paymentLinkId={invoice.id}
+                          />
+                        )
+                      : () => (
+                          <Time
+                            value={invoice.expire_by}
+                            format="DD MMM YYYY, hh:mm a"
+                          />
+                        )
+                  }
+                />
+
+                {isPaymentLinksV2Enabled ? (
+                  <EntityDetailRow
+                    label="Notes"
+                    value={() => (
+                      <EditNotesField
+                        value={invoice.notes}
+                        editPaymentLink={editPaymentLink}
+                        paymentLinkId={invoice.id}
+                      />
+                    )}
+                  />
+                ) : (
+                  <NestedEntityDetailRow label="Notes" value={invoice.notes} />
+                )}
               </div>
             </div>
           </div>
@@ -224,3 +348,291 @@ export default props => {
     </div>
   );
 };
+
+class EditReceiptField extends React.Component {
+  state = this.resetState();
+
+  resetState() {
+    return {
+      isEditableMode: false,
+      receipt: this.props.value || '',
+    };
+  }
+
+  makeEditable = () => {
+    this.setState({
+      isEditableMode: true,
+    });
+    setTimeout(() => document.getElementsByName('receipt_no')[0].focus(), 10);
+    trackDetailViewEdits(this.props.paymentLinkId, 'Edit Receipt');
+  };
+
+  render() {
+    let content = (
+      <React.Fragment>
+        {this.state.receipt || '--'}
+        <Button.Transparent
+          onClick={this.makeEditable}
+          class="Button--Link"
+          style={{ marginLeft: 12 }}
+        >
+          Change
+        </Button.Transparent>
+      </React.Fragment>
+    );
+
+    if (this.state.isEditableMode) {
+      content = (
+        <React.Fragment>
+          <Input
+            name="receipt_no"
+            placeholder="Receipt No."
+            class="Input--small Input--inline"
+            required={true}
+            value={this.state.receipt}
+            validator={maxLength(40)}
+            onChange={e => {
+              this.setState({
+                receipt: e.target.value,
+              });
+            }}
+          />
+          <div style={{ textAlign: 'right', marginBottom: 12, width: 260 }}>
+            <Button.Transparent
+              class="Button--Link"
+              onClick={() => {
+                this.setState(this.resetState());
+                trackDetailViewEdits(
+                  this.props.paymentLinkId,
+                  'Cancel Receipt'
+                );
+              }}
+            >
+              Cancel
+            </Button.Transparent>
+
+            <AsyncBtn.Primary
+              class="Button--small"
+              style={{ marginRight: 0, marginLeft: 16 }}
+              disabled={!this.state.receipt}
+              onClick={() => {
+                trackDetailViewEdits(this.props.paymentLinkId, 'Save Receipt');
+
+                this.props
+                  .editPaymentLink({
+                    receipt: this.state.receipt,
+                  })
+                  .then(resp => {
+                    if (resp.data) {
+                      this.setState(this.resetState());
+                    }
+                  });
+              }}
+              pendingState="Saving"
+            >
+              Save
+            </AsyncBtn.Primary>
+          </div>
+        </React.Fragment>
+      );
+    }
+
+    return content;
+  }
+}
+
+class EditExpiryField extends React.Component {
+  state = this.resetState();
+
+  resetState() {
+    return {
+      isEditableMode: false,
+      expire_by: this.props.value ? moment(this.props.value * 1000) : undefined,
+      hasNoExpiry: this.props.value ? '0' : '1',
+    };
+  }
+
+  makeEditable = () => {
+    this.setState({
+      isEditableMode: true,
+    });
+
+    trackDetailViewEdits(this.props.paymentLinkId, 'Edit Expiry');
+  };
+
+  onDateChange = date => {
+    const curExpiryByTime = this.state.expire_by;
+
+    dateCalculator(date, curExpiryByTime, this.updateDate);
+  };
+
+  onTimeChange = date => {
+    const curDate = this.state.expire_by;
+
+    timeCalculator(date, curDate, this.updateDate);
+  };
+
+  updateDate = ts => {
+    const newDate = moment(ts);
+
+    this.setState({
+      expire_by: newDate,
+    });
+  };
+
+  render() {
+    let content = (
+      <React.Fragment>
+        <Time value={this.props.value} format="DD MMM YYYY, hh:mm a" />
+        <Button.Transparent
+          onClick={this.makeEditable}
+          class="Button--Link"
+          style={{ marginLeft: 12 }}
+        >
+          Change
+        </Button.Transparent>
+      </React.Fragment>
+    );
+
+    if (this.state.isEditableMode) {
+      content = (
+        <React.Fragment>
+          <Input.Check
+            fieldLabel="No Expiry"
+            defaultValue={this.props.value ? '0' : '1'}
+            value={this.state.hasNoExpiry}
+            onChange={e => {
+              if (e.target.value == '0') {
+                // 0 => unselected
+                setTimeout(() => {
+                  document
+                    .querySelector('[data-name="expire_by_date"]')
+                    .focus();
+                  document
+                    .querySelector('[data-name="expire_by_date"]')
+                    .click();
+                }, 10);
+              }
+              this.setState({
+                hasNoExpiry: e.target.value,
+              });
+            }}
+          />
+          <Input.Group class="InputGroup--near Input--inline Input--half_big">
+            <div class="Input-content">
+              <Input.ToCalendar
+                data-name="expire_by_date"
+                placeholder="15-04-2018"
+                defaultValue={this.state.expire_by}
+                disabled={this.state.hasNoExpiry === '1'}
+                readOnly={true}
+                onChange={this.onDateChange}
+                size="half"
+                addonAfter={<i class="i i-date-range" />}
+                placement="topLeft"
+                allowToday={true}
+                disablePastDates={true}
+              />
+              {!!this.state.expire_by && (
+                <Input.TimePicker
+                  placeholder="11:59PM"
+                  defaultValue={this.state.expire_by}
+                  disabled={this.state.hasNoExpiry === '1'}
+                  readOnly={true}
+                  onChange={this.onTimeChange}
+                  size="half"
+                  addonAfter={<i class="i i-time" />}
+                />
+              )}
+            </div>
+          </Input.Group>
+          <div style={{ textAlign: 'right', marginBottom: 12, width: 192 }}>
+            <Button.Transparent
+              class="Button--Link"
+              onClick={() => {
+                this.setState(this.resetState());
+                trackDetailViewEdits(this.props.paymentLinkId, 'Cancel Expiry');
+              }}
+            >
+              Cancel
+            </Button.Transparent>
+
+            <AsyncBtn.Primary
+              class="Button--small"
+              style={{ marginRight: 0, marginLeft: 16 }}
+              onClick={() => {
+                this.props
+                  .editPaymentLink({
+                    expire_by:
+                      this.state.hasNoExpiry == '1'
+                        ? null
+                        : Math.floor(this.state.expire_by / 1000),
+                  })
+                  .then(resp => {
+                    if (resp.data) {
+                      this.setState(this.resetState());
+                    }
+                  });
+
+                trackDetailViewEdits(this.props.paymentLinkId, 'Save Expiry');
+              }}
+              pendingState="Saving"
+            >
+              Save
+            </AsyncBtn.Primary>
+          </div>
+        </React.Fragment>
+      );
+    }
+
+    return content;
+  }
+}
+
+class EditNotesField extends React.Component {
+  state = this.resetState();
+
+  resetState() {
+    const notes = Object.keys(this.props.value).map(k => ({
+      key: k,
+      value: this.props.value[k],
+    }));
+
+    return {
+      notes,
+    };
+  }
+
+  /* Handle save of new note */
+  saveAndUpdate = pairs => {
+    const notes = { ...pairs };
+
+    return this.props
+      .editPaymentLink({
+        notes: onChangeNotes(pairs),
+      })
+      .then(resp => {
+        if (resp.data) {
+          // Handle failed case..
+          this.setState({
+            notes,
+          });
+        }
+
+        return resp;
+      });
+  };
+
+  render() {
+    return (
+      <React.Fragment>
+        <Input.EditablePairsList
+          name="notes"
+          saveAndUpdate={this.saveAndUpdate}
+          defaultValue={this.state.notes}
+          trackerFn={trackDetailViewEdits.bind(null, this.props.paymentLinkId)}
+        />
+      </React.Fragment>
+    );
+  }
+}

@@ -8,25 +8,25 @@ import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { getCustomerDisplayName } from 'rzp/utils/rzp-utils';
 
 const InvoiceListItem = props => {
-  let { invoice, onEditClick, onCopy, type } = props;
+  let { invoice, onEditClick, onCopy, type, isPaymentLinksV2Enabled } = props;
   let customer = invoice.customer_details;
+
+  const isPaymentLinksType = type === 'link';
 
   return (
     <EntityItemRow id={invoice.id}>
       <td>
-        {
-          do {
-            if (['link', 'ecod'].indexOf(invoice.type) !== -1) {
-              <NavLink to={`/paymentlinks/${invoice.id}`}>
-                <code>{invoice.id}</code>
-              </NavLink>;
-            } else {
-              <NavLink to={`/invoices/${invoice.id}`}>
-                <code>{invoice.id}</code>
-              </NavLink>;
-            }
+        {do {
+          if (['link', 'ecod'].indexOf(invoice.type) !== -1) {
+            <NavLink to={`/paymentlinks/${invoice.id}`}>
+              <code>{invoice.id}</code>
+            </NavLink>;
+          } else {
+            <NavLink to={`/invoices/${invoice.id}`}>
+              <code>{invoice.id}</code>
+            </NavLink>;
           }
-        }
+        }}
       </td>
       <td>
         <Time value={invoice.date} />
@@ -58,30 +58,39 @@ const InvoiceListItem = props => {
       <td>
         <InvoiceStatusLabel status={invoice.status} />
       </td>
-      <td>
-        <div class="row-action">
-          <div class="btn-group">
-            <button
-              data-tip={
-                !invoice.isEditable ? 'Paid invoice cannot be edited' : null
-              }
-              class="btn btn-xs btn-default"
-              disabled={!invoice.isEditable}
-              onClick={props.onEditClick}
-            >
-              <i class="i i-edit" />
-              <span>edit</span>
-            </button>
+      {!isPaymentLinksType || !isPaymentLinksV2Enabled ? (
+        <td>
+          <div class="row-action">
+            <div class="btn-group">
+              <button
+                data-tip={
+                  !invoice.isEditable ? 'Paid invoice cannot be edited' : null
+                }
+                class="btn btn-xs btn-default"
+                disabled={!invoice.isEditable}
+                onClick={props.onEditClick}
+              >
+                <i class="i i-edit" />
+                <span>edit</span>
+              </button>
+            </div>
           </div>
-        </div>
-      </td>
+        </td>
+      ) : null}
     </EntityItemRow>
   );
 };
 
 export default props => {
-  let { type, invoices, isLoading, onCopy = () => {} } = props;
-  let label = type === 'link' ? 'Payment Link' : 'Invoice';
+  let {
+    type,
+    invoices,
+    isLoading,
+    onCopy = () => {},
+    isPaymentLinksV2Enabled,
+  } = props;
+  const isPaymentLinksType = type === 'link';
+  let label = isPaymentLinksType ? 'Payment Link' : 'Invoice';
 
   return (
     <div class="table-responsive">
@@ -89,13 +98,15 @@ export default props => {
         <thead>
           <tr>
             <th>{label} Id</th>
-            <th>{label} Date</th>
+            <th>Created Date</th>
             <th class="text-right">Amount</th>
             <th>Receipt No.</th>
             <th>Customer</th>
             <th>Payment Link</th>
             <th>Status</th>
-            <th>Actions</th>
+            {(!isPaymentLinksType || !isPaymentLinksV2Enabled) && (
+              <th>Actions</th>
+            )}
           </tr>
         </thead>
         <TableBody
@@ -111,6 +122,8 @@ export default props => {
               onEditClick={() => props.onEdit(invoice)}
               onDeleteClick={() => props.onDelete(invoice)}
               onCopy={onCopy}
+              type={type}
+              isPaymentLinksV2Enabled={isPaymentLinksV2Enabled}
             />
           ))}
         </TableBody>

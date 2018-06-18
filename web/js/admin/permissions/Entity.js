@@ -3,7 +3,7 @@ import { openModal, closeModal, notifyDone } from 'common/modal';
 import Form from 'ui/Form';
 import Field, { CheckField } from 'ui/Field';
 import OrgTable from './OrgTable';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import Table from 'ui/Table';
 import { adminFetch, adminPut, adminPost, adminDelete } from 'common/fetch';
 import { prevent } from 'common/util';
@@ -90,7 +90,7 @@ export default class EditPerm extends Component {
     let { roles, orgs, permission } = this.state;
 
     return (
-      <BaseModal
+      <ModalContent
         header={id ? `Edit Permission – ${name}` : 'Add a new Permission'}
       >
         <Form onSubmit={this.onSubmit}>
@@ -140,7 +140,7 @@ export default class EditPerm extends Component {
             </div>
           )}
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

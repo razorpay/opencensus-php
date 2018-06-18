@@ -9,11 +9,14 @@ a, .btn-link {
 
 html, body {
   background-color: #f0f3f4;
-  overflow-x: hidden;
 }
 
 body {
   -webkit-font-smoothing: antialiased;
+
+  &.noscroll {
+    overflow: hidden;
+  }
 }
 
 *:focus {
@@ -150,7 +153,7 @@ body {
       padding: 12px 20px;
       background-color: #315BC2;
       margin-bottom: 15px;
-     
+
       i.i-chevron-right {
 
         position: relative;
@@ -173,7 +176,7 @@ body {
         line-height: 20px;
         color: rgba(255, 255, 255, 0.7);
       }
- 
+
       div.activation-bar-content {
 
         display: table;
@@ -185,7 +188,7 @@ body {
 
           display: table-cell;
           vertical-align: middle;
-          
+
           &.activation-bar-text {
 
             white-space: nowrap;
@@ -250,6 +253,10 @@ body {
       border-color: $primary-color;
       color: #fff;
       background-color: #252939;
+    }
+
+    .spin-loader {
+      margin-top: 10px
     }
   }
 
@@ -339,7 +346,26 @@ body {
 
 .content-wrapper {
   padding: 24px;
-  @media (max-width $screen-sm-min) {
+  position: relative;
+
+
+  /* General Input styles (new UI Component) */
+  .Input {
+    margin-top: 0
+  }
+
+  /* Input pairs inside details view (new UI Component) */
+  .Input--pair {
+    .Input-elWrapper {
+      font-size: inherit
+    }
+
+    textarea.Input-el {
+      height: 36px
+    }
+  }
+
+    @media (max-width $screen-sm-min) {
     padding: 20px;
   }
 }
@@ -478,8 +504,8 @@ body.ReactModal__Body--open {
   }
 
   .CalendarDay__selected {
-    border-color: #6a5ace;
-    background-color: #6a5ace;
+    border-color: $primary-color;
+    background-color: $primary-color;
   }
 }
 
@@ -622,8 +648,8 @@ body.ReactModal__Body--open {
 .CalendarDay--after-hovered-start,
 .CalendarDay--hovered-span,
 .CalendarDay--selected-span {
-  background-color: #E9E6F8;
-  border-color: #CBCCE0;
+  background-color: rgba(82, 143, 240, 0.2);
+  border-color: #e4e4e4;
   color: #706E77;
 }
 
@@ -639,8 +665,8 @@ body.ReactModal__Body--open {
 .CalendarDay--selected-end:active,
 .CalendarDay--selected-start:active,
 .CalendarDay--selected:active {
-  background-color: #6A5ACE;
-  border-color: #6A5ACE;
+  background-color: $primary-color;
+  border-color: $primary-color;
   color: #fff;
 }
 
@@ -741,6 +767,7 @@ tr:hover .row-action.btn-group {
   }
 
   .pair-value {
+    position: relative
     width: 60%;
     padding-left: 8px;
 
@@ -749,7 +776,7 @@ tr:hover .row-action.btn-group {
     }
 
     > div {
-      line-height: 18px;
+      line-height: 20px;
     }
 
     // check icon looks mis-aligned without negative margin
@@ -919,7 +946,7 @@ tr:hover .row-action.btn-group {
   display: inline-block;
   color: #777;
 
-  .i-done {
+  .i-check {
     margin-top: 2px;
     margin-left: 5px;
   }
@@ -1139,7 +1166,7 @@ tr:hover .row-action.btn-group {
   }
 
   &--secondary {
-    color: #7B8199;
+    color: $secondary-color;
     font-size: 85%;
 
     i {

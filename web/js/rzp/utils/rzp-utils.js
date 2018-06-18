@@ -10,6 +10,10 @@ moment.updateLocale('en', {
   },
 });
 
+export function isFunction(value) {
+  return typeof value === 'function';
+}
+
 export function isDefined(value) {
   return typeof value !== 'undefined';
 }
@@ -519,6 +523,19 @@ export const getKeysSeparatedByPipe = params => {
  **/
 export const trim = str => {
   return str.replace(/\s+/g, '');
+};
+
+/**
+ * convert array of items to a sentence
+ * ex. item1, item2 and item3
+ */
+
+export const arrayToSentence = (arr = []) => {
+  if (arr.length === 1) {
+    return arr[0];
+  } else {
+    return arr.slice(0, arr.length - 1).join(', ') + ' and ' + arr.slice(-1);
+  }
 };
 
 export const pluralize = (str, length) => {

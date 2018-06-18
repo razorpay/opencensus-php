@@ -98,10 +98,6 @@ app
               name: 'LLP',
               value: 6,
             },
-            8: {
-              name: 'Educational Institutes',
-              value: 8,
-            },
             9: {
               name: 'Trust',
               value: 9,
@@ -113,10 +109,6 @@ app
             11: {
               name: 'NGO',
               value: 7,
-            },
-            12: {
-              name: 'Other',
-              value: 12,
             },
           },
 
@@ -265,7 +257,13 @@ app
         };
 
         payload.data.password_confirmation = payload.data.password;
+
         payload.data.business_name = payload.data.business_name || '';
+
+        // Business name cannot be empty or null. Same as quickSendDetails
+        if (!payload.data.business_name) {
+          delete payload.data.business_name;
+        }
 
         $scope.alerts.resetAlerts();
         var request = $http(payload);
@@ -326,6 +324,17 @@ app
 
       $scope.sendDetails = function() {
         pushToDrip();
+
+        // Fire linkedin Pixel.
+        var i = new Image();
+        i.src =
+          'https://dc.ads.linkedin.com/collect/?pid=155571&conversionId=391804&fmt=gif';
+
+        // Fire Quora pixel.
+        i = new Image();
+        i.src =
+          'https://q.quora.com/_/ad/0b40045f43e5492d916199b03c35aa48/pixel?tag=ViewContent&noscript=1';
+
         var payload = {
           method: 'post',
           url: '/user/pre_signup',
@@ -363,12 +372,19 @@ app
 
       $scope.quickSendDetails = function(detailField, key) {
         $scope.signup.merchantData[detailField] = key;
+
+        var reqPayload = Object.assign({}, $scope.signup.merchantData);
+        // Business name cannot be empty or null
+        if (!reqPayload.business_name) {
+          delete reqPayload['business_name'];
+        }
+
         pushToDrip();
         var payload = {
           method: 'post',
           url: '/user/pre_signup',
           transformRequest: transformRequestAsFormPost,
-          data: $scope.signup.merchantData,
+          data: reqPayload,
         };
 
         var request = $http(payload);

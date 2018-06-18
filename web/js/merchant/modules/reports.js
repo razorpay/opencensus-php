@@ -2,16 +2,26 @@ import ajax from 'merchant/utils/ajax';
 import { set } from 'rzp/utils/immutable';
 import poll from 'rzp/utils/poll/longPoll';
 import { merchantFetch } from 'rzp/utils/ajax';
+import { trackReportGenericActions } from 'merchant/containers/Reports/ReportsNew/ga';
 
 const GENERATE_REPORT = 'GENERATE_REPORT';
 
-const reportErrorMsg = {
+const ADD_REPORT = 'ADD_REPORT';
+const UPDATE_REPORT = 'UPDATE_REPORT';
+const REMOVE_REPORT = 'REMOVE_REPORT';
+const ADD_POLL_INSTANCE = 'ADD_POLL_INSTANCE';
+
+const downloadReportErrorMsg = {
   error: 'Oops!, Unable to generate report',
+};
+
+const emailReportErrorMsg = {
+  error: 'Oops!, Unable to email report',
 };
 
 const handleError = e => {
   console.error(e);
-  return reportErrorMsg;
+  return downloadReportErrorMsg;
 };
 
 const createLog = (data, accountId) => {
@@ -19,30 +29,36 @@ const createLog = (data, accountId) => {
     url: 'reporting/logs',
     method: 'post',
     data,
-    ...(!!accountId && {accountId})
+    ...(!!accountId && { accountId }),
   });
 };
 
 const getLog = (logId, accountId) => {
-    
   return merchantFetch({
     url: `reporting/logs/${logId}`,
-    ...(!!accountId && {accountId})
+    ...(!!accountId && { accountId }),
   });
 };
 
 const getFile = (fileId, accountId) => {
-    
   return merchantFetch({
     url: `ufh/file/${fileId}/get-signed-url`,
-    ...(!!accountId && {accountId})
+    ...(!!accountId && { accountId }),
+  });
+};
+
+const updateLog = (data, accountId) => {
+  return merchantFetch({
+    url: `reporting/logs/${data.id}`,
+    method: 'patch',
+    data: { emails: data.emails },
+    ...(!!accountId && { accountId }),
   });
 };
 
 export const getConfigs = () => {
-    
   return merchantFetch({
-    url: 'reporting/configs'
+    url: 'reporting/configs',
   });
 };
 
@@ -56,27 +72,31 @@ export const generateReport = ajaxParams => {
 const pollInterval = 2, // poll interval in SECONDS
   timeout = 30 * 60 * 1000; // 30 minutes
 
-export const generateReportV2 = (params, isMerchantAccount) => {
+export const generateReportV2 = (
+  params,
+  isMerchantAccount,
+  onProgress,
+  onPollStart
+) => {
   const startTime = new Date(),
-        accountHeaderVal = !isMerchantAccount && 
-                           params.generated_by;
-  
+    accountHeaderVal = !isMerchantAccount && params.generated_by;
+
   let numCallsMade = 0,
     timeElapsed = 0;
 
   return createLog(params, accountHeaderVal)
     .then(resp => {
       if (!resp.success || !resp.data || !resp.data.id) {
-        return reportErrorMsg;
+        onProgress(resp.data);
+        return downloadReportErrorMsg;
       }
+
+      onProgress(resp.data, true);
 
       const logId = resp.data.id;
 
       const logPoll = poll({
-        fetchFunc: () => getLog(
-                           resp.data.id,
-                           accountHeaderVal
-                         ),
+        fetchFunc: () => getLog(resp.data.id, accountHeaderVal),
         validator: resp => {
           numCallsMade++;
           timeElapsed = new Date() - startTime;
@@ -111,6 +131,9 @@ export const generateReportV2 = (params, isMerchantAccount) => {
         },
       });
 
+      //save log poll instances in the store
+      onPollStart(logId, logPoll);
+
       return logPoll.promise
         .then(resp => {
           // `resp.data.status` will be `created` in
@@ -120,12 +143,16 @@ export const generateReportV2 = (params, isMerchantAccount) => {
             resp.data.status === 'failed' ||
             resp.data.status === 'created'
           ) {
-            return reportErrorMsg;
+            onProgress({ ...resp.data, status: 'failed' });
+            return downloadReportErrorMsg;
           }
+
+          onProgress(resp.data);
 
           const fileId = resp.data.file_id;
 
           if (!fileId) {
+            onProgress(resp.data);
             return {
               error: 'No data found for the given dates',
             };
@@ -134,7 +161,7 @@ export const generateReportV2 = (params, isMerchantAccount) => {
           return getFile(fileId, accountHeaderVal)
             .then(resp => {
               if (!resp.success) {
-                return reportErrorMsg;
+                return downloadReportErrorMsg;
               }
 
               return {
@@ -147,3 +174,109 @@ export const generateReportV2 = (params, isMerchantAccount) => {
     })
     .catch(handleError);
 };
+
+export const emailReportV2 = (
+  params,
+  isMerchantAccount,
+  shouldUpdate = false
+) => {
+  const accountHeaderVal = !isMerchantAccount && params.generated_by;
+  const reqFunc = shouldUpdate ? updateLog : createLog;
+
+  return reqFunc(params, accountHeaderVal)
+    .then(resp => {
+      if (!resp.success || !resp.data || !resp.data.id) {
+        return emailReportErrorMsg;
+      }
+      return resp;
+    })
+    .catch(err => {
+      return emailReportErrorMsg;
+    });
+};
+
+export const addReportToList = report => {
+  return {
+    type: ADD_REPORT,
+    report,
+  };
+};
+
+export const updateReportInList = report => {
+  return {
+    type: UPDATE_REPORT,
+    report,
+  };
+};
+
+export const removeReportFromList = reportId => {
+  return {
+    type: REMOVE_REPORT,
+    reportId,
+  };
+};
+
+export const addPollInstance = (logId, pollInstance) => {
+  return {
+    type: ADD_POLL_INSTANCE,
+    payload: {
+      logId,
+      pollInstance,
+    },
+  };
+};
+
+export const areReportsStillDownloading = reports => {
+  const list = Object.keys(reports);
+  let isDownloading = false;
+
+  for (let i = 0, len = list.length; i < len; i++) {
+    if (reports[list[i]].status === 'created') {
+      isDownloading = true;
+      break;
+    }
+  }
+
+  return isDownloading;
+};
+
+let initialState = {
+  currentReportList: {},
+  pollInstances: {},
+};
+
+export function reportsReducer(state = initialState, action) {
+  let currentReportList = {},
+    pollInstances = {};
+
+  currentReportList = { ...state.currentReportList };
+  pollInstances = { ...state.pollInstances };
+
+  switch (action.type) {
+    case `${ADD_REPORT}`:
+      currentReportList[action.report.id] = action.report;
+      return set(state, 'currentReportList', currentReportList);
+
+    case `${UPDATE_REPORT}`:
+      if (currentReportList[action.report.id]) {
+        currentReportList[action.report.id] = action.report;
+      }
+
+      return set(state, 'currentReportList', currentReportList);
+
+    case `${REMOVE_REPORT}`:
+      if (currentReportList[action.reportId]) {
+        delete currentReportList[action.reportId];
+      }
+
+      return set(state, 'currentReportList', currentReportList);
+    case `${ADD_POLL_INSTANCE}`:
+      if (!pollInstances[action.payload.logId]) {
+        pollInstances[action.payload.logId] = action.payload.pollInstance;
+      }
+
+      return set(state, 'pollInstances', pollInstances);
+    default:
+      return state;
+  }
+}

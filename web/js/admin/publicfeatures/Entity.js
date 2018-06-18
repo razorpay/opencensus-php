@@ -9,7 +9,7 @@ import {
   closeModal,
 } from 'common/modal';
 import Form from 'ui/Form';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import AsyncButton from 'ui/AsyncButton';
 import Field, { SelectField, TextAreaField, FileField } from 'ui/Field';
 import Table from 'ui/Table';
@@ -201,7 +201,7 @@ export default class EditPublicFeatures extends Component {
     let oldStatus = this.props.model.status;
 
     return (
-      <BaseModal header="Edit Submission">
+      <ModalContent header="Edit Submission">
         <Form class="full-span full-elements" onSubmit={save}>
           {this.state.pending ? (
             <div class="spinner center" />
@@ -383,7 +383,7 @@ export default class EditPublicFeatures extends Component {
             </div>
           )}
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

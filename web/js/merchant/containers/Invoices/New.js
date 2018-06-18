@@ -706,7 +706,7 @@ export default class InvoicesNewContainer extends Component {
                       <div class="row">
                         <div class="col-md-12">
                           <ShowWhen featureEnabled="Invoice_Partial_Payments">
-                            <div class="rzpCheckbox rzpCheckbox-sm">
+                            <div class="rzpCheckbox">
                               <Field
                                 name="partial_payment"
                                 id="partial_payment"
@@ -779,7 +779,7 @@ export default class InvoicesNewContainer extends Component {
                                 });
                               })}
                             >
-                              <i class="i i-done" />
+                              <i class="i i-check" />
                               <span>Finalize and Issue</span>
                             </AsyncButton>
                           )}

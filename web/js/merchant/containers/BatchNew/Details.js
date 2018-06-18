@@ -1,34 +1,33 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import {
-  fetchBatch,
   batchDownload,
-  fetchBatchStats,
-  fetchBatchInvoices,
+  fetchPaymentLinkBatchesDetails,
 } from 'merchant/modules/batches';
 
 import BatchDetails from 'merchant/components/BatchNew/BatchDetails';
 
-import { trackDetails } from './ga';
-
-@connect(null, {
-  fetchBatch,
-  batchDownload,
-  fetchBatchStats,
-  fetchBatchInvoices,
-  ...ModalActions,
-  ...NotificationsActions,
-})
+@withRouter
+@connect(
+  state => {
+    const batchDetails = state.batchDetails;
+    return {
+      isLoading: batchDetails.loading,
+      error: batchDetails.error,
+      ...batchDetails.item,
+    };
+  },
+  {
+    batchDownload,
+    ...ModalActions,
+    ...NotificationsActions,
+  }
+)
 export default class BatchDetailsContainer extends Component {
-  state = {
-    batch: {},
-    stats: {},
-    isLoading: true,
-  };
-
   handleDownload = id => {
     let windowRef = window.open('', '_blank');
     this.props
@@ -46,32 +45,8 @@ export default class BatchDetailsContainer extends Component {
   };
 
   fetchData = id => {
-    if (!id) {
-      return;
-    }
-
-    let { fetchBatch, fetchBatchStats, fetchBatchInvoices } = this.props;
-    let requests = [
-      fetchBatch(id),
-      fetchBatchStats(id),
-      fetchBatchInvoices(id),
-    ];
-
-    Promise.all(requests)
-      .then(([batch, stats, invoices]) => {
-        this.setState({
-          batch: batch,
-          invoices: invoices.data.items,
-          stats: stats.data.stats,
-          isLoading: false,
-        });
-      })
-      .catch(error => {
-        this.props.showNotification({
-          type: 'error',
-          message: 'Failed to fetch batch.',
-        });
-      });
+    if (!id) return;
+    this.props.fetchBatchDetails({ id });
   };
 
   componentWillMount() {
@@ -80,19 +55,19 @@ export default class BatchDetailsContainer extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
-      this.setState({ isLoading: true });
       this.fetchData(nextProps.id);
     }
   }
 
   componentDidMount() {
-    trackDetails('Open', this.props.id);
+    this.props.gaEvents.trackDetails('Open', this.props.id);
   }
 
   componentWillUnmount() {
-    trackDetails('Close', this.props.id);
+    this.props.gaEvents.trackDetails('Close', this.props.id);
   }
+
   render() {
-    return <BatchDetails onDownload={this.handleDownload} {...this.state} />;
+    return <BatchDetails onDownload={this.handleDownload} {...this.props} />;
   }
 }

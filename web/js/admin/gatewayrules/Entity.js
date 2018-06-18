@@ -11,7 +11,7 @@ import AsyncButton from 'ui/AsyncButton';
 import { openModal, notifyError } from 'common/modal';
 import { observer } from 'mobx-react';
 import user from 'admin/user';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import {
   methods,
   gateways,
@@ -31,7 +31,7 @@ class EntityProps extends Component {
     const isEditable = user.permissions.indexOf('edit_gateway_rule') > -1;
 
     return (
-      <BaseModal
+      <ModalContent
         header={`${isEditable ? 'Edit Rule' : 'View Rule'}`}
         noPadding={!isEditable}
       >
@@ -40,7 +40,7 @@ class EntityProps extends Component {
         ) : (
           <Duplex fields={fields} model={model} />
         )}
-      </BaseModal>
+      </ModalContent>
     );
   }
 }
@@ -363,9 +363,9 @@ export function showEntity(collection) {
     this ? (
       <EntityProps model={this} />
     ) : (
-      <BaseModal header="Create new Gateway Rule">
+      <ModalContent header="Create new Gateway Rule">
         <GatewayRuleForm model={new GatewayRule(collection)} />
-      </BaseModal>
+      </ModalContent>
     )
   );
 }

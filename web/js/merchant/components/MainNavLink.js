@@ -31,11 +31,12 @@ export default class MainNavLink extends Component {
       label,
       isNew,
       isBeta = false,
+      isPending,
       baseLocation,
       ...linkProps
     } = this.props;
 
-    let tag;
+    let tag, loader;
 
     if (isBeta) {
       tag = (
@@ -43,6 +44,10 @@ export default class MainNavLink extends Component {
       );
     } else if (isNew) {
       tag = <span class="badge bg-success pull-right hidden-xs">new</span>;
+    }
+    //show infinite spin loader if there are some pending items in that section of the app
+    if (isPending) {
+      loader = <span class="spin-loader pull-right  hidden-xs" />;
     }
 
     return (
@@ -68,6 +73,7 @@ export default class MainNavLink extends Component {
           <i class={icon} />
           {label}
           {tag}
+          {loader}
         </NavLink>
       </ShowWhen>
     );

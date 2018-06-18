@@ -1,50 +1,108 @@
 # Razorpay dashboard
 
+The production dashboard uses the following:
+
+- PHP 7.1
+- Alpine Linux 3.7
+
+Builds are done using Drone. See the `.drone.yml` file for details on these.
+
 #### Pre-requisites
 
 * Install [composer](https://getcomposer.org/download/) PHP package manager
 * Install [`node`](https://github.com/creationix/nvm) (`v6` or above)
 * Install [`yarn`](https://yarnpkg.com/en/docs/install)
 
-## Set up instructions for development
+# Setup instructions with Docker (for local development)
 
-* Instructions for setup via docker are available at README-docker.md
-*  Copy over `dashboard.razorpay.in.conf` to `/etc/apache2/sites-available/`.
-*  Edit the vhost to point to correct directory
-* `sudo a2ensite dashboard.razorpay.in.conf`
-* `sudo chmod -R o+wx storage/`
-* Copy over `environment/env.sample.php` to `environment/env.php`
-* Copy `environment/.env.example` to `environment/.env.dev` and edit it accordingly
-* Make sure `SECURE_SESSION=false` in `.env.dev`
-* Run `composer install` to install laravel
-* Run `php artisan migrate --seed` to migrate and seed the db. If you face problem regarding null fields, turn off strict SQL mode.
-* Make sure you have redis installed (used for session management and caching).
-* Make sure you are running the latest node (only 6 and above are supported)
-* `npm i`
-* `npm start`
-* Setup the following integrations in your editor:
-    - [editorconfig](http://editorconfig.org/#download)
-    - [prettier](https://github.com/prettier/prettier#editor-integration). The config is documented in `package.json`. We use `--single-quote` and enable semicolons.
+#### Pre-requisites
 
-- Open <http://dashboard.razorpay.in> and login as `test@razorpay.com/123456`.
-- To sign in as an admin, open <http://dashboard.razorpay.in/admin> after setting OAUTH_MOCK=true in your .env.dev. (If you would like to use the oauth flow in dev environment then add an entry with you razorpay email to admins table in local database or change the code to use any email already in your database.)
+* Setup Razorpay API locally. Check [Razorpay API Docker](https://github.com/razorpay/api/blob/master/readme-docker.md)
+* Once set up, ensure `Docker for mac` is running.
 
-## Setup instructions for testing
+#### Setup Dashboard/Building Container
 
-* Copy `environment/.env.example` to `environment/.env.testing` and edit it accordingly
-* Create a `$HOME/.selenium` directory
-* Download the latest selenium server jar file from `http://www.seleniumhq.org/download/` and download it in the `~/.selenium` directory.
-* Make sure you have firefox installed.
+Now, build the containers:
 
-## Homestead specific instructions
+```
+$ make build
+```
 
-* Install XQuartz (Mac Only)
-* Add this to Homestead.yaml : `configure.ssh.forward_x11 = true`
-* Ensure Selenium is available in /home/vagrant/.selenium
-* `sudo apt-get update`
-* `sudo apt-get install openjdk-7-jre xvfb firefox`
-* Run selenium server manually : `java -jar ~/.selenium/selenium-server.jar`
-* Run tests : `xvfb-run phpunit`
+The above will take care of building a `Containerized dashboard app` from your
+local file-system, spin up `mysql:5.6` container and establish connection
+to run the app locally.
+
+You should be able to access the app at:
+`http://dashboard.razorpay.in:38080/`
+
+#### Shutting down/Pausing the container
+
+```
+$ make down
+```
+
+#### Bringing the container back after it has been shut down/paused
+
+```
+$ make up
+```
+
+#### Cleaning up dashboard container images
+
+```
+$ make clean
+```
+
+#### Cleaning up all container images
+
+```
+$ make clean-all
+```
+
+#### Notes on running tests
+On a vanilla mode, to run all the tests do the following:
+```
+$ make test
+```
+
+If you want to pass in specific params(e.g. -filter PaymentTest or --stop-on-failure etc), do the following:
+```
+$ make test AT="--filter <mytestname> --stop-on-failure"
+```
+
+#### Connecting to mysql:
+
+Available Databases:
+* dashboard
+
+```
+$ mysql -u root -p -P33306 -h 127.0.0.1 api_live
+```
+
+Look at the value of `DB_LIVE_PASSWORD` in `docker-compose.dev.yml` file for the password. You can also use tools like sequelpro etc with the
+above configuration. Do note that the mysql port is going to be `23306`.
+
+#### Post Install
+
+* Login to the API database and either seed a new admin user or change an existing one for self. Below describes the later. Look out
+  for the user with email `rishabh.pugalia@razorpay.com` and update with your email, name and username etc. Do this
+  in both `api_live` and `api_test` dbs. For instance:
+
+```
+mysql -u api_user -p -P23306 -h 127.0.0.1
+mysql> use api_live;
+...
+mysql>select * from admins;
+....
+mysql>update admins set email = 'someemail@razorpay.com', name = 'Some Name', username='someusername' where id = 'some_id';
+...
+mysql>use api_test;
+...
+mysql>update admins set email = 'someemail@razorpay.com', name = 'Some Name', username='someusername' where id = 'some_id';
+
+```
+
+* Login to the dashboard `http://dashboard.razorpay.in:38080/admin`
 
 # Docs
 

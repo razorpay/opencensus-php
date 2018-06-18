@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import { saveAs } from 'file-saver';
 
 import { notifyError, notifySuccess } from 'common/modal';
@@ -226,7 +226,7 @@ export default class GenerateReports extends Component {
     );
 
     return (
-      <BaseModal header="Download Reports" customClass="reports-modal">
+      <ModalContent header="Download Reports" class="reports-modal" noPadding>
         <Form>
           {/*Report Type Selection*/}
           <aside class="reports-list-panel">
@@ -337,7 +337,7 @@ export default class GenerateReports extends Component {
             </div>
           </main>
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

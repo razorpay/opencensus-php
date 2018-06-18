@@ -2,7 +2,7 @@ import React from 'react';
 import Form from 'ui/Form';
 import Field, { SelectField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 export default function InviteForm({
   fields,
@@ -11,14 +11,14 @@ export default function InviteForm({
   onInvite,
 }) {
   return (
-    <BaseModal
+    <ModalContent
       header="Invitation details"
-      banner={() => (
+      banner={
         <banner class="warning">
           Smarthub: Education, Society &amp; Government merchants should NOT be
           onboarded through this solution
         </banner>
-      )}
+      }
     >
       <Form
         class="full-span full-elements"
@@ -134,6 +134,6 @@ export default function InviteForm({
           onSubmit={onInvite}
         />
       </Form>
-    </BaseModal>
+    </ModalContent>
   );
 }

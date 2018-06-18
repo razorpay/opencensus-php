@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Field, { SelectField, CheckField } from 'ui/Field';
 import Table from 'ui/Table';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import AsyncButton from 'ui/AsyncButton';
 
 export default class RolesForm extends Component {
@@ -28,9 +28,9 @@ export default class RolesForm extends Component {
   render() {
     let { name, description, allPerms, onSubmit } = this.props;
     return (
-      <BaseModal
+      <ModalContent
         header={name ? 'Edit Role' : 'Add Role'}
-        customClass="roles-form-container"
+        class="roles-form-container"
       >
         <Form class="inline" onSubmit={onSubmit} style={{ minWidth: '700px' }}>
           <Field name="name" label="Name" required defaultValue={name} />
@@ -58,7 +58,7 @@ export default class RolesForm extends Component {
             </div>
           )}
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

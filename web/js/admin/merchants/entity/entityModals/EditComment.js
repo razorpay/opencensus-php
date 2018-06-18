@@ -1,5 +1,5 @@
 import React from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import Form from 'ui/Form';
 import { TextAreaField } from 'ui/Field';
@@ -26,7 +26,7 @@ export default ({ props, merchantId }) => {
   }
 
   return (
-    <BaseModal header="Edit Comment">
+    <ModalContent header="Edit Comment">
       <Form class="full-span full-elements">
         <TextAreaField
           label="Comment"
@@ -41,6 +41,6 @@ export default ({ props, merchantId }) => {
           onSubmit={onSubmit}
         />
       </Form>
-    </BaseModal>
+    </ModalContent>
   );
 };

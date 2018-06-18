@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import Field from 'ui/Field';
 import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
@@ -31,7 +31,7 @@ export default class EditFraudScore extends Component {
   render() {
     const { details } = this.props.props.merchant;
     return (
-      <BaseModal header="Edit Fraud Score">
+      <ModalContent header="Edit Fraud Score">
         <Form class="full-span full-elements" style={{ width: '450px' }}>
           <Field
             label="Risk Threshold"
@@ -49,7 +49,7 @@ export default class EditFraudScore extends Component {
             onSubmit={this.handleConfirm}
           />
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

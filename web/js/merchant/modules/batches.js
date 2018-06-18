@@ -1,4 +1,4 @@
-import { set } from 'rzp/utils/immutable';
+import { set, merge } from 'rzp/utils/immutable';
 import ajax from 'merchant/utils/ajax';
 import {
   getActionName,
@@ -95,6 +95,20 @@ export const fetchPaymentLinkBatches = params => {
   };
 };
 
+export const fetchPaymentLinkBatchesDetails = params => {
+  const id = params.id;
+
+  params.with_config = '1';
+  return {
+    type: `${PAYMENT_LINK}_FETCH_DETAILS`,
+    payload: Promise.all([
+      fetchBatchAjax(id),
+      fetchBatchStats(id),
+      fetchBatchInvoices(id),
+    ]),
+  };
+};
+
 const validateBatch = (actionType, batchType) => (file, progressTracker) => {
   let formData = new FormData();
   formData.append('file', file);
@@ -182,22 +196,14 @@ export const fetchBatch = batchId => {
   };
 };
 
-export const fetchBatchStats = batchId => {
-  return {
-    type: FETCH_BATCH_STATS,
-    payload: merchantFetch({
-      method: 'get',
-      url: `batches/${batchId}/stats`,
-    }),
-  };
-};
+export const fetchBatchStats = batchId =>
+  merchantFetch({
+    method: 'get',
+    url: `batches/${batchId}/stats`,
+  });
 
-export const fetchBatchInvoices = batchId => {
-  return {
-    type: FETCH_BATCH_INVOICES,
-    payload: merchantFetch(`invoices?batch_id=${batchId}`),
-  };
-};
+export const fetchBatchInvoices = batchId =>
+  merchantFetch(`invoices?batch_id=${batchId}`);
 
 export const notifyBatch = (batchId, data) => {
   return {
@@ -233,6 +239,39 @@ export const paymentBatchesReducer = makeActionCollectionReducer(PAYMENT);
 
 let paymentBatchIdsInitialState = {
   issuableIdList: [],
+};
+
+let batchDetailsReducerState = {
+  loading: true,
+  item: {},
+  error: null,
+};
+
+export const batchDetailsReducer = function(
+  state = batchDetailsReducerState,
+  action
+) {
+  switch (action.type) {
+    case `${PAYMENT_LINK}_FETCH_DETAILS::PENDING`:
+      return merge(state, {
+        loading: true,
+      });
+
+    case `${PAYMENT_LINK}_FETCH_DETAILS::SUCCESS`:
+      const payload = action.payload;
+      return merge(state, {
+        loading: false,
+        item: {
+          batch: payload[0].data.items[0],
+          stats: payload[1].data.stats,
+          invoices: payload[2].data.items,
+        },
+        error: null,
+      });
+
+    default:
+      return state;
+  }
 };
 
 export const PaymentBatchIdsReducer = function(

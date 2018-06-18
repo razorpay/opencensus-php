@@ -1,0 +1,82 @@
+.Button
+  background: #fbfbfb
+  color: #414141
+  padding: 11px 20px
+  line-height: 16px
+  border-radius: 2px
+  border: 1px solid #e6e7e8
+  outline: none
+  margin-right: 12px
+  transition: 0.15s, 0.3s border
+
+  &:not(:disabled)
+    &:hover
+      background-color: #ececec
+      border-color: #d8d8d8
+
+    &:active
+      color: #58666e
+      background-color: #dcdcdc
+
+  &:disabled
+    cursor: not-allowed !important
+    opacity: 0.5
+
+  &--small
+    padding: 8px 24px;
+
+.Button--transparent
+  background-color: transparent
+  color: $primary-color
+  border: 0
+  padding: 0
+  margin: 0 4px 0 0
+  line-height: inherit
+
+  &:not(:disabled)
+    &:hover
+      background-color: transparent
+      color: $primary-color-hover
+      opacity: 0.85
+
+    &.Button--Link
+      &:active, &:focus
+        background-color: transparent
+        color: #135fd9
+        box-shadow: none
+        text-decoration: none
+
+      &:hover
+        text-decoration: underline
+
+.Button--primary
+  background-color: $primary-color
+  color: #fff
+  border: darken($primary-color, 10%)
+
+  &:not(:disabled)
+    &:hover
+      color: #fff
+      background-color: $primary-color-hover
+      border-color: #135fd9
+
+    &:active
+      color: #fff
+      background-color: #135fd9
+      border-color: #0e449c
+
+.Button-icon
+  float: left
+  margin: 0 4px 0 -4px
+
+.Button-icon--after
+  float: right
+  margin: 0 -4px 0 4px
+
+
+.Button--danger.Button--danger
+  color: #f88180
+
+  &:not(:disabled)
+    &:hover
+      color: #e27675
