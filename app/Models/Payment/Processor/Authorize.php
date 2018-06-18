@@ -1249,27 +1249,6 @@ trait Authorize
         }
     }
 
-    protected function validateAndFetchOffer(Payment\Entity $payment, array $input): Offer\Entity
-    {
-        $offerId = $input[Payment\Entity::OFFER_ID];
-
-        Offer\Entity::verifyIdAndStripSign($offerId);
-
-        // If offer is present in the payment request, we need to validate it against the order.
-        if ($payment->order->offers->contains($offerId) === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
-            [
-                'offer_id' => $offer->getPublicId(),
-                'order_id' => $order->getPublicId(),
-            ]);
-        }
-
-        $offer = $this->repo->offer->findByIdAndMerchant($offerId, $this->merchant);
-
-        return $offer;
-    }
-
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
     {
         $this->setAuthTypeInPayment($payment);
