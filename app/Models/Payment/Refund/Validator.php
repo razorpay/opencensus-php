@@ -22,8 +22,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $editStatusRules = [
-        Entity::STATUS          => 'required|string|in:initiated,failed,processed|custom',
-        Entity::REFERENCE1      => 'required|string',
+        Entity::STATUS          => 'required|string|custom',
+        Entity::REFERENCE1      => 'sometimes|string|max:40',
     ];
 
     protected static $createValidators = [
