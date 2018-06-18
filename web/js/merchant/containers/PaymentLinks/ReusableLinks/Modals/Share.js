@@ -6,12 +6,18 @@ import Input from 'component/Input';
 
 import { isEmail, isPhone } from 'rzp/utils/validators';
 
+const fbBase = 'https://www.facebook.com/sharer/sharer.php?u=';
+const twitterBase = 'https://twitter.com/share?url=';
+const whatsappBase = 'whatsapp://send?text=';
+
 export default ({
   isNew,
   handleClose,
   handleAction,
   showNotification,
   url,
+  title,
+  description,
 }) => {
   function onSubmit(formData) {
     const reqPayload = {};
@@ -65,6 +71,34 @@ export default ({
           message: err,
         });
       });
+  }
+
+  function mediaWindowUrl(e) {
+    console.dir(e.target);
+
+    const type = e.target.dataset['type'];
+    let mediaUrl;
+    const mediaMsg = _shareMessage(title, description);
+
+    switch (type) {
+      case 'fb':
+        mediaUrl = fbBase + url + '&quote=' + mediaMsg;
+
+        window.open(mediaUrl, 'facebook-share', 'width=550,height=235');
+        break;
+
+      case 'twitter':
+        mediaUrl = twitterBase + url + '&text=' + mediaMsg;
+
+        window.open(mediaUrl, 'twitter-share', 'width=550,height=235');
+        break;
+
+      case 'whatsapp':
+        window.open(whatsappBase + mediaMsg + ' ' + url);
+        break;
+    }
+
+    return false;
   }
 
   return (
@@ -121,7 +155,20 @@ export default ({
 
           <div class="Share-section">
             <span class="label--faded">Share link on social media. </span>
-            <div />
+            <div class="social-media" style={{ display: 'inline-block' }}>
+              <a onClick={mediaWindowUrl} data-type="fb">
+                <img src="/img/social-media/fb.png" alt="Facebook share" />
+              </a>
+              <a onClick={mediaWindowUrl} data-type="twitter">
+                <img src="/img/social-media/twitter.png" alt="Twitter share" />
+              </a>
+              <a onClick={mediaWindowUrl} data-type="whatsapp">
+                <img
+                  src="/img/social-media/whatsapp.png"
+                  alt="Whatsapp share"
+                />
+              </a>
+            </div>
           </div>
 
           <Form class="Share-section" onSubmit={onSubmit}>
@@ -171,3 +218,16 @@ export default ({
     </div>
   );
 };
+
+function _shareMessage(title, description) {
+  let msg = title;
+  if (description) {
+    msg += ': ' + description;
+  }
+
+  if (msg.length > 200) {
+    msg = msg.substring(0, 200) + '...';
+  }
+
+  return msg;
+}

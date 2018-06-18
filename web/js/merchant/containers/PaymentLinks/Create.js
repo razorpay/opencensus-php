@@ -354,7 +354,7 @@ export default class CreateNewContainer extends React.Component {
     this.props.history.replace(FORM_TABS[activeTabIndx].url);
   };
 
-  openRPLShareView = (id, shortUrl) => {
+  openRPLShareView = (id, shortUrl, title, description) => {
     this.props.openModal({
       size: 'medium',
       component: (
@@ -364,6 +364,8 @@ export default class CreateNewContainer extends React.Component {
           isNew={true}
           showNotification={this.props.showNotification}
           url={shortUrl}
+          title={title}
+          description={description}
         />
       ),
     });
@@ -418,7 +420,12 @@ export default class CreateNewContainer extends React.Component {
           const entityId = resp.data.id;
 
           if (activeTabIndx == REUSABLE_PAYMENT_LINK) {
-            this.openRPLShareView(resp.id, resp.data.short_url);
+            this.openRPLShareView(
+              resp.id,
+              resp.data.short_url,
+              resp.data.title,
+              resp.data.description
+            );
           }
 
           if (IS_MODAL_VIEW) {

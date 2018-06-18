@@ -147,8 +147,10 @@ export default class ReusableLinksEntity extends React.Component {
           handleClose={this.props.closeModal}
           handleClick={this.sendLink}
           handleAction={sendLink.bind(null, this.state.reusableLink.id)}
-          url={this.state.reusableLink.short_url}
           showNotification={this.props.showNotification}
+          url={this.state.reusableLink.short_url}
+          title={this.state.reusableLink.title}
+          description={this.state.reusableLink.description}
         />
       ),
     });
