@@ -46,6 +46,24 @@ class PaymentCreateConvenienceFeeTest extends TestCase
         return $feesArray;
     }
 
+    public function testFeesS2S()
+    {
+        $this->ba->privateAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $feesArray = $this->createAndGetFeesForPaymentS2S($payment);
+
+        if ($payment['amount'] === 50000)
+        {
+            $this->assertEquals($feesArray['input']['fee'], 1173);
+
+            $this->assertEquals($feesArray['display']['tax'], 1.49);
+        }
+
+        return $feesArray;
+    }
+
     public function testFeesRouteOnPlatformFeeBearer()
     {
         $this->fixtures->merchant->disableConvenienceFeeModel();

@@ -226,6 +226,17 @@ class PaymentCreateController extends Controller
         return ApiResponse::json(['input' => $input,'display' => $data]);
     }
 
+    public function postPaymentFees()
+    {
+        $json = $this->postCreatePaymentFees()->getContent();
+
+        $data = json_decode($json, true);
+
+        unset($data['input']);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * Resend OTP for a payment
      */

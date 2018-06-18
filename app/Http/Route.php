@@ -43,6 +43,7 @@ final class Route
         'payment_create_jsonp'                     => ['get',      'payments/create/jsonp',                          'PaymentCreateController@getCreatePaymentJsonp'                     ],
         'payment_create_ajax'                      => ['post',     'payments/create/ajax',                           'PaymentCreateController@postAJAX'                                  ],
         'payment_create_fees'                      => ['post',     'payments/create/fees',                           'PaymentCreateController@postCreatePaymentFees'                     ],
+        'payment_fees'                             => ['post',     'payments/fees',                                  'PaymentCreateController@postPaymentFees'                           ],
         'payment_create_wallet'                    => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
         'payment_create_upi'                       => ['post',     'payments/create/upi',                            'PaymentCreateController@postCreateUpiPayment'                      ],
         'payment_create_openwallet'                => ['post',     'payments/create/openwallet',                     'PaymentCreateController@postCreateS2SPayment'                      ],
@@ -901,6 +902,7 @@ final class Route
     public static $private = [
         'payment_create_private',
         'payment_create_private_old',
+        'payment_fees',
         'payment_create_recurring',
         'payment_create_wallet',
         'payment_create_upi',
