@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -31,9 +32,14 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION       = 'description';
     const NOTES             = 'notes';
 
-    protected static $sign = 'pl';
+    // Additional input keys (TODO: Move this to Base\Entity if possible)
+    const INPUT             = 'input';
 
-    protected $entity = 'payment_link';
+    protected static $sign        = 'pl';
+
+    protected $entity             = 'payment_link';
+
+    protected $generateIdOnCreate = true;
 
     protected $fillable = [
         self::AMOUNT,
@@ -83,6 +89,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT,
         self::TITLE,
         self::DESCRIPTION,
+        self::NOTES,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -122,7 +129,18 @@ class Entity extends Base\PublicEntity
         self::STATUS_REASON     => null,
         self::USER_ID           => null,
         self::DESCRIPTION       => null,
+        self::NOTES             => [],
     ];
+
+    public function getExpireBy()
+    {
+        return $this->getAttribute(self::EXPIRE_BY);
+    }
+
+    public function setShortUrl(string $shortUrl)
+    {
+        $this->setAttribute(self::SHORT_URL, $shortUrl);
+    }
 
     // -------------------------------------- Relations -------------------------------
 
@@ -139,5 +157,20 @@ class Entity extends Base\PublicEntity
     public function payments()
     {
         return $this->hasMany(Payment\Entity::class);
+    }
+
+    // -------------------------------------- End Relations ---------------------------
+
+    /**
+     * Payment link's hosted view long url is of the following format -
+     * https://api.razorpay.com/v1/payment_links/v1/:id/view
+     *
+     * @param  string $plHostedBaseUrl
+     *
+     * @return string
+     */
+    public function getHostedViewUrl(string $plHostedBaseUrl): string
+    {
+        return $plHostedBaseUrl . '/v1/payment_links/' . $this->getPublicId() . '/view';
     }
 }
