@@ -234,7 +234,7 @@ class PaymentCreateController extends Controller
 
         unset($data['input']);
 
-        return ApiResponse::json($data);
+        return ApiResponse::json($data['display']);
     }
 
     /**

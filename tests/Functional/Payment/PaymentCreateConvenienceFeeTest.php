@@ -36,11 +36,11 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         $feesArray = $this->createAndGetFeesForPayment($payment);
 
-        if ($payment['amount'] === 50000)
+        if ($payment['amount'] === '50000')
         {
-            $this->assertEquals($feesArray['input']['fee'], 1173);
+            $this->assertEquals(1000, $feesArray['input']['fee']);
 
-            $this->assertEquals($feesArray['display']['tax'], 1.49);
+            $this->assertEquals(0, $feesArray['display']['tax']);
         }
 
         return $feesArray;
@@ -54,11 +54,11 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         $feesArray = $this->createAndGetFeesForPaymentS2S($payment);
 
-        if ($payment['amount'] === 50000)
+        if ($payment['amount'] === '50000')
         {
-            $this->assertEquals($feesArray['input']['fee'], 1173);
+            $this->assertEquals(0, $feesArray['tax']);
 
-            $this->assertEquals($feesArray['display']['tax'], 1.49);
+            $this->assertEquals(10, $feesArray['fees']);
         }
 
         return $feesArray;
