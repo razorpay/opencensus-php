@@ -143,11 +143,11 @@ class Core extends Base\Core
 
         if ($paymentLink->isPayable() === true)
         {
-            $this->updateFromCapturedPayment($payment, $paymentLink);
+            $this->updatePaymentLinkAfterPaymentCapture($payment, $paymentLink);
         }
         else
         {
-            $this->intiateRefundForPayment($payment, $paymentLink);
+            $this->initiateRefundForPayment($payment);
         }
     }
 
@@ -163,7 +163,7 @@ class Core extends Base\Core
             $this->changeStatus($paymentLink, Status::INACTIVE, StatusReason::COMPLETED);
         }
 
-        $this->repo->payment_link->saveOrFail($paymentLink);
+        $this->repo->saveOrFail($paymentLink);
 
         $this->trace->info(
             TraceCode::PAYMENT_LINK_UPDATED_POST_PAYMENT_CAPTURE,
@@ -173,19 +173,22 @@ class Core extends Base\Core
             ]);
     }
 
-    public function intiateRefundForPaymentIfNotCaptured(Payment\Entity $payment)
+    public function initiateRefundForPaymentIfNotCaptured(Payment\Entity $payment)
     {
         if ($payment->isCaptured() === false)
         {
-            $this->intiateRefundForPayment($payment);
+            $this->initiateRefundForPayment($payment);
         }
     }
 
     /**
      * Validates if new payment initiation should be allowed or not
+     *
      * @param Entity $paymentLink
+     *
+     * @throws BadRequestException
      */
-    public function validateIsPaymentInitiatable(Entity $paymentLink)
+    public function validateIsPaymentInitiable(Entity $paymentLink)
     {
         if (($paymentLink->isPayable() === false) or
             ($this->hasPaymentSlots($paymentLink) === false))
@@ -406,7 +409,7 @@ class Core extends Base\Core
      *
      * @param Payment\Entity $payment
      */
-    protected function intiateRefundForPayment(Payment\Entity $payment)
+    protected function initiateRefundForPayment(Payment\Entity $payment)
     {
         $this->trace->info(
             TraceCode::PAYMENT_LINK_PAYMENT_ASYNC_REFUND_PUSH,

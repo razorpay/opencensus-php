@@ -404,7 +404,6 @@ trait Capture
      * and push it into a queue. We continue with the normal flow afterwards.
      *
      * @param $data
-     * @throws Exception\BaseException
      */
     protected function captureOnGateway($data)
     {
@@ -584,7 +583,7 @@ trait Capture
     {
         if ($payment->hasPaymentLink() === true)
         {
-            (new PaymentLink\Core)->intiateRefundForPaymentIfNotCaptured($payment);
+            (new PaymentLink\Core)->initiateRefundForPaymentIfNotCaptured($payment);
         }
     }
 

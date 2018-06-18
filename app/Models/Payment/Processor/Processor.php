@@ -1489,7 +1489,7 @@ class Processor
         $paymentLinkId = $input[Payment\Entity::PAYMENT_LINK_ID];
         $paymentLink   = $this->repo->payment_link->findByPublicIdAndMerchant($paymentLinkId, $this->merchant);
 
-        (new PaymentLink\Core)->validateIsPaymentInitiatable($paymentLink);
+        (new PaymentLink\Core)->validateIsPaymentInitiable($paymentLink);
 
         $payment->paymentLink()->associate($paymentLink);
     }

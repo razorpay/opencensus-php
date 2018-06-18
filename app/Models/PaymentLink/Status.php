@@ -2,6 +2,8 @@
 
 namespace RZP\Models\PaymentLink;
 
+use RZP\Exception\BadRequestValidationFailureException;
+
 class Status
 {
     const ACTIVE   = 'active';

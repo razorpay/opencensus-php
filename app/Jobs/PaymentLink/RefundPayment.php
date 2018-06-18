@@ -2,6 +2,7 @@
 
 namespace RZP\Jobs\PaymentLink;
 
+use RZP\Jobs\Job;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
