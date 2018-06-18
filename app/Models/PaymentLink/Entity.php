@@ -32,8 +32,15 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION       = 'description';
     const NOTES             = 'notes';
 
-    // Additional input keys (TODO: Move this to Base\Entity if possible)
+    //
+    // Additional request input keys used in various other endpoint calls.
+    // TODO: Move 'INPUT' to Base\Entity if possible.
+    //
     const INPUT             = 'input';
+    const CONTACTS          = 'contacts';
+    const EMAILS            = 'emails';
+    const CONTACT           = 'contact';
+    const EMAIL             = 'email';
 
     protected static $sign        = 'pl';
 
@@ -131,6 +138,31 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION       => null,
         self::NOTES             => [],
     ];
+
+    public function isActive(): bool
+    {
+        return ($this->getAttribute(self::STATUS) === Status::ACTIVE);
+    }
+
+    public function isInactive(): bool
+    {
+        return ($this->getAttribute(self::STATUS) === Status::INACTIVE);
+    }
+
+    public function getStatus(): string
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getShortUrl()
+    {
+        return $this->getAttribute(self::SHORT_URL);
+    }
 
     public function getExpireBy()
     {

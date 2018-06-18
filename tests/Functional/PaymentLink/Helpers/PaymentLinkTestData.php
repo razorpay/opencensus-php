@@ -163,4 +163,42 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testPaymentLinkSendNotification' => [
+        'request'  => [
+            'url'     => '/payment_links/pl_100000000000pl/notify',
+            'method'  => 'post',
+            'content' => [
+                'emails'   => ['test@rzp.com'],
+                'contacts' => ['9090908080']
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testInactivePaymentLinkSendNotification' => [
+        'request'  => [
+            'url'     => '/payment_links/pl_100000000000pl/notify',
+            'method'  => 'post',
+            'content' => [
+                'emails'   => ['test@rzp.com'],
+                'contacts' => ['9090908080']
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment link is not active.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

@@ -20,4 +20,11 @@ class Service extends Base\Service
 
         $this->entityRepo = $this->repo->payment_link;
     }
+
+    public function sendNotification(string $id, array $input)
+    {
+        $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $this->core->sendNotification($paymentLink, $input);
+    }
 }
