@@ -2,9 +2,10 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use RZP\Models\Pricing;
 use RZP\Models\Transaction;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class PricingTest extends TestCase
@@ -152,6 +153,38 @@ class PricingTest extends TestCase
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
 
         $this->startTest($testData);
+    }
+
+    public function testUpdatePricingPlanRule()
+    {
+        $this->doAuthAndCapturePayment();
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $transactionId = substr($txn['id'], 4, strlen($txn['id']));
+
+        $content = $this->createPricingPlan2();
+
+        $rule = $this->getEntityById('pricing', $content['rules']['0']['id'], true);
+
+        $this->assertEquals($rule['deleted_at'], null);
+
+        $attributes = [
+            'pricing_rule_id' => $rule['id'],
+            'name'            => $rule['plan_name'],
+            'transaction_id'  => $transactionId,
+            'amount'          => 10000,
+        ];
+
+        $this->fixtures->create('fee_breakup', $attributes);
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule/'. $rule['id'];
+
+        $this->startTest($testData);
+
+        $rule = Pricing\Entity::withTrashed()->findOrFail($rule['id']);
+
+        $this->assertNotNull($rule['deleted_at']);
     }
 
     public function testGetPricingPlan()
