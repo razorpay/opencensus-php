@@ -34,7 +34,7 @@ export default class ActivateAgainModal extends React.Component {
      * */
     // const invalidFields = document.querySelectorAll('.PaymentLinks--Create-Form :invalid');
     const invalidFields = document.querySelectorAll(
-      '.ModalForm--ActivationAgainModal .Input.is-invalid'
+      '.ModalForm--ActivationAgain .Input.is-invalid'
     );
     const disableSubmit = invalidFields.length;
 
@@ -123,7 +123,7 @@ export default class ActivateAgainModal extends React.Component {
             {msg.length && 'Kindly '} {msg}.
           </p>
 
-          <div class="ModalForm ModalForm--ActivationAgainModal">
+          <div class="ModalForm ModalForm--ActivationAgain">
             {this.props.expireBy && (
               <div class="ModalForm-field">
                 <div class="Input-label">Expires On</div>

@@ -14,9 +14,11 @@ import PaymentLinksFormFields from './Links/Create';
 import ReusableLinksFormFields from './ReusableLinks/Create';
 
 import { createPaymentLink } from './Links/model';
-import { createReusableLink } from './ReusableLinks/model';
+import { createReusableLink, sendLink } from './ReusableLinks/model';
 import ShowWhen from 'merchant/components/ShowWhen';
+import RPLShareView from './ReusableLinks/Modals/Share';
 
+import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
 import {
@@ -141,9 +143,11 @@ function WizardFields(field) {
 
 @withRouter
 @connect(state => state.session, {
-  showNotification,
   updatePLInReduxList,
   updateRPLInReduxList,
+  showNotification,
+  openModal,
+  closeModal,
   luminateRow,
 })
 export default class CreateNewContainer extends React.Component {
@@ -350,6 +354,21 @@ export default class CreateNewContainer extends React.Component {
     this.props.history.replace(FORM_TABS[activeTabIndx].url);
   };
 
+  openRPLShareView = (id, shortUrl) => {
+    this.props.openModal({
+      size: 'medium',
+      component: (
+        <RPLShareView
+          handleClose={this.props.closeModal}
+          handleAction={sendLink.bind(null, id)}
+          isNew={true}
+          showNotification={this.props.showNotification}
+          url={shortUrl}
+        />
+      ),
+    });
+  };
+
   onCreate = () => {
     const activeTabIndx = String(this.state.activeTab);
     const IS_MODAL_VIEW = this.props.onClose;
@@ -397,6 +416,10 @@ export default class CreateNewContainer extends React.Component {
           });
 
           const entityId = resp.data.id;
+
+          if (activeTabIndx == REUSABLE_PAYMENT_LINK) {
+            this.openRPLShareView(resp.id, resp.data.short_url);
+          }
 
           if (IS_MODAL_VIEW) {
             if (activeTabIndx == PAYMENT_LINK) {

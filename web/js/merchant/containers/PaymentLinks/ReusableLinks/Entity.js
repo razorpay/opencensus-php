@@ -4,16 +4,18 @@ import { connect } from 'react-redux';
 import { updateRPLInReduxList } from 'merchant/modules/invoices/list';
 
 import {
-  editReusableLink,
   fetchReusableLinksEntity,
   fetchReusableLinkPaymentsList,
+  editReusableLink,
+  sendLink,
 } from './model';
 import { ReusableLinksStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
-import CustomClipboard from 'rzp/ui/Clipboard/Custom';
+import CopyLink from 'merchant/components/Invoices/CopyLink';
+import ShowWhen from 'merchant/components/ShowWhen';
 import StatsInfo from 'ui/StatsTable';
 import GroupDetailsTable from 'rzp/ui/GroupDetailsTable';
 
@@ -25,7 +27,8 @@ import EditPaymentFor from './Edit/EditPaymentFor';
 import EditTimesPayable from './Edit/EditTimesPayable';
 
 import { EditExpiry, EditNotes, EditReceipt } from '../Edit/index';
-import ActivateAgainModal from './Modals/ActivateAgain';
+import ActivateAgain from './Modals/ActivateAgain';
+import ShareView from './Modals/Share';
 
 import Button from 'component/Button';
 
@@ -131,6 +134,21 @@ export default class ReusableLinksEntity extends React.Component {
       eventCategory: 'Dashboard - Reusable Payment Links',
       eventAction: 'Copy - Reusable Payment Link',
       eventLabel: `payment_link_id=${reusableLinkId}`,
+    });
+  };
+
+  openShareView = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <ShareView
+          handleClose={this.props.closeModal}
+          handleClick={this.sendLink}
+          handleAction={sendLink.bind(null, this.state.reusableLink.id)}
+          url={this.state.reusableLink.short_url}
+          showNotification={this.props.showNotification}
+        />
+      ),
     });
   };
 
@@ -329,6 +347,10 @@ export default class ReusableLinksEntity extends React.Component {
     const isCompleted =
       !loading && !isActive && statusReason.toLowerCase() === 'completed';
 
+    const isSmsOrEmailSent =
+      reusableLink.sms_status === 'sent' ||
+      reusableLink.email_status === 'sent';
+
     return (
       <div class="content-wrapper content-sm txn-details Entity--reusable">
         {loading ? (
@@ -340,6 +362,18 @@ export default class ReusableLinksEntity extends React.Component {
             <div class="panel-heading">
               <i class="i i-link text-primary icon--formal" />{' '}
               <strong>{reusableLink.id}</strong>
+              <ShowWhen notMyRole="support finance">
+                <div class="btn-toolbar pull-right">
+                  {isActive && (
+                    <button
+                      class="btn btn-primary btn-sm"
+                      onClick={this.openShareView}
+                    >
+                      Send Link
+                    </button>
+                  )}
+                </div>
+              </ShowWhen>
             </div>
 
             <div class="SliderPanel__Body">
@@ -358,17 +392,14 @@ export default class ReusableLinksEntity extends React.Component {
                   <EntityDetailRow
                     label="Link URL"
                     value={() => (
-                      <span class="CopyLink">
-                        <span>{reusableLink.short_url}</span>
-                        <CustomClipboard
-                          value={reusableLink.short_url}
-                          onCopy={this.onCopy({
+                      <CopyLink
+                        url={reusableLink.short_url}
+                        onCopy={() => {
+                          this.onCopy({
                             reusableLinkId: reusableLink.id,
-                          })}
-                        >
-                          <button class="btn btn-default btn-xs">copy</button>
-                        </CustomClipboard>
-                      </span>
+                          });
+                        }}
+                      />
                     )}
                   />
                   <EntityDetailRow

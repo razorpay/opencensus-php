@@ -1,7 +1,7 @@
 .Button
   background: #fbfbfb
   color: #414141
-  padding: 11px 20px
+  padding: 10px 20px
   line-height: 16px
   border-radius: 2px
   border: 1px solid #e6e7e8
@@ -49,6 +49,11 @@
       &:hover
         text-decoration: underline
 
+      i
+        margin-left: 4px
+        display: inline-block // To avoid putting text-decoration
+        text-decoration: none
+
 .Button--primary
   background-color: $primary-color
   color: #fff
@@ -73,3 +78,12 @@
   float: right
   margin: 0 -4px 0 4px
 
+/* Input having button on the right attached to it */
+.Button--input--right
+  position: relative
+  margin-right: 0
+  margin-left: -1px
+  display: inline-block
+  border-top-left-radius: 0
+  border-bottom-left-radius: 0
+  z-index: 2

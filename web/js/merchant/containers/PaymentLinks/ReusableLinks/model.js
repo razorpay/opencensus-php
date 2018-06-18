@@ -49,3 +49,16 @@ export const fetchReusableLinkPaymentsList = id => {
     },
   });
 };
+
+export const sendLink = (id, data) => {
+  const reqPayload = {};
+
+  data.email && (reqPayload.emails = [data.email]);
+  data.contact && (reqPayload.contacts = [data.contact]);
+
+  return merchantFetch({
+    url: `payment_links/${id}/notify`,
+    method: 'post',
+    data: reqPayload,
+  });
+};
