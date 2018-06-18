@@ -8,6 +8,7 @@ import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import Image from 'rzp/ui/Image';
 import ModalHeader from 'rzp/ui/ModalHeader';
+import Group, { GroupItem } from 'rzp/ui/Group';
 
 import { logout, showOrHideTour } from 'merchant/modules/session';
 import SubmitFeedback from 'merchant/containers/Header/SubmitFeedback';
@@ -115,22 +116,23 @@ export default class ProfileDropdown extends Component {
                     </Image>
                   </div>
                 </div>
-                <div class="media-body">
+                <div class="media-body merchant-details-container">
                   <div class="merchantname">{merchant.name}</div>
-                  <div>
-                    <small>{merchant.id}</small>
-                    <CustomClipboard
-                      value={merchant.id}
-                      onCopy={() => analytics('Copy - Merchant ID')}
-                    >
-                      <button
-                        class="btn btn-default btn-xs"
-                        style={{ marginLeft: '5px' }}
+                  <Group>
+                    <GroupItem>
+                      <small>{merchant.id}</small>
+                    </GroupItem>
+                    <GroupItem>
+                      <CustomClipboard
+                        value={merchant.id}
+                        onCopy={() => analytics('Copy - Merchant ID')}
                       >
-                        Copy <b>Merchant Id</b>
-                      </button>
-                    </CustomClipboard>
-                  </div>
+                        <button class="btn btn-default btn-xs">
+                          Copy Merchant Id
+                        </button>
+                      </CustomClipboard>
+                    </GroupItem>
+                  </Group>
                 </div>
               </div>
             )}

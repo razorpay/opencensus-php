@@ -990,9 +990,29 @@ tr:hover .row-action.btn-group {
   padding: 0;
   line-height: 1.8;
 
+  .merchant-details-container {
+
+    .rzp-group {
+
+      width: 100%;
+
+      .rzp-group-item {
+
+        width: auto;
+        padding: 0;
+        border: none;
+
+        &:last-child {
+
+          text-align: right;
+        }
+      }
+    }
+  }
+
   .media {
     margin-top: 0;
-    padding: 10px 12px;
+    padding: 12px;
 
     + .media {
       border-top: 1px solid #eee;
@@ -1031,6 +1051,29 @@ tr:hover .row-action.btn-group {
   .i-tour,
   .i-undo {
     font-size: 20px;
+  }
+}
+
+ul.switch-modes-menu.nav.nav-stacked {
+
+  padding: 0;
+
+  > li {
+
+    margin: 0;
+
+    > a {
+
+      border-top: 1px solid #eee;
+    }
+
+    &:first-child {
+
+      > a {
+
+        border-top: none;
+      }
+    }
   }
 }
 
