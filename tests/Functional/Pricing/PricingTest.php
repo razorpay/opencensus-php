@@ -157,26 +157,11 @@ class PricingTest extends TestCase
 
     public function testUpdatePricingPlanRule()
     {
-        $this->doAuthAndCapturePayment();
-
-        $txn = $this->getLastEntity('transaction', true);
-
-        $transactionId = substr($txn['id'], 4, strlen($txn['id']));
-
         $content = $this->createPricingPlan2();
 
         $rule = $this->getEntityById('pricing', $content['rules']['0']['id'], true);
 
         $this->assertEquals($rule['deleted_at'], null);
-
-        $attributes = [
-            'pricing_rule_id' => $rule['id'],
-            'name'            => $rule['plan_name'],
-            'transaction_id'  => $transactionId,
-            'amount'          => 10000,
-        ];
-
-        $this->fixtures->create('fee_breakup', $attributes);
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule/'. $rule['id'];
 
