@@ -1590,7 +1590,9 @@ class MerchantTest extends TestCase
             'starts_at'        => $startsAt,
         ]);
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertStringStartsWith('offer_', $response['offers'][0]['id']);
     }
 
     public function testGetCheckoutPreferencesWithOrderRelatedUndiscountedOffer()

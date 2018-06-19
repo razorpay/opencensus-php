@@ -43,6 +43,7 @@ final class Route
         'payment_create_jsonp'                     => ['get',      'payments/create/jsonp',                          'PaymentCreateController@getCreatePaymentJsonp'                     ],
         'payment_create_ajax'                      => ['post',     'payments/create/ajax',                           'PaymentCreateController@postAJAX'                                  ],
         'payment_create_fees'                      => ['post',     'payments/create/fees',                           'PaymentCreateController@postCreatePaymentFees'                     ],
+        'payment_fees'                             => ['post',     'payments/fees',                                  'PaymentCreateController@postPaymentFees'                           ],
         'payment_create_wallet'                    => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
         'payment_create_upi'                       => ['post',     'payments/create/upi',                            'PaymentCreateController@postCreateUpiPayment'                      ],
         'payment_create_openwallet'                => ['post',     'payments/create/openwallet',                     'PaymentCreateController@postCreateS2SPayment'                      ],
@@ -440,6 +441,8 @@ final class Route
         'payment_link_list'                        => ['get',      'payment_links',                                  'PaymentLinkController@list'                                        ],
         'payment_link_create'                      => ['post',     'payment_links',                                  'PaymentLinkController@create'                                      ],
         'payment_link_update'                      => ['patch',    'payment_links/{id}',                             'PaymentLinkController@update'                                      ],
+        'payment_link_notify'                      => ['post',     'payment_links/{id}/notify',                      'PaymentLinkController@sendNotification'                            ],
+        'payment_link_expire_cron'                 => ['post',     'payment_links/expire',                           'PaymentLinkController@expirePaymentLinks'                          ],
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
         'app_fetch_payments'                       => ['get',      'apps/payments',                                  'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
@@ -902,6 +905,7 @@ final class Route
     public static $private = [
         'payment_create_private',
         'payment_create_private_old',
+        'payment_fees',
         'payment_create_recurring',
         'payment_create_wallet',
         'payment_create_upi',
@@ -1042,6 +1046,7 @@ final class Route
         'invitation_fetch_by_token',
         'invoice_expire_bulk',
         'invoice_send_notifications',
+        'payment_link_expire_cron',
         'merchant_activation_migrate',
         'merchant_admin_lead_put',
         'merchant_create_app_access_mapping',
@@ -1260,6 +1265,7 @@ final class Route
         'payment_link_list',
         'payment_link_create',
         'payment_link_update',
+        'payment_link_notify',
     ];
 
     // These will run on internal auth with the assurance
@@ -1983,6 +1989,7 @@ final class Route
             'invoice_send_notifications',
             'card_update_saved',
             'invoice_expire_bulk',
+            'payment_link_expire_cron',
             'batch_process_file',
             'order_refund_multiple_authorized',
             'subscriptions_charge_invoices',
