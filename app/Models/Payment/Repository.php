@@ -48,6 +48,7 @@ class Repository extends Base\Repository
         Entity::EMAIL           => 'sometimes',
         Entity::STATUS          => 'sometimes|string',
         Entity::NOTES           => 'sometimes|string|max:500',
+        Entity::PAYMENT_LINK_ID => 'fillable|public_id|size:17',
         Entity::SUBSCRIPTION_ID => 'sometimes|string|min:14|max:18',
         Entity::BANK_REFERENCE  => 'sometimes|alpha_num|max:22',
         self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes',
