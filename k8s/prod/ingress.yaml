@@ -22,3 +22,17 @@ spec:
         backend:
           serviceName: api
           servicePort: 80
+  - host: k8s-prod-api.razorpay.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: api
+          servicePort: 80
+  - host: k8s-prod-invoices.razorpay.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: api
+          servicePort: 80
