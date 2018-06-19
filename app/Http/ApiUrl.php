@@ -38,6 +38,7 @@ class ApiUrl
             'https://api.razorpay.com/v1/',
             'https://prod-api-canary.razorpay.com/v1/',
             'https://api-dark.razorpay.com/v1/',
+            'https://k8s-prod-api.razorpay.com/v1/',
         ],
     ];
 
