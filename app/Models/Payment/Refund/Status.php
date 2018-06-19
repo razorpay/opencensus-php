@@ -10,4 +10,11 @@ class Status
     const INITIATED = Attempt\Status::INITIATED;
     const PROCESSED = 'processed';
     const FAILED    = 'failed';
+
+    const REFUND_STATES = [
+        self::CREATED,
+        self::INITIATED,
+        self::PROCESSED,
+        self::FAILED,
+    ];
 }

@@ -61,13 +61,21 @@ class Validator extends Base\Validator
         $this->payment = $payment;
     }
 
-    protected function validateStatus($input)
+    protected function validateStatus($attribute, $value)
     {
         if ($this->entity->getStatus() === Status::PROCESSED)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Status cannot be updated to initiated from processed.',
                 'status');
+        }
+
+        $validState = in_array($value, Status::REFUND_STATES, true);
+
+        if($validState === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The selected status is invalid.');
         }
     }
 
