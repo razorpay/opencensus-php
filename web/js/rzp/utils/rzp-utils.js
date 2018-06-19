@@ -486,7 +486,132 @@ export const isWebkit =
 export { acronyms, shortenText };
 
 /**
- *Get human readable file size
+ * Returns the applicable GST groups, a corresponding mapping, and the rate per GST group.
+ * @param {Integer} slab Slab. eg: 500 (5%)
+ * @param {Integer} serviceStateCode State Code of Service (Merchant)
+ * @param {Integer} supplyStateCode State Code of Supply (Customer)
+ * @param {Object} mapping TaxGroup_Slab => Razorpay_Tax_ID mapping
+ * @param {Boolean} isUT Whether or not any of the states is a Union Territory
+ * @return {Object}
+ *  @prop {Array} groups List of applicable groups
+ *  @prop {Object} mapping Mapping that was passed, but only the ones applicable
+ *  @prop {Integer} perGroup % rate per group
+ */
+export const getApplicableGSTForSlab = (
+  slab,
+  serviceStateCode,
+  supplyStateCode,
+  mapping,
+  isUT
+) => {
+  let mapKeys = Object.keys(mapping);
+
+  /**
+   * For different states, it is IGST.
+   * For same state, if it is a Union Territory, it is CGST+UTGST.
+   * For same state, if it not is a Union Territory, it is CGST+SGST.
+   */
+  let groups = ['IGST'];
+  if (serviceStateCode === supplyStateCode) {
+    groups = isUT ? ['CGST', 'UTGST'] : ['CGST', 'SGST'];
+  }
+
+  let applicable = {};
+  let perKey = slab / groups.length;
+  for (let i = 0; i < mapKeys.length; i++) {
+    let key = mapKeys[i];
+    for (let j = 0; j < groups.length; j++) {
+      let group = groups[j];
+      if (`${group}_${perKey}` === key) {
+        applicable[key] = mapping[key];
+      }
+    }
+  }
+
+  return {
+    groups,
+    mapping: applicable,
+    perGroup: perKey,
+  };
+};
+
+/**
+ * Returns the applicable GST groups, a corresponding mapping, and the rate per GST group for given slabs.
+ * @param {Array} slabs Slabs. eg: [0, 500, 1200, ...]
+ * @param {Integer} serviceStateCode State Code of Service (Merchant)
+ * @param {Integer} supplyStateCode State Code of Supply (Customer)
+ * @param {Boolean} isUT Whether or not any of the states is a Union Territory
+ * @return {Object}
+ *  @prop {Number} slab Slab eg. 500, 1200, ...
+ *    @prop {Array} groups List of applicable groups
+ *    @prop {Object} mapping Mapping that was passed, but only the ones applicable
+ *    @prop {Integer} perGroup % rate per group
+ */
+export const getGSTSlabs = (
+  slabs,
+  serviceStateCode,
+  supplyStateCode,
+  mapping,
+  isUT
+) => {
+  let toReturn = {};
+  slabs.forEach(slab => {
+    toReturn[slab] = getApplicableGSTForSlab(
+      slab,
+      serviceStateCode,
+      supplyStateCode,
+      mapping,
+      isUT
+    );
+  });
+  return toReturn;
+};
+
+/**
+ * Stringifies an address.
+ * @param {Object} addr
+ * @return {String}
+ */
+export const stringifyAddress = addr => {
+  let str = '';
+
+  // Add Line 1 and Line 2
+  if (addr.line1) {
+    str += `${addr.line1},\n`;
+  }
+  if (addr.line2) {
+    str += `${addr.line2},\n`;
+  }
+
+  // Generate and add last line (city, state, country)
+  let lastLine = [];
+  if (addr.city) {
+    lastLine.push(addr.city);
+  }
+  if (addr.state) {
+    lastLine.push(addr.state);
+  }
+  if (addr.country) {
+    let country = addr.country;
+    if (country.toLowerCase() === 'in') {
+      country = 'India';
+    } else {
+      country = country.toUpperCase();
+    }
+    lastLine.push(country);
+  }
+  str += lastLine.join(', ');
+
+  // Add zipcode
+  if (addr.zipcode) {
+    str += ` (${addr.zipcode})`;
+  }
+
+  return str;
+};
+
+/**
+ * Get human readable file size
  * @param {*} fileSize in bytes in Binary prefixes
  */
 export const readableFileSize = bytes => {
@@ -533,7 +658,6 @@ export const trim = str => {
  * convert array of items to a sentence
  * ex. item1, item2 and item3
  */
-
 export const arrayToSentence = (arr = []) => {
   if (arr.length === 1) {
     return arr[0];
@@ -545,6 +669,63 @@ export const arrayToSentence = (arr = []) => {
 export const pluralize = (str, length) => {
   return length > 1 ? `${str}s` : str;
 };
+
+/**
+ * Capital-cases a string.
+ * @param {String} input
+ * @return {String}
+ */
+export const capitalize = input =>
+  !!input ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : '';
+
+/**
+ * Checks the validity of an address.
+ * Line1, City, State, Country, Zipcode are required fields in an address.
+ * @param {Object} address
+ * @return {Bool}
+ */
+export const isAddressValid = address => {
+  const allKeys = Boolean(
+    address &&
+      address.line1 &&
+      address.city &&
+      address.state &&
+      address.country &&
+      address.zipcode
+  );
+
+  if (!allKeys) {
+    return false;
+  }
+
+  const { line1, line2, city, state, country, zipcode } = address;
+
+  const requiredFieldsLengthCheck = Boolean(
+    line1.length >= 10 &&
+      line1.length <= 255 &&
+      city.length >= 2 &&
+      city.length <= 32 &&
+      zipcode.length === 6 &&
+      state.length >= 2 &&
+      state.length <= 32 &&
+      country.length >= 2 &&
+      country.length <= 64
+  );
+
+  let optionalFieldsLengthCheck = true;
+  if (line2 && !(line2.length >= 5 && line2.length <= 255)) {
+    optionalFieldsLengthCheck = false;
+  }
+
+  const lengthCheck = requiredFieldsLengthCheck && optionalFieldsLengthCheck;
+
+  if (!lengthCheck) {
+    return false;
+  }
+
+  return true;
+};
+
 /**
  * Returns whether or not a GSTIN is valid.
  * @param {String} gstin
@@ -579,6 +760,38 @@ export const subString = (str, length) => {
     return `${str.substr(0, length)} ...`;
   } else {
     return str;
+  }
+};
+
+/**
+ * Figure out if the given Tax is of type cess.
+ * @param {Tax} tax
+ * @return {Boolean}
+ */
+export const isTaxOfTypeCess = tax =>
+  Boolean(
+    tax &&
+      tax.name &&
+      tax.name.toLowerCase().startsWith('cess') &&
+      tax.rate_type === 'percentage'
+  );
+
+/**
+ * Calculates tax.
+ * @param {Number} base Amount.
+ * @param {Number} rate Rate
+ * @param {Boolean} inclusive Whether or not tax is inclusive
+ *
+ * eg:  base: 500
+ *      rate: 18 (18%)
+ *
+ * @return {Number} tax.
+ */
+export const calculateTax = (base, rate, inclusive = false) => {
+  if (inclusive) {
+    return base - base / (1 + rate / 100);
+  } else {
+    return base * (rate / 100);
   }
 };
 

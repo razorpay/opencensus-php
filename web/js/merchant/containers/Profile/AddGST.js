@@ -12,6 +12,7 @@ import { saveGST } from 'merchant/modules/profile';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import { required, validateGSTIN } from 'rzp/utils/validators';
+import { updateSession } from 'merchant/modules/session';
 
 const selector = formValueSelector('newGST');
 @connect(
@@ -23,6 +24,7 @@ const selector = formValueSelector('newGST');
   },
   {
     saveGST,
+    updateSession,
     ...ModalActions,
     ...NotificationsActions,
   }
@@ -55,7 +57,10 @@ export default class AddGST extends Component {
     return this.props
       .saveGST(fieldProps)
       .then(item => {
-        if (this.props.openedFromTopbar) {
+        this.props.updateSession(item.data);
+        if (this.props.reloadAfterSave) {
+          window.location.reload();
+        } else if (this.props.openedFromTopbar) {
           this.setState({
             saved: true,
           });

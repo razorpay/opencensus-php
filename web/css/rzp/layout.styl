@@ -698,7 +698,9 @@ body.ReactModal__Body--open {
 .tether-element {
   z-index: 1;
 }
-.super-impose {
+.super-impose,
+.ps-z-index-fix__Tether,
+.ps-z-index-fix__Menu {
   z-index: 100000;
 }
 
@@ -1291,3 +1293,24 @@ span.transfer-scheduled-text.text-warning,
 span.transfer-scheduled-text.text-warning span.label--primary {
   color: #F5A623;
 }
+
+.light-placeholder {
+  color: $light-grey;
+}
+
+.input-number-no-arrows
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin: 0;
+
+.PowerSelect--focused,
+.PowerSelect__SearchInput:focus
+  border-color: $primary-color;
+
+// Temporary fix for invisible triggers until react-power-select library is updated
+.PowerSelect__TriggerLabel
+  overflow: hidden;
+  max-width: 0px;

@@ -58,7 +58,7 @@ const InvoiceListItem = props => {
       <td>
         <InvoiceStatusLabel status={invoice.status} />
       </td>
-      {!isPaymentLinksType || !isPaymentLinksV2Enabled ? (
+      {isPaymentLinksType && !isPaymentLinksV2Enabled ? (
         <td>
           <div class="row-action">
             <div class="btn-group">
@@ -104,9 +104,7 @@ export default props => {
             <th>Customer</th>
             <th>Payment Link</th>
             <th>Status</th>
-            {(!isPaymentLinksType || !isPaymentLinksV2Enabled) && (
-              <th>Actions</th>
-            )}
+            {isPaymentLinksType && !isPaymentLinksV2Enabled && <th>Actions</th>}
           </tr>
         </thead>
         <TableBody

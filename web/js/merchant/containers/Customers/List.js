@@ -32,6 +32,7 @@ export default class CustomersListContainer extends ListContainer {
           customer={customer}
           onSave={this.highlightRowAndClose}
           closeModal={this.props.closeModal}
+          askAddress={false}
         />
       ),
     });

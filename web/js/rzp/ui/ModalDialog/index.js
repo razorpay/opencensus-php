@@ -28,16 +28,14 @@ export default class ModalDialog extends Component {
       <div>
         <Modal
           isOpen={!!props.component}
-          onRequestClose={props.closeModal}
+          onRequestClose={props.disableClose ? null : props.closeModal}
           closeTimeoutMS={300}
           shouldCloseOnOverlayClick={false}
           class={`Modal ${props.size ? `Modal--${props.size}` : ''}`}
           contentLabel="Modal"
           ariaHideApp={false}
         >
-          <ErrorBoundary resetOnProps>
-            {props.component}
-          </ErrorBoundary>
+          <ErrorBoundary resetOnProps>{props.component}</ErrorBoundary>
         </Modal>
       </div>
     );
@@ -46,4 +44,5 @@ export default class ModalDialog extends Component {
 
 ModalDialog.defaultProps = {
   size: 'regular',
+  disableClose: false,
 };

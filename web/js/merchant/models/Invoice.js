@@ -2,16 +2,19 @@ import GenericEntity from './GenericEntity';
 import ajax from 'merchant/utils/ajax';
 import { getFixedINRAmount, isBlank, rupeesToPaise } from 'rzp/utils/rzp-utils';
 import Payment from 'merchant/models/Payment';
+import store from 'merchant/store';
 
 const createFields = [
   'id',
   'amount',
   'currency',
-  'partial_payment',
+  // 'partial_payment' // Commented just for the sake of listing. Discuss if you feel like uncommenting this.
   'date',
   'expire_by',
   'draft',
+  'customer',
   'customer_id',
+  'supply_state_code',
   'customer',
   'sms_notify',
   'email_notify',
@@ -31,7 +34,7 @@ const editableFieldsInIssuedState = [
   'notes',
   'receipt',
   'comment',
-  'partial_payment',
+  // 'partial_payment' // Commented just for the sake of listing. Discuss if you feel like uncommenting this.
 ];
 
 export default class Invoice extends GenericEntity {
@@ -43,6 +46,15 @@ export default class Invoice extends GenericEntity {
   }
 
   resourceFields() {
+    // Add partial payment to list if partial payment is enabled.
+    const isPPEnabled = store.getState().session.user
+      .isInvoicePartialPaymentsEnabled;
+
+    if (isPPEnabled) {
+      createFields.push('partial_payment');
+      editableFieldsInIssuedState.push('partial_payment');
+    }
+
     return this.status === 'issued'
       ? editableFieldsInIssuedState
       : createFields;
@@ -53,8 +65,8 @@ export default class Invoice extends GenericEntity {
   }
 
   notify(type) {
-    return ajax({
-      url: `/invoices/${this.id}/notify/${type}`,
+    return this.makeGenericAjaxCall({
+      url: `/invoices/${this.id}/notify_by/${type}`,
       method: 'post',
     });
   }
@@ -97,8 +109,18 @@ export default class Invoice extends GenericEntity {
       return rupeesToPaise(this.amountInINR);
     }
 
-    if (prop === 'customer' && this.type === 'invoice' && !this.isNew) {
-      return undefined;
+    // Serialize the `this.customer` property.
+    if (
+      this.type === 'invoice' &&
+      prop === 'customer' &&
+      typeof this['customer'] === 'object'
+    ) {
+      let keys = Object.keys(this[prop]);
+      let obj = {};
+      for (let i = 0; i < keys.length; i++) {
+        obj[keys[i]] = super.serializeProperty.call(this[prop], keys[i]);
+      }
+      return obj;
     }
 
     if (prop === 'notes') {
@@ -133,12 +155,27 @@ export default class Invoice extends GenericEntity {
               quantity: item.quantity,
               description: item.description,
               amount: rupeesToPaise(item.amountInINR),
+              tax_rate: item.tax_rate,
+              tax_inclusive: item.tax_inclusive,
             };
+
+            // Set tax IDs if they exist.
+            if (item.tax_ids && item.tax_ids.length > 0) {
+              lineItem.tax_ids = item.tax_ids;
+            }
 
             if (item.item_id) {
               lineItem.item_id = item.item_id;
             } else {
               lineItem.id = item.id;
+            }
+
+            /**
+             * `tax_id` being `null` specifies that no taxes are to be applied
+             * on this line item. Need to explicitly send this to the API.
+             */
+            if (!this.supply_state_code) {
+              lineItem.tax_id = null;
             }
 
             return lineItem;
@@ -152,11 +189,32 @@ export default class Invoice extends GenericEntity {
   deserializeProperty(prop, value) {
     switch (prop) {
       case 'customer_details':
+        // Get address IDs.
+        let billingAddressID = value.billing_address;
+        let shippingAddressID = value.shipping_address;
+        if (
+          billingAddressID &&
+          typeof billingAddressID === 'object' &&
+          billingAddressID.id
+        ) {
+          billingAddressID = billingAddressID.id;
+        }
+        if (
+          shippingAddressID &&
+          typeof shippingAddressID === 'object' &&
+          shippingAddressID.id
+        ) {
+          shippingAddressID = shippingAddressID.id;
+        }
+
         this.customer = {
-          name: value.customer_name,
-          email: value.customer_email,
-          contact: value.customer_contact,
-          address: value.customer_address,
+          id: value.id,
+          name: value.name,
+          email: value.email,
+          contact: value.contact,
+          billing_address_id: billingAddressID,
+          shipping_address_id: shippingAddressID,
+          gstin: value.gstin,
         };
         break;
 

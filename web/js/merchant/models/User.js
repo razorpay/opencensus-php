@@ -97,6 +97,14 @@ export default class User {
     return (this.tags || []).indexOf('Gst_Invoice_Disabled') !== -1;
   }
 
+  /**
+   * Check for Partial Payment tag on Invoices.
+   * @return {Boolean}
+   */
+  get isInvoicePartialPaymentsEnabled() {
+    return (this.tags || []).indexOf('Invoice_partial_payments') >= 0;
+  }
+
   // TODO: Remove this code and reports v1 code when confirmed no rollbacks
   // Enabling reportsV2 for all merchants.
   get isReportV2Enabled() {

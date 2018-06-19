@@ -14,11 +14,13 @@ export const fetchInvoices = params => {
   };
 };
 
-export const saveInvoice = params => {
+export const saveInvoice = (params, headers = {}) => {
   let invoice = new Invoice(params);
   return {
     type: invoice.isNew ? INVOICE_CREATE : INVOICE_EDIT,
-    payload: invoice.save(),
+    payload: invoice.save(null, {
+      headers,
+    }),
   };
 };
 
