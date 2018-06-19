@@ -7,7 +7,7 @@ import Pager from 'rzp/ui/Pager';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ListContainer from 'merchant/containers/ListContainer';
 import ListFilter from 'merchant/components/ListFilter';
-import { fetchReusableLinksList } from 'merchant/containers/PaymentLinks/ReusableLinks/model';
+import { fetchReusableLinksList } from './model';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Amount from 'rzp/ui/Amount';
@@ -94,7 +94,7 @@ export default class ReusableLinksContainer extends ListContainer {
         <HeaderAction>
           <ShowWhen notMyRole="support">
             <div class="btn-toolbar pull-right">
-              <NavLink class="btn btn-primary" to="/paymentlinks/reusable/new">
+              <NavLink class="btn btn-primary" to="/paymentpages/new">
                 <i class="i i-plus" />
                 <span>Create Reusable Link</span>
               </NavLink>
@@ -185,7 +185,7 @@ export default class ReusableLinksContainer extends ListContainer {
                 {reusableLinks.map(item => (
                   <EntityItemRow id={item.id} key={item.id}>
                     <td>
-                      <NavLink to={`/paymentlinks/reusable/${item.id}`}>
+                      <NavLink to={`/paymentpages/${item.id}`}>
                         <code>{item.title}</code>
                       </NavLink>
                     </td>
@@ -238,7 +238,7 @@ export default class ReusableLinksContainer extends ListContainer {
               Learn more
             </a>
             <br />
-            <NavLink class="btn btn-primary" to="/paymentlinks/reusable/new">
+            <NavLink class="btn btn-primary" to="/paymentpages/new">
               <i class="i i-plus" />
               <span>Create your first Reusable Link</span>
             </NavLink>

@@ -2,8 +2,9 @@ import { matchPath } from 'react-router-dom';
 
 import SettlementDetails from 'merchant/containers/Settlements/Details';
 import PaymentLinkEntity from 'merchant/containers/PaymentLinks/Links/Entity';
-import ReusableLinksEntity from 'merchant/containers/PaymentLinks/ReusableLinks/Entity';
-import PaymentLinksCreate from 'merchant/containers/PaymentLinks/Create';
+import PaymentPages from 'merchant/containers/PaymentPages/Pages/Entity';
+import PaymentLinksCreate from 'merchant/containers/PaymentLinks/Links/Create/index';
+import PaymentPagesCreate from 'merchant/containers/PaymentPages/Pages/Create/index';
 import PaymentsDetails from 'merchant/containers/Payments/Details';
 import RefundDetails from 'merchant/containers/Refunds/Details';
 import OrderDetails from 'merchant/containers/Orders/Details';
@@ -31,7 +32,7 @@ const entityDetailsMap = {
   '/settlements/:id': SettlementDetails,
   '/paymentlinks/:id(inv_.+)': PaymentLinkEntity,
   '/paymentlinks/batchuploads/:id(batch_.+)': PaymentLinkBatchDetails,
-  '/paymentlinks/reusable/:id(pl_.+)': ReusableLinksEntity,
+  '/paymentpages/:id(pl_.+)': PaymentPages,
   '/invoices/:id/details': PaymentLinkEntity,
 
   '/route/payments/:id': PaymentsDetails,
@@ -50,7 +51,7 @@ const entityDetailsMap = {
 const entityModalsMap = {
   '/activation': ActivationContainer,
   '/paymentlinks/new': PaymentLinksCreate,
-  '/paymentlinks/reusable/new': PaymentLinksCreate,
+  '/paymentpages/new': PaymentPagesCreate,
 };
 
 export function matchDetail(pathname) {

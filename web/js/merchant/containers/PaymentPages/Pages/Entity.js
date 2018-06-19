@@ -23,12 +23,16 @@ import GroupDetailsTable from 'rzp/ui/GroupDetailsTable';
 
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
-import { trackDetailViewEdits } from '../Links/ga';
+import { trackDetailViewEdits } from './ga';
 
 import EditPaymentFor from './Edit/EditPaymentFor';
 import EditTimesPayable from './Edit/EditTimesPayable';
 
-import { EditExpiry, EditNotes, EditReceipt } from '../Edit/index';
+import {
+  EditExpiry,
+  EditNotes,
+  EditReceipt,
+} from '../../PaymentLinks/Edit/index';
 import ActivateAgain from './Modals/ActivateAgain';
 import ShareView from './Modals/Share';
 
@@ -47,7 +51,7 @@ const inActiveStatusReasonMap = {
   openModal,
   closeModal,
 })
-export default class ReusableLinksEntity extends React.Component {
+export default class PaymentPagesEntity extends React.Component {
   state = {
     reusableLink: {},
     reusableLinkPayments: [],

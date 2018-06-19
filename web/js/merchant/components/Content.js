@@ -12,6 +12,7 @@ import Home from 'merchant/containers/Home/Index';
 import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
 import PaymentLinks from 'merchant/containers/PaymentLinks/Index';
+import PaymentPages from 'merchant/containers/PaymentPages/Index';
 import InvoicingContainer from 'merchant/containers/Invoicing';
 import InvoicesNew from 'merchant/containers/Invoices/New';
 import Subscriptions from 'merchant/containers/Subscriptions/Index';
@@ -153,6 +154,7 @@ export default class Content extends Component {
           <Route path="/invoices/new" component={InvoicesNew} />
           <Route path="/items" component={InvoicingContainer} />
           <Route path="/paymentlinks" component={PaymentLinks} />
+          <Route path="/paymentpages" component={PaymentPages} />
           <Route path="/subscriptions" component={Subscriptions} />
           <Route path="/plans" component={Subscriptions} />
           {/*<Route path="/addons" component={Subscriptions} />*/}

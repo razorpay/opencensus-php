@@ -4,6 +4,7 @@ import Input from 'component/Input';
 
 import moment from 'moment';
 import { dateCalculator, timeCalculator } from 'component/Input/Calendar';
+import { isInteger } from 'rzp/utils/validators';
 
 const expireByError = 'Expiry has passed';
 const timesPayableError = 'Number of payments exceeded';
@@ -183,6 +184,11 @@ export default class ActivateAgainModal extends React.Component {
                     name="hasNoLimit"
                     defaultValue="0"
                     value={this.state.hasNoExpiry}
+                    validator={val => {
+                      if (!isInteger(val)) {
+                        return 'Enter valid number';
+                      }
+                    }}
                     onChange={e => {
                       this.setState(
                         {

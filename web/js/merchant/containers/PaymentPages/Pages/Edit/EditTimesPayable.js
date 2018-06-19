@@ -1,5 +1,6 @@
 import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
+import { isInteger } from 'rzp/utils/validators';
 
 export default class EditTimesPayable extends React.Component {
   state = this.resetState();
@@ -61,9 +62,13 @@ export default class EditTimesPayable extends React.Component {
             placeholder="TimesPayable"
             value={this.state.timesPayable}
             disabled={this.state.hasNoLimit === '1'}
-            validator={() => {
-              if (this.state.hasNoLimit === '0' && !this.state.timesPayable) {
-                return 'Please fill out this field';
+            validator={val => {
+              if (this.state.hasNoLimit === '0') {
+                if (!this.state.timesPayable) {
+                  return 'Please fill out this field';
+                } else if (!isInteger(val)) {
+                  return 'Enter valid number';
+                }
               }
             }}
             onChange={e => {
