@@ -409,33 +409,21 @@ class Entity extends Base\PublicEntity
         return ($this->offers->isNotEmpty() === true);
     }
 
-    /**
-     * Temporary. Serves to fetch the only offer available via pivot table.
-     * Includes validations to ensure there isn't more than one.
-     * TODO: Remove this when multiple offers are expected.
-     *
-     * @return Offer\Entity
-     */
-    public function getOffer()
-    {
-        $offers = $this->offers;
-
-        return $offers->first();
-    }
-
     protected function setPublicOffersAttribute(array & $array)
     {
         if ($this->hasOffers() === true)
         {
+            $offers = $this->offers;
+
             //
             // For backward compatibility
             //
-            if ($this->offers->count() === 1)
+            if ($offers->count() === 1)
             {
-                $array[self::OFFER_ID] = $this->getOffer()->getPublicId();
+                $array[self::OFFER_ID] = $offers->first()->getPublicId();
             }
 
-            $array[self::OFFERS] = $this->offers->getPublicIds();
+            $array[self::OFFERS] = $offers->getPublicIds();
         }
         else
         {
