@@ -73,16 +73,6 @@ class Core extends Base\Core
             return;
         }
 
-        // Multiple offers not permitted yet
-        // TODO: Remove this later
-        if (count($input[Entity::OFFERS]) > 1)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_MULTIPLE_OFFERS, null, [
-                'order_id' => $order->getId(),
-                'offers'   => $input[Entity::OFFERS],
-            ]);
-        }
-
         foreach ($input[Entity::OFFERS] as $offerId)
         {
             $this->validateAndAssociateOffer($order, $offerId);
@@ -92,10 +82,6 @@ class Core extends Base\Core
     protected function validateAndAssociateOffer(Entity $order, string $offerId)
     {
         $offer = (new Offer\Core)->fetchAndValidateOfferForOrder($offerId, $order);
-
-        // Fills offer_id FK in orders
-        // TODO: Remove this when FK is deprecated
-        $order->offer()->associate($offer);
 
         // Creates row in entity_offers table
         $this->repo->order->attachOfferToOrder($order, $offer);
