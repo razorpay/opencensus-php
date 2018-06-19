@@ -104,11 +104,12 @@ class InvoiceTest extends TestCase
 
         $merchantAttrs = [
             'name'                => 'ASD Enterprise',
-            'business_dba'       => $merchantLabel,
             'invoice_label_field' => 'business_dba',
         ];
 
         $this->fixtures->merchant->edit('10000000000000', $merchantAttrs);
+
+        $this->fixtures->merchant_detail->edit('10000000000000', ['business_dba' => $merchantLabel]);
 
         $response = $this->startTest();
 

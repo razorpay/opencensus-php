@@ -837,10 +837,12 @@ class Entity extends Base\PublicEntity
 
     /**
      * Helper method to fetch the actual display_name for an
-     * invoice, based on merchant-defined field preference:
-     * `billing_label` or `name`
+     * invoice, based on merchant-defined field preference from merchant_detail:
+     * `business_name` or `business_dba`
      *
-     * Fallback to `billing_name` if the setting is not defined
+     * Fallback to `merchant_detail.business_name` if the invoice_label_field setting is not defined
+     *
+     * If invoice_label_field is defined but the attribute is null, use merchant.billing_label instead.
      *
      * @return mixed
      */
@@ -848,7 +850,9 @@ class Entity extends Base\PublicEntity
     {
         $field = $this->getInvoiceLabelField() ?: Detail\Entity::BUSINESS_NAME;
 
-        return $this->merchantDetail->getAttribute($field);
+        $value = $this->merchantDetail->getAttribute($field);
+
+        return $value ?: $this->getBillingLabel();
     }
 
     public function getAutoCaptureLateAuth()
