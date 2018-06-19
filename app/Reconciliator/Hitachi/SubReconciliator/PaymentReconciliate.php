@@ -5,11 +5,12 @@ namespace RZP\Reconciliator\Hitachi;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Currency\Currency;
-use RZP\Models\Base\UniqueIdEntity;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
+    use Base\BharatQrTrait;
+
     /*******************
      * Row Header Names
      *******************/
@@ -24,6 +25,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_CARD_INTERCHANGE_TYPE  = 'interchange_type';
     const COLUMN_ISSETTLED              = 'issettled';
     const COLUMN_CURRENCY_CODE          = 'tran_currency_code';
+    const COLUMN_RRN                    = 'retr_ref_nr';
 
     const BHARAT_QR_TERMINAL            = '38R00450';
 
@@ -47,37 +49,29 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             return null;
         }
 
-        return $this->validatePaymentId($row);
+        return $this->getPaymentIdByTerminal($row);
     }
 
     /**
-     * Receiving random bharat qr reference number in invoice number,
-     * which is not our payment id. Skipping such rows based on id pattern and terminal check.
+     * Gets the payment id. In case of bharat qr payments
+     * information is present in rrn while in case of
+     * normal payments this info is present in invoice number
      *
      * @param array $row
      * @return mixed|null
      */
-    protected function validatePaymentId(array $row)
+    protected function getPaymentIdByTerminal(array $row)
     {
-        if ((UniqueIdEntity::verifyUniqueId($row[self::COLUMN_PAYMENT_ID], false) === false)
-            and ($row['terminal_id'] === self::BHARAT_QR_TERMINAL))
+        if ($row[self::COLUMN_TERMINAL_NUMBER] === self::BHARAT_QR_TERMINAL)
         {
-            $this->trace->info(
-                TraceCode::RECON_INFO_ALERT,
-                [
-                    'message'       => 'Payment ID being sent in the file is not as expected.',
-                    'info_code'     => 'PAYMENT_ABSENT',
-                    'row'           => $row,
-                    'payment_id'    => $row[self::COLUMN_PAYMENT_ID],
-                    'gateway'       => $this->gateway
-                ]);
-
-            $this->setFailUnprocessedRow(false);
-
-            return null;
+            $paymentId =  $this->getPaymentIdFromBharatQr($row[self::COLUMN_RRN], $row);
+        }
+        else
+        {
+            $paymentId = $row[self::COLUMN_PAYMENT_ID];
         }
 
-        return $row[self::COLUMN_PAYMENT_ID];
+        return $paymentId;
     }
 
     protected function getGatewayFee($row)

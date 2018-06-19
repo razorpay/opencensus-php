@@ -182,6 +182,7 @@ class Core extends Base\Core
                 $params[Entity::NETWORK]       = $card->getNetworkCode();
                 $params[Entity::ISSUER]        = $card->getIssuer();
                 $params[Entity::INTERNATIONAL] = $payment->isInternational();
+                $params[Entity::RECURRING]     = $payment->isRecurring();
 
                 break;
 

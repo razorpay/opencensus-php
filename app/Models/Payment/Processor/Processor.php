@@ -484,11 +484,12 @@ class Processor
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
 
         $data = [
-            'originalAmount'    => $input['amount'],
-            'fees'              => $fee,
-            'razorpay_fee'      => $fee - $tax,
-            'tax'               => $tax,
-            'amount'            => $input['amount'] + $fee,
+            'originalAmount'  => $input['amount'],
+            'original_amount' => $input['amount'],
+            'fees'            => $fee,
+            'razorpay_fee'    => $fee - $tax,
+            'tax'             => $tax,
+            'amount'          => $input['amount'] + $fee,
         ];
 
         // Set new input amount and fees
