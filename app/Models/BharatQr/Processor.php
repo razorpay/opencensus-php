@@ -200,18 +200,29 @@ class Processor extends VirtualAccount\Processor
             return $this->terminal;
         }
 
-        $gatewayMerchantId = $this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID];
+    	$gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
 
-        $gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
+    	if (isset($this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID]) === true)
+	    {
+		    $gatewayMerchantId	= $this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID];
 
-        $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
+		    $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
+	    }
+	    else
+	    {
+	    	$gatewayMpan = $this->gatewayInput[GatewayResponseParams::MPAN];
+
+	    	$terminal = $this->repo->terminal->findByGatewayMpan($gateway, $gatewayMpan);
+	    }
 
         if ($terminal === null)
         {
             throw new Exception\LogicException(
                 'Terminal should not be null here',
                 null,
-                ['gateway_merchant_id' => $gatewayMerchantId]);
+                ['gateway_merchant_id' => $gatewayMerchantId,
+                 'merchant_pan'        => $gatewayMpan,
+                ]);
         }
 
         $this->terminal = $terminal;
@@ -297,7 +308,12 @@ class Processor extends VirtualAccount\Processor
 
         $card[Card\Entity::NUMBER] = $this->getLuhnValidCardNumber();
 
-        $cardHolderName = preg_replace("/[^ \w]+/", "", $this->gatewayInput[GatewayResponseParams::SENDER_NAME]);
+        if (isset($this->gatewayInput[GatewayResponseParams::SENDER_NAME]) === true)
+        {
+	        $cardHolderName = preg_replace("/[^ \w]+/",
+		                                   "",
+		                                    $this->gatewayInput[GatewayResponseParams::SENDER_NAME]);
+        }
 
         if (empty($cardHolderName) === false)
         {

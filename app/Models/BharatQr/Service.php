@@ -43,7 +43,7 @@ class Service extends Base\Service
         {
             $this->trace->traceException($ex);
 
-            return $this->getResponse(false);
+            return $gatewayClass->getBharatQrResponse($input, false);
         }
 
         $qrData = $gatewayResponse['qr_data'];
@@ -58,7 +58,7 @@ class Service extends Base\Service
 
         $valid = $this->core->processPayment($gatewayResponse);
 
-        $response = $this->getResponse($valid);
+        $response = $gatewayClass->getBharatQrResponse($input, $valid);
 
         return $response;
     }
@@ -87,27 +87,6 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
     }
-
-    protected function getResponse(bool $valid)
-    {
-        if ($valid === true)
-        {
-            $xml = '<RESPONSE>OK</RESPONSE>';
-        }
-        else
-        {
-            $xml = '<RESPONSE>NOK</RESPONSE>';
-        }
-
-        $response = \Response::make($xml);
-
-        $response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
-
-        $response->headers->set('Cache-Control', 'no-cache');
-
-        return $response;
-    }
-
     protected function determineAndSetModeForQr(string $merchantReference, string $gateway)
     {
         // We are not using verifyIdAndSilentlyStripSign here because in case

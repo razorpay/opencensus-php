@@ -162,7 +162,7 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public function preProcessServerCallback($input, $isBharatQr = false): array
+    public function preProcessServerCallback(& $input, $isBharatQr = false): array
     {
         if ($isBharatQr === true)
         {
