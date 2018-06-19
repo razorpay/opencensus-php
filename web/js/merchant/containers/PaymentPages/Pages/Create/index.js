@@ -279,10 +279,6 @@ export default class CreateNewContainer extends React.Component {
   onChangeNotes = pairs => {
     const notes = onChangeNotes(pairs);
 
-    if (!Object.keys(notes).length) {
-      return;
-    }
-
     this.setState({
       dirty: {
         ...this.state.dirty,
@@ -318,8 +314,19 @@ export default class CreateNewContainer extends React.Component {
     const notificationMSG = 'Payment page created successfully.';
 
     const reqPayload = { ...this.state.dirty };
+
+    /* Removing unrequired fields */
+
     if (this.state._name.hasNoExpiry == '1') {
       delete reqPayload.expire_by;
+    }
+
+    if (this.state.dirty.notes && Object.keys(this.state.dirty.notes).length) {
+      delete reqPayload.notes;
+    }
+
+    if (!this.state.dirty.receipt) {
+      delete reqPayload.receipt;
     }
 
     return FORM_FIELDS.onCreate(reqPayload)
