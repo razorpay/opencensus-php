@@ -531,6 +531,7 @@ class DatabaseSeeder extends Seeder
                     'payzapp'       => '1',
                     'payumoney'     => '1',
                     'airtelmoney'   => '1',
+                    'amazonpay'     => '1',
                     'openwallet'    => '1',
                     'jiomoney'      => '1',
                     'sbibuddy'      => '1',
@@ -1131,6 +1132,7 @@ class DatabaseSeeder extends Seeder
         $this->createOlamoneyTerminals();
         $this->createUpiTerminals();
         $this->createAirtelmoneyTerminals();
+        $this->createAmazonpayTerminals();
         $this->createFreechargeTerminals();
         $this->createJiomoneyTerminals();
         $this->createSbibuddyTerminals();
@@ -1232,21 +1234,7 @@ class DatabaseSeeder extends Seeder
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::NETBANKING_BOB,
                 'netbanking'            => '1',
-                'corporate'             => '0',
-                'gateway_merchant_id'   => 'test_merchant_netbanking_bob',
-                'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_bob_hash_secret'),
-                'created_at'            => time(),
-                'updated_at'            => time(),
-            )
-        );
-
-        DB::table(Table::TERMINAL)->insert(
-            array(
-                'id'                    => '22BOfBarodaCm8',
-                'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => Gateway::NETBANKING_BOB,
-                'netbanking'            => '1',
-                'corporate'             => '1',
+                'corporate'             => '2',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_bob',
                 'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_bob_hash_secret'),
                 'created_at'            => time(),
@@ -1712,6 +1700,7 @@ class DatabaseSeeder extends Seeder
             'card'                      => '0',
             'netbanking'                => '0',
             'upi'                       => '1',
+            'gateway_merchant_id'       => 'upi_sbi_merchant_id',
             'gateway_merchant_id2'      => 'razorpay@sbibank',
             'created_at'                => time(),
             'updated_at'                => time(),
@@ -1814,6 +1803,22 @@ class DatabaseSeeder extends Seeder
                 'netbanking'                => '0',
                 'gateway_terminal_id'       => 'demo_terminal_airtelmoney',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_airtelmoney_terminal_pass'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            )
+        );
+    }
+
+    protected function createAmazonpayTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => Terminal\Shared::AMAZONPAY_RAZORPAY_TERMINAL,
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_AMAZONPAY,
+                'gateway_merchant_id'       => 'gateway_merchant_id',
+                'gateway_terminal_password' => Crypt::encrypt('amazonpay_secure_secret'),
+                'gateway_access_code'       => 'gateway_access_key',
                 'created_at'                => time(),
                 'updated_at'                => time(),
             )

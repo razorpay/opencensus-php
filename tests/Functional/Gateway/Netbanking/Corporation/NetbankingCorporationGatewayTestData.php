@@ -75,14 +75,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+            'class'               => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         ],
     ],
 
@@ -123,12 +123,5 @@ return [
             'class'               => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         ],
-    ],
-
-    'testAuthFailedVerifyFailedEntity' => [
-        'bank_payment_id' => null,
-        'received'        => true,
-        'bank'            => 'CORP',
-        'status'          => 'F'
     ],
 ];

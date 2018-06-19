@@ -22,28 +22,26 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    protected $fillable = array(
+    protected $fillable = [
+        self::ID,
+        self::DEVICE_TOKEN,
+    ];
+
+    protected $visible = [
         self::ID,
         self::DEVICE_TOKEN,
         self::CUSTOMER_ID,
         self::MERCHANT_ID,
-    );
+    ];
 
-    protected $visible = array(
-        self::ID,
+    protected $public = [
         self::DEVICE_TOKEN,
         self::CUSTOMER_ID,
-        self::MERCHANT_ID,
-    );
+    ];
 
-    protected $public = array(
+    protected static $generators = [
         self::DEVICE_TOKEN,
-        self::CUSTOMER_ID,
-    );
-
-    protected static $generators = array(
-        self::DEVICE_TOKEN,
-    );
+    ];
 
     public function merchant()
     {

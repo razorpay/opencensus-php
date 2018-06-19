@@ -227,7 +227,7 @@ trait SettlementTrait
 
         $balance = $merchant->balance->getBalance();
 
-        if (($setlAmount <= 100) or ($setlAmount > $balance))
+        if (($setlAmount < 100) or ($setlAmount > $balance))
         {
             $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
                 [

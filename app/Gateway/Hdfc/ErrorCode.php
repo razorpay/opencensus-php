@@ -61,6 +61,7 @@ class ErrorCode
     const GW00850   = 'GW00850';
     const GW00854   = 'GW00854';
     const GW00856   = 'GW00856';
+    const GW00874   = 'GW00874';
     const GW00876   = 'GW00876';
     const GW02016   = 'GW02016';
 
@@ -258,6 +259,7 @@ class ErrorCode
         self::GW00850     => 'Missing Required data',
         self::GW00854     => 'Invalid Expiration Date',
         self::GW00856     => 'Invalid cvv',
+        self::GW00874     => 'Transaction denied due to expiration date.',
         self::GW00876     => 'Invalid cvv',
         self::GW02016     => 'Locale text not found',
 
@@ -358,6 +360,7 @@ class ErrorCode
         self::GW00850     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::GW00854     => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
         self::GW00856     => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
+        self::GW00874     => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
         self::GW00876     => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
         self::GW02016     => Error\ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY,
 

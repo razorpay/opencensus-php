@@ -31,8 +31,6 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
-        self::ENTITY_ID,
-        self::ENTITY_TYPE,
         self::TYPE,
         self::STATUS,
         self::AMOUNT,
@@ -41,7 +39,6 @@ class Entity extends Base\PublicEntity
         self::DEBIT,
         self::BALANCE,
         self::DESCRIPTION,
-        self::CUSTOMER_ID
     ];
 
     protected $visible = [

@@ -31,6 +31,7 @@ class Repository extends Base\Repository
         Entity::EMI_SUBVENTION   => 'sometimees|string',
         Entity::CURRENCY         => 'sometimes|string',
         Entity::CATEGORY2        => 'sometimes|string',
+        Entity::RECURRING        => 'sometimes|boolean',
     ];
 
     /**

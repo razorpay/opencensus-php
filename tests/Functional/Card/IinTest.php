@@ -50,6 +50,53 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetPaymentFlows()
+    {
+        $this->testAddIin();
+
+        $this->ba->publicAuth();
+
+        $flows = [
+            'pin'          => '1',
+            'headless_otp' => '1',
+            'otp'          => '1',
+            ];
+
+        $this->fixtures->edit('iin', 112333, ['flows' => $flows]);
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'otpelf']);
+
+        $this->startTest();
+    }
+
+    public function testGetPaymentFlowsEmptyResponse()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetPaymentOtpFlow()
+    {
+        $this->testAddIin();
+
+        $this->ba->publicAuth();
+
+        $flows = [
+            'pin'          => '1',
+            'headless_otp' => '1',
+            'otp'          => '1',
+        ];
+
+        $this->fixtures->edit('iin', 112333, ['flows' => $flows]);
+
+        $this->fixtures->merchant->addFeatures(['otpelf']);
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('atm_pin_auth', $response);
+    }
+
     public function testGetIins()
     {
         $this->ba->adminAuth();

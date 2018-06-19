@@ -12,14 +12,14 @@ class IrctcSettlement extends Base
     {
         $paymentId = str_replace("\xEF\xBB\xBF", '',  $entry[Batch\Header::PAYMENT_ID]);
 
-        $payment = $this->repo->payment->findByPublicId($paymentId);
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
 
-        $paymentProcessor = (new PaymentProcessor($payment->merchant));
+        $paymentProcessor = (new PaymentProcessor($this->merchant));
 
         $amount = $payment->getAmount();
 
         // The payment amount is inclusive of fees, so we need to capture with the original amount.
-        if ($payment->merchant->isFeeBearerCustomer() === true)
+        if ($this->merchant->isFeeBearerCustomer() === true)
         {
             $amount = $amount - $payment->getFee();
         }
