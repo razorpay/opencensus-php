@@ -11,7 +11,7 @@ import Button, { AsyncBtn } from 'component/Button';
 
 import { Modal, ModalContent } from 'component/Modal';
 import { ModalAsideNav } from 'component/Wizard';
-import PaymentLinksFormFields from './Fields';
+import PaymentLinkFormFields from './Fields';
 
 import moment from 'moment';
 import { createPaymentLink } from '../model';
@@ -20,10 +20,7 @@ import { onChangeNotes } from 'component/Input/PairList';
 
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
-import {
-  updatePLInReduxList,
-  updateRPLInReduxList,
-} from 'merchant/modules/invoices/list';
+import { updatePLInReduxList } from 'merchant/modules/invoices/list';
 import { luminateRow } from 'merchant/modules/app';
 
 import { trackOpenCreateForm, closePaymentLinkForm } from '../ga';
@@ -32,7 +29,7 @@ const FORM_FIELDS = {
   title: 'Payment Link',
   desc: 'The link gets expired automatically once its paid.',
   url: '/paymentlinks/new',
-  content: [...PaymentLinksFormFields],
+  content: [...PaymentLinkFormFields],
   onCreate: createPaymentLink,
 };
 
@@ -125,7 +122,6 @@ function WizardFields(field) {
 @withRouter
 @connect(state => state.session, {
   updatePLInReduxList,
-  updateRPLInReduxList,
   showNotification,
   openModal,
   closeModal,

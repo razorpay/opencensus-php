@@ -10,27 +10,27 @@ import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 
 import { Modal, ModalContent } from 'component/Modal';
-import ReusableLinksFormFields from './Fields';
-import RPLShareView from '../Modals/Share';
+import PaymentPageFormFields from './Fields';
+import PPShareView from '../Modals/Share';
 
 import moment from 'moment';
 import { dateCalculator, timeCalculator } from 'component/Input/Calendar';
 import { onChangeNotes } from 'component/Input/PairList';
-import { createReusableLink, sendLink } from '../model';
+import { createPaymentPage, sendLink } from '../model';
 
 import { trackOpenCreateForm, closePaymentLinkForm } from '../ga';
 
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
-import { updateRPLInReduxList } from 'merchant/modules/invoices/list';
+import { updatePPInReduxList } from 'merchant/modules/invoices/list';
 import { luminateRow } from 'merchant/modules/app';
 
 const FORM_FIELDS = {
-  title: 'Reusable Link',
+  title: 'Payment Page',
   desc: 'Accept payments multiple times on a single payment link.',
   url: '/paymentpages/new',
-  content: [...ReusableLinksFormFields],
-  onCreate: createReusableLink,
+  content: [...PaymentPageFormFields],
+  onCreate: createPaymentPage,
 };
 
 function defaultFieldProps(f) {
@@ -125,7 +125,7 @@ function WizardFields(field) {
 
 @withRouter
 @connect(state => state.session, {
-  updateRPLInReduxList,
+  updatePPInReduxList,
   showNotification,
   openModal,
   closeModal,
@@ -291,11 +291,11 @@ export default class CreateNewContainer extends React.Component {
     });
   };
 
-  openRPLShareView = (id, shortUrl, title, description) => {
+  openPPShareView = (id, shortUrl, title, description) => {
     this.props.openModal({
       size: 'medium',
       component: (
-        <RPLShareView
+        <PPShareView
           handleClose={this.props.closeModal}
           handleAction={sendLink.bind(null, id)}
           isNew={true}
@@ -315,7 +315,7 @@ export default class CreateNewContainer extends React.Component {
       parentFormLock: true,
     });
 
-    const notificationMSG = 'Reusable link created successfully.';
+    const notificationMSG = 'Payment page created successfully.';
 
     const reqPayload = { ...this.state.dirty };
     if (this.state._name.hasNoExpiry == '1') {
@@ -336,7 +336,7 @@ export default class CreateNewContainer extends React.Component {
 
           const entityId = resp.data.id;
 
-          this.openRPLShareView(
+          this.openPPShareView(
             entityId,
             resp.data.short_url,
             resp.data.title,
@@ -344,7 +344,7 @@ export default class CreateNewContainer extends React.Component {
           );
 
           if (IS_MODAL_VIEW) {
-            this.props.updateRPLInReduxList(resp.data, true);
+            this.props.updatePPInReduxList(resp.data, true);
             this.props.luminateRow(entityId); // Make it promise based
 
             setTimeout(this.props.onClose, 50);

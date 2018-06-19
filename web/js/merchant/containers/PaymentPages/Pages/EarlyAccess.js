@@ -38,7 +38,7 @@ export default class EarlyAccessRPL extends React.Component {
         >
           <Input.Textarea
             name="early-access-reason"
-            placeholder="Describe your use-case for Reusable Link"
+            placeholder="Describe your use-case for Payment Pages"
           />
           <Button.Primary
             type="button"

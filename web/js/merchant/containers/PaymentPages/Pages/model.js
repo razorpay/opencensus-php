@@ -1,6 +1,6 @@
 import { merchantFetch } from 'rzp/utils/ajax';
 
-export function createReusableLink(reqPayload) {
+export function createPaymentPage(reqPayload) {
   reqPayload.currency = 'INR'; // TODO: Get is dynamically
 
   reqPayload.amount *= 100;
@@ -14,7 +14,7 @@ export function createReusableLink(reqPayload) {
   });
 }
 
-export function editReusableLink(id, data) {
+export function editPaymentPage(id, data) {
   return merchantFetch({
     url: `payment_links/${id}`,
     method: 'patch',
@@ -25,7 +25,7 @@ export function editReusableLink(id, data) {
   });
 }
 
-export function fetchReusableLinksEntity(id) {
+export function fetchPaymentPageEntity(id) {
   return merchantFetch({
     url: `payment_links/${id}`,
     params: {
@@ -34,14 +34,14 @@ export function fetchReusableLinksEntity(id) {
   });
 }
 
-export function fetchReusableLinksList(data) {
+export function fetchPaymentPagesList(data) {
   return merchantFetch({
     url: 'payment_links',
     data,
   });
 }
 
-export function fetchReusableLinkPaymentsList(id) {
+export function fetchPaymentsListForPaymentPage(id) {
   return merchantFetch({
     url: 'payments',
     params: {
@@ -51,14 +51,14 @@ export function fetchReusableLinkPaymentsList(id) {
   });
 }
 
-export function deactivateReusableLink(id) {
+export function deactivatePaymentPage(id) {
   return merchantFetch({
     url: `payment_links/${id}/deactivate`,
     method: 'patch',
   });
 }
 
-export function activateReusableLink(id, data) {
+export function activatePaymentPage(id, data) {
   return merchantFetch({
     url: `payment_links/${id}/activate`,
     method: 'patch',

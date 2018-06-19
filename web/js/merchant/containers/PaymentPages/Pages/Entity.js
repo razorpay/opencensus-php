@@ -1,17 +1,17 @@
 import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { updateRPLInReduxList } from 'merchant/modules/invoices/list';
+import { updatePPInReduxList } from 'merchant/modules/invoices/list';
 
 import {
-  fetchReusableLinksEntity,
-  fetchReusableLinkPaymentsList,
-  editReusableLink,
-  activateReusableLink,
-  deactivateReusableLink,
+  fetchPaymentPageEntity,
+  fetchPaymentsListForPaymentPage,
+  editPaymentPage,
+  activatePaymentPage,
+  deactivatePaymentPage,
   sendLink,
 } from './model';
-import { ReusableLinksStatusLabel } from 'merchant/components/StatusLabel';
+import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
@@ -46,15 +46,15 @@ const inActiveStatusReasonMap = {
 };
 
 @connect(null, {
-  updateRPLInReduxList,
+  updatePPInReduxList,
   showNotification,
   openModal,
   closeModal,
 })
 export default class PaymentPagesEntity extends React.Component {
   state = {
-    reusableLink: {},
-    reusableLinkPayments: [],
+    paymentPage: {},
+    paymentPagePayments: [],
     paymentsListLoading: true,
   };
 
@@ -77,10 +77,10 @@ export default class PaymentPagesEntity extends React.Component {
   fetchEntity(id) {
     this.setState({ loading: true });
 
-    return fetchReusableLinksEntity(id)
+    return fetchPaymentPageEntity(id)
       .then(resp => {
         if (resp) {
-          this.setState({ reusableLink: resp.data });
+          this.setState({ paymentPage: resp.data });
         }
 
         this.setState({ loading: false });
@@ -97,16 +97,16 @@ export default class PaymentPagesEntity extends React.Component {
       });
   }
 
-  getStatsTable(reusableLink) {
+  getStatsTable(paymentPage) {
     return [
       [
-        { title: 'Payments Made', value: reusableLink.times_paid },
+        { title: 'Payments Made', value: paymentPage.times_paid },
         {
           title: 'Total Sales',
           value: (
             <Amount
-              value={reusableLink.total_amount_paid}
-              currency={reusableLink.currency}
+              value={paymentPage.total_amount_paid}
+              currency={paymentPage.currency}
             />
           ),
         },
@@ -115,10 +115,10 @@ export default class PaymentPagesEntity extends React.Component {
   }
 
   fetchEntityPayments(id) {
-    return fetchReusableLinkPaymentsList(id)
+    return fetchPaymentsListForPaymentPage(id)
       .then(resp => {
         if (resp) {
-          this.setState({ reusableLinkPayments: resp.data.items });
+          this.setState({ paymentPagePayments: resp.data.items });
         }
 
         this.setState({ paymentsListLoading: false });
@@ -135,11 +135,11 @@ export default class PaymentPagesEntity extends React.Component {
       });
   }
 
-  onCopy = ({ reusableLinkId }) => {
+  onCopy = ({ paymentPageId }) => {
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Reusable Payment Links',
-      eventAction: 'Copy - Reusable Payment Link',
-      eventLabel: `payment_link_id=${reusableLinkId}`,
+      eventCategory: 'Dashboard - Payment Pages',
+      eventAction: 'Copy - Payment Page Link',
+      eventLabel: `payment_link_id=${paymentPageId}`,
     });
   };
 
@@ -150,18 +150,18 @@ export default class PaymentPagesEntity extends React.Component {
         <ShareView
           handleClose={this.props.closeModal}
           handleClick={this.sendLink}
-          handleAction={sendLink.bind(null, this.state.reusableLink.id)}
+          handleAction={sendLink.bind(null, this.state.paymentPage.id)}
           showNotification={this.props.showNotification}
-          url={this.state.reusableLink.short_url}
-          title={this.state.reusableLink.title}
-          description={this.state.reusableLink.description}
+          url={this.state.paymentPage.short_url}
+          title={this.state.paymentPage.title}
+          description={this.state.paymentPage.description}
         />
       ),
     });
   };
 
   reActivateLink = () => {
-    let statusReason = this.state.reusableLink.status_reason;
+    let statusReason = this.state.paymentPage.status_reason;
 
     const isExpired = statusReason.toLowerCase() === 'expired';
     const isCompleted = statusReason.toLowerCase() === 'completed';
@@ -183,20 +183,20 @@ export default class PaymentPagesEntity extends React.Component {
         <ActivateAgain
           expireBy={
             isExpired || hasExpiredInCompletedState
-              ? this.state.reusableLink.expire_by
+              ? this.state.paymentPage.expire_by
               : undefined
           }
           timesPayable={
-            isCompleted ? this.state.reusableLink.times_payable : undefined
+            isCompleted ? this.state.paymentPage.times_payable : undefined
           }
           handleClose={this.props.closeModal}
           handleClick={data => {
-            return activateReusableLink(this.state.reusableLink.id, data).then(
+            return activatePaymentPage(this.state.paymentPage.id, data).then(
               resp => {
                 if (resp.data) {
-                  updateRPLInReduxList(resp.data, false);
+                  updatePPInReduxList(resp.data, false);
                   this.setState({
-                    reusableLink: resp.data,
+                    paymentPage: resp.data,
                   });
                 }
 
@@ -216,8 +216,8 @@ export default class PaymentPagesEntity extends React.Component {
   toggleManualActivation = () => {
     const newStatus = 'active';
 
-    const status = this.state.reusableLink.status;
-    const statusReason = this.state.reusableLink.status_reason;
+    const status = this.state.paymentPage.status;
+    const statusReason = this.state.paymentPage.status_reason;
 
     const isActive = status === 'active';
     const isDeactivated =
@@ -232,23 +232,23 @@ export default class PaymentPagesEntity extends React.Component {
 
     if (isActive) {
       /* Wants manual deactivation */
-      apiAction = deactivateReusableLink;
+      apiAction = deactivatePaymentPage;
       header = 'Deactivate Link?';
       message =
         'Once you deactivate the link, you will not be able to accept payments till you activate it again.';
       affirmativeLabel = 'Yes, deactivate';
       affirmativePendingLabel = 'Deactivating..';
-      successMsg = `${this.state.reusableLink.id} link is now Inactive`;
+      successMsg = `${this.state.paymentPage.id} link is now Inactive`;
     } else if (isDeactivated) {
       /* Wants activation for manual deactivation for cancelled status */
 
-      apiAction = activateReusableLink;
+      apiAction = activatePaymentPage;
       header = 'Activate Link?';
       message =
         'Once you activate the link, you will be able to accept payments.';
       affirmativeLabel = 'Yes, activate';
       affirmativePendingLabel = 'Activating..';
-      successMsg = `${this.state.reusableLink.id} link is now Active`;
+      successMsg = `${this.state.paymentPage.id} link is now Active`;
     }
 
     this.context.confirm({
@@ -262,7 +262,7 @@ export default class PaymentPagesEntity extends React.Component {
       affirmativePendingLabel,
       abortLabel: "No, don't!",
       action: () => {
-        return apiAction(this.state.reusableLink.id)
+        return apiAction(this.state.paymentPage.id)
           .then(resp => {
             if (resp.data) {
               this.props.showNotification({
@@ -272,10 +272,10 @@ export default class PaymentPagesEntity extends React.Component {
 
               this.props.closeModal();
 
-              updateRPLInReduxList(resp.data, false);
+              updatePPInReduxList(resp.data, false);
 
               this.setState({
-                reusableLink: resp.data,
+                paymentPage: resp.data,
               });
             }
             return resp;
@@ -309,22 +309,22 @@ export default class PaymentPagesEntity extends React.Component {
     });
   };
 
-  editReusableLink = () => {
+  editPaymentPage = () => {
     const self = this;
 
     return function(data) {
-      return editReusableLink(self.state.reusableLink.id, data)
+      return editPaymentPage(self.state.paymentPage.id, data)
         .then(resp => {
           if (resp.data) {
-            self.props.updateRPLInReduxList(resp.data, false);
+            self.props.updatePPInReduxList(resp.data, false);
 
             self.props.showNotification({
               type: 'success',
-              message: `${self.state.reusableLink.id} successfully Updated`,
+              message: `${self.state.paymentPage.id} successfully Updated`,
             });
 
             self.setState({
-              reusableLink: resp.data,
+              paymentPage: resp.data,
             });
 
             return resp;
@@ -362,14 +362,14 @@ export default class PaymentPagesEntity extends React.Component {
 
   render() {
     let {
-      reusableLink,
+      paymentPage,
       loading,
-      reusableLinkPayments,
+      paymentPagePayments,
       paymentsListLoading,
     } = this.state;
 
-    let status = reusableLink.status;
-    let statusReason = reusableLink.status_reason;
+    let status = paymentPage.status;
+    let statusReason = paymentPage.status_reason;
 
     const isActive = !loading && status === 'active';
     const isExpired =
@@ -379,11 +379,10 @@ export default class PaymentPagesEntity extends React.Component {
       !loading && !isActive && statusReason.toLowerCase() === 'completed';
 
     const isSmsOrEmailSent =
-      reusableLink.sms_status === 'sent' ||
-      reusableLink.email_status === 'sent';
+      paymentPage.sms_status === 'sent' || paymentPage.email_status === 'sent';
 
     return (
-      <div class="content-wrapper content-sm txn-details Entity--reusable">
+      <div class="content-wrapper content-sm txn-details Entity--paymentpage">
         {loading ? (
           <div class="page-spinner-container">
             <Spinner />
@@ -392,7 +391,7 @@ export default class PaymentPagesEntity extends React.Component {
           <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
               <i class="i i-link text-primary icon--formal" />{' '}
-              <strong>{reusableLink.id}</strong>
+              <strong>{paymentPage.id}</strong>
               <ShowWhen notMyRole="support finance">
                 <div class="btn-toolbar pull-right">
                   {isActive && (
@@ -410,13 +409,13 @@ export default class PaymentPagesEntity extends React.Component {
             <div class="SliderPanel__Body">
               <div class="panel-body">
                 <div class="list-group details-row-container">
-                  <StatsInfo stats={this.getStatsTable(reusableLink)} />
+                  <StatsInfo stats={this.getStatsTable(paymentPage)} />
                   <EntityDetailRow
                     label="Amount"
                     value={() => (
                       <Amount
-                        value={reusableLink.amount}
-                        currency={reusableLink.currency}
+                        value={paymentPage.amount}
+                        currency={paymentPage.currency}
                       />
                     )}
                   />
@@ -424,10 +423,10 @@ export default class PaymentPagesEntity extends React.Component {
                     label="Link URL"
                     value={() => (
                       <CopyLink
-                        url={reusableLink.short_url}
+                        url={paymentPage.short_url}
                         onCopy={() => {
                           this.onCopy({
-                            reusableLinkId: reusableLink.id,
+                            paymentPageId: paymentPage.id,
                           });
                         }}
                       />
@@ -437,7 +436,7 @@ export default class PaymentPagesEntity extends React.Component {
                     label="Status"
                     value={() => (
                       <div>
-                        <ReusableLinksStatusLabel status={status} />
+                        <PaymentPagesStatusLabel status={status} />
                         <Button.Transparent
                           class="Button--Link"
                           style={{ marginLeft: 12 }}
@@ -463,23 +462,23 @@ export default class PaymentPagesEntity extends React.Component {
                         ? () => (
                             <EditPaymentFor
                               value={{
-                                title: reusableLink.title,
-                                description: reusableLink.description,
+                                title: paymentPage.title,
+                                description: paymentPage.description,
                               }}
-                              entityId={reusableLink.id}
-                              editFn={this.editReusableLink()}
+                              entityId={paymentPage.id}
+                              editFn={this.editPaymentPage()}
                               trackerFn={trackDetailViewEdits}
                             />
                           )
                         : () => (
                             <div>
-                              {reusableLink.title}
-                              {reusableLink.description && (
+                              {paymentPage.title}
+                              {paymentPage.description && (
                                 <div
                                   class="label--secondary"
                                   style={{ whiteSpace: 'pre' }}
                                 >
-                                  {reusableLink.description}
+                                  {paymentPage.description}
                                 </div>
                               )}
                             </div>
@@ -493,21 +492,21 @@ export default class PaymentPagesEntity extends React.Component {
                       isActive || isCompleted
                         ? () => (
                             <EditReceipt
-                              value={reusableLink.receipt}
-                              entityId={reusableLink.id}
-                              editFn={this.editReusableLink()}
+                              value={paymentPage.receipt}
+                              entityId={paymentPage.id}
+                              editFn={this.editPaymentPage()}
                               trackerFn={trackDetailViewEdits}
                             />
                           )
-                        : reusableLink.receipt || '--'
+                        : paymentPage.receipt || '--'
                     }
                   />
 
                   <EntityDetailRow label="Created by">
-                    {!!reusableLink.user ? (
+                    {!!paymentPage.user ? (
                       <Definition>
-                        {reusableLink.user.name}
-                        {reusableLink.user.email}
+                        {paymentPage.user.name}
+                        {paymentPage.user.email}
                       </Definition>
                     ) : (
                       'API'
@@ -516,7 +515,7 @@ export default class PaymentPagesEntity extends React.Component {
 
                   <EntityDetailRow
                     label="Created At"
-                    value={() => <Time value={reusableLink.created_at} />}
+                    value={() => <Time value={paymentPage.created_at} />}
                   />
 
                   <EntityDetailRow
@@ -525,15 +524,15 @@ export default class PaymentPagesEntity extends React.Component {
                       isActive || isCompleted
                         ? () => (
                             <EditExpiry
-                              value={reusableLink.expire_by}
-                              editFn={this.editReusableLink()}
-                              entityId={reusableLink.id}
+                              value={paymentPage.expire_by}
+                              editFn={this.editPaymentPage()}
+                              entityId={paymentPage.id}
                               trackerFn={trackDetailViewEdits}
                             />
                           )
                         : () => (
                             <Time
-                              value={reusableLink.expire_by}
+                              value={paymentPage.expire_by}
                               format="DD MMM YYYY, hh:mm a"
                             />
                           )
@@ -546,14 +545,14 @@ export default class PaymentPagesEntity extends React.Component {
                       isActive || isCompleted
                         ? () => (
                             <EditTimesPayable
-                              value={reusableLink.times_payable}
-                              editFn={this.editReusableLink()}
-                              entityId={reusableLink.id}
+                              value={paymentPage.times_payable}
+                              editFn={this.editPaymentPage()}
+                              entityId={paymentPage.id}
                               trackerFn={trackDetailViewEdits}
                             />
                           )
                         : () =>
-                            reusableLink.times_payable || (
+                            paymentPage.times_payable || (
                               <div class="text-danger">No Limit</div>
                             )
                     }
@@ -563,9 +562,9 @@ export default class PaymentPagesEntity extends React.Component {
                     label="Notes"
                     value={() => (
                       <EditNotes
-                        value={reusableLink.notes}
-                        editFn={this.editReusableLink()}
-                        entityId={reusableLink.id}
+                        value={paymentPage.notes}
+                        editFn={this.editPaymentPage()}
+                        entityId={paymentPage.id}
                         trackerFn={trackDetailViewEdits}
                       />
                     )}
@@ -576,15 +575,15 @@ export default class PaymentPagesEntity extends React.Component {
                     subTitle={
                       <React.Fragment>
                         <Amount
-                          value={reusableLink.total_amount_paid}
-                          currency={reusableLink.currency}
+                          value={paymentPage.total_amount_paid}
+                          currency={paymentPage.currency}
                         />{' '}
                         total sales
                       </React.Fragment>
                     }
-                    class="reusable-link-payments-table"
+                    class="paymentpage-link-payments-table"
                     loading={paymentsListLoading}
-                    items={reusableLinkPayments}
+                    items={paymentPagePayments}
                     rowConfig={[
                       [
                         data => (

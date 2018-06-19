@@ -3,7 +3,7 @@ import { classList } from 'common/util';
 
 /*
 * GroupedDetailsTable is similar to DataTable but it supports 2 column layout, where each row can have upto 2 sub rows, shown in primary-secondary fashion
-* Example: Invoices list in subscription details view and Payments list in Reusable payment links
+* Example: Invoices list in subscription details view and Payments list on Payment-Pages details view
 * @props
 *   - (Optional, String), className: Custom class name
 *   - (String), title: Shown on primary title on left side

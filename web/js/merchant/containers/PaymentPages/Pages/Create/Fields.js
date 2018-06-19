@@ -1,7 +1,7 @@
 import Input from 'component/Input';
 import { isAmount, isInteger, maxLength } from 'rzp/utils/validators';
 
-/* Form fields of Reusable Payment Links */
+/* Form fields of Payment-Pages Links */
 export default [
   {
     name: 'amount',

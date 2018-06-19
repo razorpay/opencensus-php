@@ -7,12 +7,12 @@ import Pager from 'rzp/ui/Pager';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ListContainer from 'merchant/containers/ListContainer';
 import ListFilter from 'merchant/components/ListFilter';
-import { fetchReusableLinksList } from './model';
+import { fetchPaymentPagesList } from './model';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Amount from 'rzp/ui/Amount';
 import TableBody from 'rzp/ui/TableBody';
-import { ReusableLinksStatusLabel } from 'merchant/components/StatusLabel';
+import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import Time from 'rzp/ui/Time';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { showNotification } from 'rzp/modules/notifications';
@@ -25,13 +25,13 @@ import EarlyAccessRPL from './EarlyAccess';
   showNotification,
   populateRPLReduxList,
 })
-export default class ReusableLinksContainer extends ListContainer {
+export default class PaymentPagesContainer extends ListContainer {
   state = {
     loading: true,
   };
 
   fetchEntityList(params) {
-    return fetchReusableLinksList(params)
+    return fetchPaymentPagesList(params)
       .then(resp => {
         if (resp.data) {
           this.props.populateRPLReduxList(resp);
@@ -55,8 +55,8 @@ export default class ReusableLinksContainer extends ListContainer {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
       window.rzpAnalytics({
-        eventCategory: 'Dashboard - Reusable Payment Links',
-        eventAction: 'Search - Reusable Payment Links',
+        eventCategory: 'Dashboard - Payment Pages',
+        eventAction: 'Search - Payment Pages',
         eventLabel: label,
       });
     }
@@ -64,22 +64,22 @@ export default class ReusableLinksContainer extends ListContainer {
 
   onClearAnalytics = () => {
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Reusable Payment Links',
-      eventAction: 'Clear Search Params - Reusable Payment Links',
+      eventCategory: 'Dashboard - Payment Pages',
+      eventAction: 'Clear Search Params - Payment Pages',
     });
   };
 
   onCopy = ({ paymentLinkId }) => {
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Reusable Payment Links',
-      eventAction: 'Copy - Reusable Payment Link',
+      eventCategory: 'Dashboard - Payment Pages',
+      eventAction: 'Copy - Payment Page Link',
       eventLabel: `payment_link_id=${paymentLinkId}`,
     });
   };
 
   render() {
     const { loading } = this.state;
-    const { reusableLinks } = this.props;
+    const { paymentPages } = this.props;
 
     if (false) {
       return (
@@ -96,14 +96,14 @@ export default class ReusableLinksContainer extends ListContainer {
             <div class="btn-toolbar pull-right">
               <NavLink class="btn btn-primary" to="/paymentpages/new">
                 <i class="i i-plus" />
-                <span>Create Reusable Link</span>
+                <span>Create Payment Page</span>
               </NavLink>
             </div>
           </ShowWhen>
         </HeaderAction>
 
         <ListFilter
-          form="ReusablePaymentLinkListFilter"
+          form="PaymentPagesPaymentLitFilter"
           count={this.state.count}
           onSearchAnalytics={this.onSearchAnalytics}
           onClearAnalytics={this.onClearAnalytics}
@@ -161,7 +161,7 @@ export default class ReusableLinksContainer extends ListContainer {
           </div>
         </ListFilter>
 
-        {loading || reusableLinks.length ? (
+        {loading || paymentPages.length ? (
           <div class="table-responsive">
             <table class="table table-hover table-striped">
               <thead>
@@ -179,10 +179,10 @@ export default class ReusableLinksContainer extends ListContainer {
               <TableBody
                 isLoading={loading}
                 colSpan={8}
-                rows={reusableLinks}
+                rows={paymentPages}
                 emptyTableMsg="No data found!"
               >
-                {reusableLinks.map(item => (
+                {paymentPages.map(item => (
                   <EntityItemRow id={item.id} key={item.id}>
                     <td>
                       <NavLink to={`/paymentpages/${item.id}`}>
@@ -219,7 +219,7 @@ export default class ReusableLinksContainer extends ListContainer {
                       <Time value={item.created_at} />
                     </td>
                     <td>
-                      <ReusableLinksStatusLabel status={item.status} />
+                      <PaymentPagesStatusLabel status={item.status} />
                     </td>
                   </EntityItemRow>
                 ))}
@@ -227,9 +227,9 @@ export default class ReusableLinksContainer extends ListContainer {
             </table>
           </div>
         ) : (
-          <div class="Onboarding Onboarding--ReusableLinks">
+          <div class="Onboarding Onboarding--PaymentPages">
             <div class="illustration" />
-            You haven't created any reusable links yet.{' '}
+            You haven't created any payment page yet.{' '}
             <a
               class="btn-link"
               href="https://razorpay.com/docs/private/partial-payments/"
@@ -240,17 +240,17 @@ export default class ReusableLinksContainer extends ListContainer {
             <br />
             <NavLink class="btn btn-primary" to="/paymentpages/new">
               <i class="i i-plus" />
-              <span>Create your first Reusable Link</span>
+              <span>Create your first Payment Page</span>
             </NavLink>
           </div>
         )}
 
         {!loading &&
-          !!reusableLinks.length && (
+          !!paymentPages.length && (
             <Pager
               count={this.state.count}
               skip={this.state.skip}
-              length={reusableLinks.length}
+              length={paymentPages.length}
               onClick={this.paginate}
             />
           )}
