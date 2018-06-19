@@ -98,6 +98,7 @@ class CreateVirtualAccountsTable extends Migration
             $table->index(VirtualAccount::VPA);
             $table->index(VirtualAccount::DESCRIPTOR);
             $table->index(VirtualAccount::STATUS);
+            $table->index(VirtualAccount::QR_CODE_ID);
             $table->index(VirtualAccount::CREATED_AT);
             $table->index(VirtualAccount::UPDATED_AT);
             $table->index(VirtualAccount::DELETED_AT);

@@ -42,7 +42,7 @@ class Gateway extends Base\Gateway
     {
         parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->setBankingTypeAndDomainType($input, $terminal);
+        $this->setBankingTypeAndDomainType($input);
     }
 
     public function authorize(array $input)
@@ -632,21 +632,19 @@ class Gateway extends Base\Gateway
         return Status::getAuthSuccessStatus();
     }
 
-    protected function setBankingTypeAndDomainType($input, $terminal)
+    protected function setBankingTypeAndDomainType($input)
     {
-        if (
-            (isset($input['payment']) === true) and
-            ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
-        )
+        if (isset($input['payment']) === true)
         {
-            $this->setBankingType(BankingType::EMANDATE);
-        }
-
-        // Default banking type is retail
-        if ((isset($terminal) === true) and
-            ($terminal->isCorporate() === true))
-        {
-            $this->setBankingType(BankingType::CORPORATE);
+            // If emandate registration payment
+            if (($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL))
+            {
+                $this->setBankingType(BankingType::EMANDATE);
+            }
+            else if ($input['payment']['bank'] === Payment\Processor\Netbanking::UTIB_C)
+            {
+                $this->setBankingType(BankingType::CORPORATE);
+            }
         }
 
          $this->setDomainType();

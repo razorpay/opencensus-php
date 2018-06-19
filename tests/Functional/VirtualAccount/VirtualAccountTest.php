@@ -714,6 +714,27 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
 
+    public function testFetchPaymentsForVirtualAccountForQrCode()
+    {
+        $virtualAccount = $this->createVirtualAccount([], true, null, true);
+
+        $qrCodeId = substr($virtualAccount['receivers'][1]['id'], 3);
+
+        $mockServer = $this->app['gateway']->server('hitachi');
+
+        $this->makeRequestAndGetContent([
+            'url'     => '/payment/callback/bharatqr/hitachi',
+            'method'  => 'post',
+            'content' => $mockServer->getBharatQrCallback($qrCodeId),
+        ]);
+
+        $response = $this->fetchVirtualAccountPayments($virtualAccount['id']);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
     public function testVirtualAccountForCustomer()
     {
         $virtualAccount = $this->createVirtualAccount([

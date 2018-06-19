@@ -31,6 +31,23 @@ class PaymentFetchTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchRuleVPAFilterForAdminAuth()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('payment', [
+            'method' => 'upi',
+            'vpa'    => 'success1@razorpay',
+        ]);
+
+        $this->fixtures->create('payment', [
+            'method' => 'upi',
+            'vpa'    => 'success2@razorpay',
+        ]);
+
+        $this->startTest();
+    }
+
     public function testFetchCardQueryParams()
     {
         $this->ba->adminAuth();

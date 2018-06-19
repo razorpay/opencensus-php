@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Order;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
@@ -132,7 +133,7 @@ class Entity extends Base\PublicEntity
         // See setPublicDiscountAttribute
         // self::DISCOUNT,
         self::OFFER_ID,
-        // self::OFFERS,
+        self::OFFERS,
         self::STATUS,
         self::ATTEMPTS,
         self::NOTES,
@@ -168,7 +169,7 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
-        self::OFFER_ID,
+        self::OFFERS,
         // This is likely needed for the merchant,
         // but still needs to be discussed.
         // self::DISCOUNT,
@@ -199,12 +200,6 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasOne('RZP\Models\Invoice\Entity');
     }
-
-    public function offer()
-    {
-        return $this->belongsTo('RZP\Models\Offer\Entity');
-    }
-
 
     public function offers()
     {
@@ -399,21 +394,57 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DISCOUNT);
     }
 
+    public function isOfferForced()
+    {
+        return $this->getAttribute(self::FORCE_OFFER);
+    }
+
     public function getOfferId()
     {
         return $this->getAttribute(self::OFFER_ID);
     }
 
-    public function hasOffer()
+    public function hasOffers(): bool
     {
-        return $this->isAttributeNotNull(self::OFFER_ID);
+        return ($this->offers->isNotEmpty() === true);
     }
 
-    protected function setPublicOfferIdAttribute(array & $array)
+    /**
+     * Temporary. Serves to fetch the only offer available via pivot table.
+     * Includes validations to ensure there isn't more than one.
+     * TODO: Remove this when multiple offers are expected.
+     *
+     * @return Offer\Entity
+     */
+    public function getOffer()
     {
-        $offerId = $this->getAttribute(self::OFFER_ID);
+        $offers = $this->offers;
 
-        $array[self::OFFER_ID] = Offer\Entity::getSignedIdOrNull($offerId);
+        return $offers->first();
+    }
+
+    protected function setPublicOffersAttribute(array & $array)
+    {
+        if ($this->hasOffers() === true)
+        {
+            //
+            // For backward compatibility
+            //
+            if ($this->offers->count() === 1)
+            {
+                $array[self::OFFER_ID] = $this->getOffer()->getPublicId();
+            }
+
+            $array[self::OFFERS] = $this->offers->getPublicIds();
+        }
+        else
+        {
+            //
+            // We are already sending offer_id=null for all order responses
+            // (even when no offer is associated), so this cannot be removed for now.
+            //
+            $array[self::OFFER_ID] = null;
+        }
     }
 
     protected function setPublicDiscountAttribute(array & $array)

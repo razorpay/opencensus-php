@@ -178,4 +178,13 @@ class AdminController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function createAdminBatch()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createBatch($input);
+
+        return ApiResponse::json($data);
+    }
 }

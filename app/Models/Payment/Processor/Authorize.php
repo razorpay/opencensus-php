@@ -17,6 +17,7 @@ use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Risk;
 use RZP\Models\Card;
+use RZP\Models\Order;
 use RZP\Models\Offer;
 use RZP\Constants\TLD;
 use RZP\Http\BasicAuth;
@@ -72,8 +73,6 @@ trait Authorize
         $this->processCurrencyConversions($payment);
 
         $this->runPaymentInputValidations($payment, $input);
-
-        $this->validateOfferIfApplicable($payment);
 
         $ret = $this->hitGatewayIfRequired($payment, $input, $gatewayInput);
 
@@ -559,6 +558,8 @@ trait Authorize
         // otherwise can cause issues with international pricing rule being not available when
         // international is not enabled.
         $this->verifyFeesLessThanAmount($payment);
+
+        $this->validateOfferIfApplicable($payment, $input);
     }
 
     protected function validateSubscriptionInputIfPresent(Payment\Entity $payment, $input)
@@ -1238,9 +1239,14 @@ trait Authorize
         }
     }
 
-    protected function validateOfferIfApplicable(Payment\Entity $payment)
+    protected function validateOfferIfApplicable(Payment\Entity $payment, array $input)
     {
-        (new Offer\Core)->validateOfferApplicableOnPayment($payment);
+        $offer = $this->offer;
+
+        if ($offer !== null)
+        {
+            (new Offer\Core)->validateOfferApplicableOnPayment($offer, $payment);
+        }
     }
 
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
@@ -2807,13 +2813,16 @@ trait Authorize
             return;
         }
 
-        $appliedOffer = $order->offer;
+        if ($this->offer === null)
+        {
+            return;
+        }
 
         $discountInput = [
-            Discount\Entity::AMOUNT => $appliedOffer->getDiscount($order->getAmount()),
+            Discount\Entity::AMOUNT => $this->offer->getDiscount($order->getAmount()),
         ];
 
-        (new Discount\Service)->create($discountInput, $payment, $appliedOffer);
+        (new Discount\Service)->create($discountInput, $payment, $this->offer);
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)

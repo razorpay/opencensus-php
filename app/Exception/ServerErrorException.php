@@ -27,7 +27,7 @@ class ServerErrorException extends BaseException
         $message,
         $code,
         $data = null,
-        \Exception $previous = null)
+        \Throwable $previous = null)
     {
         $this->data = $data;
 

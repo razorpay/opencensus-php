@@ -550,14 +550,16 @@ class Checkout
         }
 
         if (($order !== null) and
-            ($order->offer !== null))
+            ($order->getOffer() !== null))
         {
+            $offer = $order->getOffer();
+
             $orderAmount = $order->getAmount();
 
-            $this->updateMethodsToEnableOnCheckout($order->offer, $data);
+            $this->updateMethodsToEnableOnCheckout($offer, $data);
 
             $data['offers'] = [
-                $order->offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount),
+                $offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount),
             ];
         }
         else

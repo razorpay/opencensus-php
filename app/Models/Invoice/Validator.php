@@ -2,9 +2,8 @@
 
 namespace RZP\Models\Invoice;
 
-use Carbon\Carbon;
 use Lib\Gstin;
-use RZP\Constants\Timezone;
+use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Models\Batch;
@@ -13,6 +12,7 @@ use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
+use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -26,6 +26,7 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 class Validator extends Base\Validator
 {
+    //
     // We have rules on create and update for the two status: DRAFT, ISSUED.
     // Eg. In ISSUED state, you cannot update amount of the invoice. There are
     //     rules to accommodate such requirements. This way it's good to manage and
@@ -35,6 +36,7 @@ class Validator extends Base\Validator
     // - Create invoice in ISSUED status
     // - Update invoice when it's in DRAFT status
     // - Update invoice when it's in ISSUED status
+    //
 
     const CREATE_DRAFT  = 'createDraft';
     const CREATE_ISSUED = 'createIssued';
@@ -63,7 +65,7 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable|custom',
         Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40|nullable',
         Entity::VIEW_LESS           => 'filled|in:1',
         Entity::SOURCE              => 'filled|string|max:32|custom',
@@ -96,7 +98,7 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable|custom',
         Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40|nullable',
         Entity::VIEW_LESS           => 'filled|in:1',
         Entity::SOURCE              => 'filled|string|max:32|custom',
@@ -124,7 +126,7 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable|custom',
         Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40|nullable',
         Entity::VIEW_LESS           => 'filled|in:1',
         Entity::SOURCE              => 'filled|string|max:32|custom',
@@ -152,7 +154,7 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable|custom',
         Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40|nullable',
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19|nullable',
@@ -173,7 +175,7 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable|custom',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
         Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
         Entity::CALLBACK_URL        => 'sometimes|url|nullable',
@@ -186,6 +188,7 @@ class Validator extends Base\Validator
 
     protected static $editPartiallyPaidRules = [
         Entity::NOTES               => 'sometimes|notes',
+        Entity::EXPIRE_BY           => 'sometimes|epoch|nullable|custom',
     ];
 
     protected static $editExpiredRules = [
@@ -384,6 +387,39 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateExpireBy(string $attribute, int $expireBy)
+    {
+        $now = Carbon::now(Timezone::IST);
+
+        $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
+
+        if ($expireBy < $minExpireBy->getTimestamp())
+        {
+            $message = 'expire_by should be at least ' . $minExpireBy->diffForHumans($now) . ' current time';
+
+            throw new BadRequestValidationFailureException($message);
+        }
+    }
+
+    /**
+     * For non empty receipt, validates that it's unique for given merchant across it's NON cancelled & expired items
+     * @param  string $attribute
+     * @param  string $receipt
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateReceipt(string $attribute, string $receipt)
+    {
+        if (empty($receipt) === false)
+        {
+            $isDuplicateReceipt = app('repo')->invoice->isDuplicateReceipt($this->entity, $receipt);
+
+            if ($isDuplicateReceipt === true)
+            {
+                throw new BadRequestValidationFailureException("receipt must be unique for each item : {$receipt}");
+            }
+        }
+    }
+
     /**
      * Does few validations around merchant data to decide if invoice should
      * allowed to be created or not.
@@ -569,21 +605,9 @@ class Validator extends Base\Validator
     {
         $invoice = $this->entity;
 
-        // If expired_by is not set at all, nothing to validate.
-        if ($invoice->getExpireBy() === null)
+        if ($invoice->getExpireBy() !== null)
         {
-            return;
-        }
-
-        $now = Carbon::now(Timezone::IST);
-        $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
-
-        if ($invoice->getExpireBy() < $minExpireBy->getTimestamp())
-        {
-            $message = 'expire_by should be at least ' .
-                        $minExpireBy->diffForHumans($now) . ' the time of issue.';
-
-            throw new BadRequestValidationFailureException($message);
+            $this->validateExpireBy(Entity::EXPIRE_BY, $invoice->getExpireBy());
         }
     }
 
