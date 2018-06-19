@@ -9,6 +9,7 @@ use Request;
 use App;
 use View;
 
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
 
@@ -417,6 +418,7 @@ class PaymentCreateController extends Controller
         $postFormData = $data;
         $postFormData['theme']['color'] = $merchant->getBrandColorElseDefault();
         $postFormData['name'] = $merchant->getBillingLabel();
+        $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
 
         return View::make('gateway.gatewayPostForm')
                    ->with('data', $postFormData);
