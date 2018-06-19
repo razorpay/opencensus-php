@@ -14,7 +14,6 @@ import { paymentId, amount, paidOn } from 'rzp/ui/item/pair';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 import Button, { AsyncBtn } from 'component/Button';
 
-import EditPaymentFor from 'merchant/containers/PaymentLinks/Links/Edit/EditPaymentFor';
 import {
   EditExpiry,
   EditNotes,
@@ -173,18 +172,7 @@ export default props => {
                 <EntityDetailRow
                   label="Payment For"
                   pairClass="description"
-                  value={
-                    isPaymentLinksV2Enabled && isIssued
-                      ? () => (
-                          <EditPaymentFor
-                            value={invoice.description}
-                            entityId={invoice.id}
-                            editFn={editPaymentLink}
-                            trackerFn={trackDetailViewEdits}
-                          />
-                        )
-                      : invoice.description || '--'
-                  }
+                  value={invoice.description || '--'}
                 />
 
                 <EntityDetailRow
