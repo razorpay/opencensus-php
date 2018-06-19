@@ -443,7 +443,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateVisibleFeatures(array $input)
+    public function validateVisibleFeatures(array $input)
     {
         $featureNames = array_keys($input['features']);
 
