@@ -157,16 +157,8 @@ class Repository extends Base\Repository
 
         $rule->setAuditAction(Action::DELETE_PRICING_PLAN_RULE);
 
-        $count = $rule->feesBreakup->count();
-
-        if ($count === 0)
-        {
-            return $this->forceDelete($rule);
-        }
-        else
-        {
-            return $this->delete($rule);
-        }
+        //always soft delete the rule
+        return $this->delete($rule);
     }
 
     protected function addQueryParamDeleted($query, $params)
