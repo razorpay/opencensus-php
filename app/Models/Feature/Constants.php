@@ -69,6 +69,7 @@ class Constants
     const EXPOSE_CARD_IIN               = 'expose_card_iin';
     const S2S_OPTIONAL_DATA             = 's2s_optional_data';
     const PARTNER                       = 'partner';
+    const OTPELF                        = 'otpelf';
     const PAYMENT_NOBRANDING            = 'payment_nobranding';
 
     // Orders
@@ -172,6 +173,7 @@ class Constants
         self::PARTNER                       => true,
         self::PAYMENT_NOBRANDING            => true,
         self::HEADLESS_OTP                  => true,
+        self::OTPELF                        => true,
     ];
 
     // Entity type constants
