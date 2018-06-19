@@ -241,7 +241,7 @@ class Validator extends Base\Validator
         }
         else
         {
-            $this->validateNonAppTypeBatch($batch, $onlyAppAuth);
+            $this->validateNonAppTypeBatch($batch);
         }
     }
 
@@ -268,25 +268,16 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateNonAppTypeBatch(Entity $batch, bool $appAuth)
+    protected function validateNonAppTypeBatch(Entity $batch)
     {
         $merchantId = $batch->getMerchantId();
-
-        if ($appAuth === true)
-        {
-            throw new BadRequestValidationFailureException(
-                'Invalid type passed for batch creation',
-                Entity::TYPE,
-                $this->getTraceDataForTypeValidation($appAuth, $batch)
-            );
-        }
 
         if ($merchantId === Merchant\Account::SHARED_ACCOUNT)
         {
             throw new BadRequestValidationFailureException(
                 'Invalid merchant trying to create a non-app-type batch: ' . $merchantId,
                 Entity::MERCHANT_ID,
-                $this->getTraceDataForTypeValidation($appAuth, $batch)
+                $this->getTraceDataForTypeValidation(false, $batch)
             );
         }
     }
@@ -297,7 +288,7 @@ class Validator extends Base\Validator
             'app_auth'      => $appAuth,
             'batch_id'      => $batch->getId(),
             'batch_type'    => $batch->getType(),
-            ];
+        ];
     }
 
     /**
