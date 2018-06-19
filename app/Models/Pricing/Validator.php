@@ -38,9 +38,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $editPlanRuleRules = [
-        Entity::AMOUNT_RANGE_ACTIVE => 'sometimes|in:0,1',
-        Entity::AMOUNT_RANGE_MIN    => 'required_only_if:amount_range_active,1|nullable|integer|min:0',
-        Entity::AMOUNT_RANGE_MAX    => 'required_only_if:amount_range_active,1|nullable|integer|max:1000000000',
         Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
         Entity::FIXED_RATE          => 'sometimes|integer|max:100000',
         Entity::MIN_FEE             => 'sometimes|integer|max:100000',
@@ -62,7 +59,6 @@ class Validator extends Base\Validator
 
     protected static $editPlanRuleValidators = [
         'addPlanRuleRate',
-        'addPlanRuleAmountRange',
         'addPlanRuleMinAndMaxFee'
     ];
 
