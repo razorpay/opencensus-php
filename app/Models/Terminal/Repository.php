@@ -275,23 +275,21 @@ class Repository extends Base\Repository
         $count = $this->repo->payment->getTotalUsedCountForTerminal(
                     $entity->getId());
 
-        if ($count === 0)
+        return $this->transaction(function() use ($entity, $count)
         {
-            $this->transaction(function () use ($entity)
+            if ($count === 0)
             {
                 $entity->forceDelete();
-            });
 
-            return null;
-        }
-        else
-        {
-            $entity->deleteOrFail();
+                return null;
+            }
+            else
+            {
+                $entity->deleteOrFail();
 
-            return $this->newQuery()
-                        ->withTrashed()
-                        ->findOrFail($entity->getId());
-        }
+                return $entity;
+            }
+        });
     }
 
     public function restoreOrFail($terminal)
@@ -307,13 +305,13 @@ class Repository extends Base\Repository
             $terminal->getAttributes());
     }
 
-    public function addMerchantToTerminal(Entity $terminal, string $merchantId)
+    public function addMerchantToTerminal(Entity $terminal, Merchant\Entity $merchant)
     {
-        $terminal->merchants()->attach($merchantId);
+        $terminal->merchants()->attach($merchant);
     }
 
-    public function removeMerchantFromTerminal(Entity $terminal, string $merchantId)
+    public function removeMerchantFromTerminal(Entity $terminal, Merchant\Entity $merchant)
     {
-        $terminal->merchants()->detach($merchantId);
+        $terminal->merchants()->detach($merchant);
     }
 }

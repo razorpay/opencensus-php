@@ -125,7 +125,7 @@ class EnachRblGatewayTest extends TestCase
         $file = (new TestingFile('MMS-CREATE-RATN-RATNA0001-06032018-ESIGN6000001-INP-ACK.xml', $handle));
 
         $request = [
-            'url' => '/batches',
+            'url' => '/admin/batches',
             'method' => 'POST',
             'content' => [
                 'type' => 'emandate',
@@ -137,7 +137,7 @@ class EnachRblGatewayTest extends TestCase
             ]
         ];
 
-        $this->ba->proxyAuth('rzp_test_100000Razorpay');
+        $this->ba->adminAuth();
 
         $batch = $this->makeRequestAndGetContent($request);
 
@@ -181,7 +181,7 @@ class EnachRblGatewayTest extends TestCase
         $file = (new TestingFile('MMS-CREATE-RATN-RATNA0001-06032018-ESIGN6000001-INP-ACK.xml', $handle));
 
         $request = [
-            'url' => '/batches',
+            'url' => '/admin/batches',
             'method' => 'POST',
             'content' => [
                 'type' => 'emandate',
@@ -193,7 +193,7 @@ class EnachRblGatewayTest extends TestCase
             ]
         ];
 
-        $this->ba->proxyAuth('rzp_test_100000Razorpay');
+        $this->ba->adminAuth();
 
         $batch = $this->makeRequestAndGetContent($request);
 
@@ -257,11 +257,50 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals('application/x-compressed', $file['mime']);
     }
 
+    public function testRegistrationReconWithTestMerchantProxyAuth()
+    {
+        $payment = $this->createAcknowledgedEnachPayment(false);
+
+        $batchFile = $this->getBatchFileToUpload($payment);
+
+        $url = '/batches';
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($url, $batchFile)
+        {
+            $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+        });
+    }
+
+    public function testRegistrationReconWithSharedMerchantProxyAuth()
+    {
+        $payment = $this->createAcknowledgedEnachPayment(false);
+
+        $batchFile = $this->getBatchFileToUpload($payment);
+
+        $url = '/batches';
+        $this->ba->proxyAuth('rzp_test_100000Razorpay');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($url, $batchFile)
+        {
+            $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+        });
+    }
+
     public function testRegisterSuccessReconciliation()
     {
         $payment = $this->createAcknowledgedEnachPayment();
 
-        $batch = $this->uploadRegistrationBatch($payment);
+        $batchFile = $this->getBatchFileToUpload($payment);
+
+        $url = '/admin/batches';
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
 
         $this->assertEquals('emandate', $batch['type']);
         $this->assertEquals('created', $batch['status']);
@@ -527,7 +566,7 @@ class EnachRblGatewayTest extends TestCase
         $file = (new TestingFile('Debit MIS.xlsx', $handle));
 
         $request = [
-            'url' => '/batches',
+            'url' => '/admin/batches',
             'method' => 'POST',
             'content' => [
                 'type' => 'emandate',
@@ -539,7 +578,7 @@ class EnachRblGatewayTest extends TestCase
             ]
         ];
 
-        $this->ba->proxyAuth('rzp_test_100000Razorpay');
+        $this->ba->adminAuth();
 
         $batch = $this->makeRequestAndGetContent($request);
 
@@ -625,7 +664,7 @@ class EnachRblGatewayTest extends TestCase
         return [$payment, $token, $order];
     }
 
-    protected function createAcknowledgedEnachPayment()
+    protected function createAcknowledgedEnachPayment($webhook = true)
     {
         list($payment, $token, $order) = $this->createEmandatePayment();
 
@@ -633,16 +672,19 @@ class EnachRblGatewayTest extends TestCase
 
         $testData = $this->testData['tokenWebhookData'];
 
-        $this->mockInfernoFire(function ($data) use ($testData)
+        if ($webhook === true)
         {
-            $data['event'] = json_decode($data['event'], true);
+            $this->mockInfernoFire(function ($data) use ($testData)
+            {
+                $data['event'] = json_decode($data['event'], true);
 
-            $this->assertEquals('token.confirmed', $data['event']['event']);
+                $this->assertEquals('token.confirmed', $data['event']['event']);
 
-            $this->assertArraySelectiveEquals($testData, $data);
+                $this->assertArraySelectiveEquals($testData, $data);
 
-            return true;
-        });
+                return true;
+            });
+        }
 
         $gatewayEntity = $this->getLastEntity('enach', true);
 
@@ -657,7 +699,7 @@ class EnachRblGatewayTest extends TestCase
         return $payment;
     }
 
-    protected function uploadRegistrationBatch($payment)
+    protected function getBatchFileToUpload($payment)
     {
         $sheets = [
             'sheet1' => [
@@ -719,8 +761,13 @@ class EnachRblGatewayTest extends TestCase
         fseek($handle, 0);
         $file = (new TestingFile('Response Report-Response Report.xlsx', $handle));
 
+        return $file;
+    }
+
+    protected function makeRequestWithGivenUrlAndFile($url, $file)
+    {
         $request = [
-            'url' => '/batches',
+            'url' => $url,
             'method' => 'POST',
             'content' => [
                 'type' => 'emandate',
@@ -731,8 +778,6 @@ class EnachRblGatewayTest extends TestCase
                 'file' => $file,
             ]
         ];
-
-        $this->ba->proxyAuth('rzp_test_100000Razorpay');
 
         return $this->makeRequestAndGetContent($request);
     }

@@ -17,6 +17,7 @@ use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Risk;
 use RZP\Models\Card;
+use RZP\Models\Order;
 use RZP\Models\Offer;
 use RZP\Constants\TLD;
 use RZP\Http\BasicAuth;
@@ -72,8 +73,6 @@ trait Authorize
         $this->processCurrencyConversions($payment);
 
         $this->runPaymentInputValidations($payment, $input);
-
-        $this->validateOfferIfApplicable($payment);
 
         $ret = $this->hitGatewayIfRequired($payment, $input, $gatewayInput);
 
@@ -559,6 +558,8 @@ trait Authorize
         // otherwise can cause issues with international pricing rule being not available when
         // international is not enabled.
         $this->verifyFeesLessThanAmount($payment);
+
+        $this->validateOfferIfApplicable($payment, $input);
     }
 
     protected function validateSubscriptionInputIfPresent(Payment\Entity $payment, $input)
@@ -1238,9 +1239,14 @@ trait Authorize
         }
     }
 
-    protected function validateOfferIfApplicable(Payment\Entity $payment)
+    protected function validateOfferIfApplicable(Payment\Entity $payment, array $input)
     {
-        (new Offer\Core)->validateOfferApplicableOnPayment($payment);
+        $offer = $this->offer;
+
+        if ($offer !== null)
+        {
+            (new Offer\Core)->validateOfferApplicableOnPayment($offer, $payment);
+        }
     }
 
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
@@ -1604,8 +1610,10 @@ trait Authorize
 
     /**
      * @param Payment\Entity $payment
-     * @param array $input Input data received from checkout/merchant.
-     * @param array $gatewayInput Data that is required by gateway for the payment to be processed.
+     * @param array          $input        Input data received from checkout/merchant.
+     * @param array          $gatewayInput Data that is required by gateway for the payment to be processed.
+     *
+     * @throws Exception\BadRequestValidationFailureException
      */
     protected function runPaymentMethodRelatedPreProcessing(Payment\Entity $payment, & $input, array & $gatewayInput)
     {
@@ -1625,13 +1633,21 @@ trait Authorize
         {
             $this->associateSubscriptionToPayment($payment, $input);
 
-            $this->addCustomerIdToSubscriptionInput($payment->subscription, $input);
+            $subscription = $payment->subscription;
+
+            $this->addCustomerIdToSubscriptionInput($subscription, $input);
 
             $this->addTestSuccessFlagToGatewayInput($input, $gatewayInput);
+
+            if ($subscription->isGlobal() === true)
+            {
+                $followGlobal = true;
+            }
         }
 
         // First fetch the relevant customer (global or local)
-        list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $this->merchant);
+        list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
+                                                                $input, $this->merchant, $followGlobal ?? false);
 
         if ($customer === null)
         {
@@ -1844,7 +1860,7 @@ trait Authorize
             // second 2FA (change card). In the subsequent charges flow,
             // app_token won't be present anyway, since it's internal.
             //
-            if($subscription->isGlobal() === true)
+            if ($subscription->isGlobal() === true)
             {
                 $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
 
@@ -2797,13 +2813,16 @@ trait Authorize
             return;
         }
 
-        $appliedOffer = $order->offer;
+        if ($this->offer === null)
+        {
+            return;
+        }
 
         $discountInput = [
-            Discount\Entity::AMOUNT => $appliedOffer->getDiscount($order->getAmount()),
+            Discount\Entity::AMOUNT => $this->offer->getDiscount($order->getAmount()),
         ];
 
-        (new Discount\Service)->create($discountInput, $payment, $appliedOffer);
+        (new Discount\Service)->create($discountInput, $payment, $this->offer);
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)
@@ -3402,7 +3421,7 @@ trait Authorize
         // enach rbl again. This will ensure idempotency is maintained.
         //
         if (($oldRecurringStatus !== $currentRecurringStatus) and
-            (in_array($currentRecurringStatus, Token\RecurringStatus::$webhookStatuses, true) === true))
+            (Token\RecurringStatus::isWebhookStatus($currentRecurringStatus) === true))
         {
             $event = 'api.token.' . $currentRecurringStatus;
 
@@ -3469,7 +3488,7 @@ trait Authorize
                 $log[TerminalAnalytics\Entity::TERMINAL_STATUS_MSG] = $e->getError()->getDescription();
             }
 
-            (new TerminalAnalytics\Core)->create($log);
+            (new TerminalAnalytics\Core)->create($log, $payment);
 
             $tStatus = $log[TerminalAnalytics\Entity::TERMINAL_STATUS];
 

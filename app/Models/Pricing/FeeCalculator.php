@@ -488,7 +488,6 @@ class FeeCalculator
 
         $network = Card\Network::getCode($payment->card->getNetwork());
 
-
         // Current Implementation
         // * Filter based on receiver type
         // * Filter based on international
@@ -500,7 +499,6 @@ class FeeCalculator
 
         // Structure is as follows:
         // Field name, Field value, Choose default (true/false), default value
-
 
         // The sequence should not be changed as it changes the behaviour.
         // Right now if the receiver_type is present it needs to be selected no
@@ -729,16 +727,17 @@ class FeeCalculator
         return $verbose;
     }
 
-    protected function createFeeBreakup($name, $percent, $amount, $pricingRuleId = null)
+    protected function createFeeBreakup($name, $percent, $amount, $pricingRule = null)
     {
         $params = [
-            Transaction\FeeBreakup\Entity::NAME                 => $name,
-            Transaction\FeeBreakup\Entity::PERCENTAGE           => $percent,
-            Transaction\FeeBreakup\Entity::AMOUNT               => $amount,
-            Transaction\FeeBreakup\Entity::PRICING_RULE_ID      => $pricingRuleId,
+            Transaction\FeeBreakup\Entity::NAME       => $name,
+            Transaction\FeeBreakup\Entity::PERCENTAGE => $percent,
+            Transaction\FeeBreakup\Entity::AMOUNT     => $amount,
         ];
 
         $feeBreakup = (new Transaction\FeeBreakup\Entity)->build($params);
+
+        $feeBreakup->pricingRule()->associate($pricingRule);
 
         return $feeBreakup;
     }
@@ -761,7 +760,7 @@ class FeeCalculator
                                 $rule->getFeature(),
                                 null,
                                 $fee,
-                                $rule->getId());
+                                $rule);
 
         $this->feesSplit->push($rzpFee);
 

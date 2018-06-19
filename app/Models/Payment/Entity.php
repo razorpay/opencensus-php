@@ -55,6 +55,7 @@ class Entity extends Base\PublicEntity
     const ORDER_ID              = 'order_id';
     const INVOICE_ID            = 'invoice_id';
     const TRANSFER_ID           = 'transfer_id';
+    const PAYMENT_LINK_ID       = 'payment_link_id';
     const RECEIVER_ID           = 'receiver_id';
     const RECEIVER_TYPE         = 'receiver_type';
     const INTERNATIONAL         = 'international';
@@ -102,6 +103,15 @@ class Entity extends Base\PublicEntity
     const REFERENCE5            = 'reference5';
     const REFERENCE6            = 'reference6';
     const REFERENCE9            = 'reference9';
+    // From 10 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
+    const REFERENCE10           = 'reference10';
+    const REFERENCE11           = 'reference11';
+    const REFERENCE12           = 'reference12';
+    const REFERENCE13           = 'reference13';
+    const REFERENCE14           = 'reference14';
+    const REFERENCE15           = 'reference15';
+    const REFERENCE16           = 'reference16';
+    const REFERENCE17           = 'reference17';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
     const GATEWAY_CAPTURED      = 'gateway_captured';
@@ -154,6 +164,8 @@ class Entity extends Base\PublicEntity
     const IFSC                  = 'ifsc';
     const ACCOUNT_NUMBER        = 'account_number';
 
+    const OFFER_ID              = 'offer_id';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
@@ -178,7 +190,6 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::ID,
-        self::MERCHANT_ID,
         self::AMOUNT,
         self::METHOD,
         self::EMI_PLAN_ID,
@@ -279,6 +290,7 @@ class Entity extends Base\PublicEntity
         self::DISPUTED,
         self::RECURRING_TYPE,
         self::ACKNOWLEDGED_AT,
+        self::PAYMENT_LINK_ID,
     ];
 
     protected $public = [
@@ -405,6 +417,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
         self::ACKNOWLEDGED_AT      => null,
+        self::PAYMENT_LINK_ID      => null,
     ];
 
     protected $amounts = [
@@ -1462,7 +1475,7 @@ class Entity extends Base\PublicEntity
         {
             $order = $this->order;
 
-            if ($order->hasOffer() === true)
+            if ($order->hasOffers() === true)
             {
                 return true;
             }
@@ -2734,5 +2747,13 @@ class Entity extends Base\PublicEntity
     {
         $query->where(Entity::RECEIVER_ID, '=', $entity->getId())
               ->where(Entity::RECEIVER_TYPE, '=', $entity->getEntity());
+    }
+
+    public function isCorporateNetbanking()
+    {
+        return (
+            ($this->isNetbanking() === true) and
+            (Netbanking::isCorporateBank($this->getBank()) === true)
+        );
     }
 }

@@ -49,6 +49,10 @@ class AdminFetch
                         'review',
                         'allow'
                     ]
+                ],
+                'ruleset'           => [
+                    Fetch::LABEL        => 'ruleset',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
                 ]
             ],
             Entity::SHIELD_RULE_ANALYTICS => [
@@ -93,6 +97,10 @@ class AdminFetch
                     Fetch::LABEL        => 'card_hash',
                     Fetch::TYPE         => Fetch::TYPE_STRING
                 ],
+                'triggered_count'   => [
+                    Fetch::LABEL        => 'triggered_count',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ]
             ]
         ];
     }
@@ -283,11 +291,26 @@ class AdminFetch
                     Fetch::LABEL  => 'Type',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
-                        'all',
                         'payment_link',
                         'refund',
+                        'emandate',
+                        'reconciliation',
                         'irctc_refund',
-                        'irctc_settlement'
+                        'irctc_settlement',
+                        'linked_account',
+                        'virtual_bank_account',
+                        'recurring_charge',
+                        'payout',
+                        'sub_merchant',
+                        'direct_debit',
+                    ],
+                ],
+                'gateway' => [
+                    Fetch::LABEL  => 'Gateway',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'enach_rbl',
+                        'hdfc'
                     ],
                 ],
             ],
@@ -660,6 +683,8 @@ class AdminFetch
                         'emi',
                         'refund',
                         'combined',
+                        'emandate_debit',
+                        'emandate_register',
                     ],
                 ],
                 'status' => [
@@ -674,7 +699,7 @@ class AdminFetch
                     ],
                 ],
                 'target' => [
-                    Fetch::LABEL  => 'Type',
+                    Fetch::LABEL  => 'Target',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
                         'rbl',
@@ -1225,6 +1250,10 @@ class AdminFetch
                     ],
                 ],
                 'wallet' => Fetch::FIELD_WALLET,
+                'vpa' => [
+                    Fetch::LABEL  => 'VPA',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
             ],
 
             Entity::PAYOUT => [

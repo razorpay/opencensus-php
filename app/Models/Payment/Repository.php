@@ -48,6 +48,7 @@ class Repository extends Base\Repository
         Entity::EMAIL           => 'sometimes',
         Entity::STATUS          => 'sometimes|string',
         Entity::NOTES           => 'sometimes|string|max:500',
+        Entity::PAYMENT_LINK_ID => 'fillable|public_id|size:17',
         Entity::SUBSCRIPTION_ID => 'sometimes|string|min:14|max:18',
         Entity::BANK_REFERENCE  => 'sometimes|alpha_num|max:22',
         self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes',
@@ -80,6 +81,7 @@ class Repository extends Base\Repository
         Entity::AMOUNT                  => 'sometimes|integer',
         Entity::TERMINAL_ID             => 'sometimes|alpha_num|size:14',
         Token\Entity::RECURRING_STATUS  => 'sometimes|string|max:15',
+        Entity::VPA                     => 'sometimes|string|max:100',
     ];
 
     protected $signedIds = [
@@ -967,35 +969,34 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function fetchBankTransferPaymentsByPublicVaIdAndMerchant(
-        string $virtualAccountId,
-        Merchant\Entity $merchant
-        )
+    public function fetchByPublicVaIdAndMerchant(string $virtualAccountId, Merchant\Entity $merchant)
     {
-        $paymentId = $this->dbColumn(Payment\Entity::ID);
-        $paymentMethod = $this->dbColumn(Payment\Entity::METHOD);
+        $paymentReceiverId = $this->dbColumn(Payment\Entity::RECEIVER_ID);
         $paymentMerchantId = $this->dbColumn(Payment\Entity::MERCHANT_ID);
+
+        $virtualAccountIdCol = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::ID);
 
         $paymentColumns = $this->dbColumn('*');
 
-        $bankTransferTable = $this->repo->bank_transfer->getTableName();
+        $qrcodeId = $this->repo
+                         ->virtual_account
+                         ->dbColumn(VirtualAccount\Entity::QR_CODE_ID);
 
-        $bankTransferPaymentId = $this->repo
-                                      ->bank_transfer
-                                      ->dbColumn(BankTransfer\Entity::PAYMENT_ID);
-
-        $bankTransferVirtualAccountId = $this->repo
-                                             ->bank_transfer
-                                             ->dbColumn(BankTransfer\Entity::VIRTUAL_ACCOUNT_ID);
+        $bankAccountId = $this->repo
+                              ->virtual_account
+                              ->dbColumn(VirtualAccount\Entity::BANK_ACCOUNT_ID);
 
         VirtualAccount\Entity::verifyIdAndSilentlyStripSign($virtualAccountId);
 
         return $this->newQuery()
                     ->select($paymentColumns)
-                    ->join($bankTransferTable, $paymentId, '=', $bankTransferPaymentId)
-                    ->where($bankTransferVirtualAccountId, '=', $virtualAccountId)
+                    ->join(Table::VIRTUAL_ACCOUNT, function ($join) use($paymentReceiverId, $qrcodeId, $bankAccountId)
+                        {
+                            $join->on($paymentReceiverId, '=', $qrcodeId);
+                            $join->orOn($paymentReceiverId, '=', $bankAccountId);
+                        })
+                    ->where($virtualAccountIdCol, '=', $virtualAccountId)
                     ->where($paymentMerchantId, '=', $merchant->getId())
-                    ->where($paymentMethod, '=', Method::BANK_TRANSFER)
                     ->orderByCreatedAt()
                     ->get();
     }

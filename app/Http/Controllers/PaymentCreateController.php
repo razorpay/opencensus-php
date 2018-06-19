@@ -9,6 +9,7 @@ use Request;
 use App;
 use View;
 
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
 
@@ -194,21 +195,15 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        $retJson = false;
-
         $retHtml = false;
 
         if (isset($input['view']) === true)
         {
-            if ($input['view'] === 'json')
-            {
-                $retJson = true;
-            }
-            else if ($input['view'] === 'html')
+            if ($input['view'] === 'html')
             {
                 $retHtml = true;
             }
-            
+
             unset($input['view']);
         }
 
@@ -222,16 +217,27 @@ class PaymentCreateController extends Controller
             $data[$key] = $value / 100;
         }
 
-        if ($retJson === true)
-        {
-            return ApiResponse::json(['input' => $input,'display' => $data]);
-        }
-        else
+        if ($retHtml === true)
         {
             $url = $this->route->getUrlWithPublicAuth('payment_create_checkout');
 
             return $this->returnConvenienceFeesView($input, $data, $url);
         }
+
+        return ApiResponse::json(['input' => $input,'display' => $data]);
+    }
+
+    public function postPaymentFees()
+    {
+        $input = Request::all();
+
+        $this->setMerchantCallbackUrlIfApplicable($input);
+
+        $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
+
+        unset($data['originalAmount']);
+
+        return ApiResponse::json($data);
     }
 
     /**
@@ -414,6 +420,7 @@ class PaymentCreateController extends Controller
         $postFormData = $data;
         $postFormData['theme']['color'] = $merchant->getBrandColorElseDefault();
         $postFormData['name'] = $merchant->getBillingLabel();
+        $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
 
         return View::make('gateway.gatewayPostForm')
                    ->with('data', $postFormData);

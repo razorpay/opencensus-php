@@ -3,6 +3,8 @@
 namespace RZP\Models\Transaction\FeeBreakup;
 
 use RZP\Models\Base;
+use RZP\Models\Pricing;
+use RZP\Models\Transaction;
 
 class Entity extends Base\PublicEntity
 {
@@ -21,14 +23,13 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    protected $fillable = array(
+    protected $fillable = [
         self::NAME,
         self::AMOUNT,
         self::PERCENTAGE,
-        self::PRICING_RULE_ID,
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::NAME,
         self::AMOUNT,
@@ -37,18 +38,22 @@ class Entity extends Base\PublicEntity
         self::PRICING_RULE_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
-    );
+    ];
 
-    protected $casts = array(
-        self::AMOUNT                        => 'int',
-        self::PERCENTAGE                    => 'int',
-    );
+    protected $casts = [
+        self::AMOUNT     => 'int',
+        self::PERCENTAGE => 'int',
+    ];
 
     public function transaction()
     {
-        return $this->belongsTo('RZP\Models\Transaction\Entity');
+        return $this->belongsTo(Transaction\Entity::class);
     }
 
+    public function pricingRule()
+    {
+        return $this->belongsTo(Pricing\Entity::class);
+    }
 
     // ----------------------- Getters ---------------------------------------------
 

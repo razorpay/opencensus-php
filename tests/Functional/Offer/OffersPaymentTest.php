@@ -30,11 +30,47 @@ class OffersPaymentTest extends TestCase
     {
         $offer = $this->fixtures->create('offer');
 
-        $order = $this->fixtures->create('order:with_offer_applied', [
-            'offer_id' => $offer->getId()
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'force_offer' => true,
         ]);
 
-        $payment = $this->getOfferPaymentArray($order);
+        $payment = $this->getOrderPaymentArray($order);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(90000, $payment['amount']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], 100000, 'INR', 90000);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(90000, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(100000, $order['amount']);
+        $this->assertEquals('paid', $order['status']);
+
+        $offer = $this->getLastEntity('offer', true);
+        $discount = $this->getLastEntity('discount', true);
+        $this->assertEquals(10000, $discount['amount']);
+        $this->assertEquals($payment['id'], $discount['payment_id']);
+        $this->assertEquals($order['id'], $discount['order_id']);
+        $this->assertEquals($offer['id'], $discount['offer_id']);
+    }
+
+    public function testOfferPaymentMultipleOffers()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ]);
+
+        $payment = $this->getOfferPaymentArray($order, $offer2);
 
         $this->doAuthPayment($payment);
 
@@ -74,7 +110,7 @@ class OffersPaymentTest extends TestCase
             'offer_id' => $offer->getId()
         ]);
 
-        $payment = $this->getOfferPaymentArray($order);
+        $payment = $this->getOrderPaymentArray($order);
 
         $feesArray = $this->createAndGetFeesForPayment($payment);
         $amount = $payment['amount'];
@@ -99,12 +135,21 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals($offer['id'], $discount['offer_id']);
     }
 
-    protected function getOfferPaymentArray($order)
+    protected function getOrderPaymentArray($order)
     {
         $payment = $this->getDefaultPaymentArray();
 
         $payment['order_id'] = $order->getPublicId();
         $payment['amount']   = $order->getAmount();
+
+        return $payment;
+    }
+
+    protected function getOfferPaymentArray($order, $offer)
+    {
+        $payment = $this->getOrderPaymentArray($order);
+
+        $payment['offer_id'] = $offer->getPublicId();
 
         return $payment;
     }

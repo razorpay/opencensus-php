@@ -183,6 +183,30 @@ return [
         ],
     ],
 
+    'testFetchPaymentsForVirtualAccountForQrCode' => [
+        'entity' => 'collection',
+        'count'  => 1,
+        'items'  => [
+            [
+                'entity'            => 'payment',
+                'amount'            => 200,
+                'currency'          => 'INR',
+                'status'            => 'captured',
+                'order_id'          => null,
+                'invoice_id'        => null,
+                'method'            => 'card',
+                'amount_refunded'   => 0,
+                'refund_status'     => null,
+                'captured'          => true,
+                'description'       => 'Bharat Qr Payment',
+                'email'             => null,
+                'contact'           => null,
+                'error_code'        => null,
+                'error_description' => null,
+            ]
+        ],
+    ],
+
     'testCreateVirtualAccountWithDescriptor' => [
         'response' => [
             'content' => [
@@ -249,6 +273,22 @@ return [
     ],
 
     'testCreateVirtualAccountDescriptorLengths' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid length for descriptor.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH,
+        ],
+    ],
+
+    'testCreateVirtualAccountDescriptorInvalidLength' => [
         'response' => [
             'content' => [
                 'error' => [

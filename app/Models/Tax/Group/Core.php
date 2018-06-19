@@ -83,6 +83,8 @@ class Core extends Base\Core
 
         Tax\Entity::verifyIdAndStripSignMultiple($inputTaxIds);
 
+        $this->repo->tax->validateExists($inputTaxIds);
+
         $group->taxes()->sync($inputTaxIds);
     }
 }

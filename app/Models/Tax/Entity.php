@@ -92,12 +92,12 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RATE_TYPE);
     }
 
-    public function getRate()
+    public function getRate(): int
     {
         return $this->getAttribute(self::RATE);
     }
 
-    public function getRatePercentValue()
+    public function getRatePercentValue(): float
     {
         return $this->getRate() * self::PERCENT_MULTIPLIER;
     }
