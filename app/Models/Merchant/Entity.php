@@ -850,7 +850,7 @@ class Entity extends Base\PublicEntity
     {
         $field = $this->getInvoiceLabelField() ?: Detail\Entity::BUSINESS_NAME;
 
-        $value = $this->merchantDetail->getAttribute($field);
+        $value = optional($this->merchantDetail)->getAttribute($field);
 
         return $value ?: $this->getBillingLabel();
     }
