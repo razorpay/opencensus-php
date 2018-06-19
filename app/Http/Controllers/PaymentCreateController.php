@@ -229,13 +229,15 @@ class PaymentCreateController extends Controller
 
     public function postPaymentFees()
     {
-        $json = $this->postCreatePaymentFees()->getContent();
+        $input = Request::all();
 
-        $data = json_decode($json, true);
+        $this->setMerchantCallbackUrlIfApplicable($input);
 
-        unset($data['input']);
+        $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
 
-        return ApiResponse::json($data['display']);
+        unset($data['originalAmount']);
+
+        return ApiResponse::json($data);
     }
 
     /**
