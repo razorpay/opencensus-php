@@ -63,7 +63,7 @@ export default ({
         }
 
         if (!err) {
-          err = `Some Network error occured`;
+          err = `Some network error has occured`;
         }
 
         showNotification({

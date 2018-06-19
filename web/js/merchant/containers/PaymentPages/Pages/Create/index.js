@@ -381,7 +381,7 @@ export default class CreateNewContainer extends React.Component {
         }
 
         if (!err) {
-          err = `Some Network error occured`;
+          err = `Some network error has occured`;
         }
 
         this.props.showNotification({
@@ -516,7 +516,7 @@ class CreateWizard extends React.Component {
     return (
       <div class="PaymentLinks--Create Wizard">
         <main class="form-container">
-          <main-title class="main-title">CREATE {FORM_FIELDS.title}</main-title>
+          <main-title class="main-title">Create {FORM_FIELDS.title}</main-title>
 
           {/* ALERTS */}
           {mode === 'test' && (

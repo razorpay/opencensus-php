@@ -297,7 +297,7 @@ export default class PaymentPagesEntity extends React.Component {
             }
 
             if (!err) {
-              err = `Some Network error occured`;
+              err = `Some network error has occured`;
             }
 
             this.props.showNotification({
@@ -346,7 +346,7 @@ export default class PaymentPagesEntity extends React.Component {
         }
 
         if (!err) {
-          err = `Some Network error occured`;
+          err = `Some network error has occured`;
         }
 
         this.props.showNotification({
