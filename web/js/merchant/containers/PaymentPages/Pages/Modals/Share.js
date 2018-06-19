@@ -74,8 +74,6 @@ export default ({
   }
 
   function mediaWindowUrl(e) {
-    console.dir(e.target);
-
     const type = e.target.dataset['type'];
     let mediaUrl;
     const mediaMsg = _shareMessage(title, description);
@@ -94,7 +92,9 @@ export default ({
         break;
 
       case 'whatsapp':
-        window.open(whatsappBase + mediaMsg + ' ' + url);
+        mediaUrl = whatsappBase + mediaMsg + ' ' + url;
+
+        window.open(mediaUrl);
         break;
     }
 

@@ -309,55 +309,51 @@ export default class PaymentPagesEntity extends React.Component {
     });
   };
 
-  editPaymentPage = () => {
-    const self = this;
+  editPaymentPage = data => {
+    return editPaymentPage(this.state.paymentPage.id, data)
+      .then(resp => {
+        if (resp.data) {
+          this.props.updatePPInReduxList(resp.data, false);
 
-    return function(data) {
-      return editPaymentPage(self.state.paymentPage.id, data)
-        .then(resp => {
-          if (resp.data) {
-            self.props.updatePPInReduxList(resp.data, false);
-
-            self.props.showNotification({
-              type: 'success',
-              message: `${self.state.paymentPage.id} successfully Updated`,
-            });
-
-            self.setState({
-              paymentPage: resp.data,
-            });
-
-            return resp;
-          } else {
-            throw 'Some network issue occured';
-          }
-        })
-        .catch(({ errors }) => {
-          let err = errors;
-
-          if (Array.isArray(err)) {
-            err = [];
-
-            errors.length &&
-              errors.forEach(e => {
-                if (e && e.toLowerCase().indexOf('status code') === -1) {
-                  err.push(e);
-                }
-              });
-
-            err = err.length ? err : null;
-          }
-
-          if (!err) {
-            err = `Some Network error occured`;
-          }
-
-          self.props.showNotification({
-            type: 'error',
-            message: err,
+          this.props.showNotification({
+            type: 'success',
+            message: `${this.state.paymentPage.id} successfully Updated`,
           });
+
+          this.setState({
+            paymentPage: resp.data,
+          });
+
+          return resp;
+        } else {
+          throw 'Some network issue occured';
+        }
+      })
+      .catch(({ errors }) => {
+        let err = errors;
+
+        if (Array.isArray(err)) {
+          err = [];
+
+          errors.length &&
+            errors.forEach(e => {
+              if (e && e.toLowerCase().indexOf('status code') === -1) {
+                err.push(e);
+              }
+            });
+
+          err = err.length ? err : null;
+        }
+
+        if (!err) {
+          err = `Some Network error occured`;
+        }
+
+        this.props.showNotification({
+          type: 'error',
+          message: err,
         });
-    };
+      });
   };
 
   render() {
@@ -466,7 +462,7 @@ export default class PaymentPagesEntity extends React.Component {
                                 description: paymentPage.description,
                               }}
                               entityId={paymentPage.id}
-                              editFn={this.editPaymentPage()}
+                              editFn={this.editPaymentPage}
                               trackerFn={trackDetailViewEdits}
                             />
                           )
@@ -494,7 +490,7 @@ export default class PaymentPagesEntity extends React.Component {
                             <EditReceipt
                               value={paymentPage.receipt}
                               entityId={paymentPage.id}
-                              editFn={this.editPaymentPage()}
+                              editFn={this.editPaymentPage}
                               trackerFn={trackDetailViewEdits}
                             />
                           )
@@ -525,7 +521,7 @@ export default class PaymentPagesEntity extends React.Component {
                         ? () => (
                             <EditExpiry
                               value={paymentPage.expire_by}
-                              editFn={this.editPaymentPage()}
+                              editFn={this.editPaymentPage}
                               entityId={paymentPage.id}
                               trackerFn={trackDetailViewEdits}
                             />
@@ -546,7 +542,7 @@ export default class PaymentPagesEntity extends React.Component {
                         ? () => (
                             <EditTimesPayable
                               value={paymentPage.times_payable}
-                              editFn={this.editPaymentPage()}
+                              editFn={this.editPaymentPage}
                               entityId={paymentPage.id}
                               trackerFn={trackDetailViewEdits}
                             />
@@ -563,7 +559,7 @@ export default class PaymentPagesEntity extends React.Component {
                     value={() => (
                       <EditNotes
                         value={paymentPage.notes}
-                        editFn={this.editPaymentPage()}
+                        editFn={this.editPaymentPage}
                         entityId={paymentPage.id}
                         trackerFn={trackDetailViewEdits}
                       />
