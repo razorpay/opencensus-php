@@ -128,16 +128,12 @@ initialize(){
 }
 
 ### Check that atleast either webapp or supervisor is specified
-if [ "$#" -eq 0 ]; then
-    echo "Specify app type: < web | supervisor >"
-    exit -1
-fi
 
 ## Do the basic initialization and get the app type
 
 function main {
   initialize
-  app_type=$1
+  app_type="web"
 
   ## Now, based on the app type, call the specific functions
   if [[ "${app_type}" == "web" ]]; then
