@@ -129,7 +129,7 @@ export default ({
           {isNew && (
             <div class="Share-section">
               <span class="label--faded">
-                Use the following Link to accept payments.
+                Use the following url to accept payments.
               </span>
               <div>
                 <CustomClipboard
@@ -146,7 +146,7 @@ export default ({
                     class="Input--inline is-focused"
                   />
                   <Button.Primary class="Button--input--right">
-                    Copy Link
+                    Copy URL
                   </Button.Primary>
                 </CustomClipboard>
               </div>
@@ -154,7 +154,7 @@ export default ({
           )}
 
           <div class="Share-section">
-            <span class="label--faded">Share link on social media. </span>
+            <span class="label--faded">Share on social media. </span>
             <div class="social-media" style={{ display: 'inline-block' }}>
               <a onClick={mediaWindowUrl} data-type="fb">
                 <img src="/img/social-media/fb.png" alt="Facebook share" />
@@ -207,7 +207,7 @@ export default ({
                 class="Button--Link"
               >
                 <b>
-                  Send Link
+                  Send
                   <i class="i i-arrow-forward" />
                 </b>
               </Button.Transparent>
