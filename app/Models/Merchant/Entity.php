@@ -1512,4 +1512,12 @@ class Entity extends Base\PublicEntity
     {
         return (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($this->getId());
     }
+
+    /**
+     * @todo: remove this function. included in #8406
+     */
+    public function isPurePlatformTypePartner(): bool
+    {
+        return ($this->getPartnerType() === Constants::PURE_PLATFORM);
+    }
 }

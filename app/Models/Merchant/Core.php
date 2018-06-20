@@ -856,11 +856,12 @@ class Core extends Base\Core
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant)
         {
+            $this->deletePartnerApp($merchant);
+
             $merchant->setPartnerType();
 
             $this->repo->saveOrFail($merchant);
 
-            $this->deletePartnerApp($merchant);
         });
 
         return $merchant;
@@ -868,11 +869,15 @@ class Core extends Base\Core
 
     /**
      * @param Entity $merchant
-     *
-     * @return array
      */
-    public function createPartnerApp(Entity $merchant): array
+    public function createPartnerApp(Entity $merchant)
     {
+        if ($merchant->isPurePlatformTypePartner() === true)
+        {
+            // Don't create a dummy application for pure platforms
+            return;
+        }
+
         $name = $merchant->getName();
 
         // Default value is required because website is a required field to create oauth applications
@@ -896,8 +901,14 @@ class Core extends Base\Core
      *
      * @return array
      */
-    public function deletePartnerApp(Entity $merchant): array
+    public function deletePartnerApp(Entity $merchant)
     {
+        if ($merchant->isPurePlatformTypePartner() === true)
+        {
+            // A dummy application for pure platforms does not exist
+            return;
+        }
+
         $app = $merchant->getPartnerApp();
 
         $app = app('authservice')->deleteApplication($app->getId(), $merchant->getId());
