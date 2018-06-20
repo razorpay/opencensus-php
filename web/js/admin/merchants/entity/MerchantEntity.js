@@ -123,6 +123,8 @@ const ActionsList = ({ model, merchantId, actions }) => {
   const isDetailsLoading = !Object.keys(toJS(merchant.details)).length;
   const isFeaturesLoading = !Object.keys(toJS(merchant.features)).length;
   let isAdminsLoading = !Object.keys(toJS(merchant.adminsMap)).length;
+  const isPartnerRequestsLoading = !Object.keys(toJS(merchant.partnerRequests))
+    .length;
 
   // If user has no permission, then don't wait for this
   if (!user.permissions.find(perm => perm === 'view_all_admin')) {
@@ -358,23 +360,6 @@ const ActionsList = ({ model, merchantId, actions }) => {
         }
         notifySuccess('Merchant granted key access successfully.');
         model.updateDetails(response);
-      }
-    });
-  }
-
-  // method to unmark a mercant as partner
-  function unMarkPartner() {
-    return adminPost({
-      url: `live_${merchantId}/merchant/requests`,
-      data: {
-        name: 'deactivation',
-        type: 'partner',
-        submissions: { partner_type: '' },
-      },
-    }).then(response => {
-      if (response) {
-        notifySuccess('Merchant unmarked as partner');
-        model.updateDetails(response.merchant);
       }
     });
   }
@@ -706,20 +691,11 @@ const ActionsList = ({ model, merchantId, actions }) => {
           </div>
         </ShowWhen>
 
-        {/* partner actions */}
-        {merchant.details.partner_type ? (
+        {(!isDetailsLoading || !isPartnerRequestsLoading) && (
           <ShowWhen>
-            <AsyncButton
-              onClick={unMarkPartner}
-              pendingClass="btn-pending"
-              confirm="Are you sure, you want to unmark merchant as partner?"
-            >
-              Unmark As Partner
-            </AsyncButton>
-          </ShowWhen>
-        ) : (
-          <ShowWhen>
-            <div onClick={actions.MarkAsPartner}>Mark As Partner</div>
+            <div onClick={actions.TogglePartnerType}>
+              {(merchant.details.partner_type ? 'Unm' : 'M') + 'ark As Partner'}
+            </div>
           </ShowWhen>
         )}
 
