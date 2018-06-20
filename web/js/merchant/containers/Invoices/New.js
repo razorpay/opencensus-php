@@ -194,17 +194,10 @@ export default class InvoicesNewContainer extends Component {
       if (customer) {
         let billingAddress, shippingAddress;
 
-        if (invoice.customer) {
-          billingAddress = customerDetails.billing_address;
-          shippingAddress = customerDetails.shipping_address;
-        }
+        billingAddress = customerDetails.billing_address_id;
+        shippingAddress = customerDetails.shipping_address_id;
 
-        this.onSelectCustomer(
-          customer,
-          billingAddress && billingAddress.id,
-          shippingAddress && shippingAddress.id,
-          false
-        );
+        this.onSelectCustomer(customer, billingAddress, shippingAddress, false);
       }
     }
 
