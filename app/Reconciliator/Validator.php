@@ -41,7 +41,7 @@ class Validator
                                                         "/^MIS file for (0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}, "
                                                         . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/"
                                                      ],
-        RequestProcessor\Base::NETBANKING_BOB     => ["/^Razorpay_Scroll_ of /"],
+        RequestProcessor\Base::NETBANKING_BOB     => ["/^(RE: )?Razorpay_Scroll_ of /"],
         RequestProcessor\Base::NETBANKING_CSB     => ["/^RAZORPAY_Recon File/"],
         RequestProcessor\Base::NETBANKING_ICICI   => ["/^Payment Through Internet Banking Center Razorpay/"],
         RequestProcessor\Base::NETBANKING_FEDERAL => [

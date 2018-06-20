@@ -817,9 +817,10 @@ class Core extends Base\Core
     {
         $submissions = $this->getPartnerSubmissions($merchantRequest);
 
-        if (isset($submissions[Entity::PARTNER_TYPE]) === false)
+        if (empty($submissions[Entity::PARTNER_TYPE]) === true)
         {
-            throw new LogicException(PublicErrorDescription::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
+            throw new LogicException(
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
                 ErrorCode::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
                 $submissions);
         }
@@ -827,6 +828,8 @@ class Core extends Base\Core
         $partnerType = $submissions[Entity::PARTNER_TYPE];
 
         $merchant = $merchantRequest->merchant;
+
+        (new Validator)->validateIfAlreadyPartner($merchant);
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $partnerType)
         {
@@ -849,13 +852,16 @@ class Core extends Base\Core
      */
     public function unmarkAsPartner(Entity $merchant): Entity
     {
+        (new Validator)->validateIfNotAPartner($merchant);
+
         $this->repo->transactionOnLiveAndTest(function() use ($merchant)
         {
-            $merchant->setPartnerType(null);
+            $this->deletePartnerApp($merchant);
+
+            $merchant->setPartnerType();
 
             $this->repo->saveOrFail($merchant);
 
-            $this->deletePartnerApp($merchant);
         });
 
         return $merchant;
@@ -931,9 +937,11 @@ class Core extends Base\Core
     {
         $referralId = $referral->getId();
 
-        $partnerApp = $partner->getPartnerApp();
-
-        if ($partnerApp === null)
+        try
+        {
+            $partnerApp = $partner->getPartnerApp();
+        }
+        catch (\Exception $ex)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
@@ -969,12 +977,28 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function createPartnerApp(Entity $merchant): array
+    /*
+     * @param Entity $merchant
+     */
+    public function createPartnerApp(Entity $merchant)
     {
+        if ($merchant->isPurePlatformTypePartner() === true)
+        {
+            // Don't create a dummy application for pure platforms
+            return;
+        }
+
+        $name = $merchant->getName();
+
+        // Default value is required because website is a required field to create oauth applications
+        $website = $merchant->getWebsite() ?? 'https://www.razorpay.com';
+
+        $logoUrl = $merchant->getLogoUrl();
+
         $appInput = [
-            'name'     => 'Internal',
-            'website'  => 'https://www.razorpay.com',
-            'logo_url' => '/logo/app_logo.png',
+            'name'     => $name,
+            'website'  => $website,
+            'logo_url' => $logoUrl,
         ];
 
         $app = app('authservice')->createApplication($appInput, $merchant->getId(), Application\Type::PARTNER);
@@ -982,8 +1006,19 @@ class Core extends Base\Core
         return $app;
     }
 
-    public function deletePartnerApp(Entity $merchant): array
+    /**
+     * @param Entity $merchant
+     *
+     * @return array
+     */
+    public function deletePartnerApp(Entity $merchant)
     {
+        if ($merchant->isPurePlatformTypePartner() === true)
+        {
+            // A dummy application for pure platforms does not exist
+            return;
+        }
+
         $app = $merchant->getPartnerApp();
 
         $app = app('authservice')->deleteApplication($app->getId(), $merchant->getId());

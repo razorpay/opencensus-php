@@ -1,7 +1,7 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
     "content-hash": "04b6c340abeb9bdad3cbf98ae687665d",
@@ -554,7 +554,7 @@
                     "role": "Developer"
                 },
                 {
-                    "name": "DataDog",
+                    "name": "Datadog",
                     "email": "dev@datadoghq.com",
                     "role": "Developer"
                 }
@@ -1496,16 +1496,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "8.9.7",
+            "version": "8.9.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "cc4ec7cd91e6bc629f868dd4564aa74bbcd8dd34"
+                "reference": "420621360d56499ac1b0e6293561ed8661017c6b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/cc4ec7cd91e6bc629f868dd4564aa74bbcd8dd34",
-                "reference": "cc4ec7cd91e6bc629f868dd4564aa74bbcd8dd34",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/420621360d56499ac1b0e6293561ed8661017c6b",
+                "reference": "420621360d56499ac1b0e6293561ed8661017c6b",
                 "shasum": ""
             },
             "require": {
@@ -1560,7 +1560,7 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2018-05-29T11:52:24+00:00"
+            "time": "2018-06-14T11:25:48+00:00"
         },
         {
             "name": "giggsey/locale",
@@ -5388,12 +5388,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
-                "reference": "45d078001722bbe58b18c148c5101fe0b7912688"
+                "reference": "31c808d6a72588e3d15e94f009562c506739d2d9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/oauth/zipball/45d078001722bbe58b18c148c5101fe0b7912688",
-                "reference": "45d078001722bbe58b18c148c5101fe0b7912688",
+                "url": "https://api.github.com/repos/razorpay/oauth/zipball/31c808d6a72588e3d15e94f009562c506739d2d9",
+                "reference": "31c808d6a72588e3d15e94f009562c506739d2d9",
                 "shasum": ""
             },
             "require": {
@@ -5432,7 +5432,7 @@
                 "source": "https://github.com/razorpay/oauth/tree/master",
                 "issues": "https://github.com/razorpay/oauth/issues"
             },
-            "time": "2018-05-04T06:59:34+00:00"
+            "time": "2018-06-18T18:20:01+00:00"
         },
         {
             "name": "razorpay/razorpay",

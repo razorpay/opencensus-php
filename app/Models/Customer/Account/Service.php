@@ -296,12 +296,11 @@ class Service extends Base\Service
         // If result is valid, then create a new app token.
         if ($result['valid'] === true)
         {
-            $custAppInput = array(
-                AppToken\Entity::CUSTOMER_ID     => $customer->getId(),
-                AppToken\Entity::MERCHANT_ID     => $this->merchant->getId(),
-                AppToken\Entity::DEVICE_TOKEN    => $deviceToken);
+            $custAppInput = [
+                AppToken\Entity::DEVICE_TOKEN  => $deviceToken
+            ];
 
-            $app = (new AppToken\Core)->create($custAppInput);
+            $app = (new AppToken\Core)->create($custAppInput, $customer, $this->merchant);
 
             $this->core->putAppTokenInSession($app);
 

@@ -124,7 +124,7 @@ class Validator extends Base\Validator
      *
      * @param array $input
      */
-    public function validateCreateMerchantRequests(array $input)
+    public function validateCreateMerchantRequest(array $input)
     {
         $submissions = $input[Constants::SUBMISSIONS] ?? [];
 
@@ -138,7 +138,7 @@ class Validator extends Base\Validator
 
         $this->validateName($type, $name);
 
-        $this->blockMerchantAccessIfPartnerRequest($type, $name);
+        $this->validateAdminAccessIfPartnerRequest($type, $name);
 
         $this->validateSubmissions($input, $submissions);
     }
@@ -156,7 +156,7 @@ class Validator extends Base\Validator
         if (in_array($name, Constants::$typeNamesMap[$type], true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                PublicErrorDescription::BAD_REQUEST_INVALID_MERCHANT_REQUEST_NAME,
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_REQUEST_INVALID_NAME,
                 Entity::NAME,
                 [
                     Entity::NAME                  => $name,
@@ -174,7 +174,7 @@ class Validator extends Base\Validator
      *
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function blockMerchantAccessIfPartnerRequest(string $type, string $name)
+    public function validateAdminAccessIfPartnerRequest(string $type, string $name)
     {
         $isAdminAuth = app('basicauth')->isAdminAuth();
 

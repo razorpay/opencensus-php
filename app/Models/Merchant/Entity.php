@@ -245,6 +245,7 @@ class Entity extends Base\PublicEntity
         self::HANDLE,
         self::RISK_RATING,
         self::RISK_THRESHOLD,
+        self::PARTNER_TYPE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::SUSPENDED_AT,
@@ -1512,8 +1513,11 @@ class Entity extends Base\PublicEntity
         return (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($this->getId());
     }
 
+    /**
+     * @todo: remove this function. included in #8406
+     */
     public function isPurePlatformTypePartner(): bool
     {
-        return ($this->getPartnerType() === 'pure_platform');
+        return ($this->getPartnerType() === Constants::PURE_PLATFORM);
     }
 }

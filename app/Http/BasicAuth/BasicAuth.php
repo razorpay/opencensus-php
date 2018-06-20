@@ -360,7 +360,7 @@ class BasicAuth
         return null;
     }
 
-// --------------------- Basic Auths -------------------------------------------
+    // --------------------- Basic Auths ---------------------
 
     public function privateAuth()
     {
@@ -520,8 +520,8 @@ class BasicAuth
         }
 
         // Check key is blank and it's an internal app
-        if (($this->isKeyBlank()) and
-            ($this->verifyInternalApp()))
+        if (($this->isKeyBlank() === true) and
+            ($this->verifyInternalApp() === true))
         {
             // It's an internal auth. We check whether dashboard
             // merchant header is set. In that case, it's coming
@@ -1247,7 +1247,7 @@ class BasicAuth
         $this->appAuth = true;
     }
 
-// --------------------- Setters Ends ------------------------------------------
+    // --------------------- Setters Ends ---------------------
 
     public function isProxyAuth()
     {

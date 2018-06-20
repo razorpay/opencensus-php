@@ -612,6 +612,22 @@ class Gateway
             IFSC::YESB,
             Netbanking::BARB_R,
             Netbanking::PUNB_R,
+            IFSC::BNPA,
+            IFSC::UCBS,
+            IFSC::REBX,
+            IFSC::LKMX,
+            IFSC::AGCX,
+            IFSC::MOGX,
+            IFSC::NALX,
+            IFSC::KOCX,
+            IFSC::UCUX,
+            IFSC::RAMX,
+            IFSC::APGB,
+            IFSC::NCCX,
+            IFSC::MBCX,
+            IFSC::TSIX,
+            IFSC::AMRX,
+            IFSC::DDBX,
         ]
     ];
 

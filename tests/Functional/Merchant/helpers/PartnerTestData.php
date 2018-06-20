@@ -149,7 +149,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_MERCHANT_REQUEST_NAME,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_REQUEST_INVALID_NAME,
                 ],
             ],
             'status_code' => 400,
@@ -223,6 +223,52 @@ return [
             'content' => [
                 'status' => 'activated',
             ],
+        ],
+    ],
+
+    'testMarkPartnerAsPartner' => [
+        'request'   => [
+            'url'     => '/merchant/requests/100000RandomId',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER,
+        ],
+    ],
+
+    'testUnmarkNonPartnerMerchantAsPartner' => [
+        'request'   => [
+            'url'     => '/merchant/requests/100000RandomId',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER,
         ],
     ],
 
@@ -473,6 +519,36 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
+        ],
+    ],
+
+    'testApprovingPurePlatformDeactivationRequest' => [
+        'request'   => [
+            'url'     => '/merchant/requests/100000RandomId',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+        'response'   => [
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+    ],
+
+    'testApprovingPurePlatformActivationRequest' => [
+        'request'   => [
+            'url'     => '/merchant/requests/100000RandomId',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+        'response'   => [
+            'content' => [
+                'status' => 'activated',
+            ],
         ],
     ],
 ];

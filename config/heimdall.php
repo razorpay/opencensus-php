@@ -545,6 +545,10 @@ return [
             Permission::RETRY_BATCH => [
                 'description' => 'Retry batch processing',
                 'assignable'  => true,
+            ],
+            Permission::ADMIN_BATCH_CREATE => [
+                'description' => 'Create admin type batches',
+                'assignable'  => true,
             ]
         ],
 

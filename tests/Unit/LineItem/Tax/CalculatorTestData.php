@@ -96,7 +96,7 @@ return [
                     'rate_type' => 'percentage',
                     'rate'      => 1000,
                 ],
-                'tax_amount'    => 909,
+                'tax_amount'    => 909.1,
             ],
         ],
     ],
@@ -142,7 +142,7 @@ return [
                     'rate'      => 1500,
                     'rate_type' => 'percentage',
                 ],
-                'tax_amount'    => 5306,
+                'tax_amount'    => 5305.5,
             ],
             [
                 'attributes' => [
