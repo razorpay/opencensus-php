@@ -7,7 +7,7 @@
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
 
     @if (isset($data['invoice']) && $data['invoice']['type'] !== 'invoice')
-        <meta property="og:title" content="Payment of Rs. {{format_amount($data['invoice']['amount'])}} requested by {{$data['invoice']['merchant_label']}} for {{$data['invoice']['description']}}">
+        <meta property="og:title" content="Payment of Rs. {{amount_format_IN($data['invoice']['amount'])}} requested by {{$data['invoice']['merchant_label']}} for {{$data['invoice']['description']}}">
         <meta property="og:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://razorpay.com/favicon.png'}}">
         <meta property="og:description" content="Click on this link to pay to {{$data['invoice']['merchant_label']}}">
     @endif
@@ -781,7 +781,7 @@
                                           <div class="info">
                                               {{$data['invoice']['status'] === 'expired' ? 'EXPIRED ON' : 'EXPIRES BY'}}
                                               <div class="val">
-                                              {{format_epoch($data['invoice']['expire_by'])}}
+                                              {{epoch_format($data['invoice']['expire_by'])}}
                                               </div>
                                           </div>
                                       @endif
@@ -789,16 +789,16 @@
                                       <div class="info">
                                           <span id="pay-title">AMOUNT PAYABLE</span>
                                           <div class="val" id="display-pay-amt">
-                                          ₹{{format_amount($data['invoice']['amount'])}}
+                                          ₹{{amount_format_IN($data['invoice']['amount'])}}
                                           </div>
 
                                           <div class="info" id="partial-payment-info">
                                               <div class="val">
-                                                  <b>₹{{format_amount($data['invoice']['amount_due'])}}</b>
+                                                  <b>₹{{amount_format_IN($data['invoice']['amount_due'])}}</b>
                                                   <span class="light">Due</span>
                                               </div>
                                               <div class="val">
-                                                  <span> ₹{{format_amount($data['invoice']['amount_paid'])}}</span>
+                                                  <span> ₹{{amount_format_IN($data['invoice']['amount_paid'])}}</span>
                                                   <span class="light">Paid</span>
                                               </div>
                                           </div>
@@ -811,7 +811,7 @@
                                           <div id="hist-close" onclick="closePayHist()"><b>✕</b></div>
 
                                           <div class="modal-title">
-                                            Payment History
+                                            Successful Payments
                                             <div class="modal-desc">
                                             {{count($data['invoice']['payments'])}} Payment{{(count($data['invoice']['payments']) > 1) ? 's' : ''}} made for this request
                                             </div>
@@ -821,7 +821,7 @@
                                           @foreach ($data['invoice']['payments'] as $key => $item)
                                               <div class="modal-col">
                                                 <div class="row"><b style="color: #2e3345">
-                                                    ₹{{format_amount($item['amount'])}} Paid </b>on {{format_epoch($item['created_at'])}}
+                                                    ₹{{amount_format_IN($item['amount'])}} Paid </b>on {{epoch_format($item['created_at'])}}
                                                 </div>
                                                 <div class="row">Paid using <span style="text-transform: capitalize">{{$item['method']}}</span></div>
                                                     <div class="row">Payment ID: {{$item['id']}}</div>
@@ -874,7 +874,7 @@
                                 <div id="cancelled-invoice">
                                     <div class="title" style='color:#f54443; font-size:18px'>Payment Link Expired</div>
                                     <div class="desc">
-                                        Oops! This payment link expired on {{format_epoch($data['invoice']['expire_by'])}}. Please contact {{$data['invoice']['merchant_label']}} support in case you have any queries.
+                                        Oops! This payment link expired on {{epoch_format($data['invoice']['expire_by'])}}. Please contact {{$data['invoice']['merchant_label']}} support in case you have any queries.
                                     </div>
                                 </div>
                               @endif
@@ -930,15 +930,15 @@
                               <div class="info">
                                   <span id="pay-title">AMOUNT PAYABLE</span>
                                   <div class="val" id="display-pay-amt">
-                                    ₹{{format_amount($data['invoice']['amount'])}}
+                                    ₹{{amount_format_IN($data['invoice']['amount'])}}
                                   </div>
                                   <div class="info" id="partial-payment-info">
                                       <div class="val">
-                                          <b>₹{{format_amount($data['invoice']['amount_due'])}}</b>
+                                          <b>₹{{amount_format_IN($data['invoice']['amount_due'])}}</b>
                                           <span class="light">Due</span>
                                       </div>
                                       <div class="val">
-                                          <span>₹{{format_amount($data['invoice']['amount_paid'])}}</span>
+                                          <span>₹{{amount_format_IN($data['invoice']['amount_paid'])}}</span>
                                           <span class="light">Paid</span>
                                       </div>
                                   </div>
@@ -954,7 +954,7 @@
                               @if($data['invoice']['expire_by'] and $data['invoice']['status'] !== 'paid')
                                 <div class="info">
                                   {{$data['invoice']['status'] === 'expired' ? 'EXPIRED ON' : 'EXPIRES BY'}}
-                                  <div class="val">{{format_epoch($data['invoice']['expire_by'])}} </div>
+                                  <div class="val">{{epoch_format($data['invoice']['expire_by'])}} </div>
                                 </div>
                               @endif
                               @if($data['invoice']['customer_details']['customer_name'] or $data['invoice']['customer_details']['customer_email'])
@@ -974,14 +974,14 @@
                                 <div id="hist-close" onclick="closePayHist()"><b>✕</b></div>
 
                                 <div class="modal-title">
-                                  Payment History
+                                  Successful Payments
                                   <div class="modal-desc">{{$data['invoice']['partial_payment']}} Payment{{$data['invoice']['partial_payment'] > 1 ?: 's'}} made for this request</div>
                                 </div>
 
                                   @foreach ($data['invoice']['payments'] as $key => $item)
                                       <div class="modal-col">
                                         <div class="row"><b style="color: #2e3345">
-                                            ₹{{format_amount($item['amount'])}} Paid </b>on {{format_epoch($item['created_at'])}}
+                                            ₹{{amount_format_IN($item['amount'])}} Paid </b>on {{epoch_format($item['created_at'])}}
                                         </div>
                                         <div class="row">Paid using <span style="text-transform: capitalize">{{$item['method']}}</span></div>
                                         <div class="row">Payment ID: {{$item['id']}}</div>
@@ -1002,7 +1002,7 @@
                         <div id="cancelled-invoice">
                           <div class="title" style='color:#f54443; font-size:18px'>Payment Link Expired</div>
                             <div class="desc">
-                              Oops! This payment link expired on {{format_epoch($data['invoice']['expire_by'])}}. Please contact {{$data['invoice']['merchant_label']}} support in case you have any queries.
+                              Oops! This payment link expired on {{epoch_format($data['invoice']['expire_by'])}}. Please contact {{$data['invoice']['merchant_label']}} support in case you have any queries.
                           </div>
                         </div>
                       @endif
@@ -1024,8 +1024,22 @@
           </div>
           @endif
 
+        <script type="text/javascript">
+            function initAnalytics() {
+                analytics.init(['ga', 'hotjar'], window.location.hostname.indexOf('razorpay.com') < 0);
+                analytics.track('ga', 'pageview');
+
+                if (typeof window.hj === 'function') {
+                    @if ($data['invoice']['type'] !== 'invoice')
+                        window.hj('tagRecording', ['pl_hosted']);
+                    @else
+                        window.hj('tagRecording', ['invoice_hosted']);
+                    @endif
+                }
+            }
+        </script>
+        <script src="https://cdn.razorpay.com/static/analytics/bundle.js" onload="initAnalytics()" async></script>
         @if ($data['invoice']['type'] !== 'invoice')
-          <script src="https://cdn.razorpay.com/static/analytics/bundle.js" onload="initAnalytics()" async></script>
           <script>
             function checkIsDesktop() {
                 var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
@@ -1085,11 +1099,6 @@
           <script>
               cleanHTML();
               window.t0 = (new Date()).getTime(); // initial time stamp
-
-              function initAnalytics() {
-                analytics.init(['ga', 'hotjar'], window.location.hostname.indexOf('razorpay.com') < 0);
-                analytics.track('ga', 'pageview');
-              }
 
               var data = window.RZP_DATA.data;
               var color = data.merchant.brand_color || '#168AFA';

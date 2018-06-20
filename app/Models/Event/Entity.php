@@ -16,28 +16,31 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'event';
 
-    protected $fillable = array(
+    protected $fillable = [
         self::EVENT,
         self::ACCOUNT_ID,
         self::MERCHANT_ID,
         self::CONTAINS,
         self::PAYLOAD,
-        self::CREATED_AT);
+        self::CREATED_AT
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::EVENT,
         self::ACCOUNT_ID,
         self::CONTAINS,
         self::PAYLOAD,
-        self::CREATED_AT);
+        self::CREATED_AT
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ENTITY,
         self::ACCOUNT_ID,
         self::EVENT,
         self::CONTAINS,
         self::PAYLOAD,
-        self::CREATED_AT);
+        self::CREATED_AT
+    ];
 
     public function merchant()
     {

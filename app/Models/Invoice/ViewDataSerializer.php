@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
@@ -134,23 +135,25 @@ class ViewDataSerializer extends Base\Core
 
     protected function addDerivedAttributesForInvoice(array & $serialized)
     {
-        // Ordered serialized payments of invoice
+        // In view, we show only captured(successful, not refunded) payments
         $serializedPayments = $this->invoice
-                                   ->load(Entity::PAYMENTS)
-                                   ->payments
-                                   ->sortByDesc(Entity::CREATED_AT)
-                                   ->values()
+                                   ->payments()
+                                   ->status(Payment\Status::CAPTURED)
+                                   ->get()
                                    ->toArrayHosted();
 
-        $serialized[Entity::IS_PAID]           = $this->invoice->isPaid();
-        $serialized[Entity::PAYMENTS]          = $serializedPayments;
-        $serialized[Entity::CALLBACK_URL]      = $this->invoice->getCallbackUrl();
-        $serialized[Entity::CALLBACK_METHOD]   = $this->invoice->getCallbackMethod();
-        $serialized[Entity::MERCHANT_GSTIN]    = $this->invoice->getMerchantGstin();
-        $serialized[Entity::MERCHANT_LABEL]    = $this->invoice->getMerchantLabel();
-        $serialized[Entity::SUPPLY_STATE_NAME] = $this->invoice->getSupplyStateName();
+        $serialized[Entity::IS_PAID]            = $this->invoice->isPaid();
+        $serialized[Entity::PAYMENTS]           = $serializedPayments;
+        $serialized[Entity::CALLBACK_URL]       = $this->invoice->getCallbackUrl();
+        $serialized[Entity::CALLBACK_METHOD]    = $this->invoice->getCallbackMethod();
+        $serialized[Entity::MERCHANT_GSTIN]     = $this->invoice->getMerchantGstin();
+        $serialized[Entity::MERCHANT_LABEL]     = $this->invoice->getMerchantLabel();
+        $serialized[Entity::SUPPLY_STATE_NAME]  = $this->invoice->getSupplyStateName();
+        $serialized[Entity::HAS_ADDRESS_OR_POS] = (($this->invoice->hasCustomerBillingAddress() === true) or
+                                                   ($this->invoice->hasCustomerShippingAddress() === true) or
+                                                   ($this->invoice->getSupplyStateCode() !== null));
 
-        $serialized[Entity::CUSTOMER_DETAILS]  += [
+        $serialized[Entity::CUSTOMER_DETAILS] += [
             Entity::BILLING_ADDRESS_TEXT  => optional($this->invoice->customerBillingAddress)->formatAsText(),
             Entity::SHIPPING_ADDRESS_TEXT => optional($this->invoice->customerShippingAddress)->formatAsText(),
         ];
@@ -173,7 +176,7 @@ class ViewDataSerializer extends Base\Core
         // Adds formatted invoice's amount attributes
         foreach (self::$amounts as $key)
         {
-            $serialized[$key . '_formatted'] = self::formatNumber($serialized[$key]);
+            $serialized[$key . '_formatted'] = amount_format_IN($serialized[$key]);
         }
 
         // Adds formatted invoice's line item's & their tax's amount attributes
@@ -182,8 +185,8 @@ class ViewDataSerializer extends Base\Core
             function (& $lineItem, $idx)
             {
                 $lineItem += [
-                    'amount_formatted'       => self::formatNumber($lineItem[LineItem\Entity::AMOUNT]),
-                    'total_amount_formatted' => self::formatNumber($lineItem[LineItem\Entity::GROSS_AMOUNT]),
+                    'amount_formatted'       => amount_format_IN($lineItem[LineItem\Entity::AMOUNT]),
+                    'total_amount_formatted' => amount_format_IN($lineItem[LineItem\Entity::GROSS_AMOUNT]),
                     'has_taxes'              => (bool) $lineItem[LineItem\Entity::TAXES],
                 ];
 
@@ -192,7 +195,7 @@ class ViewDataSerializer extends Base\Core
                     function (& $tax, $idx)
                     {
                         $tax += [
-                            'tax_amount_formatted'  => self::formatNumber($tax[LineItem\Tax\Entity::TAX_AMOUNT]),
+                            'tax_amount_formatted'  => amount_format_IN($tax[LineItem\Tax\Entity::TAX_AMOUNT]),
                         ];
                     });
             });
@@ -237,17 +240,5 @@ class ViewDataSerializer extends Base\Core
         $serialized[E::MERCHANT] += [
             'business_registered_address' => optional($this->merchant->merchantDetail)->getBusinessRegisteredAddress(),
         ];
-    }
-
-    // Static helper methods
-
-    /**
-     * Formats given number to string representation like 1,234.56, for null value returns 0.00
-     * @param  int|null $v
-     * @return string
-     */
-    public static function formatNumber($v): string
-    {
-        return number_format($v / 100, 2);
     }
 }

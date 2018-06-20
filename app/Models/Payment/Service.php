@@ -1185,6 +1185,11 @@ class Service extends Base\Service
         $this->getNewProcessor()->acknowledge($payment);
     }
 
+    public function updateReceiverData()
+    {
+        return $this->core->updateReceiverData();
+    }
+
     protected function setHoldFalse(Payment\Entity $payment)
     {
         $this->repo->payment->lockForUpdateAndReload($payment);

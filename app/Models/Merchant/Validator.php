@@ -84,7 +84,7 @@ class Validator extends Base\Validator
         Entity::BRAND_COLOR              => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
         Entity::TRANSACTION_REPORT_EMAIL => 'sometimes|array',
         Entity::LOGO_URL                 => 'sometimes|max:2000',
-        Entity::INVOICE_LABEL_FIELD      => 'sometimes|filled|string|max:50|in:name,billing_label',
+        Entity::INVOICE_LABEL_FIELD      => 'sometimes|filled|string|max:50|in:business_name,business_dba',
         Entity::AUTO_CAPTURE_LATE_AUTH   => 'sometimes|boolean',
         Entity::HANDLE                   => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
         MerchantDetail::GSTIN            => 'sometimes|nullable|string|size:15',
@@ -443,7 +443,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateVisibleFeatures(array $input)
+    public function validateVisibleFeatures(array $input)
     {
         $featureNames = array_keys($input['features']);
 

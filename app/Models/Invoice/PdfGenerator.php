@@ -19,7 +19,7 @@ class PdfGenerator extends Base\Core
 
     const INVOICE_PDF_TEMPLATES_KEY = 'invoices.pdf.templates';
 
-    const CACHE_DEFAULT_TTL         = 900; // In seconds (=15 min)
+    const CACHE_DEFAULT_TTL         = 15; // In minutes
 
     const TEMPLATE_FILE             = 'template_file';
     const CSS_FILE                  = 'css_file';

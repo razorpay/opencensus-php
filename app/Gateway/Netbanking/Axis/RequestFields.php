@@ -23,4 +23,5 @@ class RequestFields
     const VERIFY_PRN               = 'prn';
     const VERIFY_DATE              = 'date';
     const VERIFY_AMT               = 'amt';
+    const VERIFY_ENCDATA           = 'encdata';
 }

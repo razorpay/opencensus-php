@@ -120,11 +120,19 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONFIRM_TOKEN, $this->generateOneTimeUseToken(32));
     }
 
+    /**
+     * Order by owned first. In case of multiple owned merchants with same
+     * email, pick first. Followed by owned merchants with different emails.
+     */
     public function merchants()
     {
+        $sql = "CASE WHEN email=? AND role='owner' THEN 0
+                     WHEN role='owner' THEN 1
+                     else 2 END";
+
         return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
                     ->withPivot(self::ROLE)
-                    ->orderBy(self::NAME);
+                    ->orderByRaw($sql, [$this->getEmail()]);
     }
 
     public function invitations()
@@ -136,6 +144,11 @@ class Entity extends Base\PublicEntity
     public function setConfirmTokenNull()
     {
         $this->setAttribute(self::CONFIRM_TOKEN, null);
+    }
+
+    public function getEmail()
+    {
+        return $this->getAttribute(self::EMAIL);
     }
 
     public function getPassword()

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use RZP\Models\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -75,6 +76,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddBharatQrTerminalWithExpected()
+    {
+        $request = $this->testData['testAddBharatQrTerminal'];
+
+        $request['request']['content']['expected'] = true;
+
+        $this->startTest($request);
+    }
+
     public function testReassignBharatQrTerminal()
     {
         $this->fixtures->create('terminal:bharat_qr_terminal');
@@ -114,6 +124,15 @@ class TerminalTest extends TestCase
     }
 
     public function testCreateTerminalWithInvalidNetworkCategory()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateHitachiDebitRecurringTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';
 
@@ -168,6 +187,25 @@ class TerminalTest extends TestCase
         $this->assertNull($t['deleted_at']);
     }
 
+    public function testDeleteTerminalWithSubMerchantAssigned()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_hdfc_terminal', ['gateway_recon_password' => 'boo']);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $terminal->merchants()->attach('10000000000000');
+
+        $payment = $this->defaultAuthPayment();
+
+        $t = $this->deleteTerminal2('1000HdfcShared');
+        $this->assertNotNull($t['deleted_at']);
+
+        $dt = Terminal\Entity::withTrashed()->findOrFail($t['id']);
+
+        $this->assertEquals(0, $dt->merchants->count());
+    }
+
     public function testCopyTerminal()
     {
         $this->markTestSkipped();
@@ -211,6 +249,34 @@ class TerminalTest extends TestCase
         {
             $this->copyTerminal($tid, $mid, $input);
         });
+    }
+
+    public function testEditHitachiDebitRecurringTerminal()
+    {
+        $attributes = [
+            'used' => true,
+            'type' => [
+                'recurring_non_3ds' => '1',
+                'recurring_3ds'     => '1',
+            ],
+        ];
+        $terminal   = $this->fixtures->create(
+            'terminal:hitachi_recurring_terminal_with_both_recurring_types', $attributes);
+
+        $tid = $terminal['id'];
+
+        $data = [
+            'gateway' => 'hitachi',
+            'type'    => [
+                'recurring_non_3ds' => '1',
+                'recurring_3ds'     => '1',
+                'debit_recurring'   => '1',
+            ],
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals($content['type'], ['recurring_3ds', 'recurring_non_3ds', 'debit_recurring']);
     }
 
     public function testEditAxisMigsTerminal()
@@ -425,5 +491,10 @@ class TerminalTest extends TestCase
         });
 
         $this->assertFalse($terminal->reload()->isEnabled());
+    }
+
+    public function testAddAmazonPayTerminal()
+    {
+        $this->startTest();
     }
 }

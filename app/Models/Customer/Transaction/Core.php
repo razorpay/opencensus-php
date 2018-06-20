@@ -144,12 +144,15 @@ class Core extends Base\Core
             Entity::AMOUNT              => $amount,
             Entity::CURRENCY            => 'INR',
             Entity::DESCRIPTION         => 'NA', // @todo - change this to something useful
-            Entity::CUSTOMER_ID         => $customerId
         ];
 
         $this->setAmounts($type, $amount, $customerTxn);
 
         $customerTxn->merchant()->associate($merchant);
+
+        $customer = $this->repo->customer->findOrFailPublic($customerId);
+
+        $customerTxn->customer()->associate($customer);
 
         $customerTxn->fillAndGenerateId($txnData);
 

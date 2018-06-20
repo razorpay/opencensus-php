@@ -13,12 +13,11 @@ abstract class RowProcessor extends Base\Core
 
     protected $parsedData;
 
-    /**
-     * Entity corresponding to the payment_ref_no column in the file
-     */
-    protected $reconEntity;
+    protected $reconEntity   = null;
 
-    abstract protected function parseRow();
+    protected $reconEntityId = null;
+
+    abstract protected function processRow();
 
     abstract protected function updateReconEntity();
 
@@ -31,7 +30,7 @@ abstract class RowProcessor extends Base\Core
 
     public function process()
     {
-        $this->parseRow();
+        $this->processRow();
 
         $this->fetchEntities();
 
@@ -75,9 +74,11 @@ abstract class RowProcessor extends Base\Core
     protected function updateSourceEntity()
     {
         $utr = $this->reconEntity->getUtr();
+
         $remarks = $this->reconEntity->getRemarks();
 
         $this->reconEntity->source->setUtr($utr);
+
         $this->reconEntity->source->setRemarks($remarks);
 
         $this->repo->saveOrFail($this->reconEntity->source);

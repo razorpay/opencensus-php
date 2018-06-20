@@ -1,0 +1,27 @@
+<GetRefundDetailsResponse xmlns="http://mws.amazonservices.com/schema/OffAmazonPayments/2013-01-01">
+    <GetRefundDetailsResult>
+        <RefundDetails>
+            <SellerRefundNote/>
+            <SoftDescriptor>AMZ*Deepthi test</SoftDescriptor>
+            <RefundStatus>
+                <LastUpdateTimestamp>2018-03-01T11:37:56.032Z</LastUpdateTimestamp>
+                <State>{{refund_state}}</State>
+            </RefundStatus>
+            <RefundReferenceId>{{reference_id}}</RefundReferenceId>
+            <RefundType>SellerInitiated</RefundType>
+            <CreationTimestamp>2018-03-01T11:37:25.770Z</CreationTimestamp>
+            <FeeRefunded>
+                <CurrencyCode>INR</CurrencyCode>
+                <Amount>{{refund_fee_amount}}</Amount>
+            </FeeRefunded>
+            <RefundAmount>
+                <CurrencyCode>INR</CurrencyCode>
+                <Amount>{{refund_amount}}</Amount>
+            </RefundAmount>
+            <AmazonRefundId>{{amazon_refund_id}}</AmazonRefundId>
+        </RefundDetails>
+    </GetRefundDetailsResult>
+    <ResponseMetadata>
+        <RequestId>18d870c8-094b-41d5-9518-4fc2ee0adc72</RequestId>
+    </ResponseMetadata>
+</GetRefundDetailsResponse>

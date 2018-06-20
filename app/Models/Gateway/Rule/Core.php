@@ -17,6 +17,10 @@ class Core extends Base\Core
 
         $rule = (new Entity)->build($input);
 
+        $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
+
+        $rule->merchant()->associate($merchant);
+
         $validatorMethod = $this->getValidatorMethod($rule);
 
         $matchingRules = $this->getRulesWithMatchingRuleCriteria($rule);
@@ -178,6 +182,7 @@ class Core extends Base\Core
                 $params[Entity::NETWORK]       = $card->getNetworkCode();
                 $params[Entity::ISSUER]        = $card->getIssuer();
                 $params[Entity::INTERNATIONAL] = $payment->isInternational();
+                $params[Entity::RECURRING]     = $payment->isRecurring();
 
                 break;
 

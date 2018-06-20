@@ -29,7 +29,6 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::STATUS,
         self::INTERNAL_COMMENT,
-        self::MERCHANT_ID,
         self::PUBLIC_MESSAGE,
     ];
 
