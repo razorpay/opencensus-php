@@ -138,9 +138,19 @@ trait PaymentTrait
             $payment = $this->getDefaultPaymentArray();
         }
 
-        $payment['view'] = 'json';
-
         $content = $this->getFeesForPayment($payment);
+
+        return $content;
+    }
+
+    protected function createAndGetFeesForPaymentS2S($payment = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $content = $this->getFeesForPaymentS2S($payment);
 
         return $content;
     }
@@ -652,6 +662,19 @@ trait PaymentTrait
             'content' => $payment);
 
         $this->ba->publicAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function getFeesForPaymentS2S($payment)
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/fees',
+            'content' => $payment
+        ];
 
         $content = $this->makeRequestAndGetContent($request);
 

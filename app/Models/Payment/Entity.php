@@ -55,6 +55,7 @@ class Entity extends Base\PublicEntity
     const ORDER_ID              = 'order_id';
     const INVOICE_ID            = 'invoice_id';
     const TRANSFER_ID           = 'transfer_id';
+    const PAYMENT_LINK_ID       = 'payment_link_id';
     const RECEIVER_ID           = 'receiver_id';
     const RECEIVER_TYPE         = 'receiver_type';
     const INTERNATIONAL         = 'international';
@@ -162,6 +163,8 @@ class Entity extends Base\PublicEntity
     const NAME                  = 'name';
     const IFSC                  = 'ifsc';
     const ACCOUNT_NUMBER        = 'account_number';
+
+    const OFFER_ID              = 'offer_id';
 
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
@@ -287,6 +290,7 @@ class Entity extends Base\PublicEntity
         self::DISPUTED,
         self::RECURRING_TYPE,
         self::ACKNOWLEDGED_AT,
+        self::PAYMENT_LINK_ID,
     ];
 
     protected $public = [
@@ -413,6 +417,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
         self::ACKNOWLEDGED_AT      => null,
+        self::PAYMENT_LINK_ID      => null,
     ];
 
     protected $amounts = [
@@ -1470,7 +1475,7 @@ class Entity extends Base\PublicEntity
         {
             $order = $this->order;
 
-            if ($order->hasOffer() === true)
+            if ($order->hasOffers() === true)
             {
                 return true;
             }
@@ -2742,5 +2747,13 @@ class Entity extends Base\PublicEntity
     {
         $query->where(Entity::RECEIVER_ID, '=', $entity->getId())
               ->where(Entity::RECEIVER_TYPE, '=', $entity->getEntity());
+    }
+
+    public function isCorporateNetbanking()
+    {
+        return (
+            ($this->isNetbanking() === true) and
+            (Netbanking::isCorporateBank($this->getBank()) === true)
+        );
     }
 }

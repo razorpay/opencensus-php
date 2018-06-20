@@ -300,7 +300,7 @@ class NetbankingHdfcEmandateTest extends TestCase
         $entities[0]['status_in_file'] = 'Processed';
 
         $entities[] = $this->createDebitInitiatedEntities($registrationEntities);
-        $entities[1]['status_in_file'] = 'Reject';
+        $entities[1]['status_in_file'] = 'Rejected';
 
         $file = $this->generateEmandateDebitReconFile($entities);
 
@@ -335,7 +335,7 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $netbanking = $this->getDbEntityById('netbanking', $entities[1]['netbanking']['id'])->toArray();
 
-        $this->assertEquals('reject', $netbanking[Netbanking::STATUS]);
+        $this->assertEquals('rejected', $netbanking[Netbanking::STATUS]);
     }
 
     public function testSecondRecurringPaymentVerify()
@@ -630,10 +630,12 @@ class NetbankingHdfcEmandateTest extends TestCase
     protected function generateEmandateDebitReconFile(array $entities)
     {
         $items = [];
+        $i = 1;
 
         foreach ($entities as $entityList)
         {
             $items[] = [
+                'Sr. no'             => $i,
                 'Transaction_Ref_No' => $entityList['payment']['id'],
                 'Mandate ID'         => $entityList['token']['id'],
                 'Account_NO'         => $entityList['token']['account_number'],
@@ -644,7 +646,10 @@ class NetbankingHdfcEmandateTest extends TestCase
                 'TO_DATE'            => '31/12/2099',
                 'Status'             => $entityList['status_in_file'],
                 'Remark'             => '',
+                'Narration'          => '',
             ];
+
+            $i++;
         }
 
         $content = [
@@ -667,7 +672,7 @@ class NetbankingHdfcEmandateTest extends TestCase
     protected function makeBatchRequest($content, $file)
     {
         $request = [
-            'url' => '/batches',
+            'url' => '/admin/batches',
             'method' => 'POST',
             'content' => $content,
             'files' => [
@@ -675,7 +680,7 @@ class NetbankingHdfcEmandateTest extends TestCase
             ]
         ];
 
-        $this->ba->proxyAuth('rzp_test_100000Razorpay');
+        $this->ba->adminAuth();
 
         return $this->makeRequestAndGetContent($request);
     }

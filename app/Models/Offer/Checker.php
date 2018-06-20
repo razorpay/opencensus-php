@@ -61,7 +61,7 @@ class Checker extends Base\Core
                 ($validOfferPeriod === true));
     }
 
-    public function checkOfferApplicableOnPayment(Payment\Entity $payment): bool
+    public function checkApplicabilityForPayment(Payment\Entity $payment): bool
     {
         $this->payment = $payment;
 

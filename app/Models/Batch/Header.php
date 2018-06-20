@@ -166,6 +166,7 @@ class Header
     //
     // HDFC Emandate Debit Response File Headers
     //
+    const HDFC_EM_DEBIT_SERIAL_NO           = HdfcEMDebitHeadings::SERIAL_NO;
     const HDFC_EM_DEBIT_TRANSACTION_REF_NO  = HdfcEMDebitHeadings::TRANSACTION_REF_NO;
     const HDFC_EM_DEBIT_MANDATE_ID          = HdfcEMDebitHeadings::MANDATE_ID;
     const HDFC_EM_DEBIT_ACCOUNT_NO          = HdfcEMDebitHeadings::ACCOUNT_NO;
@@ -176,6 +177,7 @@ class Header
     const HDFC_EM_DEBIT_TO_DATE             = HdfcEMDebitHeadings::TO_DATE;
     const HDFC_EM_DEBIT_STATUS              = HdfcEMDebitHeadings::STATUS;
     const HDFC_EM_DEBIT_REJECTION_REMARKS   = HdfcEMDebitHeadings::REJECTION_REMARKS;
+    const HDFC_EM_DEBIT_NARRATION           = HdfcEMDebitHeadings::NARRATION;
 
     //
     // eNach Register Response File Headers
@@ -431,6 +433,7 @@ class Header
 
         'emandate_debit_hdfc' => [
             self::INPUT => [
+                self::HDFC_EM_DEBIT_SERIAL_NO,
                 self::HDFC_EM_DEBIT_TRANSACTION_REF_NO,
                 self::HDFC_EM_DEBIT_MANDATE_ID,
                 self::HDFC_EM_DEBIT_ACCOUNT_NO,
@@ -440,7 +443,8 @@ class Header
                 self::HDFC_EM_DEBIT_FROM_DATE,
                 self::HDFC_EM_DEBIT_TO_DATE,
                 self::HDFC_EM_DEBIT_STATUS,
-                self::HDFC_EM_DEBIT_REJECTION_REMARKS
+                self::HDFC_EM_DEBIT_REJECTION_REMARKS,
+                self::HDFC_EM_DEBIT_NARRATION,
             ]
         ],
 
@@ -787,7 +791,10 @@ class Header
                 [self::NOTES => $notesKeys]);
         }
 
-        $notesKeysTooLarge = array_filter($notesKeys, function (string $k) { return strlen($k) > 256; });
+        $notesKeysTooLarge = array_filter($notesKeys, function (string $k)
+        {
+            return strlen($k) > 256;
+        });
 
         if (count($notesKeysTooLarge) > 0)
         {

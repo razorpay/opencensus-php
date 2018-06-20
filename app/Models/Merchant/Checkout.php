@@ -550,19 +550,41 @@ class Checkout
         }
 
         if (($order !== null) and
-            ($order->offer !== null))
+            ($order->hasOffers() === true))
         {
-            $orderAmount = $order->getAmount();
-
-            $this->updateMethodsToEnableOnCheckout($order->offer, $data);
-
-            $data['offers'] = [
-                $order->offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount),
-            ];
+            $this->checkAndFillOrderOffers($order, $data);
         }
         else
         {
             $this->checkAndFillNonOrderOffers($merchant, $data);
+        }
+    }
+
+    protected function checkAndFillOrderOffers(Order\Entity $order, array & $data)
+    {
+        $offers = $order->offers;
+
+        $orderAmount = $order->getAmount();
+
+        //
+        // If there's a single forced offer, we only put those
+        // methods on checkout which can be used with that offer.
+        //
+        if (($offers->count() === 1) and
+            ($order->isOfferForced() === true))
+        {
+            $offer = $offers->first();
+
+            $this->updateMethodsToEnableOnCheckout($offer, $data);
+        }
+
+        //
+        // For multiple offers, we show all methods,
+        // and rely on validation during payment.
+        //
+        foreach ($offers as $offer)
+        {
+            $data['offers'][] = $offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount);
         }
     }
 

@@ -3,11 +3,10 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\PaymentLink\Entity;
-use RZP\Models\PaymentLink\Status;
-use RZP\Models\PaymentLink\StatusReason;
 
 class CreatePaymentLinks extends Migration
 {
@@ -75,13 +74,20 @@ class CreatePaymentLinks extends Migration
             $table->index(Entity::UPDATED_AT);
             $table->index(Entity::RECEIPT);
             $table->index(Entity::EXPIRE_BY);
-            $table->index(Entity::USER_ID);
             $table->index([Entity::STATUS, Entity::STATUS_REASON]);
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
 
             $table->foreign(Entity::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
+        });
+
+        Schema::table(Table::PAYMENT, function($table)
+        {
+            $table->foreign(Payment\Entity::PAYMENT_LINK_ID)
+                  ->references(Entity::ID)
+                  ->on(Table::PAYMENT_LINK)
                   ->on_delete('restrict');
         });
     }
@@ -98,6 +104,14 @@ class CreatePaymentLinks extends Migration
             $table->dropForeign
             (
                 Table::PAYMENT_LINK . '_' . Entity::MERCHANT_ID . '_foreign'
+            );
+        });
+
+        Schema::table(Table::PAYMENT, function($table)
+        {
+           $table->dropForeign
+            (
+                Table::PAYMENT . '_' . Payment\Entity::PAYMENT_LINK_ID . '_foreign'
             );
         });
 
