@@ -444,9 +444,13 @@ class Gateway extends Base\Gateway
     {
         $gatewayCertPath = $this->getGatewayCertDirPath();
 
+        // http://php.net/manual/en/function.mkdir.php
+        $permissions = 0777; // Default permissions from PHP.
+        $recursive = true; // Allowing recursive generation of path in this case.
+
         if (file_exists($gatewayCertPath) === false)
         {
-            mkdir($gatewayCertPath);
+            mkdir($gatewayCertPath, $permissions, $recursive);
         }
 
         $clientCertPath = $gatewayCertPath . '/' .
@@ -476,9 +480,14 @@ class Gateway extends Base\Gateway
     {
         $gatewayCertPath = $this->getGatewayCertDirPath();
 
+
+        // http://php.net/manual/en/function.mkdir.php
+        $permissions = 0777; // Default permissions from PHP.
+        $recursive = true; // Allowing recursive generation of path in this case.
+
         if (file_exists($gatewayCertPath) === false)
         {
-            mkdir($gatewayCertPath);
+            mkdir($gatewayCertPath, $permissions, $recursive);
         }
 
         $clientCertPath = $gatewayCertPath . '/' .
