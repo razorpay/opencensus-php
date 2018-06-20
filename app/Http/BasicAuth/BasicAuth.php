@@ -1316,6 +1316,13 @@ class BasicAuth
 
     public function getMode()
     {
+        $authCreds = $this->authCreds;
+
+        if ((empty($authCreds) === false))
+        {
+            $this->mode = $authCreds->getMode();
+        }
+
         return $this->mode;
     }
 
