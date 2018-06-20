@@ -2789,12 +2789,16 @@ trait Authorize
     {
         $this->updateLateAuthFlag($payment);
 
+        //
+        // Needs to be before capture, since disount amount
+        // is used to decide whether to capture or not
+        //
+        $this->postPaymentAuthorizeOfferProcessing($payment);
+
         // Auto capture payment, if applicable
         $this->autoCapturePaymentIfApplicable($payment);
 
         $this->postPaymentAuthorizeSubscriptionProcessing($payment);
-
-        $this->postPaymentAuthorizeOfferProcessing($payment);
 
         return $this->processAuthorizeResponse($payment);
     }
@@ -2812,6 +2816,8 @@ trait Authorize
         {
             return;
         }
+
+        $this->offer = $payment->getOffer();
 
         if ($this->offer === null)
         {

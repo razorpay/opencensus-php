@@ -606,8 +606,18 @@ class Processor
             $offer = $this->validateAndFetchOffer($payment, $input);
         }
 
-
         $this->offer = $offer;
+
+        if ($this->offer !== null)
+        {
+            $payment->associateOffer($this->offer);
+
+            $this->trace->info(TraceCode::OFFER_SELECTED_FOR_PAYMENT, [
+                'offer_id'   => $offer->getPublicId(),
+                'payment_id' => $payment->getPublicId(),
+                'order_id'   => $order->getPublicId(),
+            ]);
+        }
     }
 
     /**

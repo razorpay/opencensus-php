@@ -924,12 +924,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
 // Trace codes for offers
     const OFFER_CREATE_REQUEST                          = 'OFFER_CREATE_REQUEST';
+    const OFFER_DISCOUNT_CREATED                        = 'OFFER_DISCOUNT_CREATED';
     const OFFER_IIN_DOES_NOT_EXISTS                     = 'OFFER_IIN_DOES_NOT_EXISTS';
     const OFFER_UPDATE_REQUEST                          = 'OFFER_UPDATE_REQUEST';
     const OFFER_DEACTIVATE                              = 'OFFER_DEACTIVATE';
     const OFFER_MERCHANT_UPDATE_REQ                     = 'OFFER_MERCHANT_UPDATE_REQ';
     const OFFER_APPLIED_ON_PAYMENT                      = 'OFFER_APPLIED_ON_PAYMENT';
     const OFFER_NOT_APPLIED_ON_PAYMENT                  = 'OFFER_NOT_APPLIED_ON_PAYMENT';
+    const OFFER_SELECTED_FOR_PAYMENT                    = 'OFFER_SELECTED_FOR_PAYMENT';
     const OFFER_APPLIED_ON_ORDER                        = 'OFFER_APPLIED_ON_ORDER';
     const OFFER_ORDER_AMOUNT_CHECK                      = 'OFFER_ORDER_AMOUNT_CHECK';
     const OFFER_PAYMENT_AMOUNT_CHECK                    = 'OFFER_PAYMENT_AMOUNT_CHECK';
