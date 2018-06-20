@@ -610,6 +610,11 @@ class BasicAuth
         $this->authCreds->setPublicKey($token);
     }
 
+    public function setAuthCreds(AuthCreds $authCreds)
+    {
+        $this->authCreds = $authCreds;
+    }
+
     /**
      * Handles keyless auth on public routes. Ref; KeylessPublicAuth.php
      *
@@ -629,12 +634,16 @@ class BasicAuth
 
         $this->setKeylessPublicAuthAttributes($entityId);
 
-        $this->setModeAndDbConnection($mode);
-
-        $this->setAndCheckMerchantActivatedForLive($merchant);
-
         // Sets the key instance if it exists, gets used in forming signature for payment authorize response
-        $this->key = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId());
+        $key = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId());
+
+        $this->authCreds = new AuthCreds($this->app, AuthCreds::API_KEY, '');
+
+        $this->authCreds->setKeyEntity($key);
+
+        $this->authCreds->setAndCheckMerchantActivatedForLive($merchant);
+
+        $this->authCreds->setModeAndDbConnection($mode);
 
         // Removes key_id from request if it existed with empty values
         $this->removeRequestKey(self::KEY_ID);

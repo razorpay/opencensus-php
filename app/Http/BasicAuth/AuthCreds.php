@@ -369,11 +369,23 @@ class AuthCreds
         return $this->merchant;
     }
 
+    public function setModeAndDbConnection(string $mode)
+    {
+        $this->setMode($mode);
+
+        \Database\DefaultConnection::set($mode);
+    }
+
     public function setAndCheckMerchantActivatedForLive($merchant)
     {
         $this->setMerchant($merchant);
 
         $this->checkMerchantActivatedForLive();
+    }
+
+    public function setKeyEntity(Key\Entity $key = null)
+    {
+        $this->key = $key;
     }
 
     public function setMerchant($merchant)
