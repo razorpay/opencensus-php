@@ -289,7 +289,7 @@ export default class CreateNewContainer extends React.Component {
 
   openPPShareView = (id, shortUrl, title, description) => {
     this.props.openModal({
-      size: 'medium',
+      size: 'small',
       component: (
         <PPShareView
           handleClose={this.props.closeModal}
