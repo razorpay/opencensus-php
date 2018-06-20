@@ -5,6 +5,12 @@ ARG GIT_TOKEN
 
 WORKDIR /app
 
+# Hack to load php gnu-libiconv.so
+# https://github.com/docker-library/php/issues/240#issuecomment-327992638
+RUN apk add gnu-libiconv --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
+
+ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so php
+
 COPY composer.json composer.lock /app/
 
 # A single character change in this command will trigger a new
