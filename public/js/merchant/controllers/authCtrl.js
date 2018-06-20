@@ -324,6 +324,7 @@ app
 
       $scope.sendDetails = function() {
         pushToDrip();
+        invokeAdroll();
 
         // Fire linkedin Pixel.
         var i = new Image();
@@ -471,6 +472,50 @@ app
           } catch (e) {}
         };
       })();
+
+      /**
+       * The script is a tiny bit modified than what AdRoll gives,
+       * specifically onload event listener part.
+       */
+      var invokeAdroll = function invokeAdroll() {
+        adroll_adv_id = 'TJ37WOXRMNBN3E7GBHOOXB';
+        adroll_pix_id = 'KCGQOUBQ5VFKRM3XB5PB2U';
+
+        (function() {
+          var _onload = function() {
+            // Use only on prod.
+            if (window.location.hostname != 'dashboard.razorpay.com') {
+              return;
+            }
+
+            if (
+              document.readyState &&
+              !/loaded|complete/.test(document.readyState)
+            ) {
+              setTimeout(_onload, 10);
+              return;
+            }
+            if (!window.__adroll_loaded) {
+              __adroll_loaded = true;
+              setTimeout(_onload, 50);
+              return;
+            }
+            var scr = document.createElement('script');
+            var host =
+              'https:' == document.location.protocol
+                ? 'https://s.adroll.com'
+                : 'http://a.adroll.com';
+            scr.setAttribute('async', 'true');
+            scr.type = 'text/javascript';
+            scr.src = host + '/j/roundtrip.js';
+            (
+              (document.getElementsByTagName('head') || [null])[0] ||
+              document.getElementsByTagName('script')[0].parentNode
+            ).appendChild(scr);
+          };
+          _onload();
+        })();
+      };
 
       // creates Drip lead if email present in params
       pushToDrip('email_only');
