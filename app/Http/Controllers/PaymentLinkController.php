@@ -78,6 +78,6 @@ class PaymentLinkController extends Controller
             $viewPayload = $e->getError()->toPublicArray();
         }
 
-        return View::make('payment_link.hosted', $viewPayload);
+        return View::make('payment_link.hosted', ['data' => $viewPayload]);
     }
 }

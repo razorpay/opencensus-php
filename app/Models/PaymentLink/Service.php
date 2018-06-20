@@ -73,7 +73,7 @@ class Service extends Base\Service
     {
         $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $paymentLink->getValidator()->validateIsViewable();
+        //$paymentLink->getValidator()->validateIsViewable();
 
         return (new ViewSerializer($paymentLink))->serializeForHosted();
     }
