@@ -607,6 +607,8 @@ class BasicAuth
     {
         $this->setType(Type::PUBLIC_AUTH);
 
+        $this->authCreds = new AuthCreds($this->app, AuthCreds::API_KEY, $token);
+
         $this->authCreds->setPublicKey($token);
     }
 
@@ -1472,18 +1474,18 @@ class BasicAuth
         \Database\DefaultConnection::set($mode);
     }
 
-    /**
-     * Sets $merchant instance var value by given $merchantId.
-     * Called by OAuth flow. OAuth server response contains the same($merchantId).
-     *
-     * @param string $merchantId
-     */
-    public function setMerchantById(string $merchantId)
-    {
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
-
-        $this->setMerchant($merchant);
-    }
+    ///**
+    // * Sets $merchant instance var value by given $merchantId.
+    // * Called by OAuth flow. OAuth server response contains the same($merchantId).
+    // *
+    // * @param string $merchantId
+    // */
+    //public function setMerchantById(string $merchantId)
+    //{
+    //    $merchant = $this->repo->merchant->findOrFail($merchantId);
+    //
+    //    $this->setMerchant($merchant);
+    //}
 
     public function setAccessTokenId(string $tokenId)
     {

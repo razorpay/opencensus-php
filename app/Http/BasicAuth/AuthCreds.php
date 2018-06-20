@@ -383,6 +383,19 @@ class AuthCreds
         $this->checkMerchantActivatedForLive();
     }
 
+    /**
+     * Sets $merchant instance var value by given $merchantId.
+     * Called by OAuth flow. OAuth server response contains the same($merchantId).
+     *
+     * @param string $merchantId
+     */
+    public function setMerchantById(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->setMerchant($merchant);
+    }
+
     public function setKeyEntity(Key\Entity $key = null)
     {
         $this->key = $key;

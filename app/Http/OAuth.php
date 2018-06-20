@@ -189,15 +189,6 @@ class OAuth
 
         $mode = $response[OAuthToken::MODE];
 
-        // Sets the mode for the request, and database connection
-        $this->ba->setModeAndDbConnection($mode);
-
-        //
-        // Set merchant for the current request
-        // TODO: Move this to a common auth class
-        //
-        $this->ba->setMerchantById($response[OAuthToken::MERCHANT_ID]);
-
         //
         // Public key is used to generate the callback URL parameter that is
         // being sent with the payment create request to the gateway.
@@ -206,9 +197,20 @@ class OAuth
 
         $this->ba->oauthPublicTokenAuth($publicKey);
 
+        // Sets the mode for the request, and database connection
+        $this->ba->getAuthCreds()->setModeAndDbConnection($mode);
+
+        //
+        // Set merchant for the current request
+        // TODO: Move this to a common auth class
+        //
+        $this->ba->getAuthCreds()->setMerchantById($response[OAuthToken::MERCHANT_ID]);
+
+
+
         try
         {
-            $this->ba->checkMerchantActivatedForLive();
+            $this->ba->getAuthCreds()->checkMerchantActivatedForLive();
         }
         catch (Exception\LogicException $e)
         {
