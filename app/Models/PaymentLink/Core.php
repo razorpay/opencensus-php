@@ -7,9 +7,9 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
-use RZP\Jobs\PaymentLink\RefundPayment as RefundPaymentJob;
 
 class Core extends Base\Core
 {
@@ -121,38 +121,90 @@ class Core extends Base\Core
     }
 
     /**
-     * This method is executed to update the payment link entity after payment has been captured. This payment is
-     * verified to be associated with a payment link. This is executed inside a transaction, after acquiring a lock on
-     * the payment entity.
-     *
-     * Actions:
-     *  - Payable?     Update payment link entity's attributes(including stats)
-     *  - Not payable? Initiate refund for payment
-     *
-     * @param Payment\Entity $payment
+     * Validates if new payment initiation should be allowed or not
+     * @param  Entity $paymentLink
+     * @throws BadRequestException
      */
-    public function updatePaymentLinkAfterPaymentCaptureIfApplicable(Payment\Entity $payment)
+    public function validateIsPaymentInitiable(Entity $paymentLink)
     {
-        // TODO: Check if we should wrap this block in try..catch
-
-        $this->repo->assertTransactionActive();
-
-        $paymentLink = $payment->paymentLink;
-
-        $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
-
-        if ($paymentLink->isPayable() === true)
+        if (($paymentLink->isPayable() === false) or
+            ($this->hasPaymentSlots($paymentLink) === false))
         {
-            $this->updatePaymentLinkAfterPaymentCapture($payment, $paymentLink);
-        }
-        else
-        {
-            $this->initiateRefundForPayment($payment);
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE,
+                null,
+                [
+                    E::PAYMENT_LINK => $paymentLink->toArrayPublic(),
+                ]);
         }
     }
 
-    protected function updatePaymentLinkAfterPaymentCapture(Payment\Entity $payment, Entity $paymentLink)
+    /**
+     * This method is called post a payment capture is attempted (failed or success) in Processor/Authorize. Refer below
+     * cases on what this method handles.
+     * @param Payment\Entity $payment
+     */
+    public function postPaymentCaptureAttemptProcessing(Payment\Entity $payment)
     {
+        assertTrue($payment->hasPaymentLink());
+
+        $paymentLink = $payment->paymentLink;
+
+        $this->trace->info(
+            TraceCode::PAYMENT_LINK_POST_PAYMENT_CAPTURE_ATTEMPT,
+            [
+                'payment_id' => $payment->getId(),
+                'payment_status' => $payment->getStatus(),
+                'payment_link' => $paymentLink->toArrayPublic(),
+            ]);
+
+        //
+        // Case 1: If payment was not captured (i.e. stuck in authorized state), refund it immediately and return as
+        // there is nothing else to be done here.
+        //
+        $shouldRefundPayment = ($payment->isCaptured() === false);
+        if ($shouldRefundPayment === true)
+        {
+            return $this->refundPayment($paymentLink, $payment);
+        }
+
+        $this->repo->transaction(function() use ($paymentLink, $payment, & $shouldRefundPayment)
+        {
+            $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
+
+            //
+            // Case 2: If payment is captured and there the link is still payable, accept the payment and update entity
+            // Note: Updating entity happens in transaction with lock on pl entity, so other process doesn't read & work
+            // on bad value.
+            //
+            if ($paymentLink->isPayable() === true)
+            {
+                $this->updatePaymentLinkAfterPaymentCapture($paymentLink, $payment);
+            }
+            //
+            // Case 3: If payment is captured but now the link is not payable, refund it immediately
+            // Note: We are just setting up a flag here and not initiating the refund here actually, because this block
+            // is wrapped in a db transaction. We do actual refund outside this block.
+            //
+            else
+            {
+                $shouldRefundPayment = true;
+            }
+        });
+
+        // Follow up to Case 3 (Refer above ^ comment)
+        if ($shouldRefundPayment === true)
+        {
+            $this->refundPayment($paymentLink, $payment);
+        }
+    }
+
+    protected function updatePaymentLinkAfterPaymentCapture(Entity $paymentLink, Payment\Entity $payment)
+    {
+        //
+        // Caller of this function must be wrapped in a database txn because we are updating entity's attributes &
+        // status which are shared in multiple payment process & entity operation in parallel.
+        //
         $this->repo->assertTransactionActive();
 
         $paymentLink->incrementTimesPaid();
@@ -173,35 +225,6 @@ class Core extends Base\Core
             ]);
     }
 
-    public function initiateRefundForPaymentIfNotCaptured(Payment\Entity $payment)
-    {
-        if ($payment->isCaptured() === false)
-        {
-            $this->initiateRefundForPayment($payment);
-        }
-    }
-
-    /**
-     * Validates if new payment initiation should be allowed or not
-     *
-     * @param Entity $paymentLink
-     *
-     * @throws BadRequestException
-     */
-    public function validateIsPaymentInitiable(Entity $paymentLink)
-    {
-        if (($paymentLink->isPayable() === false) or
-            ($this->hasPaymentSlots($paymentLink) === false))
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE,
-                null,
-                [
-                    E::PAYMENT_LINK => $paymentLink->toArrayPublic(),
-                ]);
-        }
-    }
-
     /**
      * Changes payment link's status. Every status change must happen via this method which keeps a uniform log of
      * status changes and probably could do further things i.e. validation etc.
@@ -212,6 +235,10 @@ class Core extends Base\Core
      */
     protected function changeStatus(Entity $paymentLink, string $status, string $statusReason = null)
     {
+        //
+        // Caller of this function must be wrapped in a database txn because we are updating entity's attributes &
+        // status which are shared in multiple payment process & entity operation in parallel.
+        //
         $this->repo->assertTransactionActive();
 
         $oldStatus       = $paymentLink->getStatus();
@@ -336,31 +363,43 @@ class Core extends Base\Core
     }
 
     /**
-     * Dispatches new job onto queue for asynchronous processing of it.
-     *
-     * This is an edge case, and is expected to be used seldomly after
-     * initial release.  Further releases should purge the requirement
-     * for refund using soft reservation. As for now, we do a simple
-     * refund without retry.
-     *
+     * Initiates refund on a payment. This happens in cases as described in postPaymentCaptureAttemptProcessing() method
+     * @param Entity         $paymentLink
      * @param Payment\Entity $payment
      */
-    protected function initiateRefundForPayment(Payment\Entity $payment)
+    protected function refundPayment(Entity $paymentLink, Payment\Entity $payment)
     {
-        $this->trace->info(
-            TraceCode::PAYMENT_LINK_PAYMENT_ASYNC_REFUND_PUSH,
-            [
-                E::PAYMENT      => $payment->toArrayPublic(),
-                E::PAYMENT_LINK => $payment->paymentLink->toArrayPublic(),
-            ]);
+        $processor = new Payment\Processor\Processor($payment->merchant);
+
+        $tracePayload = [
+            E::PAYMENT      => $payment->toArrayPublic(),
+            E::PAYMENT_LINK => $paymentLink->toArrayPublic(),
+        ];
+
+        $this->trace->info(TraceCode::PAYMENT_LINK_PAYMENT_REFUND_REQUEST, $tracePayload);
 
         try
         {
-            RefundPaymentJob::dispatch($this->mode, $payment);
+            if ($payment->isAuthorized() === true)
+            {
+                $refund = $processor->refundAuthorizedPayment($payment);
+            }
+            else if ($payment->isCaptured() === true)
+            {
+                $refund = $processor->refundCapturedPayment($payment);
+            }
+            else
+            {
+                $refund = null;
+                $this->trace->critical(TraceCode::PAYMENT_LINK_PAYMENT_REFUND_ERROR, $tracePayload);
+            }
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e);
+            $this->trace->traceException($e, Logger::CRITICAL, TraceCode::PAYMENT_LINK_PAYMENT_REFUND_ERROR, $tracePayload);
         }
+
+        $tracePayload = array_merge($tracePayload, [E::REFUND => optional($refund)->toArrayPublic()]);
+        $this->trace->info(TraceCode::PAYMENT_LINK_PAYMENT_REFUND_HANDLED, $tracePayload);
     }
 }

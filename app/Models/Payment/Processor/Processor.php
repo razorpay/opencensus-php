@@ -1691,9 +1691,14 @@ class Processor
             return false;
         }
 
+        //
+        // Post payment authorization payment link's payments are actually auto captured but there is more logic in
+        // the flow and in handling capture failures etc which is all done in specific method(easy to move out to a
+        // service) triggered from postPaymentAuthorizeProcessing() method.
+        //
         if ($payment->hasPaymentLink() === true)
         {
-            return true;
+            return false;
         }
 
         //
