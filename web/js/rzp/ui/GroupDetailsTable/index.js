@@ -19,6 +19,7 @@ export default function GroupDetailsTable({
   className,
   loading,
   items,
+  footer,
   rowConfig,
   loaderConfig,
 }) {
@@ -47,6 +48,8 @@ export default function GroupDetailsTable({
         !items.length && (
           <h4 class="empty-table-message">{`No ${title} Found!`}</h4>
         )}
+
+      {!loading && footer && <div class="entity-detail-footer">{footer}</div>}
     </div>
   );
 }
