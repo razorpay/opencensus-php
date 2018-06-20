@@ -186,32 +186,6 @@ class PartnerTest extends OAuthTestCase
         $this->startTest($testData);
     }
 
-//    public function testMarkAsPartnerWithMissingSubmission()
-//    {
-//        $merchantRequest = $this->createMerchantRequest('activation', false);
-//
-//        $this->setAuthServiceMockDetail('applications', 'POST', $requestParams);
-//
-//        // Set the admin auth
-//        $liveMode = $this->app['basicauth']->getLiveConnection();
-//
-//        $this->ba->adminAuth($liveMode);
-//
-//        $testData = $this->testData[__FUNCTION__];
-//
-//        $merchantRequestId = $merchantRequest->getPublicId();
-//
-//        $testData['request']['url'] = '/merchant/requests/' . $merchantRequestId;
-//
-//        $this->startTest($testData);
-//
-//        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, $liveMode);
-//
-//        $this->assertTrue($merchant->isPartner());
-//
-//        $this->assertEquals($merchant->getPartnerType(), 'reseller');
-//    }
-
     public function testApprovingUnmarkAsPartnerMerchantRequest()
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;
