@@ -143,12 +143,6 @@ class BasicAuth
      */
     private $key = null;
 
-    ///**
-    // * Used instead of api key for partner authentication
-    // * @var OAuthClient\Entity
-    // */
-    //private $partnerClient = null;
-
     /**
      * Used to identify partner flows
      * @var bool
