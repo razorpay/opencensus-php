@@ -57,6 +57,13 @@ class AuthCreds
     private $isPartnerAuth = false;
 
     /**
+     * The application instance.
+     *
+     * @var \Illuminate\Foundation\Application
+     */
+    protected $app;
+
+    /**
      * Authentication mode - test, live
      * @var string
      */
@@ -94,6 +101,22 @@ class AuthCreds
     ];
 
     /**
+     * Contains valid lengths of key.
+     * rzp_mode            = 3 + 1 + 4
+     * rzp_mode_admin      = 3 + 1 + 4 + 1 + 5
+     * rzp_mode_keyId      = 3 + 1 + 4 + 1 + 24
+     * rzp_mode_merchantId = 3 + 1 + 4 + 1 + 14
+     *
+     * NOTE: key length 29 is used for OAuth public tokens,
+     * hence DO NOT add 29 as a valid length for basicAuth
+     *
+     * @var array
+     */
+    public static $validKeyLengths = [
+        8, 14, 23, 31, 33
+    ];
+
+    /**
      * Client types are interpreted differently in API vs
      * auth-service. We store the mapping here. API uses
      * test and live and restricts them the test/live modes
@@ -113,9 +136,11 @@ class AuthCreds
 
     public function __construct($app, string $type = self::API_KEY, string $key)
     {
-        $this->repo = $app['repo'];
+        $this->app = $app;
 
-        $this->trace = $app['trace'];
+        $this->repo = $this->app['repo'];
+
+        $this->trace = $this->app['trace'];
 
         if (in_array($type, self::$validTypes) === false) {
             throw new Exception\BadRequestException(
@@ -149,10 +174,18 @@ class AuthCreds
         //
         if ($this->isPartnerAuth === true)
         {
-            $this->partnerClient = (new OAuthClient\Repository)->getClientByIdAndEnv(
-                $keyId,
-                self::$clientModes[$this->getMode()]
-            );
+            try
+            {
+                $this->partnerClient = (new OAuthClient\Repository)->getClientByIdAndEnv(
+                    $keyId,
+                    self::$clientModes[$this->getMode()]
+                );
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(TraceCode::BAD_REQUEST_INVALID_CLIENT_KEY, [self::CLIENT_ID => $this->getKey()]);
+            }
+
         }
         else
         {
@@ -179,6 +212,60 @@ class AuthCreds
         }
 
         return $this->verifyKeyNotExpired();
+    }
+
+    public function validateAndSetKeyId(string $key)
+    {
+        if (($this->verifyKeyLength($key) === false) or
+            ($this->verifyKeyPrefix($key) === false) or
+            ($this->verifyAndSetMode($key) === false))
+        {
+            return $this->invalidApiKey();
+        }
+
+        // In case of partner, the key will be something like rzp_test_partner_A0jg73G43ihI90
+        // So in case of app auth this will return '' as expected and in other auths where id
+        // is expected, it will be key_id or partner's client_id
+        $keyId = substr(substr($key, 9), -14);
+
+        $keyId = $keyId ?? '';
+
+        $this->creds[self::KEY_ID] = $keyId;
+    }
+
+    protected function verifyKeyLength($key)
+    {
+        $keyLen = strlen($key);
+
+        return in_array($keyLen, static::$validKeyLengths);
+    }
+
+    protected function verifyKeyPrefix($key)
+    {
+        return (substr($key, 0, 4) === 'rzp_');
+    }
+
+    protected function verifyAndSetMode($key)
+    {
+        $mode = substr($key, 4, 4);
+
+        if (Mode::exists($mode) === true)
+        {
+            $this->setMode($mode);
+        }
+        else
+        {
+            return false;
+        }
+
+        if ((strlen($key) > 8) and (substr($key, 8, 1) !== '_'))
+        {
+            return false;
+        }
+
+        \Database\DefaultConnection::set($mode);
+
+        return true;
     }
 
     public function verifyKeyNotExpired()
@@ -355,6 +442,8 @@ class AuthCreds
     public function setMode(string $mode)
     {
         $this->mode = $mode;
+
+        $this->app['rzp.mode'] = $mode;
     }
 
     public function invalidApiKey()

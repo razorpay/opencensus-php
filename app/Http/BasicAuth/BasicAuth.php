@@ -143,11 +143,11 @@ class BasicAuth
      */
     private $key = null;
 
-    /**
-     * Used instead of api key for partner authentication
-     * @var OAuthClient\Entity
-     */
-    private $partnerClient = null;
+    ///**
+    // * Used instead of api key for partner authentication
+    // * @var OAuthClient\Entity
+    // */
+    //private $partnerClient = null;
 
     /**
      * Used to identify partner flows
@@ -269,21 +269,21 @@ class BasicAuth
      */
     protected $dashboardHeaders = array();
 
-    /**
-     * Contains valid lengths of key.
-     * rzp_mode            = 3 + 1 + 4
-     * rzp_mode_admin      = 3 + 1 + 4 + 1 + 5
-     * rzp_mode_keyId      = 3 + 1 + 4 + 1 + 24
-     * rzp_mode_merchantId = 3 + 1 + 4 + 1 + 14
-     *
-     * NOTE: key length 29 is used for OAuth public tokens,
-     * hence DO NOT add 29 as a valid length for basicAuth
-     *
-     * @var array
-     */
-    public static $validKeyLengths = [
-        8, 14, 23, 31, 33
-    ];
+    ///**
+    // * Contains valid lengths of key.
+    // * rzp_mode            = 3 + 1 + 4
+    // * rzp_mode_admin      = 3 + 1 + 4 + 1 + 5
+    // * rzp_mode_keyId      = 3 + 1 + 4 + 1 + 24
+    // * rzp_mode_merchantId = 3 + 1 + 4 + 1 + 14
+    // *
+    // * NOTE: key length 29 is used for OAuth public tokens,
+    // * hence DO NOT add 29 as a valid length for basicAuth
+    // *
+    // * @var array
+    // */
+    //public static $validKeyLengths = [
+    //    8, 14, 23, 31, 33
+    //];
 
     protected $adminOrgId  = null;
 
@@ -374,29 +374,9 @@ class BasicAuth
 
     public function checkAndSetKeyId($key)
     {
-        if (($this->verifyKeyLength($key) === false) or
-            ($this->verifyKeyPrefix($key) === false) or
-            ($this->verifyAndSetMode($key) === false))
-        {
-            return $this->invalidApiKey();
-        }
-
-        // In case of partner, the key will be something like rzp_test_partner_A0jg73G43ihI90
-        // So in case of app auth this will return '' as expected and in other auths where id
-        // is expected, it will be key_id or partner's client_id
-        $keyId = substr(substr($key, 9), -14);
-
         $this->checkAndSetCreds($key);
 
-        if ($keyId === false)
-        {
-            $this->authCreds->creds[self::KEY_ID] = '';
-            return;
-        }
-
-        $this->authCreds->creds[self::KEY_ID] = $keyId;
-
-        $this->authCreds->setMode($this->getMode());
+        return $this->authCreds->validateAndSetKeyId($key);
     }
 
     protected function checkAndSetCreds(string $key)
@@ -697,12 +677,7 @@ class BasicAuth
 
         $this->authCreds->fetchAndSetMerchantAndCheckLive();
 
-        $error = $this->checkAndSetPartnerMerchantScope();
-
-        if ($error !== null)
-        {
-            return $error;
-        };
+        return $this->checkAndSetPartnerMerchantScope();
     }
 
     public function directAuth()
@@ -933,45 +908,45 @@ class BasicAuth
         return true;
     }
 
-    protected function verifyKeyLength($key)
-    {
-        $keyLen = strlen($key);
-
-        return in_array($keyLen, static::$validKeyLengths);
-    }
-
-    protected function verifyKeyPrefix($key)
-    {
-        return (substr($key, 0, 4) === 'rzp_');
-    }
-
-    protected function verifyAndSetMode($key)
-    {
-        $mode = substr($key, 4, 4);
-
-        if ($mode === Mode::LIVE)
-        {
-            $this->setMode(Mode::LIVE);
-        }
-        else if ($mode === Mode::TEST)
-        {
-            $this->setMode(Mode::TEST);
-        }
-        else
-        {
-            return false;
-        }
-
-        if ((strlen($key) > 8) and
-            (substr($key, 8, 1) !== '_'))
-        {
-            return false;
-        }
-
-        \Database\DefaultConnection::set($mode);
-
-        return true;
-    }
+    //protected function verifyKeyLength($key)
+    //{
+    //    $keyLen = strlen($key);
+    //
+    //    return in_array($keyLen, static::$validKeyLengths);
+    //}
+    //
+    //protected function verifyKeyPrefix($key)
+    //{
+    //    return (substr($key, 0, 4) === 'rzp_');
+    //}
+    //
+    //protected function verifyAndSetMode($key)
+    //{
+    //    $mode = substr($key, 4, 4);
+    //
+    //    if ($mode === Mode::LIVE)
+    //    {
+    //        $this->setMode(Mode::LIVE);
+    //    }
+    //    else if ($mode === Mode::TEST)
+    //    {
+    //        $this->setMode(Mode::TEST);
+    //    }
+    //    else
+    //    {
+    //        return false;
+    //    }
+    //
+    //    if ((strlen($key) > 8) and
+    //        (substr($key, 8, 1) !== '_'))
+    //    {
+    //        return false;
+    //    }
+    //
+    //    \Database\DefaultConnection::set($mode);
+    //
+    //    return true;
+    //}
 
     /**
      * Verify key exists by fetching it
@@ -1074,21 +1049,21 @@ class BasicAuth
         return true;
     }
 
-    protected function verifyKeyNotExpired()
-    {
-        if ((empty($this->key) === false) and ($this->key->isExpired() === false))
-        {
-            return true;
-        }
-
-        if (empty($this->partnerClient) === false)
-        {
-            return true;
-        }
-
-        return ApiResponse::unauthorized(
-            ErrorCode::BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED);
-    }
+    //protected function verifyKeyNotExpired()
+    //{
+    //    if ((empty($this->key) === false) and ($this->key->isExpired() === false))
+    //    {
+    //        return true;
+    //    }
+    //
+    //    if (empty($this->partnerClient) === false)
+    //    {
+    //        return true;
+    //    }
+    //
+    //    return ApiResponse::unauthorized(
+    //        ErrorCode::BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED);
+    //}
 
     //protected function verifyKeyExpiryAndSecret()
     //{
