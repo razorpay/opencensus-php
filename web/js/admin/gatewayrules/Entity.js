@@ -57,6 +57,7 @@ const fields = [
   item => item.network && ['Network', networks[item.network]],
   item => ['Currency', item.currency],
   item => item.international && ['International', item.international],
+  item => item.recurring && ['Recurring', item.recurring],
   item => (item.iins.length && ['IINs', item.iins]) || null,
   item =>
     (item.type === 'filter' && ['Network Category', item.network_category]) ||
@@ -334,6 +335,17 @@ class GatewayRuleForm extends Component {
           name="international"
           label="International"
           defaultValue={model.international | 0}
+          disabled={!!model.id}
+        >
+          <option value="" />
+          <option value="0">No</option>
+          <option value="1">Yes</option>
+        </SelectField>
+
+        <SelectField
+          name="recurring"
+          label="Recurring"
+          defaultValue={model.recurring | 0}
           disabled={!!model.id}
         >
           <option value="" />
