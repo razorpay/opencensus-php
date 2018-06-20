@@ -20,7 +20,7 @@ class EnachRbl extends Base
         self::GATEWAY_ERROR_DESCRIPTION   => Entity::ERROR_MESSAGE,
     ];
 
-    protected function getDataFromRow(array & $entry): array
+    protected function getDataFromRow(array $entry): array
     {
         $gatewayToken = $entry[Batch\Header::ENACH_REGISTER_UMRN];
 

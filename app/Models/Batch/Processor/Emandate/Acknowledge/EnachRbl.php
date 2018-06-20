@@ -36,30 +36,21 @@ class EnachRbl extends Base
         Config::set('excel.import.heading', 'original');
         Config::set('excel.import.startRow', 2);
 
-        $sheets = $this->parseExcelFile($filePath);
+        $sheets = $this->parseExcelFile($filePath, ['ACKNOWLEDGEMENT REPORT']);
 
         //
         // Resetting startRow to 1 again
         //
         Config::set('excel.import.startRow', 1);
 
-        $hasDoubleSheets  = (count($sheets) === 2);
-        $errorMessage    = 'Sheets keys: ' . implode('.', array_keys($sheets));
-
-        assertTrue($hasDoubleSheets, $errorMessage);
-
-        //
-        // We use 2nd index as 1st sheet contains the summary and
-        // 2nd sheet contains th actual recon data
-        //
-        return $sheets[1];
+        return $sheets[0];
     }
 
     protected function processEntry(array & $entry)
     {
         $entry = array_map('trim', $entry);
 
-        $content = $this->getDataFromRow($row);
+        $content = $this->getDataFromRow($entry);
 
         $this->updateEntities($content);
 
@@ -70,7 +61,7 @@ class EnachRbl extends Base
      * @param  array $entry
      * @return array
      */
-    protected function getDataFromRow(array & $entry): array
+    protected function getDataFromRow(array $entry): array
     {
         $tokenStatus = $this->getTokenStatus($entry);
 
