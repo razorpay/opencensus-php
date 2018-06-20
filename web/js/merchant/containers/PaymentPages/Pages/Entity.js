@@ -61,6 +61,7 @@ export default class PaymentPagesEntity extends React.Component {
     paymentPageEntity: {},
     paymentPagePayments: [],
     paymentsListLoading: true,
+    user: null,
   };
 
   static contextTypes = {
@@ -86,12 +87,16 @@ export default class PaymentPagesEntity extends React.Component {
       paymentPageEntity: {},
       paymentPagePayments: [],
       paymentsListLoading: true,
+      user: null,
     });
 
     return fetchPaymentPageEntity(id)
       .then(resp => {
         if (resp) {
-          this.setState({ paymentPageEntity: resp.data });
+          this.setState({
+            paymentPageEntity: resp.data,
+            user: resp.data.user,
+          });
         }
 
         this.setState({ loading: false });
@@ -474,7 +479,7 @@ export default class PaymentPagesEntity extends React.Component {
                       >
                         {isActive ? 'Deactivate Link' : 'Activate Link'}
                       </Button.Transparent>
-                      <div class="text-danger" style={{ marginTop: 4 }}>
+                      <div style={{ marginTop: 4, color: '#8991ae' }}>
                         {inActiveStatusReasonMap[statusReason]}
                       </div>
                     </div>
@@ -529,10 +534,10 @@ export default class PaymentPagesEntity extends React.Component {
                 />
 
                 <EntityDetailRow label="Created by">
-                  {!!paymentPageEntity.user ? (
+                  {!!this.state.user ? (
                     <Definition>
-                      {paymentPageEntity.user.name}
-                      {paymentPageEntity.user.email}
+                      {this.state.user.name}
+                      {this.state.user.email}
                     </Definition>
                   ) : (
                     'API'
