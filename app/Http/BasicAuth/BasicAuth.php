@@ -1544,7 +1544,7 @@ class BasicAuth
         $this->appAuth = true;
     }
 
-// --------------------- Setters Ends ------------------------------------------
+    // --------------------- Setters Ends ---------------------
 
     public function isProxyAuth()
     {

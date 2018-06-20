@@ -22,6 +22,52 @@ return [
         ],
     ],
 
+    'testRefundBatchWithAdminAuth' => [
+        'request'  => [
+            'url'     => '/admin/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'refund',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid merchant trying to create a non-app-type batch: 100000Razorpay',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testRefundBatchWithSharedMerchantProxyAuth' => [
+        'request'  => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'refund',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid merchant trying to create a non-app-type batch: 100000Razorpay',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
     'testUploadRefundFileException' => [
         'request'   => [
             'url'     => '/batches',
@@ -66,8 +112,8 @@ return [
                         'status'        => 'created',
                         'amount'        => 4000,
                         'total_count'   => 1,
-                        'success_count' => null,
-                        'failure_count' => null,
+                        'success_count' => 0,
+                        'failure_count' => 0,
                     ],
                 ],
             ],
@@ -91,10 +137,9 @@ return [
                 'status'        => 'created',
                 'amount'        => 4000,
                 'total_count'   => 1,
-                'success_count' => null,
-                'failure_count' => null,
+                'success_count' => 0,
+                'failure_count' => 0,
                 'attempts'      => 0,
-                'amount'        => 4000,
             ],
         ],
     ],
@@ -115,9 +160,10 @@ return [
                     [
                         'entity'           => 'batch',
                         'status'           => 'processed',
-                        'amount'           => 4000,
-                        'processed_amount' => 4000,
-                        'success_count'    => 1,
+                        'amount'           => 4200,
+                        'processed_amount' => 4200,
+                        'total_count'      => 2,
+                        'success_count'    => 2,
                         'failure_count'    => 0,
                         'attempts'         => 1,
                     ],
@@ -272,13 +318,20 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity'           => 'batch',
-                'status'           => 'partially_processed',
-                'amount'           => 4000,
-                'processed_amount' => 0,
-                'success_count'    => 0,
-                'failure_count'    => 1,
-                'attempts'         => 2,
+                'entity'               => 'batch',
+                'status'               => 'partially_processed',
+                'amount'               => 4000,
+                'processed_amount'     => 0,
+                'success_count'        => 0,
+                'failure_count'        => 1,
+                //
+                // Assertion: Following attribute (processed_percentage) only comes in admin auth at the moment.
+                // Additionally, it's value in this case should be 100 %, but that is asserted in code because
+                // it's queue stuff.
+                //
+                'processed_count'      => 0,
+                'processed_percentage' => 0,
+                'attempts'             => 2,
             ],
         ],
     ],

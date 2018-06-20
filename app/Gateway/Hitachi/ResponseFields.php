@@ -28,6 +28,7 @@ class ResponseFields
     const RESPONSE_CODE       = 'pRespCode';
     const REQUEST_ID          = 'pRequestId';
     const STATUS              = 'pStatus';
+    const CURRENCY            = 'pCurrencyCode';
 
     //Bharat Qr Fields
     const MASKED_CARD_NUMBER = 'F002';

@@ -22,6 +22,38 @@ return [
         ],
     ],
 
+    'testRegistrationReconWithTestMerchantProxyAuth' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Invalid type passed for batch creation'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+
+    'testRegistrationReconWithSharedMerchantProxyAuth' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Invalid type passed for batch creation'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+
     'testDebitFileGeneration' => [
         'request' => [
             'content' => [
@@ -63,8 +95,6 @@ return [
             'content' => [
                 'type'    => 'emandate_register',
                 'targets' => ['enach_rbl'],
-                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
-                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
             'url' => '/gateway/files',
             'method' => 'POST'

@@ -6,6 +6,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Gateway\Enach\Rbl\DebitFileHeadings as EnachRblDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
@@ -14,6 +15,11 @@ class Header
 {
     const INPUT             = 'input';
     const OUTPUT            = 'output';
+
+    // A header key which holds notes values(key value pairs)
+    const NOTES             = 'notes';
+    // In file, notes columns are expected to be in format: Notes[<key>] & while parsing the file, formatted as above
+    const NOTES_REGEX       = '/^Notes\[(.*)]$/';
 
     //
     // Refund Headers
@@ -160,6 +166,7 @@ class Header
     //
     // HDFC Emandate Debit Response File Headers
     //
+    const HDFC_EM_DEBIT_SERIAL_NO           = HdfcEMDebitHeadings::SERIAL_NO;
     const HDFC_EM_DEBIT_TRANSACTION_REF_NO  = HdfcEMDebitHeadings::TRANSACTION_REF_NO;
     const HDFC_EM_DEBIT_MANDATE_ID          = HdfcEMDebitHeadings::MANDATE_ID;
     const HDFC_EM_DEBIT_ACCOUNT_NO          = HdfcEMDebitHeadings::ACCOUNT_NO;
@@ -170,6 +177,7 @@ class Header
     const HDFC_EM_DEBIT_TO_DATE             = HdfcEMDebitHeadings::TO_DATE;
     const HDFC_EM_DEBIT_STATUS              = HdfcEMDebitHeadings::STATUS;
     const HDFC_EM_DEBIT_REJECTION_REMARKS   = HdfcEMDebitHeadings::REJECTION_REMARKS;
+    const HDFC_EM_DEBIT_NARRATION           = HdfcEMDebitHeadings::NARRATION;
 
     //
     // eNach Register Response File Headers
@@ -279,11 +287,13 @@ class Header
             self::INPUT => [
                 self::PAYMENT_ID,
                 self::AMOUNT,
+                self::NOTES,
             ],
 
             self::OUTPUT => [
                 self::PAYMENT_ID,
                 self::AMOUNT,
+                self::NOTES,
                 self::REFUND_ID,
                 self::REFUNDED_AMOUNT,
                 self::STATUS,
@@ -423,6 +433,7 @@ class Header
 
         'emandate_debit_hdfc' => [
             self::INPUT => [
+                self::HDFC_EM_DEBIT_SERIAL_NO,
                 self::HDFC_EM_DEBIT_TRANSACTION_REF_NO,
                 self::HDFC_EM_DEBIT_MANDATE_ID,
                 self::HDFC_EM_DEBIT_ACCOUNT_NO,
@@ -432,7 +443,8 @@ class Header
                 self::HDFC_EM_DEBIT_FROM_DATE,
                 self::HDFC_EM_DEBIT_TO_DATE,
                 self::HDFC_EM_DEBIT_STATUS,
-                self::HDFC_EM_DEBIT_REJECTION_REMARKS
+                self::HDFC_EM_DEBIT_REJECTION_REMARKS,
+                self::HDFC_EM_DEBIT_NARRATION,
             ]
         ],
 
@@ -730,6 +742,16 @@ class Header
     {
         $expectedHeaders = self::HEADER_MAP[$type][self::INPUT];
 
+        //
+        // Notes is optional header in file. Currently optional headers are not supported and so this quick workaround
+        // to get validation passing. Soon we will have support for optional headers.
+        //
+        if ((in_array(self::NOTES, $expectedHeaders, true) === true) and
+            (in_array(self::NOTES, $actualHeaders, true) === false))
+        {
+            $actualHeaders[] = self::NOTES;
+        }
+
         $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
 
         // Todo: Fix this hack!
@@ -748,6 +770,38 @@ class Header
                     'expected_headers'  => $expectedHeaders,
                     'input_headers'     => $actualHeaders,
                 ]);
+        }
+    }
+
+    /**
+     * Validates notes keys:
+     * - No more than 15 keys,
+     * - Each key's length should be less than or equals to 256
+     *
+     * @param  array $notesKeys
+     * @throws BadRequestValidationFailureException
+     */
+    public static function validateNotesKeys(array $notesKeys)
+    {
+        if (count($notesKeys) > 15)
+        {
+            throw new BadRequestValidationFailureException(
+                'Number of headers for notes should not exceed 15',
+                null,
+                [self::NOTES => $notesKeys]);
+        }
+
+        $notesKeysTooLarge = array_filter($notesKeys, function (string $k)
+        {
+            return strlen($k) > 256;
+        });
+
+        if (count($notesKeysTooLarge) > 0)
+        {
+            throw new BadRequestValidationFailureException(
+                'No notes headers should have keys with length exceeding 256 characters',
+                null,
+                [self::NOTES => $notesKeys]);
         }
     }
 

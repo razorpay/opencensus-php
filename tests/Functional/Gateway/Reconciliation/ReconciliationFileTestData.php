@@ -155,10 +155,26 @@ return [
             'refund_amount_rs_ps'       => 500
         ],
 
+        'atom' => [
+            'Merchant Name'         => 'RAZORPAY SOFTWARE PVT LTD',
+            'Merchant ID'           => '58809',
+            'Txn State'             => 'Sale',
+            'Client Code'           => '007',
+            'Product'               => 'Razorpay',
+            'Discriminator'         => 'NB',
+            'Payment Status'        => 'Payment Given',
+            'Refund Status'         => '',
+            'SB Cess'               => 0,
+            'Krishi Kalyan Cess'    => 0,
+            'Txn Charges'           => 0,
+            'GST (18%)'             => 0,
+            'Net Amount to be Paid' => 0,
+        ],
+
         'hitachi' => [
             'terminal_id'           => '38R00001',
             'amount'                => 500,
-            'retr_ref_nr'           => 736022780722,
+            'retr_ref_nr'           => '123456789012',
             'auth_id'               => 108418,
             'interchange_type'      => 'VISA',
             'fee_amount'            => 0.00,
@@ -167,7 +183,8 @@ return [
             'arn'                   => 74110757361008597807228,
             'issettled'             => 'S',
             'message_type'          => '0200',
-            'datetime'              => '2018-03-05 23:50:00'
+            'datetime'              => '2018-03-05 23:50:00',
+            'tran_currency_code'    => '356',
         ]
     ],
 

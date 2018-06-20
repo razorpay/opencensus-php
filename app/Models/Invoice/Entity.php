@@ -142,6 +142,8 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_DETAILS         = 'customer_details';
     const PAYMENT_ID               = 'payment_id';
     const URL                      = 'url';
+    // Boolean holding 'has address or supply state name' value to be used in view
+    const HAS_ADDRESS_OR_POS       = 'has_address_or_pos';
 
     // ------------------------ Output Keys End ----------------------
 
@@ -172,6 +174,7 @@ class Entity extends Base\PublicEntity
 
     const TOTAL_COUNT              = 'batch_total';
     const ISSUED_COUNT             = 'issued_count';
+    const CREATED_COUNT            = 'created_count';
     const PAID_COUNT               = 'paid_count';
     const EXPIRED_COUNT            = 'expired_count';
 
@@ -1393,11 +1396,11 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Gets the most recent invoice pdf file
+     * Gets the most recent invoice pdf file, or null
      *
-     * @return FileStore\Entity
+     * @return FileStore\Entity|null
      */
-    public function pdf(): FileStore\Entity
+    public function pdf()
     {
         return $this->files()
                     ->where(FileStore\Entity::TYPE, '=', FileStore\Type::INVOICE_PDF)

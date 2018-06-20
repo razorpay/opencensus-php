@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
     const IINS                = 'iins';
     const PAYMENT_NETWORK     = 'payment_network';
     const ISSUER              = 'issuer';
+    const INTERNATIONAL       = 'international';
     const ACTIVE              = 'active';
     const TYPE                = 'type';
     const BLOCK               = 'block';
@@ -92,6 +93,7 @@ class Entity extends Base\PublicEntity
         self::IINS,
         self::PAYMENT_NETWORK,
         self::ISSUER,
+        self::INTERNATIONAL,
         self::TYPE,
         self::PERCENT_RATE,
         self::MIN_AMOUNT,
@@ -119,6 +121,7 @@ class Entity extends Base\PublicEntity
         self::IINS,
         self::PAYMENT_NETWORK,
         self::ISSUER,
+        self::INTERNATIONAL,
         self::TYPE,
         self::PERCENT_RATE,
         self::MAX_CASHBACK,
@@ -146,6 +149,7 @@ class Entity extends Base\PublicEntity
         self::IINS,
         self::PAYMENT_NETWORK,
         self::ISSUER,
+        self::INTERNATIONAL,
         self::TYPE,
         self::PERCENT_RATE,
         self::MAX_CASHBACK,
@@ -186,6 +190,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::IINS               => 'array',
+        self::INTERNATIONAL      => 'boolean',
         self::ACTIVE             => 'boolean',
         self::BLOCK              => 'boolean',
         self::CHECKOUT_DISPLAY   => 'boolean',
@@ -233,6 +238,11 @@ class Entity extends Base\PublicEntity
     public function getIssuer()
     {
         return $this->getAttribute(self::ISSUER);
+    }
+
+    public function isInternational()
+    {
+        return $this->getAttribute(self::INTERNATIONAL);
     }
 
     public function getPaymentNetwork()
@@ -378,6 +388,7 @@ class Entity extends Base\PublicEntity
     public function toArrayCheckout(bool $discount = false, int $amount = null)
     {
         $data = [
+            self::ID              => $this->getPublicId(),
             self::NAME            => $this->getAttribute(self::NAME),
             self::PAYMENT_METHOD  => $this->getAttribute(self::PAYMENT_METHOD),
             self::PAYMENT_NETWORK => $this->getAttribute(self::PAYMENT_NETWORK),

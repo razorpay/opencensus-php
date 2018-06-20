@@ -20,6 +20,7 @@ return [
         'response' => [
             'content' => [
                 'amount'             => 100,
+                'amount_deducted'    => 0,
                 'currency'           => 'INR',
                 'phase'              => 'chargeback',
                 'status'             => 'open',
@@ -43,6 +44,7 @@ return [
         'response' => [
             'content' => [
                 'amount'             => 100,
+                'amount_deducted'    => 0,
                 'currency'           => 'INR',
                 'phase'              => 'chargeback',
                 'status'             => 'open',
@@ -67,6 +69,7 @@ return [
         'response' => [
             'content' => [
                 'amount'             => 100,
+                'amount_deducted'    => 0,
                 'currency'           => 'INR',
                 'phase'              => 'chargeback',
                 'status'             => 'open',
@@ -113,11 +116,132 @@ return [
                 'entity' => [
                     'entity'             => 'dispute',
                     'amount'             => 50000,
+                    'amount_deducted'    => 0,
                     'currency'           => 'INR',
                     'gateway_dispute_id' => '4342frf34r',
                     'respond_by'         => 946684801,
                     'status'             => 'open',
                     'reason_code'        => 'KFRER_R',
+                ],
+            ],
+        ],
+    ],
+
+    'testDisputeLostEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payment.dispute.lost',
+        'contains' => [
+            'payment',
+            'dispute',
+        ],
+        'payload' => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 1000000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'captured'   => true,
+                ],
+            ],
+            'dispute' => [
+                'entity' => [
+                    'entity'             => 'dispute',
+                    'amount'             => 1000000,
+                    'amount_deducted'    => 1000000,
+                    'currency'           => 'INR',
+                    'status'             => 'lost',
+                    'reason_code'        => 'SOMETHING_BAD',
+                ],
+            ],
+        ],
+    ],
+
+    'testDisputeWonEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payment.dispute.won',
+        'contains' => [
+            'payment',
+            'dispute',
+        ],
+        'payload' => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 1000000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'captured'   => true,
+                ],
+            ],
+            'dispute' => [
+                'entity' => [
+                    'entity'             => 'dispute',
+                    'amount'             => 1000000,
+                    'amount_deducted'    => 0,
+                    'currency'           => 'INR',
+                    'status'             => 'won',
+                    'reason_code'        => 'SOMETHING_BAD',
+                ],
+            ],
+        ],
+    ],
+
+    'testDisputeWonEventPostDeductData' => [
+        'entity'   => 'event',
+        'event'    => 'payment.dispute.won',
+        'contains' => [
+            'payment',
+            'dispute',
+        ],
+        'payload' => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 1000000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'captured'   => true,
+                ],
+            ],
+            'dispute' => [
+                'entity' => [
+                    'entity'             => 'dispute',
+                    'amount'             => 1000000,
+                    'amount_deducted'    => 0,
+                    'currency'           => 'INR',
+                    'status'             => 'won',
+                    'reason_code'        => 'SOMETHING_BAD',
+                ],
+            ],
+        ],
+    ],
+
+    'testDisputeClosedEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payment.dispute.closed',
+        'contains' => [
+            'payment',
+            'dispute',
+        ],
+        'payload' => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 1000000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'captured'   => true,
+                ],
+            ],
+            'dispute' => [
+                'entity' => [
+                    'entity'             => 'dispute',
+                    'amount'             => 1000000,
+                    'amount_deducted'    => 0,
+                    'currency'           => 'INR',
+                    'status'             => 'closed',
+                    'reason_code'        => 'SOMETHING_BAD',
                 ],
             ],
         ],
@@ -138,6 +262,7 @@ return [
         'response' => [
             'content' => [
                 'amount'             => 100,
+                'amount_deducted'    => 100,
                 'currency'           => 'INR',
                 'phase'              => 'chargeback',
                 'status'             => 'open',
@@ -354,6 +479,7 @@ return [
         'response' => [
             'content' => [
                 'amount'             => 100,
+                'amount_deducted'    => 0,
                 'currency'           => 'INR',
                 'phase'              => 'chargeback',
                 'status'             => 'open',
@@ -511,10 +637,11 @@ return [
         ],
         'response' => [
             'content' => [
-                'amount'      => 1000000,
-                'currency'    => 'INR',
-                'phase'       => 'chargeback',
-                'status'      => 'under_review'
+                'amount'          => 1000000,
+                'amount_deducted' => 0,
+                'currency'        => 'INR',
+                'phase'           => 'chargeback',
+                'status'          => 'under_review'
             ],
         ],
     ],
@@ -530,10 +657,31 @@ return [
         ],
         'response' => [
             'content' => [
-                'amount'      => 1000000,
-                'currency'    => 'INR',
-                'phase'       => 'chargeback',
-                'status'      => 'won'
+                'amount'          => 1000000,
+                'amount_deducted' => 0,
+                'currency'        => 'INR',
+                'phase'           => 'chargeback',
+                'status'          => 'won'
+            ],
+        ],
+    ],
+
+    'testDisputeEditWonPostDeduct' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'status'                 => 'won',
+                'expires_on'             => '1912162918',
+                'gateway_dispute_status' => 'processing'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'          => 1000000,
+                'amount_deducted' => 1000000,
+                'currency'        => 'INR',
+                'phase'           => 'chargeback',
+                'status'          => 'won'
             ],
         ],
     ],
@@ -549,10 +697,11 @@ return [
         ],
         'response' => [
             'content' => [
-                'amount'      => 1000000,
-                'currency'    => 'INR',
-                'phase'       => 'chargeback',
-                'status'      => 'closed'
+                'amount'          => 1000000,
+                'amount_deducted' => 0,
+                'currency'        => 'INR',
+                'phase'           => 'chargeback',
+                'status'          => 'closed'
             ],
         ],
     ],
@@ -566,10 +715,11 @@ return [
         ],
         'response' => [
             'content' => [
-                'amount'      => 1000000,
-                'currency'    => 'INR',
-                'phase'       => 'chargeback',
-                'status'      => 'lost'
+                'amount'          => 1000000,
+                'amount_deducted' => 1000000,
+                'currency'        => 'INR',
+                'phase'           => 'chargeback',
+                'status'          => 'lost'
             ],
         ],
     ],
@@ -628,10 +778,11 @@ return [
         ],
         'response' => [
             'content' => [
-                'amount'      => 1000000,
-                'currency'    => 'INR',
-                'phase'       => 'chargeback',
-                'status'      => 'lost'
+                'amount'          => 1000000,
+                'amount_deducted' => 1000000,
+                'currency'        => 'INR',
+                'phase'           => 'chargeback',
+                'status'          => 'lost'
             ],
         ],
     ],
@@ -717,7 +868,10 @@ return [
             ],
         ],
         'response' => [
-            'content' => [],
+            'content' => [
+                'amount_deducted' => 10100,
+                'amount_reversed' => 10100,
+            ],
         ],
     ],
 
@@ -729,7 +883,9 @@ return [
             ],
         ],
         'response' => [
-            'content' => [],
+            'content' => [
+                'amount_deducted' => 10100
+            ],
         ],
     ],
 

@@ -16,6 +16,7 @@ use RZP\Constants\HashAlgo;
 use RZP\Constants\Timezone;
 use RZP\Models\Card\Network;
 use RZP\Gateway\Base\Verify;
+use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Base\UniqueIdEntity;
 
@@ -78,10 +79,12 @@ class Gateway extends Base\Gateway
 
         $authResponse = $this->callAuthenticationGateway($input);
 
-        $this->authorizeEnrolled($input, $authResponse);
+        $gatewayEntity = $this->authorizeEnrolled($input, $authResponse);
+
+        $acquirerData = $this->getAcquirerData($input, $gatewayEntity);
 
         // TODO: Add authenticate data for 2FA
-        return $this->getCallbackResponseData($input);
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function capture(array $input)
@@ -206,7 +209,7 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::CARD,
             BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::MID],
             BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[ResponseFields::PURCHASE_ID],
-            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::AUTHORIZATION_ID],
+            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::RRN],
         ];
 
         return $qrData;
@@ -282,9 +285,11 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getAttributesFromAuthResponse($response);
 
-        $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
+        $gatewayEntity = $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
 
         $this->checkErrorsAndThrowException($response);
+
+        return $gatewayEntity;
     }
 
     protected function sendPaymentVerifyRequest($verify)
@@ -540,6 +545,8 @@ class Gateway extends Base\Gateway
         $time = Carbon::now(Timezone::IST)->format(self::TIME_FORMAT);
         $date = Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
 
+        $currencyCode = Currency::getIsoCode($input['payment']['currency']);
+
         $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::AUTH,
             RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['payment']['amount']),
@@ -553,6 +560,7 @@ class Gateway extends Base\Gateway
             RequestFields::ALGORITHM           => '',
             RequestFields::CAVV2               => '',
             RequestFields::UCAF                => '',
+            RequestFields::CURRENCY_CODE       => $currencyCode,
         ];
 
         return $content;
@@ -668,7 +676,7 @@ class Gateway extends Base\Gateway
             Entity::CARD_NETWORK       => $response[ResponseFields::CARD_NETWORK],
             Entity::AMOUNT             => $this->getIntegerFormattedAmount($response[ResponseFields::AMOUNT]),
             Entity::RRN                => $response[ResponseFields::RRN],
-            Entity::REQUEST_ID         => $response[ResponseFields::AUTHORIZATION_ID],
+            Entity::AUTH_ID            => $response[ResponseFields::AUTHORIZATION_ID],
             Entity::STATUS             => $response[ResponseFields::STATUS_CODE],
             Entity::MERCHANT_REFERENCE => $response[ResponseFields::PURCHASE_ID],
         ];

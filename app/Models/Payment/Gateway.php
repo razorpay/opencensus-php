@@ -54,6 +54,7 @@ class Gateway
     const CARD_FSS               = 'card_fss';
 
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
+    const WALLET_AMAZONPAY   = 'wallet_amazonpay';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
     const WALLET_JIOMONEY    = 'wallet_jiomoney';
     const WALLET_SBIBUDDY    = 'wallet_sbibuddy';
@@ -141,6 +142,7 @@ class Gateway
         self::NETBANKING_INDUSIND,
         self::NETBANKING_PNB,
         self::NETBANKING_OBC,
+        self::NETBANKING_ICICI,
         self::WALLET_OPENWALLET,
     ];
 
@@ -171,8 +173,11 @@ class Gateway
         Payment\Gateway::CARD_FSS,
         Payment\Gateway::WALLET_PAYUMONEY,
         Payment\Gateway::WALLET_FREECHARGE,
+        Payment\Gateway::WALLET_AMAZONPAY,
         Payment\Gateway::UPI_MINDGATE,
         Payment\Gateway::HITACHI,
+        Payment\Gateway::UPI_HULK,
+        Payment\Gateway::NETBANKING_AIRTEL,
     ];
 
     public static $channels = [
@@ -282,6 +287,7 @@ class Gateway
             self::WALLET_SBIBUDDY,
             self::WALLET_OPENWALLET,
             self::WALLET_MPESA,
+            self::WALLET_AMAZONPAY,
         ],
 
         Method::EMI => [
@@ -460,6 +466,7 @@ class Gateway
         Wallet::SBIBUDDY    => Gateway::WALLET_SBIBUDDY,
         Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET,
         Wallet::MPESA       => Gateway::WALLET_MPESA,
+        Wallet::AMAZONPAY   => Gateway::WALLET_AMAZONPAY,
     ];
 
     public static $upiToGatewayMap = [
@@ -563,56 +570,73 @@ class Gateway
         ],
         AuthType::AADHAAR => [
             IFSC::ABHY,
+            IFSC::ACUX,
+            IFSC::ADCC,
             IFSC::ANDB,
-            IFSC::UTIB,
-            IFSC::BKID,
-            IFSC::MAHB,
             IFSC::BCBM,
-            IFSC::CNRB,
+            IFSC::BGBX,
+            IFSC::BKDN,
+            IFSC::BKID,
             IFSC::CBIN,
             IFSC::CITI,
+            IFSC::CNRB,
+            IFSC::CORP,
+            IFSC::COSB,
+            IFSC::CSBX,
+            IFSC::DBSS,
             IFSC::DCBL,
+            IFSC::ESFB,
             IFSC::FDRL,
             IFSC::HDFC,
-            IFSC::ICIC,
+            IFSC::HSBC,
             IFSC::IBKL,
+            IFSC::ICIC,
             IFSC::IDFB,
             IFSC::INDB,
+            IFSC::KAIJ,
             IFSC::KKBK,
+            IFSC::KVBL,
+            IFSC::MAHB,
             IFSC::ORBC,
-            Netbanking::PUNB_R,
             IFSC::RATN,
-            IFSC::SRCB,
             IFSC::SCBL,
+            IFSC::SIBL,
+            IFSC::SRCB,
+            IFSC::SUTB,
             IFSC::SVCB,
             IFSC::SYNB,
-            IFSC::ADCC,
-            IFSC::COSB,
-            IFSC::HSBC,
-            IFSC::SUTB,
-            IFSC::UCBA,
-            IFSC::UBIN,
-            IFSC::YESB,
-            IFSC::DBSS,
-            IFSC::BGBX,
-            IFSC::CORP,
-            IFSC::VARA,
-            IFSC::KVBL,
-            Netbanking::BARB_R,
-            IFSC::BKDN,
-            IFSC::CSBX,
-            IFSC::TMBL,
-            IFSC::KAIJ,
             IFSC::TACX,
-            IFSC::SIBL,
-            IFSC::ESFB,
-            IFSC::ACUX,
+            IFSC::TMBL,
+            IFSC::UBIN,
+            IFSC::UCBA,
+            IFSC::UTIB,
+            IFSC::VARA,
+            IFSC::YESB,
+            Netbanking::BARB_R,
+            Netbanking::PUNB_R,
+            IFSC::BNPA,
+            IFSC::UCBS,
+            IFSC::REBX,
+            IFSC::LKMX,
+            IFSC::AGCX,
+            IFSC::MOGX,
+            IFSC::NALX,
+            IFSC::KOCX,
+            IFSC::UCUX,
+            IFSC::RAMX,
+            IFSC::APGB,
+            IFSC::NCCX,
+            IFSC::MBCX,
+            IFSC::TSIX,
+            IFSC::AMRX,
+            IFSC::DDBX,
         ]
     ];
 
     public static $bharatQrGateways = [
         self::UPI_ICICI,
         self::HITACHI,
+        self::SHARP,
     ];
 
     public static $authTypeToEmandateGatewayMap = [

@@ -145,6 +145,23 @@ class MerchantRequestTest extends TestCase
         $this->startTest();
     }
 
+    protected function bulkUpdateMerchantRequestsTimestampsOnce()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBulkUpdateMerchantRequestsTimestamps()
+    {
+        $this->ba->adminAuth();
+
+        $this->bulkUpdateMerchantRequestsTimestampsOnce();
+
+        // Update timestamp again
+        $this->startTest();
+    }
+
     public function testBulkUpdateMerchantRequestsWithErrors()
     {
         $this->ba->adminAuth();

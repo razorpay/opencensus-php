@@ -702,7 +702,7 @@ return [
             'content' => [
                 'brand_color'         => '00bcd4',
                 'handle'              => 'LOLO',
-                'invoice_label_field' => 'name',
+                'invoice_label_field' => 'business_name',
             ],
             'url'     => '/account/config',
             'method'  => 'put',
@@ -716,7 +716,7 @@ return [
                 'id'                  => '10000000000000',
                 'brand_color'         => '#00BCD4',
                 'handle'              => 'LOLO',
-                'invoice_label_field' => 'name',
+                'invoice_label_field' => 'business_name',
             ]
         ]
     ],
@@ -1446,6 +1446,34 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithMultipleOrderOffers' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'order_id' => null
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'offers' => [
+                    [
+                        'name' => 'Test Offer',
+                        'payment_method' => 'card',
+                        'payment_network' => 'VISA',
+                        'issuer' => 'HDFC',
+                    ],
+                    [
+                        'name' => 'Test Offer',
+                        'payment_method' => 'card',
+                        'payment_network' => 'VISA',
+                        'issuer' => 'HDFC',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithOrderRelatedUndiscountedOffer' => [
         'request' => [
             'url'    => null,
@@ -1753,7 +1781,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 20,
+                'count' => 15,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1809,41 +1837,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'NKGS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBBJ',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBHY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBMY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'STBP',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBTR',
                         ],
                     ],
                     [
@@ -1908,7 +1901,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 21,
+                'count' => 16,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1971,41 +1964,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'NKGS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBBJ',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBHY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBMY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'STBP',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBTR',
                         ],
                     ],
                     [
@@ -2258,11 +2216,6 @@ return [
                                 'IDFB',
                                 'JSBP',
                                 'NKGS',
-                                'SBBJ',
-                                'SBHY',
-                                'SBMY',
-                                'STBP',
-                                'SBTR',
                                 'SCBL',
                                 'SVCB',
                                 'SYNB',

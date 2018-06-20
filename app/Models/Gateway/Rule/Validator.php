@@ -39,6 +39,7 @@ class Validator extends Base\Validator
         Entity::IINS             => 'filled|array',
         Entity::CURRENCY         => 'filled|in:INR,USD',
         Entity::COMMENTS         => 'filled|string|max:255',
+        Entity::RECURRING        => 'filled|boolean',
     ];
 
     protected static $editRules = [

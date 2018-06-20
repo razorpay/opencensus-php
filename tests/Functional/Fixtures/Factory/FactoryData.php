@@ -62,6 +62,18 @@ final class FactoryData
             'tax'               => 2200,
         ]);
 
+        $factory(\RZP\Models\PaymentLink\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'receipt'     => '00000000000001',
+            'merchant_id' => '10000000000000',
+            'currency'    => 'INR',
+            'amount'      => 100000,
+            'status'      => \RZP\Models\PaymentLink\Status::ACTIVE,
+            'title'       => 'Sample title',
+            'description' => 'Sample description',
+            'notes'       => null,
+        ]);
+
         $factory(\RZP\Models\Merchant\Balance\Entity::class, [
             'id'                        => $faker->uniqueid,
             'balance'                   => 0,
@@ -129,6 +141,7 @@ final class FactoryData
             'refund_status' => null,
             'contact' => $faker->randomElement(['+918199078685', '+17813924010', '+33751253819', '+919416544332', '+447706696711', '67332323', '+9613688111']),
             'notes' => null,
+            'fee' => 0,
             'gateway' => 'hdfc',
             'email' => $faker->email,
             'auto_captured' => 0,
@@ -204,17 +217,17 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\FundTransfer\Batch\Entity::class, [
-            'id' => $faker->uniqueid,
-            'date' => Carbon::today(Timezone::IST)->timestamp,
-            'channel' => Channel::AXIS,
-            'amount' => $faker->randomNumber(4),
+            'id'               => $faker->uniqueid,
+            'date'             => Carbon::today(Timezone::IST)->timestamp,
+            'channel'          => Channel::AXIS,
+            'amount'           => $faker->randomNumber(4),
             'processed_amount' => 0,
-            'processed_count' => 0,
-            'fees' => $faker->randomNumber(2),
-            'api_fee' => $faker->randomNumber(2),
-            'gateway_fee' => $faker->randomNumber(2),
-            'urls' => $faker->sentence,
-            'initiated_at' => Carbon::today(Timezone::IST)->timestamp + 10,
+            'processed_count'  => 0,
+            'fees'             => $faker->randomNumber(2),
+            'api_fee'          => $faker->randomNumber(2),
+            'gateway_fee'      => $faker->randomNumber(2),
+            'urls'             => $faker->sentence,
+            'initiated_at'     => Carbon::today(Timezone::IST)->timestamp + 10,
         ]);
 
         $factory(\RZP\Models\Adjustment\Entity::class, [
@@ -470,14 +483,17 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Batch\Entity::class, [
-            'id'          => $faker->uniqueid,
-            'merchant_id' => '10000000000000',
-            'status'      => 'created',
-            'processing'  => 0,
-            'total_count' => 0,
-            'attempts'    => 0,
-            'created_at'  => $faker->timestamp,
-            'updated_at'  => $faker->timestamp,
+            'id'              => $faker->uniqueid,
+            'merchant_id'     => '10000000000000',
+            'status'          => 'created',
+            'processing'      => 0,
+            'total_count'     => 0,
+            'processed_count' => 0,
+            'success_count'   => 0,
+            'failure_count'   => 0,
+            'attempts'        => 0,
+            'created_at'      => $faker->timestamp,
+            'updated_at'      => $faker->timestamp,
         ]);
 
         $factory(\RZP\Gateway\Wallet\Base\Entity::class, [
@@ -598,6 +614,9 @@ final class FactoryData
             'id'        => $faker->uniqueid,
             'active'    => true,
             'terms'     => 'Terms and Condition'
+        ]);
+
+        $factory(\RZP\Models\Offer\EntityOffer\Entity::class, [
         ]);
 
         $factory(\RZP\Models\Plan\Entity::class, [
