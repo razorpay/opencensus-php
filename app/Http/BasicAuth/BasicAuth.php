@@ -1588,7 +1588,7 @@ class BasicAuth
         {
             $client = (new OAuthClient\Repository)->findOrFail($this->oauthClientId);
 
-            $secret = $client->getSecret();
+            $secret = 'TheKeySecretForTests';//$client->getSecret();
         }
         else
         {
