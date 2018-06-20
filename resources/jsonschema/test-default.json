@@ -1,14 +1,9 @@
 {
-  "title": "Schindler Payment",
+  "title": "Test Schema",
   "type": "object",
   "required": [
     "customer_id",
-    "customer_name",
-    "invoice_number",
-    "job_number",
-    "amount",
-    "service_type",
-    "location"
+    "customer_name"
   ],
   "properties": {
     "customer_id": {
@@ -17,45 +12,11 @@
       "minimum": 1000000,
       "maximum": 999999999
     },
-    "invoice_number": {
-      "type": "string",
-      "title": "Invoice Number",
-      "length": 100,
-      "default": ""
-    },
     "customer_name": {
       "type": "string",
       "title": "Customer Name",
       "length": 100,
       "default": ""
-    },
-    "job_number": {
-      "type": "integer",
-      "title": "Job/Quotation number",
-      "default": ""
-    },
-    "amount": {
-      "type": "integer",
-      "title": "Amount",
-      "minimum": 0
-    },
-    "service_type": {
-      "type": "string",
-      "title": "Type Of Service",
-      "enum": [
-        "Repair",
-        "Installation",
-        "Maintenance"
-      ]
-    },
-    "location": {
-      "type": "string",
-      "title": "Location",
-      "enum": [
-        "Bangalore",
-        "Mumbai",
-        "New delhi"
-      ]
     }
   }
 }
