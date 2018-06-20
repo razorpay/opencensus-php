@@ -923,27 +923,36 @@ export default class InvoicesNewContainer extends Component {
 
   resendInvoice = props => {
     this.showIssueConfirmModal(notifyProps => {
-      let promises = [];
+      // Update invoice and then resend.
 
-      if (notifyProps.email_notify) {
-        promises.push(this.props.notifyCustomer(props, 'email'));
-      }
-      if (notifyProps.sms_notify) {
-        promises.push(this.props.notifyCustomer(props, 'sms'));
-      }
+      return this._save(props)
+        .then(invoice => {
+          let promises = [];
 
-      promises.push(this._save(props));
+          if (notifyProps.email_notify) {
+            promises.push(this.props.notifyCustomer(props, 'email'));
+          }
+          if (notifyProps.sms_notify) {
+            promises.push(this.props.notifyCustomer(props, 'sms'));
+          }
 
-      return Promise.all(promises)
-        .then(([emailStatus, smsStatus, invoice]) => {
-          track({
-            eventAction: 'Resend - Invoice',
-            eventLabel: getKeysSeparatedByPipe(props),
-          });
-          this.props.showNotification({
-            type: 'success',
-            message: 'Invoice has been sent successfully!',
-          });
+          return Promise.all(promises)
+            .then(([emailStatus, smsStatus]) => {
+              track({
+                eventAction: 'Resend - Invoice',
+                eventLabel: getKeysSeparatedByPipe(props),
+              });
+              this.props.showNotification({
+                type: 'success',
+                message: 'Invoice has been sent successfully!',
+              });
+            })
+            .catch(({ errors }) => {
+              this.props.showNotification({
+                type: 'error',
+                message: errors,
+              });
+            });
         })
         .catch(({ errors }) => {
           this.props.showNotification({
