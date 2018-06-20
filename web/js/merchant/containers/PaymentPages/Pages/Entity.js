@@ -190,13 +190,17 @@ export default class PaymentPagesEntity extends React.Component {
 
     const currentTimeStamp = moment().unix();
     // Ideally, it should consider 2 min window, because it would take time for merchant to update.
+    const reactivationTimeGap = 15 * 60;
     const hasExpiredInCompletedState =
-      this.props.expire_by && this.props.expire_by < currentTimeStamp;
+      this.state.paymentPageEntity.expire_by &&
+      this.state.paymentPageEntity.expire_by <
+        currentTimeStamp + reactivationTimeGap; // within 15 minutes
 
     this.props.openModal({
       size: 'medium',
       component: (
         <ActivateAgain
+          reactivationTimeGap={reactivationTimeGap}
           expireBy={
             isExpired || hasExpiredInCompletedState
               ? this.state.paymentPageEntity.expire_by
@@ -205,21 +209,57 @@ export default class PaymentPagesEntity extends React.Component {
           timesPayable={
             isCompleted ? this.state.paymentPageEntity.times_payable : undefined
           }
+          timesPaid={
+            isCompleted ? this.state.paymentPageEntity.times_paid : undefined
+          }
           handleClose={this.props.closeModal}
           handleClick={data => {
-            return activatePaymentPage(
-              this.state.paymentPageEntity.id,
-              data
-            ).then(resp => {
-              if (resp.data) {
-                updatePPInReduxList(resp.data, false);
-                this.setState({
-                  paymentPageEntity: resp.data,
-                });
-              }
+            return activatePaymentPage(this.state.paymentPageEntity.id, data)
+              .then(resp => {
+                if (resp.data) {
+                  this.props.updatePPInReduxList(resp.data, false);
 
-              return resp;
-            });
+                  this.setState({
+                    paymentPageEntity: resp.data,
+                  });
+
+                  this.props.showNotification({
+                    type: 'success',
+                    message: `${this.state.paymentPageEntity.id} is now Active`,
+                  });
+                } else {
+                  throw 'Some network error has occured';
+                }
+
+                return resp;
+              })
+              .catch(({ errors }) => {
+                let err = errors;
+
+                if (Array.isArray(err)) {
+                  err = [];
+
+                  errors.length &&
+                    errors.forEach(e => {
+                      if (e && e.toLowerCase().indexOf('status code') === -1) {
+                        err.push(e);
+                      }
+                    });
+
+                  err = err.length ? err : null;
+                }
+
+                if (!err) {
+                  err = `Some network error has occured`;
+                }
+
+                this.props.showNotification({
+                  type: 'error',
+                  message: err,
+                });
+
+                throw errors;
+              });
           }}
         />
       ),
@@ -255,7 +295,7 @@ export default class PaymentPagesEntity extends React.Component {
         'Once you deactivate the link, you will not be able to accept payments till you activate it again.';
       affirmativeLabel = 'Yes, deactivate';
       affirmativePendingLabel = 'Deactivating..';
-      successMsg = `${this.state.paymentPageEntity.id} link is now Inactive`;
+      successMsg = `${this.state.paymentPageEntity.id} is now Inactive`;
     } else if (isDeactivated) {
       /* Wants activation for manual deactivation for cancelled status */
 
@@ -265,7 +305,7 @@ export default class PaymentPagesEntity extends React.Component {
         'Once you activate the link, you will be able to accept payments.';
       affirmativeLabel = 'Yes, activate';
       affirmativePendingLabel = 'Activating..';
-      successMsg = `${this.state.paymentPageEntity.id} link is now Active`;
+      successMsg = `${this.state.paymentPageEntity.id} is now Active`;
     }
 
     this.context.confirm({
@@ -289,7 +329,7 @@ export default class PaymentPagesEntity extends React.Component {
 
               this.props.closeModal();
 
-              updatePPInReduxList(resp.data, false);
+              this.props.updatePPInReduxList(resp.data, false);
 
               this.setState({
                 paymentPageEntity: resp.data,
@@ -422,7 +462,7 @@ export default class PaymentPagesEntity extends React.Component {
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
             <i class="i i-link text-primary icon--formal" />{' '}
-            <strong>{paymentPageEntity.id}</strong>
+            <div class="text">{paymentPageEntity.title}</div>
             <ShowWhen notMyRole="support finance">
               <div class="btn-toolbar pull-right">
                 {isActive && (
@@ -441,6 +481,10 @@ export default class PaymentPagesEntity extends React.Component {
             <div class="panel-body">
               <div class="list-group details-row-container">
                 <StatsInfo stats={this.getStatsTable(paymentPageEntity)} />
+                <EntityDetailRow
+                  label="Payment Page Id"
+                  value={paymentPageEntity.id}
+                />
                 <EntityDetailRow
                   label="Amount"
                   value={() => (
@@ -488,49 +532,29 @@ export default class PaymentPagesEntity extends React.Component {
                 <EntityDetailRow
                   label="Payment For"
                   pairClass="description"
-                  value={
-                    isActive || isCompleted
-                      ? () => (
-                          <EditPaymentFor
-                            value={{
-                              title: paymentPageEntity.title,
-                              description: paymentPageEntity.description,
-                            }}
-                            entityId={paymentPageEntity.id}
-                            editFn={this.editPaymentPage}
-                            trackerFn={trackDetailViewEdits}
-                          />
-                        )
-                      : () => (
-                          <div>
-                            {paymentPageEntity.title}
-                            {paymentPageEntity.description && (
-                              <div
-                                class="label--secondary"
-                                style={{ whiteSpace: 'pre' }}
-                              >
-                                {paymentPageEntity.description}
-                              </div>
-                            )}
-                          </div>
-                        )
-                  }
+                  value={() => (
+                    <EditPaymentFor
+                      value={{
+                        title: paymentPageEntity.title,
+                        description: paymentPageEntity.description,
+                      }}
+                      entityId={paymentPageEntity.id}
+                      editFn={this.editPaymentPage}
+                      trackerFn={trackDetailViewEdits}
+                    />
+                  )}
                 />
 
                 <EntityDetailRow
                   label="Receipt"
-                  value={
-                    isActive || isCompleted
-                      ? () => (
-                          <EditReceipt
-                            value={paymentPageEntity.receipt}
-                            entityId={paymentPageEntity.id}
-                            editFn={this.editPaymentPage}
-                            trackerFn={trackDetailViewEdits}
-                          />
-                        )
-                      : paymentPageEntity.receipt || '--'
-                  }
+                  value={() => (
+                    <EditReceipt
+                      value={paymentPageEntity.receipt}
+                      entityId={paymentPageEntity.id}
+                      editFn={this.editPaymentPage}
+                      trackerFn={trackDetailViewEdits}
+                    />
+                  )}
                 />
 
                 <EntityDetailRow label="Created by">
@@ -551,42 +575,26 @@ export default class PaymentPagesEntity extends React.Component {
 
                 <EntityDetailRow
                   label={isExpired ? 'Expired On' : 'Expires On'}
-                  value={
-                    isActive || isCompleted
-                      ? () => (
-                          <EditExpiry
-                            value={paymentPageEntity.expire_by}
-                            editFn={this.editPaymentPage}
-                            entityId={paymentPageEntity.id}
-                            trackerFn={trackDetailViewEdits}
-                          />
-                        )
-                      : () => (
-                          <Time
-                            value={paymentPageEntity.expire_by}
-                            format="DD MMM YYYY, hh:mm a"
-                          />
-                        )
-                  }
+                  value={() => (
+                    <EditExpiry
+                      value={paymentPageEntity.expire_by}
+                      editFn={this.editPaymentPage}
+                      entityId={paymentPageEntity.id}
+                      trackerFn={trackDetailViewEdits}
+                    />
+                  )}
                 />
 
                 <EntityDetailRow
                   label="Times Payable"
-                  value={
-                    isActive || isCompleted
-                      ? () => (
-                          <EditTimesPayable
-                            value={paymentPageEntity.times_payable}
-                            editFn={this.editPaymentPage}
-                            entityId={paymentPageEntity.id}
-                            trackerFn={trackDetailViewEdits}
-                          />
-                        )
-                      : () =>
-                          paymentPageEntity.times_payable || (
-                            <div class="text-danger">No Limit</div>
-                          )
-                  }
+                  value={() => (
+                    <EditTimesPayable
+                      value={paymentPageEntity.times_payable}
+                      editFn={this.editPaymentPage}
+                      entityId={paymentPageEntity.id}
+                      trackerFn={trackDetailViewEdits}
+                    />
+                  )}
                 />
 
                 <EntityDetailRow

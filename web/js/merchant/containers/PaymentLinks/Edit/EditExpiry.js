@@ -8,12 +8,20 @@ import Button, { AsyncBtn } from 'component/Button';
 export default class EditExpiry extends React.Component {
   state = this.resetState();
 
-  resetState() {
+  resetState(props) {
+    props = props || this.props;
+
     return {
       isEditableMode: false,
-      expire_by: this.props.value ? moment(this.props.value * 1000) : undefined,
-      hasNoExpiry: this.props.value ? '0' : '1',
+      expire_by: props.value ? moment(props.value * 1000) : undefined,
+      hasNoExpiry: props.value ? '0' : '1',
     };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.value * 1000 !== this.state.expire_by) {
+      this.setState(this.resetState(nextProps));
+    }
   }
 
   makeEditable = () => {

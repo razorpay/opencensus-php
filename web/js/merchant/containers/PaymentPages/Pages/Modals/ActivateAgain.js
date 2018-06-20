@@ -8,7 +8,7 @@ import { timeCalculator } from 'component/Input/Time';
 import { isInteger } from 'rzp/utils/validators';
 
 const expireByError = 'Expiry has passed';
-const timesPayableError = 'Number of payments exceeded';
+const timesPayableError = 'Enter number greater than payments made';
 
 export default class ActivateAgainModal extends React.Component {
   state = {
@@ -69,8 +69,12 @@ export default class ActivateAgainModal extends React.Component {
   };
 
   flushExpireByError() {
-    // New time must be greater than current time. Ideally it must be 15 min past current time.
-    // TODO: What must be minimum time gap to show FE error?
+    /*
+    * New time must be greater than current time.
+    * Ideally it must be atleast 15 min past current time. But in that case error won't be shown on FE,
+    * but only calendar+time will be shown to be filled again.
+    *
+    * */
 
     const resetError =
       (this.state.hasNoExpiry == '0' && this.state.expireBy > moment()) ||
@@ -82,9 +86,10 @@ export default class ActivateAgainModal extends React.Component {
   }
 
   flushTimesPayableError() {
+    // Has no limit, or new times payable is more than times-paid
     const resetError =
       (this.state.hasNoLimit == '0' &&
-        this.state.timesPayable > this.props.timesPayable) ||
+        this.state.timesPayable > this.props.timesPaid) ||
       this.state.hasNoLimit == '1';
 
     this.setState({
@@ -253,7 +258,7 @@ export default class ActivateAgainModal extends React.Component {
                     reqPayload.times_payable =
                       this.state.hasNoLimit == '1'
                         ? null
-                        : this.state.timesPayable;
+                        : Number(this.state.timesPayable);
                   }
 
                   return this.props.handleClick(reqPayload).then(resp => {

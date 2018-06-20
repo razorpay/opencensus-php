@@ -3,14 +3,22 @@ import Button, { AsyncBtn } from 'component/Button';
 import { isInteger } from 'rzp/utils/validators';
 
 export default class EditTimesPayable extends React.Component {
-  state = this.resetState();
+  state = this.resetState(this.props);
 
-  resetState() {
+  resetState(props) {
+    props = props || this.props;
+
     return {
       isEditableMode: false,
-      timesPayable: this.props.value || '',
-      hasNoLimit: this.props.value ? '0' : '1',
+      timesPayable: props.value || '',
+      hasNoLimit: props.value ? '0' : '1',
     };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.value !== this.state.timesPayable) {
+      this.setState(this.resetState(nextProps));
+    }
   }
 
   makeEditable = () => {
@@ -42,17 +50,17 @@ export default class EditTimesPayable extends React.Component {
             fieldLabel="No Limit"
             name="hasNoLimit"
             defaultValue={this.state.hasNoLimit}
-            value={this.state.hasNoExpiry}
+            value={this.state.hasNoLimit}
             onChange={e => {
               this.setState({
                 hasNoLimit: e.target.value,
               });
 
               if (e.target.value == '0') {
-                setTimeout(
-                  () => document.getElementsByName('times_payable')[0].focus(),
-                  10
-                );
+                setTimeout(() => {
+                  const ele = document.getElementsByName('times_payable');
+                  ele[0] && ele[0].focus();
+                }, 10);
               }
             }}
           />
@@ -62,6 +70,9 @@ export default class EditTimesPayable extends React.Component {
             placeholder="TimesPayable"
             value={this.state.timesPayable}
             disabled={this.state.hasNoLimit === '1'}
+            onFocus={e => {
+              e.target.select();
+            }}
             validator={val => {
               if (this.state.hasNoLimit === '0') {
                 if (!this.state.timesPayable) {
@@ -111,7 +122,7 @@ export default class EditTimesPayable extends React.Component {
                     times_payable:
                       this.state.hasNoLimit == '1'
                         ? null
-                        : this.state.timesPayable,
+                        : Number(this.state.timesPayable),
                   })
                   .then(resp => {
                     if (resp.data) {
