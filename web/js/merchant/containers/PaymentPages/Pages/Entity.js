@@ -461,7 +461,7 @@ export default class PaymentPagesEntity extends React.Component {
       <div class="content-wrapper content-sm txn-details Entity--paymentpage">
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
-            <i class="i i-link text-primary icon--formal" />{' '}
+            <i class="i i-payment-pages text-primary icon--formal" />{' '}
             <div class="text">{paymentPageEntity.title}</div>
             <ShowWhen notMyRole="support finance">
               <div class="btn-toolbar pull-right">
