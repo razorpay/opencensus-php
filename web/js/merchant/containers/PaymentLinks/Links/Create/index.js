@@ -15,7 +15,9 @@ import PaymentLinkFormFields from './Fields';
 
 import moment from 'moment';
 import { createPaymentLink } from '../model';
-import { dateCalculator, timeCalculator } from 'component/Input/Calendar';
+import { dateCalculator } from 'component/Input/Calendar';
+import { timeCalculator } from 'component/Input/Time';
+
 import { onChangeNotes } from 'component/Input/PairList';
 
 import { closeModal, openModal } from 'rzp/modules/modals';

@@ -1,7 +1,8 @@
 import FileUpload from 'merchant/components/File/Upload';
 import { classList } from 'common/util';
 
-import CalendarPicker, { TimePicker } from './Calendar';
+import CalendarPicker from './Calendar';
+import TimePicker from './Time';
 import PairList from './PairList';
 import EditablePairsList from './EditablePairList';
 

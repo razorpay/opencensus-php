@@ -3,7 +3,8 @@ import Button, { AsyncBtn } from 'component/Button';
 import Input from 'component/Input';
 
 import moment from 'moment';
-import { dateCalculator, timeCalculator } from 'component/Input/Calendar';
+import { dateCalculator } from 'component/Input/Calendar';
+import { timeCalculator } from 'component/Input/Time';
 import { isInteger } from 'rzp/utils/validators';
 
 const expireByError = 'Expiry has passed';

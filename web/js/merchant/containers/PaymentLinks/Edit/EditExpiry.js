@@ -1,5 +1,6 @@
 import moment from 'moment';
-import { dateCalculator, timeCalculator } from 'component/Input/Calendar';
+import { dateCalculator } from 'component/Input/Calendar';
+import { timeCalculator } from 'component/Input/Time';
 import Input from 'component/Input';
 import Time from 'rzp/ui/Time';
 import Button, { AsyncBtn } from 'component/Button';
