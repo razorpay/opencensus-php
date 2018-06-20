@@ -70,9 +70,9 @@ class Validator extends Base\Validator
                 'status');
         }
 
-        $validState = in_array($value, Status::REFUND_STATES, true);
+        $validStatus = in_array($value, Status::REFUND_STATUS, true);
 
-        if($validState === false)
+        if($validStatus === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The selected status is invalid.');

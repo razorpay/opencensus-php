@@ -11,7 +11,7 @@ class Status
     const PROCESSED = 'processed';
     const FAILED    = 'failed';
 
-    const REFUND_STATES = [
+    const REFUND_STATUS = [
         self::CREATED,
         self::INITIATED,
         self::PROCESSED,
