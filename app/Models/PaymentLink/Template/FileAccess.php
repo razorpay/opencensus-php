@@ -11,7 +11,7 @@ class FileAccess
 
     protected static $extension = [
         self::UDF_SCHEMA  => 'json',
-        self::HOSTED_PAGE => '.blade.php',
+        self::HOSTED_PAGE => 'blade.php',
     ];
 
     protected $id;
