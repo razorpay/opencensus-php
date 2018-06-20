@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Blade\Mock;
+namespace RZP\Gateway\Mpi\Blade\Mock;
 
 class CardNumber
 {

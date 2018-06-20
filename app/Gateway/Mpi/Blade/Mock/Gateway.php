@@ -1,9 +1,9 @@
 <?php
 
-namespace RZP\Gateway\Blade\Mock;
+namespace RZP\Gateway\Mpi\Blade\Mock;
 
 use RZP\Gateway\Base;
-use RZP\Gateway\Blade;
+use RZP\Gateway\Mpi\Blade;
 
 class Gateway extends Blade\Gateway
 {

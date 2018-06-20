@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Blade;
+namespace RZP\Gateway\Mpi\Blade;
 
 use Cache;
 use Carbon\Carbon;
@@ -10,12 +10,14 @@ use RZP\Constants\Timezone;
 use RZP\Exception;
 use Requests_Hooks;
 use RZP\Models\Card;
-use RZP\Gateway\Base;
+use RZP\Gateway\Mpi\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Lib\Formatters\Xml;
+use RZP\Gateway\Base\Action;
 use RZP\Models\Currency\Currency;
+use RZP\Gateway\Mpi\Base\DeviceCategory;
 
 class Gateway extends Base\Gateway
 {
@@ -46,7 +48,7 @@ class Gateway extends Base\Gateway
         '70179b868c00a4fa609152223f9f3e32bde00562',
     ];
 
-    protected $gateway = 'blade';
+    protected $gateway = 'mpi_blade';
 
 
     /**
@@ -90,10 +92,10 @@ class Gateway extends Base\Gateway
         //
         switch ($enrolled)
         {
-            case Enrolled::Y:
+            case Base\Enrolled::Y:
                 return $this->getPayerAuthenticationRequest($input, $response);
 
-            case Enrolled::N:
+            case Base\Enrolled::N:
                 return null;
 
             default:
@@ -112,7 +114,7 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Base\Action::AUTHORIZE);
+            $input['payment']['id'], Action::AUTHORIZE);
 
         $PARes = $this->validateAndGetPayerAuthenticationResponse($input);
 
@@ -176,52 +178,28 @@ class Gateway extends Base\Gateway
         $ch = $response[VERes::MESSAGE][VERes::VERES][VERes::CH];
 
         $attributes = [
-            Entity::ENROLLED   => $ch[VERes::ENROLLED],
-            Entity::PAYMENT_ID => $input['payment']['id'],
-            Entity::AMOUNT     => $input['payment']['amount'],
-            Entity::CURRENCY   => $input['payment']['currency'],
+            Base\Entity::ENROLLED   => $ch[VERes::ENROLLED],
+            Base\Entity::PAYMENT_ID => $input['payment']['id'],
+            Base\Entity::AMOUNT     => $input['payment']['amount'],
+            Base\Entity::CURRENCY   => $input['payment']['currency'],
         ];
 
         if (empty($ch[VERes::ACCID]) === false)
         {
-            $attributes[Entity::ACC_ID] = $ch[VERes::ACCID];
+            $attributes[Base\Entity::ACC_ID] = $ch[VERes::ACCID];
         }
 
         return $attributes;
     }
 
-    protected function updateGatewayPaymentFromCallbackResponse(
-        Entity $gatewayPayment,
-        array $response)
-    {
-        $attributes = $this->getCallbackResponseAttributes($response);
-
-        $gatewayPayment->fill($attributes);
-
-        $this->repo->saveOrFail($gatewayPayment);
-    }
-
-    protected function createGatewayPaymentEntity(array $attributes, array $input)
-    {
-        $gatewayPayment = $this->getNewGatewayPaymentEntity();
-
-        $gatewayPayment->setAction($this->action);
-
-        $gatewayPayment->fill($attributes);
-
-        $this->repo->saveOrFail($gatewayPayment);
-
-        return $gatewayPayment;
-    }
-
     protected function getCallbackResponseAttributes($response)
     {
         $attributes = [
-            Entity::XID            => $response[PARes::PURCHASE][PARes::XID] ?? null,
-            Entity::CAVV           => $response[PARes::TX][PARes::CAVV] ?? null,
-            Entity::CAVV_ALGORITHM => $response[PARes::TX][PARes::CAVVALGORITHM] ?? null,
-            Entity::STATUS         => $response[PARes::TX][PARes::STATUS],
-            Entity::ECI            => $response[PARes::TX][PARes::ECI] ?? null,
+            Base\Entity::XID            => $response[PARes::PURCHASE][PARes::XID] ?? null,
+            Base\Entity::CAVV           => $response[PARes::TX][PARes::CAVV] ?? null,
+            Base\Entity::CAVV_ALGORITHM => $response[PARes::TX][PARes::CAVVALGORITHM] ?? null,
+            Base\Entity::STATUS         => $response[PARes::TX][PARes::STATUS],
+            Base\Entity::ECI            => $response[PARes::TX][PARes::ECI] ?? null,
         ];
 
         return $attributes;
@@ -399,7 +377,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_ENROLL_RESPONSE,
             [
-                'gateway' => 'blade',
+                'gateway' => 'mpi_blade ',
                 'response' => $response->body,
                 'payment_id' => $input['payment']['id']
             ]);
@@ -642,7 +620,7 @@ class Gateway extends Base\Gateway
         unset($traceContent['Message']['VEReq']['Merchant']['password']);
 
         $this->trace->info(TraceCode::GATEWAY_ENROLL_REQUEST, [
-            'gateway' => 'blade',
+            'gateway' => 'mpi_blade',
             'payment_id' => $input['payment']['id'],
             'content' => $traceContent
         ]);

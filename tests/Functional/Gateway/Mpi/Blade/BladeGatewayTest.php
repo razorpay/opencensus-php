@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Gateway\Blade;
+namespace RZP\Tests\Functional\Gateway\Mpi\Blade;
 
 use RZP\Exception;
 use Carbon\Carbon;
@@ -9,7 +9,7 @@ use RZP\Constants\Timezone;
 use RZP\Error\PublicErrorCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as Payment;
-use RZP\Gateway\Blade\Mock\CardNumber;
+use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Fixtures\Entity\TransactionTrait;
 
@@ -28,7 +28,7 @@ class BladeGatewayTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->gateway = 'blade';
+        $this->gateway = 'mpi_blade';
     }
 
     public function testSuccessful13DigitPanForEnrolledCard()
