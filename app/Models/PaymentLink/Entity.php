@@ -43,6 +43,7 @@ class Entity extends Base\PublicEntity
     const EMAILS            = 'emails';
     const CONTACT           = 'contact';
     const EMAIL             = 'email';
+    const USER              = 'user';
 
     // Additional general usage input/output constants for the module
     const PAYMENT_ID         = 'payment_id';
@@ -109,6 +110,7 @@ class Entity extends Base\PublicEntity
         self::STATUS_REASON,
         self::SHORT_URL,
         self::USER_ID,
+        self::USER,
         self::RECEIPT,
         self::TITLE,
         self::DESCRIPTION,

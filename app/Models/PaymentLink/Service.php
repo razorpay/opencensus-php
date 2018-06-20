@@ -21,6 +21,17 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->payment_link;
     }
 
+    /**
+     * {@inheritDoc}
+     * Overridden as it expects in arguments & passes around $input to repository method
+     */
+    public function fetch(string $id, array $input): array
+    {
+        $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
+
+        return $entity->toArrayPublic();
+    }
+
     public function create(array $input): array
     {
         $entity = $this->core->create($input, $this->merchant, $this->user);

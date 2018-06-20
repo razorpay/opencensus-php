@@ -14,6 +14,19 @@ class PaymentLinkController extends Controller
 {
     use HasCrudMethods;
 
+    /**
+     * {@inheritDoc}
+     * Overridden as it passes around $input to service method
+     */
+    public function get(string $id)
+    {
+        $input = Request::all();
+
+        $entity = $this->service()->fetch($id, $input);
+
+        return ApiResponse::json($entity);
+    }
+
     public function sendNotification(string $id)
     {
         $this->service()->sendNotification($id, $this->input);

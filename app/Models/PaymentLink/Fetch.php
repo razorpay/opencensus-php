@@ -15,6 +15,7 @@ class Fetch extends BaseFetch
             Entity::TITLE         => 'filled|string|min:2|max:255',
             Entity::STATUS        => 'filled|required_with:status_reason|custom',
             Entity::STATUS_REASON => 'filled|custom',
+            self::EXPAND_EACH     => 'filled|string|in:user',
         ],
     ];
 
@@ -26,6 +27,7 @@ class Fetch extends BaseFetch
             Entity::TITLE,
             Entity::STATUS,
             Entity::STATUS_REASON,
+            self::EXPAND_EACH,
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::USER_ID,
