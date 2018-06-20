@@ -110,6 +110,10 @@ class AuthCreds
      * NOTE: key length 29 is used for OAuth public tokens,
      * hence DO NOT add 29 as a valid length for basicAuth
      *
+     * key length 31 is for partners that use their dummy
+     * client credentials for BasicAuth. The is something
+     * like rzp_test_partner_dummyClientId1
+     *
      * @var array
      */
     public static $validKeyLengths = [

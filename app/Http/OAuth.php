@@ -198,19 +198,19 @@ class OAuth
         $this->ba->oauthPublicTokenAuth($publicKey);
 
         // Sets the mode for the request, and database connection
-        $this->ba->getAuthCreds()->setModeAndDbConnection($mode);
+        $this->ba->authCreds->setModeAndDbConnection($mode);
 
         //
         // Set merchant for the current request
         // TODO: Move this to a common auth class
         //
-        $this->ba->getAuthCreds()->setMerchantById($response[OAuthToken::MERCHANT_ID]);
+        $this->ba->authCreds->setMerchantById($response[OAuthToken::MERCHANT_ID]);
 
 
 
         try
         {
-            $this->ba->getAuthCreds()->checkMerchantActivatedForLive();
+            $this->ba->authCreds->checkMerchantActivatedForLive();
         }
         catch (Exception\LogicException $e)
         {

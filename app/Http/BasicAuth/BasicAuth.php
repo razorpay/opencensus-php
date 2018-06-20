@@ -263,22 +263,6 @@ class BasicAuth
      */
     protected $dashboardHeaders = array();
 
-    ///**
-    // * Contains valid lengths of key.
-    // * rzp_mode            = 3 + 1 + 4
-    // * rzp_mode_admin      = 3 + 1 + 4 + 1 + 5
-    // * rzp_mode_keyId      = 3 + 1 + 4 + 1 + 24
-    // * rzp_mode_merchantId = 3 + 1 + 4 + 1 + 14
-    // *
-    // * NOTE: key length 29 is used for OAuth public tokens,
-    // * hence DO NOT add 29 as a valid length for basicAuth
-    // *
-    // * @var array
-    // */
-    //public static $validKeyLengths = [
-    //    8, 14, 23, 31, 33
-    //];
-
     protected $adminOrgId  = null;
 
     protected $adminToken;
@@ -310,7 +294,7 @@ class BasicAuth
      * Sample:
      * [
      *  'key' => 'rzp_test_partner_1DP5mmOlF5G5ag'
-     *  'partner_token' => 'rzp_partner_ACIg2tb8NySnuh'
+     *  'account_id' => 'acc_ACIg2tb8NySnuh'
      * ]
      *
      * @var array
@@ -913,175 +897,6 @@ class BasicAuth
         return true;
     }
 
-    //protected function verifyKeyLength($key)
-    //{
-    //    $keyLen = strlen($key);
-    //
-    //    return in_array($keyLen, static::$validKeyLengths);
-    //}
-    //
-    //protected function verifyKeyPrefix($key)
-    //{
-    //    return (substr($key, 0, 4) === 'rzp_');
-    //}
-    //
-    //protected function verifyAndSetMode($key)
-    //{
-    //    $mode = substr($key, 4, 4);
-    //
-    //    if ($mode === Mode::LIVE)
-    //    {
-    //        $this->setMode(Mode::LIVE);
-    //    }
-    //    else if ($mode === Mode::TEST)
-    //    {
-    //        $this->setMode(Mode::TEST);
-    //    }
-    //    else
-    //    {
-    //        return false;
-    //    }
-    //
-    //    if ((strlen($key) > 8) and
-    //        (substr($key, 8, 1) !== '_'))
-    //    {
-    //        return false;
-    //    }
-    //
-    //    \Database\DefaultConnection::set($mode);
-    //
-    //    return true;
-    //}
-
-    /**
-     * Verify key exists by fetching it
-     * @return boolean
-     */
-    //protected function verifyKeyExistence()
-    //{
-    //    if ($this->isKeyExisting() === false)
-    //    {
-    //        return $this->invalidApiKey();
-    //    }
-    //
-    //    return $this->verifyKeyNotExpired();
-    //}
-
-    //protected function isKeyExisting()
-    //{
-    //    $keyId = $this->getKey();
-    //
-    //    if ($keyId === '')
-    //    {
-    //        return false;
-    //    }
-    //
-    //    //
-    //    // For keys sent by merchants, make sure they exist in db.
-    //    // In case of partner, this will return partnerClient which
-    //    // has partner id + secret that serve as credentials
-    //    //
-    //    $keyOrPartnerClient = $this->fetchKeyOrPartnerClient($keyId);
-    //
-    //    return ($keyOrPartnerClient !== null);
-    //}
-
-    /**
-     * Used for private/secret authentication.
-     * These requests are expected to originate
-     * from merchant's server
-     *
-     * @return bool|Response
-     */
-    //protected function verifySecret()
-    //{
-    //    $keyEntity = $this->key;
-    //
-    //    $partnerClient = $this->partnerClient;
-    //
-    //    $secret = $this->getSecret();
-    //
-    //    if ($secret === '')
-    //    {
-    //        $this->trace->info(
-    //            TraceCode::BAD_REQUEST_API_SECRET_NOT_PROVIDED, [self::KEY_ID => $this->getKey()]);
-    //
-    //        return ApiResponse::unauthorized(
-    //            ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
-    //    }
-    //
-    //    // The following cases should never both be true
-    //    if (empty($keyEntity) === false)
-    //    {
-    //        return $this->verifyKeySecretAndFetchMerchant($keyEntity, $secret);
-    //    }
-    //
-    //    if (empty($partnerClient) === false)
-    //    {
-    //        return $this->verifyClientSecretAndFetchMerchant($partnerClient, $secret);
-    //    }
-    //}
-
-    protected function verifyKeySecretAndFetchMerchant(Key\Entity $keyEntity, string $secret)
-    {
-        if (Crypt::decrypt($keyEntity->getSecret()) !== $secret)
-        {
-            $this->trace->info(
-                TraceCode::BAD_REQUEST_INVALID_API_SECRET, [self::KEY_ID => $this->getKey()]);
-
-            return ApiResponse::unauthorized(
-                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
-        }
-
-        $this->fetchMerchantOfKey($keyEntity);
-
-        return true;
-    }
-
-    protected function verifyClientSecretAndFetchMerchant(OAuthClient\Entity $client, string $secret)
-    {
-        if ($client->getSecret() !== $secret)
-        {
-            $this->trace->info(
-                TraceCode::BAD_REQUEST_INVALID_API_SECRET, ['client_id' => $client->getSecret()]);
-
-            return ApiResponse::unauthorized(
-                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
-        }
-
-        $this->fetchMerchantOfClient($client);
-
-        return true;
-    }
-
-    //protected function verifyKeyNotExpired()
-    //{
-    //    if ((empty($this->key) === false) and ($this->key->isExpired() === false))
-    //    {
-    //        return true;
-    //    }
-    //
-    //    if (empty($this->partnerClient) === false)
-    //    {
-    //        return true;
-    //    }
-    //
-    //    return ApiResponse::unauthorized(
-    //        ErrorCode::BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED);
-    //}
-
-    //protected function verifyKeyExpiryAndSecret()
-    //{
-    //    $response = $this->verifyKeyNotExpired();
-    //
-    //    if ($response !== true)
-    //    {
-    //        return $response;
-    //    }
-    //
-    //    return $this->verifySecret();
-    //}
-
     /**
      * Used for device verification. Checks
      * that the device exists and belongs
@@ -1355,11 +1170,6 @@ class BasicAuth
         return $merchant->getId();
     }
 
-    public function getAuthCreds()
-    {
-        return $this->authCreds;
-    }
-
     public function getDevice()
     {
         return $this->device;
@@ -1380,16 +1190,6 @@ class BasicAuth
         return $this->adminOrgId;
     }
 
-    //public function getMerchantId()
-    //{
-    //    if ($this->getMerchant() === null)
-    //    {
-    //        return null;
-    //    }
-    //
-    //    return $this->merchant->getKey();
-    //}
-
     public function getAccessTokenId()
     {
         return $this->accessTokenId;
@@ -1404,16 +1204,6 @@ class BasicAuth
     {
         return $this->partnerMerchantId;
     }
-
-    //public function getMerchantIdOfKey()
-    //{
-    //    if ($this->key === null)
-    //    {
-    //        return null;
-    //    }
-    //
-    //    return $this->key->getMerchantId();
-    //}
 
     public function getPublicKey()
     {
@@ -1467,19 +1257,6 @@ class BasicAuth
 
         \Database\DefaultConnection::set($mode);
     }
-
-    ///**
-    // * Sets $merchant instance var value by given $merchantId.
-    // * Called by OAuth flow. OAuth server response contains the same($merchantId).
-    // *
-    // * @param string $merchantId
-    // */
-    //public function setMerchantById(string $merchantId)
-    //{
-    //    $merchant = $this->repo->merchant->findOrFail($merchantId);
-    //
-    //    $this->setMerchant($merchant);
-    //}
 
     public function setAccessTokenId(string $tokenId)
     {
@@ -1619,53 +1396,6 @@ class BasicAuth
         return $this->checkAndSetAccountId();
     }
 
-    //protected function fetchKeyOrPartnerClient($keyId)
-    //{
-    //    $this->key = $this->repo->key->find($keyId);
-    //
-    //    if (empty($this->key) === true)
-    //    {
-    //        // This could be a partner call and hence we check for client credentials
-    //        if (empty($this->getPartnerToken()) === false)
-    //        {
-    //            $this->partnerClient = (new OAuthClient\Repository)->getClientByIdAndEnv(
-    //                $keyId,
-    //                self::$clientModes[$this->getMode()]
-    //            );
-    //
-    //            $this->isPartnerAuth = true;
-    //
-    //            return $this->partnerClient;
-    //        }
-    //    }
-    //
-    //    return $this->key;
-    //}
-
-    //protected function fetchMerchantOfKey($key)
-    //{
-    //    $merchantId = $key->getMerchantId();
-    //
-    //    $merchant = $this->repo->merchant->findOrFail($merchantId);
-    //
-    //    $this->setAndCheckMerchantActivatedForLive($merchant);
-    //
-    //    return $this->merchant;
-    //}
-    //
-    //protected function fetchMerchantOfClient($client)
-    //{
-    //    $merchantId = $client->getMerchantId();
-    //
-    //    $merchant = $this->repo->merchant->findOrFail($merchantId);
-    //
-    //    // Here we do not need to check for activated, that check will be
-    //    // on the sub-merchant passed in the X_RAZORPAY_PARTNER_TOKEN header
-    //    $this->setMerchant($merchant);
-    //
-    //    return $this->merchant;
-    //}
-
     protected function fetchAdminToken($token)
     {
         $mode = $this->getLiveConnection();
@@ -1765,14 +1495,9 @@ class BasicAuth
     {
         $partnerMerchant = $this->authCreds->getMerchant();
         //
-        // $this->merchant needs to have been set, and have the 'partner' feature
-        // enabled for Partner token auth to apply
+        // $this->merchant needs to have been set, and have been tagged as 'partner'
         //
-        // TODO: Replace the second check with $this->merchant->isPartner once that\
-        // function is merged to base from other PR
-        if ((empty($partnerMerchant) === true) or
-            // ($this->merchant->isPartner() === false)) TODO: Enable this and remove below line
-            ($partnerMerchant->isFeatureEnabled(Feature::PARTNER) === false))
+        if ((empty($partnerMerchant) === true) or ($partnerMerchant->isPartner() === false))
         {
             return false;
         }
