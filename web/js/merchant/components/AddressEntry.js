@@ -228,7 +228,7 @@ export default class AddressEntry extends Component {
           >
             <PowerSelect
               placeholder="State"
-              class="address-entry-PS ps-z-index-fix"
+              class="address-entry-PS ps-in-modal"
               selected={selectedState}
               optionLabelPath="name"
               options={states}
@@ -240,7 +240,7 @@ export default class AddressEntry extends Component {
             <div class="col col-md-6">
               <PowerSelect
                 placeholder="Country"
-                class="address-entry-PS ps-z-index-fix"
+                class="address-entry-PS ps-in-modal"
                 selected={country}
                 options={countries}
                 onChange={this.updateCountry}

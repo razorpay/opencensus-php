@@ -74,7 +74,7 @@ body.show-hotjar-poll #_hj_poll_container {
 
       .rzp-banner {
 
-        background-color: transparent; 
+        background-color: transparent;
         border: none;
         margin-bottom: 0;
         color: inherit;
@@ -92,7 +92,7 @@ body.show-hotjar-poll #_hj_poll_container {
           }
         }
       }
-      
+
       &.banner-close {
 
         width: 1px;
@@ -429,7 +429,9 @@ body.analytics-v2-active {
 
   .tether-element {
 
-    z-index: 2;
+    &:not(.ps-in-modal__Tether) {
+      z-index: 2;
+    }
 
     .react-normal-select__Menu {
 

@@ -497,7 +497,7 @@ export default class AddItem extends Component {
                   <div class="form-group">
                     <label>Tax Rate</label>
                     <PowerSelect
-                      class="CheckableItem__PowerSelect ps-z-index-fix"
+                      class="CheckableItem__PowerSelect ps-in-modal"
                       placeholder="Select Tax Rate"
                       options={gstRates}
                       selected={taxRate}
