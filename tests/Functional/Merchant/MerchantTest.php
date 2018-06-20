@@ -1614,9 +1614,7 @@ class MerchantTest extends TestCase
             $fixtureData['starts_at'] = $startsAt;
 
             $offer = $this->fixtures->create('offer', $fixtureData);
-            $order = $this->fixtures->create('order:with_undiscounted_offer_applied', [
-                'offer_id' => $offer->getId()
-            ]);
+            $order = $this->fixtures->order->createWithUndiscountedOffers($offer);
 
             $data['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
 
@@ -1645,9 +1643,7 @@ class MerchantTest extends TestCase
             $fixtureData['starts_at'] = $startsAt;
 
             $offer = $this->fixtures->create('offer', $fixtureData);
-            $order = $this->fixtures->create('order:with_offer_applied', [
-                'offer_id' => $offer->getId()
-            ]);
+            $order = $this->fixtures->order->createWithOffers($offer);
 
             $data['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
 

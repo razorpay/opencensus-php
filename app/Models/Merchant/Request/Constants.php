@@ -30,13 +30,11 @@ class Constants
     ];
 
     public static $typeNamesMap = [
-
         Type::PRODUCT => [
             Feature\Constants::MARKETPLACE,
             Feature\Constants::VIRTUAL_ACCOUNTS,
             Feature\Constants::SUBSCRIPTIONS,
         ],
-
         Type::PARTNER => [
             self::ACTIVATION,
             self::DEACTIVATION,

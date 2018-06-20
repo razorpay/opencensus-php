@@ -11,7 +11,7 @@ class AuthenticationException extends RecoverableException
         $autheticationErrorDesc = null,
         \Exception $previous = null)
     {
-        parent::__construct('', 0, $previous);
+        parent::__construct('', $code, $previous);
 
         Error::checkErrorCode($code);
 

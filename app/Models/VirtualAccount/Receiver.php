@@ -30,7 +30,7 @@ class Receiver extends Base\Core
     const STANDARD_HANDLE_LENGTH       = 4;
     const DESCRIPTOR_LENGTH            = 9;
     const PRIVILEGED_DESCRIPTOR_LENGTH = 10;
-    const ACCOUNT_NUMBER_LENGTH        = 17;
+    const ACCOUNT_NUMBER_LENGTH        = 16;
 
     const DEFAULT_BANK_ACCOUNT_OPTIONS = [
         self::DESCRIPTOR => null,

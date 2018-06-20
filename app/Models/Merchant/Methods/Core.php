@@ -147,10 +147,7 @@ class Core extends Base\Core
             $this->addRecurringEmandateToMethodsIfApplicable($merchant, $methods, $data['recurring']);
         }
 
-        $merchantList = Merchant\Preferences::MID_INTENT_WHITELIST;
-
-        if ((in_array($merchant->getId(), $merchantList, true) === true) and
-            ($merchant->isFeatureEnabled(Constants::DISABLE_UPI_INTENT) === false))
+        if ($merchant->isFeatureEnabled(Constants::DISABLE_UPI_INTENT) === false)
         {
             $data['upi_intent'] = true;
         }

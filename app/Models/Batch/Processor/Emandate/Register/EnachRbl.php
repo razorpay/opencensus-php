@@ -98,6 +98,6 @@ class EnachRbl extends Base
         // We use 2nd index as 1st sheet contains the summary and
         // 2nd sheet contains th actual recon data
         //
-        return $sheets[1];
+        return last($sheets);
     }
 }

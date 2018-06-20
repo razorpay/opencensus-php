@@ -245,6 +245,7 @@ class Entity extends Base\PublicEntity
         self::HANDLE,
         self::RISK_RATING,
         self::RISK_THRESHOLD,
+        self::PARTNER_TYPE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::SUSPENDED_AT,

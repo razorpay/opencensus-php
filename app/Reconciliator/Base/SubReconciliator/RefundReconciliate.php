@@ -160,7 +160,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $validRefundAmount = $this->validateRefundAmountEqualsReconAmount($row);
 
-        $validRefundDetails = ($validPaymentStatus and $validRefundAmount);
+        $validCurrencyCode = $this->validateRefundCurrencyEqualsReconCurrency($row);
+
+        $validRefundDetails = (($validPaymentStatus === true) and
+                               ($validRefundAmount === true) and
+                               ($validCurrencyCode === true));
 
         return $validRefundDetails;
     }
@@ -489,6 +493,20 @@ class RefundReconciliate extends Foundation\SubReconciliate
      * @return bool
      */
     protected function validateRefundAmountEqualsReconAmount(array $row)
+    {
+        return true;
+    }
+
+
+    /**
+     * Checks if currency in recon file matches the actual currency in refund entity
+     * Implementation to be provided by child clasess
+     *
+     * @param  array $row Row data
+     *
+     * @return bool
+     */
+    protected function validateRefundCurrencyEqualsReconCurrency(array $row) : bool
     {
         return true;
     }

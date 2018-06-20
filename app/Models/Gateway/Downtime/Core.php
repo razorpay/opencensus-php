@@ -39,6 +39,13 @@ class Core extends Base\Core
             $downtime = (new Entity)->build($input);
         }
 
+        if (isset($input[Entity::TERMINAL_ID]) === true)
+        {
+            $terminal = $this->repo->terminal->findOrFailPublic($input[Entity::TERMINAL_ID]);
+
+            $downtime->terminal()->associate($terminal);
+        }
+
         $this->repo->saveOrFail($downtime);
 
         return $downtime;
@@ -51,6 +58,13 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::GATEWAY_DOWNTIME_EDIT, $input);
 
         $downtime->edit($input);
+
+        if (isset($input[Entity::TERMINAL_ID]) === true)
+        {
+            $terminal = $this->repo->terminal->findOrFailPublic($input[Entity::TERMINAL_ID]);
+
+            $downtime->terminal()->associate($terminal);
+        }
 
         $this->repo->saveOrFail($downtime);
 

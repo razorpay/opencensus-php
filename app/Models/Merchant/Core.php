@@ -817,9 +817,10 @@ class Core extends Base\Core
     {
         $submissions = $this->getPartnerSubmissions($merchantRequest);
 
-        if (isset($submissions[Entity::PARTNER_TYPE]) === false)
+        if (empty($submissions[Entity::PARTNER_TYPE]) === true)
         {
-            throw new LogicException(PublicErrorDescription::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
+            throw new LogicException(
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
                 ErrorCode::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
                 $submissions);
         }
@@ -827,6 +828,8 @@ class Core extends Base\Core
         $partnerType = $submissions[Entity::PARTNER_TYPE];
 
         $merchant = $merchantRequest->merchant;
+
+        (new Validator)->validateIfAlreadyPartner($merchant);
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $partnerType)
         {
@@ -849,9 +852,11 @@ class Core extends Base\Core
      */
     public function unmarkAsPartner(Entity $merchant): Entity
     {
+        (new Validator)->validateIfNotAPartner($merchant);
+
         $this->repo->transactionOnLiveAndTest(function() use ($merchant)
         {
-            $merchant->setPartnerType(null);
+            $merchant->setPartnerType();
 
             $this->repo->saveOrFail($merchant);
 

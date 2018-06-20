@@ -29,7 +29,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function create(array $input)
+    public function create(array $input, Merchant\Entity $merchant)
     {
         $submissions = $input[Constants::SUBMISSIONS] ?? [];
 
@@ -40,6 +40,8 @@ class Core extends Base\Core
         $request->generateId();
 
         $request->build($input);
+
+        $request->merchant()->associate($merchant);
 
         $this->repo->transactionOnLiveAndTest(function() use($request, $input, $submissions)
         {
@@ -266,7 +268,7 @@ class Core extends Base\Core
             default:
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_PARTNER_NAME,
+                    ErrorCode::BAD_REQUEST_MERCHANT_REQUEST_INVALID_NAME,
                     Entity::NAME,
                     [
                         Entity::ID   => $request->getId(),
@@ -364,7 +366,7 @@ class Core extends Base\Core
 
             $input[Entity::STATUS]      = Status::UNDER_REVIEW;
 
-            $request = $this->create($input);
+            $request = $this->create($input, $merchant);
         }
 
         return $request;
@@ -610,7 +612,7 @@ class Core extends Base\Core
      */
     public function createMerchantRequest(array $input): Entity
     {
-        (new Validator)->validateCreateMerchantRequests($input);
+        (new Validator)->validateCreateMerchantRequest($input);
 
         $type = $input[Entity::TYPE];
 
@@ -626,15 +628,10 @@ class Core extends Base\Core
         }
 
         //
-        // Product onboarding submissions and partner activation requests must only be inserted in the live db.
         // Force set the database connection and mode to live.
+        // @todo Instead of forcing live connection, block requests from test connection
         //
-        $liveModeRequestTypes = [
-            Type::PRODUCT,
-            Type::PARTNER,
-        ];
-
-        if (in_array($type, $liveModeRequestTypes, true) === true)
+        if (in_array($type, Type::$liveModeRequestTypes, true) === true)
         {
             $liveMode = $this->app['basicauth']->getLiveConnection();
 
@@ -642,7 +639,7 @@ class Core extends Base\Core
             $this->setModeAndDefaultConnection($liveMode);
         }
 
-        $request = $this->create($input);
+        $request = $this->create($input, $this->merchant);
 
         return $request;
     }

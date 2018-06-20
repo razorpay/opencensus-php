@@ -62,6 +62,23 @@ class NetbankingBobGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testPaymentNetbankingEntity');
     }
 
+    public function testPaymentOnCorporate()
+    {
+        $payment = $this->payment;
+
+        $payment['bank'] = 'BARB_C';
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'testPaymentOnCorporateNetbankingEntity');
+    }
+
     public function testAuthorizationFailure()
     {
         $data = $this->testData[__FUNCTION__];

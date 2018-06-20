@@ -118,27 +118,26 @@ class Core extends Base\Core
         // This was done to maintain flow clean. Because if not now, there are chances
         // we want to handle different things in different case.
         //
-        // This is neat base code for that.
-        //
 
         $operation = 'edit' . studly_case($status);
 
-        try
+        $invoice->edit($input, $operation);
+
+        $updateFunction = 'update' . studly_case($status) . 'Invoice';
+
+        // If a custom function exists to handle update for a status, call it. Else, handle save here and proceed
+        if (method_exists($this, $updateFunction) === true)
         {
-            $invoice->edit($input, $operation);
-
-            $updateFunction = 'update' . studly_case($status) . 'Invoice';
-
             $this->$updateFunction($merchant, $invoice, $input);
         }
-        catch (\Exception $e)
+        else
         {
-            ExceptionHandler::handleMySqlUniqueError($e, $invoice, $input);
+            $this->repo->saveOrFail($invoice);
         }
 
         $this->repo->loadRelations($invoice);
 
-        if ($invoice->isIssued())
+        if ($invoice->isIssued() === true)
         {
             InvoiceJob::dispatch($this->mode, InvoiceJob::UPDATED, $invoice->getId());
         }
@@ -712,9 +711,7 @@ class Core extends Base\Core
      */
     public function calculateAndSetAmountsOfInvoice(Entity $invoice)
     {
-        // Other types won't have taxation, their tax amount will be 0
-        // and net amount will be equal to amount.
-
+        // Other types won't have taxation, their tax amount will be 0 and net amount will be equal to amount.
         if (($invoice->isTypeInvoice() === false) and ($invoice->getAmount() !== null))
         {
             $invoice->setTaxAmount(0);
@@ -725,9 +722,7 @@ class Core extends Base\Core
 
         $lineItems = $invoice->lineItems()->get();
 
-        // If there are no line items associated with invoice, make all amounts
-        // field 'null' (i.e. unset).
-
+        // If there are no line items associated with invoice, make all amounts field 'null' (i.e. unset).
         if ($lineItems->count() === 0)
         {
             $invoice->setAmountsToNull();
@@ -735,23 +730,34 @@ class Core extends Base\Core
             return;
         }
 
+        //
         // Invoice's:
         // Gross amount = ∑(line_items.gross_amount)
-        // Tax amount = ∑(line_items.tax_amount)
-        // Amount = ∑(line_items.net_amount)
+        // Tax amount   = ∑(line_items.tax_amount)
+        // Amount       = ∑(line_items.net_amount)
+        //
+        // Note: We do re calculation of all taxes of line items here to get the precise(float) value and then ∑
+        // followed by rounding here again to set in invoice's entity. This is because line item's taxes entities are
+        // already built earlier in the flow and they have in their columns values rounded(so precision lost). This is
+        // and quick workaround and we'll revisit to have the flow here fixed besides thinking long term of keeping
+        // precise amount throughout (i.e. PAISE multiplied by 100 or something :) ).
+        //
 
         $grossAmount = $taxAmount = $amount = 0;
 
         foreach ($lineItems as $lineItem)
         {
-            $grossAmount += $lineItem->getGrossAmount();
-            $taxAmount   += $lineItem->getTaxAmount();
-            $amount      += $lineItem->getNetAmount();
+            // Gets line item's gross, tax and net amount in order
+            $amounts = $this->lineItemCore->calculateAmountsOfLineItem($lineItem);
+
+            $grossAmount += $amounts[0];
+            $taxAmount   += $amounts[1];
+            $amount      += $amounts[2];
         }
 
         $invoice->setGrossAmount($grossAmount);
-        $invoice->setTaxAmount($taxAmount);
-        $invoice->setAmount($amount);
+        $invoice->setTaxAmount((int) round($taxAmount));
+        $invoice->setAmount((int) round($amount));
 
         $invoice->getValidator()->validateMaxAllowedAmount($grossAmount);
     }
