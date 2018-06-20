@@ -1595,6 +1595,23 @@ class MerchantTest extends TestCase
         $this->assertStringStartsWith('offer_', $response['offers'][0]['id']);
     }
 
+    public function testGetCheckoutPreferencesWithMultipleOrderOffers()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ]);
+
+        $this->ba->publicAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order->getPublicId();
+
+        $this->startTest();
+    }
+
     public function testGetCheckoutPreferencesWithOrderRelatedUndiscountedOffer()
     {
         $this->ba->publicAuth();
@@ -1616,7 +1633,9 @@ class MerchantTest extends TestCase
             $fixtureData['starts_at'] = $startsAt;
 
             $offer = $this->fixtures->create('offer', $fixtureData);
-            $order = $this->fixtures->order->createWithUndiscountedOffers($offer);
+            $order = $this->fixtures->order->createWithUndiscountedOffers($offer, [
+                'force_offer' => true,
+            ]);
 
             $data['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
 

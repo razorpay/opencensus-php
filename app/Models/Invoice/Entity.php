@@ -1396,11 +1396,11 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Gets the most recent invoice pdf file
+     * Gets the most recent invoice pdf file, or null
      *
-     * @return FileStore\Entity
+     * @return FileStore\Entity|null
      */
-    public function pdf(): FileStore\Entity
+    public function pdf()
     {
         return $this->files()
                     ->where(FileStore\Entity::TYPE, '=', FileStore\Type::INVOICE_PDF)

@@ -14,6 +14,7 @@ use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Order;
+use RZP\Models\Offer;
 use RZP\Models\Feature;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
@@ -22,6 +23,7 @@ use RZP\Models\Currency;
 use RZP\Models\Customer;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
+use RZP\Constants\Table;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -2456,6 +2458,30 @@ class Entity extends Base\PublicEntity
     public function discount()
     {
         return $this->hasOne('RZP\Models\Discount\Entity');
+    }
+
+    public function offers()
+    {
+        return $this->morphToMany(
+                        Offer\Entity::class,
+                        'entity',
+                        Table::ENTITY_OFFER)
+                    ->withTimestamps();
+    }
+
+    public function associateOffer(Offer\Entity $offer)
+    {
+        // Creates row in entity_offers table
+        $this->offers()->attach($offer);
+    }
+
+    /**
+     * Works cos we only associate one offer with payment
+     * @return Offer\Entity
+     */
+    public function getOffer()
+    {
+        return $this->offers->first();
     }
 
 // --------------- Relation to other entity section ends -----------------------

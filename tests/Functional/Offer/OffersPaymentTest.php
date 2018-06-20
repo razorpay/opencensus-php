@@ -48,6 +48,13 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(90000, $payment['amount']);
         $this->assertEquals('captured', $payment['status']);
 
+        // Payment Offer row got created
+        $entityOffers = $this->getEntities('entity_offer', ['entity_type'=>'payment'], true);
+        $entityOffer = $entityOffers['items'][0];
+        $this->assertEquals($offer->getId(), $entityOffer['offer_id']);
+        $this->assertEquals($payment['entity'], $entityOffer['entity_type']);
+        $this->assertEquals($payment['id'], 'pay_' . $entityOffer['entity_id']);
+
         $order = $this->getLastEntity('order', true);
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);

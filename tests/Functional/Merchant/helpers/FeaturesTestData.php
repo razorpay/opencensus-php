@@ -771,4 +771,27 @@ return [
             'status_code' => 400,
         ],
     ],
+
+    'testAddNonVisibleFeatureToAccount' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/accounts/me/features',
+            'content' => [
+                'names' => ['dummy'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+        ],
+    ],
 ];

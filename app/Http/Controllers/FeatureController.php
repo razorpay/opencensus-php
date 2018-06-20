@@ -17,7 +17,11 @@ class FeatureController extends Controller
      */
     public function addAccountFeatures()
     {
-        return $this->addFeatures();
+        $input = Request::all();
+
+        $data = $this->service()->addAccountFeatures($input);
+
+        return ApiResponse::json($data);
     }
 
     /**
