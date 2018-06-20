@@ -27,9 +27,17 @@ class Validator extends Base\Validator
         Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card,emi,emandate|nullable|alpha|max:10',
         Entity::EMI_DURATION        => 'sometimes|nullable|integer|in:3,6,9,12,18,24',
         Entity::INTERNATIONAL       => 'sometimes|in:0,1',
+        Entity::RECEIVER_TYPE       => 'sometimes_if:payment_method,card,upi|nullable|in:qr_code',
         Entity::AMOUNT_RANGE_ACTIVE => 'sometimes|in:0,1',
         Entity::AMOUNT_RANGE_MIN    => 'required_only_if:amount_range_active,1|nullable|integer|min:0',
         Entity::AMOUNT_RANGE_MAX    => 'required_only_if:amount_range_active,1|nullable|integer|max:1000000000',
+        Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
+        Entity::FIXED_RATE          => 'sometimes|integer|max:100000',
+        Entity::MIN_FEE             => 'sometimes|integer|max:100000',
+        Entity::MAX_FEE             => 'sometimes|nullable|integer|max:100000',
+    ];
+
+    protected static $editPlanRuleRules = [
         Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
         Entity::FIXED_RATE          => 'sometimes|integer|max:100000',
         Entity::MIN_FEE             => 'sometimes|integer|max:100000',
@@ -46,6 +54,11 @@ class Validator extends Base\Validator
         'addPlanRuleAmountRange',
         'addPlanRuleFeature',
         'addPlanRulePricingMethod',
+        'addPlanRuleMinAndMaxFee'
+    ];
+
+    protected static $editPlanRuleValidators = [
+        'addPlanRuleRate',
         'addPlanRuleMinAndMaxFee'
     ];
 

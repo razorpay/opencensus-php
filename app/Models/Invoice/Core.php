@@ -15,7 +15,6 @@ use RZP\Models\Merchant;
 use RZP\Models\LineItem;
 use RZP\Models\Settings;
 use RZP\Models\FileStore;
-use RZP\Jobs\DispatchRouter;
 use RZP\Models\Plan\Subscription;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
@@ -91,29 +90,13 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $job = new InvoiceJob($this->mode, InvoiceJob::ISSUED, $invoice->getId());
-
-            //
-            // In cases we push job over queue with delay factor of 2 seconds.
-            // This is done because some methods of this Core gets called internally
-            // by other products (eg. subscriptions) and in their core they finish few
-            // other stuffs as well before commiting DB transactions.
-            //
-            if ($subscription !== null)
-            {
-                $job->delay(self::QUEUE_JOB_DELAY);
-            }
-
-            (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+            InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
         }
 
         return $invoice;
     }
 
-    public function update(
-        Entity $invoice,
-        array $input,
-        Merchant\Entity $merchant): Entity
+    public function update(Entity $invoice, array $input, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(TraceCode::INVOICE_UPDATE_REQUEST,
             [
@@ -135,34 +118,28 @@ class Core extends Base\Core
         // This was done to maintain flow clean. Because if not now, there are chances
         // we want to handle different things in different case.
         //
-        // This is neat base code for that.
-        //
 
         $operation = 'edit' . studly_case($status);
 
-        try
+        $invoice->edit($input, $operation);
+
+        $updateFunction = 'update' . studly_case($status) . 'Invoice';
+
+        // If a custom function exists to handle update for a status, call it. Else, handle save here and proceed
+        if (method_exists($this, $updateFunction) === true)
         {
-            $invoice->edit($input, $operation);
-
-            $updateFunction = 'update' . studly_case($status) . 'Invoice';
-
             $this->$updateFunction($merchant, $invoice, $input);
         }
-        catch (\Exception $e)
+        else
         {
-            ExceptionHandler::handleMySqlUniqueError($e, $invoice, $input);
+            $this->repo->saveOrFail($invoice);
         }
 
         $this->repo->loadRelations($invoice);
 
-        if ($invoice->isIssued())
+        if ($invoice->isIssued() === true)
         {
-            $job = new InvoiceJob(
-                        $this->mode,
-                        InvoiceJob::UPDATED,
-                        $invoice->getId());
-
-            (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+            InvoiceJob::dispatch($this->mode, InvoiceJob::UPDATED, $invoice->getId());
         }
 
         return $invoice;
@@ -187,12 +164,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $job = new InvoiceJob(
-                    $this->mode,
-                    InvoiceJob::ISSUED,
-                    $invoice->getId());
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+        InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
 
         return $invoice;
     }
@@ -448,14 +420,9 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $job = new InvoiceJob(
-                        $this->mode,
-                        InvoiceJob::EXPIRED,
-                        $invoice->getId());
+        InvoiceJob::dispatch($this->mode, InvoiceJob::EXPIRED, $invoice->getId());
 
         // Sends expiration mails to customer asynchronously
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
-
         $this->eventService->fire('api.invoice.expired', [$invoice]);
     }
 
@@ -710,9 +677,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        $job = new InvoiceBatchIssueJob($this->mode, $batch->getId(), $input);
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+        InvoiceBatchIssueJob::dispatch($this->mode, $batch->getId(), $input);
 
         return ['success' => true];
     }
@@ -736,9 +701,7 @@ class Core extends Base\Core
 
         $settingsAccessor->upsert($input)->save();
 
-        $job = new InvoiceBatchNotifyJob($this->mode, $batch->getId(), $input);
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+        InvoiceBatchNotifyJob::dispatch($this->mode, $batch->getId(), $input);
     }
 
     /**
@@ -748,9 +711,7 @@ class Core extends Base\Core
      */
     public function calculateAndSetAmountsOfInvoice(Entity $invoice)
     {
-        // Other types won't have taxation, their tax amount will be 0
-        // and net amount will be equal to amount.
-
+        // Other types won't have taxation, their tax amount will be 0 and net amount will be equal to amount.
         if (($invoice->isTypeInvoice() === false) and ($invoice->getAmount() !== null))
         {
             $invoice->setTaxAmount(0);
@@ -761,9 +722,7 @@ class Core extends Base\Core
 
         $lineItems = $invoice->lineItems()->get();
 
-        // If there are no line items associated with invoice, make all amounts
-        // field 'null' (i.e. unset).
-
+        // If there are no line items associated with invoice, make all amounts field 'null' (i.e. unset).
         if ($lineItems->count() === 0)
         {
             $invoice->setAmountsToNull();
@@ -771,23 +730,34 @@ class Core extends Base\Core
             return;
         }
 
+        //
         // Invoice's:
         // Gross amount = ∑(line_items.gross_amount)
-        // Tax amount = ∑(line_items.tax_amount)
-        // Amount = ∑(line_items.net_amount)
+        // Tax amount   = ∑(line_items.tax_amount)
+        // Amount       = ∑(line_items.net_amount)
+        //
+        // Note: We do re calculation of all taxes of line items here to get the precise(float) value and then ∑
+        // followed by rounding here again to set in invoice's entity. This is because line item's taxes entities are
+        // already built earlier in the flow and they have in their columns values rounded(so precision lost). This is
+        // and quick workaround and we'll revisit to have the flow here fixed besides thinking long term of keeping
+        // precise amount throughout (i.e. PAISE multiplied by 100 or something :) ).
+        //
 
         $grossAmount = $taxAmount = $amount = 0;
 
         foreach ($lineItems as $lineItem)
         {
-            $grossAmount += $lineItem->getGrossAmount();
-            $taxAmount   += $lineItem->getTaxAmount();
-            $amount      += $lineItem->getNetAmount();
+            // Gets line item's gross, tax and net amount in order
+            $amounts = $this->lineItemCore->calculateAmountsOfLineItem($lineItem);
+
+            $grossAmount += $amounts[0];
+            $taxAmount   += $amounts[1];
+            $amount      += $amounts[2];
         }
 
         $invoice->setGrossAmount($grossAmount);
-        $invoice->setTaxAmount($taxAmount);
-        $invoice->setAmount($amount);
+        $invoice->setTaxAmount((int) round($taxAmount));
+        $invoice->setAmount((int) round($amount));
 
         $invoice->getValidator()->validateMaxAllowedAmount($grossAmount);
     }
@@ -796,11 +766,22 @@ class Core extends Base\Core
     {
         $stats = $this->repo->invoice->getInvoiceStatsForBatch($batch);
 
+        //
+        // created_count is the number of links that were in `issued` state
+        // at some point of their lifetime.
+        // Invoice can be cancelled from both `draft` and `issued` state.
+        // However, for batch payment links, all links are created in `issued` state only.
+        // So any link in `cancelled` state can be safely assumed to have
+        // reached from `issued` state only.
+        //
+        $createdCount = array_sum(array_except($stats, [Status::DRAFT]));
+
         return [
             Entity::TOTAL_COUNT   => $batch->getTotalCount(),
-            Entity::ISSUED_COUNT  => (int) ($stats[Status::ISSUED] ?? 0),
-            Entity::PAID_COUNT    => (int) ($stats[Status::PAID] ?? 0),
-            Entity::EXPIRED_COUNT => (int) ($stats[Status::EXPIRED] ?? 0),
+            Entity::ISSUED_COUNT  => $createdCount,
+            Entity::CREATED_COUNT => $createdCount,
+            Entity::PAID_COUNT    => $stats[Status::PAID] ?? 0,
+            Entity::EXPIRED_COUNT => $stats[Status::EXPIRED] ?? 0,
         ];
     }
 

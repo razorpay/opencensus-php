@@ -38,6 +38,8 @@ class Core extends Base\Core
 
         $order->build($input);
 
+        $order->generateId();
+
         $this->validateReceiptUniqueness($order);
 
         if ($partialPayment === true)
@@ -47,14 +49,14 @@ class Core extends Base\Core
 
         $order->getValidator()->validateMerchantSpecificData();
 
-        if (isset($input[Entity::OFFER_ID]) === true)
+        $order = $this->repo->transaction(function() use ($order, $input)
         {
-            $offerId = $input[Entity::OFFER_ID];
+            $this->associateOffers($order, $input);
 
-            $this->validateAndAssociateOffer($order, $offerId);
-        }
+            $this->repo->saveOrFail($order);
 
-        $this->repo->saveOrFail($order);
+            return $order;
+        });
 
         $this->trace->info(
             TraceCode::ORDER_CREATED,
@@ -62,6 +64,34 @@ class Core extends Base\Core
         );
 
         return $order;
+    }
+
+    protected function associateOffers(Entity $order, array $input)
+    {
+        if (isset($input[Entity::OFFERS]) === false)
+        {
+            return;
+        }
+
+        foreach ($input[Entity::OFFERS] as $offerId)
+        {
+            $this->validateAndAssociateOffer($order, $offerId);
+        }
+    }
+
+    protected function validateAndAssociateOffer(Entity $order, string $offerId)
+    {
+        $offer = (new Offer\Core)->fetchAndValidateOfferForOrder($offerId, $order);
+
+        // Creates row in entity_offers table
+        $this->repo->order->attachOfferToOrder($order, $offer);
+
+        $this->trace->info(
+            TraceCode::OFFER_APPLIED_ON_ORDER,
+            [
+                'offer_id' => $offerId,
+                'order_id' => $order->getId()
+            ]);
     }
 
     /**
@@ -91,6 +121,7 @@ class Core extends Base\Core
             $data += [
                 Entity::BANK           => $order->getBank(),
                 Entity::ACCOUNT_NUMBER => $order->getMaskedAccountNumber(),
+                Entity::METHOD         => $order->getMethod(),
             ];
         }
         else if ($order->getBank() !== null)
@@ -101,31 +132,6 @@ class Core extends Base\Core
         }
 
         return $data;
-    }
-
-    protected function validateAndAssociateOffer(Entity $order, string $offerId)
-    {
-        $offer = $this->repo->offer->findByPublicIdAndMerchant($offerId, $this->merchant);
-
-        $offerChecker = new Offer\Checker($offer, true);
-
-        if ($offerChecker->checkOfferApplicableOnOrder($order) === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
-            [
-                'offer_id' => $offerId,
-                'order_id' => $order->getId()
-            ]);
-        }
-
-        $this->trace->info(
-            TraceCode::OFFER_APPLIED_ON_ORDER,
-            [
-                'offer_id' => $offerId,
-                'order_id' => $order->getId()
-            ]);
-
-        $order->offer()->associate($offer);
     }
 
     /**

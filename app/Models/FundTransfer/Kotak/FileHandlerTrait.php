@@ -67,17 +67,17 @@ trait FileHandlerTrait
         return $url;
     }
 
-    public function writeToExcelFile($data, $name, $dir = 'files/settlement', $sheetNames = ['Sheet 1'])
+    public function writeToExcelFile($data, $name, $dir = 'files/settlement', $sheetNames = ['Sheet 1'], $extension = 'xlsx')
     {
-        $fullpath = $this->createExcelFile($data, $name, $dir, $sheetNames);
+        $fullpath = $this->createExcelFile($data, $name, $dir, $sheetNames, $extension);
 
-        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        $xlsxMimeType = (($extension === 'xls') ? 'application/vnd.ms-office'
+                                             : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
-        $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType);
+        $url = $this->saveToAws($name . '.' . $extension, $fullpath, $xlsxMimeType);
 
         return $url;
     }
-
 
     public function writeToExcelFileH2H($data, $name, $dir = 'files/settlement')
     {
@@ -94,7 +94,7 @@ trait FileHandlerTrait
         return $url;
     }
 
-    public function createExcelFile($data, $name, $dir, $sheetNames = ['Sheet 1'])
+    public function createExcelFile($data, $name, $dir, $sheetNames = ['Sheet 1'], $extension = 'xlsx')
     {
         \Config::set('excel::export.calculate', true);
 
@@ -102,7 +102,7 @@ trait FileHandlerTrait
 
         $excel = $this->createExcelObject($data, $name, $columnFormat, $sheetNames);
 
-        $fileMetadata = $excel->store('xlsx', storage_path($dir), true);
+        $fileMetadata = $excel->store($extension, storage_path($dir), true);
 
         $fullpath = $fileMetadata['full'];
 
@@ -679,26 +679,37 @@ trait FileHandlerTrait
         return static::$fileToWriteName.'_'.$mode.'_'.$time;
     }
 
-    protected function parseTextFile($file, string $delimiter = '~')
+    protected function parseTextFile(string $file, string $delimiter = '~')
     {
         $rows = $this->getFileLines($file);
         $data = [];
+
+        $headings = $this->parseFirstRowAndGetHeadings($rows, $delimiter);
 
         foreach ($rows as $ix => $row)
         {
             // Ending row may be just empty.
             if (blank($row) === false)
             {
-                $data[] = $this->parseTextRow($row, $ix, $delimiter);
+                $data[] = $this->parseTextRow($row, $ix, $delimiter, $headings);
             }
         }
 
         return $data;
     }
 
-    protected function parseTextRow($row, $ix, $delimiter)
+    /**
+     * Reads first row and if it's the header row, pulls it from rows and usage this as heading for doing array_combine
+     * in further flows (e.g. parseTextRow).
+     * @return array|null
+     */
+    protected function parseFirstRowAndGetHeadings(array & $rows, string $delimiter)
     {
-        $headings = $this->getHeadings();
+    }
+
+    protected function parseTextRow(string $row, int $ix, string $delimiter, array $headings = null)
+    {
+        $headings = $headings ?: $this->getHeadings();
 
         $values = explode($delimiter, $row);
 
@@ -736,8 +747,20 @@ trait FileHandlerTrait
 
     protected function parseExcelSheets($filePath)
     {
+        $app = App::getFacadeRoot();
+
         Config::set('excel.import.force_sheets_collection', true);
         Config::set('excel.import.heading', 'original');
+
+        //
+        // Calling LaravelExcelReader's setSelectedSheets() and setSelectedSheetIndices() to
+        // reset selected sheet names and indices here, as its not happening in LaravelExcelReader.
+        // If previous run has set some sheet name in selectSheets(), its retaining that sheet name
+        // until it is replaced with new sheet name.
+        //
+        $app['excel.reader']->setSelectedSheets([]);
+
+        $app['excel.reader']->setSelectedSheetIndices([]);
 
         $sheets = $this->parseExcelFile($filePath);
 

@@ -18,7 +18,7 @@ class Service extends Base\Service
 
         $dispute = $this->core()->create($payment, $reason, $input);
 
-        return $dispute->toArrayPublic();
+        return $dispute->toArrayAdmin();
     }
 
     public function update(string $id, array $input): array

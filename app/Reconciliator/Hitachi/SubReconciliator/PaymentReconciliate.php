@@ -1,13 +1,16 @@
-<?php 
+<?php
 
 namespace RZP\Reconciliator\Hitachi;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Models\Currency\Currency;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
+    use Base\BharatQrTrait;
+
     /*******************
      * Row Header Names
      *******************/
@@ -21,6 +24,12 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_CARD_COUNTRY           = 'cardcountry';
     const COLUMN_CARD_INTERCHANGE_TYPE  = 'interchange_type';
     const COLUMN_ISSETTLED              = 'issettled';
+    const COLUMN_CURRENCY_CODE          = 'tran_currency_code';
+    const COLUMN_RRN                    = 'retr_ref_nr';
+
+    const BHARAT_QR_TERMINAL            = '38R00450';
+
+    const DEFAULT_CURRENCY_CODE         = '356';
 
     protected function getPaymentId(array $row)
     {
@@ -32,15 +41,37 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                 [
                     'message'   => 'Unsettled row found. Skipping',
                     'row'       => $row,
-                    'gateway'   => get_called_class()
+                    'gateway'   => $this->gateway
                 ]);
-            
+
             $this->setFailUnprocessedRow(false);
-            
+
             return null;
         }
-        
-        return $row[self::COLUMN_PAYMENT_ID];
+
+        return $this->getPaymentIdByTerminal($row);
+    }
+
+    /**
+     * Gets the payment id. In case of bharat qr payments
+     * information is present in rrn while in case of
+     * normal payments this info is present in invoice number
+     *
+     * @param array $row
+     * @return mixed|null
+     */
+    protected function getPaymentIdByTerminal(array $row)
+    {
+        if ($row[self::COLUMN_TERMINAL_NUMBER] === self::BHARAT_QR_TERMINAL)
+        {
+            $paymentId =  $this->getPaymentIdFromBharatQr($row[self::COLUMN_RRN], $row);
+        }
+        else
+        {
+            $paymentId = $row[self::COLUMN_PAYMENT_ID];
+        }
+
+        return $paymentId;
     }
 
     protected function getGatewayFee($row)
@@ -76,7 +107,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             BaseReconciliate::CARD_TRIVIA => $cardTrivia,
         ];
     }
-    
+
     protected function getColumnCardLocale($row)
     {
         if (empty($row[self::COLUMN_CARD_COUNTRY]) === true)
@@ -86,7 +117,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         return strtolower($row[self::COLUMN_CARD_COUNTRY]);
     }
-    
+
     protected function getColumnCardTrivia($row)
     {
         if (empty($row[self::COLUMN_CARD_INTERCHANGE_TYPE]) === true)
@@ -108,7 +139,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'info_code'         => 'CARD_TRIVIA_ABSENT',
                     'recon_card_trivia' => $cardTrivia,
                     'row'               => $row,
-                    'gateway'           => get_class()
+                    'gateway'           => $this->gateway
                 ]);
 
             $cardTrivia = null;
@@ -135,7 +166,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'message'         => 'Unable to figure out the card type.',
                     'recon_card_type' => $cardType,
                     'row'             => $row,
-                    'gateway'         => get_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             // It's as good as no card type present in the row.
@@ -158,7 +189,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'info_code'         => 'CARD_LOCALE_ABSENT',
                     'recon_card_locale' => $cardCountry,
                     'row'               => $row,
-                    'gateway'           => get_class()
+                    'gateway'           => $this->gateway
                 ]);
         }
         else if (in_array($cardCountry, ['ind', 'in'], true) === true)
@@ -197,4 +228,76 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $row[self::COLUMN_AUTH_CODE];
     }
 
+    protected function getReconPaymentAmount(array $row)
+    {
+        if (isset($row[static::COLUMN_PAYMENT_AMOUNT]) === false)
+        {
+            return null;
+        }
+
+        $paymentAmount = Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT]);
+
+        return $paymentAmount;
+    }
+
+    protected function getReconCurrencyCode($row)
+    {
+        if (empty($row[self::COLUMN_CURRENCY_CODE]) === true)
+        {
+            $this->reportMissingColumn($row, self::COLUMN_CURRENCY_CODE);
+
+            return null;
+        }
+
+        return $row[self::COLUMN_CURRENCY_CODE];
+    }
+
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        $convertCurrency = $this->payment->getConvertCurrency();
+
+        $paymentAmount = ($convertCurrency === true) ? $this->payment->getBaseAmount() : $this->payment->getAmount();
+
+        if ($paymentAmount !== $this->getReconPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'message'           => 'Payment amount mismatch',
+                    'expected_amount'   => $paymentAmount,
+                    'currency'          => $this->payment->getCurrency(),
+                    'row'               => $row,
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+        return true;
+    }
+
+    protected function validatePaymentCurrencyEqualsReconCurrency(array $row) : bool
+    {
+        $convertCurrency = $this->payment->getConvertCurrency();
+
+        $expectedCurrency = ($convertCurrency === true) ? self::DEFAULT_CURRENCY_CODE : Currency::getIsoCode($this->payment->getCurrency());
+
+        $reconCurrency = $this->getReconCurrencyCode($row);
+
+        if ($expectedCurrency !== $reconCurrency)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'message'           => 'Payment currency mismatch',
+                    'expected_currency' => $expectedCurrency,
+                    'recon_currency'    => $reconCurrency,
+                    'row'               => $row,
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
 }

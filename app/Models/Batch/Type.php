@@ -32,11 +32,24 @@ class Type
 
     const SUB_MERCHANT          = 'sub_merchant';
 
+    const DIRECT_DEBIT          = 'direct_debit';
+
+    /**
+     * This type is used to create short urls in bulk async using elfin (hence gimli) service via api
+     */
+    const ELFIN                 = 'elfin';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
         // removed, since this may be necessary for the YesBank integration as well.
         //
+        self::BANK_TRANSFER,
+    ];
+
+    public static $appTypes = [
+        self::RECONCILIATION,
+        self::EMANDATE,
         self::BANK_TRANSFER,
     ];
 
@@ -65,7 +78,9 @@ class Type
         self::EMANDATE,
         self::PAYOUT,
         self::SUB_MERCHANT,
+        self::DIRECT_DEBIT,
         self::RECURRING_CHARGE,
+        self::ELFIN,
     ];
 
     public static function exists(string $type)
@@ -92,5 +107,10 @@ class Type
     public static function isQueueGroup(string $type): bool
     {
         return in_array($type, self::$queueGroup, true);
+    }
+
+    public static function isAppType(string $type): bool
+    {
+        return in_array($type, self::$appTypes, true);
     }
 }

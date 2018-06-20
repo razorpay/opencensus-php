@@ -2,8 +2,9 @@
 
 namespace RZP\Reconciliator\Hitachi;
 
-use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
+use RZP\Reconciliator\Base;
+use RZP\Models\Currency\Currency;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
@@ -17,8 +18,10 @@ class RefundReconciliate extends Base\RefundReconciliate
     const COLUMN_REFUND_AMOUNT          = 'amount';
     const COLUMN_ISSETTLED              = 'issettled';
     const COLUMN_DATETIME               = 'datetime';
+    const COLUMN_CURRENCY_CODE          = 'tran_currency_code';
 
     const REFUND_RECON_SKIP_TIMESTAMP   = '2018-03-05 23:48:09';
+    const DEFAULT_CURRENCY_CODE         = '356';
 
     protected function getRefundId(array $row)
     {
@@ -34,7 +37,7 @@ class RefundReconciliate extends Base\RefundReconciliate
         }
 
         $refundId = null;
-        
+
         // Unsettled rows should be skipped while processing.
         if ($row[self::COLUMN_ISSETTLED] !== 'S')
         {
@@ -44,7 +47,7 @@ class RefundReconciliate extends Base\RefundReconciliate
                     'info_code' => 'UNSETTLED_ROW_FOUND',
                     'message'   => 'Unsettled row found. Skipping',
                     'row'       => $row,
-                    'gateway'   => get_called_class()
+                    'gateway'   => $this->gateway
                 ]);
 
             $this->setFailUnprocessedRow(false);
@@ -84,7 +87,7 @@ class RefundReconciliate extends Base\RefundReconciliate
                     'trace_code'    => TraceCode::RECON_MISMATCH,
                     'message'       => 'Gateway refund not found.',
                     'refund_id'     => $refundId,
-                    'gateway'       => get_called_class(),
+                    'gateway'       => $this->gateway,
                ]);
 
             return null;
@@ -126,20 +129,62 @@ class RefundReconciliate extends Base\RefundReconciliate
      */
     protected function validateRefundAmountEqualsReconAmount(array $row)
     {
-        if ($this->refund->getBaseAmount() !== $this->getReconRefundAmount($row))
+        $convertCurrency = $this->payment->getConvertCurrency();
+
+        $refundAmount = ($convertCurrency === true) ? $this->refund->getBaseAmount() : $this->refund->getAmount();
+
+        if ($refundAmount !== $this->getReconRefundAmount($row))
         {
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
                     'message'           => 'Refund amount mismatch',
-                    'expected_amount'   => $this->refund->getBaseAmount(),
+                    'expected_amount'   => $refundAmount,
                     'currency'          => $this->refund->getCurrency(),
                     'row'               => $row,
-                    'gateway'           => get_called_class()
+                    'gateway'           => $this->gateway
                 ]);
 
             return false;
         }
+        return true;
+    }
+
+    protected function getReconCurrencyCode($row)
+    {
+        if (empty($row[self::COLUMN_CURRENCY_CODE]) === true)
+        {
+            $this->reportMissingColumn($row, self::COLUMN_CURRENCY_CODE);
+
+            return null;
+        }
+
+        return $row[self::COLUMN_CURRENCY_CODE];
+    }
+
+    protected function validateRefundCurrencyEqualsReconCurrency(array $row) : bool
+    {
+        $convertCurrency = $this->payment->getConvertCurrency();
+
+        $expectedCurrency = ($convertCurrency === true) ? self::DEFAULT_CURRENCY_CODE : Currency::getIsoCode($this->payment->getCurrency());
+
+        $reconCurrency = $this->getReconCurrencyCode($row);
+
+        if ($expectedCurrency !== $reconCurrency)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'message'           => 'Refund currency mismatch',
+                    'expected_currency' => $expectedCurrency,
+                    'recon_currency'    => $reconCurrency,
+                    'row'               => $row,
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+
         return true;
     }
 }

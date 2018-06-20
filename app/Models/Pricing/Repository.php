@@ -118,9 +118,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getPricingPlanRule($id)
+    public function getPricingPlanRule($planId, $ruleId)
     {
-        return $this->newQuery()->findOrFailPublic($id);
+        return $this->newQuery()
+                     ->planId($planId)
+                     ->where(Entity::ID, '=', $ruleId)
+                     ->firstOrFailPublic();
     }
 
     public function deletePlanRule($planId, $ruleId)
@@ -154,16 +157,8 @@ class Repository extends Base\Repository
 
         $rule->setAuditAction(Action::DELETE_PRICING_PLAN_RULE);
 
-        $count = $rule->feesBreakup->count();
-
-        if ($count === 0)
-        {
-            return $this->forceDelete($rule);
-        }
-        else
-        {
-            return $this->delete($rule);
-        }
+        //always soft delete the rule
+        return $this->delete($rule);
     }
 
     protected function addQueryParamDeleted($query, $params)

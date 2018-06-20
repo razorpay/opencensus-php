@@ -128,6 +128,22 @@ class InvoiceTaxesTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceLineItemWithItemCessTax()
+    {
+        $this->fixtures->create('item', [
+            'name'   => 'Item Name',
+            'id'     => '00000000000003',
+            'tax_id' => '00000000000002',
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithCgstAndSgstTaxes()
+    {
+        $this->startTest();
+    }
+
     /**
      * Tests invoice update, includes removal/addition/updates
      * of line items and taxes.

@@ -33,7 +33,6 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::CHANNEL,
         self::DESCRIPTION,
-        self::SETTLEMENT_ID,
     ];
 
     protected $visible = [
@@ -70,6 +69,10 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::ENTITY_ID   => null,
         self::ENTITY_TYPE => null,
+    ];
+
+    protected $ignoredRelations = [
+        'entity',
     ];
 
     public function getChannel()

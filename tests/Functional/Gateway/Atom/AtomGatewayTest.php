@@ -44,6 +44,21 @@ class AtomGatewayTest extends TestCase
         $this->assertTestResponse($payment);
     }
 
+    public function testSbiAssociatedNetbankingPaymentCapture()
+    {
+        $this->payment = $this->getDefaultNetbankingPaymentArray('SBBJ');
+
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $gatewayPayment = $this->getLastEntity('atom', true);
+
+        $this->assertEquals($payment['id'], 'pay_' . $gatewayPayment['payment_id']);
+
+        $this->assertEquals('atom', $payment['gateway']);
+    }
+
     public function testAtomVerifyPayment()
     {
         $this->setMockGatewayTrue();
@@ -53,6 +68,8 @@ class AtomGatewayTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $id = $payment['id'];
+
+        $this->mockSetVerifyTransactionId();
 
         $data = $this->verifyPayment($id);
 
@@ -147,6 +164,8 @@ class AtomGatewayTest extends TestCase
 
         $this->fixtures->edit('atom', $gatewayPayment['id'], ['status' => 'F']);
 
+        $this->mockSetVerifyTransactionId();
+
         $this->verifyPayment($payment['razorpay_payment_id']);
 
         $gatewayPayment = $this->getLastEntity('atom', true);
@@ -154,6 +173,23 @@ class AtomGatewayTest extends TestCase
         $this->assertEquals('Ok', $gatewayPayment['status']);
 
         $this->assertEquals(true, $gatewayPayment['success']);
+    }
+
+    public function testAuthorizeFailedPayment()
+    {
+        $this->testFailedPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['reference1']);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNotNull($payment['reference1']);
+
+        $this->assertEquals('authorized', $payment['status']);
     }
 
     public function testFailedVerifyMismatch()
@@ -164,7 +200,8 @@ class AtomGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->verifyPayment($payment['id']);
         });
     }
@@ -271,5 +308,17 @@ class AtomGatewayTest extends TestCase
         $this->assertEquals('atom', $payment['gateway']);
         $this->assertEquals($method, $payment['method']);
         $this->assertEquals('1000AtomShared', $payment['terminal_id']);
+    }
+
+    protected function mockSetVerifyTransactionId()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $gatewayPayment = $this->getLastEntity('atom', true);
+
+            $content['atomtxnId'] = $gatewayPayment['gateway_payment_id'];
+
+            $content['BID']       = $gatewayPayment['bank_payment_id'];
+        });
     }
 }

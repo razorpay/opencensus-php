@@ -88,6 +88,7 @@ class Service extends Base\Service
                 unset($gateways[IFSC::FDRL]);
                 unset($gateways[IFSC::INDB]);
                 unset($gateways[IFSC::UTIB]);
+                unset($gateways[IFSC::CSBK]);
                 unset($gateways[Netbanking::BARB_R]);
 
                 break;

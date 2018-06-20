@@ -9,6 +9,7 @@ use Request;
 use App;
 use View;
 
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
 
@@ -194,13 +195,16 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        $retJson = false;
+        $retHtml = false;
 
-        if (isset($input['view']) and ($input['view'] === 'json'))
+        if (isset($input['view']) === true)
         {
-            unset($input['view']);
+            if ($input['view'] === 'html')
+            {
+                $retHtml = true;
+            }
 
-            $retJson = true;
+            unset($input['view']);
         }
 
         $this->setMerchantCallbackUrlIfApplicable($input);
@@ -213,14 +217,27 @@ class PaymentCreateController extends Controller
             $data[$key] = $value / 100;
         }
 
-        if ($retJson)
+        if ($retHtml === true)
         {
-            return ApiResponse::json(['input' => $input,'display' => $data]);
+            $url = $this->route->getUrlWithPublicAuth('payment_create_checkout');
+
+            return $this->returnConvenienceFeesView($input, $data, $url);
         }
 
-        $url = $this->route->getUrlWithPublicAuth('payment_create_checkout');
+        return ApiResponse::json(['input' => $input,'display' => $data]);
+    }
 
-        return $this->returnConvenienceFeesView($input, $data, $url);
+    public function postPaymentFees()
+    {
+        $input = Request::all();
+
+        $this->setMerchantCallbackUrlIfApplicable($input);
+
+        $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
+
+        unset($data['originalAmount']);
+
+        return ApiResponse::json($data);
     }
 
     /**
@@ -403,6 +420,7 @@ class PaymentCreateController extends Controller
         $postFormData = $data;
         $postFormData['theme']['color'] = $merchant->getBrandColorElseDefault();
         $postFormData['name'] = $merchant->getBillingLabel();
+        $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
 
         return View::make('gateway.gatewayPostForm')
                    ->with('data', $postFormData);

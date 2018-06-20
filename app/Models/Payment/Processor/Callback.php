@@ -95,7 +95,7 @@ trait Callback
                 // Reload in case it's processed by another thread.
                 $this->repo->reload($payment);
 
-                $isCorporatePayment = $payment->terminal->isCorporate();
+                $isCorporatePayment = $payment->isCorporateNetbanking();
 
                 // In case of non - corporate payments, this case is fine.
                 // In case of corporate and payment already having been authorized
@@ -253,7 +253,7 @@ trait Callback
                 // Reload in case it's processed by another thread.
                 $this->repo->reload($payment);
 
-                $isCorporatePayment = $payment->terminal->isCorporate();
+                $isCorporatePayment = $payment->isCorporateNetbanking();
 
                 //
                 // In case of non - corporate payments, this case is fine.
@@ -371,7 +371,7 @@ trait Callback
 
         $status = $payment->getStatus();
 
-        $isCorporatePayment = $payment->terminal->isCorporate();
+        $isCorporatePayment = $payment->isCorporateNetbanking();
 
         // In case of corporate payments, process this.
         if (($status !== Status::CREATED) and

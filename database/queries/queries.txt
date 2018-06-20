@@ -3472,6 +3472,10 @@ ALTER TABLE invoices
     ADD COLUMN customer_shipping_addr_id CHAR(14) DEFAULT NULL AFTER customer_billing_addr_id,
     ADD CONSTRAINT invoices_customer_shipping_addr_id_foreign FOREIGN KEY (customer_shipping_addr_id) REFERENCES addresses (id);
 
+ALTER TABLE enach
+    ADD COLUMN registration_date INTEGER UNSIGNED AFTER registration_status,
+    ADD INDEX enach_registration_date_index (registration_date);
+
 //Atom Entity refactor
 
 ALTER TABLE atom DROP FOREIGN KEY atom_id_foreign;
@@ -3499,7 +3503,7 @@ ALTER TABLE atom
     MODIFY COLUMN `payment_id` char(14) NOT NULL;
 
 ALTER TABLE atom MODIFY COLUMN gateway_payment_id VARCHAR(255) DEFAULT NULL;
-    
+
 ALTER TABLE `merchant_details`
     ADD COLUMN `business_category` VARCHAR(255) DEFAULT NULL AFTER `company_pan_name`,
     ADD COLUMN `business_subcategory` VARCHAR(255) DEFAULT NULL AFTER `business_category`;
@@ -3508,3 +3512,145 @@ ALTER TABLE payments drop foreign key payments_app_id_foreign,
                      rename index payments_app_id_foreign TO payments_receiver_id_index,
                      change app_id receiver_id varchar(14),
                      change reference8 receiver_type varchar(255);
+
+# Renaming to batch_id
+ALTER TABLE payments
+    CHANGE reference7 batch_id VARCHAR(255);
+
+ALTER TABLE settlements
+    ADD INDEX settlements_channel_index (channel);
+
+ALTER TABLE pricing
+    ADD COLUMN receiver_type varchar(255) DEFAULT NULL AFTER international;
+
+# Invoice GST changes
+ALTER TABLE merchants
+    ADD COLUMN invoice_label_field varchar(50) DEFAULT NULL AFTER logo_url;
+
+ALTER TABLE invoices
+    ADD COLUMN merchant_label varchar(255) DEFAULT NULL AFTER customer_gstin;
+
+ALTER TABLE terminals
+    ADD COLUMN mastercard_mpan varchar(16) DEFAULT NULL after gateway_client_certificate,
+    ADD COLUMN visa_mpan varchar(16) DEFAULT NULL after mastercard_mpan,
+    ADD COLUMN rupay_mpan varchar(16) DEFAULT NULL after visa_mpan,
+    ADD COLUMN vpa varchar(255) DEFAULT NULL after rupay_mpan,
+    ADD INDEX terminals_mastercard_mpan_index (mastercard_mpan),
+    ADD INDEX terminals_visa_mpan_index (visa_mpan),
+    ADD INDEX terminals_rupay_mpan_index (rupay_mpan),
+    ADD INDEX terminals_vpa_index (vpa);
+
+ALTER TABLE terminals
+    CHANGE mastercard_mpan mc_mpan varchar(16),
+    rename index terminals_mastercard_mpan_index to terminals_mc_mpan_index;
+
+ALTER TABLE terminals
+    ADD COLUMN gateway_terminal_password2 text DEFAULT NULL AFTER gateway_terminal_password,
+    ADD COLUMN gateway_secure_secret2 VARCHAR(255) DEFAULT NULL AFTER gateway_secure_secret;
+
+ALTER TABLE payments
+    ADD INDEX `payments_merchant_id_captured_at_index` (merchant_id, captured_at);
+
+ALTER TABLE invoices
+    ADD COLUMN supply_state_code CHAR(4) DEFAULT NULL AFTER merchant_label;
+
+ALTER TABLE card_fss MODIFY COLUMN status VARCHAR(255) DEFAULT NULL;
+
+DROP INDEX `card_fss_status_index` on `card_fss`; CREATE INDEX `card_fss_status_index` ON card_fss (status(50));
+
+ALTER TABLE line_items
+    ADD COLUMN tax_rate INTEGER UNSIGNED DEFAULT NULL AFTER sac_code;
+    
+Alter table terminals
+    Modify column type integer default '1';
+
+ALTER TABLE invoices
+    ADD COLUMN merchant_gstin VARCHAR(20) DEFAULT NULL AFTER customer_gstin;
+
+ALTER TABLE webhooks
+    ADD COLUMN disable_on_failure TINYINT(1) NOT NULL DEFAULT 1 AFTER active;
+
+ALTER TABLE offers
+    ADD COLUMN international TINYINT(1) DEFAULT NULL AFTER issuer;
+
+ALTER TABLE terminals
+    ADD COLUMN expected BOOLEAN DEFAULT 0 NOT NULL after corporate;
+
+ALTER TABLE qr_code
+    ADD COLUMN reference varchar(255) DEFAULT NULL after merchant_id,
+    ADD INDEX `qr_code_reference_index` (reference),
+    MODIFY COLUMN qr_string TEXT DEFAULT NULL,
+    MODIFY COLUMN short_url varchar(255) DEFAULT NULL;
+
+ALTER TABLE orders
+    ADD COLUMN reference1 TINYINT(1) NULL AFTER authorized,
+    ADD COLUMN reference2 TINYINT(1) NULL AFTER reference1,
+    ADD COLUMN reference3 TINYINT(4) NULL AFTER reference2,
+    ADD COLUMN reference4 INT(11) UNSIGNED DEFAULT NULL AFTER reference3,
+    ADD COLUMN reference5 BIGINT UNSIGNED DEFAULT NULL AFTER reference4,
+    ADD COLUMN reference6 BIGINT UNSIGNED DEFAULT NULL AFTER reference5,
+    ADD COLUMN reference7 VARCHAR(14) DEFAULT NULL AFTER reference6,
+    ADD COLUMN reference8 VARCHAR(14) DEFAULT NULL AFTER reference7,
+    ADD COLUMN reference9 VARCHAR(255) DEFAULT NULL AFTER reference8,
+    ADD COLUMN reference10 VARCHAR(255) DEFAULT NULL AFTER reference9;
+
+# Add attempts to payouts
+ALTER TABLE payouts
+    ADD COLUMN attempts integer default 1 not null after channel;
+
+# Amazon Pay is added as wallet
+ALTER TABLE merchant_banks
+    ADD COLUMN amazonpay TINYINT(1) NOT NULL DEFAULT 0 AFTER airtelmoney;
+
+ALTER TABLE batches
+    ADD COLUMN processed_count INTEGER UNSIGNED DEFAULT NULL AFTER total_count;
+
+ALTER TABLE tokens
+    ADD COLUMN confirmed_at INTEGER UNSIGNED DEFAULT NULL AFTER recurring_failure_reason,
+    ADD COLUMN rejected_at INTEGER UNSIGNED DEFAULT NULL AFTER confirmed_at,
+    ADD COLUMN initiated_at INTEGER UNSIGNED DEFAULT NULL AFTER rejected_at,
+    ADD COLUMN acknowledged_at INTEGER UNSIGNED DEFAULT NULL AFTER initiated_at,
+    ADD INDEX `tokens_confirmed_at_index` (confirmed_at);
+    ADD INDEX `tokens_rejected_at_index` (rejected_at);
+    ADD INDEX `tokens_initiated_at_index` (initiated_at);
+    ADD INDEX `tokens_acknowledged_at_index` (acknowledged_at);
+
+# Renames the reference1 column and adds a default value
+ALTER TABLE orders
+    CHANGE reference1 force_offer TINYINT(1),
+    ALGORITHM=INPLACE, LOCK=NONE;
+
+ALTER TABLE merchants
+    ADD COLUMN partner_type VARCHAR(255) DEFAULT NULL AFTER has_key_access;
+
+# Corrects unique index on entity_offer
+ALTER TABLE entity_offer
+  DROP INDEX entity_offer_entity_id_entity_type_unique,
+  ADD UNIQUE INDEX entity_offer_entity_id_entity_type_offer_id_unique (entity_id, entity_type, offer_id);
+
+# Adds payment_link_id column and few more blank columns of various types for future usage
+# Creates index on payment_link_id
+ALTER TABLE payments
+    ADD COLUMN payment_link_id CHAR(14) DEFAULT NULL AFTER transfer_id,
+    ADD COLUMN reference10 INT(10) UNSIGNED DEFAULT NULL AFTER acknowledged_at,
+    ADD COLUMN reference11 INT(10) UNSIGNED DEFAULT NULL AFTER reference10,
+    ADD COLUMN reference12 BIGINT(20) UNSIGNED DEFAULT NULL AFTER reference11,
+    ADD COLUMN reference13 CHAR(14) DEFAULT NULL AFTER reference12,
+    ADD COLUMN reference14 CHAR(14) DEFAULT NULL AFTER reference13,
+    ADD COLUMN reference15 VARCHAR(255) DEFAULT NULL AFTER reference14,
+    ADD COLUMN reference16 VARCHAR(255) DEFAULT NULL AFTER reference15,
+    ADD COLUMN reference17 TEXT AFTER reference16,
+    ADD INDEX payments_payment_link_id_index (payment_link_id);
+
+ALTER TABLE gateway_rules
+    ADD COLUMN recurring TINYINT(1) DEFAULT NULL AFTER method,
+    ADD COLUMN flow VARCHAR(64) DEFAULT NULL AFTER recurring;
+
+ALTER TABLE virtual_accounts
+    ADD INDEX virtual_accounts_qr_code_id_index (qr_code_id);
+
+# Removes database unique constraints for merchant_id and receipt uniqueness
+# Adds index on merchant_id, receipt for fast lookup
+ALTER TABLE invoices
+    DROP INDEX invoices_merchant_id_receipt_unique,
+    ADD INDEX invoices_merchant_id_receipt_index (merchant_id, receipt);

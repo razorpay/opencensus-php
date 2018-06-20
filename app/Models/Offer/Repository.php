@@ -31,6 +31,7 @@ class Repository extends Base\Repository
         Entity::MIN_AMOUNT,
         Entity::MAX_CASHBACK,
         Entity::FLAT_CASHBACK,
+        Entity::INTERNATIONAL,
     ];
 
     public function fetchExistingOffers(Entity $newOffer, string $merchantId)

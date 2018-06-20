@@ -48,7 +48,7 @@ class Sorter extends Base\Core
         {
             $sorterFunction = $this->getSorterNameForProperty($sorterProperty);
 
-            $currentTerminals = $this->$sorterFunction($currentTerminals);
+            $currentTerminals = $this->$sorterFunction($currentTerminals, $verbose);
 
             $this->traceTerminals(
                 $currentTerminals,

@@ -44,6 +44,17 @@ class OAuthApplicationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function createPartner()
+    {
+        $input = Request::all();
+
+        $merchantId = $this->auth->getMerchantId();
+
+        $data = $this->authservice->createApplication($input, $merchantId, Application\Type::PARTNER);
+
+        return ApiResponse::json($data);
+    }
+
     public function get(string $id)
     {
         $merchantId = $this->auth->getMerchantId();

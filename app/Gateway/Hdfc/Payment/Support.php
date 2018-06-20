@@ -26,12 +26,6 @@ trait Support
      */
     protected function supportPayment($input, $type)
     {
-        if (($type === 'refund') and
-            ($this->isRefundNotRequiredOnGateway($input, $type)))
-        {
-            return;
-        }
-
         $this->model = $this->retrievePreviousGatewayTransaction($input, $type);
 
         $result = $this->model['result'];
@@ -267,6 +261,11 @@ trait Support
                 $data['udf5'] = 'PaymentID';
             }
         }
+
+        if ($this->shouldMigrateToIpay() === true)
+        {
+            $data['udf5'] = '';
+        }
     }
 
     protected function verifyAndSaveSupportResponse($type, $input)
@@ -358,55 +357,6 @@ trait Support
                                 $paymentId,
                                 $refundId);
         }
-    }
-
-    /**
-     * When refund request comes to gateway, it's not necessary that
-     * we always call gateway refund. For cases like a card authorization on hdfc
-     * mastercard or visa etc., since we did not capture a transaction,
-     * there is no reason to call refund here.
-     *
-     * Also, we call refund on gateway when a payment has been captured on mastercard, visa.
-     * But sometime capture times out. So in those cases, we need to check for those status
-     * and still proceed with refund.
-     */
-    protected function isRefundNotRequiredOnGateway($input, $type)
-    {
-        assert ($type === 'refund');
-
-        $paymentId = $input['payment']['id'];
-
-        // Gets the first gateway entity matching the action
-        // authorize or purchase
-        $gatewayEntity = $this->repo->findByPaymentIdToVerify($paymentId);
-
-        $gatewayAction = (int) $gatewayEntity->getAction();
-
-        $gatewayStatus = $gatewayEntity->getStatus();
-
-        // Now this is the first payment,
-        // either the action : purchase and status : captured
-        // or the action : authorize and status : authorized
-        if (($gatewayAction === Action::AUTHORIZE) and
-            ($gatewayStatus === Payment\Status::AUTHORIZED))
-        {
-            // Check if a captured entity is also present. If yes, refund is required on the gateway.
-            $capturedEntity = $this->repo->retrieveCapturedOrAcceptedCaptureError($paymentId);
-
-            if ($capturedEntity !== null)
-            {
-                return false;
-            }
-
-            return true;
-        }
-        else if (($gatewayAction === Action::PURCHASE) and
-                 ($gatewayStatus === Payment\Status::CAPTURED))
-        {
-            return false;
-        }
-
-        return false;
     }
 
     protected function canForceRefund($input)

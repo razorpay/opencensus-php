@@ -39,13 +39,32 @@ class Headings
     const REJECT_REASON                 = 'Reject Reason';
     const UTR                           = 'UTR No for RTGS';
 
+    // Errors are stored under this key in case of failed recon files
+    const ERRORS                        = 'Errors';
+
+    // Bene Registration fields
+    const PAYMENT_TYPE                  = 'Payment Type';
+    const CITY                          = 'City';
+    const CREDIT_ACCOUNT                = 'Credit Account';
+    const FLAG                          = 'Flag';
+    const IFSC                          = 'IFSC';
+    const BENE_FUNCTION_TYPE            = 'Bene Function type';
+    const COPY_TO_PAYMENT_TYPE          = 'Copy to Payment type';
+
+    // Unused bene columns
+    const STATE                         = 'State';
+    const PIN_CODE                      = 'PinCode';
+    const EMAIL_ID                      = 'Email ID';
+    const MOBILE_NUMBER                 = 'Mobile Number';
+    const TRANSACTION_LIMIT             = 'Transaction Limit';
+
     /**
      * Gives the attributes of records in order of expected format
      * In order of its occurrence
      *
      * @return array
      */
-    public static function getRequestFileHeadings()
+    public static function getRequestFileHeadings(): array
     {
         return [
             self::TRANSACTION_TYPE,
@@ -85,7 +104,7 @@ class Headings
      *
      * @return array
      */
-    public static function getResponseFileHeadings()
+    public static function getResponseFileHeadings(): array
     {
         return [
             self::TRANSACTION_TYPE,
@@ -104,6 +123,37 @@ class Headings
             self::IFC_CODE,
             self::MICR_NUMBER,
             self::UTR
+        ];
+    }
+
+    /**
+     * Gives the attributes of records in order of expected format for Bene file
+     * In order of its occurrence
+     *
+     * @return array
+     */
+    public static function getBeneficiaryFileHeadings(): array
+    {
+        return [
+            self::BENEFICIARY_CODE,
+            self::BENEFICIARY_NAME,
+            self::PAYMENT_TYPE,
+            self::BENE_ADDRESS_1,
+            self::BENE_ADDRESS_2,
+            self::BENE_ADDRESS_3,
+            self::CITY,
+            self::STATE,
+            self::PIN_CODE,
+            self::EMAIL_ID,
+            self::MOBILE_NUMBER,
+            self::IFSC,
+            self::BENE_BANK_NAME,
+            self::BENE_BANK_BRANCH_NAME,
+            self::CREDIT_ACCOUNT,
+            self::TRANSACTION_LIMIT,
+            self::BENE_FUNCTION_TYPE,
+            self::COPY_TO_PAYMENT_TYPE,
+            self::FLAG,
         ];
     }
 }

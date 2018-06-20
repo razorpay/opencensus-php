@@ -8,6 +8,7 @@ use RZP\Models\Settlement;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Mail\Settlement\CriticalFailure;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationMail;
 use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 
@@ -42,6 +43,10 @@ class AttemptReconcileTest extends TestCase
         $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
             $channel, 1, Attempt\Type::SETTLEMENT);
 
+        $fileName = basename($setlFile);
+
+        $this->assertStringStartsWith('NRPSS_NRPSSUPLDNEW_', $fileName);
+
         $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
     }
 
@@ -63,6 +68,16 @@ class AttemptReconcileTest extends TestCase
             $channel, 1, Attempt\Type::SETTLEMENT);
 
         $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
+    }
+
+    protected function verifySettlementReconProcessForRbl($failureTest = false)
+    {
+        $channel = Channel::RBL;
+
+        $this->createDataAndAssertInitiateOnlineTransferSuccess(
+            $channel, 1, Attempt\Type::SETTLEMENT, $failureTest);
+
+        $this->assertReconProcessSuccessForChannel($channel, Attempt\Type::SETTLEMENT, $failureTest);
     }
 
     protected function verifySettlementReconFileProcessFailureKotak()
@@ -174,6 +189,24 @@ class AttemptReconcileTest extends TestCase
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
     }
 
+    public function testSettlementReconcileEntitiesSuccessForRbl()
+    {
+        $this->verifySettlementReconProcessForRbl();
+
+        $this->reconcileEntitiesForChannel(Channel::RBL);
+
+        $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
+    }
+
+    public function testSettlementReconcileEntitiesFailureForRbl()
+    {
+        $this->verifySettlementReconProcessForRbl(true);
+
+        $content = $this->reconcileEntitiesForChannel(Channel::RBL);
+
+        $this->assertOnlineReconcileEntitiesFailure($content, Channel::RBL);
+    }
+
     public function testPayoutReconcileEntitiesForKotak()
     {
         $this->verifyPayoutReconFileProcessForKotak();
@@ -252,6 +285,39 @@ class AttemptReconcileTest extends TestCase
             $this->assertEquals('settlement', $setlTxn['type']);
             $this->assertNotNull($setlTxn['reconciled_at']);
 //        }
+    }
+
+    protected function assertOnlineReconcileEntitiesFailure(array $content, string $channel)
+    {
+        $this->assertTestResponse($content, 'matchSummaryForReconFailure');
+
+        // Validate batch fund transfer entity
+        $batch = $this->getLastEntity('batch_fund_transfer', true);
+        $this->assertEquals(0, $batch['processed_count']);
+        $this->assertEquals(0, $batch['processed_amount']);
+
+        //Validate settlement entities
+        $settlement = $this->getLastEntity('settlement', true);
+
+        $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconFailure');
+        $this->assertEquals(
+            $batch['id'], $settlement[Settlement\Entity::BATCH_FUND_TRANSFER_ID]);
+
+        $this->assertNull($settlement[Settlement\Entity::UTR]);
+
+        // Validate settlement attempt entities
+        $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $testKey = 'matchSettlementAttemptForReconFailure' . ucfirst($channel);
+
+        $this->assertTestResponse($settlementAttempt, $testKey);
+        $this->assertNull($settlementAttempt['utr']);
+
+        // Validate settlement-transaction entity
+        $setlTxn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('settlement', $setlTxn['type']);
+        $this->assertNotNull($setlTxn['reconciled_at']);
     }
 
     protected function assertReconcileEntitiesSuccessForSource(string $sourceType)
@@ -334,9 +400,13 @@ class AttemptReconcileTest extends TestCase
         $this->assertTestResponse($settlement, 'testRetrySettlement');
     }
 
-
-    public function verifyReconciliationInTestMode(string $channel, bool $failure = false)
+    public function verifyReconciliationInTestMode(
+        string $channel,
+        bool $failure = false,
+        bool $internalFailure = false)
     {
+        Mail::fake();
+
         $this->createDataAndAssertInitiateTransferSuccess(
             $channel, 1, Attempt\Type::SETTLEMENT);
 
@@ -344,13 +414,16 @@ class AttemptReconcileTest extends TestCase
             'url' => '/settlements/reconcile/test/all',
             'method' => 'POST',
             'content' => [
-                'failed_recons' => (int) $failure
+                'failed_recons'    => (int) $failure,
+                'internal_failure' => (int) $internalFailure
             ]
         ];
 
         $this->ba->appAuth();
 
         $this->makeRequestAndGetContent($request);
+
+        $this->reconcileEntitiesForChannel($channel);
 
         $ftas = $this->getEntities('fund_transfer_attempt', [], true);
 
@@ -372,13 +445,18 @@ class AttemptReconcileTest extends TestCase
             }
         }
 
-        if ($failure === true)
+        if (($failure === true) or ($internalFailure === true))
         {
             $this->assertEquals(1, $failed);
         }
         else
         {
             $this->assertEquals(1, $success);
+        }
+
+        if ($internalFailure === true)
+        {
+            Mail::assertQueued(CriticalFailure::class);
         }
     }
 
@@ -392,6 +470,16 @@ class AttemptReconcileTest extends TestCase
         // This test wont work for kotak.
         // because kotak failure transactions can not be determined by the status.
         $this->verifyReconciliationInTestMode(Channel::AXIS, true);
+    }
+
+    public function testReconciliationInTestModeForInternalFailure()
+    {
+        $this->verifyReconciliationInTestMode(Channel::AXIS, true, true);
+    }
+
+    public function testReconciliationInTestModeForFailureForHdfc()
+    {
+        $this->verifyReconciliationInTestMode(Channel::HDFC, false, true);
     }
 
     protected function getReconStatusClass(string $channel)

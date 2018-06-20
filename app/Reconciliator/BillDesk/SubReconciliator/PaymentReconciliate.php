@@ -12,11 +12,12 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID         = 'Ref. 1';
-    const COLUMN_SERVICE_TAX        = 'S Tax (Rs Ps)';
-    const COLUMN_FEE                = 'Charges (Rs.Ps)';
-    const COLUMN_GST                = 'GST (Rs Ps)';
-    const COLUMN_SETTLED_AT         = 'Settlement Date';
+    const COLUMN_PAYMENT_ID         = 'ref_1';
+    const COLUMN_SERVICE_TAX        = 's_tax_rs_ps';
+    const COLUMN_FEE                = 'charges_rsps';
+    const COLUMN_GST                = 'gst_rs_ps';
+    const COLUMN_SETTLED_AT         = 'settlement_date';
+    
     // 29/06/2017 00:31:08
     const SETTLEMENT_DATE_FORMAT    = 'd/m/Y H:i:s';
 
@@ -102,7 +103,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'trace_code'    => TraceCode::RECON_INFO_ALERT,
                     'message'       => 'Unable to parse settlement date -> ' . $ex->getMessage(),
                     'row'           => $row,
-                    'gateway'       => get_called_class()
+                    'gateway'       => $this->gateway
                 ]);
 
             $this->trace->traceException($ex);

@@ -3,8 +3,10 @@
 namespace RZP\Models\Merchant\Detail;
 
 use RZP\Models\Base;
+use RZP\Models\Address;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
+use RZP\Constants\IndianStates;
 
 /**
  * Class Entity
@@ -456,6 +458,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BUSINESS_REGISTERED_ADDRESS);
     }
 
+    public function getBusinessRegisteredAddressAsText(string $delimiter = PHP_EOL)
+    {
+        return Address\Utility::formatAddressAsText(
+            [
+                Address\Entity::LINE1     => $this->getBusinessRegisteredAddress(),
+                Address\Entity::CITY      => $this->getBusinessRegisteredCity(),
+                Address\Entity::STATE     => $this->getBusinessRegisteredStateName(),
+                Address\Entity::COUNTRY   => 'India',
+                Address\Entity::ZIPCODE   => $this->getBusinessRegisteredPin(),
+            ],
+            $delimiter);
+    }
+
     public function getBusinessRegisteredCity()
     {
         return $this->getAttribute(self::BUSINESS_REGISTERED_CITY);
@@ -464,6 +479,14 @@ class Entity extends Base\PublicEntity
     public function getBusinessRegisteredState()
     {
         return $this->getAttribute(self::BUSINESS_REGISTERED_STATE);
+    }
+
+    public function getBusinessRegisteredStateName()
+    {
+        $state     = $this->getBusinessRegisteredState();
+        $stateName = $state !== null ? IndianStates::getStateNameByCode($state) : null;
+
+        return $stateName !== null ? ucwords(strtolower($stateName)) : null;
     }
 
     public function getBusinessRegisteredPin()

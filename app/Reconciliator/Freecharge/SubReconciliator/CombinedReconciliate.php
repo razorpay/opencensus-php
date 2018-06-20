@@ -10,7 +10,7 @@ class CombinedReconciliate extends Base\CombinedReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_TRANSACTION_TYPE = 'Transaction Type';
+    const COLUMN_TRANSACTION_TYPE = 'transaction_type';
 
     const TXN_TYPE_PAYMENT = 'Payment';
 

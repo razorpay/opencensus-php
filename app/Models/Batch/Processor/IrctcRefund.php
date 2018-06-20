@@ -18,7 +18,7 @@ class IrctcRefund extends Base
 
         $paymentId = trim($entry[Batch\Header::PAYMENT_ID]);
 
-        $payment = $this->repo->payment->findByPublicId($paymentId);
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
 
         $type = $entry[Batch\Header::REFUND_TYPE];
 
@@ -33,11 +33,11 @@ class IrctcRefund extends Base
 
     protected function processRTypeRefunds(array $entry, Payment\Entity $payment)
     {
-        $paymentProcessor = (new PaymentProcessor($payment->merchant));
+        $paymentProcessor = (new PaymentProcessor($this->merchant));
 
         $input = $this->getRefundParams($entry);
 
-        $refund = $this->repo->refund->findByReceiptAndMerchant($input[Refund\Entity::RECEIPT], $payment->merchant->getId());
+        $refund = $this->repo->refund->findByReceiptAndMerchant($input[Refund\Entity::RECEIPT], $this->merchant->getId());
 
         if ($refund !== null)
         {
@@ -49,7 +49,7 @@ class IrctcRefund extends Base
 
     protected function processCTypeRefunds(array $entry, Payment\Entity $payment)
     {
-        $paymentProcessor = (new PaymentProcessor($payment->merchant));
+        $paymentProcessor = (new PaymentProcessor($this->merchant));
 
         // In case the payment is not captured, we need to capture the payment before initiating the refund
         if ($payment->hasBeenCaptured() === false)
@@ -57,7 +57,7 @@ class IrctcRefund extends Base
             $amount = $payment->getAmount();
 
             // The payment amount is inclusive of fees, so we need to capture with the original amount.
-            if ($payment->merchant->isFeeBearerCustomer() === true)
+            if ($this->merchant->isFeeBearerCustomer() === true)
             {
                 $amount = $amount - $payment->getFee();
             }
@@ -74,7 +74,7 @@ class IrctcRefund extends Base
 
         $input[Refund\Entity::AMOUNT]  = intval($entry[Batch\Header::REFUND_AMOUNT] * 100);
 
-        $refund = $this->repo->refund->findByReceiptAndMerchant($input[Refund\Entity::RECEIPT], $payment->merchant->getId());
+        $refund = $this->repo->refund->findByReceiptAndMerchant($input[Refund\Entity::RECEIPT], $this->merchant->getId());
 
         if ($refund !== null)
         {

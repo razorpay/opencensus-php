@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Account;
 
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
@@ -39,7 +40,7 @@ class Core extends Merchant\Core
         //
         // Hence, forcing the input mode to be live mode here, if not already.
         //
-        $this->setLiveMode();
+        $this->setModeAndDefaultConnection(Mode::LIVE);
 
         (new Validator)->validateInput('create', $input);
 

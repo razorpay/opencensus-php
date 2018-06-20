@@ -29,7 +29,7 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'The fraud type for risk logging is invalid',
                 Entity::FRAUD_TYPE,
-                [Entity::SOURCE => $source]);
+                [Entity::SOURCE => $value]);
         }
     }
 
@@ -40,7 +40,7 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'The source for risk logging is invalid',
                 Entity::SOURCE,
-                [Entity::SOURCE => $source]);
+                [Entity::SOURCE => $value]);
         }
     }
 }

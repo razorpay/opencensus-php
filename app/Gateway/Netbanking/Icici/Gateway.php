@@ -7,7 +7,6 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
-use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Verify;
@@ -42,7 +41,7 @@ class Gateway extends Base\Gateway
     {
         parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->setBankingTypeAndDomainType($terminal);
+        $this->setBankingTypeAndDomainType($input);
     }
 
     public function authorize(array $input)
@@ -244,6 +243,8 @@ class Gateway extends Base\Gateway
             $this->assertAmount($expectedAmount, $actualAmount);
         }
 
+        $this->verifyCallback($input, $gatewayPayment);
+
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         if ($this->hasRecurringData($gatewayPayment) === true)
@@ -256,6 +257,29 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
+    protected function verifyCallback(array $input, $gatewayPayment)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->setGatewaySuccess($verify);
+
+        //
+        // If verify returns false, we throw an error as
+        // authorize request / response has been tampered with
+        //
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
+    }
+
     public function verify(array $input)
     {
         parent::verify($input);
@@ -265,18 +289,19 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    protected function setBankingTypeAndDomainType($terminal)
+    protected function setBankingTypeAndDomainType($input)
     {
         // Default banking type is retail
-        if ((isset($terminal) === true) and
-            ($terminal->isCorporate() === true))
+        if (isset($input['payment']) === true)
         {
-            $this->setBankingType(BankingType::CORPORATE);
-        }
-        else if ((isset($terminal) === true) and
-                 ($terminal->isRecurring() === true))
-        {
-            $this->setBankingType(BankingType::RECURRING);
+            if ($input['payment']['bank'] === Payment\Processor\Netbanking::ICIC_C)
+            {
+                $this->setBankingType(BankingType::CORPORATE);
+            }
+            else if ($input['payment']['recurring'] === true)
+            {
+                $this->setBankingType(BankingType::RECURRING);
+            }
         }
 
         $this->setDomainType();
@@ -944,5 +969,29 @@ class Gateway extends Base\Gateway
         ];
 
         return $recurringData;
+    }
+
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+                                            $input['payment']['id'],
+                                            Payment\Action::AUTHORIZE);
+
+        // If it's already authorized on gateway side, We just return.
+        if (($gatewayPayment->getReceived() === true) and
+            ($gatewayPayment->getStatus() === Confirmation::YES))
+        {
+            return true;
+        }
+
+        $attrs = [
+            Base\Entity::STATUS  => Confirmation::YES,
+        ];
+
+        $gatewayPayment->fill($attrs);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
     }
 }

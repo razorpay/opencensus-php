@@ -3,20 +3,21 @@
 namespace RZP\Base;
 
 use DB;
+use App;
 use Config;
-use Illuminate\Support\Facades\App;
 
-use Database\Connection;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models;
 use RZP\Exception;
 use RZP\Jobs\EsSync;
 use RZP\Constants\Mode;
+use Database\Connection;
 use RZP\Trace\TraceCode;
-use RZP\Jobs\DispatchRouter;
 use RZP\Constants\Entity as E;
-use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\Collection;
 use RZP\Models\Base\EsRepository;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\UniqueIdEntity;
 
 class Repository extends \Razorpay\Spine\Repository
 {
@@ -232,6 +233,33 @@ class Repository extends \Razorpay\Spine\Repository
         return $this;
     }
 
+    /**
+     * Checks whether the given ids for the entity exist in the database.
+     *
+     * @param  mixed $ids array of unsigned ids | entity collection | entity
+     */
+    public function validateExists($ids)
+    {
+        $parsedIds = $this->parseIds($ids);
+
+        $expectedCount = count($parsedIds);
+
+        $actualCount = $this->newQuery()
+                            ->whereIn(
+                                $this->getEntityObject()->getKeyName(),
+                                $parsedIds)
+                            ->count();
+
+        if ($expectedCount !== $actualCount)
+        {
+            throw new Exception\RuntimeException('entity ids being attached do not exist', [
+                'expected_count' => $expectedCount,
+                'actual_count'   => $actualCount,
+                'ids'            => $parsedIds
+            ]);
+        }
+    }
+
     public function getEntityClass()
     {
         return E::getEntityClass($this->entity);
@@ -271,6 +299,21 @@ class Repository extends \Razorpay\Spine\Repository
         if ( ! is_null($model = $this->find($id, $columns))) return $model;
 
         $this->processDbQueryFailure('find', array('id' => $id, 'columns' => $columns));
+    }
+
+    protected function parseIds($value): array
+    {
+        if ($value instanceof Model)
+        {
+            return [$value->getKey()];
+        }
+
+        if ($value instanceof Collection)
+        {
+            return $value->modelKeys();
+        }
+
+        return (array) $value;
     }
 
     protected function processDbQueryFailure($operation, $attributes = null)
@@ -611,14 +654,8 @@ class Repository extends \Razorpay\Spine\Repository
 
         try
         {
-            $job = (new EsSync(
-                        $mode,
-                        $action,
-                        $entity->getEntity(),
-                        $entity->getId()
-                    ))->delay(self::ES_JOB_DELAY);
-
-            (new DispatchRouter)->dispatchOn($job, DispatchRouter::ES_V2);
+            // We do delayed dispatch here to account for time taken in db transaction(with numbers of queries) commit.
+            EsSync::dispatch($mode, $action, $entity->getEntity(), $entity->getId())->delay(self::ES_JOB_DELAY);
         }
         catch (\Throwable $e)
         {

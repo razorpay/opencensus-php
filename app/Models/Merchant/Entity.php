@@ -51,6 +51,8 @@ class Entity extends Base\PublicEntity
     const CHANNEL                  = 'channel';
     const WEBSITE                  = 'website';
     const CATEGORY                 = 'category';
+    const WHITELISTED_IPS_LIVE     = 'whitelisted_ips_live';
+    const WHITELISTED_IPS_TEST     = 'whitelisted_ips_test';
     const CATEGORY2                = 'category2';
     const INVOICE_CODE             = 'invoice_code';
     const SCOPE                    = 'scope';
@@ -59,11 +61,13 @@ class Entity extends Base\PublicEntity
     const REFUND_SOURCE            = 'refund_source';
     const LINKED_ACCOUNT_KYC       = 'linked_account_kyc';
     const HAS_KEY_ACCESS           = 'has_key_access';
+    const PARTNER_TYPE             = 'partner_type';
     const BRAND_COLOR              = 'brand_color';
     const HANDLE                   = 'handle';
     const RISK_RATING              = 'risk_rating';
     const RISK_THRESHOLD           = 'risk_threshold';
     const LOGO_URL                 = 'logo_url';
+    const INVOICE_LABEL_FIELD      = 'invoice_label_field';
     const AWS_LOGO_URL             = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT       = 'max_payment_amount';
     const AUTO_REFUND_DELAY        = 'auto_refund_delay';
@@ -72,8 +76,6 @@ class Entity extends Base\PublicEntity
     const ARCHIVED_AT              = 'archived_at';
     const SUSPENDED_AT             = 'suspended_at';
     const NOTES                    = 'notes';
-    const WHITELISTED_IPS_LIVE     = 'whitelisted_ips_live';
-    const WHITELISTED_IPS_TEST     = 'whitelisted_ips_test';
 
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
@@ -168,7 +170,6 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::EMAIL,
         self::SCOPE,
-        self::ORG_ID,
         self::WEBSITE,
         self::CHANNEL,
         self::CATEGORY,
@@ -180,6 +181,7 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS,
         self::RISK_RATING,
         self::RISK_THRESHOLD,
+        self::PARTNER_TYPE,
         self::BRAND_COLOR,
         self::HANDLE,
         self::INTERNATIONAL,
@@ -187,6 +189,7 @@ class Entity extends Base\PublicEntity
         self::CONVERT_CURRENCY,
         self::AUTO_REFUND_DELAY,
         self::MAX_PAYMENT_AMOUNT,
+        self::INVOICE_LABEL_FIELD,
         self::LINKED_ACCOUNT_KYC,
         self::RECEIPT_EMAIL_ENABLED,
         self::AUTO_CAPTURE_LATE_AUTH,
@@ -196,13 +199,13 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_TEST,
     ];
 
-    // Requires PHP 5.6
     const CONFIG_LIST = [
         self::ID,
         self::BRAND_COLOR,
         self::HANDLE,
         self::TRANSACTION_REPORT_EMAIL,
         self::LOGO_URL,
+        self::INVOICE_LABEL_FIELD,
         self::AUTO_CAPTURE_LATE_AUTH,
     ];
 
@@ -229,6 +232,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
+        self::INVOICE_LABEL_FIELD,
         self::CHANNEL,
         self::METHODS,
         self::CONVERT_CURRENCY,
@@ -262,6 +266,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED  => true,
         self::HOLD_FUNDS             => false,
         self::FEE_BEARER             => FeeBearer::PLATFORM,
+        self::PARTNER_TYPE           => null,
         self::BRAND_COLOR            => null,
         self::HANDLE                 => null,
         self::RISK_RATING            => 3,
@@ -813,6 +818,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MAX_PAYMENT_AMOUNT);
     }
 
+    public function getInvoiceLabelField()
+    {
+        return $this->getAttribute(self::INVOICE_LABEL_FIELD);
+    }
+
     public function getAutoRefundDelay()
     {
         $autoRefundDelay = $this->getAttribute(self::AUTO_REFUND_DELAY);
@@ -823,6 +833,26 @@ class Entity extends Base\PublicEntity
         }
 
         return $autoRefundDelay;
+    }
+
+    /**
+     * Helper method to fetch the actual display_name for an
+     * invoice, based on merchant-defined field preference from merchant_detail:
+     * `business_name` or `business_dba`
+     *
+     * Fallback to `merchant_detail.business_name` if the invoice_label_field setting is not defined
+     *
+     * If invoice_label_field is defined but the attribute is null, use merchant.billing_label instead.
+     *
+     * @return mixed
+     */
+    public function getLabelForInvoice()
+    {
+        $field = $this->getInvoiceLabelField() ?: Detail\Entity::BUSINESS_NAME;
+
+        $value = optional($this->merchantDetail)->getAttribute($field);
+
+        return $value ?: $this->getBillingLabel();
     }
 
     public function getAutoCaptureLateAuth()
@@ -995,6 +1025,16 @@ class Entity extends Base\PublicEntity
 
         // Just so there is no whitespace before or after the email
         return array_filter(array_map('trim', $emails));
+    }
+
+    public function getPartnerType()
+    {
+        return $this->getAttribute(self::PARTNER_TYPE);
+    }
+
+    public function isPartner(): bool
+    {
+        return $this->isAttributeNotNull(self::PARTNER_TYPE);
     }
 
     protected function setEmailAttribute($email)
@@ -1186,6 +1226,16 @@ class Entity extends Base\PublicEntity
         }
 
         return $this->merchantDetail->getGstin() ?: $this->merchantDetail->getPGstin();
+    }
+
+    public function getCompanyCin()
+    {
+        return optional($this->merchantDetail)->getCompanyCin();
+    }
+
+    public function getBusinessRegisteredAddressAsText(string $delimiter = PHP_EOL)
+    {
+        return optional($this->merchantDetail)->getBusinessRegisteredAddressAsText($delimiter);
     }
 
     public function getBusinessRegisteredState()

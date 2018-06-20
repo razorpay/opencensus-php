@@ -26,6 +26,7 @@ use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Netbanking;
 
 /**
@@ -54,6 +55,7 @@ class Entity extends Base\PublicEntity
     const ORDER_ID              = 'order_id';
     const INVOICE_ID            = 'invoice_id';
     const TRANSFER_ID           = 'transfer_id';
+    const PAYMENT_LINK_ID       = 'payment_link_id';
     const RECEIVER_ID           = 'receiver_id';
     const RECEIVER_TYPE         = 'receiver_type';
     const INTERNATIONAL         = 'international';
@@ -93,14 +95,23 @@ class Entity extends Base\PublicEntity
     const GATEWAY               = 'gateway';
     const TERMINAL_ID           = 'terminal_id';
     const APPROVAL_CODE         = 'approval_code';
+    const BATCH_ID              = 'batch_id';
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
     const REFERENCE3            = 'reference3';
     const REFERENCE4            = 'reference4';
     const REFERENCE5            = 'reference5';
     const REFERENCE6            = 'reference6';
-    const REFERENCE7            = 'reference7';
     const REFERENCE9            = 'reference9';
+    // From 10 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
+    const REFERENCE10           = 'reference10';
+    const REFERENCE11           = 'reference11';
+    const REFERENCE12           = 'reference12';
+    const REFERENCE13           = 'reference13';
+    const REFERENCE14           = 'reference14';
+    const REFERENCE15           = 'reference15';
+    const REFERENCE16           = 'reference16';
+    const REFERENCE17           = 'reference17';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
     const GATEWAY_CAPTURED      = 'gateway_captured';
@@ -153,6 +164,8 @@ class Entity extends Base\PublicEntity
     const IFSC                  = 'ifsc';
     const ACCOUNT_NUMBER        = 'account_number';
 
+    const OFFER_ID              = 'offer_id';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
@@ -177,7 +190,6 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::ID,
-        self::MERCHANT_ID,
         self::AMOUNT,
         self::METHOD,
         self::EMI_PLAN_ID,
@@ -246,6 +258,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::TERMINAL_ID,
         self::APPROVAL_CODE,
+        self::BATCH_ID,
         self::REFERENCE1,
         self::REFERENCE2,
         self::ACQUIRER_DATA,
@@ -277,6 +290,7 @@ class Entity extends Base\PublicEntity
         self::DISPUTED,
         self::RECURRING_TYPE,
         self::ACKNOWLEDGED_AT,
+        self::PAYMENT_LINK_ID,
     ];
 
     protected $public = [
@@ -403,6 +417,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
         self::ACKNOWLEDGED_AT      => null,
+        self::PAYMENT_LINK_ID      => null,
     ];
 
     protected $amounts = [
@@ -438,6 +453,7 @@ class Entity extends Base\PublicEntity
         self::LATE_AUTHORIZED      => 'bool',
         self::CONVERT_CURRENCY     => 'bool',
         self::DISPUTED             => 'bool',
+        self::VERIFY_BUCKET        => 'int',
     ];
 
     // window in secs, used to fetch payments with same checkout id
@@ -446,6 +462,8 @@ class Entity extends Base\PublicEntity
     const DUMMY_EMAIL = 'void@razorpay.com';
 
     const DUMMY_PHONE = '+919999999999';
+
+    const DUMMY_VPA = 'dummy@razorpay';
 
     // --------------------- Modifiers ---------------------------------------------
 
@@ -682,6 +700,11 @@ class Entity extends Base\PublicEntity
         $isInternational = $this->isMethodCardOrEmi() ? $this->card->isInternational() : false;
 
         $this->setAttribute(self::INTERNATIONAL, $isInternational);
+    }
+
+    public function setAmount(int $amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
     }
 
     public function setBaseAmount(int $amount)
@@ -933,7 +956,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONVERT_CURRENCY, $convert);
     }
 
-    public function setAuthType(string $authType)
+    public function setAuthType($authType)
     {
         $this->setAttribute(self::AUTH_TYPE, $authType);
     }
@@ -988,6 +1011,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACKNOWLEDGED_AT, $timestamp);
     }
 
+    public function setReceiverId(string $receiverId)
+    {
+        $this->setAttribute(self::RECEIVER_ID, $receiverId);
+    }
+
+    public function setReceiverType(string $receiverType)
+    {
+        $this->setAttribute(self::RECEIVER_TYPE, $receiverType);
+    }
+
     // ----------------------- Setters Ends-----------------------------------------
 
     // ----------------------- Mutator ---------------------------------------------
@@ -1033,6 +1066,20 @@ class Entity extends Base\PublicEntity
         $reason = mb_strtolower($reason);
 
         $this->attributes[self::CANCELLATION_REASON] = mb_substr($reason, 0, 255);
+    }
+
+    protected function setReference1Attribute($reference1)
+    {
+        $trimmedReference1 = (blank($reference1) === true) ? null : trim($reference1);
+
+        $this->attributes[self::REFERENCE1] =  $trimmedReference1;
+    }
+
+    protected function setReference2Attribute($reference2)
+    {
+        $trimmedReference2 = (blank($reference2) === true) ? null : trim($reference2);
+
+        $this->attributes[self::REFERENCE2] =  $trimmedReference2;
     }
 
 // ----------------------- Mutator Ends ----------------------------------------
@@ -1351,6 +1398,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::BANK_TRANSFER);
     }
 
+    public function isBharatQr()
+    {
+        return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE);
+    }
+
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
@@ -1423,7 +1475,7 @@ class Entity extends Base\PublicEntity
         {
             $order = $this->order;
 
-            if ($order->hasOffer() === true)
+            if ($order->hasOffers() === true)
             {
                 return true;
             }
@@ -2142,8 +2194,12 @@ class Entity extends Base\PublicEntity
 
     public function setPublicAcquirerDataAttribute(array & $array)
     {
-        // Adding test merchants PolicyBazaar, DSP Blackrock, Yatra merchant ID's
-        $merchantIds = ['10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f', '7thBRSDflu7NHL', '87qTXzFTBLFN7i'];
+        // Adding test merchants PolicyBazaar, DSP Blackrock, Yatra, Zomato merchant ID's
+        $merchantIds = [
+            '10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f',
+            '7thBRSDflu7NHL', '87qTXzFTBLFN7i', '9sOd4xwUKox63N',
+            '9fI2f7tNoAmVhu', '6H7N6hlcv29OMG', '8tiqrk8Qpc47l9'
+        ];
 
         $currentMerchantId = $this->getMerchantId();
 
@@ -2326,6 +2382,11 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Models\BankTransfer\Entity');
     }
 
+    public function batch()
+    {
+        return $this->belongsTo('RZP\Models\Batch\Entity');
+    }
+
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
@@ -2371,6 +2432,11 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
     }
 
+    public function enach()
+    {
+        return $this->hasOne('RZP\Gateway\Enach\Base\Entity');
+    }
+
     // using hasOne here as we need only the first billdesk entity, actual relation can be one-to-many
     public function billdesk()
     {
@@ -2385,6 +2451,11 @@ class Entity extends Base\PublicEntity
     public function disputes()
     {
         return $this->hasMany(\RZP\Models\Dispute\Entity::class);
+    }
+
+    public function discount()
+    {
+        return $this->hasOne('RZP\Models\Discount\Entity');
     }
 
 // --------------- Relation to other entity section ends -----------------------
@@ -2639,6 +2710,31 @@ class Entity extends Base\PublicEntity
         return $this->isAttributeNotNull(self::ACKNOWLEDGED_AT);
     }
 
+    public function getDummyPaymentArray(string $method, string $network = null): array
+    {
+        $paymentArray =  [
+            self::CURRENCY    => Currency\Currency::INR,
+            self::METHOD      => $method,
+            self::AMOUNT      => 100,
+            self::DESCRIPTION => 'Dummy Payment',
+            self::CONTACT     => self::DUMMY_PHONE,
+            self::EMAIL       => self::DUMMY_EMAIL,
+        ];
+
+        switch ($method)
+        {
+            case Method::CARD:
+                $paymentArray[self::CARD] = (new Card\Entity)->getDummyCardArray($network);
+                break;
+
+            case Method::UPI:
+                $paymentArray[self::VPA] = self::DUMMY_VPA;
+
+        }
+
+        return $paymentArray;
+    }
+
     // Query scopes
 
     /**
@@ -2651,5 +2747,13 @@ class Entity extends Base\PublicEntity
     {
         $query->where(Entity::RECEIVER_ID, '=', $entity->getId())
               ->where(Entity::RECEIVER_TYPE, '=', $entity->getEntity());
+    }
+
+    public function isCorporateNetbanking()
+    {
+        return (
+            ($this->isNetbanking() === true) and
+            (Netbanking::isCorporateBank($this->getBank()) === true)
+        );
     }
 }

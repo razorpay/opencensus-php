@@ -10,7 +10,6 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Settings;
 use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
-use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\Batch as BatchJob;
 use RZP\Exception\BadRequestException;
 
@@ -31,6 +30,8 @@ class Core extends Base\Core
         $batch = (new Entity)->build($input);
 
         $batch->merchant()->associate($merchant);
+
+        $batch->getValidator()->validateAuthForBatchType();
 
         $processor = Processor\Factory::get($batch);
 
@@ -181,7 +182,7 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::BATCH_PROCESS_ASYNC, [$batch->toArrayPublic(), $input]);
 
-        $this->queueBatchForProcessing($batch, $input);
+        BatchJob::dispatch($this->mode, $batch->getId(), $input);
 
         return $batch;
     }
@@ -207,14 +208,7 @@ class Core extends Base\Core
         {
             unset($input[Entity::FILE]);
 
-            $this->queueBatchForProcessing($batch, $input);
+            BatchJob::dispatch($this->mode, $batch->getId(), $input);
         }
-    }
-
-    protected function queueBatchForProcessing(Entity $batch, array $input = [])
-    {
-        $job = new BatchJob($this->mode, $batch->getId(), $input);
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
     }
 }

@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\BharatQr;
 use RZP\Gateway\Upi\Base as UpiBase;
 use RZP\Models\Customer\Token;
 
@@ -21,6 +22,11 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        if ($this->isBharatQrPayment() === true)
+        {
+            return null;
+        }
 
         $this->failIfRequired($input);
 
@@ -46,6 +52,11 @@ class Gateway extends Base\Gateway
                 }
             }
 
+            return;
+        }
+
+        if ($input['payment'][Payment\Entity::AUTH_TYPE] == Payment\AuthType::SKIP)
+        {
             return;
         }
 
@@ -96,6 +107,63 @@ class Gateway extends Base\Gateway
         }
 
         return $request;
+    }
+
+    /**
+     * Takes in S2S request as a body string
+     * and returns the parsed response as an array
+     *
+     * @param  array $body Request body
+     *
+     * @param bool    $isBharatQr
+     *
+     * @return array
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\RuntimeException
+     */
+    public function preProcessServerCallback($body, $isBharatQr = false): array
+    {
+        $response = $body;
+
+        if ($isBharatQr === true)
+        {
+            $response = $this->getBharatQrResponse($body);
+        }
+
+        return $response;
+    }
+
+    protected function getBharatQrResponse(array $input)
+    {
+        $qrData = [
+            BharatQr\GatewayResponseParams::AMOUNT                => $input[Fields::AMOUNT],
+            BharatQr\GatewayResponseParams::METHOD                => $input[Fields::METHOD],
+            BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => Constants::SHARP_MERCHANT_ID,
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[Fields::REFERENCE],
+            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => random_alphanum_string(10),
+            BharatQr\GatewayResponseParams::SENDER_NAME           => 'Razorpay',
+        ];
+
+        switch ($input[Fields::METHOD])
+        {
+            case Payment\Method::CARD:
+                $qrData[BharatQr\GatewayResponseParams::CARD_FIRST6] = Constants::CARD_FIRST_SIX;
+                $qrData[BharatQr\GatewayResponseParams::CARD_LAST4]  = Constants::CARD_LAST_FOUR;
+                break;
+
+            case Payment\Method::UPI:
+                $qrData[BharatQr\GatewayResponseParams::VPA] = Constants::BQR_VPA;
+                break;
+
+            default:
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD);
+        }
+
+        return [
+            'callback_data' => $input,
+            'qr_data'       => $qrData
+        ];
     }
 
     protected function getIntentRequest($input)

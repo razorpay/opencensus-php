@@ -66,6 +66,10 @@ class RecurringChargeTest extends TestCase
         $this->assertInputFileExistsForBatch($response[Batch\Entity::ID]);
         $this->assertOutputFileExistsForBatch($response[Batch\Entity::ID]);
 
+        $batch = $this->getLastEntity('batch', true);
+        $this->assertEquals('processed', $batch['status']);
+        $this->assertEquals(200, $batch['processed_amount']);
+
         $order = $this->getLastEntity('order', true);
         $this->assertEquals('random receipt', $order['receipt']);
         $this->assertEquals('INR', $order['currency']);
@@ -80,6 +84,7 @@ class RecurringChargeTest extends TestCase
         $this->assertEquals('cust_100000customer', $payment['customer_id']);
         $this->assertEquals(100, $payment['amount']);
         $this->assertEquals('random description', $payment['description']);
+        $this->assertEquals($batch['id'], 'batch_'.$payment['batch_id']);
     }
 
     protected function getDefaultVirtualAccountFileEntries()

@@ -213,7 +213,7 @@ return [
             Permission::ADD_RECONCILIATION_FILE => '',
             Permission::ADD_SETTLEMENT_RECONCILIATION => '',
             Permission::RETRY_SETTLEMENT => '',
-            Permission::EDIT_MERCHANT_INVOICE_GSTIN => '',
+            Permission::MERCHANT_INVOICE_EDIT => '',
             Permission::SEND_NEWSLETTER => '',
             Permission::TRIGGER_DUMMY_ERROR => '',
             Permission::MAKE_API_CALL => '',
@@ -258,6 +258,7 @@ return [
 
         PermissionCategory::SETTLEMENT  => [
             Permission::SETTLEMENT_BULK_UPDATE  => '',
+            Permission::CREATE_NODAL_ACCOUNT_TRANSFER => '',
         ],
 
         PermissionCategory::DISPUTE => [
@@ -438,6 +439,7 @@ return [
 
         PermissionCategory::ACTION => [
             Permission::DB_META_QUERY => '',
+            Permission::OAUTH_SYNC_MERCHANT_MAP => '',
         ],
 
         // Permissions
@@ -531,6 +533,10 @@ return [
         PermissionCategory::BATCH => [
             Permission::RETRY_BATCH => [
                 'description' => 'Retry batch processing',
+                'assignable'  => true,
+            ],
+            Permission::ADMIN_BATCH_CREATE => [
+                'description' => 'Create admin type batches',
                 'assignable'  => true,
             ]
         ],

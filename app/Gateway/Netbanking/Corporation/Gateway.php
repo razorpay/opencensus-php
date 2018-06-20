@@ -39,7 +39,11 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($content);
 
-        $request = $this->getStandardRequestArray($content);
+        $content = http_build_query($content);
+
+        $request = $this->getStandardRequestArray([], 'get');
+
+        $request['url'] .= '?' . $content;
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -66,16 +70,22 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::PAYMENT_ID]
         );
 
+        // For those payments whose amounts are integer values,
+        // the amount in the callback is rounded off to 1 decimal place.
+        // For those with amount having 1 or 2 decimal places, it is kept as it is.
+        // Hence, we need to format the amount in the callback as well before making
+        // the amount assertion
         $this->assertAmount(
-            $this->formatAmount($input['payment']['amount']), $content[ResponseFields::AMOUNT]
+            $this->formatAmount($input['payment']['amount'] / 100),
+            $this->formatAmount($content[ResponseFields::AMOUNT])
         );
+
+        $this->checkCallbackStatus($content);
 
         $this->verifyCallback($input, $content);
 
         // Saving callback response only if the verification passes
-        $gatewayPayment = $this->saveCallbackResponse($content);
-
-        $this->checkCallbackStatus($content);
+        $this->saveCallbackResponse($content);
 
         return $this->getCallbackResponseData($input);
     }
@@ -144,7 +154,7 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
-        $request = $this->getVerifyRequest($verify->input);
+        $request = $this->getVerifyRequest($verify);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -245,6 +255,8 @@ class Gateway extends Base\Gateway
     {
         $verify = new Verify($this->gateway, $input);
 
+        $this->getPaymentToVerify($verify);
+
         $this->sendPaymentVerifyRequest($verify);
 
         $this->checkGatewaySuccess($verify);
@@ -262,18 +274,42 @@ class Gateway extends Base\Gateway
 
     protected function parseVerifyResponse($content)
     {
-        parse_str($content, $data);
-
-        return $this->getEncryptor()->decryptData($data[ResponseFields::VERIFY_DATA]);
+        return $this->getEncryptor()->decryptData($content);
     }
 
-    protected function getVerifyRequest(array $input)
+    /**
+     * @param Verify $verify
+     * @return array
+     * @throws Exception\LogicException
+     */
+    protected function getVerifyRequest(Verify $verify)
     {
+        $input = $verify->input;
+
+        $bankRefNumber = '';
+
+        if ($this->action === Action::VERIFY)
+        {
+            $gatewayPayment = $verify->payment;
+
+            $bankRefNumber = $gatewayPayment['bank_payment_id'];
+        }
+        elseif ($this->action === Action::CALLBACK)
+        {
+            $bankRefNumber = $input['gateway'][ResponseFields::BANK_REF_NUMBER];
+        }
+        else
+        {
+            throw new Exception\LogicException('Verify should be called from either verify or callback actions');
+        }
+
         $data = [
             RequestFields::VERIFY_MERCHANT_CODE         => $this->getMerchantId(),
             RequestFields::VERIFY_PAYMENT_ID            => $input['payment']['id'],
             RequestFields::VERIFY_AMOUNT                => $this->formatAmount($input['payment']['amount']),
-            RequestFields::VERIFY_MODE_OF_TRANSACTION   => RequestFields::VERIFY_MODE_OF_TRANSACTION_VALUE
+            RequestFields::VERIFY_BANK_REF_NUMBER       => $bankRefNumber,
+            RequestFields::VERIFY_MODE_OF_TRANSACTION   => RequestFields::VERIFY_MODE_OF_TRANSACTION_VALUE,
+            RequestFields::FUND_TRANSFER                => Constants::FUND_TRANSFER,
         ];
 
         $encryptedString = $this->getEncryptor()->encryptData($data);
@@ -283,15 +319,21 @@ class Gateway extends Base\Gateway
             RequestFields::VERIFY_DATA          => $encryptedString
         ];
 
-        $request = $this->getStandardRequestArray($content, 'post', Action::VERIFY);
+        $request = $this->getStandardRequestArray($content, 'get', Action::VERIFY);
+
+        // Since they don't have a valid SSL certificate on UAT site.
+        if ($this->mode === Mode::TEST)
+        {
+            $request['options']['verify'] = false;
+        }
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
-                'gateway'    => $this->gateway,
-                'request'    => $request,
-                'content'    => $data,
-                'payment_id' => $input['payment']['id'],
+                'gateway'           => $this->gateway,
+                'request'           => $request,
+                'payment_id'        => $input['payment']['id'],
+                'decrypted_content' => $data,
             ]
         );
 
@@ -319,7 +361,7 @@ class Gateway extends Base\Gateway
     {
         $secret = $this->getSecret();
 
-        return new Encryptor(AES::MODE_ECB, $secret);
+        return new Encryptor(AES::MODE_CBC, $secret, $secret);
     }
 
     public function getMerchantId()

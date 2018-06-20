@@ -6,7 +6,6 @@ use App;
 use Requests;
 use Requests_Response;
 use Requests_Exception;
-
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
@@ -21,7 +20,7 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 /**
  * Interface for api to talk to Reporting service
  */
-class Reporting
+class Reporting implements ExternalService
 {
     const REQUEST_TIMEOUT = 30; // In secs
 
@@ -33,6 +32,10 @@ class Reporting
     const SCHEDULE_PATH = '/v1/schedules';
 
     const SCHEDULE_PREFIX = 'sched_';
+
+    const LOGS          = 'logs';
+    const CONFIGS       = 'configs';
+    const SCHEDULES     = 'schedules';
 
     /**
      * @var array
@@ -60,6 +63,46 @@ class Reporting
         // TODO: This service should(to discuss) not depend on BA, better to pass
         // or set merchant context on the instance before using.
         $this->ba     = $app['basicauth'];
+    }
+
+    public function fetchMultiple(string $entity, array $input)
+    {
+        $merchantId = $input['merchant_id'] ?? Merchant\Account::SHARED_ACCOUNT;
+
+        unset($input['merchant_id']);
+
+        switch ($entity)
+        {
+            case self::LOGS:
+                return $this->fetchLogMultipleAdmin($input, $merchantId);
+
+            case self::CONFIGS:
+                return $this->fetchConfigMultipleAdmin($input, $merchantId);
+
+            case self::SCHEDULES:
+                return $this->fetchScheduleMultipleAdmin($input, $merchantId);
+        }
+
+        return [];
+    }
+
+    public function fetch(string $entity, string $id, array $input)
+    {
+        $merchantId = $input['merchant_id'] ?? Merchant\Account::SHARED_ACCOUNT;
+
+        switch ($entity)
+        {
+            case self::LOGS:
+                return $this->fetchLogByIdAdmin($id, $merchantId);
+
+            case self::CONFIGS:
+                return $this->fetchConfigByIdAdmin($id, $merchantId);
+
+            case self::SCHEDULES:
+                return $this->fetchScheduleByIdAdmin($id, $merchantId);
+        }
+
+        return [];
     }
 
     public function createConfig(array $input): array
@@ -105,6 +148,13 @@ class Reporting
         $input['mode'] = $this->mode;
 
         return $this->createAndSendRequest(Requests::POST, self::LOG_PATH, $input);
+    }
+
+    public function editLog(string $id, array $input): array
+    {
+        $path = self::LOG_PATH . '/' . $id;
+
+        return $this->createAndSendRequest(Requests::PATCH, $path, $input);
     }
 
     public function fetchLogById(string $id): array
@@ -209,6 +259,43 @@ class Reporting
         }
 
         return $response;
+    }
+
+    public function fetchLogByIdAdmin(string $id, string $merchantId = Merchant\Account::SHARED_ACCOUNT): array
+    {
+        $path = self::LOG_PATH . '/' . $id;
+
+        return $this->createAndSendRequest(Requests::GET, $path, [], $merchantId);
+    }
+
+    public function fetchConfigByIdAdmin(string $id, string $merchantId = Merchant\Account::SHARED_ACCOUNT): array
+    {
+        $path = self::CONFIG_PATH . '/' . $id;
+
+        return $this->createAndSendRequest(Requests::GET, $path, [], $merchantId);
+    }
+
+    public function fetchScheduleByIdAdmin(string $id, string $merchantId = Merchant\Account::SHARED_ACCOUNT): array
+    {
+        $path = self::SCHEDULE_PATH . '/' . $id;
+
+        return $this->createAndSendRequest(Requests::GET, $path, [], $merchantId);
+    }
+
+    public function fetchLogMultipleAdmin(array $input, string $merchantId): array
+    {
+        return $this->createAndSendRequest(Requests::GET, self::LOG_PATH, $input, $merchantId);
+    }
+
+    // TODO: Add filter based upon feature/tags for admin calls
+    public function fetchConfigMultipleAdmin(array $input, string $merchantId): array
+    {
+        return $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input, $merchantId);
+    }
+
+    public function fetchScheduleMultipleAdmin(array $input, string $merchantId): array
+    {
+        return $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input, $merchantId);
     }
 
     protected function createScheduleOnAPI(array $input)

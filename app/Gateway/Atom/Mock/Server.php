@@ -285,6 +285,8 @@ class Server extends Base\Mock\Server
             VerifyResponseFields::GATEWAY_TRANSACTION_ID => (string) mt_rand(1111111, 9999999),
         ];
 
+        $this->content($response);
+
         return $response;
     }
 

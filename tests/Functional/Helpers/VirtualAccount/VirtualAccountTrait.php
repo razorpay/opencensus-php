@@ -9,7 +9,8 @@ trait VirtualAccountTrait
     private function createVirtualAccount(
         array $input = [],
         $numeric = true,
-        $descriptor = null)
+        $descriptor = null,
+        $qrCode = false)
     {
         $defaultValues = $this->getDefaultVirtualAccountRequestArray();
 
@@ -21,6 +22,11 @@ trait VirtualAccountTrait
         if ($descriptor !== null)
         {
             $defaultValues['receivers']['bank_account']['descriptor'] = $descriptor;
+        }
+
+        if ($qrCode === true)
+        {
+            $defaultValues['receivers']['types'][] = 'qr_code';
         }
 
         $attributes = array_merge($defaultValues, $input);
@@ -183,6 +189,23 @@ trait VirtualAccountTrait
         ];
 
         $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    private function payViaBharatQr(string $qrCodeId, string $gateway)
+    {
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId,'123456789012');
+
+        $request = [
+            'method' => 'POST',
+            'url'    => '/payment/callback/bharatqr/'. $gateway,
+            'content'=> $content
+        ];
+
+        $this->ba->directAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 

@@ -39,6 +39,7 @@ class Validator extends Base\Validator
         Entity::IINS             => 'filled|array',
         Entity::CURRENCY         => 'filled|in:INR,USD',
         Entity::COMMENTS         => 'filled|string|max:255',
+        Entity::RECURRING        => 'filled|boolean',
     ];
 
     protected static $editRules = [
@@ -288,11 +289,14 @@ class Validator extends Base\Validator
 
     protected function validateUpiIssuer(array $input)
     {
-       if (ProviderCode::validateBankCode($input[Entity::ISSUER]) === false)
-       {
-           throw new Exception\BadRequestValidationFailureException(
+        $issuer = $input[Entity::ISSUER] ?? null;
+
+        if (($issuer !== null) and
+            (ProviderCode::validateBankCode($issuer) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
                'Invalid bank code for PSP');
-       }
+        }
     }
 
     protected function validateNetwork(array $input)
@@ -444,7 +448,7 @@ class Validator extends Base\Validator
 
     protected static function isRejectFilter(array $input): bool
     {
-        return(($input[Entity::TYPE] === Entity::FILTER) and
-            ($input[Entity::FILTER_TYPE] === Entity::REJECT));
+        return (($input[Entity::TYPE] === Entity::FILTER) and
+                ($input[Entity::FILTER_TYPE] === Entity::REJECT));
     }
 }

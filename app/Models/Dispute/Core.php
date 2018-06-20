@@ -101,7 +101,7 @@ class Core extends Base\Core
 
                 $this->sendDisputeMailToMerchant($dispute, $merchant, $input);
 
-                $this->firePaymentDisputedEvent($payment, $dispute);
+                $this->firePaymentDisputeWebhookEvent($payment, $dispute, WebhookEvent::PAYMENT_DISPUTE_CREATED);
 
                 return $dispute;
 
@@ -142,6 +142,8 @@ class Core extends Base\Core
                 return $this->repo->transaction(function() use ($dispute, $input)
                 {
                     $this->handleDisputeClosure($dispute, $input);
+
+                    $this->fireDisputeStatusChangeWebhookEvent($dispute);
 
                     $this->repo->saveOrFail($dispute);
 
@@ -549,7 +551,22 @@ class Core extends Base\Core
         return $input;
     }
 
-    protected function firePaymentDisputedEvent(Payment\Entity $payment, Entity $dispute)
+    protected function fireDisputeStatusChangeWebhookEvent(Entity $dispute)
+    {
+        $status = $dispute->getStatus();
+
+        if (($dispute->isDirty(Entity::STATUS) === false) or
+            (isset(Status::$webhookEventMap[$status]) === false))
+        {
+            return;
+        }
+
+        $eventName = Status::$webhookEventMap[$status];
+
+        $this->firePaymentDisputeWebhookEvent($dispute->payment, $dispute, $eventName);
+    }
+
+    protected function firePaymentDisputeWebhookEvent(Payment\Entity $payment, Entity $dispute, string $event)
     {
         //
         // `reason_description` should not be exposed on API or webhook responses.
@@ -565,7 +582,7 @@ class Core extends Base\Core
             ],
         ];
 
-        $eventName = 'api.' . WebhookEvent::PAYMENT_DISPUTE_CREATED;
+        $eventName = 'api.' . $event;
 
         $this->app['events']->fire($eventName, $eventPayload);
     }

@@ -6,22 +6,34 @@ use RZP\Models\FundTransfer\Base\Reconciliation\Status as BaseStatus;
 
 class Status extends BaseStatus
 {
-    const SUCCESS   = 'SUCCESS';
-    const FAILURE   = 'FAILURE';
-    const INITIATED = 'Initiated';
+    const SUCCESS     = 'SUCCESS';
+    const FAILURE     = 'Failure';
+    const INITIATED   = 'Initiated';
+    const FAILED      = 'FAILED';
+    const IN_PROGRESS = 'IN PROGRESS';
 
     public static function getSuccessfulStatus(): array
     {
         return [
             self::SUCCESS,
-            self::INITIATED
         ];
     }
 
     public static function getFailureStatus(): array
     {
         return [
-            self::FAILURE
+            self::FAILURE,
+            self::FAILED,
         ];
+    }
+
+    public static function getCriticalErrorStatus(): array
+    {
+        return [];
+    }
+
+    public static function getCriticalErrorRemarks(): array
+    {
+        return [];
     }
 }

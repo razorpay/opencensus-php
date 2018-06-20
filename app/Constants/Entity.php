@@ -68,12 +68,14 @@ class Entity
     const SETTLEMENT            = 'settlement';
     const TRANSACTION           = 'transaction';
     const FEE_BREAKUP           = 'fee_breakup';
+    const PAYMENT_LINK          = 'payment_link';
     const GATEWAY_RULE          = 'gateway_rule';
     const GATEWAY_FILE          = 'gateway_file';
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
     const DISPUTE_FILE          = 'dispute_file';
     const SUBSCRIPTION          = 'subscription';
+    const ENTITY_OFFER          = 'entity_offer';
     const GATEWAY_TOKEN         = 'gateway_token';
     const BANK_TRANSFER         = 'bank_transfer';
     const SCHEDULE_TASK         = 'schedule_task';
@@ -151,6 +153,7 @@ class Entity
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_SBI                = 'upi_sbi';
     const UPI_ICICI              = 'upi_icici';
+    const UPI_HULK               = 'upi_hulk';
     const ENACH_RBL              = 'enach_rbl';
     const ESIGNER_DIGIO          = 'esigner_digio';
     const NETBANKING_AXIS        = 'netbanking_axis';
@@ -164,6 +167,7 @@ class Entity
     const NETBANKING_RBL         = 'netbanking_rbl';
     const NETBANKING_INDUSIND    = 'netbanking_indusind';
     const NETBANKING_PNB         = 'netbanking_pnb';
+    const NETBANKING_OBC         = 'netbanking_obc';
     const NETBANKING_CSB         = 'netbanking_csb';
     const WALLET_PAYZAPP         = 'wallet_payzapp';
     const WALLET_JIOMONEY        = 'wallet_jiomoney';
@@ -174,10 +178,18 @@ class Entity
     const WALLET_OPENWALLET      = 'wallet_openwallet';
     const WALLET_AIRTELMONEY     = 'wallet_airtelmoney';
     const WALLET_MPESA           = 'wallet_mpesa';
+    const WALLET_AMAZONPAY       = 'wallet_amazonpay';
 
     // Tax and Tax Groups
     const TAX                   = 'tax';
     const TAX_GROUP             = 'tax_group';
+
+    // External Service Entity (ServiceName.EntityName)
+    const REPORTING_LOGS               = 'reporting.logs';
+    const REPORTING_CONFIGS            = 'reporting.configs';
+    const REPORTING_SCHEDULES          = 'reporting.schedules';
+    const SHIELD_RULES                 = 'shield.rules';
+    const SHIELD_RULE_ANALYTICS        = 'shield.rule_analytics';
 
     /**
      * Defines a map of entites which are currently
@@ -247,9 +259,11 @@ class Entity
         self::INVITATION            => \RZP\Models\Invitation::class,
         self::FILE_STORE            => \RZP\Models\FileStore::class,
         self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
+        self::ENTITY_OFFER          => \RZP\Models\Offer\EntityOffer::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::SUBSCRIPTION          => \RZP\Models\Plan\Subscription::class,
         self::DISPUTE_FILE          => \RZP\Models\Dispute\File::class,
+        self::PAYMENT_LINK          => \RZP\Models\PaymentLink::class,
         self::GATEWAY_TOKEN         => \RZP\Models\Customer\GatewayToken::class,
         self::SCHEDULE_TASK         => \RZP\Models\Schedule\Task::class,
         self::DISPUTE_REASON        => \RZP\Models\Dispute\Reason::class,
@@ -289,6 +303,7 @@ class Entity
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Mindgate::class,
         self::UPI_SBI                => \RZP\Gateway\Upi\Sbi::class,
         self::UPI_ICICI              => \RZP\Gateway\Upi\Icici::class,
+        self::UPI_HULK               => \RZP\Gateway\Upi\Hulk::class,
         self::AEPS                   => \RZP\Gateway\Aeps\Base::class,
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Icici::class,
         self::AXIS_MIGS              => \RZP\Gateway\AxisMigs::class,
@@ -310,6 +325,7 @@ class Entity
         self::NETBANKING_CORPORATION => \RZP\Gateway\Netbanking\Corporation::class,
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Kotak::class,
         self::NETBANKING_ICICI       => \RZP\Gateway\Netbanking\Icici::class,
+        self::NETBANKING_OBC         => \RZP\Gateway\Netbanking\Obc::class,
         self::NETBANKING_AIRTEL      => \RZP\Gateway\Netbanking\Airtel::class,
         self::NETBANKING_FEDERAL     => \RZP\Gateway\Netbanking\Federal::class,
         self::NETBANKING_RBL         => \RZP\Gateway\Netbanking\Rbl::class,
@@ -321,6 +337,7 @@ class Entity
         self::WALLET_FREECHARGE      => \RZP\Gateway\Wallet\Freecharge::class,
         self::WALLET_AIRTELMONEY     => \RZP\Gateway\Wallet\Airtelmoney::class,
         self::WALLET_MPESA           => \RZP\Gateway\Wallet\Mpesa::class,
+        self::WALLET_AMAZONPAY       => \RZP\Gateway\Wallet\Amazonpay::class,
 
         // heimdall
         self::ORG                   => \RZP\Models\Admin\Org::class,
@@ -355,6 +372,7 @@ class Entity
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_RBL         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_PNB         => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_OBC         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Base::class,
 
@@ -363,6 +381,7 @@ class Entity
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Base::class,
         self::UPI_SBI                => \RZP\Gateway\Upi\Base::class,
         self::UPI_ICICI              => \RZP\Gateway\Upi\Base::class,
+        self::UPI_HULK               => \RZP\Gateway\Upi\Base::class,
         self::UPI_NPCI               => \RZP\Gateway\Upi\Base::class,
 
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Base::class,
@@ -375,8 +394,17 @@ class Entity
         self::WALLET_OLAMONEY        => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_AMAZONPAY       => \RZP\Gateway\Wallet\Base::class,
 
-        self::NODAL_STATEMENT       => \RZP\Models\Nodal\Statement::class,
+        self::NODAL_STATEMENT        => \RZP\Models\Nodal\Statement::class,
+    ];
+
+    protected static $externalServiceClass = [
+        self::REPORTING_LOGS               => \RZP\Services\Reporting::class,
+        self::REPORTING_CONFIGS            => \RZP\Services\Reporting::class,
+        self::REPORTING_SCHEDULES          => \RZP\Services\Reporting::class,
+        self::SHIELD_RULES                 => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RULE_ANALYTICS        => \RZP\Services\ShieldClient::class,
     ];
 
     protected static $syncedInLiveAndTest = [
@@ -538,6 +566,31 @@ class Entity
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid entity.');
         }
+    }
+
+    /**
+     * For API entities there would only be entity, which would be verified by normal flow
+     * For other, we need to validate the service should exists, and entity is exposed
+     *
+     * @param string $entity
+     * @return bool
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public static function validateExternalServiceEntity(string $entity)
+    {
+        return (isset(self::$externalServiceClass[$entity]) === true);
+    }
+
+    public static function getExternalServiceClass(string $entity)
+    {
+        $class = self::$externalServiceClass[$entity];
+
+        return new $class;
+    }
+
+    public static function getExternalEntityName(string $entity)
+    {
+        return explode('.', $entity)[1];
     }
 
     public static function isEntitySyncedInLiveAndTest($entity)

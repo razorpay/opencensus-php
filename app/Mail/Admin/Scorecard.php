@@ -97,6 +97,13 @@ class Scorecard extends Mailable
 
             foreach ($attributes as $key => $value)
             {
+                if ($key === 'volume')
+                {
+                    $value = sprintf("%.2f", $value);
+
+                    $value = money_format_IN($value);
+                }
+
                 $message .= '<td>' . $value . '</td>';
             }
 

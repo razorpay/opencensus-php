@@ -2,16 +2,17 @@
 
 namespace RZP\Models\Batch;
 
+use App;
 use RZP\Base;
 use RZP\Models\Invoice;
+use RZP\Http\BasicAuth;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Feature\Constants as Feature;
-use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
-use RZP\Models\Batch\Processor\HdfcEmandateRegister;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
 
 /**
@@ -35,7 +36,11 @@ class Validator extends Base\Validator
                                     . 'application/octet-stream,'
                                     . 'application/xml,'
                                     . 'text/csv,'
-                                    . 'text/plain'
+                                    . 'text/plain,'
+                                    . 'application/cdfv2-unknown,'
+                                    . 'application/vnd.ms-office,'
+                                    . 'application/excel,'
+                                    . 'application/msexcel'
                                 . '|mimes:'
                                     . 'zip,'
                                     . 'xlsx,'
@@ -67,6 +72,18 @@ class Validator extends Base\Validator
         Entity::CONFIG                  => 'filled|array',
     ];
 
+    protected static $directDebitCreateRules = [
+        Entity::TYPE            => 'required|in:direct_debit',
+        Entity::FILE            => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::NAME            => 'filled|string|max:255',
+        Entity::TOKEN           => 'required_without:file_id|max:255|alpha_num',
+        Entity::FILE_ID         => 'required_without:file|public_id',
+    ];
+
+    protected static $tokenRules = [
+        Entity::TOKEN           => 'required|max:255|alpha_num',
+    ];
+
     protected static $reconciliationCreateRules = [
         Entity::TYPE            => 'required|in:reconciliation',
         Entity::GATEWAY         => 'required|string|max:25',
@@ -84,6 +101,13 @@ class Validator extends Base\Validator
     protected static $virtualBankAccountCreateRules = [
         Entity::TYPE                 => 'required|in:virtual_bank_account',
         Entity::FILE                 => 'required|file' . self::DEFAULT_MIME_RULE,
+    ];
+
+    protected static $elfinCreateRules = [
+        Entity::TYPE   => 'required|custom',
+        Entity::NAME   => 'filled|string|max:255',
+        Entity::FILE   => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG => 'filled|array',
     ];
 
     /**
@@ -108,6 +132,13 @@ class Validator extends Base\Validator
         HdfcEMDebitHeadings::TRANSACTION_REF_NO     => 'Transaction Reference No. must be present',
         HdfcEMDebitHeadings::ACCOUNT_NO             => 'Account No must be present',
         HdfcEMDebitHeadings::STATUS                 => 'Status must be present',
+    ];
+
+    protected static $subMerchantCreateRules = [
+        Entity::TYPE                 => 'required|in:sub_merchant',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::APPLICATION_ID       => 'filled|string|size:14',
     ];
 
     protected function validateType($attribute, $value)
@@ -143,12 +174,8 @@ class Validator extends Base\Validator
      * @param array           $entries
      * @param array           $params
      * @param Merchant\Entity $merchant
-     *
      */
-    public function validateEntries(
-        array & $entries,
-        array $params,
-        Merchant\Entity $merchant)
+    public function validateEntries(array & $entries, array $params, Merchant\Entity $merchant)
     {
         $rules = $this->getRuleNames();
 
@@ -158,6 +185,17 @@ class Validator extends Base\Validator
         // Header validations
         Header::validate($rules['header_rule'], array_keys(current($entries)));
 
+        //
+        // Formatted notes can be present in entries. Addition to above validation (where existence of notes header is
+        // validated) per batch type, here we validate the keys count & their lengths to avoid multiple failure at later
+        // stage (consumption - entity building etc in respective processors).
+        //
+        $firstEntry = current($entries);
+        if (isset($firstEntry[Header::NOTES]) === true)
+        {
+            Header::validateNotesKeys(array_keys($firstEntry[Header::NOTES]));
+        }
+
         // Data validations
         $validatorMethodName = $rules['validator_method'];
 
@@ -165,6 +203,92 @@ class Validator extends Base\Validator
         {
             $this->$validatorMethodName($entries, $params, $merchant);
         }
+    }
+
+    public function validateAuthForBatchType()
+    {
+        $batch = $this->entity;
+        $batchType = $batch->getType();
+
+        $basicAuth = App::getFacadeRoot()['basicauth'];
+
+        //
+        // 1/ The outer brackets are very important!
+        //    Gives an incorrect result otherwise.
+        // 2/ We need the `proxyAuth` check for the following reason:
+        //    In basic auth, we set `app=true` if the route is
+        //    private route but is made via dashboard (via proxy).
+        //    So, these should not be considered as made via
+        //    app (cron, lambda, etc) / admin (dashboard).
+        //    Hence, we remove proxyAuth explicitly.
+        //    But, for some reason, if a route is a proxy route already,
+        //    `app` is not set to `true`. Need to check why.
+        // 3/ Currently, `/admin/batches` is put under admin routes
+        //    and `/batches` route is put under proxy routes.
+        //    If `/batches` is called from app/admin, it'll fail at route middleware.
+        //    If emandate batch is created via proxy auth
+        //    (bypassed route middleware - through lambda or recon or some other code flow),
+        //    it'll fail at this validation layer. If it's created via private auth, it'll
+        //    anyway fail because it's neither appAuth nor proxyAuth. If it's created via
+        //    private auth via dashboard, it'll again fail because of the proxyAuth condition.
+        //
+        $onlyAppAuth = (($basicAuth->isAppAuth() === true) and
+                        ($basicAuth->isProxyAuth() === false));
+
+        if (Type::isAppType($batchType) === true)
+        {
+            $this->validateAppTypeBatch($batch, $onlyAppAuth);
+        }
+        else
+        {
+            $this->validateNonAppTypeBatch($batch);
+        }
+    }
+
+    protected function validateAppTypeBatch(Entity $batch, bool $appAuth)
+    {
+        $merchantId = $batch->getMerchantId();
+
+        if ($appAuth === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invalid type passed for batch creation',
+                Entity::TYPE,
+                $this->getTraceDataForTypeValidation($appAuth, $batch)
+            );
+        }
+
+        if ($merchantId !== Merchant\Account::SHARED_ACCOUNT)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invalid merchant trying to create an app-type batch: ' . $merchantId,
+                Entity::MERCHANT_ID,
+                $this->getTraceDataForTypeValidation($appAuth, $batch)
+            );
+        }
+    }
+
+    protected function validateNonAppTypeBatch(Entity $batch)
+    {
+        $merchantId = $batch->getMerchantId();
+
+        if ($merchantId === Merchant\Account::SHARED_ACCOUNT)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invalid merchant trying to create a non-app-type batch: ' . $merchantId,
+                Entity::MERCHANT_ID,
+                $this->getTraceDataForTypeValidation(false, $batch)
+            );
+        }
+    }
+
+    protected function getTraceDataForTypeValidation(bool $appAuth, Entity $batch)
+    {
+        return [
+            'app_auth'      => $appAuth,
+            'batch_id'      => $batch->getId(),
+            'batch_type'    => $batch->getType(),
+        ];
     }
 
     /**
@@ -275,24 +399,30 @@ class Validator extends Base\Validator
 
         foreach ($entries as $idx => $entry)
         {
-            $input = Helpers\PaymentLink::getEntityInput($entry, $params);
-
-            // Need to create dummy entity and associate merchant
-            // for the validation around max allowed payment to happen.
-
-            $rule = Invoice\Validator::CREATE_DRAFT;
-
-            if ($input[Invoice\Entity::DRAFT] === '0')
-            {
-                $rule = Invoice\Validator::CREATE_ISSUED;
-            }
-
-            $invoice = new Invoice\Entity;
-
-            $invoice->merchant()->associate($merchant);
-
+            //
+            // This whole block needs to be in try..catch as following line may
+            // also throw bad request exception per row while parsing human readable
+            // date time values as epoch.
+            //
             try
             {
+                $input = Helpers\PaymentLink::getEntityInput($entry, $params);
+
+                $rule = Invoice\Validator::CREATE_DRAFT;
+
+                if ($input[Invoice\Entity::DRAFT] === '0')
+                {
+                    $rule = Invoice\Validator::CREATE_ISSUED;
+                }
+
+                //
+                // Need to create dummy entity and associate merchant for
+                // the validation around max allowed payment to happen.
+                //
+                $invoice = new Invoice\Entity;
+
+                $invoice->merchant()->associate($merchant);
+
                 $invoice->getValidator()->validateInput($rule, $input);
 
                 $error = [
@@ -437,6 +567,17 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException(
                 'Sub-merchant creation not allowed for merchant',
                 null,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+
+        if ((isset($params[Entity::APPLICATION_ID]) === true) and
+            ($merchant->isFeatureEnabled(Feature::PARTNER) === false))
+        {
+            throw new BadRequestValidationFailureException(
+                'Application ID cannot be sent, and is not allowed',
+                Entity::APPLICATION_ID,
                 [
                     Entity::MERCHANT_ID => $merchant->getId(),
                 ]);

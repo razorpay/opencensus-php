@@ -20,4 +20,26 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_RECONCILIATION,
         ],
     ],
+
+    'testObcReconBatch' => [
+        'sub_type'      => "payment",
+        'gateway'       => "NetbankingObc",
+        'status'        => "processed",
+        'total_count'   => 1,
+        'success_count' => 1,
+        'failure_count' => 0,
+        'attempts'      => 1,
+        'entity'        => 'batch',
+    ],
+
+    'testObcReconBatchPartiallyProcessed' => [
+        'sub_type'      => 'payment',
+        'gateway'       => 'NetbankingObc',
+        'status'        => 'partially_processed',
+        'total_count'   => 1,
+        'success_count' => 0,
+        'failure_count' => 1,
+        'attempts'      => 1,
+        'entity'        => 'batch',
+    ],
 ];

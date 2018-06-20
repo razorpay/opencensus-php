@@ -181,6 +181,7 @@ return array(
         // Makes blade sharper
         RZP\Providers\KnifeServiceProvider::class,
         \Conner\Tagging\Providers\TaggingServiceProvider::class,
+        RZP\Services\Metrics\ServiceProvider::class,
     ],
 
     /*
@@ -249,21 +250,24 @@ return array(
         'Mail'            => RZP\Mail\Facade::class,
         'Workflow'        => RZP\Services\Workflow\Facade::class,
         'LaravelSettings' => anlutro\LaravelSettings\Facade::class,
+        'Metrics'         => RZP\Services\Metrics\Facade::class,
     ],
 
-    'context' => env('CONTEXT'),
+    'context'                      => env('CONTEXT'),
 
-    'checkout' => env('CHECKOUT_URL'),
+    'checkout'                     => env('CHECKOUT_URL'),
 
-    'invoice' => env('INVOICE_URL'),
+    'invoice'                      => env('INVOICE_URL'),
 
-    'cdn_v1_url' => env('CDN_V1_URL'),
+    'payment_link_hosted_base_url' => env('PAYMENT_LINK_HOSTED_BASE_URL'),
 
-    'proxy_enabled' => env('PROXY_ENABLED'),
+    'cdn_v1_url'                   => env('CDN_V1_URL'),
 
-    'proxy_address' => env('PROXY_ADDRESS'),
+    'proxy_enabled'                => env('PROXY_ENABLED'),
 
-    'throw_exception_in_testing' => env('THROW_EXCEPTION_IN_TESTING', true),
+    'proxy_address'                => env('PROXY_ADDRESS'),
+
+    'throw_exception_in_testing'   => env('THROW_EXCEPTION_IN_TESTING', true),
 
     'data_store' => [
         'mock' => env('DATA_STORE_MOCK', false)

@@ -52,6 +52,8 @@ class Core extends Base\Core
     {
         if (isset($input[Entity::PERMISSIONS]) === true)
         {
+            $this->repo->permission->validateExists($input[Entity::PERMISSIONS]);
+
             $this->repo->sync(
                 $role, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
         }

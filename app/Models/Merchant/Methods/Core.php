@@ -118,7 +118,7 @@ class Core extends Base\Core
         {
             $banks = $methods->getSupportedBanks();
 
-            $allSupportedBanks = Netbanking::removeDefaultDisableBanks($banks, $merchant->getId());
+            $allSupportedBanks = Netbanking::removeDefaultDisableBanks($banks);
 
             $data[Payment\Method::NETBANKING] = $this->getBankNames($allSupportedBanks);
         }
@@ -268,6 +268,7 @@ class Core extends Base\Core
             $methods->setOlamoney(true);
             $methods->setFreecharge(true);
             $methods->setAirtelmoney(false);
+            $methods->setAmazonpay(false);
             $methods->setBankTransfer(true);
             // Initializing Disabled bank with empty array
             $methods->setDisabledBanks([]);

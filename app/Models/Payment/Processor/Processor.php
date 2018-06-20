@@ -19,11 +19,10 @@ use RZP\Models\Customer;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Offer;
 use RZP\Models\Payment;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Methods;
-use RZP\Models\Plan\Subscription\Addon;
-use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
 use RZP\Models\Risk;
@@ -123,6 +122,12 @@ class Processor
      * @var Order\Entity
      */
     protected $order;
+    /**
+     * @var Offer\Entity
+     */
+    protected $offer;
+
+    protected $receiver;
     protected $segment;
 
     protected $verifyRefundStatus;
@@ -171,7 +176,16 @@ class Processor
         $this->verifyRefundStatus = null;
     }
 
-    public function process(array $input): array
+    public function flushPaymentObjects()
+    {
+        $this->order   = null;
+        $this->offer   = null;
+        $this->payment = null;
+        $this->refund  = null;
+        $this->type    = null;
+    }
+
+    public function process(array $input, $gatewayInput = []): array
     {
         $this->setMethodForInput($input);
 
@@ -194,7 +208,14 @@ class Processor
         // This flow is being used for only hosted (Shopify).
         $this->checkSignature($input, $payment);
 
-        return $this->authorize($payment, $input);
+        return $this->authorize($payment, $input, $gatewayInput);
+    }
+
+    public function getPayment(): Payment\Entity
+    {
+        $this->payment->reload();
+
+        return $this->payment;
     }
 
     protected function preProcessPaymentInputs(array $input, Payment\Entity $payment)
@@ -390,6 +411,44 @@ class Processor
         return $coproto;
     }
 
+    /**
+     * This function is used while creating the Qr codes. It will
+     * create dummy payment and fetch terminal corresponding to that.
+     *
+     * @param array $input
+     *
+     * @return mixed
+     */
+    public function processAndReturnTerminal(array & $input)
+    {
+        $receiver = $input[Payment\Entity::RECEIVER];
+
+        unset($input[Payment\Entity::RECEIVER]);
+
+        $this->tracePaymentNewRequest($input);
+
+        $terminal = $this->repo->beginTransactionAndRollback(
+            function() use ($input, $receiver)
+            {
+                //
+                // We only create a dummy payment entity for purpose
+                // of bharat qr terminal selection and returning it.
+                // It's not going to be saved in the database.
+                //
+                $payment = $this->buildPaymentEntity($input);
+
+                $payment->receiver()->associate($receiver);
+
+                $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
+
+                $selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+
+                return $selectedTerminals[0] ?? null;
+            });
+
+        return $terminal;
+    }
+
     public function processAndReturnFees(array & $input)
     {
         $this->tracePaymentNewRequest($input);
@@ -425,11 +484,12 @@ class Processor
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
 
         $data = [
-            'originalAmount'    => $input['amount'],
-            'fees'              => $fee,
-            'razorpay_fee'      => $fee - $tax,
-            'tax'               => $tax,
-            'amount'            => $input['amount'] + $fee,
+            'originalAmount'  => $input['amount'],
+            'original_amount' => $input['amount'],
+            'fees'            => $fee,
+            'razorpay_fee'    => $fee - $tax,
+            'tax'             => $tax,
+            'amount'          => $input['amount'] + $fee,
         ];
 
         // Set new input amount and fees
@@ -501,6 +561,99 @@ class Processor
         {
             $input[Payment\Entity::METHOD] = Payment\Method::CARD;
         }
+    }
+
+    protected function modifyAmountForDiscountedOfferIfApplicable(Payment\Entity $payment, array & $input)
+    {
+        if (empty($input[Payment\Entity::ORDER_ID]) === true)
+        {
+            return;
+        }
+
+        $order = $this->fetchOrderFromInput($input);
+
+        $this->setOfferForPaymentFromOrderOrInput($payment, $input);
+
+        if (($this->offer !== null) and
+            ($order->isDiscountApplicable() === true))
+        {
+            $orderAmount = $order->getAmount();
+
+            $discountedAmount = $this->offer->getDiscountedAmount($orderAmount);
+
+            $payment->setAmount($discountedAmount);
+        }
+    }
+
+    protected function setOfferForPaymentFromOrderOrInput(Payment\Entity $payment, array $input)
+    {
+        $order = $payment->order;
+
+        $offer = null;
+
+        // When offer is forced, we do not expect offer_id in the payment input.
+        // Instead we retrieve the offer to be applied (we can figure
+        // this out ourselves from the payment) and validate it.
+        if (($order->hasOffers() === true) and
+            ($order->isOfferForced() === true))
+        {
+            $offer =  $this->selectForcedOfferForPayment($order);
+        }
+        // If offer is not forced, we expect it in the payment input. If it is
+        // not present there, we assume the customer is opting to not use an offer.
+        else if (isset($input[Payment\Entity::OFFER_ID]) === true)
+        {
+            $offer = $this->validateAndFetchOffer($payment, $input);
+        }
+
+
+        $this->offer = $offer;
+    }
+
+    /**
+     * A forced offer is when merchant has decided that an offer is to be used
+     * for a payment, and the customer does not have a choice to opt out of it.
+     *
+     * - In its simplest form, an offer is associated
+     *   with the order, and we use it for the payment.
+     * - Merchant can also associated multiple offers with a payment, wherein
+     *   only one would be applicable for the payment itself (eg. one offer for each method).
+     *   TODO: Implement auto selection of offer from order->offers, based on payment
+     *
+     * @param  Order\Entity $order
+     * @return Offer\Entity
+     */
+    protected function selectForcedOfferForPayment(Order\Entity $order): Offer\Entity
+    {
+        $offers = $order->offers;
+
+        if ($offers->count() === 1)
+        {
+            return $offers->first();
+        }
+
+        new Exception\LogicException('Auto selection of offer is not implemented yet.');
+    }
+
+    protected function validateAndFetchOffer(Payment\Entity $payment, array $input): Offer\Entity
+    {
+        $offerId = $input[Payment\Entity::OFFER_ID];
+
+        Offer\Entity::verifyIdAndStripSign($offerId);
+
+        // If offer is present in the payment request, we need to validate it against the order.
+        if ($payment->order->offers->contains($offerId) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
+            [
+                'offer_id' => $offer->getPublicId(),
+                'order_id' => $order->getPublicId(),
+            ]);
+        }
+
+        $offer = $this->repo->offer->findByIdAndMerchant($offerId, $this->merchant);
+
+        return $offer;
     }
 
     protected function checkSignature($input, $payment)
@@ -997,35 +1150,21 @@ class Processor
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
-        $terminalId = $this->payment->getTerminalId();
+        $terminal = $this->repo->terminal->fetchForPayment($this->payment);
+
+        if ($terminal === null)
+        {
+            throw new Exception\LogicException(
+                'Terminal should not be null here',
+                null,
+                ['payment_id' => $this->payment->getId()]);
+        }
 
         $gateway = $this->payment->getGateway();
-
-        $terminal = null;
-
-        // This will be removed after terminal association with bharat qr payments
-        if (($terminalId !== null) or
-            (Payment\Gateway::isValidBharatQrGateway($gateway) === false))
-        {
-            $terminal = $this->repo->terminal->fetchForPayment($this->payment);
-
-            if ($terminal === null)
-            {
-                throw new Exception\LogicException(
-                    'Terminal should not be null here',
-                    null,
-                    ['payment_id' => $this->payment->getId()]);
-            }
-        }
 
         $gatewayData['terminal'] = $terminal;
 
         $gatewayData['merchant'] = $this->payment->merchant;
-
-        if (Payment\Gateway::isValidBharatQrGateway($this->payment->getGateway()) === true)
-        {
-            $gatewayData['bharat_qr'] = $this->repo->bharat_qr->findByPaymentId($this->payment->getId());
-        }
 
         // Wrapping all gateway call, We can take actions on Exception here.
         try
@@ -1069,6 +1208,8 @@ class Processor
         $this->addOrderIdToInputForSubscriptionIfApplicable($input, $payment);
 
         $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
+
+        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
 
         $this->validateAndSetReceiverIfApplicable($payment, $input);
 
@@ -1239,34 +1380,31 @@ class Processor
         // and the fees re-calculated again. Ideally, this should be 0.
         $feeDifference = $input['fee'] - $payment->getFee();
 
-        if (abs($feeDifference) > 5)
+        if (abs($feeDifference) !== 0)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Payment failed because fees or tax was tampered');
+           throw new Exception\BadRequestValidationFailureException(
+               'Payment failed because fees or tax was tampered',
+               Payment\Entity::FEE,
+                [
+                    'checkout_fee'      => $input['fee'],
+                    'calculated_fee'    => $payment->getFee(),
+                ]);
         }
     }
 
     protected function fetchOrderFromInput(array $input): Order\Entity
     {
-        $order = $this->orderRepo->findbyPublicId($input['order_id']);
-
-        if ($order === null)
+        if ($this->order === null)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Order id provided not found.',
-                'order_id');
+            $order = $this->orderRepo
+                          ->findByPublicIdAndMerchant(
+                            $input[Payment\Entity::ORDER_ID],
+                            $this->merchant);
+
+            $this->order = $order;
         }
 
-        if ($order->getMerchantId() !== $this->merchant->id)
-        {
-            // Merchant mismatch
-            throw new Exception\BadRequestValidationFailureException(
-                'Order id not found');
-        }
-
-        $order->merchant()->associate($this->merchant);
-
-        return $order;
+        return $this->order;
     }
 
     protected function validateAndSetOrderDetailsIfApplicable(
@@ -1925,25 +2063,6 @@ class Processor
         }
 
         if ($payment->isBankTransfer() === true)
-        {
-            return false;
-        }
-
-        if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
-        {
-            return false;
-        }
-
-        //
-        // TODO: route check to be changed after refactor
-        //
-        // If this is hit while creating a payment, gateway would not have been set yet.
-        // Hence, gateway check in the previous block would not work.
-        // This function is hit in the refund flow also, in which the gateway
-        // would have been set already.
-        // The gateway would be set AFTER the payment is created and processed.
-        //
-        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
         {
             return false;
         }

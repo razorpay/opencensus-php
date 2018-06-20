@@ -26,6 +26,14 @@ trait BharatQrTrait
         {
             $this->alertUnexpectedBharatQrPayment($bankReference, $row);
 
+            //
+            // We don't want to fail entire reconciliation for
+            // bharat qr payments. There can be missed notification.
+            // So we will notify the payment in slack and mark the row
+            // as successful.
+            //
+            $this->setFailUnprocessedRow(false);
+
             return null;
         }
 
@@ -37,11 +45,11 @@ trait BharatQrTrait
         $this->messenger->raiseReconAlert(
             [
                 'trace_code'     => TraceCode::BHARAT_QR_UNEXPECTED_PAYMENT,
-                'info_code'      => 'PAYMENT_ABSENT',
+                'info_code'      => InfoCode::PAYMENT_ABSENT,
                 'message'        => 'Unexpected Bharat Qr Payment',
                 'bank_reference' => $merchantReference,
                 'row'            => $row,
-                'gateway'        => get_called_class()
+                'gateway'        => $this->gateway
             ]);
     }
 }

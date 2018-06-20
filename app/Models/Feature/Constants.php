@@ -61,7 +61,16 @@ class Constants
     const NEW_ANALYTICS                 = 'new_analytics';
     const DAILY_SETTLEMENT              = 'daily_settlement';
     const DISABLE_UPI_INTENT            = 'disable_upi_intent';
+    const DIRECT_DEBIT                  = 'direct_debit';
     const ALLOW_S2S_APPS                = 'allow_s2s_apps';
+    const UPI_PLUS                      = 'upi_plus';
+    const FSS_IPAY                      = 'fss_ipay';
+    const EXPOSE_CARD_EXPIRY            = 'expose_card_expiry';
+    const EXPOSE_CARD_IIN               = 'expose_card_iin';
+    const S2S_OPTIONAL_DATA             = 's2s_optional_data';
+    const PARTNER                       = 'partner';
+    const OTPELF                        = 'otpelf';
+    const PAYMENT_NOBRANDING            = 'payment_nobranding';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -69,6 +78,9 @@ class Constants
 
     // Payment authentication
     const ATM_PIN_AUTH                  = 'atm_pin_auth';
+
+    // Payment headless otp auth
+    const HEADLESS_OTP                  = 'headless_otp';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -152,6 +164,16 @@ class Constants
         self::DISABLE_UPI_INTENT            => true,
         self::ATM_PIN_AUTH                  => true,
         self::ALLOW_S2S_APPS                => true,
+        self::UPI_PLUS                      => true,
+        self::FSS_IPAY                      => true,
+        self::DIRECT_DEBIT                  => true,
+        self::EXPOSE_CARD_EXPIRY            => true,
+        self::EXPOSE_CARD_IIN               => true,
+        self::S2S_OPTIONAL_DATA             => true,
+        self::PARTNER                       => true,
+        self::PAYMENT_NOBRANDING            => true,
+        self::HEADLESS_OTP                  => true,
+        self::OTPELF                        => true,
     ];
 
     // Entity type constants

@@ -360,7 +360,7 @@ class BasicAuth
         return null;
     }
 
-// --------------------- Basic Auths -------------------------------------------
+    // --------------------- Basic Auths ---------------------
 
     public function privateAuth()
     {
@@ -413,7 +413,11 @@ class BasicAuth
     {
         $this->setType(Type::PUBLIC_AUTH);
 
-        if (($this->request->has('key_id') === false) and ($this->request->getUser() === null))
+        $keyId = $this->request->input('key_id');
+
+        // Note: Attempts keyless auth in case when key_id request input exists
+        // but is not set (i.e. is empty).
+        if ((empty($keyId) === true) and (empty($this->request->getUser()) === true))
         {
             return $this->keylessPublicAuth();
         }
@@ -446,6 +450,10 @@ class BasicAuth
 
         // Sets the key instance if it exists, gets used in forming signature for payment authorize response
         $this->key = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId());
+
+        // Removes key_id from request if it existed with empty values
+        $this->request->query->remove('key_id');
+        $this->request->request->remove('key_id');
     }
 
     /**
@@ -512,8 +520,8 @@ class BasicAuth
         }
 
         // Check key is blank and it's an internal app
-        if (($this->isKeyBlank()) and
-            ($this->verifyInternalApp()))
+        if (($this->isKeyBlank() === true) and
+            ($this->verifyInternalApp() === true))
         {
             // It's an internal auth. We check whether dashboard
             // merchant header is set. In that case, it's coming
@@ -1144,14 +1152,12 @@ class BasicAuth
 
     public function isDashboardApp()
     {
-        return ($this->internalApp === 'dashboard');
+        return ($this->getInternalApp() === 'dashboard');
     }
 
     public function isCron()
     {
-        $cron = ($this->internalApp === 'cron');
-
-        return $cron;
+        return ($this->getInternalApp() === 'cron');
     }
 
     public function getOAuthApplicationId()
@@ -1241,7 +1247,7 @@ class BasicAuth
         $this->appAuth = true;
     }
 
-// --------------------- Setters Ends ------------------------------------------
+    // --------------------- Setters Ends ---------------------
 
     public function isProxyAuth()
     {

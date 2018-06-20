@@ -17,6 +17,8 @@ use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
  */
 class VirtualAccountTest extends TestCase
 {
+    protected $t1;
+    protected $t2;
     use MocksDnsTrait;
     use EntityActionTrait;
     use VirtualAccountTrait;
@@ -34,11 +36,21 @@ class VirtualAccountTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
+        $this->t1 = $this->fixtures->create('terminal:bharat_qr_terminal');
+
+        $this->t2 = $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+
         $this->ba->privateAuth();
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
         $this->customer = $this->getEntityById('customer', 'cust_100000customer');
+
+        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
+
+        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal_upi');
+
+        $this->fixtures->on('test');
 
         $this->setupMockDns();
     }
@@ -135,6 +147,8 @@ class VirtualAccountTest extends TestCase
 
         $qrCode = $this->getLastEntity('qr_code', true);
 
+        $this->assertEquals($qrCode['id'], 'qr_' . $qrCode['reference']);
+
         $qrString = $qrCode['qr_string'];
 
         $this->assertRegExp('^http://dwarf.razorpay.in/^', $qrCode['short_url']);
@@ -153,9 +167,101 @@ class VirtualAccountTest extends TestCase
 
         $visaAcquirerCode = substr($visaValue, 0, 6);
 
-        $this->assertEquals('470100', $visaAcquirerCode);
+        $this->assertEquals('528734', $visaAcquirerCode);
 
-        $this->assertEquals('513344', $masterCardAcquirerCode);
+        $this->assertEquals('428734', $masterCardAcquirerCode);
+    }
+
+    public function testCreateVirtualAccountWithReference()
+    {
+        $this->ba->proxyAuthLive();
+
+        $this->fixtures->merchant->activate();
+
+        $input = [
+            'receivers'  => [
+                'types' => ['qr_code'],
+                'qr_code'       => [
+                    'reference' => 'abc'
+                ]
+            ]
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts',
+            'content' => $input,
+        ];
+
+        $this->expectException(\Rzp\Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('reference is/are not required and should not be sent');
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testCreateVirtualAccountWithBharatQrWithNoTerminal()
+    {
+        $this->fixtures->terminal->disableTerminal($this->t1['id']);
+
+        $this->fixtures->terminal->disableTerminal($this->t2['id']);
+
+        $this->expectException(\RZP\Exception\LogicException::class);
+        $this->expectExceptionMessage('No identifiers found for the merchant');
+
+        $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+        ]);
+    }
+
+    public function testCreateVirtualAccountWithBharatQrWithOneTerminal()
+    {
+        $this->fixtures->terminal->disableTerminal($this->t1['id']);
+
+        $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+        ]);
+
+        $qrCode = $this->getLastEntity('qr_code', true);
+
+        $tlvArray = $this->getTagMappedValues($qrCode['qr_string']);
+
+        $this->assertArrayNotHasKey('02', $tlvArray);
+
+        $this->assertArrayNotHasKey('04', $tlvArray);
+
+        $this->assertArrayNotHasKey('06', $tlvArray);
+    }
+
+    public function testTransactionRollback()
+    {
+        $response = $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+        ]);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertNotEquals('222100', $card['iin']);
+        $this->assertNotEquals('423156', $card['iin']);
+        $this->assertNotEquals('508500', $card['iin']);
+
+    }
+
+    public function testCreateVirtualAccountWithBharatQrAndEmptyMpan()
+    {
+        $this->fixtures->terminal->edit($this->t1['id'], ['mc_mpan' => null]);
+
+        $response = $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+        ]);
+
+        $qrCode = $this->getLastEntity('qr_code', true);
+
+        $qrString = $qrCode['qr_string'];
+
+        $tlvArray = $this->getTagMappedValues($qrString);
+
+        $this->assertArrayNotHasKey('04', $tlvArray);
     }
 
     public function testCreateVirtualAccountWithBharatQrWithAmount()
@@ -268,7 +374,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is unset so default root is used with default handle
-        $this->assertRegexp("/11122200[0-9]{9}$/", $vba['account_number']);
+        $this->assertRegexp("/11122200[0-9]{8}$/", $vba['account_number']);
 
         $this->fixtures->merchant->setHandle('hand');
 
@@ -282,7 +388,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is set, but numeric accounts can still be created
-        $this->assertRegexp("/11122200[0-9]{9}$/", $vba['account_number']);
+        $this->assertRegexp("/11122200[0-9]{8}$/", $vba['account_number']);
     }
 
     public function testCreateVirtualAccountOldFormat()
@@ -367,6 +473,10 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualAccountDescriptorLengths()
     {
+        // Descriptor lengths are only relevant
+        // (i.e. configurable) for alphanumeric accounts
+        $this->markTestSkipped('Alphanumeric account are no longer supported');
+
         $this->fixtures->merchant->setHandle('hand');
 
         $this->createVirtualAccount([], false, '9chardesc');
@@ -389,13 +499,24 @@ class VirtualAccountTest extends TestCase
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is set so standard root is used with given handle
         $this->assertEquals("RAZRHAN10CHARDESC", $vba['account_number']);
+    }
 
-        // 10 char descriptors are also allowed with numeric
-        $response = $this->createVirtualAccount([], true, '0123456789');
+    public function testCreateVirtualAccountDescriptorInvalidLength()
+    {
+        // Shortening handle to 3 characters
+        $this->fixtures->merchant->setHandle('han');
 
-        $vba = $this->getLastEntity('bank_account', true);
-        // Shorter handle is set so special root is used with given descriptor
-        $this->assertEquals("11122290123456789", $vba['account_number']);
+        //
+        // 10 char descriptors were previously allowed
+        // with numeric VAs for 3char handle merchants.
+        //
+        // These are now completely blocked.
+        //
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() {
+            $response = $this->createVirtualAccount([], true, '0123456789');
+        });
     }
 
     public function testCreateVirtualAccountWithIdenticalDescriptor()
@@ -585,6 +706,27 @@ class VirtualAccountTest extends TestCase
         $virtualAccount = $this->createVirtualAccount();
 
         $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
+
+        $response = $this->fetchVirtualAccountPayments($virtualAccount['id']);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testFetchPaymentsForVirtualAccountForQrCode()
+    {
+        $virtualAccount = $this->createVirtualAccount([], true, null, true);
+
+        $qrCodeId = substr($virtualAccount['receivers'][1]['id'], 3);
+
+        $mockServer = $this->app['gateway']->server('hitachi');
+
+        $this->makeRequestAndGetContent([
+            'url'     => '/payment/callback/bharatqr/hitachi',
+            'method'  => 'post',
+            'content' => $mockServer->getBharatQrCallback($qrCodeId),
+        ]);
 
         $response = $this->fetchVirtualAccountPayments($virtualAccount['id']);
 

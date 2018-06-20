@@ -121,11 +121,6 @@ trait SettlementTrait
 
     protected function skipForMutualFundsMarketplace($txn): bool
     {
-        // Settle only between 1pm and 2pm
-
-        // Is a submerchant of a mutual fund market place
-        $isSubMerchantOfMf = false;
-
         // Mutual Fund Marketplace Merchant ids
         $mfMids = [
             Preferences::MID_GOALWISE_TPV,
@@ -135,58 +130,88 @@ trait SettlementTrait
             Preferences::MID_PAISABAZAAR,
         ];
 
-        //
-        // Maps the mids that want to receive only 1 settlement per day,
-        // no matter what. They need all transactions till 1 pm to be
-        // settled by 3 pm.
-        //
-        $oneSetlPerDayMids = [
-            Preferences::MID_WEALTHY,
-            Preferences::MID_PAISABAZAAR,
-        ];
+        $parentId = $txn->merchant->getParentId();
 
+        // Check if it is a sub-merchant of a Mutual-fund account
         if (($txn->isTypePayment() === true) and
             ($txn->merchant->isLinkedAccount() === true) and
-            (in_array($txn->merchant->getParentId(), $mfMids, true) === true))
-        {
-            $isSubMerchantOfMf = true;
-        }
-
-        if ($isSubMerchantOfMf === true)
+            (in_array($parentId, $mfMids, true) === true))
         {
             $now = Carbon::now(Timezone::IST)->getTimestamp();
 
             $onePm = Carbon::today(Timezone::IST)->hour(13)->getTimestamp();
 
-            $oneThirtyPm = Carbon::today(Timezone::IST)->hour(13)->minute(30)->getTimestamp();
-
             $twoPm = Carbon::today(Timezone::IST)->hour(14)->getTimestamp();
 
-            $twoTenPm = Carbon::today(Timezone::IST)->hour(14)->minute(10)->getTimestamp();
+            $twoThirtyPm = Carbon::today(Timezone::IST)->hour(14)->minute(30)->getTimestamp();
 
-            if ((in_array($txn->merchant->getParentId(), $oneSetlPerDayMids, true) === true) and
-                ($now > $oneThirtyPm))
-            {
-                return true;
-            }
-
-            //
-            // Settle transaction which needed to be settled before 2 pm today
-            // but for whatever reason weren't picked up then.
-            // In this case, the below condition of settlement window of 1-2 PM
-            // is not applicable, because these were due for settlement
-            // before 2 pm, and should have been picked up.
-            //
-            if (($txn->getSettledAt() <= $twoPm) and ($now > $twoPm))
+            // If settlement was delayed for some reason, beyond our control, settle ASAP
+            if ($this->isDelayedSettlement($txn) === true)
             {
                 return false;
             }
 
-            if (($now < $onePm) or
-                ($now > $twoTenPm))
+            //
+            // Maps the mids that want to receive only 1 settlement per day.
+            // They need all transactions till 1 pm to be settled in the 1 pm cycle.
+            //
+            $oneSetlAt1PmMids = [
+                Preferences::MID_WEALTHY,
+                Preferences::MID_PAISABAZAAR,
+            ];
+
+            if ((in_array($parentId, $oneSetlAt1PmMids, true) === true) and
+                (($now < $onePm) or
+                 ($now >= $twoPm)))
             {
                 return true;
             }
+
+            // Normal MF settlement window is 1pm-2pm (2 settlements)
+            if (($now < $onePm) or
+                ($now > $twoThirtyPm))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Applicable only for Mutual Fund Transactions.
+     * That need to be settled only between 1-2 PM
+     *
+     * @param $txn
+     * @return bool
+     */
+    protected function isDelayedSettlement($txn): bool
+    {
+        $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $twoPm = Carbon::today(Timezone::IST)->hour(14)->getTimestamp();
+
+        $today = Carbon::today(Timezone::IST)->getTimestamp();
+
+        //
+        // If the transaction was due settlement before today, but wasn't
+        // settled for whatever reason, we want to try to settle it immediately.
+        //
+        if ($txn->getSettledAt() < $today)
+        {
+            return true;
+        }
+
+        //
+        // Settle transaction which needed to be settled before 2 pm today
+        // but for whatever reason weren't picked up then.
+        // In this case, the below condition of settlement window of 1-2 PM
+        // is not applicable, because these were due for settlement
+        // before 2 pm, and should have been picked up.
+        //
+        if (($txn->getSettledAt() <= $twoPm) and ($now > $twoPm))
+        {
+            return true;
         }
 
         return false;
@@ -202,7 +227,7 @@ trait SettlementTrait
 
         $balance = $merchant->balance->getBalance();
 
-        if (($setlAmount <= 100) or ($setlAmount > $balance))
+        if (($setlAmount < 100) or ($setlAmount > $balance))
         {
             $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
                 [
@@ -444,7 +469,7 @@ trait SettlementTrait
     {
         $e = new SettlementFailureException($channel, $e->getMessage(), null, $e);
 
-//        $this->failureNotification($e);
+        $this->failureNotification($e);
 
         throw $e;
     }

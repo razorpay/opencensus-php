@@ -35,6 +35,22 @@ class Service extends Base\Service
         return $features->toArray();
     }
 
+    public function addAccountFeatures(array $input): array
+    {
+        $features = $input[Entity::NAMES] ?? [];
+
+        $data[Constants::FEATURES] = [];
+
+        foreach ($features as $feature)
+        {
+            $data[Constants::FEATURES][$feature] = "1";
+        }
+
+        (new Merchant\Validator)->validateVisibleFeatures($data);
+
+        return $this->addFeatures($input);
+    }
+
     public function getFeatures($routeEndpoint, $entityId)
     {
         //
@@ -252,7 +268,13 @@ class Service extends Base\Service
      */
     public function postOnboardingSubmissions(array $input, string $feature): bool
     {
-        $status = (new Core)->postOnboardingSubmissions($this->merchant, $input, $feature);
+        // Product onboarding submissions must only be inserted in the live mode. Force set the connection to live.
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        // Sets the mode for the request, and database connection
+        $this->core()->setModeAndDefaultConnection($liveMode);
+
+        $status = $this->core()->postOnboardingSubmissions($this->merchant, $input, $feature);
 
         return $status;
     }
@@ -267,6 +289,12 @@ class Service extends Base\Service
      */
     public function updateOnboardingSubmissions(array $input, string $feature): bool
     {
+        // Product onboarding submissions must only be inserted in the live mode. Force set the connection to live.
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        // Sets the mode for the request, and database connection
+        $this->core()->setModeAndDefaultConnection($liveMode);
+
         $merchantId = $input['merchant_id'];
 
         $merchant = $this->repo->merchant->findByPublicId($merchantId);

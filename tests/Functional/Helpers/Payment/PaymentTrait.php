@@ -4,13 +4,16 @@ namespace RZP\Tests\Functional\Helpers\Payment;
 
 use Mockery;
 use Requests;
+use Carbon\Carbon;
+use Symfony\Component\DomCrawler\Crawler;
+
 use RZP\Exception;
+use RZP\Models\Payment;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Account;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Payment\Verify\Action;
-use Symfony\Component\DomCrawler\Crawler;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Models\Payment;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
@@ -36,6 +39,7 @@ trait PaymentTrait
     use PaymentCreationTrait;
     use PaymentFssTrait;
     use PaymentWalletAirtelMoneyTrait;
+    use PaymentWalletAmazonpayTrait;
 
     use RequestResponseFlowTrait
     {
@@ -85,7 +89,7 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function doAuthCaptureAndRefundPayment($payment = null)
+    protected function doAuthCaptureAndRefundPayment($payment = null, $refundAmount = null)
     {
         if ($payment === null)
         {
@@ -94,7 +98,7 @@ trait PaymentTrait
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
-        $refund = $this->refundPayment($payment['id']);
+        $refund = $this->refundPayment($payment['id'], $refundAmount);
 
         return $refund;
     }
@@ -134,9 +138,19 @@ trait PaymentTrait
             $payment = $this->getDefaultPaymentArray();
         }
 
-        $payment['view'] = 'json';
-
         $content = $this->getFeesForPayment($payment);
+
+        return $content;
+    }
+
+    protected function createAndGetFeesForPaymentS2S($payment = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $content = $this->getFeesForPaymentS2S($payment);
 
         return $content;
     }
@@ -504,6 +518,22 @@ trait PaymentTrait
         return $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
     }
 
+    protected function generateGatewayFile($bank, string $type, $begin = null, $end = null)
+    {
+        $request = [
+            'url'       => '/gateway/files',
+            'method'    => 'POST',
+            'content'   => [
+                'targets' => (array) $bank,
+                'type'    => $type,
+                'begin'   => $begin ?? Carbon::yesterday(Timezone::IST)->getTimestamp(),
+                'end'     => $end ?? Carbon::today(Timezone::IST)->getTimestamp()
+            ],
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function makeOtpCallback($url)
     {
         $request = [
@@ -638,6 +668,19 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function getFeesForPaymentS2S($payment)
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/fees',
+            'content' => $payment
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function capturePayment($id, $amount, $currency = 'INR', $verifyAmount = 0)
     {
         $request = array(
@@ -737,7 +780,6 @@ trait PaymentTrait
 
         return $content;
     }
-
 
     protected function verifyMultiplePayments($filter)
     {
@@ -993,7 +1035,6 @@ trait PaymentTrait
         $payment = $this->getDefaultPaymentArray();
 
         unset($payment['card']);
-        $payment['merchant_id'] = '10000000000000';
         $payment['status'] = 'authorized';
         $payment['refund_status'] = 'none';
         $payment['amount_authorized'] = $payment['amount'];

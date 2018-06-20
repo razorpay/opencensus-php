@@ -60,9 +60,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return intval(number_format($paymentAmount, 2, '.', ''));
     }
 
-    protected function shouldAttemptForceAuthorizeFailed()
+    protected function setAllowForceAuthorization()
     {
-        return true;
+        $this->allowForceAuthorization = true;
     }
 
     protected function getInputForForceAuthorize($row)
@@ -83,7 +83,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
-                    'gateway'         => get_called_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             return false;

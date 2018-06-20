@@ -6,6 +6,7 @@ use Cache;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\AdminFetch;
@@ -19,11 +20,12 @@ class Service extends Base\Service
     {
         $fields = AdminFetch::fields();
         $entities = AdminFetch::entities();
+        $externalEntities = AdminFetch::externalEntities();
 
         // Fetching all entities and fill them with null
         $allEntities = array_fill_keys(Entity::getAllEntities(), null);
 
-        $mergedEntities = array_merge($allEntities, $entities);
+        $mergedEntities = array_merge($allEntities, $entities, $externalEntities);
 
         return [
             'version'   => 1,
@@ -34,6 +36,15 @@ class Service extends Base\Service
 
     public function fetchEntityById(string $entity, string $id, array $input = []): array
     {
+        if (Entity::validateExternalServiceEntity($entity) === true)
+        {
+            $class = Entity::getExternalServiceClass($entity);
+
+            $entityName = Entity::getExternalEntityName($entity);
+
+            return $class->fetch($entityName, $id, $input);
+        }
+
         $entity = $this->fetchEntityByNameAndId($entity, $id, $input);
 
         return $entity->toArrayAdmin();
@@ -69,6 +80,15 @@ class Service extends Base\Service
 
     public function fetchMultipleEntities($entity, $input)
     {
+        if (Entity::validateExternalServiceEntity($entity) === true)
+        {
+            $class = Entity::getExternalServiceClass($entity);
+
+            $entityName = Entity::getExternalEntityName($entity);
+
+            return $class->fetchMultiple($entityName, $input);
+        }
+
         Entity::validateEntityOrFailPublic($entity);
 
         $entities = $this->repo->$entity->fetch($input);
@@ -202,6 +222,11 @@ class Service extends Base\Service
         return (new Mailgun)->processCallback($type, $input);
     }
 
+    public function processSetCronJobCallback(array $input)
+    {
+        $this->trace->info(TraceCode::SETCRONJOB_CALLBACK, $input);
+    }
+
     public function updateTaxColumnValue(string $entity, int $limit = 10000)
     {
         if (in_array($entity, [Entity::PAYMENT, Entity::TRANSACTION]) === false)
@@ -229,5 +254,16 @@ class Service extends Base\Service
         $data = (new DailyReconStatusSummary)->generateReconSummary($input);
 
         return $data;
+    }
+
+    public function createBatch(array $input)
+    {
+        $batchCore = new Batch\Core;
+
+        $sharedMerchant = $this->repo->merchant->getSharedAccount();
+
+        $batch = $batchCore->create($input, $sharedMerchant);
+
+        return $batch->toArrayPublic();
     }
 }

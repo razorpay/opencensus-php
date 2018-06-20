@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Batch;
 
 use Mail;
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
 
@@ -10,6 +11,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Invoice;
 use RZP\Models\Settings;
 use RZP\Models\Batch\Type;
+use RZP\Constants\Timezone;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Entity;
 use RZP\Jobs\Batch as BatchJob;
@@ -76,6 +78,34 @@ class PaymentLinkTest extends TestCase
 
         // TODO:
         // - Open and verify output file contents with expectations
+    }
+
+    /**
+     * Tests pl batch with new header values (includes Amount (In Paise))
+     */
+    public function testCreateBatchOfPaymentLinkTypeWithNewHeaderValues()
+    {
+        $rows = $this->testData[__FUNCTION__ . 'FileRows'];
+
+        $this->createAndPutExcelFileInRequest($rows, __FUNCTION__);
+
+        $response = $this->startTest();
+
+        // Asserts batch entity's attributes
+        $entity = $this->getLastEntity('batch', true);
+
+        $this->assertEquals(1, $entity['success_count']);
+        $this->assertEquals(0, $entity['failure_count']);
+
+        // Asserts files existence
+        $this->assertInputFileExistsForBatch($response[Entity::ID]);
+        $this->assertOutputFileExistsForBatch($response[Entity::ID]);
+
+        // Assert invoice entity's attributes
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals('#1', $invoice['receipt']);
+        $this->assertEquals(500, $invoice['amount']);
     }
 
     /**
@@ -236,6 +266,39 @@ class PaymentLinkTest extends TestCase
         $this->assertTrue(str_contains($inputFile['location'], 'batch/upload'));
     }
 
+    public function testCreateBatchWithHumanReadableExpireBy()
+    {
+        $rows = $this->testData[__FUNCTION__ . 'FileRows'];
+
+        $this->createAndPutExcelFileInRequest($rows, __FUNCTION__);
+
+        $response = $this->startTest();
+
+        // Asserts batch entity's attributes
+        $entity = $this->getLastEntity('batch', true);
+
+        $this->assertEquals(3, $entity['success_count']);
+        $this->assertEquals(0, $entity['failure_count']);
+
+        // Asserts files existence
+        $this->assertInputFileExistsForBatch($response[Entity::ID]);
+        $this->assertOutputFileExistsForBatch($response[Entity::ID]);
+
+        // Assert invoice entity's attributes
+        $invoices = $this->getEntities('invoice', [], true)['items'];
+        $this->assertCount(3, $invoices);
+
+        // Against each invoice's receipt from test rows assert expected epoch values
+        foreach ($invoices as $invoice)
+        {
+            $receipt          = $invoice['receipt'];
+            $expireBy         = $invoice['expire_by'];
+            $expectedExpireBy = Carbon::now(Timezone::IST)->addDays((int) $receipt)->getTimestamp();
+
+            $this->assertEquals($expectedExpireBy, $expireBy, '', 5);
+        }
+    }
+
     /**
      * Helper method to accompany testBatchCreateForUploadedFile() test.
      * It creates an state(db, file wise) which would have been there if
@@ -283,7 +346,7 @@ class PaymentLinkTest extends TestCase
             [
                 'id'          => '00000000000001',
                 'type'        => 'payment_link',
-                'total_count' => 4,
+                'total_count' => 6,
             ]);
 
         $attributes = $this->testData[__FUNCTION__ . 'InputData']['attributes'];

@@ -13,6 +13,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
@@ -23,10 +24,11 @@ use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
  */
 class InvoiceTest extends TestCase
 {
-    use InvoiceTestTrait;
-    use CreatesInvoice;
     use PaymentTrait;
     use MocksDnsTrait;
+    use CreatesInvoice;
+    use InvoiceTestTrait;
+    use DbEntityFetchTrait;
 
     const TEST_INV_ID = 'inv_1000000invoice';
 
@@ -42,6 +44,7 @@ class InvoiceTest extends TestCase
             [
                 'merchant_id'                 => '10000000000000',
                 'business_registered_address' => '#1205, Rzp, Outer Ring Road, Bangalore',
+                'gstin'                       => '29kjsngjk213922',
             ]);
 
         $this->fixtures->create('user', ['id' => '1000000000user']);
@@ -73,6 +76,12 @@ class InvoiceTest extends TestCase
 
         // Asserts if have assigned default value to invoices.date
         $this->assertNotNull($response['date']);
+
+        // Asserts that proper value for merchant label & merchant gstin is set (not exposed in public response)
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $this->assertEquals('Test Merchant', $invoice->getMerchantLabel());
+        $this->assertEquals('29kjsngjk213922', $invoice->getMerchantGstin());
     }
 
     public function testCreateInvoiceWithExistingCustomer()
@@ -86,6 +95,44 @@ class InvoiceTest extends TestCase
 
     public function testCreateInvoiceWithCustomerIdAndDetails()
     {
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithDefinedDisplayName()
+    {
+        $merchantLabel = 'Awesome and Co';
+
+        $merchantAttrs = [
+            'name'                => 'ASD Enterprise',
+            'invoice_label_field' => 'business_dba',
+        ];
+
+        $this->fixtures->merchant->edit('10000000000000', $merchantAttrs);
+
+        $this->fixtures->merchant_detail->edit('10000000000000', ['business_dba' => $merchantLabel]);
+
+        $response = $this->startTest();
+
+        // supply_state_code should not be in private auth response
+        $this->assertArrayNotHasKey('supply_state_code', $response);
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($merchantLabel, $invoice['merchant_label']);
+        $this->assertEquals('29', $invoice['supply_state_code']);
+    }
+
+    public function testCreateInvoiceWithNestedCustomerIdAndDetails()
+    {
+        $this->fixtures->create(
+            'customer',
+            [
+                'id'      => '100001customer',
+                'name'    => 'Test Old',
+                'email'   => 'testold@razorpay.com',
+                'contact' => '1234567890',
+            ]);
+
         $this->startTest();
     }
 
@@ -227,7 +274,7 @@ class InvoiceTest extends TestCase
 
     public function testCreateInvoiceWithMultipleLineItemsAndUsingExistingItem()
     {
-        $this->fixtures->create('item');
+        $this->fixtures->create('item', ['tax_rate' => 120]);
 
         $response = $this->startTest();
 
@@ -352,11 +399,70 @@ class InvoiceTest extends TestCase
         $this->makePaymentForInvoiceAndAssert($response);
     }
 
-    public function testCreateInvoiceWithDuplicateMerchantRefId()
+    public function testCreateInvoiceWithDuplicateReceiptFails()
     {
-        $this->createOrder();
+        // Case 1: Issued invoice with same receipt already exists
+        $attributes = [
+            'receipt'  => '00000000000001',
+            'order_id' => $this->fixtures->create('order')->getId(),
+        ];
+        $this->fixtures->create('invoice', $attributes);
 
-        $this->fixtures->create('invoice', ['receipt' => '00000000000001']);
+        $this->startTest();
+
+        // Case 2: Paid invoice with same receipt already exists
+        $attributes = ['status' => 'paid', 'paid_at' => Carbon::now(Timezone::IST)->getTimestamp()];
+        $this->fixtures->invoice->edit('1000000invoice', $attributes);
+
+        $this->startTest();
+
+        // Case 3: Partially paid invoice with same receipt already exists
+        $attributes = ['status' => 'partially_paid', 'paid_at' => Carbon::now(Timezone::IST)->getTimestamp()];
+        $this->fixtures->invoice->edit('1000000invoice', $attributes);
+
+        $this->startTest();
+
+        // Case 4: Draft invoice with same receipt already exists
+        $attributes = ['status' => 'draft', 'issued_at' => null];
+        $this->fixtures->invoice->edit('1000000invoice', $attributes);
+
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithDuplicateReceiptSucceeds()
+    {
+        // Case 1: Issued invoice with same receipt doesn't exists
+        $this->startTest();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        // Case 2: Cancelled invoice with same receipt already exists
+        $attributes = [
+            'id'           => '1000001invoice',
+            'receipt'      => '00000000000002',
+            'status'       => 'cancelled',
+            'cancelled_at' => Carbon::now(Timezone::IST)->getTimestamp(),
+            'order_id'     => $this->fixtures->create('order')->getId(),
+        ];
+        $this->fixtures->create('invoice', $attributes);
+
+        $testData['request']['content']['receipt']  = '00000000000002';
+        $testData['response']['content']['receipt'] = '00000000000002';
+
+        $this->startTest();
+
+        // Case 3: Expired invoice with same receipt already exists
+        $attributes = [
+            'id'         => '1000002invoice',
+            'receipt'    => '00000000000003',
+            'status'     => 'expired',
+            'expired_at' => Carbon::now(Timezone::IST)->getTimestamp(),
+            'order_id'   => $this->fixtures->create('order')->getId(),
+        ];
+        $this->fixtures->create('invoice', $attributes);
+
+        $testData['request']['content']['receipt']  = '00000000000003';
+        $testData['response']['content']['receipt'] = '00000000000003';
 
         $this->startTest();
     }
@@ -467,7 +573,7 @@ class InvoiceTest extends TestCase
 
     public function testUpdateDraftInvoiceWithAmount()
     {
-        $this->createDraftInvoice();
+        $this->createDraftInvoice(['supply_state_code' => '29']);
 
         $this->startTest();
     }
@@ -582,6 +688,13 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateDraftInvoiceWithNestedCustomerIdAndDetails()
+    {
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
     public function testUpdateDraftInvoiceWithCustomerBillingAddressId()
     {
         $this->fixtures->create(
@@ -617,6 +730,43 @@ class InvoiceTest extends TestCase
             ]);
 
         $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testUpdateDraftInvoiceWithSameBillingAndShippingAddressIds()
+    {
+        $this->fixtures->create(
+            'address',
+            [
+                'id'      => '1000000address',
+                'type'    => 'billing_address',
+                'primary' => false,
+            ]);
+
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartiallyPaidInvoiceExpireBy()
+    {
+        $past = Carbon::create(2018, 2, 1, 12, null, null, Timezone::IST);
+
+        Carbon::setTestNow($past);
+
+        $this->createInvoice(['status' => 'partially_paid']);
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartiallyPaidInvoiceInvalidExpireBy()
+    {
+        $past = Carbon::create(2018, 2, 1, 12, null, null, Timezone::IST);
+
+        Carbon::setTestNow($past);
+
+        $this->createInvoice(['status' => 'partially_paid']);
 
         $this->startTest();
     }
@@ -657,6 +807,13 @@ class InvoiceTest extends TestCase
         $this->startTest();
 
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
+    public function testUpdateDraftInvoiceUnsetCustomerWithNestedCustomerId()
+    {
+        $this->createDraftInvoice();
+
+        $this->startTest();
     }
 
     public function testUpdateIssuedInvoice()
@@ -1427,9 +1584,9 @@ class InvoiceTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->createDraftInvoice();
-        $this->createDraftInvoice(['id' => '1000001invoice', 'type' => 'link']);
-        $this->createDraftInvoice(['id' => '1000002invoice', 'type' => 'ecod']);
-        $this->createDraftInvoice(['id' => '1000003invoice', 'type' => 'ecod']);
+        $this->createDraftInvoice(['id' => '1000001invoice', 'type' => 'link', 'supply_state_code' => '29']);
+        $this->createDraftInvoice(['id' => '1000002invoice', 'type' => 'ecod', 'supply_state_code' => '29']);
+        $this->createDraftInvoice(['id' => '1000003invoice', 'type' => 'ecod', 'supply_state_code' => '29']);
 
         $this->startTest();
     }
@@ -1724,14 +1881,21 @@ class InvoiceTest extends TestCase
 
     public function testGetLinkViewCancelled()
     {
-        $this->createOrder();
+        $order = $this->createOrder();
 
-        $this->createDraftInvoice(['type' => 'link', 'status' => 'cancelled']);
+        $this->createDraftInvoice(
+            [
+                'type'         => 'link',
+                'order_id'     => $order->getId(),
+                'status'       => 'cancelled',
+                'amount'       => 100000,
+                'cancelled_at' => Carbon::now(Timezone::IST)->getTimestamp(),
+            ]);
 
         $this->callViewUrlAndMakeAssertions(
                 self::TEST_INV_ID,
                 200,
-                'Payment Link with id inv_1000000invoice is cancelled');
+                'Payment Link Cancelled');
     }
 
     public function testGetLinkViewExpired()
@@ -1743,7 +1907,7 @@ class InvoiceTest extends TestCase
         $this->callViewUrlAndMakeAssertions(
                 self::TEST_INV_ID,
                 200,
-                'Payment Link with id inv_1000000invoice is expired');
+                'Payment Link Expired');
     }
 
     public function testGetInvoiceView()
@@ -1982,7 +2146,7 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testCancelPaidInvocie()
+    public function testCancelPaidInvoice()
     {
         $this->createOrder();
 
@@ -2007,6 +2171,26 @@ class InvoiceTest extends TestCase
                 'invoice_id' => '1000000invoice',
                 'card_id'    => null,
             ]);
+
+        $this->startTest();
+    }
+
+    public function testUpdateExpiredInvoiceNotes()
+    {
+        $this->createOrder();
+
+        $attributes = [
+            'notes'  => [
+                'key1' => 'value1'
+            ],
+            'status' => 'expired',
+        ];
+
+        $this->fixtures->create('invoice', $attributes);
+
+        $invoice = $this->getLastEntity('invoice');
+
+        $this->assertArraySelectiveEquals(['key1' => 'value1'], $invoice['notes']);
 
         $this->startTest();
     }

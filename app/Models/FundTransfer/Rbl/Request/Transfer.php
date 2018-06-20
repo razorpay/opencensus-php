@@ -2,22 +2,28 @@
 
 namespace RZP\Models\FundTransfer\Rbl\Request;
 
+use Carbon\Carbon;
+
 use RZP\Trace\TraceCode;
-use RZP\Models\Bank\IFSC;
-use RZP\Models\Settlement\Channel;
-use RZP\Exception\RuntimeException;
+use RZP\Constants\Timezone;
+use RZP\Models\Base\PublicEntity;
+use RZP\Models\FundTransfer\Mode;
+use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\FundTransfer\Rbl\Reconciliation\Status as ValidStatus;
 
 class Transfer extends Base
 {
-    const BENE_CODE_PRIFIX = 'BENRZPAYP';
+    const BENE_CODE_PRIFIX = 'BEN';
 
-    protected $transferMode;
+    protected $entity       = null;
 
-    protected $entity;
+    protected $transferMode = null;
 
-    protected $requestTraceCode  = TraceCode::RBL_NODAL_TRANSFER_REQUEST;
+    protected $requestTraceCode   = TraceCode::NODAL_TRANSFER_REQUEST;
 
-    protected $responseTraceCode = TraceCode::RBL_NODAL_TRANSFER_RESPONSE;
+    protected $responseTraceCode  = TraceCode::NODAL_TRANSFER_RESPONSE;
+
+    protected $responseIdentifier = Constants::TRANSFER_RESPONSE_IDENTIFIER;
 
     public function __construct()
     {
@@ -31,20 +37,39 @@ class Transfer extends Base
         return $this->transferMode;
     }
 
-    public function setEntity($entity)
+    public function init()
+    {
+        parent::init();
+
+        $this->entity       = null;
+
+        $this->transferMode = null;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return self
+     */
+    public function setEntity(Attempt\Entity $entity): self
     {
         $this->entity = $entity;
 
         return $this;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function requestBody(): string
     {
         $source             = $this->entity->source;
 
         $amount             = ($source->getAmount() / 100);
 
-        $beneCode           = $this->entity->bankAccount->getBeneficiaryCode();
+        $beneId             = $this->entity->bankAccount->getId();
 
         $this->transferMode = $this->getTransferMode($amount);
 
@@ -53,7 +78,7 @@ class Transfer extends Base
             'Single_Payment_Corp_Req' => [
                 'Header' => [
                     'TranID'      => $this->entity->getId(),
-                    'Corp_ID'     => self::CORP_ID,
+                    'Corp_ID'     => $this->corpId,
                     'Maker_ID'    => self::MAKER_ID,
                     'Checker_ID'  => self::CHECKER_ID,
                     'Approver_ID' => self::APPROVER_ID,
@@ -66,7 +91,7 @@ class Transfer extends Base
                     'Debit_PartTrnRmks'    => '',
                     'Mode_of_Pay'          => $this->transferMode,
                     'Remarks'              => 'Transfer',
-                    'Ben_ID'               => self::BENE_CODE_PRIFIX . $beneCode,
+                    'Ben_ID'               => self::BENE_CODE_PRIFIX . $this->corpId . $beneId,
                 ],
                 'Signature' => [
                     'Signature' => 'Signature'
@@ -74,4 +99,135 @@ class Transfer extends Base
             ]
         ]);
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function extractSuccessfulData(array $response): array
+    {
+        $bankStatus = $response['Header']['Status'];
+
+        $utr = $response['Body']['UTRNo'] ?? null;
+
+        $rrn = $response['Body']['RRN No'] ?? null;
+
+        $referenceNo = $response['Body']['RefNo'] ?? null;
+
+        $transactionID = $response['Header']['TranID'];
+
+        $now = Carbon::now(Timezone::IST)->format('Y-m-d H:i:s.u');
+
+        $transactionTime = (empty($response['Body']['Txn_Time']) === true) ?
+            $now : $response['Body']['Txn_Time'];
+
+        $paymentDate = Carbon::createFromFormat(
+            'Y-m-d H:i:s.u',
+            $transactionTime,
+            Timezone::IST)->getTimestamp();
+
+        $utr = $this->getNullOnEmpty($utr);
+
+        $rrn = $this->getNullOnEmpty($rrn);
+
+        $utr = $this->getUtr($utr, $rrn);
+
+        $data = [
+            self::PAYMENT_REF_NO   => $this->getNullOnEmpty($transactionID),
+            self::BANK_STATUS_CODE => $this->getNullOnEmpty($bankStatus),
+            self::PAYMENT_DATE     => $this->getNullOnEmpty($paymentDate),
+            self::REFERENCE_NUMBER => $this->getNullOnEmpty($referenceNo),
+            self::UTR              => $utr,
+            self::REMARK           => null,
+        ];
+
+        return $data;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function extractFailedData(array $response): array
+    {
+        $transactionID = $response['Header']['TranID'];
+
+        $bankStatus = $response['Header']['Status'] ?? null;
+
+        $remark = $response['Header']['Error_Desc'] ?? null;
+
+        return [
+            self::PAYMENT_REF_NO    => $this->getNullOnEmpty($transactionID),
+            self::BANK_STATUS_CODE  => $this->getNullOnEmpty($bankStatus),
+            self::PAYMENT_DATE      => null,
+            self::REFERENCE_NUMBER  => null,
+            self::UTR               => null,
+            self::REMARK            => $this->getNullOnEmpty($remark),
+        ];
+    }
+
+    protected function getUtr($utr, $rrn): string
+    {
+        return (in_array($this->transferMode, [Mode::RTGS, Mode::NEFT], true) === true) ?
+                    $utr : $rrn;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function mockGenerateSuccessResponse(): array
+    {
+        $status = ValidStatus::getSuccessfulStatus();
+
+        return [
+            $this->responseIdentifier => [
+                'Header'    => [
+                    'TranID'      => $this->entity->getId(),
+                    'Corp_ID'     => $this->corpId,
+                    'Maker_ID'    => self::MAKER_ID,
+                    'Checker_ID'  => self::CHECKER_ID,
+                    'Approver_ID' => self::APPROVER_ID,
+                    'Status'      => array_random($status),
+                    'Error_Cde'   => [],
+                    'Error_Desc'  => []
+                ],
+                'Body'      => [
+                    'RefNo'       => PublicEntity::generateUniqueId(),
+                    'UTRNo'       => PublicEntity::generateUniqueId(),
+                    'PONum'       => 'some number',
+                    'Ben_Acct_No' => 'some account number',
+                    'Amount'      => 'Some Amount',
+                    'Txn_Time'    => Carbon::now(Timezone::IST)->format('Y-m-d H:i:s.u'),
+                    'Ben_ID'      => 'some random ID'
+                ],
+                'Signature' => [
+                    'Signature' => 'Signature'
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function mockGenerateFailedResponse(): array
+    {
+        return [
+            $this->responseIdentifier => [
+                'Header'    => [
+                    'TranID'      => $this->entity->getId(),
+                    'Corp_ID'     => $this->corpId,
+                    'Maker_ID'    => self::MAKER_ID,
+                    'Checker_ID'  => self::CHECKER_ID,
+                    'Approver_ID' => self::APPROVER_ID,
+                    'Status'      => ValidStatus::FAILURE,
+                    'Error_Cde'   => 'some code',
+                    'Error_Desc'  => 'some description'
+                ],
+                'Signature' => [
+                    'Signature' => 'Signature'
+                ]
+            ]
+        ];
+    }
+
+
 }
