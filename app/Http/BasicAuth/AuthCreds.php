@@ -407,11 +407,6 @@ class AuthCreds
 
     public function setMerchant($merchant)
     {
-        if ($merchant !== null)
-        {
-            $this->setOrgId($merchant->org->getPublicId());
-        }
-
         $this->merchant = $merchant;
     }
 
@@ -429,11 +424,6 @@ class AuthCreds
             throw new Exception\LogicException(
                 'Must not be able to make live request when not activated');
         }
-    }
-
-    public function setOrgId($orgId)
-    {
-        $this->orgId = $orgId;
     }
 
     public function getSecret()

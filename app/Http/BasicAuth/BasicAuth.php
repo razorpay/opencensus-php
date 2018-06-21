@@ -1247,7 +1247,15 @@ class BasicAuth
 
     public function setMode(string $mode)
     {
-        $this->mode = $mode;
+        $authCreds = $this->authCreds;
+
+        if ((empty($authCreds) === false))
+        {
+            $this->authCreds->setMode($mode);
+
+            $this->mode = $this->authCreds->getMode();
+        }
+
         $this->app['rzp.mode'] = $mode;
     }
 
@@ -1285,7 +1293,14 @@ class BasicAuth
             $this->setOrgId($merchant->org->getPublicId());
         }
 
-        $this->merchant = $merchant;
+        $authCreds = $this->authCreds;
+
+        if ((empty($authCreds) === false))
+        {
+            $this->authCreds->setMerchant($merchant);
+
+            $this->merchant = $this->authCreds->getMerchant();
+        }
     }
 
     protected function setType($type)
