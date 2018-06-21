@@ -19,7 +19,7 @@ class Validator extends Base\Validator
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable',
         Entity::RECEIPT       => 'sometimes|string|min:1|max:40|nullable',
-        Entity::TITLE         => 'required|filled|string|max:255',
+        Entity::TITLE         => 'required|filled|string|max:40',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
     ];
@@ -28,7 +28,7 @@ class Validator extends Base\Validator
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
         Entity::RECEIPT       => 'sometimes|string|min:1|max:40|nullable',
-        Entity::TITLE         => 'filled|string|max:255',
+        Entity::TITLE         => 'filled|string|max:40',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
     ];
