@@ -831,6 +831,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_PROCESSING_ENTRY                        = 'BATCH_PROCESSING_ENTRY';
     const BATCH_PROCESSING_ERROR                        = 'BATCH_PROCESSING_ERROR';
     const BATCH_PROCESS_ASYNC                           = 'BATCH_PROCESS_ASYNC';
+    const BATCH_PROCESS_ENTRIES_CLEANED                 = 'BATCH_PROCESS_ENTRIES_CLEANED';
     const BATCH_RETRY_OUTPUT_FILE                       = 'BATCH_RETRY_OUTPUT_FILE';
     const BATCH_JOB_RECEIVED                            = 'BATCH_JOB_RECEIVED';
     const BATCH_JOB_HANDLED                             = 'BATCH_JOB_HANDLED';
