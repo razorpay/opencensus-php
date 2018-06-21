@@ -1,5 +1,6 @@
 import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
+import { maxLength } from 'rzp/utils/validators';
 
 export default class EditDescription extends React.Component {
   state = this.resetState();
@@ -15,10 +16,27 @@ export default class EditDescription extends React.Component {
   makeEditable = () => {
     this.setState({
       isEditableMode: true,
+      disableSubmit: false,
     });
     setTimeout(() => document.getElementsByName('title')[0].focus(), 10);
     this.props.trackerFn(this.props.entityId, 'Edit PaymentFor');
   };
+
+  componentDidUpdate() {
+    this.toggleDisableState();
+  }
+
+  toggleDisableState() {
+    const invalidFields = document.querySelectorAll(
+      '.js-payment-for-form .Input.is-invalid'
+    );
+
+    const disableSubmit = invalidFields.length;
+
+    if (this.state.disableSubmit !== disableSubmit) {
+      this.setState({ disableSubmit });
+    }
+  }
 
   render() {
     let content = (
@@ -39,13 +57,14 @@ export default class EditDescription extends React.Component {
 
     if (this.state.isEditableMode) {
       content = (
-        <div class="InputGroup Input">
+        <div class="InputGroup Input js-payment-for-form">
           <Input
             name="title"
             class="Input--small"
             placeholder="PaymentFor"
             required={true}
             value={this.state.title}
+            validator={maxLength(40)}
             onChange={e => {
               this.setState({
                 title: e.target.value,
@@ -84,7 +103,7 @@ export default class EditDescription extends React.Component {
             <AsyncBtn.Primary
               class="Button--small"
               style={{ marginRight: 0, marginLeft: 16 }}
-              disabled={!this.state.title}
+              disabled={!this.state.title || this.state.disableSubmit}
               onClick={() => {
                 this.props.trackerFn(this.props.entityId, 'Save PaymentFor');
 

@@ -26,6 +26,7 @@ export default [
       name: 'title',
       label: 'Payment For',
       placeholder: 'Payment Title',
+      validator: maxLength(40),
       description: form => {
         if (form.state._name.hasDesc == '0') {
           return 'This will be visible to the customer';
