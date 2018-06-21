@@ -1,7 +1,7 @@
 export const testMerchantId = '10000000000000';
 import { snakeToTitleCase } from './util';
 
-export const activationDuration = '1-2 working days';
+export const activationDuration = '4-5 working days';
 
 export const entity2Prefix = {
   account: 'acc',
