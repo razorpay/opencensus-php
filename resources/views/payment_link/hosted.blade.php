@@ -6,7 +6,6 @@ $error_icon = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" vi
 $payment_page_data               = $data['payment_link'];
 $payment_page_expire_by          = $payment_page_data['expire_by'];
 $payment_page_status             = $payment_page_data['status'];
-$data['is_test_mode']            = true;
 
 ?>
 
