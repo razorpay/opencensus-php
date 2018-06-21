@@ -50,6 +50,27 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
     }
 
+    public function testCallbackFailedDueDateMismatch()
+    {
+        $boundaryTime = Carbon::create(2018, 6, 21, 23, 58, 00,Timezone::IST);
+
+        Carbon::setTestNow($boundaryTime);
+
+        $this->mockTransactionDateMismatch();
+
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->fixtures->edit('netbanking', $netbanking['id'], ['date' => null]);
+
+        $this->verifyPayment($payment['id']);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($netbanking['date'], '2018-06-22');
+    }
+
     /**
      * Backward compatibility test
      **/
@@ -442,4 +463,19 @@ class NetbankingIciciGatewayTest extends TestCase
             }
         });
     }
+
+    protected function mockTransactionDateMismatch()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                if ($content[ResponseFields::PAYMENT_DATE] === '2018-06-21')
+                {
+                   $content[ResponseFields::STATUS] = 'failed';
+                }
+            }
+        });
+    }
+
 }

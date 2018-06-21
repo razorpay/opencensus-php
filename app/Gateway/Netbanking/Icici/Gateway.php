@@ -37,6 +37,8 @@ class Gateway extends Base\Gateway
     // Payment type recurring
     const RECURRING         = 'R';
 
+    const VERIFY_WINDOW     =  600;
+
     public function setGatewayParams($input, $mode, $terminal)
     {
         parent::setGatewayParams($input, $mode, $terminal);
@@ -270,6 +272,11 @@ class Gateway extends Base\Gateway
 
         $this->setGatewaySuccess($verify);
 
+        if (($verify->gatewaySuccess === false) and
+            ($this->isBorderTransaction($input['payment']['created_at']) === true))
+        {
+            $this->resendVerificationRequest($gatewayPayment, $verify);
+        }
         //
         // If verify returns false, we throw an error as
         // authorize request / response has been tampered with
@@ -331,6 +338,11 @@ class Gateway extends Base\Gateway
 
     public function sendPaymentVerifyRequest(Verify $verify)
     {
+        if ($verify->payment->getDate() === null)
+        {
+            $verify->payment->setDate($verify->input['payment']['created_at']);
+        }
+
         $requestData = $this->getVerifyRequestData($verify);
 
         $request = $this->getStandardRequestArray($requestData, 'post', $this->getUrlType());
@@ -377,6 +389,12 @@ class Gateway extends Base\Gateway
             $content);
 
         $this->setVerifyStatus($verify);
+
+        if (($verify->gatewaySuccess === false) and
+            ($this->isBorderTransaction($verify->input['payment']['created_at']) === true))
+        {
+            $this->resendVerificationRequest($verify->payment, $verify);
+        }
 
         $this->saveVerifyContentIfNeeded($verify);
     }
@@ -508,12 +526,13 @@ class Gateway extends Base\Gateway
 
     protected function getBaseVerifyRequestData(Base\Entity $gatewayPayment, array $input)
     {
-        $paymentDate = Carbon::createFromTimestamp($gatewayPayment['created_at'], Timezone::IST)
-                             ->format('Y-m-d');
+        $paymentDate = $gatewayPayment->getDate();
+
+        $formattedPaymentDate = Carbon::createFromTimestamp($paymentDate)->format('Y-m-d');
 
         $data = $this->getPaymentReferenceData($input);
 
-        $data[RequestFields::PAYMENT_DATE] = $paymentDate;
+        $data[RequestFields::PAYMENT_DATE] = $formattedPaymentDate;
 
         //
         // For payments that were done via the recurring flow, we
@@ -800,6 +819,8 @@ class Gateway extends Base\Gateway
             $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[$bankPaymentIdKey] ?? null;
         }
 
+        $attributes[Base\Entity::DATE] = $content[ResponseFields::PAYMENT_DATE];
+
         return $attributes;
     }
 
@@ -997,6 +1018,39 @@ class Gateway extends Base\Gateway
     {
         return number_format($amount, 2, '.', '');
     }
+
+    protected function resendVerificationRequest(Base\Entity $gatewayPayment, $verify)
+    {
+        $verify->payment->setDate(Carbon::createFromTimestamp($verify->input['payment']['created_at'])->addDay(1)->timestamp);
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->setVerifyStatus($verify);
+    }
+
+    /**
+     * This method checks if transactions happnes towards EOD.
+     * ICIC Transaction Status API filters based on the date as well.
+     * Transactions that happens at 11.58 might fail on verify.Bordertransaction
+     * is defined as transaction that has happened after 11.50
+     * @param PaymentCreatedAt
+     * @return bool
+     */
+    protected function isBorderTransaction($paymentCreatedAt) : bool
+    {
+
+        $paymentTime = Carbon::createFromTimestamp($paymentCreatedAt, Timezone::IST);
+
+        $secondsUntilEod = $paymentTime->secondsUntilEndOfDay();
+
+        if ($secondsUntilEod <= self::VERIFY_WINDOW)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function forceAuthorizeFailed($input)
     {
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
