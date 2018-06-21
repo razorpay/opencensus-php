@@ -61,15 +61,18 @@ class FileAccess
         return resource_path($key);
     }
 
-    public function getFilePath()
+    public function getFilePath(): string
     {
         $base =  $this->getFileBasePath();
 
-        $fileName = $this->id . '-' . $this->name;
-
         return $base
                . DIRECTORY_SEPARATOR
-               . $fileName . '.'
+               . $this->getViewName() . '.'
                . self::$extension[$this->type];
+    }
+
+    public function getViewName(): string
+    {
+        return $this->id . '-' . $this->name;
     }
 }

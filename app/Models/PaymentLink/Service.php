@@ -3,6 +3,7 @@
 namespace RZP\Models\PaymentLink;
 
 use RZP\Models\Base;
+use RZP\Models\PaymentLink\Template\FileAccess;
 
 class Service extends Base\Service
 {
@@ -69,10 +70,27 @@ class Service extends Base\Service
         return $paymentLink->toArrayPublic();
     }
 
-    public function getHostedViewPaylaod(string $id): array
+    public function getHostedViewPayload(string $id): array
     {
         $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
 
         return (new ViewSerializer($paymentLink))->serializeForHosted();
+    }
+
+    public function getHostedViewTemplate(string $id)
+    {
+        Entity::stripSignWithoutValidation($id);
+
+        $templateAccessor = new FileAccess(FileAccess::HOSTED_PAGE, $id);
+
+        // If a custom hosted page template exists, use that
+        if ($templateAccessor->exists() === true)
+        {
+            $hostedPageHint = 'hostedpage.';
+            return $hostedPageHint . $templateAccessor->getViewName();
+        }
+
+        // else return the default hosted view
+        return 'payment_link.hosted';
     }
 }

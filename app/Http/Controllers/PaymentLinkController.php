@@ -63,7 +63,7 @@ class PaymentLinkController extends Controller
     {
         try
         {
-            $viewPayload = $this->service()->getHostedViewPaylaod($id);
+            $viewPayload = $this->service()->getHostedViewPayload($id);
 
             // If request had an error string, append that separately too for view to consume
             if (empty($error = Request::get(Entity::ERROR)) === false)
@@ -78,6 +78,8 @@ class PaymentLinkController extends Controller
             $viewPayload = $e->getError()->toPublicArray();
         }
 
-        return View::make('payment_link.hosted', ['data' => $viewPayload]);
+        $view = $this->service()->getHostedViewTemplate($id);
+
+        return View::make($view, $viewPayload);
     }
 }
