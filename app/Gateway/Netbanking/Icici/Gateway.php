@@ -284,6 +284,14 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        //
+        // temp fix: failed recurring payments are getting marked as success on verify on ICICI's end
+        //
+        if ($input['payment']['recurring'] === true)
+        {
+           return ;
+        }
+
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
