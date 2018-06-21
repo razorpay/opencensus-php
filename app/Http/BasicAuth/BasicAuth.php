@@ -21,7 +21,6 @@ use RZP\Models\Merchant;
 use RZP\Http\RequestHeader;
 use RZP\Base\RepositoryManager;
 use RZP\Models\User\Entity as User;
-use RZP\Models\Feature\Constants as Feature;
 
 /**
  * Class BasicAuth
@@ -380,7 +379,7 @@ class BasicAuth
     {
         $accountId = $this->request->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
 
-        if ($accountId === null)
+        if (empty($accountId) === true)
         {
             return null;
         }
@@ -390,7 +389,7 @@ class BasicAuth
             return $this->invalidAccountId($accountId);
         }
 
-        $this->creds[self::ACCOUNT_ID] = $accountId;
+        $this->authCreds->creds[self::ACCOUNT_ID] = $accountId;
 
         return null;
     }
@@ -1117,6 +1116,13 @@ class BasicAuth
 
     protected function getAccountId()
     {
+        $authCreds = $this->authCreds;
+
+        if ((empty($authCreds) === false))
+        {
+            $this->creds[self::ACCOUNT_ID] = $this->authCreds->creds[AuthCreds::ACCOUNT_ID];
+        }
+
         return $this->creds[self::ACCOUNT_ID];
     }
 
@@ -1643,8 +1649,8 @@ class BasicAuth
 
         // For Private auth requests - $this->merchant should be set
         if (($this->isPrivateAuth() === true) and
-            (empty($this->merchant) === false) and
-            ($this->merchant->isMarketplace() === true))
+            (empty($this->authCreds->getMerchant()) === false) and
+            ($this->authCreds->getMerchant()->isMarketplace() === true))
         {
             return true;
         }
