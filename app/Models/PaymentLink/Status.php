@@ -2,6 +2,8 @@
 
 namespace RZP\Models\PaymentLink;
 
+use RZP\Exception\BadRequestValidationFailureException;
+
 class Status
 {
     const ACTIVE   = 'active';
@@ -12,5 +14,13 @@ class Status
         $key = __CLASS__ . '::' . strtoupper($status);
 
         return ((defined($key) === true) and (constant($key) === $status));
+    }
+
+    public static function checkStatus(string $status)
+    {
+        if (self::isValid($status) === false)
+        {
+            throw new BadRequestValidationFailureException('Not a valid status: ' . $status);
+        }
     }
 }
