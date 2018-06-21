@@ -43,6 +43,7 @@ class Entity extends Base\PublicEntity
     const EMAILS            = 'emails';
     const CONTACT           = 'contact';
     const EMAIL             = 'email';
+    const USER              = 'user';
 
     // Additional general usage input/output constants for the module
     const PAYMENT_ID         = 'payment_id';
@@ -50,6 +51,8 @@ class Entity extends Base\PublicEntity
     const FROM_STATUS_REASON = 'from_status_reason';
     const TO_STATUS          = 'to_status';
     const TO_STATUS_REASON   = 'to_status_reason';
+    const ERROR              = 'error';
+    const REQUEST_PARAMS     = 'request_params';
 
     /**
      * expiry_by has to be atleast 15 mins from current timestamp
@@ -107,6 +110,7 @@ class Entity extends Base\PublicEntity
         self::STATUS_REASON,
         self::SHORT_URL,
         self::USER_ID,
+        self::USER,
         self::RECEIPT,
         self::TITLE,
         self::DESCRIPTION,

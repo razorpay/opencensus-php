@@ -115,6 +115,10 @@ add_cron "00 9 * * *"       "gateway_file_emandate_debit_hdfc"    POST "$BASE_UR
 add_cron "*/10 * * * *"     "invoice_expire_bulk_test"       POST "$BASE_URL/invoices/expire"                            ""                              $TEST_AUTH
 add_cron "*/10 * * * *"     "invoice_expire_bulk_live"       POST "$BASE_URL/invoices/expire"                            ""                              $LIVE_AUTH
 
+# Payment Link
+add_cron "*/10 * * * *"     "payment_link_expire_cron_test"  POST "$BASE_URL/payment_links/expire"                       ""                              $TEST_AUTH
+add_cron "*/10 * * * *"     "payment_link_expire_cron_live"  POST "$BASE_URL/payment_links/expire"                       ""                              $LIVE_AUTH
+
 # Merchant Invoice
 add_cron "10 0 1 * *"       "merchant_create_invoice"        POST "$BASE_URL/merchants/invoice/create"                   ""                              $LIVE_AUTH
 

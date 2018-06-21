@@ -3,6 +3,7 @@
 namespace RZP\Models\PaymentLink;
 
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -35,16 +36,18 @@ class Core extends Base\Core
     /**
      * @param  array           $input
      * @param  Merchant\Entity $merchant
+     * @param  User\Entity     $user
      *
      * @return Entity
      */
-    public function create(array $input, Merchant\Entity $merchant): Entity
+    public function create(array $input, Merchant\Entity $merchant, User\Entity $user = null): Entity
     {
         $this->trace->info(TraceCode::PAYMENT_LINK_CREATE_REQUEST, $input);
 
         $paymentLink = (new Entity)->build($input);
 
         $paymentLink->merchant()->associate($merchant);
+        $paymentLink->user()->associate($user);
 
         $paymentLink->generateId();
 
@@ -164,12 +167,19 @@ class Core extends Base\Core
     }
 
     /**
-     * Validates if new payment initiation should be allowed or not
-     * @param  Entity $paymentLink
-     * @throws BadRequestException
+     * Validates if new payment initiation should be allowed or not.
+     * Note: This is intentionally not in Validator class, because there is much logic(probably more very soon) and it
+     * accesses repository as well.
+     *
+     * @param Entity         $paymentLink
+     * @param Payment\Entity $payment
      */
-    public function validateIsPaymentInitiable(Entity $paymentLink)
+    public function validateIsPaymentInitiatable(Entity $paymentLink, Payment\Entity $payment)
     {
+        // 1. Validates amount if applicable
+        $paymentLink->getValidator()->validatePaymentAmount($payment);
+
+        // 2. Validates payment link is active and has payment slots available
         if (($paymentLink->isPayable() === false) or
             ($this->hasPaymentSlots($paymentLink) === false))
         {
@@ -354,7 +364,7 @@ class Core extends Base\Core
     protected function setShortUrl(Entity $paymentLink)
     {
         $url = $paymentLink->getHostedViewUrl($this->plHostedBaseUrl);
-        $shortUrl = $this->elfin->shorten($url);
+        $shortUrl = $this->elfin->shorten($url, ['ptype' => E::PAYMENT_LINK]);
 
         $paymentLink->setShortUrl($shortUrl);
     }

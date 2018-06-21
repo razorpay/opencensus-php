@@ -5,7 +5,10 @@ namespace RZP\Models\PaymentLink;
 use Carbon\Carbon;
 
 use RZP\Base;
+use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -15,9 +18,9 @@ class Validator extends Base\Validator
         Entity::CURRENCY      => 'filled|in:INR',
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable',
-        Entity::RECEIPT       => 'required|string|min:1|max:40',
-        Entity::TITLE         => 'required|string|max:255|min:1',
-        Entity::DESCRIPTION   => 'sometimes|string|max:2048|min:1|nullable',
+        Entity::RECEIPT       => 'sometimes|string|min:1|max:40|nullable',
+        Entity::TITLE         => 'required|filled|string|max:255',
+        Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
     ];
 
@@ -25,7 +28,7 @@ class Validator extends Base\Validator
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
         Entity::RECEIPT       => 'sometimes|string|min:1|max:40|nullable',
-        Entity::TITLE         => 'sometimes|string|max:255',
+        Entity::TITLE         => 'filled|string|max:255',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
     ];
@@ -118,5 +121,38 @@ class Validator extends Base\Validator
         }
 
         $this->validateInput('sendNotification', $input);
+    }
+
+    public function validateIsViewable()
+    {
+        $paymentLink = $this->entity;
+        $publicId    = $paymentLink->getPublicId();
+
+        if ($paymentLink->isInactive() === true)
+        {
+            throw new BadRequestValidationFailureException("payment link with id: {$publicId} is inactive");
+        }
+    }
+
+    /**
+     * If amount is set for payment link, validates that amount of new payment request is same as expected
+     * @param  Payment\Entity $payment
+     * @throws BadRequestException
+     */
+    public function validatePaymentAmount(Payment\Entity $payment)
+    {
+        $paymentAmount     = $payment->getAmount();
+        $paymentLinkAmount = $this->entity->getAmount();
+
+        if (($paymentLinkAmount !== null) and ($paymentLinkAmount !== $paymentAmount))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_LINK_PAYMENT_AMOUNT_MISMATCH,
+                Payment\Entity::AMOUNT,
+                [
+                    'expected' => $paymentLinkAmount,
+                    'actual'   => $paymentAmount,
+                ]);
+        }
     }
 }
