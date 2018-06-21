@@ -1149,8 +1149,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::BAD_REQUEST_INVALID_API_SECRET            => 'The api secret provided is invalid',
         self::BAD_REQUEST_INVALID_ACCOUNT_HEADER        => 'The Account ID provided is invalid',
         self::BAD_REQUEST_INVALID_PARTNER_TOKEN_HEADER  => 'The Partner token provided is invalid',
-        self::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER    => 'The partner does not have access to the merchant',
-        self::BAD_REQUEST_PARTNER_AUTH_NOT_ALLOWED      => 'Partner auth is not allowed for merchant',
         self::BAD_REQUEST_API_SECRET_NOT_PROVIDED       => 'API secret is not provided',
 
         self::PAYMENT_VERIFY_ALREADY_AUTHORIZED         => 'Payment being authorized is actually already authorized by some other thread',

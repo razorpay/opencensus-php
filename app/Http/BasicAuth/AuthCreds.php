@@ -137,9 +137,9 @@ abstract class AuthCreds
         return $this->verifyKeyNotExpired();
     }
 
-    abstract protected function isKeyExisting();
+    abstract public function isKeyExisting();
 
-    abstract protected function verifyKeyNotExpired();
+    abstract public function verifyKeyNotExpired();
 
     protected function verifyKeyLength($key)
     {

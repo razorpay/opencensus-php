@@ -608,9 +608,9 @@ class BasicAuth
 
         $this->authCreds->setKeyEntity($key);
 
-        $this->authCreds->setAndCheckMerchantActivatedForLive($merchant);
-
         $this->authCreds->setModeAndDbConnection($mode);
+
+        $this->authCreds->setAndCheckMerchantActivatedForLive($merchant);
 
         // Removes key_id from request if it existed with empty values
         $this->removeRequestKey(self::KEY_ID);
