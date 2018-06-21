@@ -56,7 +56,7 @@ class Server extends Base\Mock\Server
 
     protected function getCallbackResponseData(array $input)
     {
-        return [
+        $data = [
             ResponseFields::MODE_OF_TRANSACTION => 'P',
             ResponseFields::MERCHANT_CODE       => $input[RequestFields::MERCHANT_CODE],
             ResponseFields::PAYMENT_ID          => $input[RequestFields::PAYMENT_ID],
@@ -66,6 +66,10 @@ class Server extends Base\Mock\Server
             ResponseFields::BANK_REF_NUMBER     => self::BANK_REF_NUMBER,
             ResponseFields::STATUS              => ResponseCodeMap::SUCCESS_CODE,
         ];
+
+        $this->content($data, Base\Action::CALLBACK);
+
+        return $data;
     }
 
     protected function getVerifyResponseData(array $input)
@@ -91,7 +95,7 @@ class Server extends Base\Mock\Server
             ResponseFields::VERIFY_PAYMENT_DATE_TIME => $datetime,
         ];
 
-        $this->content($data, 'verify');
+        $this->content($data, Base\Action::VERIFY);
 
         return $this->getGatewayInstance()->getEncryptor()->encryptData($data);
     }
