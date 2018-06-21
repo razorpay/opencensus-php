@@ -76,18 +76,6 @@ class BasicAuth
     const AUTH_TYPE               = 'auth_type';
 
     /**
-     * Client types are interpreted differently in API vs
-     * auth-service. We store the mapping here. API uses
-     * test and live and restricts them the test/live modes
-     * respectively. Auth-service refers to these as dev and
-     * prod and the interpretation for Pure-platforms there
-     * is not related to these modes from API.
-     */
-    protected static $clientModes = [
-        'test' => 'dev',
-        'live' => 'prod',
-    ];
-    /**
      * The application instance.
      *
      * @var \Illuminate\Foundation\Application
@@ -364,9 +352,9 @@ class BasicAuth
 
         $this->isPartnerAuth = $validPartnerKey ?? false;
 
-        $keyType = $validPartnerKey ? AuthCreds::CLIENT_ID : AuthCreds::API_KEY;
+        $authCredsClass = $validPartnerKey ? ClientAuthCreds::class : KeyAuthCreds::class;
 
-        $this->authCreds = new AuthCreds($this->app, $keyType, $key);
+        $this->authCreds = new $authCredsClass($this->app, $key);
     }
 
     /**
@@ -584,7 +572,7 @@ class BasicAuth
     {
         $this->setType(Type::PUBLIC_AUTH);
 
-        $this->authCreds = new AuthCreds($this->app, AuthCreds::API_KEY, $token);
+        $this->authCreds = new KeyAuthCreds($this->app, $token);
 
         $this->authCreds->setPublicKey($token);
     }
@@ -616,7 +604,7 @@ class BasicAuth
         // Sets the key instance if it exists, gets used in forming signature for payment authorize response
         $key = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId());
 
-        $this->authCreds = new AuthCreds($this->app, AuthCreds::API_KEY, '');
+        $this->authCreds = new KeyAuthCreds($this->app);
 
         $this->authCreds->setKeyEntity($key);
 
