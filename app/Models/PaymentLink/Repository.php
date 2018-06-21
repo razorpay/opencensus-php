@@ -29,7 +29,7 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Returns counts of payment which are succeeding (i.e. either created, authorized) for given invoice.
+     * Returns counts of payment which are succeeding (i.e. either created, authorized) for given payment link.
      * This method gets used in determining if enough slots are available to initiate a payment.
      *
      * @param  Entity $paymentLink
