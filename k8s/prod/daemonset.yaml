@@ -14,7 +14,7 @@ spec:
   template:
     metadata:
       annotations:
-        iam.amazonaws.com/role: prod-api
+        iam.amazonaws.com/role: kube-prod-api
       labels:
         name: api-web
     spec:
@@ -27,7 +27,8 @@ spec:
             configMapKeyRef:
               key: APP_MODE
               name: api
-        image: razorpay/api:8f38ab13cab96a5decf0a598145af2c9b7deb4d8
+        # image: razorpay/api:8f38ab13cab96a5decf0a598145af2c9b7deb4d8
+        image: razorpay/api:8de54898a2e4f317887b0b901fa8f26fac63bf12
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
