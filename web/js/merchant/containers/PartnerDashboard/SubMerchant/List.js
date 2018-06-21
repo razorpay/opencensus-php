@@ -46,6 +46,12 @@ export default class SubMerchantsList extends Component {
     return (
       <div class="sub-merchants-list">
         <div class="content-wrapper sub-merchants-list--stats">
+          <HeaderAction>
+            <button class="btn btn-primary pull-right">
+              <i class="i i-plus" />
+              Add New Merchant
+            </button>
+          </HeaderAction>
           <StatsCard
             title="Total transaction volume"
             value={humanReadableIndianCurrency(603000000)}
