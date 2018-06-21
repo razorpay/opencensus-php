@@ -10,12 +10,6 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
-
-    /**
-     * expiry_by has to be atleast 15 mins from current timestamp
-     */
-    const MIN_EXPIRY_SECS = 900;
-
     protected static $createRules = [
         Entity::AMOUNT        => 'required|mysql_unsigned_int|min:100',
         Entity::CURRENCY      => 'filled|in:INR',
@@ -29,8 +23,9 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
+        Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
         Entity::RECEIPT       => 'sometimes|string|min:1|max:40|nullable',
-        Entity::TITLE         => 'sometimes|string|max:255|nullable',
+        Entity::TITLE         => 'sometimes|string|max:255',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
     ];
@@ -42,20 +37,76 @@ class Validator extends Base\Validator
         'contacts.*' => 'required|contact_syntax|digits_between:8,11',
     ];
 
-    public function validateExpireBy($attribute, $value)
+    public function validateExpireBy(string $attribute, int $value)
     {
         $now = Carbon::now(Timezone::IST);
-
-        $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
+        $minExpireBy = $now->copy()->addSeconds(Entity::MIN_EXPIRY_SECS);
 
         if ($value < $minExpireBy->getTimestamp())
         {
-            $message = 'expire_by should be at least ' . $minExpireBy->diffForHumans($now) . ' the current time.';
+            $message = 'expire_by should be at least ' . $minExpireBy->diffForHumans($now) . ' current time.';
 
+            throw new BadRequestValidationFailureException($message);
+        }
+    }
+
+    public function validateTimesPayable(string $attribute, int $value)
+    {
+        $paymentLink = $this->entity;
+
+        if ($value < $paymentLink->getTimesPaid())
+        {
             throw new BadRequestValidationFailureException(
-                $message,
-                Entity::EXPIRE_BY,
-                [Entity::EXPIRE_BY => $value]);
+                'Times payable cannot be less than the number of payments already made',
+                Entity::TIMES_PAYABLE,
+                [
+                    Entity::TIMES_PAYABLE => $value,
+                ]);
+        }
+    }
+
+    public function validateActivateOperation()
+    {
+        $paymentLink = $this->entity;
+
+        if ($paymentLink->isActive() === true)
+        {
+            $message = 'Payment link cannot be activated as it is already active';
+
+            throw new BadRequestValidationFailureException($message);
+        }
+    }
+
+    public function validateDeactivateOperation()
+    {
+        $paymentLink = $this->entity;
+
+        if ($paymentLink->isInactive() === true)
+        {
+            $message = 'Payment link cannot be deactivated as it is already inactive';
+
+            throw new BadRequestValidationFailureException($message);
+        }
+    }
+
+    /**
+     * Validates that payment link's attributes are holding values that confirms to active state requirements.
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateShouldActivationBeAllowed()
+    {
+        $paymentLink  = $this->entity;
+        $timesPayable = $paymentLink->getTimesPayable();
+        $expireBy     = $paymentLink->getExpireBy();
+
+        if ($timesPayable !== null)
+        {
+            $this->validateTimesPayable(Entity::TIMES_PAYABLE, $timesPayable);
+        }
+
+        if ($expireBy !== null)
+        {
+            $this->validateExpireBy(Entity::EXPIRE_BY, $expireBy);
         }
     }
 

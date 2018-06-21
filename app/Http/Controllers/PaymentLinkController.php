@@ -22,4 +22,18 @@ class PaymentLinkController extends Controller
 
         return ApiResponse::json($summary);
     }
+
+    public function deactivate(string $id)
+    {
+        $response = $this->service()->deactivate($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function activate(string $id)
+    {
+        $response = $this->service()->activate($id, $this->input);
+
+        return ApiResponse::json($response);
+    }
 }

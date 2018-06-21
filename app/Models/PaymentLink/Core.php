@@ -14,11 +14,6 @@ use RZP\Exception\BadRequestException;
 class Core extends Base\Core
 {
     /**
-     * @var Mutex
-     */
-    protected $mutex;
-
-    /**
      * Elfin: Url shortener service
      */
     protected $elfin;
@@ -33,7 +28,6 @@ class Core extends Base\Core
     {
         parent::__construct();
 
-        $this->mutex           = $this->app['api.mutex'];
         $this->elfin           = $this->app['elfin'];
         $this->plHostedBaseUrl = $this->app['config']->get('app.payment_link_hosted_base_url');
     }
@@ -78,22 +72,71 @@ class Core extends Base\Core
                 Entity::INPUT => $input,
             ]);
 
-        // TODO : TO change to lockForUpdate(). Has been done in subsequent PR already.
-        $paymentLink = $this->mutex->acquireAndRelease(
-                            $paymentLink->getId(),
-                            function() use ($paymentLink, $input)
-                            {
-                                $paymentLink->reload();
+        $this->repo->transaction(function() use ($paymentLink, $input)
+        {
+            $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
 
-                                // TODO: Cases related to expire_by and times_payable to be handled. Has been done in subsequent pr already.
-                                $paymentLink->edit($input);
+            $paymentLink->edit($input);
 
-                                $this->repo->saveOrFail($paymentLink);
+            $this->changeStatusAfterUpdateIfApplicable($paymentLink);
 
-                                return $paymentLink;
-                            });
+            $this->repo->saveOrFail($paymentLink);
+        });
 
         $this->trace->info(TraceCode::PAYMENT_LINK_UPDATED, $paymentLink->toArrayPublic());
+
+        return $paymentLink;
+    }
+
+    public function deactivate(Entity $paymentLink): Entity
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_LINK_DEACTIVATE_REQUEST,
+            [
+                Entity::ID => $paymentLink->getPublicId(),
+            ]);
+
+        $this->repo->transaction(function() use ($paymentLink)
+        {
+            $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
+
+            $paymentLink->getValidator()->validateDeactivateOperation();
+
+            $this->changeStatus($paymentLink, Status::INACTIVE, StatusReason::DEACTIVATED);
+
+            $this->repo->saveOrFail($paymentLink);
+        });
+
+        $this->trace->info(TraceCode::PAYMENT_LINK_DEACTIVATED, $paymentLink->toArrayPublic());
+
+        return $paymentLink;
+    }
+
+    public function activate(Entity $paymentLink, array $input): Entity
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_LINK_ACTIVATE_REQUEST,
+            [
+                Entity::ID    => $paymentLink->getPublicId(),
+                Entity::INPUT => $input,
+            ]);
+
+        $this->repo->transaction(function() use ($paymentLink, $input)
+        {
+            $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
+
+            $paymentLink->getValidator()->validateActivateOperation();
+
+            $paymentLink->edit($input);
+
+            $paymentLink->getValidator()->validateShouldActivationBeAllowed();
+
+            $this->changeStatus($paymentLink, Status::ACTIVE, null);
+
+            $this->repo->saveOrFail($paymentLink);
+        });
+
+        $this->trace->info(TraceCode::PAYMENT_LINK_ACTIVATED, $paymentLink->toArrayPublic());
 
         return $paymentLink;
     }
@@ -223,6 +266,28 @@ class Core extends Base\Core
                 Entity::PAYMENT_ID => $payment->getId(),
                 E::PAYMENT_LINK    => $paymentLink->toArrayPublic(),
             ]);
+    }
+
+    /**
+     * This is called after edit/update operation. Post building the entity with request input we check if payment
+     * link's status needs changing.
+     *
+     * Payment link's status:
+     * - will be marked complete if times_payable post update is equal to times_paid
+     *
+     * Currently there is no other cases. Expire by edits will not affect this because that must already by at least
+     * 15 mins in future (validated via Validator method during build).
+     *
+     * @param Entity $paymentLink
+     */
+    protected function changeStatusAfterUpdateIfApplicable(Entity $paymentLink)
+    {
+        $this->repo->assertTransactionActive();
+
+        if ($paymentLink->getTimesPayable() === $paymentLink->getTimesPaid())
+        {
+            $this->changeStatus($paymentLink, Status::INACTIVE, StatusReason::COMPLETED);
+        }
     }
 
     /**

@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Queue;
 
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Models\PaymentLink;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
@@ -192,13 +194,117 @@ class PaymentLinkTest extends TestCase
         $this->doAutoCapture();
     }
 
+    public function testDeactivatePaymentLink()
+    {
+        $this->createPaymentLink();
+
+        $this->startTest();
+    }
+
+    public function testDeactivateAlreadyDeactivatedPaymentLink()
+    {
+        $attributes = [
+            PaymentLinkModel\Entity::STATUS        => PaymentLinkModel\Status::INACTIVE,
+            PaymentLinkModel\Entity::STATUS_REASON => PaymentLinkModel\StatusReason::DEACTIVATED,
+        ];
+
+        $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
+
+        $this->startTest();
+    }
+
+    public function testActivatePaymentLink()
+    {
+        $attributes = [
+            PaymentLinkModel\Entity::STATUS        => PaymentLinkModel\Status::INACTIVE,
+            PaymentLinkModel\Entity::STATUS_REASON => PaymentLinkModel\StatusReason::DEACTIVATED,
+        ];
+
+        $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
+
+        $this->startTest();
+    }
+
+    public function testActivateLinkAlreadyActivated()
+    {
+        $attributes = [
+            PaymentLinkModel\Entity::STATUS        => PaymentLinkModel\Status::ACTIVE,
+            PaymentLinkModel\Entity::STATUS_REASON => null,
+        ];
+
+        $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
+
+        $this->startTest();
+    }
+
+    public function testActivateWithTimesPayableLessThanTimesPaid()
+    {
+        $attributes = [
+            PaymentLinkModel\Entity::STATUS            => PaymentLinkModel\Status::INACTIVE,
+            PaymentLinkModel\Entity::STATUS_REASON     => PaymentLinkModel\StatusReason::COMPLETED,
+            PaymentLinkModel\Entity::TIMES_PAID        => 2,
+            PaymentLinkModel\Entity::TIMES_PAYABLE     => 2,
+            PaymentLinkModel\Entity::AMOUNT            => 100,
+            PaymentLinkModel\Entity::TOTAL_AMOUNT_PAID => 200,
+        ];
+
+        $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
+
+        $this->startTest();
+    }
+
+    public function testMinExpiryTimeForActivation()
+    {
+        $attributes = [
+            PaymentLinkModel\Entity::STATUS        => PaymentLinkModel\Status::INACTIVE,
+            PaymentLinkModel\Entity::STATUS_REASON => PaymentLinkModel\StatusReason::EXPIRED,
+        ];
+
+        $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
+
+        $expireBy = Carbon::now(Timezone::IST)->addSeconds(120)->getTimestamp();
+
+        $this->testData[__FUNCTION__]['request']['content']['expire_by'] = $expireBy;
+
+        $this->startTest();
+    }
+
+    public function testEditPaymentLinkToCompleteAndExcessPaymentRefunded()
+    {
+        $attributes = [
+            PaymentLinkModel\Entity::TIMES_PAYABLE => 2,
+        ];
+
+        $paymentLink = $this->createPaymentLink(self::DEFAULT_PAYMENT_LINK_ID, $attributes);
+
+        $this->makePaymentForPaymentLinkAndAssert($paymentLink);
+
+        Carbon::setTestNow(Carbon::now()->subHours(25));
+
+        $paymentAttributes = [
+            Payment\Entity::PAYMENT_LINK_ID => $paymentLink->getId(),
+        ];
+
+        // TODO: Fix this test, simulate late authorized payments instead!
+
+        $paymentAuth = $this->fixtures->create('payment:authorized', $paymentAttributes);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $this->doAutoCapture();
+    }
+
     // -------------------- Protected methods --------------------
 
-    protected function createPaymentLink(string $id = self::DEFAULT_PAYMENT_LINK_ID, array $attributes = [])
+    protected function createPaymentLink(
+        string $id = self::DEFAULT_PAYMENT_LINK_ID,
+        array $attributes = []): PaymentLinkModel\Entity
     {
         $attributes[PaymentLinkModel\Entity::ID] = $id;
 
-        $this->fixtures->create('payment_link', $attributes);
+        return $this->fixtures->create('payment_link', $attributes);
     }
 
     /**
