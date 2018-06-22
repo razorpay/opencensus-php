@@ -2159,15 +2159,6 @@ final class Route
         'merchant_invoice_update_gstin',
         'setl_retry',
         'merchant_invoice_add_bulk',
-        'customer_create_token_public',
-    ];
-
-    const RAZORPAYJS_ROUTES = [
-        'payment_cancel',
-        'payment_create_ajax',
-        'payment_otp_submit',
-        'payment_otp_resend',
-        'payment_topup_ajax'
     ];
 
     // Sets TRACE level to CRITICAL for these routes
