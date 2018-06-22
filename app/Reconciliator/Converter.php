@@ -219,10 +219,15 @@ class Converter extends Base\Core
                 {
                     if ($columnHeadersCount !== count($row))
                     {
-                        throw new Exception\ReconciliationException(
-                            'The number of columns in the row does not match the column headers count.',
-                            ['file_details' => $fileDetails, 'column_headers' => $columnHeaders, 'row' => $row]
-                        );
+                        $this->trace->debug(
+                            TraceCode::RECON_ALERT,
+                            [
+                                'message'       => 'The number of columns in the row does not match the column headers count',
+                                'file_details'  => ['column_headers' => $columnHeaders, 'row' => $row],
+                                'info_code'     => 'COLUMN_HEADER_MISMATCH'
+                            ]);
+
+                        continue;
                     }
 
                     /**

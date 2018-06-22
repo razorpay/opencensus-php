@@ -25,6 +25,7 @@ class Service extends Base\Service
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::FIRST_DATA,
         RequestProcessor\Base::NETBANKING_OBC,
+        RequestProcessor\Base::NETBANKING_HDFC,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
     ];
