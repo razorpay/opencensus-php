@@ -295,7 +295,7 @@ class PaymentLinkTest extends TestCase
             $expireBy         = $invoice['expire_by'];
             $expectedExpireBy = Carbon::now(Timezone::IST)->addDays((int) $receipt)->getTimestamp();
 
-            $this->assertEquals($expectedExpireBy, $expireBy, '', 5);
+            $this->assertEquals($expectedExpireBy, $expireBy, '', 10);
         }
     }
 

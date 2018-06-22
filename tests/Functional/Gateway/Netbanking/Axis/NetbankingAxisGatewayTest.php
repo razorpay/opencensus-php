@@ -65,6 +65,20 @@ class NetbankingAxisGatewayTest extends TestCase
         });
     }
 
+    public function testVerifyAmountMismatch()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockAmountMismatch();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthAndCapturePayment($this->payment);
+            });
+    }
+
     public function testTpvPayment()
     {
         $this->fixtures->create('terminal:shared_netbanking_axis_tpv_terminal');
@@ -715,5 +729,17 @@ class NetbankingAxisGatewayTest extends TestCase
 
         // Fire s2s callback request
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function mockAmountMismatch()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content[ResponseFields::STATUS]              = ResponseFields::PAYMENT_STATUS;
+                $content[ResponseFields::VERIFY_RESPONSE_AMT] = '10.00';
+            }
+        });
     }
 }

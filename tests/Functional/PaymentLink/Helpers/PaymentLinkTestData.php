@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\PaymentLink;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Tests\Functional\Fixtures\Entity\User;
 
 return [
     'testCreatePaymentLink' => [
@@ -23,6 +24,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'user_id'       => User::MERCHANT_USER_ID,
                 'receipt'       => '00000000000001',
                 'amount'        => 100000,
                 'currency'      => 'INR',
@@ -55,7 +57,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'expire_by should be at least 15 minutes after the current time.',
+                    'description' => 'expire_by should be at least 15 minutes after current time.',
                 ],
             ],
             'status_code' => 400,
@@ -75,6 +77,7 @@ return [
         'response' => [
             'content' => [
                 'id'            => 'pl_100000000000pl',
+                'user_id'       => User::MERCHANT_USER_ID,
                 'receipt'       => '00000000000001',
                 'amount'        => 100000,
                 'currency'      => 'INR',
@@ -97,6 +100,7 @@ return [
                 'items' => [
                     [
                         'id'            => 'pl_100000000000pl',
+                        'user_id'       => User::MERCHANT_USER_ID,
                         'receipt'       => '00000000000001',
                         'amount'        => 100000,
                         'currency'      => 'INR',
@@ -153,7 +157,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'expire_by should be at least 15 minutes after the current time.',
+                    'description' => 'expire_by should be at least 15 minutes after current time.',
                 ],
             ],
             'status_code' => 400,
@@ -212,6 +216,164 @@ return [
             'content' => [
                 'total_count' => 2,
                 'failed_ids'  => [],
+            ],
+        ],
+    ],
+
+    'testPaymentLinkMakePayment' => [
+        // Used to assert payment link's attributes after payment in test
+        'payment_link' => [
+            'times_paid'        => 1,
+            'total_amount_paid' => 10100,
+            'status'            => 'active',
+            'status_reason'     => null,
+        ],
+    ],
+
+    'testPaymentLinkCompletePayments' => [
+        // Used to assert payment link's attributes after payment in test
+        'payment_link_after_payment_1' => [
+            'times_paid'        => 1,
+            'total_amount_paid' => 10100,
+            'status'            => 'active',
+            'status_reason'     => null,
+        ],
+        'payment_link_after_payment_2' => [
+            'times_paid'        => 2,
+            'total_amount_paid' => 20200,
+            'status'            => 'inactive',
+            'status_reason'     => 'completed',
+        ],
+    ],
+
+    'testDeactivatePaymentLink' => [
+        'request' => [
+            'url'    => '/payment_links/pl_100000000000pl/deactivate',
+            'method' => 'patch',
+        ],
+        'response' => [
+            'content' => [
+                'id'            => 'pl_100000000000pl',
+                'status'        => 'inactive',
+                'status_reason' => 'deactivated',
+            ],
+        ],
+    ],
+
+    'testDeactivateAlreadyDeactivatedPaymentLink' => [
+        'request' => [
+            'url'    => '/payment_links/pl_100000000000pl/deactivate',
+            'method' => 'patch',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment link cannot be deactivated as it is already inactive',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testActivatePaymentLink' => [
+        'request' => [
+            'url'    => '/payment_links/pl_100000000000pl/activate',
+            'method' => 'patch',
+        ],
+        'response' => [
+            'content' => [
+                'id'            => 'pl_100000000000pl',
+                'status'        => 'active',
+                'status_reason' => null,
+            ],
+        ],
+    ],
+
+    'testActivateLinkAlreadyActivated' => [
+        'request' => [
+            'url'    => '/payment_links/pl_100000000000pl/activate',
+            'method' => 'patch',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment link cannot be activated as it is already active',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testActivateWithTimesPayableLessThanTimesPaid' => [
+        'request' => [
+            'url'     => '/payment_links/pl_100000000000pl/activate',
+            'method'  => 'patch',
+            'content' => [
+                'times_payable' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Times payable cannot be less than the number of payments already made',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMinExpiryTimeForActivation' => [
+        'request' => [
+            'url'     => '/payment_links/pl_100000000000pl/activate',
+            'method'  => 'patch',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'expire_by should be at least 15 minutes after current time.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditPaymentLinkToCompleteAndExcessPaymentRefunded' => [
+        'request' => [
+            'url'     => '/payment_links/pl_100000000000pl',
+            'method'  => 'patch',
+            'content' => [
+                'times_payable' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'            => 'pl_100000000000pl',
+                'times_payable' => 1,
+                'status'        => 'inactive',
+                'status_reason' => 'completed',
+                'times_paid'    => 1
             ],
         ],
     ],

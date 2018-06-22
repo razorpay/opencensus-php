@@ -320,8 +320,8 @@ class RefundTest extends TestCase
         if ($withNotes === true)
         {
             $entries[0] += [
-                'Notes[key_1]'     => 'Notes Value 1',
-                'Notes[key_2]'     => 'Notes Value 2',
+                'notes[key_1]'     => 'Notes Value 1',
+                'notes[key_2]'     => 'Notes Value 2',
             ];
         }
 

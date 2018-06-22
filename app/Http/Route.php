@@ -125,7 +125,7 @@ final class Route
         'iin_range_upload'                         => ['post',     'iins/range/upload',                              'CardController@rangeUploadIin'                                     ],
         'iin_edit'                                 => ['put',      'iins/{id}',                                      'CardController@editIin'                                            ],
         'iin_generate_post'                        => ['post',     'iins/import/generate',                           'CardController@postIinGenerate'                                    ],
-        'iin_fetch_payment_flows'                  => ['get',      'iins/payment_flows',                             'CardController@getPaymentFlows'                                    ],
+        'fetch_payment_flows'                      => ['get',      'payment_flows',                                  'CardController@getPaymentFlows'                                    ],
         'merchant_public_get_banks'                => ['get',      'banks',                                          'MerchantController@getBanksPublic'                                 ],
         'merchant_secret'                          => ['get',      'keys/{id}/secret',                               'MerchantController@getKeySecret'                                   ],
         'merchant_get_banks'                       => ['get',      'merchants/{id}/banks',                           'MerchantController@getBanks'                                       ],
@@ -438,12 +438,16 @@ final class Route
         'item_fetch_multiple'                      => ['get',      'items',                                          'ItemController@getItems'                                           ],
         'item_update'                              => ['patch',    'items/{id}',                                     'ItemController@updateItem'                                         ],
         'item_delete'                              => ['delete',   'items/{id}',                                     'ItemController@deleteItem'                                         ],
+        'payment_link_view_get'                    => ['get',      'payment_links/{x_entity_id}/view',               'PaymentLinkController@view'                                        ],
+        'payment_link_view_post'                   => ['post',     'payment_links/{x_entity_id}/view',               'PaymentLinkController@view'                                        ],
         'payment_link_get'                         => ['get',      'payment_links/{id}',                             'PaymentLinkController@get'                                         ],
         'payment_link_list'                        => ['get',      'payment_links',                                  'PaymentLinkController@list'                                        ],
         'payment_link_create'                      => ['post',     'payment_links',                                  'PaymentLinkController@create'                                      ],
         'payment_link_update'                      => ['patch',    'payment_links/{id}',                             'PaymentLinkController@update'                                      ],
         'payment_link_notify'                      => ['post',     'payment_links/{id}/notify',                      'PaymentLinkController@sendNotification'                            ],
         'payment_link_expire_cron'                 => ['post',     'payment_links/expire',                           'PaymentLinkController@expirePaymentLinks'                          ],
+        'payment_link_deactivate'                  => ['patch',    'payment_links/{id}/deactivate',                  'PaymentLinkController@deactivate'                                  ],
+        'payment_link_activate'                    => ['patch',    'payment_links/{id}/activate',                    'PaymentLinkController@activate'                                    ],
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
         'app_fetch_payments'                       => ['get',      'apps/payments',                                  'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
@@ -831,11 +835,12 @@ final class Route
         'payment_get_status',
         'payment_callback_post',
         'payment_callback_get',
-        'iin_fetch_payment_flows',
+        'fetch_payment_flows',
         'invoice_get_status',
         'invoice_send_notification',
         'invoice_get_pdf',
-        // 'invoice_view',
+        'payment_link_view_get',
+        'payment_link_view_post',
         'merchant_public_get_banks',
         'merchant_methods',
         'merchant_checkout_preferences',
@@ -1268,6 +1273,8 @@ final class Route
         'payment_link_create',
         'payment_link_update',
         'payment_link_notify',
+        'payment_link_deactivate',
+        'payment_link_activate',
     ];
 
     // These will run on internal auth with the assurance
@@ -2152,15 +2159,6 @@ final class Route
         'merchant_invoice_update_gstin',
         'setl_retry',
         'merchant_invoice_add_bulk',
-        'customer_create_token_public',
-    ];
-
-    const RAZORPAYJS_ROUTES = [
-        'payment_cancel',
-        'payment_create_ajax',
-        'payment_otp_submit',
-        'payment_otp_resend',
-        'payment_topup_ajax'
     ];
 
     // Sets TRACE level to CRITICAL for these routes

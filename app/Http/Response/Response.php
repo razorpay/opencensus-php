@@ -326,6 +326,7 @@ class Response
             'payment_otp_resend',
             'payment_topup_ajax',
             'merchant_methods_downtime',
+            'customer_create_token_public',
         ];
 
         if (in_array($route, $routes, true) === true)

@@ -34,6 +34,7 @@ use RZP\Models\Customer;
 use RZP\Models\Discount;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
+use RZP\Models\PaymentLink;
 use RZP\Jobs\RunShieldCheck;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
@@ -2789,12 +2790,18 @@ trait Authorize
     {
         $this->updateLateAuthFlag($payment);
 
+        //
+        // Needs to be before capture, since disount amount
+        // is used to decide whether to capture or not
+        //
+        $this->postPaymentAuthorizeOfferProcessing($payment);
+
         // Auto capture payment, if applicable
         $this->autoCapturePaymentIfApplicable($payment);
 
         $this->postPaymentAuthorizeSubscriptionProcessing($payment);
 
-        $this->postPaymentAuthorizeOfferProcessing($payment);
+        $this->postPaymentAuthorizePaymentLinkProcessing($payment);
 
         return $this->processAuthorizeResponse($payment);
     }
@@ -2813,6 +2820,8 @@ trait Authorize
             return;
         }
 
+        $this->offer = $payment->getOffer();
+
         if ($this->offer === null)
         {
             return;
@@ -2823,6 +2832,30 @@ trait Authorize
         ];
 
         (new Discount\Service)->create($discountInput, $payment, $this->offer);
+    }
+
+    /**
+     * Post payment authorization we initiate auto capture and let payment link's core method take care of further
+     * action to be taken - e.g. update it's own entities, refund payment if this comes out as extra payment etc.
+     *
+     * @param Payment\Entity $payment
+     */
+    protected function postPaymentAuthorizePaymentLinkProcessing(Payment\Entity $payment)
+    {
+        if ($payment->hasPaymentLink() === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $this->autoCapturePayment($payment);
+        }
+        // Whether capture succeeds or fails, we let payment link's core take care of what to do (refer below method)
+        finally
+        {
+            (new PaymentLink\Core)->postPaymentCaptureAttemptProcessing($payment);
+        }
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)

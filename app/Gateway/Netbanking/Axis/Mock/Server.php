@@ -225,7 +225,7 @@ class Server extends Base\Mock\Server
         ];
 
         // for test cases
-        $this->content($response);
+        $this->content($response, Base\Action::VERIFY);
 
         // For null verify response
         if ($response === "")
