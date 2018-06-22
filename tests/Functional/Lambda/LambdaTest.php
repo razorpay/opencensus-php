@@ -162,7 +162,9 @@ class LambdaTest extends TestCase
 
         $data = $this->getExcelString('Acknowledgment Report_15062018_Acknowledgment Report', $sheets);
 
-        $handle = tmpfile();
+        $tempFileName = sys_get_temp_dir() . '/Acknowledgment Report_15062018_Acknowledgment Report.xlsx';
+
+        $handle = fopen($tempFileName, 'w+');
         fwrite($handle, $data);
         fseek($handle, 0);
         $file = (new TestingFile('Acknowledgment Report_15062018_Acknowledgment Report.xlsx', $handle));
