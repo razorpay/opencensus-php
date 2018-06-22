@@ -10,7 +10,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
 ?>
 
 
-<!doctype html>
+        <!doctype html>
 <html>
 <head>
     <title>Payment Link</title>
