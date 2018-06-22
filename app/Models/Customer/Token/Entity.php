@@ -395,6 +395,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECURRING_FAILURE_REASON, $recurringFailureReason);
     }
 
+    public function setAcknowledgedAt($timestamp)
+    {
+        $this->setAttribute(self::ACKNOWLEDGED_AT, $timestamp);
+    }
+
     public function setUsedAt($timestamp)
     {
         $this->setAttribute(self::USED_AT, $timestamp);

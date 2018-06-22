@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\Enach\Rbl\Status;
 use RZP\Gateway\Base\Action as GatewayAction;
@@ -183,6 +184,7 @@ class EnachRbl extends Base
         $tokenParams = [
             Token\Entity::RECURRING_STATUS          => $newStatus,
             Token\Entity::RECURRING_FAILURE_REASON  => $content[self::ERROR_MESSAGE],
+            Token\Entity::ACKNOWLEDGED_AT           => Carbon::now(Timezone::IST)->getTimestamp()
         ];
 
         (new Token\Core)->updateTokenFromEmandateGatewayData($token, $tokenParams);
