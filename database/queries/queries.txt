@@ -3655,6 +3655,17 @@ ALTER TABLE invoices
     DROP INDEX invoices_merchant_id_receipt_unique,
     ADD INDEX invoices_merchant_id_receipt_index (merchant_id, receipt);
 
+
+#increase error_code length for hdfc
+ALTER TABLE hdfc
+    ADD COLUMN error_code2 VARCHAR(255) DEFAULT NULL AFTER error_code,
+    ADD COLUMN reference1 VARCHAR(255) DEFAULT NULL AFTER arn_no,
+    ADD COLUMN reference2 VARCHAR(255) DEFAULT NULL AFTER reference1,
+    ADD COLUMN reference3 VARCHAR(255) DEFAULT NULL AFTER reference2,
+    ADD COLUMN reference4 VARCHAR(255) DEFAULT NULL AFTER reference3,
+    ADD COLUMN reference5 INT(11) UNSIGNED DEFAULT NULL AFTER reference4,
+    ADD COLUMN reference6 BIGINT UNSIGNED DEFAULT NULL AFTER reference5;
+
 # Below queries to be run only on prod db.
 # Removes foreign key constraints for heimdall entities
 # Turn off binlog for the session on master db
@@ -3688,3 +3699,4 @@ SET sql_log_bin = 1;
 
 # Once above has executed, on each replica apart from redash login and execute the same command.
 # Doing it this way, so that there is no time in which redash replica does not have fk constraints.
+
