@@ -11,6 +11,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      *******************/
     const COLUMN_PAYMENT_ID     = 'orderid';
     const COLUMN_SERVICE_TAX    = 'servicetax';
+    const COLUMN_IGST           = 'igst';
     const COLUMN_FEE            = 'fee';
     const COLUMN_PAYMENT_AMOUNT = 'txnamount';
 
@@ -22,7 +23,21 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getPaymentId(array $row)
     {
-        $paymentId = $row[self::COLUMN_PAYMENT_ID];
+        $paymentId = $this->getColumnPaymentId($row);
+
+        return $paymentId;
+    }
+
+    protected function getColumnPaymentId(array $row)
+    {
+        $paymentId = null;
+
+        if (empty($row[self::COLUMN_PAYMENT_ID]) === false)
+        {
+            $paymentId = $row[self::COLUMN_PAYMENT_ID];
+
+            $paymentId = trim(str_replace('"', '', $paymentId));
+        }
 
         return $paymentId;
     }
@@ -30,21 +45,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     /**
      * Gets amount captured.
      *
-     * We are converting to int after casting to string as PHP randomly
-     * returns wrong int values due to differing floating point precisions
-     * So something like intval(31946.0) may give 31945 or 31946
-     * Convering to string using number_format and then converting
-     * is a hack to avoid this issue
-     *
      * @param $row array
      *
      * @return int $paymentAmount
      */
     protected function getReconPaymentAmount($row)
     {
-        $paymentAmount = floatval($row[self::COLUMN_PAYMENT_AMOUNT]) * 100;
-
-        return intval(number_format($paymentAmount, 2, '.', ''));
+        return Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT]);
     }
 
     /**
@@ -55,10 +62,32 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getGatewayServiceTax($row)
     {
-        // Convert service tax into paise
-        $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) * 100;
+        $igst = $this->getIgst($row);
 
-        return round($serviceTax);
+        // Convert service tax into paise
+        $serviceTax = Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_SERVICE_TAX]);
+
+        $serviceTax += $igst;
+
+        return $serviceTax;
+    }
+
+    protected function getIgst($row)
+    {
+        $columnIgst = null;
+
+        //
+        // This should be isset only and not empty
+        // because igst can be 0 also.
+        //
+        if (isset($row[self::COLUMN_IGST]) === true)
+        {
+            $columnIgst = $row[self::COLUMN_IGST];
+        }
+
+        $igst = Base\Helper::getIntegerFormattedAmount($columnIgst);
+
+        return $igst;
     }
 
     /**
@@ -71,13 +100,34 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function getGatewayFee($row)
     {
         // Convert fee into basic unit of currency (ex: paise)
-        $fee = floatval($row[self::COLUMN_FEE]) * 100;
+        $fee = Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_FEE]);
 
         // Already in basic unit of currency. Hence, no conversion needed
         $serviceTax = $this->getGatewayServiceTax($row);
 
         $fee += $serviceTax;
 
-        return round($fee);
+        return $fee;
+    }
+
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'message'         => 'Payment amount mismatch',
+                    'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
+                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'currency'        => $this->payment->getCurrency(),
+                    'row'             => $row,
+                    'gateway'         => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        return true;
     }
 }

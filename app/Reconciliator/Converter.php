@@ -18,12 +18,13 @@ class Converter extends Base\Core
     const DEFAULT_DELIMITER = ',';
 
     const NORMALIZED_HEADER_GATEWAYS = [
-        RequestProcessor\Base::BILLDESK,
-        RequestProcessor\Base::FREECHARGE,
+        RequestProcessor\Base::ATOM,
         RequestProcessor\Base::HDFC,
-        RequestProcessor\Base::MOBIKWIK,
         RequestProcessor\Base::PAYZAPP,
-        RequestProcessor\Base::ATOM
+        RequestProcessor\Base::BILLDESK,
+        RequestProcessor\Base::MOBIKWIK,
+        RequestProcessor\Base::OLAMONEY,
+        RequestProcessor\Base::FREECHARGE,
     ];
 
     const MAX_SHEETS_ALLOWED = 3;
