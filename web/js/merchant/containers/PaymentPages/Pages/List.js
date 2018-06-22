@@ -38,19 +38,21 @@ export default class PaymentPagesContainer extends ListContainer {
 
   /* Fetch all payment pages list to find whether first-time user */
   fetchAllEntityList() {
-    fetchPaymentPagesList().then(resp => {
-      this.setState({
-        loadingAllList: false,
-      });
-
-      if (resp.data) {
+    fetchPaymentPagesList()
+      .then(resp => {
         this.setState({
-          totalPaymentPagesLength: resp.data.items.length,
+          loadingAllList: false,
         });
-      }
 
-      return resp;
-    });
+        if (resp.data) {
+          this.setState({
+            totalPaymentPagesLength: resp.data.items.length,
+          });
+        }
+
+        return resp;
+      })
+      .catch(() => {});
   }
 
   fetchEntityList(params) {
