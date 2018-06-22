@@ -201,9 +201,13 @@ class PublicErrorDescription
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY                              = 'The api key provided is invalid';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET                           = 'The api secret provided is invalid';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID                           = 'The Account ID provided is invalid';
+    const BAD_REQUEST_UNAUTHORIZED_INVALID_KEY_TYPE                             = 'The key passed is not of a valid type';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_PARTNER_TOKEN                        = 'The Partner token provided is invalid';
+    const BAD_REQUEST_PARTNER_AUTH_NOT_ALLOWED                                  = 'The partner is not allowed the requested access';
+    const BAD_REQUEST_PARTNER_ACCOUNT_ID_REQUIRED                               = 'Account id is required with partner credentials';
+    const BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER                                = 'The partner does not have access to the merchant';
     const BAD_REQUEST_UNAUTHORIZED_USER_ROLE_MISSING                            = 'Unauthorized Action';
-    const BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED                          = 'Please provide api secret';
+    const BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED                          = 'Please provide secret for authentication';
     const BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE                  = 'Please do not provide your secret on public sided requests';
     const BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED                         = 'Please provide your Razorpay Api Key Id';
     const BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED                              = 'The api key provided by you has expired and cannot be used. Please use correct key and secret.';

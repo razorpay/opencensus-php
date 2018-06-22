@@ -9,7 +9,6 @@ use Illuminate\Support\Str;
 use ApiResponse;
 use RZP\Http\Route;
 use RZP\Http\OAuth;
-use RZP\Http\Throttle;
 use RZP\Http\FeatureAccess;
 use RZP\Http\BasicAuth\BasicAuth;
 

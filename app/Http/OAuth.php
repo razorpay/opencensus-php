@@ -4,6 +4,7 @@ namespace RZP\Http;
 
 use ApiResponse;
 use Razorpay\OAuth\OAuthServer;
+use Illuminate\Support\Facades\App;
 use Razorpay\OAuth\Token\Entity as OAuthToken;
 
 use RZP\Exception;
@@ -12,7 +13,6 @@ use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Http\BasicAuth\BasicAuth;
 use Razorpay\Trace\Logger as Trace;
-use Illuminate\Support\Facades\App;
 
 class OAuth
 {
@@ -85,8 +85,7 @@ class OAuth
         // If the request was authenticated with key_id sent in the request params
         // we remove the key_id attribute before proceeding
         //
-        $this->request->query->remove('key_id');
-        $this->request->request->remove('key_id');
+        $this->ba->removeRequestKey('key_id');
 
         //
         // Set the public_key on BasicAuth
@@ -190,26 +189,28 @@ class OAuth
 
         $mode = $response[OAuthToken::MODE];
 
-        // Sets the mode for the request, and database connection
-        $this->ba->setModeAndDbConnection($mode);
-
-        //
-        // Set merchant for the current request
-        // TODO: Move this to a common auth class
-        //
-        $this->ba->setMerchantById($response[OAuthToken::MERCHANT_ID]);
-
         //
         // Public key is used to generate the callback URL parameter that is
         // being sent with the payment create request to the gateway.
         //
         $publicKey = 'rzp_' . $mode . '_oauth_' . $response[OAuthToken::PUBLIC_TOKEN];
 
-        $this->ba->setPublicKey($publicKey);
+        $this->ba->oauthPublicTokenAuth($publicKey);
+
+        // Sets the mode for the request, and database connection
+        $this->ba->authCreds->setModeAndDbConnection($mode);
+
+        //
+        // Set merchant for the current request
+        // TODO: Move this to a common auth class
+        //
+        $this->ba->authCreds->setMerchantById($response[OAuthToken::MERCHANT_ID]);
+
+
 
         try
         {
-            $this->ba->checkMerchantActivatedForLive();
+            $this->ba->authCreds->checkMerchantActivatedForLive();
         }
         catch (Exception\LogicException $e)
         {
