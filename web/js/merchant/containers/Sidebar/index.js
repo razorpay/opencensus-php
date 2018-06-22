@@ -219,6 +219,7 @@ export default class Sidebar extends Component {
                     label="Payment Pages"
                     icon="i i-payment-pages text-warm"
                     to={routes.paymentpages}
+                    featureEnabled="paymentpages"
                     isNew={true}
                   />
                   <MainNavLink

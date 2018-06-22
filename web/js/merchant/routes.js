@@ -62,7 +62,10 @@ const entityDetailsMap = {
 const entityModalsMap = {
   '/activation': { component: ActivationContainer },
   '/paymentlinks/new': { component: PaymentLinksCreate },
-  '/paymentpages/new': { component: PaymentPagesCreate },
+  '/paymentpages/new': {
+    component: PaymentPagesCreate,
+    featureEnabled: 'paymentpages',
+  },
 };
 
 export function matchDetail(pathname) {

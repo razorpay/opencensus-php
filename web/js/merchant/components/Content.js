@@ -154,7 +154,11 @@ export default class Content extends Component {
           <Route path="/invoices/new" component={InvoicesNew} />
           <Route path="/items" component={InvoicingContainer} />
           <Route path="/paymentlinks" component={PaymentLinks} />
-          <ShowWhenRoute path="/paymentpages" component={PaymentPages} featureEnabled="paymentpages"/>
+          <ShowWhenRoute
+            path="/paymentpages"
+            component={PaymentPages}
+            featureEnabled="paymentpages"
+          />
           <Route path="/subscriptions" component={Subscriptions} />
           <Route path="/plans" component={Subscriptions} />
           {/*<Route path="/addons" component={Subscriptions} />*/}
