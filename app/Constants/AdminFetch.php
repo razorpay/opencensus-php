@@ -305,6 +305,15 @@ class AdminFetch
                         'direct_debit',
                     ],
                 ],
+                'sub_type' => [
+                    Fetch::LABEL  => 'Sub Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'acknowledge',
+                        'debit',
+                        'register',
+                    ],
+                ],
                 'gateway' => [
                     Fetch::LABEL  => 'Gateway',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
