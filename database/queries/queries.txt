@@ -3654,3 +3654,37 @@ ALTER TABLE virtual_accounts
 ALTER TABLE invoices
     DROP INDEX invoices_merchant_id_receipt_unique,
     ADD INDEX invoices_merchant_id_receipt_index (merchant_id, receipt);
+
+# Below queries to be run only on prod db.
+# Removes foreign key constraints for heimdall entities
+# Turn off binlog for the session on master db
+SET sql_log_bin = 0
+ALTER TABLE action_checker DROP FOREIGN KEY action_checker_action_id_foreign;
+ALTER TABLE action_checker DROP FOREIGN KEY action_checker_admin_id_foreign;
+ALTER TABLE action_checker DROP FOREIGN KEY action_checker_step_id_foreign;
+ALTER TABLE action_comments DROP FOREIGN KEY action_comments_action_id_foreign;
+ALTER TABLE action_comments DROP FOREIGN KEY action_comments_admin_id_foreign;
+ALTER TABLE action_state DROP FOREIGN KEY action_state_action_id_foreign;
+ALTER TABLE action_state DROP FOREIGN KEY action_state_admin_id_foreign;
+ALTER TABLE action_state_reasons DROP FOREIGN KEY action_state_reasons_state_id_foreign;
+ALTER TABLE admin_leads DROP FOREIGN KEY admin_leads_admin_id_foreign;
+ALTER TABLE admin_leads DROP FOREIGN KEY admin_leads_merchant_id_foreign;
+ALTER TABLE admin_leads DROP FOREIGN KEY admin_leads_org_id_foreign;
+ALTER TABLE admin_tokens DROP FOREIGN KEY admin_tokens_admin_id_foreign;
+ALTER TABLE admins DROP FOREIGN KEY admins_org_id_foreign;
+ALTER TABLE roles DROP FOREIGN KEY roles_org_id_foreign;
+ALTER TABLE workflow_actions DROP FOREIGN KEY workflow_actions_admin_id_foreign;
+ALTER TABLE workflow_actions DROP FOREIGN KEY workflow_actions_org_id_foreign;
+ALTER TABLE workflow_actions DROP FOREIGN KEY workflow_actions_permission_id_foreign;
+ALTER TABLE workflow_actions DROP FOREIGN KEY workflow_actions_state_changer_id_foreign;
+ALTER TABLE workflow_actions DROP FOREIGN KEY workflow_actions_state_changer_role_id_foreign;
+ALTER TABLE workflow_actions DROP FOREIGN KEY workflow_actions_workflow_id_foreign;
+ALTER TABLE workflow_permissions DROP FOREIGN KEY workflow_permissions_permission_id_foreign;
+ALTER TABLE workflow_permissions DROP FOREIGN KEY workflow_permissions_workflow_id_foreign;
+ALTER TABLE workflow_steps DROP FOREIGN KEY workflow_steps_role_id_foreign;
+ALTER TABLE workflow_steps DROP FOREIGN KEY workflow_steps_workflow_id_foreign;
+ALTER TABLE workflows DROP FOREIGN KEY workflows_org_id_foreign;
+SET sql_log_bin = 1;
+
+# Once above has executed, on each replica apart from redash login and execute the same command.
+# Doing it this way, so that there is no time in which redash replica does not have fk constraints.
