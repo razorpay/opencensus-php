@@ -1,7 +1,7 @@
 import Input from 'component/Input';
 import { isAmount, isInteger, maxLength } from 'rzp/utils/validators';
 
-/* Form fields of Reusable Payment Links */
+/* Form fields of Payment-Pages Links */
 export default [
   {
     name: 'amount',
@@ -26,8 +26,9 @@ export default [
       name: 'title',
       label: 'Payment For',
       placeholder: 'Payment Title',
+      validator: maxLength(40),
       description: form => {
-        if (form.state._name[form.state.activeTab].hasDesc == '0') {
+        if (form.state._name.hasDesc == '0') {
           return 'This will be visible to the customer';
         }
       },
@@ -38,11 +39,11 @@ export default [
       placeholder: 'Provide additional description',
       _cmp: Input.Textarea,
       description: form => {
-        if (form.state._name[form.state.activeTab].hasDesc == '1') {
+        if (form.state._name.hasDesc == '1') {
           return 'This will be visible to the customer';
         }
       },
-      _when: form => form.state._name[form.state.activeTab].hasDesc == '1',
+      _when: form => form.state._name.hasDesc == '1',
     },
     {
       _name: 'hasDesc',
@@ -80,8 +81,7 @@ export default [
         _name: 'expire_by_date',
         placeholder: 'DD-MM-YYYY',
         size: 'half',
-        _disabledWhen: form =>
-          form.state._name[form.state.activeTab].hasNoExpiry === '1',
+        _disabledWhen: form => form.state._name.hasNoExpiry === '1',
         addonAfter: <i class="i i-date-range" />,
 
         _cmp: Input.ToCalendar,
@@ -93,10 +93,9 @@ export default [
       {
         name: 'expire_by',
         placeholder: '11:59PM',
-        _when: form => !!form.state._name[form.state.activeTab].expire_by_date,
+        _when: form => !!form.state._name.expire_by_date,
         size: 'half',
-        _disabledWhen: form =>
-          form.state._name[form.state.activeTab].hasNoExpiry === '1',
+        _disabledWhen: form => form.state._name.hasNoExpiry === '1',
         addonAfter: <i class="i i-time" />,
 
         // defaultValue: moment().endOf().unix(), // Epoch of timestamp today end. Don't set. Has to be in sync with Date(expire_by_date).
@@ -135,11 +134,14 @@ export default [
       _autoRenderImpure: true,
       description:
         'Upon reaching limit, link will close. Limit can be modified anytime.',
-      _disabledWhen: form =>
-        form.state._name[form.state.activeTab].hasNoLimit === '1',
-      validator: val => {
-        if (!isInteger(val)) {
-          return 'Enter valid number';
+      _disabledWhen: form => form.state._name.hasNoLimit === '1',
+      validator: function(val) {
+        if (this.state._name.hasNoLimit === '0') {
+          if (!val) {
+            return 'Please fill out this field';
+          } else if (!isInteger(val)) {
+            return 'Enter valid number';
+          }
         }
       },
     },

@@ -23,51 +23,53 @@
     margin 20px auto 0
 
 
-.Onboarding--ReusableLinks
-  .illustration
-    background-image: url('assets/onboarding/reusable-links.svg');
-    margin-bottom: 20px
+.Onboarding--PaymentPages
+  margin: 20px 0 80px
+  color: #58666E
 
-  .btn
-    margin-top: 20px
+  .Onboarding-heading
+    font-size: 20px
+    font-weight: 600
+    margin-bottom: 16px
 
-.Onboarding--EarlyAccessRPL
-  max-width: 520px
-  margin: 32px auto 0
+    span
+      color: $primary-color
 
-  .illustration
-    padding: 96px
-    width: auto
-    background-image: url('assets/onboarding/reusable-links.svg');
+  .Onboarding--content
+    margin-top: 100px
 
-  .form-fields
-    .Input
-      pointer-events: none
+  .step
+    position: relative
+    text-align: center
+    display: inline-block
+    width: 30%
+    min-width: 240px
+    font-size: 14px
+    padding: 0 8px
 
-    textarea.Input-el
-      max-height: unset
-      height: 102px
-      line-height: 20px
+    img
+      height: 124px
 
-    .Input-el
-      opacity: 0;
-      transform: scaleY(0)
-      transform-origin: top center
+    .title
+      font-size: 18px
+      font-weight: 600
+      margin-bottom: 8px;
 
-    .Input-el, .Button
-      transition: 0.3s
+    .i
+      position: absolute
+      top: 50%
+      right: -18px
+      transform: translateY(-50%)
+      font-size: 36px
+      font-weight: 600
+      color: $primary-color
 
-    .Button
-      transform: translateY(-122px)
+  @media (max-width: 1023px)
 
-    &.drishy
-      .Input
-        pointer-events: all
+    .Onboarding--content  .step
+      display: block
+      margin: 48px auto 0
 
-      .Input-el
-        opacity: 1
-        transform: scaleY(1)
-
-      .Button
-        transform: translateY(0)
+      .i
+        display: none
 

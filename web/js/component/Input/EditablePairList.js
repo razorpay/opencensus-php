@@ -336,7 +336,8 @@ class InputEditablePair extends React.Component {
             data-id={idx}
             style={{ marginRight: 0, marginLeft: 16 }}
             onClick={() => handleSave(this.state.pair)}
-            pendingState="Saving"
+            showLoader={false}
+            pendingState="Saving..."
           >
             Save
           </AsyncBtn.Primary>
@@ -372,7 +373,7 @@ class PairView extends React.Component {
         {deletePair && (
           <Button.Transparent
             type="button"
-            class="Btn--Link Button--danger"
+            class="Btn--Link"
             onClick={() => deletePair(idx)}
           >
             Delete

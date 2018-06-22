@@ -24,34 +24,28 @@ export const saveInvoice = (params, headers = {}) => {
   };
 };
 
-/* Hook to update newly created payment link in redux list*/
-export const savePLInReduxList = newInvoice => {
+/* Hook to update newly-created/edited payment link in redux list*/
+export const updatePLInReduxList = (newInvoice, isNew) => {
+  const invoice = new Invoice(newInvoice.data).deserialize();
+
   return {
-    type: `${INVOICE_CREATE}::SUCCESS`,
-    payload: new Invoice(newInvoice.data),
+    type: isNew ? `${INVOICE_CREATE}::SUCCESS` : `${INVOICE_EDIT}::SUCCESS`,
+    payload: invoice,
   };
 };
 
-/* Hook to update edited invoice in redux list */
-export const editPLInReduxList = invoice => {
+/* Hook to update newly created payment-page in redux list */
+export const updatePPInReduxList = (newLink, isNew) => {
   return {
-    type: `${INVOICE_EDIT}::SUCCESS`,
-    payload: new Invoice(invoice.data).deserialize(),
-  };
-};
-
-/* Hook to update newly created reusable link in redux list */
-export const saveRPLInReduxList = newLink => {
-  return {
-    type: 'RPL_CREATE',
+    type: isNew ? 'PP_CREATE' : 'PP_EDIT',
     payload: newLink,
   };
 };
 
-/* Hook to populate reusable links list fetched separately from api */
+/* Hook to populate payment-page list fetched separately from api */
 export const populateRPLReduxList = newLinksList => {
   return {
-    type: 'RPL_FETCH',
+    type: 'PP_FETCH',
     payload: newLinksList,
   };
 };
@@ -67,7 +61,7 @@ export const deleteInvoice = params => {
 let initialState = {
   loading: true,
   invoices: [],
-  reusableLinks: [],
+  paymentPages: [],
   count: 0,
 };
 
@@ -92,16 +86,22 @@ export default function(state = initialState, action) {
     case `${INVOICE_CREATE}::SUCCESS`:
       return set(state, 'invoices', unshift(state.invoices, action.payload));
 
-    case 'RPL_CREATE':
+    case 'PP_CREATE':
       return set(
         state,
-        'reusableLinks',
-        unshift(state.reusableLinks, action.payload)
+        'paymentPages',
+        unshift(state.paymentPages, action.payload)
       );
 
-    case 'RPL_FETCH':
+    case 'PP_EDIT':
+      let entityIndex = state.paymentPages.findIndex(
+        entity => entity.id === action.payload.id
+      );
+      return set(state, `paymentPages.${entityIndex}`, action.payload);
+
+    case 'PP_FETCH':
       return merge(state, {
-        reusableLinks: action.payload.data.items,
+        paymentPages: action.payload.data.items,
       });
 
     case `${INVOICE_EDIT}::SUCCESS`:

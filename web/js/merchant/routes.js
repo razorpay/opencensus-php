@@ -3,8 +3,9 @@ import { showWhenUtil } from 'merchant/components/ShowWhen';
 
 import SettlementDetails from 'merchant/containers/Settlements/Details';
 import PaymentLinkEntity from 'merchant/containers/PaymentLinks/Links/Entity';
-import ReusableLinksEntity from 'merchant/containers/PaymentLinks/ReusableLinks/Entity';
-import PaymentLinksCreate from 'merchant/containers/PaymentLinks/Create';
+import PaymentPages from 'merchant/containers/PaymentPages/Pages/Entity';
+import PaymentLinksCreate from 'merchant/containers/PaymentLinks/Links/Create/index';
+import PaymentPagesCreate from 'merchant/containers/PaymentPages/Pages/Create/index';
 import PaymentsDetails from 'merchant/containers/Payments/Details';
 import RefundDetails from 'merchant/containers/Refunds/Details';
 import OrderDetails from 'merchant/containers/Orders/Details';
@@ -36,7 +37,7 @@ const entityDetailsMap = {
   '/paymentlinks/batchuploads/:id(batch_.+)': {
     component: PaymentLinkBatchDetails,
   },
-  '/paymentlinks/reusable/:id(pl_.+)': { component: ReusableLinksEntity },
+  '/paymentpages/:id(pl_.+)': { component: PaymentPages },
   '/invoices/:id/details': { component: PaymentLinkEntity },
 
   '/route/payments/:id': { component: PaymentsDetails },
@@ -61,6 +62,10 @@ const entityDetailsMap = {
 const entityModalsMap = {
   '/activation': { component: ActivationContainer },
   '/paymentlinks/new': { component: PaymentLinksCreate },
+  '/paymentpages/new': {
+    component: PaymentPagesCreate,
+    featureEnabled: 'paymentpages',
+  },
 };
 
 export function matchDetail(pathname) {

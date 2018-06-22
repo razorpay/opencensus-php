@@ -6,7 +6,7 @@ import MonthCalendar from 'rc-calendar/lib/MonthCalendar';
 import enUS from 'rc-calendar/lib/locale/en_US';
 import { classList } from 'common/util';
 
-import { Label, inputClass, separateDomProps } from './index';
+import { Label, Error, inputClass, separateDomProps } from './index';
 
 class CalendarWrapper extends React.Component {
   state = {
@@ -180,7 +180,9 @@ class CalendarWrapper extends React.Component {
 
 export default class CalendarPicker extends React.Component {
   className = 'Input--Calendar';
-  state = {};
+  state = {
+    mature: this.props.mature,
+  };
 
   focus = e => {
     this.setState({ focus: true });
@@ -200,6 +202,7 @@ export default class CalendarPicker extends React.Component {
             onFocus={this.focus}
             onBlur={this.blur}
           />
+          <Error text={this.props.propagatedError} />
         </div>
       </div>
     );
