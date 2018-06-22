@@ -187,7 +187,7 @@ export default class EditPublicFeatures extends Component {
       needs_clarification_text,
     } = this.state;
 
-    let { merchant_id, name, internal_comment } = this.props.model;
+    let { merchant_id, name, internal_comment, type } = this.props.model;
 
     let {
       akaFeature,
@@ -212,8 +212,8 @@ export default class EditPublicFeatures extends Component {
                 <code>{merchant_id}</code>
               </div>
               <div class="field">
-                <label>Feature</label>
-                <code>{name}</code>
+                <label>Request</label>
+                <code>{publicFeature.featuresAkaMap[type][name]}</code>
               </div>
               <SelectField
                 label="Status"
