@@ -109,6 +109,7 @@ class OtpElf
         }
 
         $response = json_decode($response->body, true);
+
         $this->trace->info(
             TraceCode::OTPELF_RESPONSE,
             [
