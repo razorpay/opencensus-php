@@ -93,6 +93,15 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postFixAttemptedOrders()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fixAttemptedOrders($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postFixAuthorizedAt()
     {
         $input = Request::all();
