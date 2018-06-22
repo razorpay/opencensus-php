@@ -566,6 +566,36 @@ class UpiMindgateGatewayTest extends TestCase
 
     }
 
+    public function testValidateVpaSuccess()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testValidateVpaSuccessWithoutTerminal()
+    {
+        $this->fixtures->edit('terminal', $this->sharedTerminal->id, [
+            'enabled' => 0,
+        ]);
+
+        $this->testValidateVpaSuccess();
+    }
+
+    public function testValidateVpaFailure()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testValidateVpaInvalid()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     protected function checkPaymentStatus($id, $expectedStatus)
     {
         $response = $this->getPaymentStatus($id);

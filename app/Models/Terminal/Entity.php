@@ -717,6 +717,11 @@ class Entity extends Base\PublicEntity
         return $query->where(Entity::ENABLED, '=', '1');
     }
 
+    public function scopeShared($query)
+    {
+        return $query->where(Entity::MERCHANT_ID, '=', Merchant\Account::SHARED_ACCOUNT);
+    }
+
     /**
      * Used to query by type, which is a bitwise column.
      *
