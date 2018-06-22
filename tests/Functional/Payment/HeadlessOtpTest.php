@@ -12,6 +12,13 @@ class HeadlessOtpTest extends TestCase
 {
     use PaymentTrait;
 
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__.'/helpers/HeadlessTestData.php';
+
+        parent::setUp();
+    }
+
     public function testHeadlessOtpAuthenticationPayment()
     {
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
@@ -53,6 +60,54 @@ class HeadlessOtpTest extends TestCase
         self::assertEquals('headless_otp', $payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+    }
+
+    public function testHeadlessOtpAuthenticationPaymentWithout3ds()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['otpelf']);
+        $this->mockTokenEx();
+        $this->mockOtpElf();
+
+        $this->fixtures->create('terminal:shared_axis_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        $this->setOtp('213433');
+
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'authenticate')
+            {
+                throw new GatewayTimeoutException('Timed out', null, true);
+            }
+        }, 'mpi_blade');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testHeadlessOtpAuthenticationPaymentS2S()
@@ -385,7 +440,6 @@ class HeadlessOtpTest extends TestCase
 
     public function testHeadlessOtpAuthenticationWithNoTerminal()
     {
-        $this->markTestSkipped();
         $this->fixtures->merchant->addFeatures(['otpelf']);
         $this->mockTokenEx();
         $this->mockOtpElf();
@@ -401,40 +455,7 @@ class HeadlessOtpTest extends TestCase
             ]
         ]);
 
-        $payment = $this->getDefaultPaymentArray();
-        $payment['card']['number'] = '4143667057540458';
-        $payment['auth_type'] = 'otp';
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->doAuthPayment($payment);
-        });
-    }
-
-    public function testHeadlessOtpAuthenticationNotSupported()
-    {
-        $this->markTestSkipped();
-        $this->fixtures->create('terminal:shared_hitachi_terminal', [
-            'type' => [
-                'non_recurring' => '1'
-            ]
-        ]);
-
-        $this->fixtures->merchant->addFeatures(['otpelf']);
-        $this->mockTokenEx();
-        $this->mockOtpElf();
-
-        $this->fixtures->iin->create([
-            'iin'     => '414366',
-            'country' => 'IN',
-            'issuer'  => 'ICIC',
-            'network' => 'Visa',
-            'flows'   => [
-                '3ds'  => '1',
-            ]
-        ]);
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4143667057540458';

@@ -53,7 +53,7 @@ final class Route
         'payment_callback_with_key_get'            => ['get',      'payments/{id}/callback/{hash}/{key}',            'PaymentCreateController@postCallback'                              ],
         'payment_get_status'                       => ['get',      'payments/{x_entity_id}/status',                  'PaymentController@getPaymentStatusForAsyncPayments'                ],
         'payment_otp_submit'                       => ['post',     'payments/{x_entity_id}/otp_submit/{hash}',       'PaymentCreateController@postOtpSubmit'                             ],
-        'payment_otp_submit_private'               => ['post',     'payments/{x_entity_id}/otp/submit',              'PaymentCreateController@postOtpSubmitPrivate'                             ],
+        'payment_otp_submit_private'               => ['post',     'payments/{x_entity_id}/otp/submit',              'PaymentCreateController@postOtpSubmitPrivate'                      ],
         'payment_otp_resend'                       => ['post',     'payments/{x_entity_id}/otp_resend',              'PaymentCreateController@postOtpResend'                             ],
         'payment_topup_ajax'                       => ['post',     'payments/{x_entity_id}/topup/ajax',              'PaymentCreateController@postTopupAjax'                             ],
         'payment_topup_post'                       => ['post',     'payments/{x_entity_id}/topup',                   'PaymentCreateController@postTopup'                                 ],
