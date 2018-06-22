@@ -18,7 +18,7 @@ trait HeadlessOtp
     protected function canRunHeadlessOtpFlow($payment)
     {
         if (($payment->isMethodCardOrEmi() === true) and
-            ($payment->getAuthType() === Payment\AuthType::OTP) and
+            ($this->isAuthTypeOtp($payment) === true) and
             (Payment\Flow::isFeatureBasedFlowEnabled($this->merchant, Payment\Flow::HEADLESS_OTP) === true))
         {
             if ((Payment\Gateway::supportsHeadlessBrowser($payment->getGateway()) === true) and
@@ -31,7 +31,18 @@ trait HeadlessOtp
         return false;
     }
 
-    protected function openHeadlessBrowser($payment, $request)
+    protected function isAuthTypeOtp(Payment\Entity $payment)
+    {
+        if (($payment->getAuthType() === Payment\AuthType::OTP) or
+            (in_array(Payment\AuthType::OTP, $payment->getMetadata(Payment\Entity::PREFERRED_AUTH, []), true) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function openHeadlessBrowser(Payment\Entity $payment, $request)
     {
         //
         // This will happen in case of single step payment.

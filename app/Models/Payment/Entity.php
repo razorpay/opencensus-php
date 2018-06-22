@@ -1186,6 +1186,20 @@ class Entity extends Base\PublicEntity
         return $count;
     }
 
+//    protected function getAuthTypeAttribute()
+//    {
+//        $authType = $this->attributes[self::AUTH_TYPE];
+//
+//        // We are doing this as headless_otp is an internal
+//        // auth_type, we expose only otp to the merchant
+//        if ($authType === AuthType::HEADLESS_OTP)
+//        {
+//            $authType = AuthType::OTP;
+//        }
+//
+//        return $authType;
+//    }
+
     public function getMetadata($key = null, $default = null)
     {
         if ($key === null)

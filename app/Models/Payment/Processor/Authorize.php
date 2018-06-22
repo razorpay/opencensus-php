@@ -358,13 +358,14 @@ trait Authorize
                             ->render();
 
             $response = [
-                'type'       => 'first',
+                'type'       => 'otp',
                 'request'    => [
                     'method'  => 'direct',
                     'content' => $content
                 ],
                 'version'    => 1,
                 'payment_id' => $payment->getPublicId(),
+                'next'       => ['otp_submit'],
                 'gateway'    => $response['gateway'],
             ];
         }
@@ -3614,10 +3615,8 @@ trait Authorize
 
         // If the payment is card payment with headless browser flow then
         // we render the otp submission page to the user
-        if ($payment->isCard() === true)
+        if ($payment->isMethodCardOrEmi() === true)
         {
-            // $headless = $this->cache->get($this->getHeadlessCacheKey($payment), false);
-
             if ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP)
             {
                 return true;
