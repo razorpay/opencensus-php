@@ -118,6 +118,7 @@ class EnachRblGatewayTest extends TestCase
 
         $token = $this->getDbLastEntityToArray('token');
 
+        $this->assertNotNull($token['acknowledged_at']);
         $this->assertEquals('initiated', $token['recurring_status']);
 
         $payment = $this->getDbLastEntityToArray('payment');
