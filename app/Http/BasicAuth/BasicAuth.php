@@ -369,7 +369,14 @@ class BasicAuth
 
         if (empty($accountId) === true)
         {
-            return null;
+            $accountId = $this->request->input('account_id');
+
+            if (empty($accountId) === true)
+            {
+                return null;
+            }
+
+            $this->removeRequestKey('account_id');
         }
 
         if ($this->verifyAccountId($accountId) === false)
@@ -1102,7 +1109,7 @@ class BasicAuth
         return $this->creds[self::SECRET];
     }
 
-    protected function getAccountId()
+    public function getAccountId()
     {
         $authCreds = $this->authCreds;
 
@@ -1339,6 +1346,11 @@ class BasicAuth
     public function isAdminAuth()
     {
         return $this->isAdmin;
+    }
+
+    public function isPartnerAuth()
+    {
+        return $this->isPartnerAuth;
     }
 
     public function isPublicAuth()
