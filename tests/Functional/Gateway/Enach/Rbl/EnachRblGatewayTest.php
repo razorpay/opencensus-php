@@ -680,7 +680,7 @@ class EnachRblGatewayTest extends TestCase
                     ],
                 ],
             ],
-            'ACKNOWLEDGEMENT REPORT'  => [
+            'ACKNOWLEDGMENT REPORT'  => [
                 'config' => [
                     'start_cell' => 'A2',
                 ],

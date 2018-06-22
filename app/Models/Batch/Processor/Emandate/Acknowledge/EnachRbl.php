@@ -38,7 +38,7 @@ class EnachRbl extends Base
         Config::set('excel.import.heading', 'original');
         Config::set('excel.import.startRow', 2);
 
-        $sheets = $this->parseExcelFile($filePath, ['ACKNOWLEDGEMENT REPORT']);
+        $sheets = $this->parseExcelFile($filePath, ['ACKNOWLEDGMENT REPORT']);
 
         //
         // Resetting startRow to 1 again
