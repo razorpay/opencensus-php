@@ -123,17 +123,6 @@ class Validator extends Base\Validator
         $this->validateInput('sendNotification', $input);
     }
 
-    public function validateIsViewable()
-    {
-        $paymentLink = $this->entity;
-        $publicId    = $paymentLink->getPublicId();
-
-        if ($paymentLink->isInactive() === true)
-        {
-            throw new BadRequestValidationFailureException("payment link with id: {$publicId} is inactive");
-        }
-    }
-
     /**
      * If amount is set for payment link, validates that amount of new payment request is same as expected
      * @param  Payment\Entity $payment

@@ -5,6 +5,7 @@ namespace RZP\Models\PaymentLink;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
@@ -48,6 +49,8 @@ class ViewSerializer extends Base\Core
     {
         return [
             'key_id'         => $this->getMerchantKeyId(),
+            'is_test_mode'   => ($this->mode === Mode::TEST),
+            'environment'    => $this->app->environment(),
             E::MERCHANT      => $this->serializeMerchantForHosted(),
             E::PAYMENT_LINK  => $this->serializePaymentLinkForHosted(),
         ];
