@@ -5,9 +5,10 @@ namespace RZP\Tests\Functional\Gateway\Reconciliation;
 use Mockery;
 use Illuminate\Http\UploadedFile;
 
+use RZP\Models\Batch\Status;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class NetbankingReconciliationTest extends TestCase
 {
@@ -78,15 +79,11 @@ class NetbankingReconciliationTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $data = $this->testData[__FUNCTION__];
+        $this->reconcile('NetbankingRbl', $uploadedFile);
 
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($uploadedFile)
-            {
-                $this->reconcile('NetbankingRbl', $uploadedFile);
-            }
-        );
+        $transactionEntity = $this->getDbLastEntityPublic('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
     }
 
     public function testRblFailedPaymentReconciliation()
@@ -306,6 +303,33 @@ class NetbankingReconciliationTest extends TestCase
         $transactionEntity = $this->getLastEntity('transaction', true);
 
         $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+    }
+
+    public function testHdfcPaymentReconciliation()
+    {
+        $this->gateway = 'netbanking_hdfc';
+
+        $payment = $this->createPayment('netbanking_hdfc');
+
+        $this->createNetbanking($payment['id'], 'ICIC', 'S');
+
+        $fileContents = $this->generateFile('hdfc', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingHdfc', $uploadedFile);
+
+        $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($gatewayEntity['bank_payment_id'], 99999);
+
+        $transactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+
+        $batch = $this->getDbLastEntity('batch');
+
+        $this->assertEquals(Status::PROCESSED, $batch['status']);
     }
 
     public function testIciciFailedPaymentReconciliation()

@@ -648,6 +648,26 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
+    private function overrideOlamoneyPayment(array $payment)
+    {
+        $facade = $this->testData['facades']['olamoney'];
+
+        $facade['Unique Bill Id'] = $payment['payment_id'];
+
+        return $facade;
+    }
+
+    private function overrideMobikwikPayment(array $payment)
+    {
+        $facade = $this->testData['facades']['mobikwik'];
+
+        $paymentId = str_replace("pay_", '', $payment['id']);
+
+        $facade['OrderID'] = '"""'. $paymentId;
+
+        return $facade;
+    }
+
     protected function runForFiles(array $files, string $gateway, array $forceUpdate = [])
     {
         $this->ba->appAuth();
@@ -688,6 +708,19 @@ class ReconciliationFileTest extends TestCase
             filesize($url),
             null,
             true);
+    }
+
+    private function getNewWalletEntity($merchantId, $wallet)
+    {
+        $this->fixtures->merchant->enableWallet($merchantId, $wallet);
+
+        $payment = $this->getDefaultWalletPaymentArray($wallet);
+
+        $capturePayment = $this->doAuthAndCapturePayment($payment);
+
+        $gatewayPayment = $this->getDbLastEntityPublic('payment');
+
+        return $gatewayPayment;
     }
 
     public function testHitachiReconPaymentFile()
@@ -833,5 +866,55 @@ class ReconciliationFileTest extends TestCase
 
         // Asserting status of batch as 'Processed'.
         $this->assertBatchStatus();
+    }
+
+    public function testOlamoneyReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:shared_olamoney_terminal');
+
+        $gatewayPayment1 = $this->getNewWalletEntity('10000000000000', 'olamoney');
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $entries[] = $this->overrideOlamoneyPayment($wallet);
+
+        $file = $this->writeToCsvFile($entries, 'olamoney');
+
+        $this->runForFiles([$file], 'Olamoney');
+
+        $updatedPayment1 = $this->getEntityById('payment', $wallet['payment_id'], true);
+
+        $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $updatedTransaction = $this->getEntityById('transaction', $updatedPayment1['transaction_id'], true);
+
+        //Reconciled at should not be null
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testMobikwikReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:shared_mobikwik_terminal');
+
+        $gatewayPayment1 = $this->getNewWalletEntity('10000000000000', 'mobikwik');
+
+        $entries[] = $this->overrideMobikwikPayment($gatewayPayment1);
+
+        $file = $this->writeToCsvFile($entries, 'mobikwik');
+
+        $this->runForFiles([$file], 'Mobikwik');
+
+        $updatedPayment1 = $this->getEntityById('payment', $gatewayPayment1['id'], true);
+
+        $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $updatedTransaction = $this->getEntityById('transaction', $updatedPayment1['transaction_id'], true);
+
+        //Reconciled at should not be null
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 }
