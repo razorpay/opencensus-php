@@ -829,7 +829,11 @@ class Core extends Base\Core
 
         $merchant = $merchantRequest->merchant;
 
-        (new Validator)->validateIfAlreadyPartner($merchant);
+        $validator = new Validator;
+
+        $validator->validateIsNotLinkedAccount($merchant);
+
+        $validator->validateIfAlreadyPartner($merchant);
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $partnerType)
         {
