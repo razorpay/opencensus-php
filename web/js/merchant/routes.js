@@ -1,4 +1,5 @@
 import { matchPath } from 'react-router-dom';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 
 import SettlementDetails from 'merchant/containers/Settlements/Details';
 import PaymentLinkEntity from 'merchant/containers/PaymentLinks/Links/Entity';
@@ -23,35 +24,45 @@ import ActivationContainer from 'merchant/containers/Activation/new';
 * */
 
 const entityDetailsMap = {
-  '/payments/:id(pay_.+)/:entity_name(transfers)/new': PaymentsDetails,
-  '/payments/:id(pay_.+)/:transfer_id(trf_.+)': PaymentsDetails,
-  '/payments/:id(pay_.+)': PaymentsDetails,
+  '/payments/:id(pay_.+)/:entity_name(transfers)/new': {
+    component: PaymentsDetails,
+  },
+  '/payments/:id(pay_.+)/:transfer_id(trf_.+)': { component: PaymentsDetails },
+  '/payments/:id(pay_.+)': { component: PaymentsDetails },
 
-  '/refunds/:id(rfnd_.+)': RefundDetails,
-  '/orders/:id': OrderDetails,
-  '/settlements/:id': SettlementDetails,
-  '/paymentlinks/:id(inv_.+)': PaymentLinkEntity,
-  '/paymentlinks/batchuploads/:id(batch_.+)': PaymentLinkBatchDetails,
-  '/paymentpages/:id(pl_.+)': PaymentPages,
-  '/invoices/:id/details': PaymentLinkEntity,
+  '/refunds/:id(rfnd_.+)': { component: RefundDetails },
+  '/orders/:id': { component: OrderDetails },
+  '/settlements/:id': { component: SettlementDetails },
+  '/paymentlinks/:id(inv_.+)': { component: PaymentLinkEntity },
+  '/paymentlinks/batchuploads/:id(batch_.+)': {
+    component: PaymentLinkBatchDetails,
+  },
+  '/paymentpages/:id(pl_.+)': { component: PaymentPages },
+  '/invoices/:id/details': { component: PaymentLinkEntity },
 
-  '/route/payments/:id': PaymentsDetails,
-  '/virtualaccounts/:id': VirtualAccountDetails,
-  '/plans/new': PlanNew,
-  '/plans/:id': PlanDetails,
+  '/route/payments/:id': { component: PaymentsDetails },
+  '/virtualaccounts/:id': { component: VirtualAccountDetails },
+  '/plans/new': { component: PlanNew },
+  '/plans/:id': { component: PlanDetails },
 
-  '/subscriptions/:id(sub_.+)/:invoice_id(inv_.+)': SubscriptionDetails,
-  '/subscriptions/:id(sub_.+)': SubscriptionDetails,
+  '/subscriptions/:id(sub_.+)/:invoice_id(inv_.+)': {
+    component: SubscriptionDetails,
+  },
+  '/subscriptions/:id(sub_.+)': { component: SubscriptionDetails },
 
-  '/route/transfers/:id': TransferDetails,
+  '/route/transfers/:id': { component: TransferDetails },
 
-  '/disputes/:id(disp_.+)': DisputeDetails,
+  '/disputes/:id(disp_.+)': { component: DisputeDetails },
 };
 
+/*
+* Example:
+* - '/paymentlinks/new': {component: PaymentLinksCreate, featureEnabled: "randomFeature", featureEnabled: "randomFeature"}
+* */
 const entityModalsMap = {
-  '/activation': ActivationContainer,
-  '/paymentlinks/new': PaymentLinksCreate,
-  '/paymentpages/new': PaymentPagesCreate,
+  '/activation': { component: ActivationContainer },
+  '/paymentlinks/new': { component: PaymentLinksCreate },
+  '/paymentpages/new': { component: PaymentPagesCreate },
 };
 
 export function matchDetail(pathname) {
@@ -65,10 +76,13 @@ export function matchModal(pathname) {
 function matcher(routeMap, pathname) {
   for (let route in routeMap) {
     var match = matchPath(pathname, route);
-    if (match) {
+
+    var { component, ...rest } = routeMap[route];
+
+    if (match && showWhenUtil(rest)) {
       return {
         match,
-        component: routeMap[route],
+        component: component,
       };
     }
   }

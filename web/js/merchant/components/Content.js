@@ -7,7 +7,7 @@ import { matchDetail, matchModal } from 'merchant/routes';
 import Slider from 'rzp/ui/Slider';
 import { ModalMask } from 'component/Modal';
 
-import ShowWhen from 'merchant/components/ShowWhen';
+import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
 import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
@@ -154,7 +154,7 @@ export default class Content extends Component {
           <Route path="/invoices/new" component={InvoicesNew} />
           <Route path="/items" component={InvoicingContainer} />
           <Route path="/paymentlinks" component={PaymentLinks} />
-          <Route path="/paymentpages" component={PaymentPages} />
+          <ShowWhenRoute path="/paymentpages" component={PaymentPages} featureEnabled="paymentpages"/>
           <Route path="/subscriptions" component={Subscriptions} />
           <Route path="/plans" component={Subscriptions} />
           {/*<Route path="/addons" component={Subscriptions} />*/}
@@ -264,3 +264,21 @@ export default class Content extends Component {
     );
   }
 }
+
+const ShowWhenRoute = ({ component: Component, ...rest }) => (
+  <Route
+    {...rest}
+    render={props =>
+      showWhenUtil(rest) ? (
+        <Component {...rest} />
+      ) : (
+        <Redirect
+          to={{
+            pathname: '/dashboard',
+            state: { from: rest.location },
+          }}
+        />
+      )
+    }
+  />
+);
