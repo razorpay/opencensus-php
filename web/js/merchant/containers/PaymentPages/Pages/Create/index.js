@@ -517,8 +517,8 @@ class CreateWizard extends React.Component {
           {/* ALERTS */}
           {mode === 'test' && (
             <Alert.Warning>
-              You are creating the link in <b>Test Mode</b>. So, only test
-              payments can be made for this link.
+              You are creating the page in <b>Test Mode</b>. So, only test
+              payments can be made for it.
             </Alert.Warning>
           )}
 

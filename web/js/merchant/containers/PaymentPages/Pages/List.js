@@ -118,16 +118,12 @@ export default class PaymentPagesContainer extends ListContainer {
       !paymentPages.length
     ) {
       // !paymentPages check is required so that while creation first time, the list would be updated while totalPaymentPagesLength still = 0
-      content = (
-        <div class="content-wrapper">
-          <OnboardingPP />
-        </div>
-      );
+      content = <OnboardingPP />;
     } else {
       content = (
         <React.Fragment>
           <ListFilter
-            form="PaymentPagesPaymentLitFilter"
+            form="PaymentPagesPaymentListFilter"
             count={this.state.count}
             onSearchAnalytics={this.onSearchAnalytics}
             onClearAnalytics={this.onClearAnalytics}
