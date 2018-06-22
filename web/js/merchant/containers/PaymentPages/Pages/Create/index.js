@@ -337,11 +337,6 @@ export default class CreateNewContainer extends React.Component {
         });
 
         if (resp.data) {
-          this.props.showNotification({
-            type: 'success',
-            message: notificationMSG,
-          });
-
           const entityId = resp.data.id;
 
           this.openPPShareView(

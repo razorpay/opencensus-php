@@ -44,7 +44,7 @@ export default class EditDescription extends React.Component {
         <div>
           {this.state.title}
           {this.state.description && (
-            <div class="label--secondary" style={{ whiteSpace: 'pre' }}>
+            <div class="label--secondary" style={{ whiteSpace: 'pre-wrap' }}>
               {this.state.description}
             </div>
           )}

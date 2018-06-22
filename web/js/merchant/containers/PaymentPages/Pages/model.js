@@ -46,6 +46,7 @@ export function fetchPaymentsListForPaymentPage(id) {
     url: 'payments',
     params: {
       payment_link_id: id,
+      captured: 1,
       count: 5,
     },
   });
