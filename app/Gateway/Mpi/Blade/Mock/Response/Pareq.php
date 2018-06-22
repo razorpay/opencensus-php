@@ -139,7 +139,7 @@ class Pareq
                 'enrolled' => 'Y',
                 'acctID'   => CardNumber::getAccId($cardNo),
             ],
-            'url'      => $this->route->getUrl('mock_acs', ['gateway'=> 'mpi_blade']),
+            'url'      => $this->route->getUrl('mock_acs', ['gateway'=> 'blade']),
             'protocol' => 'ThreeDSecure'
         ];
     }
@@ -157,7 +157,7 @@ class Pareq
                 'enrolled' => 'Y',
                 'acctID'   => CardNumber::getAccId($cardNo),
             ],
-            'url'      => $this->route->getUrl('mock_acs', ['gateway'=> 'mpi_blade']),
+            'url'      => $this->route->getUrl('mock_acs', ['gateway'=> 'blade']),
             'protocol' => 'ThreeDSecure'
         ];
     }

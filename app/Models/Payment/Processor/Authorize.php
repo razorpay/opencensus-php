@@ -345,15 +345,16 @@ trait Authorize
         {
             $templateData = [
                'data' => $response,
-               'cdn'  => $this->config->get('url.cdn.production')
+               'cdn'  => $this->app['config']->get('url.cdn.production')
             ];
 
-            $content = View::make('gateway.gatewayOtpPostForm')
+            $content =  $this->app['view']
+                            ->make('gateway.gatewayOtpPostForm')
                             ->with('data', $templateData)
                             ->render();
 
             $response = [
-                'type'       => 'otp',
+                'type'       => 'first',
                 'request'    => [
                     'method'  => 'direct',
                     'content' => $content

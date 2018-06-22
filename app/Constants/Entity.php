@@ -134,6 +134,7 @@ class Entity
     const AMEX                   = 'amex';
     const MPI                    = 'mpi';
     const MPI_BLADE              = 'mpi_blade';
+    const MPI_ENSTAGE            = 'mpi_enstage';
     const ATOM                   = 'atom';
     const ENACH                  = 'enach';
     const HDFC                   = 'hdfc';
@@ -340,6 +341,7 @@ class Entity
         self::WALLET_MPESA           => \RZP\Gateway\Wallet\Mpesa::class,
         self::MPI                    => \RZP\Gateway\Mpi\Base::class,
         self::MPI_BLADE              => \RZP\Gateway\Mpi\Blade::class,
+        self::MPI_ENSTAGE            => \RZP\Gateway\Mpi\Enstage    ::class,
         self::WALLET_AMAZONPAY       => \RZP\Gateway\Wallet\Amazonpay::class,
 
         // heimdall
@@ -380,6 +382,7 @@ class Entity
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Base::class,
 
         self::MPI_BLADE              => \RZP\Gateway\Mpi\Base::class,
+        self::MPI_ENSTAGE            => \RZP\Gateway\Mpi\Base::class,
 
         self::ENACH_RBL              => \RZP\Gateway\Enach\Base::class,
 
