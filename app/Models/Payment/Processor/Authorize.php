@@ -880,14 +880,25 @@ trait Authorize
             return;
         }
 
-        if ($payment->getAuthType() === Payment\AuthType::PIN)
+        switch ($payment->getAuthType())
         {
-            if (($payment->card->iinRelation === null) or
-                ($payment->card->iinRelation->supports(IIN\Flow::PIN) === false))
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The pin authentication type is not applicable on the given card');
-            }
+            case Payment\AuthType::PIN:
+                if (($payment->card->iinRelation === null) or
+                    ($payment->card->iinRelation->supports(IIN\Flow::PIN) === false))
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'The pin authentication type is not applicable on the given card');
+                }
+                break;
+
+            case Payment\AuthType::OTP:
+                if (($payment->card->iinRelation === null) or
+                    ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === false))
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'The otp authentication type is not applicable on the given card');
+                }
+                break;
         }
     }
 

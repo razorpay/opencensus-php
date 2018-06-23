@@ -451,7 +451,7 @@ class HeadlessOtpTest extends TestCase
             'network' => 'Visa',
             'flows'   => [
                 '3ds'  => '1',
-                'pin'  => '1',
+                'headless_otp'  => '1',
             ]
         ]);
 
@@ -460,6 +460,32 @@ class HeadlessOtpTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4143667057540458';
         $payment['auth_type'] = 'otp';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testOtpAuthPaymentWithCardNotSupported()
+    {
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'  => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        $this->fixtures->merchant->addFeatures(['otpelf']);
 
         $data = $this->testData[__FUNCTION__];
 

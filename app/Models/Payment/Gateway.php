@@ -373,6 +373,7 @@ class Gateway
     ];
 
     public static $headless = [
+        self::CYBERSOURCE,
         self::HITACHI,
         self::HDFC,
     ];
