@@ -36,6 +36,20 @@ export default class PaymentPagesContainer extends ListContainer {
     this.fetchAllEntityList();
   }
 
+  componentWillReceiveProps(nextProps, nextState) {
+    if (this.props.paymentPages.length !== nextProps.paymentPages.length) {
+      const newLength = nextProps.paymentPages.length;
+
+      if (newLength) {
+        this.setState({
+          totalPaymentPagesLength: newLength,
+        });
+      }
+    }
+
+    super.componentWillReceiveProps(nextProps);
+  }
+
   /* Fetch all payment pages list to find whether first-time user */
   fetchAllEntityList() {
     fetchPaymentPagesList()
@@ -173,80 +187,70 @@ export default class PaymentPagesContainer extends ListContainer {
               />
             </div>
           </ListFilter>
-
-          {loading ||
-            (!!paymentPages.length && (
-              <div class="table-responsive">
-                <table class="table table-hover table-striped">
-                  <thead>
-                    <tr>
-                      <th>Title</th>
-                      <th>Amount</th>
-                      <th>Payments Made</th>
-                      <th>Times Payable</th>
-                      <th>Total Sales</th>
-                      <th>Link Url</th>
-                      <th>Created At</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <TableBody
-                    isLoading={loading}
-                    colSpan={8}
-                    rows={paymentPages}
-                    emptyTableMsg="No data found!"
-                  >
-                    {paymentPages.map(item => (
-                      <EntityItemRow id={item.id} key={item.id}>
-                        <td>
-                          <NavLink to={`/paymentpages/${item.id}`}>
-                            <code>{item.title}</code>
-                          </NavLink>
-                        </td>
-                        <td>
-                          <Amount
-                            value={item.amount}
-                            currency={item.currency}
-                          />
-                        </td>
-                        <td>{item.times_paid}</td>
-                        <td>{item.times_payable || '--'}</td>
-                        <td>
-                          <Amount
-                            value={item.total_amount_paid}
-                            currency={item.currency}
-                          />
-                        </td>
-                        <td>
-                          {item.short_url && (
-                            <span class="CopyLink">
-                              <span>{item.short_url}</span>
-                              <CustomClipboard
-                                value={item.short_url}
-                                onCopy={this.onCopy({
-                                  itemId: item.id,
-                                })}
-                              >
-                                <button class="btn btn-default btn-xs">
-                                  copy
-                                </button>
-                              </CustomClipboard>
-                            </span>
-                          )}
-                        </td>
-                        <td>
-                          <Time value={item.created_at} />
-                        </td>
-                        <td>
-                          <PaymentPagesStatusLabel status={item.status} />
-                        </td>
-                      </EntityItemRow>
-                    ))}
-                  </TableBody>
-                </table>
-              </div>
-            ))}
-
+          <div class="table-responsive">
+            <table class="table table-hover table-striped">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Amount</th>
+                  <th>Payments Made</th>
+                  <th>Times Payable</th>
+                  <th>Total Sales</th>
+                  <th>Page Url</th>
+                  <th>Created At</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <TableBody
+                isLoading={loading}
+                colSpan={8}
+                rows={paymentPages}
+                emptyTableMsg="No data found!"
+              >
+                {paymentPages.map(item => (
+                  <EntityItemRow id={item.id} key={item.id}>
+                    <td>
+                      <NavLink to={`/paymentpages/${item.id}`}>
+                        <code>{item.title}</code>
+                      </NavLink>
+                    </td>
+                    <td>
+                      <Amount value={item.amount} currency={item.currency} />
+                    </td>
+                    <td>{item.times_paid}</td>
+                    <td>{item.times_payable || '--'}</td>
+                    <td>
+                      <Amount
+                        value={item.total_amount_paid}
+                        currency={item.currency}
+                      />
+                    </td>
+                    <td>
+                      {item.short_url && (
+                        <span class="CopyLink">
+                          <span>{item.short_url}</span>
+                          <CustomClipboard
+                            value={item.short_url}
+                            onCopy={this.onCopy({
+                              itemId: item.id,
+                            })}
+                          >
+                            <button class="btn btn-default btn-xs">copy</button>
+                          </CustomClipboard>
+                        </span>
+                      )}
+                    </td>
+                    <td>
+                      <Time value={item.created_at} />
+                    </td>
+                    <td>
+                      <PaymentPagesStatusLabel status={item.status} />
+                    </td>
+                  </EntityItemRow>
+                ))}
+              </TableBody>
+            </table>
+          </div>
           {!loading &&
             !!paymentPages.length && (
               <Pager

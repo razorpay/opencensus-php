@@ -34,7 +34,6 @@ export default class ActivateAgainModal extends React.Component {
      * Fields like: 'Time Payable' is required on checkbox. So, if value not selected, html marks it as ':invalid' which is tehnically valid in our case.
      * Hence, relying on is-invalid.
      * */
-    // const invalidFields = document.querySelectorAll('.PaymentLinks--Create-Form :invalid');
     const invalidFields = document.querySelectorAll(
       '.ModalForm--ActivationAgain .Input.is-invalid'
     );
@@ -120,13 +119,13 @@ export default class ActivateAgainModal extends React.Component {
     return (
       <div>
         <ModalHeader
-          title="Activate Link?"
+          title="Activate Page?"
           onCloseClick={this.props.handleClose}
         />
 
         <div class="modal-body">
           <p>
-            Once you activate the link, you will be able to accept payments.{' '}
+            Once you activate the page, you will be able to accept payments.{' '}
             {msg.length && 'Kindly '} {msg}.
           </p>
 
