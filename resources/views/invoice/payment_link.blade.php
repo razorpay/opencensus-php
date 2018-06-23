@@ -580,14 +580,14 @@ $invoice_status                 = $invoice_data['status'];
             document.getElementById('hist-modal').className = 'show';
             showOverlay('overlay-hist');
 
-            ga('send', 'event', 'PL Hosted Page', 'Click - Show Payment History', undefined, data.invoice.payments.length);
+            window.ga('send', 'event', 'PL Hosted Page', 'Click - Show Payment History', undefined, data.invoice.payments.length);
         }
 
         function closePayHist() {
             document.getElementById('hist-modal').className = '';
             hideOverlay('overlay-hist');
 
-            ga('send', 'event', 'PL Hosted Page', 'Click - Close Payment History', undefined, data.invoice.payments.length);
+            window.ga('send', 'event', 'PL Hosted Page', 'Click - Close Payment History', undefined, data.invoice.payments.length);
         }
     </script>
 @endif
@@ -633,11 +633,11 @@ $invoice_status                 = $invoice_data['status'];
                         );
                     }
 
-                    if (ga && ga.length) {
+                    if (window.ga && window.ga.length) {
                         var sessionTDiff = (new Date()).getTime() - window.t0;
                         var paymentSuccessAction = data.invoice.partial_payment ? 'Payment Successful - Partial' : 'Payment Successful';
 
-                        ga('send', 'event', 'PL Hosted Page', paymentSuccessAction, 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
+                        window.ga('send', 'event', 'PL Hosted Page', paymentSuccessAction, 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
                             hitCallback: function() {
                                 return location.reload(); // To display the latest payment id
                             }

@@ -431,10 +431,13 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
             var color = data.merchant.brand_color || '#168AFA';
             document.getElementById('chkout-header').style['background-color'] = color;
 
-
             toggleTrimDescription(true);
 
             function fullPaid(respPaymentId) {
+                if (!respPaymentId) {
+                    return;
+                }
+
                 var amount = data.payment_link.amount;
                 document.getElementById('pay-title').innerHTML = 'AMOUNT PAID';
 
@@ -442,12 +445,13 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                     document.getElementById('scs-box').style.display = 'block';
                     var successNote = "You have successfully paid ₹ " + (amount/100).toFixed(2);
 
-                    successNote += '<div> Payment ID: ' + respPaymentId + ' </div>'
+                    successNote += '<div> Payment ID: ' + respPaymentId + ' </div>';
 
                     document.getElementById('scs-msg').innerHTML = successNote;
 
                     document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2);
                 } else {
+                    document.getElementById('mob-payment-btn').style.display = 'none';
                     document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2) + '<span id="paid-tag">PAID</span></span>';
                     document.getElementById('payment_id').style.display = 'block';
                     document.querySelector('#payment_id .val').innerHTML = respPaymentId;
@@ -520,11 +524,11 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                                 );
                             }
 
-                            if (ga && ga.length) {
+                            if (window.ga && window.ga.length) {
                                 var sessionTDiff = (new Date()).getTime() - window.t0;
                                 var paymentSuccessAction = 'Payment Successful';
 
-                                ga('send', 'event', 'Payment Page Hosted', paymentSuccessAction, 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
+                                window.ga('send', 'event', 'Payment Page Hosted', paymentSuccessAction, 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
                                     hitCallback: function() {
                                         return fullPaid(response.razorpay_payment_id); // To display the latest payment id
                                     }
