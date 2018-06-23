@@ -10,7 +10,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
 ?>
 
 
-        <!doctype html>
+<!doctype html>
 <html>
 <head>
     <title>Payment Link</title>
@@ -74,9 +74,9 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
         }
 
         function toggleTrimDescription(toTrim) {
-            var data = window.RZP_DATA.data;
-            desc = data.payment_link.description;
-            var charLimit, pseudoChar, button = '';
+            var data = window.RZP_DATA.data,
+            desc = data.payment_link.description,
+            charLimit, pseudoChar, button = '';
 
             if (checkIsDesktop()) {
                 charLimit = 200;
@@ -86,26 +86,27 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                 pseudoChar = 35;
             }
 
-            if (desc && (desc.length > charLimit)) {
-                if (toTrim) {
-                    var newLines = 0;
-                    newLines = (desc.match(new RegExp("\n", "g")) || []).length;
+            if (desc && toTrim) {
+                var visLength = 0;
 
-                    if (newLines) {
-                        for(let i = 0; i < newLines; i++) {
-                            if ((charLimit - i * pseudoChar) < 0.6 * charLimit) {
-                                desc = desc.substr(0, charLimit - i*pseudoChar);
-                                break;
-                            }
-                        }
+                var i = 0;
+                for(; i < desc.length ; i++) {
+                    if (desc[i] === '\n') {
+                        visLength += pseudoChar;
                     } else {
-                        desc = desc.substr(0,charLimit);
+                        visLength++;
                     }
 
-                    desc =  desc.trim();
-                    desc += '...';
-                    button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button'
+                    if (visLength > charLimit) {
+                        i = i - 1;
+                        break;
+                    }
                 }
+
+                desc= desc.substr(0, i + 1);
+                desc =  desc.trim();
+                desc += '...';
+                button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button>';
             }
 
             var ele = document.getElementById('payment-for');
@@ -256,7 +257,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                                 @endif
                                 <div class="inv-details">
                                     <div id="inv-details-main">
-                                        <div class="inv-for">
+                                        <div class="inv-for" style="overflow-wrap: break-word;">
                                             {{$payment_page_data['title']}}
                                         </div>
                                         @if(isset($payment_page_data['description']))
@@ -368,7 +369,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                         @endif
                         <div class="inv-details">
                             <div id="inv-details-main">
-                                <div class="inv-for">
+                                <div class="inv-for" style="overflow-wrap: break-word;">
                                     {{$payment_page_data['title']}}
                                 </div>
                                 @if(isset($payment_page_data['description']))

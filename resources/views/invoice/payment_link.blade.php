@@ -74,9 +74,9 @@ $invoice_status                 = $invoice_data['status'];
         }
 
         function toggleTrimDescription(toTrim) {
-            var data = window.RZP_DATA.data;
-            desc = data.invoice.description;
-            var charLimit, pseudoChar, button = '';
+            var data = window.RZP_DATA.data,
+            desc = data.payment_link.description,
+            charLimit, pseudoChar, button = '';
 
             if (checkIsDesktop()) {
                 charLimit = 200;
@@ -86,26 +86,27 @@ $invoice_status                 = $invoice_data['status'];
                 pseudoChar = 35;
             }
 
-            if (desc && (desc.length > charLimit)) {
-                if (toTrim) {
-                    var newLines = 0;
-                    newLines = (desc.match(new RegExp("\n", "g")) || []).length;
+            if (desc && toTrim) {
+                var visLength = 0;
 
-                    if (newLines) {
-                        for(let i = 0; i < newLines; i++) {
-                            if ((charLimit - i * pseudoChar) < 0.6 * charLimit) {
-                                desc = desc.substr(0, charLimit - i*pseudoChar);
-                                break;
-                            }
-                        }
+                var i = 0;
+                for (; i < desc.length ; i++) {
+                    if (desc[i] === '\n') {
+                        visLength += pseudoChar;
                     } else {
-                        desc = desc.substr(0,charLimit);
+                        visLength++;
                     }
 
-                    desc =  desc.trim();
-                    desc += '...';
-                    button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button'
+                    if (visLength > charLimit) {
+                        i = i - 1;
+                        break;
+                    }
                 }
+
+                desc= desc.substr(0, i + 1);
+                desc =  desc.trim();
+                desc += '...';
+                button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button>';
             }
 
             document.getElementById('payment-for').innerHTML = desc + button;
