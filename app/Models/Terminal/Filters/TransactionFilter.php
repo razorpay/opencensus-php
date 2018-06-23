@@ -589,16 +589,22 @@ class TransactionFilter extends Terminal\Filter
                         break;
 
                     case Payment\AuthType::OTP:
-                        if ($terminal->isIvr() === true)
+                        // We should select the terminal only if
+                        if ($payment->card->iinRelation !== null)
                         {
-                            return true;
-                        }
+                            if (($terminal->isIvr() === true) and
+                                ($payment->card->iinRelation->supports(Flow::OTP) === true))
+                            {
+                                return true;
+                            }
 
-                        $gateway = $terminal->getGateway();
+                            $gateway = $terminal->getGateway();
 
-                        if (Gateway::supportsHeadlessBrowser($gateway) === true)
-                        {
-                            return true;
+                            if ((Gateway::supportsHeadlessBrowser($gateway) === true) and
+                                ($payment->card->iinRelation->supports(Flow::HEADLESS_OTP) === true))
+                            {
+                                return true;
+                            }
                         }
 
                         break;
@@ -631,7 +637,7 @@ class TransactionFilter extends Terminal\Filter
 
     protected function is3DSTerminal($terminal)
     {
-        return ($terminal->isPin() === false);
+        return (($terminal->isPin() === false) and ($terminal->isIvr() === false));
     }
 
     protected function isTerminalWithMerchantMccAbsent(
