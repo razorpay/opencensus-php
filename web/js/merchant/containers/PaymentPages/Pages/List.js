@@ -185,7 +185,7 @@ export default class PaymentPagesContainer extends ListContainer {
                       <th>Payments Made</th>
                       <th>Times Payable</th>
                       <th>Total Sales</th>
-                      <th>Link Url</th>
+                      <th>Page Url</th>
                       <th>Created At</th>
                       <th>Status</th>
                     </tr>

@@ -290,9 +290,9 @@ export default class PaymentPagesEntity extends React.Component {
     if (isActive) {
       /* Wants manual deactivation */
       apiAction = deactivatePaymentPage;
-      header = 'Deactivate Link?';
+      header = 'Deactivate Page?';
       message =
-        'Once you deactivate the link, you will not be able to accept payments till you activate it again.';
+        'Once you deactivate the page, you will not be able to accept payments till you activate it again.';
       affirmativeLabel = 'Yes, deactivate';
       affirmativePendingLabel = 'Deactivating..';
       successMsg = `${this.state.paymentPageEntity.id} is now Inactive`;
@@ -300,9 +300,9 @@ export default class PaymentPagesEntity extends React.Component {
       /* Wants activation for manual deactivation for cancelled status */
 
       apiAction = activatePaymentPage;
-      header = 'Activate Link?';
+      header = 'Activate Page?';
       message =
-        'Once you activate the link, you will be able to accept payments.';
+        'Once you activate the page, you will be able to accept payments.';
       affirmativeLabel = 'Yes, activate';
       affirmativePendingLabel = 'Activating..';
       successMsg = `${this.state.paymentPageEntity.id} is now Active`;
@@ -470,7 +470,7 @@ export default class PaymentPagesEntity extends React.Component {
                     class="btn btn-primary btn-sm"
                     onClick={this.openShareView}
                   >
-                    Send Link
+                    Send URL
                   </button>
                 )}
               </div>
@@ -495,7 +495,7 @@ export default class PaymentPagesEntity extends React.Component {
                   )}
                 />
                 <EntityDetailRow
-                  label="Link URL"
+                  label="Page URL"
                   value={() => (
                     <CopyLink
                       url={paymentPageEntity.short_url}
@@ -521,7 +521,7 @@ export default class PaymentPagesEntity extends React.Component {
                             : this.reActivateLink
                         }
                       >
-                        {isActive ? 'Deactivate Link' : 'Activate Link'}
+                        {isActive ? 'Deactivate' : 'Activate'}
                       </Button.Transparent>
                       <div style={{ marginTop: 4, color: '#8991ae' }}>
                         {inActiveStatusReasonMap[statusReason]}
