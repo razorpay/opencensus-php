@@ -29,7 +29,7 @@ export default ({
     if (!msg.length) {
       showNotification({
         type: 'error',
-        message: 'Please enter Mobile or Email to send link',
+        message: 'Please enter Mobile or Email to send URL',
       });
 
       return;
@@ -40,7 +40,7 @@ export default ({
         if (resp.data) {
           showNotification({
             type: 'success',
-            message: 'Link is successfully sent via ' + msg.join(' and '),
+            message: 'URL is successfully sent via ' + msg.join(' and '),
           });
 
           handleClose();
