@@ -6,9 +6,17 @@ import Input from 'component/Input';
 
 import { isEmail, isPhone } from 'rzp/utils/validators';
 
+import { isMobileAndTablet } from 'common/util';
+
 const fbBase = 'https://www.facebook.com/sharer/sharer.php?u=';
 const twitterBase = 'https://twitter.com/share?url=';
-const whatsappBase = 'whatsapp://send?text=';
+let whatsappBase;
+
+if (isMobileAndTablet()) {
+  whatsappBase = 'whatsapp://send?text=';
+} else {
+  whatsappBase = 'https://web.whatsapp.com//send?text=';
+}
 
 export default ({
   isNew,
@@ -220,7 +228,7 @@ export default ({
 };
 
 function _shareMessage(title, description) {
-  let msg = title;
+  let msg = `"${title}"`;
   if (description) {
     msg += ': ' + description;
   }
