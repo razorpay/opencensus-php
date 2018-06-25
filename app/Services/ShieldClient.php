@@ -157,6 +157,13 @@ class ShieldClient implements ExternalService
             $input['attempts'] = $payment->order->getAttempts();
         }
 
+        //Pass client metadata to shield
+        //These include browser fingerprint, local timezone etc
+        if ($payment->hasMetadata('shield'))
+        {
+            $input['client_metadata'] = $payment->getMetadata('shield');
+        }
+
         $analytics = $this->getPaymentAnalyticsData($payment);
 
         $input = array_merge($input, $analytics);
